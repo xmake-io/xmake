@@ -12,6 +12,7 @@ demo_C_FILES 									+= xmake
 
 # packages
 demo_PKGS-$(TBOX)  								+= tbox 
+demo_PKGS-$(LUAJIT)  							+= luajit 
 demo_PKGS-$(BASE)  								+= base 
 
 # others

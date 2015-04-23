@@ -16,5 +16,5 @@ PRO_VERSION_ALTER 	= 1
 PRO_PREFIX 			= XM_
 
 # the package names
-PKG_NAMES 			= tbox base
+PKG_NAMES 			= tbox luajit base
 
