@@ -1,0 +1,4 @@
+#/bin/bash
+
+gprof $1 | gprof2dot.py > /tmp/gprof2dot.dot
+xdot /tmp/gprof2dot.dot

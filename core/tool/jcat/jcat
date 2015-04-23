@@ -1,0 +1,36 @@
+#/bin/bash
+
+# jcat path
+jcat=$0
+
+# uname
+uname=`uname`
+
+# probe host
+if [ $uname = "MSVC" ]; then
+    host=windows
+elif [ $uname = "Darwin" ] || [ `uname | egrep -i darwin` ]; then
+    host=mac
+elif [ $uname = "Linux" ] || [ `uname | egrep -i linux` ]; then
+    host=linux
+elif [ `uname | egrep -i msys` ]; then
+    host=windows
+elif [ `uname | egrep -i cygwin` ]; then
+    host=windows
+else
+    host=linux
+fi
+
+# probe arch
+arch=x86
+if [ $host = "linux" ]; then
+    if [ `getconf LONG_BIT` = "64" ]; then
+        arch=x64
+    fi
+fi
+
+# select jcat
+jcat=$jcat"_"$host"_"$arch
+
+# done it
+$jcat object_jcat $1 $2

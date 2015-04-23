@@ -1,0 +1,105 @@
+{
+    "format":
+    {
+        "name":         "The TBOOX Package Format"
+    ,   "version":      "v1.0.1"
+    ,   "website":      "http://www.tboox.org"
+    }
+
+,   "package":
+    {
+        "name":         "The Base Library"
+    }
+
+,   "compiler": 
+    {
+        "mac":
+        {
+            "x64":              
+            {
+                "debug":
+                {
+                    "libs":         "m dl pthread"
+                ,   "libpath":      "/usr/local/lib"
+                ,   "incpath":      ""
+                ,   "libflags":     ""
+                ,   "incflags":     ""
+                }
+            ,   "release":          "$.compiler.mac.x64.debug"
+            }
+        ,   "x86":              "$.compiler.mac.x64"
+        }
+
+    ,   "msvc":
+        {
+            "x86":
+            {
+                "debug":
+                {
+                    "libs":     "ws2_32"
+                }
+            ,   "release":      "$.compiler.msvc.x86.debug"
+            }
+        }
+
+    ,   "cygwin":
+        {
+            "x86":
+            {
+                "debug":
+                {
+                    "libs":     "ws2_32 m dl pthread"
+                }
+            ,   "release":      "$.compiler.cygwin.x86.debug"
+            }
+        }
+
+    ,   "mingw":                "$.compiler.msvc"
+
+    ,   "android":
+        {
+            "armv5te":
+            {
+                "debug":
+                {
+                    "libs":     "stdc++ log gcc c m dl"
+                }
+            ,   "release":      "$.compiler.android.armv5te.debug"
+            }
+
+        ,   "armv6":            "$.compiler.android.armv5te"
+        ,   "armv7":            "$.compiler.android.armv5te"
+        }
+
+    ,   "ios":
+        {
+            "armv6":
+            {
+                "debug":
+                {
+                    "libs":     "stdc++ m dl pthread"
+                ,   "libflags": "-framework UIKit"
+                }
+            ,   "release":      "$.compiler.ios.armv6.debug"
+            }
+
+        ,   "armv7":            "$.compiler.ios.armv6"
+        ,   "armv7s":           "$.compiler.ios.armv6"
+        ,   "arm64":            "$.compiler.ios.armv6"
+        }
+
+    ,   "linux":
+        {
+            "x86":
+            {
+                "debug":
+                {
+                    "libs":     "rt m dl pthread"
+                }
+            ,   "release":      "$.compiler.linux.x86.debug"
+            }
+
+        ,   "x64":              "$.compiler.linux.x86"
+        }
+    }
+}
