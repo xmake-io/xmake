@@ -15,15 +15,11 @@
     {
         "default":
         {
-            "x64":              
+            "debug":
             {
-                "debug":
-                {
-                    "libs":         "luajit"
-                }
-            ,   "release":          "$.compiler.default.x64.debug"
+                "libs":         "luajit"
             }
-        ,   "x86":              "$.compiler.default.x64"
+        ,   "release":          "$.compiler.default.debug"
         }
 
     ,   "mac" :
