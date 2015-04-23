@@ -41,13 +41,13 @@ static __tb_inline__ tb_bool_t xm_check_mode(tb_size_t mode)
 #ifdef __xm_debug__
     if (!(mode & TB_MODE_DEBUG))
     {
-        tb_trace_e("libgbox.a has __tb_debug__ but xmake/xmake.h not");
+        tb_trace_e("libxmake.a has __tb_debug__ but xmake/xmake.h not");
         return tb_false;
     }
 #else
     if (mode & TB_MODE_DEBUG)
     {
-        tb_trace_e("xmake/xmake.h has __tb_debug__ but libgbox.a not");
+        tb_trace_e("xmake/xmake.h has __tb_debug__ but libxmake.a not");
         return tb_false;
     }
 #endif
@@ -55,13 +55,13 @@ static __tb_inline__ tb_bool_t xm_check_mode(tb_size_t mode)
 #ifdef __xm_small__
     if (!(mode & TB_MODE_SMALL))
     {
-        tb_trace_e("libgbox.a has __tb_small__ but xmake/xmake.h not");
+        tb_trace_e("libxmake.a has __tb_small__ but xmake/xmake.h not");
         return tb_false;
     }
 #else
     if (mode & TB_MODE_SMALL)
     {
-        tb_trace_e("xmake/xmake.h has __tb_small__ but libgbox.a not");
+        tb_trace_e("xmake/xmake.h has __tb_small__ but libxmake.a not");
         return tb_false;
     }
 #endif
@@ -106,6 +106,9 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build)
     // check version
     xm_version_check(build);
 
+    // init tbox
+    if (!tb_init(tb_null, tb_null, 0)) return tb_false;
+
     // trace
     tb_trace_d("init: ok");
 
@@ -120,6 +123,9 @@ tb_void_t xm_exit()
 
     // check
     tb_assert_and_check_return(!init);
+
+    // exit tbox
+    tb_exit();
 }
 tb_version_t const* xm_version()
 {

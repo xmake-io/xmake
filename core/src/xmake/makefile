@@ -12,7 +12,8 @@ xmake_CONFIG 			= y
 
 # core files
 xmake_C_FILES 			+= \
-						xmake 
+						xmake \
+						machine 
 						
 
 # flags
@@ -21,6 +22,7 @@ xmake_CXFLAGS 			+= -D__tb_prefix__=\"xmake\"
 # header files
 xmake_INC_FILES 		= \
 						xmake.h \
+						machine.h \
 						config.h \
 						prefix.h \
 						prefix/prefix.h \

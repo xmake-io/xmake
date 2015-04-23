@@ -17,17 +17,16 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        xmake.h
+ * @file        machine.h
  *
  */
-#ifndef XM_XMAKE_H
-#define XM_XMAKE_H
+#ifndef XM_MACHINE_H
+#define XM_MACHINE_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "machine.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -35,63 +34,38 @@
 __tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * macros
+ * types
  */
 
-#ifdef __xm_debug__
-#   define __xm_mode_debug__    TB_MODE_DEBUG
-#else
-#   define __xm_mode_debug__    (0)
-#endif
-
-#ifdef __xm_small__
-#   define __xm_mode_small__    TB_MODE_SMALL
-#else
-#   define __xm_mode_small__    (0)
-#endif
-
-/*! init xmake
- *
- * @return          tb_true or tb_false
- *
- * @code
-    #include "xmake/xmake.h"
-
-    int main(int argc, char** argv)
-    {
-        // init xmake
-        if (!xm_init()) return 0;
-
-
-        // exit xmake
-        xm_exit();
-        return 0;
-    }
- * @endcode
- */
-#define xm_init()     xm_init_((tb_size_t)(__xm_mode_debug__ | __xm_mode_small__), XM_VERSION_BUILD)
+/// the xmake machine type
+typedef struct{}*   xm_machine_ref_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! init the xmake library
+/*! init the machine
  *
- * @param mode      the compile mode for check __tb_small__ and __tb_debug__
- * @param build     the build version
- *
- * @return          tb_true or tb_false
+ * @return          the machine
  */
-tb_bool_t           xm_init_(tb_size_t mode, tb_hize_t build);
+xm_machine_ref_t    xm_machine_init(tb_noarg_t);
 
-/// exit the xmake library
-tb_void_t           xm_exit(tb_noarg_t);
-
-/*! the xmake version
+/*! exit the machine 
  *
- * @return          the xmake version
+ * @param machine   the machine
  */
-tb_version_t const* xm_version(tb_noarg_t);
+tb_void_t           xm_machine_exit(xm_machine_ref_t machine);
+
+/*! done the machine 
+ *
+ * @param machine   the machine
+ * @param argc      the argument count of the console
+ * @param argv      the argument list of the console
+ * @param code_path the main code file path
+ *
+ * @return          the error code of main()
+ */
+tb_int_t            xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** argv, tb_char_t const* code_path);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
