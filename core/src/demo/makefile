@@ -19,7 +19,7 @@ demo_PKGS-$(BASE)  								+= base
 demo_LIBS 										+= xmake$(DTYPE)
 demo_INC_DIRS 									+= ../
 demo_LIB_DIRS 									+= ../xmake
-demo_CXFLAGS 									+= -D__tb_prefix__=\"demo\"
+demo_CXFLAGS 									+= -D__tb_prefix__=\"xmake\"
 
 # suffix
 include $(PRO_DIR)/suffix.mak
