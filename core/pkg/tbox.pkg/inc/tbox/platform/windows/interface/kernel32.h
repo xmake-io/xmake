@@ -62,6 +62,12 @@ typedef BOOL (WINAPI* tb_kernel32_GetFileSizeEx_t)(HANDLE hFile, PLARGE_INTEGER 
 // the InterlockedCompareExchange64 func type
 typedef LONGLONG (WINAPI* tb_kernel32_InterlockedCompareExchange64_t)(LONGLONG __tb_volatile__* Destination, LONGLONG Exchange, LONGLONG Comparand);
 
+// the GetEnvironmentVariableW func type
+typedef DWORD (WINAPI* tb_kernel32_GetEnvironmentVariableW_t)(LPCWSTR lpName, LPWSTR lpBuffer, DWORD nSize);
+
+// the SetEnvironmentVariableW func type
+typedef BOOL (WINAPI* tb_kernel32_SetEnvironmentVariableW_t)(LPCWSTR lpName, LPCWSTR lpValue);
+
 // the kernel32 interfaces type
 typedef struct __tb_kernel32_t
 {
@@ -79,6 +85,12 @@ typedef struct __tb_kernel32_t
 
     // InterlockedCompareExchange64
     tb_kernel32_InterlockedCompareExchange64_t  InterlockedCompareExchange64;
+
+    // GetEnvironmentVariableW
+    tb_kernel32_GetEnvironmentVariableW_t       GetEnvironmentVariableW;
+
+    // SetEnvironmentVariableW
+    tb_kernel32_SetEnvironmentVariableW_t       SetEnvironmentVariableW;
 
 }tb_kernel32_t,*tb_kernel32_ref_t;
 

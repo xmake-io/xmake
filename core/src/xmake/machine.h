@@ -61,11 +61,10 @@ tb_void_t           xm_machine_exit(xm_machine_ref_t machine);
  * @param machine   the machine
  * @param argc      the argument count of the console
  * @param argv      the argument list of the console
- * @param code_path the main code file path
  *
  * @return          the error code of main()
  */
-tb_int_t            xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** argv, tb_char_t const* code_path);
+tb_int_t            xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** argv);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

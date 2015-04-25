@@ -55,6 +55,7 @@
 #include "directory.h"
 #include "exception.h"
 #include "cache_time.h"
+#include "environment.h"
 #include "thread_pool.h"
 #include "thread_store.h"
 

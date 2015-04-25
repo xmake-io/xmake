@@ -129,7 +129,7 @@ MMFLAGS 			=
 # ldflags
 LDFLAGS_RELEASE 	= 
 LDFLAGS_DEBUG 		=  
-LDFLAGS 			= -m$(BITS) -all_load
+LDFLAGS 			= -m$(BITS) -all_load -pagezero_size 10000 -image_base 100000000
 LDFLAGS-L 			= -L
 LDFLAGS-l 			= -l
 LDFLAGS-f 			=
