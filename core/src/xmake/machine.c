@@ -60,14 +60,6 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     tb_int_t i = 0;
     for (i = 1; i < argc; i++)
     {
-        // get the install directory
-        if (!tb_strncmp(argv[i], "--install=", 10))
-        {
-            // save it to the environment variable
-            tb_environment_set_one("XMAKE_INSTALL_DIR", argv[i] + 10);
-            continue ;
-        }
-
         // get the project directory
         if (!tb_strncmp(argv[i], "--project=", 10))
         {
@@ -87,7 +79,7 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     // ok
     return tb_true;
 }
-static tb_bool_t xm_machine_main_get_install_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
+static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(impl && path && maxn, tb_false);
@@ -98,7 +90,7 @@ static tb_bool_t xm_machine_main_get_install_directory(xm_machine_impl_t* impl, 
     {
         // attempt to get it from the environment variable first
         tb_char_t data[TB_PATH_MAXN] = {0};
-        if (    !tb_environment_get_one("XMAKE_INSTALL_DIR", data, sizeof(data))
+        if (    !tb_environment_get_one("XMAKE_PROGRAM_DIR", data, sizeof(data))
             ||  !tb_path_full(data, path, maxn)) 
         {
             // TODO
@@ -106,11 +98,11 @@ static tb_bool_t xm_machine_main_get_install_directory(xm_machine_impl_t* impl, 
         }
 
         // trace
-        tb_trace_d("install: %s", path);
+        tb_trace_d("program: %s", path);
 
-        // save the directory to the global variable: _INSTALL_DIR
+        // save the directory to the global variable: _PROGRAM_DIR
         lua_pushstring(impl->lua, path);
-        lua_setglobal(impl->lua, "_INSTALL_DIR");
+        lua_setglobal(impl->lua, "_PROGRAM_DIR");
 
         // ok
         ok = tb_true;
@@ -219,8 +211,8 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     tb_char_t path[TB_PATH_MAXN] = {0};
     if (!xm_machine_main_get_project_directory(impl, path, sizeof(path))) return -1;
 
-    // get the install directory
-    if (!xm_machine_main_get_install_directory(impl, path, sizeof(path))) return -1;
+    // get the program directory
+    if (!xm_machine_main_get_program_directory(impl, path, sizeof(path))) return -1;
 
     // append the main script path
     tb_strcat(path, "/scripts/xmake_main.lua");
