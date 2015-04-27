@@ -2,9 +2,11 @@
 
 # is debug?
 debug=n
+verbose=
 if [ $1 ]; then
     if [ $1 = "--debug" ] || [ $1 = "-d" ]; then
         debug=y
+        verbose=-v
     fi
 fi
 
@@ -34,6 +36,9 @@ fi
 
 # compile xmake-core
 cd ./core
+if [ -f .config.mak ]; then 
+    rm .config.mak
+fi
 make f DEBUG=$debug
 if [ $? -ne 0 ]; then exit; fi
 make r
@@ -62,7 +67,7 @@ if [ $? -ne 0 ]; then exit; fi
 xmake_loader=/tmp/xmake_loader
 echo "#!/bin/bash" > $xmake_loader
 echo "export XMAKE_PROGRAM_DIR=$xmake_dir_install" >> $xmake_loader
-echo "$xmake_core_install" >> $xmake_loader
+echo "$xmake_core_install $verbose" >> $xmake_loader
 if [ $? -ne 0 ]; then exit; fi
 
 # install the xmake loader
