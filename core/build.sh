@@ -1,5 +1,7 @@
 #!/bin/sh
-rm .config.mak
-make f DEBUG=n
+if [ -f .config.mak ]; then 
+    rm .config.mak
+fi
+make f DEBUG=n PLAT=msvc ARCH=x86
 make r
 exit
