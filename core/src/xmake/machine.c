@@ -43,6 +43,9 @@ typedef struct __xm_machine_impl_t
     // the lua 
     lua_State*              lua;
 
+    // print verbose info?
+    tb_bool_t               verbose;
+
 }xm_machine_impl_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -60,6 +63,10 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     tb_int_t i = 0;
     for (i = 1; i < argc; i++)
     {
+        // print verbose info
+        if (!tb_strncmp(argv[i], "--verbose", 9) || !tb_strncmp(argv[i], "-v", 2)) 
+            impl->verbose = tb_true;
+
         // get the project directory
         if (!tb_strncmp(argv[i], "--project=", 10))
         {
@@ -88,14 +95,17 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
     tb_bool_t ok = tb_false;
     do
     {
-        // attempt to get it from the environment variable first
+        // get it from the environment variable 
         tb_char_t data[TB_PATH_MAXN] = {0};
-        if (    !tb_environment_get_one("XMAKE_PROGRAM_DIR", data, sizeof(data))
-            ||  !tb_path_full(data, path, maxn)) 
+        if (!tb_environment_get_one("XMAKE_PROGRAM_DIR", data, sizeof(data)))
         {
-            // TODO
+            // trace
+            if (impl->verbose) tb_trace_i("please set XMAKE_PROGRAM_DIR first!");
             break;
         }
+
+        // get the full path
+        if (!tb_path_full(data, path, maxn)) break;
 
         // trace
         tb_trace_d("program: %s", path);
@@ -142,6 +152,9 @@ static tb_bool_t xm_machine_main_get_project_directory(xm_machine_impl_t* impl, 
 
     } while (0);
 
+    // failed?
+    if (!ok && impl->verbose) tb_trace_i("not found the project directory!");
+
     // ok?
     return ok;
 }
@@ -169,6 +182,9 @@ xm_machine_ref_t xm_machine_init()
 
         // TODO: bind lua interfaces
         // ...
+
+        // init verbose
+        impl->verbose = tb_false;
 
         // ok
         ok = tb_true;
@@ -218,11 +234,26 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     tb_strcat(path, "/scripts/xmake_main.lua");
 
     // exists this script?
-    if (!tb_file_info(path, tb_null)) return -1;
+    if (!tb_file_info(path, tb_null))
+    {
+        // trace
+        if (impl->verbose) tb_trace_i("not found main script: %s", path);
+        return -1;
+    }
 
     // trace
     tb_trace_d("main: %s", path);
 
     // exec the script file
-    return luaL_dofile(impl->lua, path);
+    tb_int_t error = luaL_dofile(impl->lua, path);
+
+    // failed? print the error info
+    if (error && impl->verbose)
+    {
+        // trace
+        tb_trace_i("%s", lua_tostring(impl->lua, -1));
+    }
+
+    // ok?
+    return error;
 }

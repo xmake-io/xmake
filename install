@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# is debug?
+debug=n
+if [ $1 ]; then
+    if [ $1 = "--debug" ] || [ $1 = "-d" ]; then
+        debug=y
+    fi
+fi
+
+# probe plat
+uname=`uname`
+if [ $uname = "MSVC" ]; then
+    plat=msvc
+elif [ $uname = "Darwin" ] || [ `uname | egrep -i darwin` ]; then
+    plat=mac
+elif [ $uname = "Linux" ] || [ `uname | egrep -i linux` ]; then
+    plat=linux
+elif [ `uname | egrep -i msys` ]; then
+    plat=msvc
+elif [ `uname | egrep -i cygwin` ]; then
+    plat=msvc
+else
+    plat=linux
+fi
+
+# probe arch
+arch=x86
+if [ $plat = "linux" ] || [ $plat = "mac" ]; then
+    if [ `getconf LONG_BIT` = "64" ]; then
+        arch=x64
+    fi
+fi
+
+# compile xmake-core
+cd ./core
+make f DEBUG=$debug
+if [ $? -ne 0 ]; then exit; fi
+make r
+if [ $? -ne 0 ]; then exit; fi
+cd ..
+
+# create the xmake install directory
+xmake_dir_install=/usr/local/share/xmake
+if [ ! -d $xmake_dir_install ]; then
+    sudo mkdir $xmake_dir_install
+fi
+if [ $? -ne 0 ]; then exit; fi
+
+# install the xmake core file
+xmake_core=./core/bin/demo.pkg/bin/$plat/$arch/demo.b
+xmake_core_install=$xmake_dir_install/xmake
+sudo cp $xmake_core $xmake_core_install
+sudo chmod 777 $xmake_core_install
+if [ $? -ne 0 ]; then exit; fi
+
+# install the xmake directory
+sudo cp -r ./xmake/* $xmake_dir_install/
+if [ $? -ne 0 ]; then exit; fi
+
+# make the xmake loader
+xmake_loader=/tmp/xmake_loader
+echo "#!/bin/bash" > $xmake_loader
+echo "export XMAKE_PROGRAM_DIR=$xmake_dir_install" >> $xmake_loader
+echo "$xmake_core_install" >> $xmake_loader
+if [ $? -ne 0 ]; then exit; fi
+
+# install the xmake loader
+xmake_loader_install=/usr/local/bin/xmake
+sudo mv $xmake_loader $xmake_loader_install
+sudo chmod 777 $xmake_loader_install
+if [ $? -ne 0 ]; then exit; fi
