@@ -26,5 +26,10 @@
         {
             "x64":      "$.compiler.default"
         }
+
+    ,   "msvc" :
+        {
+            "x86":      "$.compiler.default"
+        }
     }
 }

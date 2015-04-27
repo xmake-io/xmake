@@ -100,7 +100,8 @@ exit
 
 :startsh
 if NOT EXIST %WD%sh.exe goto notfound
-start %WD%sh --login -i
+rem start %WD%sh --login -i
+%WD%sh --login -i ./build.sh
 exit
 
 :EOF
@@ -198,3 +199,4 @@ rem 2009.03.17  Keith Marshall  mailto:keithmarshall@users.sf.net
 rem     * Add -rxvt or --rxvt switch; start in --norxvt mode by default.
 rem     Make it deterministic; (do not inherit MSYSCON from parent).
 rem
+
