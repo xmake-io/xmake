@@ -35,13 +35,14 @@ if [ $plat = "linux" ] || [ $plat = "mac" ]; then
 fi
 
 # compile xmake-core
+echo compiling xmake-core...
 cd ./core
 if [ -f .config.mak ]; then 
     rm .config.mak
 fi
-make f DEBUG=$debug
+make f DEBUG=$debug > ../install.log
 if [ $? -ne 0 ]; then exit; fi
-make r
+make r >> ../install.log
 if [ $? -ne 0 ]; then exit; fi
 cd ..
 
@@ -75,3 +76,6 @@ xmake_loader_install=/usr/local/bin/xmake
 sudo mv $xmake_loader $xmake_loader_install
 sudo chmod 777 $xmake_loader_install
 if [ $? -ne 0 ]; then exit; fi
+
+# ok
+echo ok!
