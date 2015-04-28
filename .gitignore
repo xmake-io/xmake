@@ -26,6 +26,7 @@ gmon.out
 other
 tags
 doc
+install.log
 core/bin
 core/pre
 core/tool/msys
