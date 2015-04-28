@@ -48,7 +48,7 @@ rem make the xmake loader
 set xmake_loader=%temp%\xmake_loader
 echo @echo off > %xmake_loader%
 echo set XMAKE_PROGRAM_DIR=%xmake_dir_install%>> %xmake_loader%
-echo "%xmake_core_install%" >> %xmake_loader%
+echo "%xmake_core_install%" %%* >> %xmake_loader%
 
 rem install the xmake loader
 set xmake_loader_install=%xmake_dir_install%\xmake.bat
