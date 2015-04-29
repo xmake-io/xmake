@@ -83,6 +83,10 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     // _ARGV = table_new
     lua_setglobal(impl->lua, "_ARGV");
 
+    // enable verbose?
+    lua_pushboolean(impl->lua, impl->verbose);
+    lua_setglobal(impl->lua, "_VERBOSE");
+
     // ok
     return tb_true;
 }
@@ -183,6 +187,10 @@ xm_machine_ref_t xm_machine_init()
         // TODO: bind lua interfaces
         // ...
 
+        // init namespace: xmake
+        lua_newtable(impl->lua);
+	    lua_setglobal(impl->lua, "xmake");
+
         // init verbose
         impl->verbose = tb_false;
 
@@ -231,7 +239,7 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     if (!xm_machine_main_get_program_directory(impl, path, sizeof(path))) return -1;
 
     // append the main script path
-    tb_strcat(path, "/scripts/xmake_main.lua");
+    tb_strcat(path, "/scripts/_xmake_main.lua");
 
     // exists this script?
     if (!tb_file_info(path, tb_null))
@@ -244,16 +252,36 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     // trace
     tb_trace_d("main: %s", path);
 
-    // exec the script file
-    tb_int_t error = luaL_dofile(impl->lua, path);
-
-    // failed? print the error info
-    if (error && impl->verbose)
+    // load and execute the main script
+    if (luaL_dofile(impl->lua, path))
     {
         // trace
-        tb_trace_i("%s", lua_tostring(impl->lua, -1));
+        if (impl->verbose) tb_trace_i("%s", lua_tostring(impl->lua, -1));
+
+        // failed
+        return -1;
     }
 
-    // ok?
-    return error;
+    // set the error function
+    tb_int_t errfunc = 0;
+    if (impl->verbose)
+    {
+        lua_getglobal(impl->lua, "debug");
+	    lua_getfield(impl->lua, -1, "traceback");
+        errfunc = -2;
+    }
+
+    // call the main function
+    lua_getglobal(impl->lua, "_xmake_main");
+    if (lua_pcall(impl->lua, 0, 1, errfunc)) 
+    {
+        // trace
+        if (impl->verbose) tb_trace_i("%s", lua_tostring(impl->lua, -1));
+
+        // failed
+        return -1;
+    }
+
+    // get the error code
+    return (tb_int_t)lua_tonumber(impl->lua, -1);
 }
