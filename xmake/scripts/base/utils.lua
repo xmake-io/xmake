@@ -17,27 +17,33 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        prefix.lua
+-- @file        utils.lua
 --
 
+-- define module: utils
+local utils = {}
+
 -- the trace function
-function xmake.trace(msg, ...)
+function utils.trace(msg, ...)
     print(string.format(msg, ...))
 end
 
 -- the verbose function
-function xmake.verbose(msg, ...)
+function utils.verbose(msg, ...)
     if xmake._VERBOSE then
         print(string.format(msg, ...))
     end
 end
 
 -- the error function
-function xmake.error(msg, ...)
+function utils.error(msg, ...)
     print("error: " .. string.format(msg, ...))
 end
 
 -- the warning function
-function xmake.warning(msg, ...)
+function utils.warning(msg, ...)
     print("warning: " .. string.format(msg, ...))
 end
+
+-- return module: utils
+return utils

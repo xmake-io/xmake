@@ -17,12 +17,20 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _scripts.lua
+-- @file        main.lua
 --
 
--- all built-in scripts list
-return 
-{
-    -- base
-    "base/prefix.lua"
-}
+-- define module: main
+local main = {}
+
+-- load modules
+local utils = require("base/utils")
+
+-- the main function
+function main.done()
+    utils.trace("hello world!")
+    return 0
+end
+
+-- return module: main
+return main
