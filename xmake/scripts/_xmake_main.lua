@@ -21,27 +21,20 @@
 --
 
 -- init namespace: xmake
-xmake = xmake or {}
-
--- init some global variables for xmake
+xmake               = xmake or {}
 xmake._ARGV         = _ARGV
 xmake._VERBOSE      = _VERBOSE
 xmake._PROGRAM_DIR  = _PROGRAM_DIR
 xmake._PROJECT_DIR  = _PROJECT_DIR
 xmake._SCRIPTS_DIR  = _PROGRAM_DIR .. "/scripts/"
 
--- init namespace: xmake.main
-xmake.main = {}
-local main = xmake.main
+-- init package path
+package.path = xmake._SCRIPTS_DIR .. "?.lua;" .. package.path
 
--- load built-in scripts
-local scripts = dofile(xmake._SCRIPTS_DIR .. "_scripts.lua")
-for i = 1, #scripts do
-    dofile(xmake._SCRIPTS_DIR .. scripts[i])
-end
+-- load modules
+local main = require("base/main")
 
--- the main entry function
+-- the main function
 function _xmake_main()
-    xmake.trace("hello world!");
-    return 0
+    return main.done()
 end
