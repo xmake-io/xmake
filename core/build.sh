@@ -4,4 +4,7 @@ if [ -f .config.mak ]; then
 fi
 make f DEBUG=n PLAT=msvc ARCH=x86
 make r
+if [ $? -ne 0 ]; then 
+    make o
+fi
 exit
