@@ -24,11 +24,33 @@
 local main = {}
 
 -- load modules
-local utils = require("base/utils")
+local utils     = require("base/utils")
+local option    = require("base/option")
+
+-- init the option menu
+option._MENU =
+{
+    {'p', "project",    "Change to the given prject directory before doing anything."   }
+,   {'f', "file",       "Read FILE as a xmake.lua file."                                }
+,   {'d', "debug",      "Print lots of debugging information."                          }
+,   {'v', "version",    "Print the version number and exit."                            }
+,   {'h', "help",       "Print this help message and exit."                             }
+}
 
 -- the main function
 function main.done()
-    utils.trace("hello world!")
+
+    -- done option first
+    if not option.done(xmake._ARGV) then 
+
+        -- print the help option
+        option.help()
+
+        -- failed
+        return -1
+    end
+    
+    -- ok
     return 0
 end
 
