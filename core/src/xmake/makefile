@@ -13,7 +13,8 @@ xmake_CONFIG 			= y
 # core files
 xmake_C_FILES 			+= \
 						xmake \
-						machine 
+						machine \
+						string/startswith
 						
 
 # flags

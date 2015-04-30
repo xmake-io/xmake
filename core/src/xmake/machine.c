@@ -49,6 +49,24 @@ typedef struct __xm_machine_impl_t
 }xm_machine_impl_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * declaration
+ */
+
+// the string functions
+tb_int_t xm_string_startswith(lua_State* lua);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * globals
+ */
+
+// the string functions
+static luaL_Reg const g_string_functions[] = 
+{
+    { "startswith", xm_string_startswith    }
+,   { tb_null,      tb_null                 }
+};
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_t argc, tb_char_t** argv)
@@ -184,12 +202,12 @@ xm_machine_ref_t xm_machine_init()
         // open lua libraries
         luaL_openlibs(impl->lua);
 
-        // TODO: bind lua interfaces
-        // ...
+        // bind string functions
+        luaL_register(impl->lua, "string", g_string_functions);
 
         // init namespace: xmake
         lua_newtable(impl->lua);
-	    lua_setglobal(impl->lua, "xmake");
+        lua_setglobal(impl->lua, "xmake");
 
         // init verbose
         impl->verbose = tb_false;
@@ -267,7 +285,7 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     if (impl->verbose)
     {
         lua_getglobal(impl->lua, "debug");
-	    lua_getfield(impl->lua, -1, "traceback");
+        lua_getfield(impl->lua, -1, "traceback");
         errfunc = -2;
     }
 
