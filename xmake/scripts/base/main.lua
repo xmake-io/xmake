@@ -30,11 +30,104 @@ local option    = require("base/option")
 -- init the option menu
 option._MENU =
 {
-    {'p', "project",    "Change to the given prject directory before doing anything."   }
-,   {'f', "file",       "Read FILE as a xmake.lua file."                                }
-,   {'d', "debug",      "Print lots of debugging information."                          }
-,   {'v', "version",    "Print the version number and exit."                            }
-,   {'h', "help",       "Print this help message and exit."                             }
+    -- title
+    title = "XMake" .. xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
+
+    -- copyright
+,   copyright =
+    [[
+        Copyright (C) 2015-2016 Ruki Wang, tboox.org
+        Copyright (C) 2005-2014 Mike Pall, luajit.org
+    ]]
+
+    -- build project: xmake
+,   main = 
+    {
+        -- usage
+        usage = "xmake [action] [options] ..."
+
+        -- options
+    ,   options = 
+        {
+            {'p', "project",    "Change to the given project directory."                        }
+        ,   {'f', "file",       "Read a given xmake.lua file."                                  }
+        ,   {'-', "verbose",    "Print lots of verbose information."                            }
+        ,   {'v', "version",    "Print the version number and exit."                            }
+        ,   {'h', "help",       "Print this help message and exit."                             }
+        }
+    }
+
+    -- create project: xmake create
+,   create =
+    {
+        -- xmake p
+        shortname = 'p'
+
+        -- usage
+    ,   usage = "xmake create|p [options] ..."
+
+        -- description
+    ,   description = "Create a new project."
+
+        -- options
+    ,   options = 
+        {
+        }
+    }
+
+    -- config project: xmake config
+,   config = 
+    {
+        -- xmake f
+        shortname = 'f'
+
+        -- usage
+    ,   usage = "xmake config|f [options] ..."
+
+        -- description
+    ,   description = "Configure the project."
+
+        -- options
+    ,   options = 
+        {
+        }
+    }
+
+    -- install project: xmake install
+,   install =
+    {
+        -- xmake i
+        shortname = 'i'
+
+        -- usage
+    ,   usage = "xmake install|i [options] ..."
+
+        -- description
+    ,   description = "Package and install the project binary files."
+
+        -- options
+    ,   options = 
+        {
+        }
+    }
+
+    -- clean project: xmake clean
+,   clean =
+    {
+        -- xmake c
+        shortname = 'c'
+
+        -- usage
+    ,   usage = "xmake clean|c [options] ..."
+
+        -- description
+    ,   description = "Clean the project binary and temporary files."
+
+        -- options
+    ,   options = 
+        {
+        }
+    }
 }
 
 -- the main function
