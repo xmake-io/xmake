@@ -28,17 +28,13 @@ local utils     = require("base/utils")
 local option    = require("base/option")
 
 -- init the option menu
-option._MENU =
+local menu =
 {
     -- title
-    title = "XMake" .. xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
+    title = "XMake " .. xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
 
     -- copyright
-,   copyright =
-    [[
-        Copyright (C) 2015-2016 Ruki Wang, tboox.org
-        Copyright (C) 2005-2014 Mike Pall, luajit.org
-    ]]
+,   copyright = "Copyright (C) 2015-2016 Ruki Wang, tboox.org\nCopyright (C) 2005-2014 Mike Pall, luajit.org"
 
     -- build project: xmake
 ,   main = 
@@ -46,14 +42,31 @@ option._MENU =
         -- usage
         usage = "xmake [action] [options] ..."
 
+        -- description
+    ,   description = "Build the project if no given action."
+
+    ,   -- actions
+        actions = {"create", "config", "install", "clean"}
+
         -- options
     ,   options = 
         {
-            {'p', "project",    "Change to the given project directory."                        }
-        ,   {'f', "file",       "Read a given xmake.lua file."                                  }
-        ,   {'-', "verbose",    "Print lots of verbose information."                            }
-        ,   {'v', "version",    "Print the version number and exit."                            }
-        ,   {'h', "help",       "Print this help message and exit."                             }
+            {'b', "build",      "k",  nil,          "Build project. This is default building mode and optional."    }
+        ,   {'u', "update",     "k",  nil,          "Only relink and update the binary files."                      }
+        ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
+
+        ,   {}
+        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
+        ,   {}
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. the current directory"                                  }
         }
     }
 
@@ -72,6 +85,17 @@ option._MENU =
         -- options
     ,   options = 
         {
+            {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
+        ,   {}
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. the current directory"                                  }
         }
     }
 
@@ -90,6 +114,46 @@ option._MENU =
         -- options
     ,   options = 
         {
+            {'d', "debug",      "k",  nil,          "Compile for the debugging mode. (default: release)"            }
+        ,   {nil, "profile",    "k",  nil,          "Compile for the profiling mode and disable the debugging mode."}
+
+        ,   {}
+        ,   {nil, "output",     "kv", "build",      "Set the build output directory"                                }
+        ,   {nil, "packages",   "kv", "pkg",        "Set the packages directory"                                    }
+
+        ,   {}
+        ,   {nil, "cc",         "kv", nil,          "The c compiler"                                                }
+        ,   {nil, "cxx",        "kv", nil,          "The c++ compiler"                                              }
+        ,   {nil, "mm",         "kv", nil,          "The objc compiler"                                             }
+        ,   {nil, "mxx",        "kv", nil,          "The objc++ compiler"                                           }
+        ,   {nil, "ld",         "kv", nil,          "The linker"                                                    }
+        ,   {nil, "as",         "kv", nil,          "The assembler"                                                 }
+        ,   {nil, "ar",         "kv", nil,          "The library creator"                                           }
+
+        ,   {}
+        ,   {nil, "cflags",     "kv", nil,          "The c compiler flags"                                          }
+        ,   {nil, "cxflags",    "kv", nil,          "The c/c++ compiler flags"                                      }
+        ,   {nil, "cxxflags",   "kv", nil,          "The c++ compiler flags"                                        }
+        ,   {nil, "mflags",     "kv", nil,          "The objc compiler flags"                                       }
+        ,   {nil, "mxflags",    "kv", nil,          "The objc/c++ compiler flags"                                   }
+        ,   {nil, "mxxflags",   "kv", nil,          "The objc++ compiler flags"                                     }
+        ,   {nil, "asflags",    "kv", nil,          "The assembler flags"                                           }
+        ,   {nil, "ldflags",    "kv", nil,          "The linker flags"                                              }
+        ,   {nil, "arflags",    "kv", nil,          "The library creator flags"                                     }
+
+        ,   {}
+        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+       
+        ,   {}
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. the current directory"                                  }
+
         }
     }
 
@@ -108,6 +172,17 @@ option._MENU =
         -- options
     ,   options = 
         {
+            {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
+        ,   {}
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. the current directory"                                  }
         }
     }
 
@@ -121,11 +196,22 @@ option._MENU =
     ,   usage = "xmake clean|c [options] ..."
 
         -- description
-    ,   description = "Clean the project binary and temporary files."
+    ,   description = "Remove all binary and temporary files."
 
         -- options
     ,   options = 
         {
+            {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
+        ,   {}
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. the current directory"                                  }
         }
     }
 }
@@ -134,12 +220,7 @@ option._MENU =
 function main.done()
 
     -- done option first
-    if not option.done(xmake._ARGV) then 
-
-        -- print the help option
-        option.help()
-
-        -- failed
+    if not option.done(xmake._ARGV, menu) then 
         return -1
     end
     
