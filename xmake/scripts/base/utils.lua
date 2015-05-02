@@ -23,8 +23,8 @@
 -- define module: utils
 local utils = {}
 
--- the trace function
-function utils.trace(msg, ...)
+-- the printf function
+function utils.printf(msg, ...)
     print(string.format(msg, ...))
 end
 
@@ -43,6 +43,11 @@ end
 -- the warning function
 function utils.warning(msg, ...)
     print("warning: " .. string.format(msg, ...))
+end
+
+-- ifelse, a? b : c
+function utils.ifelse(a, b, c)
+    if a then return b else return c end
 end
 
 -- return module: utils
