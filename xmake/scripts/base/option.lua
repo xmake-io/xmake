@@ -26,35 +26,32 @@ local option = {}
 -- load modules
 local utils = require("base/utils")
 
--- init _OPTIONS.metatable to always use lowercase keys
-local _OPTIONS_metatable = 
-{
-    __index = function(table, key)
-        -- make lowercase key
-        if type(key) == "string" then
-            key = key:lower()
-        end
-        return rawget(table, key)
-    end
-,   __newindex = function(table, key, value)
-        -- make lowercase key
-        if type(key) == "string" then
-            key = key:lower()
-        end
-        rawset(table, key, value)
-    end
-}
-xmake._OPTIONS = xmake._OPTIONS or {}
-setmetatable(xmake._OPTIONS, _OPTIONS_metatable)
-
--- done the option
-function option.done(argv, menu)
+-- init the option
+function option.init(argv, menu)
 
     -- check
     assert(argv and menu)
 
+    -- the main menu
+    local main = menu.main
+    assert(main)
+
+    -- init _OPTIONS
+    xmake._OPTIONS = {}
+
+    -- save menu
+    option._MENU = menu
+
     -- parse _ARGV to _OPTIONS
-    for i, arg in ipairs(argv) do
+    local _iter, _s, _k = ipairs(argv)
+    while true do
+
+        -- the idx and arg
+        local idx, arg = _iter(_s, _k)
+
+        -- end?
+        _k = idx
+        if idx == nil then break end
 
         -- parse key and value
         local key, value
@@ -70,30 +67,238 @@ function option.done(argv, menu)
             value = ""
         end
 
+        -- --key?
+        local prefix = 0
+        if key:startswith("--") then
+            key = key:sub(3)
+            prefix = 2
         -- -k?
-        if key:startswith("-") then
-            xmake._OPTIONS[key:sub(2)] = value
-        -- --key=value?
-        elseif key:startswith("--") then
-           xmake. _OPTIONS[key:sub(3)] = value
+        elseif key:startswith("-") then
+            key = key:sub(2)
+            prefix = 1
+        end
+
+        -- check key
+        if prefix and #key == 0 then
+
+            -- invalid option
+            print("invalid option: " .. arg)
+
+            -- print menu
+            option.print_menu(xmake._OPTIONS._ACTION)
+
+            -- failed
+            return false
+        end
+
+        -- --key=value or -k value or -k?
+        if prefix ~= 0 then
+
+            -- find this option
+            local opt = nil
+            for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
+
+                -- check
+                assert(o)
+
+                -- --key?
+                if prefix == 2 and key == o[2] then
+                    opt = o
+                    break 
+                -- k?
+                elseif prefix == 1 and key == o[1] then
+                    opt = o
+                    break
+                end
+            end
+
+            -- not found?
+            if not opt then
+
+                -- invalid option
+                print("invalid option: " .. arg)
+
+                -- print menu
+                option.print_menu(xmake._OPTIONS._ACTION)
+
+                -- failed
+                return false
+            end
+
+            -- -k value? continue to get the value
+            if prefix == 1 and opt[3] == "kv" then
+
+                -- get the next idx and arg
+                idx, arg = _iter(_s, _k)
+
+                -- exists value?
+                _k = idx
+                if idx == nil or arg:startswith("-") then 
+
+                    -- invalid option
+                    print("invalid option: " .. utils.ifelse(idx, arg, key))
+
+                    -- print menu
+                    option.print_menu(xmake._OPTIONS._ACTION)
+
+                    -- failed
+                    return false
+                end
+
+                -- get value
+                value = arg
+            end
+
+            -- check mode
+            if (opt[3] == "k" and #value ~= 0) or (opt[3] == "kv" and #value == 0) then
+
+                -- invalid option
+                print("invalid option: " .. arg)
+            
+                -- print menu
+                option.print_menu(xmake._OPTIONS._ACTION)
+
+                -- failed
+                return false
+            end
+
+            -- save option
+            xmake._OPTIONS[utils.ifelse(prefix == 1 and opt[2], opt[2], key)] = value
+
+        -- action?
+        elseif idx == 1 then
+
+            -- find this action
+            for _, action in ipairs(main.actions) do
+
+                -- check
+                assert(menu[action])
+
+                -- ok?
+                if action == key or menu[action].shortname == key then
+                    -- save this action
+                    xmake._OPTIONS._ACTION = action 
+                    break 
+                end
+            end
+
+            -- not found?
+            if not xmake._OPTIONS._ACTION or not menu[xmake._OPTIONS._ACTION] then
+
+                -- invalid action
+                print("invalid action: " .. key)
+
+                -- print the main menu
+                option.print_main()
+
+                -- failed
+                return false
+                
+            end
+
+        -- value?
+        else 
+            
+            -- find a value option with name
+            local opt = nil
+            for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
+
+                -- check
+                assert(o and (o[3] ~= "v" or o[2]))
+
+                -- is value and with name?
+                if o[3] == "v" and o[2] and not xmake._OPTIONS[o[2]] then
+                    opt = o
+                    break 
+                end
+            end
+
+            -- ok? save this value with name opt[2]
+            if opt then 
+                xmake._OPTIONS[opt[2]] = key
+            else
+                -- invalid option
+                print("invalid option: " .. arg)
+            
+                -- print menu
+                option.print_menu(xmake._OPTIONS._ACTION)
+
+                -- failed
+                return false
+            end
+
         end
     end
 
-    -- save menu
-    option._MENU = menu
+    -- init the default value
+    for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
 
-    -- print main menu
-    option.print_main()
+        -- key=value?
+        if o[3] == "kv" then
 
-    -- print action menu: create
-    option.print_action("create")
-    option.print_action("config")
-    option.print_action("install")
-    option.print_action("clean")
+            -- the key
+            local key = o[2] or o[1]
+            assert(key)
+
+            -- exists the default value?
+            if not xmake._OPTIONS[key] and o[4] then
+                -- save the default value 
+                xmake._OPTIONS[key] = o[4]    
+            end
+        end
+    end
+
+    -- dump options
+--    for a, b in pairs(xmake._OPTIONS) do
+--        print(a, b)
+--    end
 
     -- ok
     return true
 end
+
+-- print the menu 
+function option.print_menu(action)
+
+    -- no action? print main menu
+    if not action then 
+        option.print_main()
+    end
+
+    -- the menu
+    local menu = option._MENU
+    assert(menu)
+
+    -- the action
+    action = menu[action]
+    assert(action)
+
+    -- print title
+    if menu.title then
+        print(menu.title)
+    end
+
+    -- print copyright
+    if menu.copyright then
+        print(menu.copyright)
+    end
+
+    -- print usage
+    if action.usage then
+        print("Usage: " .. action.usage)
+    end
+
+    -- print description
+    if action.description then
+        print("")
+        print(action.description)
+    end
+
+    -- print options
+    if action.options then
+        option.print_options(action.options)
+    end
+end  
 
 -- print the main menu
 function option.print_main()
@@ -170,39 +375,6 @@ function option.print_main()
     -- print options
     if main.options then
         option.print_options(main.options)
-    end
-end  
-
--- print the action menu 
-function option.print_action(action)
-
-    -- no action? print main menu
-    if not action then 
-        option.print_main()
-    end
-
-    -- the menu
-    local menu = option._MENU
-    assert(menu)
-
-    -- the action
-    action = menu[action]
-    assert(action)
-
-    -- print usage
-    if action.usage then
-        print("Usage: " .. action.usage)
-    end
-
-    -- print description
-    if action.description then
-        print("")
-        print(action.description)
-    end
-
-    -- print options
-    if action.options then
-        option.print_options(action.options)
     end
 end  
 

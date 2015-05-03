@@ -82,16 +82,8 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     for (i = 1; i < argc; i++)
     {
         // print verbose info
-        if (!tb_strncmp(argv[i], "--verbose", 9) || !tb_strncmp(argv[i], "-v", 2)) 
+        if (!tb_strncmp(argv[i], "--verbose", 9)) 
             impl->verbose = tb_true;
-
-        // get the project directory
-        if (!tb_strncmp(argv[i], "--project=", 10))
-        {
-            // save it to the environment variable
-            tb_environment_set_one("XMAKE_PROJECT_DIR", argv[i] + 10);
-            continue ;
-        }
 
         // table_new[table.getn(table_new) + 1] = argv[i]
         lua_pushstring(impl->lua, argv[i]);
@@ -100,10 +92,6 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
 
     // _ARGV = table_new
     lua_setglobal(impl->lua, "_ARGV");
-
-    // enable verbose?
-    lua_pushboolean(impl->lua, impl->verbose);
-    lua_setglobal(impl->lua, "_VERBOSE");
 
     // ok
     return tb_true;

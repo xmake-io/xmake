@@ -31,7 +31,7 @@ local option    = require("base/option")
 local menu =
 {
     -- title
-    title = "XMake " .. xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
+    title = xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
 
     -- copyright
 ,   copyright = "Copyright (C) 2015-2016 Ruki Wang, tboox.org\nCopyright (C) 2005-2014 Mike Pall, luajit.org"
@@ -144,8 +144,8 @@ local menu =
         ,   {nil, "profile",    "k",  nil,          "Compile for the profiling mode and disable the debugging mode."}
 
         ,   {}
-        ,   {nil, "output",     "kv", "build",      "Set the build output directory"                                }
-        ,   {nil, "packages",   "kv", "pkg",        "Set the packages directory"                                    }
+        ,   {'o', "output",     "kv", "build",      "Set the build output directory"                                }
+        ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory"                                    }
 
         ,   {}
         ,   {nil, "cc",         "kv", nil,          "The c compiler"                                                }
@@ -255,14 +255,64 @@ local menu =
     }
 }
 
+-- done option
+function main.done_action()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- the action
+    local action = options._ACTION or "build"
+
+
+    -- ok
+    return true
+end
+
+-- done option
+function main.done_option()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- done help
+    if options.help then
+        option.print_menu(options._ACTION)
+    -- done version
+    elseif options.version then
+        -- print title
+        if option._MENU.title then
+            print(option._MENU.title)
+        end
+
+        -- print copyright
+        if option._MENU.copyright then
+            print(option._MENU.copyright)
+        end
+    -- done action    
+    else
+        return main.done_action()
+    end
+    
+    -- ok
+    return true
+end
+
 -- the main function
 function main.done()
 
-    -- done option first
-    if not option.done(xmake._ARGV, menu) then 
+    -- init option first
+    if not option.init(xmake._ARGV, menu) then 
         return -1
     end
-    
+
+    -- done option
+    if not main.done_option() then 
+        return -1
+    end
+
     -- ok
     return 0
 end

@@ -30,7 +30,7 @@ end
 
 -- the verbose function
 function utils.verbose(msg, ...)
-    if xmake._VERBOSE then
+    if xmake._OPTIONS.verbose then
         print(string.format(msg, ...))
     end
 end
