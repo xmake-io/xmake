@@ -52,12 +52,22 @@ typedef struct __xm_machine_impl_t
  * declaration
  */
 
+// the path functions
+tb_int_t xm_path_getabsolute(lua_State* lua);
+
 // the string functions
 tb_int_t xm_string_startswith(lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
+
+// the path functions
+static luaL_Reg const g_path_functions[] = 
+{
+    { "getabsolute",    xm_path_getabsolute }
+,   { tb_null,          tb_null             }
+};
 
 // the string functions
 static luaL_Reg const g_string_functions[] = 
@@ -189,6 +199,9 @@ xm_machine_ref_t xm_machine_init()
 
         // open lua libraries
         luaL_openlibs(impl->lua);
+
+        // bind path functions
+        luaL_register(impl->lua, "path", g_path_functions);
 
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
