@@ -242,12 +242,12 @@ local menu =
         
         ,   {}
         ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+        ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    1. the given command argument"
                                                   , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
                                                   , "    3. the current directory"                                  }
- 
+
         ,   {}
         ,   {nil, "target",     "v",  nil,          "Clean for the given target."
                                                   , "Clean all targets if not exists."                              }
@@ -279,9 +279,16 @@ function main.done_option()
 
     -- done help
     if options.help then
+    
+        -- print menu
         option.print_menu(options._ACTION)
+
+        -- ok
+        return true
+
     -- done version
     elseif options.version then
+
         -- print title
         if option._MENU.title then
             print(option._MENU.title)
@@ -291,13 +298,22 @@ function main.done_option()
         if option._MENU.copyright then
             print(option._MENU.copyright)
         end
-    -- done action    
-    else
-        return main.done_action()
+
+        -- ok
+        return true
     end
-    
-    -- ok
-    return true
+
+    -- init the project directory
+    options.project = options.project or _PROJECT_DIR
+    options.project = path.getabsolute(options.project)
+    print(options.project)
+
+    -- init the xmake.lua file path
+    options.file = options.file or "xmake.lua"
+    print(options.file)
+
+    -- done action    
+    return main.done_action()
 end
 
 -- the main function

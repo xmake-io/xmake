@@ -45,7 +45,7 @@ if [ $? -ne 0 ]; then exit; fi
 make c >> ../install.log
 make >> ../install.log
 if [ $? -ne 0 ]; then 
-    make e
+    make o
     exit; 
 fi
 make i
