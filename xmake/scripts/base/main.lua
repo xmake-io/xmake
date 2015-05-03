@@ -40,7 +40,7 @@ local menu =
 ,   main = 
     {
         -- usage
-        usage = "xmake [action] [options] ..."
+        usage = "xmake [action] [options] [target]"
 
         -- description
     ,   description = "Build the project if no given action."
@@ -56,17 +56,22 @@ local menu =
         ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
         ,   {}
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. the given command argument"
+                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. the current directory"                                  }
+
+
+        ,   {}
         ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
         ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
-        
+
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
-                                                  , "Search priority:"
-                                                  , "    1. the last argument of the current command: ..."
-                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
-                                                  , "    3. the current directory"                                  }
+        ,   {nil, "target",     "v",  nil,          "Build the given target"                     
+                                                  , "Build all targets if not exists."                              }
         }
     }
 
@@ -77,7 +82,7 @@ local menu =
         shortname = 'p'
 
         -- usage
-    ,   usage = "xmake create|p [options] ..."
+    ,   usage = "xmake create|p [options] [target]"
 
         -- description
     ,   description = "Create a new project."
@@ -85,17 +90,35 @@ local menu =
         -- options
     ,   options = 
         {
-            {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
-        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
-        
-        ,   {}
-        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+            {'n', "name",       "kv", nil,          "The project name."                                             }
+        ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
+        ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    1. the given command argument"
                                                   , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
                                                   , "    3. the current directory"                                  }
+        ,   {'l', "language",   "kv", "c",          "The project language"
+                                                  , "    - c"
+                                                  , "    - c++"
+                                                  , "    - objc"
+                                                  , "    - objc++"         
+                                                  , "    - lua"                                                     }
+        ,   {'t', "type",       "kv", "console",    "The project type"
+                                                  , "    - console"
+                                                  , "    - library_static"
+                                                  , "    - library_shared"
+                                                  , "    - application_empty"                                       
+                                                  , "    - application_singleview"                                  
+                                                  , "    - game"                                                    }
+
+        ,   {}
+        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+ 
+        ,   {}
+        ,   {nil, "target",     "v",  nil,          "Create the given target"                     
+                                                  , "Uses the project name as target if not exists."                }
         }
     }
 
@@ -106,7 +129,7 @@ local menu =
         shortname = 'f'
 
         -- usage
-    ,   usage = "xmake config|f [options] ..."
+    ,   usage = "xmake config|f [options] [target]"
 
         -- description
     ,   description = "Configure the project."
@@ -114,7 +137,10 @@ local menu =
         -- options
     ,   options = 
         {
-            {'d', "debug",      "k",  nil,          "Compile for the debugging mode. (default: release)"            }
+            {'p', "plat",       "kv", "auto",       "Compile for the given platform."                               }
+        ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                           }
+        ,   {'d', "debug",      "k",  nil,          "Compile for the debugging mode."                               }
+        ,   {'s', "small",      "k",  nil,          "Compile for the small mode."                                   }
         ,   {nil, "profile",    "k",  nil,          "Compile for the profiling mode and disable the debugging mode."}
 
         ,   {}
@@ -142,18 +168,22 @@ local menu =
         ,   {nil, "arflags",    "kv", nil,          "The library creator flags"                                     }
 
         ,   {}
-        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
-        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
-       
-        ,   {}
         ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+        ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    1. the given command argument"
                                                   , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
                                                   , "    3. the current directory"                                  }
 
+
+        ,   {}
+        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+ 
+        ,   {}
+        ,   {nil, "target",     "v",  nil,          "Configure for the given target."             
+                                                  , "Configure for all targets if not exists."                      }
         }
     }
 
@@ -164,7 +194,7 @@ local menu =
         shortname = 'i'
 
         -- usage
-    ,   usage = "xmake install|i [options] ..."
+    ,   usage = "xmake install|i [options] [target]"
 
         -- description
     ,   description = "Package and install the project binary files."
@@ -172,17 +202,22 @@ local menu =
         -- options
     ,   options = 
         {
-            {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
-        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
-        
-        ,   {}
-        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-        ,   {nil, nil,          "v",  nil,          "Change to the given project directory."
+            {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the last argument of the current command: ..."
+                                                  , "    1. the given command argument"
                                                   , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
                                                   , "    3. the current directory"                                  }
+
+
+        ,   {}
+        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+ 
+        ,   {}
+        ,   {nil, "target",     "v",  nil,          "Install the given target."                               
+                                                  , "Install all targets if not exists."                            }
         }
     }
 
@@ -193,7 +228,7 @@ local menu =
         shortname = 'c'
 
         -- usage
-    ,   usage = "xmake clean|c [options] ..."
+    ,   usage = "xmake clean|c [options] [target]"
 
         -- description
     ,   description = "Remove all binary and temporary files."
@@ -212,6 +247,10 @@ local menu =
                                                   , "    1. the last argument of the current command: ..."
                                                   , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
                                                   , "    3. the current directory"                                  }
+ 
+        ,   {}
+        ,   {nil, "target",     "v",  nil,          "Clean for the given target."
+                                                  , "Clean all targets if not exists."                              }
         }
     }
 }

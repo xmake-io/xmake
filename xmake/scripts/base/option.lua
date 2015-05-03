@@ -136,7 +136,7 @@ function option.print_main()
         print("Actions: ")
         
         -- the padding spaces
-        local padding = 32
+        local padding = 42
 
         -- print actions
         for _, action in ipairs(main.actions) do
@@ -217,7 +217,7 @@ function option.print_options(options)
     print("Options: ")
     
     -- the padding spaces
-    local padding = 32
+    local padding = 42
 
     -- print options
     for _, option in ipairs(options) do
@@ -238,7 +238,11 @@ function option.print_options(options)
 
         -- append the name
         if name then
-            option_info = option_info .. utils.ifelse(shortname, ", --", "        --") .. name
+            if mode == "v" then
+                option_info = option_info .. "    " .. name
+            else
+                option_info = option_info .. utils.ifelse(shortname, ", --", "        --") .. name
+            end
             if mode == "kv" then
                 option_info = option_info .. "=" .. name:upper()
             end
