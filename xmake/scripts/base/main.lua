@@ -21,9 +21,10 @@
 --
 
 -- define module: main
-local main = {}
+local main = main or {}
 
 -- load modules
+local path      = require("base/path")
 local utils     = require("base/utils")
 local option    = require("base/option")
 
@@ -305,12 +306,13 @@ function main.done_option()
 
     -- init the project directory
     options.project = options.project or _PROJECT_DIR
-    options.project = path.getabsolute(options.project)
-    print(options.project)
+    options.project = path.absolute(options.project)
+    assert(options.project)
 
     -- init the xmake.lua file path
     options.file = options.file or "xmake.lua"
-    print(options.file)
+    options.file = path.absolute(options.file, options.project)
+    assert(options.file)
 
     -- done action    
     return main.done_action()

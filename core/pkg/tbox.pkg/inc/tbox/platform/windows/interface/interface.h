@@ -30,6 +30,7 @@
 #include "user32.h"
 #include "ws2_32.h"
 #include "mswsock.h"
+#include "shell32.h"
 #include "dbghelp.h"
 #include "kernel32.h"
 #include "iphlpapi.h"

@@ -53,7 +53,8 @@ typedef struct __xm_machine_impl_t
  */
 
 // the path functions
-tb_int_t xm_path_getabsolute(lua_State* lua);
+tb_int_t xm_path_absolute(lua_State* lua);
+tb_int_t xm_path_translate(lua_State* lua);
 
 // the string functions
 tb_int_t xm_string_startswith(lua_State* lua);
@@ -65,7 +66,8 @@ tb_int_t xm_string_startswith(lua_State* lua);
 // the path functions
 static luaL_Reg const g_path_functions[] = 
 {
-    { "getabsolute",    xm_path_getabsolute }
+    { "absolute",       xm_path_absolute    }
+,   { "translate",      xm_path_translate   }
 ,   { tb_null,          tb_null             }
 };
 
@@ -125,7 +127,7 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
         }
 
         // get the full path
-        if (!tb_path_full(data, path, maxn)) break;
+        if (!tb_path_absolute(data, path, maxn)) break;
 
         // trace
         tb_trace_d("program: %s", path);
@@ -154,7 +156,7 @@ static tb_bool_t xm_machine_main_get_project_directory(xm_machine_impl_t* impl, 
         // attempt to get it from the environment variable first
         tb_char_t data[TB_PATH_MAXN] = {0};
         if (    !tb_environment_get_one("XMAKE_PROJECT_DIR", data, sizeof(data))
-            ||  !tb_path_full(data, path, maxn))
+            ||  !tb_path_absolute(data, path, maxn))
         {
             // get it from the current directory
             if (!tb_directory_current(path, maxn)) break;

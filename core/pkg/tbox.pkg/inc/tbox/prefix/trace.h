@@ -66,12 +66,12 @@ __tb_extern_c_enter__
 #       define tb_tracef_assert_p(prefix, fmt, arg ...)     do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[assert]: " fmt " at %s(): %d, %s", ##arg, __tb_func__, __tb_line__, __tb_file__); tb_trace_sync(); } while (0)
 #       define tb_tracef_warning_p(prefix, fmt, arg ...)    do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[warning]: " fmt " at %s(): %d, %s", ##arg, __tb_func__, __tb_line__, __tb_file__); tb_trace_sync(); } while (0)
 #   else
-#       define tb_trace_error_p(prefix, fmt, arg ...)       do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[error]: " fmt __tb_newline__, ##arg); tb_trace_sync(); } while (0)
-#       define tb_trace_assert_p(prefix, fmt, arg ...)      do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[assert]: " fmt __tb_newline__, ##arg); tb_trace_sync(); } while (0)
-#       define tb_trace_warning_p(prefix, fmt, arg ...)     do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[warning]: " fmt __tb_newline__, ##arg); tb_trace_sync(); } while (0)
-#       define tb_tracef_error_p(prefix, fmt, arg ...)      do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[error]: " fmt, ##arg); tb_trace_sync(); } while (0)
-#       define tb_tracef_assert_p(prefix, fmt, arg ...)     do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[assert]: " fmt, ##arg); tb_trace_sync(); } while (0)
-#       define tb_tracef_warning_p(prefix, fmt, arg ...)    do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[warning]: " fmt, ##arg); tb_trace_sync(); } while (0)
+#       define tb_trace_error_p(prefix, fmt, arg ...)       
+#       define tb_trace_assert_p(prefix, fmt, arg ...)       
+#       define tb_trace_warning_p(prefix, fmt, arg ...)       
+#       define tb_tracef_error_p(prefix, fmt, arg ...)       
+#       define tb_tracef_assert_p(prefix, fmt, arg ...)       
+#       define tb_tracef_warning_p(prefix, fmt, arg ...)       
 #   endif
 #elif defined(TB_COMPILER_IS_MSVC) && TB_COMPILER_VERSION_BE(13, 0)
 #   define tb_trace_p(prefix, fmt, ...)                     do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, fmt __tb_newline__, __VA_ARGS__); } while (0)
@@ -84,12 +84,12 @@ __tb_extern_c_enter__
 #       define tb_tracef_assert_p(prefix, fmt, ...)         do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[assert]: at %s(): %d, %s: " fmt, __tb_func__, __tb_line__, __tb_file__, __VA_ARGS__); tb_trace_sync(); } while (0)
 #       define tb_tracef_warning_p(prefix, fmt, ...)        do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[warning]: at %s(): %d, %s: " fmt, __tb_func__, __tb_line__, __tb_file__, __VA_ARGS__); tb_trace_sync(); } while (0)
 #   else
-#       define tb_trace_error_p(prefix, fmt, ...)           do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[error]: " fmt __tb_newline__, __VA_ARGS__); tb_trace_sync(); } while (0)
-#       define tb_trace_assert_p(prefix, fmt, ...)          do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[assert]: " fmt __tb_newline__, __VA_ARGS__); tb_trace_sync(); } while (0)
-#       define tb_trace_warning_p(prefix, fmt, ...)         do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[warning]: " fmt __tb_newline__, __VA_ARGS__); tb_trace_sync(); } while (0)
-#       define tb_tracef_error_p(prefix, fmt, ...)          do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[error]: " fmt, __VA_ARGS__); tb_trace_sync(); } while (0)
-#       define tb_tracef_assert_p(prefix, fmt, ...)         do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[assert]: " fmt, __VA_ARGS__); tb_trace_sync(); } while (0)
-#       define tb_tracef_warning_p(prefix, fmt, ...)        do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, "[warning]: " fmt, __VA_ARGS__); tb_trace_sync(); } while (0)
+#       define tb_trace_error_p(prefix, fmt, ...)       
+#       define tb_trace_assert_p(prefix, fmt, ...)       
+#       define tb_trace_warning_p(prefix, fmt, ...)       
+#       define tb_tracef_error_p(prefix, fmt, ...)       
+#       define tb_tracef_assert_p(prefix, fmt, ...)       
+#       define tb_tracef_warning_p(prefix, fmt, ...)       
 #   endif
 #else
 #   define tb_trace_p

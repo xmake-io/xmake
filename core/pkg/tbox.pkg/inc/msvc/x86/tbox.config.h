@@ -15,10 +15,10 @@
 #define TB_CONFIG_VERSION_ALTER         8
 
 // build version
-#define TB_CONFIG_VERSION_BUILD         201504271443
+#define TB_CONFIG_VERSION_BUILD         201505042322
 
 // small
-#define TB_CONFIG_SMALL                 (1)
+#define TB_CONFIG_SMALL                 (0)
 
 // os
 #define TB_CONFIG_OS_WINDOWS

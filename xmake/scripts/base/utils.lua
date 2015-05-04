@@ -21,7 +21,7 @@
 --
 
 -- define module: utils
-local utils = {}
+local utils = utils or {}
 
 -- the printf function
 function utils.printf(msg, ...)
