@@ -37,21 +37,56 @@ __tb_extern_c_enter__
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+
+// the path maximum
 #define TB_PATH_MAXN        (4096)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! the full path
+/*! translate the path to the native path
  * 
- * @param path          the path path
- * @param full          the full path
+ * - transform the path separator
+ * - remove the repeat path separator
+ * - expand the user directory with the prefix: ~
+ *
+ * @param path          the path 
+ * @param size          the path size, optional
  * @param maxn          the path maxn
  *
- * @return              the full path
+ * @return              tb_true or tb_false
  */
-tb_char_t const*        tb_path_full(tb_char_t const* path, tb_char_t* full, tb_size_t maxn);
+tb_size_t               tb_path_translate(tb_char_t* path, tb_size_t size, tb_size_t maxn);
+
+/*! the path is absolute?
+ * 
+ * @param path          the path 
+ *
+ * @return              tb_true or tb_false
+ */
+tb_bool_t               tb_path_is_absolute(tb_char_t const* path);
+
+/*! get the absolute path which relative to the current directory
+ * 
+ * @param path          the path 
+ * @param data          the path data
+ * @param maxn          the path maxn
+ *
+ * @return              the absolute path
+ */
+tb_char_t const*        tb_path_absolute(tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
+
+/*! get the absolute path which relative to the given root directory
+ * 
+ * @param root          the root path 
+ * @param path          the path 
+ * @param data          the path data
+ * @param maxn          the path maxn
+ *
+ * @return              the absolute path
+ */
+tb_char_t const*        tb_path_absolute_to(tb_char_t const* root, tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

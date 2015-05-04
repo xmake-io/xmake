@@ -61,14 +61,14 @@ tb_bool_t               tb_directory_create(tb_char_t const* path);
  */
 tb_bool_t               tb_directory_remove(tb_char_t const* path);
 
-/*! the temporary directory
+/*! the home directory
  * 
  * @param path          the directory path data
  * @param maxn          the directory path maxn
  *
  * @return              the directory path size
  */
-tb_size_t               tb_directory_temporary(tb_char_t* path, tb_size_t maxn);
+tb_size_t               tb_directory_home(tb_char_t* path, tb_size_t maxn);
 
 /*! the current directory
  * 
@@ -78,6 +78,15 @@ tb_size_t               tb_directory_temporary(tb_char_t* path, tb_size_t maxn);
  * @return              the directory path size
  */
 tb_size_t               tb_directory_current(tb_char_t* path, tb_size_t maxn);
+
+/*! the temporary directory
+ * 
+ * @param path          the directory path data
+ * @param maxn          the directory path maxn
+ *
+ * @return              the directory path size
+ */
+tb_size_t               tb_directory_temporary(tb_char_t* path, tb_size_t maxn);
 
 /*! the directory walk
  *

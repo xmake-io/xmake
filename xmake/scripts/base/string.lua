@@ -17,38 +17,28 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        utils.lua
+-- @file        string.lua
 --
 
--- define module: utils
-local utils = utils or {}
+-- define module: string
+local string = string or {}
 
--- the printf function
-function utils.printf(msg, ...)
-    print(string.format(msg, ...))
-end
+-- find the last substring with the given pattern
+function string.find_last(self, pattern, plain)
+    -- find the last substring
+    local curr = 0
+    repeat
+        local next = self:find(pattern, curr + 1, plain)
+        if next then
+            curr = next
+        end
+    until (not next)
 
--- the verbose function
-function utils.verbose(msg, ...)
-    if xmake._OPTIONS.verbose then
-        print(string.format(msg, ...))
+    -- found?
+    if curr > 0 then
+        return curr
     end
 end
 
--- the error function
-function utils.error(msg, ...)
-    print("error: " .. string.format(msg, ...))
-end
-
--- the warning function
-function utils.warning(msg, ...)
-    print("warning: " .. string.format(msg, ...))
-end
-
--- ifelse, a? b : c
-function utils.ifelse(a, b, c)
-    if a then return b else return c end
-end
-
--- return module: utils
-return utils
+-- return module: string
+return string

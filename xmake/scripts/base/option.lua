@@ -21,7 +21,7 @@
 --
 
 -- define module: option
-local option = {}
+local option = option or {}
 
 -- load modules
 local utils = require("base/utils")

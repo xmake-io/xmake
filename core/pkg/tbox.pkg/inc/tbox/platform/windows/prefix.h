@@ -50,11 +50,11 @@ static __tb_inline__ tb_time_t tb_filetime_to_time(FILETIME ft)
 }
 
 // the path full for wchar
-static __tb_inline__ tb_wchar_t const* tb_path_full_w(tb_char_t const* path, tb_wchar_t* full, tb_size_t maxn)
+static __tb_inline__ tb_wchar_t const* tb_path_absolute_w(tb_char_t const* path, tb_wchar_t* full, tb_size_t maxn)
 {
     // the path full
     tb_char_t full_a[TB_PATH_MAXN] = {0};
-    if (!tb_path_full(path, full_a, TB_PATH_MAXN)) return tb_null;
+    if (!tb_path_absolute(path, full_a, TB_PATH_MAXN)) return tb_null;
 
     // atow
     tb_size_t size = tb_atow(full, full_a, maxn);

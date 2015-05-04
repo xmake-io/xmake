@@ -14,7 +14,8 @@ xmake_CONFIG 			= y
 xmake_C_FILES 			+= \
 						xmake \
 						machine \
-						path/getabsolute \
+						path/absolute \
+						path/translate \
 						string/startswith 
 						
 
