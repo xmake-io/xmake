@@ -27,6 +27,7 @@ local main = main or {}
 local path      = require("base/path")
 local utils     = require("base/utils")
 local option    = require("base/option")
+local action    = require("action/action")
 
 -- init the option menu
 local menu =
@@ -66,8 +67,8 @@ local menu =
 
 
         ,   {}
-        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
 
         ,   {}
@@ -113,8 +114,8 @@ local menu =
                                                   , "    - game"                                                    }
 
         ,   {}
-        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
  
         ,   {}
@@ -145,7 +146,7 @@ local menu =
         ,   {nil, "profile",    "k",  nil,          "Compile for the profiling mode and disable the debugging mode."}
 
         ,   {}
-        ,   {'o', "output",     "kv", "build",      "Set the build output directory"                                }
+        ,   {'o', "output",     "kv", "build",      "Set the build directory"                                       }
         ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory"                                    }
 
         ,   {}
@@ -178,8 +179,8 @@ local menu =
 
 
         ,   {}
-        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
  
         ,   {}
@@ -212,8 +213,8 @@ local menu =
 
 
         ,   {}
-        ,   {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
  
         ,   {}
@@ -237,18 +238,18 @@ local menu =
         -- options
     ,   options = 
         {
-            {nil, "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {'v', "version",    "k",  nil,          "Print the version number and exit."                            }
-        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
-        
-        ,   {}
-        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+            {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
                                                   , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
                                                   , "    3. the current directory"                                  }
 
+        ,   {}
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
         ,   {}
         ,   {nil, "target",     "v",  nil,          "Clean for the given target."
                                                   , "Clean all targets if not exists."                              }
@@ -257,26 +258,24 @@ local menu =
 }
 
 -- done option
-function main.done_action()
-
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
-
-    -- the action
-    local action = options._ACTION or "build"
-
-
-    -- ok
-    return true
-end
-
--- done option
 function main.done_option()
 
     -- the options
     local options = xmake._OPTIONS
     assert(options)
+
+    -- init the project directory
+    options.project = options.project or _PROJECT_DIR
+    options.project = path.absolute(options.project)
+    assert(options.project)
+
+    -- init the xmake.lua file path
+    options.file = options.file or "xmake.lua"
+    options.file = path.absolute(options.file, options.project)
+    assert(options.file)
+
+    -- load and execute the xmake.lua script of the given project
+    dofile(options.file)
 
     -- done help
     if options.help then
@@ -304,18 +303,8 @@ function main.done_option()
         return true
     end
 
-    -- init the project directory
-    options.project = options.project or _PROJECT_DIR
-    options.project = path.absolute(options.project)
-    assert(options.project)
-
-    -- init the xmake.lua file path
-    options.file = options.file or "xmake.lua"
-    options.file = path.absolute(options.file, options.project)
-    assert(options.file)
-
     -- done action    
-    return main.done_action()
+    return action.done(options._ACTION or "build")
 end
 
 -- the main function
