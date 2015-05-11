@@ -258,7 +258,7 @@ local menu =
 }
 
 -- done option
-function main.done_option()
+function main._done_option()
 
     -- the options
     local options = xmake._OPTIONS
@@ -275,7 +275,21 @@ function main.done_option()
     assert(options.file)
 
     -- load and execute the xmake.lua script of the given project
-    dofile(options.file)
+    local script = loadfile(options.file)
+    if script then
+        -- execute it
+        local ok, err = pcall(script)
+        if not ok then
+            -- error
+            utils.error("load %s failed!", options.file)
+            utils.error(err)
+            return false
+        end
+    else
+        -- error
+        utils.error("%s not found!", options.file)
+        return false
+    end
 
     -- done help
     if options.help then
@@ -316,7 +330,7 @@ function main.done()
     end
 
     -- done option
-    if not main.done_option() then 
+    if not main._done_option() then 
         return -1
     end
 
