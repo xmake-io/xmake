@@ -1,3 +1,4 @@
+--[[
 project "console"
 
     target "hello1"
@@ -54,4 +55,4 @@ project "console"
 
         plarforms { "macosx", "ios" }
 			ldflags { "-framework Cocoa", "-framework IOKit" }
-
+]]

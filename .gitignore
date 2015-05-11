@@ -21,6 +21,7 @@
 .demo
 .svn
 .DS_Store
+.config.lua
 cscope.*
 gmon.out
 other
