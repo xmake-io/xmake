@@ -31,13 +31,16 @@ function config._save_option(file, option)
  
     -- check
     assert(file and option)
-
-    -- save number
-    if type(option) == "number" then  
-        file:write(option)  
+    
     -- save string
-    elseif type(option) == "string" then  
+    if type(option) == "string" then  
         file:write(string.format("%q", option))  
+    -- save boolean
+    elseif type(option) == "boolean" then  
+        file:write(tostring(option))  
+    -- save number 
+    elseif type(option) == "number" then  
+        file:write(option)  
     -- save table
     elseif type(option) == "table" then  
 

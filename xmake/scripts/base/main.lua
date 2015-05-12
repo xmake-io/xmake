@@ -271,7 +271,9 @@ function main._done_option()
 
     -- init the xmake.lua file path
     options.file = options.file or options._DEFAULTS.file or "xmake.lua"
-    options.file = path.absolute(options.file, options.project)
+    if not path.is_absolute(options.file) then
+        options.file = path.absolute(options.file, options.project)
+    end
     assert(options.file)
 
     -- load and execute the xmake.lua script of the given project

@@ -55,6 +55,7 @@ typedef struct __xm_machine_impl_t
 // the path functions
 tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
+tb_int_t xm_path_is_absolute(lua_State* lua);
 
 // the string functions
 tb_int_t xm_string_startswith(lua_State* lua);
@@ -68,6 +69,7 @@ static luaL_Reg const g_path_functions[] =
 {
     { "absolute",       xm_path_absolute    }
 ,   { "translate",      xm_path_translate   }
+,   { "is_absolute",    xm_path_is_absolute }
 ,   { tb_null,          tb_null             }
 };
 
