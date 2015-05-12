@@ -136,20 +136,41 @@ function config._load()
         -- check
         assert(configs and type(configs) == "table")
 
-        -- ok? merge xmake._OPTIONS to configs
+        -- merge xmake._OPTIONS to configs
         for k, v in pairs(xmake._OPTIONS) do
-            if type(k) == "string" then
+ 
+            -- check
+            assert(type(k) == "string")
+
+            -- merge it
+            configs[k] = v
+        end
+
+        -- merge xmake._OPTIONS._DEFAULTS to configs
+        for k, v in pairs(xmake._OPTIONS._DEFAULTS) do
+
+            -- check
+            assert(type(k) == "string")
+
+            -- merge it
+            if not configs[k] then
                 configs[k] = v
-            else
-                -- error
-                utils.error("invalid option type: %s", type(k))
-                return 
             end
         end
 
         -- update configs to xmake._OPTIONS
         xmake._OPTIONS = configs
     end
+end
+
+-- dump options
+function config._dump()
+    
+    -- dump
+    for k, v in pairs(xmake._OPTIONS) do
+        utils.printf("%s = %s", k, v)
+    end
+   
 end
     
 -- done the given config
@@ -158,16 +179,16 @@ function config.done()
     -- attempt to load configs to xmake._OPTIONS from the configure file
     config._load()
 
+    -- TODO
+
+    -- dump options
+    config._dump()
+ 
     -- save options to the configure file
     if not config._save() then
         return false
     end
 
-    -- dump
-    for k, v in pairs(xmake._OPTIONS) do
-        utils.printf("%s = %s", k, v)
-    end
-    
     -- ok
     return true
 end
