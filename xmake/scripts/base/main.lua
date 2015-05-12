@@ -141,9 +141,10 @@ local menu =
         {
             {'p', "plat",       "kv", "auto",       "Compile for the given platform."                               }
         ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                           }
-        ,   {'d', "debug",      "k",  nil,          "Compile for the debugging mode."                               }
-        ,   {'s', "small",      "k",  nil,          "Compile for the small mode."                                   }
-        ,   {nil, "profile",    "k",  nil,          "Compile for the profiling mode and disable the debugging mode."}
+        ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
+                                                  , "    - debug"
+                                                  , "    - release"
+                                                  , "    - profile"                                                 }
 
         ,   {}
         ,   {'o', "output",     "kv", "build",      "Set the build directory"                                       }
@@ -277,20 +278,18 @@ function main._done_option()
     assert(options.file)
 
     -- load and execute the xmake.lua script of the given project
+    local errors = nil
     local script = loadfile(options.file)
     if script then
         -- execute it
         local ok, err = pcall(script)
         if not ok then
             -- error
-            utils.error("load %s failed!", options.file)
-            utils.error(err)
-            return false
+            errors = err
         end
     else
         -- error
-        utils.error("%s not found!", options.file)
-        return false
+        errors = string.format("%s not found!", options.file)
     end
 
     -- done help
@@ -317,6 +316,10 @@ function main._done_option()
 
         -- ok
         return true
+    elseif errors then
+        -- error
+        utils.error(errors)
+        return false
     end
 
     -- done action    
