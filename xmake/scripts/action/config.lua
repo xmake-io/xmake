@@ -58,7 +58,7 @@ function config._save()
     return true
 end
  
--- load configs to xmake._OPTIONS from the configure file
+-- load configs
 function config._load()
 
     -- the options
@@ -121,71 +121,35 @@ function config._load()
 
             -- save the default option to the target
             if not configs[target][k] then
-                configs[target][k] = v
+                configs[target][k] = utils.ifelse(v == "auto", config._auto(k), v)
             end
         end
     end
 end
 
--- save config 
-function config._save_option(file, option)
- 
-    -- check
-    assert(file and option)
+-- auto configs
+function config._auto(name)
     
-    -- save string
-    if type(option) == "string" then  
-        file:write(string.format("%q", option))  
-    -- save boolean
-    elseif type(option) == "boolean" then  
-        file:write(tostring(option))  
-    -- save number 
-    elseif type(option) == "number" then  
-        file:write(option)  
-    -- save table
-    elseif type(option) == "table" then  
+    -- get platform
+    if name == "plat" then
+        return xmake._PLAT
+    -- get architecture
+    elseif name == "arch" then
+        return xmake._ARCH
+    end
 
-        -- save head
-        file:write("{\n")  
-
-        -- save body
-        local i = 0
-        for k, v in pairs(option) do  
-
-            -- skip --project and --file
-            if type(k) == "string" and not k:startswith("_") and k ~= "project" and k ~= "file" and k ~= "verbose" then
-
-                -- save separator
-                file:write(utils.ifelse(i == 0, "    ", ",   "), k, " = ")  
-
-                -- save this key: value
-                if not config._save_option(file, v) then 
-                    return false 
-                end 
-
-                -- save newline
-                file:write("\n")
-                i = i + 1
-            end
-        end  
-
-        -- save tail
-        file:write("}\n")  
-    else  
-        -- error
-        utils.error("invalid option type: %s", type(option))  
-        return false
-    end  
-
-    -- ok
-    return true
+    -- unknown
+    utils.error("unknown config: %s", name)
+    return "unknown"
 end
 
 -- dump configs
 function config._dump()
     
     -- dump
-    utils.dump(xmake._CONFIGS, "configs = ")
+    if xmake._OPTIONS.verbose then
+        utils.dump(xmake._CONFIGS, "configs = ")
+    end
    
 end
     
@@ -194,8 +158,6 @@ function config.done()
 
     -- load configs
     config._load()
-
-    -- TODO
 
     -- dump configs
     config._dump()
