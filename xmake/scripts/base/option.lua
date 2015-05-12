@@ -38,6 +38,7 @@ function option.init(argv, menu)
 
     -- init _OPTIONS
     xmake._OPTIONS = {}
+    xmake._OPTIONS._DEFAULTS = {}
 
     -- save menu
     option._MENU = menu
@@ -240,11 +241,8 @@ function option.init(argv, menu)
             local key = o[2] or o[1]
             assert(key)
 
-            -- exists the default value?
-            if not xmake._OPTIONS[key] and o[4] then
-                -- save the default value 
-                xmake._OPTIONS[key] = o[4]    
-            end
+            -- save the default value 
+            xmake._OPTIONS._DEFAULTS[key] = o[4]    
         end
     end
 

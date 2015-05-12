@@ -265,12 +265,12 @@ function main._done_option()
     assert(options)
 
     -- init the project directory
-    options.project = options.project or _PROJECT_DIR
+    options.project = options.project or options._DEFAULTS.project or _PROJECT_DIR
     options.project = path.absolute(options.project)
     assert(options.project)
 
     -- init the xmake.lua file path
-    options.file = options.file or "xmake.lua"
+    options.file = options.file or options._DEFAULTS.file or "xmake.lua"
     options.file = path.absolute(options.file, options.project)
     assert(options.file)
 

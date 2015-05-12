@@ -49,7 +49,7 @@ function config._save_option(file, option)
         for k, v in pairs(option) do  
 
             -- skip --project and --file
-            if k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "_ACTION" then
+            if type(k) == "string" and not k:startswith("_") and k ~= "project" and k ~= "file" and k ~= "verbose" then
 
                 -- save separator
                 file:write(utils.ifelse(i == 0, "    ", ",   "), k, " = ")  
@@ -146,9 +146,6 @@ function config._load()
 
         -- update configs to xmake._OPTIONS
         xmake._OPTIONS = configs
-    else
-        -- error
-        utils.error("%s not found!", path)
     end
 end
     
