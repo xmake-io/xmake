@@ -24,9 +24,110 @@
 local config = config or {}
 
 -- load modules
+local io    = require("base/io")
 local utils = require("base/utils")
 
--- save option to the file
+-- save configs
+function config._save()
+    
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- open the configure file
+    local path = options.project .. "/.config.lua"
+    local file = io.open(path, "w")
+    if not file then
+        -- error
+        utils.error("open %s failed!", path)
+        return false
+    end
+
+    -- save configs to file
+    if not io.save(file, xmake._CONFIGS, "return") then
+        -- error 
+        utils.error("save %s failed!", path)
+        file:close()
+        return false
+    end
+
+    -- close file
+    file:close()
+   
+    -- ok
+    return true
+end
+ 
+-- load configs to xmake._OPTIONS from the configure file
+function config._load()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- the target
+    local target = options.target or options._DEFAULTS.target
+    assert(target)
+
+    -- open the configure file
+    local path = options.project .. "/.config.lua"
+    local file = loadfile(path)
+    if file then
+        -- execute it
+        local ok, cfg = pcall(file)
+        if not ok then
+            -- error
+            utils.error("load %s failed!", path)
+            utils.error(cfg)
+            return 
+        end
+
+        -- check
+        assert(cfg and type(cfg) == "table")
+
+        -- merges configs to xmake._CONFIGS
+        xmake._CONFIGS = cfg
+    end
+
+    -- the configs
+    xmake._CONFIGS = xmake._CONFIGS or {}
+    local configs = xmake._CONFIGS
+
+    -- init the configs for the target
+    configs[target] = configs[target] or {}
+
+    -- merge xmake._OPTIONS to xmake._CONFIGS[target]
+    for k, v in pairs(options) do
+
+        -- check
+        assert(type(k) == "string")
+
+        -- skip some options
+        if not k:startswith("_") and k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "target" then
+
+            -- save the option to the target
+            configs[target][k] = v
+        end
+    end
+
+    -- merge xmake._OPTIONS._DEFAULTS to xmake._CONFIGS[target]
+    for k, v in pairs(options._DEFAULTS) do
+
+        -- check
+        assert(type(k) == "string")
+
+        -- skip some options
+        if k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "target" then
+
+            -- save the default option to the target
+            if not configs[target][k] then
+                configs[target][k] = v
+            end
+        end
+    end
+end
+
+-- save config 
 function config._save_option(file, option)
  
     -- check
@@ -80,111 +181,26 @@ function config._save_option(file, option)
     return true
 end
 
--- save xmake._OPTIONS to the configure file
-function config._save()
-    
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
-
-    -- open the configure file
-    local path = options.project .. "/.config.lua"
-    local file = io.open(path, "w")
-    if not file then
-        -- error
-        utils.error("open %s failed!", path)
-        return false
-    end
-
-    -- save return to file
-    file:write("return \n")
-
-    -- save options to file
-    if not config._save_option(file, options) then
-        -- error
-        utils.error("save %s failed!", path)
-        return false
-    end
-
-    -- close file
-    file:close()
-   
-    -- ok
-    return true
-end
- 
--- load configs to xmake._OPTIONS from the configure file
-function config._load()
-    
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
-
-    -- open the configure file
-    local path = options.project .. "/.config.lua"
-    local file = loadfile(path)
-    if file then
-        -- execute it
-        local ok, configs = pcall(file)
-        if not ok then
-            -- error
-            utils.error("load %s failed!", path)
-            utils.error(configs)
-            return 
-        end
-
-        -- check
-        assert(configs and type(configs) == "table")
-
-        -- merge xmake._OPTIONS to configs
-        for k, v in pairs(xmake._OPTIONS) do
- 
-            -- check
-            assert(type(k) == "string")
-
-            -- merge it
-            configs[k] = v
-        end
-
-        -- merge xmake._OPTIONS._DEFAULTS to configs
-        for k, v in pairs(xmake._OPTIONS._DEFAULTS) do
-
-            -- check
-            assert(type(k) == "string")
-
-            -- merge it
-            if not configs[k] then
-                configs[k] = v
-            end
-        end
-
-        -- update configs to xmake._OPTIONS
-        xmake._OPTIONS = configs
-    end
-end
-
--- dump options
+-- dump configs
 function config._dump()
     
     -- dump
-    for k, v in pairs(xmake._OPTIONS) do
-        utils.printf("%s = %s", k, v)
-    end
+    utils.dump(xmake._CONFIGS, "configs = ")
    
 end
     
 -- done the given config
 function config.done()
 
-    -- attempt to load configs to xmake._OPTIONS from the configure file
+    -- load configs
     config._load()
 
     -- TODO
 
-    -- dump options
+    -- dump configs
     config._dump()
  
-    -- save options to the configure file
+    -- save configs
     if not config._save() then
         return false
     end

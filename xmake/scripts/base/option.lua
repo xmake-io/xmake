@@ -243,6 +243,10 @@ function option.init(argv, menu)
 
             -- save the default value 
             xmake._OPTIONS._DEFAULTS[key] = o[4]    
+        -- value with name?
+        elseif o[3] == "v" and o[2] then
+            -- save the default value 
+            xmake._OPTIONS._DEFAULTS[o[2]] = o[4]    
         end
     end
 

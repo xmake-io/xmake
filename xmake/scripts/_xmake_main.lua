@@ -27,6 +27,7 @@ xmake._VERSION      = "XMake v1.0.1"
 xmake._PROGRAM_DIR  = _PROGRAM_DIR
 xmake._SCRIPTS_DIR  = _PROGRAM_DIR .. "/scripts/"
 xmake._OPTIONS      = {}
+xmake._CONFIGS      = {}
 
 -- init package path
 package.path = xmake._SCRIPTS_DIR .. "?.lua;" .. package.path

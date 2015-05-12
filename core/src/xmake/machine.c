@@ -96,7 +96,7 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     for (i = 1; i < argc; i++)
     {
         // print verbose info
-        if (!tb_strncmp(argv[i], "--verbose", 9)) 
+        if (!tb_strcmp(argv[i], "-v") || !tb_strcmp(argv[i], "--verbose")) 
             impl->verbose = tb_true;
 
         // table_new[table.getn(table_new) + 1] = argv[i]

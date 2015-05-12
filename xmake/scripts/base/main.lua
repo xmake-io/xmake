@@ -72,8 +72,7 @@ local menu =
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
 
         ,   {}
-        ,   {nil, "target",     "v",  nil,          "Build the given target"                     
-                                                  , "Build all targets if not exists."                              }
+        ,   {nil, "target",     "v",  "all",        "Build the given target."                                       } 
         }
     }
 
@@ -185,8 +184,7 @@ local menu =
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
  
         ,   {}
-        ,   {nil, "target",     "v",  nil,          "Configure for the given target."             
-                                                  , "Configure for all targets if not exists."                      }
+        ,   {nil, "target",     "v",  "all",        "Configure for the given target."                               }
         }
     }
 
@@ -219,8 +217,7 @@ local menu =
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
  
         ,   {}
-        ,   {nil, "target",     "v",  nil,          "Install the given target."                               
-                                                  , "Install all targets if not exists."                            }
+        ,   {nil, "target",     "v",  "all",        "Install the given target."                                     }
         }
     }
 
@@ -252,8 +249,7 @@ local menu =
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
         
         ,   {}
-        ,   {nil, "target",     "v",  nil,          "Clean for the given target."
-                                                  , "Clean all targets if not exists."                              }
+        ,   {nil, "target",     "v",  "all",        "Clean for the given target."                                   }      
         }
     }
 }

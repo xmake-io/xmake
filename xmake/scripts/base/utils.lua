@@ -50,5 +50,82 @@ function utils.ifelse(a, b, c)
     if a then return b else return c end
 end
 
+-- dump object with the level
+function utils._dump_with_level(object, level)
+ 
+    -- check
+    assert(object)
+
+    -- dump string
+    if type(object) == "string" then  
+        io.write(string.format("%q", object))  
+    -- dump boolean
+    elseif type(object) == "boolean" then  
+        io.write(tostring(object))  
+    -- dump number 
+    elseif type(object) == "number" then  
+        io.write(object)  
+    -- dump table
+    elseif type(object) == "table" then  
+
+        -- dump head
+        io.write("\n")  
+        for l = 1, level do
+            io.write("    ")
+        end
+        io.write("{\n")  
+
+        -- dump body
+        local i = 0
+        for k, v in pairs(object) do  
+
+            -- dump spaces
+            for l = 1, level do
+                io.write("    ")
+            end
+
+            -- dump separator
+            io.write(utils.ifelse(i == 0, "    ", ",   "), k, " = ")  
+
+            -- dump this key: value
+            if not utils._dump_with_level(v, level + 1) then 
+                return false
+            end
+
+            -- dump newline
+            io.write("\n")
+            i = i + 1
+        end  
+
+        -- dump tail
+        for l = 1, level do
+            io.write("    ")
+        end
+        io.write("}\n")  
+    else  
+        -- error
+        utils.error("invalid object type: %s", type(object))
+        return false
+    end  
+
+    -- ok
+    return true
+end
+
+-- dump object
+function utils.dump(object, prefix)
+   
+    -- dump prefix
+    if prefix and type(prefix) == "string" then
+        io.write(prefix)
+    end
+ 
+    -- dump it
+    utils._dump_with_level(object, 0)
+
+    -- return it
+    return object
+end
+
 -- return module: utils
 return utils
