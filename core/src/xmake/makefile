@@ -16,6 +16,7 @@ xmake_C_FILES 			+= \
 						machine \
 						path/absolute \
 						path/translate \
+						path/is_absolute \
 						string/startswith 
 						
 

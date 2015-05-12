@@ -65,7 +65,7 @@ function option.init(argv, menu)
         -- only key?
         else
             key = arg
-            value = ""
+            value = true
         end
 
         -- --key?
@@ -151,7 +151,7 @@ function option.init(argv, menu)
             end
 
             -- check mode
-            if (opt[3] == "k" and #value ~= 0) or (opt[3] == "kv" and #value == 0) then
+            if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
 
                 -- invalid option
                 print("invalid option: " .. arg)
