@@ -33,6 +33,10 @@ setfenv(1, _PROJECT)
 local parent    = nil
 local current   = nil
 
+-- configure scope end
+function scopend()
+end
+
 -- configure target
 function target(name)
 
@@ -40,10 +44,10 @@ function target(name)
     assert(name and _ROOT)
 
     -- init targets
-    _ROOT._TARGETS = _ROOT._TARGETS or {}
+    current._TARGETS = current._TARGETS or {}
 
     -- init target scope
-    _ROOT._TARGETS[name] = {}
+    current._TARGETS[name] = {}
 
     -- TODO
     -- enter target scope

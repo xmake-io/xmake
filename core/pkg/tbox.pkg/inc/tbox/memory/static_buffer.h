@@ -50,7 +50,7 @@ typedef struct __tb_static_buffer_t
     // the buffer maxn
     tb_size_t       maxn;
 
-}tb_static_buffer_t;
+}tb_static_buffer_t, *tb_static_buffer_ref_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -64,13 +64,13 @@ typedef struct __tb_static_buffer_t
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_static_buffer_init(tb_static_buffer_t* buffer, tb_byte_t* data, tb_size_t maxn);
+tb_bool_t           tb_static_buffer_init(tb_static_buffer_ref_t buffer, tb_byte_t* data, tb_size_t maxn);
 
 /*! exit the static buffer
  *
  * @param buffer    the static buffer
  */
-tb_void_t           tb_static_buffer_exit(tb_static_buffer_t* buffer);
+tb_void_t           tb_static_buffer_exit(tb_static_buffer_ref_t buffer);
 
 /*! the buffer data
  *
@@ -78,7 +78,7 @@ tb_void_t           tb_static_buffer_exit(tb_static_buffer_t* buffer);
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_data(tb_static_buffer_t* buffer);
+tb_byte_t*          tb_static_buffer_data(tb_static_buffer_ref_t buffer);
 
 /*! the buffer data size
  *
@@ -86,7 +86,7 @@ tb_byte_t*          tb_static_buffer_data(tb_static_buffer_t* buffer);
  *
  * @return          the buffer data size
  */
-tb_size_t           tb_static_buffer_size(tb_static_buffer_t const* buffer);
+tb_size_t           tb_static_buffer_size(tb_static_buffer_ref_t buffer);
 
 /*! the buffer data maxn
  *
@@ -94,13 +94,13 @@ tb_size_t           tb_static_buffer_size(tb_static_buffer_t const* buffer);
  *
  * @return          the buffer data maxn
  */
-tb_size_t           tb_static_buffer_maxn(tb_static_buffer_t const* buffer);
+tb_size_t           tb_static_buffer_maxn(tb_static_buffer_ref_t buffer);
 
 /*! clear the buffer
  *
  * @param buffer    the static buffer
  */
-tb_void_t           tb_static_buffer_clear(tb_static_buffer_t* buffer);
+tb_void_t           tb_static_buffer_clear(tb_static_buffer_ref_t buffer);
 
 /*! resize the buffer size
  *
@@ -109,7 +109,7 @@ tb_void_t           tb_static_buffer_clear(tb_static_buffer_t* buffer);
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_resize(tb_static_buffer_t* buffer, tb_size_t size);
+tb_byte_t*          tb_static_buffer_resize(tb_static_buffer_ref_t buffer, tb_size_t size);
 
 /*! memset: b => 0 ... e
  *
@@ -118,7 +118,7 @@ tb_byte_t*          tb_static_buffer_resize(tb_static_buffer_t* buffer, tb_size_
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memset(tb_static_buffer_t* buffer, tb_byte_t b);
+tb_byte_t*          tb_static_buffer_memset(tb_static_buffer_ref_t buffer, tb_byte_t b);
 
 /*! memset: b => p ... e
  *
@@ -128,7 +128,7 @@ tb_byte_t*          tb_static_buffer_memset(tb_static_buffer_t* buffer, tb_byte_
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memsetp(tb_static_buffer_t* buffer, tb_size_t p, tb_byte_t b);
+tb_byte_t*          tb_static_buffer_memsetp(tb_static_buffer_ref_t buffer, tb_size_t p, tb_byte_t b);
 
 /*! memset: b => 0 ... n
  *
@@ -138,7 +138,7 @@ tb_byte_t*          tb_static_buffer_memsetp(tb_static_buffer_t* buffer, tb_size
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memnset(tb_static_buffer_t* buffer, tb_byte_t b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memnset(tb_static_buffer_ref_t buffer, tb_byte_t b, tb_size_t n);
 
 /*! memset: b => p ... n
  *
@@ -149,7 +149,7 @@ tb_byte_t*          tb_static_buffer_memnset(tb_static_buffer_t* buffer, tb_byte
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memnsetp(tb_static_buffer_t* buffer, tb_size_t p, tb_byte_t b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memnsetp(tb_static_buffer_ref_t buffer, tb_size_t p, tb_byte_t b, tb_size_t n);
 
 /*! memcpy: b => 0 ... 
  *
@@ -158,7 +158,7 @@ tb_byte_t*          tb_static_buffer_memnsetp(tb_static_buffer_t* buffer, tb_siz
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memcpy(tb_static_buffer_t* buffer, tb_static_buffer_t* b);
+tb_byte_t*          tb_static_buffer_memcpy(tb_static_buffer_ref_t buffer, tb_static_buffer_ref_t b);
 
 /*! memcpy: b => p ... 
  *
@@ -168,7 +168,7 @@ tb_byte_t*          tb_static_buffer_memcpy(tb_static_buffer_t* buffer, tb_stati
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memcpyp(tb_static_buffer_t* buffer, tb_size_t p, tb_static_buffer_t* b);
+tb_byte_t*          tb_static_buffer_memcpyp(tb_static_buffer_ref_t buffer, tb_size_t p, tb_static_buffer_ref_t b);
 
 /*! memcpy: b ... n => 0 ... 
  *
@@ -178,7 +178,7 @@ tb_byte_t*          tb_static_buffer_memcpyp(tb_static_buffer_t* buffer, tb_size
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memncpy(tb_static_buffer_t* buffer, tb_byte_t const* b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memncpy(tb_static_buffer_ref_t buffer, tb_byte_t const* b, tb_size_t n);
 
 /*! memcpy: b ... n => p ... 
  *
@@ -189,7 +189,7 @@ tb_byte_t*          tb_static_buffer_memncpy(tb_static_buffer_t* buffer, tb_byte
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memncpyp(tb_static_buffer_t* buffer, tb_size_t p, tb_byte_t const* b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memncpyp(tb_static_buffer_ref_t buffer, tb_size_t p, tb_byte_t const* b, tb_size_t n);
 
 /*! memmov: b ... e => 0 ... 
  *
@@ -198,7 +198,7 @@ tb_byte_t*          tb_static_buffer_memncpyp(tb_static_buffer_t* buffer, tb_siz
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memmov(tb_static_buffer_t* buffer, tb_size_t b);
+tb_byte_t*          tb_static_buffer_memmov(tb_static_buffer_ref_t buffer, tb_size_t b);
 
 /*! memmov: b ... e => p ... 
  *
@@ -208,7 +208,7 @@ tb_byte_t*          tb_static_buffer_memmov(tb_static_buffer_t* buffer, tb_size_
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memmovp(tb_static_buffer_t* buffer, tb_size_t p, tb_size_t b);
+tb_byte_t*          tb_static_buffer_memmovp(tb_static_buffer_ref_t buffer, tb_size_t p, tb_size_t b);
 
 /*! memmov: b ... n => 0 ... 
  *
@@ -218,7 +218,7 @@ tb_byte_t*          tb_static_buffer_memmovp(tb_static_buffer_t* buffer, tb_size
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memnmov(tb_static_buffer_t* buffer, tb_size_t b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memnmov(tb_static_buffer_ref_t buffer, tb_size_t b, tb_size_t n);
 
 /*! memmov: b ... n => p ... 
  *
@@ -229,7 +229,7 @@ tb_byte_t*          tb_static_buffer_memnmov(tb_static_buffer_t* buffer, tb_size
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memnmovp(tb_static_buffer_t* buffer, tb_size_t p, tb_size_t b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memnmovp(tb_static_buffer_ref_t buffer, tb_size_t p, tb_size_t b, tb_size_t n);
 
 /*! memcat: b +=> e ... 
  *
@@ -238,7 +238,7 @@ tb_byte_t*          tb_static_buffer_memnmovp(tb_static_buffer_t* buffer, tb_siz
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memcat(tb_static_buffer_t* buffer, tb_static_buffer_t* b);
+tb_byte_t*          tb_static_buffer_memcat(tb_static_buffer_ref_t buffer, tb_static_buffer_ref_t b);
 
 /*! memcat: b ... n +=> e ... 
  *
@@ -248,7 +248,7 @@ tb_byte_t*          tb_static_buffer_memcat(tb_static_buffer_t* buffer, tb_stati
  *
  * @return          the buffer data address
  */
-tb_byte_t*          tb_static_buffer_memncat(tb_static_buffer_t* buffer, tb_byte_t const* b, tb_size_t n);
+tb_byte_t*          tb_static_buffer_memncat(tb_static_buffer_ref_t buffer, tb_byte_t const* b, tb_size_t n);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

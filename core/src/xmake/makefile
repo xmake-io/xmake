@@ -17,7 +17,8 @@ xmake_C_FILES 			+= \
 						path/absolute \
 						path/translate \
 						path/is_absolute \
-						string/startswith 
+						string/startswith \
+						preprocessor/load_xproj 
 						
 
 # flags
