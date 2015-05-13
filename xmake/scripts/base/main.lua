@@ -144,6 +144,7 @@ local menu =
                                                   , "    - debug"
                                                   , "    - release"
                                                   , "    - profile"                                                 }
+        ,   {'-', "host",       "kv", "auto",       "The current host environment."                                 }
 
         ,   {}
         ,   {'o', "output",     "kv", "build",      "Set the build directory"                                       }

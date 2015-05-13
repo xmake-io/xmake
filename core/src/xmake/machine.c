@@ -210,7 +210,7 @@ xm_machine_ref_t xm_machine_init()
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
 
-        // init platform
+        // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
         lua_pushstring(impl->lua, "windows");
 #elif defined(TB_CONFIG_OS_MAC)
@@ -226,7 +226,7 @@ xm_machine_ref_t xm_machine_init()
 #else
         lua_pushstring(impl->lua, "unknown");
 #endif
-        lua_setglobal(impl->lua, "_PLAT");
+        lua_setglobal(impl->lua, "_HOST");
 
         // init architecture
 #if defined(TB_ARCH_x86) || defined(TB_CONFIG_OS_WINDOWS)

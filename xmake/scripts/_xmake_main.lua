@@ -23,7 +23,7 @@
 -- init namespace: xmake
 xmake               = xmake or {}
 xmake._ARGV         = _ARGV
-xmake._PLAT         = _PLAT
+xmake._HOST         = _HOST
 xmake._ARCH         = _ARCH
 xmake._VERSION      = "XMake v1.0.1"
 xmake._PROGRAM_DIR  = _PROGRAM_DIR
