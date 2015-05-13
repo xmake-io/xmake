@@ -27,6 +27,7 @@ local main = main or {}
 local path      = require("base/path")
 local utils     = require("base/utils")
 local option    = require("base/option")
+local project   = require("base/project")
 local action    = require("action/action")
 
 -- init the option menu
@@ -274,10 +275,14 @@ function main._done_option()
     end
     assert(options.file)
 
-    -- load and execute the xmake.lua script of the given project
+    -- load and execute the project script
     local errors = nil
     local script = loadfile(options.file)
     if script then
+
+        -- init the project envirnoment
+        setfenv(script, project)
+
         -- execute it
         local ok, err = pcall(script)
         if not ok then
@@ -318,6 +323,9 @@ function main._done_option()
         utils.error(errors)
         return false
     end
+
+    -- save project
+    xmake._PROJECT = project
 
     -- done action    
     return action.done(options._ACTION or "build")
