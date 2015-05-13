@@ -55,4 +55,5 @@ project "console"
 
         plarforms { "macosx", "ios" }
 			ldflags { "-framework Cocoa", "-framework IOKit" }
+            
 ]]

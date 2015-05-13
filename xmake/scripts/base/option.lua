@@ -250,11 +250,6 @@ function option.init(argv, menu)
         end
     end
 
-    -- dump options
---    for a, b in pairs(xmake._OPTIONS) do
---        print(a, b)
---    end
-
     -- ok
     return true
 end
@@ -265,6 +260,7 @@ function option.print_menu(action)
     -- no action? print main menu
     if not action then 
         option.print_main()
+        return 
     end
 
     -- the menu

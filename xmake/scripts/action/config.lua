@@ -35,7 +35,7 @@ function config._save()
     assert(options)
 
     -- open the configure file
-    local path = options.project .. "/.config.lua"
+    local path = options.project .. "/xmake.conf"
     local file = io.open(path, "w")
     if not file then
         -- error
@@ -70,7 +70,7 @@ function config._load()
     assert(target)
 
     -- open the configure file
-    local path = options.project .. "/.config.lua"
+    local path = options.project .. "/xmake.conf"
     local file = loadfile(path)
     if file then
         -- execute it
@@ -84,6 +84,14 @@ function config._load()
 
         -- check
         assert(cfg and type(cfg) == "table")
+
+        -- clear configs if the host environment has been changed
+        if cfg[target] and cfg[target].host ~= xmake._HOST then
+            cfg = {}
+        end
+        if cfg.all and cfg.all.host ~= xmake._HOST then
+            cfg = {}
+        end
 
         -- merges configs to xmake._CONFIGS
         xmake._CONFIGS = cfg
@@ -121,7 +129,11 @@ function config._load()
 
             -- save the default option to the target
             if not configs[target][k] then
-                configs[target][k] = utils.ifelse(v == "auto", config._auto(k), v)
+                if v == "auto" then 
+                    configs[target][k] = config._auto(k)
+                else
+                    configs[target][k] = v
+                end
             end
         end
     end
@@ -129,10 +141,10 @@ end
 
 -- auto configs
 function config._auto(name)
-    
-    -- get platform
-    if name == "plat" then
-        return xmake._PLAT
+
+    -- get platform or host
+    if name == "plat" or name == "host" then
+        return xmake._HOST
     -- get architecture
     elseif name == "arch" then
         return xmake._ARCH
@@ -168,6 +180,7 @@ function config.done()
     end
 
     -- ok
+    print("configure ok!")
     return true
 end
 
