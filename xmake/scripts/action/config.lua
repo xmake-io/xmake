@@ -35,7 +35,7 @@ function config._save()
     assert(options)
 
     -- open the configure file
-    local path = options.project .. "/xmake.conf"
+    local path = options.project .. "/xmake.xconf"
     local file = io.open(path, "w")
     if not file then
         -- error
@@ -70,7 +70,7 @@ function config._load()
     assert(target)
 
     -- open the configure file
-    local path = options.project .. "/xmake.conf"
+    local path = options.project .. "/xmake.xconf"
     local file = loadfile(path)
     if file then
         -- execute it

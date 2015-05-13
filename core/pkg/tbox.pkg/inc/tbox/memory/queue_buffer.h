@@ -53,7 +53,7 @@ typedef struct __tb_queue_buffer_t
     // the buffer maxn
     tb_size_t       maxn;
 
-}tb_queue_buffer_t;
+}tb_queue_buffer_t, *tb_queue_buffer_ref_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -66,13 +66,13 @@ typedef struct __tb_queue_buffer_t
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_queue_buffer_init(tb_queue_buffer_t* buffer, tb_size_t maxn);
+tb_bool_t           tb_queue_buffer_init(tb_queue_buffer_ref_t buffer, tb_size_t maxn);
 
 /*! exit buffer
  *
  * @param buffer    the buffer
  */
-tb_void_t           tb_queue_buffer_exit(tb_queue_buffer_t* buffer);
+tb_void_t           tb_queue_buffer_exit(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer data
  *
@@ -80,7 +80,7 @@ tb_void_t           tb_queue_buffer_exit(tb_queue_buffer_t* buffer);
  *
  * @return          the buffer data
  */
-tb_byte_t*          tb_queue_buffer_data(tb_queue_buffer_t const* buffer);
+tb_byte_t*          tb_queue_buffer_data(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer head
  *
@@ -88,7 +88,7 @@ tb_byte_t*          tb_queue_buffer_data(tb_queue_buffer_t const* buffer);
  *
  * @return          the buffer head
  */
-tb_byte_t*          tb_queue_buffer_head(tb_queue_buffer_t const* buffer);
+tb_byte_t*          tb_queue_buffer_head(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer tail
  *
@@ -96,7 +96,7 @@ tb_byte_t*          tb_queue_buffer_head(tb_queue_buffer_t const* buffer);
  *
  * @return          the buffer tail
  */
-tb_byte_t*          tb_queue_buffer_tail(tb_queue_buffer_t const* buffer);
+tb_byte_t*          tb_queue_buffer_tail(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer maxn
  *
@@ -104,7 +104,7 @@ tb_byte_t*          tb_queue_buffer_tail(tb_queue_buffer_t const* buffer);
  *
  * @return          the buffer maxn
  */
-tb_size_t           tb_queue_buffer_maxn(tb_queue_buffer_t const* buffer);
+tb_size_t           tb_queue_buffer_maxn(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer size
  *
@@ -112,7 +112,7 @@ tb_size_t           tb_queue_buffer_maxn(tb_queue_buffer_t const* buffer);
  *
  * @return          the buffer size
  */
-tb_size_t           tb_queue_buffer_size(tb_queue_buffer_t const* buffer);
+tb_size_t           tb_queue_buffer_size(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer left
  *
@@ -120,7 +120,7 @@ tb_size_t           tb_queue_buffer_size(tb_queue_buffer_t const* buffer);
  *
  * @return          the buffer left
  */
-tb_size_t           tb_queue_buffer_left(tb_queue_buffer_t const* buffer);
+tb_size_t           tb_queue_buffer_left(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer full?
  *
@@ -128,7 +128,7 @@ tb_size_t           tb_queue_buffer_left(tb_queue_buffer_t const* buffer);
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_queue_buffer_full(tb_queue_buffer_t const* buffer);
+tb_bool_t           tb_queue_buffer_full(tb_queue_buffer_ref_t buffer);
 
 /*! the buffer null?
  *
@@ -136,13 +136,13 @@ tb_bool_t           tb_queue_buffer_full(tb_queue_buffer_t const* buffer);
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_queue_buffer_null(tb_queue_buffer_t const* buffer);
+tb_bool_t           tb_queue_buffer_null(tb_queue_buffer_ref_t buffer);
 
 /*! clear buffer
  *
  * @param buffer    the buffer
  */
-tb_void_t           tb_queue_buffer_clear(tb_queue_buffer_t* buffer);
+tb_void_t           tb_queue_buffer_clear(tb_queue_buffer_ref_t buffer);
 
 /*! resize buffer size
  *
@@ -151,7 +151,7 @@ tb_void_t           tb_queue_buffer_clear(tb_queue_buffer_t* buffer);
  *
  * @return          the buffer data
  */
-tb_byte_t*          tb_queue_buffer_resize(tb_queue_buffer_t* buffer, tb_size_t maxn);
+tb_byte_t*          tb_queue_buffer_resize(tb_queue_buffer_ref_t buffer, tb_size_t maxn);
 
 /*! skip buffer
  *
@@ -160,7 +160,7 @@ tb_byte_t*          tb_queue_buffer_resize(tb_queue_buffer_t* buffer, tb_size_t 
  *
  * @return          the real size
  */
-tb_long_t           tb_queue_buffer_skip(tb_queue_buffer_t* buffer, tb_size_t size);
+tb_long_t           tb_queue_buffer_skip(tb_queue_buffer_ref_t buffer, tb_size_t size);
 
 /*! read buffer
  *
@@ -170,7 +170,7 @@ tb_long_t           tb_queue_buffer_skip(tb_queue_buffer_t* buffer, tb_size_t si
  *
  * @return          the real size
  */
-tb_long_t           tb_queue_buffer_read(tb_queue_buffer_t* buffer, tb_byte_t* data, tb_size_t size);
+tb_long_t           tb_queue_buffer_read(tb_queue_buffer_ref_t buffer, tb_byte_t* data, tb_size_t size);
 
 /*! writ buffer
  *
@@ -180,7 +180,7 @@ tb_long_t           tb_queue_buffer_read(tb_queue_buffer_t* buffer, tb_byte_t* d
  *
  * @return          the real size
  */
-tb_long_t           tb_queue_buffer_writ(tb_queue_buffer_t* buffer, tb_byte_t const* data, tb_size_t size);
+tb_long_t           tb_queue_buffer_writ(tb_queue_buffer_ref_t buffer, tb_byte_t const* data, tb_size_t size);
 
 /*! init pull buffer for reading
  *
@@ -189,14 +189,14 @@ tb_long_t           tb_queue_buffer_writ(tb_queue_buffer_t* buffer, tb_byte_t co
  *
  * @return          the data
  */
-tb_byte_t*          tb_queue_buffer_pull_init(tb_queue_buffer_t* buffer, tb_size_t* size);
+tb_byte_t*          tb_queue_buffer_pull_init(tb_queue_buffer_ref_t buffer, tb_size_t* size);
 
 /*! exit pull buffer for reading
  *
  * @param buffer    the buffer
  * @param size      the size
  */
-tb_void_t           tb_queue_buffer_pull_exit(tb_queue_buffer_t* buffer, tb_size_t size);
+tb_void_t           tb_queue_buffer_pull_exit(tb_queue_buffer_ref_t buffer, tb_size_t size);
 
 /*! init push buffer for writing
  *
@@ -205,14 +205,14 @@ tb_void_t           tb_queue_buffer_pull_exit(tb_queue_buffer_t* buffer, tb_size
  *
  * @return          the data
  */
-tb_byte_t*          tb_queue_buffer_push_init(tb_queue_buffer_t* buffer, tb_size_t* size);
+tb_byte_t*          tb_queue_buffer_push_init(tb_queue_buffer_ref_t buffer, tb_size_t* size);
 
 /*! exit push buffer for writing
  *
  * @param buffer    the buffer
  * @param size      the size
  */
-tb_void_t           tb_queue_buffer_push_exit(tb_queue_buffer_t* buffer, tb_size_t size);
+tb_void_t           tb_queue_buffer_push_exit(tb_queue_buffer_ref_t buffer, tb_size_t size);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

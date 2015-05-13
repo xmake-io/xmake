@@ -24,11 +24,12 @@
 local main = main or {}
 
 -- load modules
-local path      = require("base/path")
-local utils     = require("base/utils")
-local option    = require("base/option")
-local project   = require("base/project")
-local action    = require("action/action")
+local path          = require("base/path")
+local utils         = require("base/utils")
+local option        = require("base/option")
+local project       = require("base/project")
+local preprocessor  = require("base/preprocessor")
+local action        = require("action/action")
 
 -- init the option menu
 local menu =
@@ -59,7 +60,7 @@ local menu =
         ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -93,7 +94,7 @@ local menu =
     ,   options = 
         {
             {'n', "name",       "kv", nil,          "The project name."                                             }
-        ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
+        ,   {'f', "file",       "kv", "xmake.xproj",  "Create a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -172,7 +173,7 @@ local menu =
         ,   {nil, "arflags",    "kv", nil,          "The library creator flags"                                     }
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+        ,   {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -205,7 +206,7 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+            {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -238,7 +239,7 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+            {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -268,16 +269,16 @@ function main._done_option()
     options.project = path.absolute(options.project)
     assert(options.project)
 
-    -- init the xmake.lua file path
-    options.file = options.file or options._DEFAULTS.file or "xmake.lua"
+    -- init the xmake.xproj file path
+    options.file = options.file or options._DEFAULTS.file or "xmake.xproj"
     if not path.is_absolute(options.file) then
         options.file = path.absolute(options.file, options.project)
     end
     assert(options.file)
 
-    -- load and execute the project script
+    -- load and execute the xmake.xproj
     local errors = nil
-    local script = loadfile(options.file)
+    local script = preprocessor.load_xproj(options.file)
     if script then
 
         -- init the project envirnoment
@@ -291,7 +292,7 @@ function main._done_option()
         end
     else
         -- error
-        errors = string.format("%s not found!", options.file)
+        errors = string.format("load %s failed!", options.file)
     end
 
     -- done help

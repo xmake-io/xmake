@@ -62,7 +62,7 @@ tb_object_ref_t     tb_object_data_init_from_data(tb_pointer_t data, tb_size_t s
  *
  * @return          the data object
  */
-tb_object_ref_t     tb_object_data_init_from_buffer(tb_buffer_t* buffer);
+tb_object_ref_t     tb_object_data_init_from_buffer(tb_buffer_ref_t buffer);
 
 /*! get the data 
  *
@@ -96,7 +96,7 @@ tb_size_t           tb_object_data_size(tb_object_ref_t data);
  *
  * @return          the data buffer
  */
-tb_buffer_t*         tb_object_data_buffer(tb_object_ref_t data);
+tb_buffer_ref_t         tb_object_data_buffer(tb_object_ref_t data);
 
 /*! writ data to url
  *

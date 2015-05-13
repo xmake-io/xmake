@@ -52,7 +52,7 @@ tb_object_ref_t     tb_object_string_init_from_cstr(tb_char_t const* cstr);
  *
  * @return          the string object
  */
-tb_object_ref_t     tb_object_string_init_from_str(tb_string_t* str);
+tb_object_ref_t     tb_object_string_init_from_str(tb_string_ref_t str);
 
 /*! the c-string
  *

@@ -43,9 +43,6 @@ typedef struct __xm_machine_impl_t
     // the lua 
     lua_State*              lua;
 
-    // print verbose info?
-    tb_bool_t               verbose;
-
 }xm_machine_impl_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -59,6 +56,9 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 
 // the string functions
 tb_int_t xm_string_startswith(lua_State* lua);
+
+// the preprocessor functions
+tb_int_t xm_preprocessor_load_xproj(lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
@@ -76,8 +76,15 @@ static luaL_Reg const g_path_functions[] =
 // the string functions
 static luaL_Reg const g_string_functions[] = 
 {
-    { "startswith", xm_string_startswith    }
-,   { tb_null,      tb_null                 }
+    { "startswith",     xm_string_startswith    }
+,   { tb_null,          tb_null                 }
+};
+
+// the preprocessor functions
+static luaL_Reg const g_preprocessor_functions[] = 
+{
+    { "load_xproj",     xm_preprocessor_load_xproj  }
+,   { tb_null,          tb_null                     }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -95,10 +102,6 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     tb_int_t i = 0;
     for (i = 1; i < argc; i++)
     {
-        // print verbose info
-        if (!tb_strcmp(argv[i], "-v") || !tb_strcmp(argv[i], "--verbose")) 
-            impl->verbose = tb_true;
-
         // table_new[table.getn(table_new) + 1] = argv[i]
         lua_pushstring(impl->lua, argv[i]);
         lua_rawseti(impl->lua, -2, luaL_getn(impl->lua, -2) + 1);
@@ -123,8 +126,8 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
         tb_char_t data[TB_PATH_MAXN] = {0};
         if (!tb_environment_get_one("XMAKE_PROGRAM_DIR", data, sizeof(data)))
         {
-            // trace
-            if (impl->verbose) tb_trace_i("please set XMAKE_PROGRAM_DIR first!");
+            // error
+            tb_printf("error: please set XMAKE_PROGRAM_DIR first!\n");
             break;
         }
 
@@ -177,7 +180,7 @@ static tb_bool_t xm_machine_main_get_project_directory(xm_machine_impl_t* impl, 
     } while (0);
 
     // failed?
-    if (!ok && impl->verbose) tb_trace_i("not found the project directory!");
+    if (!ok) tb_printf("error: not found the project directory!\n");
 
     // ok?
     return ok;
@@ -210,6 +213,9 @@ xm_machine_ref_t xm_machine_init()
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
 
+        // bind preprocessor functions
+        luaL_register(impl->lua, "preprocessor", g_preprocessor_functions);
+
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
         lua_pushstring(impl->lua, "windows");
@@ -241,9 +247,6 @@ xm_machine_ref_t xm_machine_init()
         // init namespace: xmake
         lua_newtable(impl->lua);
         lua_setglobal(impl->lua, "xmake");
-
-        // init verbose
-        impl->verbose = tb_false;
 
         // ok
         ok = tb_true;
@@ -295,8 +298,10 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     // exists this script?
     if (!tb_file_info(path, tb_null))
     {
-        // trace
-        if (impl->verbose) tb_trace_i("not found main script: %s", path);
+        // error
+        tb_printf("not found main script: %s\n", path);
+
+        // failed
         return -1;
     }
 
@@ -306,28 +311,23 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     // load and execute the main script
     if (luaL_dofile(impl->lua, path))
     {
-        // trace
-        if (impl->verbose) tb_trace_i("%s", lua_tostring(impl->lua, -1));
+        // error
+        tb_printf("error: %s\n", lua_tostring(impl->lua, -1));
 
         // failed
         return -1;
     }
 
     // set the error function
-    tb_int_t errfunc = 0;
-    if (impl->verbose)
-    {
-        lua_getglobal(impl->lua, "debug");
-        lua_getfield(impl->lua, -1, "traceback");
-        errfunc = -2;
-    }
+    lua_getglobal(impl->lua, "debug");
+    lua_getfield(impl->lua, -1, "traceback");
 
     // call the main function
     lua_getglobal(impl->lua, "_xmake_main");
-    if (lua_pcall(impl->lua, 0, 1, errfunc)) 
+    if (lua_pcall(impl->lua, 0, 1, -2)) 
     {
-        // trace
-        if (impl->verbose) tb_trace_i("%s", lua_tostring(impl->lua, -1));
+        // error
+        tb_printf("error: %s\n", lua_tostring(impl->lua, -1));
 
         // failed
         return -1;
