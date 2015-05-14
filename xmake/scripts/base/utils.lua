@@ -51,7 +51,7 @@ function utils.ifelse(a, b, c)
 end
 
 -- dump object with the level
-function utils._dump_with_level(object, level)
+function utils._dump_with_level(object, exclude, level)
  
     -- check
     assert(object)
@@ -79,22 +79,31 @@ function utils._dump_with_level(object, level)
         local i = 0
         for k, v in pairs(object) do  
 
-            -- dump spaces
-            for l = 1, level do
-                io.write("    ")
+            -- exclude some keys
+            if not exclude or type(k) ~= "string" or not k:find(exclude) then
+
+                -- dump spaces
+                for l = 1, level do
+                    io.write("    ")
+                end
+
+                -- dump separator
+                io.write(utils.ifelse(i == 0, "    ", ",   "))
+                
+                -- dump key
+                if type(k) == "string" then
+                    io.write(k, " = ")  
+                end
+
+                -- dump value
+                if not utils._dump_with_level(v, exclude, level + 1) then 
+                    return false
+                end
+
+                -- dump newline
+                io.write("\n")
+                i = i + 1
             end
-
-            -- dump separator
-            io.write(utils.ifelse(i == 0, "    ", ",   "), k, " = ")  
-
-            -- dump this key: value
-            if not utils._dump_with_level(v, level + 1) then 
-                return false
-            end
-
-            -- dump newline
-            io.write("\n")
-            i = i + 1
         end  
 
         -- dump tail
@@ -113,7 +122,7 @@ function utils._dump_with_level(object, level)
 end
 
 -- dump object
-function utils.dump(object, prefix)
+function utils.dump(object, prefix, exclude)
    
     -- dump prefix
     if prefix and type(prefix) == "string" then
@@ -121,7 +130,7 @@ function utils.dump(object, prefix)
     end
  
     -- dump it
-    utils._dump_with_level(object, 0)
+    utils._dump_with_level(object, exclude, 0)
 
     -- return it
     return object
