@@ -221,10 +221,10 @@ tb_int_t xm_preprocessor_load_xproj(lua_State* lua)
         tb_char_t const* xproj = xm_preprocessor_load_xproj_to_string(stream, &string);
         tb_assert_and_check_break(xproj);
 
-        tb_printf("%s", xproj);
+        // trace
+        tb_trace_d("%s", xproj);
 
         // load xmake.xproj string to script
-        //if (luaL_loadstring(lua, "project(\"console\")\nscopend()")) 
         if (luaL_loadstring(lua, xproj)) 
         {
             // error

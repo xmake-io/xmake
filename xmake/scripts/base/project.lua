@@ -101,8 +101,8 @@ function project(name)
     assert(name)
 
     -- init the root scope, must be only one project
-    if not _ROOT then
-        _ROOT = {}
+    if not _CONFIGS then
+        _CONFIGS = {}
     else
         -- error
         utils.error("the project: %s is redundant!", name)
@@ -110,10 +110,10 @@ function project(name)
     end
 
     -- init the project name
-    _ROOT.name = name
+    _CONFIGS.name = name
 
     -- init the current scope
-    current = _ROOT
+    current = _CONFIGS
     current._PARENT = nil
 
 end
