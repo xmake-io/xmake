@@ -40,7 +40,16 @@ static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t str
     // check
     tb_assert_and_check_return_val(stream && string, tb_null);
 
+    // init value
+    tb_string_t value;
+    if (!tb_string_init(&value)) return tb_null;
+
+    // init temporary value
+    tb_string_t value_temp;
+    if (!tb_string_init(&value_temp)) return tb_null;
+
     // done
+    tb_bool_t is_value = tb_false;
     tb_bool_t is_values = tb_false;
     while (!tb_stream_beof(stream))
     {
@@ -48,16 +57,118 @@ static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t str
         tb_char_t ch = (tb_char_t)tb_stream_bread_u8(stream);
         if (ch)
         {
-            // skip '{'
-            if (ch == '{') ;
-            // replace '}' to scopend
-            else if (ch == '}') tb_string_cstrcat(string, "scopend");
+            // is values?
+            if (is_values)
+            {
+                // is value?
+                if (is_value && ch != ',' && ch != ':' && ch != '{' && ch != '}' && ch != '\r' && ch != '\n')
+                {
+                    // append to value
+                    tb_string_chrcat(&value, ch);
+                }
+                // ',' or ':' or '{' or newline?
+                else if (ch == ',' || ch == ':' || ch == '{' || ch == '}' || ch == '\r' || ch == '\n') 
+                {
+                    // has value?
+                    if (is_value)
+                    {
+                        // values end? append ')' and newline first
+                        if (ch == ':') tb_string_cstrcat(string, ")\n");
+                        else
+                        {
+                            // trim the left spaces
+                            tb_string_ltrim(&value);
+
+                            // trim the right spaces
+                            tb_string_rtrim(&value);
+
+                            // wrap "xxx" 
+                            if (tb_string_size(&value))
+                            {
+                                // it has been "xxx"? only copy it
+                                if (tb_string_charat(&value, 0) == '\"')
+                                    tb_string_strcpy(&value_temp, &value);
+                                // wrap it
+                                else
+                                {
+                                    tb_string_clear(&value_temp);
+                                    tb_string_chrcat(&value_temp, '\"');
+                                    tb_string_strcat(&value_temp, &value);
+                                    tb_string_chrcat(&value_temp, '\"');
+                                }
+                                
+                                // clear value first
+                                tb_string_clear(&value);
+
+                                // copy and replace '\"' to "\\""
+                                tb_char_t const*    s = tb_string_cstr(&value_temp);
+                                tb_size_t           n = tb_string_size(&value_temp);
+                                tb_size_t           i = 0;
+                                for (i = 0; i < n; i++)
+                                {
+                                    // replace '\"' to "\\""
+                                    if (i && i != n - 1 && s[i] == '\"') tb_string_cstrcat(&value, "\\\"");
+                                    // only copy iy
+                                    else tb_string_chrcat(&value, s[i]);
+                                }
+                            }
+                        }
+
+                        // append value to string
+                        if (tb_string_size(&value)) tb_string_strcat(string, &value);
+
+                        // clear value
+                        tb_string_clear(&value);
+
+                        // not value now
+                        is_value = tb_false;
+                    }
+
+                    // continue to enter values? onyl replace ':' to '('
+                    if (ch == ':') tb_string_chrcat(string, '(');
+                    // '{' ?
+                    else if (ch == '{') 
+                    {
+                        // not values now
+                        is_values = tb_false;
+
+                        // append ')' and newline
+                        tb_string_cstrcat(string, ")\n");
+                    }
+                    // '}' ?
+                    else if (ch == '}') 
+                    {
+                        // not values now
+                        is_values = tb_false;
+
+                        // append ')' and replace '}' to scopend 
+                        tb_string_cstrcat(string, ")\nscopend()");
+                    }
+                    // skip newline
+                    else if (ch == '\r' || ch == '\n') ;
+                    // append to string
+                    else tb_string_chrcat(string, ch);
+                }
+                else
+                {
+                    // value now
+                    is_value = tb_true;
+
+                    // append to value
+                    tb_string_chrcat(&value, ch);
+                }
+            }
             // enter values?
             else if (ch == ':')
             {
                 // values now
                 is_values = tb_true;
+
+                // replace ':' to '('
+                tb_string_chrcat(string, '(');
             }
+            // replace '}' and newline to scopend 
+            else if (ch == '}') tb_string_cstrcat(string, "\nscopend()");
             // append it
             else tb_string_chrcat(string, ch);
         }
@@ -67,6 +178,12 @@ static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t str
             break;
         }
     }
+
+    // exit value
+    tb_string_exit(&value);
+
+    // exit temporary value
+    tb_string_exit(&value_temp);
 
     // ok?
     return tb_string_size(string)? tb_string_cstr(string) : tb_null;
@@ -104,9 +221,10 @@ tb_int_t xm_preprocessor_load_xproj(lua_State* lua)
         tb_char_t const* xproj = xm_preprocessor_load_xproj_to_string(stream, &string);
         tb_assert_and_check_break(xproj);
 
-        tb_trace_i("%s", xproj);
+        tb_printf("%s", xproj);
 
         // load xmake.xproj string to script
+        //if (luaL_loadstring(lua, "project(\"console\")\nscopend()")) 
         if (luaL_loadstring(lua, xproj)) 
         {
             // error

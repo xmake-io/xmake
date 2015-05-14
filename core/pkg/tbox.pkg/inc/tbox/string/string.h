@@ -94,6 +94,14 @@ tb_void_t               tb_string_clear(tb_string_ref_t string);
  */
 tb_char_t const*        tb_string_strip(tb_string_ref_t string, tb_size_t n);
 
+/*! trim the left spaces for string
+ *
+ * @param string        the string
+ *
+ * @return              the c-string
+ */
+tb_char_t const*        tb_string_ltrim(tb_string_ref_t string);
+
 /*! trim the right spaces for string
  *
  * @param string        the string
@@ -101,6 +109,15 @@ tb_char_t const*        tb_string_strip(tb_string_ref_t string, tb_size_t n);
  * @return              the c-string
  */
 tb_char_t const*        tb_string_rtrim(tb_string_ref_t string);
+
+/*! get the charactor at the given position
+ *
+ * @param string        the string
+ * @param p             the position
+ *
+ * @return              the c-string
+ */
+tb_char_t               tb_string_charat(tb_string_ref_t string, tb_size_t p);
 
 /*! find charactor position
  *
