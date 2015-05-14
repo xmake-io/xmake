@@ -295,6 +295,8 @@ function main._done_option()
         errors = string.format("load %s failed!", options.file)
     end
 
+    utils.dump(project._ROOT, "", "_PARENT")
+
     -- done help
     if options.help then
     

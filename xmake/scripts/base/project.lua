@@ -29,99 +29,69 @@ local _MAINENV = getfenv()
 setmetatable(_PROJECT, {__index = _G})  
 setfenv(1, _PROJECT)
 
--- init the parent and current scope
-local parent    = nil
-local current   = nil
+-- init the current scope
+local current = nil
 
 -- configure scope end
 function scopend()
+
+    -- check
+    assert(current)
+
+    -- leave the current scope
+    current = current._PARENT
 end
 
--- configure kind
-function kind()
-end
+-- configure platforms
+function plarforms(...)
 
--- configure deps
-function deps()
-end
+    -- check
+    assert(current)
 
--- configure files
-function files()
-end
+    -- init platforms
+    current._PLATFORMS = current._PLATFORMS or {}
 
--- configure links
-function links()
-end
+    -- init scope
+    local scope = {}
 
--- configure headers
-function headers()
-end
+    -- configure all platforms
+    local arg = arg or {...}
+    for _, name in ipairs(arg) do
 
--- configure headerdir
-function headerdir()
-end
+        -- check
+        if current._PLATFORMS[name] then
+            -- error
+            utils.error("the platform: %s has been defined repeatly!", name)
+            assert(false) 
+        end
 
--- configure targetdir
-function targetdir()
-end
+        -- init the platform scope
+        current._PLATFORMS[name] = scope
 
--- configure objectdir
-function objectdir()
-end
+    end
 
--- configure linkdirs
-function linkdirs()
-end
-
--- configure includedirs
-function includedirs()
-end
-
--- configure cflags
-function cflags()
-end
-
--- configure cxxflags
-function cxxflags()
-end
-
--- configure ldflags
-function ldflags()
-end
-
--- configure mflags
-function mflags()
-end
-
--- configure mxflags
-function mxflags()
-end
-
--- configure defines
-function defines()
-end
-
--- configure plarforms
-function plarforms()
+    -- enter scope
+    local parent = current
+    current = scope
+    current._PARENT = parent
 end
 
 -- configure target
 function target(name)
 
     -- check
-    assert(name and _ROOT)
+    assert(name and current)
 
     -- init targets
---    current._TARGETS = current._TARGETS or {}
+    current._TARGETS = current._TARGETS or {}
 
     -- init target scope
---    current._TARGETS[name] = {}
+    current._TARGETS[name] = {}
 
-    -- TODO
     -- enter target scope
---    parent = current
---    current = _ROOT._TARGETS[name]
-
+    local parent = current
+    current = current._TARGETS[name]
+    current._PARENT = parent
 end
 
 -- configure project
@@ -144,7 +114,65 @@ function project(name)
 
     -- init the current scope
     current = _ROOT
+    current._PARENT = nil
+
 end
+
+-- register configures
+function _register(names)
+
+    -- check
+    assert(_PROJECT)
+    assert(names and type(names) == "table")
+
+    -- register all configures
+    for _, name in ipairs(names) do
+
+        -- register the configure 
+        _PROJECT[name] = _PROJECT[name] or function(...)
+
+            -- check
+            assert(current)
+
+            -- init ldflags
+            current[name] = current[name] or {}
+
+            -- get arguments
+            local arg = arg or {...}
+            if table.getn(arg) == 0 then
+                -- no argument
+                current[name] = nil
+            elseif table.getn(arg) == 1 then
+                -- save only one argument
+                current[name] = arg[1]
+            else
+                -- save all arguments
+                for i, v in ipairs(arg) do
+                    current[name][i] = v
+                end
+            end
+        end
+    end
+end
+
+-- register all configures
+_register   {   "kind"
+            ,   "deps"
+            ,   "files"
+            ,   "links" 
+            ,   "mflags" 
+            ,   "headers" 
+            ,   "headerdir" 
+            ,   "targetdir" 
+            ,   "objectdir" 
+            ,   "linkdirs" 
+            ,   "includedirs" 
+            ,   "cflags" 
+            ,   "cxxflags" 
+            ,   "ldflags" 
+            ,   "mxflags" 
+            ,   "defines"} 
+
 
 -- leave project 
 setfenv(1, _MAINENV)

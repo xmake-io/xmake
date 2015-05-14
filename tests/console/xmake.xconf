@@ -4,10 +4,10 @@ return
     {
         plat = "macosx"
     ,   arch = "x64"
-    ,   packages = "pkg"
-    ,   mode = "release"
-    ,   output = "build"
     ,   host = "macosx"
+    ,   output = "build"
+    ,   mode = "release"
+    ,   packages = "pkg"
     }
 
 }
