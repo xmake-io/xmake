@@ -52,7 +52,7 @@ project: console
         links:          hello3 
         linkdirs:       $(buildir)/lib 
         includedirs:    $(buildir)/inc 
-        mflags:         -DHELLO3 
+        mflags:         -DHELLO3, -DPLAT="macosx" 
     }
 
     target: demo_objcpp
@@ -65,7 +65,7 @@ project: console
 
         plarforms: linux 
         {
-            defines:    PLAT=linux 
+            defines:    PLAT="linux"
         }
 
         plarforms: windows 
@@ -75,7 +75,9 @@ project: console
 
         plarforms: macosx, ios 
         {
-			ldflags:    -framework Cocoa, -framework IOKit 
+			ldflags:    -framework Cocoa, "-framework IOKit"
+                   ,    -framework UIKit
+                   ,    -framework CoreFoundation
         }
     }
 }

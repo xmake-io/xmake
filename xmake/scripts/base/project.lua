@@ -37,6 +37,74 @@ local current   = nil
 function scopend()
 end
 
+-- configure kind
+function kind()
+end
+
+-- configure deps
+function deps()
+end
+
+-- configure files
+function files()
+end
+
+-- configure links
+function links()
+end
+
+-- configure headers
+function headers()
+end
+
+-- configure headerdir
+function headerdir()
+end
+
+-- configure targetdir
+function targetdir()
+end
+
+-- configure objectdir
+function objectdir()
+end
+
+-- configure linkdirs
+function linkdirs()
+end
+
+-- configure includedirs
+function includedirs()
+end
+
+-- configure cflags
+function cflags()
+end
+
+-- configure cxxflags
+function cxxflags()
+end
+
+-- configure ldflags
+function ldflags()
+end
+
+-- configure mflags
+function mflags()
+end
+
+-- configure mxflags
+function mxflags()
+end
+
+-- configure defines
+function defines()
+end
+
+-- configure plarforms
+function plarforms()
+end
+
 -- configure target
 function target(name)
 
@@ -44,15 +112,15 @@ function target(name)
     assert(name and _ROOT)
 
     -- init targets
-    current._TARGETS = current._TARGETS or {}
+--    current._TARGETS = current._TARGETS or {}
 
     -- init target scope
-    current._TARGETS[name] = {}
+--    current._TARGETS[name] = {}
 
     -- TODO
     -- enter target scope
-    parent = current
-    current = _ROOT._TARGETS[name]
+--    parent = current
+--    current = _ROOT._TARGETS[name]
 
 end
 
