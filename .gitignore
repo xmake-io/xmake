@@ -21,7 +21,7 @@
 .demo
 .svn
 .DS_Store
-xmake.conf
+xmake.xconf
 cscope.*
 gmon.out
 other

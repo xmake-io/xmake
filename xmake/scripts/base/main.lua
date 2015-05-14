@@ -60,7 +60,7 @@ local menu =
         ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
+        ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -94,7 +94,7 @@ local menu =
     ,   options = 
         {
             {'n', "name",       "kv", nil,          "The project name."                                             }
-        ,   {'f', "file",       "kv", "xmake.xproj",  "Create a given xmake.xproj file."                                }
+        ,   {'f', "file",       "kv", "xmake.xproj","Create a given xmake.xproj file."                              }
         ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -173,7 +173,7 @@ local menu =
         ,   {nil, "arflags",    "kv", nil,          "The library creator flags"                                     }
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
+        ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -206,7 +206,7 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
+            {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -239,7 +239,7 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.xproj",  "Read a given xmake.xproj file."                                  }
+            {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. the given command argument"
@@ -295,8 +295,6 @@ function main._done_option()
         errors = string.format("load %s failed!", options.file)
     end
 
-    utils.dump(project._ROOT, "", "_PARENT")
-
     -- done help
     if options.help then
     
@@ -329,6 +327,9 @@ function main._done_option()
 
     -- save project
     xmake._PROJECT = project
+
+    -- dump project configs
+--    utils.dump(xmake._PROJECT._CONFIGS, "", "_PARENT")
 
     -- done action    
     return action.done(options._ACTION or "build")
