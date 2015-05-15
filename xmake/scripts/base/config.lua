@@ -44,122 +44,6 @@ function config._auto(name)
     return "unknown"
 end
 
--- register configures
-function config._register(env, names)
-
-    -- check
-    assert(env)
-    assert(names and type(names) == "table")
-
-    -- register all configures
-    for _, name in ipairs(names) do
-
-        -- register the configure 
-        env[name] = env[name] or function(...)
-
-            -- check
-            local _current = env._current
-            assert(_current)
-
-            -- init ldflags
-            _current[name] = _current[name] or {}
-
-            -- get arguments
-            local arg = arg or {...}
-            if table.getn(arg) == 0 then
-                -- no argument
-                _current[name] = nil
-            elseif table.getn(arg) == 1 then
-                -- save only one argument
-                _current[name] = arg[1]
-            else
-                -- save all arguments
-                for i, v in ipairs(arg) do
-                    _current[name][i] = v
-                end
-            end
-        end
-    end
-end
-
--- init configures
-function config._init()
-
-    -- check
-    assert(option._MENU)
-    assert(option._MENU.config)
-
-    -- enter new environment 
-    local newenv = {}
-    local oldenv = getfenv()
-    setmetatable(newenv, {__index = _G})  
-    setfenv(1, newenv)
-
-    -- get all configures name
-    local i = 1
-    local configures = {}
-    for _, o in ipairs(option._MENU.config.options) do
-        local name = o[2]
-        if name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" then
-            configures[i] = name
-            i = i + 1
-        end
-    end
-
-    -- register all configures
-    config._register(newenv, configures)
-
-    -- configure scope end
-    newenv["_end"] = function ()
-
-        -- check
-        assert(_current)
-
-        -- leave the current scope
-        _current = _current._PARENT
-    end
-
-    -- configure target
-    newenv["target"] = function (name)
-
-        -- check
-        assert(name and _current)
-
-        -- init targets
-        _current._TARGETS = _current._TARGETS or {}
-
-        -- init target scope
-        _current._TARGETS[name] = {}
-
-        -- enter target scope
-        local parent = _current
-        _current = _current._TARGETS[name]
-        _current._PARENT = parent
-    end
-
-    -- the root configure 
-    newenv["config"] = function ()
-
-        -- init the root scope, must be only one configs
-        if not config._CONFIGS then
-            config._CONFIGS = {}
-        else
-            -- error
-            utils.error("exists double configs!")
-            return
-        end
-
-        -- init the current scope
-        _current = config._CONFIGS
-        _current._PARENT = nil
-
-    end
-
-    -- enter old environment 
-    setfenv(1, oldenv)
-    return newenv
-end
-
 -- save object with the level
 function config._save_with_level(file, object, level)
  
@@ -319,23 +203,25 @@ function config.loadxconf()
 
     -- the options
     local options = xmake._OPTIONS
-    assert(options)
+    assert(options and options.project)
 
-    -- load and execute the xmake.xproj
-    local path = options.project .. "/xmake.xconf"
-    local script = preprocessor.loadx(path)
-    if script then
+    -- check
+    assert(option._MENU)
+    assert(option._MENU.config)
 
-        -- init the configs envirnoment
-        setfenv(script, config._init())
-
-        -- execute it
-        local ok, err = pcall(script)
-        if not ok then
-            -- error
-            return err
+    -- get all configure names
+    local i = 1
+    local configures = {}
+    for _, o in ipairs(option._MENU.config.options) do
+        local name = o[2]
+        if name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" then
+            configures[i] = name
+            i = i + 1
         end
     end
+
+    -- load and execute the xmake.xproj
+    config._CONFIGS = preprocessor.loadfile(options.project .. "/xmake.xconf", "config", configures)
 
     -- exists local configures?
     if config._CONFIGS then
