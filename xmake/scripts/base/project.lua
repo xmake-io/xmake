@@ -21,7 +21,8 @@
 --
 
 -- load modules
-local utils = require("base/utils")
+local utils     = require("base/utils")
+local config    = require("base/config")
 
 -- enter project 
 local _PROJECT = _PROJECT or {}
@@ -51,9 +52,8 @@ function _preprocess(value)
         -- replace $(variable)
         value = value:gsub("%$%((.*)%)",    function (v) 
                                                 if v == "buildir" then
-                                                    -- TODO
-                                                    return v
-                                                    --return xmake._CONFIGS.all.output
+                                                    local target = config.getarget()
+                                                    return utils.ifelse(target, target.output, nil);
                                                 elseif v == "projectdir" then
                                                     return xmake._OPTIONS.project
                                                 end
