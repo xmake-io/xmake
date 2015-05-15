@@ -23,5 +23,149 @@
 -- define module: preprocessor
 local preprocessor = preprocessor or {}
 
+-- register configures
+function preprocessor._register(env, names)
+
+    -- check
+    assert(env and names and type(names) == "table")
+
+    -- register all configures
+    for _, name in ipairs(names) do
+
+        -- register the configure 
+        env[name] = env[name] or function(...)
+
+            -- check
+            local _current = env._current
+            assert(_current)
+
+            -- init ldflags
+            _current[name] = _current[name] or {}
+
+            -- get arguments
+            local arg = arg or {...}
+            if table.getn(arg) == 0 then
+                -- no argument
+                _current[name] = nil
+            elseif table.getn(arg) == 1 then
+                -- save only one argument
+                _current[name] = arg[1]
+            else
+                -- save all arguments
+                for i, v in ipairs(arg) do
+                    _current[name][i] = v
+                end
+            end
+        end
+    end
+end
+
+-- init configures
+function preprocessor._init(root, configures)
+
+    -- check
+    assert(root and configures)
+
+    -- enter new environment 
+    local newenv = {}
+    local oldenv = getfenv()
+    setmetatable(newenv, {__index = _G})  
+    setfenv(1, newenv)
+
+    -- register all configures
+    preprocessor._register(newenv, configures)
+
+    -- configure scope end
+    newenv["_end"] = function ()
+
+        -- check
+        assert(_current)
+
+        -- leave the current scope
+        _current = _current._PARENT
+    end
+
+    -- configure target
+    newenv["target"] = function (name)
+
+        -- check
+        assert(name and _current)
+
+        -- init targets
+        _current._TARGETS = _current._TARGETS or {}
+
+        -- init target scope
+        _current._TARGETS[name] = {}
+
+        -- enter target scope
+        local parent = _current
+        _current = _current._TARGETS[name]
+        _current._PARENT = parent
+    end
+
+    -- the root configure 
+    newenv[root] = function ()
+
+        -- init the root scope, must be only one configs
+        if not newenv._CONFIGS then
+            newenv._CONFIGS = {}
+        else
+            -- error
+            utils.error("exists double configs!")
+            return
+        end
+
+        -- init the current scope
+        _current = newenv._CONFIGS
+        _current._PARENT = nil
+
+    end
+
+    -- enter old environment 
+    setfenv(1, oldenv)
+    return newenv
+end
+ 
+--!load the configure file
+--
+-- supports:
+--     xmake.xproj
+--     xmake.xconf
+--
+-- @code
+-- local configs, errors = preprocessor.loadfile("xmake.xconf", "config", {"plat", "host", "arch", ...})
+-- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...})
+-- @endcode
+function preprocessor.loadfile(path, root, configures)
+
+    -- check
+    assert(path and root and configures)
+
+    -- load and execute the configure file
+    local script = preprocessor.loadx(path)
+    if script then
+
+        -- init a new envirnoment
+        local newenv = preprocessor._init(root, configures)
+        assert(newenv)
+
+        -- bind this envirnoment
+        setfenv(script, newenv)
+
+        -- execute it
+        local ok, err = pcall(script)
+        if not ok then
+            -- error
+            return nil, err
+        end
+
+        -- ok?
+        return newenv._CONFIGS
+    else
+        -- error
+        return nil, string.format("load %s failed!", path)
+    end
+end
+
 -- return module: preprocessor
 return preprocessor
