@@ -135,9 +135,6 @@ function _save_with_level(file, object, level)
     -- save number 
     elseif type(object) == "number" then  
         file:write(object)  
-    -- save function 
-    elseif type(object) == "function" then  
-        file:write("<function>")  
     -- save table
     elseif type(object) == "table" then  
 
@@ -271,11 +268,7 @@ function getarget()
     -- for all targets?
     if name == "all" then
         return _CONFIGS
-    else
-        -- init it if not exists
-        _CONFIGS._TARGETS = _CONFIGS._TARGETS or {}
-        _CONFIGS._TARGETS[name] = _CONFIGS._TARGETS[name] or {}
-
+    elseif _CONFIGS._TARGETS then
         -- get it
         return _CONFIGS._TARGETS[name]
     end
@@ -350,8 +343,12 @@ function loadxconf()
     local name = options.target or options._DEFAULTS.target
     assert(name and type(name) == "string")
 
-    -- ensures the configs
+    -- init it if not exists
     _CONFIGS = _CONFIGS or {}
+    _CONFIGS._TARGETS = _CONFIGS._TARGETS or {}
+    if name ~= "all" then
+        _CONFIGS._TARGETS[name] = _CONFIGS._TARGETS[name] or {}
+    end
 
     -- get the current target scope
     local target = getarget()
