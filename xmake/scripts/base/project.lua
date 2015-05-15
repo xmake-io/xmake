@@ -24,7 +24,7 @@
 local utils = require("base/utils")
 
 -- enter project 
-local _PROJECT = {}
+local _PROJECT = _PROJECT or {}
 local _MAINENV = getfenv()
 setmetatable(_PROJECT, {__index = _G})  
 setfenv(1, _PROJECT)
@@ -33,13 +33,95 @@ setfenv(1, _PROJECT)
 local current = nil
 
 -- configure scope end
-function scopend()
+function _end()
 
     -- check
     assert(current)
 
     -- leave the current scope
     current = current._PARENT
+end
+
+-- preprocess value
+function _preprocess(value)
+
+    -- the value is string?
+    if type(value) == "string" then
+
+        -- replace $(variable)
+        value = value:gsub("%$%((.*)%)",    function (v) 
+                                                if v == "buildir" then
+                                                    -- TODO
+                                                    return v
+                                                    --return xmake._CONFIGS.all.output
+                                                elseif v == "projectdir" then
+                                                    return xmake._OPTIONS.project
+                                                end
+                                                return v 
+                                            end)
+    end
+
+    -- ok
+    return value
+end
+
+-- register configures
+function _register(names)
+
+    -- check
+    assert(_PROJECT)
+    assert(names and type(names) == "table")
+
+    -- register all configures
+    for _, name in ipairs(names) do
+
+        -- register the configure 
+        _PROJECT[name] = _PROJECT[name] or function(...)
+
+            -- check
+            assert(current)
+
+            -- init ldflags
+            current[name] = current[name] or {}
+
+            -- get arguments
+            local arg = arg or {...}
+            if table.getn(arg) == 0 then
+                -- no argument
+                current[name] = nil
+            elseif table.getn(arg) == 1 then
+                -- save only one argument
+                current[name] = _preprocess(arg[1])
+            else
+                -- save all arguments
+                for i, v in ipairs(arg) do
+                    current[name][i] = _preprocess(v)
+                end
+            end
+        end
+    end
+end
+
+-- init project
+function _init()
+
+    -- register all configures
+    _register   {   "kind"
+                ,   "deps"
+                ,   "files"
+                ,   "links" 
+                ,   "mflags" 
+                ,   "headers" 
+                ,   "headerdir" 
+                ,   "targetdir" 
+                ,   "objectdir" 
+                ,   "linkdirs" 
+                ,   "includedirs" 
+                ,   "cflags" 
+                ,   "cxxflags" 
+                ,   "ldflags" 
+                ,   "mxflags" 
+                ,   "defines"} 
 end
 
 -- configure platforms
@@ -118,65 +200,6 @@ function project(name)
 
 end
 
--- preprocess value
-function _preprocess(value)
-
-    -- the value is string?
-    if type(value) == "string" then
-
-        -- replace $(variable)
-        value = value:gsub("%$%((.*)%)",    function (v) 
-                                                if v == "buildir" then
-                                                    -- TODO
-                                                    return xmake._CONFIGS.all.output
-                                                elseif v == "projectdir" then
-                                                    return xmake._OPTIONS.project
-                                                end
-                                                return v 
-                                            end)
-    end
-
-    -- ok
-    return value
-end
-
--- register configures
-function _register(names)
-
-    -- check
-    assert(_PROJECT)
-    assert(names and type(names) == "table")
-
-    -- register all configures
-    for _, name in ipairs(names) do
-
-        -- register the configure 
-        _PROJECT[name] = _PROJECT[name] or function(...)
-
-            -- check
-            assert(current)
-
-            -- init ldflags
-            current[name] = current[name] or {}
-
-            -- get arguments
-            local arg = arg or {...}
-            if table.getn(arg) == 0 then
-                -- no argument
-                current[name] = nil
-            elseif table.getn(arg) == 1 then
-                -- save only one argument
-                current[name] = _preprocess(arg[1])
-            else
-                -- save all arguments
-                for i, v in ipairs(arg) do
-                    current[name][i] = _preprocess(v)
-                end
-            end
-        end
-    end
-end
-
 -- load xproj
 function loadxproj(file)
 
@@ -184,55 +207,40 @@ function loadxproj(file)
     assert(file)
 
     -- load and execute the xmake.xproj
-    local script = preprocessor.load_xproj(file)
+    local script = preprocessor.loadx(file)
     if script then
 
         -- init the project envirnoment
+        _PROJECT._init()
         setfenv(script, _PROJECT)
 
         -- execute it
         local ok, err = pcall(script)
         if not ok then
             -- error
-            return false, err
+            return err
         end
     else
         -- error
-        return false, string.format("load %s failed!", file)
+        return string.format("load %s failed!", file)
     end
 
     -- ok
-    return true
+    return nil
 end
 
 -- dump all configures
 function dump()
-    
+     
+    -- check
+    assert(_CONFIGS)
+
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(xmake._PROJECT._CONFIGS, "", "_PARENT")
+        utils.dump(_CONFIGS, "_PARENT")
     end
    
 end
-
--- register all configures
-_register   {   "kind"
-            ,   "deps"
-            ,   "files"
-            ,   "links" 
-            ,   "mflags" 
-            ,   "headers" 
-            ,   "headerdir" 
-            ,   "targetdir" 
-            ,   "objectdir" 
-            ,   "linkdirs" 
-            ,   "includedirs" 
-            ,   "cflags" 
-            ,   "cxxflags" 
-            ,   "ldflags" 
-            ,   "mxflags" 
-            ,   "defines"} 
-
 
 -- leave project 
 setfenv(1, _MAINENV)

@@ -277,11 +277,12 @@ function main._done_option()
     end
     assert(options.file)
 
-    -- load xmake.xconf file
-    config.loadxconf()
-
-    -- load xmake.xproj file
-    local _, errors = project.loadxproj(options.file)
+    -- load xmake.xconf file first
+    local errors = config.loadxconf()
+    if not errors then
+        -- load xmake.xproj file
+        errors = project.loadxproj(options.file)
+    end
 
     -- done help
     if options.help then
@@ -313,12 +314,12 @@ function main._done_option()
         return false
     end
 
-    -- save project
-    xmake._PROJECT = project
-
     -- dump project 
     project.dump()
 
+    -- dump config
+    config.dump()
+ 
     -- done action    
     return action.done(options._ACTION or "build")
 end

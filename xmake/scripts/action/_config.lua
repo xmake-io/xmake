@@ -31,9 +31,6 @@ local config    = require("base/config")
 -- done the given config
 function _config.done()
 
-    -- dump configs
-    config.dump()
- 
     -- save configs
     if not config.savexconf() then
         return false
