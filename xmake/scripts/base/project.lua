@@ -155,6 +155,44 @@ function _register(names)
     end
 end
 
+-- load xproj
+function loadxproj(file)
+
+    -- check
+    assert(file)
+
+    -- load and execute the xmake.xproj
+    local script = preprocessor.load_xproj(file)
+    if script then
+
+        -- init the project envirnoment
+        setfenv(script, _PROJECT)
+
+        -- execute it
+        local ok, err = pcall(script)
+        if not ok then
+            -- error
+            return false, err
+        end
+    else
+        -- error
+        return false, string.format("load %s failed!", file)
+    end
+
+    -- ok
+    return true
+end
+
+-- dump all configures
+function dump()
+    
+    -- dump
+    if xmake._OPTIONS.verbose then
+        utils.dump(xmake._PROJECT._CONFIGS, "", "_PARENT")
+    end
+   
+end
+
 -- register all configures
 _register   {   "kind"
             ,   "deps"

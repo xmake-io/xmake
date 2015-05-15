@@ -17,22 +17,32 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        action.lua
+-- @file        _config.lua
 --
 
--- define module: action
-local action = action or {}
+-- define module: _config
+local _config = _config or {}
 
--- done the given action
-function action.done(name)
+-- load modules
+local io        = require("base/io")
+local utils     = require("base/utils")
+local config    = require("base/config")
     
-    -- load the given action
-    local a = require("action/_" .. name)
-    if not a then return false end
+-- done the given config
+function _config.done()
 
-    -- done the given action
-    return a.done()
+    -- dump configs
+    config.dump()
+ 
+    -- save configs
+    if not config.savexconf() then
+        return false
+    end
+
+    -- ok
+    print("configure ok!")
+    return true
 end
 
--- return module: action
-return action
+-- return module: _config
+return _config

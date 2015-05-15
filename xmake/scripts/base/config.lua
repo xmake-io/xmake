@@ -27,8 +27,24 @@ local config = config or {}
 local io    = require("base/io")
 local utils = require("base/utils")
 
--- save configs
-function config._save()
+-- auto configs
+function config._auto(name)
+
+    -- get platform or host
+    if name == "plat" or name == "host" then
+        return xmake._HOST
+    -- get architecture
+    elseif name == "arch" then
+        return xmake._ARCH
+    end
+
+    -- unknown
+    utils.error("unknown config: %s", name)
+    return "unknown"
+end
+
+-- save xmake.xconf
+function config.savexconf()
     
     -- the options
     local options = xmake._OPTIONS
@@ -58,8 +74,8 @@ function config._save()
     return true
 end
  
--- load configs
-function config._load()
+-- load xmake.xconf
+function config.loadxconf()
 
     -- the options
     local options = xmake._OPTIONS
@@ -139,49 +155,14 @@ function config._load()
     end
 end
 
--- auto configs
-function config._auto(name)
-
-    -- get platform or host
-    if name == "plat" or name == "host" then
-        return xmake._HOST
-    -- get architecture
-    elseif name == "arch" then
-        return xmake._ARCH
-    end
-
-    -- unknown
-    utils.error("unknown config: %s", name)
-    return "unknown"
-end
-
 -- dump configs
-function config._dump()
+function config.dump()
     
     -- dump
     if xmake._OPTIONS.verbose then
         utils.dump(xmake._CONFIGS, "configs = ")
     end
    
-end
-    
--- done the given config
-function config.done()
-
-    -- load configs
-    config._load()
-
-    -- dump configs
-    config._dump()
- 
-    -- save configs
-    if not config._save() then
-        return false
-    end
-
-    -- ok
-    print("configure ok!")
-    return true
 end
 
 -- return module: config
