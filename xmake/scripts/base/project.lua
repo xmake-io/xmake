@@ -118,6 +118,28 @@ function project(name)
 
 end
 
+-- preprocess value
+function _preprocess(value)
+
+    -- the value is string?
+    if type(value) == "string" then
+
+        -- replace $(variable)
+        value = value:gsub("%$%((.*)%)",    function (v) 
+                                                if v == "buildir" then
+                                                    -- TODO
+                                                    return xmake._CONFIGS.all.output
+                                                elseif v == "projectdir" then
+                                                    return xmake._OPTIONS.project
+                                                end
+                                                return v 
+                                            end)
+    end
+
+    -- ok
+    return value
+end
+
 -- register configures
 function _register(names)
 
@@ -144,11 +166,11 @@ function _register(names)
                 current[name] = nil
             elseif table.getn(arg) == 1 then
                 -- save only one argument
-                current[name] = arg[1]
+                current[name] = _preprocess(arg[1])
             else
                 -- save all arguments
                 for i, v in ipairs(arg) do
-                    current[name][i] = v
+                    current[name][i] = _preprocess(v)
                 end
             end
         end
