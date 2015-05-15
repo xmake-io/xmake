@@ -58,7 +58,7 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
 
 // the preprocessor functions
-tb_int_t xm_preprocessor_load_xproj(lua_State* lua);
+tb_int_t xm_preprocessor_loadx(lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
@@ -83,7 +83,7 @@ static luaL_Reg const g_string_functions[] =
 // the preprocessor functions
 static luaL_Reg const g_preprocessor_functions[] = 
 {
-    { "load_xproj",     xm_preprocessor_load_xproj  }
+    { "loadx",     xm_preprocessor_loadx  }
 ,   { tb_null,          tb_null                     }
 };
 

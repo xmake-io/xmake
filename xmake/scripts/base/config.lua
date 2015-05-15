@@ -20,15 +20,32 @@
 -- @file        config.lua
 --
 
--- define module: config
-local config = config or {}
-
 -- load modules
-local io    = require("base/io")
-local utils = require("base/utils")
+local io        = require("base/io")
+local utils     = require("base/utils")
+local option    = require("base/option")
+
+-- enter config 
+local _CONFIG = _CONFIG or {}
+local _MAINENV = getfenv()
+setmetatable(_CONFIG, {__index = _G})  
+setfenv(1, _CONFIG)
+
+-- init the current scope
+local current = nil
+
+-- configure scope end
+function _end()
+
+    -- check
+    assert(current)
+
+    -- leave the current scope
+    current = current._PARENT
+end
 
 -- auto configs
-function config._auto(name)
+function _auto(name)
 
     -- get platform or host
     if name == "plat" or name == "host" then
@@ -43,8 +60,229 @@ function config._auto(name)
     return "unknown"
 end
 
+-- register configures
+function _register(names)
+
+    -- check
+    assert(_CONFIG)
+    assert(names and type(names) == "table")
+
+    -- register all configures
+    for _, name in ipairs(names) do
+
+        -- register the configure 
+        _CONFIG[name] = _CONFIG[name] or function(...)
+
+            -- check
+            assert(current)
+
+            -- init ldflags
+            current[name] = current[name] or {}
+
+            -- get arguments
+            local arg = arg or {...}
+            if table.getn(arg) == 0 then
+                -- no argument
+                current[name] = nil
+            elseif table.getn(arg) == 1 then
+                -- save only one argument
+                current[name] = arg[1]
+            else
+                -- save all arguments
+                for i, v in ipairs(arg) do
+                    current[name][i] = v
+                end
+            end
+        end
+    end
+end
+
+-- init configures
+function _init()
+
+    -- check
+    assert(option._MENU)
+    assert(option._MENU.config)
+
+    -- get all configures name
+    local i = 1
+    local configures = {}
+    for _, o in ipairs(option._MENU.config.options) do
+        local name = o[2]
+        if name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" then
+            configures[i] = name
+            i = i + 1
+        end
+    end
+
+    -- register all configures
+    _register(configures)
+
+end
+
+-- save object with the level
+function _save_with_level(file, object, level)
+ 
+    -- check
+    assert(object)
+
+    -- save string
+    if type(object) == "string" then  
+        file:write(object) 
+    -- save boolean
+    elseif type(object) == "boolean" then  
+        file:write(tostring(object))  
+    -- save number 
+    elseif type(object) == "number" then  
+        file:write(object)  
+    -- save function 
+    elseif type(object) == "function" then  
+        file:write("<function>")  
+    -- save table
+    elseif type(object) == "table" then  
+
+        -- save head
+        file:write(utils.ifelse(level == 0, "config:\n", "\n"))
+        for l = 1, level do
+            file:write("    ")
+        end
+        file:write("{\n")  
+
+        -- save body
+        for k, v in pairs(object) do  
+
+            -- save _TARGETS
+            if type(k) == "string" and k == "_TARGETS" then
+
+                for _k, _v in pairs(v) do  
+
+                    -- save spaces
+                    for l = 0, level do
+                        file:write("    ")
+                    end
+
+                    -- save key
+                    file:write("target: ", _k)  
+
+                    -- save value
+                    if not _save_with_level(file, _v, level + 1) then 
+                        return false
+                    end
+
+                    -- save newline
+                    file:write("\n")
+                end
+
+            -- exclude _PARENT
+            elseif type(k) ~= "string" or k ~= "_PARENT" then
+
+                -- save spaces
+                for l = 0, level do
+                    file:write("    ")
+                end
+
+                -- save key
+                if type(k) == "string" then
+                    file:write(k, ": ")  
+                end
+
+                -- save value
+                if not _save_with_level(file, v, level + 1) then 
+                    return false
+                end
+
+                -- save newline
+                file:write("\n")
+            end
+        end  
+
+        -- save tail
+        for l = 1, level do
+            file:write("    ")
+        end
+        file:write("}\n")  
+    else  
+        -- error
+        utils.error("invalid object type: %s", type(object))
+        return false
+    end  
+
+    -- ok
+    return true
+end
+
+-- save object
+function _save(file, object)
+
+    -- save it
+    return _save_with_level(file, object, 0)
+end
+
+-- configure target
+function target(name)
+
+    -- check
+    assert(name and current)
+
+    -- init targets
+    current._TARGETS = current._TARGETS or {}
+
+    -- init target scope
+    current._TARGETS[name] = {}
+
+    -- enter target scope
+    local parent = current
+    current = current._TARGETS[name]
+    current._PARENT = parent
+end
+
+-- the root configure 
+function config()
+
+    -- init the root scope, must be only one configs
+    if not _CONFIGS then
+        _CONFIGS = {}
+    else
+        -- error
+        utils.error("exists double configs!")
+        return
+    end
+
+    -- init the current scope
+    current = _CONFIGS
+    current._PARENT = nil
+
+end
+
+-- get the current target scope
+function getarget()
+
+    -- check
+    assert(_CONFIGS)
+    
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- the target name
+    local name = options.target or options._DEFAULTS.target
+    assert(name and type(name) == "string")
+
+    -- for all targets?
+    if name == "all" then
+        return _CONFIGS
+    else
+        -- init it if not exists
+        _CONFIGS._TARGETS = _CONFIGS._TARGETS or {}
+        _CONFIGS._TARGETS[name] = _CONFIGS._TARGETS[name] or {}
+
+        -- get it
+        return _CONFIGS._TARGETS[name]
+    end
+end
+
 -- save xmake.xconf
-function config.savexconf()
+function savexconf()
     
     -- the options
     local options = xmake._OPTIONS
@@ -60,7 +298,7 @@ function config.savexconf()
     end
 
     -- save configs to file
-    if not io.save(file, xmake._CONFIGS, "return") then
+    if not _save(file, _CONFIGS) then
         -- error 
         utils.error("save %s failed!", path)
         file:close()
@@ -75,52 +313,51 @@ function config.savexconf()
 end
  
 -- load xmake.xconf
-function config.loadxconf()
+function loadxconf()
 
     -- the options
     local options = xmake._OPTIONS
     assert(options)
 
-    -- the target
-    local target = options.target or options._DEFAULTS.target
-    assert(target)
-
-    -- open the configure file
+    -- load and execute the xmake.xproj
     local path = options.project .. "/xmake.xconf"
-    local file = loadfile(path)
-    if file then
+    local script = preprocessor.loadx(path)
+    if script then
+
+        -- init the configs envirnoment
+        _CONFIG._init()
+        setfenv(script, _CONFIG)
+
         -- execute it
-        local ok, cfg = pcall(file)
+        local ok, err = pcall(script)
         if not ok then
             -- error
-            utils.error("load %s failed!", path)
-            utils.error(cfg)
-            return 
+            return err
         end
-
-        -- check
-        assert(cfg and type(cfg) == "table")
-
-        -- clear configs if the host environment has been changed
-        if cfg[target] and cfg[target].host ~= xmake._HOST then
-            cfg = {}
-        end
-        if cfg.all and cfg.all.host ~= xmake._HOST then
-            cfg = {}
-        end
-
-        -- merges configs to xmake._CONFIGS
-        xmake._CONFIGS = cfg
     end
 
-    -- the configs
-    xmake._CONFIGS = xmake._CONFIGS or {}
-    local configs = xmake._CONFIGS
+    -- exists local configures?
+    if _CONFIGS then
 
-    -- init the configs for the target
-    configs[target] = configs[target] or {}
+        -- clear configs if the host environment has been changed
+        local target = getarget()
+        if target and target.host ~= xmake._HOST then
+            _CONFIGS = {}
+        end
+    end
 
-    -- merge xmake._OPTIONS to xmake._CONFIGS[target]
+    -- the target name
+    local name = options.target or options._DEFAULTS.target
+    assert(name and type(name) == "string")
+
+    -- ensures the configs
+    _CONFIGS = _CONFIGS or {}
+
+    -- get the current target scope
+    local target = getarget()
+    assert(target and type(target) == "table")
+
+    -- merge xmake._OPTIONS to target
     for k, v in pairs(options) do
 
         -- check
@@ -130,11 +367,11 @@ function config.loadxconf()
         if not k:startswith("_") and k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "target" then
 
             -- save the option to the target
-            configs[target][k] = v
+            target[k] = v
         end
     end
 
-    -- merge xmake._OPTIONS._DEFAULTS to xmake._CONFIGS[target]
+    -- merge xmake._OPTIONS._DEFAULTS to target
     for k, v in pairs(options._DEFAULTS) do
 
         -- check
@@ -144,26 +381,34 @@ function config.loadxconf()
         if k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "target" then
 
             -- save the default option to the target
-            if not configs[target][k] then
+            if not target[k] then
+
                 if v == "auto" then 
-                    configs[target][k] = config._auto(k)
+                    target[k] = _auto(k)
                 else
-                    configs[target][k] = v
+                    target[k] = v
                 end
             end
         end
     end
+
+    -- ok
+    return nil
 end
 
 -- dump configs
-function config.dump()
+function dump()
     
+    -- check
+    assert(_CONFIGS)
+
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(xmake._CONFIGS, "configs = ")
+        utils.dump(_CONFIGS, "_PARENT")
     end
    
 end
 
--- return module: config
-return config
+-- leave configs 
+setfenv(1, _MAINENV)
+return _CONFIG

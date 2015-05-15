@@ -65,6 +65,9 @@ function utils._dump_with_level(object, exclude, level)
     -- dump number 
     elseif type(object) == "number" then  
         io.write(object)  
+    -- dump function 
+    elseif type(object) == "function" then  
+        io.write("<function>")  
     -- dump table
     elseif type(object) == "table" then  
 
@@ -122,13 +125,8 @@ function utils._dump_with_level(object, exclude, level)
 end
 
 -- dump object
-function utils.dump(object, prefix, exclude)
-   
-    -- dump prefix
-    if prefix and type(prefix) == "string" then
-        io.write(prefix)
-    end
- 
+function utils.dump(object, exclude)
+  
     -- dump it
     utils._dump_with_level(object, exclude, 0)
 

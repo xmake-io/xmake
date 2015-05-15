@@ -17,14 +17,14 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        load_xproj.c
+ * @file        loadx.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "load_xproj"
+#define TB_TRACE_MODULE_NAME                "loadx"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t stream, tb_string_ref_t string)
+static tb_char_t const* xm_preprocessor_loadx_to_string(tb_stream_ref_t stream, tb_string_ref_t string)
 {
     // check
     tb_assert_and_check_return_val(stream && string, tb_null);
@@ -141,8 +141,8 @@ static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t str
                         // not values now
                         is_values = tb_false;
 
-                        // append ')' and replace '}' to scopend 
-                        tb_string_cstrcat(string, ")\nscopend()");
+                        // append ')' and replace '}' to _end 
+                        tb_string_cstrcat(string, ")\n_end()");
                     }
                     // skip newline
                     else if (ch == '\r' || ch == '\n') ;
@@ -167,8 +167,8 @@ static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t str
                 // replace ':' to '('
                 tb_string_chrcat(string, '(');
             }
-            // replace '}' and newline to scopend 
-            else if (ch == '}') tb_string_cstrcat(string, "\nscopend()");
+            // replace '}' and newline to _end 
+            else if (ch == '}') tb_string_cstrcat(string, "\n_end()");
             // append it
             else tb_string_chrcat(string, ch);
         }
@@ -192,7 +192,7 @@ static tb_char_t const* xm_preprocessor_load_xproj_to_string(tb_stream_ref_t str
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_preprocessor_load_xproj(lua_State* lua)
+tb_int_t xm_preprocessor_loadx(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -218,7 +218,7 @@ tb_int_t xm_preprocessor_load_xproj(lua_State* lua)
         if (!tb_stream_open(stream)) break;
 
         // load xmake.xproj to the string and preprocess it
-        tb_char_t const* xproj = xm_preprocessor_load_xproj_to_string(stream, &string);
+        tb_char_t const* xproj = xm_preprocessor_loadx_to_string(stream, &string);
         tb_assert_and_check_break(xproj);
 
         // trace
