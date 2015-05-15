@@ -27,6 +27,7 @@ local main = main or {}
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
+local config        = require("base/config")
 local project       = require("base/project")
 local preprocessor  = require("base/preprocessor")
 local action        = require("action/action")
@@ -276,24 +277,11 @@ function main._done_option()
     end
     assert(options.file)
 
-    -- load and execute the xmake.xproj
-    local errors = nil
-    local script = preprocessor.load_xproj(options.file)
-    if script then
+    -- load xmake.xconf file
+    config.loadxconf()
 
-        -- init the project envirnoment
-        setfenv(script, project)
-
-        -- execute it
-        local ok, err = pcall(script)
-        if not ok then
-            -- error
-            errors = err
-        end
-    else
-        -- error
-        errors = string.format("load %s failed!", options.file)
-    end
+    -- load xmake.xproj file
+    local _, errors = project.loadxproj(options.file)
 
     -- done help
     if options.help then
@@ -328,8 +316,8 @@ function main._done_option()
     -- save project
     xmake._PROJECT = project
 
-    -- dump project configs
---    utils.dump(xmake._PROJECT._CONFIGS, "", "_PARENT")
+    -- dump project 
+    project.dump()
 
     -- done action    
     return action.done(options._ACTION or "build")
