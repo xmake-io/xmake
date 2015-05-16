@@ -150,7 +150,7 @@ local menu =
         ,   {'-', "host",       "kv", "auto",       "The current host environment."                                 }
 
         ,   {}
-        ,   {'o', "output",     "kv", "build",      "Set the build directory"                                       }
+        ,   {'o', "buildir",    "kv", "build",      "Set the build directory"                                       }
         ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory"                                    }
 
         ,   {}
