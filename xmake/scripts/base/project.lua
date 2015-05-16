@@ -20,28 +20,13 @@
 -- @file        project.lua
 --
 
+-- define module: config
+local project = project or {}
+
 -- load modules
-local utils     = require("base/utils")
-local config    = require("base/config")
-
--- enter project 
-local _PROJECT = _PROJECT or {}
-local _MAINENV = getfenv()
-setmetatable(_PROJECT, {__index = _G})  
-setfenv(1, _PROJECT)
-
--- init the current scope
-local current = nil
-
--- configure scope end
-function _end()
-
-    -- check
-    assert(current)
-
-    -- leave the current scope
-    current = current._PARENT
-end
+local utils         = require("base/utils")
+local config        = require("base/config")
+local preprocessor  = require("base/preprocessor")
 
 -- preprocess value
 function _preprocess(value)
@@ -65,183 +50,56 @@ function _preprocess(value)
     return value
 end
 
--- register configures
-function _register(names)
-
-    -- check
-    assert(_PROJECT)
-    assert(names and type(names) == "table")
-
-    -- register all configures
-    for _, name in ipairs(names) do
-
-        -- register the configure 
-        _PROJECT[name] = _PROJECT[name] or function(...)
-
-            -- check
-            assert(current)
-
-            -- init ldflags
-            current[name] = current[name] or {}
-
-            -- get arguments
-            local arg = arg or {...}
-            if table.getn(arg) == 0 then
-                -- no argument
-                current[name] = nil
-            elseif table.getn(arg) == 1 then
-                -- save only one argument
-                current[name] = _preprocess(arg[1])
-            else
-                -- save all arguments
-                for i, v in ipairs(arg) do
-                    current[name][i] = _preprocess(v)
-                end
-            end
-        end
-    end
-end
-
--- init project
-function _init()
-
-    -- register all configures
-    _register   {   "kind"
-                ,   "deps"
-                ,   "files"
-                ,   "links" 
-                ,   "mflags" 
-                ,   "headers" 
-                ,   "headerdir" 
-                ,   "targetdir" 
-                ,   "objectdir" 
-                ,   "linkdirs" 
-                ,   "includedirs" 
-                ,   "cflags" 
-                ,   "cxxflags" 
-                ,   "ldflags" 
-                ,   "mxflags" 
-                ,   "defines"} 
-end
-
--- configure platforms
-function plarforms(...)
-
-    -- check
-    assert(current)
-
-    -- init platforms
-    current._PLATFORMS = current._PLATFORMS or {}
-
-    -- init scope
-    local scope = {}
-
-    -- configure all platforms
-    local arg = arg or {...}
-    for _, name in ipairs(arg) do
-
-        -- check
-        if current._PLATFORMS[name] then
-            -- error
-            utils.error("the platform: %s has been defined repeatly!", name)
-            assert(false) 
-        end
-
-        -- init the platform scope
-        current._PLATFORMS[name] = scope
-
-    end
-
-    -- enter scope
-    local parent = current
-    current = scope
-    current._PARENT = parent
-end
-
--- configure target
-function target(name)
-
-    -- check
-    assert(name and current)
-
-    -- init targets
-    current._TARGETS = current._TARGETS or {}
-
-    -- init target scope
-    current._TARGETS[name] = {}
-
-    -- enter target scope
-    local parent = current
-    current = current._TARGETS[name]
-    current._PARENT = parent
-end
-
--- configure project
-function project(name)
-
-    -- check
-    assert(name)
-
-    -- init the root scope, must be only one project
-    if not _CONFIGS then
-        _CONFIGS = {}
-    else
-        -- error
-        utils.error("the project: %s is redundant!", name)
-        return
-    end
-
-    -- init the project name
-    _CONFIGS.name = name
-
-    -- init the current scope
-    current = _CONFIGS
-    current._PARENT = nil
-
-end
-
 -- load xproj
-function loadxproj(file)
+function project.loadxproj(file)
 
     -- check
     assert(file)
 
+    -- init configures
+    local configures = {   "kind"
+                        ,   "deps"
+                        ,   "files"
+                        ,   "links" 
+                        ,   "mflags" 
+                        ,   "headers" 
+                        ,   "headerdir" 
+                        ,   "targetdir" 
+                        ,   "objectdir" 
+                        ,   "linkdirs" 
+                        ,   "includedirs" 
+                        ,   "cflags" 
+                        ,   "cxxflags" 
+                        ,   "ldflags" 
+                        ,   "mxflags" 
+                        ,   "defines"} 
+
     -- load and execute the xmake.xproj
-    local script = preprocessor.loadx(file)
-    if script then
-
-        -- init the project envirnoment
-        _PROJECT._init()
-        setfenv(script, _PROJECT)
-
-        -- execute it
-        local ok, err = pcall(script)
-        if not ok then
-            -- error
-            return err
-        end
+    local configs, errors = preprocessor.loadfile(file, "project", configures, {"target", "platforms"})
+    if configs then
+        -- ok
+        project._CONFIGS = configs
+    elseif errors then
+        -- error
+        return errors
     else
         -- error
         return string.format("load %s failed!", file)
     end
-
-    -- ok
-    return nil
 end
 
--- dump all configures
-function dump()
-     
+-- dump configs
+function project.dump()
+    
     -- check
-    assert(_CONFIGS)
+    assert(project._CONFIGS)
 
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(_CONFIGS, "_PARENT")
+        utils.dump(project._CONFIGS, "_PARENT")
     end
    
 end
 
--- leave project 
-setfenv(1, _MAINENV)
-return _PROJECT
+-- return module: project
+return project
