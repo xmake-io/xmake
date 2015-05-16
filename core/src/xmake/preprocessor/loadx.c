@@ -51,23 +51,80 @@ static tb_char_t const* xm_preprocessor_loadx_to_string(tb_stream_ref_t stream, 
     // done
     tb_bool_t is_value = tb_false;
     tb_bool_t is_values = tb_false;
+    tb_size_t is_script = 0;
+    tb_bool_t is_comment = tb_false;
+    tb_bool_t is_value_string = tb_false;
+    tb_size_t is_value_script = 0;
     while (!tb_stream_beof(stream))
     {
         // read character
         tb_char_t ch = (tb_char_t)tb_stream_bread_u8(stream);
         if (ch)
         {
-            // is values?
-            if (is_values)
+            // is comment? skip it
+            if (is_comment) 
             {
-                // is value?
-                if (is_value && ch != ',' && ch != ':' && ch != '{' && ch != '}' && ch != '\r' && ch != '\n')
+                // newline? leave comment
+                if (ch == '\n') is_comment = tb_false;
+            }
+            // is script? skip it
+            else if (is_script)
+            {
+                // is ']'?
+                if (ch == ']')
+                {
+                    // leave bracket?
+                    is_script--;
+
+                    // append it if is script now
+                    if (is_script) tb_string_chrcat(string, ch);
+                }
+                else
+                {
+                    // enter bracket?
+                    if (ch == '[') is_script++;
+
+                    // append it    
+                    tb_string_chrcat(string, ch);
+                }
+            }
+            // is values?
+            else if (is_values)
+            {
+                // enter or leave string
+                if (ch == '\"' || ch == '\'') is_value_string = !is_value_string;
+
+                // enter or leave script?
+                if (ch == '[') is_value_script++;
+                else if (ch == ']' && is_value_script) is_value_script--;
+
+                // is string or script value?
+                if (is_value && (is_value_string || is_value_script))
                 {
                     // append to value
                     tb_string_chrcat(&value, ch);
                 }
-                // ',' or ':' or '{' or newline?
-                else if (ch == ',' || ch == ':' || ch == '{' || ch == '}' || ch == '\r' || ch == '\n') 
+                // is value?
+                else if (   is_value
+                        &&  ch != ','
+                        &&  ch != ':'
+                        &&  ch != '{' 
+                        &&  ch != '}'
+                        &&  ch != '\r'
+                        &&  ch != '\n'
+                        &&  ch != '#')
+                {
+                    // append to value
+                    tb_string_chrcat(&value, ch);
+                }
+                // ',' or ':' or '{' or '#' or newline?
+                else if (   ch == ','
+                        ||  ch == ':'
+                        ||  ch == '{'
+                        ||  ch == '}'
+                        ||  ch == '\r'
+                        ||  ch == '\n'
+                        ||  ch == '#') 
                 {
                     // has value?
                     if (is_value)
@@ -85,8 +142,8 @@ static tb_char_t const* xm_preprocessor_loadx_to_string(tb_stream_ref_t stream, 
                             // wrap "xxx" 
                             if (tb_string_size(&value))
                             {
-                                // it has been "xxx"? only copy it
-                                if (tb_string_charat(&value, 0) == '\"')
+                                // it has been "xxx" or 'xxx'? only copy it
+                                if (tb_string_charat(&value, 0) == '\"' || tb_string_charat(&value, 0) == '\'')
                                     tb_string_strcpy(&value_temp, &value);
                                 // wrap it
                                 else
@@ -146,6 +203,8 @@ static tb_char_t const* xm_preprocessor_loadx_to_string(tb_stream_ref_t stream, 
                     }
                     // skip newline
                     else if (ch == '\r' || ch == '\n') ;
+                    // enter comment?
+                    else if (ch == '#' && !is_comment) is_comment = tb_true;
                     // append to string
                     else tb_string_chrcat(string, ch);
                 }
@@ -169,6 +228,10 @@ static tb_char_t const* xm_preprocessor_loadx_to_string(tb_stream_ref_t stream, 
             }
             // replace '}' and newline to _end 
             else if (ch == '}') tb_string_cstrcat(string, "\n_end()");
+            // enter comment? skip it
+            else if (ch == '#' && !is_comment) is_comment = tb_true;
+            // enter script? skip it
+            else if (ch == '[' && !is_script) is_script++;
             // append it
             else tb_string_chrcat(string, ch);
         }
