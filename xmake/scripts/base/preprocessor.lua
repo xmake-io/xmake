@@ -23,11 +23,26 @@
 -- define module: preprocessor
 local preprocessor = preprocessor or {}
 
+-- filter value
+function preprocessor._filter(value, filter)
+
+    -- the value is string?
+    if filter and type(value) == "string" then
+
+        -- replace $(variable)
+        value = value:gsub("%$%((.*)%)", filter)
+    end
+
+    -- ok
+    return value
+end
+
 -- register configures
-function preprocessor._register(env, names)
+function preprocessor._register(env, names, filter)
 
     -- check
     assert(env and names and type(names) == "table")
+    assert(not filter or type(filter) == "function")
 
     -- register all configures
     for _, name in ipairs(names) do
@@ -49,11 +64,11 @@ function preprocessor._register(env, names)
                 _current[name] = nil
             elseif table.getn(arg) == 1 then
                 -- save only one argument
-                _current[name] = arg[1]
+                _current[name] = preprocessor._filter(arg[1], filter)
             else
                 -- save all arguments
                 for i, v in ipairs(arg) do
-                    _current[name][i] = v
+                    _current[name][i] = preprocessor._filter(v, filter)
                 end
             end
         end
@@ -61,7 +76,7 @@ function preprocessor._register(env, names)
 end
 
 -- init configures
-function preprocessor._init(root, configures, scopes)
+function preprocessor._init(root, configures, scopes, filter)
 
     -- check
     assert(root and configures)
@@ -73,7 +88,7 @@ function preprocessor._init(root, configures, scopes)
     setfenv(1, newenv)
 
     -- register all configures
-    preprocessor._register(newenv, configures)
+    preprocessor._register(newenv, configures, filter)
 
     -- configure scope end
     newenv["_end"] = function ()
@@ -158,9 +173,9 @@ end
 --
 -- @code
 -- local configs, errors = preprocessor.loadfile("xmake.xconf", "config", {"plat", "host", "arch", ...}, {"target"})
--- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...}, {"target", "platforms"})
+-- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...}, {"target", "platforms"}, filter)
 -- @endcode
-function preprocessor.loadfile(path, root, configures, scopes)
+function preprocessor.loadfile(path, root, configures, scopes, filter)
 
     -- check
     assert(path and root and configures)
@@ -170,7 +185,7 @@ function preprocessor.loadfile(path, root, configures, scopes)
     if script then
 
         -- init a new envirnoment
-        local newenv = preprocessor._init(root, configures, scopes)
+        local newenv = preprocessor._init(root, configures, scopes, filter)
         assert(newenv)
 
         -- bind this envirnoment
