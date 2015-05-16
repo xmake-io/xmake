@@ -61,7 +61,7 @@ function preprocessor._register(env, names)
 end
 
 -- init configures
-function preprocessor._init(root, configures)
+function preprocessor._init(root, configures, scopes)
 
     -- check
     assert(root and configures)
@@ -85,22 +85,47 @@ function preprocessor._init(root, configures)
         _current = _current._PARENT
     end
 
-    -- configure target
-    newenv["target"] = function (name)
+    -- configure scopes
+    if scopes then
+        for _, scope_name in ipairs(scopes) do
+                
+            newenv[scope_name] = function (...)
 
-        -- check
-        assert(name and _current)
+                -- check
+                assert(_current)
 
-        -- init targets
-        _current._TARGETS = _current._TARGETS or {}
+                -- init config name
+                local config_name = "_" .. scope_name:upper()
 
-        -- init target scope
-        _current._TARGETS[name] = {}
+                -- init scope config
+                _current[config_name] = _current[config_name] or {}
+                local scope_config = _current[config_name]
 
-        -- enter target scope
-        local parent = _current
-        _current = _current._TARGETS[name]
-        _current._PARENT = parent
+                -- init scope
+                local scope = {}
+
+                -- configure all 
+                local arg = arg or {...}
+                for _, name in ipairs(arg) do
+
+                    -- check
+                    if scope_config[name] then
+                        -- error
+                        utils.error("the %s: %s has been defined repeatly!", config_name, name)
+                        assert(false) 
+                    end
+
+                    -- init the scope
+                    scope_config[name] = scope
+
+                end
+
+                -- enter scope
+                local parent = _current
+                _current = scope
+                _current._PARENT = parent
+            end
+        end
     end
 
     -- the root configure 
@@ -111,14 +136,13 @@ function preprocessor._init(root, configures)
             newenv._CONFIGS = {}
         else
             -- error
-            utils.error("exists double configs!")
+            utils.error("exists double %s!", root)
             return
         end
 
         -- init the current scope
         _current = newenv._CONFIGS
         _current._PARENT = nil
-
     end
 
     -- enter old environment 
@@ -133,10 +157,10 @@ end
 --     xmake.xconf
 --
 -- @code
--- local configs, errors = preprocessor.loadfile("xmake.xconf", "config", {"plat", "host", "arch", ...})
--- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...})
+-- local configs, errors = preprocessor.loadfile("xmake.xconf", "config", {"plat", "host", "arch", ...}, {"target"})
+-- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...}, {"target", "platforms"})
 -- @endcode
-function preprocessor.loadfile(path, root, configures)
+function preprocessor.loadfile(path, root, configures, scopes)
 
     -- check
     assert(path and root and configures)
@@ -146,7 +170,7 @@ function preprocessor.loadfile(path, root, configures)
     if script then
 
         -- init a new envirnoment
-        local newenv = preprocessor._init(root, configures)
+        local newenv = preprocessor._init(root, configures, scopes)
         assert(newenv)
 
         -- bind this envirnoment

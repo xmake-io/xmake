@@ -72,8 +72,8 @@ function config._save_with_level(file, object, level)
         -- save body
         for k, v in pairs(object) do  
 
-            -- save _TARGETS
-            if type(k) == "string" and k == "_TARGETS" then
+            -- save _TARGET
+            if type(k) == "string" and k == "_TARGET" then
 
                 for _k, _v in pairs(v) do  
 
@@ -157,9 +157,9 @@ function config.getarget()
     -- for all targets?
     if name == "all" then
         return configs
-    elseif configs._TARGETS then
+    elseif configs._TARGET then
         -- get it
-        return configs._TARGETS[name]
+        return configs._TARGET[name]
     end
 end
 
@@ -221,16 +221,24 @@ function config.loadxconf()
     end
 
     -- load and execute the xmake.xproj
-    config._CONFIGS = preprocessor.loadfile(options.project .. "/xmake.xconf", "config", configures)
+    local path = options.project .. "/xmake.xconf"
+    local configs, errors = preprocessor.loadfile(path, "config", configures, {"target"})
+
+    -- save configs
+    config._CONFIGS = configs
 
     -- exists local configures?
-    if config._CONFIGS then
+    if configs then
 
         -- clear configs if the host environment has been changed
         local target = config.getarget()
         if target and target.host ~= xmake._HOST then
             config._CONFIGS = {}
         end
+    elseif errors then
+        -- error
+        utils.error("load %s failed!", path)
+        utils.error("%s", errors)
     end
 
     -- the target name
@@ -239,12 +247,12 @@ function config.loadxconf()
 
     -- init configs
     config._CONFIGS = config._CONFIGS or {}
-    local configs = config._CONFIGS
+    configs = config._CONFIGS
 
     -- init targets
-    configs._TARGETS = configs._TARGETS or {}
+    configs._TARGET = configs._TARGET or {}
     if name ~= "all" then
-        configs._TARGETS[name] = configs._TARGETS[name] or {}
+        configs._TARGET[name] = configs._TARGET[name] or {}
     end
 
     -- get the current target scope
