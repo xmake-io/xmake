@@ -28,28 +28,6 @@ local utils         = require("base/utils")
 local config        = require("base/config")
 local preprocessor  = require("base/preprocessor")
 
--- preprocess value
-function _preprocess(value)
-
-    -- the value is string?
-    if type(value) == "string" then
-
-        -- replace $(variable)
-        value = value:gsub("%$%((.*)%)",    function (v) 
-                                                if v == "buildir" then
-                                                    local target = config.getarget()
-                                                    return utils.ifelse(target, target.output, nil);
-                                                elseif v == "projectdir" then
-                                                    return xmake._OPTIONS.project
-                                                end
-                                                return v 
-                                            end)
-    end
-
-    -- ok
-    return value
-end
-
 -- load xproj
 function project.loadxproj(file)
 
@@ -74,8 +52,19 @@ function project.loadxproj(file)
                         ,   "mxflags" 
                         ,   "defines"} 
 
+    -- init filter
+    local filter =  function (v) 
+                        if v == "buildir" then
+                            local target = config.getarget()
+                            return utils.ifelse(target, target.output, nil);
+                        elseif v == "projectdir" then
+                            return xmake._OPTIONS.project
+                        end
+                        return v 
+                    end
+
     -- load and execute the xmake.xproj
-    local configs, errors = preprocessor.loadfile(file, "project", configures, {"target", "platforms"})
+    local configs, errors = preprocessor.loadfile(file, "project", configures, {"target", "platforms"}, filter)
     if configs then
         -- ok
         project._CONFIGS = configs
