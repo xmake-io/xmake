@@ -24,13 +24,38 @@
 local preprocessor = preprocessor or {}
 
 -- filter value
-function preprocessor._filter(value, filter)
+function preprocessor._filter(env, value, filter)
 
     -- the value is string?
-    if filter and type(value) == "string" then
+    if type(value) == "string" then
 
-        -- replace $(variable)
-        value = value:gsub("%$%((.*)%)", filter)
+        -- init
+        local _v = nil
+        local _n = 0
+
+        -- replace it for filter
+        if filter then
+            -- replace $(variable)
+            _v, _n = value:gsub("%$%((.*)%)", filter)
+        end
+
+        -- replace it for script
+        if _n == 0 then
+            _v, _n = value:gsub("%[(.*)%]",     function (v) 
+
+                                                    -- load the script
+                                                    local script = assert(loadstring(v))
+
+                                                    -- bind the envirnoment
+                                                    setfenv(script, env)
+
+                                                    -- done it
+                                                    return script()  
+                                                end)
+        end
+
+        -- update value
+        value = _v
     end
 
     -- ok
@@ -64,11 +89,11 @@ function preprocessor._register(env, names, filter)
                 _current[name] = nil
             elseif table.getn(arg) == 1 then
                 -- save only one argument
-                _current[name] = preprocessor._filter(arg[1], filter)
+                _current[name] = preprocessor._filter(env, arg[1], filter)
             else
                 -- save all arguments
                 for i, v in ipairs(arg) do
-                    _current[name][i] = preprocessor._filter(v, filter)
+                    _current[name][i] = preprocessor._filter(env, v, filter)
                 end
             end
         end
