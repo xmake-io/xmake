@@ -101,7 +101,7 @@ function preprocessor._register(env, names, filter)
 end
 
 -- init configures
-function preprocessor._init(root, configures, scopes, filter)
+function preprocessor._init(root, configures, scopes, filter, import)
 
     -- check
     assert(root and configures)
@@ -114,6 +114,11 @@ function preprocessor._init(root, configures, scopes, filter)
 
     -- register all configures
     preprocessor._register(newenv, configures, filter)
+
+    -- configure import
+    if import then
+        newenv["import"] = import
+    end
 
     -- configure scope end
     newenv["_end"] = function ()
@@ -198,9 +203,9 @@ end
 --
 -- @code
 -- local configs, errors = preprocessor.loadfile("xmake.xconf", "config", {"plat", "host", "arch", ...}, {"target"})
--- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...}, {"target", "platforms"}, filter)
+-- local configs, errors = preprocessor.loadfile("xmake.xproj", "project", {"links", "files", "ldflags", ...}, {"target", "platforms"}, filter, import)
 -- @endcode
-function preprocessor.loadfile(path, root, configures, scopes, filter)
+function preprocessor.loadfile(path, root, configures, scopes, filter, import)
 
     -- check
     assert(path and root and configures)
@@ -210,7 +215,7 @@ function preprocessor.loadfile(path, root, configures, scopes, filter)
     if script then
 
         -- init a new envirnoment
-        local newenv = preprocessor._init(root, configures, scopes, filter)
+        local newenv = preprocessor._init(root, configures, scopes, filter, import)
         assert(newenv)
 
         -- bind this envirnoment
@@ -224,7 +229,7 @@ function preprocessor.loadfile(path, root, configures, scopes, filter)
         end
 
         -- ok?
-        return newenv._CONFIGS
+        return newenv
     else
         -- error
         return nil, string.format("load %s failed!", path)

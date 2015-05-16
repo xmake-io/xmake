@@ -1,4 +1,13 @@
 [
+    -- get configs
+    local configs = import("configs")
+    assert(configs)
+
+    -- dump configs
+--    for k, v in pairs(configs) do
+--        print(k, v)
+--    end
+
     -- the custom script
     function add(a, b)
         return a + b

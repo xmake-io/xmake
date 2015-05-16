@@ -63,11 +63,39 @@ function project.loadxproj(file)
                         return v 
                     end
 
+    -- init import 
+    local import = function (name)
+
+        -- import configs?
+        if name == "configs" then
+
+            -- init configs
+            local configs = {}
+
+            -- get the config for the current target
+            local target = config.getarget()
+            if target then
+                for k, v in pairs(target) do
+                    if k and type(k) == "string" and not k:startswith("_") then
+                        configs[k] = v
+                    end
+                end
+            end
+
+            -- init the project directory
+            configs.projectdir = xmake._OPTIONS.project
+
+            -- import it
+            return configs
+        end
+
+    end
+
     -- load and execute the xmake.xproj
-    local configs, errors = preprocessor.loadfile(file, "project", configures, {"target", "platforms"}, filter)
-    if configs then
+    local newenv, errors = preprocessor.loadfile(file, "project", configures, {"target", "platforms"}, filter, import)
+    if newenv and newenv._CONFIGS then
         -- ok
-        project._CONFIGS = configs
+        project._CONFIGS = newenv._CONFIGS
     elseif errors then
         -- error
         return errors
@@ -75,6 +103,7 @@ function project.loadxproj(file)
         -- error
         return string.format("load %s failed!", file)
     end
+
 end
 
 -- dump configs

@@ -223,13 +223,13 @@ function config.loadxconf()
 
     -- load and execute the xmake.xconf
     local path = options.project .. "/xmake.xconf"
-    local configs, errors = preprocessor.loadfile(path, "config", configures, {"target"})
-
-    -- save configs
-    config._CONFIGS = configs
+    local newenv, errors = preprocessor.loadfile(path, "config", configures, {"target"})
 
     -- exists local configures?
-    if configs then
+    if newenv then
+
+        -- save configs
+        config._CONFIGS = newenv._CONFIGS
 
         -- clear configs if the host environment has been changed
         local target = config.getarget()
@@ -248,7 +248,7 @@ function config.loadxconf()
 
     -- init configs
     config._CONFIGS = config._CONFIGS or {}
-    configs = config._CONFIGS
+    local configs = config._CONFIGS
 
     -- init targets
     configs._TARGET = configs._TARGET or {}
