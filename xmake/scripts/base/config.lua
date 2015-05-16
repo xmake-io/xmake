@@ -24,9 +24,10 @@
 local config = config or {}
 
 -- load modules
-local io        = require("base/io")
-local utils     = require("base/utils")
-local option    = require("base/option")
+local io            = require("base/io")
+local utils         = require("base/utils")
+local option        = require("base/option")
+local preprocessor  = require("base/preprocessor")
 
 -- auto configs
 function config._auto(name)
@@ -220,7 +221,7 @@ function config.loadxconf()
         end
     end
 
-    -- load and execute the xmake.xproj
+    -- load and execute the xmake.xconf
     local path = options.project .. "/xmake.xconf"
     local configs, errors = preprocessor.loadfile(path, "config", configures, {"target"})
 
@@ -293,9 +294,6 @@ function config.loadxconf()
             end
         end
     end
-
-    -- ok
-    return nil
 end
 
 -- dump configs
