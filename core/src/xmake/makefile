@@ -14,6 +14,15 @@ xmake_CONFIG 			= y
 xmake_C_FILES 			+= \
 						xmake \
 						machine \
+						os/isdir \
+						os/rmdir \
+						os/mkdir \
+						os/cpdir \
+						os/isfile \
+						os/rmfile \
+						os/cpfile \
+						os/rename \
+						os/exists \
 						path/absolute \
 						path/translate \
 						path/is_absolute \

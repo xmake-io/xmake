@@ -58,7 +58,7 @@ function project.loadxproj(file)
                             local target = config.getarget()
                             return utils.ifelse(target, target.output, nil);
                         elseif v == "projectdir" then
-                            return xmake._OPTIONS.project
+                            return xmake._PROJECT_DIR
                         end
                         return v 
                     end

@@ -266,9 +266,12 @@ function main._done_option()
     assert(options)
 
     -- init the project directory
-    options.project = options.project or options._DEFAULTS.project or _PROJECT_DIR
+    options.project = options.project or options._DEFAULTS.project or xmake._PROJECT_DIR
     options.project = path.absolute(options.project)
     assert(options.project)
+
+    -- save the project directory
+    xmake._PROJECT_DIR = options.project
 
     -- init the xmake.xproj file path
     options.file = options.file or options._DEFAULTS.file or "xmake.xproj"
@@ -283,6 +286,13 @@ function main._done_option()
         -- load xmake.xproj file
         errors = project.loadxproj(options.file)
     end
+    assert(config._CONFIGS)
+
+    -- init the build directory
+    if config._CONFIGS.buildir and not path.is_absolute(config._CONFIGS.buildir) then
+        config._CONFIGS.buildir = path.absolute(config._CONFIGS.buildir, xmake._PROJECT_DIR)
+    end
+    assert(config._CONFIGS.buildir)
 
     -- done help
     if options.help then

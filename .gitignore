@@ -28,6 +28,7 @@ other
 tags
 doc
 install.log
+build
 core/bin
 core/pre
 core/tool/msys
