@@ -24,12 +24,21 @@
 local _config = _config or {}
 
 -- load modules
-local io        = require("base/io")
+local os        = require("base/os")
 local utils     = require("base/utils")
 local config    = require("base/config")
     
 -- done the given config
 function _config.done()
+
+    -- the configs
+    local configs = config._CONFIGS
+    assert(configs and configs.buildir)
+
+    -- make the build directory
+    if not os.isdir(configs.buildir) then
+        assert(os.mkdir(configs.buildir))
+    end
 
     -- save configs
     if not config.savexconf() then

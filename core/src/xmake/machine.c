@@ -49,6 +49,17 @@ typedef struct __xm_machine_impl_t
  * declaration
  */
 
+// the os functions
+tb_int_t xm_os_isdir(lua_State* lua);
+tb_int_t xm_os_rmdir(lua_State* lua);
+tb_int_t xm_os_mkdir(lua_State* lua);
+tb_int_t xm_os_cpdir(lua_State* lua);
+tb_int_t xm_os_isfile(lua_State* lua);
+tb_int_t xm_os_rmfile(lua_State* lua);
+tb_int_t xm_os_cpfile(lua_State* lua);
+tb_int_t xm_os_rename(lua_State* lua);
+tb_int_t xm_os_exists(lua_State* lua);
+
 // the path functions
 tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
@@ -63,6 +74,21 @@ tb_int_t xm_preprocessor_loadx(lua_State* lua);
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
+
+// the os functions
+static luaL_Reg const g_os_functions[] = 
+{
+    { "isdir",          xm_os_isdir     }
+,   { "rmdir",          xm_os_rmdir     }
+,   { "mkdir",          xm_os_mkdir     }
+,   { "cpdir",          xm_os_cpdir     }
+,   { "isfile",         xm_os_isfile    }
+,   { "rmfile",         xm_os_rmfile    }
+,   { "cpfile",         xm_os_cpfile    }
+,   { "rename",         xm_os_rename    }
+,   { "exists",         xm_os_exists    }
+,   { tb_null,          tb_null         }
+};
 
 // the path functions
 static luaL_Reg const g_path_functions[] = 
@@ -83,8 +109,8 @@ static luaL_Reg const g_string_functions[] =
 // the preprocessor functions
 static luaL_Reg const g_preprocessor_functions[] = 
 {
-    { "loadx",     xm_preprocessor_loadx  }
-,   { tb_null,          tb_null                     }
+    { "loadx",          xm_preprocessor_loadx   }
+,   { tb_null,          tb_null                 }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -206,6 +232,9 @@ xm_machine_ref_t xm_machine_init()
 
         // open lua libraries
         luaL_openlibs(impl->lua);
+
+        // bind os functions
+        luaL_register(impl->lua, "os", g_os_functions);
 
         // bind path functions
         luaL_register(impl->lua, "path", g_path_functions);
