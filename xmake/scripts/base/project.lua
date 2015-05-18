@@ -55,7 +55,7 @@ function project.loadxproj(file)
     -- init filter
     local filter =  function (v) 
                         if v == "buildir" then
-                            local target = config.getarget()
+                            local target = config.target()
                             return utils.ifelse(target, target.output, nil);
                         elseif v == "projectdir" then
                             return xmake._PROJECT_DIR
@@ -73,7 +73,7 @@ function project.loadxproj(file)
             local configs = {}
 
             -- get the config for the current target
-            local target = config.getarget()
+            local target = config.target()
             if target then
                 for k, v in pairs(target) do
                     if k and type(k) == "string" and not k:startswith("_") then

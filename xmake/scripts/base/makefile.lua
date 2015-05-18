@@ -135,5 +135,27 @@ function makefile.make()
     return true
 end
 
+-- build target
+function makefile.build(target)
+
+    -- check
+    assert(target and type(target) == "string")
+
+    -- the configs
+    local configs = config._CONFIGS
+    assert(configs and configs.buildir)
+
+    -- done build
+    local ok = os.execute(string.format("make -f %s %s", configs.buildir .. "/makefile", target))
+    if ok ~= 0 then
+        -- error
+        utils.error("build target: %s failed!", target)
+        return false
+    end
+
+    -- ok
+    return true
+end
+
 -- return module: makefile
 return makefile
