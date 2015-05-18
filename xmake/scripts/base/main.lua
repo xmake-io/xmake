@@ -24,6 +24,7 @@
 local main = main or {}
 
 -- load modules
+local os            = require("base/os")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
@@ -289,8 +290,8 @@ function main._done_option()
     assert(config._CONFIGS)
 
     -- init the build directory
-    if config._CONFIGS.buildir and not path.is_absolute(config._CONFIGS.buildir) then
-        config._CONFIGS.buildir = path.absolute(config._CONFIGS.buildir, xmake._PROJECT_DIR)
+    if config._CONFIGS.buildir and path.is_absolute(config._CONFIGS.buildir) then
+        config._CONFIGS.buildir = path.relative(config._CONFIGS.buildir, xmake._PROJECT_DIR)
     end
     assert(config._CONFIGS.buildir)
 
@@ -329,6 +330,13 @@ function main._done_option()
 
     -- dump config
     config.dump()
+
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        -- error
+        utils.error("not found project: %s!", xmake._PROJECT_DIR)
+        return false
+    end
  
     -- done action    
     return action.done(options._ACTION or "build")
