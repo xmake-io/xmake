@@ -134,5 +134,17 @@ function utils.dump(object, exclude)
     return object
 end
 
+-- wrap object to table
+function utils.wrap(object)
+
+    -- check
+    assert(object)
+
+    -- wrap it if not table
+    if type(object) ~= "table" then
+        return {object}
+    end
+end
+
 -- return module: utils
 return utils
