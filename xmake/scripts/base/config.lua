@@ -140,13 +140,9 @@ function config._save(file, object)
     return config._save_with_level(file, object, 0)
 end
 
--- get the current target scope
-function config.getarget()
-
-    -- check
-    local configs = config._CONFIGS
-    assert(configs)
-    
+-- get the current target name
+function config.target_name()
+ 
     -- the options
     local options = xmake._OPTIONS
     assert(options)
@@ -154,6 +150,20 @@ function config.getarget()
     -- the target name
     local name = options.target or options._DEFAULTS.target
     assert(name and type(name) == "string")
+
+    -- ok
+    return name
+end
+
+-- get the current target scope
+function config.target()
+
+    -- check
+    local configs = config._CONFIGS
+    assert(configs)
+   
+    -- the target name
+    local name = config.target_name()
 
     -- for all targets?
     if name == "all" then
@@ -232,7 +242,7 @@ function config.loadxconf()
         config._CONFIGS = newenv._CONFIGS
 
         -- clear configs if the host environment has been changed
-        local target = config.getarget()
+        local target = config.target()
         if target and target.host ~= xmake._HOST then
             config._CONFIGS = {}
         end
@@ -257,7 +267,7 @@ function config.loadxconf()
     end
 
     -- get the current target scope
-    local target = config.getarget()
+    local target = config.target()
     assert(target and type(target) == "table")
 
     -- merge xmake._OPTIONS to target
