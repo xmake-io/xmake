@@ -18,11 +18,15 @@ xmake_C_FILES 			+= \
 						os/rmdir \
 						os/mkdir \
 						os/cpdir \
+						os/chdir \
+						os/curdir \
+						os/tmpdir \
 						os/isfile \
 						os/rmfile \
 						os/cpfile \
 						os/rename \
 						os/exists \
+						path/relative \
 						path/absolute \
 						path/translate \
 						path/is_absolute \

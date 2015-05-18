@@ -98,5 +98,46 @@ function os.rm(path)
     return true
 end
 
+-- change to directory
+function os.cd(path)
+
+    -- check
+    assert(path)
+
+    -- change to the previous directory?
+    if path == "-" then
+        -- exists the previous directory?
+        if os._PREDIR then
+            path = os._PREDIR
+            os._PREDIR = nil
+        else
+            -- error
+            return false, string.format("not found the previous directory!")
+        end
+    end
+    
+    -- is directory?
+    if os.isdir(path) then
+
+        -- get the current directory
+        local current = os.curdir()
+
+        -- change to directory
+        if not os.chdir(path) then
+            return false, string.format("cannot change directory %s!", path)
+        end
+
+        -- save the previous directory
+        os._PREDIR = current
+
+    -- not exists?
+    else
+        return false, string.format("cannot change directory %s, not found this directory!", path)
+    end
+    
+    -- ok
+    return true
+end
+
 -- return module: os
 return os

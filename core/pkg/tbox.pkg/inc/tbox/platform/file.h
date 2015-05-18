@@ -295,16 +295,6 @@ tb_bool_t               tb_file_remove(tb_char_t const* path);
  */
 tb_bool_t               tb_file_rename(tb_char_t const* path, tb_char_t const* dest);
 
-/*! the file full path
- * 
- * @param path          the file path
- * @param full          the full path
- * @param maxn          the path maxn
- *
- * @return              the full path
- */
-tb_char_t const*        tb_file_full(tb_char_t const* path, tb_char_t* full, tb_size_t maxn);
-
 /*! link the file
  * 
  * @param path          the source file path

@@ -1,4 +1,4 @@
---!The Automatic Cross-platform Build Tool
+--!The Automatic Crmakefiles-platform Build Tool
 -- 
 -- XMake is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
@@ -17,39 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _config.lua
+-- @file        makefile.lua
 --
 
--- define module: _config
-local _config = _config or {}
+-- define module: makefile
+local makefile = makefile or {}
 
--- load modules
-local os        = require("base/os")
-local utils     = require("base/utils")
-local config    = require("base/config")
-local makefile  = require("base/makefile")
-    
--- done the given config
-function _config.done()
-
-    -- the configs
-    local configs = config._CONFIGS
-    assert(configs and configs.buildir)
-
-    -- make the build directory
-    if not os.isdir(configs.buildir) then
-        assert(os.mkdir(configs.buildir))
-    end
-
-    -- save configs
-    if not config.savexconf() then
-        return false
-    end
-
-    -- ok
-    print("configure ok!")
-    return true
-end
-
--- return module: _config
-return _config
+-- return module: makefile
+return makefile

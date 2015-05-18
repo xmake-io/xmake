@@ -79,7 +79,15 @@
 #   define TB_ARCH_ARM
 #   if defined(__ARM_ARCH)
 #       define TB_ARCH_ARM_VERSION          __ARM_ARCH
-#       if __ARM_ARCH >= 7
+#       if __ARM_ARCH >= 8
+#           define TB_ARCH_ARM_v8
+#           if defined(__arm64) || defined(__arm64__)
+#               define TB_ARCH_ARM64
+#               define TB_ARCH_STRING       "arm64"
+#           else
+#               define TB_ARCH_STRING       "armv7s"
+#           endif
+#       elif __ARM_ARCH >= 7
 #           define TB_ARCH_ARM_v7
 #           define  TB_ARCH_STRING          "armv7"
 #       elif __ARM_ARCH >= 6
