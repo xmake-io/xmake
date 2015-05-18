@@ -24,7 +24,6 @@
 local _config = _config or {}
 
 -- load modules
-local os        = require("base/os")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local makefile  = require("base/makefile")
@@ -32,17 +31,17 @@ local makefile  = require("base/makefile")
 -- done the given config
 function _config.done()
 
-    -- the configs
-    local configs = config._CONFIGS
-    assert(configs and configs.buildir)
-
-    -- make the build directory
-    if not os.isdir(configs.buildir) then
-        assert(os.mkdir(configs.buildir))
-    end
-
     -- save configs
     if not config.savexconf() then
+        -- error
+        utils.error("save configure failed!")
+        return false
+    end
+
+    -- make makefile
+    if not makefile.make() then
+        -- error
+        utils.error("make makefile failed!")
         return false
     end
 
