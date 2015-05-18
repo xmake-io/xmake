@@ -88,6 +88,27 @@ tb_char_t const*        tb_path_absolute(tb_char_t const* path, tb_char_t* data,
  */
 tb_char_t const*        tb_path_absolute_to(tb_char_t const* root, tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
 
+/*! get the path which relative to the current directory
+ * 
+ * @param path          the path 
+ * @param data          the path data
+ * @param maxn          the path maxn
+ *
+ * @return              the relative path
+ */
+tb_char_t const*        tb_path_relative(tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
+
+/*! get the path which relative to the given root directory
+ * 
+ * @param root          the root path 
+ * @param path          the path 
+ * @param data          the path data
+ * @param maxn          the path maxn
+ *
+ * @return              the relative path
+ */
+tb_char_t const*        tb_path_relative_to(tb_char_t const* root, tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
  */

@@ -54,6 +54,9 @@ tb_int_t xm_os_isdir(lua_State* lua);
 tb_int_t xm_os_rmdir(lua_State* lua);
 tb_int_t xm_os_mkdir(lua_State* lua);
 tb_int_t xm_os_cpdir(lua_State* lua);
+tb_int_t xm_os_chdir(lua_State* lua);
+tb_int_t xm_os_curdir(lua_State* lua);
+tb_int_t xm_os_tmpdir(lua_State* lua);
 tb_int_t xm_os_isfile(lua_State* lua);
 tb_int_t xm_os_rmfile(lua_State* lua);
 tb_int_t xm_os_cpfile(lua_State* lua);
@@ -61,6 +64,7 @@ tb_int_t xm_os_rename(lua_State* lua);
 tb_int_t xm_os_exists(lua_State* lua);
 
 // the path functions
+tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
@@ -82,6 +86,9 @@ static luaL_Reg const g_os_functions[] =
 ,   { "rmdir",          xm_os_rmdir     }
 ,   { "mkdir",          xm_os_mkdir     }
 ,   { "cpdir",          xm_os_cpdir     }
+,   { "chdir",          xm_os_chdir     }
+,   { "curdir",         xm_os_curdir    }
+,   { "tmpdir",         xm_os_tmpdir    }
 ,   { "isfile",         xm_os_isfile    }
 ,   { "rmfile",         xm_os_rmfile    }
 ,   { "cpfile",         xm_os_cpfile    }
@@ -93,7 +100,8 @@ static luaL_Reg const g_os_functions[] =
 // the path functions
 static luaL_Reg const g_path_functions[] = 
 {
-    { "absolute",       xm_path_absolute    }
+    { "relative",       xm_path_relative    }
+,   { "absolute",       xm_path_absolute    }
 ,   { "translate",      xm_path_translate   }
 ,   { "is_absolute",    xm_path_is_absolute }
 ,   { tb_null,          tb_null             }

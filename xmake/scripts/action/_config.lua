@@ -27,6 +27,7 @@ local _config = _config or {}
 local os        = require("base/os")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local makefile  = require("base/makefile")
     
 -- done the given config
 function _config.done()

@@ -79,6 +79,14 @@ tb_size_t               tb_directory_home(tb_char_t* path, tb_size_t maxn);
  */
 tb_size_t               tb_directory_current(tb_char_t* path, tb_size_t maxn);
 
+/*! set the current directory
+ * 
+ * @param path          the directory path 
+ *
+ * @return              tb_true or tb_false
+ */
+tb_bool_t               tb_directory_current_set(tb_char_t const* path);
+
 /*! the temporary directory
  * 
  * @param path          the directory path data
