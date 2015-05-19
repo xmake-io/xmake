@@ -32,6 +32,7 @@ local config        = require("base/config")
 local project       = require("base/project")
 local preprocessor  = require("base/preprocessor")
 local action        = require("action/action")
+local platform      = require("platform/platform")
 
 -- init the option menu
 local menu =
@@ -325,11 +326,21 @@ function main._done_option()
         return false
     end
 
+    -- init platform
+    if not platform.init() then
+        -- error
+        utils.error("init platform: %s failed!", config.target().plat)
+        return false
+    end
+
     -- dump project 
     project.dump()
 
     -- dump config
     config.dump()
+
+    -- dump platform
+    platform.dump()
 
     -- enter the project directory
     if not os.cd(xmake._PROJECT_DIR) then

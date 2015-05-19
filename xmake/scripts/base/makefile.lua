@@ -29,6 +29,7 @@ local os        = require("base/os")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
+local platform  = require("platform/platform")
 
 -- make the given target to the makefile
 function makefile._make_target(file, name, target)
@@ -45,6 +46,12 @@ function makefile._make_target(file, name, target)
         for _, dep in ipairs(deps) do
             file:write(" " .. dep)
         end
+    end
+
+    -- make dependence for object
+    local srcfiles = os.match(target.files)
+    for _, srcfile in ipairs(srcfiles) do
+        file:write(" " .. srcfile)
     end
 
     -- make dependence end
