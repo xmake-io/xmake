@@ -38,8 +38,16 @@ __tb_extern_c_enter__
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
-/// the directory walk func type
-typedef tb_void_t       (*tb_directory_walk_func_t)(tb_char_t const* path, tb_file_info_t const* info, tb_cpointer_t priv);
+
+/*! the directory walk func type
+ *
+ * @param path          the file path
+ * @param info          the file info
+ * @param priv          the user private data
+ *
+ * @return              continue: tb_true, break: tb_false
+ */
+typedef tb_bool_t       (*tb_directory_walk_func_t)(tb_char_t const* path, tb_file_info_t const* info, tb_cpointer_t priv);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces

@@ -23,6 +23,10 @@
 -- define module: os
 local os = os or {}
 
+-- load modules
+local path      = require("base/path")
+local utils     = require("base/utils")
+
 -- copy file or directory
 function os.cp(src, dst)
     
@@ -137,6 +141,47 @@ function os.cd(path)
     
     -- ok
     return true
+end
+
+-- match files or directories
+--
+-- @param pattern   the search pattern 
+--                  uses "*" to match any part of a file or directory name,
+--                  uses "**" to recurse into subdirectories.
+--
+-- @param findir    true: find directory, false: find file
+-- @return          the result array and count
+--
+-- @code
+-- local dirs, count = os.match("./src/*", true)
+-- local files, count = os.match("./src/**.c")
+-- @endcode
+--
+function os.match(pattern, findir)
+
+    -- translate path and remove some repeat separators
+    pattern = path.translate(pattern)
+
+    -- get the root directory
+    local rootdir = pattern
+    local starpos = pattern:find("%*")
+    if starpos then
+        rootdir = rootdir:sub(1, starpos - 1)
+    end
+    rootdir = path.directory(rootdir)
+
+    -- is recurse?
+    local recurse = pattern:find("**", nil, true)
+
+    -- convert pattern to a lua pattern
+    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+    pattern = pattern:gsub("%*%*", "\001")
+    pattern = pattern:gsub("%*", "\002")
+    pattern = pattern:gsub("\001", ".*")
+    pattern = pattern:gsub("\002", "[^/]*")
+    
+    -- find it
+    return os.find(rootdir, pattern, recurse, findir)
 end
 
 -- return module: os
