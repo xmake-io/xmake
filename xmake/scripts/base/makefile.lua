@@ -26,10 +26,76 @@ local makefile = makefile or {}
 -- load modules
 local io        = require("base/io")
 local os        = require("base/os")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
+
+-- get the source files from the given target
+function makefile._srcfiles(target)
+
+    -- check
+    assert(target)
+
+    -- no files?
+    if not target.files then
+        return nil
+    end
+
+    -- wrap files first
+    local target_files = utils.wrap(target.files)
+
+    -- match files
+    local i = 1
+    local srcfiles = {}
+    for _, target_file in ipairs(target_files) do
+
+        -- match source files
+        local files = os.match(target_file)
+
+        -- process source files
+        for _, file in ipairs(files) do
+
+            -- save it
+            srcfiles[i] = file
+            i = i + 1
+
+        end
+    end
+
+    -- ok?
+    return srcfiles
+end
+
+-- get object files for the given source files
+function makefile._objfiles(srcfiles)
+
+    -- check
+    assert(srcfiles)
+   
+    -- the platform configs
+    local configs = platform._CONFIGS
+    assert(configs and configs.format)
+
+    -- the object file format
+    local format = configs.format.object
+    assert(format)
+ 
+    -- make object files
+    local i = 1
+    local objfiles = {}
+    for _, srcfile in ipairs(srcfiles) do
+
+        -- save it
+        objfiles[i] = path.directory(srcfile) .. "/" .. format[1] .. path.basename(srcfile) .. format[2]
+        i = i + 1
+
+    end
+
+    -- ok?
+    return objfiles
+end
 
 -- make the given target to the makefile
 function makefile._make_target(file, name, target)
@@ -49,9 +115,12 @@ function makefile._make_target(file, name, target)
     end
 
     -- make dependence for object
-    local srcfiles = os.match(target.files)
-    for _, srcfile in ipairs(srcfiles) do
-        file:write(" " .. srcfile)
+    local srcfiles = makefile._srcfiles(target)
+    if srcfiles then
+        local objfiles = makefile._objfiles(srcfiles)
+        for _, objfile in ipairs(objfiles) do
+            file:write(" " .. path.translate(objfile))
+        end
     end
 
     -- make dependence end
