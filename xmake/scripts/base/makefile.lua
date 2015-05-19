@@ -40,7 +40,7 @@ function makefile._srcfiles(target)
 
     -- no files?
     if not target.files then
-        return nil
+        return {}
     end
 
     -- wrap files first
@@ -87,8 +87,11 @@ function makefile._objfiles(srcfiles)
     local objfiles = {}
     for _, srcfile in ipairs(srcfiles) do
 
+        -- make object file
+        local objfile = path.directory(srcfile) .. "/" .. format[1] .. path.basename(srcfile) .. format[2]
+
         -- save it
-        objfiles[i] = path.directory(srcfile) .. "/" .. format[1] .. path.basename(srcfile) .. format[2]
+        objfiles[i] = path.translate(objfile)
         i = i + 1
 
     end
@@ -97,11 +100,61 @@ function makefile._objfiles(srcfiles)
     return objfiles
 end
 
+-- make the object of the given target to the makefile
+function makefile._make_object(file, target, srcfile, objfile)
+    
+    -- check
+    assert(file and target and srcfile and objfile)
+
+    -- make head
+    file:write(string.format("%s:", objfile))
+
+    -- make dependence
+    file:write(string.format(" %s\n", srcfile))
+
+    -- make body
+    file:write(string.format("\techo \"%s\"\n", srcfile))
+
+    -- make tail
+    file:write("\n")
+
+    -- ok
+    return true
+end
+
+-- make all objects of the given target to the makefile
+function makefile._make_objects(file, target, srcfiles, objfiles)
+
+    -- check
+    assert(file and target and srcfiles and objfiles)
+
+    -- make all objects
+    local i = 1
+    for _, objfile in ipairs(objfiles) do
+
+        -- make object
+        if not makefile._make_object(file, target, srcfiles[i], objfile) then
+            return false
+        end
+
+        -- next
+        i = i + 1
+    end
+
+    -- ok
+    return true
+end
+
 -- make the given target to the makefile
 function makefile._make_target(file, name, target)
 
     -- check
     assert(file and name and target)
+
+    -- get source and object files
+    local srcfiles = makefile._srcfiles(target)
+    local objfiles = makefile._objfiles(srcfiles)
+    assert(srcfiles and objfiles)
 
     -- make head
     file:write(string.format("%s:", name))
@@ -114,13 +167,9 @@ function makefile._make_target(file, name, target)
         end
     end
 
-    -- make dependence for object
-    local srcfiles = makefile._srcfiles(target)
-    if srcfiles then
-        local objfiles = makefile._objfiles(srcfiles)
-        for _, objfile in ipairs(objfiles) do
-            file:write(" " .. path.translate(objfile))
-        end
+    -- make dependence for objects
+    for _, objfile in ipairs(objfiles) do
+        file:write(" " .. objfile)
     end
 
     -- make dependence end
@@ -129,11 +178,11 @@ function makefile._make_target(file, name, target)
     -- make body
     file:write(string.format("\techo \"%s\"\n", name))
 
-    -- make end
+    -- make tail
     file:write("\n")
 
-    -- ok
-    return true
+    -- make objects for this target
+    return makefile._make_objects(file, target, srcfiles, objfiles) 
 end
 
 -- make all targets to the makefile
@@ -198,9 +247,17 @@ function makefile.make()
 
     -- make all targets to the makefile
     if not makefile._make_targets(file) then
+
         -- error 
         utils.error("save %s failed!", path)
+
+        -- close the makefile
         file:close()
+
+        -- remove the makefile
+        os.rm(path)
+
+        -- failed
         return false
     end
 
