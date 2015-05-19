@@ -155,6 +155,7 @@ end
 -- @code
 -- local dirs, count = os.match("./src/*", true)
 -- local files, count = os.match("./src/**.c")
+-- local file = os.match("./src/test.c")
 -- @endcode
 --
 function os.match(pattern, findir)
