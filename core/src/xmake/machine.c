@@ -50,6 +50,7 @@ typedef struct __xm_machine_impl_t
  */
 
 // the os functions
+tb_int_t xm_os_find(lua_State* lua);
 tb_int_t xm_os_isdir(lua_State* lua);
 tb_int_t xm_os_rmdir(lua_State* lua);
 tb_int_t xm_os_mkdir(lua_State* lua);
@@ -82,7 +83,8 @@ tb_int_t xm_preprocessor_loadx(lua_State* lua);
 // the os functions
 static luaL_Reg const g_os_functions[] = 
 {
-    { "isdir",          xm_os_isdir     }
+    { "find",           xm_os_find      }
+,   { "isdir",          xm_os_isdir     }
 ,   { "rmdir",          xm_os_rmdir     }
 ,   { "mkdir",          xm_os_mkdir     }
 ,   { "cpdir",          xm_os_cpdir     }
