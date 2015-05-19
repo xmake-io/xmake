@@ -24,23 +24,16 @@
 local _macosx = _macosx or {}
 
 -- init _macosx
-function _macosx.init()
+function _macosx.init(configs)
 
-    -- init configs
-    local configs = {}
-
-    -- init the target file suffix name
-    configs.suffix = {}
-    configs.suffix.static = ".a"
-    configs.suffix.object = ".o"
-    configs.suffix.shared = ".dylib"
-
-    -- init the target file prefix name
-    configs.prefix = {}
-    configs.prefix.static = "lib"
+    -- init the file name format
+    configs.format = {}
+    configs.format.static = {"lib", ".a"}
+    configs.format.object = {"",    ".o"}
+    configs.format.shared = {"",    ".dylib"}
 
     -- ok
-    return configs
+    return true
 end
 
 

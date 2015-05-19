@@ -30,26 +30,28 @@ local config    = require("base/config")
 -- init platform
 function platform.init()
 
-    -- have been existed?
-    if platform._CONFIGS then
-        return platform._CONFIGS
-    end
+    -- init platform configs
+    platform._CONFIGS = platform._CONFIGS or {}
+    local configs = platform._CONFIGS
 
     -- get target
     local target = config.target()
     assert(target)
 
+    -- init configs
+    configs.plat = target.plat
+    configs.host = target.host
+    configs.arch = target.arch
+    configs.mode = target.mode
+
     -- load platform
     local p = require("platform/_" .. target.plat)
     if not p then
-        return nil
+        return false
     end
 
     -- init platform
-    platform._CONFIGS = p.init()
-
-    -- ok?
-    return platform._CONFIGS
+    return p.init(configs)
 end
 
 -- dump configs
