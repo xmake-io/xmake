@@ -282,19 +282,17 @@ function main._done_option()
     end
     assert(options.file)
 
+    -- init the build directory
+    if options.buildir and path.is_absolute(options.buildir) then
+        options.buildir = path.relative(options.buildir, xmake._PROJECT_DIR)
+    end
+
     -- load xmake.xconf file first
     local errors = config.loadxconf()
     if not errors then
         -- load xmake.xproj file
         errors = project.loadxproj(options.file)
     end
-    assert(config._CONFIGS)
-
-    -- init the build directory
-    if config._CONFIGS.buildir and path.is_absolute(config._CONFIGS.buildir) then
-        config._CONFIGS.buildir = path.relative(config._CONFIGS.buildir, xmake._PROJECT_DIR)
-    end
-    assert(config._CONFIGS.buildir)
 
     -- done help
     if options.help then
@@ -329,7 +327,7 @@ function main._done_option()
     -- init platform
     if not platform.init() then
         -- error
-        utils.error("init platform: %s failed!", config.target().plat)
+        utils.error("init platform: %s failed!", config.get("plat"))
         return false
     end
 

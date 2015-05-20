@@ -57,6 +57,11 @@ function makefile._srcfiles(target)
         -- process source files
         for _, file in ipairs(files) do
 
+            -- convert to the relative path
+            if path.is_absolute(file) then
+                file = path.relative(file, xmake._PROJECT_DIR)
+            end
+
             -- save it
             srcfiles[i] = file
             i = i + 1
@@ -69,17 +74,17 @@ function makefile._srcfiles(target)
 end
 
 -- get object files for the given source files
-function makefile._objfiles(srcfiles)
+function makefile._objfiles(name, srcfiles)
 
     -- check
-    assert(srcfiles)
-   
-    -- the platform configs
-    local configs = platform._CONFIGS
-    assert(configs and configs.format)
+    assert(name and srcfiles)
 
+    -- the build directory
+    local buildir = config.get("buildir")
+    assert(buildir)
+   
     -- the object file format
-    local format = configs.format.object
+    local format = platform._CONFIGS.format.object
     assert(format)
  
     -- make object files
@@ -88,7 +93,7 @@ function makefile._objfiles(srcfiles)
     for _, srcfile in ipairs(srcfiles) do
 
         -- make object file
-        local objfile = path.directory(srcfile) .. "/" .. format[1] .. path.basename(srcfile) .. format[2]
+        local objfile = string.format("%s/%s/%s/%s/%s/%s", buildir, name, path.directory(srcfile), format[1], path.basename(srcfile), format[2])
 
         -- save it
         objfiles[i] = path.translate(objfile)
@@ -153,7 +158,7 @@ function makefile._make_target(file, name, target)
 
     -- get source and object files
     local srcfiles = makefile._srcfiles(target)
-    local objfiles = makefile._objfiles(srcfiles)
+    local objfiles = makefile._objfiles(name, srcfiles)
     assert(srcfiles and objfiles)
 
     -- make head
@@ -227,17 +232,17 @@ end
 -- make makefile in the build directory
 function makefile.make()
 
-    -- the configs
-    local configs = config._CONFIGS
-    assert(configs and configs.buildir)
+    -- get the build directory
+    local buildir = config.get("buildir")
+    assert(buildir)
 
     -- make the build directory
-    if not os.isdir(configs.buildir) then
-        assert(os.mkdir(configs.buildir))
+    if not os.isdir(buildir) then
+        assert(os.mkdir(buildir))
     end
 
     -- open the makefile 
-    local path = configs.buildir .. "/makefile"
+    local path = buildir .. "/makefile"
     local file = io.open(path, "w")
     if not file then
         -- error
@@ -274,12 +279,12 @@ function makefile.build(target)
     -- check
     assert(target and type(target) == "string")
 
-    -- the configs
-    local configs = config._CONFIGS
-    assert(configs and configs.buildir)
+    -- get the build directory
+    local buildir = config.get("buildir")
+    assert(buildir)
 
     -- done build
-    local ok = os.execute(string.format("make -f %s %s", configs.buildir .. "/makefile", target))
+    local ok = os.execute(string.format("make -f %s %s", buildir .. "/makefile", target))
     if ok ~= 0 then
         -- error
         utils.error("build target: %s failed!", target)

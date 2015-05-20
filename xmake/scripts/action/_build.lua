@@ -35,9 +35,9 @@ function _build.done()
     -- rebuild, update
 
     -- build target for makefile
-    if not makefile.build(config.target_name()) then
+    if not makefile.build(config.get("target")) then
         -- error
-        utils.error("build target: %s failed!", config.target_name())
+        utils.error("build target: %s failed!", config.get("target"))
         return false
     end
 

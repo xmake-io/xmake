@@ -34,18 +34,8 @@ function platform.init()
     platform._CONFIGS = platform._CONFIGS or {}
     local configs = platform._CONFIGS
 
-    -- get target
-    local target = config.target()
-    assert(target)
-
-    -- init configs
-    configs.plat = target.plat
-    configs.host = target.host
-    configs.arch = target.arch
-    configs.mode = target.mode
-
     -- load platform
-    local p = require("platform/_" .. target.plat)
+    local p = require("platform/_" .. config.get("plat"))
     if not p then
         return false
     end
