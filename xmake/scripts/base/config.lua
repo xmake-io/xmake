@@ -29,7 +29,7 @@ local utils         = require("base/utils")
 local option        = require("base/option")
 local preprocessor  = require("base/preprocessor")
 
--- auto configs
+-- make the automatic configure
 function config._auto(name)
 
     -- get platform or host
@@ -140,10 +140,10 @@ function config._save(file, object)
     return config._save_with_level(file, object, 0)
 end
 
--- make config for the current target
+-- make configure for the current target
 function config._make()
 
-    -- check
+    -- the configs
     local configs = config._CONFIGS
     assert(configs)
    
@@ -153,7 +153,7 @@ function config._make()
 
     -- init current config
     config._CURRENT = config._CURRENT or {}
-    local current = config._CURRENT;
+    local current = config._CURRENT
 
     -- init the current target 
     current.target = options.target or options._DEFAULTS.target
@@ -205,7 +205,7 @@ function config._target()
     end
 end
 
--- get the given config from the current 
+-- get the given configure from the current 
 function config.get(name)
 
     -- check
@@ -274,7 +274,7 @@ function config.loadxconf()
 
     -- load and execute the xmake.xconf
     local path = options.project .. "/xmake.xconf"
-    local newenv, errors = preprocessor.loadfile(path, "config", configures, {"target"})
+    local newenv = preprocessor.loadfile(path, "config", configures, {"target"})
 
     -- exists local configures?
     if newenv then
@@ -287,10 +287,6 @@ function config.loadxconf()
         if target and target.host ~= xmake._HOST then
             config._CONFIGS = {}
         end
-    elseif errors then
-        -- error
-        utils.error("load %s failed!", path)
-        utils.error("%s", errors)
     end
 
     -- the target name
@@ -350,7 +346,7 @@ function config.loadxconf()
     config._make()
 end
 
--- dump configs
+-- dump the current configure
 function config.dump()
     
     -- check

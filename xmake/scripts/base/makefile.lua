@@ -69,6 +69,9 @@ function makefile._srcfiles(target)
         end
     end
 
+    -- remove repeat files
+    srcfiles = utils.unique(srcfiles)
+
     -- ok?
     return srcfiles
 end
@@ -194,10 +197,10 @@ end
 function makefile._make_targets(file)
 
     -- check 
-    assert(file and project and project._CONFIGS)
+    assert(file)
 
     -- get all project targets
-    local targets = project._CONFIGS._TARGET
+    local targets = project.targets()
     if not targets then
         -- error
         utils.error("not found target in this project!")

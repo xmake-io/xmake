@@ -76,7 +76,7 @@ function utils._dump_with_level(object, exclude, level)
         for l = 1, level do
             io.write("    ")
         end
-        io.write("{\n")  
+        io.write("{\n")
 
         -- dump body
         local i = 0
@@ -85,12 +85,11 @@ function utils._dump_with_level(object, exclude, level)
             -- exclude some keys
             if not exclude or type(k) ~= "string" or not k:find(exclude) then
 
-                -- dump spaces
+                -- dump spaces and separator
                 for l = 1, level do
                     io.write("    ")
                 end
 
-                -- dump separator
                 io.write(utils.ifelse(i == 0, "    ", ",   "))
                 
                 -- dump key
@@ -134,6 +133,23 @@ function utils.dump(object, exclude)
     return object
 end
 
+-- unwrap object if be only one
+function utils.unwrap(object)
+
+    -- check
+    assert(object)
+
+    -- unwrap it
+    if type(object) == "table" and table.getn(object) == 1 then
+        for _, v in pairs(object) do
+            return v
+        end
+    end
+
+    -- ok
+    return object
+end
+
 -- wrap object to table
 function utils.wrap(object)
 
@@ -144,6 +160,45 @@ function utils.wrap(object)
     if type(object) ~= "table" then
         return {object}
     end
+
+    -- ok
+    return object
+end
+
+-- remove repeat from the given array
+function utils.unique(array)
+
+    -- check
+    assert(array)
+
+    -- remove repeat
+    if type(array) == "table" then
+
+        -- not only one?
+        if table.getn(array) ~= 1 then
+        
+            -- make unique table
+            local unique = {}
+            for _, v in ipairs(array) do
+                if type(v) == "string" then
+                    unique[v] = v
+                else
+                    unique["\"" .. v .. "\""] = v
+                end
+            end
+
+            -- make array again
+            array = {}
+            local i = 1
+            for _, v in pairs(unique) do
+                array[i] = v
+                i = i + 1
+            end
+        end
+    end
+
+    -- ok
+    return array
 end
 
 -- return module: utils
