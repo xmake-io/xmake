@@ -87,7 +87,7 @@ function makefile._objfiles(name, srcfiles)
     assert(buildir)
    
     -- the object file format
-    local format = platform._CONFIGS.format.object
+    local format = platform.format("object")
     assert(format)
  
     -- make object files
@@ -108,7 +108,46 @@ function makefile._objfiles(name, srcfiles)
     return objfiles
 end
 
--- make the object of the given target to the makefile
+-- make the console to the makefile
+function makefile._make_console(file, target, objfiles)
+    
+    -- check
+    assert(file and target and objfiles)
+
+    -- make it
+    file:write(string.format("\techo console\n"))
+
+    -- ok
+    return true
+end
+
+-- make the static library to the makefile
+function makefile._make_static(file, target, objfiles)
+    
+    -- check
+    assert(file and target and objfiles)
+
+    -- make it
+    file:write(string.format("\techo static\n"))
+
+    -- ok
+    return true
+end
+
+-- make the shared library to the makefile
+function makefile._make_shared(file, target, objfiles)
+    
+    -- check
+    assert(file and target and objfiles)
+
+    -- make it
+    file:write(string.format("\techo shared\n"))
+
+    -- ok
+    return true
+end
+
+-- make the object to the makefile
 function makefile._make_object(file, target, srcfile, objfile)
     
     -- check
@@ -157,7 +196,7 @@ end
 function makefile._make_target(file, name, target)
 
     -- check
-    assert(file and name and target)
+    assert(file and name and target and target.kind)
 
     -- get source and object files
     local srcfiles = makefile._srcfiles(target)
@@ -184,7 +223,24 @@ function makefile._make_target(file, name, target)
     file:write("\n")
 
     -- make body
-    file:write(string.format("\techo \"%s\"\n", name))
+    local ok = false
+    if target.kind == "console" then 
+        ok = makefile._make_console(file, target, objfiles)
+    elseif target.kind == "static" then 
+        ok = makefile._make_static(file, target, objfiles)
+    elseif target.kind == "shared" then 
+        ok = makefile._make_shared(file, target, objfiles)
+    else
+        -- error
+        utils.error("the target kind: %s in not surpported now!", target.kind)
+        return false
+    end
+
+    -- error?
+    if not ok then
+        utils.error("make target with kind: %s failed!", target.kind)
+        return false
+    end
 
     -- make tail
     file:write("\n")

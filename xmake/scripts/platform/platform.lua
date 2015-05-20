@@ -44,7 +44,27 @@ function platform.init()
     return p.init(configs)
 end
 
--- dump configs
+-- get the given configure
+function platform.get(name)
+
+    -- check
+    assert(platform._CONFIGS)
+
+    -- get it
+    return platform._CONFIGS[name]
+end
+
+-- get the format from the given kind
+function platform.format(kind)
+
+    -- get format
+    local format = platform.get("format")
+
+    -- get it
+    return format[kind] or {"", ""}
+end
+
+-- dump the platform configure
 function platform.dump()
     
     -- check
