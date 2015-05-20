@@ -96,7 +96,7 @@ function makefile._objfiles(name, srcfiles)
     for _, srcfile in ipairs(srcfiles) do
 
         -- make object file
-        local objfile = string.format("%s/%s/%s/%s/%s/%s", buildir, name, path.directory(srcfile), format[1], path.basename(srcfile), format[2])
+        local objfile = string.format("%s/%s/%s/%s%s%s", buildir, name, path.directory(srcfile), format[1], path.basename(srcfile), format[2])
 
         -- save it
         objfiles[i] = path.translate(objfile)
