@@ -17,25 +17,30 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _android.lua
+-- @file        _linux.lua
 --
 
--- define module: _android
-local _android = _android or {}
+-- define module: _linux
+local _linux = _linux or {}
 
--- init _android
-function _android.init(configs)
+-- init _linux
+function _linux.init(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"",    ".so"}
+    -- init the file name formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"",    ".so"}
+
+    -- init the architecture scopes
+    configs.archs = {}
+    configs.archs.x86 = {}
+    configs.archs.x64 = {}
 
     -- ok
     return true
 end
 
 
--- return module: _android
-return _android
+-- return module: _linux
+return _linux

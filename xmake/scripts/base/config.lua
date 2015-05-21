@@ -29,22 +29,6 @@ local utils         = require("base/utils")
 local option        = require("base/option")
 local preprocessor  = require("base/preprocessor")
 
--- make the automatic configure
-function config._auto(name)
-
-    -- get platform or host
-    if name == "plat" or name == "host" then
-        return xmake._HOST
-    -- get architecture
-    elseif name == "arch" then
-        return xmake._ARCH
-    end
-
-    -- unknown
-    utils.error("unknown config: %s", name)
-    return "unknown"
-end
-
 -- save object with the level
 function config._save_with_level(file, object, level)
  
@@ -332,12 +316,7 @@ function config.loadxconf()
 
             -- save the default option to the target
             if not target[k] then
-
-                if v == "auto" then 
-                    target[k] = config._auto(k)
-                else
-                    target[k] = v
-                end
+                target[k] = v
             end
         end
     end

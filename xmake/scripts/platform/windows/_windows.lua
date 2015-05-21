@@ -17,25 +17,31 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _ios.lua
+-- @file        _windows.lua
 --
 
--- define module: _ios
-local _ios = _ios or {}
+-- define module: _windows
+local _windows = _windows or {}
 
--- init _ios
-function _ios.init(configs)
+-- init _windows
+function _windows.init(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"",    ".dylib"}
+    -- init the file name formats
+    configs.formats = {}
+    configs.formats.static   = {"", ".lib"}
+    configs.formats.object   = {"", ".obj"}
+    configs.formats.shared   = {"", ".dll"}
+    configs.formats.console  = {"", ".exe"}
+
+    -- init the architecture scopes
+    configs.archs = {}
+    configs.archs.x86 = {}
+    configs.archs.x64 = {}
 
     -- ok
     return true
 end
 
 
--- return module: _ios
-return _ios
+-- return module: _windows
+return _windows

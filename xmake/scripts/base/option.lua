@@ -442,16 +442,44 @@ function option.print_options(options)
 
         -- print more description if exists
         for i = 6, #option do
-            if option[i] then
 
-                -- make spaces 
-                local spaces = ""
-                for i = 0, padding do
-                    spaces = spaces .. " "
+            -- the description
+            local description = option[i]
+            if description then
+
+                -- is function? get results
+                if type(description) == "function" then
+                    description = description()
                 end
 
-                -- print this description
-                print(spaces .. option[i])
+                -- the description is string?
+                if type(description) == "string" then
+
+                    -- make spaces 
+                    local spaces = ""
+                    for i = 0, padding do
+                        spaces = spaces .. " "
+                    end
+
+                    -- print this description
+                    print(spaces .. description)
+
+                -- the description is table?
+                elseif type(description) == "table" then
+
+                    -- print all descriptions
+                    for _, v in pairs(description) do
+
+                        -- make spaces 
+                        local spaces = ""
+                        for i = 0, padding do
+                            spaces = spaces .. " "
+                        end
+
+                        -- print this description
+                        print(spaces .. v)
+                    end
+                end
             end
         end
     end

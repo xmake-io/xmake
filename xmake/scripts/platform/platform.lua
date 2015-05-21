@@ -24,6 +24,8 @@
 local platform = platform or {}
 
 -- load modules
+local os        = require("base/os")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 
@@ -35,7 +37,7 @@ function platform.init()
     local configs = platform._CONFIGS
 
     -- load platform
-    local p = require("platform/_" .. config.get("plat"))
+    local p = require("platform/" .. config.get("plat") .. "/_" .. config.get("plat"))
     if not p then
         return false
     end
@@ -58,7 +60,7 @@ end
 function platform.format(kind)
 
     -- get format
-    local format = platform.get("format")
+    local format = platform.get("formats")
 
     -- get it
     return format[kind] or {"", ""}
@@ -77,5 +79,48 @@ function platform.dump()
    
 end
 
+-- list all platforms
+function platform.plats()
+    
+    -- return it directly if exists
+    if platform._PLATS then
+        return platform._PLATS 
+    end
+
+    -- get the platform list
+    local plats = os.match(xmake._SCRIPTS_DIR .. "/platform/*", true)
+    if plats then
+        for i, v in ipairs(plats) do
+            plats[i] = path.basename(v)
+        end
+    end
+
+    -- save it
+    platform._PLATS = plats
+
+    -- ok
+    return plats
+end
+
+-- list all architectures
+function platform.archs(plat)
+
+    -- check
+    assert(plat)
+ 
+    -- load all platform configs
+    local archs = {}
+    local configs = {}
+    local p = require("platform/" .. plat .. "/_" .. plat)
+    if p and p.init(configs) and configs.archs then
+       for arch, _ in pairs(configs.archs) do
+        archs[table.getn(archs) + 1] = arch
+       end
+    end
+
+    -- ok
+    return archs
+end
+    
 -- return module: platform
 return platform
