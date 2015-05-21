@@ -53,6 +53,9 @@ cd ..
 
 # create the xmake install directory
 xmake_dir_install=/usr/local/share/xmake
+if [ -d $xmake_dir_install ]; then
+    sudo rm -rf $xmake_dir_install
+fi
 if [ ! -d $xmake_dir_install ]; then
     sudo mkdir $xmake_dir_install
 fi

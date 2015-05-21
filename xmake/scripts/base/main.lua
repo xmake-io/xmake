@@ -143,13 +143,39 @@ local menu =
         -- options
     ,   options = 
         {
-            {'p', "plat",       "kv", "auto",       "Compile for the given platform."                               }
-        ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                           }
+            {'p', "plat",       "kv", xmake._HOST,  "Compile for the given platform."                               
+                                                  , function () 
+                                                        local descriptions = {}
+                                                        local plats = platform.plats()
+                                                        if plats then
+                                                            for i, plat in ipairs(plats) do
+                                                                descriptions[i] = "    - " .. plat
+                                                            end
+                                                        end
+                                                        return descriptions
+                                                    end                                                             }
+        ,   {'a', "arch",       "kv", xmake._ARCH,  "Compile for the given architecture."                               
+                                                  , function () 
+                                                        local descriptions = {}
+                                                        local plats = platform.plats()
+                                                        if plats then
+                                                            for i, plat in ipairs(plats) do
+                                                                descriptions[i] = "    - " .. plat .. ":"
+                                                                local archs = platform.archs(plat)
+                                                                if archs then
+                                                                    for _, arch in ipairs(archs) do
+                                                                        descriptions[i] = descriptions[i] .. " " .. arch
+                                                                    end
+                                                                end
+                                                            end
+                                                        end
+                                                        return descriptions
+                                                    end                                                             }
         ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
                                                   , "    - debug"
                                                   , "    - release"
                                                   , "    - profile"                                                 }
-        ,   {'-', "host",       "kv", "auto",       "The current host environment."                                 }
+        ,   {'-', "host",       "kv", xmake._HOST,  "The current host environment."                                 }
 
         ,   {}
         ,   {'o', "buildir",    "kv", "build",      "Set the build directory"                                       }

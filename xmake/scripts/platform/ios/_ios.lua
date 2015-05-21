@@ -17,25 +17,31 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _macosx.lua
+-- @file        _ios.lua
 --
 
--- define module: _macosx
-local _macosx = _macosx or {}
+-- define module: _ios
+local _ios = _ios or {}
 
--- init _macosx
-function _macosx.init(configs)
+-- init _ios
+function _ios.init(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"",    ".dylib"}
+    -- init the file name formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"",    ".dylib"}
+
+    -- init the architecture scopes
+    configs.archs = {}
+    configs.archs.armv7      = {}
+    configs.archs.armv7s     = {}
+    configs.archs.arm64      = {}
 
     -- ok
     return true
 end
 
 
--- return module: _macosx
-return _macosx
+-- return module: _ios
+return _ios

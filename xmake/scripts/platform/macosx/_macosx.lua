@@ -17,26 +17,30 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _windows.lua
+-- @file        _macosx.lua
 --
 
--- define module: _windows
-local _windows = _windows or {}
+-- define module: _macosx
+local _macosx = _macosx or {}
 
--- init _windows
-function _windows.init(configs)
+-- init _macosx
+function _macosx.init(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static   = {"", ".lib"}
-    configs.format.object   = {"", ".obj"}
-    configs.format.shared   = {"", ".dll"}
-    configs.format.console  = {"", ".exe"}
+    -- init the file name formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"",    ".dylib"}
+
+    -- init the architecture scopes
+    configs.archs = {}
+    configs.archs.x86 = {}
+    configs.archs.x64 = {}
 
     -- ok
     return true
 end
 
 
--- return module: _windows
-return _windows
+-- return module: _macosx
+return _macosx
