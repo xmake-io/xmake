@@ -29,6 +29,7 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local config        = require("base/config")
+local global        = require("base/global")
 local project       = require("base/project")
 local preprocessor  = require("base/preprocessor")
 local action        = require("action/action")
@@ -397,10 +398,10 @@ function main._done_global()
     assert(options)
 
     -- load global configure
-    local errors = nil
-
+    global.loadxconf()
 
     -- dump global
+    global.dump()
 
     -- done action    
     return action.done("global")
