@@ -36,9 +36,6 @@ function _linux.init(configs)
     configs.archs = {}
     configs.archs.x86 = {}
     configs.archs.x64 = {}
-
-    -- ok
-    return true
 end
 
 
