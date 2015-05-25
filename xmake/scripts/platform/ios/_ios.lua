@@ -37,9 +37,6 @@ function _ios.init(configs)
     configs.archs.armv7      = {}
     configs.archs.armv7s     = {}
     configs.archs.arm64      = {}
-
-    -- ok
-    return true
 end
 
 

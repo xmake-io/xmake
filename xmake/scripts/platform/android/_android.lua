@@ -36,9 +36,6 @@ function _android.init(configs)
     configs.archs = {}
     configs.archs.armv5te    = {}
     configs.archs.armv6      = {}
-
-    -- ok
-    return true
 end
 
 

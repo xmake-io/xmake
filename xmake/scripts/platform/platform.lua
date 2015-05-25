@@ -29,21 +29,39 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 
+-- get the configure of the given platform
+function platform._config(plat)
+
+    -- the configure
+    platform._CONFIGS = platform._CONFIGS or {}
+    local config = platform._CONFIGS[plat]
+
+    -- return it directly if exists
+    if config then
+        return config
+    end
+
+    -- load platform
+    local p = require("platform/" .. plat .. "/_" .. plat)
+    if p then
+          
+        -- make configure
+        platform._CONFIGS[plat]= {}
+        config = platform._CONFIGS[plat]
+
+        -- init configure
+        p.init(config)
+    end
+
+    -- ok?
+    return config
+end
+
 -- init platform
 function platform.init()
 
-    -- init platform configs
-    platform._CONFIGS = platform._CONFIGS or {}
-    local configs = platform._CONFIGS
-
-    -- load platform
-    local p = require("platform/" .. config.get("plat") .. "/_" .. config.get("plat"))
-    if not p then
-        return false
-    end
-
-    -- init platform
-    return p.init(configs)
+    -- init the current platform
+    return platform._config(config.get("plat"))
 end
 
 -- get the given configure
@@ -52,8 +70,12 @@ function platform.get(name)
     -- check
     assert(platform._CONFIGS)
 
-    -- get it
-    return platform._CONFIGS[name]
+    -- get the current platform configure
+    local config = platform._config(config.get("plat"))
+    if config then
+        -- get it
+        return config[name]
+    end
 end
 
 -- get the format from the given kind
@@ -74,7 +96,7 @@ function platform.dump()
 
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(platform._CONFIGS)
+        utils.dump(platform._config(config.get("plat")))
     end
    
 end
@@ -110,10 +132,9 @@ function platform.archs(plat)
  
     -- load all platform configs
     local archs = {}
-    local configs = {}
-    local p = require("platform/" .. plat .. "/_" .. plat)
-    if p and p.init(configs) and configs.archs then
-       for arch, _ in pairs(configs.archs) do
+    local config = platform._config(plat)
+    if config and config.archs then
+       for arch, _ in pairs(config.archs) do
         archs[table.getn(archs) + 1] = arch
        end
     end
