@@ -38,6 +38,30 @@ function _android.init(configs)
     configs.archs.armv6      = {}
 end
 
+-- get the option menu for action: xmake config or global
+function _android.menu(action)
+
+    -- init config option menu
+    _android._MENU_CONFIG = _android._MENU_CONFIG or
+            {   {}
+            ,   {nil, "ndk",        "kv", nil,          "The NDK directory"             }
+            ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK version for NDK"       }
+            ,   }
+
+    -- init global option menu
+    _android._MENU_GLOBAL = _android._MENU_GLOBAL or
+            {   {}
+            ,   {nil, "ndk",        "kv", nil,          "The NDK directory"             }
+            ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK version for NDK"       }
+            ,   }
+
+    -- get the option menu
+    if action == "config" then
+        return _android._MENU_CONFIG
+    elseif action == "global" then
+        return _android._MENU_GLOBAL
+    end
+end
 
 -- return module: _android
 return _android

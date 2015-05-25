@@ -182,24 +182,29 @@ local menu =
         ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory"                                    }
 
         ,   {}
-        ,   {nil, "cc",         "kv", nil,          "The c compiler"                                                }
-        ,   {nil, "cxx",        "kv", nil,          "The c++ compiler"                                              }
-        ,   {nil, "mm",         "kv", nil,          "The objc compiler"                                             }
-        ,   {nil, "mxx",        "kv", nil,          "The objc++ compiler"                                           }
-        ,   {nil, "ld",         "kv", nil,          "The linker"                                                    }
-        ,   {nil, "as",         "kv", nil,          "The assembler"                                                 }
-        ,   {nil, "ar",         "kv", nil,          "The library creator"                                           }
+        ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
+                                                  , ".e.g"
+                                                  , "    - i386-mingw32-"
+                                                  , "    - arm-linux-androideabi-"                                  }
+        ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory"                                }
 
         ,   {}
+        ,   {nil, "cc",         "kv", "gcc",        "The c compiler"                                                }
+        ,   {nil, "cx",         "kv", "gcc",        "The c/c++ compiler"                                            }
+        ,   {nil, "cxx",        "kv", "gcc",        "The c++ compiler"                                              }
         ,   {nil, "cflags",     "kv", nil,          "The c compiler flags"                                          }
         ,   {nil, "cxflags",    "kv", nil,          "The c/c++ compiler flags"                                      }
         ,   {nil, "cxxflags",   "kv", nil,          "The c++ compiler flags"                                        }
-        ,   {nil, "mflags",     "kv", nil,          "The objc compiler flags"                                       }
-        ,   {nil, "mxflags",    "kv", nil,          "The objc/c++ compiler flags"                                   }
-        ,   {nil, "mxxflags",   "kv", nil,          "The objc++ compiler flags"                                     }
-        ,   {nil, "asflags",    "kv", nil,          "The assembler flags"                                           }
+
+        ,   {}
+        ,   {nil, "ld",         "kv", "ld",         "The linker"                                                    }
         ,   {nil, "ldflags",    "kv", nil,          "The linker flags"                                              }
-        ,   {nil, "arflags",    "kv", nil,          "The library creator flags"                                     }
+
+        ,   {}
+        ,   {nil, "as",         "kv", "as",         "The assembler"                                                 }
+        ,   {nil, "asflags",    "kv", nil,          "The assembler flags"                                           }
+       
+        ,   function () return platform.menu("config") end
 
         ,   {}
         ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }

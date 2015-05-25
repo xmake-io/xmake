@@ -23,7 +23,7 @@
 -- define module: _macosx
 local _macosx = _macosx or {}
 
--- init _macosx
+-- init configure
 function _macosx.init(configs)
 
     -- init the file name formats
@@ -36,8 +36,44 @@ function _macosx.init(configs)
     configs.archs = {}
     configs.archs.x86 = {}
     configs.archs.x64 = {}
+
+    -- save configure
+    _macosx._CONFIGS = configs
 end
 
+-- get the option menu for action: xmake config or global
+function _macosx.menu(action)
+
+    -- init config option menu
+    _macosx._MENU_CONFIG = _macosx._MENU_CONFIG or
+            {   {}   
+            ,   {nil, "mm",             "kv", nil,          "The objc compiler"                 }
+            ,   {nil, "mx",             "kv", nil,          "The objc/c++ compiler"             }
+            ,   {nil, "mxx",            "kv", nil,          "The objc++ compiler"               }
+            ,   {nil, "mflags",         "kv", nil,          "The objc compiler flags"           }
+            ,   {nil, "mxflags",        "kv", nil,          "The objc/c++ compiler flags"       }
+            ,   {nil, "mxxflags",       "kv", nil,          "The objc++ compiler flags"         }
+            ,   {}
+            ,   {nil, "xcode",          "kv", "/Applications/Xcode.app"
+                                            ,               "The Xcode application directory"   }
+            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK version for Xcode"         }
+            ,   }
+
+    -- init global option menu
+    _macosx._MENU_GLOBAL = _macosx._MENU_GLOBAL or
+            {   {}
+            ,   {nil, "xcode",          "kv", "/Applications/Xcode.app"
+                                            ,               "The Xcode application directory"   }
+            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK version for Xcode"         }
+            ,   }
+
+    -- get the option menu
+    if action == "config" then
+        return _macosx._MENU_CONFIG
+    elseif action == "global" then
+        return _macosx._MENU_GLOBAL
+    end
+end
 
 -- return module: _macosx
 return _macosx

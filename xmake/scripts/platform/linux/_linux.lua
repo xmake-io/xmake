@@ -38,6 +38,26 @@ function _linux.init(configs)
     configs.archs.x64 = {}
 end
 
+-- get the option menu for action: xmake config or global
+function _linux.menu(action)
+
+    -- init config option menu
+    _linux._MENU_CONFIG = _linux._MENU_CONFIG or
+            {   {}
+            ,   {nil, "ar",         "kv", "ar",         "The library creator"           }
+            ,   {nil, "arflags",    "kv", nil,          "The library creator flags"     }
+            }
+
+    -- init global option menu
+    _linux._MENU_GLOBAL = _linux._MENU_GLOBAL or {}
+
+    -- get the option menu
+    if action == "config" then
+        return _linux._MENU_CONFIG
+    elseif action == "global" then
+        return _linux._MENU_GLOBAL
+    end
+end
 
 -- return module: _linux
 return _linux
