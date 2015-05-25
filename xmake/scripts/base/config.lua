@@ -27,6 +27,7 @@ local config = config or {}
 local io            = require("base/io")
 local utils         = require("base/utils")
 local option        = require("base/option")
+local global        = require("base/global")
 local preprocessor  = require("base/preprocessor")
 
 -- save object with the level
@@ -143,7 +144,14 @@ function config._make()
     current.target = options.target or options._DEFAULTS.target
     assert(current.target)
 
-    -- get configs from all targets first
+    -- get configs from the global configure first
+    if global._CURRENT then
+        for k, v in pairs(global._CURRENT) do 
+            current[k] = v
+        end
+    end
+
+    -- get configs from all targets 
     for k, v in pairs(configs) do 
         if type(k) == "string" and not k:startswith("_") then
             current[k] = v
