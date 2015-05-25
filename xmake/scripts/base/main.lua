@@ -53,7 +53,7 @@ local menu =
     ,   description = "Build the project if no given action."
 
     ,   -- actions
-        actions = {"create", "config", "install", "clean"}
+        actions = {"create", "config", "global", "install", "clean"}
 
         -- options
     ,   options = 
@@ -204,6 +204,7 @@ local menu =
         ,   {nil, "as",         "kv", "as",         "The assembler"                                                 }
         ,   {nil, "asflags",    "kv", nil,          "The assembler flags"                                           }
        
+            -- the options for all platforms
         ,   function () return platform.menu("config") end
 
         ,   {}
@@ -222,6 +223,31 @@ local menu =
  
         ,   {}
         ,   {nil, "target",     "v",  "all",        "Configure for the given target."                               }
+        }
+    }
+
+    -- config global: xmake global
+,   global = 
+    {
+        -- xmake g
+        shortname = 'g'
+
+        -- usage
+    ,   usage = "xmake global|g [options] [target]"
+
+        -- description
+    ,   description = "Configure the global options for xmake."
+
+        -- options
+    ,   options = 
+        {
+            -- the options for all platforms
+            function () return platform.menu("global") end
+
+        ,   {}
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
         }
     }
 
@@ -291,8 +317,8 @@ local menu =
     }
 }
 
--- done option
-function main._done_option()
+-- prepare project
+function main._prepare_project()
 
     -- the options
     local options = xmake._OPTIONS
@@ -325,6 +351,17 @@ function main._done_option()
         errors = project.loadxproj(options.file)
     end
 
+    -- ok?
+    return errors
+end
+
+-- done help
+function main._done_help()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
     -- done help
     if options.help then
     
@@ -349,7 +386,46 @@ function main._done_option()
 
         -- ok
         return true
-    elseif errors then
+    end
+end
+
+-- done global
+function main._done_global()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- load global configure
+    local errors = nil
+
+
+    -- dump global
+
+    -- done action    
+    return action.done("global")
+end
+
+-- done option
+function main._done_option()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- done help?
+    if main._done_help() then
+        return true
+    end
+
+    -- done global?
+    if options._ACTION == "global" then
+        return main._done_global()
+    end
+
+    -- prepare project
+    local errors = main._prepare_project()
+    if errors then
         -- error
         utils.error(errors)
         return false
@@ -362,6 +438,13 @@ function main._done_option()
         return false
     end
 
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        -- error
+        utils.error("not found project: %s!", xmake._PROJECT_DIR)
+        return false
+    end
+ 
     -- dump project 
     project.dump()
 
@@ -371,13 +454,6 @@ function main._done_option()
     -- dump platform
     platform.dump()
 
-    -- enter the project directory
-    if not os.cd(xmake._PROJECT_DIR) then
-        -- error
-        utils.error("not found project: %s!", xmake._PROJECT_DIR)
-        return false
-    end
- 
     -- done action    
     return action.done(options._ACTION or "build")
 end
