@@ -26,6 +26,42 @@ local option = option or {}
 -- load modules
 local utils = require("base/utils")
 
+-- save the option menu
+function option._save_menu(menu)
+
+    -- translate it if exists function in the option menu
+    for _, submenu in pairs(menu) do
+
+        -- exits options?
+        if submenu.options then
+            
+            -- translate options
+            local options_all = {}
+            for _, option in ipairs(submenu.options) do
+
+                -- this option is function? translate it
+                if type(option) == "function" then
+                    local _options = option()
+                    if _options then
+                        for _, o in ipairs(_options) do
+                            options_all[table.getn(options_all) + 1] = o
+                        end
+                    end
+                else
+                    options_all[table.getn(options_all) + 1] = option
+                end
+            end
+
+            -- update the options
+            submenu.options = options_all
+        end
+    end
+
+    -- save menu
+    option._MENU = menu
+
+end
+
 -- init the option
 function option.init(argv, menu)
 
@@ -41,7 +77,7 @@ function option.init(argv, menu)
     xmake._OPTIONS._DEFAULTS = {}
 
     -- save menu
-    option._MENU = menu
+    option._save_menu(menu)
 
     -- parse _ARGV to _OPTIONS
     local _iter, _s, _k = ipairs(argv)

@@ -39,6 +39,31 @@ function _windows.init(configs)
     configs.archs.x64 = {}
 end
 
+-- get the option menu for action: xmake config or global
+function _windows.menu(action)
+
+    -- init config option menu
+    _windows._MENU_CONFIG = _windows._MENU_CONFIG or
+            {   {}
+            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio directory"         }
+            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK directory"     }
+            ,   }
+
+    -- init global option menu
+    _windows._MENU_GLOBAL = _windows._MENU_GLOBAL or
+            {   {}
+            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio directory"         }
+            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK directory"     }
+            ,   }
+
+    -- get the option menu
+    if action == "config" then
+        return _windows._MENU_CONFIG
+    elseif action == "global" then
+        return _windows._MENU_GLOBAL
+    end
+end
+
 
 -- return module: _windows
 return _windows

@@ -39,6 +39,40 @@ function _ios.init(configs)
     configs.archs.arm64      = {}
 end
 
+-- get the option menu for action: xmake config or global
+function _ios.menu(action)
+
+    -- init config option menu
+    _ios._MENU_CONFIG = _ios._MENU_CONFIG or
+            {   {}   
+            ,   {nil, "mm",             "kv", nil,          "The objc compiler"                     }
+            ,   {nil, "mx",             "kv", nil,          "The objc/c++ compiler"                 }
+            ,   {nil, "mxx",            "kv", nil,          "The objc++ compiler"                   }
+            ,   {nil, "mflags",         "kv", nil,          "The objc compiler flags"               }
+            ,   {nil, "mxflags",        "kv", nil,          "The objc/c++ compiler flags"           }
+            ,   {nil, "mxxflags",       "kv", nil,          "The objc++ compiler flags"             }
+            ,   {}
+            ,   {nil, "xcode",          "kv", "/Applications/Xcode.app"
+                                            ,               "The Xcode application directory"   }
+            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK version for Xcode"         }
+            ,   }
+
+    -- init global option menu
+    _ios._MENU_GLOBAL = _ios._MENU_GLOBAL or
+            {   {}
+            ,   {nil, "xcode",          "kv", "/Applications/Xcode.app"
+                                            ,               "The Xcode application directory"   }
+            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK version for Xcode"         }
+            ,   }
+
+    -- get the option menu
+    if action == "config" then
+        return _ios._MENU_CONFIG
+    elseif action == "global" then
+        return _ios._MENU_GLOBAL
+    end
+end
+
 
 -- return module: _ios
 return _ios

@@ -29,39 +29,46 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 
+-- load the given platform 
+function platform._load(plat)
+ 
+    -- load it
+    return require("platform/" .. plat .. "/_" .. plat)
+end
+
 -- get the configure of the given platform
-function platform._config(plat)
+function platform._configs(plat)
 
     -- the configure
     platform._CONFIGS = platform._CONFIGS or {}
-    local config = platform._CONFIGS[plat]
+    local configs = platform._CONFIGS[plat]
 
     -- return it directly if exists
-    if config then
-        return config
+    if configs then
+        return configs
     end
 
     -- load platform
-    local p = require("platform/" .. plat .. "/_" .. plat)
+    local p = platform._load(plat)
     if p then
           
         -- make configure
         platform._CONFIGS[plat]= {}
-        config = platform._CONFIGS[plat]
+        configs = platform._CONFIGS[plat]
 
         -- init configure
-        p.init(config)
+        p.init(configs)
     end
 
     -- ok?
-    return config
+    return configs
 end
 
 -- init platform
 function platform.init()
 
     -- init the current platform
-    return platform._config(config.get("plat"))
+    return platform._configs(config.get("plat"))
 end
 
 -- get the given configure
@@ -71,10 +78,10 @@ function platform.get(name)
     assert(platform._CONFIGS)
 
     -- get the current platform configure
-    local config = platform._config(config.get("plat"))
-    if config then
+    local configs = platform._configs(config.get("plat"))
+    if configs then
         -- get it
-        return config[name]
+        return configs[name]
     end
 end
 
@@ -96,7 +103,7 @@ function platform.dump()
 
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(platform._config(config.get("plat")))
+        utils.dump(platform._configs(config.get("plat")))
     end
    
 end
@@ -132,15 +139,73 @@ function platform.archs(plat)
  
     -- load all platform configs
     local archs = {}
-    local config = platform._config(plat)
-    if config and config.archs then
-       for arch, _ in pairs(config.archs) do
+    local configs = platform._configs(plat)
+    if configs and configs.archs then
+       for arch, _ in pairs(configs.archs) do
         archs[table.getn(archs) + 1] = arch
        end
     end
 
     -- ok
     return archs
+end
+
+-- get the option menu for action: xmake config or global
+function platform.menu(action)
+    
+    -- check
+    assert(action)
+
+    -- get all platforms
+    local plats = platform.plats()
+    assert(plats)
+
+    -- load and merge all platform menus
+    local menus = {}
+    local exist = {}
+    for _, plat in ipairs(plats) do
+
+        -- load platform
+        local p = platform._load(plat)
+        if p and p.menu then
+
+            -- get the platform menu
+            local menu = p.menu(action)
+            if menu then
+
+                -- exists options?
+                local exists = false
+                for _, option in ipairs(menu) do
+                    local name = option[2]
+                    if name and not exist[name] then
+                        exists = true
+                        break
+                    end
+                end
+
+                -- merge it and remove repeat if exists options
+                if exists then
+                    -- get the platform menu option
+                    for _, option in ipairs(menu) do
+
+                        -- merge it and remove repeat 
+                        local name = option[2]
+                        if name then
+                            if not exist[name] then
+                                menus[table.getn(menus) + 1] = option
+                                exist[name] = true
+                            end
+                        else
+                            menus[table.getn(menus) + 1] = option
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- get all platform menus
+    return menus
 end
     
 -- return module: platform
