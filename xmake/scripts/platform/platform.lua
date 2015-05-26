@@ -207,6 +207,35 @@ function platform.menu(action)
     -- get all platform menus
     return menus
 end
+
+-- probe the platform configure and update the values with "auto"
+function platform.probe(configs, is_global)
+
+    -- probe global
+    if is_global then
+
+        -- get all platforms
+        local plats = platform.plats()
+        assert(plats)
+
+        -- probe all platforms with the current host
+        for _, plat in ipairs(plats) do
+            local p = platform._load(plat)
+            local c = platform._configs(plat)
+            if p and p.probe and c and c.host and c.host == xmake._HOST then
+                p.probe(configs)
+            end
+        end
+
+    -- probe config
+    else
+        -- probe it
+        local p = platform._load(config.get("plat"))
+        if p and p.probe then
+            p.probe(configs)
+        end
+    end
+end
     
 -- return module: platform
 return platform

@@ -26,6 +26,9 @@ local _android = _android or {}
 -- init _android
 function _android.init(configs)
 
+    -- init host
+    configs.host = xmake._HOST
+
     -- init the file name formats
     configs.formats = {}
     configs.formats.static = {"lib", ".a"}
@@ -44,15 +47,15 @@ function _android.menu(action)
     -- init config option menu
     _android._MENU_CONFIG = _android._MENU_CONFIG or
             {   {}
-            ,   {nil, "ndk",        "kv", nil,          "The NDK directory"             }
-            ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK version for NDK"       }
+            ,   {nil, "ndk",        "kv", nil,          "The NDK Directory"             }
+            ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK Version for NDK"       }
             ,   }
 
     -- init global option menu
     _android._MENU_GLOBAL = _android._MENU_GLOBAL or
             {   {}
-            ,   {nil, "ndk",        "kv", nil,          "The NDK directory"             }
-            ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK version for NDK"       }
+            ,   {nil, "ndk",        "kv", nil,          "The NDK Directory"             }
+            ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK Version for NDK"       }
             ,   }
 
     -- get the option menu

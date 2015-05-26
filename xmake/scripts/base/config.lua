@@ -207,6 +207,23 @@ function config.get(name)
     return config._CURRENT[name]
 end
 
+-- set the given configure to the current 
+function config.set(name, value)
+
+    -- check
+    assert(config._CURRENT and name and value)
+
+    -- get the current target
+    local target = config._target()
+    assert(target)
+
+    -- set it to the current target configure for saving to file
+    target[name] = value
+
+    -- set it to the current configure
+    config._CURRENT[name] = value
+end
+
 -- save xmake.xconf
 function config.savexconf()
     
@@ -340,9 +357,7 @@ function config.dump()
     assert(config._CURRENT)
 
     -- dump
-    if xmake._OPTIONS.verbose then
-        utils.dump(config._CURRENT)
-    end
+    utils.dump(config._CURRENT)
    
 end
 

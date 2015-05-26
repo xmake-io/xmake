@@ -26,6 +26,9 @@ local _linux = _linux or {}
 -- init _linux
 function _linux.init(configs)
 
+    -- init host
+    configs.host = "linux"
+
     -- init the file name formats
     configs.formats = {}
     configs.formats.static = {"lib", ".a"}
@@ -44,8 +47,8 @@ function _linux.menu(action)
     -- init config option menu
     _linux._MENU_CONFIG = _linux._MENU_CONFIG or
             {   {}
-            ,   {nil, "ar",         "kv", "ar",         "The library creator"           }
-            ,   {nil, "arflags",    "kv", nil,          "The library creator flags"     }
+            ,   {nil, "ar",         "kv", "ar",         "The Library Creator"           }
+            ,   {nil, "arflags",    "kv", nil,          "The Library Creator Flags"     }
             }
 
     -- init global option menu
