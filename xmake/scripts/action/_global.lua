@@ -17,20 +17,39 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _config.lua
+-- @file        _global.lua
 --
 
--- define module: _config
-local _config = _config or {}
+-- define module: _global
+local _global = _global or {}
 
 -- load modules
 local utils     = require("base/utils")
 local global    = require("base/global")
+local platform  = require("platform/platform")
 
 -- done the given config
-function _config.done()
+function _global.done()
 
-    -- save globals
+    -- wrap the global configure for more convenient to get and set values
+    local global_wrapped = {}
+    setmetatable(global_wrapped, 
+    {
+        __index = function(tbl, key)
+            return global.get(key)
+        end,
+        __newindex = function(tbl, key, val)
+            global.set(key, val)
+        end
+    })
+
+    -- probe the global configure 
+    platform.probe(global_wrapped, true)
+
+    -- dump global
+    global.dump()
+
+    -- save the global configure
     if not global.savexconf() then
         -- error
         utils.error("save configure failed!")
@@ -42,5 +61,5 @@ function _config.done()
     return true
 end
 
--- return module: _config
-return _config
+-- return module: _global
+return _global

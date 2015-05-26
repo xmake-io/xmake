@@ -67,9 +67,9 @@ local menu =
         ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the given command argument"
-                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
-                                                  , "    3. the current directory"                                  }
+                                                  , "    1. The Given Command Argument"
+                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. The Current Directory"                                  }
 
 
         ,   {}
@@ -101,9 +101,9 @@ local menu =
         ,   {'f', "file",       "kv", "xmake.xproj","Create a given xmake.xproj file."                              }
         ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the given command argument"
-                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
-                                                  , "    3. the current directory"                                  }
+                                                  , "    1. The Given Command Argument"
+                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. The Current Directory"                                  }
         ,   {'l', "language",   "kv", "c",          "The project language"
                                                   , "    - c"
                                                   , "    - c++"
@@ -190,20 +190,20 @@ local menu =
         ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory"                                }
 
         ,   {}
-        ,   {nil, "cc",         "kv", "gcc",        "The c compiler"                                                }
-        ,   {nil, "cx",         "kv", "gcc",        "The c/c++ compiler"                                            }
-        ,   {nil, "cxx",        "kv", "gcc",        "The c++ compiler"                                              }
-        ,   {nil, "cflags",     "kv", nil,          "The c compiler flags"                                          }
-        ,   {nil, "cxflags",    "kv", nil,          "The c/c++ compiler flags"                                      }
-        ,   {nil, "cxxflags",   "kv", nil,          "The c++ compiler flags"                                        }
+        ,   {nil, "cc",         "kv", "gcc",        "The C Compiler"                                                }
+        ,   {nil, "cx",         "kv", "gcc",        "The C/C++ Compiler"                                            }
+        ,   {nil, "cxx",        "kv", "gcc",        "The C++ Compiler"                                              }
+        ,   {nil, "cflags",     "kv", nil,          "The C Compiler Flags"                                          }
+        ,   {nil, "cxflags",    "kv", nil,          "The C/C++ compiler Flags"                                      }
+        ,   {nil, "cxxflags",   "kv", nil,          "The C++ Compiler Flags"                                        }
 
         ,   {}
-        ,   {nil, "ld",         "kv", "ld",         "The linker"                                                    }
-        ,   {nil, "ldflags",    "kv", nil,          "The linker flags"                                              }
+        ,   {nil, "ld",         "kv", "ld",         "The Linker"                                                    }
+        ,   {nil, "ldflags",    "kv", nil,          "The Linker Flags"                                              }
 
         ,   {}
-        ,   {nil, "as",         "kv", "as",         "The assembler"                                                 }
-        ,   {nil, "asflags",    "kv", nil,          "The assembler flags"                                           }
+        ,   {nil, "as",         "kv", "as",         "The Assembler"                                                 }
+        ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"                                           }
        
             -- the options for all platforms
         ,   function () return platform.menu("config") end
@@ -212,9 +212,9 @@ local menu =
         ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the given command argument"
-                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
-                                                  , "    3. the current directory"                                  }
+                                                  , "    1. The Given Command Argument"
+                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. The Current Directory"                                  }
 
 
         ,   {}
@@ -270,10 +270,9 @@ local menu =
             {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the given command argument"
-                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
-                                                  , "    3. the current directory"                                  }
-
+                                                  , "    1. The Given Command Argument"
+                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. The Current Directory"                                  }
 
         ,   {}
         ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
@@ -303,10 +302,9 @@ local menu =
             {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
-                                                  , "    1. the given command argument"
-                                                  , "    2. the envirnoment variable: XMAKE_PROJECT_DIR"
-                                                  , "    3. the current directory"                                  }
-
+                                                  , "    1. The Given Command Argument"
+                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. The Current Directory"                                  }
         ,   {}
         ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
         ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
@@ -400,9 +398,6 @@ function main._done_global()
     -- load global configure
     global.loadxconf()
 
-    -- dump global
-    global.dump()
-
     -- done action    
     return action.done("global")
 end
@@ -448,9 +443,6 @@ function main._done_option()
  
     -- dump project 
     project.dump()
-
-    -- dump config
-    config.dump()
 
     -- dump platform
     platform.dump()

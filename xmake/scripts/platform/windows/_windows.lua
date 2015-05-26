@@ -26,6 +26,9 @@ local _windows = _windows or {}
 -- init _windows
 function _windows.init(configs)
 
+    -- init host
+    configs.host = "windows"
+
     -- init the file name formats
     configs.formats = {}
     configs.formats.static   = {"", ".lib"}
@@ -45,15 +48,15 @@ function _windows.menu(action)
     -- init config option menu
     _windows._MENU_CONFIG = _windows._MENU_CONFIG or
             {   {}
-            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio directory"         }
-            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK directory"     }
+            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio Directory"         }
+            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK Directory"     }
             ,   }
 
     -- init global option menu
     _windows._MENU_GLOBAL = _windows._MENU_GLOBAL or
             {   {}
-            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio directory"         }
-            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK directory"     }
+            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio Directory"         }
+            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK Directory"     }
             ,   }
 
     -- get the option menu

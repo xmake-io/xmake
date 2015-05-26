@@ -136,6 +136,21 @@ function global.get(name)
     return global._CURRENT[name]
 end
 
+-- set the given configure to the current 
+function global.set(name, value)
+
+    -- check
+    assert(global._CURRENT and global._CONFIGS)
+    assert(name and value)
+
+    -- set it to the current configure
+    global._CURRENT[name] = value
+
+    -- set it to the configure for saving to file
+    global._CONFIGS[name] = value
+
+end
+
 -- save xmake.xconf
 function global.savexconf()
     
@@ -248,9 +263,7 @@ function global.dump()
     assert(global._CURRENT)
 
     -- dump
-    if xmake._OPTIONS.verbose then
-        utils.dump(global._CURRENT)
-    end
+    utils.dump(global._CURRENT)
    
 end
 

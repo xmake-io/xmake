@@ -26,6 +26,9 @@ local _ios = _ios or {}
 -- init _ios
 function _ios.init(configs)
 
+    -- init host
+    configs.host = "macosx"
+
     -- init the file name formats
     configs.formats = {}
     configs.formats.static = {"lib", ".a"}
@@ -45,24 +48,30 @@ function _ios.menu(action)
     -- init config option menu
     _ios._MENU_CONFIG = _ios._MENU_CONFIG or
             {   {}   
-            ,   {nil, "mm",             "kv", nil,          "The objc compiler"                     }
-            ,   {nil, "mx",             "kv", nil,          "The objc/c++ compiler"                 }
-            ,   {nil, "mxx",            "kv", nil,          "The objc++ compiler"                   }
-            ,   {nil, "mflags",         "kv", nil,          "The objc compiler flags"               }
-            ,   {nil, "mxflags",        "kv", nil,          "The objc/c++ compiler flags"           }
-            ,   {nil, "mxxflags",       "kv", nil,          "The objc++ compiler flags"             }
+            ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
+            ,   {nil, "mx",             "kv", nil,          "The Objc/c++ Compiler"                 }
+            ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
+            ,   {nil, "mflags",         "kv", nil,          "The Objc Compiler Flags"               }
+            ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"           }
+            ,   {nil, "mxxflags",       "kv", nil,          "The Objc++ Compiler Flags"             }
             ,   {}
-            ,   {nil, "xcode",          "kv", "/Applications/Xcode.app"
-                                            ,               "The Xcode application directory"   }
-            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK version for Xcode"         }
+            ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"       }
+            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"             }
+            ,   {}
+            ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"         }
+            ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"            }
+            ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"         }
             ,   }
 
     -- init global option menu
     _ios._MENU_GLOBAL = _ios._MENU_GLOBAL or
             {   {}
-            ,   {nil, "xcode",          "kv", "/Applications/Xcode.app"
-                                            ,               "The Xcode application directory"   }
-            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK version for Xcode"         }
+            ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"       }
+            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"             }
+            ,   {}
+            ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"         }
+            ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"            }
+            ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"         }
             ,   }
 
     -- get the option menu
