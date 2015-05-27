@@ -27,25 +27,9 @@ local _config = _config or {}
 local utils     = require("base/utils")
 local config    = require("base/config")
 local makefile  = require("base/makefile")
-local platform  = require("platform/platform")
 
 -- done the given config
 function _config.done()
-
-    -- wrap the global configure for more convenient to get and set values
-    local config_wrapped = {}
-    setmetatable(config_wrapped, 
-    {
-        __index = function(tbl, key)
-            return config.get(key)
-        end,
-        __newindex = function(tbl, key, val)
-            config.set(key, val)
-        end
-    })
-
-    -- probe the configure
-    platform.probe(config_wrapped, false)
 
     -- dump config
     config.dump()

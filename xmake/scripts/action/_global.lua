@@ -26,25 +26,9 @@ local _global = _global or {}
 -- load modules
 local utils     = require("base/utils")
 local global    = require("base/global")
-local platform  = require("platform/platform")
 
 -- done the given config
 function _global.done()
-
-    -- wrap the global configure for more convenient to get and set values
-    local global_wrapped = {}
-    setmetatable(global_wrapped, 
-    {
-        __index = function(tbl, key)
-            return global.get(key)
-        end,
-        __newindex = function(tbl, key, val)
-            global.set(key, val)
-        end
-    })
-
-    -- probe the global configure 
-    platform.probe(global_wrapped, true)
 
     -- dump global
     global.dump()

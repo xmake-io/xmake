@@ -52,22 +52,22 @@ function platform._configs(plat)
     local p = platform._load(plat)
     if p then
           
-        -- make configure
+        -- init configure
         platform._CONFIGS[plat]= {}
         configs = platform._CONFIGS[plat]
 
-        -- init configure
-        p.init(configs)
+        -- make configure
+        p.make(configs)
     end
 
     -- ok?
     return configs
 end
 
--- init platform
-function platform.init()
+-- make the current platform configure
+function platform.make()
 
-    -- init the current platform
+    -- make and get the current platform configure
     return platform._configs(config.get("plat"))
 end
 
@@ -221,9 +221,8 @@ function platform.probe(configs, is_global)
         -- probe all platforms with the current host
         for _, plat in ipairs(plats) do
             local p = platform._load(plat)
-            local c = platform._configs(plat)
-            if p and p.probe and c and c.host and c.host == xmake._HOST then
-                p.probe(configs)
+            if p and p._PROBER and p._PROBER.done and p._HOST and p._HOST == xmake._HOST then
+                p._PROBER.done(configs)
             end
         end
 
@@ -231,8 +230,8 @@ function platform.probe(configs, is_global)
     else
         -- probe it
         local p = platform._load(config.get("plat"))
-        if p and p.probe then
-            p.probe(configs)
+        if p and p._PROBER and p._PROBER.done then
+            p._PROBER.done(configs)
         end
     end
 end
