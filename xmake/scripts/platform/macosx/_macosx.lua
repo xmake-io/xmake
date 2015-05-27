@@ -24,14 +24,13 @@
 local _macosx = _macosx or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local utils     = require("base/utils")
 local config    = require("base/config")
-local string    = require("base/string")
 
 -- init host
 _macosx._HOST   = "macosx"
+
+-- init architectures
+_macosx._ARCHS  = {"x86", "x64"}
 
 -- init prober
 _macosx._PROBER = require("platform/macosx/_prober")
@@ -44,11 +43,6 @@ function _macosx.make(configs)
     configs.formats.static = {"lib", ".a"}
     configs.formats.object = {"",    ".o"}
     configs.formats.shared = {"",    ".dylib"}
-
-    -- init the architectures
-    configs.archs = {}
-    configs.archs.x86 = {}
-    configs.archs.x64 = {}
 
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. config.get("xcode_sdkver") .. ".sdk"

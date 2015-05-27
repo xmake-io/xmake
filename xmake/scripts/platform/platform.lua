@@ -139,10 +139,10 @@ function platform.archs(plat)
  
     -- load all platform configs
     local archs = {}
-    local configs = platform._configs(plat)
-    if configs and configs.archs then
-       for arch, _ in pairs(configs.archs) do
-        archs[table.getn(archs) + 1] = arch
+    local p = platform._load(plat)
+    if p and p._ARCHS then
+       for _, arch in ipairs(p._ARCHS) do
+            archs[table.getn(archs) + 1] = arch
        end
     end
 

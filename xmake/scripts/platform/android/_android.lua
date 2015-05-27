@@ -26,6 +26,9 @@ local _android = _android or {}
 -- init host
 _android._HOST = xmake._HOST
 
+-- init architectures
+_android._ARCHS  = {"armv5te", "armv6", "armv7-a"}
+
 -- make configure
 function _android.make(configs)
 
@@ -35,10 +38,6 @@ function _android.make(configs)
     configs.formats.object = {"",    ".o"}
     configs.formats.shared = {"",    ".so"}
 
-    -- init the architecture scopes
-    configs.archs = {}
-    configs.archs.armv5te    = {}
-    configs.archs.armv6      = {}
 end
 
 -- get the option menu for action: xmake config or global
