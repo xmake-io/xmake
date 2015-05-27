@@ -23,11 +23,11 @@
 -- define module: _linux
 local _linux = _linux or {}
 
--- init _linux
-function _linux.init(configs)
+-- init host
+_linux._HOST = "linux"
 
-    -- init host
-    configs.host = "linux"
+-- make configure
+function _linux.make(configs)
 
     -- init the file name formats
     configs.formats = {}

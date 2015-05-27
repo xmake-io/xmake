@@ -23,11 +23,11 @@
 -- define module: _android
 local _android = _android or {}
 
--- init _android
-function _android.init(configs)
+-- init host
+_android._HOST = xmake._HOST
 
-    -- init host
-    configs.host = xmake._HOST
+-- make configure
+function _android.make(configs)
 
     -- init the file name formats
     configs.formats = {}

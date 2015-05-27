@@ -23,11 +23,11 @@
 -- define module: _windows
 local _windows = _windows or {}
 
--- init _windows
-function _windows.init(configs)
+-- init host
+_windows._HOST = "windows"
 
-    -- init host
-    configs.host = "windows"
+-- make configure
+function _windows.make(configs)
 
     -- init the file name formats
     configs.formats = {}

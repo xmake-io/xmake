@@ -398,6 +398,21 @@ function main._done_global()
     -- load global configure
     global.loadxconf()
 
+    -- wrap the global configure for more convenient to get and set values
+    local global_wrapped = {}
+    setmetatable(global_wrapped, 
+    {
+        __index = function(tbl, key)
+            return global.get(key)
+        end,
+        __newindex = function(tbl, key, val)
+            global.set(key, val)
+        end
+    })
+
+    -- probe the global platform configure 
+    platform.probe(global_wrapped, true)
+
     -- done action    
     return action.done("global")
 end
@@ -427,10 +442,29 @@ function main._done_option()
         return false
     end
 
-    -- init platform
-    if not platform.init() then
+    -- xmake config?
+    if options._ACTION == "config" then
+
+        -- wrap the global configure for more convenient to get and set values
+        local config_wrapped = {}
+        setmetatable(config_wrapped, 
+        {
+            __index = function(tbl, key)
+                return config.get(key)
+            end,
+            __newindex = function(tbl, key, val)
+                config.set(key, val)
+            end
+        })
+
+        -- probe the current platform configure
+        platform.probe(config_wrapped, false)
+    end
+
+    -- make the current platform configure
+    if not platform.make() then
         -- error
-        utils.error("init platform: %s failed!", config.get("plat"))
+        utils.error("make platform configure: %s failed!", config.get("plat"))
         return false
     end
 

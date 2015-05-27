@@ -23,11 +23,11 @@
 -- define module: _ios
 local _ios = _ios or {}
 
--- init _ios
-function _ios.init(configs)
+-- init host
+_ios._HOST = "macosx"
 
-    -- init host
-    configs.host = "macosx"
+-- make configure
+function _ios.make(configs)
 
     -- init the file name formats
     configs.formats = {}
@@ -55,7 +55,7 @@ function _ios.menu(action)
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"           }
             ,   {nil, "mxxflags",       "kv", nil,          "The Objc++ Compiler Flags"             }
             ,   {}
-            ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"       }
+            ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"             }
             ,   {}
             ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"         }
@@ -66,7 +66,7 @@ function _ios.menu(action)
     -- init global option menu
     _ios._MENU_GLOBAL = _ios._MENU_GLOBAL or
             {   {}
-            ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"       }
+            ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"             }
             ,   {}
             ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"         }
