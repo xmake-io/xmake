@@ -23,11 +23,17 @@
 -- define module: _android
 local _android = _android or {}
 
+-- load modules
+local config        = require("base/config")
+
 -- init host
-_android._HOST = xmake._HOST
+_android._HOST      = xmake._HOST
 
 -- init architectures
-_android._ARCHS  = {"armv5te", "armv6", "armv7-a"}
+_android._ARCHS     = {"armv5te", "armv6", "armv7-a"}
+
+-- init prober
+_android._PROBER    = require("platform/android/_prober")
 
 -- make configure
 function _android.make(configs)

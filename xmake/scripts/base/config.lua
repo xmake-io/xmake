@@ -291,9 +291,14 @@ function config.loadxconf()
         -- save configs
         config._CONFIGS = newenv._CONFIGS
 
-        -- clear configs if the host environment has been changed
+        -- clear configs if the host has been changed
         local target = config._target()
         if target and target.host ~= xmake._HOST then
+            config._CONFIGS = {}
+        end
+
+        -- clear configs if the plat has been changed
+        if target and target.plat and options.plat and target.plat ~= options.plat then
             config._CONFIGS = {}
         end
     end

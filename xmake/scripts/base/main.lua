@@ -155,7 +155,7 @@ local menu =
                                                         end
                                                         return descriptions
                                                     end                                                             }
-        ,   {'a', "arch",       "kv", xmake._ARCH,  "Compile for the given architecture."                               
+        ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                               
                                                   , function () 
                                                         local descriptions = {}
                                                         local plats = platform.plats()

@@ -23,11 +23,17 @@
 -- define module: _windows
 local _windows = _windows or {}
 
+-- load modules
+local config        = require("base/config")
+
 -- init host
-_windows._HOST = "windows"
+_windows._HOST      = "windows"
 
 -- init architectures
-_windows._ARCHS  = {"x86", "x64"}
+_windows._ARCHS     = {"x86", "x64"}
+
+-- init prober
+_windows._PROBER    = require("platform/windows/_prober")
 
 -- make configure
 function _windows.make(configs)
