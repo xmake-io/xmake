@@ -39,7 +39,7 @@ function _prober._probe_arch(configs)
     if arch and arch ~= "auto" then return true end
 
     -- init the default architecture
-    configs.arch = xmake._ARCH
+    configs.arch = "x86"
 
     -- ok
     return true
@@ -101,7 +101,7 @@ function _prober._probe_xcode_sdkver(configs)
 
     -- attempt to match the directory
     if not xcode_sdkver then
-        local dirs = os.match(configs.xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk", true)
+        local dirs = os.match(configs.xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk", true)
         if dirs then
             for _, dir in ipairs(dirs) do
                 xcode_sdkver = string.match(dir, "%d+%.%d+")

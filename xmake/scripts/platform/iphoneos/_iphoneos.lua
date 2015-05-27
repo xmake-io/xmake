@@ -17,26 +17,26 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _ios.lua
+-- @file        _iphoneos.lua
 --
 
--- define module: _ios
-local _ios = _ios or {}
+-- define module: _iphoneos
+local _iphoneos = _iphoneos or {}
 
 -- load modules
-local config    = require("base/config")
+local config        = require("base/config")
 
 -- init host
-_ios._HOST      = "macosx"
+_iphoneos._HOST      = "macosx"
 
 -- init architectures
-_ios._ARCHS     = {"armv7", "armv7s", "arm64"}
+_iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
 
 -- init prober
-_ios._PROBER    = require("platform/ios/_prober")
+_iphoneos._PROBER    = require("platform/iphoneos/_prober")
 
 -- make configure
-function _ios.make(configs)
+function _iphoneos.make(configs)
 
     -- init the file name formats
     configs.formats = {}
@@ -50,10 +50,10 @@ function _ios.make(configs)
 end
 
 -- get the option menu for action: xmake config or global
-function _ios.menu(action)
+function _iphoneos.menu(action)
 
     -- init config option menu
-    _ios._MENU_CONFIG = _ios._MENU_CONFIG or
+    _iphoneos._MENU_CONFIG = _iphoneos._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
             ,   {nil, "mx",             "kv", nil,          "The Objc/c++ Compiler"                 }
@@ -71,10 +71,9 @@ function _ios.menu(action)
             ,   }
 
     -- init global option menu
-    _ios._MENU_GLOBAL = _ios._MENU_GLOBAL or
+    _iphoneos._MENU_GLOBAL = _iphoneos._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
-            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"             }
             ,   {}
             ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"         }
             ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"            }
@@ -83,12 +82,12 @@ function _ios.menu(action)
 
     -- get the option menu
     if action == "config" then
-        return _ios._MENU_CONFIG
+        return _iphoneos._MENU_CONFIG
     elseif action == "global" then
-        return _ios._MENU_GLOBAL
+        return _iphoneos._MENU_GLOBAL
     end
 end
 
 
--- return module: _ios
-return _ios
+-- return module: _iphoneos
+return _iphoneos

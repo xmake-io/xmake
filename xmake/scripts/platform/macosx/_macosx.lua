@@ -69,7 +69,6 @@ function _macosx.menu(action)
     _macosx._MENU_GLOBAL = _macosx._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
-            ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
             ,   }
 
     -- get the option menu

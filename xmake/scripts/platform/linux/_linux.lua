@@ -23,11 +23,17 @@
 -- define module: _linux
 local _linux = _linux or {}
 
+-- load modules
+local config    = require("base/config")
+
 -- init host
-_linux._HOST = "linux"
+_linux._HOST    = "linux"
 
 -- init architectures
-_linux._ARCHS  = {"x86", "x64"}
+_linux._ARCHS   = {"x86", "x64"}
+
+-- init prober
+_linux._PROBER  = require("platform/linux/_prober")
 
 -- make configure
 function _linux.make(configs)

@@ -29,6 +29,22 @@ local string    = require("base/string")
 -- define module: _prober
 local _prober = _prober or {}
 
+-- probe the architecture
+function _prober._probe_arch(configs)
+
+    -- get the architecture
+    local arch = configs.arch
+
+    -- ok? 
+    if arch and arch ~= "auto" then return true end
+
+    -- init the default architecture
+    configs.arch = "armv7"
+
+    -- ok
+    return true
+end
+
 -- probe the xcode application directory
 function _prober._probe_xcode(configs)
 
@@ -86,8 +102,11 @@ function _prober._probe_xcode_sdkver(configs)
     -- attempt to match the directory
     if not xcode_sdkver then
         local dirs = os.match(configs.xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk", true)
-        if dirs and table.getn(dirs) ~= 0 then
-            xcode_sdkver = string.match(dirs[1], "%d+%.%d+")
+        if dirs then
+            for _, dir in ipairs(dirs) do
+                xcode_sdkver = string.match(dir, "%d+%.%d+")
+                if xcode_sdkver then break end
+            end
         end
     end
 
@@ -108,6 +127,9 @@ end
 
 -- probe the configure and update the values with "auto"
 function _prober.done(configs)
+
+    -- probe the architecture
+    if not _prober._probe_arch(configs) then return end
 
     -- probe the xcode application directory
     if not _prober._probe_xcode(configs) then return end
