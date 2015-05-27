@@ -26,6 +26,9 @@ local _linux = _linux or {}
 -- init host
 _linux._HOST = "linux"
 
+-- init architectures
+_linux._ARCHS  = {"x86", "x64"}
+
 -- make configure
 function _linux.make(configs)
 
@@ -34,11 +37,6 @@ function _linux.make(configs)
     configs.formats.static = {"lib", ".a"}
     configs.formats.object = {"",    ".o"}
     configs.formats.shared = {"",    ".so"}
-
-    -- init the architecture scopes
-    configs.archs = {}
-    configs.archs.x86 = {}
-    configs.archs.x64 = {}
 end
 
 -- get the option menu for action: xmake config or global

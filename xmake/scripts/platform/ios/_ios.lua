@@ -23,8 +23,17 @@
 -- define module: _ios
 local _ios = _ios or {}
 
+-- load modules
+local config    = require("base/config")
+
 -- init host
-_ios._HOST = "macosx"
+_ios._HOST      = "macosx"
+
+-- init architectures
+_ios._ARCHS     = {"armv7", "armv7s", "arm64"}
+
+-- init prober
+_ios._PROBER    = require("platform/ios/_prober")
 
 -- make configure
 function _ios.make(configs)
@@ -34,12 +43,10 @@ function _ios.make(configs)
     configs.formats.static = {"lib", ".a"}
     configs.formats.object = {"",    ".o"}
     configs.formats.shared = {"",    ".dylib"}
+ 
+    -- init xcode sdk directory
+    configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. config.get("xcode_sdkver") .. ".sdk"
 
-    -- init the architecture scopes
-    configs.archs = {}
-    configs.archs.armv7      = {}
-    configs.archs.armv7s     = {}
-    configs.archs.arm64      = {}
 end
 
 -- get the option menu for action: xmake config or global

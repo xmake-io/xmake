@@ -26,6 +26,9 @@ local _windows = _windows or {}
 -- init host
 _windows._HOST = "windows"
 
+-- init architectures
+_windows._ARCHS  = {"x86", "x64"}
+
 -- make configure
 function _windows.make(configs)
 
@@ -35,11 +38,6 @@ function _windows.make(configs)
     configs.formats.object   = {"", ".obj"}
     configs.formats.shared   = {"", ".dll"}
     configs.formats.console  = {"", ".exe"}
-
-    -- init the architecture scopes
-    configs.archs = {}
-    configs.archs.x86 = {}
-    configs.archs.x64 = {}
 end
 
 -- get the option menu for action: xmake config or global
