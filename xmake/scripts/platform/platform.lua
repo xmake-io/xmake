@@ -89,7 +89,7 @@ end
 function platform.format(kind)
 
     -- get format
-    local format = platform.get("formats")
+    local format = platform.get("format")
 
     -- get it
     return format[kind] or {"", ""}
@@ -208,7 +208,7 @@ function platform.menu(action)
     return menus
 end
 
--- probe the platform configure and update the values with "auto"
+-- probe the platform configure 
 function platform.probe(configs, is_global)
 
     -- probe global

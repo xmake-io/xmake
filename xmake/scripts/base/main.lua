@@ -190,19 +190,18 @@ local menu =
         ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory"                                }
 
         ,   {}
-        ,   {nil, "cc",         "kv", "gcc",        "The C Compiler"                                                }
-        ,   {nil, "cx",         "kv", "gcc",        "The C/C++ Compiler"                                            }
-        ,   {nil, "cxx",        "kv", "gcc",        "The C++ Compiler"                                              }
+        ,   {nil, "cc",         "kv", nil,          "The C Compiler"                                                }
+        ,   {nil, "cxx",        "kv", nil,          "The C++ Compiler"                                              }
         ,   {nil, "cflags",     "kv", nil,          "The C Compiler Flags"                                          }
         ,   {nil, "cxflags",    "kv", nil,          "The C/C++ compiler Flags"                                      }
         ,   {nil, "cxxflags",   "kv", nil,          "The C++ Compiler Flags"                                        }
 
         ,   {}
-        ,   {nil, "ld",         "kv", "ld",         "The Linker"                                                    }
+        ,   {nil, "ld",         "kv", nil,          "The Linker"                                                    }
         ,   {nil, "ldflags",    "kv", nil,          "The Linker Flags"                                              }
 
         ,   {}
-        ,   {nil, "as",         "kv", "as",         "The Assembler"                                                 }
+        ,   {nil, "as",         "kv", nil,          "The Assembler"                                                 }
         ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"                                           }
        
             -- the options for all platforms

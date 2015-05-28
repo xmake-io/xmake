@@ -38,12 +38,12 @@ _windows._PROBER    = require("platform/windows/_prober")
 -- make configure
 function _windows.make(configs)
 
-    -- init the file name formats
-    configs.formats = {}
-    configs.formats.static   = {"", ".lib"}
-    configs.formats.object   = {"", ".obj"}
-    configs.formats.shared   = {"", ".dll"}
-    configs.formats.console  = {"", ".exe"}
+    -- init the file name format
+    configs.format = {}
+    configs.format.static   = {"", ".lib"}
+    configs.format.object   = {"", ".obj"}
+    configs.format.shared   = {"", ".dll"}
+    configs.format.console  = {"", ".exe"}
 end
 
 -- get the option menu for action: xmake config or global

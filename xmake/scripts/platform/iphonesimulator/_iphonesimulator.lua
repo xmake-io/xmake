@@ -38,11 +38,11 @@ _iphonesimulator._PROBER    = require("platform/iphonesimulator/_prober")
 -- make configure
 function _iphonesimulator.make(configs)
 
-    -- init the file name formats
-    configs.formats = {}
-    configs.formats.static = {"lib", ".a"}
-    configs.formats.object = {"",    ".o"}
-    configs.formats.shared = {"",    ".dylib"}
+    -- init the file name format
+    configs.format = {}
+    configs.format.static = {"lib", ".a"}
+    configs.format.object = {"",    ".o"}
+    configs.format.shared = {"",    ".dylib"}
  
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator" .. config.get("xcode_sdkver") .. ".sdk"
@@ -56,7 +56,6 @@ function _iphonesimulator.menu(action)
     _iphonesimulator._MENU_CONFIG = _iphonesimulator._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
-            ,   {nil, "mx",             "kv", nil,          "The Objc/c++ Compiler"                 }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
             ,   {nil, "mflags",         "kv", nil,          "The Objc Compiler Flags"               }
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"           }

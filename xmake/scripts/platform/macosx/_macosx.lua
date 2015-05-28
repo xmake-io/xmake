@@ -38,11 +38,54 @@ _macosx._PROBER = require("platform/macosx/_prober")
 -- make configure
 function _macosx.make(configs)
 
-    -- init the file name formats
-    configs.formats = {}
-    configs.formats.static = {"lib", ".a"}
-    configs.formats.object = {"",    ".o"}
-    configs.formats.shared = {"",    ".dylib"}
+    -- init the file name format
+    configs.format = {}
+    configs.format.static = {"lib", ".a"}
+    configs.format.object = {"",    ".o"}
+    configs.format.shared = {"",    ".dylib"}
+
+    -- init the compiler
+    configs.compiler = {}
+    configs.compiler.cc  = config.get("cc") or "xcrun -sdk macosx clang"
+    configs.compiler.cxx = config.get("cxx") or "xcrun -sdk macosx clang++"
+    configs.compiler.mm  = config.get("mm") or configs.compiler.cc
+    configs.compiler.mxx = config.get("mxx") or configs.compiler.cxx
+
+    -- init the linker
+    configs.linker = {}
+    configs.linker.ld = config.get("ld") or configs.compiler.cxx
+
+    -- init the assembler
+    configs.assembler = {}
+    configs.assembler.as = config.get("as") or configs.compiler.cc
+
+    -- init the cflags
+    configs.compiler.cflags             = {}
+    configs.compiler.cflags.opti        = {}
+    configs.compiler.cflags.warn        = {}
+    configs.compiler.cflags.all         = "-c"
+    configs.compiler.cflags.debug       = "-g"
+    configs.compiler.cflags.release     = "-fomit-frame-pointer -fvisibility=hidden"
+    configs.compiler.cflags.profile     = ""
+    configs.compiler.cflags.opti.O0     = "-O0"
+    configs.compiler.cflags.opti.O1     = "-O1"
+    configs.compiler.cflags.opti.O2     = "-O2"
+    configs.compiler.cflags.opti.O3     = "-O3"
+    configs.compiler.cflags.opti.Os     = "-Os"
+    configs.compiler.cflags.warn.W0     = "-W0"
+    configs.compiler.cflags.warn.W1     = "-W1"
+    configs.compiler.cflags.warn.W2     = "-W2"
+    configs.compiler.cflags.warn.W3     = "-W3"
+    configs.compiler.cflags.warn.We     = "-Werror"
+
+    -- init the cxxflags
+    configs.compiler.cxxflags           = {}
+    configs.compiler.cxxflags.opti      = configs.compiler.cflags.opti
+    configs.compiler.cxxflags.warn      = configs.compiler.cflags.warn
+    configs.compiler.cxxflags.all       = ""
+    configs.compiler.cxxflags.debug     = "-g"
+    configs.compiler.cxxflags.release   = "-fomit-frame-pointer -fvisibility=hidden"
+    configs.compiler.cxxflags.profile   = ""
 
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. config.get("xcode_sdkver") .. ".sdk"
@@ -55,7 +98,6 @@ function _macosx.menu(action)
     _macosx._MENU_CONFIG = _macosx._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                 }
-            ,   {nil, "mx",             "kv", nil,          "The Objc/c++ Compiler"             }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"               }
             ,   {nil, "mflags",         "kv", nil,          "The Objc Compiler Flags"           }
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"       }

@@ -132,8 +132,14 @@ function global.get(name)
     -- check
     assert(global._CURRENT)
 
+    -- the value
+    local value = global._CURRENT[name]
+    if value and value == "auto" then
+        value = nil
+    end
+
     -- get it
-    return global._CURRENT[name]
+    return value
 end
 
 -- set the given configure to the current 

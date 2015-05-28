@@ -36,7 +36,7 @@ function _prober._probe_arch(configs)
     local arch = configs.arch
 
     -- ok? 
-    if arch and arch ~= "auto" then return true end
+    if arch then return true end
 
     -- init the default architecture
     configs.arch = xmake._ARCH
@@ -52,7 +52,7 @@ function _prober._probe_xcode(configs)
     local xcode_dir = configs.xcode_dir
 
     -- ok? 
-    if xcode_dir and xcode_dir ~= "auto" then return true end
+    if xcode_dir then return true end
 
     -- clear it first
     xcode_dir = nil
@@ -94,7 +94,7 @@ function _prober._probe_xcode_sdkver(configs)
     local xcode_sdkver = configs.xcode_sdkver
 
     -- ok? 
-    if xcode_sdkver and xcode_sdkver ~= "auto" then return true end
+    if xcode_sdkver then return true end
 
     -- clear it first
     xcode_sdkver = nil
@@ -125,7 +125,7 @@ function _prober._probe_xcode_sdkver(configs)
     return true
 end
 
--- probe the configure and update the values with "auto"
+-- probe the configure 
 function _prober.done(configs)
 
     -- probe the architecture
