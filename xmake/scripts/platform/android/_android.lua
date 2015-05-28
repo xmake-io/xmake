@@ -38,11 +38,11 @@ _android._PROBER    = require("platform/android/_prober")
 -- make configure
 function _android.make(configs)
 
-    -- init the file name formats
-    configs.formats = {}
-    configs.formats.static = {"lib", ".a"}
-    configs.formats.object = {"",    ".o"}
-    configs.formats.shared = {"",    ".so"}
+    -- init the file name format
+    configs.format = {}
+    configs.format.static = {"lib", ".a"}
+    configs.format.object = {"",    ".o"}
+    configs.format.shared = {"",    ".so"}
 
 end
 

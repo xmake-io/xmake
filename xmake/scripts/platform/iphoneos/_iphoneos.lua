@@ -38,11 +38,11 @@ _iphoneos._PROBER    = require("platform/iphoneos/_prober")
 -- make configure
 function _iphoneos.make(configs)
 
-    -- init the file name formats
-    configs.formats = {}
-    configs.formats.static = {"lib", ".a"}
-    configs.formats.object = {"",    ".o"}
-    configs.formats.shared = {"",    ".dylib"}
+    -- init the file name format
+    configs.format = {}
+    configs.format.static = {"lib", ".a"}
+    configs.format.object = {"",    ".o"}
+    configs.format.shared = {"",    ".dylib"}
  
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. config.get("xcode_sdkver") .. ".sdk"
@@ -56,7 +56,6 @@ function _iphoneos.menu(action)
     _iphoneos._MENU_CONFIG = _iphoneos._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
-            ,   {nil, "mx",             "kv", nil,          "The Objc/c++ Compiler"                 }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
             ,   {nil, "mflags",         "kv", nil,          "The Objc Compiler Flags"               }
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"           }

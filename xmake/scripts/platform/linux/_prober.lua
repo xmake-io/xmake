@@ -36,7 +36,7 @@ function _prober._probe_arch(configs)
     local arch = configs.arch
 
     -- ok? 
-    if arch and arch ~= "auto" then return true end
+    if arch then return true end
 
     -- init the default architecture
     configs.arch = xmake._ARCH
@@ -45,7 +45,7 @@ function _prober._probe_arch(configs)
     return true
 end
 
--- probe the configure and update the values with "auto"
+-- probe the configure 
 function _prober.done(configs)
 
     -- probe the architecture

@@ -203,8 +203,14 @@ function config.get(name)
     -- check
     assert(config._CURRENT)
 
+    -- the value
+    local value = config._CURRENT[name]
+    if value and value == "auto" then
+        value = nil
+    end
+
     -- get it
-    return config._CURRENT[name]
+    return value
 end
 
 -- set the given configure to the current 
