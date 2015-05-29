@@ -51,42 +51,6 @@ function _macosx.make(configs)
     configs.compiler.mm  = config.get("mm") or configs.compiler.cc
     configs.compiler.mxx = config.get("mxx") or configs.compiler.cxx
 
-    -- init the linker
-    configs.linker = {}
-    configs.linker.ld = config.get("ld") or configs.compiler.cxx
-
-    -- init the assembler
-    configs.assembler = {}
-    configs.assembler.as = config.get("as") or configs.compiler.cc
-
-    -- init the cflags
-    configs.compiler.cflags             = {}
-    configs.compiler.cflags.opti        = {}
-    configs.compiler.cflags.warn        = {}
-    configs.compiler.cflags.all         = "-c"
-    configs.compiler.cflags.debug       = "-g"
-    configs.compiler.cflags.release     = "-fomit-frame-pointer -fvisibility=hidden"
-    configs.compiler.cflags.profile     = ""
-    configs.compiler.cflags.opti.O0     = "-O0"
-    configs.compiler.cflags.opti.O1     = "-O1"
-    configs.compiler.cflags.opti.O2     = "-O2"
-    configs.compiler.cflags.opti.O3     = "-O3"
-    configs.compiler.cflags.opti.Os     = "-Os"
-    configs.compiler.cflags.warn.W0     = "-W0"
-    configs.compiler.cflags.warn.W1     = "-W1"
-    configs.compiler.cflags.warn.W2     = "-W2"
-    configs.compiler.cflags.warn.W3     = "-W3"
-    configs.compiler.cflags.warn.We     = "-Werror"
-
-    -- init the cxxflags
-    configs.compiler.cxxflags           = {}
-    configs.compiler.cxxflags.opti      = configs.compiler.cflags.opti
-    configs.compiler.cxxflags.warn      = configs.compiler.cflags.warn
-    configs.compiler.cxxflags.all       = ""
-    configs.compiler.cxxflags.debug     = "-g"
-    configs.compiler.cxxflags.release   = "-fomit-frame-pointer -fvisibility=hidden"
-    configs.compiler.cxxflags.profile   = ""
-
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. config.get("xcode_sdkver") .. ".sdk"
 end
