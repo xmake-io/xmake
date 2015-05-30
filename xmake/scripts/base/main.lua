@@ -54,7 +54,7 @@ local menu =
     ,   description = "Build the project if no given action."
 
     ,   -- actions
-        actions = {"create", "config", "global", "install", "clean"}
+        actions = {"create", "config", "global", "install", "clean", "run", "lua"}
 
         -- options
     ,   options = 
@@ -313,6 +313,69 @@ local menu =
         ,   {nil, "target",     "v",  "all",        "Clean for the given target."                                   }      
         }
     }
+
+    -- run target: xmake run
+,   run =
+    {
+        -- xmake r
+        shortname = 'r'
+
+        -- usage
+    ,   usage = "xmake run|r [options] [target] [arguments]"
+
+        -- description
+    ,   description = "Run the project target."
+
+        -- options
+    ,   options = 
+        {
+            {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+        ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
+                                                  , "Search priority:"
+                                                  , "    1. The Given Command Argument"
+                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                  , "    3. The Current Directory"                                  }
+        ,   {}
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
+        ,   {}
+        ,   {nil, "target",     "v",  "all",        "Run the given target."                                         }      
+        ,   {nil, "arguments",  "v",  nil,          "The target arguments"                                          }
+        }
+    }
+
+    -- run lua: xmake lua
+,   lua =
+    {
+        -- xmake l
+        shortname = 'l'
+
+        -- usage
+    ,   usage = "xmake lua|l [options] [script] [arguments]"
+
+        -- description
+    ,   description = "Run the lua script."
+
+        -- options
+    ,   options = 
+        {
+            {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
+
+        ,   {}
+        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        
+        ,   {}
+        ,   {nil, "script",     "v",  nil,          "Run the given lua script."
+                                                  , "    - The script name from the xmake tool directory"
+                                                  , "    - The script file"
+                                                  , "    - The script string"                                       }      
+        ,   {nil, "arguments",  "v",  nil,          "The script arguments"                                          }
+        }
+    }
 }
 
 -- prepare project
@@ -426,6 +489,11 @@ function main._done_option()
     -- done help?
     if main._done_help() then
         return true
+    end
+
+    -- done lua?
+    if options._ACTION == "lua" then
+        return action.done("lua")
     end
 
     -- done global?
