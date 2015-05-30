@@ -17,28 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _xmake_main.lua
+-- @file        echo.lua
 --
 
--- init namespace: xmake
-xmake               = xmake or {}
-xmake._ARGV         = _ARGV
-xmake._HOST         = _HOST
-xmake._ARCH         = _ARCH
-xmake._VERSION      = "XMake v1.0.1"
-xmake._PROGRAM_DIR  = _PROGRAM_DIR
-xmake._PROJECT_DIR  = _PROJECT_DIR
-xmake._SCRIPTS_DIR  = _PROGRAM_DIR .. "/scripts"
-xmake._OPTIONS      = {}
-xmake._CONFIGS      = {}
+-- echo it
+print(...)
 
--- init package path
-package.path = xmake._SCRIPTS_DIR .. "/?.lua;" .. package.path
-
--- load modules
-local main = require("base/main")
-
--- the main function
-function _xmake_main()
-    return main.done()
-end
+-- ok
+return true
