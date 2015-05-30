@@ -32,6 +32,46 @@ local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
 
+-- get the compiler from the given source file
+function makefile._compiler(srcfile)
+
+    -- get the source file type
+    local filetype = path.extension(srcfile)
+    if not filetype then
+        return nil, string.format("cannot get the source file type: %s", srcfile)
+    end
+
+    -- get the lower file type
+    filetype = filetype:lower()
+
+    -- get the compiler name
+    local name = nil
+    if filetype == ".c" then name = "cc"
+    elseif filetype == ".cpp" or filetype == ".cc" then name = "cxx"
+    elseif filetype == ".m" then name = "mm"
+    elseif filetype == ".mm" then name = "mxx"
+    elseif filetype == ".s" or filetype == ".asm" then name = "as"
+    else return nil, string.format("unknown file type: %s", filetype)
+    end
+    
+    -- init compiler 
+    makefile._COMPILERS = makefile._COMPILERS or {}
+    local compilers = makefile._COMPILERS
+
+    -- return it directly if the compiler has been cached
+    local c = compilers[name]
+    if c then return c end
+
+    -- get compiler from the current platform
+    c = platform.compiler(name)
+
+    -- cache this compiler
+    compilers[name] = c
+
+    -- ok
+    return c
+end
+
 -- get the source files from the given target
 function makefile._srcfiles(target)
 
@@ -153,6 +193,14 @@ function makefile._make_object(file, target, srcfile, objfile)
     -- check
     assert(file and target and srcfile and objfile)
 
+    -- get the compiler
+    local c, errors = makefile._compiler(srcfile);
+    if not c then
+        -- error
+        utils.error(errors)
+        return false
+    end
+
     -- make head
     file:write(string.format("%s:", objfile))
 
@@ -160,7 +208,8 @@ function makefile._make_object(file, target, srcfile, objfile)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
-    file:write(string.format("\techo \"%s\"\n", srcfile))
+    file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
+    file:write(string.format("\t@%s\n", c:make(srcfile, objfile, "")))
 
     -- make tail
     file:write("\n")

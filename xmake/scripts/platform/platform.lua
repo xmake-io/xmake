@@ -28,6 +28,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local compiler  = require("compiler/compiler")
 
 -- load the given platform 
 function platform._load(plat)
@@ -88,11 +89,32 @@ end
 -- get the format from the given kind
 function platform.format(kind)
 
+    -- check
+    assert(kind)
+
     -- get format
     local format = platform.get("format")
+    assert(format)
 
     -- get it
     return format[kind] or {"", ""}
+end
+
+-- get the compiler from the given name
+function platform.compiler(name)
+
+    -- check
+    assert(name)
+
+    -- get compiler
+    local c = platform.get("compiler")
+    assert(c)
+
+    -- load compiler
+    c = c[name]
+    if c then 
+        return compiler.load(c)
+    end
 end
 
 -- dump the platform configure

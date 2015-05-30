@@ -42,6 +42,20 @@ function compiler._get(self, name)
     return configs[name]
 end
 
+-- make the compile command
+function compiler._make(self, srcfile, objfile, flags)
+
+    -- check
+    assert(self);
+
+    -- the configure
+    local configs = self._CONFIGS
+    assert(configs)
+
+    -- get it
+    return self._make(configs, srcfile, objfile, flags)
+end
+
 -- map gcc flags to the given compiler flags
 function compiler._mapflags(self, flags)
 
@@ -68,7 +82,7 @@ function compiler._mapflags(self, flags)
     end
 
     -- ok?
-    return flag_mapped;
+    return flag_mapped
 end
 
 -- load the given compiler 
@@ -116,6 +130,7 @@ function compiler.load(name)
 
     -- init interfaces
     c["get"]        = compiler._get
+    c["make"]       = compiler._make
     c["mapflags"]   = compiler._mapflags
 
     -- ok?

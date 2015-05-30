@@ -33,6 +33,13 @@ function _clang._init(configs)
 
 end
 
+-- make the compiler command
+function _clang._make(configs, srcfile, objfile, flags)
+
+    -- make it
+    return string.format("%s -c %s -o%s %s", configs.name, flags, objfile, srcfile)
+end
+
 -- map gcc flag to the current compiler flag
 function _clang._mapflag(configs, flag)
 
