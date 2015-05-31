@@ -25,8 +25,10 @@ local _lua = _lua or {}
 
 -- load modules
 local os        = require("base/os")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local string    = require("base/string")
     
 -- done the given config
 function _lua.done()
@@ -41,13 +43,29 @@ function _lua.done()
     end
 
     -- the arguments
-    local arguments = options.arguments
+    local arguments = options.arguments or {}
+    if type(arguments) ~= "table" then
+        arguments = {}
+    end
+
+    -- init new environment 
+    local newenv = {}
+    setmetatable(newenv, {__index = _G})  
+    newenv.os       = os
+    newenv.path     = path
+    newenv.utils    = utils
+    newenv.string   = string
 
     -- is string script? 
     if options.string then
+
+        -- trace
+        utils.verbose("script: %s", options.script)
+
         -- load and run string
         local script = loadstring(options.script)
         if script then
+            setfenv(script, newenv)
             return script(arguments)
         end
     else
@@ -66,6 +84,7 @@ function _lua.done()
         if os.isfile(file) then
             local script = loadfile(file)
             if script then
+                setfenv(script, newenv)
                 return script(arguments)
             end
         end

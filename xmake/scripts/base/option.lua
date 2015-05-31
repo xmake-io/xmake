@@ -240,19 +240,49 @@ function option.init(argv, menu)
             local opt = nil
             for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
 
+                -- the mode
+                local mode = o[3]
+
+                -- the name
+                local name = o[2]
+
                 -- check
-                assert(o and (o[3] ~= "v" or o[2]))
+                assert(o and ((mode ~= "v" and mode ~= "vs") or name))
 
                 -- is value and with name?
-                if o[3] == "v" and o[2] and not xmake._OPTIONS[o[2]] then
+                if mode == "v" and name and not xmake._OPTIONS[name] then
                     opt = o
                     break 
+                -- is values and with name?
+                elseif mode == "vs" and name then
+                    opt = o
+                    break
                 end
             end
 
             -- ok? save this value with name opt[2]
             if opt then 
-                xmake._OPTIONS[opt[2]] = key
+
+                -- the mode
+                local mode = opt[3]
+
+                -- the name
+                local name = opt[2]
+
+                -- save value
+                if mode == "v" then
+                    xmake._OPTIONS[name] = key
+                elseif mode == "vs" then
+                    -- the option
+                    local o = xmake._OPTIONS[name]
+                    if not o then
+                        xmake._OPTIONS[name] = {}
+                        o = xmake._OPTIONS[name]
+                    end
+
+                    -- append value
+                    o[table.getn(o) + 1] = key
+                end
             else
                 -- invalid option
                 print("invalid option: " .. arg)
@@ -319,6 +349,7 @@ function option.print_menu(action)
 
     -- print usage
     if action.usage then
+        print("")
         print("Usage: " .. action.usage)
     end
 

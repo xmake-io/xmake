@@ -341,8 +341,8 @@ local menu =
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
         
         ,   {}
-        ,   {nil, "target",     "v",  "all",        "Run the given target."                                         }      
-        ,   {nil, "arguments",  "v",  nil,          "The target arguments"                                          }
+        ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      
+        ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                          }
         }
     }
 
@@ -373,7 +373,7 @@ local menu =
                                                   , "    - The script name from the xmake tool directory"
                                                   , "    - The script file"
                                                   , "    - The script string"                                       }      
-        ,   {nil, "arguments",  "v",  nil,          "The script arguments"                                          }
+        ,   {nil, "arguments",  "vs", nil,          "The script arguments"                                          }
         }
     }
 }

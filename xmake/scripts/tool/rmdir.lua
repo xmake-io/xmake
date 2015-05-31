@@ -17,14 +17,15 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        echo.lua
+-- @file        rmdir.lua
 --
 
--- echo all
-for _, v in ipairs(...) do
-    io.write(string.format("%s ", v))
+-- rmdir all
+for _, dir in ipairs(...) do
+    if os.isdir(dir) then
+        os.rmdir(dir)
+    end
 end
-io.write("\n")
 
 -- ok
 return true
