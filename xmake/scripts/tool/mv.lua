@@ -17,14 +17,14 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        echo.lua
+-- @file        mv.lua
 --
 
--- echo all
-for _, v in ipairs(...) do
-    io.write(string.format("%s ", v))
+-- mv it
+local pathes = ...
+if pathes and table.getn(pathes) == 2 then
+    return os.mv(pathes[1], pathes[2])
 end
-io.write("\n")
 
--- ok
-return true
+-- failed
+return false

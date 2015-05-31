@@ -17,14 +17,15 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        echo.lua
+-- @file        rm.lua
 --
 
--- echo all
-for _, v in ipairs(...) do
-    io.write(string.format("%s ", v))
+-- rm all
+for _, file_or_dir in ipairs(...) do
+    if os.exists(file_or_dir) then
+        os.rm(file_or_dir)
+    end
 end
-io.write("\n")
 
 -- ok
 return true
