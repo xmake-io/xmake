@@ -209,6 +209,7 @@ function makefile._make_object(file, target, srcfile, objfile)
 
     -- make body
     file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
+    file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s\n", c:make(srcfile, objfile, "")))
 
     -- make tail

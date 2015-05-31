@@ -23,7 +23,9 @@
 -- rm all
 for _, file_or_dir in ipairs(...) do
     if os.exists(file_or_dir) then
-        os.rm(file_or_dir)
+        if not os.rm(file_or_dir) then
+            return false
+        end
     end
 end
 
