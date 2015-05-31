@@ -23,7 +23,9 @@
 -- rmdir all
 for _, dir in ipairs(...) do
     if os.isdir(dir) then
-        os.rmdir(dir)
+        if not os.rmdir(dir) then
+            return false
+        end
     end
 end
 

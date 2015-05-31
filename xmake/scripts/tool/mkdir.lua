@@ -23,7 +23,9 @@
 -- mkdir all
 for _, dir in ipairs(...) do
     if not os.exists(dir) then
-        os.mkdir(dir)
+        if not os.mkdir(dir) then
+            return false
+        end
     end
 end
 
