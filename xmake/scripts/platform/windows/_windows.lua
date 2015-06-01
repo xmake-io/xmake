@@ -43,7 +43,7 @@ function _windows.make(configs)
     configs.format.static   = {"", ".lib"}
     configs.format.object   = {"", ".obj"}
     configs.format.shared   = {"", ".dll"}
-    configs.format.console  = {"", ".exe"}
+    configs.format.execute  = {"", ".exe"}
 end
 
 -- get the option menu for action: xmake config or global

@@ -32,6 +32,27 @@ local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
 
+-- get the linker from the given kind
+function makefile._linker(kind)
+        
+    -- init linkers
+    makefile._LINKERS = makefile._LINKERS or {}
+    local linkers = makefile._LINKERS
+
+    -- return it directly if the linker has been cached
+    local l = linkers[kind]
+    if l then return l end
+
+    -- get compiler from the current platform
+    l = platform.linker(kind)
+
+    -- cache this compiler
+    linkers[kind] = l
+
+    -- ok
+    return l
+end
+
 -- get the compiler from the given source file
 function makefile._compiler(srcfile)
 
@@ -54,7 +75,7 @@ function makefile._compiler(srcfile)
     else return nil, string.format("unknown file type: %s", filetype)
     end
     
-    -- init compiler 
+    -- init compilers
     makefile._COMPILERS = makefile._COMPILERS or {}
     local compilers = makefile._COMPILERS
 
@@ -126,17 +147,13 @@ function makefile._objfiles(name, srcfiles)
     local buildir = config.get("buildir")
     assert(buildir)
    
-    -- the object file format
-    local format = platform.format("object")
-    assert(format)
- 
     -- make object files
     local i = 1
     local objfiles = {}
     for _, srcfile in ipairs(srcfiles) do
 
         -- make object file
-        local objfile = string.format("%s/%s/%s/%s%s%s", buildir, name, path.directory(srcfile), format[1], path.basename(srcfile), format[2])
+        local objfile = string.format("%s/%s/%s/%s", buildir, name, path.directory(srcfile), platform.filename(path.basename(srcfile), "object"))
 
         -- save it
         objfiles[i] = path.translate(objfile)
@@ -148,43 +165,22 @@ function makefile._objfiles(name, srcfiles)
     return objfiles
 end
 
--- make the console to the makefile
-function makefile._make_console(file, target, objfiles)
-    
+-- get target file for the given target name and kind
+function makefile._targetfile(name, kind)
+
     -- check
-    assert(file and target and objfiles)
+    assert(name and kind)
 
-    -- make it
-    file:write(string.format("\techo console\n"))
+    -- the build directory
+    local buildir = config.get("buildir")
+    assert(buildir)
+   
+    -- the target file name
+    local filename = platform.filename(name, kind)
+    assert(filename)
 
-    -- ok
-    return true
-end
-
--- make the static library to the makefile
-function makefile._make_static(file, target, objfiles)
-    
-    -- check
-    assert(file and target and objfiles)
-
-    -- make it
-    file:write(string.format("\techo static\n"))
-
-    -- ok
-    return true
-end
-
--- make the shared library to the makefile
-function makefile._make_shared(file, target, objfiles)
-    
-    -- check
-    assert(file and target and objfiles)
-
-    -- make it
-    file:write(string.format("\techo shared\n"))
-
-    -- ok
-    return true
+    -- make the target file path
+    return buildir .. "/" .. name .. "/" .. filename
 end
 
 -- make the object to the makefile
@@ -253,10 +249,26 @@ function makefile._make_target(file, name, target)
     local objfiles = makefile._objfiles(name, srcfiles)
     assert(srcfiles and objfiles)
 
+    -- get target file
+    local targetfile = makefile._targetfile(name, target.kind)
+    assert(targetfile)
+
+    -- the linker
+    local l = makefile._linker(target.kind)
+    assert(l)
+
+    -- the make command
+    local make_command = l["make_" .. target.kind]
+    if not make_command then
+        -- error
+        utils.error("the target kind: %s in not surpported now!", target.kind)
+        return false
+    end
+
     -- make head
     file:write(string.format("%s:", name))
 
-    -- make dependence for target
+    -- make dependence for the dependent targets
     if target.deps then
         local deps = utils.wrap(target.deps)
         for _, dep in ipairs(deps) do
@@ -273,24 +285,9 @@ function makefile._make_target(file, name, target)
     file:write("\n")
 
     -- make body
-    local ok = false
-    if target.kind == "console" then 
-        ok = makefile._make_console(file, target, objfiles)
-    elseif target.kind == "static" then 
-        ok = makefile._make_static(file, target, objfiles)
-    elseif target.kind == "shared" then 
-        ok = makefile._make_shared(file, target, objfiles)
-    else
-        -- error
-        utils.error("the target kind: %s in not surpported now!", target.kind)
-        return false
-    end
-
-    -- error?
-    if not ok then
-        utils.error("make target with kind: %s failed!", target.kind)
-        return false
-    end
+    file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
+    file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
+    file:write(string.format("\t@%s\n", make_command(l, objfiles, targetfile, "")))
 
     -- make tail
     file:write("\n")

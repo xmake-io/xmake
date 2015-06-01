@@ -50,7 +50,7 @@ project: console
 
     target: demo_c
     {
-        kind:           console
+        kind:           binary
         deps:           hello1 
         files:          src/demo/*.c
         links:          hello1
@@ -67,7 +67,7 @@ project: console
 
     target: demo_cpp
     {
-        kind:           console
+        kind:           binary
         deps:           hello2 
         files:          src/demo/*.cpp 
         links:          hello2 
@@ -78,7 +78,7 @@ project: console
 
     target: demo_objc
     {
-        kind:           console
+        kind:           binary
         deps:           hello3 
         files:          src/demo/*.m 
         links:          hello3 
@@ -89,7 +89,7 @@ project: console
 
     target: demo_objcpp
     {
-        kind:           console
+        kind:           binary
         deps:           hello3 
         files:          src/demo/*.mm 
         mxflags:        -DHELLO3 

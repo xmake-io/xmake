@@ -28,6 +28,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local linker    = require("linker/linker")
 local compiler  = require("compiler/compiler")
 
 -- load the given platform 
@@ -86,18 +87,38 @@ function platform.get(name)
     end
 end
 
--- get the format from the given kind
-function platform.format(kind)
+-- get the filename from the given name and kind
+function platform.filename(name, kind)
 
     -- check
-    assert(kind)
+    assert(name and kind)
+
+    -- get formats
+    local formats = platform.get("format")
+    assert(formats)
 
     -- get format
-    local format = platform.get("format")
-    assert(format)
+    local format = formats[kind] or {"", ""}
 
-    -- get it
-    return format[kind] or {"", ""}
+    -- make it
+    return format[1] .. name .. format[2]
+end
+
+-- get the linker from the given name
+function platform.linker(name)
+
+    -- check
+    assert(name)
+
+    -- get linker
+    local c = platform.get("linker")
+    assert(c)
+
+    -- load linker
+    c = c[name]
+    if c then 
+        return linker.load(c)
+    end
 end
 
 -- get the compiler from the given name
