@@ -28,62 +28,6 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 
--- get the configure from the given name
-function linker._get(self, name)
-
-    -- check
-    assert(self and name);
-
-    -- the linker configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- get it
-    return configs[name]
-end
-
--- make the binary command
-function linker._make_binary(self, objfiles, targetfile, flags)
-
-    -- check
-    assert(self and self._make_binary)
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- make it
-    return self._make_binary(configs, objfiles, targetfile, flags)
-end
-
--- make the static library command
-function linker._make_static(self, objfiles, targetfile, flags)
-
-    -- check
-    assert(self and self._make_static)
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- make it
-    return self._make_static(configs, objfiles, targetfile, flags)
-end
-
--- make the shared library command
-function linker._make_shared(self, objfiles, targetfile, flags)
-
-    -- check
-    assert(self and self._make_shared)
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- make it
-    return self._make_shared(configs, objfiles, targetfile, flags)
-end
-
 -- map gcc flags to the given linker flags
 function linker._mapflags(self, flags)
 
@@ -110,7 +54,49 @@ function linker._mapflags(self, flags)
     end
 
     -- ok?
-    return flag_mapped
+    return flags_mapped
+end
+
+-- make the binary command
+function linker._make_binary(self, objfiles, targetfile, flags)
+
+    -- check
+    assert(self and self._make_binary)
+
+    -- the configure
+    local configs = self._CONFIGS
+    assert(configs)
+
+    -- make it
+    return self._make_binary(configs, objfiles, targetfile, linker._mapflags(self, flags))
+end
+
+-- make the static library command
+function linker._make_static(self, objfiles, targetfile, flags)
+
+    -- check
+    assert(self and self._make_static)
+
+    -- the configure
+    local configs = self._CONFIGS
+    assert(configs)
+
+    -- make it
+    return self._make_static(configs, objfiles, targetfile, linker._mapflags(self, flags))
+end
+
+-- make the shared library command
+function linker._make_shared(self, objfiles, targetfile, flags)
+
+    -- check
+    assert(self and self._make_shared)
+
+    -- the configure
+    local configs = self._CONFIGS
+    assert(configs)
+
+    -- make it
+    return self._make_shared(configs, objfiles, targetfile, linker._mapflags(self, flags))
 end
 
 -- load the given linker 
@@ -157,8 +143,6 @@ function linker.load(name)
     l._init(configs)
 
     -- init interfaces
-    l["get"]            = linker._get
-    l["mapflags"]       = linker._mapflags
     l["make_binary"]    = linker._make_binary
     l["make_static"]    = linker._make_static
     l["make_shared"]    = linker._make_shared
