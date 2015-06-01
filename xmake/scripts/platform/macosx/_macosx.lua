@@ -51,6 +51,12 @@ function _macosx.make(configs)
     configs.compiler.mm  = config.get("mm") or configs.compiler.cc
     configs.compiler.mxx = config.get("mxx") or configs.compiler.cxx
 
+    -- init the linker
+    configs.linker = {}
+    configs.linker.binary  = config.get("ld") or "xcrun -sdk macosx clang++"
+    configs.linker.static  = config.get("ar") or "xcrun -sdk macosx ar"
+    configs.linker.shared  = config.get("ld") or "xcrun -sdk macosx clang++"
+
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. config.get("xcode_sdkver") .. ".sdk"
 end
