@@ -28,34 +28,6 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 
--- get the configure from the given name
-function compiler._get(self, name)
-
-    -- check
-    assert(self and name);
-
-    -- the compiler configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- get it
-    return configs[name]
-end
-
--- make the compile command
-function compiler._make(self, srcfile, objfile, flags)
-
-    -- check
-    assert(self);
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- get it
-    return self._make(configs, srcfile, objfile, flags)
-end
-
 -- map gcc flags to the given compiler flags
 function compiler._mapflags(self, flags)
 
@@ -83,6 +55,20 @@ function compiler._mapflags(self, flags)
 
     -- ok?
     return flag_mapped
+end
+
+-- make the compile command
+function compiler._make(self, srcfile, objfile, flags)
+
+    -- check
+    assert(self);
+
+    -- the configure
+    local configs = self._CONFIGS
+    assert(configs)
+
+    -- get it
+    return self._make(configs, srcfile, objfile, compiler._mapflags(self, flags))
 end
 
 -- load the given compiler 
@@ -129,9 +115,7 @@ function compiler.load(name)
     c._init(configs)
 
     -- init interfaces
-    c["get"]        = compiler._get
-    c["make"]       = compiler._make
-    c["mapflags"]   = compiler._mapflags
+    c["make"] = compiler._make
 
     -- ok?
     return c
