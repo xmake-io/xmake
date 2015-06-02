@@ -25,53 +25,83 @@ local _clean = _clean or {}
 
 -- load modules
 local os        = require("base/os")
+local rule      = require("base/rule")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
 
--- remove the given target
-function _clean._rm_target(buildir, target)
+-- remove the given files or directories
+function _clean._remove(filedirs)
 
     -- check
-    assert(buildir and target)
+    assert(filedirs)
+
+    -- wrap it first
+    filedirs = utils.wrap(filedirs)
+    for _, filedir in ipairs(filedirs) do
  
-    -- the file 
-    local file = string.format("%s/%s", buildir, target)
-    if not os.exists(file) then
-        return true
+        -- exists? remove it
+        if os.exists(filedir) then
+            -- remove it
+            local ok, errors = os.rm(filedir)
+            if not ok then
+                -- error
+                utils.error(errors)
+                return false
+            end  
+        end
     end
 
-    -- clean target
-    local ok, errors = os.rm(file)
-    if not ok then
-        -- error
-        utils.error(errors)
+    -- ok
+    return true
+end
+
+-- remove the given target_name
+function _clean._remove_target(target_name, target, buildir)
+
+    -- check
+    assert(target_name and target)
+ 
+    -- remove the target file 
+    if not _clean._remove(rule.targetfile(target_name, target, buildir)) then
         return false
-    end   
+    end
+ 
+    -- remove the object files 
+    if not _clean._remove(rule.objectfiles(target_name, target, rule.sourcefiles(target), buildir)) then
+        return false
+    end
 
     -- ok
     return true
 end
 
 -- remove the given target and all dependent targets
-function _clean._rm_target_and_deps(buildir, target)
+function _clean._remove_target_and_deps(target_name, buildir)
 
-    -- remove the target 
-    if not _clean._rm_target(buildir, target) then
-        return false 
-    end
-     
     -- the targets
     local targets = project.targets()
     assert(targets)
 
+    -- the target
+    local target = targets[target_name]
+    assert(target)
+
+    -- remove the target
+    if not _clean._remove_target(target_name, target, buildir) then
+        return false 
+    end
+     
     -- exists the dependent targets?
-    if targets[target] and targets[target].deps then
-        local deps = utils.wrap(targets[target].deps)
+    if target.deps then
+        local deps = utils.wrap(target.deps)
         for _, dep in ipairs(deps) do
-            if not _clean._rm_target_and_deps(buildir, dep) then return false end
+            if not _clean._remove_target_and_deps(dep, buildir) then return false end
         end
     end
+
+    -- ok
+    return true
 end
 
 -- done the given config
@@ -85,18 +115,20 @@ function _clean.done()
     local buildir = config.get("buildir")
     assert(buildir)
 
-    -- the target
-    local target = options.target
-    if target and target ~= "all" then
-        if not _clean._rm_target_and_deps(buildir, target) then return false end
+    -- the target name
+    local target_name = options.target
+    if target_name and target_name ~= "all" then
+        -- remove target
+        if not _clean._remove_target_and_deps(target_name, buildir) then return false end
     else
+
         -- the targets
         local targets = project.targets()
         assert(targets)
 
-        -- clean targets
-        for target, _ in pairs(targets) do
-            if not _clean._rm_target(buildir, target) then return false end
+        -- remove targets
+        for target_name, target in pairs(targets) do
+            if not _clean._remove_target(target_name, target, buildir) then return false end
         end
     end
 
