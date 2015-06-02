@@ -24,6 +24,7 @@
 local _msvc = _msvc or {}
 
 -- load modules
+local rule      = require("base/rule")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
@@ -37,16 +38,18 @@ function _msvc._init(configs)
 
     -- init flags for architecture
     local flags_arch = ""
-    if arch == "x86" then flags_arch = "-m32"
-    elseif arch == "x64" then flags_arch = "-m64"
-    else flags_arch = "-arch " .. arch
+    if arch == "x86" then flags_arch = "-machine:x86"
+    elseif arch == "x64" then flags_arch = "-machine:x86_64"
     end
 
     -- init ldflags
-    configs.ldflags = flags_arch
+    configs.ldflags = "-nologo -dynamicbase -nxcompat -manifest -manifestuac:\"level='asInvoker' uiAccess='false'\" " .. flags_arch
+
+    -- init arflags
+    configs.arflags = "-lib -nologo " .. flags_arch
 
     -- init shflags
-    configs.shflags = flags_arch .. " -dynamiclib"
+    configs.shflags = "-dll -nologo " .. flags_arch
 
 end
 
@@ -54,21 +57,21 @@ end
 function _msvc._make(configs, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s %s -o%s %s", configs.name, flags, targetfile, objfiles)
+    return string.format("%s %s -out:%s %s", configs.name, flags, targetfile, objfiles)
 end
 
 -- make the link flag
 function _msvc._make_link(configs, link)
 
     -- make it
-    return "-l" .. link
+    return link .. ".lib"
 end
 
 -- make the linkdir flag
 function _msvc._make_linkdir(configs, linkdir)
 
     -- make it
-    return "-L" .. linkdir
+    return "-libpath:" .. linkdir
 end
 
 -- map gcc flag to the current linker flag

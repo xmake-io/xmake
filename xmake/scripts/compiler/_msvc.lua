@@ -35,27 +35,11 @@ function _msvc._init(configs)
     local arch = config.get("arch")
     assert(arch)
 
-    -- init flags for architecture
-    local flags_arch = ""
-    if arch == "x86" then flags_arch = "-m32"
-    elseif arch == "x64" then flags_arch = "-m64"
-    else flags_arch = "-arch " .. arch
-    end
-
     -- init cflags
-    configs.cflags = flags_arch
+    configs.cflags = "-nologo"
 
     -- init cxxflags
-    configs.cxxflags = flags_arch
-
-    -- init mflags
-    configs.mflags = flags_arch
-
-    -- init mxxflags
-    configs.mxxflags = flags_arch
-
-    -- init asflags
-    configs.asflags = flags_arch
+    configs.cxxflags = "-nologo"
 
 end
 
@@ -63,7 +47,7 @@ end
 function _msvc._make(configs, srcfile, objfile, flags)
 
     -- make it
-    return string.format("%s -c %s -o%s %s", configs.name, flags, objfile, srcfile)
+    return string.format("%s -c %s -Fo%s %s", configs.name, flags, objfile, srcfile)
 end
 
 -- make the define flag

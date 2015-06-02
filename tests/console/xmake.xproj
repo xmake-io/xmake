@@ -70,7 +70,6 @@ project: console
         kind:           binary
         deps:           hello2 
         files:          src/demo/*.cpp 
-        links:          hello2 
         linkdirs:       $(buildir)
         includedirs:    $(buildir)
         cxxflags:       -DHELLO1 
