@@ -31,6 +31,7 @@ xmake_C_FILES 			+= \
 						path/absolute \
 						path/translate \
 						path/is_absolute \
+						string/endswith \
 						string/startswith \
 						preprocessor/loadx 
 						

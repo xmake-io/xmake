@@ -71,6 +71,7 @@ tb_int_t xm_path_translate(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
 
 // the string functions
+tb_int_t xm_string_endswith(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
 
 // the preprocessor functions
@@ -112,7 +113,8 @@ static luaL_Reg const g_path_functions[] =
 // the string functions
 static luaL_Reg const g_string_functions[] = 
 {
-    { "startswith",     xm_string_startswith    }
+    { "endswith",       xm_string_endswith      }
+,   { "startswith",     xm_string_startswith    }
 ,   { tb_null,          tb_null                 }
 };
 
