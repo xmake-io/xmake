@@ -69,7 +69,7 @@ function project._make_configs(scope, configs)
             end
 
         -- append configure to scope
-        elseif not k:startswith("_") then
+        elseif not k:startswith("_") and k:endswith("s") then
 
             -- wrap it first
             local values = utils.wrap(v)
@@ -83,6 +83,20 @@ function project._make_configs(scope, configs)
 
                 -- append it
                 item[table.getn(item) + 1] = _v
+            end
+        -- replace configure to scope
+        elseif not k:startswith("_") then
+            
+            -- wrap it first
+            local values = utils.wrap(v)
+            if table.getn(values) == 1 then
+
+                -- the configure item
+                scope[k] = scope[k] or {}
+                local item = scope[k]
+
+                -- replace it
+                item[1] = values[1]
             end
         end
     end
