@@ -32,7 +32,7 @@ local preprocessor  = require("base/preprocessor")
 function project._make_configs(scope, configs)
 
     -- check
-    assert(scope and configs)
+    assert(configs)
 
     -- the current mode
     local mode = config.get("mode")
@@ -48,8 +48,24 @@ function project._make_configs(scope, configs)
         -- check
         assert(type(k) == "string")
 
+        -- enter the target configure?
+        if k == "_TARGET" then
+ 
+            -- the current 
+            local current = project._CURRENT
+
+            -- init all targets
+            for _k, _v in pairs(v) do
+
+                -- init target scope first
+                current[_k] = current[_k] or {}
+
+                -- make the target configure to this scope
+                project._make_configs(current[_k], _v)
+            end
+
         -- enter the platform configure?
-        if k == "_PLATFORMS" then
+        elseif k == "_PLATFORMS" then
 
             -- append configure to scope for the current mode
             for _k, _v in pairs(v) do
@@ -69,7 +85,7 @@ function project._make_configs(scope, configs)
             end
 
         -- append configure to scope
-        elseif not k:startswith("_") and k:endswith("s") then
+        elseif scope and not k:startswith("_") and k:endswith("s") then
 
             -- wrap it first
             local values = utils.wrap(v)
@@ -85,7 +101,7 @@ function project._make_configs(scope, configs)
                 item[table.getn(item) + 1] = _v
             end
         -- replace configure to scope
-        elseif not k:startswith("_") then
+        elseif scope and not k:startswith("_") then
             
             -- wrap it first
             local values = utils.wrap(v)
@@ -107,28 +123,16 @@ function project._make()
 
     -- the configs
     local configs = project._CONFIGS
-    assert(configs and configs._TARGET)
-   
-    -- init current config
+    assert(configs)
+  
+    -- init current
     project._CURRENT = project._CURRENT or {}
-    local current = project._CURRENT
 
-    -- init all targets
-    for name, target in pairs(configs._TARGET) do
-
-        -- init target scope first
-        current[name] = current[name] or {}
-        local scope = current[name]
-
-        -- make the root configure to this scope
-        project._make_configs(scope, configs)
-
-        -- make the target configure to this scope
-        project._make_configs(scope, target)
-    end
+    -- make the root configure to the current scope
+    project._make_configs(nil, configs)
 
     -- remove repeat values and unwrap it
-    for _, target in pairs(current) do
+    for _, target in pairs(project._CURRENT) do
         for k, v in pairs(target) do
 
             -- remove repeat first

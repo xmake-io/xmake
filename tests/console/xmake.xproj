@@ -76,40 +76,32 @@ project: console
         cxxflags:       -DHELLO1 
     }
 
-    target: demo_objc
+    platforms: macosx, ios 
     {
-        kind:           binary
-        deps:           hello3 
-        files:          src/demo/*.m 
-        links:          hello3 
-        linkdirs:       $(buildir)/lib 
-        includedirs:    $(buildir)/inc 
-        mflags:         -DHELLO3, -DPLAT="macosx", -DARCH='armv7, arm64', -DVERSION=[return add(1, 2)] 
-    }
-
-    target: demo_objcpp
-    {
-        kind:           binary
-        deps:           hello3 
-        files:          src/demo/*.mm 
-        mxflags:        -DHELLO3 
-        ldflags:        -L$(buildir)/lib, -lhello3, -lhello3
-
-        # the linux platform
-        platforms: linux 
+        target: demo_objc
         {
-            defines:    PLAT="linux"
+            kind:           binary
+            deps:           hello3 
+            files:          src/demo/*.m 
+            links:          hello3 
+            linkdirs:       $(buildir)/lib 
+            includedirs:    $(buildir)/inc 
+            mflags:         -DHELLO3, -DPLAT="macosx", -DARCH='armv7, arm64', -DVERSION=[return add(1, 2)] 
         }
 
-        platforms: windows 
+        target: demo_objcpp
         {
-            defines:    PLAT=windows
-        }
+            kind:           binary
+            deps:           hello3 
+            files:          src/demo/*.mm 
+            mxflags:        -DHELLO3 
+            ldflags:        -L$(buildir)/lib, -lhello3, -lhello3
 
-        platforms: macosx, ios 
-        {
-			ldflags:    -framework Cocoa, "-framework IOKit"
-                   ,    -framework CoreFoundation
+            platforms: ios 
+            {
+                ldflags:    -framework Cocoa, "-framework IOKit"
+                       ,    -framework CoreFoundation
+            }
         }
     }
 }

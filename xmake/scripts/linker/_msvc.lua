@@ -17,19 +17,19 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _clang.lua
+-- @file        _msvc.lua
 --
 
--- define module: _clang
-local _clang = _clang or {}
+-- define module: _msvc
+local _msvc = _msvc or {}
 
 -- load modules
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 
--- init the compiler
-function _clang._init(configs)
+-- init the linker
+function _msvc._init(configs)
 
     -- the architecture
     local arch = config.get("arch")
@@ -42,50 +42,41 @@ function _clang._init(configs)
     else flags_arch = "-arch " .. arch
     end
 
-    -- init cflags
-    configs.cflags = flags_arch
+    -- init ldflags
+    configs.ldflags = flags_arch
 
-    -- init cxxflags
-    configs.cxxflags = flags_arch
-
-    -- init mflags
-    configs.mflags = flags_arch
-
-    -- init mxxflags
-    configs.mxxflags = flags_arch
-
-    -- init asflags
-    configs.asflags = flags_arch
+    -- init shflags
+    configs.shflags = flags_arch .. " -dynamiclib"
 
 end
 
--- make the compiler command
-function _clang._make(configs, srcfile, objfile, flags)
+-- make the command
+function _msvc._make(configs, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s -c %s -o%s %s", configs.name, flags, objfile, srcfile)
+    return string.format("%s %s -o%s %s", configs.name, flags, targetfile, objfiles)
 end
 
--- make the define flag
-function _clang._make_define(configs, define)
+-- make the link flag
+function _msvc._make_link(configs, link)
 
     -- make it
-    return "-D" .. define
+    return "-l" .. link
 end
 
--- make the includedir flag
-function _clang._make_includedir(configs, includedir)
+-- make the linkdir flag
+function _msvc._make_linkdir(configs, linkdir)
 
     -- make it
-    return "-I" .. includedir
+    return "-L" .. linkdir
 end
 
--- map gcc flag to the current compiler flag
-function _clang._mapflag(configs, flag)
+-- map gcc flag to the current linker flag
+function _msvc._mapflag(configs, flag)
 
     -- ok
     return flag
 end
 
--- return module: _clang
-return _clang
+-- return module: _msvc
+return _msvc
