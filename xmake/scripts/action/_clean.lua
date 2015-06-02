@@ -24,112 +24,15 @@
 local _clean = _clean or {}
 
 -- load modules
-local os        = require("base/os")
-local rule      = require("base/rule")
-local utils     = require("base/utils")
+local clean     = require("base/clean")
 local config    = require("base/config")
-local project   = require("base/project")
-
--- remove the given files or directories
-function _clean._remove(filedirs)
-
-    -- check
-    assert(filedirs)
-
-    -- wrap it first
-    filedirs = utils.wrap(filedirs)
-    for _, filedir in ipairs(filedirs) do
- 
-        -- exists? remove it
-        if os.exists(filedir) then
-            -- remove it
-            local ok, errors = os.rm(filedir)
-            if not ok then
-                -- error
-                utils.error(errors)
-                return false
-            end  
-        end
-    end
-
-    -- ok
-    return true
-end
-
--- remove the given target_name
-function _clean._remove_target(target_name, target, buildir)
-
-    -- check
-    assert(target_name and target)
- 
-    -- remove the target file 
-    if not _clean._remove(rule.targetfile(target_name, target, buildir)) then
-        return false
-    end
- 
-    -- remove the object files 
-    if not _clean._remove(rule.objectfiles(target_name, target, rule.sourcefiles(target), buildir)) then
-        return false
-    end
-
-    -- ok
-    return true
-end
-
--- remove the given target and all dependent targets
-function _clean._remove_target_and_deps(target_name, buildir)
-
-    -- the targets
-    local targets = project.targets()
-    assert(targets)
-
-    -- the target
-    local target = targets[target_name]
-    assert(target)
-
-    -- remove the target
-    if not _clean._remove_target(target_name, target, buildir) then
-        return false 
-    end
-     
-    -- exists the dependent targets?
-    if target.deps then
-        local deps = utils.wrap(target.deps)
-        for _, dep in ipairs(deps) do
-            if not _clean._remove_target_and_deps(dep, buildir) then return false end
-        end
-    end
-
-    -- ok
-    return true
-end
 
 -- done the given config
 function _clean.done()
 
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
-
-    -- the build directory
-    local buildir = config.get("buildir")
-    assert(buildir)
-
-    -- the target name
-    local target_name = options.target
-    if target_name and target_name ~= "all" then
-        -- remove target
-        if not _clean._remove_target_and_deps(target_name, buildir) then return false end
-    else
-
-        -- the targets
-        local targets = project.targets()
-        assert(targets)
-
-        -- remove targets
-        for target_name, target in pairs(targets) do
-            if not _clean._remove_target(target_name, target, buildir) then return false end
-        end
+    -- clean the current target
+    if not clean.remove(config.get("target")) then
+        return false
     end
 
     -- trace
