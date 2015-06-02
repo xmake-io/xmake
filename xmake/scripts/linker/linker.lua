@@ -58,33 +58,47 @@ function linker._mapflags(self, flags)
 end
 
 -- make the command
-function linker._make(self, kind, objfiles, targetfile, flags)
+function linker._make(self, target, objfiles, targetfile)
 
     -- check
-    assert(self and self._make)
+    assert(self and self._make and target)
 
     -- the configure
     local configs = self._CONFIGS
     assert(configs)
 
-    -- get the common flags string for the current linker
-    local flags_common = nil
-    if kind == "binary" then flags_common = configs.ldflags
-    elseif kind == "static" then flags_common = configs.arflags
-    elseif kind == "shared" then flags_common = configs.shflags
-    end
-    flags_common = flags_common or ""
+    -- the target kind
+    local kind = target.kind or ""
 
-    -- map flags
-    flags = linker._mapflags(self, utils.wrap(flags))
-    assert(flags)
-    
-    -- make flags string
-    flags = table.concat(flags)
-    assert(flags)
+    -- the flag name
+    local flag_name = nil
+    if kind == "binary" then flag_name = "ldflags"
+    elseif kind == "static" then flag_name = "arflags"
+    elseif kind == "shared" then flag_name = "shflags"
+    else
+        -- error
+        utils.error("unknown type for linker: %s", kind)
+        return 
+    end
+
+    -- get the common flags from the current linker 
+    local flags_common = configs[flag_name] or ""
+
+    -- get the target flags from the current project
+    local flags_target = target[flag_name] or ""
+    flags_target = table.concat(linker._mapflags(self, utils.wrap(flags_target)), " ")
+    assert(flags_target)
+
+    -- get the config flags
+    local flags_config = config.get(flag_name) or ""
+    flags_config = table.concat(linker._mapflags(self, utils.wrap(flags_config)), " ")
+    assert(flags_config)
+
+    -- make the flags string
+    local flags = string.format("%s %s %s", flags_common, flags_target, flags_config)
 
     -- make it
-    return self._make(configs, table.concat(objfiles), targetfile, flags_common .. " " .. flags)
+    return self._make(configs, table.concat(objfiles, " "), targetfile, flags)
 end
 
 -- load the given linker 
