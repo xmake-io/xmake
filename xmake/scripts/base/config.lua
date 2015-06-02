@@ -300,11 +300,13 @@ function config.loadxconf()
         -- clear configs if the host has been changed
         local target = config._target()
         if target and target.host ~= xmake._HOST then
+            -- clear configs
             config._CONFIGS = {}
         end
 
         -- clear configs if the plat has been changed
         if target and target.plat and options.plat and target.plat ~= options.plat then
+            -- clear configs
             config._CONFIGS = {}
         end
     end

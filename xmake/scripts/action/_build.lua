@@ -25,19 +25,28 @@ local _build = _build or {}
 
 -- load modules
 local utils     = require("base/utils")
+local clean     = require("base/clean")
 local config    = require("base/config")
 local makefile  = require("base/makefile")
-    
+
 -- done the given config
 function _build.done()
 
-    -- TODO
-    -- rebuild, update
+    -- the target name
+    local target_name = config.get("target")
+
+    -- rebuild it?
+    if config.get("rebuild") then
+        clean.remove(target_name)
+    -- update it?
+    elseif config.get("update") then
+        clean.remove(target_name, true)
+    end
 
     -- build target for makefile
-    if not makefile.build(config.get("target")) then
+    if not makefile.build(target_name) then
         -- error
-        utils.error("build target: %s failed!", config.get("target"))
+        utils.error("build target: %s failed!", target_name)
         return false
     end
 
