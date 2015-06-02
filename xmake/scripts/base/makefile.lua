@@ -26,105 +26,12 @@ local makefile = makefile or {}
 -- load modules
 local io        = require("base/io")
 local os        = require("base/os")
+local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
-
--- get the source files from the given target
-function makefile._srcfiles(target)
-
-    -- check
-    assert(target)
-
-    -- no files?
-    if not target.files then
-        return {}
-    end
-
-    -- wrap files first
-    local target_files = utils.wrap(target.files)
-
-    -- match files
-    local i = 1
-    local srcfiles = {}
-    for _, target_file in ipairs(target_files) do
-
-        -- match source files
-        local files = os.match(target_file)
-
-        -- process source files
-        for _, file in ipairs(files) do
-
-            -- convert to the relative path
-            if path.is_absolute(file) then
-                file = path.relative(file, xmake._PROJECT_DIR)
-            end
-
-            -- save it
-            srcfiles[i] = file
-            i = i + 1
-
-        end
-    end
-
-    -- remove repeat files
-    srcfiles = utils.unique(srcfiles)
-
-    -- ok?
-    return srcfiles
-end
-
--- get object files for the given source files
-function makefile._objfiles(target, name, srcfiles)
-
-    -- check
-    assert(target and name and srcfiles)
-
-    -- the build directory
-    local buildir = config.get("buildir")
-    assert(buildir)
-   
-    -- the object directory
-    local objectdir = target.objectdir or buildir .. "/.objs"
-    assert(objectdir and type(objectdir) == "string")
-   
-    -- make object files
-    local i = 1
-    local objfiles = {}
-    for _, srcfile in ipairs(srcfiles) do
-
-        -- make object file
-        local objfile = string.format("%s/%s/%s/%s", objectdir, name, path.directory(srcfile), platform.filename(path.basename(srcfile), "object"))
-
-        -- save it
-        objfiles[i] = path.translate(objfile)
-        i = i + 1
-
-    end
-
-    -- ok?
-    return objfiles
-end
-
--- get target file for the given target name and kind
-function makefile._targetfile(name, target)
-
-    -- check
-    assert(name and target and target.kind)
-
-    -- the target directory
-    local targetdir = target.targetdir or config.get("buildir")
-    assert(targetdir and type(targetdir) == "string")
-   
-    -- the target file name
-    local filename = platform.filename(name, target.kind)
-    assert(filename)
-
-    -- make the target file path
-    return targetdir .. "/" .. filename
-end
 
 -- make the object to the makefile
 function makefile._make_object(file, target, srcfile, objfile)
@@ -188,12 +95,12 @@ function makefile._make_target(file, name, target)
     assert(file and name and target and target.kind)
 
     -- get source and object files
-    local srcfiles = makefile._srcfiles(target)
-    local objfiles = makefile._objfiles(target, name, srcfiles)
+    local srcfiles = rule.sourcefiles(target)
+    local objfiles = rule.objectfiles(name, target, srcfiles)
     assert(srcfiles and objfiles)
 
     -- get target file
-    local targetfile = makefile._targetfile(name, target)
+    local targetfile = rule.targetfile(name, target)
     assert(targetfile)
 
     -- the linker
