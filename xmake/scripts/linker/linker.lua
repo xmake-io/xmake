@@ -85,13 +85,27 @@ function linker._make(self, target, objfiles, targetfile)
     local flags_common = configs[flag_name] or ""
 
     -- get the target flags from the current project
-    local flags_target = target[flag_name] or ""
-    flags_target = table.concat(linker._mapflags(self, utils.wrap(flags_target)), " ")
+    local flags_target = table.concat(linker._mapflags(self, utils.wrap(target[flag_name])), " ")
     assert(flags_target)
 
+    -- get the linkdirs flags from the current project
+    if self._make_linkdir then
+        local linkdirs = utils.wrap(target.linkdirs)
+        for _, linkdir in ipairs(linkdirs) do
+            flags_target = string.format("%s %s", flags_target, self._make_linkdir(configs, linkdir))
+        end
+    end
+
+    -- get the links flags from the current project
+    if self._make_link then
+        local links = utils.wrap(target.links)
+        for _, link in ipairs(links) do
+            flags_target = string.format("%s %s", flags_target, self._make_link(configs, link))
+        end
+    end
+
     -- get the config flags
-    local flags_config = config.get(flag_name) or ""
-    flags_config = table.concat(linker._mapflags(self, utils.wrap(flags_config)), " ")
+    local flags_config = table.concat(linker._mapflags(self, utils.wrap(config.get(flag_name))), " ")
     assert(flags_config)
 
     -- make the flags string
