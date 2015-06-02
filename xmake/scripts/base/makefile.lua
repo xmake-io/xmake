@@ -77,14 +77,18 @@ function makefile._srcfiles(target)
 end
 
 -- get object files for the given source files
-function makefile._objfiles(name, srcfiles)
+function makefile._objfiles(target, name, srcfiles)
 
     -- check
-    assert(name and srcfiles)
+    assert(target and name and srcfiles)
 
     -- the build directory
     local buildir = config.get("buildir")
     assert(buildir)
+   
+    -- the object directory
+    local objectdir = target.objectdir or buildir .. "/.objs"
+    assert(objectdir and type(objectdir) == "string")
    
     -- make object files
     local i = 1
@@ -92,7 +96,7 @@ function makefile._objfiles(name, srcfiles)
     for _, srcfile in ipairs(srcfiles) do
 
         -- make object file
-        local objfile = string.format("%s/%s/%s/%s", buildir, name, path.directory(srcfile), platform.filename(path.basename(srcfile), "object"))
+        local objfile = string.format("%s/%s/%s/%s", objectdir, name, path.directory(srcfile), platform.filename(path.basename(srcfile), "object"))
 
         -- save it
         objfiles[i] = path.translate(objfile)
@@ -105,21 +109,21 @@ function makefile._objfiles(name, srcfiles)
 end
 
 -- get target file for the given target name and kind
-function makefile._targetfile(name, kind)
+function makefile._targetfile(name, target)
 
     -- check
-    assert(name and kind)
+    assert(name and target and target.kind)
 
-    -- the build directory
-    local buildir = config.get("buildir")
-    assert(buildir)
+    -- the target directory
+    local targetdir = target.targetdir or config.get("buildir")
+    assert(targetdir and type(targetdir) == "string")
    
     -- the target file name
-    local filename = platform.filename(name, kind)
+    local filename = platform.filename(name, target.kind)
     assert(filename)
 
     -- make the target file path
-    return buildir .. "/" .. name .. "/" .. filename
+    return targetdir .. "/" .. filename
 end
 
 -- make the object to the makefile
@@ -185,11 +189,11 @@ function makefile._make_target(file, name, target)
 
     -- get source and object files
     local srcfiles = makefile._srcfiles(target)
-    local objfiles = makefile._objfiles(name, srcfiles)
+    local objfiles = makefile._objfiles(target, name, srcfiles)
     assert(srcfiles and objfiles)
 
     -- get target file
-    local targetfile = makefile._targetfile(name, target.kind)
+    local targetfile = makefile._targetfile(name, target)
     assert(targetfile)
 
     -- the linker

@@ -54,7 +54,7 @@ end
 function _clang._make(configs, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s %s -o%s %s", configs.name, flags, objfiles, targetfile)
+    return string.format("%s %s -o%s %s", configs.name, flags, targetfile, objfiles)
 end
 
 -- make the link flag

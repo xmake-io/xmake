@@ -42,7 +42,7 @@ function _macosx.make(configs)
     configs.format = {}
     configs.format.static = {"lib", ".a"}
     configs.format.object = {"",    ".o"}
-    configs.format.shared = {"",    ".dylib"}
+    configs.format.shared = {"lib", ".dylib"}
 
     -- init the compiler
     configs.compiler = {}

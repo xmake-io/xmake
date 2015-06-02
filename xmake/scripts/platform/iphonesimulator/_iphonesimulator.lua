@@ -42,7 +42,7 @@ function _iphonesimulator.make(configs)
     configs.format = {}
     configs.format.static = {"lib", ".a"}
     configs.format.object = {"",    ".o"}
-    configs.format.shared = {"",    ".dylib"}
+    configs.format.shared = {"lib", ".dylib"}
  
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator" .. config.get("xcode_sdkver") .. ".sdk"
