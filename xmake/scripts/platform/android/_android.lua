@@ -42,7 +42,7 @@ function _android.make(configs)
     configs.format = {}
     configs.format.static = {"lib", ".a"}
     configs.format.object = {"",    ".o"}
-    configs.format.shared = {"",    ".so"}
+    configs.format.shared = {"lib", ".so"}
 
 end
 

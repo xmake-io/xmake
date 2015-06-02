@@ -54,8 +54,8 @@ project: console
         deps:           hello1 
         files:          src/demo/*.c
         links:          hello1
-        linkdirs:       $(buildir)/src/hello1
-        includedirs:    $(buildir)/src/hello1
+        linkdirs:       $(buildir)
+        includedirs:    $(buildir)
         cflags:         -DHELLO1
 
         # the modes
@@ -71,8 +71,8 @@ project: console
         deps:           hello2 
         files:          src/demo/*.cpp 
         links:          hello2 
-        linkdirs:       $(buildir)/src/hello2 
-        includedirs:    $(buildir)/src/hello2 
+        linkdirs:       $(buildir)
+        includedirs:    $(buildir)
         cxxflags:       -DHELLO1 
     }
 
@@ -109,7 +109,6 @@ project: console
         platforms: macosx, ios 
         {
 			ldflags:    -framework Cocoa, "-framework IOKit"
-                   ,    -framework UIKit
                    ,    -framework CoreFoundation
         }
     }
