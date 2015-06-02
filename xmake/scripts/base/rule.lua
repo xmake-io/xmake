@@ -31,6 +31,23 @@ local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
 
+-- get the filename from the given name and kind
+function rule.filename(name, kind)
+
+    -- check
+    assert(name and kind)
+
+    -- get formats
+    local formats = platform.get("format")
+    assert(formats)
+
+    -- get format
+    local format = formats[kind] or {"", ""}
+
+    -- make it
+    return format[1] .. name .. format[2]
+end
+
 -- get target file for the given target
 function rule.targetfile(target_name, target, buildir)
 
@@ -42,7 +59,7 @@ function rule.targetfile(target_name, target, buildir)
     assert(targetdir and type(targetdir) == "string")
    
     -- the target file name
-    local filename = platform.filename(target_name, target.kind)
+    local filename = rule.filename(target_name, target.kind)
     assert(filename)
 
     -- make the target file path
@@ -89,7 +106,7 @@ function rule.objectfiles(target_name, target, sourcefiles, buildir)
     for _, sourcefile in ipairs(sourcefiles) do
 
         -- make object file
-        local objectfile = string.format("%s/%s/%s/%s", objectdir, target_name, path.directory(sourcefile), platform.filename(path.basename(sourcefile), "object"))
+        local objectfile = string.format("%s/%s/%s/%s", objectdir, target_name, path.directory(sourcefile), rule.filename(path.basename(sourcefile), "object"))
 
         -- save it
         objectfiles[i] = path.translate(objectfile)
@@ -144,8 +161,6 @@ function rule.sourcefiles(target)
     -- ok?
     return sourcefiles
 end
-
-
 
 -- return module: rule
 return rule

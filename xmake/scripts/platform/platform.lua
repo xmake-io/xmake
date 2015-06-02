@@ -87,23 +87,6 @@ function platform.get(name)
     end
 end
 
--- get the filename from the given name and kind
-function platform.filename(name, kind)
-
-    -- check
-    assert(name and kind)
-
-    -- get formats
-    local formats = platform.get("format")
-    assert(formats)
-
-    -- get format
-    local format = formats[kind] or {"", ""}
-
-    -- make it
-    return format[1] .. name .. format[2]
-end
-
 -- get the linker from the given name
 function platform.linker(kind)
 
