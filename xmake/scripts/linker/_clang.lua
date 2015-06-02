@@ -57,6 +57,20 @@ function _clang._make(configs, objfiles, targetfile, flags)
     return string.format("%s %s -o%s %s", configs.name, flags, objfiles, targetfile)
 end
 
+-- make the link flag
+function _clang._make_link(configs, link)
+
+    -- make it
+    return "-l" .. link
+end
+
+-- make the linkdir flag
+function _clang._make_linkdir(configs, linkdir)
+
+    -- make it
+    return "-L" .. linkdir
+end
+
 -- map gcc flag to the current linker flag
 function _clang._mapflag(configs, flag)
 

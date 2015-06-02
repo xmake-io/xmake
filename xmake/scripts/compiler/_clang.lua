@@ -66,6 +66,20 @@ function _clang._make(configs, srcfile, objfile, flags)
     return string.format("%s -c %s -o%s %s", configs.name, flags, objfile, srcfile)
 end
 
+-- make the define flag
+function _clang._make_define(configs, define)
+
+    -- make it
+    return "-D" .. define
+end
+
+-- make the includedir flag
+function _clang._make_includedir(configs, includedir)
+
+    -- make it
+    return "-I" .. includedir
+end
+
 -- map gcc flag to the current compiler flag
 function _clang._mapflag(configs, flag)
 

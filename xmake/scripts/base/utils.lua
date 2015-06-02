@@ -153,8 +153,10 @@ end
 -- wrap object to table
 function utils.wrap(object)
 
-    -- check
-    assert(object)
+    -- no object?
+    if not object then
+        return {}
+    end
 
     -- wrap it if not table
     if type(object) ~= "table" then
@@ -176,24 +178,26 @@ function utils.unique(array)
 
         -- not only one?
         if table.getn(array) ~= 1 then
-        
-            -- make unique table
+
+            -- done
+            local exists = {}
             local unique = {}
             for _, v in ipairs(array) do
                 if type(v) == "string" then
-                    unique[v] = v
+                    if not exists[v] then
+                        exists[v] = true
+                        unique[table.getn(unique) + 1] = v
+                    end
                 else
-                    unique["\"" .. v .. "\""] = v
+                    if not exists["\"" .. v .. "\""] then
+                        exists["\"" .. v .. "\""] = true
+                        unique[table.getn(unique) + 1] = v
+                    end
                 end
             end
 
-            -- make array again
-            array = {}
-            local i = 1
-            for _, v in pairs(unique) do
-                array[i] = v
-                i = i + 1
-            end
+            -- update it
+            array = unique
         end
     end
 

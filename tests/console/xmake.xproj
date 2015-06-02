@@ -54,8 +54,8 @@ project: console
         deps:           hello1 
         files:          src/demo/*.c
         links:          hello1
-        linkdirs:       src/hello1
-        includedirs:    src/hello1
+        linkdirs:       $(buildir)/src/hello1
+        includedirs:    $(buildir)/src/hello1
         cflags:         -DHELLO1
 
         # the modes
@@ -71,8 +71,8 @@ project: console
         deps:           hello2 
         files:          src/demo/*.cpp 
         links:          hello2 
-        linkdirs:       src/hello2 
-        includedirs:    src/hello2 
+        linkdirs:       $(buildir)/src/hello2 
+        includedirs:    $(buildir)/src/hello2 
         cxxflags:       -DHELLO1 
     }
 
@@ -93,7 +93,7 @@ project: console
         deps:           hello3 
         files:          src/demo/*.mm 
         mxflags:        -DHELLO3 
-        ldflags:        -lhello3, -lhello3, -L$(buildir)/lib 
+        ldflags:        -L$(buildir)/lib, -lhello3, -lhello3
 
         # the linux platform
         platforms: linux 
