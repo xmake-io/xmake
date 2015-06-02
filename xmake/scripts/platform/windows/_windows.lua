@@ -44,6 +44,18 @@ function _windows.make(configs)
     configs.format.object   = {"", ".obj"}
     configs.format.shared   = {"", ".dll"}
     configs.format.execute  = {"", ".exe"}
+
+    -- init the compiler
+    configs.compiler = {}
+    configs.compiler.cc  = config.get("cc") or "cl.exe"
+    configs.compiler.cxx = config.get("cxx") or "cl.exe"
+
+    -- init the linker
+    configs.linker = {}
+    configs.linker.binary  = config.get("ld") or "link.exe"
+    configs.linker.static  = config.get("ar") or "link.exe"
+    configs.linker.shared  = config.get("sh") or "link.exe"
+
 end
 
 -- get the option menu for action: xmake config or global
