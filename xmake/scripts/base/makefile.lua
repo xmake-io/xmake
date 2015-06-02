@@ -145,7 +145,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     -- make body
     file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
-    file:write(string.format("\t@%s\n", c:make(filetype, srcfile, objfile, "")))
+    file:write(string.format("\t@%s\n", c:make(target, filetype, srcfile, objfile)))
 
     -- make tail
     file:write("\n")
@@ -218,7 +218,7 @@ function makefile._make_target(file, name, target)
     -- make body
     file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
-    file:write(string.format("\t@%s\n", l:make(target.kind, objfiles, targetfile, "")))
+    file:write(string.format("\t@%s\n", l:make(target, objfiles, targetfile)))
 
     -- make tail
     file:write("\n")

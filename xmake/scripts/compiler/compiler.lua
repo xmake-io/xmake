@@ -59,35 +59,66 @@ function compiler._mapflags(self, flags)
 end
 
 -- make the compile command
-function compiler._make(self, filetype, srcfile, objfile, flags)
+function compiler._make(self, target, filetype, srcfile, objfile)
 
     -- check
-    assert(self and filetype);
+    assert(self and target and filetype);
 
     -- the configure
     local configs = self._CONFIGS
     assert(configs)
 
-    -- get the common flags string for the current compiler
-    local flags_common = nil
-    if filetype == "cc" then flags_common = configs.cflags
-    elseif filetype == "cxx" then flags_common = configs.cxxflags
-    elseif filetype == "mm" then flags_common = configs.mflags
-    elseif filetype == "mxx" then flags_common = configs.mxxflags
-    elseif filetype == "as" then flags_common = configs.asflags
+    -- the flag names
+    local flag_names = nil
+    if filetype == "cc"         then flag_names = { "cxflags", "cflags"      }
+    elseif filetype == "cxx"    then flag_names = { "cxflags", "cxxflags"    }
+    elseif filetype == "mm"     then flag_names = { "mxflags", "mflags"      } 
+    elseif filetype == "mxx"    then flag_names = { "mxflags", "mxxflags"    }
+    elseif filetype == "as"     then flag_names = { "asflags"                }
+        -- error
+        utils.error("unknown filetype for compiler: %s", filetype)
+        return 
     end
-    flags_common = flags_common or ""
 
-    -- map flags
-    flags = compiler._mapflags(self, utils.wrap(flags))
-    assert(flags)
-    
-    -- make flags string
-    flags = table.concat(flags)
-    assert(flags)
+    -- get the common flags from the current compiler 
+    local flags_common = ""
+    for _, flag_name in ipairs(flag_names) do
+        flags_common = string.format("%s %s", flags_common, configs[flag_name] or "")
+    end
+
+    -- get the target flags from the current project
+    local flags_target = ""
+    for _, flag_name in ipairs(flag_names) do
+
+        -- get flags
+        local flags = target[flag_name]
+        if flags then
+            flags = table.concat(compiler._mapflags(self, utils.wrap(flags)), " ")
+        end
+
+        -- append flags
+        flags_target = string.format("%s %s", flags_target, flags or "")
+    end
+
+    -- get the config flags
+    local flags_config = ""
+    for _, flag_name in ipairs(flag_names) do
+        
+        -- get flags
+        local flags = config.get(flag_name)
+        if flags then
+            flags = table.concat(compiler._mapflags(self, utils.wrap(flags)), " ")
+        end
+
+        -- append flags
+        flags_config = string.format("%s %s", flags_config, flags or "")
+    end
+
+    -- make the flags string
+    local flags = string.format("%s %s %s", flags_common, flags_target, flags_config)
 
     -- get it
-    return self._make(configs, srcfile, objfile, flags_common .. " " .. flags)
+    return self._make(configs, srcfile, objfile, flags)
 end
 
 -- load the given compiler 
