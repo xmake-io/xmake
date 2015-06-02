@@ -31,13 +31,16 @@ local config    = require("base/config")
 -- init the linker
 function _ar._init(configs)
 
+    -- init arflags
+    configs.arflags = "-crs"
+
 end
 
--- make the static library command
-function _ar._make_static(configs, objfiles, targetfile, flags)
+-- make the command
+function _ar._make(configs, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s -crs %s %s %s", configs.name, flags, targetfile, table.concat(objfiles))
+    return string.format("%s %s %s %s", configs.name, flags, targetfile, objfiles)
 end
 
 -- map gcc flag to the current linker flag
