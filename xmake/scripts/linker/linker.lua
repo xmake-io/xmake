@@ -57,46 +57,34 @@ function linker._mapflags(self, flags)
     return flags_mapped
 end
 
--- make the binary command
-function linker._make_binary(self, objfiles, targetfile, flags)
+-- make the command
+function linker._make(self, kind, objfiles, targetfile, flags)
 
     -- check
-    assert(self and self._make_binary)
+    assert(self and self._make)
 
     -- the configure
     local configs = self._CONFIGS
     assert(configs)
 
-    -- make it
-    return self._make_binary(configs, objfiles, targetfile, linker._mapflags(self, flags))
-end
+    -- get the common flags string for the current linker
+    local flags_common = nil
+    if kind == "binary" then flags_common = configs.ldflags
+    elseif kind == "static" then flags_common = configs.arflags
+    elseif kind == "shared" then flags_common = configs.shflags
+    end
+    flags_common = flags_common or ""
 
--- make the static library command
-function linker._make_static(self, objfiles, targetfile, flags)
-
-    -- check
-    assert(self and self._make_static)
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
-
-    -- make it
-    return self._make_static(configs, objfiles, targetfile, linker._mapflags(self, flags))
-end
-
--- make the shared library command
-function linker._make_shared(self, objfiles, targetfile, flags)
-
-    -- check
-    assert(self and self._make_shared)
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
+    -- map flags
+    flags = linker._mapflags(self, utils.wrap(flags))
+    assert(flags)
+    
+    -- make flags string
+    flags = table.concat(flags)
+    assert(flags)
 
     -- make it
-    return self._make_shared(configs, objfiles, targetfile, linker._mapflags(self, flags))
+    return self._make(configs, table.concat(objfiles), targetfile, flags_common .. " " .. flags)
 end
 
 -- load the given linker 
@@ -143,9 +131,7 @@ function linker.load(name)
     l._init(configs)
 
     -- init interfaces
-    l["make_binary"]    = linker._make_binary
-    l["make_static"]    = linker._make_static
-    l["make_shared"]    = linker._make_shared
+    l["make"] = linker._make
 
     -- ok?
     return l

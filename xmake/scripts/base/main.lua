@@ -197,13 +197,21 @@ local menu =
         ,   {nil, "cxxflags",   "kv", nil,          "The C++ Compiler Flags"                                        }
 
         ,   {}
-        ,   {nil, "ld",         "kv", nil,          "The Linker"                                                    }
-        ,   {nil, "ldflags",    "kv", nil,          "The Linker Flags"                                              }
-
-        ,   {}
         ,   {nil, "as",         "kv", nil,          "The Assembler"                                                 }
         ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"                                           }
        
+        ,   {}
+        ,   {nil, "ld",         "kv", nil,          "The Linker"                                                    }
+        ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"                                       }
+
+        ,   {}
+        ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"                                     }
+        ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"                               }
+
+        ,   {}
+        ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"                                     }
+        ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"                               }
+
             -- the options for all platforms
         ,   function () return platform.menu("config") end
 

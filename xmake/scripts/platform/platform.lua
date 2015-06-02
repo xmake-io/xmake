@@ -105,37 +105,64 @@ function platform.filename(name, kind)
 end
 
 -- get the linker from the given name
-function platform.linker(name)
+function platform.linker(kind)
 
     -- check
-    assert(name)
+    assert(kind)
+ 
+    -- init linkers
+    platform._LINKERS = platform._LINKERS or {}
+    local linkers = platform._LINKERS
+
+    -- return it directly if the linker has been cached
+    local l = linkers[kind]
+    if l then return l end
 
     -- get linker
     local c = platform.get("linker")
     assert(c)
 
     -- load linker
-    c = c[name]
-    if c then 
-        return linker.load(c)
-    end
+    c = c[kind]
+    if c then return linker.load(c) end
+
+    -- cache this linker
+    linkers[kind] = l
+
+    -- ok
+    return l
 end
 
--- get the compiler from the given name
-function platform.compiler(name)
+-- get the compiler from the given source file
+function platform.compiler(srcfile)
 
-    -- check
-    assert(name)
+    -- get the source file type
+    local filetype = compiler.filetype(srcfile)
+    if not filetype then
+        return 
+    end
 
-    -- get compiler
-    local c = platform.get("compiler")
+    -- init compilers
+    platform._COMPILERS = platform._COMPILERS or {}
+    local compilers = platform._COMPILERS
+
+    -- return it directly if the compiler has been cached
+    local c = compilers[filetype]
+    if c then return c, filetype end
+
+    -- get compiler from the current platform
+    c = platform.get("compiler")
     assert(c)
 
     -- load compiler
-    c = c[name]
-    if c then 
-        return compiler.load(c)
-    end
+    c = c[filetype]
+    if c then c = compiler.load(c) end
+
+    -- cache this compiler
+    compilers[filetype] = c
+
+    -- ok
+    return c, filetype
 end
 
 -- dump the platform configure

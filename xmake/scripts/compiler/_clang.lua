@@ -31,6 +31,32 @@ local config    = require("base/config")
 -- init the compiler
 function _clang._init(configs)
 
+    -- the architecture
+    local arch = config.get("arch")
+    assert(arch)
+
+    -- init flags for architecture
+    local flags_arch = ""
+    if arch == "x86" then flags_arch = "-m32"
+    elseif arch == "x64" then flags_arch = "-m64"
+    else flags_arch = "-arch " .. arch
+    end
+
+    -- init cflags
+    configs.cflags = flags_arch
+
+    -- init cxxflags
+    configs.cxxflags = flags_arch
+
+    -- init mflags
+    configs.mflags = flags_arch
+
+    -- init mxxflags
+    configs.mxxflags = flags_arch
+
+    -- init asflags
+    configs.asflags = flags_arch
+
 end
 
 -- make the compiler command

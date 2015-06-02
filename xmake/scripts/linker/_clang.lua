@@ -31,20 +31,30 @@ local config    = require("base/config")
 -- init the linker
 function _clang._init(configs)
 
+    -- the architecture
+    local arch = config.get("arch")
+    assert(arch)
+
+    -- init flags for architecture
+    local flags_arch = ""
+    if arch == "x86" then flags_arch = "-m32"
+    elseif arch == "x64" then flags_arch = "-m64"
+    else flags_arch = "-arch " .. arch
+    end
+
+    -- init ldflags
+    configs.ldflags = flags_arch
+
+    -- init shflags
+    configs.shflags = flags_arch .. " -dynamiclib"
+
 end
 
--- make the binary command
-function _clang._make_binary(configs, objfiles, targetfile, flags)
+-- make the command
+function _clang._make(configs, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s -o%s %s %s", configs.name, table.concat(objfiles), targetfile, flags)
-end
-
--- make the shared library command
-function _clang._make_shared(configs, objfiles, targetfile, flags)
-
-    -- make it
-    return string.format("%s -dynamiclib -o%s %s %s", configs.name, table.concat(objfiles), targetfile, flags)
+    return string.format("%s %s -o%s %s", configs.name, flags, objfiles, targetfile)
 end
 
 -- map gcc flag to the current linker flag

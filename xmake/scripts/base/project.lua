@@ -163,6 +163,7 @@ function project.loadxproj(file)
                         ,   "mxflags" 
                         ,   "mxxflags" 
                         ,   "ldflags" 
+                        ,   "shflags" 
                         ,   "defines"} 
 
     -- init filter

@@ -32,67 +32,6 @@ local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
 
--- get the linker from the given kind
-function makefile._linker(kind)
-        
-    -- init linkers
-    makefile._LINKERS = makefile._LINKERS or {}
-    local linkers = makefile._LINKERS
-
-    -- return it directly if the linker has been cached
-    local l = linkers[kind]
-    if l then return l end
-
-    -- get compiler from the current platform
-    l = platform.linker(kind)
-
-    -- cache this compiler
-    linkers[kind] = l
-
-    -- ok
-    return l
-end
-
--- get the compiler from the given source file
-function makefile._compiler(srcfile)
-
-    -- get the source file type
-    local filetype = path.extension(srcfile)
-    if not filetype then
-        return nil, string.format("cannot get the source file type: %s", srcfile)
-    end
-
-    -- get the lower file type
-    filetype = filetype:lower()
-
-    -- get the compiler name
-    local name = nil
-    if filetype == ".c" then name = "cc"
-    elseif filetype == ".cpp" or filetype == ".cc" then name = "cxx"
-    elseif filetype == ".m" then name = "mm"
-    elseif filetype == ".mm" then name = "mxx"
-    elseif filetype == ".s" or filetype == ".asm" then name = "as"
-    else return nil, string.format("unknown file type: %s", filetype)
-    end
-    
-    -- init compilers
-    makefile._COMPILERS = makefile._COMPILERS or {}
-    local compilers = makefile._COMPILERS
-
-    -- return it directly if the compiler has been cached
-    local c = compilers[name]
-    if c then return c end
-
-    -- get compiler from the current platform
-    c = platform.compiler(name)
-
-    -- cache this compiler
-    compilers[name] = c
-
-    -- ok
-    return c
-end
-
 -- get the source files from the given target
 function makefile._srcfiles(target)
 
@@ -189,11 +128,11 @@ function makefile._make_object(file, target, srcfile, objfile)
     -- check
     assert(file and target and srcfile and objfile)
 
-    -- get the compiler
-    local c, errors = makefile._compiler(srcfile);
+    -- get the compiler and filetype
+    local c, filetype = platform.compiler(srcfile);
     if not c then
         -- error
-        utils.error(errors)
+        utils.error("unknown source file: %s", srcfile)
         return false
     end
 
@@ -206,7 +145,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     -- make body
     file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
-    file:write(string.format("\t@%s\n", c:make(srcfile, objfile, "")))
+    file:write(string.format("\t@%s\n", c:make(filetype, srcfile, objfile, "")))
 
     -- make tail
     file:write("\n")
@@ -254,16 +193,8 @@ function makefile._make_target(file, name, target)
     assert(targetfile)
 
     -- the linker
-    local l = makefile._linker(target.kind)
+    local l = platform.linker(target.kind)
     assert(l)
-
-    -- the make command
-    local make_command = l["make_" .. target.kind]
-    if not make_command then
-        -- error
-        utils.error("the target kind: %s in not surpported now!", target.kind)
-        return false
-    end
 
     -- make head
     file:write(string.format("%s:", name))
@@ -287,7 +218,7 @@ function makefile._make_target(file, name, target)
     -- make body
     file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
-    file:write(string.format("\t@%s\n", make_command(l, objfiles, targetfile, "")))
+    file:write(string.format("\t@%s\n", l:make(target.kind, objfiles, targetfile, "")))
 
     -- make tail
     file:write("\n")
