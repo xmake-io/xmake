@@ -63,6 +63,7 @@ tb_int_t xm_os_rmfile(lua_State* lua);
 tb_int_t xm_os_cpfile(lua_State* lua);
 tb_int_t xm_os_rename(lua_State* lua);
 tb_int_t xm_os_exists(lua_State* lua);
+tb_int_t xm_os_setenv(lua_State* lua);
 
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
@@ -97,6 +98,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "cpfile",         xm_os_cpfile    }
 ,   { "rename",         xm_os_rename    }
 ,   { "exists",         xm_os_exists    }
+,   { "setenv",         xm_os_setenv    }
 ,   { tb_null,          tb_null         }
 };
 

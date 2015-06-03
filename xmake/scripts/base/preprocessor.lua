@@ -79,7 +79,7 @@ function preprocessor._register(env, names, filter)
             local _current = env._current
             assert(_current)
 
-            -- init ldflags
+            -- init the configure entry
             _current[name] = _current[name] or {}
 
             -- get arguments
@@ -109,7 +109,39 @@ function preprocessor._init(root, configures, scopes, filter, import)
     -- enter new environment 
     local newenv = {}
     local oldenv = getfenv()
-    setmetatable(newenv, {__index = _G})  
+    setmetatable(newenv, {  __index =   function(tbl, key)
+                                            -- private configure entry? we can get it directly and need not register it
+                                            if key and type(key) == "string" and key:startswith("__") then
+
+                                                return function(...)
+
+                                                    -- check
+                                                    local _current = newenv._current
+                                                    assert(_current)
+
+                                                    -- init the configure entry
+                                                    _current[key] = _current[key] or {}
+
+                                                    -- get arguments
+                                                    local arg = arg or {...}
+                                                    if table.getn(arg) == 0 then
+                                                        -- no argument
+                                                        _current[key] = nil
+                                                    elseif table.getn(arg) == 1 then
+                                                        -- save only one argument
+                                                        _current[key] = preprocessor._filter(newenv, arg[1], filter)
+                                                    else
+                                                        -- save all arguments
+                                                        for i, v in ipairs(arg) do
+                                                            _current[key][i] = preprocessor._filter(newenv, v, filter)
+                                                        end
+                                                    end
+                                                end
+                                            end
+
+                                            -- get it from the global table
+                                            return rawget(_G, key)
+                                        end})  
     setfenv(1, newenv)
 
     -- register all configures

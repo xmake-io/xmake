@@ -27,6 +27,7 @@ xmake_C_FILES 			+= \
 						os/cpfile \
 						os/rename \
 						os/exists \
+						os/setenv \
 						path/relative \
 						path/absolute \
 						path/translate \
