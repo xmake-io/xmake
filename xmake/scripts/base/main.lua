@@ -343,7 +343,11 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+            {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
+        ,   {nil, "debugger",   "kv", "auto",       "Set the debugger path."                                        }
+
+        ,   {}
+        ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"

@@ -24,15 +24,67 @@
 local _run = _run or {}
 
 -- load modules
+local rule      = require("base/rule")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local project   = require("base/project")
     
 -- done the given config
 function _run.done()
 
- 
-    -- ok
-    return true
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options and xmake._PROJECT_DIR)
+
+    -- the target name
+    local name = options.target
+    if not name then
+        -- error
+        utils.error("no runable target!")
+        return false
+    end
+
+    -- the targets
+    local targets = project.targets()
+    if not targets or not targets[name] then
+        -- error
+        utils.error("not found target: %s!", name)
+        return false
+    end
+
+    -- the target
+    local target = targets[name]
+    if not target.kind or type(target.kind) ~= "string" or target.kind ~= "binary" then
+        -- error
+        utils.error("the target %s is not executale!", name)
+        return false
+    end
+
+    -- the target file
+    local targetfile = rule.targetfile(name, target)
+    if targetfile and not path.is_absolute(targetfile) then
+        targetfile = path.absolute(targetfile, xmake._PROJECT_DIR)
+    end
+
+    -- check the target file
+    if not targetfile and not os.isfile(targetfile) then
+        -- error
+        utils.error("not found target file: %s!", targetfile)
+        return false
+    end
+
+    -- the arguments
+    local arguments = options.arguments or {}
+    if type(arguments) ~= "table" then
+        arguments = {}
+    end
+
+    -- done 
+    local ok = os.execute(string.format("%s %s", targetfile, table.concat(arguments)))
+
+    -- ok?
+    return utils.ifelse(ok == 0, true, false)
 end
 
 -- return module: _run

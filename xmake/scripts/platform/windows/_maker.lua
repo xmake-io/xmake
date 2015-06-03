@@ -25,12 +25,56 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local config    = require("base/config")
 
 -- define module: _maker
 local _maker = _maker or {}
 
+-- enter the given environment
+function _maker._enter(name)
+
+    -- check
+    assert(name)
+
+    -- get the pathes for the vs environment
+    local old = nil
+    local new = config.get("__vsenv_" .. name)
+    if new then
+
+        -- get the current pathes
+        old = os.getenv(name) or ""
+
+        -- append the current pathes
+        new = new .. ";" .. old
+
+        -- update the pathes for the environment
+        os.setenv(name, new)
+    end
+
+    -- return the previous environment
+    return old;
+end
+
+-- leave the given environment
+function _maker._leave(name, old)
+
+    -- check
+    assert(name)
+
+    -- restore the previous environment
+    if old then 
+        os.setenv(name, old)
+    end
+end
+
 -- build the target from the given makefile 
 function _maker.done(mkfile, target)
+
+    -- enter the vs environment
+    local pathes    = _maker._enter("path")
+    local libs      = _maker._enter("lib")
+    local includes  = _maker._enter("include")
+    local libpathes = _maker._enter("libpath")
 
     -- make command
     local cmd = nil
@@ -42,12 +86,15 @@ function _maker.done(mkfile, target)
 
     -- done 
     local ok = os.execute(cmd)
-    if ok ~= 0 then
-        return false
-    end
 
-    -- ok
-    return true
+    -- leave the vs environment
+    _maker._leave("path",       pathes)
+    _maker._leave("lib",        libs)
+    _maker._leave("include",    includes)
+    _maker._leave("libpath",    libpathes)
+
+    -- ok?
+    return utils.ifelse(ok == 0, true, false)
 end
 
 -- return module: _maker
