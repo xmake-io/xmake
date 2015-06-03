@@ -79,9 +79,9 @@ function _maker.done(mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("nmake /f %s %s", mkfile, target or "")
+        cmd = string.format("nmake /f %s %s 2> nul", mkfile, target or "")
     else  
-        cmd = string.format("nmake %s", target or "")
+        cmd = string.format("nmake %s 2> nul", target or "")
     end
 
     -- done 
