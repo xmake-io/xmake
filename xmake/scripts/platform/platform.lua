@@ -289,5 +289,32 @@ function platform.probe(configs, is_global)
     end
 end
     
+-- build target from the given makefile
+function platform.build(mkfile, target)
+
+    -- attempt to done the platform special make first
+    local p = platform._load(config.get("plat"))
+    if p and p._MAKER and p._MAKER.done then
+        return p._MAKER.done(mkfile, target)
+    end
+
+    -- make command
+    local cmd = nil
+    if mkfile and os.isfile(mkfile) then
+        cmd = string.format("make -f %s %s", mkfile, target or "")
+    else  
+        cmd = string.format("make %s", target or "")
+    end
+
+    -- done 
+    local ok = os.execute(cmd)
+    if ok ~= 0 then
+        return false
+    end
+
+    -- ok
+    return true
+end
+
 -- return module: platform
 return platform
