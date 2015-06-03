@@ -98,7 +98,7 @@ function project._make_configs(scope, configs)
                 local item = scope[k]
 
                 -- append it
-                item[table.getn(item) + 1] = _v
+                table.insert(item, _v)
             end
         -- replace configure to scope
         elseif scope and not k:startswith("_") then

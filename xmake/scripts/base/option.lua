@@ -44,11 +44,11 @@ function option._save_menu(menu)
                     local _options = option()
                     if _options then
                         for _, o in ipairs(_options) do
-                            options_all[table.getn(options_all) + 1] = o
+                            table.insert(options_all, o)
                         end
                     end
                 else
-                    options_all[table.getn(options_all) + 1] = option
+                    table.insert(options_all, option)
                 end
             end
 
@@ -281,7 +281,7 @@ function option.init(argv, menu)
                     end
 
                     -- append value
-                    o[table.getn(o) + 1] = key
+                    table.insert(o, key)
                 end
             else
                 -- invalid option

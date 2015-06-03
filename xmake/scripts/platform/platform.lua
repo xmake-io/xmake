@@ -195,7 +195,7 @@ function platform.archs(plat)
     local p = platform._load(plat)
     if p and p._ARCHS then
        for _, arch in ipairs(p._ARCHS) do
-            archs[table.getn(archs) + 1] = arch
+            table.insert(archs, arch)
        end
     end
 
@@ -245,11 +245,11 @@ function platform.menu(action)
                         local name = option[2]
                         if name then
                             if not exist[name] then
-                                menus[table.getn(menus) + 1] = option
+                                table.insert(menus, option)
                                 exist[name] = true
                             end
                         else
-                            menus[table.getn(menus) + 1] = option
+                            table.insert(menus, option)
                         end
                     end
                 end
