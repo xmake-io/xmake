@@ -301,9 +301,9 @@ function platform.build(mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("make -f %s %s", mkfile, target or "")
+        cmd = string.format("make -j4 -f %s %s", mkfile, target or "")
     else  
-        cmd = string.format("make %s", target or "")
+        cmd = string.format("make -j4 %s", target or "")
     end
 
     -- done 

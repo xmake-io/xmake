@@ -31,6 +31,17 @@ local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
 
+-- get the building log file path
+function rule.logfile()
+
+    -- the logdir
+    local logdir = config.get("buildir") or os.tmpdir()
+    assert(logdir)
+
+    -- get it
+    return path.translate(logdir .. "/.build.log")
+end
+
 -- get the filename from the given name and kind
 function rule.filename(name, kind)
 

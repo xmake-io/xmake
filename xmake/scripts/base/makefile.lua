@@ -56,7 +56,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     -- make body
     file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
-    file:write(string.format("\t@%s\n", c:make(target, filetype, srcfile, objfile)))
+    file:write(string.format("\t@%s > %s 2>&1\n", c:make(target, filetype, srcfile, objfile), makefile._LOGFILE))
 
     -- make tail
     file:write("\n")
@@ -129,7 +129,7 @@ function makefile._make_target(file, name, target)
     -- make body
     file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
-    file:write(string.format("\t@%s\n", l:make(target, objfiles, targetfile)))
+    file:write(string.format("\t@%s > %s 2>&1\n", l:make(target, objfiles, targetfile), makefile._LOGFILE))
 
     -- make tail
     file:write("\n")
@@ -189,6 +189,16 @@ function makefile.make()
         assert(os.mkdir(buildir))
     end
 
+    -- init the log file
+    local logfile = rule.logfile()
+    if logfile and os.isfile(logfile) then
+        os.rmfile(logfile)
+    end
+
+    -- save the log file
+    makefile._LOGFILE = logfile
+    assert(logfile)
+
     -- open the makefile 
     local path = buildir .. "/makefile"
     local file = io.open(path, "w")
@@ -232,15 +242,7 @@ function makefile.build(target)
     assert(buildir)
 
     -- done build
-    local ok = platform.build(buildir .. "/makefile", target)
-    if not ok then
-        -- error
-        utils.error("build target: %s failed!", target)
-        return false
-    end
-
-    -- ok
-    return true
+    return platform.build(buildir .. "/makefile", target)
 end
 
 -- return module: makefile

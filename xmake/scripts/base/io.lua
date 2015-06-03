@@ -100,5 +100,22 @@ function io.save(file, object, prefix)
     return io._save_with_level(file, object, 0)
 end
 
+-- cat the given file 
+function io.cat(filepath)
+
+    -- open file
+    local file = io.open(filepath, "r")
+    if file then
+
+        -- show file
+        for line in file:lines() do
+            print(line)
+        end 
+
+        -- exit file
+        file:close() 
+    end
+end
+
 -- return module: io
 return io

@@ -24,6 +24,7 @@
 local _build = _build or {}
 
 -- load modules
+local rule      = require("base/rule")
 local utils     = require("base/utils")
 local clean     = require("base/clean")
 local config    = require("base/config")
@@ -46,7 +47,9 @@ function _build.done()
     -- build target for makefile
     if not makefile.build(target_name) then
         -- error
-        utils.error("build target: %s failed!", target_name)
+        print("")
+        io.cat(rule.logfile())
+        utils.error("build target: %s failed!\n", target_name)
         return false
     end
 
