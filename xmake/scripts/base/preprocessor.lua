@@ -129,11 +129,11 @@ function preprocessor._init(root, configures, scopes, filter, import)
                                                         _current[key] = nil
                                                     elseif table.getn(arg) == 1 then
                                                         -- save only one argument
-                                                        _current[key] = preprocessor._filter(newenv, arg[1], filter)
+                                                        _current[key] = arg[1]
                                                     else
                                                         -- save all arguments
                                                         for i, v in ipairs(arg) do
-                                                            _current[key][i] = preprocessor._filter(newenv, v, filter)
+                                                            _current[key][i] = v
                                                         end
                                                     end
                                                 end

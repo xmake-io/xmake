@@ -38,7 +38,7 @@ function config._save_with_level(file, object, level)
 
     -- save string
     if type(object) == "string" then  
-        file:write(object) 
+        file:write(string.format("%q", object))  
     -- save boolean
     elseif type(object) == "boolean" then  
         file:write(tostring(object))  
@@ -153,7 +153,7 @@ function config._make()
 
     -- get configs from all targets 
     for k, v in pairs(configs) do 
-        if type(k) == "string" and not k:find("_%u+") then
+        if type(k) == "string" and not k:find("^_%u+") then
             current[k] = v
         end
     end
@@ -217,7 +217,8 @@ end
 function config.set(name, value)
 
     -- check
-    assert(config._CURRENT and name and value)
+    assert(config._CURRENT)
+    assert(name and value and type(value) ~= "table")
 
     -- get the current target
     local target = config._target()
