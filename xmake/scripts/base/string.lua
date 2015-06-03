@@ -49,5 +49,46 @@ function string.split(self, pattern)
     return list
 end
 
+-- trim the spaces
+function string.trim(self)
+    return (self:gsub("^%s*(.-)%s*$", "%1"))
+end
+
+-- trim the left spaces
+function string.ltrim(self)
+    return (self:gsub("^%s*", ""))
+end
+
+-- trim the right spaces
+function string.rtrim(self)
+    local n = #self
+    while n > 0 and s:find("^%s", n) do n = n - 1 end
+    return self:sub(1, n)
+end
+
+-- append a substring with a given separator
+function string.append(self, substr, separator)
+
+    -- check
+    assert(self)
+
+    -- not substr? return self
+    if not substr then
+        return self
+    end
+
+    -- append it
+    local s = self
+    if #s == 0 then
+        s = substr
+    else
+        s = string.format("%s%s%s", s, separator or "", substr)
+    end
+    
+    -- ok
+    return s
+end
+
+
 -- return module: string
 return string

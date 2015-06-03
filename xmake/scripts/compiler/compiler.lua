@@ -83,7 +83,7 @@ function compiler._make(self, target, filetype, srcfile, objfile)
     -- get the common flags from the current compiler 
     local flags_common = ""
     for _, flag_name in ipairs(flag_names) do
-        flags_common = string.format("%s %s", flags_common, configs[flag_name] or "")
+        flags_common = flags_common:append(configs[flag_name], " ")
     end
 
     -- get the target flags from the current project
@@ -93,15 +93,20 @@ function compiler._make(self, target, filetype, srcfile, objfile)
         -- get flags
         local flags = table.concat(compiler._mapflags(self, utils.wrap(target[flag_name])), " ")
 
+        -- trim the spaces
+        flags = flags:trim()
+
         -- append flags
-        flags_target = string.format("%s %s", flags_target, flags or "")
+        if flags and #flags ~= 0 then 
+            flags_target = flags_target:append(flags, " ")
+        end
     end
 
     -- get the includedirs flags from the current project
     if self._make_includedir then
         local includedirs = utils.wrap(target.includedirs)
         for _, includedir in ipairs(includedirs) do
-            flags_target = string.format("%s %s", flags_target, self._make_includedir(configs, includedir))
+            flags_target = flags_target:append(self._make_includedir(configs, includedir), " ")
         end
     end
 
@@ -109,7 +114,7 @@ function compiler._make(self, target, filetype, srcfile, objfile)
     if self._make_define then
         local defines = utils.wrap(target.defines)
         for _, define in ipairs(defines) do
-            flags_target = string.format("%s %s", flags_target, self._make_define(configs, define))
+            flags_target = flags_target:append(self._make_define(configs, define), " ")
         end
     end
 
@@ -120,12 +125,21 @@ function compiler._make(self, target, filetype, srcfile, objfile)
         -- get flags
         local flags = table.concat(compiler._mapflags(self, utils.wrap(config.get(flag_name))), " ")
 
+        -- trim the spaces
+        flags = flags:trim()
+
         -- append flags
-        flags_config = string.format("%s %s", flags_config, flags or "")
+        if flags and #flags ~= 0 then 
+            flags_config = flags_config:append(flags, " ")
+        end
     end
 
     -- make the flags string
-    local flags = string.format("%s %s %s", flags_common, flags_target, flags_config)
+    local flags = ""
+    flags = flags:append(flags_common, " ")
+    flags = flags:append(flags_target, " ")
+    flags = flags:append(flags_config, " ")
+    flags = flags:trim()
 
     -- get it
     return self._make(configs, srcfile, objfile, flags)

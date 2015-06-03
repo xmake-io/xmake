@@ -92,7 +92,7 @@ function linker._make(self, target, objfiles, targetfile)
     if self._make_linkdir then
         local linkdirs = utils.wrap(target.linkdirs)
         for _, linkdir in ipairs(linkdirs) do
-            flags_target = string.format("%s %s", flags_target, self._make_linkdir(configs, linkdir))
+            flags_target = flags_target:append(self._make_linkdir(configs, linkdir), " ")
         end
     end
 
@@ -100,7 +100,7 @@ function linker._make(self, target, objfiles, targetfile)
     if self._make_link then
         local links = utils.wrap(target.links)
         for _, link in ipairs(links) do
-            flags_target = string.format("%s %s", flags_target, self._make_link(configs, link))
+            flags_target = flags_target:append(self._make_link(configs, link), " ")
         end
     end
 
@@ -109,7 +109,11 @@ function linker._make(self, target, objfiles, targetfile)
     assert(flags_config)
 
     -- make the flags string
-    local flags = string.format("%s %s %s", flags_common, flags_target, flags_config)
+    local flags = ""
+    flags = flags:append(flags_common, " ")
+    flags = flags:append(flags_target, " ")
+    flags = flags:append(flags_config, " ")
+    flags = flags:trim()
 
     -- make it
     return self._make(configs, table.concat(objfiles, " "), targetfile, flags)
