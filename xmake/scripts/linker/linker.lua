@@ -49,7 +49,7 @@ function linker._mapflags(self, flags)
         -- map it
         local flag_mapped = self._mapflag(configs, flag)
         if flag_mapped then
-            flags_mapped[table.getn(flags_mapped) + 1] = flag_mapped
+            table.insert(flags_mapped, flag_mapped)
         end
     end
 

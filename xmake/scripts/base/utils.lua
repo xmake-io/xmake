@@ -186,12 +186,12 @@ function utils.unique(array)
                 if type(v) == "string" then
                     if not exists[v] then
                         exists[v] = true
-                        unique[table.getn(unique) + 1] = v
+                        table.insert(unique, v)
                     end
                 else
                     if not exists["\"" .. v .. "\""] then
                         exists["\"" .. v .. "\""] = true
-                        unique[table.getn(unique) + 1] = v
+                        table.insert(unique, v)
                     end
                 end
             end
