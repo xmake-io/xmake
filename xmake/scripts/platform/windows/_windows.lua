@@ -64,15 +64,13 @@ function _windows.menu(action)
     -- init config option menu
     _windows._MENU_CONFIG = _windows._MENU_CONFIG or
             {   {}
-            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio Directory"         }
-            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK Directory"     }
+            ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
             ,   }
 
     -- init global option menu
     _windows._MENU_GLOBAL = _windows._MENU_GLOBAL or
             {   {}
-            ,   {nil, "vs",         "kv", "auto",       "The Microsoft Visual Studio Directory"         }
-            ,   {nil, "vs_sdk",     "kv", "auto",       "The Microsoft Visual Studio SDK Directory"     }
+            ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
             ,   }
 
     -- get the option menu

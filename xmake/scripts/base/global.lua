@@ -38,7 +38,7 @@ function global._save_with_level(file, object, level)
 
     -- save string
     if type(object) == "string" then  
-        file:write(object) 
+        file:write(string.format("%q", object))  
     -- save boolean
     elseif type(object) == "boolean" then  
         file:write(tostring(object))  
@@ -120,7 +120,7 @@ function global._make()
 
     -- make current global configure
     for k, v in pairs(configs) do 
-        if type(k) == "string" and not k:find("_%u+") then
+        if type(k) == "string" and not k:find("^_%u+") then
             current[k] = v
         end
     end
@@ -147,7 +147,7 @@ function global.set(name, value)
 
     -- check
     assert(global._CURRENT and global._CONFIGS)
-    assert(name and value)
+    assert(name and value and type(value) ~= "table")
 
     -- set it to the current configure
     global._CURRENT[name] = value
