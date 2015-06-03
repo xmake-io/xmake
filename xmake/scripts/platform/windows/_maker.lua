@@ -17,37 +17,38 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        string.lua
+-- @file        _maker.lua
 --
 
--- define module: string
-local string = string or {}
+-- load modules
+local os        = require("base/os")
+local path      = require("base/path")
+local utils     = require("base/utils")
+local string    = require("base/string")
 
--- find the last substring with the given pattern
-function string.find_last(self, pattern, plain)
-    -- find the last substring
-    local curr = 0
-    repeat
-        local next = self:find(pattern, curr + 1, plain)
-        if next then
-            curr = next
-        end
-    until (not next)
+-- define module: _maker
+local _maker = _maker or {}
 
-    -- found?
-    if curr > 0 then
-        return curr
+-- build the target from the given makefile 
+function _maker.done(mkfile, target)
+
+    -- make command
+    local cmd = nil
+    if mkfile and os.isfile(mkfile) then
+        cmd = string.format("nmake /f %s %s", mkfile, target or "")
+    else  
+        cmd = string.format("nmake %s", target or "")
     end
+
+    -- done 
+    local ok = os.execute(cmd)
+    if ok ~= 0 then
+        return false
+    end
+
+    -- ok
+    return true
 end
 
--- split string with the given pattern
-function string.split(self, pattern)
-
-    -- split it
-    local list = {}
-    self:gsub("[^" .. pattern .."]+", function(v) table.insert(list, v) end )
-    return list
-end
-
--- return module: string
-return string
+-- return module: _maker
+return _maker

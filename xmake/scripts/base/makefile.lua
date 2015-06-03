@@ -232,8 +232,8 @@ function makefile.build(target)
     assert(buildir)
 
     -- done build
-    local ok = os.execute(string.format("make -f %s %s", buildir .. "/makefile", target))
-    if ok ~= 0 then
+    local ok = platform.build(buildir .. "/makefile", target)
+    if not ok then
         -- error
         utils.error("build target: %s failed!", target)
         return false
