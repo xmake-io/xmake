@@ -298,12 +298,15 @@ function platform.build(mkfile, target)
         return p._MAKER.done(mkfile, target)
     end
 
+    -- is verbose?
+    local verbose = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("make -j4 -f %s %s", mkfile, target or "")
+        cmd = string.format("make -j4 -f %s %s VERBOSE=%s", mkfile, target or "", verbose)
     else  
-        cmd = string.format("make -j4 %s", target or "")
+        cmd = string.format("make -j4 %s VERBOSE=%s", target or "", verbose)
     end
 
     -- done 

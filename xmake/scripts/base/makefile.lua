@@ -54,9 +54,11 @@ function makefile._make_object(file, target, srcfile, objfile)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
+    local cmd = c:make(target, filetype, srcfile, objfile)
     file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20")))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
-    file:write(string.format("\t@%s > %s 2>&1\n", c:make(target, filetype, srcfile, objfile), makefile._LOGFILE))
+    file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
 
     -- make tail
     file:write("\n")
@@ -127,9 +129,11 @@ function makefile._make_target(file, name, target)
     file:write("\n")
 
     -- make body
+    local cmd = l:make(target, objfiles, targetfile)
     file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20")))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
-    file:write(string.format("\t@%s > %s 2>&1\n", l:make(target, objfiles, targetfile), makefile._LOGFILE))
+    file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
 
     -- make tail
     file:write("\n")

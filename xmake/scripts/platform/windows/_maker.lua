@@ -76,12 +76,15 @@ function _maker.done(mkfile, target)
     local includes  = _maker._enter("include")
     local libpathes = _maker._enter("libpath")
 
+    -- is verbose?
+    local verbose = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("nmake /f %s %s 2> nul", mkfile, target or "")
+        cmd = string.format("nmake /f %s %s VERBOSE=%s 2> nul", mkfile, target or "", verbose)
     else  
-        cmd = string.format("nmake %s 2> nul", target or "")
+        cmd = string.format("nmake %s VERBOSE=%s 2> nul", target or "", verbose)
     end
 
     -- done 

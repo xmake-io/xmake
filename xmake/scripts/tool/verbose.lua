@@ -17,14 +17,16 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        echo.lua
+-- @file        verbose.lua
 --
 
--- echo all
-for _, v in ipairs(...) do
-    io.write(string.format("%s ", v:gsub("%%20", " ")))
+-- verbose all
+if xmake._OPTIONS.verbose then
+    for _, v in ipairs(...) do
+        io.write(string.format("%s ", v:gsub("%%20", " ")))
+    end
+    io.write("\n")
 end
-io.write("\n")
 
 -- ok
 return true
