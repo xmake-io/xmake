@@ -33,6 +33,17 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// the separator
+#ifdef TB_CONFIG_OS_WINDOWS 
+#   define XM_OS_ENV_SEP                    ';'
+#else
+#   define XM_OS_ENV_SEP                    ':'
+#endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 tb_int_t xm_os_setenv(lua_State* lua)
@@ -41,12 +52,73 @@ tb_int_t xm_os_setenv(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get the name and value 
-    tb_char_t const* name = luaL_checkstring(lua, 1);
-    tb_char_t const* value = luaL_checkstring(lua, 2);
+    size_t              value_size = 0;
+    tb_char_t const*    name = luaL_checkstring(lua, 1);
+    tb_char_t const*    value = luaL_checklstring(lua, 2, &value_size);
     tb_check_return_val(name, 0);
 
-    // done os.setenv(name, value) 
-    lua_pushboolean(lua, tb_environment_set_one(name, value));
+    // find the first separator position
+    tb_char_t const* p = value? tb_strchr(value, XM_OS_ENV_SEP) : tb_null;
+    if (p)
+    {
+        // init filter
+        tb_bloom_filter_ref_t filter = tb_bloom_filter_init(TB_BLOOM_FILTER_PROBABILITY_0_1, 1, 32, tb_element_str(tb_true));
+
+        // init environment 
+        tb_char_t               data[TB_PATH_MAXN];
+        tb_environment_ref_t    environment = tb_environment_init();
+        if (environment)
+        {
+            // make environment
+            tb_char_t const* b = value;
+            tb_char_t const* e = b + value_size;
+            do
+            {
+                // not empty?
+                if (b < p)
+                {
+                    // the size
+                    tb_size_t size = tb_min(p - b, sizeof(data) - 1);
+
+                    // copy it
+                    tb_strlcpy(data, b, size);
+                    data[size] = '\0';
+
+                    // have been not inserted?
+                    if (!filter || tb_bloom_filter_set(filter, data)) 
+                    {
+                        // append the environment 
+                        tb_environment_set(environment, data, tb_false);
+                    }
+                }
+
+                // end?
+                tb_check_break(p + 1 < e);
+
+                // find the next separator position
+                b = p + 1;
+                p = tb_strchr(b, XM_OS_ENV_SEP);
+                if (!p) p = e;
+
+            } while (1);
+
+            // done os.setenv(name, value) 
+            lua_pushboolean(lua, tb_environment_save(environment, name));
+
+            // exit environment
+            tb_environment_exit(environment);
+        }
+
+        // exit filter
+        if (filter) tb_bloom_filter_exit(filter);
+        filter = tb_null;
+    }
+    // only one?
+    else
+    {
+        // done os.setenv(name, value) 
+        lua_pushboolean(lua, tb_environment_set_one(name, value));
+    }
 
     // ok
     return 1;
