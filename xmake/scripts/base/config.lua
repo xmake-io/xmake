@@ -25,6 +25,7 @@ local config = config or {}
 
 -- load modules
 local io            = require("base/io")
+local os            = require("base/os")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local global        = require("base/global")
@@ -173,6 +174,17 @@ function config._make()
     end
 end
 
+-- get the configure file
+function config._file()
+ 
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options and options.project)
+ 
+    -- get the configure file
+    return options.project .. "/.xmake.xconf"
+end
+
 -- get the current target scope
 function config._target()
  
@@ -234,16 +246,12 @@ end
 -- save xmake.xconf
 function config.savexconf()
     
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
- 
     -- the configs
     local configs = config._CONFIGS
     assert(configs)
 
     -- open the configure file
-    local path = options.project .. "/.xmake.xconf"
+    local path = config._file()
     local file = io.open(path, "w")
     if not file then
         -- error
@@ -271,7 +279,7 @@ function config.loadxconf()
 
     -- the options
     local options = xmake._OPTIONS
-    assert(options and options.project)
+    assert(options)
 
     -- check
     assert(option._MENU)
@@ -288,27 +296,36 @@ function config.loadxconf()
         end
     end
 
-    -- load and execute the xmake.xconf
-    local path = options.project .. "/.xmake.xconf"
-    local newenv = preprocessor.loadfile(path, "config", configures, {"target"})
+    -- does not clean the cached configure?
+    if not options.clean then
 
-    -- exists local configures?
-    if newenv then
+        -- load and execute the xmake.xconf
+        local path = config._file()
+        if os.isfile(path) then
+            local newenv, errors = preprocessor.loadfile(path, "config", configures, {"target"})
 
-        -- save configs
-        config._CONFIGS = newenv._CONFIGS
+            -- exists local configures?
+            if newenv then
 
-        -- clear configs if the host has been changed
-        local target = config._target()
-        if target and target.host ~= xmake._HOST then
-            -- clear configs
-            config._CONFIGS = {}
-        end
+                -- save configs
+                config._CONFIGS = newenv._CONFIGS
 
-        -- clear configs if the plat has been changed
-        if target and target.plat and options.plat and target.plat ~= options.plat then
-            -- clear configs
-            config._CONFIGS = {}
+                -- clear configs if the host has been changed
+                local target = config._target()
+                if target and target.host ~= xmake._HOST then
+                    -- clear configs
+                    config._CONFIGS = {}
+                end
+
+                -- clear configs if the plat has been changed
+                if target and target.plat and options.plat and target.plat ~= options.plat then
+                    -- clear configs
+                    config._CONFIGS = {}
+                end
+            elseif errors then
+                -- error
+                utils.error(errors)
+            end
         end
     end
 

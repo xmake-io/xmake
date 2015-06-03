@@ -46,7 +46,7 @@ function _prober._probe_arch(configs)
 end
 
 -- probe the configure 
-function _prober.done(configs)
+function _prober.done(configs, is_global)
 
     -- probe the architecture
     if not _prober._probe_arch(configs) then return end

@@ -144,7 +144,10 @@ local menu =
         -- options
     ,   options = 
         {
-            {'p', "plat",       "kv", xmake._HOST,  "Compile for the given platform."                               
+            {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again."           }
+
+        ,   {}
+        ,   {'p', "plat",       "kv", xmake._HOST,  "Compile for the given platform."                               
                                                   , function () 
                                                         local descriptions = {}
                                                         local plats = platform.plats()
@@ -249,8 +252,11 @@ local menu =
         -- options
     ,   options = 
         {
+            {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again."           }
+
+        ,   {}
             -- the options for all platforms
-            function () return platform.menu("global") end
+        ,   function () return platform.menu("global") end
 
         ,   {}
         ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }

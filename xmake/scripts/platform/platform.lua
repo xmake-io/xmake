@@ -275,7 +275,7 @@ function platform.probe(configs, is_global)
         for _, plat in ipairs(plats) do
             local p = platform._load(plat)
             if p and p._PROBER and p._PROBER.done and p._HOST and p._HOST == xmake._HOST then
-                p._PROBER.done(configs)
+                p._PROBER.done(configs, is_global)
             end
         end
 
@@ -284,7 +284,7 @@ function platform.probe(configs, is_global)
         -- probe it
         local p = platform._load(config.get("plat"))
         if p and p._PROBER and p._PROBER.done then
-            p._PROBER.done(configs)
+            p._PROBER.done(configs, is_global)
         end
     end
 end
