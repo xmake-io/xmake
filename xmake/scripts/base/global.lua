@@ -120,7 +120,7 @@ function global._make()
 
     -- make current global configure
     for k, v in pairs(configs) do 
-        if type(k) == "string" and not k:startswith("_") then
+        if type(k) == "string" and not k:find("_%u+") then
             current[k] = v
         end
     end
@@ -269,7 +269,7 @@ function global.dump()
     assert(global._CURRENT)
 
     -- dump
-    utils.dump(global._CURRENT)
+    utils.dump(global._CURRENT, "__%w*")
    
 end
 

@@ -153,7 +153,7 @@ function config._make()
 
     -- get configs from all targets 
     for k, v in pairs(configs) do 
-        if type(k) == "string" and not k:startswith("_") then
+        if type(k) == "string" and not k:find("_%u+") then
             current[k] = v
         end
     end
@@ -242,7 +242,7 @@ function config.savexconf()
     assert(configs)
 
     -- open the configure file
-    local path = options.project .. "/xmake.xconf"
+    local path = options.project .. "/.xmake.xconf"
     local file = io.open(path, "w")
     if not file then
         -- error
@@ -288,7 +288,7 @@ function config.loadxconf()
     end
 
     -- load and execute the xmake.xconf
-    local path = options.project .. "/xmake.xconf"
+    local path = options.project .. "/.xmake.xconf"
     local newenv = preprocessor.loadfile(path, "config", configures, {"target"})
 
     -- exists local configures?
@@ -370,7 +370,7 @@ function config.dump()
     assert(config._CURRENT)
 
     -- dump
-    utils.dump(config._CURRENT)
+    utils.dump(config._CURRENT, "__%w*")
    
 end
 

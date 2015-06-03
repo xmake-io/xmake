@@ -59,6 +59,7 @@ function _macosx.make(configs)
 
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. config.get("xcode_sdkver") .. ".sdk"
+
 end
 
 -- get the option menu for action: xmake config or global
