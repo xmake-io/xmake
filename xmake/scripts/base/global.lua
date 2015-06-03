@@ -126,6 +126,13 @@ function global._make()
     end
 end
 
+-- get the configure file
+function global._file()
+    
+    -- get it
+    return path.translate("~/.xmake/xmake.xconf")
+end
+
 -- get the given configure from the current 
 function global.get(name)
 
@@ -160,10 +167,6 @@ end
 -- save xmake.xconf
 function global.savexconf()
     
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
- 
     -- the configs
     local configs = global._CONFIGS
     assert(configs)
@@ -174,7 +177,7 @@ function global.savexconf()
     end
 
     -- open the configure file
-    local path = path.translate("~/.xmake/xmake.xconf")
+    local path = global._file()
     local file = io.open(path, "w")
     if not file then
         -- error
@@ -219,11 +222,20 @@ function global.loadxconf()
         end
     end
 
-    -- load and execute the xmake.xconf
-    local path = path.translate("~/.xmake/xmake.xconf")
-    local newenv = preprocessor.loadfile(path, "global", configures)
-    if newenv then
-        global._CONFIGS = newenv._CONFIGS
+    -- does not clean the cached configure?
+    if not options.clean then
+
+        -- load and execute the xmake.xconf
+        local path = global._file()
+        if os.isfile(path) then
+            local newenv, errors = preprocessor.loadfile(path, "global", configures)
+            if newenv then
+                global._CONFIGS = newenv._CONFIGS
+            elseif errors then
+                -- error
+                utils.error(errors);
+            end
+        end
     end
 
     -- init configs
@@ -270,6 +282,14 @@ function global.dump()
 
     -- dump
     utils.dump(global._CURRENT, "__%w*")
+   
+end
+
+-- clean the current configure
+function global.clean()
+    
+    -- remove the configure file
+    os.rm(global._file())
    
 end
 
