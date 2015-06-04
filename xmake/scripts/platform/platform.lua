@@ -177,6 +177,34 @@ function platform.get(name)
     end
 end
 
+-- get the given tool
+function platform.tool(name)
+
+    -- check
+    assert(name)
+
+    -- get tools
+    local tools = platform.get("tools")
+    if tools then
+        return tools[name]
+    end
+
+end
+
+-- get the given format
+function platform.format(kind)
+
+    -- check
+    assert(kind)
+
+    -- get formats
+    local formats = platform.get("formats")
+    if formats then
+        return formats[kind]
+    end
+
+end
+
 -- get the linker from the given name
 function platform.linker(kind)
 
@@ -396,36 +424,6 @@ function platform.probe(configs, is_global)
             module._PROBER.done(configs, is_global)
         end
     end
-end
-    
--- build target from the given makefile
-function platform.build(mkfile, target)
-
-    -- attempt to done the platform special make first
-    local module = platform.module()
-    if module and module._MAKER and module._MAKER.done then
-        return module._MAKER.done(mkfile, target)
-    end
-
-    -- is verbose?
-    local verbose = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
-
-    -- make command
-    local cmd = nil
-    if mkfile and os.isfile(mkfile) then
-        cmd = string.format("make -j4 -f %s %s VERBOSE=%s", mkfile, target or "", verbose)
-    else  
-        cmd = string.format("make -j4 %s VERBOSE=%s", target or "", verbose)
-    end
-
-    -- done 
-    local ok = os.execute(cmd)
-    if ok ~= 0 then
-        return false
-    end
-
-    -- ok
-    return true
 end
 
 -- return module: platform

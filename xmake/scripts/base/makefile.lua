@@ -31,6 +31,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
+local tools     = require("tools/tools")
 local platform  = require("platform/platform")
 
 -- make the object to the makefile
@@ -245,8 +246,15 @@ function makefile.build(target)
     local buildir = config.get("buildir")
     assert(buildir)
 
-    -- done build
-    return platform.build(buildir .. "/makefile", target)
+    -- load make
+    local make = tools.load(platform.tool("make"))
+    if not make then
+        utils.error("not found the make command!")
+        return false
+    end
+ 
+    -- done make
+    return make.main(buildir .. "/makefile", target)
 end
 
 -- return module: makefile

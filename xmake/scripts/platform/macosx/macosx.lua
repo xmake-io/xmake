@@ -35,11 +35,15 @@ _macosx._ARCHS  = {"x86", "x64"}
 -- make configure
 function _macosx.make(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"lib", ".dylib"}
+    -- init the file formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"lib", ".dylib"}
+
+    -- init the toolchains
+    configs.tools = {}
+    configs.tools.make  = "make"
 
     -- init the compiler
     configs.compiler = {}

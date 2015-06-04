@@ -98,6 +98,9 @@ end
 -- load tool from the given name and directory (optional)
 function tools.load(name, root)
 
+    -- check
+    assert(name)
+
     -- find the tool file path
     local toolpath = tools.find(name, root)
 
@@ -106,6 +109,21 @@ function tools.load(name, root)
         return 
     end
 
+    -- load script
+    local script = loadfile(toolpath)
+    if script then
+        
+        -- load tool
+        local tool = script()
+
+        -- init tool 
+        if tool and tool.init then
+            tool.init()
+        end
+
+        -- ok?
+        return tool
+    end
 end
     
 -- return module: tools
