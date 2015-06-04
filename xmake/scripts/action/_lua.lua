@@ -29,6 +29,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local string    = require("base/string")
+local tools     = require("tools/tools")
     
 -- done the given config
 function _lua.done()
@@ -75,9 +76,9 @@ function _lua.done()
             file = path.absolute(file)
         end
 
-        -- attempt to load script from the xmake tool directory
+        -- attempt to load script from the tools directory
         if not os.isfile(file) then
-            file = xmake._SCRIPTS_DIR .. "/tools/" .. options.script .. ".lua"
+            file = tools.find(options.script, xmake._SCRIPTS_DIR .. "/tools")
         end
 
         -- load and run the script file
