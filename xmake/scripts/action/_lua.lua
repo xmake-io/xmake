@@ -85,7 +85,7 @@ function _lua.done()
 
                     -- init module 
                     if module.init then
-                        module.init()
+                        module.init(options.script)
                     end
 
                     -- done module 
