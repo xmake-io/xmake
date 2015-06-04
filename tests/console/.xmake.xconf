@@ -1,0 +1,23 @@
+config:
+{
+    __vsenv_devenvdir: "C:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\IDE"
+    __vsenv_vsinstalldir: "C:\\Program Files\\Microsoft Visual Studio 9.0"
+    plat: "windows"
+    entitlements: "auto"
+    buildir: "build"
+    codesign: "auto"
+    arch: "x86"
+    __vsenv_libpath: "C:\\WINDOWS\\Microsoft.NET\\Framework\\v3.5;C:\\WINDOWS\\Microsoft.NET\\Framework\\v2.0.50727;C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\ATLMFC\\LIB;C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\LIB;"
+    __vsenv_include: "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\ATLMFC\\INCLUDE;C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\INCLUDE;C:\\Program Files\\\\Microsoft SDKs\\Windows\\v6.0A\\include;"
+    __vsenv_vcinstalldir: "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC"
+    __vsenv_path: "C:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\IDE;C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\BIN;C:\\Program Files\\Microsoft Visual Studio 9.0\\Common7\\Tools;C:\\WINDOWS\\Microsoft.NET\\Framework\\v3.5;C:\\WINDOWS\\Microsoft.NET\\Framework\\v2.0.50727;C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\VCPackages;C:\\Program Files\\\\Microsoft SDKs\\Windows\\v6.0A\\bin;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\Program Files\\Bitvise SSH Client;C:\\Program Files\\Kingsoft\\WPSOffice\\9.1.0.4993\\office6;C:\\Program Files\\xmake"
+    __vsenv_lib: "C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\ATLMFC\\LIB;C:\\Program Files\\Microsoft Visual Studio 9.0\\VC\\LIB;C:\\Program Files\\\\Microsoft SDKs\\Windows\\v6.0A\\lib;"
+    host: "windows"
+    ndk_sdkver: "auto"
+    xcode_sdkver: "auto"
+    xcode_dir: "auto"
+    packages: "pkg"
+    vs: "2008"
+    mode: "release"
+    mobileprovision: "auto"
+}

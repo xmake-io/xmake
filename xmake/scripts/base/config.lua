@@ -177,12 +177,8 @@ end
 -- get the configure file
 function config._file()
  
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options and options.project)
- 
-    -- get the configure file
-    return options.project .. "/.xmake.xconf"
+    -- get it
+    return config.directory() .. "/xmake.xconf"
 end
 
 -- get the current target scope
@@ -241,6 +237,21 @@ function config.set(name, value)
 
     -- set it to the current configure
     config._CURRENT[name] = value
+end
+
+-- get the configure directory
+function config.directory()
+
+    -- the directory
+    local dir = xmake._PROJECT_DIR .. "/.xmake"
+
+    -- create it directly first if not exists
+    if not os.isdir(dir) then
+        assert(os.mkdir(dir))
+    end
+
+    -- get it
+    return dir
 end
 
 -- save xmake.xconf

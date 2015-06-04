@@ -130,7 +130,7 @@ end
 function global._file()
     
     -- get it
-    return path.translate("~/.xmake/xmake.xconf")
+    return global.directory() .. "/xmake.xconf"
 end
 
 -- get the given configure from the current 
@@ -164,17 +164,27 @@ function global.set(name, value)
 
 end
 
+-- get the global configure directory
+function global.directory()
+
+    -- the directory
+    local dir = path.translate("~/.xmake")
+
+    -- create it directly first if not exists
+    if not os.isdir(dir) then
+        assert(os.mkdir(dir))
+    end
+
+    -- get it
+    return dir
+end
+
 -- save xmake.xconf
 function global.savexconf()
     
     -- the configs
     local configs = global._CONFIGS
     assert(configs)
-
-    -- create directly first if not exists
-    if not os.isdir("~/.xmake") then
-        assert(os.mkdir("~/.xmake"))
-    end
 
     -- open the configure file
     local path = global._file()
@@ -282,14 +292,6 @@ function global.dump()
 
     -- dump
     utils.dump(global._CURRENT, "__%w*")
-   
-end
-
--- clean the current configure
-function global.clean()
-    
-    -- remove the configure file
-    os.rm(global._file())
    
 end
 
