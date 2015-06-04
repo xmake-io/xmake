@@ -32,9 +32,6 @@ _linux._HOST    = "linux"
 -- init architectures
 _linux._ARCHS   = {"x86", "x64"}
 
--- init prober
-_linux._PROBER  = require("platform/linux/_prober")
-
 -- make configure
 function _linux.make(configs)
 

@@ -28,14 +28,87 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local global    = require("base/global")
 local linker    = require("linker/linker")
 local compiler  = require("compiler/compiler")
 
+-- load prober the given platform directory
+function platform._load_prober(root)
+
+    -- the platform file path
+    local file = string.format("%s/_prober.lua", root)
+    if os.isfile(file) then
+
+        -- load script
+        local script = loadfile(file)
+        if script then
+
+            -- load prober
+            local prober = script()
+            if prober then
+
+                -- ok
+                return prober
+            end
+        end
+    end
+end
+
+-- load the given platform from the given root directory
+function platform._load_from(root, plat)
+
+    -- the platform file path
+    local file = string.format("%s/platform/%s/_%s.lua", root, plat, plat)
+    if os.isfile(file) then
+
+        -- load script
+        local script = loadfile(file)
+        if script then
+
+            -- load module
+            local module = script()
+            if module then
+
+                -- save directory
+                module._DIRECTORY = path.directory(file)
+                assert(module._DIRECTORY)
+
+                -- attempt to load prober
+                module._PROBER = platform._load_prober(module._DIRECTORY)
+
+                -- ok
+                return module
+            end
+        end
+    end
+end
+
 -- load the given platform 
 function platform._load(plat)
- 
-    -- load it
-    return require("platform/" .. plat .. "/_" .. plat)
+
+    -- the module
+    platform._MODULES = platform._MODULES or {}
+    local module = platform._MODULES[plat]
+
+    -- return it directory if ok
+    if module then return module end
+
+    -- attempt to load it from the project configure directory 
+    if not module then module = platform._load_from(config.directory(), plat) end
+
+    -- attempt to load it from the global configure directory 
+    if not module then module = platform._load_from(global.directory(), plat) end
+
+    -- attempt to load it from the script directory 
+    if not module then module = platform._load_from(xmake._SCRIPTS_DIR, plat) end
+
+    -- cache it if ok
+    if module then
+        platform._MODULES[plat] = module
+    end
+
+    -- ok?
+    return module
 end
 
 -- get the configure of the given platform
@@ -51,15 +124,15 @@ function platform._configs(plat)
     end
 
     -- load platform
-    local p = platform._load(plat)
-    if p then
+    local module = platform._load(plat)
+    if module then
           
         -- init configure
         platform._CONFIGS[plat]= {}
         configs = platform._CONFIGS[plat]
 
         -- make configure
-        p.make(configs)
+        module.make(configs)
     end
 
     -- ok?
@@ -169,19 +242,38 @@ function platform.plats()
         return platform._PLATS 
     end
 
-    -- get the platform list
-    local plats = os.match(xmake._SCRIPTS_DIR .. "/platform/*", true)
+    -- make list
+    local list = {}
+
+    -- get the platform list from the project configure directory
+    local plats = os.match(config.directory() .. "/platform/*", true)
     if plats then
-        for i, v in ipairs(plats) do
-            plats[i] = path.basename(v)
+        for _, v in ipairs(plats) do
+            table.insert(list, path.basename(v))
+        end
+    end
+
+    -- get the platform list from the global configure directory
+    plats = os.match(global.directory() .. "/platform/*", true)
+    if plats then
+        for _, v in ipairs(plats) do
+            table.insert(list, path.basename(v))
+        end
+    end
+    
+    -- get the platform list from the script directory
+    plats = os.match(xmake._SCRIPTS_DIR .. "/platform/*", true)
+    if plats then
+        for _, v in ipairs(plats) do
+            table.insert(list, path.basename(v))
         end
     end
 
     -- save it
-    platform._PLATS = plats
+    platform._PLATS = list
 
     -- ok
-    return plats
+    return list
 end
 
 -- list all architectures
@@ -192,9 +284,9 @@ function platform.archs(plat)
  
     -- load all platform configs
     local archs = {}
-    local p = platform._load(plat)
-    if p and p._ARCHS then
-       for _, arch in ipairs(p._ARCHS) do
+    local module = platform._load(plat)
+    if module and module._ARCHS then
+       for _, arch in ipairs(module._ARCHS) do
             table.insert(archs, arch)
        end
     end
@@ -219,11 +311,11 @@ function platform.menu(action)
     for _, plat in ipairs(plats) do
 
         -- load platform
-        local p = platform._load(plat)
-        if p and p.menu then
+        local module = platform._load(plat)
+        if module and module.menu then
 
             -- get the platform menu
-            local menu = p.menu(action)
+            local menu = module.menu(action)
             if menu then
 
                 -- exists options?
@@ -273,18 +365,18 @@ function platform.probe(configs, is_global)
 
         -- probe all platforms with the current host
         for _, plat in ipairs(plats) do
-            local p = platform._load(plat)
-            if p and p._PROBER and p._PROBER.done and p._HOST and p._HOST == xmake._HOST then
-                p._PROBER.done(configs, is_global)
+            local module = platform._load(plat)
+            if module and module._PROBER and module._PROBER.done and module._HOST and module._HOST == xmake._HOST then
+                module._PROBER.done(configs, is_global)
             end
         end
 
     -- probe config
     else
         -- probe it
-        local p = platform._load(config.get("plat"))
-        if p and p._PROBER and p._PROBER.done then
-            p._PROBER.done(configs, is_global)
+        local module = platform._load(config.get("plat"))
+        if module and module._PROBER and module._PROBER.done then
+            module._PROBER.done(configs, is_global)
         end
     end
 end
@@ -293,9 +385,9 @@ end
 function platform.build(mkfile, target)
 
     -- attempt to done the platform special make first
-    local p = platform._load(config.get("plat"))
-    if p and p._MAKER and p._MAKER.done then
-        return p._MAKER.done(mkfile, target)
+    local module = platform._load(config.get("plat"))
+    if module and module._MAKER and module._MAKER.done then
+        return module._MAKER.done(mkfile, target)
     end
 
     -- is verbose?

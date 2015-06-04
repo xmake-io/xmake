@@ -32,9 +32,6 @@ _iphonesimulator._HOST      = "macosx"
 -- init architectures
 _iphonesimulator._ARCHS     = {"x86", "x64"}
 
--- init prober
-_iphonesimulator._PROBER    = require("platform/iphonesimulator/_prober")
-
 -- make configure
 function _iphonesimulator.make(configs)
 
