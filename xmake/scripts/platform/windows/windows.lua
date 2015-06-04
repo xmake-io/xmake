@@ -33,7 +33,7 @@ _windows._HOST      = "windows"
 _windows._ARCHS     = {"x86", "x64"}
 
 -- init maker
-_windows._MAKER     = require("platform/windows/_maker")
+_windows._MAKER     = require("platform/windows/maker")
 
 -- make configure
 function _windows.make(configs)

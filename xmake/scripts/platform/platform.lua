@@ -36,7 +36,7 @@ local compiler  = require("compiler/compiler")
 function platform._load_prober(root)
 
     -- the platform file path
-    local file = string.format("%s/_prober.lua", root)
+    local file = string.format("%s/prober.lua", root)
     if os.isfile(file) then
 
         -- load script
@@ -58,7 +58,7 @@ end
 function platform._load_from(root, plat)
 
     -- the platform file path
-    local file = string.format("%s/platform/%s/_%s.lua", root, plat, plat)
+    local file = string.format("%s/platform/%s/%s.lua", root, plat, plat)
     if os.isfile(file) then
 
         -- load script
