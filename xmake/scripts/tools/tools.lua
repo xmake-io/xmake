@@ -40,7 +40,7 @@ function tools._match(name, toolname)
     if name:find("^" .. toolname .. "$") then return true end
 
     -- contains it? ok
-    if name:find(toolname, true) then return true end
+    if name:find(toolname, 1, true) then return true end
 
     -- not matched
     return false

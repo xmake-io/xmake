@@ -31,8 +31,9 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
+local linker    = require("base/linker")
+local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
-local platform  = require("platform/platform")
 
 -- make the object to the makefile
 function makefile._make_object(file, target, srcfile, objfile)
@@ -40,8 +41,8 @@ function makefile._make_object(file, target, srcfile, objfile)
     -- check
     assert(file and target and srcfile and objfile)
 
-    -- get the compiler and filetype
-    local c, filetype = platform.compiler(srcfile);
+    -- get the compiler 
+    local c = compiler.get(srcfile);
     if not c then
         -- error
         utils.error("unknown source file: %s", srcfile)
@@ -55,7 +56,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
-    local cmd = c:make(target, filetype, srcfile, objfile)
+    local cmd = compiler.make(c, target, srcfile, objfile)
     file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20")))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
@@ -106,8 +107,8 @@ function makefile._make_target(file, name, target)
     local targetfile = rule.targetfile(name, target)
     assert(targetfile)
 
-    -- the linker
-    local l = platform.linker(target.kind)
+    -- get the linker from the given kind
+    local l = linker.get(target.kind)
     assert(l)
 
     -- make head
@@ -130,7 +131,7 @@ function makefile._make_target(file, name, target)
     file:write("\n")
 
     -- make body
-    local cmd = l:make(target, objfiles, targetfile)
+    local cmd = linker.make(l, target, objfiles, targetfile)
     file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20")))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))

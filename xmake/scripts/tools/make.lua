@@ -17,38 +17,47 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _ar.lua
+-- @file        make.lua
 --
 
--- define module: _ar
-local _ar = _ar or {}
-
 -- load modules
+local os        = require("base/os")
 local utils     = require("base/utils")
-local string    = require("base/string")
-local config    = require("base/config")
 
--- init the linker
-function _ar._init(configs)
+-- define module: make
+local make = make or {}
 
-    -- init arflags
-    configs.arflags = "-crs"
+-- the init function
+function make.init(name)
+
+    -- save name
+    make.name = name or "make"
+
+    -- is verbose?
+    make._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
 
 end
 
--- make the command
-function _ar._make(configs, objfiles, targetfile, flags)
+-- the main function
+function make.main(mkfile, target)
 
-    -- make it
-    return string.format("%s %s %s %s", configs.name, flags, targetfile, objfiles)
-end
+    -- make command
+    local cmd = nil
+    if mkfile and os.isfile(mkfile) then
+        cmd = string.format("%s -j4 -f %s %s VERBOSE=%s", make.name, mkfile, target or "", make._VERBOSE)
+    else  
+        cmd = string.format("%s -j4 %s VERBOSE=%s", make.name, target or "", make._VERBOSE)
+    end
 
--- map gcc flag to the current linker flag
-function _ar._mapflag(configs, flag)
+    -- done 
+    local ok = os.execute(cmd)
+    if ok ~= 0 then
+        return false
+    end
 
     -- ok
-    return flag
+    return true
 end
 
--- return module: _ar
-return _ar
+-- return module: make
+return make
