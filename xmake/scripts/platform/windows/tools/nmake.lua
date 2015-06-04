@@ -17,7 +17,7 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _maker.lua
+-- @file        nmake.lua
 --
 
 -- load modules
@@ -27,11 +27,11 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 
--- define module: _maker
-local _maker = _maker or {}
+-- define module: nmake
+local nmake = nmake or {}
 
 -- enter the given environment
-function _maker._enter(name)
+function nmake._enter(name)
 
     -- check
     assert(name)
@@ -56,7 +56,7 @@ function _maker._enter(name)
 end
 
 -- leave the given environment
-function _maker._leave(name, old)
+function nmake._leave(name, old)
 
     -- check
     assert(name)
@@ -67,38 +67,43 @@ function _maker._leave(name, old)
     end
 end
 
--- build the target from the given makefile 
-function _maker.done(mkfile, target)
-
-    -- enter the vs environment
-    local pathes    = _maker._enter("path")
-    local libs      = _maker._enter("lib")
-    local includes  = _maker._enter("include")
-    local libpathes = _maker._enter("libpath")
+-- the init function
+function nmake.init()
 
     -- is verbose?
-    local verbose = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+    nmake._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+
+end
+
+-- the main function
+function nmake.main(mkfile, target)
+
+    -- enter the vs environment
+    local pathes    = nmake._enter("path")
+    local libs      = nmake._enter("lib")
+    local includes  = nmake._enter("include")
+    local libpathes = nmake._enter("libpath")
 
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("nmake /f %s %s VERBOSE=%s 2> nul", mkfile, target or "", verbose)
+        cmd = string.format("nmake /f %s %s VERBOSE=%s 2> nul", mkfile, target or "", nmake._VERBOSE)
     else  
-        cmd = string.format("nmake %s VERBOSE=%s 2> nul", target or "", verbose)
+        cmd = string.format("nmake %s VERBOSE=%s 2> nul", target or "", nmake._VERBOSE)
     end
 
     -- done 
     local ok = os.execute(cmd)
 
     -- leave the vs environment
-    _maker._leave("path",       pathes)
-    _maker._leave("lib",        libs)
-    _maker._leave("include",    includes)
-    _maker._leave("libpath",    libpathes)
+    nmake._leave("path",       pathes)
+    nmake._leave("lib",        libs)
+    nmake._leave("include",    includes)
+    nmake._leave("libpath",    libpathes)
 
     -- ok?
     return utils.ifelse(ok == 0, true, false)
 end
 
--- return module: _maker
-return _maker
+-- return module: nmake
+return nmake

@@ -48,12 +48,8 @@ function rule.filename(name, kind)
     -- check
     assert(name and kind)
 
-    -- get formats
-    local formats = platform.get("format")
-    assert(formats)
-
     -- get format
-    local format = formats[kind] or {"", ""}
+    local format = platform.format(kind) or {"", ""}
 
     -- make it
     return format[1] .. name .. format[2]

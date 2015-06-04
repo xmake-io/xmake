@@ -32,18 +32,19 @@ _windows._HOST      = "windows"
 -- init architectures
 _windows._ARCHS     = {"x86", "x64"}
 
--- init maker
-_windows._MAKER     = require("platform/windows/maker")
-
 -- make configure
 function _windows.make(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static   = {"", ".lib"}
-    configs.format.object   = {"", ".obj"}
-    configs.format.shared   = {"", ".dll"}
-    configs.format.binary   = {"", ".exe"}
+    -- init the file formats
+    configs.formats = {}
+    configs.formats.static   = {"", ".lib"}
+    configs.formats.object   = {"", ".obj"}
+    configs.formats.shared   = {"", ".dll"}
+    configs.formats.binary   = {"", ".exe"}
+
+    -- init the toolchains
+    configs.tools = {}
+    configs.tools.make  = "nmake"
 
     -- init the compiler
     configs.compiler = {}
