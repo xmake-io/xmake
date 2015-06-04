@@ -378,6 +378,11 @@ function config.loadxconf()
     config._CONFIGS = config._CONFIGS or {}
     local configs = config._CONFIGS
 
+    -- mark as "rebuild" if clean the cached configure 
+    if options.clean then 
+        configs.__rebuild = true
+    end
+
     -- init targets
     configs._TARGET = configs._TARGET or {}
     if name ~= "all" then
