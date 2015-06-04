@@ -49,14 +49,6 @@ function _lua.done()
         arguments = {}
     end
 
-    -- init new environment 
-    local newenv = {}
-    setmetatable(newenv, {__index = _G})  
-    newenv.os       = os
-    newenv.path     = path
-    newenv.utils    = utils
-    newenv.string   = string
-
     -- is string script? 
     if options.string then
 
@@ -66,7 +58,6 @@ function _lua.done()
         -- load and run string
         local script = loadstring(options.script)
         if script then
-            setfenv(script, newenv)
             return script(arguments)
         end
     else
@@ -83,10 +74,23 @@ function _lua.done()
 
         -- load and run the script file
         if os.isfile(file) then
+
+            -- load script
             local script = loadfile(file)
             if script then
-                setfenv(script, newenv)
-                return script(arguments)
+
+                -- load module
+                local module = script()
+                if module then
+
+                    -- init module 
+                    if module.init then
+                        module.init()
+                    end
+
+                    -- done module 
+                    return module.main(arguments)
+                end
             end
         end
     end

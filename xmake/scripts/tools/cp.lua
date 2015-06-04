@@ -20,11 +20,25 @@
 -- @file        cp.lua
 --
 
--- cp it
-local pathes = ...
-if pathes and table.getn(pathes) == 2 then
-    return os.cp(pathes[1], pathes[2])
+-- define module: cp
+local cp = cp or {}
+
+-- load modules
+local os = require("base/os")
+
+-- the main function
+function cp.main(...)
+
+    -- cp it
+    local pathes = ...
+    if pathes and table.getn(pathes) == 2 then
+        return os.cp(pathes[1], pathes[2])
+    end
+
+    -- failed
+    return false
+
 end
 
--- failed
-return false
+-- return module: cp
+return cp

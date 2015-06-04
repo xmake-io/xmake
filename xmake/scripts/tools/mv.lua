@@ -20,11 +20,24 @@
 -- @file        mv.lua
 --
 
--- mv it
-local pathes = ...
-if pathes and table.getn(pathes) == 2 then
-    return os.mv(pathes[1], pathes[2])
+-- define module: mv
+local mv = mv or {}
+
+-- load modules
+local os = require("base/os")
+
+-- the main function
+function mv.main(...)
+
+    -- mv it
+    local pathes = ...
+    if pathes and table.getn(pathes) == 2 then
+        return os.mv(pathes[1], pathes[2])
+    end
+
+    -- failed
+    return false
 end
 
--- failed
-return false
+-- return module: mv
+return mv

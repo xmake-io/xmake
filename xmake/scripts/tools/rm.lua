@@ -20,14 +20,27 @@
 -- @file        rm.lua
 --
 
--- rm all
-for _, file_or_dir in ipairs(...) do
-    if os.exists(file_or_dir) then
-        if not os.rm(file_or_dir) then
-            return false
+-- define module: rm
+local rm = rm or {}
+
+-- load modules
+local os = require("base/os")
+
+-- the main function
+function rm.main(...)
+
+    -- rm all
+    for _, file_or_dir in ipairs(...) do
+        if os.exists(file_or_dir) then
+            if not os.rm(file_or_dir) then
+                return false
+            end
         end
     end
+
+    -- ok
+    return true
 end
 
--- ok
-return true
+-- return module: rm
+return rm

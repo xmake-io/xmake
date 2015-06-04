@@ -20,13 +20,27 @@
 -- @file        verbose.lua
 --
 
--- verbose all
-if xmake._OPTIONS.verbose then
-    for _, v in ipairs(...) do
-        io.write(string.format("%s ", v:gsub("%%20", " ")))
+
+-- define module: verbose
+local verbose = verbose or {}
+
+-- load modules
+local io = require("base/io")
+
+-- the main function
+function verbose.main(...)
+
+    -- verbose all
+    if xmake._OPTIONS.verbose then
+        for _, v in ipairs(...) do
+            io.write(string.format("%s ", v:gsub("%%20", " ")))
+        end
+        io.write("\n")
     end
-    io.write("\n")
+
+    -- ok
+    return true
 end
 
--- ok
-return true
+-- return module: verbose
+return verbose

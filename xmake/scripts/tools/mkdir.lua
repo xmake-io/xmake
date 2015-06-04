@@ -20,14 +20,27 @@
 -- @file        mkdir.lua
 --
 
--- mkdir all
-for _, dir in ipairs(...) do
-    if not os.exists(dir) then
-        if not os.mkdir(dir) then
-            return false
+-- define module: mkdir
+local mkdir = mkdir or {}
+
+-- load modules
+local os = require("base/os")
+
+-- the main function
+function mkdir.main(...)
+
+    -- mkdir all
+    for _, dir in ipairs(...) do
+        if not os.exists(dir) then
+            if not os.mkdir(dir) then
+                return false
+            end
         end
     end
+
+    -- ok
+    return true
 end
 
--- ok
-return true
+-- return module: mkdir
+return mkdir
