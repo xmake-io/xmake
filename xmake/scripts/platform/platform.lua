@@ -348,8 +348,8 @@ function platform.probe(configs, is_global)
         -- probe all platforms with the current host
         for _, plat in ipairs(plats) do
             local module = platform._load(plat)
-            if module and module._PROBER and module._PROBER.done and module._HOST and module._HOST == xmake._HOST then
-                module._PROBER.done(configs, is_global)
+            if module and module._PROBER and module._PROBER.global and module._HOST and module._HOST == xmake._HOST then
+                module._PROBER.global(configs)
             end
         end
 
@@ -357,8 +357,8 @@ function platform.probe(configs, is_global)
     else
         -- probe it
         local module = platform.module()
-        if module and module._PROBER and module._PROBER.done then
-            module._PROBER.done(configs, is_global)
+        if module and module._PROBER and module._PROBER.config then
+            module._PROBER.config(configs)
         end
     end
 end
