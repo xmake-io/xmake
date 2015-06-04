@@ -17,7 +17,7 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _prober.lua
+-- @file        prober.lua
 --
 
 -- load modules
@@ -26,11 +26,11 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
--- define module: _prober
-local _prober = _prober or {}
+-- define module: prober
+local prober = prober or {}
 
 -- probe the architecture
-function _prober._probe_arch(configs)
+function prober._probe_arch(configs)
 
     -- get the architecture
     local arch = configs.arch
@@ -46,12 +46,12 @@ function _prober._probe_arch(configs)
 end
 
 -- probe the configure 
-function _prober.done(configs, is_global)
+function prober.done(configs, is_global)
 
     -- probe the architecture
-    if not _prober._probe_arch(configs) then return end
+    if not prober._probe_arch(configs) then return end
 
 end
 
--- return module: _prober
-return _prober
+-- return module: prober
+return prober

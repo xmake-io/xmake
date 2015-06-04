@@ -17,42 +17,40 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _iphonesimulator.lua
+-- @file        iphonesimulator.lua
 --
 
--- define module: _iphonesimulator
-local _iphonesimulator = _iphonesimulator or {}
+-- define module: iphonesimulator
+local iphonesimulator = iphonesimulator or {}
 
 -- load modules
 local config                = require("base/config")
 
 -- init host
-_iphonesimulator._HOST      = "macosx"
+iphonesimulator._HOST      = "macosx"
 
 -- init architectures
-_iphonesimulator._ARCHS     = {"x86", "x64"}
+iphonesimulator._ARCHS     = {"x86", "x64"}
 
 -- make configure
-function _iphonesimulator.make(configs)
+function iphonesimulator.make(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"lib", ".dylib"}
-  
-    -- init the compiler
-    configs.compiler = {}
-    configs.compiler.cc  = config.get("cc") or "xcrun -sdk iphonesimulator clang"
-    configs.compiler.cxx = config.get("cxx") or "xcrun -sdk iphonesimulator clang++"
-    configs.compiler.mm  = config.get("mm") or configs.compiler.cc
-    configs.compiler.mxx = config.get("mxx") or configs.compiler.cxx
-
-    -- init the linker
-    configs.linker = {}
-    configs.linker.binary  = config.get("ld") or "xcrun -sdk iphonesimulator clang++"
-    configs.linker.static  = config.get("ar") or "xcrun -sdk iphonesimulator ar"
-    configs.linker.shared  = config.get("sh") or "xcrun -sdk iphonesimulator clang++"
+    -- init the file formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"lib", ".dylib"}
+ 
+    -- init the toolchains
+    configs.tools       = {}
+    configs.tools.make  = "make"
+    configs.tools.cc    = config.get("cc") or "xcrun -sdk iphonesimulator clang"
+    configs.tools.cxx   = config.get("cxx") or "xcrun -sdk iphonesimulator clang++"
+    configs.tools.mm    = config.get("mm") or configs.tools.cc
+    configs.tools.mxx   = config.get("mxx") or configs.tools.cxx
+    configs.tools.ld    = config.get("ld") or "xcrun -sdk iphonesimulator clang++"
+    configs.tools.ar    = config.get("ar") or "xcrun -sdk iphonesimulator ar"
+    configs.tools.sh    = config.get("sh") or "xcrun -sdk iphonesimulator clang++"
 
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator" .. config.get("xcode_sdkver") .. ".sdk"
@@ -60,10 +58,10 @@ function _iphonesimulator.make(configs)
 end
 
 -- get the option menu for action: xmake config or global
-function _iphonesimulator.menu(action)
+function iphonesimulator.menu(action)
 
     -- init config option menu
-    _iphonesimulator._MENU_CONFIG = _iphonesimulator._MENU_CONFIG or
+    iphonesimulator._MENU_CONFIG = iphonesimulator._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
@@ -80,7 +78,7 @@ function _iphonesimulator.menu(action)
             ,   }
 
     -- init global option menu
-    _iphonesimulator._MENU_GLOBAL = _iphonesimulator._MENU_GLOBAL or
+    iphonesimulator._MENU_GLOBAL = iphonesimulator._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {}
@@ -91,12 +89,12 @@ function _iphonesimulator.menu(action)
 
     -- get the option menu
     if action == "config" then
-        return _iphonesimulator._MENU_CONFIG
+        return iphonesimulator._MENU_CONFIG
     elseif action == "global" then
-        return _iphonesimulator._MENU_GLOBAL
+        return iphonesimulator._MENU_GLOBAL
     end
 end
 
 
--- return module: _iphonesimulator
-return _iphonesimulator
+-- return module: iphonesimulator
+return iphonesimulator

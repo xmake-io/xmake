@@ -17,51 +17,51 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _linux.lua
+-- @file        linux.lua
 --
 
--- define module: _linux
-local _linux = _linux or {}
+-- define module: linux
+local linux = linux or {}
 
 -- load modules
 local config    = require("base/config")
 
 -- init host
-_linux._HOST    = "linux"
+linux._HOST    = "linux"
 
 -- init architectures
-_linux._ARCHS   = {"x86", "x64"}
+linux._ARCHS   = {"x86", "x64"}
 
 -- make configure
-function _linux.make(configs)
+function linux.make(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"lib", ".so"}
+    -- init the file formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"lib", ".so"}
 end
 
 -- get the option menu for action: xmake config or global
-function _linux.menu(action)
+function linux.menu(action)
 
     -- init config option menu
-    _linux._MENU_CONFIG = _linux._MENU_CONFIG or
+    linux._MENU_CONFIG = linux._MENU_CONFIG or
             {   {}
             ,   {nil, "ar",         "kv", nil,          "The Library Creator"           }
             ,   {nil, "arflags",    "kv", nil,          "The Library Creator Flags"     }
             }
 
     -- init global option menu
-    _linux._MENU_GLOBAL = _linux._MENU_GLOBAL or {}
+    linux._MENU_GLOBAL = linux._MENU_GLOBAL or {}
 
     -- get the option menu
     if action == "config" then
-        return _linux._MENU_CONFIG
+        return linux._MENU_CONFIG
     elseif action == "global" then
-        return _linux._MENU_GLOBAL
+        return linux._MENU_GLOBAL
     end
 end
 
--- return module: _linux
-return _linux
+-- return module: linux
+return linux

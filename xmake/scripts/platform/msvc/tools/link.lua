@@ -17,20 +17,19 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _msvc.lua
+-- @file        link.lua
 --
 
--- define module: _msvc
-local _msvc = _msvc or {}
+-- define module: link
+local link = link or {}
 
 -- load modules
-local rule      = require("base/rule")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 
--- init the linker
-function _msvc._init(configs)
+-- init the compiler
+function link.init(name)
 
     -- the architecture
     local arch = config.get("arch")
@@ -43,43 +42,49 @@ function _msvc._init(configs)
     end
 
     -- init ldflags
-    configs.ldflags = "-nologo -dynamicbase -nxcompat -manifest -manifestuac:\"level='asInvoker' uiAccess='false'\" " .. flags_arch
+    link.ldflags = "-nologo -dynamicbase -nxcompat -manifest -manifestuac:\"level='asInvoker' uiAccess='false'\" " .. flags_arch
 
     -- init arflags
-    configs.arflags = "-lib -nologo " .. flags_arch
+    link.arflags = "-lib -nologo " .. flags_arch
 
     -- init shflags
-    configs.shflags = "-dll -nologo " .. flags_arch
-
+    link.shflags = "-dll -nologo " .. flags_arch
 end
 
--- make the command
-function _msvc._make(configs, objfiles, targetfile, flags)
+-- make the linker command
+function link.command_link(objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s %s -out:%s %s", configs.name, flags, targetfile, objfiles)
+    return string.format("link.exe %s -out:%s %s", flags, targetfile, objfiles)
 end
 
 -- make the link flag
-function _msvc._make_link(configs, link)
+function link.flag_link(link)
 
     -- make it
     return link .. ".lib"
 end
 
 -- make the linkdir flag
-function _msvc._make_linkdir(configs, linkdir)
+function link.flag_linkdir(linkdir)
 
     -- make it
     return "-libpath:" .. linkdir
 end
 
--- map gcc flag to the current linker flag
-function _msvc._mapflag(configs, flag)
+-- map gcc flag to the current compiler flag
+function link.flag_map(flag)
 
     -- ok
     return flag
 end
 
--- return module: _msvc
-return _msvc
+-- the main function
+function link.main(...)
+
+    -- ok
+    return true
+end
+
+-- return module: link
+return link

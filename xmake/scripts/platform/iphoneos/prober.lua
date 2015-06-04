@@ -17,7 +17,7 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _prober.lua
+-- @file        prober.lua
 --
 
 -- load modules
@@ -26,11 +26,11 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
--- define module: _prober
-local _prober = _prober or {}
+-- define module: prober
+local prober = prober or {}
 
 -- probe the architecture
-function _prober._probe_arch(configs)
+function prober._probe_arch(configs)
 
     -- get the architecture
     local arch = configs.arch
@@ -46,7 +46,7 @@ function _prober._probe_arch(configs)
 end
 
 -- probe the xcode application directory
-function _prober._probe_xcode(configs)
+function prober._probe_xcode(configs)
 
     -- get the xcode directory
     local xcode_dir = configs.xcode_dir
@@ -88,7 +88,7 @@ function _prober._probe_xcode(configs)
 end
 
 -- probe the xcode sdk version
-function _prober._probe_xcode_sdkver(configs)
+function prober._probe_xcode_sdkver(configs)
 
     -- get the xcode sdk version
     local xcode_sdkver = configs.xcode_sdkver
@@ -126,18 +126,18 @@ function _prober._probe_xcode_sdkver(configs)
 end
 
 -- probe the configure 
-function _prober.done(configs, is_global)
+function prober.done(configs, is_global)
 
     -- probe the architecture
-    if not _prober._probe_arch(configs) then return end
+    if not prober._probe_arch(configs) then return end
 
     -- probe the xcode application directory
-    if not _prober._probe_xcode(configs) then return end
+    if not prober._probe_xcode(configs) then return end
 
     -- probe the xcode sdk version
-    if not is_global and not _prober._probe_xcode_sdkver(configs) then return end
+    if not is_global and not prober._probe_xcode_sdkver(configs) then return end
 
 end
 
--- return module: _prober
-return _prober
+-- return module: prober
+return prober
