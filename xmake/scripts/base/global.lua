@@ -269,18 +269,21 @@ function global.loadxconf()
         end
     end
 
-    -- merge xmake._OPTIONS._DEFAULTS to the global configure
-    for k, v in pairs(options._DEFAULTS) do
+    -- merge the default global configure options to the global configure
+    local defaults = option.defaults("global")
+    if defaults then
+        for k, v in pairs(defaults) do
 
-        -- check
-        assert(type(k) == "string")
+            -- check
+            assert(type(k) == "string")
 
-        -- need configure it?
-        if global._need(k) then
+            -- need configure it?
+            if global._need(k) then
 
-            -- save the default option
-            if not configs[k] then
-                configs[k] = v
+                -- save the default option
+                if not configs[k] then
+                    configs[k] = v
+                end
             end
         end
     end

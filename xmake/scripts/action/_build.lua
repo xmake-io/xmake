@@ -37,7 +37,7 @@ function _build.done()
     local target_name = config.get("target")
 
     -- rebuild it?
-    if config.get("rebuild") then
+    if config.get("rebuild") or config.get("__rebuild") then
         clean.remove(target_name)
     -- update it?
     elseif config.get("update") then
@@ -51,6 +51,19 @@ function _build.done()
         io.cat(rule.logfile())
         utils.error("build target: %s failed!\n", target_name)
         return false
+    end
+
+    -- clear rebuild mark and save configure to file
+    if config.get("__rebuild") then
+
+        -- clear it
+        config.set("__rebuild", nil)
+
+        -- save the configure
+        if not config.savexconf() then
+            -- error
+            utils.error("update configure failed!")
+        end
     end
 
     -- ok

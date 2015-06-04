@@ -129,7 +129,7 @@ end
 function prober.config(configs)
 
     -- probe the architecture
-    if prober._probe_arch(configs) then return end
+    if not prober._probe_arch(configs) then return end
 
     -- probe the xcode application directory
     if not prober._probe_xcode(configs) then return end

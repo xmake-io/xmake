@@ -17,23 +17,23 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        msvc.lua
+-- @file        windows.lua
 --
 
--- define module: msvc
-local msvc = msvc or {}
+-- define module: windows
+local windows = windows or {}
 
 -- load modules
 local config        = require("base/config")
 
 -- init host
-msvc._HOST      = "windows"
+windows._HOST      = "windows"
 
 -- init architectures
-msvc._ARCHS     = {"x86", "x64"}
+windows._ARCHS     = {"x86", "x64"}
 
 -- make configure
-function msvc.make(configs)
+function windows.make(configs)
 
     -- init the file formats
     configs.formats = {}
@@ -54,28 +54,28 @@ function msvc.make(configs)
 end
 
 -- get the option menu for action: xmake config or global
-function msvc.menu(action)
+function windows.menu(action)
 
     -- init config option menu
-    msvc._MENU_CONFIG = msvc._MENU_CONFIG or
+    windows._MENU_CONFIG = windows._MENU_CONFIG or
             {   {}
             ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
             ,   }
 
     -- init global option menu
-    msvc._MENU_GLOBAL = msvc._MENU_GLOBAL or
+    windows._MENU_GLOBAL = windows._MENU_GLOBAL or
             {   {}
             ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
             ,   }
 
     -- get the option menu
     if action == "config" then
-        return msvc._MENU_CONFIG
+        return windows._MENU_CONFIG
     elseif action == "global" then
-        return msvc._MENU_GLOBAL
+        return windows._MENU_GLOBAL
     end
 end
 
 
--- return module: msvc
-return msvc
+-- return module: windows
+return windows

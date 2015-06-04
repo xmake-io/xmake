@@ -230,8 +230,12 @@ end
 function config.set(name, value)
 
     -- check
-    assert(config._CURRENT)
-    assert(name and value and type(value) ~= "table")
+    assert(config._CURRENT and name)
+
+    -- invalid value
+    if value and type(value) == "table" then
+        assert(false)
+    end
 
     -- get the current target
     local target = config._target()
@@ -326,17 +330,38 @@ function config.loadxconf()
                 -- save configs
                 config._CONFIGS = newenv._CONFIGS
 
-                -- clear configs if the host has been changed
+                -- clear configs and mark as "rebuild" and "reconfig" if the host has been changed
                 local target = config._target()
                 if target and target.host ~= xmake._HOST then
-                    -- clear configs
-                    config._CONFIGS = {}
+
+                    -- clear configs and mark as "rebuild"
+                    config._CONFIGS = { __rebuild = true }
+
+                    -- mark as "reconfig" if the current action is not "config"
+                    if options._ACTION ~= "config" then 
+                        config._RECONFIG = true
+                    end
                 end
 
-                -- clear configs if the plat has been changed
+                -- clear configs and mark as "rebuild" if the plat has been changed
                 if target and target.plat and options.plat and target.plat ~= options.plat then
-                    -- clear configs
-                    config._CONFIGS = {}
+
+                    -- clear configs and mark as "rebuild"
+                    config._CONFIGS = { __rebuild = true }
+                end
+
+                -- mark as "rebuild" if the arch has been changed
+                if target and target.arch and options.arch and target.arch ~= options.arch then
+
+                    -- mark as "rebuild"
+                    config._CONFIGS.__rebuild = true
+                end
+
+                -- mark as "rebuild" if the mode has been changed
+                if target and target.mode and options.mode and target.mode ~= options.mode then
+
+                    -- mark as "rebuild"
+                    config._CONFIGS.__rebuild = true
                 end
             elseif errors then
                 -- error
@@ -377,18 +402,21 @@ function config.loadxconf()
         end
     end
 
-    -- merge xmake._OPTIONS._DEFAULTS to target
-    for k, v in pairs(options._DEFAULTS) do
+    -- merge the default configure options to target
+    local defaults = option.defaults("config")
+    if defaults then
+        for k, v in pairs(defaults) do
 
-        -- check
-        assert(type(k) == "string")
+            -- check
+            assert(type(k) == "string")
 
-        -- skip some options
-        if config._need(k) then
+            -- skip some options
+            if config._need(k) then
 
-            -- save the default option to the target
-            if not target[k] then
-                target[k] = v
+                -- save the default option to the target
+                if not target[k] then
+                    target[k] = v
+                end
             end
         end
     end
