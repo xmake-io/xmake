@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _msvc.lua
+-- @file        cl.lua
 --
 
--- define module: _msvc
-local _msvc = _msvc or {}
+-- define module: cl
+local cl = cl or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -29,47 +29,50 @@ local string    = require("base/string")
 local config    = require("base/config")
 
 -- init the compiler
-function _msvc._init(configs)
-
-    -- the architecture
-    local arch = config.get("arch")
-    assert(arch)
+function cl.init(name)
 
     -- init cflags
-    configs.cflags = "-nologo"
+    cl.cflags = "-nologo"
 
     -- init cxxflags
-    configs.cxxflags = "-nologo"
+    cl.cxxflags = "-nologo"
 
 end
 
 -- make the compiler command
-function _msvc._make(configs, srcfile, objfile, flags)
+function cl.command_compile(srcfile, objfile, flags)
 
     -- make it
-    return string.format("%s -c %s -Fo%s %s", configs.name, flags, objfile, srcfile)
+    return string.format("cl.exe -c %s -Fo%s %s", flags, objfile, srcfile)
 end
 
 -- make the define flag
-function _msvc._make_define(configs, define)
+function cl.flag_define(define)
 
     -- make it
     return "-D" .. define
 end
 
 -- make the includedir flag
-function _msvc._make_includedir(configs, includedir)
+function cl.flag_includedir(includedir)
 
     -- make it
     return "-I" .. includedir
 end
 
 -- map gcc flag to the current compiler flag
-function _msvc._mapflag(configs, flag)
+function cl.flag_map(flag)
 
     -- ok
     return flag
 end
 
--- return module: _msvc
-return _msvc
+-- the main function
+function cl.main(...)
+
+    -- ok
+    return true
+end
+
+-- return module: cl
+return cl

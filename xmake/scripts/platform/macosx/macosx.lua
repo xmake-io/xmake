@@ -17,23 +17,23 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _macosx.lua
+-- @file        macosx.lua
 --
 
--- define module: _macosx
-local _macosx = _macosx or {}
+-- define module: macosx
+local macosx = macosx or {}
 
 -- load modules
 local config    = require("base/config")
 
 -- init host
-_macosx._HOST   = "macosx"
+macosx._HOST   = "macosx"
 
 -- init architectures
-_macosx._ARCHS  = {"x86", "x64"}
+macosx._ARCHS  = {"x86", "x64"}
 
 -- make configure
-function _macosx.make(configs)
+function macosx.make(configs)
 
     -- init the file formats
     configs.formats = {}
@@ -57,10 +57,10 @@ function _macosx.make(configs)
 end
 
 -- get the option menu for action: xmake config or global
-function _macosx.menu(action)
+function macosx.menu(action)
 
     -- init config option menu
-    _macosx._MENU_CONFIG = _macosx._MENU_CONFIG or
+    macosx._MENU_CONFIG = macosx._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                 }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"               }
@@ -73,18 +73,18 @@ function _macosx.menu(action)
             ,   }
 
     -- init global option menu
-    _macosx._MENU_GLOBAL = _macosx._MENU_GLOBAL or
+    macosx._MENU_GLOBAL = macosx._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
             ,   }
 
     -- get the option menu
     if action == "config" then
-        return _macosx._MENU_CONFIG
+        return macosx._MENU_CONFIG
     elseif action == "global" then
-        return _macosx._MENU_GLOBAL
+        return macosx._MENU_GLOBAL
     end
 end
 
--- return module: _macosx
-return _macosx
+-- return module: macosx
+return macosx

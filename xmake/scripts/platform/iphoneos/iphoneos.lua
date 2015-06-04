@@ -17,42 +17,40 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _iphoneos.lua
+-- @file        iphoneos.lua
 --
 
--- define module: _iphoneos
-local _iphoneos = _iphoneos or {}
+-- define module: iphoneos
+local iphoneos = iphoneos or {}
 
 -- load modules
 local config        = require("base/config")
 
 -- init host
-_iphoneos._HOST      = "macosx"
+iphoneos._HOST      = "macosx"
 
 -- init architectures
-_iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
+iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
 
 -- make configure
-function _iphoneos.make(configs)
+function iphoneos.make(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"lib", ".dylib"}
- 
-    -- init the compiler
-    configs.compiler = {}
-    configs.compiler.cc  = config.get("cc") or "xcrun -sdk iphoneos clang"
-    configs.compiler.cxx = config.get("cxx") or "xcrun -sdk iphoneos clang++"
-    configs.compiler.mm  = config.get("mm") or configs.compiler.cc
-    configs.compiler.mxx = config.get("mxx") or configs.compiler.cxx
+    -- init the file formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"lib", ".dylib"}
 
-    -- init the linker
-    configs.linker = {}
-    configs.linker.binary  = config.get("ld") or "xcrun -sdk iphoneos clang++"
-    configs.linker.static  = config.get("ar") or "xcrun -sdk iphoneos ar"
-    configs.linker.shared  = config.get("sh") or "xcrun -sdk iphoneos clang++"
+    -- init the toolchains
+    configs.tools       = {}
+    configs.tools.make  = "make"
+    configs.tools.cc    = config.get("cc") or "xcrun -sdk iphoneos clang"
+    configs.tools.cxx   = config.get("cxx") or "xcrun -sdk iphoneos clang++"
+    configs.tools.mm    = config.get("mm") or configs.tools.cc
+    configs.tools.mxx   = config.get("mxx") or configs.tools.cxx
+    configs.tools.ld    = config.get("ld") or "xcrun -sdk iphoneos clang++"
+    configs.tools.ar    = config.get("ar") or "xcrun -sdk iphoneos ar"
+    configs.tools.sh    = config.get("sh") or "xcrun -sdk iphoneos clang++"
 
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. config.get("xcode_sdkver") .. ".sdk"
@@ -60,10 +58,10 @@ function _iphoneos.make(configs)
 end
 
 -- get the option menu for action: xmake config or global
-function _iphoneos.menu(action)
+function iphoneos.menu(action)
 
     -- init config option menu
-    _iphoneos._MENU_CONFIG = _iphoneos._MENU_CONFIG or
+    iphoneos._MENU_CONFIG = iphoneos._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
@@ -80,7 +78,7 @@ function _iphoneos.menu(action)
             ,   }
 
     -- init global option menu
-    _iphoneos._MENU_GLOBAL = _iphoneos._MENU_GLOBAL or
+    iphoneos._MENU_GLOBAL = iphoneos._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {}
@@ -91,12 +89,12 @@ function _iphoneos.menu(action)
 
     -- get the option menu
     if action == "config" then
-        return _iphoneos._MENU_CONFIG
+        return iphoneos._MENU_CONFIG
     elseif action == "global" then
-        return _iphoneos._MENU_GLOBAL
+        return iphoneos._MENU_GLOBAL
     end
 end
 
 
--- return module: _iphoneos
-return _iphoneos
+-- return module: iphoneos
+return iphoneos

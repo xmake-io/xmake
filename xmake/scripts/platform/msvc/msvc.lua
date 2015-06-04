@@ -17,23 +17,23 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _windows.lua
+-- @file        msvc.lua
 --
 
--- define module: _windows
-local _windows = _windows or {}
+-- define module: msvc
+local msvc = msvc or {}
 
 -- load modules
 local config        = require("base/config")
 
 -- init host
-_windows._HOST      = "windows"
+msvc._HOST      = "windows"
 
 -- init architectures
-_windows._ARCHS     = {"x86", "x64"}
+msvc._ARCHS     = {"x86", "x64"}
 
 -- make configure
-function _windows.make(configs)
+function msvc.make(configs)
 
     -- init the file formats
     configs.formats = {}
@@ -43,45 +43,39 @@ function _windows.make(configs)
     configs.formats.binary   = {"", ".exe"}
 
     -- init the toolchains
-    configs.tools = {}
+    configs.tools       = {}
     configs.tools.make  = "nmake"
-
-    -- init the compiler
-    configs.compiler = {}
-    configs.compiler.cc     = config.get("cc") or "cl.exe"
-    configs.compiler.cxx    = config.get("cxx") or "cl.exe"
-
-    -- init the linker
-    configs.linker = {}
-    configs.linker.binary   = config.get("ld") or "link.exe"
-    configs.linker.static   = config.get("ar") or "link.exe"
-    configs.linker.shared   = config.get("sh") or "link.exe"
+    configs.tools.cc    = config.get("cc") or "cl"
+    configs.tools.cxx   = config.get("cxx") or "cl"
+    configs.tools.ld    = config.get("ld") or "link"
+    configs.tools.ar    = config.get("ar") or "link"
+    configs.tools.sh    = config.get("sh") or "link"
 
 end
 
 -- get the option menu for action: xmake config or global
-function _windows.menu(action)
+function msvc.menu(action)
 
     -- init config option menu
-    _windows._MENU_CONFIG = _windows._MENU_CONFIG or
+    msvc._MENU_CONFIG = msvc._MENU_CONFIG or
             {   {}
             ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
             ,   }
 
     -- init global option menu
-    _windows._MENU_GLOBAL = _windows._MENU_GLOBAL or
+    msvc._MENU_GLOBAL = msvc._MENU_GLOBAL or
             {   {}
             ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
             ,   }
 
     -- get the option menu
     if action == "config" then
-        return _windows._MENU_CONFIG
+        return msvc._MENU_CONFIG
     elseif action == "global" then
-        return _windows._MENU_GLOBAL
+        return msvc._MENU_GLOBAL
     end
 end
 
 
--- return module: _windows
-return _windows
+-- return module: msvc
+return msvc

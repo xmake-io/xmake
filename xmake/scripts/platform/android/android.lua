@@ -17,44 +17,44 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _android.lua
+-- @file        android.lua
 --
 
--- define module: _android
-local _android = _android or {}
+-- define module: android
+local android = android or {}
 
 -- load modules
 local config        = require("base/config")
 
 -- init host
-_android._HOST      = xmake._HOST
+android._HOST      = xmake._HOST
 
 -- init architectures
-_android._ARCHS     = {"armv5te", "armv6", "armv7-a"}
+android._ARCHS     = {"armv5te", "armv6", "armv7-a"}
 
 -- make configure
-function _android.make(configs)
+function android.make(configs)
 
-    -- init the file name format
-    configs.format = {}
-    configs.format.static = {"lib", ".a"}
-    configs.format.object = {"",    ".o"}
-    configs.format.shared = {"lib", ".so"}
+    -- init the file formats
+    configs.formats = {}
+    configs.formats.static = {"lib", ".a"}
+    configs.formats.object = {"",    ".o"}
+    configs.formats.shared = {"lib", ".so"}
 
 end
 
 -- get the option menu for action: xmake config or global
-function _android.menu(action)
+function android.menu(action)
 
     -- init config option menu
-    _android._MENU_CONFIG = _android._MENU_CONFIG or
+    android._MENU_CONFIG = android._MENU_CONFIG or
             {   {}
             ,   {nil, "ndk",        "kv", nil,          "The NDK Directory"             }
             ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK Version for NDK"       }
             ,   }
 
     -- init global option menu
-    _android._MENU_GLOBAL = _android._MENU_GLOBAL or
+    android._MENU_GLOBAL = android._MENU_GLOBAL or
             {   {}
             ,   {nil, "ndk",        "kv", nil,          "The NDK Directory"             }
             ,   {nil, "ndk_sdkver", "kv", "auto",       "The SDK Version for NDK"       }
@@ -62,11 +62,11 @@ function _android.menu(action)
 
     -- get the option menu
     if action == "config" then
-        return _android._MENU_CONFIG
+        return android._MENU_CONFIG
     elseif action == "global" then
-        return _android._MENU_GLOBAL
+        return android._MENU_GLOBAL
     end
 end
 
--- return module: _android
-return _android
+-- return module: android
+return android
