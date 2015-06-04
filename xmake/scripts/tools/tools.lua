@@ -101,6 +101,12 @@ function tools.load(name, root)
     -- check
     assert(name)
 
+    -- get it directly from cache dirst
+    tools._TOOLS = tools._TOOLS or {}
+    if tools._TOOLS[name] then
+        return tools._TOOLS[name]
+    end
+
     -- find the tool file path
     local toolpath = tools.find(name, root)
 
@@ -121,10 +127,18 @@ function tools.load(name, root)
             tool.init()
         end
 
+        -- save tool to the cache
+        tools._TOOLS[name] = tool
+
         -- ok?
         return tool
     end
 end
     
+-- get the given tool from the current platform
+function tools.get(name)
+    return tools.load(platform.tool(name))
+end
+
 -- return module: tools
 return tools

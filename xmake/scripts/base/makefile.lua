@@ -247,7 +247,7 @@ function makefile.build(target)
     assert(buildir)
 
     -- load make
-    local make = tools.load(platform.tool("make"))
+    local make = tools.get("make")
     if not make then
         utils.error("not found the make command!")
         return false

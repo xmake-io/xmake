@@ -20,11 +20,25 @@
 -- @file        echo.lua
 --
 
--- echo all
-for _, v in ipairs(...) do
-    io.write(string.format("%s ", v:gsub("%%20", " ")))
-end
-io.write("\n")
+-- define module: echo
+local echo = echo or {}
 
--- ok
-return true
+-- load modules
+local io        = require("base/io")
+local string    = require("base/string")
+
+-- the main function
+function echo.main(...)
+
+    -- echo all
+    for _, v in ipairs(...) do
+        io.write(string.format("%s ", v:gsub("%%20", " ")))
+    end
+    io.write("\n")
+
+    -- ok
+    return true
+end
+
+-- return module: echo
+return echo

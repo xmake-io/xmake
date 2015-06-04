@@ -20,14 +20,27 @@
 -- @file        rmdir.lua
 --
 
--- rmdir all
-for _, dir in ipairs(...) do
-    if os.isdir(dir) then
-        if not os.rmdir(dir) then
-            return false
+-- define module: rmdir
+local rmdir = rmdir or {}
+
+-- load modules
+local os = require("base/os")
+
+-- the main function
+function rmdir.main(...)
+
+    -- rmdir all
+    for _, dir in ipairs(...) do
+        if os.isdir(dir) then
+            if not os.rmdir(dir) then
+                return false
+            end
         end
     end
+
+    -- ok
+    return true
 end
 
--- ok
-return true
+-- return module: rmdir
+return rmdir
