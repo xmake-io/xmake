@@ -27,27 +27,24 @@ local linker = linker or {}
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
+local tools     = require("tools/tools")
 
 -- map gcc flags to the given linker flags
-function linker._mapflags(self, flags)
+function linker._mapflags(module, flags)
 
     -- check
-    assert(self and flags);
+    assert(module and flags);
 
     -- need not map flags? return it directly
-    if not self.mapflag then
+    if not module.mapflag then
         return flags
     end
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
 
     -- map flags
     local flags_mapped = {}
     for _, flag in pairs(flags) do
         -- map it
-        local flag_mapped = self._mapflag(configs, flag)
+        local flag_mapped = module.flag_map(flag)
         if flag_mapped then
             table.insert(flags_mapped, flag_mapped)
         end
@@ -57,15 +54,11 @@ function linker._mapflags(self, flags)
     return flags_mapped
 end
 
--- make the command
-function linker._make(self, target, objfiles, targetfile)
+-- make the link command
+function linker.make(module, target, objfiles, targetfile)
 
     -- check
-    assert(self and self._make and target)
-
-    -- the configure
-    local configs = self._CONFIGS
-    assert(configs)
+    assert(module and target)
 
     -- the target kind
     local kind = target.kind or ""
@@ -82,30 +75,30 @@ function linker._make(self, target, objfiles, targetfile)
     end
 
     -- get the common flags from the current linker 
-    local flags_common = configs[flag_name] or ""
+    local flags_common = module[flag_name] or ""
 
     -- get the target flags from the current project
-    local flags_target = table.concat(linker._mapflags(self, utils.wrap(target[flag_name])), " ")
+    local flags_target = table.concat(linker._mapflags(module, utils.wrap(target[flag_name])), " ")
     assert(flags_target)
 
     -- get the linkdirs flags from the current project
-    if self._make_linkdir then
+    if module._make_linkdir then
         local linkdirs = utils.wrap(target.linkdirs)
         for _, linkdir in ipairs(linkdirs) do
-            flags_target = flags_target:append(self._make_linkdir(configs, linkdir), " ")
+            flags_target = flags_target:append(module.flag_linkdir(linkdir), " ")
         end
     end
 
     -- get the links flags from the current project
-    if self._make_link then
+    if module._make_link then
         local links = utils.wrap(target.links)
         for _, link in ipairs(links) do
-            flags_target = flags_target:append(self._make_link(configs, link), " ")
+            flags_target = flags_target:append(module.flag_link(link), " ")
         end
     end
 
     -- get the config flags
-    local flags_config = table.concat(linker._mapflags(self, utils.wrap(config.get(flag_name))), " ")
+    local flags_config = table.concat(linker._mapflags(module, utils.wrap(config.get(flag_name))), " ")
     assert(flags_config)
 
     -- make the flags string
@@ -115,59 +108,34 @@ function linker._make(self, target, objfiles, targetfile)
     flags = flags:append(flags_config, " ")
     flags = flags:trim()
 
-    -- make it
-    return self._make(configs, table.concat(objfiles, " "), targetfile, flags)
+    -- make the link command
+    return module.command_link(table.concat(objfiles, " "), targetfile, flags)
 end
 
--- load the given linker 
-function linker.load(name)
+-- get the linker from the given kind
+function linker.get(kind)
 
     -- check
-    assert(name and type(name) == "string")
+    assert(kind)
 
-    -- gcc?
-    local module = nil
-    if name:find("gcc", 1, true) then module = "gcc"
-    -- clang?
-    elseif name:find("clang", 1, true) then module = "clang"
-    -- ar?
-    elseif name:find("ar", 1, true) then module = "ar"
-    -- cl.exe?
-    elseif name:find("link.exe", 1, true) then module = "msvc"
-    -- unknown?
-    else
-        -- error
-        utils.error("unknown linker: %s", name)
-        return nil
+    -- get the linker name from the kind
+    local name = nil
+    if kind == "binary" then name = "ld"
+    elseif kind == "static" then name = "ar"
+    elseif kind == "shared" then name = "sh"
+    else return end
+ 
+    -- get it
+    local module = tools.get(name)
+
+    -- invalid linker?
+    if module and not module.command_link then
+        return 
     end
-
-    -- load the given linker 
-    local l = require("linker/_" .. module)
-    if not l then
-        return nil
-    end
-
-    -- the linker has been loaded? return it directly
-    if l._CONFIGS then 
-        return l
-    end
-
-    -- make the linker configure
-    l._CONFIGS = {}
-    local configs = l._CONFIGS
-
-    -- init the linker name
-    configs.name = name
-
-    -- init the linker configure
-    l._init(configs)
-
-    -- init interfaces
-    l["make"] = linker._make
 
     -- ok?
-    return l
+    return module
 end
-    
+
 -- return module: linker
 return linker
