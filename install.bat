@@ -28,6 +28,7 @@ if %PROCESSOR_ARCHITECTURE%==x86_64 (
 echo please input the install directory
 set /p xmake_dir_install=(default: %xmake_dir_install_default%): 
 if "%xmake_dir_install%"=="" set xmake_dir_install=%xmake_dir_install_default%
+if exist "%xmake_dir_install%" rmdir /s /q "%xmake_dir_install%"
 if not exist "%xmake_dir_install%" mkdir "%xmake_dir_install%"
 
 rem compile xmake-core

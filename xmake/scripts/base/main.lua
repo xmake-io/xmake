@@ -425,13 +425,30 @@ function main._prepare_project()
 
     -- load xmake.xconf file first
     local errors = config.loadxconf()
-    if not errors then
-        -- load xmake.xproj file
-        errors = project.loadxproj(options.file)
+    if errors then return errors end
+
+    -- xmake config or marked as "reconfig"?
+    if options._ACTION == "config" or config._RECONFIG then
+
+        -- wrap the configure for more convenient to get and set values
+        local config_wrapped = {}
+        setmetatable(config_wrapped, 
+        {
+            __index = function(tbl, key)
+                return config.get(key)
+            end,
+            __newindex = function(tbl, key, val)
+                config.set(key, val)
+            end
+        })
+
+        -- probe the current platform configure
+        platform.probe(config_wrapped, false)
+
     end
 
-    -- ok?
-    return errors
+    -- load xmake.xproj file
+    return project.loadxproj(options.file)
 end
 
 -- done help
@@ -527,25 +544,6 @@ function main._done_option()
         return false
     end
 
-    -- xmake config?
-    if options._ACTION == "config" then
-
-        -- wrap the global configure for more convenient to get and set values
-        local config_wrapped = {}
-        setmetatable(config_wrapped, 
-        {
-            __index = function(tbl, key)
-                return config.get(key)
-            end,
-            __newindex = function(tbl, key, val)
-                config.set(key, val)
-            end
-        })
-
-        -- probe the current platform configure
-        platform.probe(config_wrapped, false)
-    end
-
     -- make the current platform configure
     if not platform.make() then
         -- error
@@ -565,6 +563,13 @@ function main._done_option()
 
     -- dump platform
     platform.dump()
+
+    -- reconfig it first if marked as "reconfig"
+    if config._RECONFIG and not action.done("config") then
+        -- error
+        utils.error("reconfig failed for the changed host!")
+        return false
+    end
 
     -- done action    
     return action.done(options._ACTION or "build")

@@ -402,6 +402,35 @@ function option.find(argv, name, shortname)
     end
 end
 
+-- get all default options from the given action
+function option.defaults(action)
+
+    -- make defaults
+    local defaults = {}
+
+    -- init the default value
+    for _, o in ipairs(option._MENU[action or "main"].options) do
+
+        -- key=value?
+        if o[3] == "kv" then
+
+            -- the key
+            local key = o[2] or o[1]
+            assert(key)
+
+            -- save the default value 
+            defaults[key] = o[4]    
+        -- value with name?
+        elseif o[3] == "v" and o[2] then
+            -- save the default value 
+            defaults[o[2]] = o[4]    
+        end
+    end
+
+    -- ok?
+    return defaults
+end
+
 -- print the menu 
 function option.print_menu(action)
 
