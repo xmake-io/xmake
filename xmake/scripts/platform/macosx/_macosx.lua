@@ -32,9 +32,6 @@ _macosx._HOST   = "macosx"
 -- init architectures
 _macosx._ARCHS  = {"x86", "x64"}
 
--- init prober
-_macosx._PROBER = require("platform/macosx/_prober")
-
 -- make configure
 function _macosx.make(configs)
 

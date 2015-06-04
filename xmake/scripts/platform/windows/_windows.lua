@@ -35,9 +35,6 @@ _windows._ARCHS     = {"x86", "x64"}
 -- init maker
 _windows._MAKER     = require("platform/windows/_maker")
 
--- init prober
-_windows._PROBER    = require("platform/windows/_prober")
-
 -- make configure
 function _windows.make(configs)
 

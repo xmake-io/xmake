@@ -573,7 +573,13 @@ end
 -- the main function
 function main.done()
 
-    -- init option first
+    -- init project directory first 
+    local projectdir = option.find(xmake._ARGV, "project", "P") 
+    if projectdir then
+        xmake._PROJECT_DIR = path.absolute(projectdir)
+    end
+
+    -- init option 
     if not option.init(xmake._ARGV, menu) then 
         return -1
     end

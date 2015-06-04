@@ -32,9 +32,6 @@ _iphoneos._HOST      = "macosx"
 -- init architectures
 _iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
 
--- init prober
-_iphoneos._PROBER    = require("platform/iphoneos/_prober")
-
 -- make configure
 function _iphoneos.make(configs)
 
