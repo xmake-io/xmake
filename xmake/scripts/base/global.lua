@@ -133,6 +133,11 @@ function global._file()
     return global.directory() .. "/xmake.xconf"
 end
 
+-- need configure?
+function global._need(name)
+    return name and name ~= "verbose" and name ~= "clean"
+end
+
 -- get the given configure from the current 
 function global.get(name)
 
@@ -226,7 +231,7 @@ function global.loadxconf()
     local configures = {}
     for _, o in ipairs(option._MENU.global.options) do
         local name = o[2]
-        if name and name ~= "verbose" then
+        if global._need(name) then
             configures[i] = name
             i = i + 1
         end
@@ -258,8 +263,8 @@ function global.loadxconf()
         -- check
         assert(type(k) == "string")
 
-        -- skip some options
-        if not k:startswith("_") and k ~= "verbose" then
+        -- need configure it?
+        if not k:startswith("_") and global._need(k) then
             configs[k] = v
         end
     end
@@ -270,8 +275,8 @@ function global.loadxconf()
         -- check
         assert(type(k) == "string")
 
-        -- skip some options
-        if k ~= "verbose" then
+        -- need configure it?
+        if global._need(k) then
 
             -- save the default option
             if not configs[k] then

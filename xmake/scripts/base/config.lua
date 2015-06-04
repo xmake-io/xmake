@@ -181,6 +181,11 @@ function config._file()
     return config.directory() .. "/xmake.xconf"
 end
 
+-- need configure?
+function config._need(name)
+    return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" and name ~= "clean"
+end
+
 -- get the current target scope
 function config._target()
  
@@ -301,7 +306,7 @@ function config.loadxconf()
     local configures = {}
     for _, o in ipairs(option._MENU.config.options) do
         local name = o[2]
-        if name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" then
+        if config._need(name) then
             configures[i] = name
             i = i + 1
         end
@@ -365,7 +370,7 @@ function config.loadxconf()
         assert(type(k) == "string")
 
         -- skip some options
-        if not k:startswith("_") and k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "target" then
+        if not k:startswith("_") and config._need(k) then
 
             -- save the option to the target
             target[k] = v
@@ -379,7 +384,7 @@ function config.loadxconf()
         assert(type(k) == "string")
 
         -- skip some options
-        if k ~= "project" and k ~= "file" and k ~= "verbose" and k ~= "target" then
+        if config._need(k) then
 
             -- save the default option to the target
             if not target[k] then
