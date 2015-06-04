@@ -185,11 +185,22 @@ function prober._probe_vs_path(configs)
     return true
 end
 
--- probe the configure 
-function prober.done(configs, is_global)
+-- probe the project configure 
+function prober.config(configs)
 
     -- probe the architecture
     if not prober._probe_arch(configs) then return end
+
+    -- probe the vs version
+    if not prober._probe_vs_version(configs) then return end
+
+    -- probe the vs path
+    if not prober._probe_vs_path(configs) then return end
+
+end
+
+-- probe the global configure 
+function prober.global(configs)
 
     -- probe the vs version
     if not prober._probe_vs_version(configs) then return end

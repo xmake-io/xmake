@@ -125,8 +125,8 @@ function prober._probe_xcode_sdkver(configs)
     return true
 end
 
--- probe the configure 
-function prober.done(configs, is_global)
+-- probe the project configure 
+function prober.config(configs)
 
     -- probe the architecture
     if not prober._probe_arch(configs) then return end
@@ -136,6 +136,14 @@ function prober.done(configs, is_global)
 
     -- probe the xcode sdk version
     if not is_global and not prober._probe_xcode_sdkver(configs) then return end
+
+end
+
+-- probe the global configure 
+function prober.config(configs)
+
+    -- probe the xcode application directory
+    if not prober._probe_xcode(configs) then return end
 
 end
 

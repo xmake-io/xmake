@@ -45,8 +45,8 @@ function prober._probe_arch(configs)
     return true
 end
 
--- probe the configure 
-function prober.done(configs, is_global)
+-- probe the project configure 
+function prober.config(configs)
 
     -- probe the architecture
     if not prober._probe_arch(configs) then return end
