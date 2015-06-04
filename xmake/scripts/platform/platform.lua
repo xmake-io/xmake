@@ -36,11 +36,11 @@ local compiler  = require("compiler/compiler")
 function platform._load_prober(root)
 
     -- the platform file path
-    local file = string.format("%s/prober.lua", root)
-    if os.isfile(file) then
+    local filepath = string.format("%s/prober.lua", root)
+    if os.isfile(filepath) then
 
         -- load script
-        local script = loadfile(file)
+        local script = loadfile(filepath)
         if script then
 
             -- load prober
@@ -58,11 +58,11 @@ end
 function platform._load_from(root, plat)
 
     -- the platform file path
-    local file = string.format("%s/platform/%s/%s.lua", root, plat, plat)
-    if os.isfile(file) then
+    local filepath = string.format("%s/platform/%s/%s.lua", root, plat, plat)
+    if os.isfile(filepath) then
 
         -- load script
-        local script = loadfile(file)
+        local script = loadfile(filepath)
         if script then
 
             -- load module
@@ -70,7 +70,7 @@ function platform._load_from(root, plat)
             if module then
 
                 -- save directory
-                module._DIRECTORY = path.directory(file)
+                module._DIRECTORY = path.directory(filepath)
                 assert(module._DIRECTORY)
 
                 -- attempt to load prober
@@ -137,6 +137,23 @@ function platform._configs(plat)
 
     -- ok?
     return configs
+end
+
+-- get the current platform module
+function platform.module()
+
+    -- load it
+    return platform._load(config.get("plat"))
+end
+
+-- get the current platform module directory
+function platform.directory()
+
+    -- load it
+    local module = platform.module()
+    if module then
+        return module._DIRECTORY
+    end
 end
 
 -- make the current platform configure
@@ -374,7 +391,7 @@ function platform.probe(configs, is_global)
     -- probe config
     else
         -- probe it
-        local module = platform._load(config.get("plat"))
+        local module = platform.module()
         if module and module._PROBER and module._PROBER.done then
             module._PROBER.done(configs, is_global)
         end
@@ -385,7 +402,7 @@ end
 function platform.build(mkfile, target)
 
     -- attempt to done the platform special make first
-    local module = platform._load(config.get("plat"))
+    local module = platform.module()
     if module and module._MAKER and module._MAKER.done then
         return module._MAKER.done(mkfile, target)
     end
