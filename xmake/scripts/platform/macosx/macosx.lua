@@ -36,21 +36,22 @@ macosx._ARCHS  = {"x86", "x64"}
 function macosx.make(configs)
 
     -- init the file formats
-    configs.formats = {}
-    configs.formats.static = {"lib", ".a"}
-    configs.formats.object = {"",    ".o"}
-    configs.formats.shared = {"lib", ".dylib"}
+    configs.formats         = {}
+    configs.formats.static  = {"lib", ".a"}
+    configs.formats.object  = {"",    ".o"}
+    configs.formats.shared  = {"lib", ".dylib"}
 
     -- init the toolchains
-    configs.tools       = {}
-    configs.tools.make  = "make"
-    configs.tools.cc    = config.get("cc") or "xcrun -sdk macosx clang"
-    configs.tools.cxx   = config.get("cxx") or "xcrun -sdk macosx clang++"
-    configs.tools.mm    = config.get("mm") or configs.tools.cc
-    configs.tools.mxx   = config.get("mxx") or configs.tools.cxx
-    configs.tools.ld    = config.get("ld") or "xcrun -sdk macosx clang++"
-    configs.tools.ar    = config.get("ar") or "xcrun -sdk macosx ar"
-    configs.tools.sh    = config.get("sh") or "xcrun -sdk macosx clang++"
+    configs.tools           = {}
+    configs.tools.make      = "make"
+    configs.tools.ccache    = config.get("__ccache")
+    configs.tools.cc        = config.get("cc") or "xcrun -sdk macosx clang"
+    configs.tools.cxx       = config.get("cxx") or "xcrun -sdk macosx clang++"
+    configs.tools.mm        = config.get("mm") or configs.tools.cc
+    configs.tools.mxx       = config.get("mxx") or configs.tools.cxx
+    configs.tools.ld        = config.get("ld") or "xcrun -sdk macosx clang++"
+    configs.tools.ar        = config.get("ar") or "xcrun -sdk macosx ar"
+    configs.tools.sh        = config.get("sh") or "xcrun -sdk macosx clang++"
 
     -- init xcode sdk directory
     configs.xcode_sdkdir = config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. config.get("xcode_sdkver") .. ".sdk"

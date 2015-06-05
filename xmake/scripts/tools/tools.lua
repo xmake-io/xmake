@@ -73,6 +73,24 @@ function tools._find_from(root, name)
 
 end
 
+-- probe it's absolute path if exists from the given tool name and root directory
+function tools._probe(root, name)
+
+    -- check
+    assert(root and name)
+
+    -- make the tool path
+    local toolpath = string.format("%s/%s", root, name)
+    toolpath = path.translate(toolpath) 
+
+    -- the tool exists? ok
+    if toolpath and os.isfile(toolpath) then
+        return toolpath
+    end
+end
+
+
+
 -- find tool from the given name and directory (optional)
 function tools.find(name, root)
 
@@ -139,6 +157,33 @@ end
 function tools.get(name)
     return tools.load(platform.tool(name))
 end
+
+-- probe it's absolute path if exists from the given tool name
+function tools.probe(name, dirs)
+
+    -- check
+    assert(name)
+
+    -- attempt to run it directly first
+    if os.execute(string.format("%s > %s 2>&1", name, xmake._NULDEV)) ~= 0x7f00 then
+        return name
+    end
+
+    -- attempt to get it from the given directories
+    if dirs then
+        for _, dir in ipairs(dirs) do
+            
+            -- probe it
+            local toolpath = tools._probe(dir, name)
+
+            -- ok?
+            if toolpath then
+                return toolpath
+            end
+        end
+    end
+end
+
 
 -- return module: tools
 return tools
