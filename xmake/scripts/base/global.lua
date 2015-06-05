@@ -296,6 +296,30 @@ function global.loadxconf()
     global._make()
 end
 
+-- clear up and remove all auto values
+function global.clearup()
+
+    -- clear up the current configure
+    local current = global._CURRENT
+    if current then
+        for k, v in pairs(current) do
+            if v and type(v) and v == "auto" then
+                current[k] = nil
+            end
+        end
+    end
+
+    -- clear up the configure
+    local configs = global._CONFIGS
+    if configs then
+        for k, v in pairs(configs) do
+            if v and type(v) and v == "auto" then
+                configs[k] = nil
+            end
+        end
+    end
+end
+
 -- dump the current configure
 function global.dump()
     
