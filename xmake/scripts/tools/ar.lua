@@ -35,7 +35,7 @@ function ar.init(name)
     ar.name = name or "ar"
 
     -- init arflags
-    ar.arflags = "-crs"
+    ar.arflags = { "-crs" }
 
 end
 

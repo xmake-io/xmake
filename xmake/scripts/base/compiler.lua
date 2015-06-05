@@ -26,6 +26,7 @@ local compiler = compiler or {}
 -- load modules
 local path      = require("base/path")
 local utils     = require("base/utils")
+local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
 local tools     = require("tools/tools")
@@ -129,32 +130,21 @@ function compiler.make(module, target, srcfile, objfile)
     end
 
     -- get the common flags from the current compiler 
-    local flags_common = ""
+    local flags = {}
     for _, flag_name in ipairs(flag_names) do
-        flags_common = flags_common:append(module[flag_name], " ")
+        table.join2(flags, module[flag_name])
     end
 
     -- get the target flags from the current project
-    local flags_target = ""
     for _, flag_name in ipairs(flag_names) do
-
-        -- get flags
-        local flags = table.concat(compiler._mapflags(module, utils.wrap(target[flag_name])), " ")
-
-        -- trim the spaces
-        flags = flags:trim()
-
-        -- append flags
-        if flags and #flags ~= 0 then 
-            flags_target = flags_target:append(flags, " ")
-        end
+        table.join2(flags, compiler._mapflags(module, utils.wrap(target[flag_name])))
     end
 
     -- get the includedirs flags from the current project
     if module._make_includedir then
         local includedirs = utils.wrap(target.includedirs)
         for _, includedir in ipairs(includedirs) do
-            flags_target = flags_target:append(module.flag_includedir(includedir), " ")
+            table.join2(flags, module.flag_includedir(includedir))
         end
     end
 
@@ -162,35 +152,17 @@ function compiler.make(module, target, srcfile, objfile)
     if module._make_define then
         local defines = utils.wrap(target.defines)
         for _, define in ipairs(defines) do
-            flags_target = flags_target:append(module.flag_define(define), " ")
+            table.join2(flags, module.flag_define(define))
         end
     end
 
     -- get the config flags
-    local flags_config = ""
     for _, flag_name in ipairs(flag_names) do
-        
-        -- get flags
-        local flags = table.concat(compiler._mapflags(module, utils.wrap(config.get(flag_name))), " ")
-
-        -- trim the spaces
-        flags = flags:trim()
-
-        -- append flags
-        if flags and #flags ~= 0 then 
-            flags_config = flags_config:append(flags, " ")
-        end
+        table.join2(flags, compiler._mapflags(module, utils.wrap(config.get(flag_name))))
     end
 
-    -- make the flags string
-    local flags = ""
-    flags = flags:append(flags_common, " ")
-    flags = flags:append(flags_target, " ")
-    flags = flags:append(flags_config, " ")
-    flags = flags:trim()
-
     -- make the compile command
-    return module.command_compile(srcfile, objfile, flags)
+    return module.command_compile(srcfile, objfile, table.concat(flags, " "):trim())
 end
 
 -- return module: compiler

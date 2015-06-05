@@ -25,6 +25,7 @@ local linker = linker or {}
 
 -- load modules
 local utils     = require("base/utils")
+local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
 local tools     = require("tools/tools")
@@ -75,17 +76,17 @@ function linker.make(module, target, objfiles, targetfile)
     end
 
     -- get the common flags from the current linker 
-    local flags_common = module[flag_name] or ""
+    local flags = {}
+    table.join2(flags, module[flag_name])
 
     -- get the target flags from the current project
-    local flags_target = table.concat(linker._mapflags(module, utils.wrap(target[flag_name])), " ")
-    assert(flags_target)
+    table.join2(flags, linker._mapflags(module, utils.wrap(target[flag_name])))
 
     -- get the linkdirs flags from the current project
     if module._make_linkdir then
         local linkdirs = utils.wrap(target.linkdirs)
         for _, linkdir in ipairs(linkdirs) do
-            flags_target = flags_target:append(module.flag_linkdir(linkdir), " ")
+            table.join2(flags, module.flag_linkdir(linkdir))
         end
     end
 
@@ -93,23 +94,15 @@ function linker.make(module, target, objfiles, targetfile)
     if module._make_link then
         local links = utils.wrap(target.links)
         for _, link in ipairs(links) do
-            flags_target = flags_target:append(module.flag_link(link), " ")
+            table.join2(flags, module.flag_link(link))
         end
     end
 
     -- get the config flags
-    local flags_config = table.concat(linker._mapflags(module, utils.wrap(config.get(flag_name))), " ")
-    assert(flags_config)
-
-    -- make the flags string
-    local flags = ""
-    flags = flags:append(flags_common, " ")
-    flags = flags:append(flags_target, " ")
-    flags = flags:append(flags_config, " ")
-    flags = flags:trim()
+    table.join2(flags, linker._mapflags(module, utils.wrap(config.get(flag_name))))
 
     -- make the link command
-    return module.command_link(table.concat(objfiles, " "), targetfile, flags)
+    return module.command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())
 end
 
 -- get the linker from the given kind
