@@ -429,6 +429,9 @@ function main._prepare_global()
 
         -- probe the global platform configure 
         platform.probe(global_wrapped, true)
+
+        -- clear up the global configure
+        global.clearup()
     end
 
     -- ok
@@ -483,6 +486,9 @@ function main._prepare_project()
 
         -- probe the current platform configure
         platform.probe(config_wrapped, false)
+
+        -- clear up the configure
+        config.clearup()
 
     end
 

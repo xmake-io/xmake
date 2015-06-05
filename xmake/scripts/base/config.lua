@@ -141,10 +141,6 @@ function config._make()
     config._CURRENT = config._CURRENT or {}
     local current = config._CURRENT
 
-    -- init the current target 
-    current.target = options.target or options._DEFAULTS.target
-    assert(current.target)
-
     -- get configs from the global configure first
     if global._CURRENT then
         for k, v in pairs(global._CURRENT) do 
@@ -443,6 +439,31 @@ function config.loadxconf()
 
     -- make the current config
     config._make()
+end
+
+-- clear up and remove all auto values
+function config.clearup()
+
+    -- clear up the current configure
+    local current = config._CURRENT
+    if current then
+        for k, v in pairs(current) do
+            if v and type(v) and v == "auto" then
+                current[k] = nil
+            end
+        end
+    end
+
+    -- clear up the current target configure
+    local target = config._target()
+    if target then
+        for k, v in pairs(target) do
+            if v and type(v) and v == "auto" then
+                target[k] = nil
+            end
+        end
+    end
+
 end
 
 -- dump the current configure
