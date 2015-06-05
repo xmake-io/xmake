@@ -23,6 +23,9 @@
 -- define module: preprocessor
 local preprocessor = preprocessor or {}
 
+-- load modules
+local utils = require("base/utils")
+
 -- filter value
 function preprocessor._filter(env, value, filter)
 

@@ -25,6 +25,7 @@ local project = project or {}
 
 -- load modules
 local utils         = require("base/utils")
+local table         = require("base/table")
 local config        = require("base/config")
 local preprocessor  = require("base/preprocessor")
 
@@ -87,29 +88,20 @@ function project._make_configs(scope, configs)
         -- append configure to scope
         elseif scope and not k:startswith("_") and k:endswith("s") then
 
-            -- wrap it first
-            local values = utils.wrap(v)
-
             -- append all 
-            for _, _v in ipairs(values) do
+            scope[k] = scope[k] or {}
+            table.join2(scope[k], v)
 
-                -- the configure item
-                scope[k] = scope[k] or {}
-                local item = scope[k]
-
-                -- append it
-                table.insert(item, _v)
-            end
         -- replace configure to scope
         elseif scope and not k:startswith("_") then
             
+            -- the configure item
+            scope[k] = scope[k] or {}
+            local item = scope[k]
+
             -- wrap it first
             local values = utils.wrap(v)
             if table.getn(values) == 1 then
-
-                -- the configure item
-                scope[k] = scope[k] or {}
-                local item = scope[k]
 
                 -- replace it
                 item[1] = values[1]
@@ -128,11 +120,25 @@ function project._make()
     -- init current
     project._CURRENT = project._CURRENT or {}
 
-    -- make the root configure to the current scope
-    project._make_configs(nil, configs)
+    -- make the current configure
+    local root = {}
+    project._make_configs(root, configs)
 
-    -- remove repeat values and unwrap it
+    -- merge and remove repeat values and unwrap it
     for _, target in pairs(project._CURRENT) do
+    
+        -- merge the root configure to all targets
+        for k, v in pairs(root) do
+            if not target[k] then
+                -- insert it
+                target[k] = v
+            elseif not k:startswith("_") and k:endswith("s") then
+                -- join root and target and update it
+                target[k] = table.join(root, target[k])
+            end
+        end
+
+        -- remove repeat values and unwrap it
         for k, v in pairs(target) do
 
             -- remove repeat first
@@ -182,7 +188,8 @@ function project.loadxproj(file)
                         ,   "mxxflags" 
                         ,   "ldflags" 
                         ,   "shflags" 
-                        ,   "defines"} 
+                        ,   "defines"
+                        ,   "optimize"} 
 
     -- init filter
     local filter =  function (v) 
