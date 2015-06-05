@@ -25,6 +25,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local tools     = require("tools/tools")
 
 -- define module: prober
 local prober = prober or {}

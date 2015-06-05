@@ -374,8 +374,18 @@ function config.loadxconf()
     local name = options.target or options._DEFAULTS.target
     assert(name and type(name) == "string")
 
-    -- init configs
-    config._CONFIGS = config._CONFIGS or {}
+    -- init configs if not exists
+    if not config._CONFIGS then
+        -- clear configs and mark as "rebuild"
+        config._CONFIGS = { __rebuild = true }
+
+        -- mark as "reconfig" if the current action is not "config"
+        if options._ACTION ~= "config" then 
+            config._RECONFIG = true
+        end
+    end
+
+    -- the configs
     local configs = config._CONFIGS
 
     -- mark as "rebuild" if clean the cached configure 
@@ -394,21 +404,26 @@ function config.loadxconf()
     assert(target and type(target) == "table")
 
     -- merge xmake._OPTIONS to target
-    for k, v in pairs(options) do
+    if options._ACTION == "config" then
+        for k, v in pairs(options) do
 
-        -- check
-        assert(type(k) == "string")
+            -- check
+            assert(type(k) == "string")
 
-        -- skip some options
-        if not k:startswith("_") and config._need(k) then
+            -- skip some options
+            if not k:startswith("_") and config._need(k) then
 
-            -- save the option to the target
-            target[k] = v
+                -- save the option to the target
+                target[k] = v
+            end
         end
     end
 
     -- merge the default configure options to target
-    local defaults = option.defaults("config")
+    local defaults = nil
+    if config._RECONFIG then defaults = option.defaults("config")
+    elseif options._ACTION == "config" then defaults = options._DEFAULTS
+    end
     if defaults then
         for k, v in pairs(defaults) do
 
