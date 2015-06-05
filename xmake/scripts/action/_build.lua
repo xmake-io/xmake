@@ -33,14 +33,18 @@ local makefile  = require("base/makefile")
 -- done the given config
 function _build.done()
 
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
     -- the target name
-    local target_name = config.get("target")
+    local target_name = options.target
 
     -- rebuild it?
-    if config.get("rebuild") or config.get("__rebuild") then
+    if options.rebuild or config.get("__rebuild") then
         clean.remove(target_name)
     -- update it?
-    elseif config.get("update") then
+    elseif options.update then
         clean.remove(target_name, true)
     end
 

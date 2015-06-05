@@ -257,32 +257,36 @@ function global.loadxconf()
     global._CONFIGS = global._CONFIGS or {}
     local configs = global._CONFIGS
 
-    -- merge xmake._OPTIONS to the global configure
-    for k, v in pairs(options) do
-
-        -- check
-        assert(type(k) == "string")
-
-        -- need configure it?
-        if not k:startswith("_") and global._need(k) then
-            configs[k] = v
-        end
-    end
-
-    -- merge the default global configure options to the global configure
-    local defaults = option.defaults("global")
-    if defaults then
-        for k, v in pairs(defaults) do
+    -- xmake global?
+    if options._ACTION == "global" then
+        
+        -- merge xmake._OPTIONS to the global configure
+        for k, v in pairs(options) do
 
             -- check
             assert(type(k) == "string")
 
             -- need configure it?
-            if global._need(k) then
+            if not k:startswith("_") and global._need(k) then
+                configs[k] = v
+            end
+        end
 
-                -- save the default option
-                if not configs[k] then
-                    configs[k] = v
+        -- merge the default global configure options to the global configure
+        local defaults = options._DEFAULTS
+        if defaults then
+            for k, v in pairs(defaults) do
+
+                -- check
+                assert(type(k) == "string")
+
+                -- need configure it?
+                if global._need(k) then
+
+                    -- save the default option
+                    if not configs[k] then
+                        configs[k] = v
+                    end
                 end
             end
         end

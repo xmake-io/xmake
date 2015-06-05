@@ -30,8 +30,12 @@ local config    = require("base/config")
 -- done the given config
 function _clean.done()
 
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
     -- clean the current target
-    if not clean.remove(config.get("target")) then
+    if not clean.remove(options.target) then
         return false
     end
 

@@ -402,6 +402,39 @@ local menu =
     }
 }
 
+-- prepare global
+function main._prepare_global()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- load global configure
+    global.loadxconf()
+
+    -- xmake global?
+    if options._ACTION == "global" then
+
+        -- wrap the global configure for more convenient to get and set values
+        local global_wrapped = {}
+        setmetatable(global_wrapped, 
+        {
+            __index = function(tbl, key)
+                return global.get(key)
+            end,
+            __newindex = function(tbl, key, val)
+                global.set(key, val)
+            end
+        })
+
+        -- probe the global platform configure 
+        platform.probe(global_wrapped, true)
+    end
+
+    -- ok
+    return true
+end
+
 -- prepare project
 function main._prepare_project()
 
@@ -453,6 +486,11 @@ function main._prepare_project()
 
     end
 
+    -- merge the default options
+    for k, v in pairs(options._DEFAULTS) do
+        if not options[k] then options[k] = v end
+    end
+
     -- load xmake.xproj file
     return project.loadxproj(options.file)
 end
@@ -491,35 +529,6 @@ function main._done_help()
     end
 end
 
--- done global
-function main._done_global()
-
-    -- the options
-    local options = xmake._OPTIONS
-    assert(options)
-
-    -- load global configure
-    global.loadxconf()
-
-    -- wrap the global configure for more convenient to get and set values
-    local global_wrapped = {}
-    setmetatable(global_wrapped, 
-    {
-        __index = function(tbl, key)
-            return global.get(key)
-        end,
-        __newindex = function(tbl, key, val)
-            global.set(key, val)
-        end
-    })
-
-    -- probe the global platform configure 
-    platform.probe(global_wrapped, true)
-
-    -- done action    
-    return action.done("global")
-end
-
 -- done option
 function main._done_option()
 
@@ -537,9 +546,12 @@ function main._done_option()
         return action.done("lua")
     end
 
+    -- prepare global 
+    main._prepare_global()
+
     -- done global?
     if options._ACTION == "global" then
-        return main._done_global()
+        return action.done("global")
     end
 
     -- prepare project
