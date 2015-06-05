@@ -77,13 +77,6 @@ function link.flag_linkdir(linkdir)
     return "-libpath:" .. linkdir
 end
 
--- map gcc flag to the current compiler flag
-function link.flag_map(flag)
-
-    -- ok
-    return flag
-end
-
 -- the main function
 function link.main(...)
 

@@ -118,13 +118,6 @@ function clang.flag_linkdir(linkdir)
     return "-L" .. linkdir
 end
 
--- map gcc flag to the current compiler flag
-function clang.flag_map(flag)
-
-    -- ok
-    return flag
-end
-
 -- the main function
 function clang.main(...)
 

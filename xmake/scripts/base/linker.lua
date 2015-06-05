@@ -30,14 +30,40 @@ local string    = require("base/string")
 local config    = require("base/config")
 local tools     = require("tools/tools")
 
+-- map gcc flag to the given linker flag
+function linker._mapflag(module, flag)
+
+    -- check
+    assert(module.mapflags and flag)
+
+    -- attempt to map it directly
+    local flag_mapped = module.mapflags[flag]
+    if flag_mapped and type(flag_mapped) == "string" then
+        return flag_mapped
+    end
+
+    -- find and replace it using pattern
+    for k, v in pairs(module.mapflags) do
+        if flag:find(k) then
+            return flag:gsub(k, v)
+        end
+    end
+
+    -- return it directly
+    return flag
+end
+
 -- map gcc flags to the given linker flags
 function linker._mapflags(module, flags)
 
     -- check
-    assert(module and flags);
+    assert(module)
+
+    -- wrap flags first
+    flags = utils.wrap(flags)
 
     -- need not map flags? return it directly
-    if not module.mapflag then
+    if not module.mapflags then
         return flags
     end
 
@@ -45,7 +71,7 @@ function linker._mapflags(module, flags)
     local flags_mapped = {}
     for _, flag in pairs(flags) do
         -- map it
-        local flag_mapped = module.flag_map(flag)
+        local flag_mapped = linker._mapflag(module, flag)
         if flag_mapped then
             table.insert(flags_mapped, flag_mapped)
         end
@@ -75,14 +101,14 @@ function linker.make(module, target, objfiles, targetfile)
         return 
     end
 
-    -- get the common flags from the current linker 
+    -- append the common flags from the current linker 
     local flags = {}
     table.join2(flags, module[flag_name])
 
-    -- get the target flags from the current project
-    table.join2(flags, linker._mapflags(module, utils.wrap(target[flag_name])))
+    -- append the target flags from the current project
+    table.join2(flags, linker._mapflags(module, target[flag_name]))
 
-    -- get the linkdirs flags from the current project
+    -- append the linkdirs flags from the current project
     if module._make_linkdir then
         local linkdirs = utils.wrap(target.linkdirs)
         for _, linkdir in ipairs(linkdirs) do
@@ -90,7 +116,7 @@ function linker.make(module, target, objfiles, targetfile)
         end
     end
 
-    -- get the links flags from the current project
+    -- append the links flags from the current project
     if module._make_link then
         local links = utils.wrap(target.links)
         for _, link in ipairs(links) do
@@ -98,8 +124,8 @@ function linker.make(module, target, objfiles, targetfile)
         end
     end
 
-    -- get the config flags
-    table.join2(flags, linker._mapflags(module, utils.wrap(config.get(flag_name))))
+    -- append the flags from the configure
+    table.join2(flags, linker._mapflags(module, config.get(flag_name)))
 
     -- make the link command
     return module.command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())

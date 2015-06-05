@@ -46,13 +46,6 @@ function ar.command_link(objfiles, targetfile, flags)
     return string.format("%s %s %s %s", ar.name, flags, targetfile, objfiles)
 end
 
--- map gcc flag to the current linker flag
-function ar.flag_map(flag)
-
-    -- ok
-    return flag
-end
-
 -- the main function
 function ar.main(...)
 
