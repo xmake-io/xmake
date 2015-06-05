@@ -37,6 +37,15 @@ function cl.init(name)
     -- init cxxflags
     cl.cxxflags = { "-nologo" }
 
+    -- init flags map
+    cl.mapflags = 
+    {
+        ["-O0"]                     = "-Od"
+    ,   ["-O3"]                     = "-Ot"
+    ,   ["-Ofast"]                  = "-Ox"
+    ,   ["-fomit-frame-pointer"]    = "-Oy"
+    }
+
 end
 
 -- make the compiler command
@@ -58,13 +67,6 @@ function cl.flag_includedir(includedir)
 
     -- make it
     return "-I" .. includedir
-end
-
--- map gcc flag to the current compiler flag
-function cl.flag_map(flag)
-
-    -- ok
-    return flag
 end
 
 -- the main function

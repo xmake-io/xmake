@@ -31,14 +31,40 @@ local string    = require("base/string")
 local config    = require("base/config")
 local tools     = require("tools/tools")
 
+-- map gcc flag to the given compiler flag
+function compiler._mapflag(module, flag)
+
+    -- check
+    assert(module.mapflags and flag)
+
+    -- attempt to map it directly
+    local flag_mapped = module.mapflags[flag]
+    if flag_mapped and type(flag_mapped) == "string" then
+        return flag_mapped
+    end
+
+    -- find and replace it using pattern
+    for k, v in pairs(module.mapflags) do
+        if flag:find(k) then
+            return flag:gsub(k, v)
+        end
+    end
+
+    -- return it directly
+    return flag
+end
+
 -- map gcc flags to the given compiler flags
 function compiler._mapflags(module, flags)
 
     -- check
-    assert(module and flags)
+    assert(module)
+
+    -- wrap flags first
+    flags = utils.wrap(flags)
 
     -- need not map flags? return it directly
-    if not module.mapflag then
+    if not module.mapflags then
         return flags
     end
 
@@ -46,14 +72,32 @@ function compiler._mapflags(module, flags)
     local flags_mapped = {}
     for _, flag in pairs(flags) do
         -- map it
-        local flag_mapped = module.flag_map(flag)
+        local flag_mapped = compiler._mapflag(module, flag)
         if flag_mapped then
             table.insert(flags_mapped, flag_mapped)
         end
     end
 
     -- ok?
-    return flag_mapped
+    return flags_mapped
+end
+
+-- get the compiler optimize flags from name
+function compiler._flag_optimize(module, name)
+
+    -- init the flags table
+    local flags = 
+    {
+        none        = "-O0"
+    ,   fast        = "-O1"
+    ,   faster      = "-O2"
+    ,   fastest     = "-O3"
+    ,   smallest    = "-Os"
+    ,   aggressive  = "-Ofast"
+    }
+
+    -- get it
+    return compiler._mapflags(module, flags[name])
 end
 
 -- get the compiler name from the source file type
@@ -129,18 +173,21 @@ function compiler.make(module, target, srcfile, objfile)
         return 
     end
 
-    -- get the common flags from the current compiler 
+    -- append the common flags from the current compiler 
     local flags = {}
     for _, flag_name in ipairs(flag_names) do
         table.join2(flags, module[flag_name])
     end
 
-    -- get the target flags from the current project
+    -- append the target flags from the current project
     for _, flag_name in ipairs(flag_names) do
-        table.join2(flags, compiler._mapflags(module, utils.wrap(target[flag_name])))
+        table.join2(flags, compiler._mapflags(module, target[flag_name]))
     end
 
-    -- get the includedirs flags from the current project
+    -- append the optimize flags from the current project
+    table.join2(flags, compiler._flag_optimize(module, target.optimize))
+
+    -- append the includedirs flags from the current project
     if module._make_includedir then
         local includedirs = utils.wrap(target.includedirs)
         for _, includedir in ipairs(includedirs) do
@@ -148,7 +195,7 @@ function compiler.make(module, target, srcfile, objfile)
         end
     end
 
-    -- get the defines flags from the current project
+    -- append the defines flags from the current project
     if module._make_define then
         local defines = utils.wrap(target.defines)
         for _, define in ipairs(defines) do
@@ -156,9 +203,9 @@ function compiler.make(module, target, srcfile, objfile)
         end
     end
 
-    -- get the config flags
+    -- append the flags from the configure 
     for _, flag_name in ipairs(flag_names) do
-        table.join2(flags, compiler._mapflags(module, utils.wrap(config.get(flag_name))))
+        table.join2(flags, compiler._mapflags(module, config.get(flag_name)))
     end
 
     -- make the compile command
