@@ -18,12 +18,17 @@ project: console
     # the modes
     modes: debug 
     {
-        defines: DEBUG=1
+        optimize: none
     }
 
-    modes: release, profile 
+    modes: release 
     {
-        defines: DEBUG=0
+        optimize: smallest
+    }
+
+    modes: profile 
+    {
+        optimize: fastest
     }
 
     target: hello1
