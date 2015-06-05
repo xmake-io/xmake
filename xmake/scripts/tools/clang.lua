@@ -45,26 +45,30 @@ function clang.init(name)
     else flags_arch = "-arch " .. arch
     end
 
-    -- init cflags
-    clang.cflags = flags_arch
+    -- init cxflags
+    clang.cxflags = flags_arch
 
-    -- init cxxflags
-    clang.cxxflags = flags_arch
-
-    -- init mflags
-    clang.mflags = flags_arch
-
-    -- init mxxflags
-    clang.mxxflags = flags_arch
+    -- init mxflags
+    clang.mxflags = flags_arch .. " -fmessage-length=0 -pipe -fpascal-strings"
+					           .. " \"-DIBOutlet=__attribute__((iboutlet))\""
+					           .. " \"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
+					           .. " \"-DIBAction=void)__attribute__((ibaction)\"" 
 
     -- init asflags
-    clang.asflags = flags_arch
+    clang.asflags = flags_arch 
 
     -- init ldflags
     clang.ldflags = flags_arch
 
     -- init shflags
     clang.shflags = flags_arch .. " -dynamiclib"
+
+    -- suppress warning for the ccache bug
+    local ccache = config.get("ccache")
+    if ccache and ccache == "y" then
+        clang.cxflags    = clang.cxflags:append("-Qunused-arguments", " ")
+        clang.mxflags    = clang.mxflags:append("-Qunused-arguments", " ")
+    end
 
 end
 
