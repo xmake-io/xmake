@@ -36,11 +36,11 @@ windows._ARCHS     = {"x86", "x64"}
 function windows.make(configs)
 
     -- init the file formats
-    configs.formats = {}
-    configs.formats.static   = {"", ".lib"}
-    configs.formats.object   = {"", ".obj"}
-    configs.formats.shared   = {"", ".dll"}
-    configs.formats.binary   = {"", ".exe"}
+    configs.formats             = {}
+    configs.formats.static      = {"", ".lib"}
+    configs.formats.object      = {"", ".obj"}
+    configs.formats.shared      = {"", ".dll"}
+    configs.formats.binary      = {"", ".exe"}
 
     -- init the toolchains
     configs.tools       = {}

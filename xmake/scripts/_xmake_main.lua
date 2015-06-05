@@ -25,6 +25,7 @@ xmake               = xmake or {}
 xmake._ARGV         = _ARGV
 xmake._HOST         = _HOST
 xmake._ARCH         = _ARCH
+xmake._NULDEV       = _NULDEV
 xmake._VERSION      = "XMake v1.0.1"
 xmake._PROGRAM_DIR  = _PROGRAM_DIR
 xmake._PROJECT_DIR  = _PROJECT_DIR

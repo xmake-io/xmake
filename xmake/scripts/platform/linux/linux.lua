@@ -36,10 +36,11 @@ linux._ARCHS   = {"x86", "x64"}
 function linux.make(configs)
 
     -- init the file formats
-    configs.formats = {}
-    configs.formats.static = {"lib", ".a"}
-    configs.formats.object = {"",    ".o"}
-    configs.formats.shared = {"lib", ".so"}
+    configs.formats         = {}
+    configs.formats.static  = {"lib", ".a"}
+    configs.formats.object  = {"",    ".o"}
+    configs.formats.shared  = {"lib", ".so"}
+
 end
 
 -- get the option menu for action: xmake config or global

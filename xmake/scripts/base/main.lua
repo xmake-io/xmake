@@ -182,8 +182,12 @@ local menu =
         ,   {'-', "host",       "kv", xmake._HOST,  "The current host environment."                                 }
 
         ,   {}
-        ,   {'o', "buildir",    "kv", "build",      "Set the build directory"                                       }
-        ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory"                                    }
+        ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
+        ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory."                                   }
+
+        ,   {}
+        ,   {nil, "ccache",     "kv",   "auto",     "Enable or disable the c/c++ compiler cache." 
+                                                  , "    --ccache=[y|n]"                                            }
 
         ,   {}
         ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
@@ -252,16 +256,18 @@ local menu =
         -- options
     ,   options = 
         {
-            {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again."           }
+            {'c', "clean",      "k",    nil,           "Clean the cached configure and configure all again."        }
+        ,   {nil, "ccache",     "kv",   "auto",        "Enable or disable the c/c++ compiler cache." 
+                                                     , "    --ccache=[y|n]"                                         }
 
         ,   {}
             -- the options for all platforms
         ,   function () return platform.menu("global") end
 
         ,   {}
-        ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-        ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
-        ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+        ,   {'v', "verbose",    "k",    nil,          "Print lots of verbose information."                          }
+        ,   {nil, "version",    "k",    nil,          "Print the version number and exit."                          }
+        ,   {'h', "help",       "k",    nil,          "Print this help message and exit."                           }
         }
     }
 

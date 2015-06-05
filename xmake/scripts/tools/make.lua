@@ -44,9 +44,9 @@ function make.main(mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s -j4 -f %s %s VERBOSE=%s", make.name, mkfile, target or "", make._VERBOSE)
+        cmd = string.format("%s -j4 -f %s %s VERBOSE=%s 2> %s", make.name, mkfile, target or "", make._VERBOSE, xmake._NULDEV)
     else  
-        cmd = string.format("%s -j4 %s VERBOSE=%s", make.name, target or "", make._VERBOSE)
+        cmd = string.format("%s -j4 %s VERBOSE=%s 2> %s", make.name, target or "", make._VERBOSE, xmake._NULDEV)
     end
 
     -- done 

@@ -34,6 +34,7 @@ local project   = require("base/project")
 local linker    = require("base/linker")
 local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
+local platform  = require("platform/platform")
 
 -- make the object to the makefile
 function makefile._make_object(file, target, srcfile, objfile)
@@ -49,6 +50,22 @@ function makefile._make_object(file, target, srcfile, objfile)
         return false
     end
 
+    -- get mode
+    local mode = config.get("mode") or ""
+    if mode == "release" then mode = ".r"
+    elseif mode == "debug" then mode = ".d"
+    elseif mode == "profile" then mode = ".p"
+    else mode = "" end
+
+    -- get ccache
+    local ccache = platform.tool("ccache") 
+
+    -- make command
+    local cmd = compiler.make(c, target, srcfile, objfile)
+    if ccache then
+        cmd = ccache:append(cmd, " ")
+    end
+
     -- make head
     file:write(string.format("%s:", objfile))
 
@@ -56,8 +73,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
-    local cmd = compiler.make(c, target, srcfile, objfile)
-    file:write(string.format("\t@echo [%s]: compiling %s\n", config.get("mode"), srcfile))
+    file:write(string.format("\t@echo %scompiling%s %s\n", utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20")))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
@@ -130,9 +146,16 @@ function makefile._make_target(file, name, target)
     -- make dependence end
     file:write("\n")
 
+    -- get mode
+    local mode = config.get("mode") or ""
+    if mode == "release" then mode = ".r"
+    elseif mode == "debug" then mode = ".d"
+    elseif mode == "profile" then mode = ".p"
+    else mode = "" end
+
     -- make body
     local cmd = linker.make(l, target, objfiles, targetfile)
-    file:write(string.format("\t@echo [%s]: linking %s\n", config.get("mode"), path.filename(targetfile)))
+    file:write(string.format("\t@echo linking%s %s\n", mode, path.filename(targetfile)))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20")))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
     file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
