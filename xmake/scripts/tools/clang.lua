@@ -22,6 +22,7 @@
 
 -- load modules
 local utils     = require("base/utils")
+local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
 
@@ -46,28 +47,31 @@ function clang.init(name)
     end
 
     -- init cxflags
-    clang.cxflags = flags_arch
+    clang.cxflags = { flags_arch }
 
     -- init mxflags
-    clang.mxflags = flags_arch .. " -fmessage-length=0 -pipe -fpascal-strings"
-					           .. " \"-DIBOutlet=__attribute__((iboutlet))\""
-					           .. " \"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
-					           .. " \"-DIBAction=void)__attribute__((ibaction)\"" 
+    clang.mxflags = {   flags_arch
+                    ,   "-fmessage-length=0"
+                    ,   "-pipe"
+                    ,   "-fpascal-strings"
+                    ,   "\"-DIBOutlet=__attribute__((iboutlet))\""
+                    ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
+                    ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
 
     -- init asflags
-    clang.asflags = flags_arch 
+    clang.asflags = { flags_arch } 
 
     -- init ldflags
-    clang.ldflags = flags_arch
+    clang.ldflags = { flags_arch }
 
     -- init shflags
-    clang.shflags = flags_arch .. " -dynamiclib"
+    clang.shflags = { flags_arch, "-dynamiclib" }
 
     -- suppress warning for the ccache bug
     local ccache = config.get("ccache")
     if ccache and ccache == "y" then
-        clang.cxflags    = clang.cxflags:append("-Qunused-arguments", " ")
-        clang.mxflags    = clang.mxflags:append("-Qunused-arguments", " ")
+        table.join2(clang.cxflags, "-Qunused-arguments")
+        table.join2(clang.mxflags, "-Qunused-arguments")
     end
 
 end

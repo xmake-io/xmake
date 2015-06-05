@@ -42,13 +42,18 @@ function link.init(name)
     end
 
     -- init ldflags
-    link.ldflags = "-nologo -dynamicbase -nxcompat -manifest -manifestuac:\"level='asInvoker' uiAccess='false'\" " .. flags_arch
+    link.ldflags =  { "-nologo"
+                    , "-dynamicbase"
+                    , "-nxcompat"
+                    , "-manifest"
+                    , "-manifestuac:\"level='asInvoker' uiAccess='false'\""
+                    , flags_arch}
 
     -- init arflags
-    link.arflags = "-lib -nologo " .. flags_arch
+    link.arflags = {"-lib", "-nologo", flags_arch}
 
     -- init shflags
-    link.shflags = "-dll -nologo " .. flags_arch
+    link.shflags = {"-dll", "-nologo", flags_arch}
 end
 
 -- make the linker command

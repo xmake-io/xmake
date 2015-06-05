@@ -32,10 +32,10 @@ local config    = require("base/config")
 function cl.init(name)
 
     -- init cflags
-    cl.cflags = "-nologo"
+    cl.cflags = { "-nologo" }
 
     -- init cxxflags
-    cl.cxxflags = "-nologo"
+    cl.cxxflags = { "-nologo" }
 
 end
 
