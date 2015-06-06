@@ -189,6 +189,7 @@ function project.loadxproj(file)
                         ,   "ldflags" 
                         ,   "shflags" 
                         ,   "defines"
+                        ,   "warning"
                         ,   "optimize"} 
 
     -- init filter

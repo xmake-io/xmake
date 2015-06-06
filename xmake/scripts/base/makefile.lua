@@ -74,7 +74,7 @@ function makefile._make_object(file, target, srcfile, objfile)
 
     -- make body
     file:write(string.format("\t@echo %scompiling%s %s\n", utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20"):gsub("=", "%%3d"):gsub("\"", "%%22")))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
 
@@ -156,7 +156,7 @@ function makefile._make_target(file, name, target)
     -- make body
     local cmd = linker.make(l, target, objfiles, targetfile)
     file:write(string.format("\t@echo linking%s %s\n", mode, path.filename(targetfile)))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("%s", "%%20"):gsub("=", "%%3d"):gsub("\"", "%%22")))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
     file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
 
