@@ -83,37 +83,23 @@ function compiler._mapflags(module, flags)
     return flags_mapped
 end
 
--- get the compiler warning flags from name
-function compiler._flag_warning(module, name)
+-- get the compiler flags from names
+function compiler._getflags(module, names, flags)
 
-    -- init the flags table
-    local flags = 
-    {
-        none        = "-w"
-    ,   all         = "-Wall"
-    ,   error       = {"-Wall", "-Werror"}
-    }
+    -- check
+    assert(flags)
 
-    -- get it
-    return compiler._mapflags(module, flags[name])
-end
+    -- the mapped flags
+    local flags_mapped = {}
 
--- get the compiler optimize flags from name
-function compiler._flag_optimize(module, name)
-
-    -- init the flags table
-    local flags = 
-    {
-        none        = "-O0"
-    ,   fast        = "-O1"
-    ,   faster      = "-O2"
-    ,   fastest     = "-O3"
-    ,   smallest    = "-Os"
-    ,   aggressive  = "-Ofast"
-    }
+    -- wrap it first
+    names = utils.wrap(names)
+    for _, name in ipairs(names) do
+        table.join2(flags_mapped, compiler._mapflags(module, flags[name]))
+    end
 
     -- get it
-    return compiler._mapflags(module, flags[name])
+    return flags_mapped
 end
 
 -- get the compiler name from the source file type
@@ -201,10 +187,19 @@ function compiler.make(module, target, srcfile, objfile)
     end
 
     -- append the warning flags from the current project
-    table.join2(flags, compiler._flag_warning(module, target.warning))
+    table.join2(flags, compiler._getflags(module, target.warnings,  {   none        = "-w"
+                                                                    ,   all         = "-Wall"
+                                                                    ,   error       = "-Werror"
+                                                                    }))
 
     -- append the optimize flags from the current project
-    table.join2(flags, compiler._flag_optimize(module, target.optimize))
+    table.join2(flags, compiler._getflags(module, target.optimize, {    none        = "-O0"
+                                                                    ,   fast        = "-O1"
+                                                                    ,   faster      = "-O2"
+                                                                    ,   fastest     = "-O3"
+                                                                    ,   smallest    = "-Os"
+                                                                    ,   aggressive  = "-Ofast"
+                                                                    }))
 
     -- append the includedirs flags from the current project
     if module._make_includedir then
