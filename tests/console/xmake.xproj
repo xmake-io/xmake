@@ -18,20 +18,20 @@ project: console
     # the modes
     modes: debug 
     {
-        warning: all
+        warnings: all
         optimize: none
     }
 
     modes: release 
     {
         cflags: -Wno-error=deprecated-declarations
-        warning: error
+        warnings: all, error
         optimize: smallest
     }
 
     modes: profile 
     {
-        warning: none
+        warnings: none
         optimize: fastest
     }
 
