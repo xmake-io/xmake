@@ -40,10 +40,15 @@ function cl.init(name)
     -- init flags map
     cl.mapflags = 
     {
+        -- optimize
         ["-O0"]                     = "-Od"
     ,   ["-O3"]                     = "-Ot"
     ,   ["-Ofast"]                  = "-Ox"
     ,   ["-fomit-frame-pointer"]    = "-Oy"
+
+        -- warning
+    ,   ["-Werror"]                 = "-WX"
+    ,   ["%-Wno%-error=(.*)"]       = ""
     }
 
 end

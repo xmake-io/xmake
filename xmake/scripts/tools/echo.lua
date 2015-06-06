@@ -32,7 +32,7 @@ function echo.main(...)
 
     -- echo all
     for _, v in ipairs(...) do
-        io.write(string.format("%s ", v:gsub("%%20", " "):gsub("%%3d", "="):gsub("%%22", "\"")))
+        io.write(string.format("%s ", v:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end)))
     end
     io.write("\n")
 

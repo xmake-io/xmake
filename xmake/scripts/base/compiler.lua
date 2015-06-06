@@ -45,8 +45,9 @@ function compiler._mapflag(module, flag)
 
     -- find and replace it using pattern
     for k, v in pairs(module.mapflags) do
-        if flag:find(k) then
-            return flag:gsub(k, v)
+        local flag_mapped, count = flag:gsub(k, v)
+        if flag_mapped and count ~= 0 then
+            return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
         end
     end
 
@@ -80,6 +81,21 @@ function compiler._mapflags(module, flags)
 
     -- ok?
     return flags_mapped
+end
+
+-- get the compiler warning flags from name
+function compiler._flag_warning(module, name)
+
+    -- init the flags table
+    local flags = 
+    {
+        none        = "-w"
+    ,   all         = "-Wall"
+    ,   error       = {"-Wall", "-Werror"}
+    }
+
+    -- get it
+    return compiler._mapflags(module, flags[name])
 end
 
 -- get the compiler optimize flags from name
@@ -183,6 +199,9 @@ function compiler.make(module, target, srcfile, objfile)
     for _, flag_name in ipairs(flag_names) do
         table.join2(flags, compiler._mapflags(module, target[flag_name]))
     end
+
+    -- append the warning flags from the current project
+    table.join2(flags, compiler._flag_warning(module, target.warning))
 
     -- append the optimize flags from the current project
     table.join2(flags, compiler._flag_optimize(module, target.optimize))

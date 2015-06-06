@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-char const* hello3();
+char const* hello3(void);
 
 #ifdef __cplusplus
 }
