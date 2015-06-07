@@ -27,6 +27,12 @@
             "x64":      "$.compiler.default"
         }
 
+    ,   "linux" :
+        {
+            "x64":      "$.compiler.default"
+        ,   "x86":      "$.compiler.default"
+        }
+
     ,   "msvc" :
         {
             "x86":      "$.compiler.default"
