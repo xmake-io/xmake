@@ -67,6 +67,10 @@ function cl.init(name)
         -- language
     ,   ["-ansi"]                   = ""
     ,   ["-std=.*"]                 = ""
+
+        -- others
+    ,   ["-ftrapv"]                 = ""
+    ,   ["-fsanitize=address"]      = ""
     }
 
 end

@@ -63,6 +63,9 @@ function link.init(name)
     ,   ["-S"]                     = ""
     ,   ["--strip-all"]            = ""
     ,   ["--strip-debug"]          = ""
+ 
+        -- others
+    ,   ["-ftrapv"]                 = ""
     }
 
 end
