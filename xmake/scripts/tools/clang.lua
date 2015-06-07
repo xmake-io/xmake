@@ -29,6 +29,27 @@ local config    = require("base/config")
 -- define module: clang
 local clang = clang or {}
 
+-- check the given flag 
+function clang._check(flag)
+
+    -- this flag has been checked?
+    clang._CHECK = clang._CHECK or {}
+    if clang._CHECK[flag] then
+        return clang._CHECK[flag]
+    end
+
+    -- check it
+    if 0 ~= os.execute(string.format("%s %s -S -o %s -xc %s > %s 2>&1", clang.name, flag, xmake._NULDEV, xmake._NULDEV, xmake._NULDEV)) then
+        flag = ""
+    end
+
+    -- save it
+    clang._CHECK[flag] = flag
+
+    -- ok?
+    return flag
+end
+
 -- the init function
 function clang.init(name)
 
@@ -73,6 +94,14 @@ function clang.init(name)
         table.join2(clang.cxflags, "-Qunused-arguments")
         table.join2(clang.mxflags, "-Qunused-arguments")
     end
+
+    -- init flags map
+    clang.mapflags = 
+    {
+        -- others
+        ["-ftrapv"]                     = clang._check
+    ,   ["-fsanitize=address"]          = clang._check
+    }
 
 end
 

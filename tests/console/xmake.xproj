@@ -16,6 +16,7 @@ project: console
         symbols: debug
         warnings: all
         optimize: none
+        cxflags: -fsanitize=address -ftrapv
     }
 
     modes: release 
