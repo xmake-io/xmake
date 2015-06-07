@@ -189,8 +189,12 @@ function project.loadxproj(file)
                         ,   "ldflags" 
                         ,   "shflags" 
                         ,   "defines"
+                        ,   "strip"
+                        ,   "symbols"
                         ,   "warnings"
-                        ,   "optimize"} 
+                        ,   "optimize"
+                        ,   "language"
+                        ,   "vectorexts"} 
 
     -- init filter
     local filter =  function (v) 

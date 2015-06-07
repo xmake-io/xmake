@@ -54,6 +54,17 @@ function link.init(name)
 
     -- init shflags
     link.shflags = {"-dll", "-nologo", flags_arch}
+
+    -- init flags map
+    link.mapflags = 
+    {
+        -- strip
+        ["-s"]                     = ""
+    ,   ["-S"]                     = ""
+    ,   ["--strip-all"]            = ""
+    ,   ["--strip-debug"]          = ""
+    }
+
 end
 
 -- make the linker command

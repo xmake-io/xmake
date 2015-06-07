@@ -186,12 +186,17 @@ function compiler.make(module, target, srcfile, objfile)
         table.join2(flags, compiler._mapflags(module, target[flag_name]))
     end
 
+    -- append the symbols flags from the current project
+    table.join2(flags, compiler._getflags(module, target.symbols, {     debug       = "-g"
+                                                                    ,   hidden      = "-fvisibility=hidden"
+                                                                    }))
+
     -- append the warning flags from the current project
     table.join2(flags, compiler._getflags(module, target.warnings,  {   none        = "-w"
                                                                     ,   all         = "-Wall"
                                                                     ,   error       = "-Werror"
                                                                     }))
-
+ 
     -- append the optimize flags from the current project
     table.join2(flags, compiler._getflags(module, target.optimize, {    none        = "-O0"
                                                                     ,   fast        = "-O1"
@@ -200,6 +205,32 @@ function compiler.make(module, target, srcfile, objfile)
                                                                     ,   smallest    = "-Os"
                                                                     ,   aggressive  = "-Ofast"
                                                                     }))
+ 
+    -- append the vector extensions flags from the current project
+    table.join2(flags, compiler._getflags(module, target.vectorexts, {      mmx         = "-mmmx"
+                                                                        ,   sse         = "-msse"
+                                                                        ,   sse2        = "-msse2"
+                                                                        ,   sse3        = "-msse3"
+                                                                        ,   ssse3       = "-mssse3"
+                                                                        ,   avx         = "-mavx"
+                                                                        ,   avx2        = "-mavx2"
+                                                                        ,   neon        = "-mfpu=neon"
+                                                                        }))
+
+    -- append the language flags from the current project
+    table.join2(flags, compiler._getflags(module, target.language, {    ansi        = "-ansi"
+                                                                    ,   c89         = "-std=c89"
+                                                                    ,   gnu89       = "-std=gnu89"
+                                                                    ,   c99         = "-std=c99"
+                                                                    ,   gnu99       = "-std=gnu99"
+                                                                    ,   cxx98       = "-std=c++98"
+                                                                    ,   gnuxx98     = "-std=gnu++98"
+                                                                    ,   cxx11       = "-std=c++11"
+                                                                    ,   gnuxx11     = "-std=gnu++11"
+                                                                    ,   cxx14       = "-std=c++14"
+                                                                    ,   gnuxx14     = "-std=gnu++14"
+                                                                    }))
+ 
 
     -- append the includedirs flags from the current project
     if module._make_includedir then
