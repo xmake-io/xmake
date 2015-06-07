@@ -3,11 +3,6 @@
     local configs = import("configs")
     assert(configs)
 
-    -- dump configs
---    for k, v in pairs(configs) do
---        print(k, v)
---    end
-
     -- the custom script
     function add(a, b)
         return a + b
@@ -18,19 +13,24 @@ project: console
     # the modes
     modes: debug 
     {
+        symbols: debug
         warnings: all
         optimize: none
     }
 
     modes: release 
     {
+        strip: all
+        symbols: hidden
         cflags: -Wno-error=deprecated-declarations
-        warnings: all, error
+        warnings: all
         optimize: smallest
+        vectorexts: sse2, ssse3, mmx
     }
 
     modes: profile 
     {
+        symbols: debug
         warnings: none
         optimize: fastest
     }

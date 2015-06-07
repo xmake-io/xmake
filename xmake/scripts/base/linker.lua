@@ -44,8 +44,9 @@ function linker._mapflag(module, flag)
 
     -- find and replace it using pattern
     for k, v in pairs(module.mapflags) do
-        if flag:find(k) then
-            return flag:gsub(k, v)
+        local flag_mapped, count = flag:gsub(k, v)
+        if flag_mapped and count ~= 0 then
+            return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
         end
     end
 
@@ -78,6 +79,25 @@ function linker._mapflags(module, flags)
     end
 
     -- ok?
+    return flags_mapped
+end
+
+-- get the linker flags from names
+function linker._getflags(module, names, flags)
+
+    -- check
+    assert(flags)
+
+    -- the mapped flags
+    local flags_mapped = {}
+
+    -- wrap it first
+    names = utils.wrap(names)
+    for _, name in ipairs(names) do
+        table.join2(flags_mapped, linker._mapflags(module, flags[name]))
+    end
+
+    -- get it
     return flags_mapped
 end
 
@@ -126,6 +146,11 @@ function linker.make(module, target, objfiles, targetfile)
 
     -- append the flags from the configure
     table.join2(flags, linker._mapflags(module, config.get(flag_name)))
+
+    -- append the strip flags from the current project
+    table.join2(flags, linker._getflags(module, target.strip, {     debug       = "-S"
+                                                                ,   all         = "-s"
+                                                                }))
 
     -- make the link command
     return module.command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())

@@ -46,9 +46,27 @@ function cl.init(name)
     ,   ["-Ofast"]                  = "-Ox"
     ,   ["-fomit-frame-pointer"]    = "-Oy"
 
-        -- warning
+        -- symbols
+    ,   ["-g"]                      = "-Z7"
+    ,   ["-fvisibility=.*"]         = ""
+
+        -- warnings
     ,   ["-Werror"]                 = "-WX"
-    ,   ["%-Wno%-error=(.*)"]       = ""
+    ,   ["%-Wno%-error=.*"]         = ""
+
+        -- vectorexts
+    ,   ["-mmmx"]                   = "-arch:mmx"
+    ,   ["-msse"]                   = "-arch:sse"
+    ,   ["-msse2"]                  = "-arch:sse2"
+    ,   ["-msse3"]                  = "-arch:sse3"
+    ,   ["-mssse3"]                 = "-arch:ssse3"
+    ,   ["-mavx"]                   = "-arch:avx"
+    ,   ["-mavx2"]                  = "-arch:avx2"
+    ,   ["-mfpu=.*"]                = ""
+
+        -- language
+    ,   ["-ansi"]                   = ""
+    ,   ["-std=.*"]                 = ""
     }
 
 end
