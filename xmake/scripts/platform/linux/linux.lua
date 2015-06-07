@@ -41,17 +41,25 @@ function linux.make(configs)
     configs.formats.object  = {"",    ".o"}
     configs.formats.shared  = {"lib", ".so"}
 
+    -- init the toolchains
+    configs.tools           = {}
+    configs.tools.make      = "make"
+    configs.tools.ccache    = config.get("__ccache")
+    configs.tools.cc        = config.get("cc") or "gcc"
+    configs.tools.cxx       = config.get("cxx") or "g++"
+    configs.tools.mm        = config.get("mm") or configs.tools.cc
+    configs.tools.mxx       = config.get("mxx") or configs.tools.cxx
+    configs.tools.ld        = config.get("ld") or "g++"
+    configs.tools.ar        = config.get("ar") or "ar"
+    configs.tools.sh        = config.get("sh") or "g++"
+
 end
 
 -- get the option menu for action: xmake config or global
 function linux.menu(action)
 
     -- init config option menu
-    linux._MENU_CONFIG = linux._MENU_CONFIG or
-            {   {}
-            ,   {nil, "ar",         "kv", nil,          "The Library Creator"           }
-            ,   {nil, "arflags",    "kv", nil,          "The Library Creator Flags"     }
-            }
+    linux._MENU_CONFIG = linux._MENU_CONFIG or {}
 
     -- init global option menu
     linux._MENU_GLOBAL = linux._MENU_GLOBAL or {}

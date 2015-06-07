@@ -65,7 +65,7 @@ function link.init(name)
     ,   ["--strip-debug"]          = ""
  
         -- others
-    ,   ["-ftrapv"]                 = ""
+    ,   ["-ftrapv"]                = ""
     }
 
 end
