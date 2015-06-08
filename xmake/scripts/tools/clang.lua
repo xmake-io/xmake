@@ -126,6 +126,13 @@ function clang.flag_define(define)
     return "-D" .. define
 end
 
+-- make the undefine flag
+function clang.flag_undefine(undefine)
+
+    -- make it
+    return "-U" .. undefine
+end
+
 -- make the includedir flag
 function clang.flag_includedir(includedir)
 

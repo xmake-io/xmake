@@ -129,7 +129,7 @@ function linker.make(module, target, objfiles, targetfile)
     table.join2(flags, linker._mapflags(module, target[flag_name]))
 
     -- append the linkdirs flags from the current project
-    if module._make_linkdir then
+    if module.flag_linkdir then
         local linkdirs = utils.wrap(target.linkdirs)
         for _, linkdir in ipairs(linkdirs) do
             table.join2(flags, module.flag_linkdir(linkdir))
@@ -137,7 +137,7 @@ function linker.make(module, target, objfiles, targetfile)
     end
 
     -- append the links flags from the current project
-    if module._make_link then
+    if module.flag_link then
         local links = utils.wrap(target.links)
         for _, link in ipairs(links) do
             table.join2(flags, module.flag_link(link))

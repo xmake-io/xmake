@@ -60,6 +60,15 @@ function project._makeconf_for_target(target_name, target)
     file:write(string.format("#define %s_CONFIG_H\n", prefix))
     file:write("\n")
 
+    -- make the undefines
+    if target.undefines then
+        file:write("// undefines\n")
+        for _, undefine in ipairs(utils.wrap(target.undefines)) do
+            file:write(string.format("#undef %s\n", undefine))
+        end
+        file:write("\n")
+    end
+
     -- make the defines
     if target.defines then
         file:write("// defines\n")
@@ -428,6 +437,7 @@ function project.loadxproj(file)
                         ,   "ldflags" 
                         ,   "shflags" 
                         ,   "defines"
+                        ,   "undefines"
                         ,   "switches"
                         ,   "switchfiles"
                         ,   "strip"

@@ -119,6 +119,13 @@ function gcc.flag_define(define)
     return "-D" .. define
 end
 
+-- make the undefine flag
+function gcc.flag_undefine(undefine)
+
+    -- make it
+    return "-U" .. undefine
+end
+
 -- make the includedir flag
 function gcc.flag_includedir(includedir)
 
