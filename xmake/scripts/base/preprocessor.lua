@@ -39,7 +39,7 @@ function preprocessor._filter(env, value, filter)
         -- replace it for filter
         if filter then
             -- replace $(variable)
-            _v, _n = value:gsub("%$%((.*)%)", filter)
+            _v, _n = value:gsub("%$%((.*)%)", function (v) return filter(env, v) end)
         end
 
         -- replace it for script
@@ -47,13 +47,17 @@ function preprocessor._filter(env, value, filter)
             _v, _n = value:gsub("%[(.*)%]",     function (v) 
 
                                                     -- load the script
-                                                    local script = assert(loadstring(v))
+                                                    local script = assert(loadstring("return " .. v))
 
                                                     -- bind the envirnoment
                                                     setfenv(script, env)
 
                                                     -- done it
-                                                    return script()  
+                                                    local ok, result = pcall(script)
+                                                    if not ok then return end
+
+                                                    -- ok?
+                                                    return result or ""
                                                 end)
         end
 
@@ -95,8 +99,11 @@ function preprocessor._register(env, names, filter)
                 _current[name] = preprocessor._filter(env, arg[1], filter)
             else
                 -- save all arguments
-                for i, v in ipairs(arg) do
-                    _current[name][i] = preprocessor._filter(env, v, filter)
+                for _, v in ipairs(arg) do
+                    v = preprocessor._filter(env, v, filter)
+                    if v and type(v) == "string" and #v ~= 0 then
+                        table.insert(_current[name], v)
+                    end
                 end
             end
         end

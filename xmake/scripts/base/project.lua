@@ -110,6 +110,85 @@ function project._make_configs(scope, configs)
     end
 end
 
+-- make values for switches
+function project._make_for_switches(target, values)
+
+    -- check
+    assert(values)
+
+    -- wrap values first
+    values = utils.wrap(values)
+
+    -- _if x return v
+    target["_if"] = function (x, v)
+
+        if target._SWITCHES and target._SWITCHES[x] then
+            return v
+        end
+        return nil
+    end
+
+    -- _if x return a else return b
+    target["_ifelse"] = function (x, a, b)
+
+        if target._SWITCHES and target._SWITCHES[x] then
+            return a
+        end
+        return b
+    end
+
+    -- done
+    local newvals = {}
+    for _, v in ipairs(values) do
+
+        -- done script
+        v = v:gsub("%[(.*)%]",  function (w) 
+
+                                    -- load the script
+                                    local script = assert(loadstring("return " .. w))
+
+                                    -- bind the envirnoment
+                                    setfenv(script, target)
+
+                                    -- ok?
+                                    return script() or ""
+                                end)
+
+        -- insert new value
+        if v and type(v) == "string" and #v ~= 0 then
+            table.insert(newvals, v)
+        end
+    end
+
+    -- remove if and ifelse
+    target["_if"] = nil
+    target["_ifelse"] = nil
+
+    -- ok?
+    return newvals
+end
+
+-- init switches
+function project._init_switches(target)
+        
+    -- make switches
+    target._SWITCHES = target._SWITCHES or {}
+
+    -- init switches
+    if target.switches then
+        for _, switch in ipairs(target.switches) do
+            target._SWITCHES[switch] = true
+        end
+    end
+end
+
+-- exit switches
+function project._exit_switches(target)
+
+    -- remove it
+    target._SWITCHES = nil
+end
+        
 -- make the current project configure
 function project._make()
 
@@ -126,7 +205,7 @@ function project._make()
 
     -- merge and remove repeat values and unwrap it
     for _, target in pairs(project._CURRENT) do
-    
+
         -- merge the root configure to all targets
         for k, v in pairs(root) do
             if not target[k] then
@@ -134,22 +213,34 @@ function project._make()
                 target[k] = v
             elseif not k:startswith("_") and k:endswith("s") then
                 -- join root and target and update it
-                target[k] = table.join(root, target[k])
+                target[k] = table.join(v, target[k])
             end
         end
+
+        -- init switches
+        project._init_switches(target)
 
         -- remove repeat values and unwrap it
         for k, v in pairs(target) do
 
-            -- remove repeat first
-            v = utils.unique(v)
+            if k and k ~= "_SWITCHES" then
 
-            -- unwrap it if be only one
-            v = utils.unwrap(v)
+                -- make values for switches
+                v = project._make_for_switches(target, v)
 
-            -- update it
-            target[k] = v
+                -- remove repeat first
+                v = utils.unique(v)
+
+                -- unwrap it if be only one
+                v = utils.unwrap(v)
+
+                -- update it
+                target[k] = v
+            end
         end
+
+        -- exit switches 
+        project._exit_switches(target)
     end
 end
 
@@ -189,6 +280,7 @@ function project.loadxproj(file)
                         ,   "ldflags" 
                         ,   "shflags" 
                         ,   "defines"
+                        ,   "switches"
                         ,   "strip"
                         ,   "symbols"
                         ,   "warnings"
@@ -197,7 +289,7 @@ function project.loadxproj(file)
                         ,   "vectorexts"} 
 
     -- init filter
-    local filter =  function (v) 
+    local filter =  function (env, v) 
                         if v == "buildir" then
                             return config.get("buildir")
                         elseif v == "projectdir" then
