@@ -124,7 +124,7 @@ function project._makeconf_for_target(target_name, target)
     if #switches ~= 0 then
         file:write("// switches\n")
         for _, switch in ipairs(switches) do
-            file:write(string.format("#define %s\n", switch))
+            file:write(string.format("#define %s_%s\n", prefix, switch))
         end
         file:write("\n")
     end
