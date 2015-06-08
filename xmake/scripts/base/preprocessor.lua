@@ -94,9 +94,6 @@ function preprocessor._register(env, names, filter)
             if table.getn(arg) == 0 then
                 -- no argument
                 _current[name] = nil
-            elseif table.getn(arg) == 1 then
-                -- save only one argument
-                _current[name] = preprocessor._filter(env, arg[1], filter)
             else
                 -- save all arguments
                 for _, v in ipairs(arg) do
