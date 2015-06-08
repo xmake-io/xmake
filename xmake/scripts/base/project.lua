@@ -50,14 +50,14 @@ function project._makeconf_for_target(target_name, target)
     end
 
     -- the prefix
-    local prefix = target_name:upper()
+    local prefix = target_name:upper() .. "_CONFIG"
     
     -- open the file
     local file = io.open(configfile, "w")
 
     -- make the head
-    file:write(string.format("#ifndef %s_CONFIG_H\n", prefix))
-    file:write(string.format("#define %s_CONFIG_H\n", prefix))
+    file:write(string.format("#ifndef %s_H\n", prefix))
+    file:write(string.format("#define %s_H\n", prefix))
     file:write("\n")
 
     -- make version
