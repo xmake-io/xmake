@@ -55,6 +55,24 @@ function rule.filename(name, kind)
     return format[1] .. name .. format[2]
 end
 
+-- get configure file for the given target
+function rule.configfile(target)
+ 
+    -- get the target configure file 
+    local configfile = target.configfile
+    if configfile then 
+        -- translate file path
+        if not path.is_absolute(configfile) then
+            configfile = path.absolute(configfile, xmake._PROJECT_DIR)
+        else
+            configfile = path.translate(configfile)
+        end
+    end
+     
+    -- ok?
+    return configfile
+end
+
 -- get target file for the given target
 function rule.targetfile(target_name, target, buildir)
 

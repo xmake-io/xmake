@@ -61,7 +61,13 @@ function clean._remove_target(target_name, target, target_only, buildir)
 
     -- check
     assert(target_name and target)
- 
+  
+    -- remove the configure file 
+    local configfile = rule.configfile(target)
+    if configfile and not clean._remove(configfile) then
+        return false
+    end
+
     -- remove the target file 
     if not clean._remove(rule.targetfile(target_name, target, buildir)) then
         return false

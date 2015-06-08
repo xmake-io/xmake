@@ -80,6 +80,7 @@ project: console
         kind:           binary
         deps:           hello2 
         files:          src/demo/*.cpp 
+        configfile:     $(buildir)/demo_cpp.h
         linkdirs:       $(buildir)
         includedirs:    $(buildir)
         switches:       AAA_ENABLE

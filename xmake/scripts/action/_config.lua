@@ -26,10 +26,15 @@ local _config = _config or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local project   = require("base/project")
 local makefile  = require("base/makefile")
 
 -- done the given config
 function _config.done()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
 
     -- dump config
     config.dump()
@@ -38,6 +43,13 @@ function _config.done()
     if not config.savexconf() then
         -- error
         utils.error("save configure failed!")
+        return false
+    end
+
+    -- make the configure file for the given target
+    if not project.makeconf(options.target) then
+        -- error
+        utils.error("make configure failed!")
         return false
     end
 
