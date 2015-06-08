@@ -36,6 +36,8 @@ project: console
         optimize: fastest
     }
 
+    switches: bbb
+
     target: hello1
     {
         kind:           static
@@ -82,7 +84,12 @@ project: console
         files:          src/demo/*.cpp 
         linkdirs:       $(buildir)
         includedirs:    $(buildir)
+        switches:       aaa, ccc
         cxxflags:       -DHELLO1 
+                    ,   [_if("aaa", "-DAAA")]
+                    ,   [_if("bbb", "-DBBB")]
+                    ,   [_if("ccc", "-DCCC")]
+                    ,   [_ifelse("ddd", "-DDDD", "-DEEE")]
     }
 
     platforms: macosx, ios 
@@ -95,7 +102,7 @@ project: console
             links:          hello3 
             linkdirs:       $(buildir)/lib 
             includedirs:    $(buildir)/inc 
-            mflags:         -DHELLO3, -DPLAT="macosx", -DARCH='armv7, arm64', -DVERSION=[return add(1, 2)] 
+            mflags:         -DHELLO3, -DPLAT="macosx", -DARCH='armv7, arm64', -DVERSION=[add(1, 2)] 
         }
 
         target: demo_objcpp
