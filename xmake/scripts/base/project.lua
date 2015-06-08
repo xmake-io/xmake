@@ -175,6 +175,27 @@ function project._init_switches(target)
         end
     end
 
+    -- load switches from the xxxx.xswf
+    if target.switchfiles then
+        for _, switchfile in ipairs(target.switchfiles) do
+            if not path.is_absolute(switchfile) then
+                switchfile = path.absolute(switchfile, xmake._PROJECT_DIR)
+            end
+            local newenv, errors = preprocessor.loadfile(switchfile, "switches", {"defines"})
+            if newenv and newenv._CONFIGS then
+                if newenv._CONFIGS.defines then
+                    for _, switch in ipairs(newenv._CONFIGS.defines) do
+                        target._SWITCHES[switch] = true
+                    end
+                end
+            else
+                -- error
+                utils.error(errors)
+                assert(false)
+            end
+        end
+    end
+
     -- attempt to get it from the switches
     setmetatable(target, 
     {
@@ -293,6 +314,7 @@ function project.loadxproj(file)
                         ,   "shflags" 
                         ,   "defines"
                         ,   "switches"
+                        ,   "switchfiles"
                         ,   "strip"
                         ,   "symbols"
                         ,   "warnings"

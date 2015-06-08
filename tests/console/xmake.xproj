@@ -82,15 +82,16 @@ project: console
         files:          src/demo/*.cpp 
         linkdirs:       $(buildir)
         includedirs:    $(buildir)
-        switches:       aaa
-        switches:       ccc
-        switches:       fff, kkk
+        switches:       AAA_ENABLE
+        switches:       CCC_ENABLE
+        switches:       FFF_ENABLE, KKK_ENABLE
+        switchfiles:    plat/demo_cpp.xswf
         cxxflags:       -DHELLO1 
-                    ,   [_if(aaa, "-DAAA")]
-                    ,   [_if(bbb, "-DBBB")]
-                    ,   [_if(ccc, "-DCCC")]
-                    ,   [_ifelse(ddd, "-DDDD", "-DEEE")]
-                    ,   [_ifelse(kkk, "-DKKK", "-DFFF")]
+                    ,   [_if (AAA_ENABLE, "-DAAA")]
+                    ,   [_if (BBB_ENABLE, "-DBBB")]
+                    ,   [_if (CCC_ENABLE, "-DCCC")]
+                    ,   [_ifelse (DDD_ENABLE, "-DDDD", "-DEEE")]
+                    ,   [_ifelse (KKK_ENABLE, "-DKKK", "-DFFF")]
     }
 
     platforms: macosx, ios 

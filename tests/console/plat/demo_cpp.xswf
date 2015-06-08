@@ -1,0 +1,8 @@
+switches:
+{
+    defines: DDD_ENABLE
+    defines: WWW_ENABLE
+#   defines: ZZZ_ENABLE
+    defines: TTT_ENABLE, YYY_ENABLE
+    defines: XXX_ENABLE
+}
