@@ -87,6 +87,7 @@ project: console
         switches:       CCC_ENABLE
         switches:       FFF_ENABLE, KKK_ENABLE
         switchfiles:    plat/demo_cpp.xswf
+        undefines:      HELLO2
         cxxflags:       -DHELLO1 
                     ,   [_if (AAA_ENABLE, "-DAAA")]
                     ,   [_if (BBB_ENABLE, "-DBBB")]

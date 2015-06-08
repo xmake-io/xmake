@@ -89,6 +89,13 @@ function cl.flag_define(define)
     return "-D" .. define
 end
 
+-- make the undefine flag
+function cl.flag_undefine(undefine)
+
+    -- make it
+    return "-U" .. undefine
+end
+
 -- make the includedir flag
 function cl.flag_includedir(includedir)
 

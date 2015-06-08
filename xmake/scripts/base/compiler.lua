@@ -233,7 +233,7 @@ function compiler.make(module, target, srcfile, objfile)
  
 
     -- append the includedirs flags from the current project
-    if module._make_includedir then
+    if module.flag_includedir then
         local includedirs = utils.wrap(target.includedirs)
         for _, includedir in ipairs(includedirs) do
             table.join2(flags, module.flag_includedir(includedir))
@@ -241,10 +241,18 @@ function compiler.make(module, target, srcfile, objfile)
     end
 
     -- append the defines flags from the current project
-    if module._make_define then
+    if module.flag_define then
         local defines = utils.wrap(target.defines)
         for _, define in ipairs(defines) do
             table.join2(flags, module.flag_define(define))
+        end
+    end
+
+    -- append the undefines flags from the current project
+    if module.flag_undefine then
+        local undefines = utils.wrap(target.undefines)
+        for _, undefine in ipairs(undefines) do
+            table.join2(flags, module.flag_undefine(undefine))
         end
     end
 
