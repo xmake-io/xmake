@@ -24,10 +24,124 @@
 local project = project or {}
 
 -- load modules
+local path          = require("base/path")
 local utils         = require("base/utils")
 local table         = require("base/table")
 local config        = require("base/config")
 local preprocessor  = require("base/preprocessor")
+
+-- make configure for the given target_name
+function project._makeconf_for_target(target_name, target)
+
+    -- check
+    assert(target_name and target)
+ 
+    -- get the target configure file 
+    local configfile = target.configfile
+    if not configfile then 
+        return true
+    end
+
+    -- translate file path
+    if not path.is_absolute(configfile) then
+        configfile = path.absolute(configfile, xmake._PROJECT_DIR)
+    else
+        configfile = path.translate(configfile)
+    end
+
+    -- the prefix
+    local prefix = target_name:upper()
+    
+    -- open the file
+    local file = io.open(configfile, "w")
+
+    -- make the head
+    file:write(string.format("#ifndef %s_CONFIG_H\n", prefix))
+    file:write(string.format("#define %s_CONFIG_H\n", prefix))
+    file:write("\n")
+
+    -- make the defines
+    if target.defines then
+        file:write("// defines\n")
+        for _, define in ipairs(utils.wrap(target.defines)) do
+            file:write(string.format("#define %s\n", define))
+        end
+        file:write("\n")
+    end
+
+    -- load the switches
+    local switches = {}
+    if target.switches then
+        for _, switch in ipairs(utils.wrap(target.switches)) do
+            table.insert(switches, switch)
+        end
+    end
+    if target.switchfiles then
+        for _, switchfile in ipairs(utils.wrap(target.switchfiles)) do
+            if not path.is_absolute(switchfile) then
+                switchfile = path.absolute(switchfile, xmake._PROJECT_DIR)
+            end
+            local newenv, errors = preprocessor.loadfile(switchfile, "switches", {"defines"})
+            if newenv and newenv._CONFIGS then
+                if newenv._CONFIGS.defines then
+                    for _, switch in ipairs(newenv._CONFIGS.defines) do
+                        table.insert(switches, switch)
+                    end
+                end
+            else
+                -- error
+                utils.error(errors)
+                assert(false)
+            end
+        end
+    end
+
+    -- make the switches
+    if #switches ~= 0 then
+        file:write("// switches\n")
+        for _, switch in ipairs(switches) do
+            file:write(string.format("#define %s\n", switch))
+        end
+        file:write("\n")
+    end
+
+    -- make the tail
+    file:write("#endif\n")
+
+    -- exit the file
+    file:close()
+
+    -- ok
+    return true
+end
+
+-- make the configure file for the given target and dependents
+function project._makeconf_for_target_and_deps(target_name)
+
+    -- the targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- the target
+    local target = targets[target_name]
+    assert(target)
+
+    -- make configure for the target
+    if not project._makeconf_for_target(target_name, target) then
+        return false 
+    end
+     
+    -- exists the dependent targets?
+    if target.deps then
+        local deps = utils.wrap(target.deps)
+        for _, dep in ipairs(deps) do
+            if not project._makeconf_for_target_and_deps(dep) then return false end
+        end
+    end
+
+    -- ok
+    return true
+end
 
 -- make the given configure to scope
 function project._make_configs(scope, configs)
@@ -304,6 +418,7 @@ function project.loadxproj(file)
                         ,   "objectdir" 
                         ,   "linkdirs" 
                         ,   "includedirs" 
+                        ,   "configfile"
                         ,   "cflags" 
                         ,   "cxflags" 
                         ,   "cxxflags" 
@@ -384,6 +499,29 @@ function project.dump()
         utils.dump(project._CURRENT)
     end
    
+end
+
+-- make the configure file for the given target
+function project.makeconf(target_name)
+
+    -- the target name
+    if target_name and target_name ~= "all" then
+        -- make configure for the target and dependents
+        if not project._makeconf_for_target_and_deps(target_name) then return false end
+    else
+
+        -- the targets
+        local targets = project.targets()
+        assert(targets)
+
+        -- make configure for the targets
+        for target_name, target in pairs(targets) do
+            if not project._makeconf_for_target(target_name, target) then return false end
+        end
+    end
+ 
+    -- ok
+    return true
 end
 
 -- return module: project
