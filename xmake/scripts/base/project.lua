@@ -101,11 +101,13 @@ function project._make_configs(scope, configs)
 
             -- wrap it first
             local values = utils.wrap(v)
-            if table.getn(values) == 1 then
-
-                -- replace it
-                item[1] = values[1]
+            if #values > 1 then
+                utils.error("the %s cannot have multiple values in xmake.xproj!", k)
+                assert(false)
             end
+
+            -- replace it
+            item[1] = values[1]
         end
     end
 end
@@ -118,24 +120,6 @@ function project._make_for_switches(target, values)
 
     -- wrap values first
     values = utils.wrap(values)
-
-    -- _if x return v
-    target["_if"] = function (x, v)
-
-        if target._SWITCHES and target._SWITCHES[x] then
-            return v
-        end
-        return nil
-    end
-
-    -- _if x return a else return b
-    target["_ifelse"] = function (x, a, b)
-
-        if target._SWITCHES and target._SWITCHES[x] then
-            return a
-        end
-        return b
-    end
 
     -- done
     local newvals = {}
@@ -160,10 +144,6 @@ function project._make_for_switches(target, values)
         end
     end
 
-    -- remove if and ifelse
-    target["_if"] = nil
-    target["_ifelse"] = nil
-
     -- ok?
     return newvals
 end
@@ -174,12 +154,40 @@ function project._init_switches(target)
     -- make switches
     target._SWITCHES = target._SWITCHES or {}
 
+    -- _if x return v
+    target["_if"] = function (x, v)
+
+        if x and type(x) == "boolean" then return v end
+        return nil
+    end
+
+    -- _if x return a else return b
+    target["_ifelse"] = function (x, a, b)
+
+        if x and type(x) == "boolean" then return a end
+        return b
+    end
+
     -- init switches
     if target.switches then
         for _, switch in ipairs(target.switches) do
             target._SWITCHES[switch] = true
         end
     end
+
+    -- attempt to get it from the switches
+    setmetatable(target, 
+    {
+        __index = function(tbl, key)
+
+            local switches = rawget(tbl, "_SWITCHES")
+            if switches and switches[key] then
+                return switches[key]
+            end
+            return rawget(tbl, key)
+        end
+    })
+
 end
 
 -- exit switches
@@ -187,6 +195,10 @@ function project._exit_switches(target)
 
     -- remove it
     target._SWITCHES = nil
+
+    -- remove if and ifelse
+    target["_if"] = nil
+    target["_ifelse"] = nil
 end
         
 -- make the current project configure
@@ -223,7 +235,7 @@ function project._make()
         -- remove repeat values and unwrap it
         for k, v in pairs(target) do
 
-            if k and k ~= "_SWITCHES" then
+            if k and not k:startswith("_") then
 
                 -- make values for switches
                 v = project._make_for_switches(target, v)
