@@ -60,6 +60,21 @@ function project._makeconf_for_target(target_name, target)
     file:write(string.format("#define %s_CONFIG_H\n", prefix))
     file:write("\n")
 
+    -- make version
+    if target.version then
+        file:write("// version\n")
+        file:write(string.format("#define %s_VERSION \"%s\"\n", prefix, target.version))
+        local i = 1
+        local m = {"MAJOR", "MINOR", "ALTER"}
+        for v in target.version:gmatch("%d+") do
+            file:write(string.format("#define %s_VERSION_%s %s\n", prefix, m[i], v))
+            i = i + 1
+            if i > 3 then break end
+        end
+        file:write(string.format("#define %s_VERSION_BUILD %d\n", prefix, os.date("%Y%m%d%H%M", os.time())))
+        file:write("\n")
+    end
+
     -- make the undefines
     if target.undefines then
         file:write("// undefines\n")
@@ -428,6 +443,7 @@ function project.loadxproj(file)
                         ,   "linkdirs" 
                         ,   "includedirs" 
                         ,   "configfile"
+                        ,   "version"
                         ,   "cflags" 
                         ,   "cxflags" 
                         ,   "cxxflags" 
