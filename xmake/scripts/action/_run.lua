@@ -29,6 +29,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
+local platform  = require("platform/platform")
     
 -- done the given config
 function _run.done()
@@ -85,6 +86,44 @@ function _run.done()
 
     -- ok?
     return utils.ifelse(ok == 0, true, false)
+end
+
+-- the menu
+function _run.menu()
+ 
+    return {
+                -- xmake r
+                shortname = 'r'
+
+                -- usage
+            ,   usage = "xmake run|r [options] [target] [arguments]"
+
+                -- description
+            ,   description = "Run the project target."
+
+                -- options
+            ,   options = 
+                {
+                    {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
+                ,   {nil, "debugger",   "kv", "auto",       "Set the debugger path."                                        }
+
+                ,   {}
+                ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+                ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
+                                                          , "Search priority:"
+                                                          , "    1. The Given Command Argument"
+                                                          , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                          , "    3. The Current Directory"                                  }
+                ,   {}
+                ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+                ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+                ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+                
+                ,   {}
+                ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      
+                ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                          }
+                }
+            }
 end
 
 -- return module: _run

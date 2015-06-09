@@ -26,6 +26,7 @@ local _create = _create or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local platform  = require("platform/platform")
     
 -- done the given config
 function _create.done()
@@ -33,6 +34,55 @@ function _create.done()
  
     -- ok
     return true
+end
+
+-- the menu
+function _create.menu()
+
+    return {
+                -- xmake p
+                shortname = 'p'
+
+                -- usage
+            ,   usage = "xmake create|p [options] [target]"
+
+                -- description
+            ,   description = "Create a new project."
+
+                -- options
+            ,   options = 
+                {
+                    {'n', "name",       "kv", nil,          "The project name."                                             }
+                ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
+                ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
+                                                          , "Search priority:"
+                                                          , "    1. The Given Command Argument"
+                                                          , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                          , "    3. The Current Directory"                                  }
+                ,   {'l', "language",   "kv", "c",          "The project language"
+                                                          , "    - c"
+                                                          , "    - c++"
+                                                          , "    - objc"
+                                                          , "    - objc++"         
+                                                          , "    - lua"                                                     }
+                ,   {'t', "type",       "kv", "console",    "The project type"
+                                                          , "    - console"
+                                                          , "    - library_static"
+                                                          , "    - library_shared"
+                                                          , "    - application_empty"                                       
+                                                          , "    - application_singleview"                                  
+                                                          , "    - game"                                                    }
+
+                ,   {}
+                ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+                ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+                ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+         
+                ,   {}
+                ,   {nil, "target",     "v",  nil,          "Create the given target"                     
+                                                          , "Uses the project name as target if not exists."                }
+                }
+            }
 end
 
 -- return module: _create

@@ -25,9 +25,31 @@ local option = option or {}
 
 -- load modules
 local utils = require("base/utils")
+local table = require("base/table")
 
 -- save the option menu
 function option._save_menu(menu)
+
+    -- translate the action menus if exists function
+    local submenus_all = {}
+    for k, submenu in pairs(menu) do
+        if type(submenu) == "function" then
+            local _submenus = submenu()
+            if _submenus then
+                for k, m in pairs(_submenus) do
+                    submenus_all[k] = m
+                end
+            end
+        else
+            submenus_all[k] = submenu
+        end
+    end
+    table.copy2(menu, submenus_all)
+
+    -- translate the actions of the main menu if exists function
+    if menu.main and type(menu.main.actions) == "function" then
+        menu.main.actions = menu.main.actions()
+    end
 
     -- translate it if exists function in the option menu
     for _, submenu in pairs(menu) do

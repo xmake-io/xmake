@@ -26,6 +26,7 @@ local _install = _install or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local platform  = require("platform/platform")
     
 -- done the given config
 function _install.done()
@@ -33,6 +34,40 @@ function _install.done()
  
     -- ok
     return true
+end
+
+-- the menu
+function _install.menu()
+
+    return {
+                -- xmake i
+                shortname = 'i'
+
+                -- usage
+            ,   usage = "xmake install|i [options] [target]"
+
+                -- description
+            ,   description = "Package and install the project binary files."
+
+                -- options
+            ,   options = 
+                {
+                    {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
+                ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
+                                                          , "Search priority:"
+                                                          , "    1. The Given Command Argument"
+                                                          , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                          , "    3. The Current Directory"                                  }
+
+                ,   {}
+                ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+                ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+                ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+         
+                ,   {}
+                ,   {nil, "target",     "v",  "all",        "Install the given target."                                     }
+                }
+        }
 end
 
 -- return module: _install

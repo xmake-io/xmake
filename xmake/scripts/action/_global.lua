@@ -26,6 +26,7 @@ local _global = _global or {}
 -- load modules
 local utils     = require("base/utils")
 local global    = require("base/global")
+local platform  = require("platform/platform")
 
 -- done the given config
 function _global.done()
@@ -43,6 +44,38 @@ function _global.done()
     -- ok
     print("configure ok!")
     return true
+end
+
+-- the menu
+function _global.menu()
+
+    return {
+                -- xmake g
+                shortname = 'g'
+
+                -- usage
+            ,   usage = "xmake global|g [options] [target]"
+
+                -- description
+            ,   description = "Configure the global options for xmake."
+
+                -- options
+            ,   options = 
+                {
+                    {'c', "clean",      "k",    nil,           "Clean the cached configure and configure all again."        }
+                ,   {nil, "ccache",     "kv",   "auto",        "Enable or disable the c/c++ compiler cache." 
+                                                             , "    --ccache=[y|n]"                                         }
+
+                ,   {}
+                    -- the options for all platforms
+                ,   function () return platform.menu("global") end
+
+                ,   {}
+                ,   {'v', "verbose",    "k",    nil,          "Print lots of verbose information."                          }
+                ,   {nil, "version",    "k",    nil,          "Print the version number and exit."                          }
+                ,   {'h', "help",       "k",    nil,          "Print this help message and exit."                           }
+                }
+            }
 end
 
 -- return module: _global
