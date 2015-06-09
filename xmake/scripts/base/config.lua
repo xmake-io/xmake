@@ -29,102 +29,6 @@ local os            = require("base/os")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local global        = require("base/global")
-local preprocessor  = require("base/preprocessor")
-
--- save object with the level
-function config._save_with_level(file, object, level)
- 
-    -- check
-    assert(object)
-
-    -- save string
-    if type(object) == "string" then  
-        file:write(string.format("%q", object))  
-    -- save boolean
-    elseif type(object) == "boolean" then  
-        file:write(tostring(object))  
-    -- save number 
-    elseif type(object) == "number" then  
-        file:write(object)  
-    -- save table
-    elseif type(object) == "table" then  
-
-        -- save head
-        file:write(utils.ifelse(level == 0, "config:\n", "\n"))
-        for l = 1, level do
-            file:write("    ")
-        end
-        file:write("{\n")  
-
-        -- save body
-        for k, v in pairs(object) do  
-
-            -- save _TARGET
-            if type(k) == "string" and k == "_TARGET" then
-
-                for _k, _v in pairs(v) do  
-
-                    -- save spaces
-                    for l = 0, level do
-                        file:write("    ")
-                    end
-
-                    -- save key
-                    file:write("target: ", _k)  
-
-                    -- save value
-                    if not config._save_with_level(file, _v, level + 1) then 
-                        return false
-                    end
-
-                    -- save newline
-                    file:write("\n")
-                end
-
-            -- exclude _PARENT
-            elseif type(k) ~= "string" or k ~= "_PARENT" then
-
-                -- save spaces
-                for l = 0, level do
-                    file:write("    ")
-                end
-
-                -- save key
-                if type(k) == "string" then
-                    file:write(k, ": ")  
-                end
-
-                -- save value
-                if not config._save_with_level(file, v, level + 1) then 
-                    return false
-                end
-
-                -- save newline
-                file:write("\n")
-            end
-        end  
-
-        -- save tail
-        for l = 1, level do
-            file:write("    ")
-        end
-        file:write("}\n")  
-    else  
-        -- error
-        utils.error("invalid object type: %s", type(object))
-        return false
-    end  
-
-    -- ok
-    return true
-end
-
--- save object
-function config._save(file, object)
-
-    -- save it
-    return config._save_with_level(file, object, 0)
-end
 
 -- make configure for the current target
 function config._make()
@@ -174,7 +78,7 @@ end
 function config._file()
  
     -- get it
-    return config.directory() .. "/xmake.xconf"
+    return config.directory() .. "/xmake.conf"
 end
 
 -- need configure?
@@ -259,39 +163,18 @@ function config.directory()
     return dir
 end
 
--- save xmake.xconf
-function config.savexconf()
+-- save xmake.conf
+function config.save()
     
     -- the configs
     local configs = config._CONFIGS
     assert(configs)
 
-    -- open the configure file
-    local path = config._file()
-    local file = io.open(path, "w")
-    if not file then
-        -- error
-        utils.error("open %s failed!", path)
-        return false
-    end
-
-    -- save configs to file
-    if not config._save(file, configs) then
-        -- error 
-        utils.error("save %s failed!", path)
-        file:close()
-        return false
-    end
-
-    -- close file
-    file:close()
-   
-    -- ok
-    return true
+    -- save to the configure file
+    return io.save(config._file(), configs) 
 end
- 
--- load xmake.xconf
-function config.loadxconf()
+
+function config.load()
 
     -- the options
     local options = xmake._OPTIONS
@@ -301,30 +184,21 @@ function config.loadxconf()
     assert(option._MENU)
     assert(option._MENU.config)
 
-    -- get all configure names
-    local i = 1
-    local configures = {}
-    for _, o in ipairs(option._MENU.config.options) do
-        local name = o[2]
-        if config._need(name) then
-            configures[i] = name
-            i = i + 1
-        end
-    end
-
     -- does not clean the cached configure?
     if not options.clean then
 
         -- load and execute the xmake.xconf
-        local path = config._file()
-        if os.isfile(path) then
-            local newenv, errors = preprocessor.loadfile(path, "config", configures, {"target"})
+        local filepath = config._file()
+        if os.isfile(filepath) then
+        
+            -- load the configure file
+            local configs, errors = io.load(filepath)
 
             -- exists local configures?
-            if newenv then
+            if configs then
 
                 -- save configs
-                config._CONFIGS = newenv._CONFIGS
+                config._CONFIGS = configs
 
                 -- clear configs and mark as "rebuild" and "reconfig" if the host has been changed
                 local target = config._target()

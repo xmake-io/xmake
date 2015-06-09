@@ -466,7 +466,7 @@ function main._prepare_project()
     end
 
     -- load xmake.xconf file first
-    local errors = config.loadxconf()
+    local errors = config.load()
     if errors then return errors end
 
     -- xmake config or marked as "reconfig"?

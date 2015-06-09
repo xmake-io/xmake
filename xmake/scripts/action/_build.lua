@@ -64,7 +64,7 @@ function _build.done()
         config.set("__rebuild", nil)
 
         -- save the configure
-        if not config.savexconf() then
+        if not config.save() then
             -- error
             utils.error("update configure failed!")
         end
