@@ -1,4 +1,5 @@
 version("1.0.1")
+configfile("$(buildir)/demo.h")
 
 if modes("debug") then
     symbols("debug")
@@ -20,6 +21,10 @@ if modes("profile") then
     symbols("debug")
     warnings("none")
     optimize("fastest")
+end
+
+if archs("x86", "x64") then
+    defines("ARCH=\"$(arch)\"", "PLAT=$(plat)", "MODE=$(mode)", "HOST=$(host)")
 end
 
 target("hello1")
