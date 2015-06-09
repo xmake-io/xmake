@@ -31,7 +31,6 @@ local option        = require("base/option")
 local config        = require("base/config")
 local global        = require("base/global")
 local project       = require("base/project")
-local preprocessor  = require("base/preprocessor")
 local action        = require("action/action")
 local platform      = require("platform/platform")
 
@@ -498,7 +497,7 @@ function main._prepare_project()
     end
 
     -- load xmake.lua file
-    return project.loadxproj(options.file)
+    return project.load(options.file)
 end
 
 -- done help

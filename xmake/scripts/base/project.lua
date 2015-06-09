@@ -28,390 +28,224 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local table         = require("base/table")
 local config        = require("base/config")
-local preprocessor  = require("base/preprocessor")
 
--- make configure for the given target_name
-function project._makeconf_for_target(target_name, target)
+-- the current mode is belong to the given modes?
+function project._api_modes(env, ...)
 
-    -- check
-    assert(target_name and target)
- 
-    -- get the target configure file 
-    local configfile = target.configfile
-    if not configfile then 
-        return true
-    end
-
-    -- translate file path
-    if not path.is_absolute(configfile) then
-        configfile = path.absolute(configfile, xmake._PROJECT_DIR)
-    else
-        configfile = path.translate(configfile)
-    end
-
-    -- the prefix
-    local prefix = target_name:upper() .. "_CONFIG"
-    
-    -- open the file
-    local file = io.open(configfile, "w")
-
-    -- make the head
-    file:write(string.format("#ifndef %s_H\n", prefix))
-    file:write(string.format("#define %s_H\n", prefix))
-    file:write("\n")
-
-    -- make version
-    if target.version then
-        file:write("// version\n")
-        file:write(string.format("#define %s_VERSION \"%s\"\n", prefix, target.version))
-        local i = 1
-        local m = {"MAJOR", "MINOR", "ALTER"}
-        for v in target.version:gmatch("%d+") do
-            file:write(string.format("#define %s_VERSION_%s %s\n", prefix, m[i], v))
-            i = i + 1
-            if i > 3 then break end
-        end
-        file:write(string.format("#define %s_VERSION_BUILD %d\n", prefix, os.date("%Y%m%d%H%M", os.time())))
-        file:write("\n")
-    end
-
-    -- make the undefines
-    if target.undefines then
-        file:write("// undefines\n")
-        for _, undefine in ipairs(utils.wrap(target.undefines)) do
-            file:write(string.format("#undef %s\n", undefine))
-        end
-        file:write("\n")
-    end
-
-    -- make the defines
-    if target.defines then
-        file:write("// defines\n")
-        for _, define in ipairs(utils.wrap(target.defines)) do
-            file:write(string.format("#define %s\n", define))
-        end
-        file:write("\n")
-    end
-
-    -- load the switches
-    local switches = {}
-    if target.switches then
-        for _, switch in ipairs(utils.wrap(target.switches)) do
-            table.insert(switches, switch)
-        end
-    end
-    if target.switchfiles then
-        for _, switchfile in ipairs(utils.wrap(target.switchfiles)) do
-            if not path.is_absolute(switchfile) then
-                switchfile = path.absolute(switchfile, xmake._PROJECT_DIR)
-            end
-            local newenv, errors = preprocessor.loadfile(switchfile, "switches", {"defines"})
-            if newenv and newenv._CONFIGS then
-                if newenv._CONFIGS.defines then
-                    for _, switch in ipairs(newenv._CONFIGS.defines) do
-                        table.insert(switches, switch)
-                    end
-                end
-            else
-                -- error
-                utils.error(errors)
-                assert(false)
-            end
-        end
-    end
-
-    -- make the switches
-    if #switches ~= 0 then
-        file:write("// switches\n")
-        for _, switch in ipairs(switches) do
-            file:write(string.format("#define %s_%s\n", prefix, switch))
-        end
-        file:write("\n")
-    end
-
-    -- make the tail
-    file:write("#endif\n")
-
-    -- exit the file
-    file:close()
-
-    -- ok
-    return true
-end
-
--- make the configure file for the given target and dependents
-function project._makeconf_for_target_and_deps(target_name)
-
-    -- the targets
-    local targets = project.targets()
-    assert(targets)
-
-    -- the target
-    local target = targets[target_name]
-    assert(target)
-
-    -- make configure for the target
-    if not project._makeconf_for_target(target_name, target) then
-        return false 
-    end
-     
-    -- exists the dependent targets?
-    if target.deps then
-        local deps = utils.wrap(target.deps)
-        for _, dep in ipairs(deps) do
-            if not project._makeconf_for_target_and_deps(dep) then return false end
-        end
-    end
-
-    -- ok
-    return true
-end
-
--- make the given configure to scope
-function project._make_configs(scope, configs)
-
-    -- check
-    assert(configs)
-
-    -- the current mode
+    -- get the current mode
     local mode = config.get("mode")
     assert(mode)
 
-    -- the current platform
-    local plat = config.get("plat")
-    assert(plat)
-
-    -- done
-    for k, v in pairs(configs) do
-        
-        -- check
-        assert(type(k) == "string")
-
-        -- enter the target configure?
-        if k == "_TARGET" then
- 
-            -- the current 
-            local current = project._CURRENT
-
-            -- init all targets
-            for _k, _v in pairs(v) do
-
-                -- init target scope first
-                current[_k] = current[_k] or {}
-
-                -- make the target configure to this scope
-                project._make_configs(current[_k], _v)
-            end
-
-        -- enter the platform configure?
-        elseif k == "_PLATFORMS" then
-
-            -- append configure to scope for the current mode
-            for _k, _v in pairs(v) do
-                if _k == plat then
-                    project._make_configs(scope, _v)
-                end
-            end
-
-        -- enter the mode configure?
-        elseif k == "_MODES" then
-
-            -- append configure to scope for the current mode
-            for _k, _v in pairs(v) do
-                if _k == mode then
-                    project._make_configs(scope, _v)
-                end
-            end
-
-        -- append configure to scope
-        elseif scope and not k:startswith("_") and k:endswith("s") then
-
-            -- append all 
-            scope[k] = scope[k] or {}
-            table.join2(scope[k], v)
-
-        -- replace configure to scope
-        elseif scope and not k:startswith("_") then
-            
-            -- the configure item
-            scope[k] = scope[k] or {}
-            local item = scope[k]
-
-            -- wrap it first
-            local values = utils.wrap(v)
-            if #values > 1 then
-                utils.error("the %s cannot have multiple values in xmake.xproj!", k)
-                assert(false)
-            end
-
-            -- replace it
-            item[1] = values[1]
+    -- exists this mode?
+    for _, m in ipairs(utils.wrap(...)) do
+        if m and type(m) == "string" and m == mode then
+            return true
         end
     end
 end
 
--- make values for switches
-function project._make_for_switches(target, values)
+-- the current platform is belong to the given platforms?
+function project._api_platforms(env, ...)
+
+    -- get the current platform
+    local plat = config.get("plat")
+    assert(plat)
+
+    -- exists this platform?
+    for _, p in ipairs(utils.wrap(...)) do
+        if p and type(p) == "string" and p == plat then
+            return true
+        end
+    end
+end
+
+-- load all subprojects from the given directories
+function project._api_subdirs(env, ...)
+
+    -- check
+    assert(env)
+
+    -- done
+    for _, subdir in ipairs(utils.wrap(...)) do
+        if subdir and type(subdir) == "string" then
+
+            -- the project file
+            local file = subdir .. "/xmake.lua"
+            if not path.is_absolute(file) then
+                file = path.absolute(file, xmake._PROJECT_DIR)
+            end
+
+            -- load the project script
+            local script = loadfile(file)
+            if script then
+
+                -- bind environment
+                setfenv(script, env)
+
+                -- done the project script
+                local ok, errors = pcall(script)
+                if not ok then
+                    utils.error(errors)
+                    assert(false)
+                end
+            end
+        end
+    end
+end
+
+-- load all subprojects from the given files
+function project._api_subfiles(env, ...)
+
+    -- check
+    assert(env)
+
+    -- done
+    for _, subfile in ipairs(utils.wrap(...)) do
+        if subfile and type(subfile) == "string" then
+
+            -- the project file
+            if not path.is_absolute(subfile) then
+                subfile = path.absolute(subfile, xmake._PROJECT_DIR)
+            end
+
+            -- load the project script
+            local script = loadfile(subfile)
+            if script then
+
+                -- bind environment
+                setfenv(script, env)
+
+                -- done the project script
+                local ok, errors = pcall(script)
+                if not ok then
+                    utils.error(errors)
+                    assert(false)
+                end
+            end
+        end
+    end
+end
+
+-- switch to the given target 
+function project._api_target(env, name)
+
+    -- check
+    assert(env and name)
+
+    -- the configs
+    local configs = env._CONFIGS
+    assert(configs)
+
+    -- init the target scope
+    configs[name] = configs[name] or {}
+
+    -- switch to this targe scope
+    env._TARGET = configs[name]
+end
+
+-- the single configure value 
+function project._api_value(env, name, value)
+
+    -- check
+    assert(env and name and value)
+
+    -- get the current scope
+    local scope = env._TARGET or env._CONFIGS._ROOT
+    assert(scope)
+
+    -- update value
+    scope[name] = value
+end
+
+-- the multiple configure values
+function project._api_values(env, name, ...)
+
+    -- check
+    assert(env and name)
+
+    -- get the current scope
+    local scope = env._TARGET or env._CONFIGS._ROOTS
+    assert(scope)
+
+    -- append values
+    scope[name] = scope[name] or {}
+    table.join2(scope[name], ...)
+end
+
+-- filter the configure value
+function project._filter(values)
 
     -- check
     assert(values)
 
-    -- wrap values first
-    values = utils.wrap(values)
-
-    -- done
+    -- filter all
     local newvals = {}
-    for _, v in ipairs(values) do
-
-        -- done script
-        v = v:gsub("%[(.*)%]",  function (w) 
-
-                                    -- load the script
-                                    local script = assert(loadstring("return " .. w))
-
-                                    -- bind the envirnoment
-                                    setfenv(script, target)
-
-                                    -- ok?
-                                    return script() or ""
-                                end)
-
-        -- insert new value
-        if v and type(v) == "string" and #v ~= 0 then
-            table.insert(newvals, v)
-        end
+    for _, v in ipairs(utils.wrap(values)) do
+        v = v:gsub("%$%((.*)%)",    function (w) 
+                                        if w == "buildir" then
+                                            return config.get("buildir")
+                                        elseif w == "projectdir" then
+                                            return xmake._PROJECT_DIR
+                                        end 
+                                    end)
+        table.insert(newvals, v)
     end
 
     -- ok?
     return newvals
 end
-
--- init switches
-function project._init_switches(target)
-        
-    -- make switches
-    target._SWITCHES = target._SWITCHES or {}
-
-    -- _if x return v
-    target["_if"] = function (x, v)
-
-        if x and type(x) == "boolean" then return v end
-        return nil
-    end
-
-    -- _if x return a else return b
-    target["_ifelse"] = function (x, a, b)
-
-        if x and type(x) == "boolean" then return a end
-        return b
-    end
-
-    -- init switches
-    if target.switches then
-        for _, switch in ipairs(target.switches) do
-            target._SWITCHES[switch] = true
-        end
-    end
-
-    -- load switches from the xxxx.xswf
-    if target.switchfiles then
-        for _, switchfile in ipairs(target.switchfiles) do
-            if not path.is_absolute(switchfile) then
-                switchfile = path.absolute(switchfile, xmake._PROJECT_DIR)
-            end
-            local newenv, errors = preprocessor.loadfile(switchfile, "switches", {"defines"})
-            if newenv and newenv._CONFIGS then
-                if newenv._CONFIGS.defines then
-                    for _, switch in ipairs(newenv._CONFIGS.defines) do
-                        target._SWITCHES[switch] = true
-                    end
-                end
-            else
-                -- error
-                utils.error(errors)
-                assert(false)
-            end
-        end
-    end
-
-    -- attempt to get it from the switches
-    setmetatable(target, 
-    {
-        __index = function(tbl, key)
-
-            local switches = rawget(tbl, "_SWITCHES")
-            if switches and switches[key] then
-                return switches[key]
-            end
-            return rawget(tbl, key)
-        end
-    })
-
-end
-
--- exit switches
-function project._exit_switches(target)
-
-    -- remove it
-    target._SWITCHES = nil
-
-    -- remove if and ifelse
-    target["_if"] = nil
-    target["_ifelse"] = nil
-end
         
 -- make the current project configure
-function project._make()
+function project._make(configs)
 
-    -- the configs
-    local configs = project._CONFIGS
+    -- check
     assert(configs)
   
-    -- init current
+    -- init 
     project._CURRENT = project._CURRENT or {}
+    local current = project._CURRENT
 
-    -- make the current configure
-    local root = {}
-    project._make_configs(root, configs)
+    -- make all targets
+    for k, v in pairs(configs) do
+        if not k:startswith("_") then
+            current[k] = v
+        end
+    end
 
-    -- merge and remove repeat values and unwrap it
-    for _, target in pairs(project._CURRENT) do
+    -- merge the root configures to all targets
+    for _, target in pairs(current) do
 
-        -- merge the root configure to all targets
-        for k, v in pairs(root) do
+        -- merge the single root configure 
+        for k, v in pairs(configs._ROOT) do
             if not target[k] then
-                -- insert it
                 target[k] = v
-            elseif not k:startswith("_") and k:endswith("s") then
-                -- join root and target and update it
+            end
+        end
+
+        -- merge the multiple root configure 
+        for k, v in pairs(configs._ROOTS) do
+            if not target[k] then
+                target[k] = v
+            else
                 target[k] = table.join(v, target[k])
             end
         end
 
-        -- init switches
-        project._init_switches(target)
-
         -- remove repeat values and unwrap it
         for k, v in pairs(target) do
 
-            if k and not k:startswith("_") then
+            -- remove repeat first
+            v = utils.unique(v)
 
-                -- make values for switches
-                v = project._make_for_switches(target, v)
+            -- filter values
+            v = project._filter(v)
 
-                -- remove repeat first
-                v = utils.unique(v)
+            -- unwrap it if be only one
+            v = utils.unwrap(v)
 
-                -- unwrap it if be only one
-                v = utils.unwrap(v)
-
-                -- update it
-                target[k] = v
-            end
+            -- update it
+            target[k] = v
         end
-
-        -- exit switches 
-        project._exit_switches(target)
     end
 end
 
@@ -425,25 +259,55 @@ function project.targets()
     return project._CURRENT
 end
 
--- load xproj
-function project.loadxproj(file)
+-- load the project file
+function project.load(file)
 
     -- check
     assert(file)
 
-    -- init configures
-    local configures = {    "kind"
-                        ,   "deps"
-                        ,   "files"
-                        ,   "links" 
-                        ,   "headers" 
+    -- load the project script
+    local script = loadfile(file)
+    if not script then
+        return string.format("load %s failed!", file)
+    end
+
+    -- bind the new environment
+    local newenv = {_CONFIGS = {_ROOT = {}, _ROOTS = {}}}
+    setmetatable(newenv, {__index = _G})
+    setfenv(script, newenv)
+
+    -- register interfaces for the condition
+    newenv.modes        = function (...) return project._api_modes(newenv, ...) end
+    newenv.platforms    = function (...) return project._api_platforms(newenv, ...) end
+
+    -- register interfaces for the target
+    newenv.target       = function (...) return project._api_target(newenv, ...) end
+    
+    -- register interfaces for the subproject files
+    newenv.subdirs      = function (...) return project._api_subdirs(newenv, ...) end
+    newenv.subfiles     = function (...) return project._api_subfiles(newenv, ...) end
+    
+    -- register interfaces for the single value
+    local interfaces =  {   "kind"
                         ,   "headerdir" 
                         ,   "targetdir" 
                         ,   "objectdir" 
-                        ,   "linkdirs" 
-                        ,   "includedirs" 
                         ,   "configfile"
                         ,   "version"
+                        ,   "strip"
+                        ,   "optimize"
+                        ,   "language"} 
+    for _, interface in ipairs(interfaces) do
+        newenv[interface] = function (value) return project._api_value(newenv, interface, value) end
+    end
+
+    -- register interfaces for the multiple values
+    interfaces =        {   "deps"
+                        ,   "files"
+                        ,   "links" 
+                        ,   "headers" 
+                        ,   "linkdirs" 
+                        ,   "includedirs" 
                         ,   "cflags" 
                         ,   "cxflags" 
                         ,   "cxxflags" 
@@ -454,64 +318,21 @@ function project.loadxproj(file)
                         ,   "shflags" 
                         ,   "defines"
                         ,   "undefines"
-                        ,   "switches"
-                        ,   "switchfiles"
-                        ,   "strip"
                         ,   "symbols"
                         ,   "warnings"
-                        ,   "optimize"
-                        ,   "language"
                         ,   "vectorexts"} 
-
-    -- init filter
-    local filter =  function (env, v) 
-                        if v == "buildir" then
-                            return config.get("buildir")
-                        elseif v == "projectdir" then
-                            return xmake._PROJECT_DIR
-                        end
-                        return v 
-                    end
-
-    -- init import 
-    local import = function (name)
-
-        -- import configs?
-        if name == "configs" then
-
-            -- init configs
-            local configs = {}
-
-            -- get the config for the current target
-            for k, v in pairs(config._CURRENT) do
-                configs[k] = v
-            end
-
-            -- init the project directory
-            configs.projectdir = xmake._OPTIONS.project
-
-            -- import it
-            return configs
-        end
-
+    for _, interface in ipairs(interfaces) do
+        newenv[interface] = function (...) return project._api_values(newenv, interface, ...) end
     end
 
-    -- load and execute the xmake.xproj
-    local newenv, errors = preprocessor.loadfile(file, "project", configures, {"target", "platforms", "modes"}, filter, import)
-    if newenv and newenv._CONFIGS then
-        -- ok
-        project._CONFIGS = newenv._CONFIGS
-    elseif errors then
-        -- error
+    -- done the project script
+    local ok, errors = pcall(script)
+    if not ok then
         return errors
-    else
-        -- error
-        return string.format("load %s failed!", file)
     end
 
     -- make the current project configure
-    project._make()
-
+    project._make(newenv._CONFIGS)
 end
 
 -- dump the current configure
@@ -530,22 +351,6 @@ end
 -- make the configure file for the given target
 function project.makeconf(target_name)
 
-    -- the target name
-    if target_name and target_name ~= "all" then
-        -- make configure for the target and dependents
-        if not project._makeconf_for_target_and_deps(target_name) then return false end
-    else
-
-        -- the targets
-        local targets = project.targets()
-        assert(targets)
-
-        -- make configure for the targets
-        for target_name, target in pairs(targets) do
-            if not project._makeconf_for_target(target_name, target) then return false end
-        end
-    end
- 
     -- ok
     return true
 end
