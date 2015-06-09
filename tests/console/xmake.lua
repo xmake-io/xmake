@@ -1,3 +1,4 @@
+version("1.0.1")
 
 if modes("debug") then
     symbols("debug")

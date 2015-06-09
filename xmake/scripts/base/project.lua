@@ -45,7 +45,7 @@ function project._api_modes(env, ...)
 end
 
 -- the current platform is belong to the given platforms?
-function project._api_platforms(env, ...)
+function project._api_plats(env, ...)
 
     -- get the current platform
     local plat = config.get("plat")
@@ -54,6 +54,21 @@ function project._api_platforms(env, ...)
     -- exists this platform?
     for _, p in ipairs(utils.wrap(...)) do
         if p and type(p) == "string" and p == plat then
+            return true
+        end
+    end
+end
+
+-- the current platform is belong to the given architectures?
+function project._api_archs(env, ...)
+
+    -- get the current architecture
+    local arch = config.get("arch")
+    assert(arch)
+
+    -- exists this architecture?
+    for _, a in ipairs(utils.wrap(...)) do
+        if a and type(a) == "string" and a == arch then
             return true
         end
     end
@@ -194,7 +209,108 @@ function project._filter(values)
     -- ok?
     return newvals
 end
-        
+
+-- make configure for the given target_name
+function project._makeconf_for_target(target_name, target)
+
+    -- check
+    assert(target_name and target)
+ 
+    -- get the target configure file 
+    local configfile = target.configfile
+    if not configfile then 
+        return true
+    end
+
+    -- translate file path
+    if not path.is_absolute(configfile) then
+        configfile = path.absolute(configfile, xmake._PROJECT_DIR)
+    else
+        configfile = path.translate(configfile)
+    end
+
+    -- the prefix
+    local prefix = target_name:upper() .. "_CONFIG"
+    
+    -- open the file
+    local file = io.open(configfile, "w")
+
+    -- make the head
+    file:write(string.format("#ifndef %s_H\n", prefix))
+    file:write(string.format("#define %s_H\n", prefix))
+    file:write("\n")
+
+    -- make version
+    if target.version then
+        file:write("// version\n")
+        file:write(string.format("#define %s_VERSION \"%s\"\n", prefix, target.version))
+        local i = 1
+        local m = {"MAJOR", "MINOR", "ALTER"}
+        for v in target.version:gmatch("%d+") do
+            file:write(string.format("#define %s_VERSION_%s %s\n", prefix, m[i], v))
+            i = i + 1
+            if i > 3 then break end
+        end
+        file:write(string.format("#define %s_VERSION_BUILD %d\n", prefix, os.date("%Y%m%d%H%M", os.time())))
+        file:write("\n")
+    end
+
+    -- make the undefines
+    if target.undefines then
+        file:write("// undefines\n")
+        for _, undefine in ipairs(utils.wrap(target.undefines)) do
+            file:write(string.format("#undef %s\n", undefine))
+        end
+        file:write("\n")
+    end
+
+    -- make the defines
+    if target.defines then
+        file:write("// defines\n")
+        for _, define in ipairs(utils.wrap(target.defines)) do
+            file:write(string.format("#define %s\n", define))
+        end
+        file:write("\n")
+    end
+
+    -- make the tail
+    file:write("#endif\n")
+
+    -- exit the file
+    file:close()
+
+    -- ok
+    return true
+end
+
+-- make the configure file for the given target and dependents
+function project._makeconf_for_target_and_deps(target_name)
+
+    -- the targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- the target
+    local target = targets[target_name]
+    assert(target)
+
+    -- make configure for the target
+    if not project._makeconf_for_target(target_name, target) then
+        return false 
+    end
+     
+    -- exists the dependent targets?
+    if target.deps then
+        local deps = utils.wrap(target.deps)
+        for _, dep in ipairs(deps) do
+            if not project._makeconf_for_target_and_deps(dep) then return false end
+        end
+    end
+
+    -- ok
+    return true
+end
+
 -- make the current project configure
 function project._make(configs)
 
@@ -278,7 +394,8 @@ function project.load(file)
 
     -- register interfaces for the condition
     newenv.modes        = function (...) return project._api_modes(newenv, ...) end
-    newenv.platforms    = function (...) return project._api_platforms(newenv, ...) end
+    newenv.plats        = function (...) return project._api_plats(newenv, ...) end
+    newenv.archs        = function (...) return project._api_archs(newenv, ...) end
 
     -- register interfaces for the target
     newenv.target       = function (...) return project._api_target(newenv, ...) end
@@ -351,6 +468,22 @@ end
 -- make the configure file for the given target
 function project.makeconf(target_name)
 
+    -- the target name
+    if target_name and target_name ~= "all" then
+        -- make configure for the target and dependents
+        if not project._makeconf_for_target_and_deps(target_name) then return false end
+    else
+
+        -- the targets
+        local targets = project.targets()
+        assert(targets)
+
+        -- make configure for the targets
+        for target_name, target in pairs(targets) do
+            if not project._makeconf_for_target(target_name, target) then return false end
+        end
+    end
+ 
     -- ok
     return true
 end

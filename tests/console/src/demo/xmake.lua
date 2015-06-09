@@ -14,14 +14,13 @@ target("demo_cpp")
     kind("binary")
     deps("hello2") 
     files("src/demo/*.cpp")
-    version("1.0.1")
     configfile("$(buildir)/demo_cpp.h")
     linkdirs("$(buildir)")
     includedirs("$(buildir)")
     undefines("HELLO2")
     cxxflags("-DHELLO1")
 
-    if platforms("macosx", "ios") then
+    if plats("macosx", "ios") then
 
         target("demo_objc")
             kind("binary")
@@ -39,7 +38,7 @@ target("demo_cpp")
             mxflags("-DHELLO3")
             ldflags("-L$(buildir)/lib", "-lhello3", "-lhello3")
 
-            if platforms("ios") then
+            if plats("ios") then
                 ldflags("-framework Cocoa", "-framework IOKit", "-framework CoreFoundation")
             end
     end
