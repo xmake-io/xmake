@@ -68,7 +68,6 @@ function project._api_archs(env, ...)
 
     -- exists this architecture?
     for _, a in ipairs(table.join(...)) do
-    print(a, arch)
         if a and type(a) == "string" and a == arch then
             return true
         end

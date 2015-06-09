@@ -23,15 +23,67 @@
 -- define module: action
 local action = action or {}
 
+-- load modules
+local os    = require("base/os")
+local path  = require("base/path")
+
+-- load the given action
+function action._load(name)
+    
+    -- load the given action
+    return require("action/_" .. name)
+end
+
 -- done the given action
 function action.done(name)
     
     -- load the given action
-    local a = require("action/_" .. name)
+    local a = action._load(name)
     if not a then return false end
 
     -- done the given action
     return a.done()
+end
+
+-- list the all actions
+function action.list()
+    
+    -- find all action scripts
+    local list = {}
+    local files = os.match(xmake._SCRIPTS_DIR .. "/action/_*.lua")
+    if files then
+        for _, file in ipairs(files) do
+            local name = path.basename(file)
+            if name and name ~= "_build" then
+                table.insert(list, name:sub(2))
+            end
+        end
+    end
+
+    -- ok?
+    return list
+end
+
+-- get the all action menus
+function action.menu()
+
+    -- get all actions
+    local menus = {}
+    local actions = action.list()
+    for _, name in ipairs(actions) do
+        
+        -- load action
+        local a = action._load(name)
+        if a and a.menu then
+            local m = a.menu()
+            if m then
+                menus[name] = m
+            end
+        end
+    end
+
+    -- ok?
+    return menus
 end
 
 -- return module: action

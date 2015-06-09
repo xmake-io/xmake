@@ -65,5 +65,33 @@ function table.join2(self, ...)
     return self
 end
 
+-- clear the table
+function table.clear(self)
+
+    -- check
+    assert(self and type(self) == "table")
+
+    -- clear it
+    for k in next, self do
+        rawset(self, k, nil) 
+    end
+end
+
+-- copy the table to self
+function table.copy2(self, copied)
+
+    -- check
+    assert(self and copied)
+
+    -- clear self first
+    table.clear(self)
+
+    -- copy it
+    for k, v in pairs(copied) do
+        self[k] = v
+    end
+
+end
+
 -- return module: table
 return table

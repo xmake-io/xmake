@@ -30,6 +30,7 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local string    = require("base/string")
 local tools     = require("tools/tools")
+local platform  = require("platform/platform")
     
 -- done the given config
 function _lua.done()
@@ -98,6 +99,39 @@ function _lua.done()
     -- failed
     utils.error("cannot run this script: %s", options.script)
     return false
+end
+
+-- the menu
+function _lua.menu()
+
+    return {
+                -- xmake l
+                shortname = 'l'
+
+                -- usage
+            ,   usage = "xmake lua|l [options] [script] [arguments]"
+
+                -- description
+            ,   description = "Run the lua script."
+
+                -- options
+            ,   options = 
+                {
+                    {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
+
+                ,   {}
+                ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
+                ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
+                ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
+                
+                ,   {}
+                ,   {nil, "script",     "v",  nil,          "Run the given lua script."
+                                                          , "    - The script name from the xmake tool directory"
+                                                          , "    - The script file"
+                                                          , "    - The script string"                                       }      
+                ,   {nil, "arguments",  "vs", nil,          "The script arguments"                                          }
+                }
+            }
 end
 
 -- return module: _lua
