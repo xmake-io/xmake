@@ -75,9 +75,6 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
 
-// the preprocessor functions
-tb_int_t xm_preprocessor_loadx(lua_State* lua);
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -117,13 +114,6 @@ static luaL_Reg const g_string_functions[] =
 {
     { "endswith",       xm_string_endswith      }
 ,   { "startswith",     xm_string_startswith    }
-,   { tb_null,          tb_null                 }
-};
-
-// the preprocessor functions
-static luaL_Reg const g_preprocessor_functions[] = 
-{
-    { "loadx",          xm_preprocessor_loadx   }
 ,   { tb_null,          tb_null                 }
 };
 
@@ -255,9 +245,6 @@ xm_machine_ref_t xm_machine_init()
 
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
-
-        // bind preprocessor functions
-        luaL_register(impl->lua, "preprocessor", g_preprocessor_functions);
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)

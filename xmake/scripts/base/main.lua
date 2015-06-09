@@ -409,7 +409,7 @@ function main._prepare_global()
     assert(options)
 
     -- load global configure
-    global.loadxconf()
+    global.load()
 
     -- xmake global?
     if options._ACTION == "global" then
