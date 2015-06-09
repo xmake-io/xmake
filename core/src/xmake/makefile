@@ -33,8 +33,7 @@ xmake_C_FILES 			+= \
 						path/translate \
 						path/is_absolute \
 						string/endswith \
-						string/startswith \
-						preprocessor/loadx 
+						string/startswith 
 						
 
 # flags

@@ -34,7 +34,7 @@ function _global.done()
     global.dump()
 
     -- save the global configure
-    if not global.savexconf() then
+    if not global.save() then
         -- error
         utils.error("save configure failed!")
         return false

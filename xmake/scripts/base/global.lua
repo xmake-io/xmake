@@ -28,80 +28,6 @@ local io            = require("base/io")
 local os            = require("base/os")
 local utils         = require("base/utils")
 local option        = require("base/option")
-local preprocessor  = require("base/preprocessor")
-
--- save object with the level
-function global._save_with_level(file, object, level)
- 
-    -- check
-    assert(object)
-
-    -- save string
-    if type(object) == "string" then  
-        file:write(string.format("%q", object))  
-    -- save boolean
-    elseif type(object) == "boolean" then  
-        file:write(tostring(object))  
-    -- save number 
-    elseif type(object) == "number" then  
-        file:write(object)  
-    -- save table
-    elseif type(object) == "table" then  
-
-        -- save head
-        file:write(utils.ifelse(level == 0, "global:\n", "\n"))
-        for l = 1, level do
-            file:write("    ")
-        end
-        file:write("{\n")  
-
-        -- save body
-        for k, v in pairs(object) do  
-
-            -- exclude _PARENT
-            if type(k) ~= "string" or k ~= "_PARENT" then
-
-                -- save spaces
-                for l = 0, level do
-                    file:write("    ")
-                end
-
-                -- save key
-                if type(k) == "string" then
-                    file:write(k, ": ")  
-                end
-
-                -- save value
-                if not global._save_with_level(file, v, level + 1) then 
-                    return false
-                end
-
-                -- save newline
-                file:write("\n")
-            end
-        end  
-
-        -- save tail
-        for l = 1, level do
-            file:write("    ")
-        end
-        file:write("}\n")  
-    else  
-        -- error
-        utils.error("invalid object type: %s", type(object))
-        return false
-    end  
-
-    -- ok
-    return true
-end
-
--- save object
-function global._save(file, object)
-
-    -- save it
-    return global._save_with_level(file, object, 0)
-end
 
 -- make configure
 function global._make()
@@ -130,7 +56,7 @@ end
 function global._file()
     
     -- get it
-    return global.directory() .. "/xmake.xconf"
+    return global.directory() .. "/xmake.conf"
 end
 
 -- need configure?
@@ -184,39 +110,19 @@ function global.directory()
     return dir
 end
 
--- save xmake.xconf
-function global.savexconf()
+-- save xmake.conf
+function global.save()
     
     -- the configs
     local configs = global._CONFIGS
     assert(configs)
 
-    -- open the configure file
-    local path = global._file()
-    local file = io.open(path, "w")
-    if not file then
-        -- error
-        utils.error("open %s failed!", path)
-        return false
-    end
-
-    -- save configs to file
-    if not global._save(file, configs) then
-        -- error 
-        utils.error("save %s failed!", path)
-        file:close()
-        return false
-    end
-
-    -- close file
-    file:close()
-   
-    -- ok
-    return true
+    -- save to the configure file
+    return io.save(global._file(), configs) 
 end
  
--- load xmake.xconf
-function global.loadxconf()
+-- load xmake.conf
+function global.load()
 
     -- the options
     local options = xmake._OPTIONS
@@ -240,15 +146,20 @@ function global.loadxconf()
     -- does not clean the cached configure?
     if not options.clean then
 
-        -- load and execute the xmake.xconf
-        local path = global._file()
-        if os.isfile(path) then
-            local newenv, errors = preprocessor.loadfile(path, "global", configures)
-            if newenv then
-                global._CONFIGS = newenv._CONFIGS
+        -- load and execute the xmake.conf
+        local filepath = global._file()
+        if os.isfile(filepath) then
+
+            -- load the configure file
+            local configs, errors = io.load(filepath)
+
+            -- exists local configures?
+            if configs then
+                -- save configs
+                global._CONFIGS = configs
             elseif errors then
                 -- error
-                utils.error(errors);
+                utils.error(errors)
             end
         end
     end
