@@ -37,7 +37,7 @@ function project._api_modes(env, ...)
     assert(mode)
 
     -- exists this mode?
-    for _, m in ipairs(utils.wrap(...)) do
+    for _, m in ipairs(table.join(...)) do
         if m and type(m) == "string" and m == mode then
             return true
         end
@@ -52,7 +52,7 @@ function project._api_plats(env, ...)
     assert(plat)
 
     -- exists this platform?
-    for _, p in ipairs(utils.wrap(...)) do
+    for _, p in ipairs(table.join(...)) do
         if p and type(p) == "string" and p == plat then
             return true
         end
@@ -67,7 +67,8 @@ function project._api_archs(env, ...)
     assert(arch)
 
     -- exists this architecture?
-    for _, a in ipairs(utils.wrap(...)) do
+    for _, a in ipairs(table.join(...)) do
+    print(a, arch)
         if a and type(a) == "string" and a == arch then
             return true
         end
@@ -81,7 +82,7 @@ function project._api_subdirs(env, ...)
     assert(env)
 
     -- done
-    for _, subdir in ipairs(utils.wrap(...)) do
+    for _, subdir in ipairs(table.join(...)) do
         if subdir and type(subdir) == "string" then
 
             -- the project file
@@ -115,7 +116,7 @@ function project._api_subfiles(env, ...)
     assert(env)
 
     -- done
-    for _, subfile in ipairs(utils.wrap(...)) do
+    for _, subfile in ipairs(table.join(...)) do
         if subfile and type(subfile) == "string" then
 
             -- the project file
@@ -197,10 +198,9 @@ function project._filter(values)
     local newvals = {}
     for _, v in ipairs(utils.wrap(values)) do
         v = v:gsub("%$%((.*)%)",    function (w) 
-                                        if w == "buildir" then
-                                            return config.get("buildir")
-                                        elseif w == "projectdir" then
-                                            return xmake._PROJECT_DIR
+                                        local r = config.get(w)
+                                        if r and type(r) == "string" then return r 
+                                        elseif w == "projectdir" then return xmake._PROJECT_DIR
                                         end 
                                     end)
         table.insert(newvals, v)
@@ -231,11 +231,12 @@ function project._makeconf_for_target(target_name, target)
 
     -- the prefix
     local prefix = target_name:upper() .. "_CONFIG"
-    
+
     -- open the file
-    local file = io.open(configfile, "w")
+    local file = project._CONFILES[configfile] or io.open(configfile, "w")
 
     -- make the head
+    if project._CONFILES[configfile] then file:write("\n") end
     file:write(string.format("#ifndef %s_H\n", prefix))
     file:write(string.format("#define %s_H\n", prefix))
     file:write("\n")
@@ -268,7 +269,7 @@ function project._makeconf_for_target(target_name, target)
     if target.defines then
         file:write("// defines\n")
         for _, define in ipairs(utils.wrap(target.defines)) do
-            file:write(string.format("#define %s\n", define))
+            file:write(string.format("#define %s\n", define:gsub("=", " ")))
         end
         file:write("\n")
     end
@@ -276,8 +277,8 @@ function project._makeconf_for_target(target_name, target)
     -- make the tail
     file:write("#endif\n")
 
-    -- exit the file
-    file:close()
+    -- cache the file
+    project._CONFILES[configfile] = file
 
     -- ok
     return true
@@ -468,6 +469,9 @@ end
 -- make the configure file for the given target
 function project.makeconf(target_name)
 
+    -- init files
+    project._CONFILES = project._CONFILES or {}
+
     -- the target name
     if target_name and target_name ~= "all" then
         -- make configure for the target and dependents
@@ -483,6 +487,12 @@ function project.makeconf(target_name)
             if not project._makeconf_for_target(target_name, target) then return false end
         end
     end
+
+    -- exit files
+    for _, file in pairs(project._CONFILES) do
+        file:close()
+    end
+    project._CONFILES = nil
  
     -- ok
     return true
