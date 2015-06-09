@@ -88,16 +88,76 @@ function io._save_with_level(file, object, level)
     return true
 end
 
--- save object
-function io.save(file, object, prefix)
+-- save object to given file
+function io._save(file, object)
    
-    -- save prefix
-    if prefix and type(prefix) == "string" then
-        file:write(prefix)
-    end
- 
     -- save it
     return io._save_with_level(file, object, 0)
+end
+
+-- save object the the given filepath
+function io.save(filepath, object)
+    
+    -- open the file
+    local file = io.open(filepath, "w")
+    if not file then
+        -- error
+        return false, string.format("open %s failed!", filepath)
+    end
+
+    -- save object to file
+    if not io._save(file, object) then
+        -- error 
+        file:close()
+        return false, string.format("save %s failed!", filepath)
+    end
+
+    -- close file
+    file:close()
+   
+    -- ok
+    return true
+end
+ 
+-- load object from the given file
+function io.load(filepath)
+
+    -- open the file
+    local file = io.open(filepath, "r")
+    if not file then
+        -- error
+        return nil, string.format("open %s failed!", filepath)
+    end
+
+    -- load data
+    local result = nil
+    local errors = nil
+    local data = file:read("*all")
+    if data and type(data) == "string" then
+
+        -- load script
+        local script = loadstring("return " .. data)
+        if script then
+            
+            -- load object
+            local ok, object = pcall(script)
+            if ok and object then
+                result = object
+            elseif object then
+                -- error
+                errors = object
+            else
+                -- error
+                errors = string.format("load %s failed!", filepath)
+            end
+        end
+    end
+
+    -- close file
+    file:close()
+
+    -- ok?
+    return result, errors
 end
 
 -- cat the given file 

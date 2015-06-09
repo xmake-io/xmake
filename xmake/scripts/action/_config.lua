@@ -40,7 +40,7 @@ function _config.done()
     config.dump()
 
     -- save the configure
-    if not config.savexconf() then
+    if not config.save() then
         -- error
         utils.error("save configure failed!")
         return false
