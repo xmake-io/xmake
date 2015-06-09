@@ -64,7 +64,7 @@ local menu =
         ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"
@@ -98,7 +98,7 @@ local menu =
     ,   options = 
         {
             {'n', "name",       "kv", nil,          "The project name."                                             }
-        ,   {'f', "file",       "kv", "xmake.xproj","Create a given xmake.xproj file."                              }
+        ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
         ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"
@@ -223,7 +223,7 @@ local menu =
         ,   function () return platform.menu("config") end
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"
@@ -286,7 +286,7 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+            {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"
@@ -318,7 +318,7 @@ local menu =
         -- options
     ,   options = 
         {
-            {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+            {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"
@@ -353,7 +353,7 @@ local menu =
         ,   {nil, "debugger",   "kv", "auto",       "Set the debugger path."                                        }
 
         ,   {}
-        ,   {'f', "file",       "kv", "xmake.xproj","Read a given xmake.xproj file."                                }
+        ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
         ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
                                                   , "Search priority:"
                                                   , "    1. The Given Command Argument"
@@ -453,8 +453,8 @@ function main._prepare_project()
     -- save the project directory
     xmake._PROJECT_DIR = options.project
 
-    -- init the xmake.xproj file path
-    options.file = options.file or options._DEFAULTS.file or "xmake.xproj"
+    -- init the xmake.lua file path
+    options.file = options.file or options._DEFAULTS.file or "xmake.lua"
     if not path.is_absolute(options.file) then
         options.file = path.absolute(options.file, options.project)
     end
@@ -497,7 +497,7 @@ function main._prepare_project()
         if not options[k] then options[k] = v end
     end
 
-    -- load xmake.xproj file
+    -- load xmake.lua file
     return project.loadxproj(options.file)
 end
 
