@@ -117,15 +117,13 @@ function _config.menu()
                                                           , "    - debug"
                                                           , "    - release"
                                                           , "    - profile"                                                 }
-                ,   {'-', "host",       "kv", xmake._HOST,  "The current host environment."                                 }
+                ,   {nil, "host",       "kv", xmake._HOST,  "The current host environment."                                 }
+
+                    -- the options for project
+                ,   function () return project.menu() end
 
                 ,   {}
-                ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
-                ,   {'k', "packages",   "kv", "pkg",        "Set the packages directory."                                   }
-
-                ,   {}
-                ,   {nil, "ccache",     "kv",   "auto",     "Enable or disable the c/c++ compiler cache." 
-                                                          , "    --ccache=[y|n]"                                            }
+                ,   {nil, "ccache",     "kv",   "auto",     "Enable or disable the c/c++ compiler cache."                   }
 
                 ,   {}
                 ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
@@ -167,6 +165,7 @@ function _config.menu()
                                                           , "    1. The Given Command Argument"
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                           , "    3. The Current Directory"                                  }
+                ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
 
                 ,   {}

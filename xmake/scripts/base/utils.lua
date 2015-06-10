@@ -53,9 +53,6 @@ end
 -- dump object with the level
 function utils._dump_with_level(object, exclude, level)
  
-    -- check
-    assert(object)
-
     -- dump string
     if type(object) == "string" then  
         io.write(string.format("%q", object))  

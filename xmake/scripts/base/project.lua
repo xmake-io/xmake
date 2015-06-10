@@ -34,7 +34,7 @@ function project._api_modes(env, ...)
 
     -- get the current mode
     local mode = config.get("mode")
-    assert(mode)
+    if not mode then return false end
 
     -- exists this mode?
     for _, m in ipairs(table.join(...)) do
@@ -49,7 +49,7 @@ function project._api_plats(env, ...)
 
     -- get the current platform
     local plat = config.get("plat")
-    assert(plat)
+    if not plat then return false end
 
     -- exists this platform?
     for _, p in ipairs(table.join(...)) do
@@ -64,7 +64,7 @@ function project._api_archs(env, ...)
 
     -- get the current architecture
     local arch = config.get("arch")
-    assert(arch)
+    if not arch then return false end
 
     -- exists this architecture?
     for _, a in ipairs(table.join(...)) do
@@ -373,18 +373,8 @@ function project._make(configs)
     end
 end
 
--- get the current configure for targets
-function project.targets()
-
-    -- check
-    assert(project._TARGETS)
-
-    -- return it
-    return project._TARGETS
-end
-
 -- load the project file
-function project.load(file)
+function project._load(file)
 
     -- check
     assert(file)
@@ -491,8 +481,25 @@ function project.load(file)
         return errors
     end
 
-    -- make the current project configure
-    project._make(newenv._CONFIGS)
+    -- get the project configure
+    return newenv._CONFIGS
+end
+
+-- get the current configure for targets
+function project.targets()
+
+    -- check
+    assert(project._TARGETS)
+
+    -- return it
+    return project._TARGETS
+end
+
+-- load the project file
+function project.load(file)
+
+    -- load and make the project configure
+    project._make(project._load(file))
 end
 
 -- dump the current configure
@@ -538,6 +545,38 @@ function project.makeconf(target_name)
  
     -- ok
     return true
+end
+
+-- get the project menu
+function project.menu()
+
+    -- attempt to load project configure
+    local configs = nil
+    local projectfile = xmake._PROJECT_FILE
+    if projectfile and os.isfile(projectfile) then
+        configs = project._load(projectfile)
+    end
+
+    -- the options
+    local options = nil
+    if configs then options = configs._OPTIONS end
+    if not options then return {} end
+
+    -- make menu
+    local menu = {{}}
+    for name, opt in pairs(options) do
+
+        -- the default
+        local default = utils.unwrap(opt.default)
+        if default then default = "true"
+        else default = "auto" end
+
+        -- append it
+        table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+    end
+
+    -- ok?
+    return menu
 end
 
 -- return module: project

@@ -114,7 +114,7 @@ end
 function config.get(name)
 
     -- check
-    assert(config._CURRENT)
+    if not config._CURRENT then return end
 
     -- the value
     local value = config._CURRENT[name]

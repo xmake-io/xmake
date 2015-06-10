@@ -129,21 +129,6 @@ function main._prepare_project()
     local options = xmake._OPTIONS
     assert(options)
 
-    -- init the project directory
-    options.project = options.project or options._DEFAULTS.project or xmake._PROJECT_DIR
-    options.project = path.absolute(options.project)
-    assert(options.project)
-
-    -- save the project directory
-    xmake._PROJECT_DIR = options.project
-
-    -- init the xmake.lua file path
-    options.file = options.file or options._DEFAULTS.file or "xmake.lua"
-    if not path.is_absolute(options.file) then
-        options.file = path.absolute(options.file, options.project)
-    end
-    assert(options.file)
-
     -- init the build directory
     if options.buildir and path.is_absolute(options.buildir) then
         options.buildir = path.relative(options.buildir, xmake._PROJECT_DIR)
@@ -182,7 +167,7 @@ function main._prepare_project()
     end
 
     -- load xmake.lua file
-    return project.load(options.file)
+    return project.load(xmake._PROJECT_FILE)
 end
 
 -- done help
@@ -283,14 +268,34 @@ function main._done_option()
     return action.done(options._ACTION or "build")
 end
 
+-- the init function for main
+function main._init()
+
+    -- init the project directory
+    local projectdir = option.find(xmake._ARGV, "project", "P") or xmake._PROJECT_DIR
+    if projectdir and not path.is_absolute(projectdir) then
+        projectdir = path.absolute(projectdir)
+    elseif projectdir then 
+        projectdir = path.translate(projectdir)
+    end
+    xmake._PROJECT_DIR = projectdir
+    assert(projectdir)
+
+    -- init the xmake.lua file path
+    local projectfile = option.find(xmake._ARGV, "file", "f") or xmake._PROJECT_FILE
+    if projectfile and not path.is_absolute(projectfile) then
+        projectfile = path.absolute(projectfile, projectdir)
+    end
+    xmake._PROJECT_FILE = projectfile
+    assert(projectfile)
+
+end
+
 -- the main function
 function main.done()
 
-    -- init project directory first 
-    local projectdir = option.find(xmake._ARGV, "project", "P") 
-    if projectdir then
-        xmake._PROJECT_DIR = path.absolute(projectdir)
-    end
+    -- init 
+    main._init()
 
     -- init option 
     if not option.init(xmake._ARGV, menu) then 

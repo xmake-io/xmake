@@ -29,9 +29,6 @@ local utils = require("base/utils")
 -- save object with the level
 function io._save_with_level(file, object, level)
  
-    -- check
-    assert(object)
-
     -- save string
     if type(object) == "string" then  
         file:write(string.format("%q", object))  

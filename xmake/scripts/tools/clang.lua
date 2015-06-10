@@ -89,8 +89,7 @@ function clang.init(name)
     clang.shflags = { flags_arch, "-dynamiclib" }
 
     -- suppress warning for the ccache bug
-    local ccache = config.get("ccache")
-    if ccache and ccache == "y" then
+    if config.get("ccache") then
         table.join2(clang.cxflags, "-Qunused-arguments")
         table.join2(clang.mxflags, "-Qunused-arguments")
     end
