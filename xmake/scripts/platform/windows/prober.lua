@@ -32,26 +32,26 @@ local global    = require("base/global")
 local prober = prober or {}
 
 -- probe the architecture
-function prober._probe_arch()
+function prober._probe_arch(configs)
 
     -- get the architecture
-    local arch = config.get("arch")
+    local arch = configs.get("arch")
 
     -- ok? 
     if arch then return true end
 
     -- init the default architecture
-    config.set("arch", xmake._ARCH)
+    configs.set("arch", xmake._ARCH)
 
     -- ok
     return true
 end
 
 -- probe the vs version
-function prober._probe_vs_version()
+function prober._probe_vs_version(configs)
 
     -- get the vs version
-    local vs = config.get("vs")
+    local vs = configs.get("vs")
 
     -- ok? 
     if vs then return true end
@@ -86,7 +86,7 @@ function prober._probe_vs_version()
 
     -- probe ok? update it
     if vs then
-        config.set("vs", vs)
+        configs.set("vs", vs)
     else
         -- failed
         utils.error("The Microsoft Visual Studio is unknown now, please config it first!")
@@ -100,13 +100,13 @@ function prober._probe_vs_version()
 end
 
 -- probe the vs path
-function prober._probe_vs_path()
+function prober._probe_vs_path(configs)
 
     -- ok?
-    if config.get("__vsenv_path") then return true end
+    if configs.get("__vsenv_path") then return true end
 
     -- get the vs version
-    local vs = config.get("vs")
+    local vs = configs.get("vs")
     assert(vs)
 
     -- make the map table
@@ -180,7 +180,7 @@ function prober._probe_vs_path()
 
     -- save the variables
     for k, v in pairs(variables) do
-        config.set("__vsenv_" .. k, v)
+        configs.set("__vsenv_" .. k, v)
     end
 
     -- ok
@@ -190,26 +190,36 @@ end
 -- probe the project configure 
 function prober.config()
 
-    -- probe the architecture
-    if not prober._probe_arch() then return end
+    -- call all probe functions
+    utils.call(     prober   
+                ,   {   "_probe_arch"
+                    ,   "_probe_vs_version"
+                    ,   "_probe_vs_path"}
+                
+                ,   function (name, result)
+                        -- trace
+                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
+                        return result 
+                    end
 
-    -- probe the vs version
-    if not prober._probe_vs_version() then return end
-
-    -- probe the vs path
-    if not prober._probe_vs_path() then return end
-
+                ,   config)
 end
 
 -- probe the global configure 
 function prober.global()
 
-    -- probe the vs version
-    if not prober._probe_vs_version() then return end
+    -- call all probe functions
+    utils.call(     prober   
+                ,   {   "_probe_vs_version"
+                    ,   "_probe_vs_path"}
+                
+                ,   function (name, result)
+                        -- trace
+                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
+                        return result 
+                    end
 
-    -- probe the vs path
-    if not prober._probe_vs_path() then return end
-
+                ,   global)
 end
 
 -- return module: prober

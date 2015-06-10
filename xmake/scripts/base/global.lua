@@ -238,7 +238,7 @@ function global.dump()
     assert(global._CURRENT)
 
     -- dump
-    utils.dump(global._CURRENT, "__%w*")
+    utils.dump(global._CURRENT, "__%w*", "configure")
    
 end
 

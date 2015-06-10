@@ -31,15 +31,15 @@ local platform  = require("platform/platform")
 -- done the given config
 function _global.done()
 
-    -- dump global
-    global.dump()
-
     -- save the global configure
     if not global.save() then
         -- error
         utils.error("save configure failed!")
         return false
     end
+
+    -- dump global
+    global.dump()
 
     -- ok
     print("configure ok!")

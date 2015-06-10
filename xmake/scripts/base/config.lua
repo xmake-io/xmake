@@ -342,7 +342,7 @@ function config.dump()
     assert(config._CURRENT)
 
     -- dump
-    utils.dump(config._CURRENT, "__%w*")
+    utils.dump(config._CURRENT, "__%w*", "configure")
    
 end
 
