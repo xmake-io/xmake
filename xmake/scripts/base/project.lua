@@ -321,8 +321,8 @@ function project._makeconf_for_target_and_deps(target_name)
     return true
 end
 
--- make the project configure
-function project._make(configs)
+-- make targets from the project file
+function project._make_targets(configs)
 
     -- check
     assert(configs)
@@ -371,6 +371,18 @@ function project._make(configs)
             target[k] = v
         end
     end
+end
+
+-- make options from the project file
+function project._make_options(configs)
+
+    -- check
+    assert(configs)
+  
+    -- init 
+    project._OPTIONS = project._OPTIONS or {}
+    local options = project._OPTIONS
+
 end
 
 -- only load options from the the project file
@@ -534,18 +546,30 @@ function project.targets()
     return project._TARGETS
 end
 
--- load the project file
-function project.load(file)
+-- probe the project 
+function project.probe()
 
-    -- load the targets from the the project configure
-    local configs, errors = project._load_targets(file)
+    -- load the options from the the project file
+    local configs, errors = project._load_options(xmake._PROJECT_FILE)
     if not configs then
-        utils.error(errors)
-        return 
+        return errors
     end
 
-    -- load and make targets from the the project configure
-    project._make(configs)
+    -- make the options from the the project file
+    project._make_options(configs)
+end
+
+-- load the project 
+function project.load()
+
+    -- load the targets from the the project file
+    local configs, errors = project._load_targets(xmake._PROJECT_FILE)
+    if not configs then
+        return errors
+    end
+
+    -- make the targets from the the project file
+    project._make_targets(configs)
 end
 
 -- dump the current configure

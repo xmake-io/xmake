@@ -118,7 +118,7 @@ function config.get(name)
 
     -- the value
     local value = config._CURRENT[name]
-    if value and value == "auto" then
+    if type(value) == "string" and value == "auto" then
         value = nil
     end
 
@@ -131,11 +131,6 @@ function config.set(name, value)
 
     -- check
     assert(config._CURRENT and name)
-
-    -- invalid value
-    if value and type(value) == "table" then
-        assert(false)
-    end
 
     -- get the current target
     local target = config._target()
@@ -322,7 +317,7 @@ function config.clearup()
     local current = config._CURRENT
     if current then
         for k, v in pairs(current) do
-            if v and type(v) and v == "auto" then
+            if type(v) == "string" and v == "auto" then
                 current[k] = nil
             end
         end
@@ -332,7 +327,7 @@ function config.clearup()
     local target = config._target()
     if target then
         for k, v in pairs(target) do
-            if v and type(v) and v == "auto" then
+            if type(v) == "string" and v == "auto" then
                 target[k] = nil
             end
         end
