@@ -221,6 +221,13 @@ function option.init(argv, menu)
                 return false
             end
 
+            -- value is "true" or "false", translate it
+            if type(value) == "string" then
+                if value == "true" then value = true
+                elseif value == "false" then value = false
+                end
+            end
+
             -- save option
             xmake._OPTIONS[utils.ifelse(prefix == 1 and opt[2], opt[2], key)] = value
 
@@ -626,15 +633,15 @@ function option.print_options(options)
         end
 
         -- append the option description
-        local description = option[5];
+        local description = option[5]
         if description then
             option_info = option_info .. description
         end
 
         -- append the default value
-        local default = option[4];
+        local default = option[4]
         if default then
-            option_info = option_info .. " (default: " .. default .. ")"
+            option_info = option_info .. " (default: " .. tostring(default) .. ")"
         end
 
         -- print option info

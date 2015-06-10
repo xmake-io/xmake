@@ -304,7 +304,7 @@ function config.load()
             if config._need(k) then
 
                 -- save the default option to the target
-                if not target[k] then
+                if nil == target[k] then
                     target[k] = v
                 end
             end

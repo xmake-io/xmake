@@ -53,7 +53,7 @@ function prober._probe_ccache(configs)
     if configs.ccache and configs.__ccache then return true end
 
     -- disable?
-    if not configs.ccache then
+    if type(configs.ccache) == "boolean" and not configs.ccache then
         configs.__ccache = nil
         return true
     end
