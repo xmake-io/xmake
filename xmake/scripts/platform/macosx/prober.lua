@@ -26,31 +26,33 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local tools     = require("tools/tools")
+local config    = require("base/config")
+local global    = require("base/global")
 
 -- define module: prober
 local prober = prober or {}
 
 -- probe the architecture
-function prober._probe_arch(configs)
+function prober._probe_arch()
 
     -- get the architecture
-    local arch = configs.arch
+    local arch = config.get("arch")
 
     -- ok? 
     if arch then return true end
 
     -- init the default architecture
-    configs.arch = xmake._ARCH
+    config.set("arch", xmake._ARCH)
 
     -- ok
     return true
 end
 
 -- probe the xcode application directory
-function prober._probe_xcode(configs)
+function prober._probe_xcode()
 
     -- get the xcode directory
-    local xcode_dir = configs.xcode_dir
+    local xcode_dir = config.get("xcode_dir")
 
     -- ok? 
     if xcode_dir then return true end
@@ -75,7 +77,7 @@ function prober._probe_xcode(configs)
 
     -- probe ok? update it
     if xcode_dir then
-        configs.xcode_dir = xcode_dir
+        config.set("xcode_dir", xcode_dir)
     else
         -- failed
         utils.error("The Xcode directory is unknown now, please config it first!")
@@ -89,10 +91,10 @@ function prober._probe_xcode(configs)
 end
 
 -- probe the xcode sdk version
-function prober._probe_xcode_sdkver(configs)
+function prober._probe_xcode_sdkver()
 
     -- get the xcode sdk version
-    local xcode_sdkver = configs.xcode_sdkver
+    local xcode_sdkver = config.get("xcode_sdkver")
 
     -- ok? 
     if xcode_sdkver then return true end
@@ -102,7 +104,7 @@ function prober._probe_xcode_sdkver(configs)
 
     -- attempt to match the directory
     if not xcode_sdkver then
-        local dirs = os.match(configs.xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk", true)
+        local dirs = os.match(config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk", true)
         if dirs then
             for _, dir in ipairs(dirs) do
                 xcode_sdkver = string.match(dir, "%d+%.%d+")
@@ -113,7 +115,7 @@ function prober._probe_xcode_sdkver(configs)
 
     -- probe ok? update it
     if xcode_sdkver then
-        configs.xcode_sdkver = xcode_sdkver
+        config.set("xcode_sdkver", xcode_sdkver)
     else
         -- failed
         utils.error("The Xcode SDK version is unknown now, please config it first!")
@@ -127,14 +129,15 @@ function prober._probe_xcode_sdkver(configs)
 end
 
 -- probe the ccache
-function prober._probe_ccache(configs)
+function prober._probe_ccache()
 
     -- ok? 
-    if configs.ccache and configs.__ccache then return true end
+    local ccache_enable = config.get("ccache")
+    if ccache_enable and config.get("__ccache") then return true end
 
     -- disable?
-    if type(configs.ccache) == "boolean" and not configs.ccache then
-        configs.__ccache = nil
+    if type(ccache_enable) == "boolean" and not ccache_enable then
+        config.set("__ccache", nil)
         return true
     end
 
@@ -143,10 +146,10 @@ function prober._probe_ccache(configs)
 
     -- probe ok? update it
     if ccache_path then
-        configs.ccache = true
-        configs.__ccache = ccache_path
+        config.set("ccache", true)
+        config.set("__ccache", ccache_path)
     else
-        configs.ccache = false
+        config.set("ccache", false)
     end
 
     -- ok
@@ -154,30 +157,30 @@ function prober._probe_ccache(configs)
 end
 
 -- probe the project configure 
-function prober.config(configs)
+function prober.config()
 
     -- probe the architecture
-    if not prober._probe_arch(configs) then return end
+    if not prober._probe_arch() then return end
 
     -- probe the xcode application directory
-    if not prober._probe_xcode(configs) then return end
+    if not prober._probe_xcode() then return end
 
     -- probe the xcode sdk version
-    if not prober._probe_xcode_sdkver(configs) then return end
+    if not prober._probe_xcode_sdkver() then return end
 
     -- probe the ccache
-    if not prober._probe_ccache(configs) then return end
+    if not prober._probe_ccache() then return end
 
 end
 
 -- probe the global configure 
-function prober.global(configs)
+function prober.global()
 
     -- probe the xcode application directory
-    if not prober._probe_xcode(configs) then return end
+    if not prober._probe_xcode() then return end
 
     -- probe the ccache
-    if not prober._probe_ccache(configs) then return end
+    if not prober._probe_ccache() then return end
 
 end
 

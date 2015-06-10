@@ -25,31 +25,33 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local config    = require("base/config")
+local global    = require("base/global")
 
 -- define module: prober
 local prober = prober or {}
 
 -- probe the architecture
-function prober._probe_arch(configs)
+function prober._probe_arch()
 
     -- get the architecture
-    local arch = configs.arch
+    local arch = config.get("arch")
 
     -- ok? 
     if arch then return true end
 
     -- init the default architecture
-    configs.arch = xmake._ARCH
+    config.set("arch", xmake._ARCH)
 
     -- ok
     return true
 end
 
 -- probe the vs version
-function prober._probe_vs_version(configs)
+function prober._probe_vs_version()
 
     -- get the vs version
-    local vs = configs.vs
+    local vs = config.get("vs")
 
     -- ok? 
     if vs then return true end
@@ -84,7 +86,7 @@ function prober._probe_vs_version(configs)
 
     -- probe ok? update it
     if vs then
-        configs.vs = vs
+        config.set("vs", vs)
     else
         -- failed
         utils.error("The Microsoft Visual Studio is unknown now, please config it first!")
@@ -98,13 +100,13 @@ function prober._probe_vs_version(configs)
 end
 
 -- probe the vs path
-function prober._probe_vs_path(configs)
+function prober._probe_vs_path()
 
     -- ok?
-    if configs.__vsenv_path then return true end
+    if config.get("__vsenv_path") then return true end
 
     -- get the vs version
-    local vs = configs.vs
+    local vs = config.get("vs")
     assert(vs)
 
     -- make the map table
@@ -178,7 +180,7 @@ function prober._probe_vs_path(configs)
 
     -- save the variables
     for k, v in pairs(variables) do
-        configs["__vsenv_" .. k] = v
+        config.set("__vsenv_" .. k, v)
     end
 
     -- ok
@@ -186,27 +188,27 @@ function prober._probe_vs_path(configs)
 end
 
 -- probe the project configure 
-function prober.config(configs)
+function prober.config()
 
     -- probe the architecture
-    if not prober._probe_arch(configs) then return end
+    if not prober._probe_arch() then return end
 
     -- probe the vs version
-    if not prober._probe_vs_version(configs) then return end
+    if not prober._probe_vs_version() then return end
 
     -- probe the vs path
-    if not prober._probe_vs_path(configs) then return end
+    if not prober._probe_vs_path() then return end
 
 end
 
 -- probe the global configure 
-function prober.global(configs)
+function prober.global()
 
     -- probe the vs version
-    if not prober._probe_vs_version(configs) then return end
+    if not prober._probe_vs_version() then return end
 
     -- probe the vs path
-    if not prober._probe_vs_path(configs) then return end
+    if not prober._probe_vs_path() then return end
 
 end
 
