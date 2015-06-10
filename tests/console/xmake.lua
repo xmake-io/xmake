@@ -1,46 +1,46 @@
-version("1.0.1")
-configfile("$(buildir)/demo.h")
+set_version("1.0.1")
+set_configfile("$(buildir)/demo.h")
 
 if modes("debug") then
-    symbols("debug")
-    warnings("all")
-    optimize("none")
-    cxflags("-fsanitize=address", "-ftrapv")
+    set_symbols("debug")
+    set_warnings("all")
+    set_optimize("none")
+    add_cxflags("-fsanitize=address", "-ftrapv")
 end
 
 if modes("release") then
-    strip("all")
-    symbols("hidden")
-    cflags("-Wno-error=deprecated-declarations")
-    warnings("all")
-    optimize("smallest")
-    vectorexts("sse2", "ssse3", "mmx")
+    set_strip("all")
+    set_symbols("hidden")
+    add_cflags("-Wno-error=deprecated-declarations")
+    set_warnings("all")
+    set_optimize("smallest")
+    add_vectorexts("sse2", "ssse3", "mmx")
 end
 
 if modes("profile") then
-    symbols("debug")
-    warnings("none")
-    optimize("fastest")
+    set_symbols("debug")
+    set_warnings("none")
+    set_optimize("fastest")
 end
 
 if archs("x86", "x64") then
-    defines("ARCH=\"$(arch)\"", "PLAT=$(plat)", "MODE=$(mode)", "HOST=$(host)")
+    add_defines("ARCH=\"$(arch)\"", "PLAT=$(plat)", "MODE=$(mode)", "HOST=$(host)")
 end
 
-target("hello1")
-    kind("static")
-    files("src/hello1/*.c")
+add_target("hello1")
+    set_kind("static")
+    add_files("src/hello1/*.c")
 
-target("hello2")
-    kind("shared")
-    files("$(projectdir)/src/hello2/*.c")
+add_target("hello2")
+    set_kind("shared")
+    add_files("$(projectdir)/src/hello2/*.c")
 
-target("hello3")
-    kind("static")
-    files("src/hello3/*.c") 
-    headers("src/hello3/*.h")
-    headerdir("$(buildir)/inc")
-    targetdir("$(buildir)/lib")
-    objectdir("$(buildir)/obj")
+add_target("hello3")
+    set_kind("static")
+    add_files("src/hello3/*.c") 
+    add_headers("src/hello3/*.h")
+    set_headerdir("$(buildir)/inc")
+    set_targetdir("$(buildir)/lib")
+    set_objectdir("$(buildir)/obj")
 
-subdirs("src/demo")
+add_subdirs("src/demo")
