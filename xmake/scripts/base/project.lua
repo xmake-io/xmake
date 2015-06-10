@@ -341,14 +341,14 @@ function project._make(configs)
 
         -- merge the setted configures
         for k, v in pairs(configs._SET) do
-            if not target[k] then
+            if nil == target[k] then
                 target[k] = v
             end
         end
 
         -- merge the added configures 
         for k, v in pairs(configs._ADD) do
-            if not target[k] then
+            if nil == target[k] then
                 target[k] = v
             else
                 target[k] = table.join(v, target[k])
@@ -568,8 +568,7 @@ function project.menu()
 
         -- the default
         local default = utils.unwrap(opt.default)
-        if default then default = "true"
-        else default = "auto" end
+        if not default then default = "auto" end
 
         -- append it
         table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})

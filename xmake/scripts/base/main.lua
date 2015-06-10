@@ -163,7 +163,7 @@ function main._prepare_project()
 
     -- merge the default options
     for k, v in pairs(options._DEFAULTS) do
-        if not options[k] then options[k] = v end
+        if nil == options[k] then options[k] = v end
     end
 
     -- load xmake.lua file

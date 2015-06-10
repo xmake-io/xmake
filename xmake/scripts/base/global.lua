@@ -195,7 +195,7 @@ function global.load()
                 if global._need(k) then
 
                     -- save the default option
-                    if not configs[k] then
+                    if nil == configs[k] then
                         configs[k] = v
                     end
                 end
