@@ -74,21 +74,38 @@ function project._api_archs(env, ...)
     end
 end
 
--- switch to the given target 
-function project._api_target(env, name)
+-- add target 
+function project._api_add_target(env, name)
 
     -- check
     assert(env and name)
 
-    -- the configs
-    local configs = env._CONFIGS
-    assert(configs)
+    -- the targets
+    local targets = env._CONFIGS._TARGETS
+    assert(targets)
 
     -- init the target scope
-    configs[name] = configs[name] or {}
+    targets[name] = targets[name] or {}
 
-    -- switch to this targe scope
-    env._TARGET = configs[name]
+    -- switch to this target scope
+    env._TARGET = targets[name]
+end
+
+-- add option 
+function project._api_add_option(env, name)
+
+    -- check
+    assert(env and name)
+
+    -- the options
+    local options = env._CONFIGS._OPTIONS
+    assert(options)
+
+    -- init the option scope
+    options[name] = options[name] or {}
+
+    -- switch to this option scope
+    env._OPTION = options[name]
 end
 
 -- load all subprojects from the given directories
@@ -159,14 +176,10 @@ function project._api_add_subfiles(env, ...)
 end
 
 -- set configure values
-function project._api_set_values(env, name, ...)
+function project._api_set_values(scope, name, ...)
 
     -- check
-    assert(env and name)
-
-    -- get the current scope
-    local scope = env._TARGET or env._CONFIGS._SET
-    assert(scope)
+    assert(scope and name)
 
     -- update values
     scope[name] = {}
@@ -174,14 +187,10 @@ function project._api_set_values(env, name, ...)
 end
 
 -- add configure values
-function project._api_add_values(env, name, ...)
+function project._api_add_values(scope, name, ...)
 
     -- check
-    assert(env and name)
-
-    -- get the current scope
-    local scope = env._TARGET or env._CONFIGS._ADD
-    assert(scope)
+    assert(scope and name)
 
     -- append values
     scope[name] = scope[name] or {}
@@ -312,25 +321,23 @@ function project._makeconf_for_target_and_deps(target_name)
     return true
 end
 
--- make the current project configure
+-- make the project configure
 function project._make(configs)
 
     -- check
     assert(configs)
   
     -- init 
-    project._CURRENT = project._CURRENT or {}
-    local current = project._CURRENT
+    project._TARGETS = project._TARGETS or {}
+    local targets = project._TARGETS
 
     -- make all targets
-    for k, v in pairs(configs) do
-        if not k:startswith("_") then
-            current[k] = v
-        end
+    for k, v in pairs(configs._TARGETS) do
+        targets[k] = v
     end
 
     -- merge the root configures to all targets
-    for _, target in pairs(current) do
+    for _, target in pairs(targets) do
 
         -- merge the setted configures
         for k, v in pairs(configs._SET) do
@@ -370,10 +377,10 @@ end
 function project.targets()
 
     -- check
-    assert(project._CURRENT)
+    assert(project._TARGETS)
 
     -- return it
-    return project._CURRENT
+    return project._TARGETS
 end
 
 -- load the project file
@@ -389,7 +396,7 @@ function project.load(file)
     end
 
     -- bind the new environment
-    local newenv = {_CONFIGS = {_SET = {}, _ADD = {}}}
+    local newenv = {_CONFIGS = {_SET = {}, _ADD = {}, _TARGETS = {}, _OPTIONS = {}}}
     setmetatable(newenv, {__index = _G})
     setfenv(script, newenv)
 
@@ -399,9 +406,13 @@ function project.load(file)
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
 
     -- register interfaces for the target
-    newenv.set_target       = function (...) return project._api_target(newenv, ...) end
-    newenv.add_target       = function (...) return project._api_target(newenv, ...) end
-    
+    newenv.set_target       = function (...) return project._api_add_target(newenv, ...) end
+    newenv.add_target       = function (...) return project._api_add_target(newenv, ...) end
+   
+    -- register interfaces for the option
+    newenv.set_option       = function (...) return project._api_add_option(newenv, ...) end
+    newenv.add_option       = function (...) return project._api_add_option(newenv, ...) end
+     
     -- register interfaces for the subproject files
     newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
@@ -418,8 +429,9 @@ function project.load(file)
                         ,   "warnings"
                         ,   "optimize"
                         ,   "language"} 
+
     for _, interface in ipairs(interfaces) do
-        newenv["set_" .. interface] = function (...) return project._api_set_values(newenv, interface, ...) end
+        newenv["set_" .. interface] = function (...) return project._api_set_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
     end
 
     -- register interfaces for adding values
@@ -441,7 +453,36 @@ function project.load(file)
                         ,   "undefines"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
-        newenv["add_" .. interface] = function (...) return project._api_add_values(newenv, interface, ...) end
+        newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
+    end
+ 
+    -- register interfaces for setting option values
+    local interfaces =  {   "default"
+                        ,   "description"} 
+
+    for _, interface in ipairs(interfaces) do
+        newenv["set_option_" .. interface] = function (...) return project._api_set_values(newenv._OPTION, interface, ...) end
+    end
+
+    -- register interfaces for adding option values
+    interfaces =        {   "links" 
+                        ,   "linkdirs" 
+                        ,   "includedirs" 
+                        ,   "includes" 
+                        ,   "interfaces" 
+                        ,   "cflags" 
+                        ,   "cxflags" 
+                        ,   "cxxflags" 
+                        ,   "mflags" 
+                        ,   "mxflags" 
+                        ,   "mxxflags" 
+                        ,   "ldflags" 
+                        ,   "shflags" 
+                        ,   "defines"
+                        ,   "undefines"} 
+
+    for _, interface in ipairs(interfaces) do
+        newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
     end
 
     -- done the project script
@@ -458,11 +499,11 @@ end
 function project.dump()
     
     -- check
-    assert(project._CURRENT)
+    assert(project._TARGETS)
 
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(project._CURRENT)
+        utils.dump(project._TARGETS)
     end
    
 end

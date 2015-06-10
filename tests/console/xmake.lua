@@ -27,6 +27,35 @@ if archs("x86", "x64") then
     add_defines("ARCH=\"$(arch)\"", "PLAT=$(plat)", "MODE=$(mode)", "HOST=$(host)")
 end
 
+add_option("option1")
+    set_option_default(true)
+    add_option_defines("OPTION1_ENABLE")
+    set_option_description("The option for definition and need not check.")
+
+add_option("option2")
+    set_option_default(false)
+    add_option_defines("OPTION2_ENABLE")
+    add_option_includes("stdio.h", "hello1.h")
+    add_option_includedirs("src/hello1")
+    set_option_description("The option for finding includes.")
+
+add_option("option3")
+    set_option_default(false)
+    add_option_defines("OPTION3_ENABLE")
+    add_option_links("hello1")
+    add_option_linkdirs("$(buildir)")
+    set_option_description("The option for finding links.")
+
+add_option("option4")
+    set_option_default(false)
+    add_option_defines("OPTION4_ENABLE")
+    add_option_includes("stdio.h", "hello1.h")
+    add_option_includedirs("src/hello1")
+    add_option_links("hello1")
+    add_option_linkdirs("$(buildir)")
+    add_option_interfaces("hello1")
+    set_option_description("The option for finding interfaces.")
+
 add_target("hello1")
     set_kind("static")
     add_files("src/hello1/*.c")
