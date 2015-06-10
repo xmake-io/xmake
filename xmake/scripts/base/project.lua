@@ -373,8 +373,8 @@ function project._make(configs)
     end
 end
 
--- load the project file
-function project._load(file)
+-- only load options from the the project file
+function project._load_options(file)
 
     -- check
     assert(file)
@@ -386,8 +386,80 @@ function project._load(file)
     end
 
     -- bind the new environment
-    local newenv = {_CONFIGS = {_SET = {}, _ADD = {}, _TARGETS = {}, _OPTIONS = {}}}
-    setmetatable(newenv, {__index = _G})
+    local newenv = {_CONFIGS = {_OPTIONS = {}}}
+    setmetatable(newenv, {__index = function(tbl, key)
+                                        local val = rawget(tbl, key)
+                                        if nil == val then val = rawget(_G, key) end
+                                        if nil == val then return function(...) end end
+                                        return val
+                                    end})
+    setfenv(script, newenv)
+
+    -- register interfaces for the option
+    newenv.set_option       = function (...) return project._api_add_option(newenv, ...) end
+    newenv.add_option       = function (...) return project._api_add_option(newenv, ...) end
+ 
+    -- register interfaces for setting option values
+    local interfaces =  {   "default"
+                        ,   "description"} 
+
+    for _, interface in ipairs(interfaces) do
+        newenv["set_option_" .. interface] = function (...) return project._api_set_values(newenv._OPTION, interface, ...) end
+    end
+
+    -- register interfaces for adding option values
+    interfaces =        {   "links" 
+                        ,   "linkdirs" 
+                        ,   "includedirs" 
+                        ,   "includes" 
+                        ,   "interfaces" 
+                        ,   "cflags" 
+                        ,   "cxflags" 
+                        ,   "cxxflags" 
+                        ,   "mflags" 
+                        ,   "mxflags" 
+                        ,   "mxxflags" 
+                        ,   "ldflags" 
+                        ,   "shflags" 
+                        ,   "defines"
+                        ,   "undefines"} 
+
+    for _, interface in ipairs(interfaces) do
+        newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
+    end
+
+    -- done the project script
+    local ok, errors = pcall(script)
+    if not ok then
+        return nil, errors
+    end
+
+    -- get the project configure
+    return newenv._CONFIGS
+end
+
+-- only load targets from the project file
+function project._load_targets(file)
+
+    -- check
+    assert(file)
+
+    -- load the project script
+    local script = loadfile(file)
+    if not script then
+        return string.format("load %s failed!", file)
+    end
+
+    -- bind the new environment
+    local newenv = {_CONFIGS = {_SET = {}, _ADD = {}, _TARGETS = {}}}
+    setmetatable(newenv, {__index = function(tbl, key)
+                                        local val = rawget(tbl, key)
+                                        if nil == val then val = rawget(_G, key) end
+                                        if nil == val and type(key) == "string" and (key:startswith("add_option") or key:startswith("set_option")) then
+                                            return function(...) end 
+                                        end
+                                        return val
+                                    end})
     setfenv(script, newenv)
 
     -- register interfaces for the condition
@@ -399,10 +471,6 @@ function project._load(file)
     newenv.set_target       = function (...) return project._api_add_target(newenv, ...) end
     newenv.add_target       = function (...) return project._api_add_target(newenv, ...) end
    
-    -- register interfaces for the option
-    newenv.set_option       = function (...) return project._api_add_option(newenv, ...) end
-    newenv.add_option       = function (...) return project._api_add_option(newenv, ...) end
-     
     -- register interfaces for the subproject files
     newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
@@ -443,42 +511,13 @@ function project._load(file)
                         ,   "undefines"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
-        newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
-    end
- 
-    -- register interfaces for setting option values
-    local interfaces =  {   "default"
-                        ,   "description"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["set_option_" .. interface] = function (...) return project._api_set_values(newenv._OPTION, interface, ...) end
-    end
-
-    -- register interfaces for adding option values
-    interfaces =        {   "links" 
-                        ,   "linkdirs" 
-                        ,   "includedirs" 
-                        ,   "includes" 
-                        ,   "interfaces" 
-                        ,   "cflags" 
-                        ,   "cxflags" 
-                        ,   "cxxflags" 
-                        ,   "mflags" 
-                        ,   "mxflags" 
-                        ,   "mxxflags" 
-                        ,   "ldflags" 
-                        ,   "shflags" 
-                        ,   "defines"
-                        ,   "undefines"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
+        newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
     end
 
     -- done the project script
     local ok, errors = pcall(script)
     if not ok then
-        return errors
+        return nil, errors
     end
 
     -- get the project configure
@@ -498,8 +537,15 @@ end
 -- load the project file
 function project.load(file)
 
-    -- load and make the project configure
-    project._make(project._load(file))
+    -- load the targets from the the project configure
+    local configs, errors = project._load_targets(file)
+    if not configs then
+        utils.error(errors)
+        return 
+    end
+
+    -- load and make targets from the the project configure
+    project._make(configs)
 end
 
 -- dump the current configure
@@ -554,7 +600,7 @@ function project.menu()
     local configs = nil
     local projectfile = xmake._PROJECT_FILE
     if projectfile and os.isfile(projectfile) then
-        configs = project._load(projectfile)
+        configs = project._load_options(projectfile)
     end
 
     -- the options
