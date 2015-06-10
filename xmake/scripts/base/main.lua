@@ -129,8 +129,11 @@ function main._prepare_project()
     -- xmake config or marked as "reconfig"?
     if options._ACTION == "config" or config._RECONFIG then
 
-        -- probe the current platform configure
+        -- probe the current platform 
         platform.probe(false)
+
+        -- probe the current project 
+        project.probe()
 
         -- clear up the configure
         config.clearup()
@@ -142,8 +145,8 @@ function main._prepare_project()
         if nil == options[k] then options[k] = v end
     end
 
-    -- load xmake.lua file
-    return project.load(xmake._PROJECT_FILE)
+    -- load the project 
+    return project.load()
 end
 
 -- done help
