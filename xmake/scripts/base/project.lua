@@ -74,8 +74,25 @@ function project._api_archs(env, ...)
     end
 end
 
+-- switch to the given target 
+function project._api_target(env, name)
+
+    -- check
+    assert(env and name)
+
+    -- the configs
+    local configs = env._CONFIGS
+    assert(configs)
+
+    -- init the target scope
+    configs[name] = configs[name] or {}
+
+    -- switch to this targe scope
+    env._TARGET = configs[name]
+end
+
 -- load all subprojects from the given directories
-function project._api_subdirs(env, ...)
+function project._api_add_subdirs(env, ...)
 
     -- check
     assert(env)
@@ -109,7 +126,7 @@ function project._api_subdirs(env, ...)
 end
 
 -- load all subprojects from the given files
-function project._api_subfiles(env, ...)
+function project._api_add_subfiles(env, ...)
 
     -- check
     assert(env)
@@ -141,45 +158,29 @@ function project._api_subfiles(env, ...)
     end
 end
 
--- switch to the given target 
-function project._api_target(env, name)
+-- set configure values
+function project._api_set_values(env, name, ...)
 
     -- check
     assert(env and name)
 
-    -- the configs
-    local configs = env._CONFIGS
-    assert(configs)
-
-    -- init the target scope
-    configs[name] = configs[name] or {}
-
-    -- switch to this targe scope
-    env._TARGET = configs[name]
-end
-
--- the single configure value 
-function project._api_value(env, name, value)
-
-    -- check
-    assert(env and name and value)
-
     -- get the current scope
-    local scope = env._TARGET or env._CONFIGS._ROOT
+    local scope = env._TARGET or env._CONFIGS._SET
     assert(scope)
 
-    -- update value
-    scope[name] = value
+    -- update values
+    scope[name] = {}
+    table.join2(scope[name], ...)
 end
 
--- the multiple configure values
-function project._api_values(env, name, ...)
+-- add configure values
+function project._api_add_values(env, name, ...)
 
     -- check
     assert(env and name)
 
     -- get the current scope
-    local scope = env._TARGET or env._CONFIGS._ROOTS
+    local scope = env._TARGET or env._CONFIGS._ADD
     assert(scope)
 
     -- append values
@@ -331,15 +332,15 @@ function project._make(configs)
     -- merge the root configures to all targets
     for _, target in pairs(current) do
 
-        -- merge the single root configure 
-        for k, v in pairs(configs._ROOT) do
+        -- merge the setted configures
+        for k, v in pairs(configs._SET) do
             if not target[k] then
                 target[k] = v
             end
         end
 
-        -- merge the multiple root configure 
-        for k, v in pairs(configs._ROOTS) do
+        -- merge the added configures 
+        for k, v in pairs(configs._ADD) do
             if not target[k] then
                 target[k] = v
             else
@@ -388,23 +389,24 @@ function project.load(file)
     end
 
     -- bind the new environment
-    local newenv = {_CONFIGS = {_ROOT = {}, _ROOTS = {}}}
+    local newenv = {_CONFIGS = {_SET = {}, _ADD = {}}}
     setmetatable(newenv, {__index = _G})
     setfenv(script, newenv)
 
     -- register interfaces for the condition
-    newenv.modes        = function (...) return project._api_modes(newenv, ...) end
-    newenv.plats        = function (...) return project._api_plats(newenv, ...) end
-    newenv.archs        = function (...) return project._api_archs(newenv, ...) end
+    newenv.modes            = function (...) return project._api_modes(newenv, ...) end
+    newenv.plats            = function (...) return project._api_plats(newenv, ...) end
+    newenv.archs            = function (...) return project._api_archs(newenv, ...) end
 
     -- register interfaces for the target
-    newenv.target       = function (...) return project._api_target(newenv, ...) end
+    newenv.set_target       = function (...) return project._api_target(newenv, ...) end
+    newenv.add_target       = function (...) return project._api_target(newenv, ...) end
     
     -- register interfaces for the subproject files
-    newenv.subdirs      = function (...) return project._api_subdirs(newenv, ...) end
-    newenv.subfiles     = function (...) return project._api_subfiles(newenv, ...) end
+    newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
+    newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
     
-    -- register interfaces for the single value
+    -- register interfaces for setting values
     local interfaces =  {   "kind"
                         ,   "headerdir" 
                         ,   "targetdir" 
@@ -412,13 +414,15 @@ function project.load(file)
                         ,   "configfile"
                         ,   "version"
                         ,   "strip"
+                        ,   "symbols"
+                        ,   "warnings"
                         ,   "optimize"
                         ,   "language"} 
     for _, interface in ipairs(interfaces) do
-        newenv[interface] = function (value) return project._api_value(newenv, interface, value) end
+        newenv["set_" .. interface] = function (...) return project._api_set_values(newenv, interface, ...) end
     end
 
-    -- register interfaces for the multiple values
+    -- register interfaces for adding values
     interfaces =        {   "deps"
                         ,   "files"
                         ,   "links" 
@@ -435,11 +439,9 @@ function project.load(file)
                         ,   "shflags" 
                         ,   "defines"
                         ,   "undefines"
-                        ,   "symbols"
-                        ,   "warnings"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
-        newenv[interface] = function (...) return project._api_values(newenv, interface, ...) end
+        newenv["add_" .. interface] = function (...) return project._api_add_values(newenv, interface, ...) end
     end
 
     -- done the project script
