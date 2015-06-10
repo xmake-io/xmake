@@ -336,7 +336,7 @@ function platform.menu(action)
 end
 
 -- probe the platform configure 
-function platform.probe(configs, is_global)
+function platform.probe(is_global)
 
     -- probe global
     if is_global then
@@ -349,7 +349,7 @@ function platform.probe(configs, is_global)
         for _, plat in ipairs(plats) do
             local module = platform._load(plat)
             if module and module._PROBER and module._PROBER.global and module._HOST and module._HOST == xmake._HOST then
-                module._PROBER.global(configs)
+                module._PROBER.global()
             end
         end
 
@@ -358,7 +358,7 @@ function platform.probe(configs, is_global)
         -- probe it
         local module = platform.module()
         if module and module._PROBER and module._PROBER.config then
-            module._PROBER.config(configs)
+            module._PROBER.config()
         end
     end
 end

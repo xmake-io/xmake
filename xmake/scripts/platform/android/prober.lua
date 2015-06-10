@@ -26,35 +26,38 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local tools     = require("tools/tools")
+local config    = require("base/config")
+local global    = require("base/global")
 
 -- define module: prober
 local prober = prober or {}
 
 -- probe the architecture
-function prober._probe_arch(configs)
+function prober._probe_arch()
 
     -- get the architecture
-    local arch = configs.arch
+    local arch = config.get("arch")
 
     -- ok? 
     if arch then return true end
 
     -- init the default architecture
-    configs.arch = "armv7-a"
+    config.set("arch", "armv7-a")
 
     -- ok
     return true
 end
 
 -- probe the ccache
-function prober._probe_ccache(configs)
+function prober._probe_ccache()
 
     -- ok? 
-    if configs.ccache and configs.__ccache then return true end
+    local ccache_enable = config.get("ccache")
+    if ccache_enable and config.get("__ccache") then return true end
 
     -- disable?
-    if type(configs.ccache) == "boolean" and not configs.ccache then
-        configs.__ccache = nil
+    if type(ccache_enable) == "boolean" and not ccache_enable then
+        config.set("__ccache", nil)
         return true
     end
 
@@ -63,10 +66,10 @@ function prober._probe_ccache(configs)
 
     -- probe ok? update it
     if ccache_path then
-        configs.ccache = true
-        configs.__ccache = ccache_path
+        config.set("ccache", true)
+        config.set("__ccache", ccache_path)
     else
-        configs.ccache = false
+        config.set("ccache", false)
     end
 
     -- ok
@@ -74,21 +77,21 @@ function prober._probe_ccache(configs)
 end
 
 -- probe the project configure 
-function prober.config(configs)
+function prober.config()
 
     -- probe the architecture
-    if not prober._probe_arch(configs) then return end
+    if not prober._probe_arch() then return end
 
     -- probe the ccache
-    if not prober._probe_ccache(configs) then return end
+    if not prober._probe_ccache() then return end
 
 end
 
 -- probe the global configure 
-function prober.global(configs)
+function prober.global()
 
     -- probe the ccache
-    if not prober._probe_ccache(configs) then return end
+    if not prober._probe_ccache() then return end
 
 end
 

@@ -99,20 +99,8 @@ function main._prepare_global()
     -- xmake global?
     if options._ACTION == "global" then
 
-        -- wrap the global configure for more convenient to get and set values
-        local global_wrapped = {}
-        setmetatable(global_wrapped, 
-        {
-            __index = function(tbl, key)
-                return global.get(key)
-            end,
-            __newindex = function(tbl, key, val)
-                global.set(key, val)
-            end
-        })
-
         -- probe the global platform configure 
-        platform.probe(global_wrapped, true)
+        platform.probe(true)
 
         -- clear up the global configure
         global.clearup()
@@ -141,20 +129,8 @@ function main._prepare_project()
     -- xmake config or marked as "reconfig"?
     if options._ACTION == "config" or config._RECONFIG then
 
-        -- wrap the configure for more convenient to get and set values
-        local config_wrapped = {}
-        setmetatable(config_wrapped, 
-        {
-            __index = function(tbl, key)
-                return config.get(key)
-            end,
-            __newindex = function(tbl, key, val)
-                config.set(key, val)
-            end
-        })
-
         -- probe the current platform configure
-        platform.probe(config_wrapped, false)
+        platform.probe(false)
 
         -- clear up the configure
         config.clearup()
