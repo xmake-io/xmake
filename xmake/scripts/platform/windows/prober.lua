@@ -43,6 +43,9 @@ function prober._probe_arch(configs)
     -- init the default architecture
     configs.set("arch", xmake._ARCH)
 
+    -- trace
+    utils.verbose("checking the architecture ... %s", configs.get("arch"))
+
     -- ok
     return true
 end
@@ -86,10 +89,14 @@ function prober._probe_vs_version(configs)
 
     -- probe ok? update it
     if vs then
+        -- save it
         configs.set("vs", vs)
+
+        -- trace
+        utils.verbose("checking the Microsoft Visual Studio version ... %s", vs)
     else
         -- failed
-        utils.error("The Microsoft Visual Studio is unknown now, please config it first!")
+        utils.error("checking the Microsoft Visual Studio version ... no")
         utils.error("    - xmake config --vs=xxx")
         utils.error("or  - xmake global --vs=xxx")
         return false
@@ -191,17 +198,10 @@ end
 function prober.config()
 
     -- call all probe functions
-    utils.call(     prober   
-                ,   {   "_probe_arch"
-                    ,   "_probe_vs_version"
-                    ,   "_probe_vs_path"}
-                
-                ,   function (name, result)
-                        -- trace
-                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
-                        return result 
-                    end
-
+    utils.call(     {   prober._probe_arch
+                    ,   prober._probe_vs_version
+                    ,   prober._probe_vs_path}
+                ,   nil
                 ,   config)
 end
 
@@ -209,16 +209,9 @@ end
 function prober.global()
 
     -- call all probe functions
-    utils.call(     prober   
-                ,   {   "_probe_vs_version"
-                    ,   "_probe_vs_path"}
-                
-                ,   function (name, result)
-                        -- trace
-                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
-                        return result 
-                    end
-
+    utils.call(     {   prober._probe_vs_version
+                    ,   prober._probe_vs_path}
+                ,   nil
                 ,   global)
 end
 

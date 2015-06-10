@@ -44,6 +44,9 @@ function prober._probe_arch(configs)
     -- init the default architecture
     configs.set("arch", xmake._ARCH)
 
+    -- trace
+    utils.verbose("checking the architecture ... %s", configs.get("arch"))
+
     -- ok
     return true
 end
@@ -72,6 +75,9 @@ function prober._probe_ccache(configs)
         configs.set("ccache", false)
     end
 
+    -- trace
+    utils.verbose("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
+
     -- ok
     return true
 end
@@ -80,16 +86,9 @@ end
 function prober.config()
 
     -- call all probe functions
-    utils.call(     prober   
-                ,   {   "_probe_arch"
-                    ,   "_probe_ccache"}
-                
-                ,   function (name, result)
-                        -- trace
-                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
-                        return result 
-                    end
-
+    utils.call(     {   prober._probe_arch
+                    ,   prober._probe_ccache}
+                ,   nil
                 ,   config)
 end
 
@@ -97,15 +96,8 @@ end
 function prober.global()
 
     -- call all probe functions
-    utils.call(     prober   
-                ,   {   "_probe_ccache"}
-                
-                ,   function (name, result)
-                        -- trace
-                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
-                        return result 
-                    end
-
+    utils.call(     prober._probe_ccache
+                ,   nil
                 ,   global)
 end
 
