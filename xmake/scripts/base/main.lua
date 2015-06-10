@@ -230,12 +230,6 @@ function main._done_option()
         return false
     end
  
-    -- dump project 
-    project.dump()
-
-    -- dump platform
-    platform.dump()
-
     -- reconfig it first if marked as "reconfig"
     if config._RECONFIG and not action.done("config") then
         -- error

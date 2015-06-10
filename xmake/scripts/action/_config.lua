@@ -37,9 +37,6 @@ function _config.done()
     local options = xmake._OPTIONS
     assert(options)
 
-    -- dump config
-    config.dump()
-
     -- save the configure
     if not config.save() then
         -- error
@@ -61,8 +58,13 @@ function _config.done()
         return false
     end
 
-    -- ok
+    -- dump configure
+    config.dump()
+
+    -- trace
     print("configure ok!")
+
+    -- ok
     return true
 end
 

@@ -121,7 +121,12 @@ function utils._dump_with_level(object, exclude, level)
 end
 
 -- dump object
-function utils.dump(object, exclude)
+function utils.dump(object, exclude, prefix)
+
+    -- dump prefix
+    if prefix then
+        io.write(prefix)
+    end
   
     -- dump it
     utils._dump_with_level(object, exclude, 0)
@@ -200,6 +205,32 @@ function utils.unique(array)
 
     -- ok
     return array
+end
+
+-- call functions 
+function utils.call(self, funcs, pred, ...)
+
+    -- check
+    assert(self and funcs and type(funcs) == "table")
+
+    -- call all
+    for _, name in ipairs(funcs) do
+        
+        -- check
+        assert(type(name) == "string")
+
+        -- get function
+        local func = self[name]
+        assert(type(func) == "function")
+
+        -- call it
+        local result = func(...)
+
+        -- exists predicate?
+        if pred and type(pred) == "function" then
+            if not pred(name, result) then break end
+        end
+    end
 end
 
 -- return module: utils

@@ -396,7 +396,7 @@ function project._make_options(configs)
     for k, v in pairs(configs._OPTIONS) do
 
         -- this option has not been enabled?
-        if not config.get(k) then
+        if nil == config.get(k) then
 
             -- make option
             local o = project._make_option(k, v)
@@ -408,7 +408,23 @@ function project._make_options(configs)
                 -- save this option to configure 
                 config.set("__" .. k, o)
 
+            else
+
+                -- disable this option
+                config.set(k, false)
+
+                -- clear this option to configure 
+                config.set("__" .. k, nil)
+
             end
+
+            -- trace
+            utils.verbose("checking %s ...: %s", k, utils.ifelse(o, "ok", "no"))
+
+        else
+
+            -- trace
+            utils.verbose("checking %s ...: %s", k, "ok")
         end
     end
 end
