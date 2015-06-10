@@ -44,6 +44,9 @@ function prober._probe_arch(configs)
     -- init the default architecture
     configs.set("arch", xmake._ARCH)
 
+    -- trace
+    utils.verbose("checking the architecture ... %s", configs.get("arch"))
+
     -- ok
     return true
 end
@@ -77,10 +80,14 @@ function prober._probe_xcode(configs)
 
     -- probe ok? update it
     if xcode_dir then
+        -- save it
         configs.set("xcode_dir", xcode_dir)
+
+        -- trace
+        utils.verbose("checking the Xcode application directory ... %s", xcode_dir)
     else
         -- failed
-        utils.error("The Xcode directory is unknown now, please config it first!")
+        utils.error("checking the Xcode application directory ... no")
         utils.error("    - xmake config --xcode_dir=xxx")
         utils.error("or  - xmake global --xcode_dir=xxx")
         return false
@@ -115,10 +122,15 @@ function prober._probe_xcode_sdkver(configs)
 
     -- probe ok? update it
     if xcode_sdkver then
+        
+        -- save it
         configs.set("xcode_sdkver", xcode_sdkver)
+ 
+        -- trace
+        utils.verbose("checking the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)
     else
         -- failed
-        utils.error("The Xcode SDK version is unknown now, please config it first!")
+        utils.error("checking the Xcode SDK version for %s ... no", configs.get("plat"))
         utils.error("    - xmake config --xcode_sdkver=xxx")
         utils.error("or  - xmake global --xcode_sdkver=xxx")
         return false
@@ -152,6 +164,9 @@ function prober._probe_ccache(configs)
         configs.set("ccache", false)
     end
 
+    -- trace
+    utils.verbose("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
+
     -- ok
     return true
 end
@@ -160,18 +175,11 @@ end
 function prober.config()
 
     -- call all probe functions
-    utils.call(     prober   
-                ,   {   "_probe_arch"
-                    ,   "_probe_xcode"
-                    ,   "_probe_xcode_sdkver"
-                    ,   "_probe_ccache"}
-                
-                ,   function (name, result)
-                        -- trace
-                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
-                        return result 
-                    end
-
+    utils.call(     {   prober._probe_arch
+                    ,   prober._probe_xcode
+                    ,   prober._probe_xcode_sdkver
+                    ,   prober._probe_ccache}
+                ,   nil
                 ,   config)
 end
 
@@ -179,16 +187,9 @@ end
 function prober.global()
 
     -- call all probe functions
-    utils.call(     prober   
-                ,   {   "_probe_xcode"
-                    ,   "_probe_ccache"}
-                
-                ,   function (name, result)
-                        -- trace
-                        utils.verbose("checking %s ...: %s", name:gsub("_probe_", ""), utils.ifelse(result, "ok", "no"))
-                        return result 
-                    end
-
+    utils.call(     {   prober._probe_xcode
+                    ,   prober._probe_ccache}
+                ,   nil
                 ,   global)
 end
 

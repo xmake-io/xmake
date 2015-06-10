@@ -419,12 +419,7 @@ function project._make_options(configs)
             end
 
             -- trace
-            utils.verbose("checking %s ...: %s", k, utils.ifelse(o, "ok", "no"))
-
-        else
-
-            -- trace
-            utils.verbose("checking %s ...: %s", k, "ok")
+            utils.verbose("checking for %s ... %s", k, utils.ifelse(o, "ok", "no"))
         end
     end
 end

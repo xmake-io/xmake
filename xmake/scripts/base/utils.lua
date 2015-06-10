@@ -208,19 +208,15 @@ function utils.unique(array)
 end
 
 -- call functions 
-function utils.call(self, funcs, pred, ...)
+function utils.call(funcs, pred, ...)
 
     -- check
-    assert(self and funcs and type(funcs) == "table")
+    assert(funcs)
 
     -- call all
-    for _, name in ipairs(funcs) do
+    for _, func in ipairs(utils.wrap(funcs)) do
         
         -- check
-        assert(type(name) == "string")
-
-        -- get function
-        local func = self[name]
         assert(type(func) == "function")
 
         -- call it
@@ -229,7 +225,8 @@ function utils.call(self, funcs, pred, ...)
         -- exists predicate?
         if pred and type(pred) == "function" then
             if not pred(name, result) then break end
-        end
+        -- failed?
+        elseif not result then break end
     end
 end
 
