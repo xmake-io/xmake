@@ -74,6 +74,13 @@ function project._api_archs(env, ...)
     end
 end
 
+-- enable option?
+function project._api_option(env, opt)
+
+    -- enable?
+    return config.get(opt)
+end
+
 -- add target 
 function project._api_add_target(env, name)
 
@@ -325,7 +332,7 @@ end
 function project._make_targets(configs)
 
     -- check
-    assert(configs)
+    assert(configs and configs._TARGETS)
   
     -- init 
     project._TARGETS = project._TARGETS or {}
@@ -373,16 +380,37 @@ function project._make_targets(configs)
     end
 end
 
+-- make option 
+function project._make_option(name, opt)
+
+
+end
+
 -- make options from the project file
 function project._make_options(configs)
 
     -- check
-    assert(configs)
+    assert(configs and configs._OPTIONS)
   
-    -- init 
-    project._OPTIONS = project._OPTIONS or {}
-    local options = project._OPTIONS
+    -- make all options
+    for k, v in pairs(configs._OPTIONS) do
 
+        -- this option has not been enabled?
+        if not config.get(k) then
+
+            -- make option
+            local o = project._make_option(k, v)
+            if o then
+
+                -- enable this option
+                config.set(k, true)
+
+                -- save this option to configure 
+                config.set("__" .. k, o)
+
+            end
+        end
+    end
 end
 
 -- only load options from the the project file
@@ -478,6 +506,7 @@ function project._load_targets(file)
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
+    newenv.option           = function (...) return project._api_option(newenv, ...) end
 
     -- register interfaces for the target
     newenv.set_target       = function (...) return project._api_add_target(newenv, ...) end
@@ -495,6 +524,7 @@ function project._load_targets(file)
                         ,   "configfile"
                         ,   "version"
                         ,   "strip"
+                        ,   "options"
                         ,   "symbols"
                         ,   "warnings"
                         ,   "optimize"
@@ -519,6 +549,7 @@ function project._load_targets(file)
                         ,   "mxxflags" 
                         ,   "ldflags" 
                         ,   "shflags" 
+                        ,   "options"
                         ,   "defines"
                         ,   "undefines"
                         ,   "vectorexts"} 
