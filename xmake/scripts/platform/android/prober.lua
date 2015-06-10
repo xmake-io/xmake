@@ -49,14 +49,11 @@ end
 -- probe the ccache
 function prober._probe_ccache(configs)
 
-    -- get the ccache mode
-    local mode = configs.ccache
-
     -- ok? 
-    if mode and mode == "y" and configs.__ccache then return true end
+    if configs.ccache and configs.__ccache then return true end
 
     -- disable?
-    if mode and mode == "n" then
+    if not configs.ccache then
         configs.__ccache = nil
         return true
     end
@@ -66,10 +63,10 @@ function prober._probe_ccache(configs)
 
     -- probe ok? update it
     if ccache_path then
-        configs.ccache = "y"
+        configs.ccache = true
         configs.__ccache = ccache_path
     else
-        configs.ccache = "n"
+        configs.ccache = false
     end
 
     -- ok

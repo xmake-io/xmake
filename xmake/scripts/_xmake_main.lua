@@ -30,6 +30,7 @@ xmake._VERSION      = "XMake v1.0.1"
 xmake._PROGRAM_DIR  = _PROGRAM_DIR
 xmake._PROJECT_DIR  = _PROJECT_DIR
 xmake._SCRIPTS_DIR  = _PROGRAM_DIR .. "/scripts"
+xmake._PROJECT_FILE = "xmake.lua"
 xmake._OPTIONS      = {}
 xmake._CONFIGS      = {}
 
