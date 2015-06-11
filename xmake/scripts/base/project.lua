@@ -80,10 +80,13 @@ function project._api_archs(env, ...)
 end
 
 -- enable option?
-function project._api_option(env, opt)
+function project._api_option(env, name)
+
+    -- check
+    assert(name)
 
     -- enable?
-    return config.get(opt)
+    return config.get(name)
 end
 
 -- add target 
@@ -296,6 +299,47 @@ function project._makeconf_for_target(target_name, target)
         end
         file:write("\n")
     end
+
+    -- the options
+    if target.options then
+        for _, name in ipairs(utils.wrap(target.options)) do
+
+            -- get option if be enabled
+            local opt = nil
+            if config.get(name) then opt = config.get("__" .. name) end
+            if nil ~= opt then
+
+                -- get the option defines
+                local defines = {}
+                if opt.defines then table.join2(defines, opt.defines) end
+                if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
+
+                -- get the option undefines
+                local undefines = {}
+                if opt.undefines then table.join2(undefines, opt.undefines) end
+                if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
+
+                -- make the defines for options
+                if #defines ~= 0 then
+                    file:write(string.format("// defines for %s\n", name))
+                    for _, define in ipairs(defines) do
+                        file:write(string.format("#define %s\n", define:gsub("=", " ")))
+                    end
+                    file:write("\n")
+                end
+
+                -- make the undefines for options
+                if #undefines ~= 0 then
+                    file:write(string.format("// undefines for %s\n", name))
+                    for _, undefine in ipairs(undefines) do
+                        file:write(string.format("#undef %s\n", undefine))
+                    end
+                    file:write("\n")
+                end
+            end
+        end
+    end
+
 
     -- make the tail
     file:write("#endif\n")
@@ -534,6 +578,11 @@ function project._make_options(configs)
 
             -- trace
             utils.verbose("checking for the option %s ... %s", k, utils.ifelse(o, "ok", "no"))
+
+        elseif nil == config.get("__" .. k) then
+
+            -- save this option to configure 
+            config.set("__" .. k, v)
         end
     end
 
