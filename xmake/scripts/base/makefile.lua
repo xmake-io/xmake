@@ -43,10 +43,10 @@ function makefile._make_object(file, target, srcfile, objfile)
     assert(file and target and srcfile and objfile)
 
     -- get the compiler 
-    local c = compiler.get(srcfile)
+    local c, errors = compiler.get(srcfile)
     if not c then
         -- error
-        utils.error("unknown source file: %s", srcfile)
+        utils.error(errors)
         return false
     end
 

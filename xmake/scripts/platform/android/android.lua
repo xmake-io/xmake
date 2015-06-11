@@ -40,6 +40,18 @@ function android.make(configs)
     configs.formats.static = {"lib", ".a"}
     configs.formats.object = {"",    ".o"}
     configs.formats.shared = {"lib", ".so"}
+ 
+    -- init the toolchains
+    configs.tools           = {}
+    configs.tools.make      = "make"
+    configs.tools.ccache    = config.get("__ccache")
+    configs.tools.cc        = config.get("cc") or "arm-linux-androideabi-gcc"
+    configs.tools.cxx       = config.get("cxx") or "arm-linux-androideabi-g++"
+    configs.tools.mm        = config.get("mm") or configs.tools.cc
+    configs.tools.mxx       = config.get("mxx") or configs.tools.cxx
+    configs.tools.ld        = config.get("ld") or "arm-linux-androideabi-g++"
+    configs.tools.ar        = config.get("ar") or "arm-linux-androideabi-ar"
+    configs.tools.sh        = config.get("sh") or "arm-linux-androideabi-g++"
 
 end
 
