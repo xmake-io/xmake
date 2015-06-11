@@ -46,21 +46,25 @@ function io._save_with_level(file, object, level)
         for l = 1, level do
             file:write("    ")
         end
-        file:write("{\n")  
+        file:write("{\n")
 
         -- save body
         local i = 0
         for k, v in pairs(object) do  
 
-            -- save spaces
+            -- save spaces and separator
             for l = 1, level do
                 file:write("    ")
             end
 
-            -- save separator
-            file:write(utils.ifelse(i == 0, "    ", ",   "), k, " = ")  
+            file:write(utils.ifelse(i == 0, "    ", ",   "))
+            
+            -- save key
+            if type(k) == "string" then
+                file:write(k, " = ")  
+            end
 
-            -- save this key: value
+            -- save value
             if not io._save_with_level(file, v, level + 1) then 
                 return false
             end

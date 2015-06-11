@@ -182,10 +182,10 @@ function linker.make(module, target, objfiles, targetfile)
 end
 
 -- check link for the project option
-function linker.check_link(opt, link, objectfile, targetfile)
+function linker.check_links(opt, links, objectfile, targetfile)
 
     -- check
-    assert(opt and link and objectfile and targetfile)
+    assert(opt and links and objectfile and targetfile)
 
     -- get the linker
     local l = linker.get("binary")
@@ -206,17 +206,17 @@ function linker.check_link(opt, link, objectfile, targetfile)
     end
 
     -- append the links flags
-    table.join2(flags, l.flag_link(link))
+    for _, link in ipairs(utils.wrap(links)) do
+        table.join2(flags, l.flag_link(link))
+    end
 
     -- make the compile command
     local cmd = string.format("%s > %s 2>&1", l.command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
-    -- check it
-    if 0 ~= os.execute(cmd) then return end
-
-    -- ok
-    return true
+    -- execute the link command
+    return l.main(cmd)
 end
+
 -- return module: linker
 return linker
