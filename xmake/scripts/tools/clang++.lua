@@ -23,16 +23,16 @@
 -- load modules
 local gcc = require("tools/gcc")
 
--- define module: clang
-local clang = clang or {}
+-- define module: clang++
+local clangxx = clangxx or {}
 
--- only copy the interfaces of gcc to clang
+-- only copy the interfaces of gcc to clang++
 for k, v in pairs(gcc) do
     if type(v) == "function" then
-        clang[k] = v
+        clangxx[k] = v
     end
 end
 
--- return module: clang
-return clang
+-- return module: clang++
+return clangxx
 
