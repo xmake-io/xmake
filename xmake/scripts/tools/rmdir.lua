@@ -27,7 +27,7 @@ local rmdir = rmdir or {}
 local os = require("base/os")
 
 -- the main function
-function rmdir.main(...)
+function rmdir.main(self, ...)
 
     -- rmdir all
     for _, dir in ipairs(...) do

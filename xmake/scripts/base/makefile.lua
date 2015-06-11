@@ -273,7 +273,7 @@ function makefile.build(target)
     end
  
     -- done make
-    return make.main(buildir .. "/makefile", target)
+    return make:main(buildir .. "/makefile", target)
 end
 
 -- return module: makefile

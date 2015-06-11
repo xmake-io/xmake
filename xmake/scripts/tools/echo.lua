@@ -28,7 +28,7 @@ local io        = require("base/io")
 local string    = require("base/string")
 
 -- the main function
-function echo.main(...)
+function echo.main(self, ...)
 
     -- echo all
     for _, v in ipairs(...) do

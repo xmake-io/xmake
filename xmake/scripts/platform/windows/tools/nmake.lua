@@ -68,18 +68,18 @@ function nmake._leave(name, old)
 end
 
 -- the init function
-function nmake.init(name)
+function nmake.init(self, name)
 
     -- save name
-    nmake._NAME = name or "nmake.exe"
+    self._NAME = name or "nmake.exe"
 
     -- is verbose?
-    nmake._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+    self._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
 
 end
 
 -- the main function
-function nmake.main(mkfile, target)
+function nmake.main(self, mkfile, target)
 
     -- enter the vs environment
     local pathes    = nmake._enter("path")
@@ -90,9 +90,9 @@ function nmake.main(mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s /f %s %s VERBOSE=%s 2> %s", nmake._NAME, mkfile, target or "", nmake._VERBOSE, xmake._NULDEV)
+        cmd = string.format("%s /f %s %s VERBOSE=%s 2> %s", self._NAME, mkfile, target or "", self._VERBOSE, xmake._NULDEV)
     else  
-        cmd = string.format("%s %s VERBOSE=%s 2> %s", nmake._NAME, target or "", nmake._VERBOSE, xmake._NULDEV)
+        cmd = string.format("%s %s VERBOSE=%s 2> %s", self._NAME, target or "", self._VERBOSE, xmake._NULDEV)
     end
 
     -- done 

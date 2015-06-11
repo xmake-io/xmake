@@ -44,7 +44,13 @@ function linker._mapflag(module, flag)
 
     -- find and replace it using pattern
     for k, v in pairs(module.mapflags) do
-        local flag_mapped, count = flag:gsub(k, v)
+        local flag_mapped, count = flag:gsub(k, function (w) 
+                                                    if type(v) == "function" then
+                                                        return v(module, w)
+                                                    else
+                                                        return v
+                                                    end
+                                                end)
         if flag_mapped and count ~= 0 then
             return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
         end
@@ -156,14 +162,14 @@ function linker.make(module, target, objfiles, targetfile)
     -- append the linkdirs flags from the current project
     if module.flag_linkdir then
         for _, linkdir in ipairs(utils.wrap(target.linkdirs)) do
-            table.join2(flags, module.flag_linkdir(linkdir))
+            table.join2(flags, module:flag_linkdir(linkdir))
         end
     end
 
     -- append the links flags from the current project
     if module.flag_link then
         for _, link in ipairs(utils.wrap(target.links)) do
-            table.join2(flags, module.flag_link(link))
+            table.join2(flags, module:flag_link(link))
         end
     end
 
@@ -182,14 +188,14 @@ function linker.make(module, target, objfiles, targetfile)
                 -- append the linkdirs flags from the option
                 if module.flag_linkdir then
                     for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
-                        table.join2(flags, module.flag_linkdir(linkdir))
+                        table.join2(flags, module:flag_linkdir(linkdir))
                     end
                 end
 
                 -- append the links flags from the option
                 if module.flag_link then
                     for _, link in ipairs(utils.wrap(opt.links)) do
-                        table.join2(flags, module.flag_link(link))
+                        table.join2(flags, module:flag_link(link))
                     end
                 end
             end
@@ -204,7 +210,7 @@ function linker.make(module, target, objfiles, targetfile)
                                                                 }))
 
     -- make the link command
-    return module.command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())
+    return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())
 end
 
 -- check link for the project option
@@ -227,21 +233,21 @@ function linker.check_links(opt, links, objectfile, targetfile)
     -- append the linkdirs flags 
     if opt.linkdirs and module.flag_linkdir then
         for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
-            table.join2(flags, module.flag_linkdir(linkdir))
+            table.join2(flags, module:flag_linkdir(linkdir))
         end
     end
 
     -- append the links flags
     for _, link in ipairs(utils.wrap(links)) do
-        table.join2(flags, module.flag_link(link))
+        table.join2(flags, module:flag_link(link))
     end
 
     -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", module.command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
+    local cmd = string.format("%s > %s 2>&1", module:command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
     -- execute the link command
-    return module.main(cmd)
+    return module:main(cmd)
 end
 
 -- return module: linker

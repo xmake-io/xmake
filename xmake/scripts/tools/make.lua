@@ -28,25 +28,25 @@ local utils     = require("base/utils")
 local make = make or {}
 
 -- the init function
-function make.init(name)
+function make.init(self, name)
 
     -- save name
-    make.name = name or "make"
+    self.name = name or "make"
 
     -- is verbose?
-    make._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+    self._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
 
 end
 
 -- the main function
-function make.main(mkfile, target)
+function make.main(self, mkfile, target)
 
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s -j4 -f %s %s VERBOSE=%s 2> %s", make.name, mkfile, target or "", make._VERBOSE, xmake._NULDEV)
+        cmd = string.format("%s -j4 -f %s %s VERBOSE=%s 2> %s", self.name, mkfile, target or "", self._VERBOSE, xmake._NULDEV)
     else  
-        cmd = string.format("%s -j4 %s VERBOSE=%s 2> %s", make.name, target or "", make._VERBOSE, xmake._NULDEV)
+        cmd = string.format("%s -j4 %s VERBOSE=%s 2> %s", self.name, target or "", self._VERBOSE, xmake._NULDEV)
     end
 
     -- done 

@@ -28,7 +28,7 @@ local verbose = verbose or {}
 local io = require("base/io")
 
 -- the main function
-function verbose.main(...)
+function verbose.main(self, ...)
 
     -- verbose all
     if xmake._OPTIONS.verbose then

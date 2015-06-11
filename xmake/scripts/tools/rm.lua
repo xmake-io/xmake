@@ -27,7 +27,7 @@ local rm = rm or {}
 local os = require("base/os")
 
 -- the main function
-function rm.main(...)
+function rm.main(self, ...)
 
     -- rm all
     for _, file_or_dir in ipairs(...) do

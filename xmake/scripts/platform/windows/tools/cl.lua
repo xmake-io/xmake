@@ -66,16 +66,19 @@ function cl._leave(name, old)
 end
 
 -- init the compiler
-function cl.init(name)
+function cl.init(self, name)
+
+    -- save name
+    self._NAME = name or "cl.exe"
 
     -- init cflags
-    cl.cflags = { "-nologo" }
+    self.cflags = { "-nologo" }
 
     -- init cxxflags
-    cl.cxxflags = { "-nologo" }
+    self.cxxflags = { "-nologo" }
 
     -- init flags map
-    cl.mapflags = 
+    self.mapflags = 
     {
         -- optimize
         ["-O0"]                     = "-Od"
@@ -113,35 +116,35 @@ function cl.init(name)
 end
 
 -- make the compiler command
-function cl.command_compile(srcfile, objfile, flags)
+function cl.command_compile(self, srcfile, objfile, flags)
 
     -- make it
-    return string.format("cl.exe -c %s -Fo%s %s", flags, objfile, srcfile)
+    return string.format("%s -c %s -Fo%s %s", self._NAME, flags, objfile, srcfile)
 end
 
 -- make the define flag
-function cl.flag_define(define)
+function cl.flag_define(self, define)
 
     -- make it
     return "-D" .. define
 end
 
 -- make the undefine flag
-function cl.flag_undefine(undefine)
+function cl.flag_undefine(self, undefine)
 
     -- make it
     return "-U" .. undefine
 end
 
 -- make the includedir flag
-function cl.flag_includedir(includedir)
+function cl.flag_includedir(self, includedir)
 
     -- make it
     return "-I" .. includedir
 end
 
 -- the main function
-function cl.main(cmd)
+function cl.main(self, cmd)
 
     -- enter the vs environment
     local pathes    = cl._enter("path")

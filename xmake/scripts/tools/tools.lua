@@ -142,7 +142,7 @@ function tools.load(name, root)
 
         -- init tool 
         if tool and tool.init then
-            tool.init(name)
+            tool:init(name)
         end
 
         -- save tool to the cache

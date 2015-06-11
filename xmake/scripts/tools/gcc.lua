@@ -31,31 +31,31 @@ local platform  = require("platform/platform")
 local gcc = gcc or {}
 
 -- check the given flag 
-function gcc._check(flag)
+function gcc._check(self, flag)
 
     -- this flag has been checked?
-    gcc._CHECK = gcc._CHECK or {}
-    if gcc._CHECK[flag] then
-        return gcc._CHECK[flag]
+    self._CHECK = self._CHECK or {}
+    if self._CHECK[flag] then
+        return self._CHECK[flag]
     end
 
     -- check it
-    if 0 ~= os.execute(string.format("%s %s -S -o %s -xc %s > %s 2>&1", gcc.name, flag, xmake._NULDEV, xmake._NULDEV, xmake._NULDEV)) then
+    if 0 ~= os.execute(string.format("%s %s -S -o %s -xc %s > %s 2>&1", self._NAME, flag, xmake._NULDEV, xmake._NULDEV, xmake._NULDEV)) then
         flag = ""
     end
 
     -- save it
-    gcc._CHECK[flag] = flag
+    self._CHECK[flag] = flag
 
     -- ok?
     return flag
 end
 
 -- the init function
-function gcc.init(name)
+function gcc.init(self, name)
 
     -- save name
-    gcc.name = name
+    self._NAME = name or "gcc"
 
     -- the architecture
     local arch = config.get("arch")
@@ -69,10 +69,10 @@ function gcc.init(name)
     end
 
     -- init cxflags
-    gcc.cxflags = { flags_arch }
+    self.cxflags = { flags_arch }
 
     -- init mxflags
-    gcc.mxflags = { flags_arch
+    self.mxflags = { flags_arch
                 ,   "-fmessage-length=0"
                 ,   "-pipe"
                 ,   "-fpascal-strings"
@@ -81,16 +81,16 @@ function gcc.init(name)
                 ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
 
     -- init asflags
-    gcc.asflags = { flags_arch } 
+    self.asflags = { flags_arch } 
 
     -- init ldflags
-    gcc.ldflags = { flags_arch }
+    self.ldflags = { flags_arch }
 
     -- init shflags
     if name:find("clang") then
-        gcc.shflags = { flags_arch, "-dynamiclib" }
+        self.shflags = { flags_arch, "-dynamiclib" }
     else
-        gcc.shflags = { flags_arch, "-shared -Wl,-soname" }
+        self.shflags = { flags_arch, "-shared -Wl,-soname" }
     end
 
     -- append the xcode sdk directory if exists
@@ -98,80 +98,80 @@ function gcc.init(name)
     if plat and (plat == "macosx" or plat == "iphoneos" or plat == "iphonesimulator") then
         local xcode_sdkdir = platform.get("xcode_sdkdir")
         if xcode_sdkdir then
-            table.join2(gcc.cxflags, "-isysroot " .. xcode_sdkdir)
-            table.join2(gcc.mxflags, "-isysroot " .. xcode_sdkdir)
-            table.join2(gcc.ldflags, "-isysroot " .. xcode_sdkdir)
-            table.join2(gcc.shflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(self.cxflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(self.mxflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(self.ldflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(self.shflags, "-isysroot " .. xcode_sdkdir)
         end
     end
 
     -- suppress warning for the ccache bug
     if name:find("clang") and config.get("ccache") then
-        table.join2(gcc.cxflags, "-Qunused-arguments")
-        table.join2(gcc.mxflags, "-Qunused-arguments")
+        table.join2(self.cxflags, "-Qunused-arguments")
+        table.join2(self.mxflags, "-Qunused-arguments")
     end
 
     -- init flags map
-    gcc.mapflags = 
+    self.mapflags = 
     {
         -- others
-        ["-ftrapv"]                     = gcc._check
-    ,   ["-fsanitize=address"]          = gcc._check
+        ["-ftrapv"]                     = self._check
+    ,   ["-fsanitize=address"]          = self._check
     }
 
 end
 
 -- make the compile command
-function gcc.command_compile(srcfile, objfile, flags)
+function gcc.command_compile(self, srcfile, objfile, flags)
 
     -- make it
-    return string.format("%s -c %s -o%s %s", gcc.name, flags, objfile, srcfile)
+    return string.format("%s -c %s -o%s %s", self._NAME, flags, objfile, srcfile)
 end
 
 -- make the link command
-function gcc.command_link(objfiles, targetfile, flags)
+function gcc.command_link(self, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s %s -o%s %s", gcc.name, flags, targetfile, objfiles)
+    return string.format("%s %s -o%s %s", self._NAME, flags, targetfile, objfiles)
 end
 
 -- make the define flag
-function gcc.flag_define(define)
+function gcc.flag_define(self, define)
 
     -- make it
     return "-D" .. define
 end
 
 -- make the undefine flag
-function gcc.flag_undefine(undefine)
+function gcc.flag_undefine(self, undefine)
 
     -- make it
     return "-U" .. undefine
 end
 
 -- make the includedir flag
-function gcc.flag_includedir(includedir)
+function gcc.flag_includedir(self, includedir)
 
     -- make it
     return "-I" .. includedir
 end
 
 -- make the link flag
-function gcc.flag_link(link)
+function gcc.flag_link(self, link)
 
     -- make it
     return "-l" .. link
 end
 
 -- make the linkdir flag
-function gcc.flag_linkdir(linkdir)
+function gcc.flag_linkdir(self, linkdir)
 
     -- make it
     return "-L" .. linkdir
 end
 
 -- the main function
-function gcc.main(cmd)
+function gcc.main(self, cmd)
 
     -- execute it
     local ok = os.execute(cmd)

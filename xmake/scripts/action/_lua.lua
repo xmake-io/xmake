@@ -86,11 +86,11 @@ function _lua.done()
 
                     -- init module 
                     if module.init then
-                        module.init(options.script)
+                        module:init(options.script)
                     end
 
                     -- done module 
-                    return module.main(arguments)
+                    return module:main(arguments)
                 end
             end
         end
