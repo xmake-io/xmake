@@ -20,4 +20,19 @@
 -- @file        g++.lua
 --
 
-return require("tools/gcc")
+-- load modules
+local gcc = require("tools/gcc")
+
+-- define module: gxx
+local gxx = gxx or {}
+
+-- only copy the interfaces of gcc to g++
+for k, v in pairs(gcc) do
+    if type(v) == "function" then
+        gxx[k] = v
+    end
+end
+
+-- return module: g++
+return gxx
+
