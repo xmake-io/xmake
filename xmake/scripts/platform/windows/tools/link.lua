@@ -66,7 +66,10 @@ function link._leave(name, old)
 end
 
 -- init the compiler
-function link.init(name)
+function link.init(self, name)
+
+    -- save name
+    self._NAME = name or "link.exe"
 
     -- the architecture
     local arch = config.get("arch")
@@ -79,7 +82,7 @@ function link.init(name)
     end
 
     -- init ldflags
-    link.ldflags =  { "-nologo"
+    self.ldflags =  { "-nologo"
                     , "-dynamicbase"
                     , "-nxcompat"
                     , "-manifest"
@@ -87,13 +90,13 @@ function link.init(name)
                     , flags_arch}
 
     -- init arflags
-    link.arflags = {"-lib", "-nologo", flags_arch}
+    self.arflags = {"-lib", "-nologo", flags_arch}
 
     -- init shflags
-    link.shflags = {"-dll", "-nologo", flags_arch}
+    self.shflags = {"-dll", "-nologo", flags_arch}
 
     -- init flags map
-    link.mapflags = 
+    self.mapflags = 
     {
         -- strip
         ["-s"]                     = ""
@@ -108,28 +111,28 @@ function link.init(name)
 end
 
 -- make the linker command
-function link.command_link(objfiles, targetfile, flags)
+function link.command_link(self, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("link.exe %s -out:%s %s", flags, targetfile, objfiles)
+    return string.format("%s %s -out:%s %s", self._NAME, flags, targetfile, objfiles)
 end
 
 -- make the link flag
-function link.flag_link(link)
+function link.flag_link(self, link)
 
     -- make it
     return link .. ".lib"
 end
 
 -- make the linkdir flag
-function link.flag_linkdir(linkdir)
+function link.flag_linkdir(self, linkdir)
 
     -- make it
     return "-libpath:" .. linkdir
 end
 
 -- the main function
-function link.main(cmd)
+function link.main(self, cmd)
 
     -- enter the vs environment
     local pathes    = link._enter("path")

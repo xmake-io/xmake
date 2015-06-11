@@ -29,25 +29,25 @@ local string    = require("base/string")
 local config    = require("base/config")
 
 -- init the linker
-function ar.init(name)
+function ar.init(self, name)
 
     -- save name
-    ar.name = name or "ar"
+    self._NAME = name or "ar"
 
     -- init arflags
-    ar.arflags = { "-crs" }
+    self.arflags = { "-crs" }
 
 end
 
 -- make the link command
-function ar.command_link(objfiles, targetfile, flags)
+function ar.command_link(self, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s %s %s %s", ar.name, flags, targetfile, objfiles)
+    return string.format("%s %s %s %s", self._NAME, flags, targetfile, objfiles)
 end
 
 -- the main function
-function ar.main(cmd)
+function ar.main(self, cmd)
 
     -- execute it
     local ok = os.execute(cmd)

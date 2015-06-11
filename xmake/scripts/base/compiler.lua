@@ -47,7 +47,13 @@ function compiler._mapflag(module, flag)
 
     -- find and replace it using pattern
     for k, v in pairs(module.mapflags) do
-        local flag_mapped, count = flag:gsub(k, v)
+        local flag_mapped, count = flag:gsub(k, function (w) 
+                                                    if type(v) == "function" then
+                                                        return v(module, w)
+                                                    else
+                                                        return v
+                                                    end
+                                                end)
         if flag_mapped and count ~= 0 then
             return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
         end
@@ -126,8 +132,8 @@ function compiler._flagnames(name)
     return flagnames
 end
 
--- get the compiler name from the source file type
-function compiler._name(srcfile)
+-- get the compiler kind from the source file type
+function compiler._kind(srcfile)
 
     -- get the source file type
     local filetype = path.extension(srcfile)
@@ -138,30 +144,30 @@ function compiler._name(srcfile)
     -- get the lower file type
     filetype = filetype:lower()
 
-    -- get the compiler name
-    local name = nil
-    if filetype == ".c" then name = "cc"
-    elseif filetype == ".cpp" or filetype == ".cc" then name = "cxx"
-    elseif filetype == ".m" then name = "mm"
-    elseif filetype == ".mm" then name = "mxx"
-    elseif filetype == ".s" or filetype == ".asm" then name = "as"
+    -- get the compiler kind
+    local kind = nil
+    if filetype == ".c" then kind = "cc"
+    elseif filetype == ".cpp" or filetype == ".cc" then kind = "cxx"
+    elseif filetype == ".m" then kind = "mm"
+    elseif filetype == ".mm" then kind = "mxx"
+    elseif filetype == ".s" or filetype == ".asm" then kind = "as"
     end
     
     -- ok
-    return name
+    return kind
 end
     
 -- get the compiler from the given source file
 function compiler.get(srcfile)
 
-    -- get the compiler name
-    local name = compiler._name(srcfile)
-    if not name then
+    -- get the compiler kind
+    local kind = compiler._kind(srcfile)
+    if not kind then
         return 
     end
 
     -- get compiler from the source file type
-    local module = tools.get(name)
+    local module = tools.get(kind)
     if module then 
         
         -- invalid compiler
@@ -169,8 +175,8 @@ function compiler.get(srcfile)
             return 
         end
 
-        -- save name 
-        module._NAME = name 
+        -- save kind 
+        module._KIND = kind 
     end
 
     -- ok?
@@ -184,7 +190,7 @@ function compiler.make(module, target, srcfile, objfile)
     assert(module and target)
 
     -- the flag names
-    local flagnames = compiler._flagnames(module._NAME)
+    local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
     -- append the common flags from the current compiler 
@@ -247,21 +253,21 @@ function compiler.make(module, target, srcfile, objfile)
     -- append the includedirs flags from the current project
     if module.flag_includedir then
         for _, includedir in ipairs(utils.wrap(target.includedirs)) do
-            table.join2(flags, module.flag_includedir(includedir))
+            table.join2(flags, module:flag_includedir(includedir))
         end
     end
 
     -- append the defines flags from the current project
     if module.flag_define then
         for _, define in ipairs(utils.wrap(target.defines)) do
-            table.join2(flags, module.flag_define(define))
+            table.join2(flags, module:flag_define(define))
         end
     end
 
     -- append the undefines flags from the current project
     if module.flag_undefine then
         for _, undefine in ipairs(utils.wrap(target.undefines)) do
-            table.join2(flags, module.flag_undefine(undefine))
+            table.join2(flags, module:flag_undefine(undefine))
         end
     end
 
@@ -282,7 +288,7 @@ function compiler.make(module, target, srcfile, objfile)
                 -- append the includedirs flags from the option
                 if module.flag_includedir then
                     for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-                        table.join2(flags, module.flag_includedir(includedir))
+                        table.join2(flags, module:flag_includedir(includedir))
                     end
                 end
 
@@ -294,7 +300,7 @@ function compiler.make(module, target, srcfile, objfile)
                     if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
 
                     for _, define in ipairs(defines) do
-                        table.join2(flags, module.flag_define(define))
+                        table.join2(flags, module:flag_define(define))
                     end
                 end
 
@@ -306,7 +312,7 @@ function compiler.make(module, target, srcfile, objfile)
                     if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
 
                     for _, undefine in ipairs(undefines) do
-                        table.join2(flags, module.flag_undefine(undefine))
+                        table.join2(flags, module:flag_undefine(undefine))
                     end
                 end
             end
@@ -319,7 +325,7 @@ function compiler.make(module, target, srcfile, objfile)
     end
 
     -- make the compile command
-    return module.command_compile(srcfile, objfile, table.concat(flags, " "):trim())
+    return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim())
 end
 
 -- check include for the project option
@@ -351,7 +357,7 @@ function compiler.check_include(opt, include, srcpath, objpath)
     if not module then return end
 
     -- the flag names
-    local flagnames = compiler._flagnames(module._NAME)
+    local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
     -- append the common flags 
@@ -369,7 +375,7 @@ function compiler.check_include(opt, include, srcpath, objpath)
     if opt.defines and module.flag_define then
         local defines = utils.wrap(opt.defines)
         for _, define in ipairs(defines) do
-            table.join2(flags, module.flag_define(define))
+            table.join2(flags, module:flag_define(define))
         end
     end
 
@@ -377,23 +383,23 @@ function compiler.check_include(opt, include, srcpath, objpath)
     if opt.undefines and module.flag_undefine then
         local undefines = utils.wrap(opt.undefines)
         for _, undefine in ipairs(undefines) do
-            table.join2(flags, module.flag_undefine(undefine))
+            table.join2(flags, module:flag_undefine(undefine))
         end
     end
 
     -- append the includedirs flags
     if opt.includedirs and module.flag_includedir then
         for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, module.flag_includedir(includedir))
+            table.join2(flags, module:flag_includedir(includedir))
         end
     end
 
     -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", module.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
+    local cmd = string.format("%s > %s 2>&1", module:command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
     -- execute the compile command
-    return module.main(cmd)
+    return module:main(cmd)
 end
 
 -- check function for the project option
@@ -412,8 +418,8 @@ function compiler.check_function(opt, interface, srcpath, objpath)
 
     -- make includes 
     local includes = nil
-    if module._NAME == "cc" then includes = opt.cincludes
-    elseif module._NAME == "cxx" then includes = opt.cxxincludes 
+    if module._KIND == "cc" then includes = opt.cincludes
+    elseif module._KIND == "cxx" then includes = opt.cxxincludes 
     end
     if includes then
         for _, include in ipairs(utils.wrap(includes)) do
@@ -437,7 +443,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     srcfile:close()
 
     -- the flag names
-    local flagnames = compiler._flagnames(module._NAME)
+    local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
     -- append the common flags 
@@ -455,7 +461,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     if opt.defines and module.flag_define then
         local defines = utils.wrap(opt.defines)
         for _, define in ipairs(defines) do
-            table.join2(flags, module.flag_define(define))
+            table.join2(flags, module:flag_define(define))
         end
     end
 
@@ -463,23 +469,23 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     if opt.undefines and module.flag_undefine then
         local undefines = utils.wrap(opt.undefines)
         for _, undefine in ipairs(undefines) do
-            table.join2(flags, module.flag_undefine(undefine))
+            table.join2(flags, module:flag_undefine(undefine))
         end
     end
 
     -- append the includedirs flags
     if opt.includedirs and module.flag_includedir then
         for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, module.flag_includedir(includedir))
+            table.join2(flags, module:flag_includedir(includedir))
         end
     end
 
     -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", module.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
+    local cmd = string.format("%s > %s 2>&1", module:command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
     -- execute the compile command
-    return module.main(cmd)
+    return module:main(cmd)
 end
 
 -- return module: compiler

@@ -27,7 +27,7 @@ local mkdir = mkdir or {}
 local os = require("base/os")
 
 -- the main function
-function mkdir.main(...)
+function mkdir.main(self, ...)
 
     -- mkdir all
     for _, dir in ipairs(...) do

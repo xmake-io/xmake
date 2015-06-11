@@ -27,7 +27,7 @@ local mv = mv or {}
 local os = require("base/os")
 
 -- the main function
-function mv.main(...)
+function mv.main(self, ...)
 
     -- mv it
     local pathes = ...

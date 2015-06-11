@@ -27,7 +27,7 @@ local cp = cp or {}
 local os = require("base/os")
 
 -- the main function
-function cp.main(...)
+function cp.main(self, ...)
 
     -- cp it
     local pathes = ...
