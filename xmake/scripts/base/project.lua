@@ -340,7 +340,6 @@ function project._makeconf_for_target(target_name, target)
         end
     end
 
-
     -- make the tail
     file:write("#endif\n")
 
