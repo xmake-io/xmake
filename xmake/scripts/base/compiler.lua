@@ -111,6 +111,204 @@ function compiler._getflags(module, names, flags)
     return flags_mapped
 end
 
+-- add flags from the compiler 
+function compiler._addflags_from_compiler(module, flags, flagnames)
+
+    -- check
+    assert(module and flags and flagnames)
+
+    -- done
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, module, module[flagname])
+    end
+end
+
+-- add flags from the configure 
+function compiler._addflags_from_config(module, flags, flagnames)
+
+    -- check
+    assert(module and flags and flagnames)
+
+    -- done
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, config.get(flagname))
+    end
+end
+
+-- add flags from the platform 
+function compiler._addflags_from_platform(module, flags, flagnames)
+
+    -- check
+    assert(module and flags and flagnames)
+
+    -- done
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(module, platform.get(flagname)))
+    end
+end
+
+-- add flags from the target 
+function compiler._addflags_from_target(module, flags, flagnames, target)
+
+    -- check
+    assert(module and flags and flagnames and target)
+
+    -- add the target flags from the current project
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(module, target[flagname]))
+    end
+
+    -- add the symbols flags from the current project
+    table.join2(flags, compiler._getflags(module, target.symbols, {     debug       = "-g"
+                                                                    ,   hidden      = "-fvisibility=hidden"
+                                                                    }))
+
+    -- add the warning flags from the current project
+    table.join2(flags, compiler._getflags(module, target.warnings,  {   none        = "-w"
+                                                                    ,   all         = "-Wall"
+                                                                    ,   error       = "-Werror"
+                                                                    }))
+ 
+    -- add the optimize flags from the current project
+    table.join2(flags, compiler._getflags(module, target.optimize, {    none        = "-O0"
+                                                                    ,   fast        = "-O1"
+                                                                    ,   faster      = "-O2"
+                                                                    ,   fastest     = "-O3"
+                                                                    ,   smallest    = "-Os"
+                                                                    ,   aggressive  = "-Ofast"
+                                                                    }))
+ 
+    -- add the vector extensions flags from the current project
+    table.join2(flags, compiler._getflags(module, target.vectorexts, {      mmx         = "-mmmx"
+                                                                        ,   sse         = "-msse"
+                                                                        ,   sse2        = "-msse2"
+                                                                        ,   sse3        = "-msse3"
+                                                                        ,   ssse3       = "-mssse3"
+                                                                        ,   avx         = "-mavx"
+                                                                        ,   avx2        = "-mavx2"
+                                                                        ,   neon        = "-mfpu=neon"
+                                                                        }))
+
+    -- add the language flags from the current project
+    table.join2(flags, compiler._getflags(module, target.language, {    ansi        = "-ansi"
+                                                                    ,   c89         = "-std=c89"
+                                                                    ,   gnu89       = "-std=gnu89"
+                                                                    ,   c99         = "-std=c99"
+                                                                    ,   gnu99       = "-std=gnu99"
+                                                                    ,   cxx98       = "-std=c++98"
+                                                                    ,   gnuxx98     = "-std=gnu++98"
+                                                                    ,   cxx11       = "-std=c++11"
+                                                                    ,   gnuxx11     = "-std=gnu++11"
+                                                                    ,   cxx14       = "-std=c++14"
+                                                                    ,   gnuxx14     = "-std=gnu++14"
+                                                                    }))
+ 
+
+    -- add the includedirs flags from the current project
+    if module.flag_includedir then
+        for _, includedir in ipairs(utils.wrap(target.includedirs)) do
+            table.join2(flags, module:flag_includedir(includedir))
+        end
+    end
+
+    -- add the defines flags from the current project
+    if module.flag_define then
+        for _, define in ipairs(utils.wrap(target.defines)) do
+            table.join2(flags, module:flag_define(define))
+        end
+    end
+
+    -- append the undefines flags from the current project
+    if module.flag_undefine then
+        for _, undefine in ipairs(utils.wrap(target.undefines)) do
+            table.join2(flags, module:flag_undefine(undefine))
+        end
+    end
+
+    -- the options
+    if target.options then
+        for _, name in ipairs(utils.wrap(target.options)) do
+
+            -- get option if be enabled
+            local opt = nil
+            if config.get(name) then opt = config.get("__" .. name) end
+            if nil ~= opt then
+
+                -- add the flags from the option
+                for _, flagname in ipairs(flagnames) do
+                    table.join2(flags, compiler._mapflags(module, opt[flagname]))
+                end
+
+                -- add the includedirs flags from the option
+                if module.flag_includedir then
+                    for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
+                        table.join2(flags, module:flag_includedir(includedir))
+                    end
+                end
+
+                -- add the defines flags from the option
+                if module.flag_define then
+
+                    local defines = {}
+                    if opt.defines then table.join2(defines, opt.defines) end
+                    if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
+
+                    for _, define in ipairs(defines) do
+                        table.join2(flags, module:flag_define(define))
+                    end
+                end
+
+                -- add the undefines flags from the option
+                if module.flag_undefine then 
+
+                    local undefines = {}
+                    if opt.undefines then table.join2(undefines, opt.undefines) end
+                    if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
+
+                    for _, undefine in ipairs(undefines) do
+                        table.join2(flags, module:flag_undefine(undefine))
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- add flags from the option 
+function compiler._addflags_from_option(module, flags, flagnames, opt)
+
+    -- check
+    assert(module and flags and flagnames and opt)
+
+    -- append the option flags 
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(module, opt[flagname]))
+    end
+
+    -- append the defines flags
+    if opt.defines and module.flag_define then
+        local defines = utils.wrap(opt.defines)
+        for _, define in ipairs(defines) do
+            table.join2(flags, module:flag_define(define))
+        end
+    end
+
+    -- append the undefines flags 
+    if opt.undefines and module.flag_undefine then
+        local undefines = utils.wrap(opt.undefines)
+        for _, undefine in ipairs(undefines) do
+            table.join2(flags, module:flag_undefine(undefine))
+        end
+    end
+
+    -- append the includedirs flags
+    if opt.includedirs and module.flag_includedir then
+        for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
+            table.join2(flags, module:flag_includedir(includedir))
+        end
+    end
+end
+
 -- get the flag names from the given compiler name
 function compiler._flagnames(name)
 
@@ -194,136 +392,18 @@ function compiler.make(module, target, srcfile, objfile)
     local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
-    -- append the common flags from the current compiler 
+    -- add flags from the compiler 
     local flags = {}
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, module[flagname])
-    end
+    compiler._addflags_from_compiler(module, flags, flagnames)
 
-    -- append the target flags from the current project
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, target[flagname]))
-    end
+    -- add flags from the platform 
+    compiler._addflags_from_platform(module, flags, flagnames)
 
-    -- append the symbols flags from the current project
-    table.join2(flags, compiler._getflags(module, target.symbols, {     debug       = "-g"
-                                                                    ,   hidden      = "-fvisibility=hidden"
-                                                                    }))
+    -- add flags from the target 
+    compiler._addflags_from_target(module, flags, flagnames, target)
 
-    -- append the warning flags from the current project
-    table.join2(flags, compiler._getflags(module, target.warnings,  {   none        = "-w"
-                                                                    ,   all         = "-Wall"
-                                                                    ,   error       = "-Werror"
-                                                                    }))
- 
-    -- append the optimize flags from the current project
-    table.join2(flags, compiler._getflags(module, target.optimize, {    none        = "-O0"
-                                                                    ,   fast        = "-O1"
-                                                                    ,   faster      = "-O2"
-                                                                    ,   fastest     = "-O3"
-                                                                    ,   smallest    = "-Os"
-                                                                    ,   aggressive  = "-Ofast"
-                                                                    }))
- 
-    -- append the vector extensions flags from the current project
-    table.join2(flags, compiler._getflags(module, target.vectorexts, {      mmx         = "-mmmx"
-                                                                        ,   sse         = "-msse"
-                                                                        ,   sse2        = "-msse2"
-                                                                        ,   sse3        = "-msse3"
-                                                                        ,   ssse3       = "-mssse3"
-                                                                        ,   avx         = "-mavx"
-                                                                        ,   avx2        = "-mavx2"
-                                                                        ,   neon        = "-mfpu=neon"
-                                                                        }))
-
-    -- append the language flags from the current project
-    table.join2(flags, compiler._getflags(module, target.language, {    ansi        = "-ansi"
-                                                                    ,   c89         = "-std=c89"
-                                                                    ,   gnu89       = "-std=gnu89"
-                                                                    ,   c99         = "-std=c99"
-                                                                    ,   gnu99       = "-std=gnu99"
-                                                                    ,   cxx98       = "-std=c++98"
-                                                                    ,   gnuxx98     = "-std=gnu++98"
-                                                                    ,   cxx11       = "-std=c++11"
-                                                                    ,   gnuxx11     = "-std=gnu++11"
-                                                                    ,   cxx14       = "-std=c++14"
-                                                                    ,   gnuxx14     = "-std=gnu++14"
-                                                                    }))
- 
-
-    -- append the includedirs flags from the current project
-    if module.flag_includedir then
-        for _, includedir in ipairs(utils.wrap(target.includedirs)) do
-            table.join2(flags, module:flag_includedir(includedir))
-        end
-    end
-
-    -- append the defines flags from the current project
-    if module.flag_define then
-        for _, define in ipairs(utils.wrap(target.defines)) do
-            table.join2(flags, module:flag_define(define))
-        end
-    end
-
-    -- append the undefines flags from the current project
-    if module.flag_undefine then
-        for _, undefine in ipairs(utils.wrap(target.undefines)) do
-            table.join2(flags, module:flag_undefine(undefine))
-        end
-    end
-
-    -- the options
-    if target.options then
-        for _, name in ipairs(utils.wrap(target.options)) do
-
-            -- get option if be enabled
-            local opt = nil
-            if config.get(name) then opt = config.get("__" .. name) end
-            if nil ~= opt then
-
-                -- append the flags from the option
-                for _, flagname in ipairs(flagnames) do
-                    table.join2(flags, compiler._mapflags(module, opt[flagname]))
-                end
-
-                -- append the includedirs flags from the option
-                if module.flag_includedir then
-                    for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-                        table.join2(flags, module:flag_includedir(includedir))
-                    end
-                end
-
-                -- append the defines flags from the option
-                if module.flag_define then
-
-                    local defines = {}
-                    if opt.defines then table.join2(defines, opt.defines) end
-                    if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
-
-                    for _, define in ipairs(defines) do
-                        table.join2(flags, module:flag_define(define))
-                    end
-                end
-
-                -- append the undefines flags from the option
-                if module.flag_undefine then 
-
-                    local undefines = {}
-                    if opt.undefines then table.join2(undefines, opt.undefines) end
-                    if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
-
-                    for _, undefine in ipairs(undefines) do
-                        table.join2(flags, module:flag_undefine(undefine))
-                    end
-                end
-            end
-        end
-    end
-
-    -- append the flags from the configure 
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, config.get(flagname)))
-    end
+    -- add flags from the configure 
+    compiler._addflags_from_config(module, flags, flagnames)
 
     -- make the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim())
@@ -361,39 +441,18 @@ function compiler.check_include(opt, include, srcpath, objpath)
     local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
-    -- append the common flags 
+    -- add flags from the compiler 
     local flags = {}
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, module[flagname])
-    end
+    compiler._addflags_from_compiler(module, flags, flagnames)
 
-    -- append the option flags 
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, opt[flagname]))
-    end
+    -- add flags from the platform 
+    compiler._addflags_from_platform(module, flags, flagnames)
 
-    -- append the defines flags
-    if opt.defines and module.flag_define then
-        local defines = utils.wrap(opt.defines)
-        for _, define in ipairs(defines) do
-            table.join2(flags, module:flag_define(define))
-        end
-    end
+    -- add flags from the option 
+    compiler._addflags_from_option(module, flags, flagnames, opt)
 
-    -- append the undefines flags 
-    if opt.undefines and module.flag_undefine then
-        local undefines = utils.wrap(opt.undefines)
-        for _, undefine in ipairs(undefines) do
-            table.join2(flags, module:flag_undefine(undefine))
-        end
-    end
-
-    -- append the includedirs flags
-    if opt.includedirs and module.flag_includedir then
-        for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, module:flag_includedir(includedir))
-        end
-    end
+    -- add flags from the configure 
+    compiler._addflags_from_config(module, flags, flagnames)
 
     -- make the compile command
     local cmd = string.format("%s > %s 2>&1", module:command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
@@ -447,39 +506,18 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
-    -- append the common flags 
+    -- add flags from the compiler 
     local flags = {}
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, module[flagname])
-    end
+    compiler._addflags_from_compiler(module, flags, flagnames)
 
-    -- append the option flags 
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, opt[flagname]))
-    end
+    -- add flags from the platform 
+    compiler._addflags_from_platform(module, flags, flagnames)
 
-    -- append the defines flags
-    if opt.defines and module.flag_define then
-        local defines = utils.wrap(opt.defines)
-        for _, define in ipairs(defines) do
-            table.join2(flags, module:flag_define(define))
-        end
-    end
+    -- add flags from the option 
+    compiler._addflags_from_option(module, flags, flagnames, opt)
 
-    -- append the undefines flags 
-    if opt.undefines and module.flag_undefine then
-        local undefines = utils.wrap(opt.undefines)
-        for _, undefine in ipairs(undefines) do
-            table.join2(flags, module:flag_undefine(undefine))
-        end
-    end
-
-    -- append the includedirs flags
-    if opt.includedirs and module.flag_includedir then
-        for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, module:flag_includedir(includedir))
-        end
-    end
+    -- add flags from the configure 
+    compiler._addflags_from_config(module, flags, flagnames)
 
     -- make the compile command
     local cmd = string.format("%s > %s 2>&1", module:command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
