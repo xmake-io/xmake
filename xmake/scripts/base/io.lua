@@ -24,6 +24,7 @@
 local io = io or {}
 
 -- load modules
+local path  = require("base/path")
 local utils = require("base/utils")
 
 -- save object with the level
@@ -96,11 +97,27 @@ function io._save(file, object)
     return io._save_with_level(file, object, 0)
 end
 
+-- create directory and open a writable file
+function io.openmk(filepath)
+
+    -- check
+    assert(filepath)
+
+    -- get the file directory
+    local dir = path.directory(filepath)
+
+    -- ensure the file directory 
+    if not os.isdir(dir) then os.mkdir(dir) end
+
+    -- open it
+    return io.open(filepath, "w")
+end
+
 -- save object the the given filepath
 function io.save(filepath, object)
     
     -- open the file
-    local file = io.open(filepath, "w")
+    local file = io.openmk(filepath)
     if not file then
         -- error
         return false, string.format("open %s failed!", filepath)

@@ -259,7 +259,8 @@ function project._makeconf_for_target(target_name, target)
     local prefix = target_name:upper() .. "_CONFIG"
 
     -- open the file
-    local file = project._CONFILES[configfile] or io.open(configfile, "w")
+    local file = project._CONFILES[configfile] or io.openmk(configfile)
+    assert(file)
 
     -- make the head
     if project._CONFILES[configfile] then file:write("\n") end

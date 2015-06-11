@@ -24,6 +24,7 @@
 local compiler = compiler or {}
 
 -- load modules
+local io        = require("base/io")
 local path      = require("base/path")
 local rule      = require("base/rule")
 local utils     = require("base/utils")
@@ -328,7 +329,7 @@ function compiler.check_include(opt, include, srcpath, objpath)
     assert(opt and srcpath and objpath)
 
     -- open the checking source file
-    local srcfile = io.open(srcpath, "w")
+    local srcfile = io.openmk(srcpath)
     if not srcfile then return end
 
     -- make include
@@ -402,7 +403,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     assert(opt and interface)
 
     -- open the checking source file
-    local srcfile = io.open(srcpath, "w")
+    local srcfile = io.openmk(srcpath)
     if not srcfile then return end
 
     -- get the compiler

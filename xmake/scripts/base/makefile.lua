@@ -213,11 +213,6 @@ function makefile.make()
     local buildir = config.get("buildir")
     assert(buildir)
 
-    -- make the build directory
-    if not os.isdir(buildir) then
-        assert(os.mkdir(buildir))
-    end
-
     -- init the log file
     local logfile = rule.logfile()
     if logfile and os.isfile(logfile) then
@@ -230,7 +225,7 @@ function makefile.make()
 
     -- open the makefile 
     local path = buildir .. "/makefile"
-    local file = io.open(path, "w")
+    local file = io.openmk(path)
     if not file then
         -- error
         utils.error("open %s failed!", path)

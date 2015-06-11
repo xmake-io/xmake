@@ -21,6 +21,7 @@
 --
 
 -- load modules
+local io        = require("base/io")
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
@@ -151,7 +152,7 @@ function prober._probe_vs_path(configs)
 
     -- make the call(vsvars32.bat) file
     local callpath = tmpdir .. "\\call_vsvars32.bat"
-    local callfile = io.open(callpath, "w")
+    local callfile = io.openmk(callpath)
     assert(callfile)
 
     -- make call scripts
