@@ -37,6 +37,9 @@ local compiler      = require("base/compiler")
 -- the current mode is belong to the given modes?
 function project._api_modes(env, ...)
 
+    -- the configure has been not loaded, only for menu
+    if not config._CURRENT then return false end
+
     -- get the current mode
     local mode = config.get("mode")
     if not mode then return false end
@@ -52,6 +55,9 @@ end
 -- the current platform is belong to the given platforms?
 function project._api_plats(env, ...)
 
+    -- the configure has been not loaded, only for menu
+    if not config._CURRENT then return false end
+
     -- get the current platform
     local plat = config.get("plat")
     if not plat then return false end
@@ -66,6 +72,9 @@ end
 
 -- the current platform is belong to the given architectures?
 function project._api_archs(env, ...)
+
+    -- the configure has been not loaded, only for menu
+    if not config._CURRENT then return false end
 
     -- get the current architecture
     local arch = config.get("arch")
@@ -616,10 +625,19 @@ function project._load_options(file)
                                     end})
     setfenv(script, newenv)
 
+    -- register interfaces for the condition
+    newenv.modes            = function (...) return project._api_modes(newenv, ...) end
+    newenv.plats            = function (...) return project._api_plats(newenv, ...) end
+    newenv.archs            = function (...) return project._api_archs(newenv, ...) end
+
     -- register interfaces for the option
     newenv.set_option       = function (...) return project._api_add_option(newenv, ...) end
     newenv.add_option       = function (...) return project._api_add_option(newenv, ...) end
- 
+  
+    -- register interfaces for the subproject files
+    newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
+    newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
+    
     -- register interfaces for setting option values
     local interfaces =  {   "default"
                         ,   "description"} 
@@ -834,14 +852,22 @@ function project.menu()
 
     -- attempt to load project configure
     local configs = nil
+    local errors = nil
     local projectfile = xmake._PROJECT_FILE
     if projectfile and os.isfile(projectfile) then
-        configs = project._load_options(projectfile)
+        configs, errors = project._load_options(projectfile)
+    else 
+        errors = string.format("load %s failed!", projectfile)
+    end
+
+    -- failed?
+    if not configs then
+        utils.error(errors)
+        return {}
     end
 
     -- the options
-    local options = nil
-    if configs then options = configs._OPTIONS end
+    local options = configs._OPTIONS 
     if not options then return {} end
 
     -- make menu
