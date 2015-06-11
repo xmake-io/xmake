@@ -87,7 +87,7 @@ local menu =
 }
 
 -- prepare global
-function main._prepare_global()
+function main._init_global()
 
     -- the options
     local options = xmake._OPTIONS
@@ -110,8 +110,8 @@ function main._prepare_global()
     return true
 end
 
--- prepare project
-function main._prepare_project()
+-- init project
+function main._init_project()
 
     -- the options
     local options = xmake._OPTIONS
@@ -132,17 +132,27 @@ function main._prepare_project()
         -- probe the current platform 
         platform.probe(false)
 
+    end
+
+    -- merge the default options
+    for k, v in pairs(options._DEFAULTS) do
+        if nil == options[k] then options[k] = v end
+    end
+
+    -- make the current platform configure
+    if not platform.make() then
+        return string.format("make platform configure: %s failed!", config.get("plat"))
+    end
+
+    -- xmake config or marked as "reconfig"?
+    if options._ACTION == "config" or config._RECONFIG then
+
         -- probe the current project 
         project.probe()
 
         -- clear up the configure
         config.clearup()
 
-    end
-
-    -- merge the default options
-    for k, v in pairs(options._DEFAULTS) do
-        if nil == options[k] then options[k] = v end
     end
 
     -- load the project 
@@ -200,33 +210,19 @@ function main._done_option()
         return action.done("lua")
     end
 
-    -- prepare global 
-    main._prepare_global()
+    -- init global 
+    main._init_global()
 
     -- done global?
     if options._ACTION == "global" then
         return action.done("global")
     end
 
-    -- prepare project
-    local errors = main._prepare_project()
+    -- init project
+    local errors = main._init_project()
     if errors then
         -- error
         utils.error(errors)
-        return false
-    end
-
-    -- make the current platform configure
-    if not platform.make() then
-        -- error
-        utils.error("make platform configure: %s failed!", config.get("plat"))
-        return false
-    end
-
-    -- enter the project directory
-    if not os.cd(xmake._PROJECT_DIR) then
-        -- error
-        utils.error("not found project: %s!", xmake._PROJECT_DIR)
         return false
     end
  
@@ -262,6 +258,12 @@ function main._init()
     xmake._PROJECT_FILE = projectfile
     assert(projectfile)
 
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        -- error
+        utils.error("not found project: %s!", xmake._PROJECT_DIR)
+        return false
+    end
 end
 
 -- the main function

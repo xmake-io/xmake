@@ -28,7 +28,6 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
-local project   = require("base/project")
 local platform  = require("platform/platform")
 
 -- get the building log file path

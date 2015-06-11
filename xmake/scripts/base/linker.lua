@@ -101,6 +101,31 @@ function linker._getflags(module, names, flags)
     return flags_mapped
 end
 
+-- get the linker from the given kind
+function linker.get(kind)
+
+    -- check
+    assert(kind)
+
+    -- get the linker name from the kind
+    local name = nil
+    if kind == "binary" then name = "ld"
+    elseif kind == "static" then name = "ar"
+    elseif kind == "shared" then name = "sh"
+    else return end
+ 
+    -- get it
+    local module = tools.get(name)
+
+    -- invalid linker?
+    if module and not module.command_link then
+        return 
+    end
+
+    -- ok?
+    return module
+end
+
 -- make the link command
 function linker.make(module, target, objfiles, targetfile)
 
@@ -156,30 +181,42 @@ function linker.make(module, target, objfiles, targetfile)
     return module.command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())
 end
 
--- get the linker from the given kind
-function linker.get(kind)
+-- check link for the project option
+function linker.check_link(opt, link, objectfile, targetfile)
 
     -- check
-    assert(kind)
+    assert(opt and link and objectfile and targetfile)
 
-    -- get the linker name from the kind
-    local name = nil
-    if kind == "binary" then name = "ld"
-    elseif kind == "static" then name = "ar"
-    elseif kind == "shared" then name = "sh"
-    else return end
- 
-    -- get it
-    local module = tools.get(name)
+    -- get the linker
+    local l = linker.get("binary")
+    assert(l and l.flag_link)
 
-    -- invalid linker?
-    if module and not module.command_link then
-        return 
+    -- append the common flags 
+    local flags = {}
+    table.join2(flags, l.ldflags)
+
+    -- append the option flags
+    table.join2(flags, linker._mapflags(l, opt.ldflags))
+
+    -- append the linkdirs flags 
+    if opt.linkdirs and l.flag_linkdir then
+        for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
+            table.join2(flags, l.flag_linkdir(linkdir))
+        end
     end
 
-    -- ok?
-    return module
-end
+    -- append the links flags
+    table.join2(flags, l.flag_link(link))
 
+    -- make the compile command
+    local cmd = string.format("%s > %s 2>&1", l.command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
+    if not cmd then return end
+
+    -- check it
+    if 0 ~= os.execute(cmd) then return end
+
+    -- ok
+    return true
+end
 -- return module: linker
 return linker
