@@ -49,12 +49,12 @@ add_option("option3")
 add_option("option4")
     set_option_default(false)
     add_option_defines_if_ok("OPTION4_ENABLE")
-    add_option_cincludes("stdio.h", "hello1.h")
-    add_option_includedirs("src/hello1")
-    add_option_links("hello1")
-    add_option_linkdirs("$(buildir)")
-    add_option_cfuncs("hello1")
     set_option_description("The option for finding interfaces.")
+    if not plats("windows") then
+        add_option_links("z", "sqlite3")
+        add_option_cfuncs("sqlite3_open")
+        add_option_cincludes("stdio.h", "sqlite3.h")
+    end
 
 add_target("hello1")
     set_kind("static")

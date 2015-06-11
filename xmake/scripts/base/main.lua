@@ -117,6 +117,11 @@ function main._init_project()
     local options = xmake._OPTIONS
     assert(options)
 
+    -- check the project file
+    if not os.isfile(xmake._PROJECT_FILE) then
+        return string.format("not found the project file: %s", xmake._PROJECT_FILE)
+    end
+
     -- init the build directory
     if options.buildir and path.is_absolute(options.buildir) then
         options.buildir = path.relative(options.buildir, xmake._PROJECT_DIR)
