@@ -136,10 +136,10 @@ function linker.make(module, target, objfiles, targetfile)
     local kind = target.kind or ""
 
     -- the flag name
-    local flag_name = nil
-    if kind == "binary" then flag_name = "ldflags"
-    elseif kind == "static" then flag_name = "arflags"
-    elseif kind == "shared" then flag_name = "shflags"
+    local flagname = nil
+    if kind == "binary" then flagname = "ldflags"
+    elseif kind == "static" then flagname = "arflags"
+    elseif kind == "shared" then flagname = "shflags"
     else
         -- error
         utils.error("unknown type for linker: %s", kind)
@@ -148,29 +148,55 @@ function linker.make(module, target, objfiles, targetfile)
 
     -- append the common flags from the current linker 
     local flags = {}
-    table.join2(flags, module[flag_name])
+    table.join2(flags, module[flagname])
 
     -- append the target flags from the current project
-    table.join2(flags, linker._mapflags(module, target[flag_name]))
+    table.join2(flags, linker._mapflags(module, target[flagname]))
 
     -- append the linkdirs flags from the current project
     if module.flag_linkdir then
-        local linkdirs = utils.wrap(target.linkdirs)
-        for _, linkdir in ipairs(linkdirs) do
+        for _, linkdir in ipairs(utils.wrap(target.linkdirs)) do
             table.join2(flags, module.flag_linkdir(linkdir))
         end
     end
 
     -- append the links flags from the current project
     if module.flag_link then
-        local links = utils.wrap(target.links)
-        for _, link in ipairs(links) do
+        for _, link in ipairs(utils.wrap(target.links)) do
             table.join2(flags, module.flag_link(link))
         end
     end
 
+    -- the options
+    if target.options then
+        for _, name in ipairs(utils.wrap(target.options)) do
+
+            -- get option if be enabled
+            local opt = nil
+            if config.get(name) then opt = config.get("__" .. name) end
+            if nil ~= opt then
+
+                -- append the flags from the option
+                table.join2(flags, linker._mapflags(module, opt[flagname]))
+                
+                -- append the linkdirs flags from the option
+                if module.flag_linkdir then
+                    for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
+                        table.join2(flags, module.flag_linkdir(linkdir))
+                    end
+                end
+
+                -- append the links flags from the option
+                if module.flag_link then
+                    for _, link in ipairs(utils.wrap(opt.links)) do
+                        table.join2(flags, module.flag_link(link))
+                    end
+                end
+            end
+        end
+    end
     -- append the flags from the configure
-    table.join2(flags, linker._mapflags(module, config.get(flag_name)))
+    table.join2(flags, linker._mapflags(module, config.get(flagname)))
 
     -- append the strip flags from the current project
     table.join2(flags, linker._getflags(module, target.strip, {     debug       = "-S"
@@ -188,34 +214,34 @@ function linker.check_links(opt, links, objectfile, targetfile)
     assert(opt and links and objectfile and targetfile)
 
     -- get the linker
-    local l = linker.get("binary")
-    assert(l and l.flag_link)
+    local module = linker.get("binary")
+    assert(module and module.flag_link)
 
     -- append the common flags 
     local flags = {}
-    table.join2(flags, l.ldflags)
+    table.join2(flags, module.ldflags)
 
     -- append the option flags
-    table.join2(flags, linker._mapflags(l, opt.ldflags))
+    table.join2(flags, linker._mapflags(module, opt.ldflags))
 
     -- append the linkdirs flags 
-    if opt.linkdirs and l.flag_linkdir then
+    if opt.linkdirs and module.flag_linkdir then
         for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
-            table.join2(flags, l.flag_linkdir(linkdir))
+            table.join2(flags, module.flag_linkdir(linkdir))
         end
     end
 
     -- append the links flags
     for _, link in ipairs(utils.wrap(links)) do
-        table.join2(flags, l.flag_link(link))
+        table.join2(flags, module.flag_link(link))
     end
 
     -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", l.command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
+    local cmd = string.format("%s > %s 2>&1", module.command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
     -- execute the link command
-    return l.main(cmd)
+    return module.main(cmd)
 end
 
 -- return module: linker

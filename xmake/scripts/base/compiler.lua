@@ -245,25 +245,70 @@ function compiler.make(module, target, srcfile, objfile)
 
     -- append the includedirs flags from the current project
     if module.flag_includedir then
-        local includedirs = utils.wrap(target.includedirs)
-        for _, includedir in ipairs(includedirs) do
+        for _, includedir in ipairs(utils.wrap(target.includedirs)) do
             table.join2(flags, module.flag_includedir(includedir))
         end
     end
 
     -- append the defines flags from the current project
     if module.flag_define then
-        local defines = utils.wrap(target.defines)
-        for _, define in ipairs(defines) do
+        for _, define in ipairs(utils.wrap(target.defines)) do
             table.join2(flags, module.flag_define(define))
         end
     end
 
     -- append the undefines flags from the current project
     if module.flag_undefine then
-        local undefines = utils.wrap(target.undefines)
-        for _, undefine in ipairs(undefines) do
+        for _, undefine in ipairs(utils.wrap(target.undefines)) do
             table.join2(flags, module.flag_undefine(undefine))
+        end
+    end
+
+    -- the options
+    if target.options then
+        for _, name in ipairs(utils.wrap(target.options)) do
+
+            -- get option if be enabled
+            local opt = nil
+            if config.get(name) then opt = config.get("__" .. name) end
+            if nil ~= opt then
+
+                -- append the flags from the option
+                for _, flagname in ipairs(flagnames) do
+                    table.join2(flags, compiler._mapflags(module, opt[flagname]))
+                end
+
+                -- append the includedirs flags from the option
+                if module.flag_includedir then
+                    for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
+                        table.join2(flags, module.flag_includedir(includedir))
+                    end
+                end
+
+                -- append the defines flags from the option
+                if module.flag_define then
+
+                    local defines = {}
+                    if opt.defines then table.join2(defines, opt.defines) end
+                    if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
+
+                    for _, define in ipairs(defines) do
+                        table.join2(flags, module.flag_define(define))
+                    end
+                end
+
+                -- append the undefines flags from the option
+                if module.flag_undefine then 
+
+                    local undefines = {}
+                    if opt.undefines then table.join2(undefines, opt.undefines) end
+                    if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
+
+                    for _, undefine in ipairs(undefines) do
+                        table.join2(flags, module.flag_undefine(undefine))
+                    end
+                end
+            end
         end
     end
 
@@ -301,53 +346,53 @@ function compiler.check_include(opt, include, srcpath, objpath)
     srcfile:close()
 
     -- get the compiler
-    local c = compiler.get(srcpath)
-    if not c then return end
+    local module = compiler.get(srcpath)
+    if not module then return end
 
     -- the flag names
-    local flagnames = compiler._flagnames(c._NAME)
+    local flagnames = compiler._flagnames(module._NAME)
     assert(flagnames)
 
     -- append the common flags 
     local flags = {}
     for _, flagname in ipairs(flagnames) do
-        table.join2(flags, c[flagname])
+        table.join2(flags, module[flagname])
     end
 
     -- append the option flags 
     for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(c, opt[flagname]))
+        table.join2(flags, compiler._mapflags(module, opt[flagname]))
     end
 
     -- append the defines flags
-    if opt.defines and c.flag_define then
+    if opt.defines and module.flag_define then
         local defines = utils.wrap(opt.defines)
         for _, define in ipairs(defines) do
-            table.join2(flags, c.flag_define(define))
+            table.join2(flags, module.flag_define(define))
         end
     end
 
     -- append the undefines flags 
-    if opt.undefines and c.flag_undefine then
+    if opt.undefines and module.flag_undefine then
         local undefines = utils.wrap(opt.undefines)
         for _, undefine in ipairs(undefines) do
-            table.join2(flags, c.flag_undefine(undefine))
+            table.join2(flags, module.flag_undefine(undefine))
         end
     end
 
     -- append the includedirs flags
-    if opt.includedirs and c.flag_includedir then
+    if opt.includedirs and module.flag_includedir then
         for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, c.flag_includedir(includedir))
+            table.join2(flags, module.flag_includedir(includedir))
         end
     end
 
     -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", c.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
+    local cmd = string.format("%s > %s 2>&1", module.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
     -- execute the compile command
-    return c.main(cmd)
+    return module.main(cmd)
 end
 
 -- check function for the project option
@@ -361,13 +406,13 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     if not srcfile then return end
 
     -- get the compiler
-    local c = compiler.get(srcpath)
-    if not c then return end
+    local module = compiler.get(srcpath)
+    if not module then return end
 
     -- make includes 
     local includes = nil
-    if c._NAME == "cc" then includes = opt.cincludes
-    elseif c._NAME == "cxx" then includes = opt.cxxincludes 
+    if module._NAME == "cc" then includes = opt.cincludes
+    elseif module._NAME == "cxx" then includes = opt.cxxincludes 
     end
     if includes then
         for _, include in ipairs(utils.wrap(includes)) do
@@ -391,49 +436,49 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     srcfile:close()
 
     -- the flag names
-    local flagnames = compiler._flagnames(c._NAME)
+    local flagnames = compiler._flagnames(module._NAME)
     assert(flagnames)
 
     -- append the common flags 
     local flags = {}
     for _, flagname in ipairs(flagnames) do
-        table.join2(flags, c[flagname])
+        table.join2(flags, module[flagname])
     end
 
     -- append the option flags 
     for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(c, opt[flagname]))
+        table.join2(flags, compiler._mapflags(module, opt[flagname]))
     end
 
     -- append the defines flags
-    if opt.defines and c.flag_define then
+    if opt.defines and module.flag_define then
         local defines = utils.wrap(opt.defines)
         for _, define in ipairs(defines) do
-            table.join2(flags, c.flag_define(define))
+            table.join2(flags, module.flag_define(define))
         end
     end
 
     -- append the undefines flags 
-    if opt.undefines and c.flag_undefine then
+    if opt.undefines and module.flag_undefine then
         local undefines = utils.wrap(opt.undefines)
         for _, undefine in ipairs(undefines) do
-            table.join2(flags, c.flag_undefine(undefine))
+            table.join2(flags, module.flag_undefine(undefine))
         end
     end
 
     -- append the includedirs flags
-    if opt.includedirs and c.flag_includedir then
+    if opt.includedirs and module.flag_includedir then
         for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, c.flag_includedir(includedir))
+            table.join2(flags, module.flag_includedir(includedir))
         end
     end
 
     -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", c.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
+    local cmd = string.format("%s > %s 2>&1", module.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
     -- execute the compile command
-    return c.main(cmd)
+    return module.main(cmd)
 end
 
 -- return module: compiler
