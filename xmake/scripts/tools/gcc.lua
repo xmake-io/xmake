@@ -93,18 +93,6 @@ function gcc.init(self, name)
         self.shflags = { flags_arch, "-shared -Wl,-soname" }
     end
 
-    -- append the xcode sdk directory if exists
-    local plat = config.get("plat")
-    if plat and (plat == "macosx" or plat == "iphoneos" or plat == "iphonesimulator") then
-        local xcode_sdkdir = platform.get("xcode_sdkdir")
-        if xcode_sdkdir then
-            table.join2(self.cxflags, "-isysroot " .. xcode_sdkdir)
-            table.join2(self.mxflags, "-isysroot " .. xcode_sdkdir)
-            table.join2(self.ldflags, "-isysroot " .. xcode_sdkdir)
-            table.join2(self.shflags, "-isysroot " .. xcode_sdkdir)
-        end
-    end
-
     -- suppress warning for the ccache bug
     if name:find("clang") and config.get("ccache") then
         table.join2(self.cxflags, "-Qunused-arguments")
