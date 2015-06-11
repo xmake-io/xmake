@@ -24,10 +24,15 @@
 local project = project or {}
 
 -- load modules
+local os            = require("base/os")
+local io            = require("base/io")
+local rule          = require("base/rule")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local table         = require("base/table")
 local config        = require("base/config")
+local linker        = require("base/linker")
+local compiler      = require("base/compiler")
 
 -- the current mode is belong to the given modes?
 function project._api_modes(env, ...)
@@ -213,12 +218,14 @@ function project._filter(values)
     -- filter all
     local newvals = {}
     for _, v in ipairs(utils.wrap(values)) do
-        v = v:gsub("%$%((.*)%)",    function (w) 
-                                        local r = config.get(w)
-                                        if r and type(r) == "string" then return r 
-                                        elseif w == "projectdir" then return xmake._PROJECT_DIR
-                                        end 
-                                    end)
+        if type(v) == "string" then
+            v = v:gsub("%$%((.*)%)",    function (w) 
+                                            local r = config.get(w)
+                                            if r and type(r) == "string" then return r 
+                                            elseif w == "projectdir" then return xmake._PROJECT_DIR
+                                            end 
+                                        end)
+        end
         table.insert(newvals, v)
     end
 
@@ -381,9 +388,97 @@ function project._make_targets(configs)
 end
 
 -- make option 
-function project._make_option(name, opt)
+function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
 
+    -- remove repeat values and unwrap it
+    for k, v in pairs(opt) do
 
+        -- remove repeat first
+        v = utils.unique(v)
+
+        -- filter values
+        v = project._filter(v)
+
+        -- unwrap it if be only one
+        v = utils.unwrap(v)
+
+        -- update it
+        opt[k] = v
+    end
+
+    -- check includes and functions
+    if opt.cincludes or opt.cxxincludes then
+
+        -- check cincludes
+        for _, cinclude in ipairs(utils.wrap(opt.cincludes)) do
+            
+            -- check cinclude
+            local ok = compiler.check_include(opt, cinclude, cfile, objectfile)
+
+            -- trace
+            utils.verbose("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
+
+            -- failed
+            if not ok then return end
+        end
+
+        -- check cxxincludes
+        for _, cinclude in ipairs(utils.wrap(opt.cxxincludes)) do
+            
+            -- check cxxinclude
+            local ok = compiler.check_include(opt, cxxinclude, cxxfile, objectfile)
+
+            -- trace
+            utils.verbose("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
+
+            -- failed
+            if not ok then return end
+        end
+
+        -- check cfuncs
+        for _, cfunc in ipairs(utils.wrap(opt.cfuncs)) do
+            
+            -- check function
+            local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
+
+            -- trace
+            utils.verbose("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
+
+            -- failed
+            if not ok then return end
+        end
+
+        -- check cxxfuncs
+        for _, cxxfunc in ipairs(utils.wrap(opt.cxxfuncs)) do
+            
+            -- check function
+            local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
+
+            -- trace
+            utils.verbose("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
+
+            -- failed
+            if not ok then return end
+        end
+    end
+
+    -- check links
+    if opt.links then
+        for _, link in ipairs(utils.wrap(opt.links)) do
+            
+            -- check link
+            local ok = linker.check_link(opt, link, objectfile, targetfile)
+
+            -- trace
+            utils.verbose("checking for the link %s ... %s", link, utils.ifelse(ok, "ok", "no"))
+
+            -- failed
+            if not ok then return end
+        end
+    end
+
+    -- ok
+    return opt
 end
 
 -- make options from the project file
@@ -392,6 +487,16 @@ function project._make_options(configs)
     -- check
     assert(configs and configs._OPTIONS)
   
+    -- the source file path
+    local cfile     = os.tmpdir() .. "/__checking.c"
+    local cxxfile   = os.tmpdir() .. "/__checking.cpp"
+
+    -- the object file path
+    local objectfile = os.tmpdir() .. "/" .. rule.filename("__checking", "object")
+
+    -- the target file path
+    local targetfile = os.tmpdir() .. "/" .. rule.filename("__checking", "binary")
+
     -- make all options
     for k, v in pairs(configs._OPTIONS) do
 
@@ -399,7 +504,7 @@ function project._make_options(configs)
         if nil == config.get(k) then
 
             -- make option
-            local o = project._make_option(k, v)
+            local o = project._make_option(k, v, cfile, cxxfile, objectfile, targetfile)
             if o then
 
                 -- enable this option
@@ -419,9 +524,16 @@ function project._make_options(configs)
             end
 
             -- trace
-            utils.verbose("checking for %s ... %s", k, utils.ifelse(o, "ok", "no"))
+            utils.verbose("checking for the option %s ... %s", k, utils.ifelse(o, "ok", "no"))
         end
     end
+
+    -- remove files
+    os.rm(cfile)
+    os.rm(cxxfile)
+    os.rm(objectfile)
+    os.rm(targetfile)
+
 end
 
 -- only load options from the the project file
@@ -462,18 +574,19 @@ function project._load_options(file)
     interfaces =        {   "links" 
                         ,   "linkdirs" 
                         ,   "includedirs" 
-                        ,   "includes" 
-                        ,   "interfaces" 
+                        ,   "cincludes" 
+                        ,   "cxxincludes" 
+                        ,   "cfuncs" 
+                        ,   "cxxfuncs" 
                         ,   "cflags" 
                         ,   "cxflags" 
                         ,   "cxxflags" 
-                        ,   "mflags" 
-                        ,   "mxflags" 
-                        ,   "mxxflags" 
                         ,   "ldflags" 
                         ,   "shflags" 
                         ,   "defines"
-                        ,   "undefines"} 
+                        ,   "undefines"
+                        ,   "defines_if_ok"
+                        ,   "undefines_if_ok"} 
 
     for _, interface in ipairs(interfaces) do
         newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end

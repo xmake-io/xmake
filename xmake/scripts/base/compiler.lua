@@ -25,6 +25,7 @@ local compiler = compiler or {}
 
 -- load modules
 local path      = require("base/path")
+local rule      = require("base/rule")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
@@ -102,6 +103,28 @@ function compiler._getflags(module, names, flags)
     return flags_mapped
 end
 
+-- get the flag names from the given compiler name
+function compiler._flagnames(name)
+
+    -- check
+    assert(name)
+
+    -- the flag names
+    local flagnames = nil
+    if name == "cc"         then flagnames = { "cxflags", "cflags"      }
+    elseif name == "cxx"    then flagnames = { "cxflags", "cxxflags"    }
+    elseif name == "mm"     then flagnames = { "mxflags", "mflags"      } 
+    elseif name == "mxx"    then flagnames = { "mxflags", "mxxflags"    }
+    elseif name == "as"     then flagnames = { "asflags"                }
+        -- error
+        utils.error("unknown compiler: %s", name)
+        return 
+    end
+
+    -- ok
+    return flagnames
+end
+
 -- get the compiler name from the source file type
 function compiler._name(srcfile)
 
@@ -159,31 +182,19 @@ function compiler.make(module, target, srcfile, objfile)
     -- check
     assert(module and target)
 
-    -- the compiler name
-    local name = module._NAME
-    assert(name)
-
     -- the flag names
-    local flag_names = nil
-    if name == "cc"         then flag_names = { "cxflags", "cflags"      }
-    elseif name == "cxx"    then flag_names = { "cxflags", "cxxflags"    }
-    elseif name == "mm"     then flag_names = { "mxflags", "mflags"      } 
-    elseif name == "mxx"    then flag_names = { "mxflags", "mxxflags"    }
-    elseif name == "as"     then flag_names = { "asflags"                }
-        -- error
-        utils.error("unknown compiler: %s", name)
-        return 
-    end
+    local flagnames = compiler._flagnames(module._NAME)
+    assert(flagnames)
 
     -- append the common flags from the current compiler 
     local flags = {}
-    for _, flag_name in ipairs(flag_names) do
-        table.join2(flags, module[flag_name])
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, module[flagname])
     end
 
     -- append the target flags from the current project
-    for _, flag_name in ipairs(flag_names) do
-        table.join2(flags, compiler._mapflags(module, target[flag_name]))
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(module, target[flagname]))
     end
 
     -- append the symbols flags from the current project
@@ -257,12 +268,176 @@ function compiler.make(module, target, srcfile, objfile)
     end
 
     -- append the flags from the configure 
-    for _, flag_name in ipairs(flag_names) do
-        table.join2(flags, compiler._mapflags(module, config.get(flag_name)))
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(module, config.get(flagname)))
     end
 
     -- make the compile command
     return module.command_compile(srcfile, objfile, table.concat(flags, " "):trim())
+end
+
+-- check include for the project option
+function compiler.check_include(opt, include, srcpath, objpath)
+
+    -- check
+    assert(opt and include and srcpath and objpath)
+
+    -- open the checking source file
+    local srcfile = io.open(srcpath, "w")
+    if not srcfile then return end
+
+    -- make include
+    srcfile:write(string.format("#include <%s>\n\n", include))
+
+    -- make the main function header
+    srcfile:write("int main(int argc, char** argv)\n")
+    srcfile:write("{\n")
+    srcfile:write("    return 0;\n")
+    srcfile:write("}\n")
+
+    -- exit this file
+    srcfile:close()
+
+    -- get the compiler
+    local c = compiler.get(srcpath)
+    if not c then return end
+
+    -- the flag names
+    local flagnames = compiler._flagnames(c._NAME)
+    assert(flagnames)
+
+    -- append the common flags 
+    local flags = {}
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, c[flagname])
+    end
+
+    -- append the option flags 
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(c, opt[flagname]))
+    end
+
+    -- append the defines flags
+    if opt.defines and c.flag_define then
+        local defines = utils.wrap(opt.defines)
+        for _, define in ipairs(defines) do
+            table.join2(flags, c.flag_define(define))
+        end
+    end
+
+    -- append the undefines flags 
+    if opt.undefines and c.flag_undefine then
+        local undefines = utils.wrap(opt.undefines)
+        for _, undefine in ipairs(undefines) do
+            table.join2(flags, c.flag_undefine(undefine))
+        end
+    end
+
+    -- append the includedirs flags
+    if opt.includedirs and c.flag_includedir then
+        for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
+            table.join2(flags, c.flag_includedir(includedir))
+        end
+    end
+
+    -- make the compile command
+    local cmd = string.format("%s > %s 2>&1", c.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
+    if not cmd then return end
+
+    -- check it
+    if 0 ~= os.execute(cmd) then return end
+
+    -- ok
+    return true
+end
+
+-- check function for the project option
+function compiler.check_function(opt, interface, srcpath, objpath)
+
+    -- check
+    assert(opt and interface)
+
+    -- open the checking source file
+    local srcfile = io.open(srcpath, "w")
+    if not srcfile then return end
+
+    -- get the compiler
+    local c = compiler.get(srcpath)
+    if not c then return end
+
+    -- make includes 
+    local includes = nil
+    if c._NAME == "cc" then includes = opt.cincludes
+    elseif c._NAME == "cxx" then includes = opt.cxxincludes 
+    end
+    if includes then
+        for _, include in ipairs(utils.wrap(includes)) do
+            srcfile:write(string.format("#include <%s>\n", include))
+        end
+        srcfile:write("\n")
+    end
+
+    -- make the main function header
+    srcfile:write("int main(int argc, char** argv)\n")
+    srcfile:write("{\n")
+
+    -- make interfaces
+    srcfile:write(string.format("    volatile void* p%s = (void*)&%s;\n\n", interface, interface))
+
+    -- make the main function tailer
+    srcfile:write("    return 0;\n")
+    srcfile:write("}\n")
+
+    -- exit this file
+    srcfile:close()
+
+    -- the flag names
+    local flagnames = compiler._flagnames(c._NAME)
+    assert(flagnames)
+
+    -- append the common flags 
+    local flags = {}
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, c[flagname])
+    end
+
+    -- append the option flags 
+    for _, flagname in ipairs(flagnames) do
+        table.join2(flags, compiler._mapflags(c, opt[flagname]))
+    end
+
+    -- append the defines flags
+    if opt.defines and c.flag_define then
+        local defines = utils.wrap(opt.defines)
+        for _, define in ipairs(defines) do
+            table.join2(flags, c.flag_define(define))
+        end
+    end
+
+    -- append the undefines flags 
+    if opt.undefines and c.flag_undefine then
+        local undefines = utils.wrap(opt.undefines)
+        for _, undefine in ipairs(undefines) do
+            table.join2(flags, c.flag_undefine(undefine))
+        end
+    end
+
+    -- append the includedirs flags
+    if opt.includedirs and c.flag_includedir then
+        for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
+            table.join2(flags, c.flag_includedir(includedir))
+        end
+    end
+
+    -- make the compile command
+    local cmd = string.format("%s > %s 2>&1", c.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
+    if not cmd then return end
+
+    -- check it
+    if 0 ~= os.execute(cmd) then return end
+
+    -- ok
+    return true
 end
 
 -- return module: compiler
