@@ -32,6 +32,7 @@ local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
 local tools     = require("tools/tools")
+local platform  = require("platform/platform")
 
 -- map gcc flag to the given compiler flag
 function compiler._mapflag(module, flag)

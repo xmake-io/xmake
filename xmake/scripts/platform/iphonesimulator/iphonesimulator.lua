@@ -56,6 +56,12 @@ function iphonesimulator.make(configs)
     -- init xcode sdk directory
     configs.xcode_sdkdir    = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator" .. config.get("xcode_sdkver") .. ".sdk"
 
+    -- init flags
+    configs.cxflags         = "-isysroot " .. configs.xcode_sdkdir
+    configs.mxflags         = "-isysroot " .. configs.xcode_sdkdir
+    configs.ldflags         = "-isysroot " .. configs.xcode_sdkdir
+    configs.shflags         = "-isysroot " .. configs.xcode_sdkdir
+
 end
 
 -- get the option menu for action: xmake config or global
