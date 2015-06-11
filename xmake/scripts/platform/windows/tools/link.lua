@@ -28,6 +28,43 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 
+-- enter the given environment
+function link._enter(name)
+
+    -- check
+    assert(name)
+
+    -- get the pathes for the vs environment
+    local old = nil
+    local new = config.get("__vsenv_" .. name)
+    if new then
+
+        -- get the current pathes
+        old = os.getenv(name) or ""
+
+        -- append the current pathes
+        new = new .. ";" .. old
+
+        -- update the pathes for the environment
+        os.setenv(name, new)
+    end
+
+    -- return the previous environment
+    return old;
+end
+
+-- leave the given environment
+function link._leave(name, old)
+
+    -- check
+    assert(name)
+
+    -- restore the previous environment
+    if old then 
+        os.setenv(name, old)
+    end
+end
+
 -- init the compiler
 function link.init(name)
 
@@ -92,10 +129,25 @@ function link.flag_linkdir(linkdir)
 end
 
 -- the main function
-function link.main(...)
+function link.main(cmd)
 
-    -- ok
-    return true
+    -- enter the vs environment
+    local pathes    = link._enter("path")
+    local libs      = link._enter("lib")
+    local includes  = link._enter("include")
+    local libpathes = link._enter("libpath")
+
+    -- execute it
+    local ok = os.execute(cmd)
+
+    -- leave the vs environment
+    link._leave("path",       pathes)
+    link._leave("lib",        libs)
+    link._leave("include",    includes)
+    link._leave("libpath",    libpathes)
+
+    -- ok?
+    return utils.ifelse(ok == 0, true, false)
 end
 
 -- return module: link

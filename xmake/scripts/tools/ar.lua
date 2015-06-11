@@ -47,10 +47,13 @@ function ar.command_link(objfiles, targetfile, flags)
 end
 
 -- the main function
-function ar.main(...)
+function ar.main(cmd)
 
-    -- ok
-    return true
+    -- execute it
+    local ok = os.execute(cmd)
+
+    -- ok?
+    return utils.ifelse(ok == 0, true, false)
 end
 
 -- return module: ar

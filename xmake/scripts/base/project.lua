@@ -406,6 +406,24 @@ function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
         opt[k] = v
     end
 
+    -- check links
+    if opt.links then
+        for _, link in ipairs(utils.wrap(opt.links)) do
+             
+            -- only for compile a object file
+            local ok = compiler.check_include(opt, nil, cfile, objectfile)
+
+            -- check link
+            if ok then ok = linker.check_links(opt, link, objectfile, targetfile) end
+
+            -- trace
+            utils.verbose("checking for the link %s ... %s", link, utils.ifelse(ok, "ok", "no"))
+
+            -- failed
+            if not ok then return end
+        end
+    end
+
     -- check includes and functions
     if opt.cincludes or opt.cxxincludes then
 
@@ -440,6 +458,9 @@ function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
             
             -- check function
             local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
+ 
+            -- check link
+            if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
 
             -- trace
             utils.verbose("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
@@ -454,23 +475,11 @@ function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
             -- check function
             local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
 
+            -- check link
+            if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
+
             -- trace
             utils.verbose("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
-
-            -- failed
-            if not ok then return end
-        end
-    end
-
-    -- check links
-    if opt.links then
-        for _, link in ipairs(utils.wrap(opt.links)) do
-            
-            -- check link
-            local ok = linker.check_link(opt, link, objectfile, targetfile)
-
-            -- trace
-            utils.verbose("checking for the link %s ... %s", link, utils.ifelse(ok, "ok", "no"))
 
             -- failed
             if not ok then return end
@@ -582,7 +591,6 @@ function project._load_options(file)
                         ,   "cxflags" 
                         ,   "cxxflags" 
                         ,   "ldflags" 
-                        ,   "shflags" 
                         ,   "defines"
                         ,   "undefines"
                         ,   "defines_if_ok"

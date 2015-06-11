@@ -154,10 +154,13 @@ function clang.flag_linkdir(linkdir)
 end
 
 -- the main function
-function clang.main(...)
+function clang.main(cmd)
 
-    -- ok
-    return true
+    -- execute it
+    local ok = os.execute(cmd)
+
+    -- ok?
+    return utils.ifelse(ok == 0, true, false)
 end
 
 -- return module: clang

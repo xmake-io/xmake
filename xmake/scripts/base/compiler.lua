@@ -280,14 +280,16 @@ end
 function compiler.check_include(opt, include, srcpath, objpath)
 
     -- check
-    assert(opt and include and srcpath and objpath)
+    assert(opt and srcpath and objpath)
 
     -- open the checking source file
     local srcfile = io.open(srcpath, "w")
     if not srcfile then return end
 
     -- make include
-    srcfile:write(string.format("#include <%s>\n\n", include))
+    if include then
+        srcfile:write(string.format("#include <%s>\n\n", include))
+    end
 
     -- make the main function header
     srcfile:write("int main(int argc, char** argv)\n")
@@ -344,11 +346,8 @@ function compiler.check_include(opt, include, srcpath, objpath)
     local cmd = string.format("%s > %s 2>&1", c.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
-    -- check it
-    if 0 ~= os.execute(cmd) then return end
-
-    -- ok
-    return true
+    -- execute the compile command
+    return c.main(cmd)
 end
 
 -- check function for the project option
@@ -433,11 +432,8 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     local cmd = string.format("%s > %s 2>&1", c.command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
     if not cmd then return end
 
-    -- check it
-    if 0 ~= os.execute(cmd) then return end
-
-    -- ok
-    return true
+    -- execute the compile command
+    return c.main(cmd)
 end
 
 -- return module: compiler
