@@ -34,16 +34,16 @@ local platform  = require("platform/platform")
 function tools._match(name, toolname)
 
     -- match full? ok
-    if name == toolname then return true end
+    if name == toolname then return 100 end
     
-    -- match the full word? ok
-    if name:find("^" .. toolname .. "$") then return true end
+    -- match the partial word? ok
+    if name:find("%-" .. toolname) then return 60 end
 
     -- contains it? ok
-    if name:find(toolname, 1, true) then return true end
+    if name:find(toolname, 1, true) then return 30 end
 
     -- not matched
-    return false
+    return 0
 end
 
 -- find tool from the given root directory and name
@@ -59,6 +59,8 @@ function tools._find_from(root, name)
     name = name:lower()
 
     -- get all tool files
+    local file_ok = nil
+    local score_maxn = 0
     local files = os.match(string.format("%s/*.lua", root))
     for _, file in ipairs(files) do
 
@@ -66,11 +68,24 @@ function tools._find_from(root, name)
         local toolname = path.basename(file)
 
         -- found it?
-        if toolname and toolname ~= "tools" and tools._match(name, toolname:lower()) then
-            return file
+        if toolname and toolname ~= "tools" then
+            
+            -- match score
+            local score = tools._match(name, toolname:lower()) 
+            
+            -- ok?
+            if score >= 100 then return file end
+    
+            -- select the file with the max score
+            if score > score_maxn then
+                file_ok = file
+                score_maxn = score
+            end
         end
     end
 
+    -- ok?
+    return file_ok
 end
 
 -- probe it's absolute path if exists from the given tool name and root directory
@@ -88,8 +103,6 @@ function tools._probe(root, name)
         return toolpath
     end
 end
-
-
 
 -- find tool from the given name and directory (optional)
 function tools.find(name, root)
