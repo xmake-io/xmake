@@ -25,6 +25,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
+local platform  = require("platform/platform")
 
 -- define module: gcc
 local gcc = gcc or {}
@@ -54,7 +55,7 @@ end
 function gcc.init(name)
 
     -- save name
-    gcc.name = name or "gcc"
+    gcc.name = name
 
     -- the architecture
     local arch = config.get("arch")
@@ -86,7 +87,29 @@ function gcc.init(name)
     gcc.ldflags = { flags_arch }
 
     -- init shflags
-    gcc.shflags = { flags_arch, "-shared -Wl,-soname" }
+    if name:find("clang") then
+        gcc.shflags = { flags_arch, "-dynamiclib" }
+    else
+        gcc.shflags = { flags_arch, "-shared -Wl,-soname" }
+    end
+
+    -- append the xcode sdk directory if exists
+    local plat = config.get("plat")
+    if plat and (plat == "macosx" or plat == "iphoneos" or plat == "iphonesimulator") then
+        local xcode_sdkdir = platform.get("xcode_sdkdir")
+        if xcode_sdkdir then
+            table.join2(gcc.cxflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(gcc.mxflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(gcc.ldflags, "-isysroot " .. xcode_sdkdir)
+            table.join2(gcc.shflags, "-isysroot " .. xcode_sdkdir)
+        end
+    end
+
+    -- suppress warning for the ccache bug
+    if name:find("clang") and config.get("ccache") then
+        table.join2(gcc.cxflags, "-Qunused-arguments")
+        table.join2(gcc.mxflags, "-Qunused-arguments")
+    end
 
     -- init flags map
     gcc.mapflags = 
