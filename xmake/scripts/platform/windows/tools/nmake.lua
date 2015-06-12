@@ -26,46 +26,10 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
+local platform  = require("platform/platform")
 
 -- define module: nmake
 local nmake = nmake or {}
-
--- enter the given environment
-function nmake._enter(name)
-
-    -- check
-    assert(name)
-
-    -- get the pathes for the vs environment
-    local old = nil
-    local new = config.get("__vsenv_" .. name)
-    if new then
-
-        -- get the current pathes
-        old = os.getenv(name) or ""
-
-        -- append the current pathes
-        new = new .. ";" .. old
-
-        -- update the pathes for the environment
-        os.setenv(name, new)
-    end
-
-    -- return the previous environment
-    return old;
-end
-
--- leave the given environment
-function nmake._leave(name, old)
-
-    -- check
-    assert(name)
-
-    -- restore the previous environment
-    if old then 
-        os.setenv(name, old)
-    end
-end
 
 -- the init function
 function nmake.init(self, name)
@@ -81,11 +45,12 @@ end
 -- the main function
 function nmake.main(self, mkfile, target)
 
-    -- enter the vs environment
-    local pathes    = nmake._enter("path")
-    local libs      = nmake._enter("lib")
-    local includes  = nmake._enter("include")
-    local libpathes = nmake._enter("libpath")
+    -- the windows module
+    local windows = platform.module()
+    assert(windows)
+
+    -- enter envirnoment
+    windows.enter()
 
     -- make command
     local cmd = nil
@@ -98,11 +63,8 @@ function nmake.main(self, mkfile, target)
     -- done 
     local ok = os.execute(cmd)
 
-    -- leave the vs environment
-    nmake._leave("path",       pathes)
-    nmake._leave("lib",        libs)
-    nmake._leave("include",    includes)
-    nmake._leave("libpath",    libpathes)
+    -- leave envirnoment
+    windows.leave()
 
     -- ok?
     return utils.ifelse(ok == 0, true, false)

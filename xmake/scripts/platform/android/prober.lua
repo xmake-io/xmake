@@ -55,11 +55,11 @@ end
 function prober._probe_ndk_sdkver(configs)
 
     -- ok?
-    local ndk_sdkver = config.get("ndk_sdkver")
+    local ndk_sdkver = configs.get("ndk_sdkver")
     if ndk_sdkver then return true end
 
     -- get the ndk
-    local ndk = config.get("ndk")
+    local ndk = configs.get("ndk")
     if ndk then
 
         -- match all sdk directories
@@ -90,6 +90,26 @@ function prober._probe_ndk_sdkver(configs)
 
     -- trace
     utils.verbose("checking for the SDK version of NDK ... %s", string.format("android-%d", ndk_sdkver))
+
+    -- ok
+    return true
+end
+
+-- probe the make
+function prober._probe_make(configs)
+
+    -- ok? 
+    local make = configs.get("make")
+    if make then return true end
+
+    -- probe the make path
+    make = tools.probe("make", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
+
+    -- probe ok? update it
+    if make then configs.set("make", make) end
+
+    -- trace
+    utils.verbose("checking for the make ... %s", utils.ifelse(make, make, "no"))
 
     -- ok
     return true
@@ -133,23 +153,23 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     assert(kind)
 
     -- get the cross
-    cross = config.get("cross") or cross
+    cross = configs.get("cross") or cross
 
     -- attempt to get it from the given cross toolchains
     local toolpath = nil
-    local toolchains = config.get("toolchains") 
+    local toolchains = configs.get("toolchains") 
     if toolchains then
-        toolpath = tools.probe(cross .. (config.get(kind) or name), toolchains)
+        toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
     end
 
     -- attempt to get it directly from the configure
     if not toolpath then
-        toolpath = config.get(kind)
+        toolpath = configs.get(kind)
     end
 
     -- attempt to get it from the ndk
     if not toolpath then
-        local ndk = config.get("ndk")
+        local ndk = configs.get("ndk")
         if ndk then
 
             -- match all toolchains
@@ -174,7 +194,7 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     return true
 end
 
--- probe the compiler
+-- probe the toolchains
 function prober._probe_toolchains(configs)
 
     -- done
@@ -192,6 +212,7 @@ function prober.config()
 
     -- call all probe functions
     utils.call(     {   prober._probe_arch
+                    ,   prober._probe_make
                     ,   prober._probe_ccache
                     ,   prober._probe_ndk_sdkver
                     ,   prober._probe_toolchains}
@@ -204,7 +225,8 @@ end
 function prober.global()
 
     -- call all probe functions
-    utils.call(     {   prober._probe_ccache
+    utils.call(     {   prober._probe_make
+                    ,   prober._probe_ccache
                     ,   prober._probe_ndk_sdkver}
                 ,   nil
                 ,   global)

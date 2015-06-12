@@ -43,24 +43,35 @@ function iphoneos.make(configs)
 
     -- init the toolchains
     configs.tools           = {}
-    configs.tools.make      = "make"
+    configs.tools.make      = config.get("make")
     configs.tools.ccache    = config.get("__ccache")
-    configs.tools.cc        = config.get("cc") or "xcrun -sdk iphoneos clang"
-    configs.tools.cxx       = config.get("cxx") or "xcrun -sdk iphoneos clang++"
-    configs.tools.mm        = config.get("mm") or configs.tools.cc
-    configs.tools.mxx       = config.get("mxx") or configs.tools.cxx
-    configs.tools.ld        = config.get("ld") or "xcrun -sdk iphoneos clang++"
-    configs.tools.ar        = config.get("ar") or "xcrun -sdk iphoneos ar"
-    configs.tools.sh        = config.get("sh") or "xcrun -sdk iphoneos clang++"
+    configs.tools.cc        = config.get("cc")
+    configs.tools.cxx       = config.get("cxx")
+    configs.tools.mm        = config.get("mm") 
+    configs.tools.mxx       = config.get("mxx") 
+    configs.tools.ld        = config.get("ld") 
+    configs.tools.ar        = config.get("ar") 
+    configs.tools.sh        = config.get("sh") 
 
-    -- init xcode sdk directory
-    configs.xcode_sdkdir    = config.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. config.get("xcode_sdkver") .. ".sdk"
+    -- init flags for architecture
+    local archflags = nil
+    local arch = config.get("arch")
+    if arch then archflags = "-arch " .. arch end
+    configs.cxflags     = { archflags }
+    configs.mxflags     = { archflags }
+    configs.asflags     = { archflags }
+    configs.ldflags     = { archflags }
+    configs.shflags     = { archflags }
 
-    -- init flags
-    configs.cxflags         = "-isysroot " .. configs.xcode_sdkdir
-    configs.mxflags         = "-isysroot " .. configs.xcode_sdkdir
-    configs.ldflags         = "-isysroot " .. configs.xcode_sdkdir
-    configs.shflags         = "-isysroot " .. configs.xcode_sdkdir
+    -- init flags for the xcode sdk directory
+    local xcode_sdkdir = config.get("__xcode_sdkdir")
+    if xcode_sdkdir then
+        table.insert(configs.cxflags, "-isysroot " .. xcode_sdkdir)
+        table.insert(configs.asflags, "-isysroot " .. xcode_sdkdir)
+        table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
+        table.insert(configs.ldflags, "-isysroot " .. xcode_sdkdir)
+        table.insert(configs.shflags, "-isysroot " .. xcode_sdkdir)
+    end
 
 end
 

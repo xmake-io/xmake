@@ -45,7 +45,7 @@ function prober._probe_arch(configs)
     configs.set("arch", xmake._ARCH)
 
     -- trace
-    utils.verbose("checking the architecture ... %s", configs.get("arch"))
+    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
@@ -84,10 +84,10 @@ function prober._probe_xcode(configs)
         configs.set("xcode_dir", xcode_dir)
 
         -- trace
-        utils.verbose("checking the Xcode application directory ... %s", xcode_dir)
+        utils.verbose("checking for the Xcode application directory ... %s", xcode_dir)
     else
         -- failed
-        utils.error("checking the Xcode application directory ... no")
+        utils.error("checking for the Xcode application directory ... no")
         utils.error("    - xmake config --xcode_dir=xxx")
         utils.error("or  - xmake global --xcode_dir=xxx")
         return false
@@ -125,16 +125,42 @@ function prober._probe_xcode_sdkver(configs)
         
         -- save it
         configs.set("xcode_sdkver", xcode_sdkver)
- 
+
+        -- save the xcode sdk directory
+        local xcode_dir = configs.get("xcode_dir")
+        if xcode_dir then
+            configs.set("__xcode_sdkdir", xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk")
+        end
+    
         -- trace
-        utils.verbose("checking the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)
+        utils.verbose("checking for the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)
     else
         -- failed
-        utils.error("checking the Xcode SDK version for %s ... no", configs.get("plat"))
+        utils.error("checking for the Xcode SDK version for %s ... no", configs.get("plat"))
         utils.error("    - xmake config --xcode_sdkver=xxx")
         utils.error("or  - xmake global --xcode_sdkver=xxx")
         return false
     end
+
+    -- ok
+    return true
+end
+
+-- probe the make
+function prober._probe_make(configs)
+
+    -- ok? 
+    local make = configs.get("make")
+    if make then return true end
+
+    -- probe the make path
+    make = tools.probe("make", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
+
+    -- probe ok? update it
+    if make then configs.set("make", make) end
+
+    -- trace
+    utils.verbose("checking for the make ... %s", utils.ifelse(make, make, "no"))
 
     -- ok
     return true
@@ -171,6 +197,57 @@ function prober._probe_ccache(configs)
     return true
 end
 
+-- probe the tool path
+function prober._probe_toolpath(configs, kind, cross, name, description)
+
+    -- check
+    assert(kind)
+
+    -- get the cross
+    cross = configs.get("cross") or cross
+
+    -- attempt to get it from the given cross toolchains
+    local toolpath = nil
+    local toolchains = configs.get("toolchains") 
+    if toolchains then
+        toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
+    end
+
+    -- attempt to get it directly from the configure
+    if not toolpath then
+        toolpath = configs.get(kind)
+    end
+
+    -- attempt to run it directly
+    if not toolpath then
+        toolpath = tools.probe(cross .. name)
+    end
+
+    -- probe ok? update it
+    if toolpath then configs.set(kind, toolpath) end
+
+    -- trace
+    utils.verbose("checking for %s (%s) ... %s", description, kind, utils.ifelse(toolpath, path.filename(toolpath), "no"))
+
+    -- ok
+    return true
+end
+
+-- probe the toolchains
+function prober._probe_toolchains(configs)
+
+    -- done
+    if not prober._probe_toolpath(configs, "cc", "xcrun -sdk macosx ", "clang", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk macosx ", "clang++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "mm", "xcrun -sdk macosx ", "clang", "the objc compiler") then return false end
+    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk macosx ", "clang++", "the objc++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", "xcrun -sdk macosx ", "clang", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk macosx ", "clang++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", "xcrun -sdk macosx ", "ar", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk macosx ", "clang++", "the shared library linker") then return false end
+    return true
+end
+
 -- probe the project configure 
 function prober.config()
 
@@ -178,7 +255,9 @@ function prober.config()
     utils.call(     {   prober._probe_arch
                     ,   prober._probe_xcode
                     ,   prober._probe_xcode_sdkver
-                    ,   prober._probe_ccache}
+                    ,   prober._probe_make
+                    ,   prober._probe_ccache
+                    ,   prober._probe_toolchains}
                 ,   nil
                 ,   config)
 end
