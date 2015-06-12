@@ -125,7 +125,7 @@ function makefile._make_target(file, name, target)
 
     -- get the linker from the given kind
     local l = linker.get(target.kind)
-    assert(l)
+    if not l then return false end
 
     -- make head
     file:write(string.format("%s:", name))

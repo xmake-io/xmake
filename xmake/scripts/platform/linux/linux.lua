@@ -43,15 +43,30 @@ function linux.make(configs)
 
     -- init the toolchains
     configs.tools           = {}
-    configs.tools.make      = "make"
+    configs.tools.make      = config.get("make")
     configs.tools.ccache    = config.get("__ccache")
-    configs.tools.cc        = config.get("cc") or "gcc"
-    configs.tools.cxx       = config.get("cxx") or "g++"
-    configs.tools.mm        = config.get("mm") or configs.tools.cc
-    configs.tools.mxx       = config.get("mxx") or configs.tools.cxx
-    configs.tools.ld        = config.get("ld") or "g++"
-    configs.tools.ar        = config.get("ar") or "ar"
-    configs.tools.sh        = config.get("sh") or "g++"
+    configs.tools.cc        = config.get("cc")
+    configs.tools.cxx       = config.get("cxx")
+    configs.tools.mm        = config.get("mm") 
+    configs.tools.mxx       = config.get("mxx") 
+    configs.tools.ld        = config.get("ld") 
+    configs.tools.ar        = config.get("ar") 
+    configs.tools.sh        = config.get("sh") 
+
+    -- init flags for architecture
+    local archflags = nil
+    local arch = config.get("arch")
+    if arch then
+        if arch == "x64" then archflags = "-m64"
+        elseif arch == "x86" then archflags = "-m32"
+        else archflags = "-arch " .. arch
+        end
+    end
+    configs.cxflags     = { archflags }
+    configs.mxflags     = { archflags }
+    configs.asflags     = { archflags }
+    configs.ldflags     = { archflags }
+    configs.shflags     = { archflags }
 
 end
 

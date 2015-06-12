@@ -51,6 +51,26 @@ function prober._probe_arch(configs)
     return true
 end
 
+-- probe the make
+function prober._probe_make(configs)
+
+    -- ok? 
+    local make = configs.get("make")
+    if make then return true end
+
+    -- probe the make path
+    make = tools.probe("make", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
+
+    -- probe ok? update it
+    if make then configs.set("make", make) end
+
+    -- trace
+    utils.verbose("checking for the make ... %s", utils.ifelse(make, make, "no"))
+
+    -- ok
+    return true
+end
+
 -- probe the ccache
 function prober._probe_ccache(configs)
 
@@ -82,12 +102,63 @@ function prober._probe_ccache(configs)
     return true
 end
 
+-- probe the tool path
+function prober._probe_toolpath(configs, kind, cross, name, description)
+
+    -- check
+    assert(kind)
+
+    -- get the cross
+    cross = configs.get("cross") or cross
+
+    -- attempt to get it from the given cross toolchains
+    local toolpath = nil
+    local toolchains = configs.get("toolchains") 
+    if toolchains then
+        toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
+    end
+
+    -- attempt to get it directly from the configure
+    if not toolpath then
+        toolpath = configs.get(kind)
+    end
+
+    -- attempt to run it directly
+    if not toolpath then
+        toolpath = tools.probe(cross .. name)
+    end
+
+    -- probe ok? update it
+    if toolpath then configs.set(kind, toolpath) end
+
+    -- trace
+    utils.verbose("checking for %s (%s) ... %s", description, kind, utils.ifelse(toolpath, path.filename(toolpath), "no"))
+
+    -- ok
+    return true
+end
+
+-- probe the toolchains
+function prober._probe_toolchains(configs)
+
+    -- done
+    if not prober._probe_toolpath(configs, "cc", "", "gcc", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "", "g++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", "", "gcc", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "ld", "", "g++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", "", "ar", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "", "g++", "the shared library linker") then return false end
+    return true
+end
+
 -- probe the project configure 
 function prober.config()
 
     -- call all probe functions
     utils.call(     {   prober._probe_arch
-                    ,   prober._probe_ccache}
+                    ,   prober._probe_make
+                    ,   prober._probe_ccache
+                    ,   prober._probe_toolchains}
                 ,   nil
                 ,   config)
 end
@@ -96,7 +167,8 @@ end
 function prober.global()
 
     -- call all probe functions
-    utils.call(     prober._probe_ccache
+    utils.call(     {   prober._probe_make
+                ,       prober._probe_ccache}
                 ,   nil
                 ,   global)
 end
