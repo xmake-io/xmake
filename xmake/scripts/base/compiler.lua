@@ -371,13 +371,13 @@ function compiler.get(srcfile)
         
         -- invalid compiler
         if not module.command_compile then
-            return nil, string.format("invalid compiler: %s", platform.tool(kind))
+            return nil, string.format("invalid compiler: %s", path.filename(platform.tool(kind)))
         end
 
         -- save kind 
         module._KIND = kind 
     else
-        return nil, string.format("not found compiler: %s", platform.tool(kind))
+        return nil, string.format("unknown compiler: %s", path.filename(platform.tool(kind)))
     end
 
     -- ok?

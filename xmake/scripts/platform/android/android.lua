@@ -45,13 +45,28 @@ function android.make(configs)
     configs.tools           = {}
     configs.tools.make      = "make"
     configs.tools.ccache    = config.get("__ccache")
-    configs.tools.cc        = config.get("cc") or "arm-linux-androideabi-gcc"
-    configs.tools.cxx       = config.get("cxx") or "arm-linux-androideabi-g++"
-    configs.tools.mm        = config.get("mm") or configs.tools.cc
-    configs.tools.mxx       = config.get("mxx") or configs.tools.cxx
-    configs.tools.ld        = config.get("ld") or "arm-linux-androideabi-g++"
-    configs.tools.ar        = config.get("ar") or "arm-linux-androideabi-ar"
-    configs.tools.sh        = config.get("sh") or "arm-linux-androideabi-g++"
+    configs.tools.cc        = config.get("cc") 
+    configs.tools.cxx       = config.get("cxx") 
+    configs.tools.as        = config.get("as") 
+    configs.tools.ld        = config.get("ld") 
+    configs.tools.ar        = config.get("ar")
+    configs.tools.sh        = config.get("sh") 
+
+    -- init flags
+    configs.cxflags     = { "-march=" .. config.get("arch") }
+    configs.asflags     = { "-march=" .. config.get("arch") }
+    configs.ldflags     = { "-march=" .. config.get("arch"), "-llog" }
+    configs.shflags     = { "-march=" .. config.get("arch"), "-llog" }
+
+    -- add flags for the sdk directory of ndk
+    local ndk_sdkdir = config.get("__ndk_sdkdir")
+    if ndk_sdkdir then
+        ndk_sdkdir = path.translate(ndk_sdkdir) 
+        table.insert(configs.cxflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+        table.insert(configs.asflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+        table.insert(configs.ldflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+        table.insert(configs.shflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+    end
 
 end
 
