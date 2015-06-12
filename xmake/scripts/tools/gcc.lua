@@ -57,40 +57,19 @@ function gcc.init(self, name)
     -- save name
     self._NAME = name or "gcc"
 
-    -- the architecture
-    local arch = config.get("arch")
-    assert(arch)
-
-    -- init flags for architecture
-    local flags_arch = ""
-    if arch == "x86" then flags_arch = "-m32"
-    elseif arch == "x64" then flags_arch = "-m64"
-    else flags_arch = "-arch " .. arch
-    end
-
-    -- init cxflags
-    self.cxflags = { flags_arch }
-
     -- init mxflags
-    self.mxflags = { flags_arch
-                ,   "-fmessage-length=0"
-                ,   "-pipe"
-                ,   "-fpascal-strings"
-                ,   "\"-DIBOutlet=__attribute__((iboutlet))\""
-                ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
-                ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
-
-    -- init asflags
-    self.asflags = { flags_arch } 
-
-    -- init ldflags
-    self.ldflags = { flags_arch }
+    self.mxflags = {    "-fmessage-length=0"
+                    ,   "-pipe"
+                    ,   "-fpascal-strings"
+                    ,   "\"-DIBOutlet=__attribute__((iboutlet))\""
+                    ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
+                    ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
 
     -- init shflags
     if name:find("clang") then
-        self.shflags = { flags_arch, "-dynamiclib" }
+        self.shflags = { "-dynamiclib" }
     else
-        self.shflags = { flags_arch, "-shared -Wl,-soname" }
+        self.shflags = { "-shared -Wl,-soname" }
     end
 
     -- suppress warning for the ccache bug
@@ -102,9 +81,19 @@ function gcc.init(self, name)
     -- init flags map
     self.mapflags = 
     {
+        -- vectorexts
+        ["-mmmx"]                   = self._check
+    ,   ["-msse$"]                  = self._check
+    ,   ["-msse2"]                  = self._check
+    ,   ["-msse3"]                  = self._check
+    ,   ["-mssse3"]                 = self._check
+    ,   ["-mavx$"]                  = self._check
+    ,   ["-mavx2"]                  = self._check
+    ,   ["-mfpu=.*"]                = self._check
+
         -- others
-        ["-ftrapv"]                     = self._check
-    ,   ["-fsanitize=address"]          = self._check
+    ,   ["-ftrapv"]                 = self._check
+    ,   ["-fsanitize=address"]      = self._check
     }
 
 end

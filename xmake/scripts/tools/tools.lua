@@ -147,7 +147,7 @@ function tools.load(name, root)
     end
 
     -- load script
-    local script = loadfile(toolpath)
+    local script, errors = loadfile(toolpath)
     if script then
         
         -- load tool
@@ -163,6 +163,10 @@ function tools.load(name, root)
 
         -- ok?
         return tool
+    else
+        utils.error(errors)
+        utils.error("load %s failed!", toolpath)
+        assert(false)
     end
 end
     
@@ -184,13 +188,13 @@ function tools.probe(name, dirs)
 
     -- attempt to get it from the given directories
     if dirs then
-        for _, dir in ipairs(dirs) do
+        for _, dir in ipairs(utils.wrap(dirs)) do
             
             -- probe it
             local toolpath = tools._probe(dir, name)
 
             -- ok?
-            if toolpath then
+            if toolpath and os.execute(string.format("%s > %s 2>&1", toolpath, xmake._NULDEV)) ~= 0x7f00 then
                 return toolpath
             end
         end
