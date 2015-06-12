@@ -149,8 +149,22 @@ function linker._addflags_from_platform(module, flags, flagname)
     -- check
     assert(module and flags and flagname)
 
-    -- done
+    -- add flags
     table.join2(flags, linker._mapflags(module, platform.get(flagname)))
+
+    -- add the linkdirs flags 
+    if module.flag_linkdir then
+        for _, linkdir in ipairs(utils.wrap(platform.get("linkdirs"))) do
+            table.join2(flags, module:flag_linkdir(linkdir))
+        end
+    end
+
+    -- add the links flags 
+    if module.flag_link then
+        for _, link in ipairs(utils.wrap(platform.get("links"))) do
+            table.join2(flags, module:flag_link(link))
+        end
+    end
 end
 
 -- add flags from the target 
