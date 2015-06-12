@@ -42,7 +42,7 @@ function prober._probe_arch(configs)
     if arch then return true end
 
     -- init the default architecture
-    configs.set("arch", "x86")
+    configs.set("arch", "i386")
 
     -- trace
     utils.verbose("checking for the architecture ... %s", configs.get("arch"))
@@ -145,11 +145,11 @@ function prober._probe_toolchains(configs)
     local cross = ""
     local arch = configs.get("arch")
     if arch then
-        if xmake._HOST == "macosx" and arch == "x86" then
+        if xmake._HOST == "macosx" and arch == "i386" then
             cross = "i386-mingw32-"
-        elseif arch == "x86" then
+        elseif arch == "i386" then
             cross = "i686-w64-mingw32-"
-        elseif arch == "x64" then
+        elseif arch == "x86_64" then
             cross = "x86_64-w64-mingw32-"
         end
     end

@@ -31,7 +31,7 @@ local config        = require("base/config")
 windows._HOST       = "windows"
 
 -- init architectures
-windows._ARCHS      = {"x86", "x64"}
+windows._ARCHS      = {"i386", "x86_64"}
 
 -- enter the given environment
 function windows._enter(name)

@@ -30,7 +30,7 @@ local config                = require("base/config")
 iphonesimulator._HOST       = "macosx"
 
 -- init architectures
-iphonesimulator._ARCHS      = {"i386"}
+iphonesimulator._ARCHS      = {"i386", "x86_64"}
 
 -- make configure
 function iphonesimulator.make(configs)
@@ -60,8 +60,8 @@ function iphonesimulator.make(configs)
     configs.cxflags     = { archflags }
     configs.mxflags     = { archflags }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags }
-    configs.shflags     = { archflags }
+    configs.ldflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=5.0" }
+    configs.shflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=5.0" }
 
     -- init flags for the xcode sdk directory
     local xcode_sdkdir = config.get("__xcode_sdkdir")
@@ -72,7 +72,6 @@ function iphonesimulator.make(configs)
         table.insert(configs.ldflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.shflags, "-isysroot " .. xcode_sdkdir)
     end
-
 end
 
 -- get the option menu for action: xmake config or global

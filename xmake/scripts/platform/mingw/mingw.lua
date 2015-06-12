@@ -30,7 +30,7 @@ local config    = require("base/config")
 mingw._HOST    = xmake._HOST
 
 -- init architectures
-mingw._ARCHS   = {"x86", "x64"}
+mingw._ARCHS   = {"i386", "x86_64"}
 
 -- make configure
 function mingw.make(configs)
@@ -55,8 +55,9 @@ function mingw.make(configs)
     local archflags = nil
     local arch = config.get("arch")
     if arch then
-        if arch == "x64" then archflags = "-m64"
-        elseif arch == "x86" then archflags = "-m32"
+        if arch == "x86_64" then archflags = "-m64"
+        elseif arch == "i386" then archflags = "-m32"
+        else archflags = "-arch " .. arch
         end
     end
     configs.cxflags     = { archflags }

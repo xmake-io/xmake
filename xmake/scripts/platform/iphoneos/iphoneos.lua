@@ -60,8 +60,8 @@ function iphoneos.make(configs)
     configs.cxflags     = { archflags }
     configs.mxflags     = { archflags }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags }
-    configs.shflags     = { archflags }
+    configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=6.0" }
+    configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=6.0" }
 
     -- init flags for the xcode sdk directory
     local xcode_sdkdir = config.get("__xcode_sdkdir")
