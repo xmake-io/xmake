@@ -141,9 +141,30 @@ function compiler._addflags_from_platform(module, flags, flagnames)
     -- check
     assert(module and flags and flagnames)
 
-    -- done
+    -- add flags 
     for _, flagname in ipairs(flagnames) do
         table.join2(flags, compiler._mapflags(module, platform.get(flagname)))
+    end
+
+    -- add the includedirs flags
+    if module.flag_includedir then
+        for _, includedir in ipairs(utils.wrap(platform.get("includedirs"))) do
+            table.join2(flags, module:flag_includedir(includedir))
+        end
+    end
+
+    -- add the defines flags 
+    if module.flag_define then
+        for _, define in ipairs(utils.wrap(platform.get("defines"))) do
+            table.join2(flags, module:flag_define(define))
+        end
+    end
+
+    -- append the undefines flags
+    if module.flag_undefine then
+        for _, undefine in ipairs(utils.wrap(platform.get("undefines"))) do
+            table.join2(flags, module:flag_undefine(undefine))
+        end
     end
 end
 
