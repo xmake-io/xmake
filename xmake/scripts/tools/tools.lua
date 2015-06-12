@@ -171,8 +171,17 @@ function tools.load(name, root)
 end
     
 -- get the given tool from the current platform
-function tools.get(name)
-    return tools.load(platform.tool(name))
+function tools.get(kind)
+
+    -- get the tool name
+    local toolname = platform.tool(kind)
+    if not toolname then
+        utils.error("cannot get tool name for %s", kind)
+        return 
+    end
+
+    -- load it
+    return tools.load(toolname)
 end
 
 -- probe it's absolute path if exists from the given tool name
