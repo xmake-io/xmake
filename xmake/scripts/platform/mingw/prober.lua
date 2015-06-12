@@ -42,60 +42,10 @@ function prober._probe_arch(configs)
     if arch then return true end
 
     -- init the default architecture
-    configs.set("arch", "armv7-a")
+    configs.set("arch", "x86")
 
     -- trace
     utils.verbose("checking for the architecture ... %s", configs.get("arch"))
-
-    -- ok
-    return true
-end
-
--- probe the sdk version for ndk
-function prober._probe_ndk_sdkver(configs)
-
-    -- ok?
-    local ndk_sdkver = configs.get("ndk_sdkver")
-    if ndk_sdkver then return true end
-
-    -- get the ndk
-    local ndk = configs.get("ndk")
-    if ndk then
-
-        -- match all sdk directories
-        local sdkdirs = os.match(ndk .. "/platforms/android-*", true)
-        if sdkdirs then
-            
-            -- get the max version
-            local version_maxn = 0
-            for _, sdkdir in ipairs(sdkdirs) do
-                local filename = path.filename(sdkdir)
-                local version, count = filename:gsub("android%-", "")
-                if count > 0 then
-                    version = tonumber(version)
-                    if version > version_maxn then version_maxn = version end
-                end
-            end
-
-            -- save the version
-            if version_maxn > 0 then ndk_sdkver = version_maxn end
-        end
-    end
-
-    -- probe ok? update it
-    if type(ndk_sdkver) == "number" and ndk_sdkver > 0 then 
-
-        -- save it
-        configs.set("ndk_sdkver", ndk_sdkver)
-        configs.set("__ndk_sdkdir", string.format("%s/platforms/android-%d", ndk, ndk_sdkver))
-
-        -- trace
-        utils.verbose("checking for the SDK version of NDK ... %s", string.format("android-%d", ndk_sdkver))
-    else
-
-        -- trace
-        utils.verbose("checking for the SDK version of NDK ... no")
-    end
 
     -- ok
     return true
@@ -152,7 +102,7 @@ function prober._probe_ccache(configs)
     return true
 end
 
--- probe the toolchains
+-- probe the tool path
 function prober._probe_toolpath(configs, kind, cross, name, description)
 
     -- check
@@ -173,21 +123,9 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
         toolpath = configs.get(kind)
     end
 
-    -- attempt to get it from the ndk
+    -- attempt to run it directly
     if not toolpath then
-        local ndk = configs.get("ndk")
-        if ndk then
-
-            -- match all toolchains
-            toolchains = os.match(string.format("%s/toolchains/arm-linux-androideabi-**/prebuilt/*/bin/%s%s", ndk, cross, name))
-            if toolchains then
-                for _, filepath in ipairs(toolchains) do
-                    -- probe the tool path
-                    toolpath = tools.probe(cross .. name, path.directory(filepath))
-                    if toolpath then break end
-                end
-            end
-        end
+        toolpath = tools.probe(cross .. name)
     end
 
     -- probe ok? update it
@@ -203,13 +141,26 @@ end
 -- probe the toolchains
 function prober._probe_toolchains(configs)
 
+    -- init the default cross from the current host and architecture
+    local cross = ""
+    local arch = configs.get("arch")
+    if arch then
+        if xmake._HOST == "macosx" and arch == "x86" then
+            cross = "i386-mingw32-"
+        elseif arch == "x86" then
+            cross = "i686-w64-mingw32-"
+        elseif arch == "x64" then
+            cross = "x86_64-w64-mingw32-"
+        end
+    end
+
     -- done
-    if not prober._probe_toolpath(configs, "cc", "arm-linux-androideabi-", "gcc", "the c compiler") then return false end
-    if not prober._probe_toolpath(configs, "cxx", "arm-linux-androideabi-", "g++", "the c++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "as", "arm-linux-androideabi-", "gcc", "the assember") then return false end
-    if not prober._probe_toolpath(configs, "ld", "arm-linux-androideabi-", "g++", "the linker") then return false end
-    if not prober._probe_toolpath(configs, "ar", "arm-linux-androideabi-", "ar", "the static library linker") then return false end
-    if not prober._probe_toolpath(configs, "sh", "arm-linux-androideabi-", "g++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "cc", cross, "gcc", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", cross, "g++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", cross, "gcc", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "ld", cross, "g++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", cross, "ar", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", cross, "g++", "the shared library linker") then return false end
     return true
 end
 
@@ -220,11 +171,9 @@ function prober.config()
     utils.call(     {   prober._probe_arch
                     ,   prober._probe_make
                     ,   prober._probe_ccache
-                    ,   prober._probe_ndk_sdkver
                     ,   prober._probe_toolchains}
                 ,   nil
                 ,   config)
-
 end
 
 -- probe the global configure 
@@ -232,8 +181,7 @@ function prober.global()
 
     -- call all probe functions
     utils.call(     {   prober._probe_make
-                    ,   prober._probe_ccache
-                    ,   prober._probe_ndk_sdkver}
+                ,       prober._probe_ccache}
                 ,   nil
                 ,   global)
 end
