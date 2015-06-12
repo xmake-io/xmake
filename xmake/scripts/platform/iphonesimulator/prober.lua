@@ -42,7 +42,7 @@ function prober._probe_arch(configs)
     if arch then return true end
 
     -- init the default architecture
-    configs.set("arch", "i386")
+    configs.set("arch", "x86_64")
 
     -- trace
     utils.verbose("checking for the architecture ... %s", configs.get("arch"))

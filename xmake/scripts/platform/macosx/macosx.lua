@@ -30,7 +30,7 @@ local config    = require("base/config")
 macosx._HOST   = "macosx"
 
 -- init architectures
-macosx._ARCHS  = {"x86", "x64"}
+macosx._ARCHS  = {"i386", "x86_64"}
 
 -- make configure
 function macosx.make(configs)
@@ -56,16 +56,12 @@ function macosx.make(configs)
     -- init flags for architecture
     local archflags = nil
     local arch = config.get("arch")
-    if arch then
-        if arch == "x64" then archflags = "-m64"
-        elseif arch == "x86" then archflags = "-m32"
-        end
-    end
-    configs.cxflags     = { archflags }
-    configs.mxflags     = { archflags }
+    if arch then archflags = "-arch " .. arch end
+    configs.cxflags     = { archflags, "-fpascal-strings", "-fmessage-length=0" }
+    configs.mxflags     = { archflags, "-fpascal-strings", "-fmessage-length=0" }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags }
-    configs.shflags     = { archflags }
+    configs.ldflags     = { archflags, "-mmacosx-version-min=10.7", "-stdlib=libc++", "-lz" }
+    configs.shflags     = { archflags, "-mmacosx-version-min=10.7", "-stdlib=libc++", "-lz" }
 
     -- init flags for the xcode sdk directory
     local xcode_sdkdir = config.get("__xcode_sdkdir")
