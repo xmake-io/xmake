@@ -26,6 +26,7 @@ local rule = rule or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local table     = require("base/table")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local platform  = require("platform/platform")
@@ -184,6 +185,53 @@ function rule.sourcefiles(target)
 
     -- ok?
     return sourcefiles
+end
+
+-- get the header files from the given target
+function rule.headerfiles(target)
+
+    -- check
+    assert(target)
+
+    -- no headers?
+    local headers = target.headers
+    if not headers then return end
+
+    -- get the headerdir
+    local headerdir = target.headerdir or config.get("buildir")
+    assert(headerdir)
+
+    -- get the source pathes and destinate pathes
+    local srcheaders = {}
+    local dstheaders = {}
+    for _, header in ipairs(utils.wrap(headers)) do
+
+        -- get the root directory
+        local rootdir = header:gsub("%(.*%)", "")
+
+        -- remove '(' and ')'
+        local srcpathes = header:gsub("[%(%)]", "")
+        if srcpathes then 
+
+            -- get the source pathes
+            srcpathes = os.match(srcpathes)
+            if srcpathes then
+
+                -- add the source headers
+                table.join2(srcheaders, srcpathes)
+
+                -- add the destinate headers
+                local i = 1
+                for _, srcpath in ipairs(srcpathes) do
+                    dstheaders[i] = path.absolute(path.relative(srcpath, rootdir), headerdir)
+                    i = i + 1
+                end
+            end
+        end
+    end
+
+    -- ok?
+    return srcheaders, dstheaders
 end
 
 -- return module: rule
