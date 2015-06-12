@@ -119,6 +119,9 @@ function makefile._make_target(file, name, target)
     local objfiles = rule.objectfiles(name, target, srcfiles)
     assert(srcfiles and objfiles)
 
+    -- get source and destinate header files
+    local srcheaders, dstheaders = rule.headerfiles(target)
+
     -- get target file
     local targetfile = rule.targetfile(name, target)
     assert(targetfile)
@@ -159,6 +162,16 @@ function makefile._make_target(file, name, target)
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
     file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
+    if srcheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                file:write(string.format("\t@xmake l cp %s %s\n", srcheader, dstheader))
+            end
+            i = i + 1
+        end
+    end
 
     -- make tail
     file:write("\n")
