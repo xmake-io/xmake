@@ -43,7 +43,7 @@ function android.make(configs)
  
     -- init the toolchains
     configs.tools           = {}
-    configs.tools.make      = "make"
+    configs.tools.make      = config.get("make")
     configs.tools.ccache    = config.get("__ccache")
     configs.tools.cc        = config.get("cc") 
     configs.tools.cxx       = config.get("cxx") 

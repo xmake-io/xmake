@@ -28,6 +28,8 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
 local global    = require("base/global")
+local tools     = require("tools/tools")
+local platform  = require("platform/platform")
 
 -- define module: prober
 local prober = prober or {}
@@ -45,7 +47,7 @@ function prober._probe_arch(configs)
     configs.set("arch", xmake._ARCH)
 
     -- trace
-    utils.verbose("checking the architecture ... %s", configs.get("arch"))
+    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
@@ -94,10 +96,10 @@ function prober._probe_vs_version(configs)
         configs.set("vs", vs)
 
         -- trace
-        utils.verbose("checking the Microsoft Visual Studio version ... %s", vs)
+        utils.verbose("checking for the Microsoft Visual Studio version ... %s", vs)
     else
         -- failed
-        utils.error("checking the Microsoft Visual Studio version ... no")
+        utils.error("checking for the Microsoft Visual Studio version ... no")
         utils.error("    - xmake config --vs=xxx")
         utils.error("or  - xmake global --vs=xxx")
         return false
@@ -195,13 +197,64 @@ function prober._probe_vs_path(configs)
     return true
 end
 
+-- probe the tool path
+function prober._probe_toolpath(configs, kind, name, description)
+
+    -- check
+    assert(kind)
+
+    -- attempt to get it directly from the configure
+    local toolpath = configs.get(kind)
+    if toolpath then return true end
+
+    -- attempt to run it directly first
+    if not toolpath and os.execute(string.format("%s nul > %s 2>&1", name, xmake._NULDEV)) ~= 0x7f00 then
+        toolpath = name
+    end
+
+    -- probe ok? update it
+    if toolpath then configs.set(kind, toolpath) end
+
+    -- trace
+    utils.verbose("checking for %s (%s) ... %s", description, kind, utils.ifelse(toolpath, path.filename(toolpath), "no"))
+
+    -- ok
+    return true
+end
+
+-- probe the toolchains
+function prober._probe_toolchains(configs)
+
+    -- the windows module
+    local windows = platform.module()
+    assert(windows)
+
+    -- enter envirnoment
+    windows.enter()
+
+    -- done
+    if not prober._probe_toolpath(configs, "cc", "cl.exe", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "cl.exe", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "ld", "link.exe", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", "link.exe", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "link.exe", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "make", "nmake.exe", "the make") then return false end
+
+    -- leave envirnoment
+    windows.leave()
+
+    -- ok
+    return true
+end
+
 -- probe the project configure 
 function prober.config()
 
     -- call all probe functions
     utils.call(     {   prober._probe_arch
                     ,   prober._probe_vs_version
-                    ,   prober._probe_vs_path}
+                    ,   prober._probe_vs_path
+                    ,   prober._probe_toolchains}
                 ,   nil
                 ,   config)
 end

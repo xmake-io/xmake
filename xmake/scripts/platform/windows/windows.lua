@@ -24,14 +24,73 @@
 local windows = windows or {}
 
 -- load modules
+local os            = require("base/os")
 local config        = require("base/config")
 
 -- init host
-windows._HOST      = "windows"
+windows._HOST       = "windows"
 
 -- init architectures
-windows._ARCHS     = {"x86", "x64"}
+windows._ARCHS      = {"x86", "x64"}
 
+-- enter the given environment
+function windows._enter(name)
+
+    -- check
+    assert(name)
+
+    -- get the pathes for the vs environment
+    local old = nil
+    local new = config.get("__vsenv_" .. name)
+    if new then
+
+        -- get the current pathes
+        old = os.getenv(name) or ""
+
+        -- append the current pathes
+        new = new .. ";" .. old
+
+        -- update the pathes for the environment
+        os.setenv(name, new)
+    end
+
+    -- return the previous environment
+    return old;
+end
+
+-- leave the given environment
+function windows._leave(name, old)
+
+    -- check
+    assert(name)
+
+    -- restore the previous environment
+    if old then 
+        os.setenv(name, old)
+    end
+end
+
+-- enter environment
+function windows.enter()
+
+    -- enter the vs environment
+    windows._pathes    = windows._enter("path")
+    windows._libs      = windows._enter("lib")
+    windows._includes  = windows._enter("include")
+    windows._libpathes = windows._enter("libpath")
+
+end
+
+-- leave environment
+function windows.leave()
+
+    -- leave the vs environment
+    windows._leave("path",       windows._pathes)
+    windows._leave("lib",        windows._libs)
+    windows._leave("include",    windows._includes)
+    windows._leave("libpath",    windows._libpathes)
+
+end
 -- make configure
 function windows.make(configs)
 
@@ -43,13 +102,13 @@ function windows.make(configs)
     configs.formats.binary      = {"", ".exe"}
 
     -- init the toolchains
-    configs.tools       = {}
-    configs.tools.make  = "nmake"
-    configs.tools.cc    = config.get("cc") or "cl"
-    configs.tools.cxx   = config.get("cxx") or "cl"
-    configs.tools.ld    = config.get("ld") or "link"
-    configs.tools.ar    = config.get("ar") or "link"
-    configs.tools.sh    = config.get("sh") or "link"
+    configs.tools           = {}
+    configs.tools.make      = config.get("make")
+    configs.tools.cc        = config.get("cc")
+    configs.tools.cxx       = config.get("cxx")
+    configs.tools.ld        = config.get("ld") 
+    configs.tools.ar        = config.get("ar") 
+    configs.tools.sh        = config.get("sh") 
 
 end
 

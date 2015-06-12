@@ -62,18 +62,19 @@ function _global.menu()
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k",    nil,           "Clean the cached configure and configure all again."        }
-                ,   {nil, "ccache",     "kv",   "auto",        "Enable or disable the c/c++ compiler cache." 
-                                                             , "    --ccache=[y|n]"                                         }
+                    {'c', "clean",      "k",    nil,            "Clean the cached configure and configure all again."       }
+                ,   {nil, "make",       "kv",   "auto",         "Set the make path."                                        }
+                ,   {nil, "ccache",     "kv",   "auto",         "Enable or disable the c/c++ compiler cache." 
+                                                             ,  "    --ccache=[y|n]"                                        }
 
                 ,   {}
                     -- the options for all platforms
                 ,   function () return platform.menu("global") end
 
                 ,   {}
-                ,   {'v', "verbose",    "k",    nil,          "Print lots of verbose information."                          }
-                ,   {nil, "version",    "k",    nil,          "Print the version number and exit."                          }
-                ,   {'h', "help",       "k",    nil,          "Print this help message and exit."                           }
+                ,   {'v', "verbose",    "k",    nil,            "Print lots of verbose information."                        }
+                ,   {nil, "version",    "k",    nil,            "Print the version number and exit."                        }
+                ,   {'h', "help",       "k",    nil,            "Print this help message and exit."                         }
                 }
             }
 end

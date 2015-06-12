@@ -27,43 +27,7 @@ local cl = cl or {}
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
-
--- enter the given environment
-function cl._enter(name)
-
-    -- check
-    assert(name)
-
-    -- get the pathes for the vs environment
-    local old = nil
-    local new = config.get("__vsenv_" .. name)
-    if new then
-
-        -- get the current pathes
-        old = os.getenv(name) or ""
-
-        -- append the current pathes
-        new = new .. ";" .. old
-
-        -- update the pathes for the environment
-        os.setenv(name, new)
-    end
-
-    -- return the previous environment
-    return old;
-end
-
--- leave the given environment
-function cl._leave(name, old)
-
-    -- check
-    assert(name)
-
-    -- restore the previous environment
-    if old then 
-        os.setenv(name, old)
-    end
-end
+local platform  = require("platform/platform")
 
 -- init the compiler
 function cl.init(self, name)
@@ -146,20 +110,18 @@ end
 -- the main function
 function cl.main(self, cmd)
 
-    -- enter the vs environment
-    local pathes    = cl._enter("path")
-    local libs      = cl._enter("lib")
-    local includes  = cl._enter("include")
-    local libpathes = cl._enter("libpath")
+    -- the windows module
+    local windows = platform.module()
+    assert(windows)
+
+    -- enter envirnoment
+    windows.enter()
 
     -- execute it
     local ok = os.execute(cmd)
 
-    -- leave the vs environment
-    cl._leave("path",       pathes)
-    cl._leave("lib",        libs)
-    cl._leave("include",    includes)
-    cl._leave("libpath",    libpathes)
+    -- leave envirnoment
+    windows.leave()
 
     -- ok?
     return utils.ifelse(ok == 0, true, false)

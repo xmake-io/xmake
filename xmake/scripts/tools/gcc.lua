@@ -74,6 +74,8 @@ function gcc.init(self, name)
 
     -- suppress warning for the ccache bug
     if name:find("clang") and config.get("ccache") then
+        self.cxflags = self.cxflags or {}
+        self.mxflags = self.mxflags or {}
         table.join2(self.cxflags, "-Qunused-arguments")
         table.join2(self.mxflags, "-Qunused-arguments")
     end

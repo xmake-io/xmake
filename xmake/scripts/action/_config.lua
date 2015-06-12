@@ -125,7 +125,8 @@ function _config.menu()
                 ,   function () return project.menu() end
 
                 ,   {}
-                ,   {nil, "ccache",     "kv",   "auto",     "Enable or disable the c/c++ compiler cache."                   }
+                ,   {nil, "make",       "kv", "auto",     "Set the make path."                                              }
+                ,   {nil, "ccache",     "kv", "auto",     "Enable or disable the c/c++ compiler cache."                     }
 
                 ,   {}
                 ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   

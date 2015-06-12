@@ -45,7 +45,7 @@ function prober._probe_arch(configs)
     configs.set("arch", xmake._ARCH)
 
     -- trace
-    utils.verbose("checking the architecture ... %s", configs.get("arch"))
+    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
