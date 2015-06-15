@@ -1,5 +1,5 @@
 set_version("1.0.1")
-set_configfile("$(buildir)/demo.h")
+set_config_h("$(buildir)/demo.h")
 
 if modes("debug") then
     set_symbols("debug")
@@ -29,26 +29,30 @@ end
 
 add_option("option1")
     set_option_default(true)
-    add_option_defines_if_ok("OPTION1_ENABLE")
+    set_option_showmenu(true)
+    add_option_defines_to_config_h("OPTION1_ENABLE")
     set_option_description("The option for definition and need not check.")
 
 add_option("option2")
     set_option_default(false)
-    add_option_defines_if_ok("OPTION2_ENABLE")
+    set_option_showmenu(true)
+    add_option_defines_to_config_h("OPTION2_ENABLE")
     add_option_cincludes("stdio.h", "hello1.h")
     add_option_includedirs("src/hello1")
     set_option_description("The option for finding includes.")
 
 add_option("option3")
     set_option_default(false)
-    add_option_defines_if_ok("OPTION3_ENABLE")
+    set_option_showmenu(true)
+    add_option_defines_to_config_h("OPTION3_ENABLE")
     add_option_links("hello1")
     add_option_linkdirs("$(buildir)")
     set_option_description("The option for finding links.")
 
 add_option("option4")
     set_option_default(false)
-    add_option_defines_if_ok("OPTION4_ENABLE")
+    set_option_showmenu(true)
+    add_option_defines_to_config_h("OPTION4_ENABLE")
     set_option_description("The option for finding interfaces.")
     if not plats("windows") then
         add_option_links("z", "sqlite3")

@@ -31,8 +31,9 @@ function table.join(...)
     local result = {}
     for _, t in ipairs(args) do
         if type(t) == "table" then
-            for _, v in ipairs(t) do
-                table.insert(result, v)
+            for k, v in pairs(t) do
+                if type(k) == "number" then table.insert(result, v)
+                else result[k] = v end
             end
         else
             table.insert(result, t)
@@ -53,8 +54,9 @@ function table.join2(self, ...)
     local args = {...}
     for _, t in ipairs(args) do
         if type(t) == "table" then
-            for _, v in ipairs(t) do
-                table.insert(self, v)
+            for k, v in pairs(t) do
+                if type(k) == "number" then table.insert(self, v)
+                else self[k] = v end
             end
         else
             table.insert(self, t)
