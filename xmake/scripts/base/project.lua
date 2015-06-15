@@ -294,11 +294,11 @@ function project._makeconf_for_target(target_name, target)
 
     -- make the defines
     local defines = {}
-    if target.defines_to_config_h then table.join2(defines, target.defines_to_config_h) end
+    if target.defines_h then table.join2(defines, target.defines_h) end
 
     -- make the undefines
     local undefines = {}
-    if target.undefines_to_config_h then table.join2(undefines, target.undefines_to_config_h) end
+    if target.undefines_h then table.join2(undefines, target.undefines_h) end
 
     -- the options
     if target.options then
@@ -310,10 +310,10 @@ function project._makeconf_for_target(target_name, target)
             if nil ~= opt then
 
                 -- get the option defines
-                if opt.defines_to_config_h then table.join2(defines, opt.defines_to_config_h) end
+                if opt.defines_h then table.join2(defines, opt.defines_h) end
 
                 -- get the option undefines
-                if opt.undefines_to_config_h then table.join2(undefines, opt.undefines_to_config_h) end
+                if opt.undefines_h then table.join2(undefines, opt.undefines_h) end
 
             end
         end
@@ -427,6 +427,136 @@ function project._make_targets(configs)
     end
 end
 
+-- make option for checking links
+function project._make_option_for_checking_links(opt, links, cfile, objectfile, targetfile)
+
+    -- done
+    for _, link in ipairs(utils.wrap(links)) do
+          
+        -- this links has been checked?
+        project._CHECKED_LINKS = project._CHECKED_LINKS or {}
+        if project._CHECKED_LINKS[link] then return true end
+        
+        -- only for compile a object file
+        local ok = compiler.check_include(opt, nil, cfile, objectfile)
+
+        -- check link
+        if ok then ok = linker.check_links(opt, link, objectfile, targetfile) end
+
+        -- trace
+        utils.verbose("checking for the link %s ... %s", link, utils.ifelse(ok, "ok", "no"))
+
+        -- cache the result
+        project._CHECKED_LINKS[link] = ok
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
+-- make option for checking cincludes
+function project._make_option_for_checking_cincludes(opt, cincludes, cfile, objectfile)
+
+    -- done
+    for _, cinclude in ipairs(utils.wrap(cincludes)) do
+        
+        -- this cinclude has been checked?
+        project._CHECKED_CINCLUDES = project._CHECKED_CINCLUDES or {}
+        if project._CHECKED_CINCLUDES[cinclude] then return true end
+        
+        -- check cinclude
+        local ok = compiler.check_include(opt, cinclude, cfile, objectfile)
+
+        -- trace
+        utils.verbose("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
+
+        -- cache the result
+        project._CHECKED_CINCLUDES[cinclude] = ok
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
+-- make option for checking cxxincludes
+function project._make_option_for_checking_cxxincludes(opt, cxxincludes, cxxfile, objectfile)
+
+    -- done
+    for _, cxxinclude in ipairs(utils.wrap(cxxincludes)) do
+         
+        -- this cxxinclude has been checked?
+        project._CHECKED_CXXINCLUDES = project._CHECKED_CXXINCLUDES or {}
+        if project._CHECKED_CXXINCLUDES[cinclude] then return true end
+        
+        -- check cinclude
+        local ok = compiler.check_include(opt, cxxinclude, cxxfile, objectfile)
+
+        -- trace
+        utils.verbose("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
+
+        -- cache the result
+        project._CHECKED_CXXINCLUDES[cxxinclude] = ok
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
+-- make option for checking cfunctions
+function project._make_option_for_checking_cfuncs(opt, cfuncs, cfile, objectfile, targetfile)
+
+    -- done
+    for _, cfunc in ipairs(utils.wrap(cfuncs)) do
+        
+        -- check function
+        local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
+
+        -- check link
+        if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
+
+        -- trace
+        utils.verbose("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
+-- make option for checking cxxfunctions
+function project._make_option_for_checking_cxxfuncs(opt, cxxfuncs, cxxfile, objectfile, targetfile)
+
+    -- done
+    for _, cxxfunc in ipairs(utils.wrap(cxxfuncs)) do
+        
+        -- check function
+        local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
+
+        -- check link
+        if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
+
+        -- trace
+        utils.verbose("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
 -- make option 
 function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
 
@@ -448,82 +578,24 @@ function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
 
     -- check links
     if opt.links then
-        for _, link in ipairs(utils.wrap(opt.links)) do
-             
-            -- only for compile a object file
-            local ok = compiler.check_include(opt, nil, cfile, objectfile)
-
-            -- check link
-            if ok then ok = linker.check_links(opt, link, objectfile, targetfile) end
-
-            -- trace
-            utils.verbose("checking for the link %s ... %s", link, utils.ifelse(ok, "ok", "no"))
-
-            -- failed
-            if not ok then return end
-        end
+        if not project._make_option_for_checking_links(opt, opt.links, cfile, objectfile, targetfile) then return end
     end
 
     -- check includes and functions
     if opt.cincludes or opt.cxxincludes then
 
         -- check cincludes
-        for _, cinclude in ipairs(utils.wrap(opt.cincludes)) do
-            
-            -- check cinclude
-            local ok = compiler.check_include(opt, cinclude, cfile, objectfile)
-
-            -- trace
-            utils.verbose("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
-
-            -- failed
-            if not ok then return end
-        end
+        if not project._make_option_for_checking_cincludes(opt, opt.cincludes, cfile, objectfile) then return end
 
         -- check cxxincludes
-        for _, cinclude in ipairs(utils.wrap(opt.cxxincludes)) do
-            
-            -- check cxxinclude
-            local ok = compiler.check_include(opt, cxxinclude, cxxfile, objectfile)
-
-            -- trace
-            utils.verbose("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
-
-            -- failed
-            if not ok then return end
-        end
+        if not project._make_option_for_checking_cxxincludes(opt, opt.cxxincludes, cxxfile, objectfile) then return end
 
         -- check cfuncs
-        for _, cfunc in ipairs(utils.wrap(opt.cfuncs)) do
-            
-            -- check function
-            local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
- 
-            -- check link
-            if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
-
-            -- trace
-            utils.verbose("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
-
-            -- failed
-            if not ok then return end
-        end
+        if not project._make_option_for_checking_cfuncs(opt, opt.cfuncs, cfile, objectfile, targetfile) then return end
 
         -- check cxxfuncs
-        for _, cxxfunc in ipairs(utils.wrap(opt.cxxfuncs)) do
-            
-            -- check function
-            local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
+        if not project._make_option_for_checking_cxxfuncs(opt, opt.cxxfuncs, cxxfile, objectfile, targetfile) then return end
 
-            -- check link
-            if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
-
-            -- trace
-            utils.verbose("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
-
-            -- failed
-            if not ok then return end
-        end
     end
 
     -- ok
@@ -571,9 +643,6 @@ function project._make_options(configs)
                 config.set("__" .. k, nil)
 
             end
-
-            -- trace
-            utils.verbose("checking for the option %s ... %s", k, utils.ifelse(o, "ok", "no"))
 
         elseif nil == config.get("__" .. k) then
 
@@ -626,7 +695,7 @@ function project._load_options(file)
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
     
     -- register interfaces for setting option values
-    local interfaces =  {   "default"
+    local interfaces =  {   "enable"
                         ,   "showmenu"
                         ,   "description"} 
 
@@ -648,8 +717,10 @@ function project._load_options(file)
                         ,   "ldflags" 
                         ,   "defines"
                         ,   "undefines"
-                        ,   "defines_to_config_h"
-                        ,   "undefines_to_config_h"} 
+                        ,   "defines_h"
+                        ,   "defines_h_if_have_cfuncs"
+                        ,   "undefines_h"
+                        ,   "undefines_h_if_have_cfuncs"} 
 
     for _, interface in ipairs(interfaces) do
         newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
@@ -740,8 +811,8 @@ function project._load_targets(file)
                         ,   "options"
                         ,   "defines"
                         ,   "undefines"
-                        ,   "defines_to_config_h"
-                        ,   "undefines_to_config_h"
+                        ,   "defines_h"
+                        ,   "undefines_h"
                         ,   "languages"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
@@ -869,8 +940,8 @@ function project.menu()
         -- show menu?
         if opt.showmenu then
 
-            -- the default
-            local default = utils.unwrap(opt.default)
+            -- the default value
+            local default = utils.unwrap(opt.enable)
             if not default then default = "auto" end
 
             -- append it
