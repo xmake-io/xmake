@@ -294,11 +294,11 @@ function project._makeconf_for_target(target_name, target)
 
     -- make the defines
     local defines = {}
-    if target.defines_h then table.join2(defines, target.defines_h) end
+    if target.defines_h_if_ok then table.join2(defines, target.defines_h_if_ok) end
 
     -- make the undefines
     local undefines = {}
-    if target.undefines_h then table.join2(undefines, target.undefines_h) end
+    if target.undefines_h_if_ok then table.join2(undefines, target.undefines_h_if_ok) end
 
     -- the options
     if target.options then
@@ -310,10 +310,10 @@ function project._makeconf_for_target(target_name, target)
             if nil ~= opt then
 
                 -- get the option defines
-                if opt.defines_h then table.join2(defines, opt.defines_h) end
+                if opt.defines_h_if_ok then table.join2(defines, opt.defines_h_if_ok) end
 
                 -- get the option undefines
-                if opt.undefines_h then table.join2(undefines, opt.undefines_h) end
+                if opt.undefines_h_if_ok then table.join2(undefines, opt.undefines_h_if_ok) end
 
             end
         end
@@ -716,11 +716,11 @@ function project._load_options(file)
                         ,   "cxxflags" 
                         ,   "ldflags" 
                         ,   "defines"
+                        ,   "defines_if_ok"
+                        ,   "defines_h_if_ok"
                         ,   "undefines"
-                        ,   "defines_h"
-                        ,   "defines_h_if_have_cfuncs"
-                        ,   "undefines_h"
-                        ,   "undefines_h_if_have_cfuncs"} 
+                        ,   "undefines_if_ok"
+                        ,   "undefines_h_if_ok"} 
 
     for _, interface in ipairs(interfaces) do
         newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
@@ -811,8 +811,8 @@ function project._load_targets(file)
                         ,   "options"
                         ,   "defines"
                         ,   "undefines"
-                        ,   "defines_h"
-                        ,   "undefines_h"
+                        ,   "defines_h_if_ok"
+                        ,   "undefines_h_if_ok"
                         ,   "languages"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do

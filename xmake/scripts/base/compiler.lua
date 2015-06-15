@@ -314,16 +314,16 @@ function compiler._addflags_from_option(module, flags, flagnames, opt)
     end
 
     -- append the defines flags
-    if opt.defines and module.flag_define then
-        local defines = utils.wrap(opt.defines)
+    if opt.defines_if_ok and module.flag_define then
+        local defines = utils.wrap(opt.defines_if_ok)
         for _, define in ipairs(defines) do
             table.join2(flags, module:flag_define(define))
         end
     end
 
     -- append the undefines flags 
-    if opt.undefines and module.flag_undefine then
-        local undefines = utils.wrap(opt.undefines)
+    if opt.undefines_if_ok and module.flag_undefine then
+        local undefines = utils.wrap(opt.undefines_if_ok)
         for _, undefine in ipairs(undefines) do
             table.join2(flags, module:flag_undefine(undefine))
         end
