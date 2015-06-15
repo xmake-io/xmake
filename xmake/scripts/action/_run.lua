@@ -82,7 +82,7 @@ function _run.done()
     end
 
     -- done 
-    local ok = os.execute(string.format("%s %s", targetfile, table.concat(arguments)))
+    local ok = os.execute(string.format("%s %s", targetfile, table.concat(arguments, " ")))
 
     -- ok?
     return utils.ifelse(ok == 0, true, false)

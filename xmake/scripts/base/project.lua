@@ -89,14 +89,15 @@ function project._api_archs(env, ...)
     end
 end
 
--- enable option?
-function project._api_option(env, name)
+-- enable options?
+function project._api_options(env, ...)
 
-    -- check
-    assert(name)
-
-    -- enable?
-    return config.get(name)
+    -- some options are enabled?
+    for _, o in ipairs(table.join(...)) do
+        if o and type(o) == "string" and config.get(o) then
+            return true
+        end
+    end
 end
 
 -- add target 
@@ -791,7 +792,7 @@ function project._load_targets(file)
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
-    newenv.option           = function (...) return project._api_option(newenv, ...) end
+    newenv.options          = function (...) return project._api_options(newenv, ...) end
 
     -- register interfaces for the target
     newenv.set_target       = function (...) return project._api_add_target(newenv, ...) end
