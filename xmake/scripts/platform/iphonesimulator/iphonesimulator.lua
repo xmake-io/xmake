@@ -29,6 +29,9 @@ local config                = require("base/config")
 -- init host
 iphonesimulator._HOST       = "macosx"
 
+-- init os
+iphonesimulator._OS         = "ios"
+
 -- init architectures
 iphonesimulator._ARCHS      = {"i386", "x86_64"}
 

@@ -33,6 +33,7 @@ local table         = require("base/table")
 local config        = require("base/config")
 local linker        = require("base/linker")
 local compiler      = require("base/compiler")
+local platform      = require("platform/platform")
 
 -- the current mode is belong to the given modes?
 function project._api_modes(env, ...)
@@ -232,10 +233,35 @@ function project._filter(values)
     for _, v in ipairs(utils.wrap(values)) do
         if type(v) == "string" then
             v = v:gsub("%$%((.-)%)",    function (w) 
+                                            
+                                            -- is upper?
+                                            local isupper = false
+                                            local c = string.char(w:byte())
+                                            if c >= 'A' and c <= 'Z' then isupper = true end
+
+                                            -- attempt to get it directly from the configure
                                             local r = config.get(w)
-                                            if r and type(r) == "string" then return r 
-                                            elseif w == "projectdir" then return xmake._PROJECT_DIR
-                                            end 
+                                            if not r or type(r) ~= "string" then 
+
+                                                -- attempt to get it from the configure and the lower key
+                                                w = w:lower()
+                                                r = config.get(w)
+                                                if not r or type(r) ~= "string" then 
+                                                    
+                                                    -- get the other keys
+                                                    if w == "projectdir" then r = xmake._PROJECT_DIR
+                                                    elseif w == "os" then r = platform.os()
+                                                    end 
+                                                end
+                                            end
+
+                                            -- upper?
+                                            if r and type(r) == "string" and isupper then
+                                                r = r:upper() 
+                                            end
+
+                                            -- ok?
+                                            return r
                                         end)
         end
         table.insert(newvals, v)
@@ -294,11 +320,11 @@ function project._makeconf_for_target(target_name, target)
 
     -- make the defines
     local defines = {}
-    if target.defines_h_if_ok then table.join2(defines, target.defines_h_if_ok) end
+    if target.defines_h then table.join2(defines, target.defines_h) end
 
     -- make the undefines
     local undefines = {}
-    if target.undefines_h_if_ok then table.join2(undefines, target.undefines_h_if_ok) end
+    if target.undefines_h then table.join2(undefines, target.undefines_h) end
 
     -- the options
     if target.options then
@@ -811,8 +837,8 @@ function project._load_targets(file)
                         ,   "options"
                         ,   "defines"
                         ,   "undefines"
-                        ,   "defines_h_if_ok"
-                        ,   "undefines_h_if_ok"
+                        ,   "defines_h"
+                        ,   "undefines_h"
                         ,   "languages"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do

@@ -29,6 +29,9 @@ local config        = require("base/config")
 -- init host
 iphoneos._HOST      = "macosx"
 
+-- init os
+iphoneos._OS        = "ios"
+
 -- init architectures
 iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
 
