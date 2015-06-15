@@ -723,6 +723,7 @@ function project._load_options(file)
     -- register interfaces for setting option values
     local interfaces =  {   "enable"
                         ,   "showmenu"
+                        ,   "category"
                         ,   "description"} 
 
     for _, interface in ipairs(interfaces) do
@@ -959,19 +960,41 @@ function project.menu()
     local options = configs._OPTIONS 
     if not options then return {} end
 
-    -- make menu
-    local menu = {{}}
+    -- arrange options by category
+    local options_by_category = {}
     for name, opt in pairs(options) do
 
-        -- show menu?
-        if opt.showmenu then
+        -- make the category
+        local category = "default"
+        if opt.category then category = utils.unwrap(opt.category) end
+        options_by_category[category] = options_by_category[category] or {}
 
-            -- the default value
-            local default = utils.unwrap(opt.enable)
-            if not default then default = "auto" end
+        -- append option to the current category
+        options_by_category[category][name] = opt
+    end
 
-            -- append it
-            table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+    -- make menu by category
+    local menu = {}
+    for k, opts in pairs(options_by_category) do
+
+        -- insert a separator
+        table.insert(menu, {})
+
+        -- insert options
+        for name, opt in pairs(opts) do
+
+            -- show menu?
+            if opt.showmenu then
+
+                -- the default value
+                local default = "auto"
+                if opt.enable and utils.unwrap(opt.enable) then
+                    default = true
+                end
+
+                -- append it
+                table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+            end
         end
     end
 
