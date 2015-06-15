@@ -211,19 +211,26 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
                                                                         }))
 
     -- add the language flags from the current project
-    table.join2(flags, compiler._getflags(module, target.language, {    ansi        = "-ansi"
-                                                                    ,   c89         = "-std=c89"
-                                                                    ,   gnu89       = "-std=gnu89"
-                                                                    ,   c99         = "-std=c99"
-                                                                    ,   gnu99       = "-std=gnu99"
-                                                                    ,   cxx98       = "-std=c++98"
-                                                                    ,   gnuxx98     = "-std=gnu++98"
-                                                                    ,   cxx11       = "-std=c++11"
-                                                                    ,   gnuxx11     = "-std=gnu++11"
-                                                                    ,   cxx14       = "-std=c++14"
-                                                                    ,   gnuxx14     = "-std=gnu++14"
-                                                                    }))
- 
+    local languages = {}
+    for _, flagname in ipairs(flagnames) do
+        if flagname == "cflags" or flagname == "mflags" then
+            table.join2(languages, {    ansi        = "-ansi"
+                                    ,   c89         = "-std=c89"
+                                    ,   gnu89       = "-std=gnu89"
+                                    ,   c99         = "-std=c99"
+                                    ,   gnu99       = "-std=gnu99"
+                                    })
+        elseif flagname == "cxxflags" or flagname == "mxxflags" then
+            table.join2(languages, {    cxx98       = "-std=c++98"
+                                    ,   gnuxx98     = "-std=gnu++98"
+                                    ,   cxx11       = "-std=c++11"
+                                    ,   gnuxx11     = "-std=gnu++11"
+                                    ,   cxx14       = "-std=c++14"
+                                    ,   gnuxx14     = "-std=gnu++14"
+                                    })
+        end
+    end
+    table.join2(flags, compiler._getflags(module, target.languages, languages))
 
     -- add the includedirs flags from the current project
     if module.flag_includedir then

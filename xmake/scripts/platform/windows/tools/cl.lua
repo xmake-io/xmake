@@ -90,7 +90,7 @@ end
 function cl.flag_define(self, define)
 
     -- make it
-    return "-D" .. define
+    return "-D" .. define:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
