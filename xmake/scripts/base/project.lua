@@ -231,7 +231,7 @@ function project._filter(values)
     local newvals = {}
     for _, v in ipairs(utils.wrap(values)) do
         if type(v) == "string" then
-            v = v:gsub("%$%((.*)%)",    function (w) 
+            v = v:gsub("%$%((.-)%)",    function (w) 
                                             local r = config.get(w)
                                             if r and type(r) == "string" then return r 
                                             elseif w == "projectdir" then return xmake._PROJECT_DIR
@@ -265,7 +265,7 @@ function project._makeconf_for_target(target_name, target)
     end
 
     -- the prefix
-    local prefix = target_name:upper() .. "_CONFIG"
+    local prefix = (target.configprefix or target_name:upper()) .. "_CONFIG"
 
     -- open the file
     local file = project._CONFILES[configfile] or io.openmk(configfile)
@@ -296,7 +296,9 @@ function project._makeconf_for_target(target_name, target)
     if target.undefines then
         file:write("// undefines\n")
         for _, undefine in ipairs(utils.wrap(target.undefines)) do
-            file:write(string.format("#undef %s\n", undefine))
+            file:write(string.format("#ifdef %s\n", undefine))
+            file:write(string.format("#    undef %s\n", undefine))
+            file:write("#endif\n")
         end
         file:write("\n")
     end
@@ -305,7 +307,9 @@ function project._makeconf_for_target(target_name, target)
     if target.defines then
         file:write("// defines\n")
         for _, define in ipairs(utils.wrap(target.defines)) do
-            file:write(string.format("#define %s\n", define:gsub("=", " ")))
+            file:write(string.format("#ifndef %s\n", define:gsub("=.*", "")))
+            file:write(string.format("#    define %s\n", define:gsub("=", " ")))
+            file:write("#endif\n")
         end
         file:write("\n")
     end
@@ -333,7 +337,9 @@ function project._makeconf_for_target(target_name, target)
                 if #defines ~= 0 then
                     file:write(string.format("// defines for %s\n", name))
                     for _, define in ipairs(defines) do
-                        file:write(string.format("#define %s\n", define:gsub("=", " ")))
+                        file:write(string.format("#ifndef %s\n", define:gsub("=.*", "")))
+                        file:write(string.format("#    define %s\n", define:gsub("=", " ")))
+                        file:write("#endif\n")
                     end
                     file:write("\n")
                 end
@@ -342,7 +348,9 @@ function project._makeconf_for_target(target_name, target)
                 if #undefines ~= 0 then
                     file:write(string.format("// undefines for %s\n", name))
                     for _, undefine in ipairs(undefines) do
-                        file:write(string.format("#undef %s\n", undefine))
+                        file:write(string.format("#ifdef %s\n", undefine))
+                        file:write(string.format("#    undef %s\n", undefine))
+                        file:write("#endif\n")
                     end
                     file:write("\n")
                 end
@@ -721,13 +729,14 @@ function project._load_targets(file)
                         ,   "targetdir" 
                         ,   "objectdir" 
                         ,   "configfile"
+                        ,   "configprefix"
                         ,   "version"
                         ,   "strip"
                         ,   "options"
                         ,   "symbols"
                         ,   "warnings"
                         ,   "optimize"
-                        ,   "language"} 
+                        ,   "languages"} 
 
     for _, interface in ipairs(interfaces) do
         newenv["set_" .. interface] = function (...) return project._api_set_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
@@ -751,6 +760,7 @@ function project._load_targets(file)
                         ,   "options"
                         ,   "defines"
                         ,   "undefines"
+                        ,   "languages"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
         newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
