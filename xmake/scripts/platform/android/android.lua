@@ -27,10 +27,13 @@ local android = android or {}
 local config        = require("base/config")
 
 -- init host
-android._HOST      = xmake._HOST
+android._HOST       = xmake._HOST
+
+-- init os
+android._OS         = "android"
 
 -- init architectures
-android._ARCHS     = {"armv5te", "armv6", "armv7-a"}
+android._ARCHS      = {"armv5te", "armv6", "armv7-a"}
 
 -- make configure
 function android.make(configs)

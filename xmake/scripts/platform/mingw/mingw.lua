@@ -29,6 +29,9 @@ local config    = require("base/config")
 -- init host
 mingw._HOST    = xmake._HOST
 
+-- init os
+mingw._OS       = "windows"
+
 -- init architectures
 mingw._ARCHS   = {"i386", "x86_64"}
 

@@ -29,6 +29,9 @@ local config    = require("base/config")
 -- init host
 macosx._HOST   = "macosx"
 
+-- init os
+macosx._OS    = "macosx"
+
 -- init architectures
 macosx._ARCHS  = {"i386", "x86_64"}
 

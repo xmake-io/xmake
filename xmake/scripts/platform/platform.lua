@@ -161,6 +161,13 @@ function platform.make()
     return platform._configs(config.get("plat"))
 end
 
+-- get the platform os
+function platform.os()
+
+    -- ok?
+    return platform.module()._OS
+end
+
 -- get the given configure
 function platform.get(name)
 

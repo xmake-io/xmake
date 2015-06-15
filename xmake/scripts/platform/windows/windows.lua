@@ -30,6 +30,9 @@ local config        = require("base/config")
 -- init host
 windows._HOST       = "windows"
 
+-- init os
+windows._OS         = "windows"
+
 -- init architectures
 windows._ARCHS      = {"i386", "x86_64"}
 

@@ -29,6 +29,9 @@ local config    = require("base/config")
 -- init host
 linux._HOST    = "linux"
 
+-- init os
+linux._OS      = "linux"
+
 -- init architectures
 linux._ARCHS   = {"i386", "x86_64"}
 
