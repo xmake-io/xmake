@@ -48,15 +48,6 @@ function _build.done()
         clean.remove(target_name, true)
     end
 
-    -- build target for makefile
-    if not makefile.build(target_name) then
-        -- error
-        print("")
-        io.cat(rule.logfile())
-        utils.error("build target: %s failed!\n", target_name)
-        return false
-    end
-
     -- clear rebuild mark and save configure to file
     if config.get("__rebuild") then
 
@@ -68,6 +59,15 @@ function _build.done()
             -- error
             utils.error("update configure failed!")
         end
+    end
+
+    -- build target for makefile
+    if not makefile.build(target_name) then
+        -- error
+        print("")
+        io.cat(rule.logfile())
+        utils.error("build target: %s failed!\n", target_name)
+        return false
     end
 
     -- ok
