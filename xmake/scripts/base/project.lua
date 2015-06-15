@@ -252,7 +252,7 @@ function project._makeconf_for_target(target_name, target)
     assert(target_name and target)
  
     -- get the target configure file 
-    local configfile = target.configfile
+    local configfile = target.config_h
     if not configfile then 
         return true
     end
@@ -265,7 +265,7 @@ function project._makeconf_for_target(target_name, target)
     end
 
     -- the prefix
-    local prefix = (target.configprefix or target_name:upper()) .. "_CONFIG"
+    local prefix = (target.config_h_prefix or target_name:upper()) .. "_CONFIG"
 
     -- open the file
     local file = project._CONFILES[configfile] or io.openmk(configfile)
@@ -292,27 +292,13 @@ function project._makeconf_for_target(target_name, target)
         file:write("\n")
     end
 
-    -- make the undefines
-    if target.undefines then
-        file:write("// undefines\n")
-        for _, undefine in ipairs(utils.wrap(target.undefines)) do
-            file:write(string.format("#ifdef %s\n", undefine))
-            file:write(string.format("#    undef %s\n", undefine))
-            file:write("#endif\n")
-        end
-        file:write("\n")
-    end
-
     -- make the defines
-    if target.defines then
-        file:write("// defines\n")
-        for _, define in ipairs(utils.wrap(target.defines)) do
-            file:write(string.format("#ifndef %s\n", define:gsub("=.*", "")))
-            file:write(string.format("#    define %s\n", define:gsub("=", " ")))
-            file:write("#endif\n")
-        end
-        file:write("\n")
-    end
+    local defines = {}
+    if target.defines_to_config_h then table.join2(defines, target.defines_to_config_h) end
+
+    -- make the undefines
+    local undefines = {}
+    if target.undefines_to_config_h then table.join2(undefines, target.undefines_to_config_h) end
 
     -- the options
     if target.options then
@@ -324,38 +310,31 @@ function project._makeconf_for_target(target_name, target)
             if nil ~= opt then
 
                 -- get the option defines
-                local defines = {}
-                if opt.defines then table.join2(defines, opt.defines) end
-                if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
+                if opt.defines_to_config_h then table.join2(defines, opt.defines_to_config_h) end
 
                 -- get the option undefines
-                local undefines = {}
-                if opt.undefines then table.join2(undefines, opt.undefines) end
-                if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
+                if opt.undefines_to_config_h then table.join2(undefines, opt.undefines_to_config_h) end
 
-                -- make the defines for options
-                if #defines ~= 0 then
-                    file:write(string.format("// defines for %s\n", name))
-                    for _, define in ipairs(defines) do
-                        file:write(string.format("#ifndef %s\n", define:gsub("=.*", "")))
-                        file:write(string.format("#    define %s\n", define:gsub("=", " ")))
-                        file:write("#endif\n")
-                    end
-                    file:write("\n")
-                end
-
-                -- make the undefines for options
-                if #undefines ~= 0 then
-                    file:write(string.format("// undefines for %s\n", name))
-                    for _, undefine in ipairs(undefines) do
-                        file:write(string.format("#ifdef %s\n", undefine))
-                        file:write(string.format("#    undef %s\n", undefine))
-                        file:write("#endif\n")
-                    end
-                    file:write("\n")
-                end
             end
         end
+    end
+
+    -- make the defines
+    if #defines ~= 0 then
+        file:write("// defines\n")
+        for _, define in ipairs(defines) do
+            file:write(string.format("#define %s\n", define:gsub("=", " ")))
+        end
+        file:write("\n")
+    end
+
+    -- make the undefines 
+    if #undefines ~= 0 then
+        file:write("// undefines\n")
+        for _, undefine in ipairs(undefines) do
+            file:write(string.format("#undef %s\n", undefine))
+        end
+        file:write("\n")
     end
 
     -- make the tail
@@ -648,6 +627,7 @@ function project._load_options(file)
     
     -- register interfaces for setting option values
     local interfaces =  {   "default"
+                        ,   "showmenu"
                         ,   "description"} 
 
     for _, interface in ipairs(interfaces) do
@@ -668,8 +648,8 @@ function project._load_options(file)
                         ,   "ldflags" 
                         ,   "defines"
                         ,   "undefines"
-                        ,   "defines_if_ok"
-                        ,   "undefines_if_ok"} 
+                        ,   "defines_to_config_h"
+                        ,   "undefines_to_config_h"} 
 
     for _, interface in ipairs(interfaces) do
         newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
@@ -728,8 +708,8 @@ function project._load_targets(file)
                         ,   "headerdir" 
                         ,   "targetdir" 
                         ,   "objectdir" 
-                        ,   "configfile"
-                        ,   "configprefix"
+                        ,   "config_h"
+                        ,   "config_h_prefix"
                         ,   "version"
                         ,   "strip"
                         ,   "options"
@@ -760,6 +740,8 @@ function project._load_targets(file)
                         ,   "options"
                         ,   "defines"
                         ,   "undefines"
+                        ,   "defines_to_config_h"
+                        ,   "undefines_to_config_h"
                         ,   "languages"
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
@@ -884,12 +866,16 @@ function project.menu()
     local menu = {{}}
     for name, opt in pairs(options) do
 
-        -- the default
-        local default = utils.unwrap(opt.default)
-        if not default then default = "auto" end
+        -- show menu?
+        if opt.showmenu then
 
-        -- append it
-        table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+            -- the default
+            local default = utils.unwrap(opt.default)
+            if not default then default = "auto" end
+
+            -- append it
+            table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+        end
     end
 
     -- ok?

@@ -40,15 +40,19 @@ function gcc._check(self, flag)
     end
 
     -- check it
+    local result = flag
     if 0 ~= os.execute(string.format("%s %s -S -o %s -xc %s > %s 2>&1", self._NAME, flag, xmake._NULDEV, xmake._NULDEV, xmake._NULDEV)) then
-        flag = ""
+        result = ""
     end
 
+    -- trace
+    utils.verbose("checking for the compiler flags %s ... %s", flag, utils.ifelse(#result ~= 0, "ok", "no"))
+
     -- save it
-    self._CHECK[flag] = flag
+    self._CHECK[flag] = result
 
     -- ok?
-    return flag
+    return result
 end
 
 -- the init function
