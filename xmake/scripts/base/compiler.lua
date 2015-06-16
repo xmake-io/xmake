@@ -350,6 +350,7 @@ function compiler._flagnames(name)
     elseif name == "mm"     then flagnames = { "mxflags", "mflags"      } 
     elseif name == "mxx"    then flagnames = { "mxflags", "mxxflags"    }
     elseif name == "as"     then flagnames = { "asflags"                }
+    else
         -- error
         utils.error("unknown compiler: %s", name)
         return 

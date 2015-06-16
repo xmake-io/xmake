@@ -28,6 +28,7 @@ local rule      = require("base/rule")
 local utils     = require("base/utils")
 local clean     = require("base/clean")
 local config    = require("base/config")
+local project   = require("base/project")
 local makefile  = require("base/makefile")
 
 -- done the given config
@@ -39,6 +40,11 @@ function _build.done()
 
     -- the target name
     local target_name = options.target
+
+    -- check target
+    if not project.checktarget(target_name) then
+        return false
+    end
 
     -- rebuild it?
     if options.rebuild or config.get("__rebuild") then

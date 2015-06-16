@@ -26,6 +26,7 @@ local _clean = _clean or {}
 -- load modules
 local clean     = require("base/clean")
 local config    = require("base/config")
+local project   = require("base/project")
 local platform  = require("platform/platform")
 
 -- done the given config
@@ -34,6 +35,11 @@ function _clean.done()
     -- the options
     local options = xmake._OPTIONS
     assert(options)
+
+    -- check target
+    if not project.checktarget(options.target) then
+        return false
+    end
 
     -- clean the current target
     if not clean.remove(options.target) then

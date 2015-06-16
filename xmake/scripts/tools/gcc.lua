@@ -76,12 +76,14 @@ function gcc.init(self, name)
         self.shflags = { "-shared -Wl,-soname" }
     end
 
-    -- suppress warning for the ccache bug
-    if name:find("clang") and config.get("ccache") then
+    -- suppress warning for the clang
+    if name:find("clang") then
         self.cxflags = self.cxflags or {}
         self.mxflags = self.mxflags or {}
+        self.asflags = self.asflags or {}
         table.join2(self.cxflags, "-Qunused-arguments")
         table.join2(self.mxflags, "-Qunused-arguments")
+        table.join2(self.asflags, "-Qunused-arguments")
     end
 
     -- init flags map
@@ -108,14 +110,14 @@ end
 function gcc.command_compile(self, srcfile, objfile, flags)
 
     -- make it
-    return string.format("%s -c %s -o%s %s", self._NAME, flags, objfile, srcfile)
+    return string.format("%s -c %s -o %s %s", self._NAME, flags, objfile, srcfile)
 end
 
 -- make the link command
 function gcc.command_link(self, objfiles, targetfile, flags)
 
     -- make it
-    return string.format("%s %s -o%s %s", self._NAME, flags, targetfile, objfiles)
+    return string.format("%s -o %s %s %s", self._NAME, targetfile, objfiles, flags)
 end
 
 -- make the define flag
