@@ -22,7 +22,7 @@ if modes("profile") then
     set_warnings("none")
     set_optimize("fastest")
 end
-
+  
 if archs("x86", "x64") then
     add_defines("ARCH=\"$(arch)\"", "PLAT=$(plat)", "MODE=$(mode)", "HOST=$(host)")
 end

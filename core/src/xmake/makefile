@@ -20,6 +20,7 @@ xmake_C_FILES 			+= \
 						os/mkdir \
 						os/cpdir \
 						os/chdir \
+						os/mtime \
 						os/curdir \
 						os/tmpdir \
 						os/isfile \

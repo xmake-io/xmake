@@ -158,6 +158,9 @@ function project._api_add_subdirs(env, ...)
     -- check
     assert(env)
 
+    -- init mtime for files
+    project._MTIMES = project._MTIMES or {}
+
     -- done
     for _, subdir in ipairs(table.join(...)) do
         if subdir and type(subdir) == "string" then
@@ -181,6 +184,9 @@ function project._api_add_subdirs(env, ...)
                     utils.error(errors)
                     assert(false)
                 end
+
+                -- get mtime of the file
+                project._MTIMES[file] = os.mtime(file)
             end
         end
     end
@@ -191,6 +197,9 @@ function project._api_add_subfiles(env, ...)
 
     -- check
     assert(env)
+
+    -- init mtime for files
+    project._MTIMES = project._MTIMES or {}
 
     -- done
     for _, subfile in ipairs(table.join(...)) do
@@ -214,6 +223,9 @@ function project._api_add_subfiles(env, ...)
                     utils.error(errors)
                     assert(false)
                 end
+
+                -- get mtime of the file
+                project._MTIMES[file] = os.mtime(subfile)
             end
         end
     end
@@ -480,6 +492,36 @@ function project._make_targets(configs)
             -- update it
             target[k] = v
         end
+    end
+
+    -- init mtime for the project file
+    project._MTIMES = project._MTIMES or {}
+    project._MTIMES[xmake._PROJECT_FILE] = os.mtime(xmake._PROJECT_FILE)
+
+    -- get the mtimes for configure
+    local mtimes_config = config.get("__mtimes")
+    if mtimes_config then 
+
+        -- check for all project files and we need reconfig and rebuild it if them have been modified
+        for file, mtime in pairs(project._MTIMES) do
+
+            -- modified? reconfig and rebuild it
+            local mtime_old = mtimes_config[file]
+            if not mtime_old or mtime > mtime_old then
+                config._RECONFIG = true
+                config.set("__rebuild", true)
+                break
+            end
+        end
+    end
+
+    -- update mtimes
+    config.set("__mtimes", project._MTIMES)
+
+    -- reconfig it? we need reprobe it
+    if config._RECONFIG then
+        project.probe()
+        config.clearup()
     end
 end
 
