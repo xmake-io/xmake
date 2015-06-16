@@ -126,18 +126,38 @@ function makefile._make_target(file, name, target)
     local targetfile = rule.targetfile(name, target)
     assert(targetfile)
 
+    -- get the targets
+    local targets = project.targets()
+    assert(targets)
+
     -- get the linker from the given kind
     local l = linker.get(target.kind)
     if not l then return false end
 
     -- make head
-    file:write(string.format("%s:", name))
+    file:write(string.format("%s: %s\n", name, targetfile))
+    file:write(string.format("%s:", targetfile))
 
     -- make dependence for the dependent targets
     if target.deps then
+
+        -- get all dependent target
         local deps = utils.wrap(target.deps)
         for _, dep in ipairs(deps) do
-            file:write(" " .. dep)
+            
+            -- the dependent target
+            local deptarget = targets[dep]
+            if not deptarget then
+                utils.error("the dependent target: %s is invalid!", dep)
+                return false
+            end
+
+            -- get the dependent target file
+            local depfile = rule.targetfile(dep, deptarget)
+            assert(depfile)
+
+            -- add dependence
+            file:write(" " .. depfile)
         end
     end
 
