@@ -35,7 +35,10 @@ function tools._match(name, toolname)
 
     -- match full? ok
     if name == toolname then return 100 end
-    
+     
+    -- match the last word? ok
+    if name:find(toolname .. "$") then return 80 end
+
     -- match the partial word? ok
     if name:find("%-" .. toolname) then return 60 end
 

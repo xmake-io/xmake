@@ -37,6 +37,11 @@ function _config.done()
     local options = xmake._OPTIONS
     assert(options)
 
+    -- check target
+    if not project.checktarget(options.target) then
+        return false
+    end
+
     -- save the configure
     if not config.save() then
         -- error

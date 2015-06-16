@@ -35,6 +35,24 @@ local linker        = require("base/linker")
 local compiler      = require("base/compiler")
 local platform      = require("platform/platform")
 
+-- the current os is belong to the given os?
+function project._api_os(env, ...)
+
+    -- the configure has been not loaded, only for menu
+    if not config._CURRENT then return false end
+
+    -- get the current os
+    local os = platform.os()
+    if not os then return false end
+
+    -- exists this os?
+    for _, o in ipairs(table.join(...)) do
+        if o and type(o) == "string" and o == os then
+            return true
+        end
+    end
+end
+
 -- the current mode is belong to the given modes?
 function project._api_modes(env, ...)
 
@@ -65,7 +83,7 @@ function project._api_plats(env, ...)
 
     -- exists this platform?
     for _, p in ipairs(table.join(...)) do
-        if p and type(p) == "string" and p == plat then
+        if p and type(p) == "string" and plat:find(p) then
             return true
         end
     end
@@ -83,7 +101,7 @@ function project._api_archs(env, ...)
 
     -- exists this architecture?
     for _, a in ipairs(table.join(...)) do
-        if a and type(a) == "string" and a == arch then
+        if a and type(a) == "string" and arch:find(a) then
             return true
         end
     end
@@ -709,6 +727,7 @@ function project._load_options(file)
     setfenv(script, newenv)
 
     -- register interfaces for the condition
+    newenv.os               = function (...) return project._api_os(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
@@ -789,6 +808,7 @@ function project._load_targets(file)
     setfenv(script, newenv)
 
     -- register interfaces for the condition
+    newenv.os               = function (...) return project._api_os(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
@@ -934,6 +954,25 @@ function project.makeconf(target_name)
     end
     project._CONFILES = nil
  
+    -- ok
+    return true
+end
+
+-- check target
+function project.checktarget(target_name)
+
+    -- the targets
+    local targets = project.targets()
+
+    -- invalid target?
+    if target_name and target_name ~= "all" and targets and not targets[target_name] then
+        utils.error("invalid target: %s!", target_name)
+        return false
+    elseif not target_name then
+        utils.error("no target!")
+        return false
+    end
+
     -- ok
     return true
 end

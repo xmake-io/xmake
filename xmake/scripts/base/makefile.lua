@@ -1,4 +1,4 @@
---!The Automatic Crmakefiles-platform Build Tool
+--!The Automatic Cross-platform Build Tool
 -- 
 -- XMake is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by

@@ -241,7 +241,7 @@ function prober._probe_toolchains(configs)
     if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk iphoneos ", "clang++", "the c++ compiler") then return false end
     if not prober._probe_toolpath(configs, "mm", "xcrun -sdk iphoneos ", "clang", "the objc compiler") then return false end
     if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk iphoneos ", "clang++", "the objc++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "as", "xcrun -sdk iphoneos ", "clang", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "as", xmake._SCRIPTS_DIR .. "/tools/gas-preprocessor.pl xcrun -sdk iphoneos ", "clang", "the assember") then return false end
     if not prober._probe_toolpath(configs, "ld", "xcrun -sdk iphoneos ", "clang++", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "xcrun -sdk iphoneos ", "ar", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", "xcrun -sdk iphoneos ", "clang++", "the shared library linker") then return false end
