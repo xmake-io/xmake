@@ -271,7 +271,7 @@ function linker.get(kind)
 end
 
 -- make the link command
-function linker.make(module, target, objfiles, targetfile)
+function linker.make(module, target, objfiles, targetfile, logfile)
 
     -- check
     assert(module and target)
@@ -304,7 +304,7 @@ function linker.make(module, target, objfiles, targetfile)
     linker._addflags_from_config(module, flags, flagname)
 
     -- make the link command
-    return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim())
+    return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- check link for the project option
@@ -333,12 +333,8 @@ function linker.check_links(opt, links, objectfile, targetfile)
     -- add flags from the configure
     linker._addflags_from_config(module, flags, "ldflags")
 
-    -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", module:command_link(objectfile, targetfile, table.concat(flags, " "):trim()), xmake._NULDEV)
-    if not cmd then return end
-
     -- execute the link command
-    return module:main(cmd)
+    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), xmake._NULDEV))
 end
 
 -- return module: linker

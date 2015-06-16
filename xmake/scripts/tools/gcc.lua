@@ -112,17 +112,25 @@ function gcc.init(self, name)
 end
 
 -- make the compile command
-function gcc.command_compile(self, srcfile, objfile, flags)
+function gcc.command_compile(self, srcfile, objfile, flags, logfile)
+
+    -- redirect
+    local redirect = ""
+    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -c %s -o %s %s", self._NAME, flags, objfile, srcfile)
+    return string.format("%s -c %s -o %s %s%s", self._NAME, flags, objfile, srcfile, redirect)
 end
 
 -- make the link command
-function gcc.command_link(self, objfiles, targetfile, flags)
+function gcc.command_link(self, objfiles, targetfile, flags, logfile)
+
+    -- redirect
+    local redirect = ""
+    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -o %s %s %s", self._NAME, targetfile, objfiles, flags)
+    return string.format("%s -o %s %s %s%s", self._NAME, targetfile, objfiles, flags, redirect)
 end
 
 -- make the define flag

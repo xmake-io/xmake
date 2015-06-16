@@ -17,48 +17,27 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        ar.lua
+-- @file        cat.lua
 --
 
--- define module: ar
-local ar = ar or {}
+-- define module: cat
+local cat = cat or {}
 
 -- load modules
-local utils     = require("base/utils")
-local string    = require("base/string")
-local config    = require("base/config")
-
--- init the linker
-function ar.init(self, name)
-
-    -- save name
-    self._NAME = name or "ar"
-
-    -- init arflags
-    self.arflags = { "-crs" }
-
-end
-
--- make the link command
-function ar.command_link(self, objfiles, targetfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
-
-    -- make it
-    return string.format("%s %s %s %s%s", self._NAME, flags, targetfile, objfiles, redirect)
-end
+local io = require("base/io")
+local os = require("base/os")
 
 -- the main function
-function ar.main(self, cmd)
+function cat.main(self, ...)
 
-    -- execute it
-    local ok = os.execute(cmd)
+    -- cat all
+    for _, v in ipairs(...) do
+        if os.isfile(v) then io.cat(v) end
+    end
 
-    -- ok?
-    return utils.ifelse(ok == 0, true, false)
+    -- ok
+    return true
 end
 
--- return module: ar
-return ar
+-- return module: cat
+return cat

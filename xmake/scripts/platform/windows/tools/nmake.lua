@@ -55,9 +55,9 @@ function nmake.main(self, mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s /f %s %s VERBOSE=%s 2> %s", self._NAME, mkfile, target or "", self._VERBOSE, xmake._NULDEV)
+        cmd = string.format("%s /nologo /f %s %s VERBOSE=%s", self._NAME, mkfile, target or "", self._VERBOSE)
     else  
-        cmd = string.format("%s %s VERBOSE=%s 2> %s", self._NAME, target or "", self._VERBOSE, xmake._NULDEV)
+        cmd = string.format("%s /nologo %s VERBOSE=%s", self._NAME, target or "", self._VERBOSE)
     end
 
     -- done 

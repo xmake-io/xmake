@@ -17,48 +17,44 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        ar.lua
+-- @file        crun.lua
 --
 
--- define module: ar
-local ar = ar or {}
+-- define module: crun
+local crun = crun or {}
 
 -- load modules
-local utils     = require("base/utils")
-local string    = require("base/string")
-local config    = require("base/config")
-
--- init the linker
-function ar.init(self, name)
-
-    -- save name
-    self._NAME = name or "ar"
-
-    -- init arflags
-    self.arflags = { "-crs" }
-
-end
-
--- make the link command
-function ar.command_link(self, objfiles, targetfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
-
-    -- make it
-    return string.format("%s %s %s %s%s", self._NAME, flags, targetfile, objfiles, redirect)
-end
+local io = require("base/io")
+local os = require("base/os")
 
 -- the main function
-function ar.main(self, cmd)
+function crun.main(self, ...)
 
-    -- execute it
-    local ok = os.execute(cmd)
+    -- run all command files
+    local ok = -1
+    for _, v in ipairs(...) do
+
+        -- open file
+        local file = io.open(v, "r")
+        if file then
+            
+            -- read command
+            local cmd = file:read("*all")
+            if cmd and #cmd ~= 0 then
+                ok = os.execute(cmd)
+            end
+
+            -- exit file
+            file:close()
+
+            -- ok?
+            if ok ~= 0 then break end
+        end
+    end
 
     -- ok?
-    return utils.ifelse(ok == 0, true, false)
+    return ok
 end
 
--- return module: ar
-return ar
+-- return module: crun
+return crun
