@@ -62,7 +62,7 @@ function io._save_with_level(file, object, level)
             
             -- save key
             if type(k) == "string" then
-                file:write(k, " = ")  
+                file:write(string.format("[%q]", k), " = ")  
             end
 
             -- save value
@@ -154,7 +154,7 @@ function io.load(filepath)
     if data and type(data) == "string" then
 
         -- load script
-        local script = loadstring("return " .. data)
+        local script, errs = loadstring("return " .. data)
         if script then
             
             -- load object
@@ -168,7 +168,8 @@ function io.load(filepath)
                 -- error
                 errors = string.format("load %s failed!", filepath)
             end
-        end
+        -- errors
+        else errors = errs end
     end
 
     -- close file
