@@ -99,6 +99,11 @@ function gcc.init(self, name)
     ,   ["-mavx2"]                  = self._check
     ,   ["-mfpu=.*"]                = self._check
 
+        -- warnings
+    ,   ["-W1"]                     = "-Wall"
+    ,   ["-W2"]                     = "-Wall"
+    ,   ["-W3"]                     = "-Wall"
+
         -- others
     ,   ["-ftrapv"]                 = self._check
     ,   ["-fsanitize=address"]      = self._check

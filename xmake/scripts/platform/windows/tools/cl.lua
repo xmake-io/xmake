@@ -59,13 +59,13 @@ function cl.init(self, name)
     ,   ["%-Wno%-error=.*"]         = ""
 
         -- vectorexts
-    ,   ["-mmmx"]                   = "-arch:mmx"
-    ,   ["-msse"]                   = "-arch:sse"
-    ,   ["-msse2"]                  = "-arch:sse2"
-    ,   ["-msse3"]                  = "-arch:sse3"
-    ,   ["-mssse3"]                 = "-arch:ssse3"
-    ,   ["-mavx"]                   = "-arch:avx"
-    ,   ["-mavx2"]                  = "-arch:avx2"
+    ,   ["-mmmx"]                   = "-arch:MMX"
+    ,   ["-msse"]                   = "-arch:SSE"
+    ,   ["-msse2"]                  = "-arch:SSE2"
+    ,   ["-msse3"]                  = "-arch:SSE3"
+    ,   ["-mssse3"]                 = "-arch:SSSE3"
+    ,   ["-mavx"]                   = "-arch:AVX"
+    ,   ["-mavx2"]                  = "-arch:AVX2"
     ,   ["-mfpu=.*"]                = ""
 
         -- language

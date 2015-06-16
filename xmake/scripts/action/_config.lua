@@ -42,6 +42,9 @@ function _config.done()
         return false
     end
 
+    -- trace
+    print("configure ...")
+
     -- save the configure
     if not config.save() then
         -- error

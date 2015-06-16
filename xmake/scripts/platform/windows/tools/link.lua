@@ -49,8 +49,6 @@ function link.init(self, name)
     self.ldflags =  { "-nologo"
                     , "-dynamicbase"
                     , "-nxcompat"
-                    , "-manifest"
-                    , "-manifestuac:\"level='asInvoker' uiAccess='false'\""
                     , flags_arch}
 
     -- init arflags
