@@ -179,15 +179,26 @@ function io.load(filepath)
 end
 
 -- cat the given file 
-function io.cat(filepath)
+function io.cat(filepath, linecount)
 
     -- open file
     local file = io.open(filepath, "r")
     if file then
 
         -- show file
+        local count = 1
         for line in file:lines() do
+
+            -- show line
             print(line)
+
+            -- end?
+            if linecount and count >= linecount then
+                break
+            end
+
+            -- update the line count
+            count = count + 1
         end 
 
         -- exit file

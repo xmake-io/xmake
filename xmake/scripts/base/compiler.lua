@@ -186,6 +186,8 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
 
     -- add the warning flags from the current project
     table.join2(flags, compiler._getflags(module, target.warnings,  {   none        = "-w"
+                                                                    ,   less        = "-W1"
+                                                                    ,   more        = "-W3"
                                                                     ,   all         = "-Wall"
                                                                     ,   error       = "-Werror"
                                                                     }))

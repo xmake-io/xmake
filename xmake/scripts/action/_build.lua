@@ -71,7 +71,7 @@ function _build.done()
     if not makefile.build(target_name) then
         -- error
         print("")
-        io.cat(rule.logfile())
+        io.cat(rule.logfile(), 16)
         utils.error("build target: %s failed!\n", target_name)
         return false
     end

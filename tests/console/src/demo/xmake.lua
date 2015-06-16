@@ -9,10 +9,10 @@ add_target("demo_c")
     add_cflags("-DHELLO1")
 
     if modes("release") then add_defines("NDEBUG") end
-    if option("option1") then add_defines("OPTION1") end
-    if option("option2") then add_defines("OPTION2") end
-    if option("option3") then add_defines("OPTION3") end
-    if option("option4") then add_defines("OPTION4") end
+    if options("option1") then add_defines("OPTION1") end
+    if options("option2") then add_defines("OPTION2") end
+    if options("option3") then add_defines("OPTION3") end
+    if options("option4") then add_defines("OPTION4") end
 
 add_target("demo_cpp")
     set_kind("binary")
