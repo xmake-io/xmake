@@ -416,7 +416,7 @@ function compiler.get(srcfile)
 end
 
 -- make the compile command
-function compiler.make(module, target, srcfile, objfile)
+function compiler.make(module, target, srcfile, objfile, logfile)
 
     -- check
     assert(module and target)
@@ -439,7 +439,7 @@ function compiler.make(module, target, srcfile, objfile)
     compiler._addflags_from_config(module, flags, flagnames)
 
     -- make the compile command
-    return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim())
+    return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- check include for the project option
@@ -487,12 +487,8 @@ function compiler.check_include(opt, include, srcpath, objpath)
     -- add flags from the configure 
     compiler._addflags_from_config(module, flags, flagnames)
 
-    -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", module:command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
-    if not cmd then return end
-
     -- execute the compile command
-    return module:main(cmd)
+    return module:main(module:command_compile(srcpath, objpath, table.concat(flags, " "):trim(), xmake._NULDEV))
 end
 
 -- check function for the project option
@@ -552,12 +548,8 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     -- add flags from the configure 
     compiler._addflags_from_config(module, flags, flagnames)
 
-    -- make the compile command
-    local cmd = string.format("%s > %s 2>&1", module:command_compile(srcpath, objpath, table.concat(flags, " "):trim()), xmake._NULDEV)
-    if not cmd then return end
-
     -- execute the compile command
-    return module:main(cmd)
+    return module:main(module:command_compile(srcpath, objpath, table.concat(flags, " "):trim(), xmake._NULDEV))
 end
 
 -- return module: compiler

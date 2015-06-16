@@ -61,7 +61,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     local ccache = platform.tool("ccache") 
 
     -- make command
-    local cmd = compiler.make(c, target, srcfile, objfile)
+    local cmd = compiler.make(c, target, srcfile, objfile, makefile._LOGFILE)
     if ccache then
         cmd = ccache:append(cmd, " ")
     end
@@ -76,7 +76,7 @@ function makefile._make_object(file, target, srcfile, objfile)
     file:write(string.format("\t@echo %scompiling%s %s\n", utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
-    file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
+    file:write(string.format("\t@%s\n", cmd))
 
     -- make tail
     file:write("\n")
@@ -155,13 +155,22 @@ function makefile._make_target(file, name, target)
     elseif mode == "debug" then mode = ".d"
     elseif mode == "profile" then mode = ".p"
     else mode = "" end
+   
+    -- make the command
+    local cmd = linker.make(l, target, objfiles, targetfile, makefile._LOGFILE)
+
+    -- the verbose
+    local verbose = cmd:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end)
+    -- too long?
+    if verbose and #verbose > 256 then
+        verbose = verbose:sub(1, 256) .. " ..."
+    end
 
     -- make body
-    local cmd = linker.make(l, target, objfiles, targetfile)
     file:write(string.format("\t@echo linking%s %s\n", mode, path.filename(targetfile)))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", verbose))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
-    file:write(string.format("\t@%s > %s 2>&1\n", cmd, makefile._LOGFILE))
+    file:write(string.format("\t@%s\n", cmd))
     if srcheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do

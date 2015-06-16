@@ -55,6 +55,10 @@ function cl.init(self, name)
     ,   ["-fvisibility=.*"]         = ""
 
         -- warnings
+    ,   ["-Wall"]                   = "-Wall"
+    ,   ["-W1"]                     = "-W1"
+    ,   ["-W2"]                     = "-W2"
+    ,   ["-W3"]                     = "-W3"
     ,   ["-Werror"]                 = "-WX"
     ,   ["%-Wno%-error=.*"]         = ""
 
@@ -80,10 +84,14 @@ function cl.init(self, name)
 end
 
 -- make the compiler command
-function cl.command_compile(self, srcfile, objfile, flags)
+function cl.command_compile(self, srcfile, objfile, flags, logfile)
+
+    -- redirect
+    local redirect = ""
+    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -c %s -Fo%s %s", self._NAME, flags, objfile, srcfile)
+    return string.format("%s -c %s -Fo%s %s%s", self._NAME, flags, objfile, srcfile, redirect)
 end
 
 -- make the define flag

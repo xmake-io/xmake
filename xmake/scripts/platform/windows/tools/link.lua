@@ -52,10 +52,10 @@ function link.init(self, name)
                     , flags_arch}
 
     -- init arflags
-    self.arflags = {"-lib", "-nologo", flags_arch}
+    self.arflags = {"-nologo", flags_arch}
 
     -- init shflags
-    self.shflags = {"-dll", "-nologo", flags_arch}
+    self.shflags = {"-nologo", flags_arch}
 
     -- init flags map
     self.mapflags = 
@@ -73,10 +73,22 @@ function link.init(self, name)
 end
 
 -- make the linker command
-function link.command_link(self, objfiles, targetfile, flags)
+function link.command_link(self, objfiles, targetfile, flags, logfile)
+
+    -- redirect
+    local redirect = ""
+    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s %s -out:%s %s", self._NAME, flags, targetfile, objfiles)
+    local cmd = string.format("%s %s -out:%s %s%s", self._NAME, flags, targetfile, objfiles, redirect)
+
+    -- too long?
+    if #cmd > 256 then
+        cmd = string.format("%s%s @<<\n%s -out:%s %s\n<<", self._NAME, redirect, flags, targetfile, objfiles)
+    end
+
+    -- ok?
+    return cmd
 end
 
 -- make the link flag
