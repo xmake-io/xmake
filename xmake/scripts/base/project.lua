@@ -38,9 +38,6 @@ local platform      = require("platform/platform")
 -- the current os is belong to the given os?
 function project._api_os(env, ...)
 
-    -- the configure has been not loaded, only for menu
-    if not config._CURRENT then return false end
-
     -- get the current os
     local os = platform.os()
     if not os then return false end
@@ -55,9 +52,6 @@ end
 
 -- the current mode is belong to the given modes?
 function project._api_modes(env, ...)
-
-    -- the configure has been not loaded, only for menu
-    if not config._CURRENT then return false end
 
     -- get the current mode
     local mode = config.get("mode")
@@ -74,9 +68,6 @@ end
 -- the current platform is belong to the given platforms?
 function project._api_plats(env, ...)
 
-    -- the configure has been not loaded, only for menu
-    if not config._CURRENT then return false end
-
     -- get the current platform
     local plat = config.get("plat")
     if not plat then return false end
@@ -91,9 +82,6 @@ end
 
 -- the current platform is belong to the given architectures?
 function project._api_archs(env, ...)
-
-    -- the configure has been not loaded, only for menu
-    if not config._CURRENT then return false end
 
     -- get the current architecture
     local arch = config.get("arch")
@@ -116,6 +104,29 @@ function project._api_options(env, ...)
             return true
         end
     end
+end
+
+-- get all pathes and translate it 
+function project._api_get_pathes(...)
+
+    -- check
+    assert(project._CURDIR)
+
+    -- get all pathes
+    local pathes = table.join(...)
+
+    -- translate the relative path 
+    local results = {}
+    for _, p in ipairs(pathes) do
+        if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
+            table.insert(results, path.relative(path.absolute(p, project._CURDIR), project._PROJECT_DIR))
+        else
+            table.insert(results, p)
+        end
+    end
+
+    -- ok?
+    return results
 end
 
 -- add target 
@@ -161,8 +172,14 @@ function project._api_add_subdirs(env, ...)
     -- init mtime for files
     project._MTIMES = project._MTIMES or {}
 
+    -- get all sub directories 
+    local subdirs = project._api_get_pathes(...)
+
+    -- save the current project file directory
+    local curdir = project._CURDIR
+
     -- done
-    for _, subdir in ipairs(table.join(...)) do
+    for _, subdir in ipairs(subdirs) do
         if subdir and type(subdir) == "string" then
 
             -- the project file
@@ -170,6 +187,9 @@ function project._api_add_subdirs(env, ...)
             if not path.is_absolute(file) then
                 file = path.absolute(file, xmake._PROJECT_DIR)
             end
+
+            -- update the current project file directory
+            project._CURDIR = path.directory(file)
 
             -- load the project script
             local script = loadfile(file)
@@ -190,6 +210,10 @@ function project._api_add_subdirs(env, ...)
             end
         end
     end
+
+    -- restore the current project file directory
+    project._CURDIR = curdir
+
 end
 
 -- load all subprojects from the given files
@@ -201,17 +225,26 @@ function project._api_add_subfiles(env, ...)
     -- init mtime for files
     project._MTIMES = project._MTIMES or {}
 
+    -- get all files 
+    local files = project._api_get_pathes(...)
+
+    -- save the current project file directory
+    local curdir = project._CURDIR
+
     -- done
-    for _, subfile in ipairs(table.join(...)) do
-        if subfile and type(subfile) == "string" then
+    for _, file in ipairs(files) do
+        if file and type(file) == "string" then
 
             -- the project file
-            if not path.is_absolute(subfile) then
-                subfile = path.absolute(subfile, xmake._PROJECT_DIR)
+            if not path.is_absolute(file) then
+                file = path.absolute(file, xmake._PROJECT_DIR)
             end
 
+            -- update the current project file directory
+            project._CURDIR = path.directory(file)
+
             -- load the project script
-            local script = loadfile(subfile)
+            local script = loadfile(file)
             if script then
 
                 -- bind environment
@@ -225,10 +258,13 @@ function project._api_add_subfiles(env, ...)
                 end
 
                 -- get mtime of the file
-                project._MTIMES[file] = os.mtime(subfile)
+                project._MTIMES[file] = os.mtime(file)
             end
         end
     end
+
+    -- restore the current project file directory
+    project._CURDIR = curdir
 end
 
 -- set configure values
@@ -251,6 +287,28 @@ function project._api_add_values(scope, name, ...)
     -- append values
     scope[name] = scope[name] or {}
     table.join2(scope[name], ...)
+end
+
+-- set configure pathes
+function project._api_set_pathes(scope, name, ...)
+
+    -- check
+    assert(scope and name)
+
+    -- update pathes
+    scope[name] = {}
+    table.join2(scope[name], project._api_get_pathes(...))
+end
+
+-- add configure pathes
+function project._api_add_pathes(scope, name, ...)
+
+    -- check
+    assert(scope and name)
+
+    -- append pathes
+    scope[name] = scope[name] or {}
+    table.join2(scope[name], project._api_get_pathes(...))
 end
 
 -- filter the configure value
@@ -802,6 +860,9 @@ function project._load_options(file)
         return string.format("load %s failed!", file)
     end
 
+    -- set the current project file directory
+    project._CURDIR = path.directory(file)
+
     -- bind the new environment
     local newenv = {_CONFIGS = {_OPTIONS = {}}}
     setmetatable(newenv, {__index = function(tbl, key)
@@ -838,8 +899,6 @@ function project._load_options(file)
 
     -- register interfaces for adding option values
     interfaces =        {   "links" 
-                        ,   "linkdirs" 
-                        ,   "includedirs" 
                         ,   "cincludes" 
                         ,   "cxxincludes" 
                         ,   "cfuncs" 
@@ -859,6 +918,14 @@ function project._load_options(file)
 
     for _, interface in ipairs(interfaces) do
         newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
+    end
+
+    -- register interfaces for adding option pathes
+    interfaces =        {   "linkdirs" 
+                        ,   "includedirs"} 
+
+    for _, interface in ipairs(interfaces) do
+        newenv["add_option_" .. interface] = function (...) return project._api_add_pathes(newenv._OPTION, interface, ...) end
     end
 
     -- done the project script
@@ -882,6 +949,9 @@ function project._load_targets(file)
     if not script then
         return string.format("load %s failed!", file)
     end
+
+    -- set the current project file directory
+    project._CURDIR = path.directory(file)
 
     -- bind the new environment
     local newenv = {_CONFIGS = {_SET = {}, _ADD = {}, _TARGETS = {}}}
@@ -912,10 +982,6 @@ function project._load_targets(file)
        
     -- register interfaces for setting values
     local interfaces =  {   "kind"
-                        ,   "headerdir" 
-                        ,   "targetdir" 
-                        ,   "objectdir" 
-                        ,   "config_h"
                         ,   "config_h_prefix"
                         ,   "version"
                         ,   "strip"
@@ -928,14 +994,20 @@ function project._load_targets(file)
     for _, interface in ipairs(interfaces) do
         newenv["set_" .. interface] = function (...) return project._api_set_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
     end
+ 
+    -- register interfaces for setting pathes
+    local interfaces =  {   "headerdir" 
+                        ,   "targetdir" 
+                        ,   "objectdir" 
+                        ,   "config_h"} 
+
+    for _, interface in ipairs(interfaces) do
+        newenv["set_" .. interface] = function (...) return project._api_set_pathes(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
+    end
 
     -- register interfaces for adding values
     interfaces =        {   "deps"
-                        ,   "files"
-                        ,   "links" 
-                        ,   "headers" 
-                        ,   "linkdirs" 
-                        ,   "includedirs" 
+                        ,   "links"
                         ,   "cflags" 
                         ,   "cxflags" 
                         ,   "cxxflags" 
@@ -953,6 +1025,15 @@ function project._load_targets(file)
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
         newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
+    end
+
+    -- register interfaces for adding pathes
+    interfaces =        {   "files"
+                        ,   "headers" 
+                        ,   "linkdirs" 
+                        ,   "includedirs"} 
+    for _, interface in ipairs(interfaces) do
+        newenv["add_" .. interface] = function (...) return project._api_add_pathes(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
     end
 
     -- done the project script

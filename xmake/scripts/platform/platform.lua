@@ -164,8 +164,12 @@ end
 -- get the platform os
 function platform.os()
 
+    -- get module
+    local module = platform.module()
+    if not module then return end
+
     -- ok?
-    return platform.module()._OS
+    return module._OS
 end
 
 -- get the given configure

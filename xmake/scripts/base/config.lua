@@ -113,8 +113,8 @@ end
 -- get the given configure from the current 
 function config.get(name)
 
-    -- check
-    assert(config._CURRENT)
+    -- the configure has been not loaded
+    if not config._CURRENT then return end
 
     -- the value
     local value = config._CURRENT[name]
