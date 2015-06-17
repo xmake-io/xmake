@@ -207,7 +207,7 @@ function rule.headerfiles(target)
     for _, header in ipairs(utils.wrap(headers)) do
 
         -- get the root directory
-        local rootdir = header:gsub("%(.*%)", "")
+        local rootdir = header:gsub("%(.*%)", ""):gsub("|.*$", "")
 
         -- remove '(' and ')'
         local srcpathes = header:gsub("[%(%)]", "")
