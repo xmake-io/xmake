@@ -172,14 +172,21 @@ function project._api_add_subdirs(env, ...)
     -- init mtime for files
     project._MTIMES = project._MTIMES or {}
 
-    -- get all sub directories 
-    local subdirs = project._api_get_pathes(...)
-
     -- save the current project file directory
     local curdir = project._CURDIR
 
-    -- done
+    -- get all subdirs 
+    local subdirs = project._api_get_pathes(...)
+
+    -- match all subdirs
+    local subdirs_matched = {}
     for _, subdir in ipairs(subdirs) do
+        local dirs = os.match(subdir, true)
+        if dirs then table.join2(subdirs_matched, dirs) end
+    end
+
+    -- done
+    for _, subdir in ipairs(subdirs_matched) do
         if subdir and type(subdir) == "string" then
 
             -- the project file
@@ -225,14 +232,21 @@ function project._api_add_subfiles(env, ...)
     -- init mtime for files
     project._MTIMES = project._MTIMES or {}
 
-    -- get all files 
-    local files = project._api_get_pathes(...)
-
     -- save the current project file directory
     local curdir = project._CURDIR
 
+    -- get all subfiles 
+    local subfiles = project._api_get_pathes(...)
+
+    -- match all subfiles
+    local subfiles_matched = {}
+    for _, subfile in ipairs(subfiles) do
+        local files = os.match(subfile)
+        if files then table.join2(subfiles_matched, files) end
+    end
+
     -- done
-    for _, file in ipairs(files) do
+    for _, file in ipairs(subfiles_matched) do
         if file and type(file) == "string" then
 
             -- the project file
@@ -1184,10 +1198,8 @@ function project.menu()
     local menu = {}
     for k, opts in pairs(options_by_category) do
 
-        -- insert a separator
-        table.insert(menu, {})
-
         -- insert options
+        local first = true
         for name, opt in pairs(opts) do
 
             -- show menu?
@@ -1197,6 +1209,16 @@ function project.menu()
                 local default = "auto"
                 if opt.enable and utils.unwrap(opt.enable) then
                     default = true
+                end
+
+                -- is first?
+                if first then
+
+                    -- insert a separator
+                    table.insert(menu, {})
+
+                    -- not first
+                    first = false
                 end
 
                 -- append it
