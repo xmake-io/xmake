@@ -644,6 +644,46 @@ function project._make_option_for_checking_cxxfuncs(opt, cxxfuncs, cxxfile, obje
     return true
 end
 
+-- make option for checking ctypes
+function project._make_option_for_checking_ctypes(opt, ctypes, cfile, objectfile, targetfile)
+
+    -- done
+    for _, ctype in ipairs(utils.wrap(ctypes)) do
+        
+        -- check type
+        local ok = compiler.check_typedef(opt, ctype, cfile, objectfile)
+
+        -- trace
+        utils.verbose("checking for the c type %s ... %s", ctype, utils.ifelse(ok, "ok", "no"))
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
+-- make option for checking cxxtypes
+function project._make_option_for_checking_cxxtypes(opt, cxxtypes, cxxfile, objectfile, targetfile)
+
+    -- done
+    for _, cxxtype in ipairs(utils.wrap(cxxtypes)) do
+        
+        -- check type
+        local ok = compiler.check_typedef(opt, cxxtype, cxxfile, objectfile)
+
+        -- trace
+        utils.verbose("checking for the c++ type %s ... %s", cxxtype, utils.ifelse(ok, "ok", "no"))
+
+        -- failed
+        if not ok then return false end
+    end
+
+    -- ok
+    return true
+end
+
 -- make option 
 function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
 
@@ -664,24 +704,28 @@ function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
     end
 
     -- check links
-    if opt.links then
-        if not project._make_option_for_checking_links(opt, opt.links, cfile, objectfile, targetfile) then return end
-    end
+    if opt.links and not project._make_option_for_checking_links(opt, opt.links, cfile, objectfile, targetfile) then return end
+
+    -- check ctypes
+    if opt.ctypes and not project._make_option_for_checking_ctypes(opt, opt.ctypes, cfile, objectfile, targetfile) then return end
+
+    -- check cxxtypes
+    if opt.cxxtypes and not project._make_option_for_checking_cxxtypes(opt, opt.cxxtypes, cxxfile, objectfile, targetfile) then return end
 
     -- check includes and functions
     if opt.cincludes or opt.cxxincludes then
 
         -- check cincludes
-        if not project._make_option_for_checking_cincludes(opt, opt.cincludes, cfile, objectfile) then return end
+        if opt.cincludes and not project._make_option_for_checking_cincludes(opt, opt.cincludes, cfile, objectfile) then return end
 
         -- check cxxincludes
-        if not project._make_option_for_checking_cxxincludes(opt, opt.cxxincludes, cxxfile, objectfile) then return end
+        if opt.cxxincludes and not project._make_option_for_checking_cxxincludes(opt, opt.cxxincludes, cxxfile, objectfile) then return end
 
         -- check cfuncs
-        if not project._make_option_for_checking_cfuncs(opt, opt.cfuncs, cfile, objectfile, targetfile) then return end
+        if opt.cfuncs and not project._make_option_for_checking_cfuncs(opt, opt.cfuncs, cfile, objectfile, targetfile) then return end
 
         -- check cxxfuncs
-        if not project._make_option_for_checking_cxxfuncs(opt, opt.cxxfuncs, cxxfile, objectfile, targetfile) then return end
+        if opt.cxxfuncs and not project._make_option_for_checking_cxxfuncs(opt, opt.cxxfuncs, cxxfile, objectfile, targetfile) then return end
 
     end
 
@@ -800,6 +844,8 @@ function project._load_options(file)
                         ,   "cxxincludes" 
                         ,   "cfuncs" 
                         ,   "cxxfuncs" 
+                        ,   "ctypes" 
+                        ,   "cxxtypes" 
                         ,   "cflags" 
                         ,   "cxflags" 
                         ,   "cxxflags" 
