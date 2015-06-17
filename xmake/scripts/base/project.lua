@@ -1074,13 +1074,11 @@ function project.menu()
     local projectfile = xmake._PROJECT_FILE
     if projectfile and os.isfile(projectfile) then
         configs, errors = project._load_options(projectfile)
-    else 
-        errors = string.format("load %s failed!", projectfile)
     end
 
     -- failed?
     if not configs then
-        utils.error(errors)
+        if errors then utils.error(errors) end
         return {}
     end
 

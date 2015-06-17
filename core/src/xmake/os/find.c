@@ -61,7 +61,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     // find file or directory?
     if ((findir && info->type == TB_FILE_TYPE_DIRECTORY) || (!findir && info->type == TB_FILE_TYPE_FILE))
     {
-        // done string.match(pattern)
+        // done path:match(pattern)
         lua_getfield(lua, -1, "match");
         lua_pushstring(lua, path);
         lua_pushstring(lua, pattern);
@@ -74,9 +74,62 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
             return tb_false;
         }
 
-        // match ok? save this path
+        // match ok? 
         if (lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1)))
-            lua_rawseti(lua, -3, ++*pcount);
+        {
+            // exists excludes?
+            tb_bool_t excluded = tb_false;
+            if (lua_istable(lua, 5))
+            {
+                // the root directory
+                size_t              rootlen = 0;
+                tb_char_t const*    rootdir = luaL_checklstring(lua, 1, &rootlen);
+                tb_assert_and_check_return_val(rootdir && rootlen, tb_false);
+
+                // check
+                tb_assert_abort(!tb_strcmp(path, rootdir));
+                tb_assert_abort(rootlen + 1 <= tb_strlen(path));
+
+                // skip the rootdir 
+                path += rootlen + 1;
+
+                // exclude pathes
+                tb_size_t i = 0;
+                tb_size_t count = luaL_getn(lua, 5);
+                for (i = 0; i < count && !excluded; i++)
+                {
+                    // get exclude
+                    lua_rawgeti(lua, 5, i + 1);
+                    tb_char_t const* exclude = lua_tostring(lua, -1);
+                    if (exclude) 
+                    {
+                        // done path:match(exclude)
+                        lua_getfield(lua, -3, "match");
+                        lua_pushstring(lua, path);
+                        lua_pushstring(lua, exclude);
+                        if (lua_pcall(lua, 2, 1, 0)) 
+                        {
+                            // trace
+                            tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, exclude, lua_tostring(lua, -1));
+                        }
+
+                        // matched?
+                        excluded = lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1));
+
+                        // pop the match result
+                        lua_pop(lua, 1);
+                    }
+
+                    // pop exclude
+                    lua_pop(lua, 1);
+                }
+            }
+
+            // save this path
+            if (!excluded) lua_rawseti(lua, -3, ++*pcount);
+            // pop this return value
+            else lua_pop(lua, 1);
+        }
         // pop this return value
         else lua_pop(lua, 1);
     }

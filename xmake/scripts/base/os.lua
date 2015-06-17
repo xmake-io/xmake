@@ -26,6 +26,7 @@ local os = os or {}
 -- load modules
 local path      = require("base/path")
 local utils     = require("base/utils")
+local string    = require("base/string")
 
 -- copy file or directory
 function os.cp(src, dst)
@@ -160,8 +161,27 @@ end
 --
 function os.match(pattern, findir)
 
+    -- get the excludes
+    local excludes = pattern:match("|.*$")
+    if excludes then excludes = excludes:split("|") end
+
+    -- translate excludes
+    if excludes then
+        local _excludes = {}
+        for _, exclude in ipairs(excludes) do
+            exclude = path.translate(exclude)
+            exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+            exclude = exclude:gsub("%*%*", "\001")
+            exclude = exclude:gsub("%*", "\002")
+            exclude = exclude:gsub("\001", ".*")
+            exclude = exclude:gsub("\002", "[^/]*")
+            table.insert(_excludes, exclude)
+        end
+        excludes = _excludes
+    end
+
     -- translate path and remove some repeat separators
-    pattern = path.translate(pattern)
+    pattern = path.translate(pattern:gsub("|.*$", ""))
 
     -- get the root directory
     local rootdir = pattern
@@ -182,7 +202,7 @@ function os.match(pattern, findir)
     pattern = pattern:gsub("\002", "[^/]*")
     
     -- find it
-    return os.find(rootdir, pattern, recurse, findir)
+    return os.find(rootdir, pattern, recurse, findir, excludes)
 end
 
 -- return module: os
