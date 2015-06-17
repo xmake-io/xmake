@@ -31,6 +31,8 @@ local platform  = require("platform/platform")
 -- done the given config
 function _install.done()
 
+    -- TODO
+    print("not implement!")
  
     -- ok
     return true

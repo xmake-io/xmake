@@ -387,6 +387,33 @@ function compiler._kind(srcfile)
     return kind
 end
     
+-- make the compile command for option
+function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
+
+    -- check
+    assert(module and opt)
+
+    -- the flag names
+    local flagnames = compiler._flagnames(module._KIND)
+    assert(flagnames)
+
+    -- add flags from the compiler 
+    local flags = {}
+    compiler._addflags_from_compiler(module, flags, flagnames)
+
+    -- add flags from the platform 
+    compiler._addflags_from_platform(module, flags, flagnames)
+
+    -- add flags from the option 
+    compiler._addflags_from_option(module, flags, flagnames, opt)
+
+    -- add flags from the configure 
+    compiler._addflags_from_config(module, flags, flagnames)
+
+    -- execute the compile command
+    return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
+end
+
 -- get the compiler from the given source file
 function compiler.get(srcfile)
 
@@ -470,25 +497,8 @@ function compiler.check_include(opt, include, srcpath, objpath)
     local module = compiler.get(srcpath)
     if not module then return end
 
-    -- the flag names
-    local flagnames = compiler._flagnames(module._KIND)
-    assert(flagnames)
-
-    -- add flags from the compiler 
-    local flags = {}
-    compiler._addflags_from_compiler(module, flags, flagnames)
-
-    -- add flags from the platform 
-    compiler._addflags_from_platform(module, flags, flagnames)
-
-    -- add flags from the option 
-    compiler._addflags_from_option(module, flags, flagnames, opt)
-
-    -- add flags from the configure 
-    compiler._addflags_from_config(module, flags, flagnames)
-
     -- execute the compile command
-    return module:main(module:command_compile(srcpath, objpath, table.concat(flags, " "):trim(), xmake._NULDEV))
+    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, xmake._NULDEV))
 end
 
 -- check function for the project option
@@ -531,25 +541,52 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     -- exit this file
     srcfile:close()
 
-    -- the flag names
-    local flagnames = compiler._flagnames(module._KIND)
-    assert(flagnames)
+    -- execute the compile command
+    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, xmake._NULDEV))
+end
 
-    -- add flags from the compiler 
-    local flags = {}
-    compiler._addflags_from_compiler(module, flags, flagnames)
+-- check typedef for the project option
+function compiler.check_typedef(opt, typedef, srcpath, objpath)
 
-    -- add flags from the platform 
-    compiler._addflags_from_platform(module, flags, flagnames)
+    -- check
+    assert(opt and typedef)
 
-    -- add flags from the option 
-    compiler._addflags_from_option(module, flags, flagnames, opt)
+    -- open the checking source file
+    local srcfile = io.openmk(srcpath)
+    if not srcfile then return end
 
-    -- add flags from the configure 
-    compiler._addflags_from_config(module, flags, flagnames)
+    -- get the compiler
+    local module = compiler.get(srcpath)
+    if not module then return end
+
+    -- make includes 
+    local includes = nil
+    if module._KIND == "cc" then includes = opt.cincludes
+    elseif module._KIND == "cxx" then includes = opt.cxxincludes 
+    end
+    if includes then
+        for _, include in ipairs(utils.wrap(includes)) do
+            srcfile:write(string.format("#include <%s>\n", include))
+        end
+        srcfile:write("\n")
+    end
+
+    -- make the main function header
+    srcfile:write("int main(int argc, char** argv)\n")
+    srcfile:write("{\n")
+
+    -- make interfaces
+    srcfile:write(string.format("    typedef %s __type_xxx;\n\n", typedef))
+
+    -- make the main function tailer
+    srcfile:write("    return 0;\n")
+    srcfile:write("}\n")
+
+    -- exit this file
+    srcfile:close()
 
     -- execute the compile command
-    return module:main(module:command_compile(srcpath, objpath, table.concat(flags, " "):trim(), xmake._NULDEV))
+    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, xmake._NULDEV))
 end
 
 -- return module: compiler
