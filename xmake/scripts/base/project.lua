@@ -253,17 +253,6 @@ function project._api_add_values(scope, name, ...)
     table.join2(scope[name], ...)
 end
 
--- del configure values
-function project._api_del_values(scope, name, ...)
-
-    -- check
-    assert(scope and name)
-
-    -- append values
-    scope[name] = scope[name] or {}
-    table.join2(scope[name], ...)
-end
-
 -- filter the configure value
 function project._filter(values)
 
@@ -918,12 +907,6 @@ function project._load_targets(file)
                         ,   "vectorexts"} 
     for _, interface in ipairs(interfaces) do
         newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
-    end
-
-    -- register interfaces for deleting values
-    interfaces =        {   "files" }
-    for _, interface in ipairs(interfaces) do
-        newenv["del_" .. interface] = function (...) return project._api_del_values(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
     end
 
     -- done the project script
