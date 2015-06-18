@@ -394,7 +394,7 @@ function project._makeconf_for_target(target_name, target)
     end
 
     -- the prefix
-    local prefix = (target.config_h_prefix or target_name:upper()) .. "_CONFIG"
+    local prefix = target.config_h_prefix or (target_name:upper() .. "_CONFIG")
 
     -- open the file
     local file = project._CONFILES[configfile] or io.openmk(configfile)
@@ -452,7 +452,7 @@ function project._makeconf_for_target(target_name, target)
     if #defines ~= 0 then
         file:write("// defines\n")
         for _, define in ipairs(defines) do
-            file:write(string.format("#define %s\n", define:gsub("=", " ")))
+            file:write(string.format("#define %s\n", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
         end
         file:write("\n")
     end
@@ -461,7 +461,7 @@ function project._makeconf_for_target(target_name, target)
     if #undefines ~= 0 then
         file:write("// undefines\n")
         for _, undefine in ipairs(undefines) do
-            file:write(string.format("#undef %s\n", undefine))
+            file:write(string.format("#undef %s\n", undefine:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
         end
         file:write("\n")
     end
