@@ -179,6 +179,12 @@ function config.load()
     assert(option._MENU)
     assert(option._MENU.config)
 
+    -- the target name
+    local name = options.target or options._DEFAULTS.target
+    if not name then
+        return "no given target name!"
+    end
+
     -- does not clean the cached configure?
     if not options.clean then
 
@@ -234,10 +240,6 @@ function config.load()
             end
         end
     end
-
-    -- the target name
-    local name = options.target or options._DEFAULTS.target
-    assert(name and type(name) == "string")
 
     -- init configs if not exists
     if not config._CONFIGS then

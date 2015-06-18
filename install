@@ -76,7 +76,7 @@ if [ $? -ne 0 ]; then exit; fi
 xmake_loader=/tmp/xmake_loader
 echo "#!/bin/bash" > $xmake_loader
 echo "export XMAKE_PROGRAM_DIR=$xmake_dir_install" >> $xmake_loader
-echo "$xmake_core_install $verbose \$*" >> $xmake_loader
+echo "$xmake_core_install $verbose \"\$@\"" >> $xmake_loader
 if [ $? -ne 0 ]; then exit; fi
 
 # install the xmake loader
