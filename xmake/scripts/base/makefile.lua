@@ -74,7 +74,7 @@ function makefile._make_object(file, target, srcfile, objfile)
 
     -- make body
     file:write(string.format("\t@echo %scompiling%s %s\n", utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s\n", cmd))
 
@@ -180,7 +180,7 @@ function makefile._make_target(file, name, target)
     local cmd = linker.make(l, target, objfiles, targetfile, makefile._LOGFILE)
 
     -- the verbose
-    local verbose = cmd:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end)
+    local verbose = cmd:gsub("[=\"<]", function (w) return string.format("%%%x", w:byte()) end)
     -- too long?
     if verbose and #verbose > 256 then
         verbose = verbose:sub(1, 256) .. " ..."

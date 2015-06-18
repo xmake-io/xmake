@@ -129,6 +129,56 @@ function project._api_get_pathes(...)
     return results
 end
 
+-- add c functions
+function project._api_add_cfuncs(env, module, links, includes, ...)
+
+    -- check
+    assert(env and module)
+
+    -- done
+    for _, cfunc in ipairs({...}) do
+
+        -- make the option name
+        local name = string.format("__%s_%s", module, cfunc)
+
+        -- make option
+        env.add_option(name)
+        env.set_option_category("cfuncs")
+        env.add_option_cfuncs(cfunc)
+        if links then env.add_option_links(links) end
+        if includes then env.add_option_cincludes(includes) end
+        env.add_option_defines_h_if_ok(string.format("$(prefix)_%s_HAVE_%s", module:upper(), cfunc:upper()))
+
+        -- add this option 
+        env.add_options(name)
+    end
+end
+
+-- add c++ functions
+function project._api_add_cxxfuncs(env, module, links, includes, ...)
+
+    -- check
+    assert(env and module)
+
+    -- done
+    for _, cxxfunc in ipairs({...}) do
+
+        -- make the option name
+        local name = string.format("__%s_%s", module, cxxfunc)
+
+        -- make option
+        env.add_option(name)
+        env.set_option_category("cxxfuncs")
+        env.add_option_cxxfuncs(cxxfunc)
+        if links then env.add_option_links(links) end
+        if includes then env.add_option_cincludes(includes) end
+        env.add_option_defines_h_if_ok(string.format("$(prefix)_%s_HAVE_%s", module:upper(), cxxfunc:upper()))
+
+        -- add this option 
+        env.add_options(name)
+    end
+end
+
 -- add target 
 function project._api_add_target(env, name)
 
@@ -901,6 +951,10 @@ function project._load_options(file)
     newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
     
+    -- register interfaces for the functions
+    newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
+    newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
+  
     -- register interfaces for setting option values
     local interfaces =  {   "enable"
                         ,   "showmenu"
@@ -993,7 +1047,11 @@ function project._load_targets(file)
     -- register interfaces for the subproject files
     newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
-       
+        
+    -- register interfaces for the functions
+    newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
+    newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
+  
     -- register interfaces for setting values
     local interfaces =  {   "kind"
                         ,   "config_h_prefix"
