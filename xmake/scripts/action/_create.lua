@@ -65,15 +65,14 @@ function _create.menu()
                                                           , "    - c"
                                                           , "    - c++"
                                                           , "    - objc"
-                                                          , "    - objc++"         
-                                                          , "    - lua"                                                     }
-                ,   {'t', "type",       "kv", "console",    "The project type"
-                                                          , "    - console"
-                                                          , "    - library_static"
-                                                          , "    - library_shared"
-                                                          , "    - application_empty"                                       
-                                                          , "    - application_singleview"                                  
-                                                          , "    - game"                                                    }
+                                                          , "    - objc++"                                                  }
+                ,   {'t', "type",       "kv", "1",          "The project type"
+                                                          , "    1. The Console Program"
+                                                          , "    2. The Console Program with tbox"
+                                                          , "    3. The Static Library"
+                                                          , "    4. The Static Library with tbox"
+                                                          , "    5. The Shared Library"                                         
+                                                          , "    6. The Shared Library with tbox"                           }
 
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
