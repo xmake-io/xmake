@@ -60,7 +60,10 @@ function template.loadall(language)
             local script = assert(loadfile(t))
             if script then
                 local module = script()
-                if module then table.insert(modules, module) end
+                if module then 
+                    module._DIRECTORY = path.directory(t)
+                    table.insert(modules, module)
+                end
             end
         end
     end
