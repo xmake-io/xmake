@@ -23,8 +23,37 @@
 -- define module: _template
 local _template = _template or {}
 
+-- load modules
+local os        = require("base/os")
+local path      = require("base/path")
+local utils     = require("base/utils")
+    
 -- init the template description
 _template.description = "The Console Program"
+
+-- create project using this template
+function _template.done(targetname, projectdir)
+
+    -- check
+    assert(targetname and projectdir)
+
+    -- check the template project
+    if not os.isdir("project") then
+        utils.error("the template project not exists!")
+        return false
+    end
+
+    -- ensure the project directory 
+    if not os.isdir(projectdir) then 
+        os.mkdir(projectdir)
+    end
+
+    --os.cp("project/**", projectdir)
+    print(os.curdir(), targetname, projectdir)
+
+    -- ok
+    return true
+end
 
 -- return module: _template
 return _template

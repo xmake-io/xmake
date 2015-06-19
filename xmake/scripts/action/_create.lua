@@ -25,9 +25,7 @@ local _create = _create or {}
 
 -- load modules
 local utils     = require("base/utils")
-local config    = require("base/config")
 local template  = require("base/template")
-local platform  = require("platform/platform")
     
 -- need access to the given file?
 function _create.need(name)
@@ -43,6 +41,12 @@ function _create.done()
     local options = xmake._OPTIONS
     assert(options)
 
+    -- the target name
+    local targetname = options.target or path.basename(xmake._PROJECT_DIR) or "demo"
+
+    -- trace
+    utils.printf("create project %s ...", targetname)
+
     -- the language
     local language = options.language 
     if not language then
@@ -50,9 +54,39 @@ function _create.done()
         return false
     end
 
-    -- the target name
-    local target_name = options.target or path.basename(xmake._PROJECT_DIR)
-    print(language, target_name)
+    -- the template id
+    local templateid = tonumber(options.template)
+    if type(templateid) ~= "number" then
+        utils.error("invalid template id: %s!", options.template)
+        return false
+    end
+
+    -- load all templates for the given language
+    local templates = template.loadall(language)
+
+    -- load the template module
+    local module = nil
+    if templates then module = templates[templateid] end
+    if not module then
+        utils.error("invalid template id: %s!", options.template)
+        return false
+    end
+
+    -- enter the template directory
+    if not module._DIRECTORY or not os.cd(module._DIRECTORY) then
+        -- error
+        utils.error("not found template id: %s!", options.template)
+        return false
+    end
+
+    -- done the template and create this project
+    if not module.done(targetname, xmake._PROJECT_DIR) then
+        utils.error("create project %s failed!", targetname)
+        return false
+    end
+
+    -- trace
+    utils.printf("create project %s ok!", targetname)
 
     -- ok
     return true
