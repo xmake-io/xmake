@@ -24,8 +24,12 @@
 local action = action or {}
 
 -- load modules
-local os    = require("base/os")
-local path  = require("base/path")
+local os        = require("base/os")
+local path      = require("base/path")
+local global    = require("base/global")
+local config    = require("base/config")
+local project   = require("base/project")
+local platform  = require("platform/platform")
 
 -- load the given action
 function action._load(name)
@@ -34,15 +38,102 @@ function action._load(name)
     return require("action/_" .. name)
 end
 
+-- load the project file
+function action._load_project()
+
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- check the project file
+    if not os.isfile(xmake._PROJECT_FILE) then
+        return string.format("not found the project file: %s", xmake._PROJECT_FILE)
+    end
+
+    -- init the build directory
+    if options.buildir and path.is_absolute(options.buildir) then
+        options.buildir = path.relative(options.buildir, xmake._PROJECT_DIR)
+    end
+
+    -- xmake config or marked as "reconfig"?
+    if options._ACTION == "config" or config._RECONFIG then
+
+        -- probe the current project 
+        project.probe()
+
+        -- clear up the configure
+        config.clearup()
+
+    end
+
+    -- load the project 
+    return project.load()
+end
+
 -- done the given action
 function action.done(name)
     
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
     -- load the given action
-    local a = action._load(name)
-    if not a then return false end
+    local _action = action._load(name)
+    if not _action then return false end
+
+    -- load the global configure first
+    if _action.need("global") then global.load() end
+
+    -- load the project configure
+    if _action.need("config") then
+        local errors = config.load()
+        if errors then
+            -- error
+            utils.error(errors)
+            return false
+        end
+    end
+
+    -- probe the platform
+    if _action.need("platform") and (options._ACTION == "config" or config._RECONFIG) then
+        platform.probe(false)
+    end
+
+    -- merge the default options
+    for k, v in pairs(options._DEFAULTS) do
+        if nil == options[k] then options[k] = v end
+    end
+
+    -- make the platform configure
+    if _action.need("platform") and not platform.make() then
+        utils.error("make platform configure: %s failed!", config.get("plat"))
+        return false
+    end
+
+    -- load the project file
+    if _action.need("project") then
+        local errors = action._load_project()
+        if errors then
+            -- error
+            utils.error(errors)
+            return false
+        end
+    end
+
+    -- reconfig it first if marked as "reconfig"
+    if _action.need("config") and config._RECONFIG then
+
+        -- config it
+        local _action_config = action._load("config")
+        if not _action_config or not _action_config.done() then
+            -- error
+            utils.error("reconfig failed for the changed host!")
+            return false
+        end
+    end
 
     -- done the given action
-    return a.done()
+    return _action.done()
 end
 
 -- list the all actions

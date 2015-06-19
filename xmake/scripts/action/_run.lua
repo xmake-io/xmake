@@ -31,6 +31,19 @@ local config    = require("base/config")
 local project   = require("base/project")
 local platform  = require("platform/platform")
     
+-- need access to the given file?
+function _run.need(name)
+
+    -- check
+    assert(name)
+
+    -- the accessors
+    local accessors = { config = true, global = true, project = true, platform = true }
+
+    -- need it?
+    return accessors[name]
+end
+
 -- done the given config
 function _run.done()
 

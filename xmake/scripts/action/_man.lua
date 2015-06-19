@@ -28,6 +28,19 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local platform  = require("platform/platform")
     
+-- need access to the given file?
+function _man.need(name)
+
+    -- check
+    assert(name)
+
+    -- the accessors
+    local accessors = { config = true, global = true, project = true }
+
+    -- need it?
+    return accessors[name]
+end
+
 -- done the given config
 function _man.done()
 
