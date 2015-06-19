@@ -29,6 +29,13 @@ local config    = require("base/config")
 local template  = require("base/template")
 local platform  = require("platform/platform")
     
+-- need access to the given file?
+function _create.need(name)
+
+    -- no accessors
+    return false
+end
+
 -- done the given config
 function _create.done()
 

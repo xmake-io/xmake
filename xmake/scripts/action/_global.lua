@@ -28,9 +28,28 @@ local utils     = require("base/utils")
 local global    = require("base/global")
 local platform  = require("platform/platform")
 
+-- need access to the given file?
+function _global.need(name)
+
+    -- check
+    assert(name)
+
+    -- the accessors
+    local accessors = { global = true }
+
+    -- need it?
+    return accessors[name]
+end
+
 -- done the given config
 function _global.done()
 
+    -- probe the global platform configure 
+    platform.probe(true)
+
+    -- clear up the global configure
+    global.clearup()
+    
     -- save the global configure
     if not global.save() then
         -- error
