@@ -17,11 +17,14 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        template.lua
+-- @file        _template.lua
 --
 
--- define module: template
-local template = template or {}
+-- define module: _template
+local _template = _template or {}
 
--- return module: template
-return template
+-- init the template description
+_template.description = "The Console Program"
+
+-- return module: _template
+return _template

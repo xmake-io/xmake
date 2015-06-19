@@ -26,14 +26,27 @@ local _create = _create or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local template  = require("base/template")
 local platform  = require("platform/platform")
     
 -- done the given config
 function _create.done()
 
-    -- TODO
-    print("not implement!")
- 
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- the language
+    local language = options.language 
+    if not language then
+        utils.error("no language!")
+        return false
+    end
+
+    -- the target name
+    local target_name = options.target or path.basename(xmake._PROJECT_DIR)
+    print(language, target_name)
+
     -- ok
     return true
 end
@@ -62,17 +75,29 @@ function _create.menu()
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                           , "    3. The Current Directory"                                  }
                 ,   {'l', "language",   "kv", "c",          "The project language"
-                                                          , "    - c"
-                                                          , "    - c++"
-                                                          , "    - objc"
-                                                          , "    - objc++"                                                  }
-                ,   {'t', "type",       "kv", "1",          "The project type"
-                                                          , "    1. The Console Program"
-                                                          , "    2. The Console Program with tbox"
-                                                          , "    3. The Static Library"
-                                                          , "    4. The Static Library with tbox"
-                                                          , "    5. The Shared Library"                                         
-                                                          , "    6. The Shared Library with tbox"                           }
+                                                          , function ()
+                                                                local descriptions = {}
+                                                                local languages = template.languages()
+                                                                for _, language in ipairs(languages) do
+                                                                    table.insert(descriptions, "    - " .. language)
+                                                                end
+                                                                return descriptions
+                                                            end                                                             }
+                ,   {'t', "template",   "kv", "1",          "Select the project template id of the given language."
+                                                          , function ()
+                                                                local descriptions = {}
+                                                                local languages = template.languages()
+                                                                for _, language in ipairs(languages) do
+                                                                    table.insert(descriptions, string.format("    - language: %s", language))
+                                                                    local templates = template.loadall(language)
+                                                                    if templates then
+                                                                        for i, template in ipairs(templates) do
+                                                                            table.insert(descriptions, string.format("      %d. %s", i, utils.ifelse(template.description, template.description, "The Unknown Project")))
+                                                                        end
+                                                                    end
+                                                                end
+                                                                return descriptions
+                                                            end                                                             }
 
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
@@ -80,7 +105,7 @@ function _create.menu()
                 ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
          
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Create the given target"                     
+                ,   {nil, "target",     "v",  nil,          "Create the given target."                     
                                                           , "Uses the project name as target if not exists."                }
                 }
             }
