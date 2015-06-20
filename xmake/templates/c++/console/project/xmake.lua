@@ -22,11 +22,11 @@ if modes("release") then
 end
 
 -- add target
-add_target("demo")
+add_target("[targetname]")
 
     -- set kind
     set_kind("binary")
 
     -- add files
-    add_files("src/*.cpp") 
+    add_files("src/*.c") 
 

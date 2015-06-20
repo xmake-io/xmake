@@ -39,7 +39,7 @@ function _template.done(targetname, projectdir)
     assert(targetname and projectdir)
 
     -- replace the target name
-    io.gsub(projectdir .. "/xmake.lua", "%[targetname%]", targetname)
+    io.gsub(projectdir .. "/xmake.lua", "%[targetname%]", targetname) 
 
     -- ok
     return true
