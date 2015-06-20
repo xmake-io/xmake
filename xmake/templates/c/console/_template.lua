@@ -31,30 +31,11 @@ local utils     = require("base/utils")
 -- init the template description
 _template.description = "The Console Program"
 
--- create project using this template
+-- done the template file
 function _template.done(targetname, projectdir)
 
     -- check
     assert(targetname and projectdir)
-
-    -- check the template project
-    if not os.isdir("project") then
-        -- errors
-        utils.error("the template project not exists!")
-        return false
-    end
-
-    -- ensure the project directory 
-    if not os.isdir(projectdir) then 
-        os.mkdir(projectdir)
-    end
-
-    -- copy the project files
-    if not os.cp("project/*", projectdir) then
-        -- errors
-        utils.error("install project failed!")
-        return false
-    end
 
     -- ok
     return true
