@@ -113,6 +113,46 @@ function io.openmk(filepath)
     return io.open(filepath, "w")
 end
 
+-- read all data from file 
+function io.readall(filepath)
+
+    -- open file
+    local file = io.open(filepath, "r")
+    if not file then
+        -- error
+        return nil, string.format("open %s failed!", filepath)
+    end
+
+    -- read all
+    local data = file:read("*all")
+
+    -- exit file
+    file:close()
+
+    -- ok?
+    return data
+end
+
+-- write all data to file 
+function io.writall(filepath, data)
+
+    -- open file
+    local file = io.open(filepath, "w")
+    if not file then
+        -- error
+        return false, string.format("open %s failed!", filepath)
+    end
+
+    -- write all
+    file:write(data)
+
+    -- exit file
+    file:close()
+
+    -- ok?
+    return true
+end
+
 -- save object the the given filepath
 function io.save(filepath, object)
     
@@ -177,6 +217,32 @@ function io.load(filepath)
 
     -- ok?
     return result, errors
+end
+
+-- gsub the given file and return replaced data
+function io.gsub(filepath, pattern, replace)
+
+    -- read all data from file
+    local data, errors = io.readall(filepath)
+    if not data then return nil, 0, errors end
+
+    -- replace it
+    local count = 0
+    if type(data) == "string" then
+        data, count = data:gsub(pattern, replace)
+    else
+        return nil, 0, string.format("data is not string!")
+    end
+
+    -- replace ok?
+    if count ~= 0 then
+        -- write all data to file
+        local ok, errors = io.writall(filepath, data) 
+        if not ok then return nil, 0, errors end
+    end
+
+    -- ok
+    return data, count
 end
 
 -- cat the given file 

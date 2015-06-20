@@ -24,6 +24,7 @@
 local _template = _template or {}
 
 -- load modules
+local io        = require("base/io")
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
@@ -36,6 +37,9 @@ function _template.done(targetname, projectdir)
 
     -- check
     assert(targetname and projectdir)
+
+    -- replace the target name
+    io.gsub(projectdir .. "/xmake.lua", "%[targetname%]", targetname)
 
     -- ok
     return true
