@@ -28,6 +28,67 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
+-- match files or directories
+--
+-- @param pattern   the search pattern 
+--                  uses "*" to match any part of a file or directory name,
+--                  uses "**" to recurse into subdirectories.
+--
+-- @param findir    true: find directory, false: find file
+-- @return          the result array and count
+--
+-- @code
+-- local dirs, count = os.match("./src/*", true)
+-- local files, count = os.match("./src/**.c")
+-- local file = os.match("./src/test.c")
+-- @endcode
+--
+function os.match(pattern, findir)
+
+    -- get the excludes
+    local excludes = pattern:match("|.*$")
+    if excludes then excludes = excludes:split("|") end
+
+    -- translate excludes
+    if excludes then
+        local _excludes = {}
+        for _, exclude in ipairs(excludes) do
+            exclude = path.translate(exclude)
+            exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+            exclude = exclude:gsub("%*%*", "\001")
+            exclude = exclude:gsub("%*", "\002")
+            exclude = exclude:gsub("\001", ".*")
+            exclude = exclude:gsub("\002", "[^/]*")
+            table.insert(_excludes, exclude)
+        end
+        excludes = _excludes
+    end
+
+    -- translate path and remove some repeat separators
+    pattern = path.translate(pattern:gsub("|.*$", ""))
+
+    -- get the root directory
+    local rootdir = pattern
+    local starpos = pattern:find("%*")
+    if starpos then
+        rootdir = rootdir:sub(1, starpos - 1)
+    end
+    rootdir = path.directory(rootdir)
+
+    -- is recurse?
+    local recurse = pattern:find("**", nil, true)
+
+    -- convert pattern to a lua pattern
+    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+    pattern = pattern:gsub("%*%*", "\001")
+    pattern = pattern:gsub("%*", "\002")
+    pattern = pattern:gsub("\001", ".*")
+    pattern = pattern:gsub("\002", "[^/]*")
+    
+    -- find it
+    return os.find(rootdir, pattern, recurse, findir, excludes)
+end
+
 -- copy file or directory
 function os.cp(src, dst)
     
@@ -46,6 +107,23 @@ function os.cp(src, dst)
         if not os.cpdir(src, dst) then
             return false, string.format("cannot copy directory %s to %s!", src, dst)
         end
+    -- cp dir/*?
+    elseif src:find("%*") then
+
+        -- get the root directory
+        local starpos = src:find("%*")
+
+        -- match all files
+        local files = os.match((src:gsub("%*+", "**")))
+        if files then
+            for _, file in ipairs(files) do
+                local dstfile = string.format("%s/%s", dst, file:sub(starpos))
+                if not os.cpfile(file, dstfile) then
+                    return false, string.format("cannot copy file %s to %s!", file, dstfile)
+                end
+            end
+        end
+
     -- not exists?
     else
         return false, string.format("cannot copy file %s, not found this file!", src)
@@ -142,67 +220,6 @@ function os.cd(path)
     
     -- ok
     return true
-end
-
--- match files or directories
---
--- @param pattern   the search pattern 
---                  uses "*" to match any part of a file or directory name,
---                  uses "**" to recurse into subdirectories.
---
--- @param findir    true: find directory, false: find file
--- @return          the result array and count
---
--- @code
--- local dirs, count = os.match("./src/*", true)
--- local files, count = os.match("./src/**.c")
--- local file = os.match("./src/test.c")
--- @endcode
---
-function os.match(pattern, findir)
-
-    -- get the excludes
-    local excludes = pattern:match("|.*$")
-    if excludes then excludes = excludes:split("|") end
-
-    -- translate excludes
-    if excludes then
-        local _excludes = {}
-        for _, exclude in ipairs(excludes) do
-            exclude = path.translate(exclude)
-            exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-            exclude = exclude:gsub("%*%*", "\001")
-            exclude = exclude:gsub("%*", "\002")
-            exclude = exclude:gsub("\001", ".*")
-            exclude = exclude:gsub("\002", "[^/]*")
-            table.insert(_excludes, exclude)
-        end
-        excludes = _excludes
-    end
-
-    -- translate path and remove some repeat separators
-    pattern = path.translate(pattern:gsub("|.*$", ""))
-
-    -- get the root directory
-    local rootdir = pattern
-    local starpos = pattern:find("%*")
-    if starpos then
-        rootdir = rootdir:sub(1, starpos - 1)
-    end
-    rootdir = path.directory(rootdir)
-
-    -- is recurse?
-    local recurse = pattern:find("**", nil, true)
-
-    -- convert pattern to a lua pattern
-    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-    pattern = pattern:gsub("%*%*", "\001")
-    pattern = pattern:gsub("%*", "\002")
-    pattern = pattern:gsub("\001", ".*")
-    pattern = pattern:gsub("\002", "[^/]*")
-    
-    -- find it
-    return os.find(rootdir, pattern, recurse, findir, excludes)
 end
 
 -- return module: os
