@@ -152,13 +152,6 @@ function main._init()
     end
     xmake._PROJECT_FILE = projectfile
     assert(projectfile)
-
-    -- enter the project directory
-    if not os.cd(xmake._PROJECT_DIR) then
-        -- error
-        utils.error("not found project: %s!", xmake._PROJECT_DIR)
-        return false
-    end
 end
 
 -- the main function

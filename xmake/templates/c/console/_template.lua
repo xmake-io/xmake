@@ -39,6 +39,7 @@ function _template.done(targetname, projectdir)
 
     -- check the template project
     if not os.isdir("project") then
+        -- errors
         utils.error("the template project not exists!")
         return false
     end
@@ -48,8 +49,12 @@ function _template.done(targetname, projectdir)
         os.mkdir(projectdir)
     end
 
-    --os.cp("project/**", projectdir)
-    print(os.curdir(), targetname, projectdir)
+    -- copy the project files
+    if not os.cp("project/*", projectdir) then
+        -- errors
+        utils.error("install project failed!")
+        return false
+    end
 
     -- ok
     return true

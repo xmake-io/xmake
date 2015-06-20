@@ -26,6 +26,7 @@ local action = action or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local utils     = require("base/utils")
 local global    = require("base/global")
 local config    = require("base/config")
 local project   = require("base/project")
@@ -44,6 +45,12 @@ function action._load_project()
     -- the options
     local options = xmake._OPTIONS
     assert(options)
+
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        -- error
+        return string.format("not found project: %s!", xmake._PROJECT_DIR)
+    end
 
     -- check the project file
     if not os.isfile(xmake._PROJECT_FILE) then
