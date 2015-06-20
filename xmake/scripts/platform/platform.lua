@@ -157,8 +157,12 @@ end
 -- make the current platform configure
 function platform.make()
 
+    -- get the platform
+    local plat = config.get("plat")
+    assert(plat)
+
     -- make and get the current platform configure
-    return platform._configs(config.get("plat"))
+    return platform._configs(plat)
 end
 
 -- get the platform os

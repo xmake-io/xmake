@@ -17,11 +17,33 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        template.lua
+-- @file        _template.lua
 --
 
--- define module: template
-local template = template or {}
+-- define module: _template
+local _template = _template or {}
 
--- return module: template
-return template
+-- load modules
+local io        = require("base/io")
+local os        = require("base/os")
+local path      = require("base/path")
+local utils     = require("base/utils")
+    
+-- init the template description
+_template.description = "The Console Program"
+
+-- done the template file
+function _template.done(targetname, projectdir)
+
+    -- check
+    assert(targetname and projectdir)
+
+    -- replace the target name
+    io.gsub(projectdir .. "/xmake.lua", "%[targetname%]", targetname) 
+
+    -- ok
+    return true
+end
+
+-- return module: _template
+return _template
