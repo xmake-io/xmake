@@ -45,7 +45,7 @@ function _create.done()
     local targetname = options.target or path.basename(xmake._PROJECT_DIR) or "demo"
 
     -- trace
-    utils.printf("create project %s ...", targetname)
+    utils.printf("create %s ...", targetname)
 
     -- the language
     local language = options.language 
@@ -79,14 +79,33 @@ function _create.done()
         return false
     end
 
-    -- done the template and create this project
+    -- check the template project
+    if not os.isdir("project") then
+        -- errors
+        utils.error("the template project not exists!")
+        return false
+    end
+
+    -- ensure the project directory 
+    if not os.isdir(xmake._PROJECT_DIR) then 
+        os.mkdir(xmake._PROJECT_DIR)
+    end
+
+    -- copy the project files
+    if not os.cp("project/*", xmake._PROJECT_DIR) then
+        -- errors
+        utils.error("copy files failed!")
+        return false
+    end
+
+    -- done the template files
     if not module.done(targetname, xmake._PROJECT_DIR) then
-        utils.error("create project %s failed!", targetname)
+        utils.error("update the template failed!")
         return false
     end
 
     -- trace
-    utils.printf("create project %s ok!", targetname)
+    utils.printf("create %s ok!", targetname)
 
     -- ok
     return true
