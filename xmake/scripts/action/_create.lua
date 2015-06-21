@@ -115,11 +115,8 @@ end
 function _create.menu()
 
     return {
-                -- xmake p
-                shortname = 'p'
-
                 -- usage
-            ,   usage = "xmake create|p [options] [target]"
+                usage = "xmake create [options] [target]"
 
                 -- description
             ,   description = "Create a new project."

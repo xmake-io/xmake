@@ -555,7 +555,12 @@ function option.print_main()
             local action_menu = menu[action]
 
             -- init the action info
-            local action_info = "    " .. utils.ifelse(action_menu and action_menu.shortname, action_menu.shortname .. ", ", "   ")
+            local action_info = "    "
+            if action_menu and action_menu.shortname then
+                action_info = action_info .. action_menu.shortname .. ", "
+            else
+                action_info = action_info .. "   "
+            end
             
             -- append the action
             action_info = action_info .. action
