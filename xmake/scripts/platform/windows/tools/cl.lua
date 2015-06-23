@@ -35,11 +35,8 @@ function cl.init(self, name)
     -- save name
     self._NAME = name or "cl.exe"
 
-    -- init cflags
-    self.cflags = { "-nologo" }
-
-    -- init cxxflags
-    self.cxxflags = { "-nologo" }
+    -- init cxflags
+    self.cxflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
 
     -- init flags map
     self.mapflags = 
@@ -55,7 +52,7 @@ function cl.init(self, name)
     ,   ["-fvisibility=.*"]         = ""
 
         -- warnings
-    ,   ["-Wall"]                   = "-Wall"
+    ,   ["-Wall"]                   = "-W3" -- = "-Wall" will enable too more warnings
     ,   ["-W1"]                     = "-W1"
     ,   ["-W2"]                     = "-W2"
     ,   ["-W3"]                     = "-W3"
@@ -74,6 +71,8 @@ function cl.init(self, name)
 
         -- language
     ,   ["-ansi"]                   = ""
+    ,   ["-std=c99"]                = "-TP" -- compile as c++ files because msvc only support c89
+    ,   ["-std=gnu99"]              = "-TP" -- compile as c++ files because msvc only support c89
     ,   ["-std=.*"]                 = ""
 
         -- others
