@@ -31,19 +31,14 @@ local option        = require("base/option")
 local global        = require("base/global")
 
 -- make configure for the current target
-function config._make()
+function config._make(configs)
 
-    -- the configs
-    local configs = config._CONFIGS
-    assert(configs)
-   
     -- the options
     local options = xmake._OPTIONS
     assert(options)
 
-    -- init current config
-    config._CURRENT = config._CURRENT or {}
-    local current = config._CURRENT
+    -- init current target configure
+    local current = {}
 
     -- get configs from the global configure first
     if global._CURRENT then
@@ -66,12 +61,15 @@ function config._make()
         local target_config = configs._TARGET[current.target]
         if target_config then
 
-            -- merge to the current config
+            -- merge it
             for k, v in pairs(target_config) do
                 current[k] = v
             end
         end
     end
+
+    -- ok?
+    return current
 end
 
 -- get the configure file
@@ -201,9 +199,11 @@ function config.load()
                 -- save configs
                 config._CONFIGS = configs
 
+                -- make the current target configs
+                local current = config._make(configs)
+
                 -- clear configs and mark as "rebuild" and "reconfig" if the host has been changed
-                local target = config._target()
-                if target and target.host ~= xmake._HOST then
+                if current and current.host ~= xmake._HOST then
 
                     -- clear configs and mark as "rebuild"
                     config._CONFIGS = { __rebuild = true }
@@ -215,21 +215,21 @@ function config.load()
                 end
 
                 -- clear configs and mark as "rebuild" if the plat has been changed
-                if target and target.plat and options.plat and target.plat ~= options.plat then
+                if current and current.plat and options.plat and current.plat ~= options.plat then
 
                     -- clear configs and mark as "rebuild"
                     config._CONFIGS = { __rebuild = true }
                 end
 
                 -- mark as "rebuild" if the arch has been changed
-                if target and target.arch and options.arch and target.arch ~= options.arch then
+                if current and current.arch and options.arch and current.arch ~= options.arch then
 
                     -- mark as "rebuild"
                     config._CONFIGS.__rebuild = true
                 end
 
                 -- mark as "rebuild" if the mode has been changed
-                if target and target.mode and options.mode and target.mode ~= options.mode then
+                if current and current.mode and options.mode and current.mode ~= options.mode then
 
                     -- mark as "rebuild"
                     config._CONFIGS.__rebuild = true
@@ -309,7 +309,7 @@ function config.load()
     end
 
     -- make the current config
-    config._make()
+    config._CURRENT = config._make(config._CONFIGS)
 end
 
 -- clear up and remove all auto values

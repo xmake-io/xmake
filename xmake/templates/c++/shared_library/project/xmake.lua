@@ -28,5 +28,23 @@ add_target("[targetname]")
     set_kind("shared")
 
     -- add files
-    add_files("src/*.cpp") 
+    add_files("src/interface.cpp") 
+
+-- add target
+add_target("test")
+
+    -- set kind
+    set_kind("binary")
+
+    -- add deps
+    add_deps("[targetname]")
+
+    -- add files
+    add_files("src/test.cpp") 
+
+    -- add links
+    add_links("[targetname]")
+
+    -- add link directory
+    add_linkdirs("$(buildir)")
 
