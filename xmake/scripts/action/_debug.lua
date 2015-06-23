@@ -41,7 +41,7 @@ function _debug.need(name)
     return accessors[name]
 end
 
--- done the given config
+-- done 
 function _debug.done()
 
     -- TODO

@@ -41,7 +41,7 @@ function _man.need(name)
     return accessors[name]
 end
 
--- done the given config
+-- done 
 function _man.done()
 
     -- TODO

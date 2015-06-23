@@ -44,7 +44,7 @@ function _build.need(name)
     return accessors[name]
 end
 
--- done the given config
+-- done 
 function _build.done()
 
     -- the options
