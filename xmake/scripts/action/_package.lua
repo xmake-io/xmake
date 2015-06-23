@@ -17,19 +17,32 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _install.lua
+-- @file        _package.lua
 --
 
--- define module: _install
-local _install = _install or {}
+-- define module: _package
+local _package = _package or {}
 
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
 local platform  = require("platform/platform")
     
+-- need access to the given file?
+function _package.need(name)
+
+    -- check
+    assert(name)
+
+    -- the accessors
+    local accessors = { config = true, global = true, project = true, platform = true }
+
+    -- need it?
+    return accessors[name]
+end
+
 -- done 
-function _install.done()
+function _package.done()
 
     -- TODO
     print("not implement!")
@@ -39,23 +52,23 @@ function _install.done()
 end
 
 -- the menu
-function _install.menu()
+function _package.menu()
 
     return {
-                -- xmake i
-                shortname = 'i'
+                -- xmake p
+                shortname = 'p'
 
                 -- usage
-            ,   usage = "xmake install|i [options] [target]"
+            ,   usage = "xmake package|p [options] [target]"
 
                 -- description
-            ,   description = "Package and install the project binary files."
+            ,   description = "Package target."
 
                 -- options
             ,   options = 
                 {
-                    {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-                ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
+                    {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
+                ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                           , "Search priority:"
                                                           , "    1. The Given Command Argument"
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
@@ -67,10 +80,10 @@ function _install.menu()
                 ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
          
                 ,   {}
-                ,   {nil, "target",     "v",  "all",        "Install the given target."                                     }
+                ,   {nil, "target",     "v",  nil,          "Package a given target"                                        }   
                 }
-        }
+            }
 end
 
--- return module: _install
-return _install
+-- return module: _package
+return _package

@@ -34,7 +34,7 @@ function _create.need(name)
     return false
 end
 
--- done the given config
+-- done 
 function _create.done()
 
     -- the options

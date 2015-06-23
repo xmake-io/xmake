@@ -44,7 +44,7 @@ function _run.need(name)
     return accessors[name]
 end
 
--- done the given config
+-- done 
 function _run.done()
 
     -- the options

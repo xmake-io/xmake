@@ -43,7 +43,7 @@ function _config.need(name)
     return accessors[name]
 end
 
--- done the given config
+-- done 
 function _config.done()
 
     -- the options

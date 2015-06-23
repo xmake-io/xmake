@@ -39,7 +39,7 @@ function _lua.need(name)
     return false
 end
 
--- done the given config
+-- done 
 function _lua.done()
 
     -- the options

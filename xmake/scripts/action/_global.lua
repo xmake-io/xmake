@@ -41,7 +41,7 @@ function _global.need(name)
     return accessors[name]
 end
 
--- done the given config
+-- done 
 function _global.done()
 
     -- probe the global platform configure 
