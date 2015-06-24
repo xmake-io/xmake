@@ -183,7 +183,8 @@ function makefile._make_target(file, name, target)
     local verbose = cmd:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end)
     -- too long?
     if verbose and #verbose > 256 then
-        verbose = verbose:sub(1, 256) .. " ..."
+        verbose = linker.make(l, target, {rule.filename("*", "object")}, targetfile)
+        verbose = verbose:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end)
     end
 
     -- make body

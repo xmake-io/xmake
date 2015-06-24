@@ -87,7 +87,6 @@ function prober._probe_ndk_sdkver(configs)
 
         -- save it
         configs.set("ndk_sdkver", ndk_sdkver)
-        configs.set("__ndk_sdkdir", string.format("%s/platforms/android-%d", ndk, ndk_sdkver))
 
         -- trace
         utils.verbose("checking for the SDK version of NDK ... %s", string.format("android-%d", ndk_sdkver))

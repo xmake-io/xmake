@@ -125,12 +125,6 @@ function prober._probe_xcode_sdkver(configs)
         
         -- save it
         configs.set("xcode_sdkver", xcode_sdkver)
- 
-        -- save the xcode sdk directory
-        local xcode_dir = configs.get("xcode_dir")
-        if xcode_dir then
-            configs.set("__xcode_sdkdir", xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. xcode_sdkver .. ".sdk")
-        end
     
         -- trace
         utils.verbose("checking for the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)

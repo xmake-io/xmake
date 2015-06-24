@@ -65,10 +65,12 @@ function iphonesimulator.make(configs)
     configs.asflags     = { archflags }
     configs.ldflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=5.0" }
     configs.shflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=5.0" }
-
+ 
     -- init flags for the xcode sdk directory
-    local xcode_sdkdir = config.get("__xcode_sdkdir")
-    if xcode_sdkdir then
+    local xcode_dir     = config.get("xcode_dir")
+    local xcode_sdkver  = config.get("xcode_sdkver")
+    if xcode_dir and xcode_sdkver then
+        local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator" .. xcode_sdkver .. ".sdk"
         table.insert(configs.cxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.asflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
