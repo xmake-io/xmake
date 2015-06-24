@@ -62,9 +62,10 @@ function android.make(configs)
     configs.shflags     = { "-march=" .. config.get("arch"), "-llog" }
 
     -- add flags for the sdk directory of ndk
-    local ndk_sdkdir = config.get("__ndk_sdkdir")
-    if ndk_sdkdir then
-        ndk_sdkdir = path.translate(ndk_sdkdir) 
+    local ndk = config.get("ndk")
+    local ndk_sdkver = config.get("ndk_sdkver")
+    if ndk and ndk_sdkver then
+        local ndk_sdkdir = path.translate(string.format("%s/platforms/android-%d", ndk, ndk_sdkver)) 
         table.insert(configs.cxflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
         table.insert(configs.asflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
         table.insert(configs.ldflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))

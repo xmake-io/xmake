@@ -66,10 +66,12 @@ function iphoneos.make(configs)
     configs.asflags     = { archflags }
     configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=6.0" }
     configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=6.0" }
-
+ 
     -- init flags for the xcode sdk directory
-    local xcode_sdkdir = config.get("__xcode_sdkdir")
-    if xcode_sdkdir then
+    local xcode_dir     = config.get("xcode_dir")
+    local xcode_sdkver  = config.get("xcode_sdkver")
+    if xcode_dir and xcode_sdkver then
+        local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. xcode_sdkver .. ".sdk"
         table.insert(configs.cxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.asflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
