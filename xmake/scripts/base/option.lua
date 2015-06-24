@@ -653,19 +653,34 @@ function option.print_options(options)
         print(option_info)
 
         -- print more description if exists
-        for i = 6, #option do
+        for i = 6, 64 do
 
-            -- the description
+            -- the description, @note some option may be nil
             local description = option[i]
-            if description then
+            if not description then break end
 
-                -- is function? get results
-                if type(description) == "function" then
-                    description = description()
+            -- is function? get results
+            if type(description) == "function" then
+                description = description()
+            end
+
+            -- the description is string?
+            if type(description) == "string" then
+
+                -- make spaces 
+                local spaces = ""
+                for i = 0, padding do
+                    spaces = spaces .. " "
                 end
 
-                -- the description is string?
-                if type(description) == "string" then
+                -- print this description
+                print(spaces .. description)
+
+            -- the description is table?
+            elseif type(description) == "table" then
+
+                -- print all descriptions
+                for _, v in pairs(description) do
 
                     -- make spaces 
                     local spaces = ""
@@ -674,23 +689,7 @@ function option.print_options(options)
                     end
 
                     -- print this description
-                    print(spaces .. description)
-
-                -- the description is table?
-                elseif type(description) == "table" then
-
-                    -- print all descriptions
-                    for _, v in pairs(description) do
-
-                        -- make spaces 
-                        local spaces = ""
-                        for i = 0, padding do
-                            spaces = spaces .. " "
-                        end
-
-                        -- print this description
-                        print(spaces .. v)
-                    end
+                    print(spaces .. v)
                 end
             end
         end
