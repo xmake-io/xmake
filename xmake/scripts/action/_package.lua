@@ -80,7 +80,7 @@ function _package.menu()
                 ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
          
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Package a given target"                                        }   
+                ,   {nil, "target",     "v",  "all",        "Package a given target"                                        }   
                 }
             }
 end
