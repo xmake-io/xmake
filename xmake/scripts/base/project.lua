@@ -431,27 +431,27 @@ function project._makeconf_for_target(target_name, target)
     assert(target_name and target)
  
     -- get the target configure file 
-    local configfile = target.config_h
-    if not configfile then 
+    local config_h = target.config_h
+    if not config_h then 
         return true
     end
 
     -- translate file path
-    if not path.is_absolute(configfile) then
-        configfile = path.absolute(configfile, xmake._PROJECT_DIR)
+    if not path.is_absolute(config_h) then
+        config_h = path.absolute(config_h, xmake._PROJECT_DIR)
     else
-        configfile = path.translate(configfile)
+        config_h = path.translate(config_h)
     end
 
     -- the prefix
     local prefix = target.config_h_prefix or (target_name:upper() .. "_CONFIG")
 
     -- open the file
-    local file = project._CONFILES[configfile] or io.openmk(configfile)
+    local file = project._CONFILES[config_h] or io.openmk(config_h)
     assert(file)
 
     -- make the head
-    if project._CONFILES[configfile] then file:write("\n") end
+    if project._CONFILES[config_h] then file:write("\n") end
     file:write(string.format("#ifndef %s_H\n", prefix))
     file:write(string.format("#define %s_H\n", prefix))
     file:write("\n")
@@ -520,7 +520,7 @@ function project._makeconf_for_target(target_name, target)
     file:write("#endif\n")
 
     -- cache the file
-    project._CONFILES[configfile] = file
+    project._CONFILES[config_h] = file
 
     -- ok
     return true
@@ -1152,6 +1152,19 @@ function project.load()
 
     -- make the targets from the the project file
     project._make_targets(configs)
+end
+
+-- reload the project
+function project.reload()
+
+    -- clear it first
+    project._MTIMES     = nil
+    project._TARGETS    = nil
+    project._CONFILES   = nil
+    project._CURDIR     = nil
+
+    -- load it
+    return project.load()
 end
 
 -- dump the current configure

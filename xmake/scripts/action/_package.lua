@@ -24,9 +24,12 @@
 local _package = _package or {}
 
 -- load modules
+local rule      = require("base/rule")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local global    = require("base/global")
 local string    = require("base/string")
+local project   = require("base/project")
 local platform  = require("platform/platform")
     
 -- need access to the given file?
@@ -37,33 +40,126 @@ function _package.need(name)
 end
  
 -- configure target for the given architecture
-function _package._config(arch, target)
+function _package._config(arch, target_name)
 
     -- need not configure it
     if not arch then return true end
 
     -- done the command
-    return os.execute(string.format("xmake f -P %s -f %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, arch, target)) == 0;
+    return os.execute(string.format("xmake f -P %s -f %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, arch, target_name)) == 0;
 end
 
 -- build target for the given architecture
-function _package._build(arch, target)
+function _package._build(arch, target_name)
+
+    -- get the target name
+    if not target_name or target_name == "all" then 
+        target_name = ""
+    end
 
     -- configure it first
-    if not _package._config(arch, target) then return false end
+    if not _package._config(arch, target_name) then return false end
 
-    print(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target))
     -- rebuild it
-    return os.execute(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target)) == 0;
+    if os.execute(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target_name)) ~= 0 then 
+        -- errors
+        utils.error("build %s failed!", utils.ifelse(target_name, target_name, "all"))
+        return false 
+    end
+
+    -- ok
+    return true
+end
+
+-- make configure for the given target 
+function _package._makeconf(target_name, target)
+
+    -- check
+    assert(target_name and target)
+
+    -- the configs
+    local configs = _package._CONFIGS
+    assert(configs)
+
+    -- the architecture 
+    local arch = config.get("arch")
+    if not arch then return false end
+
+    -- init configs for targets
+    configs._TARGETS = configs._TARGETS or {}
+    configs._TARGETS[target_name] = configs._TARGETS[target_name] or {}
+    local configs_target = configs._TARGETS[target_name]
+
+    -- init configs for architecture
+    configs_target[arch] = configs_target[arch] or {}
+    local configs_arch = configs_target[arch]
+
+    -- save the target kind
+    configs_arch.kind = target.kind
+
+    -- save the config file
+    configs_arch.config_h = rule.config_h(target)
+
+    -- save the target file
+    configs_arch.targetfile = rule.targetfile(target_name, target)
+
+    -- save the header files
+    configs_arch.headerfiles = rule.headerfiles(target)
+
+    -- ok
+    return true
+end
+
+-- load configure for the given target 
+function _package._loadconf(target_name)
+
+    -- reload configure
+    local errors = config.reload()
+    if errors then
+        -- error
+        utils.error(errors)
+        return false
+    end
+
+    -- make the platform configure
+    if not platform.make() then
+        utils.error("make platform configure: %s failed!", config.get("plat"))
+        return false
+    end
+
+    -- reload project
+    local errors = project.reload()
+    if errors then
+        -- error
+        utils.error(errors)
+        return false
+    end
+
+    -- the targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- make configure for the given target
+    if target_name and target_name ~= "all" then
+        if not _package._makeconf(target_name, targets[target_name]) then 
+            utils.error("make target configure: %s failed!", target_name)
+            return false
+        end
+    else
+        for target_name, target in pairs(targets) do
+            if not _package._makeconf(target_name, target) then 
+                utils.error("make target configure: %s failed!", target_name)
+                return false
+            end
+        end
+    end
+
+    -- ok
+    return true
 end
 
 -- build target for all architectures
-function _package._build_all(archs, target)
-
-    -- get the target 
-    if not target or target == "all" then 
-        target = ""
-    end
+function _package._build_all(archs, target_name)
 
     -- exists the given architectures?
     if archs then
@@ -74,12 +170,43 @@ function _package._build_all(archs, target)
 
         -- build for all architectures
         for _, arch in ipairs(archs) do
-            if not _package._build(arch:trim(), target) then return false end
+
+            -- trim it
+            arch = arch:trim()
+
+            -- build it
+            if not _package._build(arch, target_name) then return false end
+
+            -- load configure
+            if not _package._loadconf(target_name) then return false end
+
         end
 
     -- build for single architecture
-    elseif not _package._build(nil, target) then return false end
+    else
 
+        -- build it
+        if not _package._build(nil, target_name) then return false end
+
+        -- load configure
+        if not _package._loadconf(target_name) then return false end
+
+    end
+
+    -- ok
+    return true
+end
+
+-- done package from the configure
+function _package._done()
+
+    -- the configs
+    local configs = _package._CONFIGS
+    assert(configs)
+
+    -- dump
+    utils.dump(configs)
+ 
     -- ok
     return true
 end
@@ -94,13 +221,37 @@ function _package.done()
     -- trace
     print("package: ...")
 
+    -- init configs
+    _package._CONFIGS = _package._CONFIGS or {}
+    local configs = _package._CONFIGS
+
+    -- load the global configure first
+    global.load()
+
     -- build the given target first for all architectures
     if not _package._build_all(options.archs, options.target) then
         -- errors
-        utils.error("build %s failed!", utils.ifelse(options.target, options.target, "all"))
+        utils.error("build package failed!")
         return false
     end
- 
+
+    -- save platform
+    configs.plat = config.get("plat")
+    assert(configs.plat)
+
+    -- save build directory
+    configs.buildir = config.get("buildir")
+
+    -- save project directory
+    configs.projectdir = xmake._PROJECT_DIR
+
+    -- done package 
+    if not _package._done() then
+        -- errors
+        utils.error("package: failed!")
+        return false
+    end
+
     -- trace
     print("package: ok!")
 

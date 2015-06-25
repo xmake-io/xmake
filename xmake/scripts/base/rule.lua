@@ -56,21 +56,21 @@ function rule.filename(name, kind)
 end
 
 -- get configure file for the given target
-function rule.configfile(target)
+function rule.config_h(target)
  
     -- get the target configure file 
-    local configfile = target.configfile
-    if configfile then 
+    local config_h = target.config_h
+    if config_h then 
         -- translate file path
-        if not path.is_absolute(configfile) then
-            configfile = path.absolute(configfile, xmake._PROJECT_DIR)
+        if not path.is_absolute(config_h) then
+            config_h = path.absolute(config_h, xmake._PROJECT_DIR)
         else
-            configfile = path.translate(configfile)
+            config_h = path.translate(config_h)
         end
     end
      
     -- ok?
-    return configfile
+    return config_h
 end
 
 -- get target file for the given target

@@ -337,6 +337,17 @@ function config.clearup()
 
 end
 
+-- reload configure
+function config.reload()
+
+    -- clear the old configure
+    config._CURRENT = nil
+    config._CONFIGS = nil
+
+    -- load it
+    return config.load()
+end
+
 -- dump the current configure
 function config.dump()
     
