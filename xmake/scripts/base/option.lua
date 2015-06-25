@@ -355,79 +355,29 @@ end
 function option.find(argv, name, shortname)
 
     -- check
-    assert(argv and name)
+    assert(argv and (name or shortname))
 
-    -- parse _ARGV to _OPTIONS
-    local _iter, _s, _k = ipairs(argv)
-    while true do
+    -- find it
+    local nextvalue = false
+    for _, arg in ipairs(argv) do
 
-        -- the idx and arg
-        local idx, arg = _iter(_s, _k)
+        -- get this value
+        if nextvalue then return arg end
 
-        -- end?
-        _k = idx
-        if idx == nil then break end
+        -- --name=value?
+        if name and arg:startswith("--" .. name) then
+                    
+            -- get value
+            local i = arg:find("=", 1, true)
+            if i then return arg:sub(i + 1) end
 
-        -- parse key and value
-        local key, value
-        local i = arg:find("=", 1, true)
-
-        -- key=value?
-        if i then
-            key = arg:sub(1, i - 1)
-            value = arg:sub(i + 1)
-        -- only key?
-        else
-            key = arg
-            value = true
+        -- -shortname value?
+        elseif shortname and arg:startswith("-" .. shortname) then
+ 
+            -- get value
+            nextvalue = true
         end
 
-        -- --key?
-        local prefix = 0
-        if key:startswith("--") then
-            key = key:sub(3)
-            prefix = 2
-        -- -k?
-        elseif key:startswith("-") then
-            key = key:sub(2)
-            prefix = 1
-        end
-
-        -- check key
-        if prefix and #key == 0 then
-            -- failed
-            return 
-        end
-
-        -- --key=value or -k value or -k?
-        if prefix ~= 0 then
-
-            -- -k value? continue to get the value
-            if prefix == 1 then
-
-                -- get the next idx and arg
-                idx, arg = _iter(_s, _k)
-
-                -- exists value?
-                _k = idx
-                if idx == nil or arg:startswith("-") then 
-                    -- failed
-                    return 
-                end
-
-                -- get value
-                value = arg
-            end
-
-            -- ok?
-            if key == name or (shortname and key == shortname) then
-                return value
-            end
-
-        -- action? skip it
-        elseif idx == 1 then
-        -- value?
-        else return end
     end
 end
 
