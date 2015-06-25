@@ -26,27 +26,88 @@ local _package = _package or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local string    = require("base/string")
 local platform  = require("platform/platform")
     
 -- need access to the given file?
 function _package.need(name)
 
-    -- check
-    assert(name)
+    -- no accessors
+    return false
+end
+ 
+-- configure target for the given platform and architecture
+function _package._config(plat, arch, target)
 
-    -- the accessors
-    local accessors = { config = true, global = true, project = true, platform = true }
+    -- make the command
+    local cmd = nil;
+    if plat and arch then cmd = string.format("xmake f -P %s -f %s -p %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, plat, arch, target);
+    elseif plat then cmd = string.format("xmake f -P %s -f %s -p %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, plat, target);
+    elseif arch then cmd = string.format("xmake f -P %s -f %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, arch, target);
+    else return true end
 
-    -- need it?
-    return accessors[name]
+    -- done the command
+    return os.execute(cmd) == 0;
+end
+
+-- build target for the given architecture
+function _package._build(plat, arch, target)
+
+    -- configure it first
+    if not _package._config(plat, arch, target) then return false end
+
+    print(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target))
+    -- rebuild it
+    return os.execute(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target)) == 0;
+end
+
+-- build target for all architectures
+function _package._build_all(plat, archs, target)
+
+    -- get the target 
+    if not target or target == "all" then 
+        target = ""
+    end
+
+    -- exists the given architectures?
+    if archs then
+    
+        -- split all architectures
+        archs = archs:split(",")
+        if not archs then return false end
+
+        -- build for all architectures
+        for _, arch in ipairs(archs) do
+            if not _package._build(plat, arch:trim(), target) then return false end
+        end
+
+    -- build for single architecture
+    elseif not _package._build(plat, nil, target) then return false end
+
+    -- ok
+    return true
 end
 
 -- done 
 function _package.done()
 
-    -- TODO
-    print("not implement!")
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- trace
+    print("package: ...")
+
+    -- build the given target first for all architectures
+    if not _package._build_all(options.plat, options.archs, options.target) then
+        -- errors
+        utils.error("build %s failed!", utils.ifelse(options.target, options.target, "all"))
+        return false
+    end
  
+    -- trace
+    print("package: ok!")
+
     -- ok
     return true
 end
@@ -67,7 +128,39 @@ function _package.menu()
                 -- options
             ,   options = 
                 {
-                    {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
+                    {'p', "plat",       "kv", nil,          "Package a given platform."                                     
+                                                          , function () 
+                                                              local descriptions = {}
+                                                              local plats = platform.plats()
+                                                              if plats then
+                                                                  for i, plat in ipairs(plats) do
+                                                                      descriptions[i] = "    - " .. plat
+                                                                  end
+                                                              end
+                                                              return descriptions
+                                                            end                                                             }
+                ,   {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
+                                                          , "    .e.g --archs=\"armv7, arm64\" or -a i386"
+                                                          , ""
+                                                          , function () 
+                                                              local descriptions = {}
+                                                              local plats = platform.plats()
+                                                              if plats then
+                                                                  for i, plat in ipairs(plats) do
+                                                                      descriptions[i] = "    - " .. plat .. ":"
+                                                                      local archs = platform.archs(plat)
+                                                                      if archs then
+                                                                          for _, arch in ipairs(archs) do
+                                                                              descriptions[i] = descriptions[i] .. " " .. arch
+                                                                          end
+                                                                      end
+                                                                  end
+                                                              end
+                                                              return descriptions
+                                                            end                                                             }
+
+                ,   {}
+                ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
                 ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
                                                           , "Search priority:"
                                                           , "    1. The Given Command Argument"
