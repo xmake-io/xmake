@@ -25,6 +25,7 @@ local _package = _package or {}
 
 -- load modules
 local rule      = require("base/rule")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local global    = require("base/global")
@@ -71,6 +72,32 @@ function _package._build(arch, target_name)
     return true
 end
 
+-- backup the target files
+function _package._backup(rootdir, filepath)
+
+    -- the relative file path
+    if filepath and path.is_absolute(filepath) then
+        filepath = path.relative(filepath, xmake._PROJECT_DIR)
+    end
+
+    -- not exists? return it directly
+    if not filepath or not os.isfile(filepath) then return end
+
+    -- the backup file
+    local backupfile = string.format("%s/%s", rootdir, filepath)
+
+    -- backup it
+    local ok, errors = os.cp(filepath, backupfile)
+    if not ok then
+        -- errors 
+        utils.error(errors)
+        return 
+    end
+
+    -- ok
+    return filepath
+end
+
 -- make configure for the given target 
 function _package._makeconf(target_name, target)
 
@@ -97,14 +124,23 @@ function _package._makeconf(target_name, target)
     -- save the target kind
     configs_arch.kind = target.kind
 
+    -- save the root directory
+    configs_arch.rootdir = rule.packagedir(target_name, arch)
+
     -- save the config file
-    configs_arch.config_h = rule.config_h(target)
+    configs_arch.config_h = _package._backup(configs_arch.rootdir, rule.config_h(target))
 
     -- save the target file
-    configs_arch.targetfile = rule.targetfile(target_name, target)
+    configs_arch.targetfile = _package._backup(configs_arch.rootdir, rule.targetfile(target_name, target))
+
+    -- save the target directory
+    configs_arch.targetdir = target.targetdir
 
     -- save the header files
     configs_arch.headerfiles = rule.headerfiles(target)
+
+    -- save the header directory
+    configs_arch.headerdir = target.headerdir
 
     -- ok
     return true
@@ -227,6 +263,13 @@ function _package.done()
 
     -- load the global configure first
     global.load()
+
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        -- errors
+        utils.error("not found project: %s!", xmake._PROJECT_DIR)
+        return false
+    end
 
     -- build the given target first for all architectures
     if not _package._build_all(options.archs, options.target) then

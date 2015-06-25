@@ -73,6 +73,21 @@ function rule.config_h(target)
     return config_h
 end
 
+-- get the temporary package directory
+function rule.packagedir(target_name, arch)
+
+    -- the temporary directory
+    local tmpdir = os.tmpdir()
+    assert(tmpdir)
+
+    -- the project name
+    local project_name = path.basename(xmake._PROJECT_DIR)
+    assert(project_name)
+
+    -- make it
+    return string.format("%s/.xmake/%s/pkgfiles/%s/%s", tmpdir, project_name, target_name, arch)
+end
+
 -- get target file for the given target
 function rule.targetfile(target_name, target, buildir)
 
