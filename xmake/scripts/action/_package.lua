@@ -36,25 +36,21 @@ function _package.need(name)
     return false
 end
  
--- configure target for the given platform and architecture
-function _package._config(plat, arch, target)
+-- configure target for the given architecture
+function _package._config(arch, target)
 
-    -- make the command
-    local cmd = nil;
-    if plat and arch then cmd = string.format("xmake f -P %s -f %s -p %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, plat, arch, target);
-    elseif plat then cmd = string.format("xmake f -P %s -f %s -p %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, plat, target);
-    elseif arch then cmd = string.format("xmake f -P %s -f %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, arch, target);
-    else return true end
+    -- need not configure it
+    if not arch then return true end
 
     -- done the command
-    return os.execute(cmd) == 0;
+    return os.execute(string.format("xmake f -P %s -f %s -a %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, arch, target)) == 0;
 end
 
 -- build target for the given architecture
-function _package._build(plat, arch, target)
+function _package._build(arch, target)
 
     -- configure it first
-    if not _package._config(plat, arch, target) then return false end
+    if not _package._config(arch, target) then return false end
 
     print(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target))
     -- rebuild it
@@ -62,7 +58,7 @@ function _package._build(plat, arch, target)
 end
 
 -- build target for all architectures
-function _package._build_all(plat, archs, target)
+function _package._build_all(archs, target)
 
     -- get the target 
     if not target or target == "all" then 
@@ -78,11 +74,11 @@ function _package._build_all(plat, archs, target)
 
         -- build for all architectures
         for _, arch in ipairs(archs) do
-            if not _package._build(plat, arch:trim(), target) then return false end
+            if not _package._build(arch:trim(), target) then return false end
         end
 
     -- build for single architecture
-    elseif not _package._build(plat, nil, target) then return false end
+    elseif not _package._build(nil, target) then return false end
 
     -- ok
     return true
@@ -99,7 +95,7 @@ function _package.done()
     print("package: ...")
 
     -- build the given target first for all architectures
-    if not _package._build_all(options.plat, options.archs, options.target) then
+    if not _package._build_all(options.archs, options.target) then
         -- errors
         utils.error("build %s failed!", utils.ifelse(options.target, options.target, "all"))
         return false
@@ -128,18 +124,7 @@ function _package.menu()
                 -- options
             ,   options = 
                 {
-                    {'p', "plat",       "kv", nil,          "Package a given platform."                                     
-                                                          , function () 
-                                                              local descriptions = {}
-                                                              local plats = platform.plats()
-                                                              if plats then
-                                                                  for i, plat in ipairs(plats) do
-                                                                      descriptions[i] = "    - " .. plat
-                                                                  end
-                                                              end
-                                                              return descriptions
-                                                            end                                                             }
-                ,   {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
+                    {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
                                                           , "    .e.g --archs=\"armv7, arm64\" or -a i386"
                                                           , ""
                                                           , function () 
