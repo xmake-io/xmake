@@ -56,7 +56,7 @@ function clean._remove(filedirs)
     return true
 end
 
--- remove the given target_name
+-- remove the given target name
 function clean._remove_target(target_name, target, target_only, buildir)
 
     -- check
