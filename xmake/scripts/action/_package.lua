@@ -31,6 +31,7 @@ local config    = require("base/config")
 local global    = require("base/global")
 local string    = require("base/string")
 local project   = require("base/project")
+local package   = require("base/package")
 local platform  = require("platform/platform")
     
 -- need access to the given file?
@@ -104,6 +105,10 @@ function _package._makeconf(target_name, target)
     -- check
     assert(target_name and target)
 
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
     -- the configs
     local configs = _package._CONFIGS
     assert(configs)
@@ -134,7 +139,7 @@ function _package._makeconf(target_name, target)
     configs_arch.targetfile = _package._backup(configs_arch.rootdir, rule.targetfile(target_name, target))
 
     -- save the target directory
-    configs_arch.targetdir = target.targetdir
+    configs_arch.targetdir = options.outputdir or target.targetdir or config.get("buildir")
 
     -- save the header files
     configs_arch.headerfiles = rule.headerfiles(target)
@@ -233,20 +238,6 @@ function _package._build_all(archs, target_name)
     return true
 end
 
--- done package from the configure
-function _package._done()
-
-    -- the configs
-    local configs = _package._CONFIGS
-    assert(configs)
-
-    -- dump
-    utils.dump(configs)
- 
-    -- ok
-    return true
-end
-
 -- done 
 function _package.done()
 
@@ -289,7 +280,7 @@ function _package.done()
     configs.projectdir = xmake._PROJECT_DIR
 
     -- done package 
-    if not _package._done() then
+    if not package.done(configs) then
         -- errors
         utils.error("package: failed!")
         return false
@@ -345,6 +336,7 @@ function _package.menu()
                                                           , "    1. The Given Command Argument"
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                           , "    3. The Current Directory"                                  }
+                ,   {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
 
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
