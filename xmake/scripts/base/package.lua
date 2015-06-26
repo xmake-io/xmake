@@ -30,15 +30,119 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local platform  = require("platform/platform")
 
--- package info from the given info configure
-function package._done_target(name, info)
+-- package target for the static library
+function package._done_static(target)
+
+
+    -- continue
+    return 0
+end
+
+-- package target for the shared library
+function package._done_shared(target)
+
+
+    -- continue
+    return 0
+end
+
+-- package target for the binary library
+function package._done_binary(target)
+
+
+    -- continue
+    return 0
+end
+
+-- package target from the default script
+function package._done_from_default(target)
 
     -- check
-    assert(name and info)
+    assert(target.kind)
 
-    -- dump
-    utils.dump(info)
- 
+    -- the package scripts
+    local pkgscripts = 
+    {
+        static = package._done_static
+    ,   shared = package._done_shared
+    ,   binary = package._done_binary
+    }
+
+    -- package it
+    local pkgscript = pkgscripts[target.kind]
+    if pkgscript then return pkgscript(target) end
+
+    -- continue
+    return 0
+end
+
+-- package target from the project script
+function package._done_from_project(target)
+
+    -- check
+    assert(target)
+
+    -- package it using the project script first
+    local pkgscript = target.pkgscript
+    if type(pkgscript) == "function" then
+
+        -- remove it
+        target.pkgscript = nil
+
+        -- package it
+        return pkgscript(target)
+    end
+
+    -- continue
+    return 0
+end
+
+-- package target from the platform script
+function package._done_from_platform(target)
+
+    -- check
+    assert(target)
+
+    -- the platform package script file
+    local pkgscript = nil
+    local scriptfile = platform.directory() .. "/package.lua"
+    if os.isfile(scriptfile) then 
+
+        -- load the package script
+        local script, errors = loadfile(scriptfile)
+        if script then pkgscript = script()
+        else
+            utils.error(errors)
+        end
+    end
+
+    -- package it
+    if type(pkgscript) == "function" then
+        return pkgscript(target)
+    end
+
+    -- continue
+    return 0
+end
+
+-- package target from the given target configure
+function package._done(target)
+
+    -- check
+    assert(target)
+
+    -- package it from the project script
+    local ok = package._done_from_project(target)
+    if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
+
+    -- package it from the platform script
+    local ok = package._done_from_platform(target)
+    if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
+
+    -- package it from the default script
+    local ok = package._done_from_default(target)
+    if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
+
     -- ok
     return true
 end
@@ -50,12 +154,12 @@ function package.done(configs)
     assert(configs)
 
     -- package targets
-    for name, info in pairs(configs) do
+    for _, target in pairs(configs) do
 
         -- package it
-        if not package._done_target(name, info) then
+        if not package._done(target) then
             -- errors
-            utils.error("package %s failed!", name)
+            utils.error("package %s failed!", target.name)
             return false
         end
 

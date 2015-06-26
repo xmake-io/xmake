@@ -121,13 +121,18 @@ function _package._makeconf(target_name, target)
     configs[target_name] = configs[target_name] or {}
     local configs_target = configs[target_name]
 
-    -- init configs for kinds
-    configs_target[target.kind] = configs_target[target.kind] or {}
-    local configs_kind = configs_target[target.kind]
+    -- init configs for files
+    configs_target.files = configs_target.files or {}
 
     -- init configs for architecture
-    configs_kind[arch] = configs_kind[arch] or {}
-    local configs_arch = configs_kind[arch]
+    configs_target.files[arch] = configs_target.files[arch] or {}
+    local configs_arch = configs_target.files[arch]
+
+    -- save name
+    configs_target.name = target_name
+
+    -- save kind
+    configs_target.kind = target.kind
 
     -- save the root directory
     configs_arch.rootdir = rule.packagedir(target_name, arch)
@@ -148,17 +153,17 @@ function _package._makeconf(target_name, target)
     configs_arch.headerdir = target.headerdir
 
     -- save the package script
-    configs_arch.pkgscript = target.pkgscript
-    if type(configs_arch.pkgscript) == "string" and os.isfile(configs_arch.pkgscript) then
-        local script, errors = loadfile(configs_arch.pkgscript)
+    configs_target.pkgscript = target.pkgscript
+    if type(configs_target.pkgscript) == "string" and os.isfile(configs_target.pkgscript) then
+        local script, errors = loadfile(configs_target.pkgscript)
         if script then
-            configs_arch.pkgscript = script()
+            configs_target.pkgscript = script()
         else
             utils.error(errors)
             return false
         end
     end
-    if target.pkgscript and type(configs_arch.pkgscript) ~= "function" then
+    if target.pkgscript and type(configs_target.pkgscript) ~= "function" then
         utils.error("invalid package script!")
         return false
     end

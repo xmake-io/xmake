@@ -24,8 +24,8 @@ add_target("demo_cpp")
     add_undefines("HELLO2")
     add_cxxflags("-DHELLO1")
     add_options("option1", "option2", "option3", "option4")
-    set_pkgscript(  function (name, info) 
-                        print("package: " .. name)
+    set_pkgscript(  function (target) 
+                        print("package: " .. target.name)
                         return 1
                     end)
 
