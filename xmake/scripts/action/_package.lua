@@ -118,16 +118,16 @@ function _package._makeconf(target_name, target)
     if not arch then return false end
 
     -- init configs for targets
-    configs._TARGETS = configs._TARGETS or {}
-    configs._TARGETS[target_name] = configs._TARGETS[target_name] or {}
-    local configs_target = configs._TARGETS[target_name]
+    configs[target_name] = configs[target_name] or {}
+    local configs_target = configs[target_name]
+
+    -- init configs for kinds
+    configs_target[target.kind] = configs_target[target.kind] or {}
+    local configs_kind = configs_target[target.kind]
 
     -- init configs for architecture
-    configs_target[arch] = configs_target[arch] or {}
-    local configs_arch = configs_target[arch]
-
-    -- save the target kind
-    configs_arch.kind = target.kind
+    configs_kind[arch] = configs_kind[arch] or {}
+    local configs_arch = configs_kind[arch]
 
     -- save the root directory
     configs_arch.rootdir = rule.packagedir(target_name, arch)
@@ -146,6 +146,22 @@ function _package._makeconf(target_name, target)
 
     -- save the header directory
     configs_arch.headerdir = target.headerdir
+
+    -- save the package script
+    configs_arch.pkgscript = target.pkgscript
+    if type(configs_arch.pkgscript) == "string" and os.isfile(configs_arch.pkgscript) then
+        local script, errors = loadfile(configs_arch.pkgscript)
+        if script then
+            configs_arch.pkgscript = script()
+        else
+            utils.error(errors)
+            return false
+        end
+    end
+    if target.pkgscript and type(configs_arch.pkgscript) ~= "function" then
+        utils.error("invalid package script!")
+        return false
+    end
 
     -- ok
     return true
@@ -268,16 +284,6 @@ function _package.done()
         utils.error("build package failed!")
         return false
     end
-
-    -- save platform
-    configs.plat = config.get("plat")
-    assert(configs.plat)
-
-    -- save build directory
-    configs.buildir = config.get("buildir")
-
-    -- save project directory
-    configs.projectdir = xmake._PROJECT_DIR
 
     -- done package 
     if not package.done(configs) then

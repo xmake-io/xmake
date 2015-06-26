@@ -27,6 +27,21 @@ local package = package or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local config    = require("base/config")
+local platform  = require("platform/platform")
+
+-- package info from the given info configure
+function package._done_target(name, info)
+
+    -- check
+    assert(name and info)
+
+    -- dump
+    utils.dump(info)
+ 
+    -- ok
+    return true
+end
 
 -- done package from the configure
 function package.done(configs)
@@ -34,9 +49,18 @@ function package.done(configs)
     -- check
     assert(configs)
 
-    -- dump
-    utils.dump(configs)
- 
+    -- package targets
+    for name, info in pairs(configs) do
+
+        -- package it
+        if not package._done_target(name, info) then
+            -- errors
+            utils.error("package %s failed!", name)
+            return false
+        end
+
+    end
+
     -- ok
     return true
 end
