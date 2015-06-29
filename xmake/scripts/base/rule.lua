@@ -203,7 +203,7 @@ function rule.sourcefiles(target)
 end
 
 -- get the header files from the given target
-function rule.headerfiles(target)
+function rule.headerfiles(target, headerdir)
 
     -- check
     assert(target)
@@ -213,7 +213,7 @@ function rule.headerfiles(target)
     if not headers then return end
 
     -- get the headerdir
-    local headerdir = target.headerdir or config.get("buildir")
+    if not headerdir then headerdir = target.headerdir or config.get("buildir") end
     assert(headerdir)
 
     -- get the source pathes and destinate pathes

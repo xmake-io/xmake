@@ -134,6 +134,12 @@ function _package._makeconf(target_name, target)
     -- save kind
     configs_target.kind = target.kind
 
+    -- save the output directory
+    configs_target.outputdir = options.outputdir or config.get("buildir")
+
+    -- save the header files
+    configs_target.headers = target.headers
+
     -- save the target directory
     configs_arch.targetdir = rule.backupdir(target_name, arch)
 
@@ -142,15 +148,6 @@ function _package._makeconf(target_name, target)
 
     -- save the target file
     configs_arch.targetfile = _package._backup(configs_arch.targetdir, rule.targetfile(target_name, target))
-
-    -- save the output directory
-    configs_arch.outputdir = options.outputdir or config.get("buildir")
-
-    -- save the header files
-    configs_arch.headerfiles = rule.headerfiles(target)
-
-    -- save the header directory
-    configs_arch.headerdir = target.headerdir
 
     -- save the package script
     configs_target.pkgscript = target.pkgscript
