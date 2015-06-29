@@ -31,8 +31,8 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local platform  = require("platform/platform")
 
--- package target for the static library
-function package._done_static(target)
+-- package target for the library file
+function package._done_library(target)
 
     -- check
     assert(target and target.name and target.archs)
@@ -48,7 +48,7 @@ function package._done_static(target)
         -- check
         assert(info.targetdir and info.targetfile and info.outputdir)
 
-        -- copy the static library file to the output directory
+        -- copy the library file to the output directory
         local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s.pkg/lib/%s/%s/%s/%s", info.outputdir, target.name, mode, plat, arch, path.filename(info.targetfile))) 
 
         -- ok?
@@ -62,15 +62,7 @@ function package._done_static(target)
     return 1
 end
 
--- package target for the shared library
-function package._done_shared(target)
-
-
-    -- continue
-    return 0
-end
-
--- package target for the binary library
+-- package target for the binary file
 function package._done_binary(target)
 
     -- check
@@ -115,8 +107,8 @@ function package._done_from_default(target)
     -- the package scripts
     local pkgscripts = 
     {
-        static = package._done_static
-    ,   shared = package._done_shared
+        static = package._done_library
+    ,   shared = package._done_library
     ,   binary = package._done_binary
     }
 
