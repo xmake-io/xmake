@@ -97,15 +97,21 @@ function os.cp(src, dst)
 
     -- is file?
     if os.isfile(src) then
+        
+        -- the destination is directory? append the filename
+        if os.isdir(dst) then
+            dst = string.format("%s/%s", dst, path.filename(src))
+        end
+
         -- copy file
         if not os.cpfile(src, dst) then
-            return false, string.format("cannot copy file %s to %s!", src, dst)
+            return false, string.format("cannot copy file %s to %s", src, dst)
         end
     -- is directory?
     elseif os.isdir(src) then
         -- copy directory
         if not os.cpdir(src, dst) then
-            return false, string.format("cannot copy directory %s to %s!", src, dst)
+            return false, string.format("cannot copy directory %s to %s", src, dst)
         end
     -- cp dir/*?
     elseif src:find("%*") then
@@ -119,14 +125,14 @@ function os.cp(src, dst)
             for _, file in ipairs(files) do
                 local dstfile = string.format("%s/%s", dst, file:sub(starpos))
                 if not os.cpfile(file, dstfile) then
-                    return false, string.format("cannot copy file %s to %s!", file, dstfile)
+                    return false, string.format("cannot copy file %s to %s", file, dstfile)
                 end
             end
         end
 
     -- not exists?
     else
-        return false, string.format("cannot copy file %s, not found this file!", src)
+        return false, string.format("cannot copy file %s, not found this file", src)
     end
     
     -- ok
@@ -143,11 +149,11 @@ function os.mv(src, dst)
     if os.exists(src) then
         -- move file or directory
         if not os.rename(src, dst) then
-            return false, string.format("cannot move %s to %s!", src, dst)
+            return false, string.format("cannot move %s to %s", src, dst)
         end
     -- not exists?
     else
-        return false, string.format("cannot move %s to %s, not found this file!", src, dst)
+        return false, string.format("cannot move %s to %s, not found this file", src, dst)
     end
     
     -- ok
@@ -164,17 +170,17 @@ function os.rm(path)
     if os.isfile(path) then
         -- remove file
         if not os.rmfile(path) then
-            return false, string.format("cannot remove file %s!", path)
+            return false, string.format("cannot remove file %s", path)
         end
     -- is directory?
     elseif os.isdir(path) then
         -- remove directory
         if not os.rmdir(path) then
-            return false, string.format("cannot remove directory %s!", path)
+            return false, string.format("cannot remove directory %s", path)
         end
     -- not exists?
     else
-        return false, string.format("cannot remove file %s, not found this file!", path)
+        return false, string.format("cannot remove file %s, not found this file", path)
     end
     
     -- ok
@@ -195,7 +201,7 @@ function os.cd(path)
             os._PREDIR = nil
         else
             -- error
-            return false, string.format("not found the previous directory!")
+            return false, string.format("not found the previous directory")
         end
     end
     
@@ -207,7 +213,7 @@ function os.cd(path)
 
         -- change to directory
         if not os.chdir(path) then
-            return false, string.format("cannot change directory %s!", path)
+            return false, string.format("cannot change directory %s", path)
         end
 
         -- save the previous directory
@@ -215,7 +221,7 @@ function os.cd(path)
 
     -- not exists?
     else
-        return false, string.format("cannot change directory %s, not found this directory!", path)
+        return false, string.format("cannot change directory %s, not found this directory", path)
     end
     
     -- ok

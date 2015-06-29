@@ -25,6 +25,7 @@ local package = package or {}
 
 -- load modules
 local os        = require("base/os")
+local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
@@ -33,9 +34,32 @@ local platform  = require("platform/platform")
 -- package target for the static library
 function package._done_static(target)
 
+    -- check
+    assert(target and target.name and target.archs)
 
-    -- continue
-    return 0
+    -- the plat and mode
+    local plat = config.get("plat")
+    local mode = config.get("mode")
+    assert(plat and mode)
+
+    -- package it
+    for arch, info in pairs(target.archs) do
+    
+        -- check
+        assert(info.targetdir and info.targetfile and info.outputdir)
+
+        -- copy the static library file to the output directory
+        local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s.pkg/lib/%s/%s/%s/%s", info.outputdir, target.name, mode, plat, arch, path.filename(info.targetfile))) 
+
+        -- ok?
+        if not ok then
+            utils.error(errors)
+            return -1
+        end
+    end
+
+    -- ok
+    return 1
 end
 
 -- package target for the shared library
@@ -49,9 +73,37 @@ end
 -- package target for the binary library
 function package._done_binary(target)
 
+    -- check
+    assert(target and target.archs)
 
-    -- continue
-    return 0
+    -- the count of architectures
+    local count = 0
+    for _, _ in pairs(target.archs) do count = count + 1 end
+
+    -- package it
+    local ok = nil
+    local errors = nil 
+    for arch, info in pairs(target.archs) do
+    
+        -- check
+        assert(info.targetdir and info.targetfile and info.outputdir)
+
+        -- copy the binary file to the output directory
+        if count == 1 then
+            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), info.outputdir) 
+        else
+            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s", info.outputdir, rule.filename(path.basename(info.targetfile) .. "_" .. arch, "binary"))) 
+        end
+
+        -- ok?
+        if not ok then
+            utils.error(errors)
+            return -1
+        end
+    end
+
+    -- ok
+    return 1
 end
 
 -- package target from the default script
