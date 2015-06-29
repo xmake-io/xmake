@@ -73,8 +73,8 @@ function rule.config_h(target)
     return config_h
 end
 
--- get the temporary package directory
-function rule.packagedir(target_name, arch)
+-- get the temporary backup directory for package
+function rule.backupdir(target_name, arch)
 
     -- the temporary directory
     local tmpdir = os.tmpdir()

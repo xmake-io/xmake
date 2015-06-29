@@ -121,12 +121,12 @@ function _package._makeconf(target_name, target)
     configs[target_name] = configs[target_name] or {}
     local configs_target = configs[target_name]
 
-    -- init configs for files
-    configs_target.files = configs_target.files or {}
+    -- init configs for architectures
+    configs_target.archs = configs_target.archs or {}
 
     -- init configs for architecture
-    configs_target.files[arch] = configs_target.files[arch] or {}
-    local configs_arch = configs_target.files[arch]
+    configs_target.archs[arch] = configs_target.archs[arch] or {}
+    local configs_arch = configs_target.archs[arch]
 
     -- save name
     configs_target.name = target_name
@@ -134,17 +134,17 @@ function _package._makeconf(target_name, target)
     -- save kind
     configs_target.kind = target.kind
 
-    -- save the root directory
-    configs_arch.rootdir = rule.packagedir(target_name, arch)
+    -- save the target directory
+    configs_arch.targetdir = rule.backupdir(target_name, arch)
 
     -- save the config file
-    configs_arch.config_h = _package._backup(configs_arch.rootdir, rule.config_h(target))
+    configs_arch.config_h = _package._backup(configs_arch.targetdir, rule.config_h(target))
 
     -- save the target file
-    configs_arch.targetfile = _package._backup(configs_arch.rootdir, rule.targetfile(target_name, target))
+    configs_arch.targetfile = _package._backup(configs_arch.targetdir, rule.targetfile(target_name, target))
 
-    -- save the target directory
-    configs_arch.targetdir = options.outputdir or target.targetdir or config.get("buildir")
+    -- save the output directory
+    configs_arch.outputdir = options.outputdir or config.get("buildir")
 
     -- save the header files
     configs_arch.headerfiles = rule.headerfiles(target)
