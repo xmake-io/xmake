@@ -192,7 +192,7 @@ function makefile._make_target(file, name, target)
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", verbose))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(targetfile)))
     file:write(string.format("\t@%s\n", cmd))
-    if srcheaders then
+    if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do
             local dstheader = dstheaders[i]

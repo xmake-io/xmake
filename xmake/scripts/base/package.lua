@@ -37,6 +37,10 @@ function package._done_library(target)
     -- check
     assert(target and target.name and target.archs)
 
+    -- the output directory
+    local outputdir = target.outputdir
+    assert(outputdir)
+
     -- the plat and mode
     local plat = config.get("plat")
     local mode = config.get("mode")
@@ -46,16 +50,83 @@ function package._done_library(target)
     for arch, info in pairs(target.archs) do
     
         -- check
-        assert(info.targetdir and info.targetfile and info.outputdir)
+        assert(info.targetdir and info.targetfile)
 
         -- copy the library file to the output directory
-        local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s.pkg/lib/%s/%s/%s/%s", info.outputdir, target.name, mode, plat, arch, path.filename(info.targetfile))) 
-
-        -- ok?
+        local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s.pkg/lib/%s/%s/%s/%s", outputdir, target.name, mode, plat, arch, path.filename(info.targetfile))) 
         if not ok then
             utils.error(errors)
             return -1
         end
+
+        -- copy the config.h to the output directory
+        if info.config_h then
+            local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.config_h), string.format("%s/%s.pkg/inc/%s/%s", outputdir, target.name, plat, path.filename(info.config_h))) 
+            if not ok then
+                utils.error(errors)
+                return -1
+            end
+        end
+    end
+
+    -- copy headers
+    if target.headers then
+        local srcheaders, dstheaders = rule.headerfiles(target, string.format("%s/%s.pkg/inc", outputdir, target.name))
+        if srcheaders and dstheaders then
+            local i = 1
+            for _, srcheader in ipairs(srcheaders) do
+                local dstheader = dstheaders[i]
+                if dstheader then
+                    local ok, errors = os.cp(srcheader, dstheader)
+                    if not ok then
+                        utils.error(errors)
+                        return -1
+                    end
+                end
+                i = i + 1
+            end
+        end
+    end
+
+    -- make xmake.lua 
+    local file = io.open(string.format("%s/%s.pkg/xmake.lua", outputdir, target.name), "w")
+    if file then
+
+        -- the xmake.lua template content
+        local template = [[ 
+-- add [targetname] package
+add_option("[targetname]")
+
+    -- show menu
+    set_option_showmenu(true)
+
+    -- set category
+    set_option_category("package")
+
+    -- set description
+    set_option_description("The [targetname] package")
+
+    -- add defines to config.h if checking ok
+    add_option_defines_h_if_ok("$(prefix)_PACKAGE_HAVE_[TARGETNAME]")
+
+    -- add links for checking
+    add_option_links("[targetname]")
+
+    -- add link directories
+    add_option_linkdirs("lib/$(mode)/$(plat)/$(arch)")
+
+    -- add c includes for checking
+    add_option_cincludes("[targetname]/[targetname].h")
+
+    -- add include directories
+    add_option_includedirs("inc", "inc/$(plat)/$(arch)")
+]]
+
+        -- save file
+        file:write(template:gsub("%[targetname%]", target.name):gsub("%[TARGETNAME%]", target.name:upper()))
+
+        -- exit file
+        file:close()
     end
 
     -- ok
@@ -68,6 +139,10 @@ function package._done_binary(target)
     -- check
     assert(target and target.archs)
 
+    -- the output directory
+    local outputdir = target.outputdir
+    assert(outputdir)
+
     -- the count of architectures
     local count = 0
     for _, _ in pairs(target.archs) do count = count + 1 end
@@ -78,13 +153,13 @@ function package._done_binary(target)
     for arch, info in pairs(target.archs) do
     
         -- check
-        assert(info.targetdir and info.targetfile and info.outputdir)
+        assert(info.targetdir and info.targetfile)
 
         -- copy the binary file to the output directory
         if count == 1 then
-            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), info.outputdir) 
+            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), outputdir) 
         else
-            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s", info.outputdir, rule.filename(path.basename(info.targetfile) .. "_" .. arch, "binary"))) 
+            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s", outputdir, rule.filename(path.basename(info.targetfile) .. "_" .. arch, "binary"))) 
         end
 
         -- ok?
