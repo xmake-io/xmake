@@ -239,6 +239,7 @@ function prober._probe_toolchains(configs)
     if not prober._probe_toolpath(configs, "ld", "xcrun -sdk iphoneos ", "clang++", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "xcrun -sdk iphoneos ", "ar", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", "xcrun -sdk iphoneos ", "clang++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "lipo", "xcrun -sdk iphoneos ", "lipo", "the universal files creater") then return false end
     return true
 end
 

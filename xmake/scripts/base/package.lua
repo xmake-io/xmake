@@ -229,7 +229,11 @@ function package._done_from_platform(target)
 
         -- load the package script
         local script, errors = loadfile(scriptfile)
-        if script then pkgscript = script()
+        if script then 
+            pkgscript = script()
+            if type(pkgscript) == "table" and pkgscript.main then 
+                pkgscript = pkgscript.main
+            end
         else
             utils.error(errors)
         end
