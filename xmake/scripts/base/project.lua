@@ -331,6 +331,20 @@ function project._api_add_subfiles(env, ...)
     project._CURDIR = curdir
 end
 
+-- load all packages from the given directories
+function project._api_add_pkgdirs(env, ...)
+
+    -- get all directories
+    local pkgdirs = {}
+    local dirs = table.join(...)
+    for _, dir in ipairs(dirs) do
+        table.insert(pkgdirs, dir .. "/*.pkg")
+    end
+
+    -- add all packages
+    project._api_add_subdirs(env, pkgdirs)
+end
+
 -- set configure values
 function project._api_set_values(scope, name, ...)
 
@@ -954,7 +968,11 @@ function project._load_options(file)
     -- register interfaces for the functions
     newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
     newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
-  
+   
+    -- register interfaces for the package files
+    newenv.add_pkgdirs      = function (...) return project._api_add_pkgdirs(newenv, ...) end
+    newenv.add_pkgs         = function (...) return project._api_add_subdirs(newenv, ...) end
+    
     -- register interfaces for setting option values
     local interfaces =  {   "enable"
                         ,   "showmenu"
@@ -1051,7 +1069,11 @@ function project._load_targets(file)
     -- register interfaces for the functions
     newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
     newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
-  
+   
+    -- register interfaces for the package files
+    newenv.add_pkgdirs      = function (...) return project._api_add_pkgdirs(newenv, ...) end
+    newenv.add_pkgs         = function (...) return project._api_add_subdirs(newenv, ...) end
+    
     -- register interfaces for setting values
     local interfaces =  {   "kind"
                         ,   "config_h_prefix"

@@ -65,7 +65,7 @@ function _package._build(arch, target_name)
     -- rebuild it
     if os.execute(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target_name)) ~= 0 then 
         -- errors
-        utils.error("build %s failed!", utils.ifelse(target_name, target_name, "all"))
+        utils.error("build failed!")
         return false 
     end
 
