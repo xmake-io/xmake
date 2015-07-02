@@ -52,7 +52,16 @@ function make.main(self, mkfile, target)
     -- done 
     local ok = os.execute(cmd)
     if ok ~= 0 then
-        return false
+
+        -- attempt to execute it again for getting the error logs without -j4
+        if mkfile and os.isfile(mkfile) then
+            cmd = string.format("%s -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
+        else  
+            cmd = string.format("%s %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
+        end
+
+        -- done
+        return os.execute(cmd) == 0
     end
 
     -- ok
