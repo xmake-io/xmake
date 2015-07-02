@@ -224,7 +224,7 @@ tb_uint64_t             tb_option_item_uint64(tb_option_ref_t option, tb_char_t 
  */
 tb_sint64_t             tb_option_item_sint64(tb_option_ref_t option, tb_char_t const* name);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 /*! the option item - float
  *

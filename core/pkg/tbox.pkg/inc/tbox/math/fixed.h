@@ -46,7 +46,7 @@
 #define TB_FIXED_NEAR0              TB_FIXED16_NEAR0
 
 // conversion
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   define tb_fixed_to_float(x)     tb_fixed16_to_float(x)
 #   define tb_float_to_fixed(x)     tb_float_to_fixed16(x)
 #endif

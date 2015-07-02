@@ -128,7 +128,7 @@
 
 // small
 #undef __tb_small__
-#if TB_CONFIG_SMALL
+#ifdef TB_CONFIG_SMALL
 #   define __tb_small__
 #endif
 

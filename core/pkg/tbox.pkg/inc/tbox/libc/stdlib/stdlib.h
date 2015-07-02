@@ -63,7 +63,7 @@ __tb_extern_c_enter__
 #define tb_sbtoi64(s, b)            ((tb_int64_t)tb_sbtou64(s, b))
 
 // for float
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   define tb_s2tof(s)              ((tb_float_t)tb_s2tod(s))
 #   define tb_s8tof(s)              ((tb_float_t)tb_s8tod(s))
 #   define tb_s10tof(s)             ((tb_float_t)tb_s10tod(s))
@@ -77,7 +77,7 @@ __tb_extern_c_enter__
 #define tb_atoll(s)                 tb_s10toi64(s)
 #define tb_strtol(s, e, b)          tb_sbtoi32(s, b)
 #define tb_strtoll(s, e, b)         tb_sbtoi64(s, b)
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   define tb_atof(s)               tb_s10tod(s)
 #   define tb_strtof(s, e)          tb_s10tof(s)
 #   define tb_strtod(s, e)          tb_s10tod(s)
@@ -177,7 +177,7 @@ tb_uint64_t         tb_stou64(tb_char_t const* s);
  */
 tb_uint64_t         tb_sbtou64(tb_char_t const* s, tb_int_t base);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 /*! convert the binary string to double
  *

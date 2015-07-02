@@ -48,7 +48,7 @@
 
 // check config
 #if !defined(TB_CONFIG_TYPE_SCALAR_IS_FIXED) \
-    && !defined(TB_CONFIG_TYPE_FLOAT)
+    && !defined(TB_CONFIG_TYPE_HAVE_FLOAT)
 #   define TB_CONFIG_TYPE_SCALAR_IS_FIXED
 #endif
 
@@ -87,7 +87,9 @@ typedef tb_pointer_t                tb_handle_t;
 #endif
 
 // wchar
-#ifdef TB_CONFIG_OS_WINDOWS
+#ifdef TB_CONFIG_TYPE_HAVE_WCHAR
+    typedef wchar_t                 tb_wchar_t;
+#elif defined(TB_CONFIG_OS_WINDOWS)
 #   if defined(_WCHAR_T_DEFINED) || defined(_NATIVE_WCHAR_T_DEFINED)
     typedef wchar_t                 tb_wchar_t;
 #   else
@@ -126,7 +128,7 @@ typedef unsigned long               tb_ulong_t;
 typedef tb_ulong_t                  tb_size_t;
 
 // double
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 typedef float                       tb_float_t;
 typedef double                      tb_double_t;
 #endif
@@ -308,7 +310,7 @@ typedef union __tb_value_t
     /// async stream
     tb_async_stream_ref_t           astream;
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
     /// float
     tb_float_t                      f;
 

@@ -28,7 +28,7 @@
  * includes
  */
 #include "prefix.h"
-#if defined(TB_CONFIG_OS_MAC) || defined(TB_CONFIG_OS_IOS)
+#if defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
 #   include "mach/barrier.h"
 #elif defined(TB_COMPILER_IS_GCC) \
     &&  TB_COMPILER_VERSION_BE(4, 1)

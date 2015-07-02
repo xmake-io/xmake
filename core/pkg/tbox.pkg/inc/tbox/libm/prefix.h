@@ -33,7 +33,7 @@
  * types
  */
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 // the ieee float type
 typedef union __tb_ieee_float_t

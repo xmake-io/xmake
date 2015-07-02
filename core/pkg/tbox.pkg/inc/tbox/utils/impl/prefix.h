@@ -17,41 +17,17 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        addr.h
- * @ingroup     network
+ * @file        prefix.h
  *
  */
-#ifndef TB_NETWORK_ADDR_H
-#define TB_NETWORK_ADDR_H
+#ifndef TB_UTILS_IMPL_PREFIX_H
+#define TB_UTILS_IMPL_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
+#include "../prefix.h"
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_enter__
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * types
- */
-
-/// the addr4 type
-typedef struct __tb_addr4_t
-{
-    /// the ipv4
-    tb_ipv4_t       ipv4;
-
-    /// the port
-    tb_uint16_t     port;
-
-}tb_addr4_t, *tb_addr4_ref_t;
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_leave__
 
 #endif

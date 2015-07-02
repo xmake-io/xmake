@@ -53,7 +53,7 @@ __tb_extern_c_enter__
 #define TB_FIXED30_SQRT2                    (0x5a827999)
 
 // conversion
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   ifndef tb_fixed30_to_float
 #       define tb_fixed30_to_float(x)       (((x) * 0.00000000093132257f))
 #   endif
@@ -83,7 +83,7 @@ __tb_extern_c_enter__
 #ifndef tb_fixed30_mul
 #   if 1
 #       define tb_fixed30_mul(x, y)         tb_fixed30_mul_int64(x, y)
-#   elif defined(TB_CONFIG_TYPE_FLOAT)
+#   elif defined(TB_CONFIG_TYPE_HAVE_FLOAT)
 #       define tb_fixed30_mul(x, y)         tb_fixed30_mul_float(x, y)
 #   else
 #       define tb_fixed30_mul(x, y)         tb_fixed30_mul_int32(x, y)
@@ -94,7 +94,7 @@ __tb_extern_c_enter__
 #ifndef tb_fixed30_div
 #   if 1
 #       define tb_fixed30_div(x, y)         tb_fixed30_div_int64(x, y)
-#   elif defined(TB_CONFIG_TYPE_FLOAT)
+#   elif defined(TB_CONFIG_TYPE_HAVE_FLOAT)
 #       define tb_fixed30_div(x, y)         tb_fixed30_div_float(x, y)
 #   else
 #       define tb_fixed30_div(x, y)         tb_int32_div(x, y, 30)
@@ -105,7 +105,7 @@ __tb_extern_c_enter__
 #ifndef tb_fixed30_sqre
 #   if 1
 #       define tb_fixed30_sqre(x)           tb_fixed30_sqre_int64(x)
-#   elif defined(TB_CONFIG_TYPE_FLOAT)
+#   elif defined(TB_CONFIG_TYPE_HAVE_FLOAT)
 #       define tb_fixed30_sqre(x)           tb_fixed30_sqre_float(x)
 #   else
 #       define tb_fixed30_sqre(x)           tb_fixed30_sqre_int32(x)
@@ -122,7 +122,7 @@ __tb_extern_c_enter__
  */
 
 #ifdef __tb_debug__
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 static __tb_inline__ tb_fixed30_t tb_float_to_fixed30_check(tb_float_t x)
 {
     // check overflow, [-2., 2.]
@@ -152,7 +152,7 @@ static __tb_inline__ tb_fixed30_t tb_fixed30_sqre_int64(tb_fixed30_t x)
     return (tb_fixed30_t)((tb_hong_t)x * x >> 30);
 }
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 static __tb_inline__ tb_fixed30_t tb_fixed30_mul_float(tb_fixed30_t x, tb_fixed30_t y)
 {
     tb_float_t f = tb_fixed30_to_float(x) * tb_fixed30_to_float(y);

@@ -17,17 +17,18 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        bplist.h
- * @ingroup     object
+ * @file        socket_pool.h
+ * @ingroup     platform
  *
  */
-#ifndef TB_OBJECT_WRITER_BPLIST_H
-#define TB_OBJECT_WRITER_BPLIST_H
+#ifndef TB_PLATFORM_WINDOWS_SOCKET_POOL_H
+#define TB_PLATFORM_WINDOWS_SOCKET_POOL_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+#include "../socket.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -35,46 +36,33 @@
 __tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * types
- */
-
-/// the object bplist writer type
-typedef struct __tb_object_bplist_writer_t
-{
-    /// the stream
-    tb_stream_ref_t              stream;
-
-}tb_object_bplist_writer_t;
-
-/// the bplist writer func type
-typedef tb_bool_t               (*tb_object_bplist_writer_func_t)(tb_object_bplist_writer_t* writer, tb_object_ref_t object, tb_size_t item_size);
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! the bplist object writer
+/*! init socket pool 
  *
- * @return                      the bplist object writer
+ * @return          tb_true or tb_false
  */
-tb_object_writer_t*             tb_object_bplist_writer(tb_noarg_t);
+tb_bool_t           tb_socket_pool_init(tb_noarg_t);
 
-/*! hook the bplist writer
+/*! exit socket pool 
  *
- * @param type                  the object type 
- * @param func                  the writer func
- *
- * @return                      tb_true or tb_false
  */
-tb_bool_t                       tb_object_bplist_writer_hook(tb_size_t type, tb_object_bplist_writer_func_t func);
+tb_void_t           tb_socket_pool_exit(tb_noarg_t);
 
-/*! the bplist writer func
+/*! put socket to the socket pool 
  *
- * @param type                  the object type 
+ * @param sock      the tcp socket
  *
- * @return                      the object writer func
+ * @return          tb_true or tb_false
  */
-tb_object_bplist_writer_func_t  tb_object_bplist_writer_func(tb_size_t type);
+tb_bool_t           tb_socket_pool_put(tb_socket_ref_t sock);
+
+/*! get socket from the socket pool 
+ *
+ * @return          the tcp socket
+ */
+tb_socket_ref_t     tb_socket_pool_get(tb_noarg_t);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -82,4 +70,3 @@ tb_object_bplist_writer_func_t  tb_object_bplist_writer_func(tb_size_t type);
 __tb_extern_c_leave__
 
 #endif
-

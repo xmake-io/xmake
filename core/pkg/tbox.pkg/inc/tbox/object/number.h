@@ -123,7 +123,7 @@ tb_object_ref_t     tb_object_number_init_from_uint64(tb_uint64_t value);
  */
 tb_object_ref_t     tb_object_number_init_from_sint64(tb_sint64_t value);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! init number from float
  *
  * @param value     the value
@@ -213,7 +213,7 @@ tb_uint64_t         tb_object_number_uint64(tb_object_ref_t number);
  */
 tb_sint64_t         tb_object_number_sint64(tb_object_ref_t number);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! the float value of the number
  *
  * @param object    the object pointer
@@ -303,7 +303,7 @@ tb_bool_t           tb_object_number_uint64_set(tb_object_ref_t number, tb_uint6
  */
 tb_bool_t           tb_object_number_sint64_set(tb_object_ref_t number, tb_sint64_t value);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! set the float value 
  *
  * @param object    the object pointer

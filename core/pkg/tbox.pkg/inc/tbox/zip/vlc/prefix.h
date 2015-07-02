@@ -16,13 +16,16 @@
  * 
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
- * @author		ruki
- * @file		prefix.S
+ * @author      ruki
+ * @file        prefix.h
  *
  */
+#ifndef TB_ZIP_VLC_PREFIX_H
+#define TB_ZIP_VLC_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "asm/prefix.S"
+#include "../prefix.h"
 
+#endif

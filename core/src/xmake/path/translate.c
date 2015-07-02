@@ -46,8 +46,7 @@ tb_int_t xm_path_translate(lua_State* lua)
 
     // copy path
     tb_char_t data[TB_PATH_MAXN];
-    tb_strlcpy(data, path, sizeof(data) - 1);
-    data[sizeof(data) - 1] = '\0';
+    tb_strlcpy(data, path, sizeof(data));
 
     // done path:translate() 
     lua_pushstring(lua, tb_path_translate(data, 0, sizeof(data) - 1)? data : tb_null);

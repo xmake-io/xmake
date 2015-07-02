@@ -17,131 +17,41 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        prefix.S
+ * @file        algorithm.h
+ * @defgroup    algorithm
  *
  */
+#ifndef TB_ALGORITHM_H
+#define TB_ALGORITHM_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+#include "predicate.h"
+#include "distance.h"
+#include "for.h"
+#include "for_if.h"
+#include "rfor.h"
+#include "rfor_if.h"
+#include "sort.h"
+#include "heap_sort.h"
+#include "quick_sort.h"
+#include "insert_sort.h"
+#include "bubble_sort.h"
+#include "find.h"
+#include "find_if.h"
+#include "rfind.h"
+#include "rfind_if.h"
+#include "binary_find.h"
+#include "binary_find_if.h"
+#include "walk.h"
+#include "rwalk.h"
+#include "count.h"
+#include "count_if.h"
+#include "remove.h"
+#include "remove_if.h"
+#include "remove_first.h"
+#include "remove_first_if.h"
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * macros
- */
-
-#ifdef TB_ARCH_ARM_THUMB
-#   define A @
-#   define T
-#else
-#   define A
-#   define T @
 #endif
-
-#ifdef TB_ARCH_ELF
-#   define ELF
-#   define EXTERN_ASM
-#else
-#   define ELF @
-#   define EXTERN_ASM _
-#endif
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * arch
- */
-
-#if defined(TB_ARCH_ARM_v7A)
-        .arch armv7-a
-#elif defined(TB_ARCH_ARM_v7)
-        .arch armv7
-#elif defined(TB_ARCH_ARM_v6) 
-        .arch armv6
-#elif defined(TB_ARCH_ARM_v5te) 
-        .arch armv5te
-#elif defined(TB_ARCH_ARM_v5) 
-        .arch armv5
-#endif
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * fpu
- */
-
-#if defined(TB_ARCH_ARM_NEON) && !defined(TB_ARCH_ARM64)
-        .fpu neon
-#elif defined(TB_ARCH_VFP)
-        .fpu vfp
-#endif
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * syntax
- */
-#ifndef TB_ARCH_ARM64
-        .syntax unified
-#endif
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * thumb
- */
-
-// will crash
-//T       .thumb
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * eabi
- */
-#ifndef TB_ARCH_ARM64
-ELF     .eabi_attribute 25, 1 
-#endif
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * macros
- */
-
-/*! function
- * 
- * @code
-    function func_xxxx, export=1
-        ...
-        bx lr
-    endfunc
-   @endcode
- */
-.macro function name, export=0
-    .macro endfunc
-ELF     .size \name, . - \name
-        .endfunc
-        .purgem endfunc
-    .endm
-
-        .text
-#ifdef TB_ARCH_ARM64
-        .align 8
-#else 
-        .align 4
-#endif
-    .if \export
-        .global EXTERN_ASM\name
-EXTERN_ASM\name:
-    .endif
-ELF     .type \name, %function
-        .func \name
-\name:
-.endm
-
-/*! label
- * 
- * @code
-    label name
-       xxx
-       xxx
-       bl name
-   @endcode
- */
-.macro label name
-#ifdef TB_ARCH_ARM64
-        .align 8
-#else 
-        .align 4
-#endif
-\name:
-.endm

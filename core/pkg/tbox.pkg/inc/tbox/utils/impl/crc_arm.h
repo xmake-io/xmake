@@ -17,65 +17,29 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        reader.h
- * @ingroup     object
+ * @file        crc_arm.h
  *
  */
-#ifndef TB_OBJECT_READER_H
-#define TB_OBJECT_READER_H
+#ifndef TB_UTILS_IMPL_CRC_ARM_H
+#define TB_UTILS_IMPL_CRC_ARM_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "xml.h"
-#include "bin.h"
-#include "json.h"
-#include "xplist.h"
-#include "bplist.h"
+#include "../prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * extern
+ * macros
  */
-__tb_extern_c_enter__
+#ifndef TB_ARCH_ARM64
+#   define tb_crc32_encode(crc, ib, in, table)  tb_crc32_encode_asm(crc, ib, in, table)
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
+tb_uint32_t tb_crc32_encode_asm(tb_uint32_t crc, tb_byte_t const* ib, tb_size_t in, tb_uint32_t const* table);
 
-/*! set object reader
- *
- * @param format    the reader format
- * @param reader    the reader
- *
- * @return          tb_true or tb_false
- */
-tb_bool_t           tb_object_reader_set(tb_size_t format, tb_object_reader_t* reader);
-
-/*! del object reader
- *
- * @param format    the reader format
- */
-tb_void_t           tb_object_reader_del(tb_size_t format);
-
-/*! get object reader
- *
- * @param format    the reader format
- *
- * @return          the object reader
- */
-tb_object_reader_t* tb_object_reader_get(tb_size_t format);
-
-/*! done reader
- *
- * @param stream    the stream
- *
- * @return          the object
- */
-tb_object_ref_t        tb_object_reader_done(tb_stream_ref_t stream);
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_leave__
 
 #endif
+
