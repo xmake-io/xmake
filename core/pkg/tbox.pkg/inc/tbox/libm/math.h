@@ -28,7 +28,7 @@
  * includes
  */
 #include "prefix.h"
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   include "nan.h"
 #   include "inf.h"
 #   include "maf.h"
@@ -49,7 +49,7 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 // is infinite?
 tb_long_t       tb_isinf(tb_double_t x);

@@ -251,7 +251,7 @@ xm_machine_ref_t xm_machine_init()
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
         lua_pushstring(impl->lua, "windows");
-#elif defined(TB_CONFIG_OS_MAC)
+#elif defined(TB_CONFIG_OS_MACOSX)
         lua_pushstring(impl->lua, "macosx");
 #elif defined(TB_CONFIG_OS_LINUX)
         lua_pushstring(impl->lua, "linux");

@@ -51,7 +51,7 @@ __tb_extern_c_enter__
 #define TB_FIXED6_NEAR0                 (0)
 
 // conversion
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   ifndef tb_fixed6_to_float
 #       define tb_fixed6_to_float(x)    (((x) * 0.015625))
 #   endif

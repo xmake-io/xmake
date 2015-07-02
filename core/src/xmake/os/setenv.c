@@ -81,7 +81,7 @@ tb_int_t xm_os_setenv(lua_State* lua)
                     tb_size_t size = tb_min(p - b, sizeof(data) - 1);
 
                     // copy it
-                    tb_strlcpy(data, b, size);
+                    tb_strncpy(data, b, size);
                     data[size] = '\0';
 
                     // have been not inserted?

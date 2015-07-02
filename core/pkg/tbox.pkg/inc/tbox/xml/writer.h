@@ -170,7 +170,7 @@ tb_void_t               tb_xml_writer_attributes_cstr(tb_xml_writer_ref_t writer
  */
 tb_void_t               tb_xml_writer_attributes_format(tb_xml_writer_ref_t writer, tb_char_t const* name, tb_char_t const* format, ...);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! writ the xml attribute for float value
  *
  * @param writer        the xml writer

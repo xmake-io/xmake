@@ -83,7 +83,7 @@ tb_void_t           tb_random_clear(tb_random_ref_t random);
  */
 tb_long_t           tb_random_range(tb_random_ref_t random, tb_long_t beg, tb_long_t end);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! generate the float random with range: [beg, end)
  *
  * @param random    the random, using the default random if be null

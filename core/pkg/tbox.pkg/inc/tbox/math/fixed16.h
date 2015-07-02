@@ -55,7 +55,7 @@ __tb_extern_c_enter__
 #define TB_FIXED16_NEAR0                    (1 << 4)
 
 // conversion
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   ifndef tb_fixed16_to_float
 #       define tb_fixed16_to_float(x)       ((tb_float_t)((x) * 1.5258789e-5))
 #   endif
@@ -175,7 +175,7 @@ __tb_extern_c_enter__
 
 // sin
 #ifndef tb_fixed16_sin
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_sin(x)            tb_fixed16_sin_float(x)
 #   else
 #       define tb_fixed16_sin(x)            tb_fixed16_sin_int32(x)
@@ -184,7 +184,7 @@ __tb_extern_c_enter__
 
 // cos
 #ifndef tb_fixed16_cos
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_cos(x)            tb_fixed16_cos_float(x)
 #   else
 #       define tb_fixed16_cos(x)            tb_fixed16_cos_int32(x)
@@ -193,7 +193,7 @@ __tb_extern_c_enter__
 
 // sincos
 #ifndef tb_fixed16_sincos
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_sincos(x, s, c)   tb_fixed16_sincos_float(x, s, c)
 #   else
 #       define tb_fixed16_sincos(x, s, c)   tb_fixed16_sincos_int32(x, s, c)
@@ -202,7 +202,7 @@ __tb_extern_c_enter__
 
 // tan
 #ifndef tb_fixed16_tan
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_tan(x)            tb_fixed16_tan_float(x)
 #   else
 #       define tb_fixed16_tan(x)            tb_fixed16_tan_int32(x)
@@ -211,7 +211,7 @@ __tb_extern_c_enter__
 
 // asin
 #ifndef tb_fixed16_asin
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_asin(x)           tb_fixed16_asin_float(x)
 #   else
 #       define tb_fixed16_asin(x)           tb_fixed16_asin_int32(x)
@@ -220,7 +220,7 @@ __tb_extern_c_enter__
 
 // acos
 #ifndef tb_fixed16_acos
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_acos(x)           tb_fixed16_acos_float(x)
 #   else
 #       define tb_fixed16_acos(x)           tb_fixed16_acos_int32(x)
@@ -229,7 +229,7 @@ __tb_extern_c_enter__
 
 // atan
 #ifndef tb_fixed16_atan
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_atan(x)           tb_fixed16_atan_float(x)
 #   else
 #       define tb_fixed16_atan(x)           tb_fixed16_atan_int32(x)
@@ -238,7 +238,7 @@ __tb_extern_c_enter__
 
 // atan2
 #ifndef tb_fixed16_atan2
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_atan2(y, x)       tb_fixed16_atan2_float(y, x)
 #   else
 #       define tb_fixed16_atan2(y, x)       tb_fixed16_atan2_int32(y, x)
@@ -247,7 +247,7 @@ __tb_extern_c_enter__
 
 // exp
 #ifndef tb_fixed16_exp
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_exp(x)            tb_fixed16_exp_float(x)
 #   else
 #       define tb_fixed16_exp(x)            tb_fixed16_exp_int32(x)
@@ -255,7 +255,7 @@ __tb_extern_c_enter__
 #endif
 
 #ifndef tb_fixed16_expi
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_expi(x)           tb_fixed16_expi_float(x)
 #   else
 #       define tb_fixed16_expi(x)           tb_assert(0)
@@ -263,7 +263,7 @@ __tb_extern_c_enter__
 #endif
 
 #ifndef tb_fixed16_exp1
-#   ifdef TB_CONFIG_TYPE_FLOAT
+#   ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #       define tb_fixed16_exp1(x)           tb_fixed16_exp1_float(x)
 #   else
 #       define tb_fixed16_exp1(x)           tb_assert(0)
@@ -424,7 +424,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_imulsub_check(tb_fixed16_t x, tb_lo
     // ok
     return (tb_fixed16_t)v;
 }
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 static __tb_inline__ tb_fixed16_t tb_fixed16_sin_float(tb_fixed16_t x)
 {
     return tb_float_to_fixed16(tb_sinf(tb_fixed16_to_float(x)));

@@ -17,12 +17,12 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        xml.h
- * @ingroup     object
+ * @file        rlc.h
+ * @ingroup     zip
  *
  */
-#ifndef TB_OBJECT_READER_XML_H
-#define TB_OBJECT_READER_XML_H
+#ifndef TB_ZIP_RLC_H
+#define TB_ZIP_RLC_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,46 +35,41 @@
 __tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// vlc 
+#define TB_ZIP_RLC_VLC_TYPE_FIXED           (0)
+#define TB_ZIP_RLC_VLC_TYPE_GAMMA           (1)
+#define TB_ZIP_RLC_VLC_TYPE_GOLOMB          (0)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
-/// the xml reader type
-typedef struct __tb_object_xml_reader_t
+// the rlc zip type
+typedef struct __tb_zip_rlc_t
 {
-    /// the xml reader
-    tb_xml_reader_ref_t         reader;
+    // the zip base
+    tb_zip_t        base;
 
-}tb_object_xml_reader_t;
+    // the reference to vlc
+    tb_zip_vlc_t*   vlc;
 
-/// the xml reader func type
-typedef tb_object_ref_t         (*tb_object_xml_reader_func_t)(tb_object_xml_reader_t* reader, tb_size_t event);
+    // the last byte
+    tb_byte_t       last;
+
+    // the repeat size
+    tb_size_t       repeat;
+
+}tb_zip_rlc_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! the xml object reader
- *
- * @return                      the xml object reader
- */
-tb_object_reader_t*             tb_object_xml_reader(tb_noarg_t);
-
-/*! hook the xml reader
- *
- * @param type                  the object type name
- * @param func                  the reader func
- *
- * @return                      tb_true or tb_false
- */
-tb_bool_t                       tb_object_xml_reader_hook(tb_char_t const* type, tb_object_xml_reader_func_t func);
-
-/*! the xml reader func
- *
- * @param type                  the object type name
- *
- * @return                      the object reader func
- */
-tb_object_xml_reader_func_t     tb_object_xml_reader_func(tb_char_t const* type);
+tb_zip_ref_t   tb_zip_rlc_init(tb_size_t action);
+tb_void_t   tb_zip_rlc_exit(tb_zip_ref_t zip);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

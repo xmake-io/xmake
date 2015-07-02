@@ -79,7 +79,7 @@ __tb_extern_c_enter__
 
 #endif
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   ifdef TB_FLOAT_BIGENDIAN
 #       define tb_static_stream_read_double_nbe(stream)         tb_static_stream_read_double_bbe(stream)
 #       define tb_static_stream_read_double_nle(stream)         tb_static_stream_read_double_ble(stream)
@@ -679,7 +679,7 @@ tb_bool_t           tb_static_stream_writ_u64_le(tb_static_stream_ref_t stream, 
  */
 tb_bool_t           tb_static_stream_writ_s64_le(tb_static_stream_ref_t stream, tb_sint64_t val);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 /*! read float-le number
  *

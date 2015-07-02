@@ -17,40 +17,16 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        hostmac.h
+ * @file        prefix.h
  * @ingroup     platform
- *
  */
-#ifndef TB_PLATFORM_HOSTMAC_H
-#define TB_PLATFORM_HOSTMAC_H
+#ifndef TB_PLATFORM_LINUX_ANDROID_PREFIX_H
+#define TB_PLATFORM_LINUX_ANDROID_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_enter__
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
- */
-
-/*! get the host mac address for the given network interface name
- *
- * @param interface_name    the network interface name, using the first ethernet address if be null
- * @param mac_address       the raw mac address
- *
- * @return                  tb_true or tb_false
- */
-tb_bool_t                   tb_hostmac(tb_char_t const* interface_name, tb_byte_t mac_address[6]);
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_leave__
-
+#include "../prefix.h"
+#include <jni.h>
 
 #endif

@@ -17,17 +17,20 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        xplist.h
- * @ingroup     object
+ * @file        gzip.h
+ * @ingroup     zip
  *
  */
-#ifndef TB_OBJECT_READER_XPLIST_H
-#define TB_OBJECT_READER_XPLIST_H
+#ifndef TB_ZIP_GZIP_H
+#define TB_ZIP_GZIP_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+#ifdef TB_CONFIG_PACKAGE_HAVE_ZLIB
+#   include "zlib/zlib.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -38,43 +41,36 @@ __tb_extern_c_enter__
  * types
  */
 
-/// the xplist reader type
-typedef struct __tb_object_xplist_reader_t
+// the gzip zip type
+typedef struct __tb_zip_gzip_t
 {
-    /// the xplist reader
-    tb_xml_reader_ref_t         reader;
+    // the zip base
+    tb_zip_t        base;
 
-}tb_object_xplist_reader_t;
+    // the zstream
+#ifdef TB_CONFIG_PACKAGE_HAVE_ZLIB
+    z_stream        zstream;
+#endif
 
-/// the xplist reader func type
-typedef tb_object_ref_t         (*tb_object_xplist_reader_func_t)(tb_object_xplist_reader_t* reader, tb_size_t event);
+}tb_zip_gzip_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! the xplist object reader
+/* init gzip 
  *
- * @return                      the xplist object reader
+ * @param action    the action
+ *
+ * @return          the zip
  */
-tb_object_reader_t*             tb_object_xplist_reader(tb_noarg_t);
+tb_zip_ref_t        tb_zip_gzip_init(tb_size_t action);
 
-/*! hook the xplist reader
+/* exit gzip
  *
- * @param type                  the object type name
- * @param func                  the reader func
- *
- * @return                      tb_true or tb_false
+ * @param zip       the zip
  */
-tb_bool_t                       tb_object_xplist_reader_hook(tb_char_t const* type, tb_object_xplist_reader_func_t func);
-
-/*! the xplist reader func
- *
- * @param type                  the object type name
- *
- * @return                      the object reader func
- */
-tb_object_xplist_reader_func_t  tb_object_xplist_reader_func(tb_char_t const* type);
+tb_void_t           tb_zip_gzip_exit(tb_zip_ref_t zip);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

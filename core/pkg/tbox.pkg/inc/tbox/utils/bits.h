@@ -122,7 +122,7 @@ __tb_extern_c_enter__
 #define tb_bits_set_s64_ne_impl(p, x)       tb_bits_set_u64_ne_impl(p, x)
 
 // float
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 #   define tb_bits_get_float_le(p)              tb_bits_get_float_le_inline(p)
 #   define tb_bits_get_float_be(p)              tb_bits_get_float_be_inline(p)
@@ -747,7 +747,7 @@ static __tb_inline__ tb_size_t tb_bits_cb1_u64_inline(tb_uint64_t x)
     return (tb_size_t)x;
 }
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /* //////////////////////////////////////////////////////////////////////////////////////
  * float
  */
@@ -968,7 +968,7 @@ static __tb_inline__ tb_void_t tb_bits_set_double_lle_inline(tb_byte_t* p, tb_do
 }
 
 
-#endif /* TB_CONFIG_TYPE_FLOAT */
+#endif /* TB_CONFIG_TYPE_HAVE_FLOAT */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

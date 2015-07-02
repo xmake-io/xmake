@@ -17,49 +17,50 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        fixed30_arm.h
+ * @file        frame.h
  *
  */
-#ifndef TB_MATH_IMPL_FIXED30_ARM_H
-#define TB_MATH_IMPL_FIXED30_ARM_H
+#ifndef TB_PLATFORM_ARCH_ARM_FRAME_H
+#define TB_PLATFORM_ARCH_ARM_FRAME_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "../prefix.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
 
-#ifdef TB_ASSEMBLER_IS_GAS
-
-#if 0
-#   define tb_fixed30_mul(x, y)             tb_fixed30_mul_asm(x, y)
+// the current stack frame address
+#if !defined(TB_CURRENT_STACK_FRAME) \
+    && defined(TB_COMPILER_IS_GCC) \
+    &&  TB_COMPILER_VERSION_BE(4, 1)
+#   define TB_CURRENT_STACK_FRAME               (__builtin_frame_address(0) - 12)
 #endif
 
-#endif /* TB_ASSEMBLER_IS_GAS */
+// the advance stack frame address
+#ifndef TB_ADVANCE_STACK_FRAME
+#   define TB_ADVANCE_STACK_FRAME(next)         ((tb_frame_layout_t*)(next) - 1)
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
+ * types
  */
-#if defined(TB_ASSEMBLER_IS_GAS)
-static __tb_inline__ tb_fixed30_t tb_fixed30_mul_asm(tb_fixed30_t x, tb_fixed30_t y)
+
+// the frame layout type
+typedef struct __tb_frame_layout_t
 {
-    __tb_register__ tb_fixed30_t t;
-    __tb_asm__ __tb_volatile__
-    (
-        "smull  %0, %2, %1, %3          \n"     // r64 = (l, h) = x * y
-        "mov    %0, %0, lsr #30         \n"     // to fixed30: r64 >>= 30
-        "orr    %0, %0, %2, lsl #2      \n"     // x = l = (h << (32 - 30)) | (l >> 30);
+    // the next
+    struct __tb_frame_layout_t*     next;
 
-        : "=r"(x), "=&r"(y), "=r"(t)
-        : "r"(x), "1"(y)
-    );
-    return x;
-}
-#endif
+    // the sp
+    tb_pointer_t                    sp;
+
+    // the frame return address
+    tb_pointer_t                    return_address;
+
+}tb_frame_layout_t;
 
 
 #endif
-

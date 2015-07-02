@@ -481,7 +481,7 @@ function project._makeconf_for_target(target_name, target)
             i = i + 1
             if i > 3 then break end
         end
-        file:write(string.format("#define %s_VERSION_BUILD %d\n", prefix, os.date("%Y%m%d%H%M", os.time())))
+        file:write(string.format("#define %s_VERSION_BUILD %s\n", prefix, os.date("%Y%m%d%H%M", os.time())))
         file:write("\n")
     end
 

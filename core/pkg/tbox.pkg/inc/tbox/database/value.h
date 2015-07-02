@@ -51,7 +51,7 @@ typedef enum __tb_database_sql_value_type_e
 ,   TB_DATABASE_SQL_VALUE_TYPE_UINT16       = 6
 ,   TB_DATABASE_SQL_VALUE_TYPE_UINT32       = 7
 ,   TB_DATABASE_SQL_VALUE_TYPE_UINT64       = 8
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 ,   TB_DATABASE_SQL_VALUE_TYPE_FLOAT        = 13
 ,   TB_DATABASE_SQL_VALUE_TYPE_DOUBLE       = 14
 #endif
@@ -87,7 +87,7 @@ typedef struct __tb_database_sql_value_t
         tb_uint64_t             u64;
 
         // float
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
         tb_float_t              f;
         tb_double_t             d;
 #endif
@@ -191,7 +191,7 @@ tb_uint32_t         tb_database_sql_value_uint32(tb_database_sql_value_t const* 
  */
 tb_uint64_t         tb_database_sql_value_uint64(tb_database_sql_value_t const* value);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! the float value
  *
  * @param value     the value
@@ -272,7 +272,7 @@ tb_void_t           tb_database_sql_value_set_uint32(tb_database_sql_value_t* va
  */
 tb_void_t           tb_database_sql_value_set_uint64(tb_database_sql_value_t* value, tb_uint64_t number);
 
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 /*! set the float value
  *
  * @param value     the value
@@ -358,7 +358,7 @@ static __tb_inline_force__ tb_bool_t tb_database_sql_value_is_integer(tb_databas
 }
 
 /// the value is float?
-#ifdef TB_CONFIG_TYPE_FLOAT
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 static __tb_inline_force__ tb_bool_t tb_database_sql_value_is_float(tb_database_sql_value_t const* value)
 {
     return (    value 

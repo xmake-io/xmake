@@ -16,16 +16,50 @@
  * 
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
- * @author		ruki
- * @file		prefix.S
+ * @author      ruki
+ * @file        binary_find.h
+ * @ingroup     algorithm
  *
  */
+#ifndef TB_ALGORITHM_BINARY_FIND_H
+#define TB_ALGORITHM_BINARY_FIND_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "asm.h"
-#if defined(TB_ARCH_ARM)
-# 	include "arm/prefix.S"
-#endif
+#include "prefix.h"
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*! binary find item 
+ *
+ * @param iterator  the iterator
+ * @param head      the iterator head
+ * @param tail      the iterator tail
+ * @param item      the finded item
+ *
+ * @return          the iterator itor, return tb_iterator_tail(iterator) if not found
+ */
+tb_size_t           tb_binary_find(tb_iterator_ref_t iterator, tb_size_t head, tb_size_t tail, tb_cpointer_t item);
+
+/*!binary find item for all
+ *
+ * @param iterator  the iterator
+ * @param item      the finded item
+ *
+ * @return          the iterator itor, return tb_iterator_tail(iterator) if not found
+ */
+tb_size_t           tb_binary_find_all(tb_iterator_ref_t iterator, tb_cpointer_t item);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
+#endif

@@ -17,17 +17,20 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        bin.h
- * @ingroup     object
+ * @file        zlib.h
+ * @ingroup     zip
  *
  */
-#ifndef TB_OBJECT_READER_BIN_H
-#define TB_OBJECT_READER_BIN_H
+#ifndef TB_ZIP_ZLIB_H
+#define TB_ZIP_ZLIB_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+#ifdef TB_CONFIG_PACKAGE_HAVE_ZLIB
+#   include "zlib/zlib.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -38,46 +41,36 @@ __tb_extern_c_enter__
  * types
  */
 
-/// the bin reader type
-typedef struct __tb_object_bin_reader_t
+// the zlib zip type
+typedef struct __tb_zip_zlib_t
 {
-    /// the stream
-    tb_stream_ref_t              stream;
+    // the zip base
+    tb_zip_t        base;
 
-    /// the object list
-    tb_vector_ref_t                list;
+    // the zstream
+#ifdef TB_CONFIG_PACKAGE_HAVE_ZLIB
+    z_stream        zstream;
+#endif
 
-}tb_object_bin_reader_t;
-
-/// the bin reader func type
-typedef tb_object_ref_t            (*tb_object_bin_reader_func_t)(tb_object_bin_reader_t* reader, tb_size_t type, tb_uint64_t size);
+}tb_zip_zlib_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! the bin object reader
+/* init zlib 
  *
- * @return                      the bin object reader
+ * @param action    the action
+ *
+ * @return          the zip
  */
-tb_object_reader_t*             tb_object_bin_reader(tb_noarg_t);
+tb_zip_ref_t        tb_zip_zlib_init(tb_size_t action);
 
-/*! hook the bin reader
+/* exit zlib
  *
- * @param type                  the object type 
- * @param func                  the reader func
- *
- * @return                      tb_true or tb_false
+ * @param zip       the zip
  */
-tb_bool_t                       tb_object_bin_reader_hook(tb_size_t type, tb_object_bin_reader_func_t func);
-
-/*! the bin reader func
- *
- * @param type                  the object type 
- *
- * @return                      the object reader func
- */
-tb_object_bin_reader_func_t     tb_object_bin_reader_func(tb_size_t type);
+tb_void_t           tb_zip_zlib_exit(tb_zip_ref_t zip);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
