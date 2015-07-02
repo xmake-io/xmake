@@ -263,7 +263,7 @@ function project._api_add_subdirs(env, ...)
                 end
 
                 -- get mtime of the file
-                project._MTIMES[file] = os.mtime(file)
+                project._MTIMES[path.relative(file, xmake._PROJECT_DIR)] = os.mtime(file)
             end
         end
     end
@@ -322,7 +322,7 @@ function project._api_add_subfiles(env, ...)
                 end
 
                 -- get mtime of the file
-                project._MTIMES[file] = os.mtime(file)
+                project._MTIMES[path.relative(file, xmake._PROJECT_DIR)] = os.mtime(file)
             end
         end
     end
@@ -621,7 +621,7 @@ function project._make_targets(configs)
 
     -- init mtime for the project file
     project._MTIMES = project._MTIMES or {}
-    project._MTIMES[xmake._PROJECT_FILE] = os.mtime(xmake._PROJECT_FILE)
+    project._MTIMES[path.relative(xmake._PROJECT_FILE, xmake._PROJECT_DIR)] = os.mtime(xmake._PROJECT_FILE)
 
     -- get the mtimes for configure
     local mtimes_config = config.get("__mtimes")
