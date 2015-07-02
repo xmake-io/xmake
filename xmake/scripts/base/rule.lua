@@ -236,10 +236,14 @@ function rule.headerfiles(target, headerdir)
                 table.join2(srcheaders, srcpathes)
 
                 -- add the destinate headers
-                local i = 1
                 for _, srcpath in ipairs(srcpathes) do
-                    dstheaders[i] = path.absolute(path.relative(srcpath, rootdir), headerdir)
-                    i = i + 1
+
+                    -- the header
+                    local dstheader = path.absolute(path.relative(srcpath, rootdir), headerdir)
+                    assert(dstheader)
+
+                    -- add it
+                    table.insert(dstheaders, dstheader)
                 end
             end
         end
