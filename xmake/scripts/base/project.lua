@@ -977,6 +977,9 @@ function project._load_options(file)
     local interfaces =  {   "enable"
                         ,   "showmenu"
                         ,   "category"
+                        ,   "warnings"
+                        ,   "optimize"
+                        ,   "languages"
                         ,   "description"} 
 
     for _, interface in ipairs(interfaces) do
@@ -995,6 +998,7 @@ function project._load_options(file)
                         ,   "cxflags" 
                         ,   "cxxflags" 
                         ,   "ldflags" 
+                        ,   "vectorexts"
                         ,   "defines"
                         ,   "defines_if_ok"
                         ,   "defines_h_if_ok"
