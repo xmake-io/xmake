@@ -78,6 +78,10 @@ function macosx.make(configs)
         table.insert(configs.shflags, "-isysroot " .. xcode_sdkdir)
     end
 
+    -- init linkdirs and includedirs
+    configs.linkdirs    = {"/usr/lib", "/usr/local/lib"}
+    configs.includedirs = {"/usr/include", "/usr/local/include"}
+
 end
 
 -- get the option menu for action: xmake config or global

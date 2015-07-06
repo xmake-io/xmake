@@ -119,11 +119,11 @@ add_option("[targetname]")
     add_option_cincludes("[targetname]/[targetname].h")
 
     -- add include directories
-    add_option_includedirs("inc", "inc/$(plat)/$(arch)")
+    add_option_includedirs("inc/$(plat)", "inc")
 ]]
 
         -- save file
-        file:write(template:gsub("%[targetname%]", target.name):gsub("%[TARGETNAME%]", target.name:upper()))
+        file:write((template:gsub("%[targetname%]", target.name):gsub("%[TARGETNAME%]", target.name:upper())))
 
         -- exit file
         file:close()

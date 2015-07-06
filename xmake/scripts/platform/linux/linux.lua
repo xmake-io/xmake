@@ -71,6 +71,10 @@ function linux.make(configs)
     configs.ldflags     = { archflags }
     configs.shflags     = { archflags }
 
+    -- init linkdirs and includedirs
+    configs.linkdirs    = {"/usr/lib", "/usr/local/lib"}
+    configs.includedirs = {"/usr/include", "/usr/local/include"}
+
 end
 
 -- get the option menu for action: xmake config or global
