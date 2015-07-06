@@ -168,6 +168,7 @@ function compiler._addflags_from_platform(module, flags, flagnames)
     end
 end
 
+
 -- add flags from the target 
 function compiler._addflags_from_target(module, flags, flagnames, target)
 
@@ -265,36 +266,19 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
             if nil ~= opt then
 
                 -- add the flags from the option
-                for _, flagname in ipairs(flagnames) do
-                    table.join2(flags, compiler._mapflags(module, opt[flagname]))
-                end
+                compiler._addflags_from_target(module, flags, flagnames, opt)
 
-                -- add the includedirs flags from the option
-                if module.flag_includedir then
-                    for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-                        table.join2(flags, module:flag_includedir(includedir))
-                    end
-                end
-
-                -- add the defines flags from the option
-                if module.flag_define then
-
-                    local defines = {}
-                    if opt.defines then table.join2(defines, opt.defines) end
-                    if opt.defines_if_ok then table.join2(defines, opt.defines_if_ok) end
-
+                -- append the defines flags
+                if opt.defines_if_ok and module.flag_define then
+                    local defines = utils.wrap(opt.defines_if_ok)
                     for _, define in ipairs(defines) do
                         table.join2(flags, module:flag_define(define))
                     end
                 end
 
-                -- add the undefines flags from the option
-                if module.flag_undefine then 
-
-                    local undefines = {}
-                    if opt.undefines then table.join2(undefines, opt.undefines) end
-                    if opt.undefines_if_ok then table.join2(undefines, opt.undefines_if_ok) end
-
+                -- append the undefines flags 
+                if opt.undefines_if_ok and module.flag_undefine then
+                    local undefines = utils.wrap(opt.undefines_if_ok)
                     for _, undefine in ipairs(undefines) do
                         table.join2(flags, module:flag_undefine(undefine))
                     end
@@ -310,33 +294,9 @@ function compiler._addflags_from_option(module, flags, flagnames, opt)
     -- check
     assert(module and flags and flagnames and opt)
 
-    -- append the option flags 
-    for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, opt[flagname]))
-    end
+    -- add the flags from the option
+    compiler._addflags_from_target(module, flags, flagnames, opt)
 
-    -- append the defines flags
-    if opt.defines_if_ok and module.flag_define then
-        local defines = utils.wrap(opt.defines_if_ok)
-        for _, define in ipairs(defines) do
-            table.join2(flags, module:flag_define(define))
-        end
-    end
-
-    -- append the undefines flags 
-    if opt.undefines_if_ok and module.flag_undefine then
-        local undefines = utils.wrap(opt.undefines_if_ok)
-        for _, undefine in ipairs(undefines) do
-            table.join2(flags, module:flag_undefine(undefine))
-        end
-    end
-
-    -- append the includedirs flags
-    if opt.includedirs and module.flag_includedir then
-        for _, includedir in ipairs(utils.wrap(opt.includedirs)) do
-            table.join2(flags, module:flag_includedir(includedir))
-        end
-    end
 end
 
 -- get the flag names from the given compiler name
