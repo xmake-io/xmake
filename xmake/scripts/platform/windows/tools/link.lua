@@ -68,6 +68,7 @@ function link.init(self, name)
  
         -- others
     ,   ["-ftrapv"]                = ""
+    ,   ["-fsanitize=address"]      = ""
     }
 
 end
