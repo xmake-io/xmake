@@ -1,7 +1,41 @@
 The Automatic Cross-platform Build Tool
 ========================
 
-xmake is an automatic cross-platform build tool
+Xmake is an automatic cross-platform build tool.
+
+
+features
+--------
+
+1. create c/c++ projects 
+2. automatically probe the host environment and configure project 
+3. build and rebuild project 
+4. clean generated target files
+5. package the project targets automatically
+   - *.ipa for ios
+   - *.apk for android
+   - *.pkg for library
+   - *.app for macosx
+   - *.exe for windows
+   - others
+   
+
+6. install target to pc or the mobile device
+7. run a given target
+8. describe the project file using lua script, more flexible and simple
+	```lua
+	
+	-- xmake.lua
+    add_target("console")
+
+        -- set kind
+        set_kind("binary")
+
+        -- add files
+        add_files("src/*.c") 
+    ```
+9. custom platforms and toolchains
+10. custom rules for package/compiler/linker
 
 contact
 -------
@@ -116,5 +150,43 @@ Please see [wiki](https://github.com/waruqi/xmake/wiki) if you want to known mor
     xmake i
  or xmake install
     
+
+```
+
+example
+-------
+
+```lua
+-- the debug mode
+if modes("debug") then
+    
+    -- enable the debug symbols
+    set_symbols("debug")
+
+    -- disable optimization
+    set_optimize("none")
+end
+
+-- the release mode
+if modes("release") then
+
+    -- set the symbols visibility: hidden
+    set_symbols("hidden")
+
+    -- enable fastest optimization
+    set_optimize("fastest")
+
+    -- strip all symbols
+    set_strip("all")
+end
+
+-- add target
+add_target("test")
+
+    -- set kind
+    set_kind("static")
+
+    -- add files
+    add_files("src/*.c") 
 
 ```
