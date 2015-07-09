@@ -33,25 +33,21 @@ local global        = require("base/global")
 -- make configure for the current target
 function config._make(configs)
 
-    -- check
-    assert(configs and configs.plat and configs.arch and configs._PLATS)
-  
     -- the options
     local options = xmake._OPTIONS
     assert(options)
 
-    -- the configs for platform
-    local configs_plat = configs._PLATS[configs.plat]
-    assert(configs_plat)
-
-    -- the configs for architecture
-    local configs_arch = configs_plat[configs.arch]
-    assert(configs_arch)
-
     -- init current target configure
-    local current = {plat = configs.plat, arch = configs.arch, __rebuild = configs.__rebuild}
+    local current = {}
 
-    -- get configs from the global configure first
+    -- get configs from the default configure 
+    if configs._DEFAULTS then
+        for k, v in pairs(configs._DEFAULTS) do 
+            if type(v) ~= "string" or v ~= "auto" then current[k] = v end
+        end
+    end
+
+    -- get configs from the global configure 
     if global._CURRENT then
         for k, v in pairs(global._CURRENT) do 
             current[k] = v
@@ -59,17 +55,17 @@ function config._make(configs)
     end
 
     -- get configs from all targets 
-    for k, v in pairs(configs_arch) do 
+    for k, v in pairs(configs) do 
         if type(k) == "string" and not k:find("^_%u+") then
             current[k] = v
         end
     end
 
     -- get configs from the current target 
-    if configs_arch._TARGETS and current.target ~= "all" then
+    if configs._TARGETS and current.target ~= "all" then
 
         -- get the target config
-        local target_config = configs_arch._TARGETS[current.target]
+        local target_config = configs._TARGETS[current.target]
         if target_config then
 
             -- merge it
@@ -92,14 +88,7 @@ end
 
 -- need configure?
 function config._need(name)
-    return  name and 
-            name ~= "plat" and 
-            name ~= "arch" and 
-            name ~= "target" and 
-            name ~= "file" and 
-            name ~= "project" and 
-            name ~= "verbose" and 
-            name ~= "clean"
+    return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" and name ~= "clean"
 end
 
 -- get the current target scope
@@ -111,33 +100,18 @@ function config._target()
 
     -- check
     local configs = config._CONFIGS
-    assert(configs and configs.plat and configs.arch)
+    assert(configs)
   
     -- the target name
     local name = options.target or options._DEFAULTS.target
     assert(name and type(name) == "string")
 
-    -- init the configs for platform
-    configs._PLATS = configs._PLATS or {}
-    configs._PLATS[configs.plat] = configs._PLATS[configs.plat] or {}
-    local configs_plat = configs._PLATS[configs.plat]
-
-    -- init the configs for architecture
-    configs_plat[configs.arch] = configs_plat[configs.arch] or {}
-    local configs_arch = configs_plat[configs.arch]
-
-    -- init targets
-    configs_arch._TARGETS = configs_arch._TARGETS or {}
-    if name ~= "all" then
-        configs_arch._TARGETS[name] = configs_arch._TARGETS[name] or {}
-    end
-
     -- for all targets?
     if name == "all" then
-        return configs_arch
-    elseif configs_arch._TARGETS then
+        return configs
+    elseif configs._TARGETS then
         -- get it
-        return configs_arch._TARGETS[name]
+        return configs._TARGETS[name]
     end
 end
 
@@ -147,60 +121,51 @@ function config.get(name)
     -- the configure has been not loaded
     if not config._CURRENT then return end
 
-    -- the value
-    local value = config._CURRENT[name]
-    if type(value) == "string" and value == "auto" then
-        value = nil
-    end
-
     -- get it
-    return value
+    return config._CURRENT[name]
 end
 
 -- set the given configure to the current 
 function config.set(name, value)
 
     -- check
-    assert(config._CURRENT and config._CONFIGS and name)
+    assert(config._CURRENT and name)
 
-    -- set platform or rebuild?
-    if name == "plat" or name == "__rebuild" then
+    -- get the current target
+    local target = config._target()
+    assert(target)
 
-        config._CONFIGS[name] = value
-        config._CURRENT[name] = value
+    -- set it to the current target configure for saving to file
+    target[name] = value
 
-    -- set architecture?
-    elseif name == "arch" then
+    -- set it to the current configure
+    config._CURRENT[name] = value
+end
 
-        -- the configs
-        local configs = config._CONFIGS
-        if configs.arch == "auto" then
+-- the given configure need probe automatically
+function config.auto(name)
 
-            -- the configs for platform
-            local configs_plat = configs._PLATS[configs.plat]
-            assert(configs_plat)
+    -- the configs
+    local configs = config._CONFIGS
+    assert(configs)
 
-            -- update configs of the auto architecture
-            configs_plat[value] = configs_plat["auto"]
-            configs_plat["auto"] = nil
-
+    -- need probe it automatically?
+    if configs._DEFAULTS then
+        local value = configs._DEFAULTS[name]
+        if value then
+            if type(value) == "string" and value == "auto" then
+                return true
+            end
         end
-
-        config._CONFIGS.arch = value
-        config._CURRENT.arch = value
-
-    -- set others
-    else
-        -- get the current target
-        local target = config._target()
-        assert(target)
-
-        -- set it to the current target configure for saving to file
-        target[name] = value
-
-        -- set it to the current configure
-        config._CURRENT[name] = value
     end
+
+    -- need not probe it if have been setted manually
+    if config._CURRENT and config._CURRENT[name] then
+        return false 
+    end
+
+    -- attempt to probe it if not exists
+    return true
 end
 
 -- get the configure directory
@@ -279,23 +244,22 @@ function config.load()
                 -- clear configs and mark as "rebuild" if the plat has been changed
                 if current and current.plat and options.plat and current.plat ~= options.plat then
 
-                    -- clear architecture and mark as "rebuild"
-                    configs.arch = nil
-                    configs.__rebuild = true
+                    -- clear configs and mark as "rebuild"
+                    config._CONFIGS = { __rebuild = true }
                 end
 
                 -- mark as "rebuild" if the arch has been changed
                 if current and current.arch and options.arch and current.arch ~= options.arch then
 
                     -- mark as "rebuild"
-                    configs.__rebuild = true
+                    config._CONFIGS.__rebuild = true
                 end
 
                 -- mark as "rebuild" if the mode has been changed
                 if current and current.mode and options.mode and current.mode ~= options.mode then
 
                     -- mark as "rebuild"
-                    configs.__rebuild = true
+                    config._CONFIGS.__rebuild = true
                 end
             elseif errors then
                 -- error
@@ -323,13 +287,35 @@ function config.load()
         configs.__rebuild = true
     end
 
-    -- init the platform 
-    configs.plat = options.plat or configs.plat or options._DEFAULTS.plat or option.defaults("config").plat
-    assert(configs.plat)
+    -- init the defaults
+    local defaults = nil
+    if not configs._DEFAULTS then
+        if config._RECONFIG then defaults = option.defaults("config")
+        elseif options._ACTION == "config" then defaults = options._DEFAULTS
+        end
+        if defaults then
+            for k, v in pairs(defaults) do
 
-    -- init the architecture 
-    configs.arch = options.arch or configs.arch or options._DEFAULTS.arch or option.defaults("config").arch
-    assert(configs.arch)
+                -- check
+                assert(type(k) == "string")
+
+                -- skip some options
+                if config._need(k) then
+
+                    -- save the default option
+                    configs._DEFAULTS = configs._DEFAULTS or {}
+                    configs._DEFAULTS[k] = v
+                end
+            end
+        end
+    end
+    defaults = configs._DEFAULTS
+
+    -- init targets
+    configs._TARGETS = configs._TARGETS or {}
+    if name ~= "all" then
+        configs._TARGETS[name] = configs._TARGETS[name] or {}
+    end
 
     -- get the current target scope
     local target = config._target()
@@ -347,35 +333,15 @@ function config.load()
 
                 -- save the option to the target
                 target[k] = v
+
+                -- remove it from the defaults, because we have setted it manually
+                if defaults then defaults[k] = nil end
             end
         end
     end
 
-    -- merge the default configure options to target
-    local defaults = nil
-    if config._RECONFIG then defaults = option.defaults("config")
-    elseif options._ACTION == "config" then defaults = options._DEFAULTS
-    end
-    if defaults then
-        for k, v in pairs(defaults) do
-
-            -- check
-            assert(type(k) == "string")
-
-            -- skip some options
-            if config._need(k) then
-
-                -- save the default option to the target
-                if nil == target[k] then
-                    target[k] = v
-                end
-            end
-        end
-    end
-
-    -- make the current configure
-    config._CURRENT = config._make(configs)
-
+    -- make the current config
+    config._CURRENT = config._make(config._CONFIGS)
 end
 
 -- clear up and remove all auto values

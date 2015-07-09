@@ -888,8 +888,8 @@ function project._make_options(configs)
     -- make all options
     for k, v in pairs(configs._OPTIONS) do
 
-        -- this option has not been enabled?
-        if nil == config.get(k) then
+        -- this option need be probed automatically?
+        if config.auto(k) then
 
             -- make option
             local o = project._make_option(k, v, cfile, cxxfile, objectfile, targetfile)
