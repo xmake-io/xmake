@@ -25,6 +25,7 @@ local package = package or {}
 
 -- load modules
 local os        = require("base/os")
+local io        = require("base/io")
 local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
@@ -251,6 +252,13 @@ function package._done_from_platform(target)
     return 0
 end
 
+-- get the configure file
+function package._file()
+ 
+    -- get it
+    return config.directory() .. "/package.conf"
+end
+
 -- package target from the given target configure
 function package._done(target)
 
@@ -291,8 +299,15 @@ function package.done(configs)
 
     end
 
-    -- ok
-    return true
+    -- save to the configure file
+    return io.save(package._file(), configs) 
+end
+
+-- load the package configure
+function package.load()
+
+    -- load it
+    return io.load(package._file()) 
 end
 
 -- return module: package

@@ -62,8 +62,8 @@ function _package._build(arch, target_name)
     -- configure it first
     if not _package._config(arch, target_name) then return false end
 
-    -- rebuild it
-    if os.execute(string.format("xmake -r -P %s %s", xmake._PROJECT_DIR, target_name)) ~= 0 then 
+    -- build it
+    if os.execute(string.format("xmake -P %s %s", xmake._PROJECT_DIR, target_name)) ~= 0 then 
         -- errors
         utils.error("build failed!")
         return false 
