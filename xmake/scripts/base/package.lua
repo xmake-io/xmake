@@ -184,7 +184,7 @@ function package._done_from_default(target)
     assert(target.kind)
 
     -- the package scripts
-    local pkgscripts = 
+    local packagescripts = 
     {
         static = package._done_library
     ,   shared = package._done_library
@@ -192,8 +192,8 @@ function package._done_from_default(target)
     }
 
     -- package it
-    local pkgscript = pkgscripts[target.kind]
-    if pkgscript then return pkgscript(target) end
+    local packagescript = packagescripts[target.kind]
+    if packagescript then return packagescript(target) end
 
     -- continue
     return 0
@@ -206,14 +206,14 @@ function package._done_from_project(target)
     assert(target)
 
     -- package it using the project script first
-    local pkgscript = target.pkgscript
-    if type(pkgscript) == "function" then
+    local packagescript = target.packagescript
+    if type(packagescript) == "function" then
 
         -- remove it
-        target.pkgscript = nil
+        target.packagescript = nil
 
         -- package it
-        return pkgscript(target)
+        return packagescript(target)
     end
 
     -- continue
@@ -227,16 +227,16 @@ function package._done_from_platform(target)
     assert(target)
 
     -- the platform package script file
-    local pkgscript = nil
+    local packagescript = nil
     local scriptfile = platform.directory() .. "/package.lua"
     if os.isfile(scriptfile) then 
 
         -- load the package script
         local script, errors = loadfile(scriptfile)
         if script then 
-            pkgscript = script()
-            if type(pkgscript) == "table" and pkgscript.main then 
-                pkgscript = pkgscript.main
+            packagescript = script()
+            if type(packagescript) == "table" and packagescript.main then 
+                packagescript = packagescript.main
             end
         else
             utils.error(errors)
@@ -244,8 +244,8 @@ function package._done_from_platform(target)
     end
 
     -- package it
-    if type(pkgscript) == "function" then
-        return pkgscript(target)
+    if type(packagescript) == "function" then
+        return packagescript(target)
     end
 
     -- continue
