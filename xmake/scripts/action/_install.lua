@@ -26,14 +26,81 @@ local _install = _install or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local global    = require("base/global")
+local install   = require("base/install")
+local package   = require("base/package")
 local platform  = require("platform/platform")
-    
+     
+-- need access to the given file?
+function _install.need(name)
+
+    -- no accessors
+    return false
+end
+
+-- package target
+function _install._package(target_name)
+
+    -- get the target name
+    if not target_name or target_name == "all" then 
+        target_name = ""
+    end
+
+    -- package it
+    if os.execute(string.format("xmake p -P %s -f %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, target_name)) ~= 0 then 
+        return false 
+    end
+
+    -- ok
+    return true
+end
+
+ 
 -- done 
 function _install.done()
 
-    -- TODO
-    print("not implement!")
- 
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- trace
+    print("install: ...")
+
+    -- load the global configure first
+    global.load()
+
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        -- errors
+        utils.error("not found project: %s!", xmake._PROJECT_DIR)
+        return false
+    end
+
+    -- package the given target first 
+    if not _install._package(options.target) then
+        -- errors
+        utils.error("package: failed!")
+        return false
+    end
+
+    -- load the package configure
+    local configs, errors = package.load()
+    if not configs then
+        -- errors
+        utils.error(errors)
+        return false
+    end
+
+    -- done package 
+    if not install.done(configs) then
+        -- errors
+        utils.error("install: failed!")
+        return false
+    end
+
+    -- trace
+    print("install: ok!")
+
     -- ok
     return true
 end
