@@ -32,14 +32,94 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local platform  = require("platform/platform")
 
+-- install target from the project script
+function install._done_from_project(target)
+
+    -- check
+    assert(target)
+
+    -- install it using the project script first
+    local installscript = target.installscript
+    if type(installscript) == "function" then
+
+        -- remove it
+        target.installscript = nil
+
+        -- install it
+        return installscript(target)
+    end
+
+    -- continue
+    return 0
+end
+
+-- install target from the platform script
+function install._done_from_platform(target)
+
+    -- check
+    assert(target)
+
+    -- the platform install script file
+    local installscript = nil
+    local scriptfile = platform.directory() .. "/install.lua"
+    if os.isfile(scriptfile) then 
+
+        -- load the install script
+        local script, errors = loadfile(scriptfile)
+        if script then 
+            installscript = script()
+            if type(installscript) == "table" and installscript.main then 
+                installscript = installscript.main
+            end
+        else
+            utils.error(errors)
+        end
+    end
+
+    -- install it
+    if type(installscript) == "function" then
+        return installscript(target)
+    end
+
+    -- continue
+    return 0
+end
+
+-- install target from the given target configure
+function install._done(target)
+
+    -- check
+    assert(target)
+
+    -- install it from the project script
+    local ok = install._done_from_project(target)
+    if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
+
+    -- install it from the platform script
+    local ok = install._done_from_platform(target)
+    if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
+
+    -- ok
+    return true
+end
+
 -- done install from the configure
 function install.done(configs)
 
     -- check
     assert(configs)
 
-    -- dump
-    utils.dump(configs)
+    -- install targets
+    for _, target in pairs(configs) do
+
+        -- install it
+        if not install._done(target) then
+            -- errors
+            utils.error("install %s failed!", target.name)
+            return false
+        end
+
+    end
 
     -- ok
     return true

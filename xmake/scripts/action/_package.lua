@@ -150,24 +150,24 @@ function _package._makeconf(target_name, target)
     configs_arch.targetfile = _package._backup(configs_arch.targetdir, rule.targetfile(target_name, target))
 
     -- save the package script
-    local pkgscript = target.pkgscript
-    if type(pkgscript) == "string" and os.isfile(pkgscript) then
-        local script, errors = loadfile(pkgscript)
+    local packagescript = target.packagescript
+    if type(packagescript) == "string" and os.isfile(packagescript) then
+        local script, errors = loadfile(packagescript)
         if script then
-            pkgscript = script()
-            if type(pkgscript) == "table" and pkgscript.main then 
-                pkgscript = pkgscript.main
+            packagescript = script()
+            if type(packagescript) == "table" and packagescript.main then 
+                packagescript = packagescript.main
             end
         else
             utils.error(errors)
             return false
         end
     end
-    if target.pkgscript and type(pkgscript) ~= "function" then
+    if target.packagescript and type(packagescript) ~= "function" then
         utils.error("invalid package script!")
         return false
     end
-    configs_target.pkgscript = pkgscript
+    configs_target.packagescript = packagescript
 
     -- ok
     return true

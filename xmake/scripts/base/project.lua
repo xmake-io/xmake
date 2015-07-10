@@ -1088,7 +1088,8 @@ function project._load_targets(file)
                         ,   "warnings"
                         ,   "optimize"
                         ,   "languages"
-                        ,   "pkgscript"} 
+                        ,   "installscript"
+                        ,   "packagescript"} 
 
     for _, interface in ipairs(interfaces) do
         newenv["set_" .. interface] = function (...) return project._api_set_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end

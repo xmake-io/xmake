@@ -29,6 +29,7 @@ local config    = require("base/config")
 local global    = require("base/global")
 local install   = require("base/install")
 local package   = require("base/package")
+local project   = require("base/project")
 local platform  = require("platform/platform")
      
 -- need access to the given file?
@@ -91,6 +92,33 @@ function _install.done()
         return false
     end
 
+    -- reload configure
+    local errors = config.reload()
+    if errors then
+        -- error
+        utils.error(errors)
+        return false
+    end
+
+    -- make the platform configure
+    if not platform.make() then
+        utils.error("make platform configure: %s failed!", config.get("plat"))
+        return false
+    end
+
+    -- reload project
+    local errors = project.reload()
+    if errors then
+        -- error
+        utils.error(errors)
+        return false
+    end
+
+    -- update the outputdir
+    for _, target in pairs(configs) do
+        target.outputdir = options.installdir 
+    end
+
     -- done package 
     if not install.done(configs) then
         -- errors
@@ -127,6 +155,7 @@ function _install.menu()
                                                           , "    1. The Given Command Argument"
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                           , "    3. The Current Directory"                                  }
+                ,   {'o', "installdir",  "kv", nil,         "Set the install directory."                                    }
 
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
