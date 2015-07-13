@@ -34,8 +34,72 @@ local platform  = require("platform/platform")
 -- install target for the library file
 function install._done_library(target)
 
-    -- dump
-    utils.dump(target)
+    -- check
+    assert(target and target.name and target.archs)
+
+    -- the output directory
+    local outputdir = target.outputdir or "/usr/local"
+    assert(outputdir)
+
+    -- get target info
+    local info = target.archs["x86_64"] or target.archs["i386"]
+    if not info then return -1 end
+
+    -- check
+    assert(info.targetdir and info.targetfile)
+
+    -- make the library directory
+    local librarydir = outputdir .. "/lib"
+    if not os.isdir(librarydir) then
+        if not os.mkdir(librarydir) then
+            utils.error("create directory %s failed", librarydir)
+            return -1
+        end
+    end
+
+    -- copy the library file to the library directory
+    local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s", librarydir, path.filename(info.targetfile))) 
+    if not ok then
+        utils.error(errors)
+        return -1
+    end
+
+    -- make the include directory
+    local includedir = outputdir .. "/include"
+    if not os.isdir(includedir) then
+        if not os.mkdir(includedir) then
+            utils.error("create directory %s failed", includedir)
+            return -1
+        end
+    end
+
+    -- copy the config.h to the output directory
+    if info.config_h then
+        local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.config_h), string.format("%s/%s/%s", includedir, target.name, path.filename(info.config_h))) 
+        if not ok then
+            utils.error(errors)
+            return -1
+        end
+    end
+
+    -- copy headers
+    if target.headers then
+        local srcheaders, dstheaders = rule.headerfiles(target, includedir)
+        if srcheaders and dstheaders then
+            local i = 1
+            for _, srcheader in ipairs(srcheaders) do
+                local dstheader = dstheaders[i]
+                if dstheader then
+                    local ok, errors = os.cp(srcheader, dstheader)
+                    if not ok then
+                        utils.error(errors)
+                        return -1
+                    end
+                end
+                i = i + 1
+            end
+        end
+    end
 
     -- ok
     return 1
@@ -44,8 +108,35 @@ end
 -- install target for the binary file
 function install._done_binary(target)
 
-    -- dump
-    utils.dump(target)
+    -- check
+    assert(target and target.archs)
+
+    -- the output directory
+    local outputdir = target.outputdir or "/usr/local"
+    assert(outputdir)
+
+    -- make the binary directory
+    local binarydir = outputdir .. "/bin"
+    if not os.isdir(binarydir) then
+        if not os.mkdir(binarydir) then
+            utils.error("create directory %s failed", binarydir)
+            return -1
+        end
+    end
+
+    -- get target info
+    local info = target.archs["x86_64"] or target.archs["i386"]
+    if not info then return -1 end
+
+    -- check
+    assert(info.targetdir and info.targetfile)
+
+    -- copy the binary file to the binary directory
+    local ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), binarydir) 
+    if not ok then
+        utils.error(errors)
+        return -1
+    end
 
     -- ok
     return 1
