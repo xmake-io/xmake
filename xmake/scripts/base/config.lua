@@ -160,7 +160,7 @@ function config.auto(name)
     end
 
     -- need not probe it if have been setted manually
-    if config._CURRENT and config._CURRENT[name] then
+    if config._CURRENT and nil ~= config._CURRENT[name] then
         return false 
     end
 
