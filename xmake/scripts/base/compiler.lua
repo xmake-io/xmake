@@ -48,7 +48,7 @@ function compiler._mapflag(module, flag)
 
     -- find and replace it using pattern
     for k, v in pairs(module.mapflags) do
-        local flag_mapped, count = flag:gsub(k, function (w) 
+        local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) 
                                                     if type(v) == "function" then
                                                         return v(module, w)
                                                     else

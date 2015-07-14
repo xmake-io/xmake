@@ -77,7 +77,9 @@ function gcc.init(self, name)
     end
 
     -- suppress warning for the clang
+    local isclang = false
     if name:find("clang") then
+        isclang = true
         self.cxflags = self.cxflags or {}
         self.mxflags = self.mxflags or {}
         self.asflags = self.asflags or {}
@@ -104,6 +106,10 @@ function gcc.init(self, name)
     ,   ["-W2"]                     = "-Wall"
     ,   ["-W3"]                     = "-Wall"
 
+        -- strip
+    ,   ["-s"]                      = utils.ifelse(isclang, "-S", "-s")
+    ,   ["-S"]                      = "-S"
+ 
         -- others
     ,   ["-ftrapv"]                 = self._check
     ,   ["-fsanitize=address"]      = self._check
