@@ -17,30 +17,31 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _install.lua
+-- @file        _uninstall.lua
 --
 
--- define module: _install
-local _install = _install or {}
+-- define module: _uninstall
+local _uninstall = _uninstall or {}
 
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
 local global    = require("base/global")
 local install   = require("base/install")
+local uninstall = require("base/uninstall")
 local package   = require("base/package")
 local project   = require("base/project")
 local platform  = require("platform/platform")
      
 -- need access to the given file?
-function _install.need(name)
+function _uninstall.need(name)
 
     -- no accessors
     return false
 end
 
 -- package target
-function _install._package(target_name)
+function _uninstall._package(target_name)
 
     -- get the target name
     if not target_name or target_name == "all" then 
@@ -58,14 +59,14 @@ end
 
  
 -- done 
-function _install.done()
+function _uninstall.done()
 
     -- the options
     local options = xmake._OPTIONS
     assert(options)
 
     -- trace
-    print("install: ...")
+    print("uninstall: ...")
 
     -- load the global configure first
     global.load()
@@ -77,15 +78,8 @@ function _install.done()
         return false
     end
 
-    -- package the given target first 
-    if not _install._package(options.target) then
-        -- errors
-        utils.error("package: failed!")
-        return false
-    end
-
-    -- load the package configure
-    local configs, errors = package.load()
+    -- load the install configure
+    local configs, errors = install.load()
     if not configs then
         -- errors
         utils.error(errors)
@@ -114,37 +108,32 @@ function _install.done()
         return false
     end
 
-    -- update the outputdir
-    for _, target in pairs(configs) do
-        target.outputdir = options.installdir 
-    end
-
-    -- done install 
-    if not install.done(configs) then
+    -- done uninstall 
+    if not uninstall.done(configs) then
         -- errors
-        utils.error("install: failed!")
+        utils.error("uninstall: failed!")
         return false
     end
 
     -- trace
-    print("install: ok!")
+    print("uninstall: ok!")
 
     -- ok
     return true
 end
 
 -- the menu
-function _install.menu()
+function _uninstall.menu()
 
     return {
-                -- xmake i
-                shortname = 'i'
+                -- xmake u
+                shortname = 'u'
 
                 -- usage
-            ,   usage = "xmake install|i [options] [target]"
+            ,   usage = "xmake uninstall|u [options] [target]"
 
                 -- description
-            ,   description = "Package and install the project binary files."
+            ,   description = "Uninstall the project binary files."
 
                 -- options
             ,   options = 
@@ -155,7 +144,6 @@ function _install.menu()
                                                           , "    1. The Given Command Argument"
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                           , "    3. The Current Directory"                                  }
-                ,   {'o', "installdir",  "kv", nil,         "Set the install directory."                                    }
 
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
@@ -168,5 +156,5 @@ function _install.menu()
         }
 end
 
--- return module: _install
-return _install
+-- return module: _uninstall
+return _uninstall

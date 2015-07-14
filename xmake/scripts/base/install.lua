@@ -103,6 +103,13 @@ function install._done(target)
     return true
 end
 
+-- get the configure file
+function install._file()
+ 
+    -- get it
+    return config.directory() .. "/install.conf"
+end
+
 -- done install from the configure
 function install.done(configs)
 
@@ -121,8 +128,15 @@ function install.done(configs)
 
     end
 
-    -- ok
-    return true
+    -- save to the configure file
+    return io.save(install._file(), configs) 
+end
+
+-- load the install configure
+function install.load()
+
+    -- load it
+    return io.load(install._file()) 
 end
 
 -- return module: install
