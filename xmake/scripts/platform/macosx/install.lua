@@ -80,6 +80,9 @@ function install._done_library(target)
             utils.error(errors)
             return -1
         end
+
+        -- update the config.h
+        info.config_h = string.format("%s/%s/%s", includedir, target.name, path.filename(info.config_h))
     end
 
     -- copy headers
@@ -99,7 +102,14 @@ function install._done_library(target)
                 i = i + 1
             end
         end
+        
+        -- update the headers
+        target.headers = dstheaders
     end
+
+    -- update the target directory and file
+    info.targetdir = librarydir
+    info.targetfile = path.filename(info.targetfile)
 
     -- ok
     return 1
@@ -137,6 +147,10 @@ function install._done_binary(target)
         utils.error(errors)
         return -1
     end
+
+    -- update the target directory and file
+    info.targetdir = binarydir
+    info.targetfile = path.filename(info.targetfile)
 
     -- ok
     return 1
