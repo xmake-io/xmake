@@ -105,13 +105,13 @@ function os.cp(src, dst)
 
         -- copy file
         if not os.cpfile(src, dst) then
-            return false, string.format("cannot copy file %s to %s", src, dst)
+            return false, string.format("cannot copy file %s to %s %s", src, dst, os.strerror())
         end
     -- is directory?
     elseif os.isdir(src) then
         -- copy directory
         if not os.cpdir(src, dst) then
-            return false, string.format("cannot copy directory %s to %s", src, dst)
+            return false, string.format("cannot copy directory %s to %s %s", src, dst, os.strerror())
         end
     -- cp dir/*?
     elseif src:find("%*") then
@@ -125,14 +125,14 @@ function os.cp(src, dst)
             for _, file in ipairs(files) do
                 local dstfile = string.format("%s/%s", dst, file:sub(starpos))
                 if not os.cpfile(file, dstfile) then
-                    return false, string.format("cannot copy file %s to %s", file, dstfile)
+                    return false, string.format("cannot copy file %s to %s %s", file, dstfile, os.strerror())
                 end
             end
         end
 
     -- not exists?
     else
-        return false, string.format("cannot copy file %s, not found this file", src)
+        return false, string.format("cannot copy file %s, not found this file %s", src, os.strerror())
     end
     
     -- ok
@@ -149,11 +149,11 @@ function os.mv(src, dst)
     if os.exists(src) then
         -- move file or directory
         if not os.rename(src, dst) then
-            return false, string.format("cannot move %s to %s", src, dst)
+            return false, string.format("cannot move %s to %s %s", src, dst, os.strerror())
         end
     -- not exists?
     else
-        return false, string.format("cannot move %s to %s, not found this file", src, dst)
+        return false, string.format("cannot move %s to %s, not found this file %s", src, dst, os.strerror())
     end
     
     -- ok
@@ -170,17 +170,17 @@ function os.rm(path)
     if os.isfile(path) then
         -- remove file
         if not os.rmfile(path) then
-            return false, string.format("cannot remove file %s", path)
+            return false, string.format("cannot remove file %s %s", path, os.strerror())
         end
     -- is directory?
     elseif os.isdir(path) then
         -- remove directory
         if not os.rmdir(path) then
-            return false, string.format("cannot remove directory %s", path)
+            return false, string.format("cannot remove directory %s %s", path, os.strerror())
         end
     -- not exists?
     else
-        return false, string.format("cannot remove file %s, not found this file", path)
+        return false, string.format("cannot remove file %s, not found this file %s", path, os.strerror())
     end
     
     -- ok
@@ -201,7 +201,7 @@ function os.cd(path)
             os._PREDIR = nil
         else
             -- error
-            return false, string.format("not found the previous directory")
+            return false, string.format("not found the previous directory %s", os.strerror())
         end
     end
     
@@ -213,7 +213,7 @@ function os.cd(path)
 
         -- change to directory
         if not os.chdir(path) then
-            return false, string.format("cannot change directory %s", path)
+            return false, string.format("cannot change directory %s %s", path, os.strerror())
         end
 
         -- save the previous directory
@@ -221,7 +221,7 @@ function os.cd(path)
 
     -- not exists?
     else
-        return false, string.format("cannot change directory %s, not found this directory", path)
+        return false, string.format("cannot change directory %s, not found this directory %s", path, os.strerror())
     end
     
     -- ok
