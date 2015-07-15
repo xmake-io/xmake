@@ -107,8 +107,8 @@ function gcc.init(self, name)
     ,   ["-W3"]                     = "-Wall"
 
         -- strip
-    ,   ["-s"]                      = utils.ifelse(isclang, "-S", "-s")
-    ,   ["-S"]                      = "-S"
+    ,   ["-s"]                      = utils.ifelse(isclang, "-Wl,-S", "-s")
+    ,   ["-S"]                      = utils.ifelse(isclang, "-Wl,-S", "-S")
  
         -- others
     ,   ["-ftrapv"]                 = self._check
