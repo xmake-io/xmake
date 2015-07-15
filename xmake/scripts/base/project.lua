@@ -653,31 +653,27 @@ end
 -- make option for checking links
 function project._make_option_for_checking_links(opt, links, cfile, objectfile, targetfile)
 
-    -- done
-    for _, link in ipairs(utils.wrap(links)) do
-          
-        -- this links has been checked?
-        project._CHECKED_LINKS = project._CHECKED_LINKS or {}
-        if project._CHECKED_LINKS[link] then return true end
-        
-        -- only for compile a object file
-        local ok = compiler.check_include(opt, nil, cfile, objectfile)
+    -- the links string
+    local links_str = table.concat(utils.wrap(links), ", ")
+    
+    -- this links has been checked?
+    project._CHECKED_LINKS = project._CHECKED_LINKS or {}
+    if project._CHECKED_LINKS[links_str] then return true end
+    
+    -- only for compile a object file
+    local ok = compiler.check_include(opt, nil, cfile, objectfile)
 
-        -- check link
-        if ok then ok = linker.check_links(opt, link, objectfile, targetfile) end
+    -- check link
+    if ok then ok = linker.check_links(opt, links, objectfile, targetfile) end
 
-        -- trace
-        utils.verbose("checking for the link %s ... %s", link, utils.ifelse(ok, "ok", "no"))
+    -- trace
+    utils.verbose("checking for the links %s ... %s", links_str, utils.ifelse(ok, "ok", "no"))
 
-        -- cache the result
-        project._CHECKED_LINKS[link] = ok
+    -- cache the result
+    project._CHECKED_LINKS[links_str] = ok
 
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
+    -- ok?
+    return ok
 end
 
 -- make option for checking cincludes
