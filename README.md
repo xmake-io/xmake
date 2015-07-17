@@ -46,17 +46,17 @@ contact
 - source:  	    
 	- [github](https://github.com/waruqi/xmake)
 	- [coding](https://coding.net/u/waruqi/p/xmake/git)
-	- [osc@git](http://git.oschina.net/tboox/xmake)
+	- [oschina](http://git.oschina.net/tboox/xmake)
 - website: 	    
 	- http://www.tboox.org
 	- http://www.tboox.net
 - download:
  	- [github](https://github.com/waruqi/xmake/archive/master.zip)
  	- [coding](https://coding.net/u/waruqi/p/xmake/git/archive/master)
- 	- [osc@git](http://git.oschina.net/tboox/xmake/repository/archive?ref=master)
+ 	- [oschina](http://git.oschina.net/tboox/xmake/repository/archive?ref=master)
 - document:
 	- [github](https://github.com/waruqi/xmake/wiki/)
-	- [osc@git](http://git.oschina.net/tboox/xmake/wikis/home)
+	- [oschina](http://git.oschina.net/tboox/xmake/wikis/home)
 - qq(group):    
 	- 343118190
 
