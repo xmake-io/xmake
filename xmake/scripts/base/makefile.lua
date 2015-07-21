@@ -37,7 +37,7 @@ local tools     = require("tools/tools")
 local platform  = require("platform/platform")
 
 -- make the object to the makefile
-function makefile._make_object(file, target, srcfile, objfile, percent)
+function makefile._make_object(file, target, srcfile, objfile)
     
     -- check
     assert(file and target and srcfile and objfile)
@@ -73,7 +73,7 @@ function makefile._make_object(file, target, srcfile, objfile, percent)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
-    file:write(string.format("\t@echo [%2d%%] %scompiling%s %s\n", percent, utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
+    file:write(string.format("\t@echo %scompiling%s %s\n", utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s\n", cmd))
@@ -93,11 +93,10 @@ function makefile._make_objects(file, target, srcfiles, objfiles)
 
     -- make all objects
     local i = 1
-    local n = #objfiles
     for _, objfile in ipairs(objfiles) do
 
         -- make object
-        if not makefile._make_object(file, target, srcfiles[i], objfile, (i - 1) * 100 / n) then
+        if not makefile._make_object(file, target, srcfiles[i], objfile) then
             return false
         end
 
