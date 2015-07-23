@@ -34,13 +34,13 @@ if not exist "%xmake_dir_install%" mkdir "%xmake_dir_install%"
 rem compile xmake-core
 echo compiling xmake-core...
 cd core
-cmd /K build.bat > ..\install.log
+cmd /K build.bat
 cd ..
 
 rem install the xmake core file
 set xmake_core=core\bin\demo.pkg\bin\msvc\x86\demo.exe
 set xmake_core_install=%xmake_dir_install%\xmake_core.exe
-copy /Y "%xmake_core%" "%xmake_core_install%" >> install.log
+copy /Y "%xmake_core%" "%xmake_core_install%" > install.log
 
 rem install the xmake directory
 xcopy /S /Q /Y "xmake" "%xmake_dir_install%" >> install.log
