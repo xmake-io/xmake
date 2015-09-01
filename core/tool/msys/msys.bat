@@ -38,9 +38,9 @@ rem ember that we get here even in command.com.
 rem Hopefully a temporary workaround for getting MSYS shell to run on x64
 rem (WoW64 cmd prompt sets PROCESSOR_ARCHITECTURE to x86)
 if not "x%PROCESSOR_ARCHITECTURE%" == "xAMD64" goto _NotX64
-set COMSPEC=%WINDIR%\SysWOW64\cmd.exe
-%COMSPEC% /c %0 %1 %2 %3 %4 %5 %6 %7 %8 %9
-goto EOF
+rem set COMSPEC=%WINDIR%\SysWOW64\cmd.exe
+rem %COMSPEC% /c %0 %1 %2 %3 %4 %5 %6 %7 %8 %9
+rem goto EOF
 :_NotX64
 
 if NOT EXIST %WD%msys-1.0.dll set WD=%~dp0\bin\
