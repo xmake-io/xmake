@@ -20,7 +20,7 @@
 -- @file        project.lua
 --
 
--- define module: config
+-- define module: project
 local project = project or {}
 
 -- load modules
@@ -34,6 +34,13 @@ local config        = require("base/config")
 local linker        = require("base/linker")
 local compiler      = require("base/compiler")
 local platform      = require("platform/platform")
+
+-- import module
+function project._api_import(env, module)
+
+    -- import 
+    return require("module/" .. module)
+end
 
 -- the current os is belong to the given os?
 function project._api_os(env, ...)
@@ -947,6 +954,9 @@ function project._load_options(file)
                                     end})
     setfenv(script, newenv)
 
+    -- register import
+    newenv.import           = function (module) return project._api_import(newenv, module) end
+
     -- register interfaces for the condition
     newenv.os               = function (...) return project._api_os(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
@@ -1050,6 +1060,9 @@ function project._load_targets(file)
                                         return val
                                     end})
     setfenv(script, newenv)
+
+    -- register import
+    newenv.import           = function (module) return project._api_import(newenv, module) end
 
     -- register interfaces for the condition
     newenv.os               = function (...) return project._api_os(newenv, ...) end
