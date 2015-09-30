@@ -39,6 +39,40 @@ function _install.need(name)
     return false
 end
 
+-- make configure for the given target 
+function _install._makeconf(configs, target_name, target)
+
+    -- check
+    assert(configs and target_name and target)
+
+    -- init configs for targets
+    configs[target_name] = configs[target_name] or {}
+    local configs_target = configs[target_name]
+
+    -- save the install script
+    local installscript = target.installscript
+    if type(installscript) == "string" and os.isfile(installscript) then
+        local script, errors = loadfile(installscript)
+        if script then
+            installscript = script()
+            if type(installscript) == "table" and installscript.main then 
+                installscript = installscript.main
+            end
+        else
+            utils.error(errors)
+            return false
+        end
+    end
+    if target.installscript and type(installscript) ~= "function" then
+        utils.error("invalid package script!")
+        return false
+    end
+    configs_target.installscript = installscript
+
+    -- ok
+    return true
+end
+
 -- package target
 function _install._package(target_name)
 
@@ -55,7 +89,6 @@ function _install._package(target_name)
     -- ok
     return true
 end
-
  
 -- done 
 function _install.done()
@@ -117,6 +150,25 @@ function _install.done()
     -- update the outputdir
     for _, target in pairs(configs) do
         target.outputdir = options.installdir 
+    end
+
+    -- the targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- make configure for the given target
+    if target_name and target_name ~= "all" then
+        if not _install._makeconf(configs, target_name, targets[target_name]) then 
+            utils.error("make target configure: %s failed!", target_name)
+            return false
+        end
+    else
+        for target_name, target in pairs(targets) do
+            if not _install._makeconf(configs, target_name, target) then 
+                utils.error("make target configure: %s failed!", target_name)
+                return false
+            end
+        end
     end
 
     -- done install 
