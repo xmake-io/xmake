@@ -56,10 +56,10 @@ function android.make(configs)
     configs.tools.sh        = config.get("sh") 
 
     -- init flags
-    configs.cxflags     = { "-march=" .. config.get("arch") }
-    configs.asflags     = { "-march=" .. config.get("arch") }
-    configs.ldflags     = { "-march=" .. config.get("arch"), "-llog" }
-    configs.shflags     = { "-march=" .. config.get("arch"), "-llog" }
+    configs.cxflags     = { "-march=" .. config.get("arch"), "-mthumb" }
+    configs.asflags     = { "-march=" .. config.get("arch"), "-mthumb" }
+    configs.ldflags     = { "-march=" .. config.get("arch"), "-llog", "-mthumb" }
+    configs.shflags     = { "-march=" .. config.get("arch"), "-llog", "-mthumb" }
 
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
