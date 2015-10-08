@@ -1097,6 +1097,7 @@ function project._load_targets(file)
                         ,   "warnings"
                         ,   "optimize"
                         ,   "languages"
+                        ,   "runscript"
                         ,   "installscript"
                         ,   "packagescript"} 
 

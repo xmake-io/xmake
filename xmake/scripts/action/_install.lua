@@ -64,7 +64,7 @@ function _install._makeconf(configs, target_name, target)
         end
     end
     if target.installscript and type(installscript) ~= "function" then
-        utils.error("invalid package script!")
+        utils.error("invalid install script!")
         return false
     end
     configs_target.installscript = installscript
