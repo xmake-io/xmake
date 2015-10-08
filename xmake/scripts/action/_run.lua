@@ -59,6 +59,12 @@ function _run.done()
         return false
     end
 
+    -- the arguments
+    local arguments = options.arguments or {}
+    if type(arguments) ~= "table" then
+        arguments = {}
+    end
+
     -- the targets
     local targets = project.targets()
     if not targets or not targets[name] then
@@ -69,11 +75,6 @@ function _run.done()
 
     -- the target
     local target = targets[name]
-    if not target.kind or type(target.kind) ~= "string" or target.kind ~= "binary" then
-        -- error
-        utils.error("the target %s is not executale!", name)
-        return false
-    end
 
     -- the target file
     local targetfile = rule.targetfile(name, target)
@@ -81,17 +82,52 @@ function _run.done()
         targetfile = path.absolute(targetfile, xmake._PROJECT_DIR)
     end
 
+    -- load the run script
+    local runscript = target.runscript
+    if type(runscript) == "string" and os.isfile(runscript) then
+        local script, errors = loadfile(runscript)
+        if script then
+            runscript = script()
+            if type(runscript) == "table" and runscript.main then 
+                runscript = runscript.main
+            end
+        else
+            utils.error(errors)
+            return false
+        end
+    end
+
+    -- run script
+    if runscript ~= nil then
+        if type(runscript) == "function" then
+            
+            -- make passed target 
+            local target_passed         = {}
+            target_passed.name          = name
+            target_passed.arguments     = arguments
+            target_passed.targetfile    = targetfile
+
+            -- run it
+            local ok = runscript(target_passed)
+            if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
+        else
+            utils.error("invalid run script!")
+            return false
+        end
+    end
+
+    -- not executale?
+    if not target.kind or type(target.kind) ~= "string" or target.kind ~= "binary" then
+        -- error
+        utils.error("the target %s is not executale!", name)
+        return false
+    end
+
     -- check the target file
     if not targetfile and not os.isfile(targetfile) then
         -- error
         utils.error("not found target file: %s!", targetfile)
         return false
-    end
-
-    -- the arguments
-    local arguments = options.arguments or {}
-    if type(arguments) ~= "table" then
-        arguments = {}
     end
 
     -- done 
