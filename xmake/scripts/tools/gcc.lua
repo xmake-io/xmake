@@ -73,7 +73,7 @@ function gcc.init(self, name)
     if name:find("clang") then
         self.shflags = { "-dynamiclib", "-fPIC" }
     else
-        self.shflags = { "-shared -Wl,-soname", "-fPIC" }
+        self.shflags = { "-shared", "-fPIC" }
     end
 
     -- suppress warning for the clang
