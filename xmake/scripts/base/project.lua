@@ -1316,8 +1316,8 @@ function project.menu()
 
                 -- the default value
                 local default = "auto"
-                if opt.enable and utils.unwrap(opt.enable) then
-                    default = true
+                if opt.enable ~= nil then
+                    default = utils.unwrap(opt.enable)
                 end
 
                 -- is first?
