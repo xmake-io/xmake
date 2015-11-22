@@ -1,5 +1,4 @@
 # main makefile
-SHELL=/bin/bash
 
 # ######################################################################################
 # includes
@@ -239,6 +238,12 @@ SED			:= sed -i
 endif
 
 # echo
+ifeq ($(HOST),mac)
+SHELL 		= bash
+endif
+ifeq ($(HOST),linux)
+SHELL 		= bash
+endif
 ECHO 		:= echo -e
 
 # make upper 
