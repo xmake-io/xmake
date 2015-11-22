@@ -1,4 +1,5 @@
 # main makefile
+SHELL=/bin/bash
 
 # ######################################################################################
 # includes
@@ -238,11 +239,7 @@ SED			:= sed -i
 endif
 
 # echo
-ifeq ($(HOST),mac)
-ECHO 		:= echo 
-else
 ECHO 		:= echo -e
-endif
 
 # make upper 
 ifeq ($(HOST),mac)
