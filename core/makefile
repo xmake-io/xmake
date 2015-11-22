@@ -238,10 +238,10 @@ SED			:= sed -i
 endif
 
 # echo
-ifeq ($(HOST),msys)
-ECHO 		:= echo -e
+ifeq ($(HOST),mac)
+ECHO 		:= echo 
 else
-ECHO 		:= echo
+ECHO 		:= echo -e
 endif
 
 # make upper 
