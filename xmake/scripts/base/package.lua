@@ -161,7 +161,7 @@ function package._done_binary(target)
 
         -- copy the binary file to the output directory
         if count == 1 then
-            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), outputdir) 
+            ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s", outputdir, path.filename(info.targetfile))) 
         else
             ok, errors = os.cp(string.format("%s/%s", info.targetdir, info.targetfile), string.format("%s/%s", outputdir, rule.filename(path.basename(info.targetfile) .. "_" .. arch, "binary"))) 
         end
