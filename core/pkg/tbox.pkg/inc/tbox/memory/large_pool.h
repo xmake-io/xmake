@@ -169,8 +169,7 @@ tb_bool_t               tb_large_pool_free_(tb_large_pool_ref_t pool, tb_pointer
 #ifdef __tb_debug__
 /*! dump the pool
  *
- * @param pool        the pool
- * @param prefix        the trace prefix
+ * @param pool          the pool
  */
 tb_void_t               tb_large_pool_dump(tb_large_pool_ref_t pool);
 #endif

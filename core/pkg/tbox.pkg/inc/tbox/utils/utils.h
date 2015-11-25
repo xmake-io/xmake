@@ -39,6 +39,7 @@
 #include "base32.h"
 #include "base64.h"
 #include "option.h"
+#include "adler32.h"
 #include "singleton.h"
 #include "lock_profiler.h"
 

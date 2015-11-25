@@ -525,11 +525,63 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-tb_uint32_t tb_bits_get_ubits32(tb_byte_t const* p, tb_size_t b, tb_size_t n);
-tb_sint32_t tb_bits_get_sbits32(tb_byte_t const* p, tb_size_t b, tb_size_t n);
+/*! get ubits32 integer
+ *
+ * @param p     the data pointer
+ * @param b     the start bits
+ * @param n     the bits count
+ *
+ * @return      the ubits32 integer
+ */
+tb_uint32_t     tb_bits_get_ubits32(tb_byte_t const* p, tb_size_t b, tb_size_t n);
 
-tb_void_t   tb_bits_set_ubits32(tb_byte_t* p, tb_size_t b, tb_uint32_t x, tb_size_t n);
-tb_void_t   tb_bits_set_sbits32(tb_byte_t* p, tb_size_t b, tb_sint32_t x, tb_size_t n);
+/*! get sbits32 integer
+ *
+ * @param p     the data pointer
+ * @param b     the start bits
+ * @param n     the bits count
+ *
+ * @return      the ubits32 integer
+ */
+tb_sint32_t     tb_bits_get_sbits32(tb_byte_t const* p, tb_size_t b, tb_size_t n);
+
+/*! set ubits32 integer
+ *
+ * @param p     the data pointer
+ * @param b     the start bits
+ * @param x     the value
+ * @param n     the bits count
+ */
+tb_void_t       tb_bits_set_ubits32(tb_byte_t* p, tb_size_t b, tb_uint32_t x, tb_size_t n);
+
+/*! set ubits32 integer
+ *
+ * @param p     the data pointer
+ * @param b     the start bits
+ * @param x     the value
+ * @param n     the bits count
+ */
+tb_void_t       tb_bits_set_sbits32(tb_byte_t* p, tb_size_t b, tb_sint32_t x, tb_size_t n);
+
+/*! get ubits64 integer
+ *
+ * @param p     the data pointer
+ * @param b     the start bits
+ * @param n     the bits count
+ *
+ * @return      the ubits64 integer
+ */
+tb_uint64_t     tb_bits_get_ubits64(tb_byte_t const* p, tb_size_t b, tb_size_t n);
+
+/*! get sbits64 integer
+ *
+ * @param p     the data pointer
+ * @param b     the start bits
+ * @param n     the bits count
+ *
+ * @return      the ubits64 integer
+ */
+tb_sint64_t     tb_bits_get_sbits64(tb_byte_t const* p, tb_size_t b, tb_size_t n);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * bits

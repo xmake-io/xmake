@@ -93,8 +93,8 @@ typedef struct __tb_object_t
     /// the copy func
     struct __tb_object_t*   (*copy)(struct __tb_object_t* object);
 
-    /// the cler func
-    tb_void_t               (*cler)(struct __tb_object_t* object);
+    /// the clear func
+    tb_void_t               (*clear)(struct __tb_object_t* object);
 
     /// the exit func
     tb_void_t               (*exit)(struct __tb_object_t* object);

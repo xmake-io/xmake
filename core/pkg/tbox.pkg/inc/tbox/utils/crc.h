@@ -71,12 +71,12 @@ typedef enum __tb_crc_mode_t
  *
  * @param mode      the crc mode
  * @param crc       the initial crc value
- * @param ib        the input data
- * @param in        the input size
+ * @param data      the input data
+ * @param size      the input size
  *
  * @return          the crc value
  */
-tb_uint32_t         tb_crc_encode(tb_crc_mode_t mode, tb_uint32_t crc, tb_byte_t const* ib, tb_size_t in);
+tb_uint32_t         tb_crc_encode(tb_crc_mode_t mode, tb_uint32_t crc, tb_byte_t const* data, tb_size_t size);
 
 /*! encode crc for cstr
  *

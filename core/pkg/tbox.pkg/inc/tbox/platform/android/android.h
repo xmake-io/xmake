@@ -17,16 +17,36 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        prefix.h
+ * @file        android.h
  * @ingroup     platform
  */
-#ifndef TB_PLATFORM_LINUX_ANDROID_PREFIX_H
-#define TB_PLATFORM_LINUX_ANDROID_PREFIX_H
+#ifndef TB_PLATFORM_ANDROID_H
+#define TB_PLATFORM_ANDROID_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "../prefix.h"
-#include <jni.h>
+#include "prefix.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*! init the android platform
+ *
+ * @param jvm       the java machine pointer
+ *
+ * @return          tb_true or tb_false
+ */
+tb_bool_t           tb_android_init(JavaVM* jvm);
+
+/// exit the android platform 
+tb_void_t           tb_android_exit(tb_noarg_t);
+
+/*! the java machine pointer
+ *
+ * @return          the java machine pointer
+ */
+JavaVM*             tb_android_jvm(tb_noarg_t);
 
 #endif

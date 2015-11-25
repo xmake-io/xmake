@@ -107,6 +107,7 @@ typedef enum __tb_stream_ctrl_e
     // the stream for file
 ,   TB_STREAM_CTRL_FILE_GET_MODE            = TB_STREAM_CTRL(TB_STREAM_TYPE_FILE, 1)
 ,   TB_STREAM_CTRL_FILE_SET_MODE            = TB_STREAM_CTRL(TB_STREAM_TYPE_FILE, 2)
+,   TB_STREAM_CTRL_FILE_IS_STREAM           = TB_STREAM_CTRL(TB_STREAM_TYPE_FILE, 3)
 
     // the stream for sock
 ,   TB_STREAM_CTRL_SOCK_GET_TYPE            = TB_STREAM_CTRL(TB_STREAM_TYPE_SOCK, 1)
