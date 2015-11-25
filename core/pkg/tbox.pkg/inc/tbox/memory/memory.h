@@ -29,11 +29,13 @@
  */
 #include "prefix.h"
 #include "pool.h"
+#include "buffer.h"
+#include "allocator.h"
 #include "fixed_pool.h"
 #include "large_pool.h"
 #include "small_pool.h"
+#include "static_pool.h"
 #include "string_pool.h"
-#include "buffer.h"
 #include "queue_buffer.h"
 #include "static_buffer.h"
 
@@ -50,9 +52,9 @@ __tb_extern_c_enter__
  *
  * <pre>
  *
- *  ----------------      ------------------------------------------------------- 
- * | native memory  | or |                         data                          |
- *  ----------------      ------------------------------------------------------- 
+ *  ----------------      -------------------------------------------------------      ----------------------
+ * | native memory  | or |                         data                          | -> |     static_pool      |
+ *  ----------------      -------------------------------------------------------      ----------------------
  *         |             if data be null             |
  *         `---------------------------------------> |
  *                                                   |
@@ -110,12 +112,13 @@ __tb_extern_c_enter__
 
 /*! init memory
  *
+ * @param allocator     the allocator, uses data and size if be null
  * @param data          the memory pool data
  * @param size          the memory pool size
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_memory_init(tb_byte_t* data, tb_size_t size);
+tb_bool_t               tb_memory_init(tb_allocator_ref_t allocator, tb_byte_t* data, tb_size_t size);
 
 /// exit memory
 tb_void_t               tb_memory_exit(tb_noarg_t);

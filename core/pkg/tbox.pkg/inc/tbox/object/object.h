@@ -65,7 +65,7 @@ tb_void_t           tb_object_context_exit(tb_noarg_t);
  */
 tb_bool_t           tb_object_init(tb_object_ref_t object, tb_size_t flag, tb_size_t type);
 
-/*! exit object
+/*! decrease the object reference count, will exit it if --refn == 0
  *
  * @param object    the object
  *
@@ -73,11 +73,11 @@ tb_bool_t           tb_object_init(tb_object_ref_t object, tb_size_t flag, tb_si
  */
 tb_void_t           tb_object_exit(tb_object_ref_t object);
 
-/*! cler object
+/*! clear object
  *
  * @param object    the object
  */
-tb_void_t           tb_object_cler(tb_object_ref_t object);
+tb_void_t           tb_object_clear(tb_object_ref_t object);
 
 /*! set the object private data
  *
@@ -245,19 +245,13 @@ tb_object_ref_t     tb_object_dump(tb_object_ref_t object, tb_size_t format);
  *
  * @return          the object reference count
  */
-tb_size_t           tb_object_ref(tb_object_ref_t object);
+tb_size_t           tb_object_refn(tb_object_ref_t object);
 
-/*! increase the object reference count
+/*! retain object and increase the object reference count
  *
  * @param object    the object
  */
-tb_void_t           tb_object_inc(tb_object_ref_t object);
-
-/*! decrease the object reference count, will free it if --refn == 0
- *
- * @param object    the object
- */
-tb_void_t           tb_object_dec(tb_object_ref_t object);
+tb_void_t           tb_object_retain(tb_object_ref_t object);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

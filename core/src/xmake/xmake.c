@@ -107,7 +107,7 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build)
     xm_version_check(build);
 
     // init tbox
-    if (!tb_init(tb_null, tb_null, 0)) return tb_false;
+    if (!tb_init(tb_null, tb_null, tb_null, 0)) return tb_false;
 
     // trace
     tb_trace_d("init: ok");

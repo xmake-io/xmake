@@ -73,6 +73,10 @@ tb_pointer_t        tb_memmov_(tb_pointer_t s1, tb_cpointer_t s2, tb_size_t n);
 tb_long_t           tb_memcmp(tb_cpointer_t s1, tb_cpointer_t s2, tb_size_t n);
 tb_long_t           tb_memcmp_(tb_cpointer_t s1, tb_cpointer_t s2, tb_size_t n);
 
+// memmem
+tb_pointer_t        tb_memmem(tb_cpointer_t s1, tb_size_t n1, tb_cpointer_t s2, tb_size_t n2);
+tb_pointer_t        tb_memmem_(tb_cpointer_t s1, tb_size_t n1, tb_cpointer_t s2, tb_size_t n2);
+
 // strlen
 tb_size_t           tb_strlen(tb_char_t const* s);
 tb_size_t           tb_strnlen(tb_char_t const* s, tb_size_t n);

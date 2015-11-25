@@ -317,6 +317,24 @@ tb_uint32_t         tb_static_stream_read_ubits32(tb_static_stream_ref_t stream,
  */
 tb_sint32_t         tb_static_stream_read_sbits32(tb_static_stream_ref_t stream, tb_size_t nbits);
 
+/*! read ubits value for uint64
+ *
+ * @param stream    the stream
+ * @param nbits     the bits count
+ *
+ * @return          the ubits value
+ */
+tb_uint64_t         tb_static_stream_read_ubits64(tb_static_stream_ref_t stream, tb_size_t nbits);
+
+/*! read sbits value for sint64
+ *
+ * @param stream    the stream
+ * @param nbits     the bits count
+ *
+ * @return          the sbits value
+ */
+tb_sint64_t         tb_static_stream_read_sbits64(tb_static_stream_ref_t stream, tb_size_t nbits);
+
 /*! read ubits1 value
  *
  * @param stream    the stream

@@ -118,6 +118,10 @@ tb_void_t       tb_sincosf(tb_float_t x, tb_float_t* s, tb_float_t* c);
 // pow
 tb_double_t     tb_pow(tb_double_t x, tb_double_t y);
 tb_float_t      tb_powf(tb_float_t x, tb_float_t y);
+
+// fmod
+tb_double_t     tb_fmod(tb_double_t x, tb_double_t y);
+tb_float_t      tb_fmodf(tb_float_t x, tb_float_t y);
 #endif
 
 // ilog2i

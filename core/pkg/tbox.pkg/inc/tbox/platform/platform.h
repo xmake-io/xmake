@@ -71,7 +71,7 @@ __tb_extern_c_enter__
 /*! init the platform
  *
  * @param priv      the platform private data
- *                  pass JNIEnv* env for android
+ *                  pass JavaVM* jvm for android
  *                  pass tb_null for other platform
  *
  * @return          tb_true or tb_false

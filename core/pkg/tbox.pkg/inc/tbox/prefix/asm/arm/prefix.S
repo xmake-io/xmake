@@ -121,6 +121,7 @@ ELF     .size \name, . - \name
 #endif
     .if \export
         .global EXTERN_ASM\name
+        .hidden EXTERN_ASM\name
 EXTERN_ASM\name:
     .endif
 ELF     .type \name, %function

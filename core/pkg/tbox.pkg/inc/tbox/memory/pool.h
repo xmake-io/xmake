@@ -28,6 +28,7 @@
  * includes
  */
 #include "prefix.h"
+#include "allocator.h"
 #include "large_pool.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -91,11 +92,12 @@ tb_pool_ref_t           tb_pool();
 
 /*! init the pool
  * 
- * @param large_pool    the large pool, using the default large pool if be null
+ * @param allocator     the allocator, uses large pool if be null
+ * @param large_pool    the large pool, uses the default large pool if be null
  *
  * @return              the pool 
  */
-tb_pool_ref_t           tb_pool_init(tb_large_pool_ref_t large_pool);
+tb_pool_ref_t           tb_pool_init(tb_allocator_ref_t allocator, tb_large_pool_ref_t large_pool);
 
 /*! exit the pool
  *
