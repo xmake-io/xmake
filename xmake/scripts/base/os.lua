@@ -84,6 +84,11 @@ function os.match(pattern, findir)
     pattern = pattern:gsub("%*", "\002")
     pattern = pattern:gsub("\001", ".*")
     pattern = pattern:gsub("\002", "[^/]*")
+
+    -- patch "./" for matching ok if root directory is '.'
+    if rootdir == '.' then
+        pattern = "./" .. pattern
+    end
     
     -- find it
     return os.find(rootdir, pattern, recurse, findir, excludes)
