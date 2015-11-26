@@ -75,7 +75,10 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 12. 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
 
-也可以参考使用xmake的实际项目：[TBOX](https://github.com/waruqi/tbox)
+也可以参考一些使用xmake的项目：
+
+* [TBOX](https://github.com/waruqi/tbox)
+* [GBOX](https://github.com/waruqi/gbox)
 
 ####后续工作
 
