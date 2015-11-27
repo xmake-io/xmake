@@ -148,8 +148,22 @@ function rule.objectfiles(target_name, target, sourcefiles, buildir)
         -- make object file
         local objectfile = string.format("%s/%s/%s/%s", objectdir, target_name, path.directory(sourcefile), rule.filename(path.basename(sourcefile), "object"))
 
+        -- translate path
+        --
+        -- .e.g 
+        --
+        -- src/xxx.c
+        --     project/xmake.lua
+        --             build/.objs
+        --
+        -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
+        --
+        -- we need replace '..' to '__' in this case
+        --
+        objectfile = (path.translate(objectfile):gsub("%.%.", "__"))
+
         -- save it
-        objectfiles[i] = path.translate(objectfile)
+        objectfiles[i] = objectfile
         i = i + 1
 
     end
