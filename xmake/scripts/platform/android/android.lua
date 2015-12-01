@@ -33,7 +33,7 @@ android._HOST       = xmake._HOST
 android._OS         = "android"
 
 -- init architectures
-android._ARCHS      = {"armv5te", "armv6", "armv7-a"}
+android._ARCHS      = {"armv5te", "armv6", "armv7-a", "arm64-v8a"}
 
 -- make configure
 function android.make(configs)
