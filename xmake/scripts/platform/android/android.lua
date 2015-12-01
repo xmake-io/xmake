@@ -33,7 +33,7 @@ android._HOST       = xmake._HOST
 android._OS         = "android"
 
 -- init architectures
-android._ARCHS      = {"armv5te", "armv6", "armv7-a", "arm64-v8a"}
+android._ARCHS      = {"armv5te", "armv6", "armv7-a", "armv8-a", "arm64-v8a"}
 
 -- make configure
 function android.make(configs)
@@ -56,20 +56,35 @@ function android.make(configs)
     configs.tools.sh        = config.get("sh") 
 
     -- init flags
-    configs.cxflags     = { "-march=" .. config.get("arch"), "-mthumb" }
-    configs.asflags     = { "-march=" .. config.get("arch"), "-mthumb" }
-    configs.ldflags     = { "-march=" .. config.get("arch"), "-llog", "-mthumb" }
-    configs.shflags     = { "-march=" .. config.get("arch"), "-llog", "-mthumb" }
+    local arch = config.get("arch")
+    if arch:startswith("arm64") then
+        configs.cxflags     = {}
+        configs.asflags     = {}
+        configs.ldflags     = {"-llog"}
+        configs.shflags     = {"-llog"}
+    else
+        configs.cxflags     = { "-march=" .. arch, "-mthumb"}
+        configs.asflags     = { "-march=" .. arch, "-mthumb"}
+        configs.ldflags     = { "-march=" .. arch, "-llog", "-mthumb"}
+        configs.shflags     = { "-march=" .. arch, "-llog", "-mthumb"}
+    end
 
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
     local ndk_sdkver = config.get("ndk_sdkver")
     if ndk and ndk_sdkver then
         local ndk_sdkdir = path.translate(string.format("%s/platforms/android-%d", ndk, ndk_sdkver)) 
-        table.insert(configs.cxflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
-        table.insert(configs.asflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
-        table.insert(configs.ldflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
-        table.insert(configs.shflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+        if arch:startswith("arm64") then
+            table.insert(configs.cxflags, string.format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+            table.insert(configs.asflags, string.format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+            table.insert(configs.ldflags, string.format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+            table.insert(configs.shflags, string.format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+        else
+            table.insert(configs.cxflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            table.insert(configs.asflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            table.insert(configs.ldflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            table.insert(configs.shflags, string.format("--sysroot=%s/arch-arm", ndk_sdkdir))
+        end
     end
 
 end

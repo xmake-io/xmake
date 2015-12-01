@@ -178,10 +178,16 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
         if ndk then
 
             -- match all toolchains
-            toolchains = os.match(string.format("%s/toolchains/arm-linux-androideabi-**/prebuilt/*/bin/%s%s", ndk, cross, name))
+            local arch = configs.get("arch")
+            if arch and arch:startswith("arm64") then
+                toolchains = os.match(string.format("%s/toolchains/aarch64-linux-android-**/prebuilt/*/bin/%s%s", ndk, cross, name))
+            else
+                toolchains = os.match(string.format("%s/toolchains/arm-linux-androideabi-**/prebuilt/*/bin/%s%s", ndk, cross, name))
+            end
+
+            -- probe the tool path
             if toolchains then
                 for _, filepath in ipairs(toolchains) do
-                    -- probe the tool path
                     toolpath = tools.probe(cross .. name, path.directory(filepath))
                     if toolpath then break end
                 end
@@ -193,7 +199,11 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     if toolpath then configs.set(kind, toolpath) end
 
     -- trace
-    utils.verbose("checking for %s (%s) ... %s", description, kind, utils.ifelse(toolpath, path.filename(toolpath), "no"))
+    if toolpath then
+        utils.verbose("checking for %s (%s) ... %s", description, kind, path.filename(toolpath), "no")
+    else
+        utils.verbose("checking for %s (%s) ... no", description, kind)
+    end
 
     -- ok
     return true
@@ -202,13 +212,20 @@ end
 -- probe the toolchains
 function prober._probe_toolchains(configs)
 
+    -- init prefix
+    local prefix = "arm-linux-androideabi-"
+    local arch = configs.get("arch")
+    if arch and arch:startswith("arm64") then
+        prefix = "aarch64-linux-android-"
+    end
+
     -- done
-    if not prober._probe_toolpath(configs, "cc", "arm-linux-androideabi-", "gcc", "the c compiler") then return false end
-    if not prober._probe_toolpath(configs, "cxx", "arm-linux-androideabi-", "g++", "the c++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "as", "arm-linux-androideabi-", "gcc", "the assember") then return false end
-    if not prober._probe_toolpath(configs, "ld", "arm-linux-androideabi-", "g++", "the linker") then return false end
-    if not prober._probe_toolpath(configs, "ar", "arm-linux-androideabi-", "ar", "the static library linker") then return false end
-    if not prober._probe_toolpath(configs, "sh", "arm-linux-androideabi-", "g++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "cc", prefix, "gcc", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", prefix, "g++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", prefix, "gcc", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "ld", prefix, "g++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", prefix, "ar", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", prefix, "g++", "the shared library linker") then return false end
     return true
 end
 
