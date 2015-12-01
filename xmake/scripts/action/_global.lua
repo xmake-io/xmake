@@ -45,7 +45,9 @@ end
 function _global.done()
 
     -- probe the global platform configure 
-    platform.probe(true)
+    if not platform.probe(true) then
+        return false
+    end
 
     -- clear up the global configure
     global.clearup()

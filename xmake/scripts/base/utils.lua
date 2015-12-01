@@ -224,10 +224,13 @@ function utils.call(funcs, pred, ...)
 
         -- exists predicate?
         if pred and type(pred) == "function" then
-            if not pred(name, result) then break end
+            if not pred(name, result) then return false end
         -- failed?
-        elseif not result then break end
+        elseif not result then return false end
     end
+
+    -- ok
+    return true
 end
 
 -- return module: utils

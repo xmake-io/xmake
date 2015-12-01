@@ -205,6 +205,14 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
         utils.verbose("checking for %s (%s) ... no", description, kind)
     end
 
+    -- failed?
+    if not toolpath and not configs.get("ndk") then
+        utils.error("checking for the NDK directory ... no")
+        utils.error("    - xmake config --ndk=xxx")
+        utils.error("or  - xmake global --ndk=xxx")
+        return false
+    end
+
     -- ok
     return true
 end
@@ -226,6 +234,8 @@ function prober._probe_toolchains(configs)
     if not prober._probe_toolpath(configs, "ld", prefix, "g++", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", prefix, "ar", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", prefix, "g++", "the shared library linker") then return false end
+
+    -- ok
     return true
 end
 
@@ -233,13 +243,13 @@ end
 function prober.config()
 
     -- call all probe functions
-    utils.call(     {   prober._probe_arch
-                    ,   prober._probe_make
-                    ,   prober._probe_ccache
-                    ,   prober._probe_ndk_sdkver
-                    ,   prober._probe_toolchains}
-                ,   nil
-                ,   config)
+    return utils.call(  {   prober._probe_arch
+                        ,   prober._probe_make
+                        ,   prober._probe_ccache
+                        ,   prober._probe_ndk_sdkver
+                        ,   prober._probe_toolchains}
+                    ,   nil
+                    ,   config)
 
 end
 
@@ -247,11 +257,11 @@ end
 function prober.global()
 
     -- call all probe functions
-    utils.call(     {   prober._probe_make
-                    ,   prober._probe_ccache
-                    ,   prober._probe_ndk_sdkver}
-                ,   nil
-                ,   global)
+    return utils.call(  {   prober._probe_make
+                        ,   prober._probe_ccache
+                        ,   prober._probe_ndk_sdkver}
+                    ,   nil
+                    ,   global)
 end
 
 -- return module: prober

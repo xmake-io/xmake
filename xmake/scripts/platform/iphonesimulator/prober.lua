@@ -246,25 +246,25 @@ end
 function prober.config()
 
     -- call all probe functions
-    utils.call(     {   prober._probe_arch
-                    ,   prober._probe_xcode
-                    ,   prober._probe_xcode_sdkver
-                    ,   prober._probe_make
-                    ,   prober._probe_ccache
-                    ,   prober._probe_toolchains}
-                ,   nil
-                ,   config)
+    return utils.call(  {   prober._probe_arch
+                        ,   prober._probe_xcode
+                        ,   prober._probe_xcode_sdkver
+                        ,   prober._probe_make
+                        ,   prober._probe_ccache
+                        ,   prober._probe_toolchains}
+                    ,   nil
+                    ,   config)
 end
 
 -- probe the global configure 
 function prober.global()
 
     -- call all probe functions
-    utils.call(     {   prober._probe_xcode
-                    ,   prober._probe_make
-                    ,   prober._probe_ccache}
-                ,   nil
-                ,   global)
+    return utils.call(  {   prober._probe_xcode
+                        ,   prober._probe_make
+                        ,   prober._probe_ccache}
+                    ,   nil
+                    ,   global)
 end
 
 -- return module: prober

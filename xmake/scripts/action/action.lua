@@ -103,7 +103,9 @@ function action.done(name)
 
     -- probe the platform
     if _action.need("platform") and (options._ACTION == "config" or config._RECONFIG) then
-        platform.probe(false)
+        if not platform.probe(false) then
+            return false
+        end
     end
 
     -- merge the default options
