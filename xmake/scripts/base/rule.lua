@@ -191,6 +191,18 @@ function rule.sourcefiles(target)
     local sourcefiles = {}
     for _, targetfile in ipairs(targetfiles) do
 
+        -- normalize *.o/obj filename
+        targetfile = targetfile:gsub("([%w%*]+)%.obj|", rule.filename("%1|", "object"))
+        targetfile = targetfile:gsub("([%w%*]+)%.obj$", rule.filename("%1", "object"))
+        targetfile = targetfile:gsub("([%w%*]+)%.o|", rule.filename("%1|", "object"))
+        targetfile = targetfile:gsub("([%w%*]+)%.o$", rule.filename("%1", "object"))
+
+        -- normalize lib*.a/*.lib filename
+        targetfile = targetfile:gsub("([%w%*]+)%.lib|", rule.filename("%1|", "static"))
+        targetfile = targetfile:gsub("([%w%*]+)%.lib$", rule.filename("%1", "static"))
+        targetfile = targetfile:gsub("lib([%w%*]+)%.a|", rule.filename("%1|", "static"))
+        targetfile = targetfile:gsub("lib([%w%*]+)%.a$", rule.filename("%1", "static"))
+
         -- match source files
         local files = os.match(targetfile)
 

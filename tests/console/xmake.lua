@@ -78,7 +78,14 @@ add_target("hello3")
 
 add_target("hello4")
     set_kind("static")
-    add_deps("hello1")
+    add_deps("hello1", "hello2")
     add_files("$(buildir)/.objs/hello1/**.o") 
+    add_files("$(buildir)/.objs/hello2/**.obj") 
+
+add_target("hello5")
+    set_kind("static")
+    add_deps("hello4", "hello1")
+    add_files("$(buildir)/hello1.lib") 
+    add_files("$(buildir)/libhello4.a") 
 
 add_subdirs("src/demo")
