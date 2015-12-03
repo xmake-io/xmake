@@ -112,6 +112,7 @@ function windows.make(configs)
     configs.tools.ld        = config.get("ld") 
     configs.tools.ar        = config.get("ar") 
     configs.tools.sh        = config.get("sh") 
+    configs.tools.as        = config.get("as") 
 
 end
 
