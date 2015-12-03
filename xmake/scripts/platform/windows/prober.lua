@@ -235,6 +235,7 @@ function prober._probe_toolchains(configs)
     -- done
     if not prober._probe_toolpath(configs, "cc", "cl.exe", "the c compiler") then return false end
     if not prober._probe_toolpath(configs, "cxx", "cl.exe", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", "ml.exe", "the assember") then return false end
     if not prober._probe_toolpath(configs, "ld", "link.exe", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "link.exe -lib", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", "link.exe -dll", "the shared library linker") then return false end
