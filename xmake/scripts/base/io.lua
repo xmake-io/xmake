@@ -273,5 +273,52 @@ function io.cat(filepath, linecount)
     end
 end
 
+-- tail the given file 
+function io.tail(filepath, linecount)
+
+    -- open file
+    local file = io.open(filepath, "r")
+    if file then
+
+        -- read lines
+        local lines = {}
+        for line in file:lines() do
+            table.insert(lines, line)
+        end
+
+        -- tail lines
+        local tails = {}
+        if #lines ~= 0 then
+            local count = 1
+            for index = #lines, 1, -1 do
+
+                -- show line
+                table.insert(tails, lines[index])
+
+                -- end?
+                if linecount and count >= linecount then
+                    break
+                end
+
+                -- update the line count
+                count = count + 1
+            end
+        end
+
+        -- show tails
+        if #tails ~= 0 then
+            for index = #tails, 1, -1 do
+
+                -- show tail
+                print(tails[index])
+
+            end
+        end
+
+        -- exit file
+        file:close() 
+    end
+end
+
 -- return module: io
 return io
