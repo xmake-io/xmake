@@ -76,4 +76,9 @@ add_target("hello3")
     set_targetdir("$(buildir)/lib")
     set_objectdir("$(buildir)/obj")
 
+add_target("hello4")
+    set_kind("static")
+    add_deps("hello1")
+    add_files("$(buildir)/.objs/hello1/**.o") 
+
 add_subdirs("src/demo")

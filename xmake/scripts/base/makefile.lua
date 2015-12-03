@@ -36,11 +36,57 @@ local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
 local platform  = require("platform/platform")
 
+-- make object for the *.o/obj source file
+function makefile._make_object_for_object(file, target, srcfile, objfile)
+
+    -- get the source file type
+    local filetype = path.extension(srcfile)
+    if not filetype then return false end
+
+    -- get the lower file type
+    filetype = filetype:lower()
+
+    -- not object file?
+    if filetype ~= ".o" and filetype ~= ".obj" then return false end
+    
+    -- get mode
+    local mode = config.get("mode") or ""
+    if mode == "release" then mode = ".r"
+    elseif mode == "debug" then mode = ".d"
+    elseif mode == "profile" then mode = ".p"
+    else mode = "" end
+
+    -- make command
+    local cmd = string.format("xmake l cp %s %s", srcfile, objfile)
+
+    -- make head
+    file:write(string.format("%s:", objfile))
+
+    -- make dependence
+    file:write(string.format(" %s\n", srcfile))
+
+    -- make body
+    file:write(string.format("\t@echo adding%s %s\n", mode, srcfile))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@%s\n", cmd))
+
+    -- make tail
+    file:write("\n")
+
+    -- ok
+    return true
+end
+
 -- make the object to the makefile
 function makefile._make_object(file, target, srcfile, objfile)
     
     -- check
     assert(file and target and srcfile and objfile)
+
+    -- make object for the *.o/obj source file
+    if makefile._make_object_for_object(file, target, srcfile, objfile) then
+        return true
+    end
 
     -- get the compiler 
     local c, errors = compiler.get(srcfile)
