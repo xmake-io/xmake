@@ -361,14 +361,14 @@ function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
     local flags = {}
     compiler._addflags_from_compiler(module, flags, flagnames)
 
-    -- add flags from the platform 
-    compiler._addflags_from_platform(module, flags, flagnames)
+    -- add flags from the configure 
+    compiler._addflags_from_config(module, flags, flagnames)
 
     -- add flags from the option 
     compiler._addflags_from_option(module, flags, flagnames, opt)
 
-    -- add flags from the configure 
-    compiler._addflags_from_config(module, flags, flagnames)
+    -- add flags from the platform 
+    compiler._addflags_from_platform(module, flags, flagnames)
 
     -- execute the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
@@ -416,14 +416,14 @@ function compiler.make(module, target, srcfile, objfile, logfile)
     local flags = {}
     compiler._addflags_from_compiler(module, flags, flagnames)
 
-    -- add flags from the platform 
-    compiler._addflags_from_platform(module, flags, flagnames)
+    -- add flags from the configure 
+    compiler._addflags_from_config(module, flags, flagnames)
 
     -- add flags from the target 
     compiler._addflags_from_target(module, flags, flagnames, target)
 
-    -- add flags from the configure 
-    compiler._addflags_from_config(module, flags, flagnames)
+    -- add flags from the platform 
+    compiler._addflags_from_platform(module, flags, flagnames)
 
     -- make the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
