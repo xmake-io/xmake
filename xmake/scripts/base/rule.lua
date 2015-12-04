@@ -145,6 +145,9 @@ function rule.objectfiles(target_name, target, sourcefiles, buildir)
     local objectfiles = {}
     for _, sourcefile in ipairs(sourcefiles) do
 
+        -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
+        sourcefile = sourcefile:gsub(rule.filename("(%w+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
+
         -- make object file
         local objectfile = string.format("%s/%s/%s/%s", objectdir, target_name, path.directory(sourcefile), rule.filename(path.basename(sourcefile), "object"))
 
@@ -191,13 +194,13 @@ function rule.sourcefiles(target)
     local sourcefiles = {}
     for _, targetfile in ipairs(targetfiles) do
 
-        -- normalize *.o/obj filename
+        -- normalize *.[o|obj] filename
         targetfile = targetfile:gsub("([%w%*]+)%.obj|", rule.filename("%1|", "object"))
         targetfile = targetfile:gsub("([%w%*]+)%.obj$", rule.filename("%1", "object"))
         targetfile = targetfile:gsub("([%w%*]+)%.o|", rule.filename("%1|", "object"))
         targetfile = targetfile:gsub("([%w%*]+)%.o$", rule.filename("%1", "object"))
 
-        -- normalize lib*.a/*.lib filename
+        -- normalize [lib]*.[a|lib] filename
         targetfile = targetfile:gsub("([%w%*]+)%.lib|", rule.filename("%1|", "static"))
         targetfile = targetfile:gsub("([%w%*]+)%.lib$", rule.filename("%1", "static"))
         targetfile = targetfile:gsub("lib([%w%*]+)%.a|", rule.filename("%1|", "static"))

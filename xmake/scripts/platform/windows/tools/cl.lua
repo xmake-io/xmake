@@ -33,7 +33,7 @@ local platform  = require("platform/platform")
 function cl.init(self, name)
 
     -- save name
-    self._NAME = name or "cl.exe"
+    self.name = name or "cl.exe"
 
     -- init cxflags
     self.cxflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
@@ -90,7 +90,7 @@ function cl.command_compile(self, srcfile, objfile, flags, logfile)
     if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -c %s -Fo%s %s%s", self._NAME, flags, objfile, srcfile, redirect)
+    return string.format("%s -c %s -Fo%s %s%s", self.name, flags, objfile, srcfile, redirect)
 end
 
 -- make the define flag

@@ -35,7 +35,7 @@ local nmake = nmake or {}
 function nmake.init(self, name)
 
     -- save name
-    self._NAME = name or "nmake.exe"
+    self.name = name or "nmake.exe"
 
     -- is verbose?
     self._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
@@ -55,9 +55,9 @@ function nmake.main(self, mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s /nologo /f %s %s VERBOSE=%s", self._NAME, mkfile, target or "", self._VERBOSE)
+        cmd = string.format("%s /nologo /f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
     else  
-        cmd = string.format("%s /nologo %s VERBOSE=%s", self._NAME, target or "", self._VERBOSE)
+        cmd = string.format("%s /nologo %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
     end
 
     -- done 

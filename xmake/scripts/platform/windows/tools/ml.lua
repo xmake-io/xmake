@@ -33,7 +33,7 @@ local platform  = require("platform/platform")
 function ml.init(self, name)
 
     -- save name
-    self._NAME = name or "ml.exe"
+    self.name = name or "ml.exe"
 
     -- init asflags
     self.asflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
@@ -84,7 +84,7 @@ function ml.command_compile(self, srcfile, objfile, flags, logfile)
     if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -c %s -Fo%s %s%s", self._NAME, flags, objfile, srcfile, redirect)
+    return string.format("%s -c %s -Fo%s %s%s", self.name, flags, objfile, srcfile, redirect)
 end
 
 -- make the define flag

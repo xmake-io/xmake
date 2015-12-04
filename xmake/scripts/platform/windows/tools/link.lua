@@ -33,7 +33,7 @@ local platform  = require("platform/platform")
 function link.init(self, name)
 
     -- save name
-    self._NAME = name or "link.exe"
+    self.name = name or "link.exe"
 
     -- the architecture
     local arch = config.get("arch")
@@ -79,11 +79,11 @@ function link.command_link(self, objfiles, targetfile, flags, logfile)
     if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    local cmd = string.format("%s %s -out:%s %s%s", self._NAME, flags, targetfile, objfiles, redirect)
+    local cmd = string.format("%s %s -out:%s %s%s", self.name, flags, targetfile, objfiles, redirect)
 
     -- too long?
     if #cmd > 256 then
-        cmd = string.format("%s%s @<<\n%s -out:%s %s\n<<", self._NAME, redirect, flags, targetfile, objfiles)
+        cmd = string.format("%s%s @<<\n%s -out:%s %s\n<<", self.name, redirect, flags, targetfile, objfiles)
     end
 
     -- ok?
