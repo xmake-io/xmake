@@ -98,15 +98,9 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     else mode = "" end
 
     -- get extractor name 
-    local toolname = nil
-    local extractor, errors = tools.get("ex")
-    if not extractor then
-        utils.error(errors)
-        return false
-    end
-    toolname = extractor.name
+    local toolname = platform.tool("ex")
     if not toolname then
-        utils.error("cannot get the extractor name!")
+        utils.error("cannot get extractor!")
         return false
     end
 

@@ -239,6 +239,7 @@ function prober._probe_toolchains(configs)
     if not prober._probe_toolpath(configs, "ld", "link.exe", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "link.exe -lib", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", "link.exe -dll", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "ex", "lib.exe", "the library extractor") then return false end
     if not prober._probe_toolpath(configs, "make", "nmake.exe", "the make") then return false end
 
     -- leave envirnoment
