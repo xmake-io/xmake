@@ -56,6 +56,7 @@ function iphoneos.make(configs)
     configs.tools.ld        = config.get("ld") 
     configs.tools.ar        = config.get("ar") 
     configs.tools.sh        = config.get("sh") 
+    configs.tools.ex        = config.get("ar") 
     configs.tools.lipo      = config.get("lipo") 
 
     -- init flags for architecture

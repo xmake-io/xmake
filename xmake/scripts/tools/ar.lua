@@ -32,7 +32,7 @@ local config    = require("base/config")
 function ar.init(self, name)
 
     -- save name
-    self._NAME = name or "ar"
+    self.name = name or "ar"
 
     -- init arflags
     self.arflags = { "-crs" }
@@ -47,7 +47,7 @@ function ar.command_link(self, objfiles, targetfile, flags, logfile)
     if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s %s %s %s%s", self._NAME, flags, targetfile, objfiles, redirect)
+    return string.format("%s %s %s %s%s", self.name, flags, targetfile, objfiles, redirect)
 end
 
 -- the main function

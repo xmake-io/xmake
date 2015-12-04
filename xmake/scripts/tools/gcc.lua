@@ -41,7 +41,7 @@ function gcc._check(self, flag)
 
     -- check it
     local result = flag
-    if 0 ~= os.execute(string.format("%s %s -S -o %s -xc %s > %s 2>&1", self._NAME, flag, xmake._NULDEV, xmake._NULDEV, xmake._NULDEV)) then
+    if 0 ~= os.execute(string.format("%s %s -S -o %s -xc %s > %s 2>&1", self.name, flag, xmake._NULDEV, xmake._NULDEV, xmake._NULDEV)) then
         result = ""
     end
 
@@ -59,7 +59,7 @@ end
 function gcc.init(self, name)
 
     -- save name
-    self._NAME = name or "gcc"
+    self.name = name or "gcc"
 
     -- init mxflags
     self.mxflags = {    "-fmessage-length=0"
@@ -125,7 +125,7 @@ function gcc.command_compile(self, srcfile, objfile, flags, logfile)
     if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -c %s -o %s %s%s", self._NAME, flags, objfile, srcfile, redirect)
+    return string.format("%s -c %s -o %s %s%s", self.name, flags, objfile, srcfile, redirect)
 end
 
 -- make the link command
@@ -136,7 +136,7 @@ function gcc.command_link(self, objfiles, targetfile, flags, logfile)
     if logfile then redirect = string.format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -o %s %s %s%s", self._NAME, targetfile, objfiles, flags, redirect)
+    return string.format("%s -o %s %s %s%s", self.name, targetfile, objfiles, flags, redirect)
 end
 
 -- make the define flag

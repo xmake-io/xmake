@@ -36,7 +36,7 @@ local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
 local platform  = require("platform/platform")
 
--- make object for the *.o/obj source file
+-- make object for the *.[o|obj] source file
 function makefile._make_object_for_object(file, target, srcfile, objfile)
 
     -- get the source file type
@@ -66,7 +66,7 @@ function makefile._make_object_for_object(file, target, srcfile, objfile)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
-    file:write(string.format("\t@echo adding%s %s\n", mode, srcfile))
+    file:write(string.format("\t@echo inserting%s %s\n", mode, srcfile))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
     file:write(string.format("\t@%s\n", cmd))
 
@@ -77,7 +77,7 @@ function makefile._make_object_for_object(file, target, srcfile, objfile)
     return true
 end
 
--- make object for the *.a/lib source file
+-- make object for the *.[a|lib] source file
 function makefile._make_object_for_static(file, target, srcfile, objfile)
 
     -- get the source file type
@@ -97,8 +97,21 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     elseif mode == "profile" then mode = ".p"
     else mode = "" end
 
+    -- get extractor name 
+    local toolname = nil
+    local extractor, errors = tools.get("ex")
+    if not extractor then
+        utils.error(errors)
+        return false
+    end
+    toolname = extractor.name
+    if not toolname then
+        utils.error("cannot get the extractor name!")
+        return false
+    end
+
     -- make command
-    local cmd = string.format("xmake l cp %s %s", srcfile, objfile)
+    local cmd = string.format("xmake l extract \"%s\" %s %s > %s 2>&1", toolname, srcfile, objfile, makefile._LOGFILE)
 
     -- make head
     file:write(string.format("%s:", objfile))
@@ -107,8 +120,9 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     file:write(string.format(" %s\n", srcfile))
 
     -- make body
-    file:write(string.format("\t@echo adding%s %s\n", mode, srcfile))
+    file:write(string.format("\t@echo inserting%s %s\n", mode, srcfile))
     file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@xmake l rmdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s\n", cmd))
 
     -- make tail
@@ -320,6 +334,7 @@ function makefile._make_targets(file)
         all = all .. " " .. name
     end
     file:write(string.format("all: %s\n\n", all))
+    file:write(string.format(".PHONY: all %s\n\n", all))
 
     -- make it for all targets
     for name, target in pairs(targets) do
