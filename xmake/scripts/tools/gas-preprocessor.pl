@@ -956,6 +956,7 @@ sub handle_serialized_line {
     $line =~ s/\.arch/$comm$&/x        if $as_type =~ /^(apple-|clang|armasm)/;
     $line =~ s/\.object_arch/$comm$&/x if $as_type =~ /^(apple-|armasm)/;
     $line =~ s/.section\s+.note.GNU-stack.*/$comm$&/x if $as_type =~ /^(apple-|armasm)/;
+    $line =~ s/\.hidden/$comm$&/x        if $as_type =~ /^(apple-|clang|armasm)/;
 
     $line =~ s/\.syntax/$comm$&/x      if $as_type =~ /armasm/;
 
