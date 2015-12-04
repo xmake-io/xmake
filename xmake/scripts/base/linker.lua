@@ -294,14 +294,14 @@ function linker.make(module, target, objfiles, targetfile, logfile)
     local flags = {}
     linker._addflags_from_linker(module, flags, flagname)
 
-    -- add flags from the platform
-    linker._addflags_from_platform(module, flags, flagname)
+    -- add flags from the configure
+    linker._addflags_from_config(module, flags, flagname)
 
     -- add flags from the target 
     linker._addflags_from_target(module, flags, flagname, target)
 
-    -- add flags from the configure
-    linker._addflags_from_config(module, flags, flagname)
+    -- add flags from the platform
+    linker._addflags_from_platform(module, flags, flagname)
 
     -- make the link command
     return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
@@ -321,17 +321,17 @@ function linker.check_links(opt, links, objectfile, targetfile)
     local flags = {}
     linker._addflags_from_linker(module, flags, "ldflags")
 
-    -- add flags from the platform
-    linker._addflags_from_platform(module, flags, "ldflags")
+    -- add flags from the configure
+    linker._addflags_from_config(module, flags, "ldflags")
 
     -- add flags from the option
     linker._addflags_from_option(module, flags, "ldflags", opt)
 
+    -- add flags from the platform
+    linker._addflags_from_platform(module, flags, "ldflags")
+
     -- add flags from the links
     linker._addflags_from_links(module, flags, links)
-
-    -- add flags from the configure
-    linker._addflags_from_config(module, flags, "ldflags")
 
     -- execute the link command
     return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), xmake._NULDEV))
