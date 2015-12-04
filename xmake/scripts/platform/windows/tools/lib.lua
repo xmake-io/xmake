@@ -17,41 +17,36 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        extract.lua
+-- @file        lib.lua
 --
 
--- define module: extract
-local extract = extract or {}
+-- define module: lib
+local lib = lib or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local config    = require("base/config")
+local platform  = require("platform/platform")
 
--- the main function
---
--- extract /home/[lib]xxx.[a|lib] /home/xxx/*.[o|obj]
--- only support: lib -extract membername -out xxx.obj
-function extract.main(self, ...)
+-- init the compiler
+function lib.init(self, name)
 
+    -- save name
+    self.name = name or "lib.exe"
+
+end
+
+-- extract the static library to object files
+function lib.extract(self, ...)
+ 
     -- check
     local args = ...
-    assert(#args == 3)
-
-    -- get toolname
-    local toolname = args[1]
-    assert(toolname)
-
-    -- be not ar?
-    if not toolname:find("lib.exe", 1, true) then
-        utils.error("%s is not lib.exe!", toolname)
-        return false
-    end
+    assert(#args == 2 and self.name)
 
     -- get library and object file path
-    local libfile = args[2]
-    local objfile = args[3]
+    local libfile = args[1]
+    local objfile = args[2]
     assert(libfile and objfile)
 
     -- get object directory
@@ -62,15 +57,32 @@ function extract.main(self, ...)
         return false
     end
 
-    -- trace
-    print(toolname, libfile, objfile, objdir)
-
-    -- abort
+    print(libfile, objfile)
     assert(false)
 
     -- ok
     return true
 end
 
--- return module: extract
-return extract
+-- the main function
+function lib.main(self, cmd)
+
+    -- the windows module
+    local windows = platform.module()
+    assert(windows)
+
+    -- enter envirnoment
+    windows.enter()
+
+    -- execute it
+    local ok = os.execute(cmd)
+
+    -- leave envirnoment
+    windows.leave()
+
+    -- ok?
+    return utils.ifelse(ok == 0, true, false)
+end
+
+-- return module: lib
+return lib

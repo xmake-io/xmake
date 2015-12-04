@@ -35,7 +35,11 @@ function tools._match(name, toolname)
 
     -- match full? ok
     if name == toolname then return 100 end
-     
+ 
+    -- match the name for windows? ok
+    if name:find("^" .. toolname .. "%.exe") then return 90 end
+    if name:find(toolname .. "%.exe") then return 85 end
+    
     -- match the last word? ok
     if name:find(toolname .. "$") then return 80 end
 
@@ -75,7 +79,7 @@ function tools._find_from(root, name)
             
             -- match score
             local score = tools._match(name, toolname:lower()) 
-            
+
             -- ok?
             if score >= 100 then return file end
     
@@ -173,7 +177,7 @@ function tools.load(name, root)
     end
 end
     
--- get the given tool from the current platform
+-- get the given tool script from the given kind
 function tools.get(kind)
 
     -- get the tool name

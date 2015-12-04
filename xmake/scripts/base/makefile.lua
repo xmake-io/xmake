@@ -97,15 +97,22 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     elseif mode == "profile" then mode = ".p"
     else mode = "" end
 
-    -- get extractor name 
+    -- get the extractor tool name
     local toolname = platform.tool("ex")
     if not toolname then
-        utils.error("cannot get extractor!")
+        utils.error("cannot get extractor name!")
+        return false
+    end
+
+    -- find the tool file path
+    local toolpath = tools.find(toolname)
+    if not toolpath or not os.isfile(toolpath) then
+        utils.error("cannot get extractor path!")
         return false
     end
 
     -- make command
-    local cmd = string.format("xmake l extract \"%s\" %s %s > %s 2>&1", toolname, srcfile, objfile, makefile._LOGFILE)
+    local cmd = string.format("xmake l dispatcher \"%s\" \"%s\" extract %s %s > %s 2>&1", toolname, toolpath, srcfile, objfile, makefile._LOGFILE)
 
     -- make head
     file:write(string.format("%s:", objfile))
@@ -229,7 +236,10 @@ function makefile._make_target(file, name, target)
 
     -- get the linker from the given kind
     local l = linker.get(target.kind)
-    if not l then return false end
+    if not l then 
+        utils.error("cannot get linker with kind: %s", target.kind)
+        return false
+    end
 
     -- make head
     file:write(string.format("%s: %s\n", name, targetfile))
