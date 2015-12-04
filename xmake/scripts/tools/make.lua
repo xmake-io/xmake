@@ -44,9 +44,9 @@ function make.main(self, mkfile, target)
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s -j4 -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
+        cmd = string.format("%s -r -j4 -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
     else  
-        cmd = string.format("%s -j4 %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
+        cmd = string.format("%s -r -j4 %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
     end
 
     -- done 
@@ -55,9 +55,9 @@ function make.main(self, mkfile, target)
 
         -- attempt to execute it again for getting the error logs without -j4
         if mkfile and os.isfile(mkfile) then
-            cmd = string.format("%s -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
+            cmd = string.format("%s -r -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
         else  
-            cmd = string.format("%s %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
+            cmd = string.format("%s -r %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
         end
 
         -- done
