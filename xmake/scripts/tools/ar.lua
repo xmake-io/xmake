@@ -50,6 +50,56 @@ function ar.command_link(self, objfiles, targetfile, flags, logfile)
     return string.format("%s %s %s %s%s", self.name, flags, targetfile, objfiles, redirect)
 end
 
+-- extract the static library to object files
+function ar.extract(self, ...)
+ 
+    -- check
+    local args = ...
+    assert(#args == 2 and self.name)
+
+    -- get library and object file path
+    local libfile = args[1]
+    local objfile = args[2]
+    assert(libfile and objfile)
+
+    -- get object directory
+    local objdir = path.directory(objfile)
+    if not os.isdir(objdir) then os.mkdir(objdir) end
+    if not os.isdir(objdir) then
+        utils.error("%s not found!", objdir)
+        return false
+    end
+
+    -- absolute the library path
+    libfile = path.absolute(libfile)
+    assert(libfile)
+
+    -- enter the object directory
+    ok, errors = os.cd(objdir)
+    if not ok then
+        utils.error(errors)
+        return false
+    end
+
+    -- extract it
+    local ok = os.execute(string.format("%s -x %s", self.name, libfile))
+    if ok ~= 0 then
+        utils.error("extract %s to %s failed!", libfile, objdir)
+        return false
+    end
+
+    -- leave the object directory
+    ok, errors = os.cd("-")
+    if not ok then
+        utils.error(errors)
+        return false
+    end
+
+    -- ok
+    return true
+end
+
+
 -- the main function
 function ar.main(self, cmd)
 
