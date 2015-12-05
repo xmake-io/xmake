@@ -28,6 +28,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local tools     = require("tools/tools")
 
 -- the main function
 --
@@ -36,49 +37,38 @@ function dispatcher.main(self, ...)
 
     -- check
     local args = ...
-    assert(#args >= 3)
+    assert(#args >= 2)
 
-    -- get toolpath
-    local toolname      = args[1]:decode()
-    local toolpath      = args[2]:decode()
-    local action_name   = args[3]
-    assert(toolname and toolpath and action_name)
+    -- get tool kind and action name
+    local tool_kind     = args[1]
+    local action_name   = args[2]
+    assert(tool_kind and action_name)
 
-    -- load script
-    local script, errors = loadfile(toolpath)
-    if script then
+    -- get the tool 
+    local tool = tools.get(tool_kind)
+    if tool then
         
-        -- load tool
-        local tool = script()
-
-        -- init tool 
-        if tool and tool.init then
-            tool:init(toolname)
-        end
-
         -- load action
         local action = tool[action_name]
         if action then
             
             -- init arguments for action
             local action_args = {}
-            for i = 4, #args do
+            for i = 3, #args do
                 table.insert(action_args, args[i]:decode())
             end
 
             -- done action
             if not action(tool, action_args) then
-                utils.error("run action %s for '%s' failed!", action_name, toolname)
+                utils.error("run action %s failed!", action_name)
                 assert(false)
             end
         else
-            utils.error("load action %s for '%s' failed!", action_name, toolname)
+            utils.error("load action %s failed!", action_name)
             assert(false)
         end
 
     else
-        utils.error(errors)
-        utils.error("load %s failed!", toolpath)
         assert(false)
     end
 

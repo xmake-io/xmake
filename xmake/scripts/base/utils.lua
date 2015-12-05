@@ -25,23 +25,44 @@ local utils = utils or {}
 
 -- the printf function
 function utils.printf(msg, ...)
+
+    -- check
+    assert(msg)
+
+    -- trace
     print(string.format(msg, ...))
 end
 
 -- the verbose function
 function utils.verbose(msg, ...)
+
     if xmake._OPTIONS.verbose then
+        
+        -- check
+        assert(msg)
+
+        -- trace
         print(string.format(msg, ...))
     end
 end
 
 -- the error function
 function utils.error(msg, ...)
+
+    -- check
+    assert(msg)
+
+    -- trace
     print("error: " .. string.format(msg, ...))
 end
 
 -- the warning function
 function utils.warning(msg, ...)
+
+    -- check
+    assert(msg)
+
+    -- trace
     print("warning: " .. string.format(msg, ...))
 end
 

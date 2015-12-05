@@ -25,6 +25,7 @@ local string = string or {}
 
 -- find the last substring with the given pattern
 function string.find_last(self, pattern, plain)
+
     -- find the last substring
     local curr = 0
     repeat
