@@ -25,6 +25,7 @@ local lib = lib or {}
 
 -- load modules
 local io        = require("base/io")
+local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
@@ -77,11 +78,23 @@ function lib.extract(self, ...)
     -- extrace all object files
     for line in file:lines() do
 
+            print(line)
         -- is object file?
         if line:find("%.obj") then
 
             -- init command
-            local cmd = string.format("%s -nologo -extract:%s -out:%s\\%s %s", self.name, line, objdir, path.filename(line), libfile)
+            local out = path.translate(string.format("%s\\%s", objdir, path.filename(line)))
+
+            -- repeat? rename it
+            if os.isfile(out) then
+                for i = 0, 10 do
+                    out = path.translate(string.format("%s\\%d_%s", objdir, i, path.filename(line)))
+                    if not os.isfile(out) then break end
+                end
+            end
+
+            -- init command
+            local cmd = string.format("%s -nologo -extract:%s -out:%s %s", self.name, line, out, libfile)
 
             -- extract it
             if 0 ~= os.execute(cmd) then

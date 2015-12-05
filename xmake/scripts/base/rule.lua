@@ -55,6 +55,17 @@ function rule.filename(name, kind)
     return format[1] .. name .. format[2]
 end
 
+-- get the makefile path
+function rule.makefile()
+
+    -- get the build directory
+    local buildir = config.get("buildir")
+    assert(buildir)
+
+    -- get it
+    return path.translate(buildir .. "/makefile")
+end
+
 -- get configure file for the given target
 function rule.config_h(target)
  

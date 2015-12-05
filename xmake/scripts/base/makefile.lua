@@ -98,7 +98,8 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     else mode = "" end
 
     -- make command
-    local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode(), makefile._LOGFILE)
+--    local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode(), makefile._LOGFILE)
+    local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode())
 
     -- make head
     file:write(string.format("%s:", objfile))
@@ -343,17 +344,6 @@ function makefile._make_targets(file)
     return true
 end
 
--- get the makefile path
-function makefile.path()
-
-    -- get the build directory
-    local buildir = config.get("buildir")
-    assert(buildir)
-
-    -- get it
-    return path.translate(buildir .. "/makefile")
-end
-
 -- make makefile in the build directory
 function makefile.make()
 
@@ -372,7 +362,7 @@ function makefile.make()
     assert(logfile)
 
     -- open the makefile 
-    local path = makefile.path() 
+    local path = rule.makefile() 
     local file = io.openmk(path)
     if not file then
         -- error
@@ -409,10 +399,6 @@ function makefile.build(target)
     -- check
     assert(target and type(target) == "string")
 
-    -- get the build directory
-    local buildir = config.get("buildir")
-    assert(buildir)
-
     -- load make
     local make = tools.get("make")
     if not make then
@@ -421,7 +407,7 @@ function makefile.build(target)
     end
  
     -- done make
-    return make:main(buildir .. "/makefile", target)
+    return make:main(rule.makefile(), target)
 end
 
 -- return module: makefile
