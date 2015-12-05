@@ -208,6 +208,9 @@ function rule.sourcefiles(target)
 
         -- match source files
         local files = os.match(targetfile)
+        if #files == 0 then
+            utils.warning("cannot match add_files(\"%s\")", targetfile)
+        end
 
         -- process source files
         for _, file in ipairs(files) do

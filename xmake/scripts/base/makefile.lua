@@ -343,6 +343,17 @@ function makefile._make_targets(file)
     return true
 end
 
+-- get the makefile path
+function makefile.path()
+
+    -- get the build directory
+    local buildir = config.get("buildir")
+    assert(buildir)
+
+    -- get it
+    return path.translate(buildir .. "/makefile")
+end
+
 -- make makefile in the build directory
 function makefile.make()
 
@@ -361,7 +372,7 @@ function makefile.make()
     assert(logfile)
 
     -- open the makefile 
-    local path = buildir .. "/makefile"
+    local path = makefile.path() 
     local file = io.openmk(path)
     if not file then
         -- error

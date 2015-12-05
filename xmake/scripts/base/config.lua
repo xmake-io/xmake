@@ -229,8 +229,8 @@ function config.load()
                 -- make the current target configs
                 local current = config._make(configs)
 
-                -- clear configs and mark as "rebuild" and "reconfig" if the host has been changed
-                if current and current.host ~= xmake._HOST then
+                -- clear configs and mark as "rebuild" and "reconfig" if the host has been changed 
+                if (current and current.host ~= xmake._HOST) then
 
                     -- clear configs and mark as "rebuild"
                     config._CONFIGS = { __rebuild = true }
