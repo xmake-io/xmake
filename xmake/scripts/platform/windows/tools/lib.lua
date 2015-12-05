@@ -57,6 +57,12 @@ function lib.extract(self, ...)
         return false
     end
 
+    -- list object files 
+    if not self:main(string.format("%s -list:%s", self.name, libfile)) then
+        utils.error("extract %s to %s failed!", libfile, objdir)
+        return false
+    end
+
     print(libfile, objfile)
     assert(false)
 

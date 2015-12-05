@@ -35,8 +35,23 @@ local platform  = require("platform/platform")
 -- need access to the given file?
 function _lua.need(name)
     
-    -- no accessors
-    return false
+    -- the options
+    local options = xmake._OPTIONS
+    assert(options)
+
+    -- do not load config if be not given -f or -P options
+    if options.file == nil and options.project == nil then
+        return false
+    end
+
+    -- patch target for loading config ok
+    options.target = "all"
+
+    -- the accessors
+    local accessors = { config = true, global = true, platform = true }
+
+    -- need it?
+    return accessors[name]
 end
 
 -- done 
@@ -124,7 +139,15 @@ function _lua.menu()
                 -- options
             ,   options = 
                 {
-                    {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
+                    {'f', "file",       "kv", nil,          "Read a given xmake.lua file."                                  }
+                ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
+                                                          , "Search priority:"
+                                                          , "    1. The Given Command Argument"
+                                                          , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                          , "    3. The Current Directory"                                  }
+
+                ,   {}
+                ,   {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
 
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
