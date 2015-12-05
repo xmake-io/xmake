@@ -82,8 +82,8 @@ function ar.extract(self, ...)
     end
 
     -- extract it
-    local ok = os.execute(string.format("%s -x %s", self.name, libfile))
-    if ok ~= 0 then
+    local ok = self:main(string.format("%s -x %s", self.name, libfile))
+    if not ok then
         utils.error("extract %s to %s failed!", libfile, objdir)
         return false
     end
