@@ -80,6 +80,24 @@ function _build.done()
         end
     end
 
+    -- check makefile
+    if not os.isfile(rule.makefile()) then
+
+        -- make the configure file for the given target
+        if not project.makeconf(options.target) then
+            -- error
+            utils.error("make configure failed!")
+            return false
+        end
+
+        -- make makefile
+        if not makefile.make() then
+            -- error
+            utils.error("make makefile failed!")
+            return false
+        end
+    end
+
     -- build target for makefile
     if not makefile.build(target_name) then
         -- error
