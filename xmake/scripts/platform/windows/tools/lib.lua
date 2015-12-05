@@ -24,6 +24,8 @@
 local lib = lib or {}
 
 -- load modules
+local io        = require("base/io")
+local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
@@ -57,14 +59,44 @@ function lib.extract(self, ...)
         return false
     end
 
+    -- the windows module
+    local windows = platform.module()
+    assert(windows)
+
+    -- enter envirnoment
+    windows.enter()
+
     -- list object files 
-    if not self:main(string.format("%s -list:%s", self.name, libfile)) then
+    local file = io.popen(string.format("%s -nologo -list %s", self.name, libfile))
+    if not file then
         utils.error("extract %s to %s failed!", libfile, objdir)
+        windows.leave()
         return false
     end
 
-    print(libfile, objfile)
-    assert(false)
+    -- extrace all object files
+    for line in file:lines() do
+
+        -- is object file?
+        if line:find("%.obj") then
+
+            -- init command
+            local cmd = string.format("%s -nologo -extract:%s -out:%s\\%s %s", self.name, line, objdir, path.filename(line), libfile)
+
+            -- extract it
+            if 0 ~= os.execute(cmd) then
+                utils.error("extract %s to %s failed!", libfile, objdir)
+                windows.leave()
+                return false
+            end
+        end
+    end
+
+    -- exit file
+    file:close()
+
+    -- leave envirnoment
+    windows.leave()
 
     -- ok
     return true
