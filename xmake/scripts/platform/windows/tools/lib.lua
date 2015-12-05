@@ -78,7 +78,6 @@ function lib.extract(self, ...)
     -- extrace all object files
     for line in file:lines() do
 
-            print(line)
         -- is object file?
         if line:find("%.obj") then
 
