@@ -39,8 +39,8 @@ function dispatcher.main(self, ...)
     assert(#args >= 3)
 
     -- get toolpath
-    local toolname      = args[1]
-    local toolpath      = args[2]
+    local toolname      = args[1]:decode()
+    local toolpath      = args[2]:decode()
     local action_name   = args[3]
     assert(toolname and toolpath and action_name)
 
@@ -63,7 +63,7 @@ function dispatcher.main(self, ...)
             -- init arguments for action
             local action_args = {}
             for i = 4, #args do
-                table.insert(action_args, args[i])
+                table.insert(action_args, args[i]:decode())
             end
 
             -- done action
