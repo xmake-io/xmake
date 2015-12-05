@@ -89,6 +89,26 @@ function string.append(self, substr, separator)
     return s
 end
 
+-- encode: ' ', '=', '\"', '<'
+function string.encode(self)
+
+    -- null?
+    if self == nil then return end
+
+    -- done
+    return (self:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end))
+end
+
+-- decode: ' ', '=', '\"'
+function string.decode(self)
+
+    -- null?
+    if self == nil then return end
+
+    -- done
+    return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
+end
+
 
 -- return module: string
 return string

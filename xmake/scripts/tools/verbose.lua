@@ -25,7 +25,8 @@
 local verbose = verbose or {}
 
 -- load modules
-local io = require("base/io")
+local io        = require("base/io")
+local string    = require("base/string")
 
 -- the main function
 function verbose.main(self, ...)
@@ -33,7 +34,7 @@ function verbose.main(self, ...)
     -- verbose all
     if xmake._OPTIONS.verbose then
         for _, v in ipairs(...) do
-            io.write(string.format("%s ", v:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end)))
+            io.write(string.format("%s ", v:decode()))
         end
         io.write("\n")
     end

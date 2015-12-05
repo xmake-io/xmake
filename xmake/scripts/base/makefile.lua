@@ -67,7 +67,7 @@ function makefile._make_object_for_object(file, target, srcfile, objfile)
 
     -- make body
     file:write(string.format("\t@echo inserting%s %s\n", mode, srcfile))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
     file:write(string.format("\t@%s\n", cmd))
 
     -- make tail
@@ -112,7 +112,8 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     end
 
     -- make command
-    local cmd = string.format("xmake l dispatcher \"%s\" \"%s\" extract %s %s > %s 2>&1", toolname, toolpath, srcfile, objfile, makefile._LOGFILE)
+    local cmd = string.format("xmake l dispatcher %s %s extract %s %s > %s 2>&1", toolname:encode(), toolpath:encode(), srcfile:encode(), objfile:encode(), makefile._LOGFILE)
+--    local cmd = string.format("xmake l dispatcher %s %s extract %s %s", toolname:encode(), toolpath:encode(), srcfile:encode(), objfile:encode())
 
     -- make head
     file:write(string.format("%s:", objfile))
@@ -122,7 +123,7 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
 
     -- make body
     file:write(string.format("\t@echo inserting%s %s\n", mode, srcfile))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
     file:write(string.format("\t@xmake l rmdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s\n", cmd))
 
@@ -178,7 +179,7 @@ function makefile._make_object(file, target, srcfile, objfile)
 
     -- make body
     file:write(string.format("\t@echo %scompiling%s %s\n", utils.ifelse(ccache, "ccache ", ""), mode, srcfile))
-    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:gsub("[%s=\"]", function (w) return string.format("%%%x", w:byte()) end)))
+    file:write(string.format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
     file:write(string.format("\t@xmake l mkdir %s\n", path.directory(objfile)))
     file:write(string.format("\t@%s\n", cmd))
 
@@ -287,11 +288,11 @@ function makefile._make_target(file, name, target)
     local cmd = linker.make(l, target, objfiles, targetfile, makefile._LOGFILE)
 
     -- the verbose
-    local verbose = cmd:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end)
+    local verbose = cmd:encode()
     -- too long?
     if verbose and #verbose > 256 then
         verbose = linker.make(l, target, {rule.filename("*", "object")}, targetfile)
-        verbose = verbose:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end)
+        verbose = verbose:encode()
     end
 
     -- make body
