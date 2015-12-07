@@ -42,7 +42,7 @@ function _create.done()
     assert(options)
 
     -- the target name
-    local targetname = options.target or path.basename(xmake._PROJECT_DIR) or "demo"
+    local targetname = options.target or options.name or path.basename(xmake._PROJECT_DIR) or "demo"
 
     -- trace
     utils.printf("create %s ...", targetname)
@@ -99,7 +99,7 @@ function _create.done()
     end
 
     -- done the template files
-    if not module.done(targetname, xmake._PROJECT_DIR) then
+    if not module.done(targetname, xmake._PROJECT_DIR, xmake._PACKAGES_DIR) then
         utils.error("update the template failed!")
         return false
     end

@@ -30,6 +30,7 @@ xmake._VERSION          = _VERSION
 xmake._PROGRAM_DIR      = _PROGRAM_DIR
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._SCRIPTS_DIR      = _PROGRAM_DIR .. "/scripts"
+xmake._PACKAGES_DIR     = _PROGRAM_DIR .. "/packages"
 xmake._TEMPLATES_DIR    = _PROGRAM_DIR .. "/templates"
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._OPTIONS          = {}
