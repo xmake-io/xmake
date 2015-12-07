@@ -1331,7 +1331,11 @@ function project.menu()
                 end
 
                 -- append it
-                table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+                if opt.description then
+                    table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+                else
+                    table.insert(menu, {nil, name, "kv", default, nil})
+                end
             end
         end
     end
