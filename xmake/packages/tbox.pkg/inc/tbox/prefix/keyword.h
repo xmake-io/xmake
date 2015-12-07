@@ -170,6 +170,15 @@
 #   define __tb_extern_c_leave__                
 #endif
 
+// export for the shared library
+#if defined(TB_COMPILER_IS_MSVC)
+#   define __tb_export__                        __declspec(dllexport)
+#elif defined(TB_COMPILER_IS_GCC) && ((__GNUC__ >= 4) || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3))
+#   define __tb_export__                        __attribute__((visibility("default")))
+#else
+#   define __tb_export__         
+#endif
+
 // has feature
 #ifdef __has_feature
 #   define __tb_has_feature__(x)                            __has_feature(x)
