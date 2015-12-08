@@ -359,9 +359,8 @@ function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
     local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
-    -- add flags from the compiler 
+    -- init flags
     local flags = {}
-    compiler._addflags_from_compiler(module, flags, flagnames)
 
     -- add flags from the configure 
     compiler._addflags_from_config(module, flags, flagnames)
@@ -371,6 +370,9 @@ function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
 
     -- add flags from the platform 
     compiler._addflags_from_platform(module, flags, flagnames)
+
+    -- add flags from the compiler 
+    compiler._addflags_from_compiler(module, flags, flagnames)
 
     -- execute the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
@@ -414,9 +416,8 @@ function compiler.make(module, target, srcfile, objfile, logfile)
     local flagnames = compiler._flagnames(module._KIND)
     assert(flagnames)
 
-    -- add flags from the compiler 
+    -- init flags 
     local flags = {}
-    compiler._addflags_from_compiler(module, flags, flagnames)
 
     -- add flags from the configure 
     compiler._addflags_from_config(module, flags, flagnames)
@@ -426,6 +427,9 @@ function compiler.make(module, target, srcfile, objfile, logfile)
 
     -- add flags from the platform 
     compiler._addflags_from_platform(module, flags, flagnames)
+
+    -- add flags from the compiler 
+    compiler._addflags_from_compiler(module, flags, flagnames)
 
     -- make the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)

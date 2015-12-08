@@ -270,13 +270,13 @@ function makefile._make_target(file, name, target)
     else mode = "" end
    
     -- make the command
-    local cmd = linker.make(l, target, objfiles, targetfile, makefile._LOGFILE)
+    local cmd = linker.make(l, target, srcfiles, objfiles, targetfile, makefile._LOGFILE)
 
     -- the verbose
     local verbose = cmd:encode()
     -- too long?
     if verbose and #verbose > 256 then
-        verbose = linker.make(l, target, {rule.filename("*", "object")}, targetfile)
+        verbose = linker.make(l, target, srcfiles, {rule.filename("*", "object")}, targetfile)
         verbose = verbose:encode()
     end
 

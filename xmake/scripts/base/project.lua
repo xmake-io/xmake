@@ -671,7 +671,7 @@ function project._make_option_for_checking_links(opt, links, cfile, objectfile, 
     local ok = compiler.check_include(opt, nil, cfile, objectfile)
 
     -- check link
-    if ok then ok = linker.check_links(opt, links, objectfile, targetfile) end
+    if ok then ok = linker.check_links(opt, links, cfile, objectfile, targetfile) end
 
     -- trace
     utils.verbose("checking for the links %s ... %s", links_str, utils.ifelse(ok, "ok", "no"))
@@ -747,7 +747,7 @@ function project._make_option_for_checking_cfuncs(opt, cfuncs, cfile, objectfile
         local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
 
         -- check link
-        if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
+        if ok and opt.links then ok = linker.check_links(opt, opt.links, cfile, objectfile, targetfile) end
 
         -- trace
         utils.verbose("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
@@ -770,7 +770,7 @@ function project._make_option_for_checking_cxxfuncs(opt, cxxfuncs, cxxfile, obje
         local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
 
         -- check link
-        if ok and opt.links then ok = linker.check_links(opt, opt.links, objectfile, targetfile) end
+        if ok and opt.links then ok = linker.check_links(opt, opt.links, cxxfile, objectfile, targetfile) end
 
         -- trace
         utils.verbose("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
