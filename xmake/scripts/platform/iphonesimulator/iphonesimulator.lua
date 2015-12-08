@@ -87,6 +87,7 @@ function iphonesimulator.make(configs)
         table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.ldflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.shflags, "-isysroot " .. xcode_sdkdir)
+        table.insert(configs.scflags, "-sdk " .. xcode_sdkdir)
  
         -- save swift link directory
         config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator")
