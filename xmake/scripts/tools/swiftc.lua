@@ -63,17 +63,10 @@ function swiftc.init(self, name)
     }
 
     -- init ldflags
-    self.ldflags = { "-lswiftCore" }
-
-    -- -target 
-    --    armv7-apple-ios7.1
-    --    x86_64-apple-ios9.0
-    --    x86_64-apple-macosx10.10 
-    --
-    -- -sdk
-    --    /xxx/xxx.sdk
-    --
-    -- -enable-objc-interop
+    local swift_linkdirs = config.get("__swift_linkdirs")
+    if swift_linkdirs then
+        self.ldflags = { "-L" .. swift_linkdirs }
+    end
 
 end
 
