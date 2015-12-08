@@ -110,7 +110,7 @@ function macosx.menu(action)
             ,   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
-            ,   {nil, "target_minver",  "kv", "10.9",       "The Target Minimal Version"        }
+            ,   {nil, "target_minver",  "kv", "auto",       "The Target Minimal Version"        }
             ,   }
 
     -- init global option menu
