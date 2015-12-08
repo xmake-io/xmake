@@ -239,6 +239,7 @@ function prober._probe_toolchains(configs)
     if not prober._probe_toolpath(configs, "ld", "xcrun -sdk iphonesimulator ", "clang++", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "xcrun -sdk iphonesimulator ", "ar", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", "xcrun -sdk iphonesimulator ", "clang++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "sc", "xcrun -sdk iphonesimulator ", "swiftc", "the swift compiler") then return false end
     return true
 end
 

@@ -312,6 +312,7 @@ function compiler._flagnames(name)
     elseif name == "mm"     then flagnames = { "mxflags", "mflags"      } 
     elseif name == "mxx"    then flagnames = { "mxflags", "mxxflags"    }
     elseif name == "as"     then flagnames = { "asflags"                }
+    elseif name == "sc"     then flagnames = { "scflags"                }
     else
         -- error
         utils.error("unknown compiler: %s", name)
@@ -341,6 +342,7 @@ function compiler._kind(srcfile)
     elseif filetype == ".m" then kind = "mm"
     elseif filetype == ".mm" then kind = "mxx"
     elseif filetype == ".s" or filetype == ".asm" then kind = "as"
+    elseif filetype == ".swift" then kind = "sc"
     end
     
     -- ok
