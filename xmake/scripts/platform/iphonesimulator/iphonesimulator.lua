@@ -65,9 +65,12 @@ function iphonesimulator.make(configs)
     configs.cxflags     = { archflags }
     configs.mxflags     = { archflags }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=5.0" }
-    configs.shflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=5.0" }
- 
+    configs.ldflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=7.0" }
+    configs.shflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=7.0" }
+     if arch then
+        configs.scflags = { string.format("-target %s-apple-ios7", arch) }
+    end
+
     -- init flags for the xcode sdk directory
     local xcode_dir     = config.get("xcode_dir")
     local xcode_sdkver  = config.get("xcode_sdkver")
