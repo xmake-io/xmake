@@ -62,6 +62,9 @@ function swiftc.init(self, name)
     ,   ["-fsanitize=address"]      = ""
     }
 
+    -- init ldflags
+    self.ldflags = { "-lswiftCore" }
+
     -- -target 
     --    armv7-apple-ios7.1
     --    x86_64-apple-ios9.0

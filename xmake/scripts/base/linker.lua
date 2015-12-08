@@ -28,6 +28,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
+local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
 local platform  = require("platform/platform")
 
@@ -131,6 +132,34 @@ function linker._addflags_from_linker(module, flags, flagname)
 
     -- done
     table.join2(flags, module[flagname])
+end
+
+-- add flags from the compiler 
+function linker._addflags_from_compiler(module, flags, flagname, srcfiles)
+
+    -- check
+    assert(module and flags and flagname)
+    
+    -- add the flags for compiler
+    local flags_for_compiler = {}
+    if srcfiles then
+        for _, srcfile in ipairs(utils.wrap(srcfiles)) do
+
+            -- get the compiler 
+            local c, errors = compiler.get(srcfile)
+            if not c then
+                -- error
+                utils.error(errors)
+                return 
+            end
+
+            -- add flags
+            table.join2(flags_for_compiler, c[flagname])
+        end
+    end
+
+    -- done
+    table.join2(flags, utils.unique(flags_for_compiler))
 end
 
 -- add flags from the configure 
@@ -271,7 +300,7 @@ function linker.get(kind)
 end
 
 -- make the link command
-function linker.make(module, target, objfiles, targetfile, logfile)
+function linker.make(module, target, srcfiles, objfiles, targetfile, logfile)
 
     -- check
     assert(module and target)
@@ -290,9 +319,8 @@ function linker.make(module, target, objfiles, targetfile, logfile)
         return 
     end
 
-    -- add flags from the linker 
+    -- init flags
     local flags = {}
-    linker._addflags_from_linker(module, flags, flagname)
 
     -- add flags from the configure
     linker._addflags_from_config(module, flags, flagname)
@@ -303,12 +331,18 @@ function linker.make(module, target, objfiles, targetfile, logfile)
     -- add flags from the platform
     linker._addflags_from_platform(module, flags, flagname)
 
+    -- add flags from the compiler 
+    linker._addflags_from_compiler(module, flags, flagname, srcfiles)
+
+    -- add flags from the linker 
+    linker._addflags_from_linker(module, flags, flagname)
+
     -- make the link command
     return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- check link for the project option
-function linker.check_links(opt, links, objectfile, targetfile)
+function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
 
     -- check
     assert(opt and links and objectfile and targetfile)
@@ -317,9 +351,8 @@ function linker.check_links(opt, links, objectfile, targetfile)
     local module = linker.get("binary")
     assert(module and module.flag_link)
 
-    -- add flags from the linker 
+    -- init flags
     local flags = {}
-    linker._addflags_from_linker(module, flags, "ldflags")
 
     -- add flags from the configure
     linker._addflags_from_config(module, flags, "ldflags")
@@ -332,6 +365,12 @@ function linker.check_links(opt, links, objectfile, targetfile)
 
     -- add flags from the links
     linker._addflags_from_links(module, flags, links)
+
+    -- add flags from the compiler 
+    linker._addflags_from_compiler(module, flags, "ldflags", sourcefile)
+
+    -- add flags from the linker 
+    linker._addflags_from_linker(module, flags, "ldflags")
 
     -- execute the link command
     return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), xmake._NULDEV))
