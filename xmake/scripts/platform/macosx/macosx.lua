@@ -93,9 +93,17 @@ function macosx.make(configs)
         config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx")
     end
 
-    -- init linkdirs and includedirs
+    -- init linkdirs
     configs.linkdirs    = {"/usr/lib", "/usr/local/lib"}
-    configs.includedirs = {"/usr/include", "/usr/local/include"}
+
+    -- init includedirs
+    --
+    -- @note 
+    -- cannot use configs.includedirs because the swift compiler will compile code failed
+    table.insert(configs.cxflags, "-I/usr/include")
+    table.insert(configs.cxflags, "-I/usr/local/include")
+    table.insert(configs.mxflags, "-I/usr/include")
+    table.insert(configs.mxflags, "-I/usr/local/include")
 
 end
 

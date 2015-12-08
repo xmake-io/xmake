@@ -66,12 +66,12 @@ function iphonesimulator.make(configs)
     local archflags = nil
     local arch = config.get("arch")
     if arch then archflags = "-arch " .. arch end
-    configs.cxflags     = { archflags }
-    configs.mxflags     = { archflags }
-    configs.asflags     = { archflags }
+    configs.cxflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.mxflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.asflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
     configs.ldflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
     configs.shflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
-     if arch then
+    if arch then
         configs.scflags = { string.format("-target %s-apple-ios%s", arch, target_minver) }
     end
 

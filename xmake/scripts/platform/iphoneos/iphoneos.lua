@@ -68,9 +68,9 @@ function iphoneos.make(configs)
     local archflags = nil
     local arch = config.get("arch")
     if arch then archflags = "-arch " .. arch end
-    configs.cxflags     = { archflags }
-    configs.mxflags     = { archflags }
-    configs.asflags     = { archflags }
+    configs.cxflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.mxflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.asflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
     configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
     configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
     if arch then
