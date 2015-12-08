@@ -58,6 +58,10 @@ function macosx.make(configs)
     configs.tools.ex        = config.get("ar") 
     configs.tools.sc        = config.get("sc") 
 
+    -- init target minimal version
+    local target_minver = config.get("target_minver")
+    assert(target_minver)
+
     -- init flags for architecture
     local archflags = nil
     local arch = config.get("arch")
@@ -65,10 +69,10 @@ function macosx.make(configs)
     configs.cxflags     = { archflags, "-fpascal-strings", "-fmessage-length=0" }
     configs.mxflags     = { archflags, "-fpascal-strings", "-fmessage-length=0" }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags, "-mmacosx-version-min=10.9", "-stdlib=libc++", "-lz" }
-    configs.shflags     = { archflags, "-mmacosx-version-min=10.9", "-stdlib=libc++", "-lz" }
+    configs.ldflags     = { archflags, "-mmacosx-version-min=" .. target_minver, "-stdlib=libc++", "-lz" }
+    configs.shflags     = { archflags, "-mmacosx-version-min=" .. target_minver, "-stdlib=libc++", "-lz" }
     if arch then
-        configs.scflags = { string.format("-target %s-apple-macosx10.9", arch) }
+        configs.scflags = { string.format("-target %s-apple-macosx%s", arch, target_minver) }
     end
 
     -- init flags for the xcode sdk directory
@@ -106,6 +110,7 @@ function macosx.menu(action)
             ,   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
+            ,   {nil, "target_minver",  "kv", "10.9",       "The Target Minimal Version"        }
             ,   }
 
     -- init global option menu

@@ -60,6 +60,10 @@ function iphoneos.make(configs)
     configs.tools.sc        = config.get("sc") 
     configs.tools.lipo      = config.get("lipo") 
 
+    -- init target minimal version
+    local target_minver = config.get("target_minver")
+    assert(target_minver)
+
     -- init flags for architecture
     local archflags = nil
     local arch = config.get("arch")
@@ -67,10 +71,10 @@ function iphoneos.make(configs)
     configs.cxflags     = { archflags }
     configs.mxflags     = { archflags }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=7.0" }
-    configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=7.0" }
+    configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
+    configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
     if arch then
-        configs.scflags = { string.format("-target %s-apple-ios7", arch) }
+        configs.scflags = { string.format("-target %s-apple-ios%s", arch, target_minver) }
     end
  
     -- init flags for the xcode sdk directory
@@ -99,8 +103,12 @@ function iphoneos.menu(action)
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"           }
             ,   {nil, "mxxflags",       "kv", nil,          "The Objc++ Compiler Flags"             }
             ,   {}
+            ,   {nil, "sc",             "kv", nil,          "The Swift Compiler"                    }
+            ,   {nil, "scflags",        "kv", nil,          "The Swift Compiler Flags"              }
+            ,   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"             }
+            ,   {nil, "target_minver",  "kv", "7.0",        "The Target Minimal Version"            }
             ,   {}
             ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"         }
             ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"            }
