@@ -79,12 +79,17 @@ function macosx.make(configs)
     local xcode_dir     = config.get("xcode_dir")
     local xcode_sdkver  = config.get("xcode_sdkver")
     if xcode_dir and xcode_sdkver then
+
+        -- init flags
         local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
         table.insert(configs.cxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.asflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.ldflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.shflags, "-isysroot " .. xcode_sdkdir)
+
+        -- save swift link directory
+        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx")
     end
 
     -- init linkdirs and includedirs
