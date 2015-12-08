@@ -65,8 +65,11 @@ function macosx.make(configs)
     configs.cxflags     = { archflags, "-fpascal-strings", "-fmessage-length=0" }
     configs.mxflags     = { archflags, "-fpascal-strings", "-fmessage-length=0" }
     configs.asflags     = { archflags }
-    configs.ldflags     = { archflags, "-mmacosx-version-min=10.7", "-stdlib=libc++", "-lz" }
-    configs.shflags     = { archflags, "-mmacosx-version-min=10.7", "-stdlib=libc++", "-lz" }
+    configs.ldflags     = { archflags, "-mmacosx-version-min=10.9", "-stdlib=libc++", "-lz" }
+    configs.shflags     = { archflags, "-mmacosx-version-min=10.9", "-stdlib=libc++", "-lz" }
+    if arch then
+        configs.scflags = { string.format("-target %s-apple-macosx10.9", arch) }
+    end
 
     -- init flags for the xcode sdk directory
     local xcode_dir     = config.get("xcode_dir")
