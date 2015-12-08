@@ -98,8 +98,7 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     else mode = "" end
 
     -- make command
---    local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode(), makefile._LOGFILE)
-    local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode())
+    local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode(), makefile._LOGFILE)
 
     -- make head
     file:write(string.format("%s:", objfile))
