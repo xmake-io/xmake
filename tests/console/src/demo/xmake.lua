@@ -51,3 +51,7 @@ add_target("demo_cpp")
                 add_ldflags("-framework Cocoa", "-framework IOKit", "-framework CoreFoundation")
             end
     end
+
+add_target("demo_swift")
+    set_kind("binary")
+    add_files("*.swift")

@@ -56,6 +56,7 @@ function macosx.make(configs)
     configs.tools.ar        = config.get("ar") 
     configs.tools.sh        = config.get("sh") 
     configs.tools.ex        = config.get("ar") 
+    configs.tools.sc        = config.get("sc") 
 
     -- init flags for architecture
     local archflags = nil
@@ -96,6 +97,9 @@ function macosx.menu(action)
             ,   {nil, "mflags",         "kv", nil,          "The Objc Compiler Flags"           }
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"       }
             ,   {nil, "mxxflags",       "kv", nil,          "The Objc++ Compiler Flags"         }
+            ,   {}
+            ,   {nil, "sc",             "kv", nil,          "The Swift Compiler"                }
+            ,   {nil, "scflags",        "kv", nil,          "The Swift Compiler Flags"          }
             ,   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
