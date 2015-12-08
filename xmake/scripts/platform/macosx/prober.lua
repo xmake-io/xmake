@@ -140,6 +140,25 @@ function prober._probe_xcode_sdkver(configs)
     return true
 end
 
+-- probe the target minimal version
+function prober._probe_target_minver(configs)
+
+    -- get the target minimal version
+    local target_minver = configs.get("target_minver")
+
+    -- ok? 
+    if target_minver then return true end
+
+    -- init the default target minimal version
+    configs.set("target_minver", "10.9")
+
+    -- trace
+    utils.verbose("checking for the target minimal version ... %s", configs.get("target_minver"))
+
+    -- ok
+    return true
+end
+
 -- probe the make
 function prober._probe_make(configs)
 
@@ -250,6 +269,7 @@ function prober.config()
     return utils.call(  {   prober._probe_arch
                         ,   prober._probe_xcode
                         ,   prober._probe_xcode_sdkver
+                        ,   prober._probe_target_minver
                         ,   prober._probe_make
                         ,   prober._probe_ccache
                         ,   prober._probe_toolchains}
