@@ -168,6 +168,10 @@ function _config.menu()
                 ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"                                           }
                
                 ,   {}
+                ,   {nil, "sc",         "kv", nil,          "The Swift Compiler"                                            }
+                ,   {nil, "scflags",    "kv", nil,          "The Swift Compiler Flags"                                      }
+
+                ,   {}
                 ,   {nil, "ld",         "kv", nil,          "The Linker"                                                    }
                 ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"                                       }
 
