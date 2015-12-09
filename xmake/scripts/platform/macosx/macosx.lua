@@ -117,9 +117,6 @@ function macosx.menu(action)
             ,   {nil, "mxflags",        "kv", nil,          "The Objc/c++ Compiler Flags"       }
             ,   {nil, "mxxflags",       "kv", nil,          "The Objc++ Compiler Flags"         }
             ,   {}
-            ,   {nil, "sc",             "kv", nil,          "The Swift Compiler"                }
-            ,   {nil, "scflags",        "kv", nil,          "The Swift Compiler Flags"          }
-            ,   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
             ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
             ,   {nil, "target_minver",  "kv", "auto",       "The Target Minimal Version"        }

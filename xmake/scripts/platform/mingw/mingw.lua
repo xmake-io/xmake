@@ -54,6 +54,7 @@ function mingw.make(configs)
     configs.tools.ar        = config.get("ar") 
     configs.tools.sh        = config.get("sh") 
     configs.tools.ex        = config.get("ar") 
+    configs.tools.sc        = config.get("sc") 
 
     -- init flags for architecture
     local archflags = nil

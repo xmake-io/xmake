@@ -234,6 +234,7 @@ function prober._probe_toolchains(configs)
     if not prober._probe_toolpath(configs, "ld", prefix, "g++", "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", prefix, "ar", "the static library linker") then return false end
     if not prober._probe_toolpath(configs, "sh", prefix, "g++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "sc", prefix, "swiftc", "the swift compiler") then return false end
 
     -- ok
     return true
