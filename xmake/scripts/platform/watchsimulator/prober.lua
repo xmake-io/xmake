@@ -111,7 +111,7 @@ function prober._probe_xcode_sdkver(configs)
 
     -- attempt to match the directory
     if not xcode_sdkver then
-        local dirs = os.match(configs.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.sdk", true)
+        local dirs = os.match(configs.get("xcode_dir") .. "/Contents/Developer/Platforms/WatchSimulator.platform/Developer/SDKs/WatchSimulator*.sdk", true)
         if dirs then
             for _, dir in ipairs(dirs) do
                 xcode_sdkver = string.match(dir, "%d+%.%d+")
@@ -250,15 +250,15 @@ end
 function prober._probe_toolchains(configs)
 
     -- done
-    if not prober._probe_toolpath(configs, "cc", "xcrun -sdk iphonesimulator ", "clang", "the c compiler") then return false end
-    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk iphonesimulator ", "clang++", "the c++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "mm", "xcrun -sdk iphonesimulator ", "clang", "the objc compiler") then return false end
-    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk iphonesimulator ", "clang++", "the objc++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "as", "xcrun -sdk iphonesimulator ", "clang", "the assember") then return false end
-    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk iphonesimulator ", "clang++", "the linker") then return false end
-    if not prober._probe_toolpath(configs, "ar", "xcrun -sdk iphonesimulator ", "ar", "the static library linker") then return false end
-    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk iphonesimulator ", "clang++", "the shared library linker") then return false end
-    if not prober._probe_toolpath(configs, "sc", "xcrun -sdk iphonesimulator ", "swiftc", "the swift compiler") then return false end
+    if not prober._probe_toolpath(configs, "cc", "xcrun -sdk watchsimulator ", "clang", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk watchsimulator ", "clang++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "mm", "xcrun -sdk watchsimulator ", "clang", "the objc compiler") then return false end
+    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk watchsimulator ", "clang++", "the objc++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", "xcrun -sdk watchsimulator ", "clang", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk watchsimulator ", "clang++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", "xcrun -sdk watchsimulator ", "ar", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk watchsimulator ", "clang++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "sc", "xcrun -sdk watchsimulator ", "swiftc", "the swift compiler") then return false end
     return true
 end
 

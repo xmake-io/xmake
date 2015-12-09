@@ -17,33 +17,33 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        iphoneos.lua
+-- @file        watchsimulator.lua
 --
 
--- define module: iphoneos
-local iphoneos = iphoneos or {}
+-- define module: watchsimulator
+local watchsimulator = watchsimulator or {}
 
 -- load modules
-local config        = require("base/config")
+local config                = require("base/config")
 
 -- init host
-iphoneos._HOST      = "macosx"
+watchsimulator._HOST       = "macosx"
 
 -- init os
-iphoneos._OS        = "ios"
+watchsimulator._OS         = "ios"
 
 -- init architectures
-iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
+watchsimulator._ARCHS      = {"i386", "x86_64"}
 
 -- make configure
-function iphoneos.make(configs)
+function watchsimulator.make(configs)
 
     -- init the file formats
     configs.formats         = {}
     configs.formats.static  = {"lib", ".a"}
     configs.formats.object  = {"",    ".o"}
     configs.formats.shared  = {"lib", ".dylib"}
-
+ 
     -- init the toolchains
     configs.tools           = {}
     configs.tools.make      = config.get("make")
@@ -52,13 +52,11 @@ function iphoneos.make(configs)
     configs.tools.cxx       = config.get("cxx")
     configs.tools.mm        = config.get("mm") 
     configs.tools.mxx       = config.get("mxx") 
-    configs.tools.as        = config.get("as")
     configs.tools.ld        = config.get("ld") 
     configs.tools.ar        = config.get("ar") 
     configs.tools.sh        = config.get("sh") 
     configs.tools.ex        = config.get("ar") 
     configs.tools.sc        = config.get("sc") 
-    configs.tools.lipo      = config.get("lipo") 
 
     -- init target minimal version
     local target_minver = config.get("target_minver")
@@ -68,22 +66,22 @@ function iphoneos.make(configs)
     local archflags = nil
     local arch = config.get("arch")
     if arch then archflags = "-arch " .. arch end
-    configs.cxflags     = { archflags, "-miphoneos-version-min=" .. target_minver }
-    configs.mxflags     = { archflags, "-miphoneos-version-min=" .. target_minver }
-    configs.asflags     = { archflags, "-miphoneos-version-min=" .. target_minver }
-    configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
-    configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
+    configs.cxflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.mxflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.asflags     = { archflags, "-mios-simulator-version-min=" .. target_minver }
+    configs.ldflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+    configs.shflags     = { archflags, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
     if arch then
         configs.scflags = { string.format("-target %s-apple-ios%s", arch, target_minver) }
     end
- 
+
     -- init flags for the xcode sdk directory
     local xcode_dir     = config.get("xcode_dir")
     local xcode_sdkver  = config.get("xcode_sdkver")
     if xcode_dir and xcode_sdkver then
 
         -- init flags
-        local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. xcode_sdkver .. ".sdk"
+        local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/WatchSimulator.platform/Developer/SDKs/WatchSimulator" .. xcode_sdkver .. ".sdk"
         table.insert(configs.cxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.asflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
@@ -92,16 +90,15 @@ function iphoneos.make(configs)
         table.insert(configs.scflags, "-sdk " .. xcode_sdkdir)
  
         -- save swift link directory
-        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos")
+        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/watchsimulator")
     end
-
 end
 
 -- get the option menu for action: xmake config or global
-function iphoneos.menu(action)
+function watchsimulator.menu(action)
 
     -- init config option menu
-    iphoneos._MENU_CONFIG = iphoneos._MENU_CONFIG or
+    watchsimulator._MENU_CONFIG = watchsimulator._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
@@ -122,7 +119,7 @@ function iphoneos.menu(action)
             ,   }
 
     -- init global option menu
-    iphoneos._MENU_GLOBAL = iphoneos._MENU_GLOBAL or
+    watchsimulator._MENU_GLOBAL = watchsimulator._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {}
@@ -133,12 +130,12 @@ function iphoneos.menu(action)
 
     -- get the option menu
     if action == "config" then
-        return iphoneos._MENU_CONFIG
+        return watchsimulator._MENU_CONFIG
     elseif action == "global" then
-        return iphoneos._MENU_GLOBAL
+        return watchsimulator._MENU_GLOBAL
     end
 end
 
 
--- return module: iphoneos
-return iphoneos
+-- return module: watchsimulator
+return watchsimulator
