@@ -99,11 +99,9 @@ function macosx.make(configs)
     -- init includedirs
     --
     -- @note 
-    -- cannot use configs.includedirs because the swift compiler will compile code failed
+    -- cannot use configs.includedirs because the swift/objc compiler will compile code failed
     table.insert(configs.cxflags, "-I/usr/include")
     table.insert(configs.cxflags, "-I/usr/local/include")
-    table.insert(configs.mxflags, "-I/usr/include")
-    table.insert(configs.mxflags, "-I/usr/local/include")
 
 end
 
