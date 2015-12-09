@@ -17,26 +17,26 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        iphoneos.lua
+-- @file        watchos.lua
 --
 
--- define module: iphoneos
-local iphoneos = iphoneos or {}
+-- define module: watchos
+local watchos = watchos or {}
 
 -- load modules
 local config        = require("base/config")
 
 -- init host
-iphoneos._HOST      = "macosx"
+watchos._HOST      = "macosx"
 
 -- init os
-iphoneos._OS        = "ios"
+watchos._OS        = "ios"
 
 -- init architectures
-iphoneos._ARCHS     = {"armv7", "armv7s", "arm64"}
+watchos._ARCHS     = {"armv7", "armv7s", "arm64"}
 
 -- make configure
-function iphoneos.make(configs)
+function watchos.make(configs)
 
     -- init the file formats
     configs.formats         = {}
@@ -68,11 +68,11 @@ function iphoneos.make(configs)
     local archflags = nil
     local arch = config.get("arch")
     if arch then archflags = "-arch " .. arch end
-    configs.cxflags     = { archflags, "-miphoneos-version-min=" .. target_minver }
-    configs.mxflags     = { archflags, "-miphoneos-version-min=" .. target_minver }
-    configs.asflags     = { archflags, "-miphoneos-version-min=" .. target_minver }
-    configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
-    configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
+    configs.cxflags     = { archflags, "-mwatchos-version-min=" .. target_minver }
+    configs.mxflags     = { archflags, "-mwatchos-version-min=" .. target_minver }
+    configs.asflags     = { archflags, "-mwatchos-version-min=" .. target_minver }
+    configs.ldflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mwatchos-version-min=" .. target_minver }
+    configs.shflags     = { archflags, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mwatchos-version-min=" .. target_minver }
     if arch then
         configs.scflags = { string.format("-target %s-apple-ios%s", arch, target_minver) }
     end
@@ -83,7 +83,7 @@ function iphoneos.make(configs)
     if xcode_dir and xcode_sdkver then
 
         -- init flags
-        local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. xcode_sdkver .. ".sdk"
+        local xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS" .. xcode_sdkver .. ".sdk"
         table.insert(configs.cxflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.asflags, "-isysroot " .. xcode_sdkdir)
         table.insert(configs.mxflags, "-isysroot " .. xcode_sdkdir)
@@ -92,16 +92,16 @@ function iphoneos.make(configs)
         table.insert(configs.scflags, "-sdk " .. xcode_sdkdir)
  
         -- save swift link directory
-        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos")
+        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/watchos")
     end
 
 end
 
 -- get the option menu for action: xmake config or global
-function iphoneos.menu(action)
+function watchos.menu(action)
 
     -- init config option menu
-    iphoneos._MENU_CONFIG = iphoneos._MENU_CONFIG or
+    watchos._MENU_CONFIG = watchos._MENU_CONFIG or
             {   {}   
             ,   {nil, "mm",             "kv", nil,          "The Objc Compiler"                     }
             ,   {nil, "mxx",            "kv", nil,          "The Objc++ Compiler"                   }
@@ -122,7 +122,7 @@ function iphoneos.menu(action)
             ,   }
 
     -- init global option menu
-    iphoneos._MENU_GLOBAL = iphoneos._MENU_GLOBAL or
+    watchos._MENU_GLOBAL = watchos._MENU_GLOBAL or
             {   {}
             ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"       }
             ,   {}
@@ -133,12 +133,12 @@ function iphoneos.menu(action)
 
     -- get the option menu
     if action == "config" then
-        return iphoneos._MENU_CONFIG
+        return watchos._MENU_CONFIG
     elseif action == "global" then
-        return iphoneos._MENU_GLOBAL
+        return watchos._MENU_GLOBAL
     end
 end
 
 
--- return module: iphoneos
-return iphoneos
+-- return module: watchos
+return watchos

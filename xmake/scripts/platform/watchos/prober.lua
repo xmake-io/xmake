@@ -42,7 +42,7 @@ function prober._probe_arch(configs)
     if arch then return true end
 
     -- init the default architecture
-    configs.set("arch", "x86_64")
+    configs.set("arch", "armv7")
 
     -- trace
     utils.verbose("checking for the architecture ... %s", configs.get("arch"))
@@ -111,7 +111,7 @@ function prober._probe_xcode_sdkver(configs)
 
     -- attempt to match the directory
     if not xcode_sdkver then
-        local dirs = os.match(configs.get("xcode_dir") .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.sdk", true)
+        local dirs = os.match(configs.get("xcode_dir") .. "/Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS*.sdk", true)
         if dirs then
             for _, dir in ipairs(dirs) do
                 xcode_sdkver = string.match(dir, "%d+%.%d+")
@@ -125,7 +125,7 @@ function prober._probe_xcode_sdkver(configs)
         
         -- save it
         configs.set("xcode_sdkver", xcode_sdkver)
-
+    
         -- trace
         utils.verbose("checking for the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)
     else
@@ -250,15 +250,16 @@ end
 function prober._probe_toolchains(configs)
 
     -- done
-    if not prober._probe_toolpath(configs, "cc", "xcrun -sdk iphonesimulator ", "clang", "the c compiler") then return false end
-    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk iphonesimulator ", "clang++", "the c++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "mm", "xcrun -sdk iphonesimulator ", "clang", "the objc compiler") then return false end
-    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk iphonesimulator ", "clang++", "the objc++ compiler") then return false end
-    if not prober._probe_toolpath(configs, "as", "xcrun -sdk iphonesimulator ", "clang", "the assember") then return false end
-    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk iphonesimulator ", "clang++", "the linker") then return false end
-    if not prober._probe_toolpath(configs, "ar", "xcrun -sdk iphonesimulator ", "ar", "the static library linker") then return false end
-    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk iphonesimulator ", "clang++", "the shared library linker") then return false end
-    if not prober._probe_toolpath(configs, "sc", "xcrun -sdk iphonesimulator ", "swiftc", "the swift compiler") then return false end
+    if not prober._probe_toolpath(configs, "cc", "xcrun -sdk watchos ", "clang", "the c compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk watchos ", "clang++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "mm", "xcrun -sdk watchos ", "clang", "the objc compiler") then return false end
+    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk watchos ", "clang++", "the objc++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "as", xmake._SCRIPTS_DIR .. "/tools/gas-preprocessor.pl xcrun -sdk watchos ", "clang", "the assember") then return false end
+    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk watchos ", "clang++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ar", "xcrun -sdk watchos ", "ar", "the static library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk watchos ", "clang++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "sc", "xcrun -sdk watchos ", "swiftc", "the swift compiler") then return false end
+    if not prober._probe_toolpath(configs, "lipo", "xcrun -sdk watchos ", "lipo", "the universal files creater") then return false end
     return true
 end
 
@@ -275,6 +276,7 @@ function prober.config()
                         ,   prober._probe_toolchains}
                     ,   nil
                     ,   config)
+
 end
 
 -- probe the global configure 
