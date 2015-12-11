@@ -257,6 +257,22 @@ ${shell echo $(1) | sed "s/\(.*\)/\U\1/g"}
 endef
 endif
 
+# config base
+ifeq ($(HOST),mac)
+base_LIBPATH 	:= /usr/local/lib
+base_LIBNAMES 	:= m dl pthread
+endif
+
+ifeq ($(HOST),msvc)
+base_LIBPATH 	:= 
+base_LIBNAMES 	:= ws2_32
+endif
+
+ifeq ($(HOST),linux)
+base_LIBPATH 	:= 
+base_LIBNAMES 	:= rt m dl pthread
+endif
+
 # select package directory
 ifneq ($(PACKAGE),)
 PKG_DIR 	:= $(PACKAGE)
@@ -270,14 +286,7 @@ $(foreach name, $(PKG_NAMES), $(eval $(call MAKE_UPPER_PACKAGE_NAME,$(name))))
 
 # probe packages
 define PROBE_PACKAGE
-$($(1)_upper) :=$(if $($($(1)_upper)),$($($(1)_upper)),\
-				$(shell if [ -d "$(PKG_DIR)/$(1).pkg/lib/$(PLAT)/$(ARCH)" ]; then \
-					echo "y"; \
-				elif [ -z "`$(TOOL_DIR)/jcat/jcat --filter=.compiler.$(PLAT).$(ARCH).$(if $(findstring y,$(DEBUG)),debug,release) $(PKG_DIR)/$(1).pkg/manifest.json`" ]; then \
-					echo "n"; \
-				else \
-					echo "y"; \
-				fi ))
+$($(1)_upper) :=y
 endef
 $(foreach name, $(PKG_NAMES), $(eval $(call PROBE_PACKAGE,$(name))))
 
@@ -287,26 +296,6 @@ define MAKE_PACKAGE_INFO
 endef
 define MAKE_PACKAGE_INFO_
 $(if $(findstring y,$($(1))),__autoconf_head_$(PRO_PREFIX)CONFIG_PACKAGE_HAVE_$(1)_autoconf_tail__,)
-endef
-
-# load package options
-define LOAD_PACKAGE_OPTIONS
-$(if $(findstring y,$($($(1)_upper))),\
-	"$($(1)_upper) ="$($($(1)_upper))"\n" \
-	"$(1)_INCPATH ="$(shell echo `$(TOOL_DIR)/jcat/jcat --filter=.compiler.$(PLAT).$(ARCH).$(if $(findstring y,$(DEBUG)),debug,release).incpath $(PKG_DIR)/$(1).pkg/manifest.json` )"\n" \
-	"$(1)_LIBPATH ="$(shell echo `$(TOOL_DIR)/jcat/jcat --filter=.compiler.$(PLAT).$(ARCH).$(if $(findstring y,$(DEBUG)),debug,release).libpath $(PKG_DIR)/$(1).pkg/manifest.json` )"\n" \
-	"$(1)_INCFLAGS ="$(shell echo `$(TOOL_DIR)/jcat/jcat --filter=.compiler.$(PLAT).$(ARCH).$(if $(findstring y,$(DEBUG)),debug,release).incflags $(PKG_DIR)/$(1).pkg/manifest.json` )"\n" \
-	"$(1)_LIBFLAGS ="$(shell echo `$(TOOL_DIR)/jcat/jcat --filter=.compiler.$(PLAT).$(ARCH).$(if $(findstring y,$(DEBUG)),debug,release).libflags $(PKG_DIR)/$(1).pkg/manifest.json` )"\n" \
-	"$(1)_LIBNAMES ="$(shell if [ -f $(PKG_DIR)/$(1).pkg/manifest.json ]; then echo `$(TOOL_DIR)/jcat/jcat --filter=.compiler.$(PLAT).$(ARCH).$(if $(findstring y,$(DEBUG)),debug,release).libs $(PKG_DIR)/$(1).pkg/manifest.json`; else echo $(1)$(DTYPE); fi)"\n" \
-	"export "$($(1)_upper)"\n" \
-	"export "$(1)_INCPATH"\n" \
-	"export "$(1)_LIBPATH"\n" \
-	"export "$(1)_LIBNAMES"\n" \
-	"export "$(1)_INCFLAGS"\n" \
-	"export "$(1)_LIBFLAGS"\n\n" \
-,\
-	"$($(1)_upper) ="$($($(1)_upper))"\n" \
-	"export "$($(1)_upper)"\n\n")
 endef
 
 # config
@@ -452,7 +441,45 @@ config : .null
 	@$(ECHO) "PKG_DIR ="$(PKG_DIR)						>> .config.mak
 	@$(ECHO) "export PACKAGE"							>> .config.mak
 	@$(ECHO) "export PKG_DIR"							>> .config.mak
-	@$(ECHO) $(foreach name, $(PKG_NAMES), $(call LOAD_PACKAGE_OPTIONS,$(name))) >> .config.mak
+	@$(ECHO) ""											>> .config.mak
+	@$(ECHO) "TBOX =y"									>> .config.mak
+	@$(ECHO) "tbox_INCPATH ="							>> .config.mak
+	@$(ECHO) "tbox_LIBPATH ="							>> .config.mak
+	@$(ECHO) "tbox_INCFLAGS ="							>> .config.mak
+	@$(ECHO) "tbox_LIBFLAGS ="							>> .config.mak
+	@$(ECHO) "tbox_LIBNAMES =tboxr"						>> .config.mak
+	@$(ECHO) "export TBOX"								>> .config.mak
+	@$(ECHO) "export tbox_INCPATH"						>> .config.mak
+	@$(ECHO) "export tbox_LIBPATH"						>> .config.mak
+	@$(ECHO) "export tbox_LIBNAMES"						>> .config.mak
+	@$(ECHO) "export tbox_INCFLAGS"						>> .config.mak
+	@$(ECHO) "export tbox_LIBFLAGS"						>> .config.mak
+	@$(ECHO) ""											>> .config.mak
+	@$(ECHO) "LUAJIT =y"								>> .config.mak
+	@$(ECHO) "luajit_INCPATH ="							>> .config.mak
+	@$(ECHO) "luajit_LIBPATH ="							>> .config.mak
+	@$(ECHO) "luajit_INCFLAGS ="						>> .config.mak
+	@$(ECHO) "luajit_LIBFLAGS ="						>> .config.mak
+	@$(ECHO) "luajit_LIBNAMES =luajit"					>> .config.mak
+	@$(ECHO) "export LUAJIT"							>> .config.mak
+	@$(ECHO) "export luajit_INCPATH"					>> .config.mak
+	@$(ECHO) "export luajit_LIBPATH"					>> .config.mak
+	@$(ECHO) "export luajit_LIBNAMES"					>> .config.mak
+	@$(ECHO) "export luajit_INCFLAGS"					>> .config.mak
+	@$(ECHO) "export luajit_LIBFLAGS"					>> .config.mak
+	@$(ECHO) ""											>> .config.mak
+	@$(ECHO) "BASE =y"									>> .config.mak
+	@$(ECHO) "base_INCPATH ="							>> .config.mak
+	@$(ECHO) "base_LIBPATH =$(base_LIBPATH)" 			>> .config.mak
+	@$(ECHO) "base_INCFLAGS ="							>> .config.mak
+	@$(ECHO) "base_LIBFLAGS ="							>> .config.mak
+	@$(ECHO) "base_LIBNAMES =$(base_LIBNAMES)" 			>> .config.mak
+	@$(ECHO) "export BASE"								>> .config.mak
+	@$(ECHO) "export base_INCPATH"						>> .config.mak
+	@$(ECHO) "export base_LIBPATH"						>> .config.mak
+	@$(ECHO) "export base_LIBNAMES"						>> .config.mak
+	@$(ECHO) "export base_INCFLAGS"						>> .config.mak
+	@$(ECHO) "export base_LIBFLAGS"						>> .config.mak
 
 # ######################################################################################
 # help
