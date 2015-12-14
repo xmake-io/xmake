@@ -32,7 +32,7 @@ export CXFLAGS_CHECK
 endif
 
 # ld
-LD 					= $(PRE_)clang++
+LD 					= $(PRE_)clang
 ifeq ($(LDFLAGS_CHECK),)
 LD_CHECK 			= ${shell if $(LD) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
 LDFLAGS_CHECK 		:= $(call LD_CHECK,-ftrapv,) $(call LD_CHECK,-fsanitize=address,) 
