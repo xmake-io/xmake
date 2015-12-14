@@ -25,7 +25,7 @@ CC 					= $(PRE_)$(CC_)
 
 # ld
 LD_ 				:= ${shell if [ -f "/usr/bin/clang" ]; then echo "clang"; elif [ -f "/usr/local/bin/clang" ]; then echo "clang"; else echo "gcc"; fi }
-LD_ 				:= $(if $(findstring y,$(PROF)),g++,$(LD_))
+LD_ 				:= $(if $(findstring y,$(PROF)),gcc,$(LD_))
 LD 					= $(PRE_)$(LD_)
 
 # tool
