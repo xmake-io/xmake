@@ -40,7 +40,10 @@ __tb_extern_c_enter__
 
 /*! init page 
  *
- * @return              the page size
+ * @note 
+ * need support to be called repeatly
+ *
+ * @return              tb_true or tb_false
  */
 tb_bool_t               tb_page_init(tb_noarg_t);
 

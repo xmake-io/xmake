@@ -40,6 +40,9 @@ __tb_extern_c_enter__
 
 /*! init native memory
  *
+ * @note 
+ * need support to be called repeatly
+ *
  * @return              tb_true or tb_false
  */
 tb_bool_t               tb_native_memory_init(tb_noarg_t);

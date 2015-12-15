@@ -138,7 +138,7 @@ typedef enum __tb_bloom_filter_probability_e
  * @param item_maxn     the item maxn
  * @param element       the element only for hash
  *
- * @return              the bloom_filter
+ * @return              the bloom filter
  */
 tb_bloom_filter_ref_t   tb_bloom_filter_init(tb_size_t probability, tb_size_t hash_count, tb_size_t item_maxn, tb_element_t element);
 

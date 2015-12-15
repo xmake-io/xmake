@@ -29,7 +29,6 @@
 #include "../prefix.h"
 #include "../stream/static_stream.h"
 #include "../memory/memory.h"
-#include "vlc.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -38,7 +37,7 @@
 // the zip action type
 typedef enum __tb_zip_action_t
 {
-    TB_ZIP_ACTION_NULL      = 0
+    TB_ZIP_ACTION_NONE      = 0
 ,   TB_ZIP_ACTION_INFLATE   = 1
 ,   TB_ZIP_ACTION_DEFLATE   = 2
 
@@ -47,15 +46,10 @@ typedef enum __tb_zip_action_t
 // the zip algorithm type
 typedef enum __tb_zip_algo_t
 {
-    TB_ZIP_ALGO_NONE        = 0     //!< null
-,   TB_ZIP_ALGO_RLC         = 1     //!< run length coding
-,   TB_ZIP_ALGO_HUFFMAN     = 2     //!< adaptive huffman
-,   TB_ZIP_ALGO_LZSW        = 3     //!< sliding window .e.g lz77 lzss ...
-,   TB_ZIP_ALGO_LZPD        = 4     //!< phrase dictionary .e.g lzw lz78 ...
-,   TB_ZIP_ALGO_ZLIBRAW     = 5     //!< zlib: raw inflate & deflate
-,   TB_ZIP_ALGO_ZLIB        = 6     //!< zlib
-,   TB_ZIP_ALGO_GZIP        = 7     //!< gnu zip
-,   TB_ZIP_ALGO_ARITHMETIC  = 8     //!< arithmetic coding
+    TB_ZIP_ALGO_NONE        = 0     //!< none
+,   TB_ZIP_ALGO_ZLIBRAW     = 1     //!< zlib: raw inflate & deflate
+,   TB_ZIP_ALGO_ZLIB        = 2     //!< zlib
+,   TB_ZIP_ALGO_GZIP        = 3     //!< gnu zip
 
 }tb_zip_algo_t;
 
@@ -70,15 +64,6 @@ typedef struct __tb_zip_t
 
     // spak
     tb_long_t               (*spak)(struct __tb_zip_t* zip, tb_static_stream_ref_t ist, tb_static_stream_ref_t ost, tb_long_t sync);
-
-    // the vlc 
-    union __tb_zip_vlc_union_t
-    {
-        tb_zip_vlc_fixed_t  fixed;
-        tb_zip_vlc_golomb_t golomb;
-        tb_zip_vlc_gamma_t  gamma;
-
-    }vlc;
 
 }tb_zip_t;
 

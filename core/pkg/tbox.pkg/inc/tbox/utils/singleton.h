@@ -41,11 +41,11 @@ __tb_extern_c_enter__
 /// the singleton type enum
 typedef enum __tb_singleton_type_e
 {
-    /// the large pool type
-    TB_SINGLETON_TYPE_LARGE_POOL            = 0
+    /// the default allocator
+    TB_SINGLETON_TYPE_DEFAULT_ALLOCATOR     = 0
 
-    /// the pool type
-,   TB_SINGLETON_TYPE_POOL                  = 1
+    /// the static allocator
+,   TB_SINGLETON_TYPE_STATIC_ALLOCATOR      = 1
 
     /// the lock profiler type
 ,   TB_SINGLETON_TYPE_LOCK_PROFILER         = 2
@@ -99,7 +99,7 @@ typedef tb_void_t   (*tb_singleton_exit_func_t)(tb_handle_t instance, tb_cpointe
 typedef tb_void_t   (*tb_singleton_kill_func_t)(tb_handle_t instance, tb_cpointer_t priv);
 
 /// the singleton static init func type
-typedef tb_bool_t   (*tb_singleton_static_init_func_t)(tb_handle_t instance);
+typedef tb_bool_t   (*tb_singleton_static_init_func_t)(tb_handle_t instance, tb_cpointer_t priv);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -125,15 +125,16 @@ tb_void_t           tb_singleton_exit(tb_noarg_t);
  * @param init      the singleton init func 
  * @param exit      the singleton exit func 
  * @param kill      the singleton kill func 
+ * @param priv      the private data
  *
  * @return          the singleton instance handle
  */
-tb_handle_t         tb_singleton_instance(tb_size_t type, tb_singleton_init_func_t init, tb_singleton_exit_func_t exit, tb_singleton_kill_func_t kill);
+tb_handle_t         tb_singleton_instance(tb_size_t type, tb_singleton_init_func_t init, tb_singleton_exit_func_t exit, tb_singleton_kill_func_t kill, tb_cpointer_t priv);
 
 /*! the singleton static instance
  *
  * @code
-    static tb_bool_t tb_xxxx_instance_init(tb_handle_t instance)
+    static tb_bool_t tb_xxxx_instance_init(tb_handle_t instance, tb_cpointer_t priv)
     {
         // init 
         // ...
@@ -148,7 +149,7 @@ tb_handle_t         tb_singleton_instance(tb_size_t type, tb_singleton_init_func
         static tb_xxxx_t        s_xxxx = {0};
 
         // init the static instance
-        tb_bool_t ok = tb_singleton_static_init(&s_binited, &s_xxxx, tb_xxxx_instance_init);
+        tb_bool_t ok = tb_singleton_static_init(&s_binited, &s_xxxx, tb_xxxx_instance_init, tb_null);
         tb_assert(ok);
 
         // ok
@@ -159,10 +160,11 @@ tb_handle_t         tb_singleton_instance(tb_size_t type, tb_singleton_init_func
  * @param binited   the singleton static instance is inited?
  * @param instance  the singleton static instance
  * @param init      the singleton static init func 
+ * @param priv      the private data
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_singleton_static_init(tb_atomic_t* binited, tb_handle_t instance, tb_singleton_static_init_func_t init);
+tb_bool_t           tb_singleton_static_init(tb_atomic_t* binited, tb_handle_t instance, tb_singleton_static_init_func_t init, tb_cpointer_t priv);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
