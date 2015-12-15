@@ -17,16 +17,17 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        zip.h
+ * @file        static_allocator.h
+ * @ingroup     memory
  *
  */
-#ifndef TB_ZIP_H
-#define TB_ZIP_H
+#ifndef TB_MEMORY_STATIC_ALLOCATOR_H
+#define TB_MEMORY_STATIC_ALLOCATOR_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
+#include "allocator.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -37,31 +38,44 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! init zip
+/*! the global static allocator 
  *
- * @param algo      the zip zlgo
- * @param action    the zip action
+ * @note
+ * this allocator may be called before tb_init()
  *
- * @return          the zip
+ * @param data          the allocator data
+ * @param size          the allocator size
+ *
+ * @return              the allocator 
  */
-tb_zip_ref_t        tb_zip_init(tb_size_t algo, tb_size_t action);
+tb_allocator_ref_t      tb_static_allocator(tb_byte_t* data, tb_size_t size);
 
-/*! exit zip
+/*! init the static allocator
  *
- * @param zip       the zip
+ * <pre>
+ *
+ *  -----------------------------------------------------
+ * |                         data                        |
+ *  ----------------------------------------------------- 
+ *                             |           
+ *  ----------------------------------------------------- 
+ * |                    static allocator                 |
+ *  ----------------------------------------------------- 
+ *
+ * </pre>
+ * 
+ * @param data          the allocator data
+ * @param size          the allocator size
+ *
+ * @return              the allocator 
  */
-tb_void_t           tb_zip_exit(tb_zip_ref_t zip);
+tb_allocator_ref_t      tb_static_allocator_init(tb_byte_t* data, tb_size_t size);
 
-/*! spak
+/*! exit the allocator
  *
- * @param zip       the zip
- * @param ist       the input stream
- * @param ost       the output stream
- * @param sync      sync? 1: sync, 0: no sync, -1: end
- *
- * @return          1: ok, 0: continue, -1: end
+ * @param allocator     the allocator 
  */
-tb_long_t           tb_zip_spak(tb_zip_ref_t zip, tb_static_stream_ref_t ist, tb_static_stream_ref_t ost, tb_long_t sync);
+tb_void_t               tb_static_allocator_exit(tb_allocator_ref_t allocator);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

@@ -17,15 +17,36 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        prefix.h
+ * @file        native_allocator.h
+ * @ingroup     memory
  *
  */
-#ifndef TB_ZIP_VLC_PREFIX_H
-#define TB_ZIP_VLC_PREFIX_H
+#ifndef TB_MEMORY_NATIVE_ALLOCATOR_H
+#define TB_MEMORY_NATIVE_ALLOCATOR_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "../prefix.h"
+#include "allocator.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*! the global native allocator 
+ * 
+ * @return                  the allocator 
+ */
+tb_allocator_ref_t          tb_native_allocator(tb_noarg_t);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif

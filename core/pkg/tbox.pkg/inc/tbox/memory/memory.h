@@ -28,16 +28,17 @@
  * includes
  */
 #include "prefix.h"
-#include "pool.h"
 #include "buffer.h"
 #include "allocator.h"
 #include "fixed_pool.h"
-#include "large_pool.h"
-#include "small_pool.h"
-#include "static_pool.h"
 #include "string_pool.h"
 #include "queue_buffer.h"
 #include "static_buffer.h"
+#include "large_allocator.h"
+#include "small_allocator.h"
+#include "native_allocator.h"
+#include "static_allocator.h"
+#include "default_allocator.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -52,18 +53,18 @@ __tb_extern_c_enter__
  *
  * <pre>
  *
- *  ----------------      -------------------------------------------------------      ----------------------
- * | native memory  | or |                         data                          | -> |     static_pool      |
- *  ----------------      -------------------------------------------------------      ----------------------
+ *  ----------------      -------------------------------------------------------      ---------------------- 
+ * | native memory  | or |                         data                          | <- |    static allocator  |
+ *  ----------------      -------------------------------------------------------      ---------------------- 
  *         |             if data be null             |
  *         `---------------------------------------> |
  *                                                   |
  *  -----------------------------------------------------------------------------      ----------------------      ------      ------
- * |                                large pool[lock]                             | -> |    fixed pool:NB     | -> | slot | -> | slot | -> ...
+ * |                                large allocator                              | -> |    fixed pool:NB     | -> | slot | -> | slot | -> ...
  *  -----------------------------------------------------------------------------      ----------------------      ------      ------
  *                             |                     |                                 
  *                             |          ---------------------------------------      ----------------------      ------      ------
- *                             |         |               small pool              | -> |    fixed pool:16B    | -> | slot | -> | slot | -> ...
+ *                             |         |            small allocator            | -> |    fixed pool:16B    | -> | slot | -> | slot | -> ...
  *                             |          ---------------------------------------     |----------------------|     ------      ------
  *                             |                              |                       |    fixed pool:32B    | -> ...
  *                             |                              |                       |----------------------|
@@ -92,11 +93,7 @@ __tb_extern_c_enter__
  *  ------------------------------------------------------------------------------ 
  * |                         >3KB        |                 <=3KB                  |
  * |------------------------------------------------------------------------------|
- * |                                  pool[lock]                                  |
- *  ------------------------------------------------------------------------------
- *                                       |                                                  
- *  ------------------------------------------------------------------------------         
- * |                        malloc, nalloc, strdup, free ...                      |
+ * |                              default allocator                               |
  *  ------------------------------------------------------------------------------ 
  *                                                                     |
  *                                                          ---------------------- 
@@ -112,13 +109,11 @@ __tb_extern_c_enter__
 
 /*! init memory
  *
- * @param allocator     the allocator, uses data and size if be null
- * @param data          the memory pool data
- * @param size          the memory pool size
+ * @param allocator     the allocator
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_memory_init(tb_allocator_ref_t allocator, tb_byte_t* data, tb_size_t size);
+tb_bool_t               tb_memory_init(tb_allocator_ref_t allocator);
 
 /// exit memory
 tb_void_t               tb_memory_exit(tb_noarg_t);
