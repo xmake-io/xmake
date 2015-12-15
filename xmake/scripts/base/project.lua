@@ -674,7 +674,7 @@ function project._make_option_for_checking_links(opt, links, cfile, objectfile, 
     if ok then ok = linker.check_links(opt, links, cfile, objectfile, targetfile) end
 
     -- trace
-    utils.verbose("checking for the links %s ... %s", links_str, utils.ifelse(ok, "ok", "no"))
+    utils.printf("checking for the links %s ... %s", links_str, utils.ifelse(ok, "ok", "no"))
 
     -- cache the result
     project._CHECKED_LINKS[links_str] = ok
@@ -697,7 +697,7 @@ function project._make_option_for_checking_cincludes(opt, cincludes, cfile, obje
         local ok = compiler.check_include(opt, cinclude, cfile, objectfile)
 
         -- trace
-        utils.verbose("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
 
         -- cache the result
         project._CHECKED_CINCLUDES[cinclude] = ok
@@ -724,7 +724,7 @@ function project._make_option_for_checking_cxxincludes(opt, cxxincludes, cxxfile
         local ok = compiler.check_include(opt, cxxinclude, cxxfile, objectfile)
 
         -- trace
-        utils.verbose("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
 
         -- cache the result
         project._CHECKED_CXXINCLUDES[cxxinclude] = ok
@@ -750,7 +750,7 @@ function project._make_option_for_checking_cfuncs(opt, cfuncs, cfile, objectfile
         if ok and opt.links then ok = linker.check_links(opt, opt.links, cfile, objectfile, targetfile) end
 
         -- trace
-        utils.verbose("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
 
         -- failed
         if not ok then return false end
@@ -773,7 +773,7 @@ function project._make_option_for_checking_cxxfuncs(opt, cxxfuncs, cxxfile, obje
         if ok and opt.links then ok = linker.check_links(opt, opt.links, cxxfile, objectfile, targetfile) end
 
         -- trace
-        utils.verbose("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
 
         -- failed
         if not ok then return false end
@@ -793,7 +793,7 @@ function project._make_option_for_checking_ctypes(opt, ctypes, cfile, objectfile
         local ok = compiler.check_typedef(opt, ctype, cfile, objectfile)
 
         -- trace
-        utils.verbose("checking for the c type %s ... %s", ctype, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c type %s ... %s", ctype, utils.ifelse(ok, "ok", "no"))
 
         -- failed
         if not ok then return false end
@@ -813,7 +813,7 @@ function project._make_option_for_checking_cxxtypes(opt, cxxtypes, cxxfile, obje
         local ok = compiler.check_typedef(opt, cxxtype, cxxfile, objectfile)
 
         -- trace
-        utils.verbose("checking for the c++ type %s ... %s", cxxtype, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c++ type %s ... %s", cxxtype, utils.ifelse(ok, "ok", "no"))
 
         -- failed
         if not ok then return false end

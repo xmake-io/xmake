@@ -373,7 +373,7 @@ function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
     linker._addflags_from_linker(module, flags, "ldflags")
 
     -- execute the link command
-    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), xmake._NULDEV))
+    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(xmake._OPTIONS.verbose, nil, xmake._NULDEV)))
 end
 
 -- return module: linker
