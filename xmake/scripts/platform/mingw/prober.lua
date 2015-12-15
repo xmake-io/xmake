@@ -132,7 +132,11 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     if toolpath then configs.set(kind, toolpath) end
 
     -- trace
-    utils.verbose("checking for %s (%s) ... %s", description, kind, utils.ifelse(toolpath, path.filename(toolpath), "no"))
+    if toolpath then
+        utils.verbose("checking for %s (%s) ... %s", description, kind, path.filename(toolpath), "no")
+    else
+        utils.verbose("checking for %s (%s) ... no", description, kind)
+    end
 
     -- ok
     return true
