@@ -38,30 +38,46 @@ function _template.done(targetname, projectdir, packagesdir)
     -- check
     assert(targetname and projectdir and packagesdir)
 
+    -- the target name cannot be demo
+    if targetname == "demo" then
+
+        -- warning
+        utils.warning("the target name cannot be \"demo\", rename to be \"test\"!")
+
+        -- rename it
+        targetname = "test"
+    end
+
     -- replace the target name
     io.gsub(projectdir .. "/xmake.lua", "%[targetname%]", targetname) 
     io.gsub(projectdir .. "/src/demo/main.cpp", "%[targetname%]", targetname) 
     io.gsub(projectdir .. "/src/demo/xmake.lua", "%[targetname%]", targetname) 
     io.gsub(projectdir .. "/src/[targetname]/xmake.lua", "%[targetname%]", targetname) 
 
+    -- remove the target directory first
+    os.rm(projectdir .. "/src/" .. targetname)
+
     -- rename the target directory
-    if not os.mv(projectdir .. "/src/[targetname]", projectdir .. "/src/" .. targetname) then
+    local ok, errors = os.mv(projectdir .. "/src/[targetname]", projectdir .. "/src/" .. targetname) 
+    if not ok then
         -- errors
-        utils.error("rename the target directory failed!")
+        utils.error(errors)
         return false
     end
 
     -- copy the tbox.pkg 
-    if not os.cp(packagesdir .. "/tbox.pkg/", projectdir .. "/pkg/tbox.pkg") then
+    ok, errors = os.cp(packagesdir .. "/tbox.pkg/", projectdir .. "/pkg/tbox.pkg") 
+    if not ok then
         -- errors
-        utils.error("copy tbox.pkg failed!")
+        utils.error(errors)
         return false
     end
 
     -- copy the base.pkg 
-    if not os.cp(packagesdir .. "/base.pkg/", projectdir .. "/pkg/base.pkg") then
+    ok, errors = os.cp(packagesdir .. "/base.pkg/", projectdir .. "/pkg/base.pkg") 
+    if not ok then
         -- errors
-        utils.error("copy base.pkg failed!")
+        utils.error(errors)
         return false
     end
 

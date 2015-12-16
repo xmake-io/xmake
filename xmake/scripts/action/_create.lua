@@ -92,9 +92,10 @@ function _create.done()
     end
 
     -- copy the project files
-    if not os.cp("project/*", xmake._PROJECT_DIR) then
+    local ok, errors = os.cp("project/*", xmake._PROJECT_DIR) 
+    if not ok then
         -- errors
-        utils.error("copy files failed!")
+        utils.error(errors)
         return false
     end
 
