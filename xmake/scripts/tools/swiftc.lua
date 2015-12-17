@@ -48,6 +48,7 @@ function swiftc.init(self, name)
 
         -- optimize
     ,   ["-O0"]                     = "-Onone"
+    ,   ["-Ofast"]                  = "-Ounchecked"
     ,   ["-O.*"]                    = "-O"
 
         -- vectorexts
