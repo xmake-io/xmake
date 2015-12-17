@@ -45,7 +45,7 @@ function prober._probe_arch(configs)
     configs.set("arch", xmake._ARCH)
 
     -- trace
-    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
+    utils.printf("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
@@ -65,7 +65,7 @@ function prober._probe_make(configs)
     if make then configs.set("make", make) end
 
     -- trace
-    utils.verbose("checking for the make ... %s", utils.ifelse(make, make, "no"))
+    utils.printf("checking for the make ... %s", utils.ifelse(make, make, "no"))
 
     -- ok
     return true
@@ -96,14 +96,14 @@ function prober._probe_ccache(configs)
     end
 
     -- trace
-    utils.verbose("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
+    utils.printf("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
 
     -- ok
     return true
 end
 
 -- probe the tool path
-function prober._probe_toolpath(configs, kind, cross, name, description)
+function prober._probe_toolpath(configs, kind, cross, names, description)
 
     -- check
     assert(kind)
@@ -111,31 +111,43 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     -- get the cross
     cross = configs.get("cross") or cross
 
-    -- attempt to get it from the given cross toolchains
+    -- done
     local toolpath = nil
     local toolchains = configs.get("toolchains") 
-    if toolchains then
-        toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
-    end
+    for _, name in ipairs(utils.wrap(names)) do
 
-    -- attempt to get it directly from the configure
-    if not toolpath then
-        toolpath = configs.get(kind)
-    end
+        -- attempt to get it from the given cross toolchains
+        if toolchains then
+            toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
+        end
 
-    -- attempt to run it directly
-    if not toolpath then
-        toolpath = tools.probe(cross .. name)
-    end
+        -- attempt to get it directly from the configure
+        if not toolpath then
+            toolpath = configs.get(kind)
+        end
 
-    -- probe ok? update it
-    if toolpath then configs.set(kind, toolpath) end
+        -- attempt to run it directly
+        if not toolpath then
+            toolpath = tools.probe(cross .. name)
+        end
+
+        -- probe ok?
+        if toolpath then 
+
+            -- update config
+            configs.set(kind, toolpath) 
+
+            -- end
+            break
+        end
+
+    end
 
     -- trace
     if toolpath then
-        utils.verbose("checking for %s (%s) ... %s", description, kind, path.filename(toolpath), "no")
+        utils.printf("checking for %s (%s) ... %s", description, kind, path.filename(toolpath))
     else
-        utils.verbose("checking for %s (%s) ... no", description, kind)
+        utils.printf("checking for %s (%s) ... no", description, kind)
     end
 
     -- ok
@@ -147,11 +159,11 @@ function prober._probe_toolchains(configs)
 
     -- done
     if not prober._probe_toolpath(configs, "cc", "", "gcc", "the c compiler") then return false end
-    if not prober._probe_toolpath(configs, "cxx", "", "g++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "", {"g++", "gcc"}, "the c++ compiler") then return false end
     if not prober._probe_toolpath(configs, "as", "", "gcc", "the assember") then return false end
-    if not prober._probe_toolpath(configs, "ld", "", "g++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ld", "", {"g++", "gcc"}, "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "", "ar", "the static library linker") then return false end
-    if not prober._probe_toolpath(configs, "sh", "", "g++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "", {"g++", "gcc"}, "the shared library linker") then return false end
     if not prober._probe_toolpath(configs, "sc", "", "swiftc", "the swift compiler") then return false end
     return true
 end
