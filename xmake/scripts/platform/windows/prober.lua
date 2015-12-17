@@ -47,7 +47,7 @@ function prober._probe_arch(configs)
     configs.set("arch", xmake._ARCH)
 
     -- trace
-    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
+    utils.printf("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
@@ -96,7 +96,7 @@ function prober._probe_vs_version(configs)
         configs.set("vs", vs)
 
         -- trace
-        utils.verbose("checking for the Microsoft Visual Studio version ... %s", vs)
+        utils.printf("checking for the Microsoft Visual Studio version ... %s", vs)
     else
         -- failed
         utils.error("checking for the Microsoft Visual Studio version ... no")
@@ -217,9 +217,9 @@ function prober._probe_toolpath(configs, kind, name, description)
 
     -- trace
     if toolpath then
-        utils.verbose("checking for %s (%s) ... %s", description, kind, path.filename(toolpath), "no")
+        utils.printf("checking for %s (%s) ... %s", description, kind, path.filename(toolpath))
     else
-        utils.verbose("checking for %s (%s) ... no", description, kind)
+        utils.printf("checking for %s (%s) ... no", description, kind)
     end
 
     -- ok

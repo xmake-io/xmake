@@ -45,7 +45,7 @@ function prober._probe_arch(configs)
     configs.set("arch", "armv7-a")
 
     -- trace
-    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
+    utils.printf("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
@@ -89,11 +89,11 @@ function prober._probe_ndk_sdkver(configs)
         configs.set("ndk_sdkver", ndk_sdkver)
 
         -- trace
-        utils.verbose("checking for the SDK version of NDK ... %s", string.format("android-%d", ndk_sdkver))
+        utils.printf("checking for the SDK version of NDK ... %s", string.format("android-%d", ndk_sdkver))
     else
 
         -- trace
-        utils.verbose("checking for the SDK version of NDK ... no")
+        utils.printf("checking for the SDK version of NDK ... no")
     end
 
     -- ok
@@ -114,7 +114,7 @@ function prober._probe_make(configs)
     if make then configs.set("make", make) end
 
     -- trace
-    utils.verbose("checking for the make ... %s", utils.ifelse(make, make, "no"))
+    utils.printf("checking for the make ... %s", utils.ifelse(make, make, "no"))
 
     -- ok
     return true
@@ -145,7 +145,7 @@ function prober._probe_ccache(configs)
     end
 
     -- trace
-    utils.verbose("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
+    utils.printf("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
 
     -- ok
     return true
@@ -200,9 +200,9 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
 
     -- trace
     if toolpath then
-        utils.verbose("checking for %s (%s) ... %s", description, kind, path.filename(toolpath), "no")
+        utils.printf("checking for %s (%s) ... %s", description, kind, path.filename(toolpath))
     else
-        utils.verbose("checking for %s (%s) ... no", description, kind)
+        utils.printf("checking for %s (%s) ... no", description, kind)
     end
 
     -- failed?

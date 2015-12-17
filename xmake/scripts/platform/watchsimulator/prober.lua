@@ -45,7 +45,7 @@ function prober._probe_arch(configs)
     configs.set("arch", "x86_64")
 
     -- trace
-    utils.verbose("checking for the architecture ... %s", configs.get("arch"))
+    utils.printf("checking for the architecture ... %s", configs.get("arch"))
 
     -- ok
     return true
@@ -84,7 +84,7 @@ function prober._probe_xcode(configs)
         configs.set("xcode_dir", xcode_dir)
 
         -- trace
-        utils.verbose("checking for the Xcode application directory ... %s", xcode_dir)
+        utils.printf("checking for the Xcode application directory ... %s", xcode_dir)
     else
         -- failed
         utils.error("checking for the Xcode application directory ... no")
@@ -127,7 +127,7 @@ function prober._probe_xcode_sdkver(configs)
         configs.set("xcode_sdkver", xcode_sdkver)
 
         -- trace
-        utils.verbose("checking for the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)
+        utils.printf("checking for the Xcode SDK version for %s ... %s", configs.get("plat"), xcode_sdkver)
     else
         -- failed
         utils.error("checking for the Xcode SDK version for %s ... no", configs.get("plat"))
@@ -153,7 +153,7 @@ function prober._probe_target_minver(configs)
     configs.set("target_minver", "7.0")
 
     -- trace
-    utils.verbose("checking for the target minimal version ... %s", configs.get("target_minver"))
+    utils.printf("checking for the target minimal version ... %s", configs.get("target_minver"))
 
     -- ok
     return true
@@ -173,7 +173,7 @@ function prober._probe_make(configs)
     if make then configs.set("make", make) end
 
     -- trace
-    utils.verbose("checking for the make ... %s", utils.ifelse(make, make, "no"))
+    utils.printf("checking for the make ... %s", utils.ifelse(make, make, "no"))
 
     -- ok
     return true
@@ -204,14 +204,14 @@ function prober._probe_ccache(configs)
     end
 
     -- trace
-    utils.verbose("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
+    utils.printf("checking for the ccache ... %s", utils.ifelse(ccache_path, ccache_path, "no"))
 
     -- ok
     return true
 end
 
 -- probe the tool path
-function prober._probe_toolpath(configs, kind, cross, name, description)
+function prober._probe_toolpath(configs, kind, cross, names, description)
 
     -- check
     assert(kind)
@@ -219,31 +219,43 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     -- get the cross
     cross = configs.get("cross") or cross
 
-    -- attempt to get it from the given cross toolchains
+    -- done
     local toolpath = nil
     local toolchains = configs.get("toolchains") 
-    if toolchains then
-        toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
-    end
+    for _, name in ipairs(utils.wrap(names)) do
 
-    -- attempt to get it directly from the configure
-    if not toolpath then
-        toolpath = configs.get(kind)
-    end
+        -- attempt to get it from the given cross toolchains
+        if toolchains then
+            toolpath = tools.probe(cross .. (configs.get(kind) or name), toolchains)
+        end
 
-    -- attempt to run it directly
-    if not toolpath then
-        toolpath = tools.probe(cross .. name)
-    end
+        -- attempt to get it directly from the configure
+        if not toolpath then
+            toolpath = configs.get(kind)
+        end
 
-    -- probe ok? update it
-    if toolpath then configs.set(kind, toolpath) end
+        -- attempt to run it directly
+        if not toolpath then
+            toolpath = tools.probe(cross .. name)
+        end
+
+        -- probe ok?
+        if toolpath then 
+
+            -- update config
+            configs.set(kind, toolpath) 
+
+            -- end
+            break
+        end
+
+    end
 
     -- trace
     if toolpath then
-        utils.verbose("checking for %s (%s) ... %s", description, kind, path.filename(toolpath), "no")
+        utils.printf("checking for %s (%s) ... %s", description, kind, path.filename(toolpath))
     else
-        utils.verbose("checking for %s (%s) ... no", description, kind)
+        utils.printf("checking for %s (%s) ... no", description, kind)
     end
 
     -- ok
@@ -255,13 +267,13 @@ function prober._probe_toolchains(configs)
 
     -- done
     if not prober._probe_toolpath(configs, "cc", "xcrun -sdk watchsimulator ", "clang", "the c compiler") then return false end
-    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk watchsimulator ", "clang++", "the c++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "cxx", "xcrun -sdk watchsimulator ", {"clang++", "clang"}, "the c++ compiler") then return false end
     if not prober._probe_toolpath(configs, "mm", "xcrun -sdk watchsimulator ", "clang", "the objc compiler") then return false end
-    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk watchsimulator ", "clang++", "the objc++ compiler") then return false end
+    if not prober._probe_toolpath(configs, "mxx", "xcrun -sdk watchsimulator ", {"clang++", "clang"}, "the objc++ compiler") then return false end
     if not prober._probe_toolpath(configs, "as", "xcrun -sdk watchsimulator ", "clang", "the assember") then return false end
-    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk watchsimulator ", "clang++", "the linker") then return false end
+    if not prober._probe_toolpath(configs, "ld", "xcrun -sdk watchsimulator ", {"clang++", "clang"}, "the linker") then return false end
     if not prober._probe_toolpath(configs, "ar", "xcrun -sdk watchsimulator ", "ar", "the static library linker") then return false end
-    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk watchsimulator ", "clang++", "the shared library linker") then return false end
+    if not prober._probe_toolpath(configs, "sh", "xcrun -sdk watchsimulator ", {"clang++", "clang"}, "the shared library linker") then return false end
     if not prober._probe_toolpath(configs, "sc", "xcrun -sdk watchsimulator ", "swiftc", "the swift compiler") then return false end
     return true
 end
