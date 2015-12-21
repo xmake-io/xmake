@@ -56,7 +56,7 @@
     static tb_void_t tb_xxxx_entry_copy(tb_pointer_t litem, tb_pointer_t ritem)
     {
         // check
-        tb_assert_return(litem && ritem);
+        tb_assert(litem && ritem);
 
         // copy it
         ((tb_xxxx_entry_t*)litem)->data = ((tb_xxxx_entry_t*)ritem)->data;
@@ -150,7 +150,7 @@ tb_void_t                                       tb_single_list_entry_exit(tb_sin
 static __tb_inline__ tb_void_t                  tb_single_list_entry_clear(tb_single_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // clear it
     list->next = tb_null;
@@ -167,7 +167,7 @@ static __tb_inline__ tb_void_t                  tb_single_list_entry_clear(tb_si
 static __tb_inline__ tb_size_t                  tb_single_list_entry_size(tb_single_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->size;
@@ -183,7 +183,7 @@ static __tb_inline__ tb_size_t                  tb_single_list_entry_size(tb_sin
 static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_next(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(entry);
+    tb_assert(entry);
 
     // done
     return entry->next;
@@ -198,7 +198,7 @@ static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_next(tb_sin
 static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_head(tb_single_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->next;
@@ -213,7 +213,7 @@ static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_head(tb_sin
 static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_last(tb_single_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->last;
@@ -239,7 +239,7 @@ static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_tail(tb_sin
 static __tb_inline__ tb_bool_t                  tb_single_list_entry_is_null(tb_single_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return !list->size;
@@ -254,7 +254,7 @@ static __tb_inline__ tb_bool_t                  tb_single_list_entry_is_null(tb_
 static __tb_inline__ tb_bool_t                  tb_single_list_entry_is_head(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->next == entry;
@@ -270,7 +270,7 @@ static __tb_inline__ tb_bool_t                  tb_single_list_entry_is_head(tb_
 static __tb_inline__ tb_bool_t                  tb_single_list_entry_is_last(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->last == entry;
@@ -285,8 +285,8 @@ static __tb_inline__ tb_bool_t                  tb_single_list_entry_is_last(tb_
 static __tb_inline__ tb_void_t                  tb_single_list_entry_insert_next(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t node, tb_single_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list && node && entry);
-    tb_assert_abort(node != entry);
+    tb_assert(list && node && entry);
+    tb_assert(node != entry);
 
     // update last
     if (node == list->last || !list->next) list->last = entry;
@@ -318,7 +318,7 @@ static __tb_inline__ tb_void_t                  tb_single_list_entry_insert_head
 static __tb_inline__ tb_void_t                  tb_single_list_entry_insert_tail(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list && entry);
+    tb_assert(list && entry);
 
     // insert it
     if (list->last) tb_single_list_entry_insert_next(list, list->last, entry);
@@ -334,8 +334,8 @@ static __tb_inline__ tb_void_t                  tb_single_list_entry_insert_tail
 static __tb_inline__ tb_void_t                  tb_single_list_entry_replace_next(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t node, tb_single_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(node && node->next);
-    tb_assert_abort(node != entry);
+    tb_assert(node && node->next);
+    tb_assert(node != entry);
 
     // update last
     if (node->next == list->last) list->last = entry;
@@ -365,7 +365,7 @@ static __tb_inline__ tb_void_t                  tb_single_list_entry_replace_hea
 static __tb_inline__ tb_void_t                  tb_single_list_entry_remove_safe(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t prev, tb_single_list_entry_ref_t next)
 {
     // check
-    tb_assert_abort(list && list->size && prev);
+    tb_assert(list && list->size && prev);
 
     // update last
     if (prev->next == list->last) list->last = next;
@@ -385,7 +385,7 @@ static __tb_inline__ tb_void_t                  tb_single_list_entry_remove_safe
 static __tb_inline__ tb_void_t                  tb_single_list_entry_remove_next(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t prev)
 {
     // check
-    tb_assert_abort(prev && prev->next);
+    tb_assert(prev && prev->next);
 
     // remove it
     tb_single_list_entry_remove_safe(list, prev, prev->next->next);
@@ -398,7 +398,7 @@ static __tb_inline__ tb_void_t                  tb_single_list_entry_remove_next
 static __tb_inline__ tb_void_t                  tb_single_list_entry_remove_head(tb_single_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list->next);
+    tb_assert(list->next);
 
     // remove it
     tb_single_list_entry_remove_safe(list, (tb_single_list_entry_ref_t)list, list->next->next);

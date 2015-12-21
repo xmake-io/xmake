@@ -56,7 +56,7 @@
     static tb_void_t tb_xxxx_entry_copy(tb_pointer_t litem, tb_pointer_t ritem)
     {
         // check
-        tb_assert_return(litem && ritem);
+        tb_assert(litem && ritem);
 
         // copy it
         ((tb_xxxx_entry_t*)litem)->data = ((tb_xxxx_entry_t*)ritem)->data;
@@ -155,7 +155,7 @@ tb_void_t                                   tb_list_entry_exit(tb_list_entry_hea
 static __tb_inline__ tb_void_t              tb_list_entry_clear(tb_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // clear it
     list->next = (tb_list_entry_ref_t)list;
@@ -172,7 +172,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_clear(tb_list_entry_he
 static __tb_inline__ tb_size_t              tb_list_entry_size(tb_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->size;
@@ -188,7 +188,7 @@ static __tb_inline__ tb_size_t              tb_list_entry_size(tb_list_entry_hea
 static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_next(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(entry);
+    tb_assert(entry);
 
     // done
     return entry->next;
@@ -204,7 +204,7 @@ static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_next(tb_list_entry_hea
 static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_prev(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 { 
     // check
-    tb_assert_abort(entry);
+    tb_assert(entry);
 
     // done
     return entry->prev;
@@ -219,7 +219,7 @@ static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_prev(tb_list_entry_hea
 static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_head(tb_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->next;
@@ -234,7 +234,7 @@ static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_head(tb_list_entry_hea
 static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_last(tb_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->prev;
@@ -261,7 +261,7 @@ static __tb_inline__ tb_list_entry_ref_t    tb_list_entry_tail(tb_list_entry_hea
 static __tb_inline__ tb_bool_t              tb_list_entry_is_null(tb_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return !list->size;
@@ -277,7 +277,7 @@ static __tb_inline__ tb_bool_t              tb_list_entry_is_null(tb_list_entry_
 static __tb_inline__ tb_bool_t              tb_list_entry_is_head(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->next == entry;
@@ -293,7 +293,7 @@ static __tb_inline__ tb_bool_t              tb_list_entry_is_head(tb_list_entry_
 static __tb_inline__ tb_bool_t              tb_list_entry_is_last(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return list->prev == entry;
@@ -308,7 +308,7 @@ static __tb_inline__ tb_bool_t              tb_list_entry_is_last(tb_list_entry_
 static __tb_inline__ tb_bool_t              tb_list_entry_is_valid(tb_list_entry_head_ref_t list)
 { 
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     return (list->next && list->next->prev == (tb_list_entry_ref_t)list) && (list->prev && list->prev->next == (tb_list_entry_ref_t)list);
@@ -324,12 +324,12 @@ static __tb_inline__ tb_bool_t              tb_list_entry_is_valid(tb_list_entry
 static __tb_inline__ tb_void_t              tb_list_entry_splice(tb_list_entry_head_ref_t list, tb_list_entry_ref_t prev, tb_list_entry_ref_t next, tb_list_entry_head_ref_t spliced_list)
 {
     // check
-    tb_assert_abort(list && prev && next);
-    tb_assert_abort(spliced_list && spliced_list->next && spliced_list->prev);
+    tb_assert(list && prev && next);
+    tb_assert(spliced_list && spliced_list->next && spliced_list->prev);
 
     // valid?
-    tb_assert_abort(tb_list_entry_is_valid(list));
-    tb_assert_abort(tb_list_entry_is_valid(spliced_list));
+    tb_assert(tb_list_entry_is_valid(list));
+    tb_assert(tb_list_entry_is_valid(spliced_list));
 
     // empty?
     tb_check_return(!tb_list_entry_is_null(spliced_list));
@@ -355,7 +355,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_splice(tb_list_entry_h
 static __tb_inline__ tb_void_t              tb_list_entry_splice_head(tb_list_entry_head_ref_t list, tb_list_entry_head_ref_t spliced_list)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     tb_list_entry_splice(list, (tb_list_entry_ref_t)list, list->next, spliced_list);
@@ -369,7 +369,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_splice_head(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_splice_tail(tb_list_entry_head_ref_t list, tb_list_entry_head_ref_t spliced_list)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // done
     tb_list_entry_splice(list, list->prev, (tb_list_entry_ref_t)list, spliced_list);
@@ -384,11 +384,11 @@ static __tb_inline__ tb_void_t              tb_list_entry_splice_tail(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_insert_next(tb_list_entry_head_ref_t list, tb_list_entry_ref_t node, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list && node && node->next && entry);
-    tb_assert_abort(node != entry);
+    tb_assert(list && node && node->next && entry);
+    tb_assert(node != entry);
 
     // valid?
-    tb_assert_abort(tb_list_entry_is_valid(list));
+    tb_assert(tb_list_entry_is_valid(list));
 
     // insert entry
     node->next->prev    = entry;
@@ -409,7 +409,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_insert_next(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_insert_prev(tb_list_entry_head_ref_t list, tb_list_entry_ref_t node, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list && node);
+    tb_assert(list && node);
 
     // insert it
     tb_list_entry_insert_next(list, node->prev, entry);
@@ -433,7 +433,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_insert_head(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_insert_tail(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list && entry);
+    tb_assert(list && entry);
 
     // insert it
     tb_list_entry_insert_next(list, list->prev, entry);
@@ -448,11 +448,11 @@ static __tb_inline__ tb_void_t              tb_list_entry_insert_tail(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_replace(tb_list_entry_head_ref_t list, tb_list_entry_ref_t node, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(node && node->next && node->prev && entry);
-    tb_assert_abort(node != entry);
+    tb_assert(node && node->next && node->prev && entry);
+    tb_assert(node != entry);
 
     // valid?
-    tb_assert_abort(tb_list_entry_is_valid(list));
+    tb_assert(tb_list_entry_is_valid(list));
 
     // replace it
     entry->next         = node->next;
@@ -470,7 +470,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_replace(tb_list_entry_
 static __tb_inline__ tb_void_t              tb_list_entry_replace_next(tb_list_entry_head_ref_t list, tb_list_entry_ref_t node, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(node);
+    tb_assert(node);
 
     // replace it
     tb_list_entry_replace(list, node->next, entry);
@@ -485,7 +485,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_replace_next(tb_list_e
 static __tb_inline__ tb_void_t              tb_list_entry_replace_prev(tb_list_entry_head_ref_t list, tb_list_entry_ref_t node, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(node);
+    tb_assert(node);
 
     // replace it
     tb_list_entry_replace(list, node->prev, entry);
@@ -499,7 +499,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_replace_prev(tb_list_e
 static __tb_inline__ tb_void_t              tb_list_entry_replace_head(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // replace it
     tb_list_entry_replace(list, list->next, entry);
@@ -513,7 +513,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_replace_head(tb_list_e
 static __tb_inline__ tb_void_t              tb_list_entry_replace_last(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // replace it
     tb_list_entry_replace(list, list->prev, entry);
@@ -528,10 +528,10 @@ static __tb_inline__ tb_void_t              tb_list_entry_replace_last(tb_list_e
 static __tb_inline__ tb_void_t              tb_list_entry_remove_safe(tb_list_entry_head_ref_t list, tb_list_entry_ref_t prev, tb_list_entry_ref_t next)
 {
     // check
-    tb_assert_abort(list && list->size && prev && next);
+    tb_assert(list && list->size && prev && next);
 
     // valid?
-    tb_assert_abort(tb_list_entry_is_valid(list));
+    tb_assert(tb_list_entry_is_valid(list));
 
     // remove entries
     prev->next = next;
@@ -549,7 +549,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_remove_safe(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_remove(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(entry);
+    tb_assert(entry);
 
     // remove it
     tb_list_entry_remove_safe(list, entry->prev, entry->next);
@@ -563,7 +563,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_remove(tb_list_entry_h
 static __tb_inline__ tb_void_t              tb_list_entry_remove_next(tb_list_entry_head_ref_t list, tb_list_entry_ref_t prev)
 {
     // check
-    tb_assert_abort(prev && prev->next);
+    tb_assert(prev && prev->next);
 
     // remove it
     tb_list_entry_remove_safe(list, prev, prev->next->next);
@@ -577,7 +577,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_remove_next(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_remove_prev(tb_list_entry_head_ref_t list, tb_list_entry_ref_t next)
 {
     // check
-    tb_assert_abort(next && next->prev);
+    tb_assert(next && next->prev);
 
     // remove it
     tb_list_entry_remove_safe(list, next->prev->prev, next);
@@ -590,7 +590,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_remove_prev(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_remove_head(tb_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list && list->next);
+    tb_assert(list && list->next);
 
     // remove it
     tb_list_entry_remove_safe(list, (tb_list_entry_ref_t)list, list->next->next);
@@ -603,7 +603,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_remove_head(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_remove_last(tb_list_entry_head_ref_t list)
 {
     // check
-    tb_assert_abort(list && list->prev);
+    tb_assert(list && list->prev);
 
     // remove it
     tb_list_entry_remove_safe(list, list->prev->prev, (tb_list_entry_ref_t)list);
@@ -634,7 +634,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_moveto_next(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_moveto_prev(tb_list_entry_head_ref_t list, tb_list_entry_ref_t node, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(node);
+    tb_assert(node);
 
     // move it
     tb_list_entry_moveto_next(list, node->prev, entry);
@@ -659,7 +659,7 @@ static __tb_inline__ tb_void_t              tb_list_entry_moveto_head(tb_list_en
 static __tb_inline__ tb_void_t              tb_list_entry_moveto_tail(tb_list_entry_head_ref_t list, tb_list_entry_ref_t entry)
 {
     // check
-    tb_assert_abort(list);
+    tb_assert(list);
 
     // move it
     tb_list_entry_moveto_next(list, list->prev, entry);

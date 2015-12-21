@@ -334,7 +334,7 @@ tb_fixed16_t    tb_fixed16_exp_int32(tb_fixed16_t x);
 static __tb_inline__ tb_fixed16_t tb_long_to_fixed16_check(tb_long_t x)
 {
     // check overflow
-    tb_assert_abort(x == (tb_int16_t)x);
+    tb_assert(x == (tb_int16_t)x);
 
     // ok
     return (x << 16);
@@ -342,7 +342,7 @@ static __tb_inline__ tb_fixed16_t tb_long_to_fixed16_check(tb_long_t x)
 static __tb_inline__ tb_long_t tb_fixed16_to_long_check(tb_fixed16_t x)
 {
     // check overflow
-    tb_assert_abort(x >= TB_FIXED16_MIN && x <= TB_FIXED16_MAX);
+    tb_assert(x >= TB_FIXED16_MIN && x <= TB_FIXED16_MAX);
 
     // ok
     return (x >> 16);
@@ -353,7 +353,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_mul_check(tb_fixed16_t x, tb_fixed1
     tb_hong_t v = (((tb_hong_t)x * y) >> 16);
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;
@@ -361,13 +361,13 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_mul_check(tb_fixed16_t x, tb_fixed1
 static __tb_inline__ tb_fixed16_t tb_fixed16_div_check(tb_fixed16_t x, tb_fixed16_t y)
 {
     // check
-    tb_assert_abort(y);
+    tb_assert(y);
 
     // done
     tb_hong_t v = ((((tb_hong_t)x) << 16) / y);
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;
@@ -378,7 +378,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_sqre_check(tb_fixed16_t x)
     tb_hong_t v = (((tb_hong_t)x * x) >> 16);
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;
@@ -389,7 +389,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_imul_check(tb_fixed16_t x, tb_long_
     tb_hong_t v = ((tb_hong_t)x * y);
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;
@@ -397,7 +397,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_imul_check(tb_fixed16_t x, tb_long_
 static __tb_inline__ tb_fixed16_t tb_fixed16_idiv_check(tb_fixed16_t x, tb_long_t y)
 {
     // check
-    tb_assert_abort(y);
+    tb_assert(y);
 
     // ok
     return x / y;
@@ -408,7 +408,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_imuldiv_check(tb_fixed16_t x, tb_lo
     tb_hong_t v = ((tb_hong_t)x * y) / z;
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;
@@ -419,7 +419,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_imulsub_check(tb_fixed16_t x, tb_lo
     tb_hong_t v = ((tb_hong_t)x * y) - z;
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;

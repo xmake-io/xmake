@@ -114,7 +114,7 @@ static __tb_inline__ tb_size_t  tb_sockaddr_save(tb_ipaddr_ref_t ipaddr, struct 
         }
         break;
     default:
-        tb_assert_abort(0);
+        tb_assert(0);
         break;
     }
     
@@ -187,7 +187,7 @@ static __tb_inline__ tb_size_t  tb_sockaddr_load(struct sockaddr_storage* saddr,
         }
         break;
     default:
-        tb_assert_abort(0);
+        tb_assert(0);
         break;
     }
     

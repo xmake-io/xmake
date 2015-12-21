@@ -151,7 +151,7 @@ static __tb_inline__ tb_fixed6_t tb_long_to_fixed6_check(tb_long_t x)
 static __tb_inline__ tb_long_t tb_fixed6_to_int_check(tb_fixed6_t x)
 {
     // check overflow
-    tb_assert_abort(x >= TB_FIXED6_MIN && x <= TB_FIXED6_MAX);
+    tb_assert(x >= TB_FIXED6_MIN && x <= TB_FIXED6_MAX);
 
     // ok
     return (x >> 6);
@@ -163,7 +163,7 @@ static __tb_inline__ tb_fixed6_t tb_fixed6_mul_inline(tb_fixed6_t x, tb_fixed6_t
     tb_hong_t v = (((tb_hong_t)x * y) >> 6);
 
     // check overflow
-    tb_assert_abort(v == (tb_int32_t)v);
+    tb_assert(v == (tb_int32_t)v);
 
     // ok
     return (tb_fixed16_t)v;
@@ -171,7 +171,7 @@ static __tb_inline__ tb_fixed6_t tb_fixed6_mul_inline(tb_fixed6_t x, tb_fixed6_t
 static __tb_inline__ tb_fixed16_t tb_fixed6_div_inline(tb_fixed6_t x, tb_fixed6_t y)
 {
     // check
-    tb_assert_abort(y);
+    tb_assert(y);
 
     // no overflow? compute it fastly
     if (x == (tb_int16_t)x) return (x << 16) / y;

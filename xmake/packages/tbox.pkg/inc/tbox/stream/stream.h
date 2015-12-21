@@ -309,16 +309,32 @@ tb_void_t               tb_stream_exit(tb_stream_ref_t stream);
 
 /*! init stream from url
  *
+ * @code
+ *
+    // init stream
+    tb_stream_ref_t stream = tb_stream_init_from_url("http://www.xxx.com/file");
+    if (stream)
+    {
+        // open stream
+        if (tb_stream_open(stream))
+        {
+            // ...
+        }
+
+        // exit stream
+        tb_stream_exit(stream);
+    }
+ *
+ * @endcode
+ *
  * @param url           the url
- * <pre>
- * data://base64
- * file://path or unix path: e.g. /root/xxxx/file
- * sock://host:port?tcp=
- * sock://host:port?udp=
- * socks://host:port
- * http://host:port/path?arg0=&arg1=...
- * https://host:port/path?arg0=&arg1=...
- * </pre>
+ *                      - data://base64
+ *                      - file://path or unix path: e.g. /root/xxxx/file
+ *                      - sock://host:port?tcp=
+ *                      - sock://host:port?udp=
+ *                      - socks://host:port
+ *                      - http://host:port/path?arg0=&arg1=...
+ *                      - https://host:port/path?arg0=&arg1=...
  *
  * @return              the stream
  */
@@ -563,6 +579,33 @@ tb_bool_t               tb_stream_open(tb_stream_ref_t stream);
 tb_bool_t               tb_stream_clos(tb_stream_ref_t stream);
 
 /*! read data, non-blocking
+ * 
+ * @code
+
+    tb_long_t read = 0;
+    tb_byte_t data[TB_STREAM_BLOCK_MAXN];
+    while (!tb_stream_beof(stream))
+    {
+        // read data
+        tb_long_t real = tb_stream_read(stream, data, sizeof(data));    
+
+        // ok?
+        if (real > 0) read += real;
+        // no data? continue it
+        else if (!real)
+        {
+            // wait
+            real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, tb_stream_timeout(stream));
+            tb_check_break(real > 0);
+
+            // has read?
+            tb_assert_and_check_break(real & TB_STREAM_WAIT_READ);
+        }
+        // failed or end?
+        else break;
+    }
+
+ * @endcode
  *
  * @param stream        the stream
  * @param data          the data
@@ -583,6 +626,30 @@ tb_long_t               tb_stream_read(tb_stream_ref_t stream, tb_byte_t* data, 
 tb_long_t               tb_stream_writ(tb_stream_ref_t stream, tb_byte_t const* data, tb_size_t size);
 
 /*! block read
+ * 
+ * @code
+ *
+    // get stream size
+    //
+    // @note 
+    // size may be < -1 for the http(chunked)/filter/.. stream
+    // we need call tb_stream_read for reading data if size < 0
+    //
+    tb_hong_t size = tb_stream_size(stream);
+    tb_assert(size > 0);
+
+    // make data
+    tb_byte_t* data = tb_malloc((tb_size_t)size);
+    if (data)
+    {
+        // read data
+        tb_bool_t ok = tb_stream_bread(stream, data, size);
+
+        // exit data
+        tb_free(data)
+    }
+ *
+ * @endcode
  *
  * @param stream        the stream
  * @param data          the data
@@ -612,6 +679,17 @@ tb_bool_t               tb_stream_bwrit(tb_stream_ref_t stream, tb_byte_t const*
 tb_bool_t               tb_stream_sync(tb_stream_ref_t stream, tb_bool_t bclosing);
 
 /*! need stream
+ *
+ * @code
+ 
+    // need 16-bytes data
+    tb_byte_t* data = tb_null;
+    if (tb_stream_need(stream, &data, 16))
+    {
+        // ..
+    }
+
+ * @endcode
  *
  * @param stream        the stream
  * @param data          the data
@@ -650,6 +728,19 @@ tb_long_t               tb_stream_printf(tb_stream_ref_t stream, tb_char_t const
 
 /*! block read line 
  *
+ * @code
+ *
+    // read line
+    tb_long_t size = 0;
+    tb_char_t line[8192];
+    while ((size = tb_stream_bread_line(stream, line, sizeof(line))) >= 0)
+    {
+        // trace
+        tb_trace_i("line: %s", line);
+    }
+ *
+ * @endcode
+ *
  * @param stream        the stream
  * @param data          the data
  * @param size          the size
@@ -667,6 +758,38 @@ tb_long_t               tb_stream_bread_line(tb_stream_ref_t stream, tb_char_t* 
  * @return              the real size
  */
 tb_long_t               tb_stream_bwrit_line(tb_stream_ref_t stream, tb_char_t* data, tb_size_t size);
+
+/*! block read all data 
+ *
+ * @code
+ *
+    // read all data
+    tb_size_t    size = 0;
+    tb_byte_t*   data = tb_stream_bread_all(stream, tb_false, &size);
+    if (data)
+    {
+        // exit data
+        tb_free(data);
+    }
+
+    // read all cstr and append '\0'
+    tb_size_t    size = 0;
+    tb_char_t*   cstr = (tb_char_t*)tb_stream_bread_all(stream, tb_true, &size);
+    if (cstr)
+    {
+        // exit cstr
+        tb_free(cstr);
+    }
+  
+ * @endcode
+ *
+ * @param stream        the stream
+ * @param is_cstr       will append '\0' if be c-string
+ * @param psize         the size pointer, optional
+ *
+ * @return              the data 
+ */
+tb_byte_t*              tb_stream_bread_all(tb_stream_ref_t stream, tb_bool_t is_cstr, tb_size_t* psize);
 
 /*! block read uint8 integer
  *

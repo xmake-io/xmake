@@ -126,9 +126,9 @@ tb_void_t               tb_xml_reader_clos(tb_xml_reader_ref_t reader);
                     break;
                 case TB_XML_READER_EVENT_ELEMENT_EMPTY: 
                     {
-                        tb_char_t const*        name = tb_xml_reader_element(reader);
-                        tb_xml_node_ref_t    attr = tb_xml_reader_attributes(reader);
-                        tb_size_t               t = tb_xml_reader_level(reader);
+                        tb_char_t const*    name = tb_xml_reader_element(reader);
+                        tb_xml_node_ref_t   attr = tb_xml_reader_attributes(reader);
+                        tb_size_t           t = tb_xml_reader_level(reader);
                         while (t--) tb_printf("\t");
                         if (!attr) tb_printf("<%s/>\n", name);
                         else
@@ -142,9 +142,9 @@ tb_void_t               tb_xml_reader_clos(tb_xml_reader_ref_t reader);
                     break;
                 case TB_XML_READER_EVENT_ELEMENT_BEG: 
                     {
-                        tb_char_t const*        name = tb_xml_reader_element(reader);
-                        tb_xml_node_ref_t    attr = tb_xml_reader_attributes(reader);    
-                        tb_size_t               t = tb_xml_reader_level(reader) - 1;
+                        tb_char_t const*    name = tb_xml_reader_element(reader);
+                        tb_xml_node_ref_t   attr = tb_xml_reader_attributes(reader);    
+                        tb_size_t           t = tb_xml_reader_level(reader) - 1;
                         while (t--) tb_printf("\t");
                         if (!attr) tb_printf("<%s>\n", name);
                         else
