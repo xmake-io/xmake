@@ -153,7 +153,7 @@ tb_pointer_t            tb_hash_map_get(tb_hash_map_ref_t hash_map, tb_cpointer_
  * {
  *      // get data
  *      tb_xxxx_ref_t data = (tb_xxxx_ref_t)tb_iterator_item(hash_map, itor);
- *      tb_assert_abort(data);
+ *      tb_assert(data);
  *
  *      // remove it
  *      tb_iterator_remove(hash_map, itor);

@@ -96,7 +96,7 @@ tb_void_t               tb_object_dictionary_incr(tb_object_ref_t dictionary, tb
  *      if (item)
  *      {
  *          tb_char_t const*    key = item->key;
- *          tb_object_ref_t        val = item->val;
+ *          tb_object_ref_t     val = item->val;
  *
  *          // ...
  *      }

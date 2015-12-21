@@ -96,7 +96,7 @@ tb_size_t           tb_object_data_size(tb_object_ref_t data);
  *
  * @return          the data buffer
  */
-tb_buffer_ref_t         tb_object_data_buffer(tb_object_ref_t data);
+tb_buffer_ref_t     tb_object_data_buffer(tb_object_ref_t data);
 
 /*! writ data to url
  *

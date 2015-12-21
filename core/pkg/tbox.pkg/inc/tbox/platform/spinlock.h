@@ -52,7 +52,7 @@
 static __tb_inline_force__ tb_bool_t tb_spinlock_init(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return_val(lock, tb_false);
+    tb_assert(lock);
 
     // init 
     *lock = 0;
@@ -68,7 +68,7 @@ static __tb_inline_force__ tb_bool_t tb_spinlock_init(tb_spinlock_ref_t lock)
 static __tb_inline_force__ tb_void_t tb_spinlock_exit(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return(lock);
+    tb_assert(lock);
 
     // exit 
     *lock = 0;
@@ -81,7 +81,7 @@ static __tb_inline_force__ tb_void_t tb_spinlock_exit(tb_spinlock_ref_t lock)
 static __tb_inline_force__ tb_void_t tb_spinlock_enter(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return(lock);
+    tb_assert(lock);
 
     // init tryn
     tb_size_t tryn = 5;
@@ -129,7 +129,7 @@ static __tb_inline_force__ tb_void_t tb_spinlock_enter(tb_spinlock_ref_t lock)
 static __tb_inline_force__ tb_void_t tb_spinlock_enter_without_profiler(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return(lock);
+    tb_assert(lock);
 
     // init tryn
     tb_size_t tryn = 5;
@@ -159,7 +159,7 @@ static __tb_inline_force__ tb_void_t tb_spinlock_enter_without_profiler(tb_spinl
 static __tb_inline_force__ tb_bool_t tb_spinlock_enter_try(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return_val(lock, tb_false);
+    tb_assert(lock);
 
 #ifndef TB_LOCK_PROFILER_ENABLE
     // try locking it
@@ -185,7 +185,7 @@ static __tb_inline_force__ tb_bool_t tb_spinlock_enter_try(tb_spinlock_ref_t loc
 static __tb_inline_force__ tb_bool_t tb_spinlock_enter_try_without_profiler(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return_val(lock, tb_false);
+    tb_assert(lock);
 
     // try locking it
     return !tb_atomic_fetch_and_pset((tb_atomic_t*)lock, 0, 1);
@@ -198,7 +198,7 @@ static __tb_inline_force__ tb_bool_t tb_spinlock_enter_try_without_profiler(tb_s
 static __tb_inline_force__ tb_void_t tb_spinlock_leave(tb_spinlock_ref_t lock)
 {
     // check
-    tb_assert_return(lock);
+    tb_assert(lock);
 
     // leave
     *((tb_atomic_t*)lock) = 0;

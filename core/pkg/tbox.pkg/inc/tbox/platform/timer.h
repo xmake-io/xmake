@@ -57,8 +57,6 @@ typedef struct{}*   tb_timer_task_ref_t;
 
 /*! init timer
  *
- * lower tick and limit range, but faster
- * 
  * @param maxn      the timer maxn
  * @param ctime     using ctime?
  *

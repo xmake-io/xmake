@@ -127,7 +127,7 @@ tb_ifaddrs_interface_ref_t  tb_ifaddrs_interface(tb_ifaddrs_ref_t ifaddrs, tb_ch
 /*! the hardware address from the given interface name
  *
  * @param ifaddrs           the ifaddrs
- * @param name              the interface name, get the first ether address if ne null
+ * @param name              the interface name, get the first ether address if be null
  * @param reload            force to reload the ifaddrs list, will cache list if be false
  * @param hwaddr            the hardware address
  *
@@ -138,7 +138,7 @@ tb_bool_t                   tb_ifaddrs_hwaddr(tb_ifaddrs_ref_t ifaddrs, tb_char_
 /*! the hardware address from the given interface name
  *
  * @param ifaddrs           the ifaddrs
- * @param name              the interface name, get the first ether address if ne null
+ * @param name              the interface name, get the first ether address if be null
  * @param reload            force to reload the ifaddrs list, will cache list if be false
  * @param family            the address family 
  * @param ipaddr            the ip address

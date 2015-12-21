@@ -82,6 +82,11 @@ __tb_extern_c_enter__
 #   define tb_strtof(s, e)          tb_s10tof(s)
 #   define tb_strtod(s, e)          tb_s10tod(s)
 #endif
+#if TB_CPU_BIT64
+#   define tb_atol(s)               (tb_long_t)tb_s10toi64(s)
+#else
+#   define tb_atol(s)               (tb_long_t)tb_s10toi32(s)
+#endif
 
 // atow
 #define tb_atow(s1, s2, n)          tb_mbstowcs(s1, s2, n)
