@@ -110,11 +110,11 @@ tb_size_t               tb_environment_load(tb_environment_ref_t environment, tb
     tb_environment_ref_t environment = tb_environment_init();
     if (environment)
     {
-        // set values
-        tb_environment_set(environment, "/xxx/0", tb_false);
-        tb_environment_set(environment, "/xxx/1", tb_false);
-        tb_environment_set(environment, "/xxx/2", tb_false);
-        tb_environment_set(environment, "/xxx/3", tb_false);
+        // insert values
+        tb_environment_insert(environment, "/xxx/0", tb_false);
+        tb_environment_insert(environment, "/xxx/1", tb_false);
+        tb_environment_insert(environment, "/xxx/2", tb_false);
+        tb_environment_insert(environment, "/xxx/3", tb_false);
 
         // save variable
         tb_environment_save(environment, "PATH");
@@ -165,15 +165,24 @@ tb_char_t const*        tb_environment_get(tb_environment_ref_t environment, tb_
 
 /*! set the environment variable and will overwrite it
  *
- * we will clear environment if value == null and overwrite
+ * we will clear environment and overwrite it
  *
  * @param environment   the environment variable
- * @param value         the variable value
- * @param overwrite     is overwrite or insert value into the head?
+ * @param value         the variable value, will clear it if be null
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_environment_set(tb_environment_ref_t environment, tb_char_t const* value, tb_bool_t overwrite);
+tb_bool_t               tb_environment_set(tb_environment_ref_t environment, tb_char_t const* value);
+
+/*! set the environment variable 
+ *
+ * @param environment   the environment variable
+ * @param value         the variable value
+ * @param to_head       insert value into the head?
+ *
+ * @return              tb_true or tb_false
+ */
+tb_bool_t               tb_environment_insert(tb_environment_ref_t environment, tb_char_t const* value, tb_bool_t to_head);
 
 #ifdef __tb_debug__
 /*! dump the environment variable

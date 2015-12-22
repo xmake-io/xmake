@@ -55,6 +55,12 @@ typedef struct{}*   tb_timer_task_ref_t;
  * interfaces
  */
 
+/*! the global timer
+ *
+ * @return          the timer
+ */
+tb_timer_ref_t      tb_timer(tb_noarg_t);
+
 /*! init timer
  *
  * @param maxn      the timer maxn

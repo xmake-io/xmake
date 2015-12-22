@@ -295,6 +295,8 @@
 #       define TB_COMPILER_VERSION_STRING           "visual c++ .net 2012 (11.0)"
 #   elif (_MSC_VER == 1800)
 #       define TB_COMPILER_VERSION_STRING           "visual c++ .net 2013 (12.0)"
+#   elif (_MSC_VER == 1900)
+#       define TB_COMPILER_VERSION_STRING           "visual c++ .net 2015 (14.0)"
 #   else
 #       error Unknown visual c++ Compiler Version
 #   endif

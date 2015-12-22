@@ -88,7 +88,7 @@ tb_int_t xm_os_setenv(lua_State* lua)
                     if (!filter || tb_bloom_filter_set(filter, data)) 
                     {
                         // append the environment 
-                        tb_environment_set(environment, data, tb_false);
+                        tb_environment_insert(environment, data, tb_false);
                     }
                 }
 

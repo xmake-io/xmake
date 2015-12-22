@@ -56,29 +56,35 @@ typedef enum __tb_singleton_type_e
     /// the ifaddrs type
 ,   TB_SINGLETON_TYPE_IFADDRS               = 4
 
+    /// the timer type
+,   TB_SINGLETON_TYPE_TIMER                 = 5
+
+    /// the ltimer type
+,   TB_SINGLETON_TYPE_LTIMER                = 6
+
     /// the aicp type
-,   TB_SINGLETON_TYPE_AICP                  = 5
+,   TB_SINGLETON_TYPE_AICP                  = 7
 
     /// the openssl library type
-,   TB_SINGLETON_TYPE_LIBRARY_OPENSSL       = 6
+,   TB_SINGLETON_TYPE_LIBRARY_OPENSSL       = 8
 
     /// the mysql library type
-,   TB_SINGLETON_TYPE_LIBRARY_MYSQL         = 7
+,   TB_SINGLETON_TYPE_LIBRARY_MYSQL         = 9
 
     /// the sqlite3 library type
-,   TB_SINGLETON_TYPE_LIBRARY_SQLITE3       = 8
+,   TB_SINGLETON_TYPE_LIBRARY_SQLITE3       = 10
 
     /// the thread pool type
-,   TB_SINGLETON_TYPE_THREAD_POOL           = 9
+,   TB_SINGLETON_TYPE_THREAD_POOL           = 11
 
     /// the transfer pool type
-,   TB_SINGLETON_TYPE_TRANSFER_POOL         = 10
+,   TB_SINGLETON_TYPE_TRANSFER_POOL         = 12
 
     /// the cookies type
-,   TB_SINGLETON_TYPE_COOKIES               = 11
+,   TB_SINGLETON_TYPE_COOKIES               = 13
 
     /// the user defined type
-,   TB_SINGLETON_TYPE_USER                  = 12
+,   TB_SINGLETON_TYPE_USER                  = 14
 
     /// the max count of the singleton type
 #ifdef __tb_small__

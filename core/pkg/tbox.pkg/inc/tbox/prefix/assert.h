@@ -53,7 +53,7 @@ __tb_extern_c_enter__
 // assert
 #ifdef __tb_debug__
 #   if defined(TB_COMPILER_IS_GCC)
-#       define tb_assertf(x, fmt, arg...)                                   do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_abort(); } } while(0)
+#       define tb_assertf(x, fmt, arg...)                                   do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); tb_abort(); } } while(0)
 #       define tb_assertf_and_check_abort(x, fmt, arg...)                   tb_assertf(x, fmt, ##arg)
 #       define tb_assertf_and_check_return(x, fmt, arg...)                  tb_assertf(x, fmt, ##arg)
 #       define tb_assertf_and_check_return_val(x, v, fmt, arg...)           tb_assertf(x, fmt, ##arg)
@@ -61,7 +61,7 @@ __tb_extern_c_enter__
 #       define tb_assertf_and_check_break(x, fmt, arg...)                   tb_assertf(x, fmt, ##arg)
 #       define tb_assertf_and_check_continue(x, fmt, arg...)                tb_assertf(x, fmt, ##arg)
 #   elif defined(TB_COMPILER_IS_MSVC) && TB_COMPILER_VERSION_BE(13, 0)
-#       define tb_assertf(x, fmt, ...)                                      do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_abort(); } } while(0)
+#       define tb_assertf(x, fmt, ...)                                      do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_trace_sync(); tb_abort(); } } while(0)
 #       define tb_assertf_and_check_abort(x, fmt, ...)                      tb_assertf(x, fmt, __VA_ARGS__)
 #       define tb_assertf_and_check_return(x, fmt, ...)                     tb_assertf(x, fmt, __VA_ARGS__)
 #       define tb_assertf_and_check_return_val(x, v, fmt, ...)              tb_assertf(x, fmt, __VA_ARGS__)
@@ -170,11 +170,13 @@ static __tb_inline__ tb_bool_t  tb_assert_impl(tb_bool_t x, tb_char_t const* exp
     if (!x)
     {
         // trace
-        tb_trace_i("[assert]: expr[%s] at %s(): %d, %s", expr __tb_debug_args__); 
-        tb_trace_sync(); 
+        tb_trace_a("expr[%s] at %s(): %d, %s", expr __tb_debug_args__); 
 
         // dump backtrace
         tb_assert_backtrace_dump();
+
+        // sync trace
+        tb_trace_sync(); 
 
         // abort it
         tb_abort();
