@@ -44,7 +44,7 @@ function prober._probe_arch(configs)
     if arch then return true end
 
     -- init the default architecture
-    configs.set("arch", xmake._ARCH)
+    configs.set("arch", "x86")
 
     -- trace
     utils.printf("checking for the architecture ... %s", configs.get("arch"))
