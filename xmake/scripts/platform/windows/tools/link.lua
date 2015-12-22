@@ -41,8 +41,8 @@ function link.init(self, name)
 
     -- init flags for architecture
     local flags_arch = ""
-    if arch == "i386" then flags_arch = "-machine:x86"
-    elseif arch == "x86_64" then flags_arch = "-machine:x86_64"
+    if arch == "x86" then flags_arch = "-machine:x86"
+    elseif arch == "x64" or arch == "amd64" then flags_arch = "-machine:x64"
     end
 
     -- init ldflags

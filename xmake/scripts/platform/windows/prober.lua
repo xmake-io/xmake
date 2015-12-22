@@ -68,7 +68,8 @@ function prober._probe_vs_version(configs)
     -- make the map table
     local map =
     {
-        VS120COMNTOOLS  = "2013"
+        VS140COMNTOOLS  = "2015"
+    ,   VS120COMNTOOLS  = "2013"
     ,   VS110COMNTOOLS  = "2012"
     ,   VS100COMNTOOLS  = "2010"
     ,   VS90COMNTOOLS   = "2008"
@@ -122,7 +123,8 @@ function prober._probe_vs_path(configs)
     -- make the map table
     local map =
     {
-        ["2013"]    = "VS120COMNTOOLS"
+        ["2015"]    = "VS140COMNTOOLS"
+    ,   ["2013"]    = "VS120COMNTOOLS"
     ,   ["2012"]    = "VS110COMNTOOLS"
     ,   ["2010"]    = "VS100COMNTOOLS"
     ,   ["2008"]    = "VS90COMNTOOLS"
@@ -134,17 +136,25 @@ function prober._probe_vs_path(configs)
     ,   ["4.2"]     = "VS42COMNTOOLS"
     }
 
-    -- attempt to get the tools directory from the envirnoment variable
-    local toolsdir = map[vs]
-    if toolsdir then 
-        toolsdir = os.getenv(toolsdir)
+    -- attempt to get the vs directory from the envirnoment variable
+    local vsdir = map[vs]
+    if vsdir then 
+        vsdir = os.getenv(vsdir)
+    end
+    if vsdir then
+        vsdir = vsdir .. "\\..\\.."
+    end
+    if not os.isdir(vsdir) then
+        -- error
+        utils.error("not found %s", vsdir)
+        return false
     end
 
-    -- the vsvars32.bat path
-    local vsvars32 = toolsdir .. "\\vsvars32.bat"
-    if not os.isfile(vsvars32) then
+    -- the vcvarsall.bat path
+    local vcvarsall = vsdir .. "\\VC\\vcvarsall.bat"
+    if not os.isfile(vcvarsall) then
         -- error
-        utils.error("not found %s", vsvars32)
+        utils.error("not found %s", vcvarsall)
         return false
     end
 
@@ -152,14 +162,14 @@ function prober._probe_vs_path(configs)
     local tmpdir = os.tmpdir()
     assert(tmpdir)
 
-    -- make the call(vsvars32.bat) file
-    local callpath = tmpdir .. "\\call_vsvars32.bat"
+    -- make the call(vcvarsall.bat) file
+    local callpath = tmpdir .. "\\call_vcvarsall.bat"
     local callfile = io.openmk(callpath)
     assert(callfile)
 
     -- make call scripts
     callfile:write("@echo off\n")
-    callfile:write(string.format("call \"%s\" > nul\n", vsvars32))
+    callfile:write(string.format("call \"%s\" %s > nul\n", vcvarsall, configs.get("arch")))
     callfile:write("echo return \n")
     callfile:write("echo { \n")
     callfile:write("echo     path = \"%path%\"\n")
@@ -207,8 +217,14 @@ function prober._probe_toolpath(configs, kind, name, description)
     local toolpath = configs.get(kind)
     if toolpath then return true end
 
+    -- make cmd
+    local cmd = string.format("%s > %s 2>&1", name, xmake._NULDEV)
+    if kind == "ld" then
+        cmd = string.format("%s nul > %s 2>&1", name, xmake._NULDEV)
+    end
+
     -- attempt to run it directly first
-    if not toolpath and os.execute(string.format("%s nul > %s 2>&1", name, xmake._NULDEV)) ~= 0x7f00 then
+    if not toolpath and os.execute(cmd) ~= 1 then
         toolpath = name
     end
 
@@ -220,6 +236,11 @@ function prober._probe_toolpath(configs, kind, name, description)
         utils.printf("checking for %s (%s) ... %s", description, kind, path.filename(toolpath))
     else
         utils.printf("checking for %s (%s) ... no", description, kind)
+    end
+
+    -- failed?
+    if not toolpath and (kind == "cc" or kind == "ld" or kind == "make") then
+        return false
     end
 
     -- ok
