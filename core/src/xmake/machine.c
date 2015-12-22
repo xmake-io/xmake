@@ -270,9 +270,9 @@ xm_machine_ref_t xm_machine_init()
 
         // init architecture
 #if defined(TB_ARCH_x86) || defined(TB_CONFIG_OS_WINDOWS)
-        lua_pushstring(impl->lua, "x86");
+        lua_pushstring(impl->lua, "i386");
 #elif defined(TB_ARCH_x64)
-        lua_pushstring(impl->lua, "x64");
+        lua_pushstring(impl->lua, "x86_64");
 #else
         lua_pushstring(impl->lua, TB_ARCH_STRING);
 #endif

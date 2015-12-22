@@ -31,6 +31,9 @@
  * includes
  */
 #include "prefix.h"
+#ifdef TB_CONFIG_OS_WINDOWS
+#   include <stdio.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -57,6 +60,14 @@ tb_int_t xm_os_setenv(lua_State* lua)
     tb_char_t const*    value = luaL_checklstring(lua, 2, &value_size);
     tb_check_return_val(name, 0);
 
+#ifdef TB_CONFIG_OS_WINDOWS
+    /* @note
+     *
+     * we must use setenv for matching the function getenv of luajit,
+     * because SetEnvironmentVariable and getenv are not compatible.
+     */
+    lua_pushboolean(lua, setenv(name, value));
+#else
     // find the first separator position
     tb_char_t const* p = value? tb_strchr(value, XM_OS_ENV_SEP) : tb_null;
     if (p)
@@ -119,6 +130,7 @@ tb_int_t xm_os_setenv(lua_State* lua)
         // done os.setenv(name, value) 
         lua_pushboolean(lua, tb_environment_set_one(name, value));
     }
+#endif
 
     // ok
     return 1;
