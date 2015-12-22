@@ -34,7 +34,7 @@ windows._HOST       = "windows"
 windows._OS         = "windows"
 
 -- init architectures
-windows._ARCHS      = {"i386", "x86_64"}
+windows._ARCHS      = {"x86", "x64", "amd64", "x86_amd64"}
 
 -- enter the given environment
 function windows._enter(name)
