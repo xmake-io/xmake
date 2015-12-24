@@ -58,6 +58,7 @@ function cl.init(self, name)
     ,   ["-W3"]                     = "-W3"
     ,   ["-Werror"]                 = "-WX"
     ,   ["%-Wno%-error=.*"]         = ""
+    ,   ["%-fno%-.*"]               = ""
 
         -- vectorexts
     ,   ["-mmmx"]                   = "-arch:MMX"
