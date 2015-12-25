@@ -77,8 +77,9 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 也可以参考一些使用xmake的项目：
 
-* [TBOX](https://github.com/waruqi/tbox)
-* [GBOX](https://github.com/waruqi/gbox)
+* [tbox](https://github.com/waruqi/tbox)
+* [gbox](https://github.com/waruqi/gbox)
+* [more](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
 
 ####后续工作
 
