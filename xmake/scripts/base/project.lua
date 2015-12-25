@@ -136,17 +136,67 @@ function project._api_get_pathes(...)
     return results
 end
 
+-- add c function
+function project._api_add_cfunc(env, module, alias, links, includes, cfunc)
+
+    -- check
+    assert(env and cfunc)
+
+    -- make the option name
+    local name = nil
+    if module ~= nil then
+        name = string.format("__%s_%s", module, cfunc)
+    else
+        name = string.format("__%s", cfunc)
+    end
+
+    -- make the option define
+    local define = nil
+    if module ~= nil then
+        define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), utils.ifelse(alias, alias, cfunc:upper()))
+    else
+        define = string.format("$(prefix)_HAVE_%s", utils.ifelse(alias, alias, cfunc:upper()))
+    end
+
+    -- make option
+    env.add_option(name)
+    env.set_option_category("cfuncs")
+    env.add_option_cfuncs(cfunc)
+    if links then env.add_option_links(links) end
+    if includes then env.add_option_cincludes(includes) end
+    env.add_option_defines_h_if_ok(define)
+
+    -- add this option 
+    env.add_options(name)
+end
+
 -- add c functions
 function project._api_add_cfuncs(env, module, links, includes, ...)
 
     -- check
-    assert(env and module)
+    assert(env)
 
     -- done
     for _, cfunc in ipairs({...}) do
 
+        -- check
+        assert(cfunc)
+
         -- make the option name
-        local name = string.format("__%s_%s", module, cfunc)
+        local name = nil
+        if module ~= nil then
+            name = string.format("__%s_%s", module, cfunc)
+        else
+            name = string.format("__%s", cfunc)
+        end
+
+        -- make the option define
+        local define = nil
+        if module ~= nil then
+            define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), cfunc:upper())
+        else
+            define = string.format("$(prefix)_HAVE_%s", cfunc:upper())
+        end
 
         -- make option
         env.add_option(name)
@@ -154,11 +204,45 @@ function project._api_add_cfuncs(env, module, links, includes, ...)
         env.add_option_cfuncs(cfunc)
         if links then env.add_option_links(links) end
         if includes then env.add_option_cincludes(includes) end
-        env.add_option_defines_h_if_ok(string.format("$(prefix)_%s_HAVE_%s", module:upper(), cfunc:upper()))
+        env.add_option_defines_h_if_ok(define)
 
         -- add this option 
         env.add_options(name)
     end
+end
+
+-- add c++ function
+function project._api_add_cxxfunc(env, module, alias, links, includes, cxxfunc)
+
+    -- check
+    assert(env and cxxfunc)
+
+    -- make the option name
+    local name = nil
+    if module ~= nil then
+        name = string.format("__%s_%s", module, cxxfunc)
+    else
+        name = string.format("__%s", cxxfunc)
+    end
+
+    -- make the option define
+    local define = nil
+    if module ~= nil then
+        define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), utils.ifelse(alias, alias, cxxfunc:upper()))
+    else
+        define = string.format("$(prefix)_HAVE_%s", utils.ifelse(alias, alias, cxxfunc:upper()))
+    end
+
+    -- make option
+    env.add_option(name)
+    env.set_option_category("cxxfuncs")
+    env.add_option_cxxfuncs(cxxfunc)
+    if links then env.add_option_links(links) end
+    if includes then env.add_option_cxxincludes(includes) end
+    env.add_option_defines_h_if_ok(define)
+
+    -- add this option 
+    env.add_options(name)
 end
 
 -- add c++ functions
@@ -170,16 +254,32 @@ function project._api_add_cxxfuncs(env, module, links, includes, ...)
     -- done
     for _, cxxfunc in ipairs({...}) do
 
+        -- check
+        assert(cxxfunc)
+
         -- make the option name
-        local name = string.format("__%s_%s", module, cxxfunc)
+        local name = nil
+        if module ~= nil then
+            name = string.format("__%s_%s", module, cxxfunc)
+        else
+            name = string.format("__%s", cxxfunc)
+        end
+
+        -- make the option define
+        local define = nil
+        if module ~= nil then
+            define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), cxxfunc:upper())
+        else
+            define = string.format("$(prefix)_HAVE_%s", cxxfunc:upper())
+        end
 
         -- make option
         env.add_option(name)
         env.set_option_category("cxxfuncs")
         env.add_option_cxxfuncs(cxxfunc)
         if links then env.add_option_links(links) end
-        if includes then env.add_option_cincludes(includes) end
-        env.add_option_defines_h_if_ok(string.format("$(prefix)_%s_HAVE_%s", module:upper(), cxxfunc:upper()))
+        if includes then env.add_option_cxxincludes(includes) end
+        env.add_option_defines_h_if_ok(define)
 
         -- add this option 
         env.add_options(name)
@@ -523,7 +623,7 @@ function project._makeconf_for_target(target_name, target)
     if #defines ~= 0 then
         file:write("// defines\n")
         for _, define in ipairs(defines) do
-            file:write(string.format("#define %s\n", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
+            file:write(string.format("#define %s 1\n", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
         end
         file:write("\n")
     end
@@ -972,7 +1072,9 @@ function project._load_options(file)
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
     
     -- register interfaces for the functions
+    newenv.add_cfunc        = function (...) return project._api_add_cfunc(newenv, ...) end
     newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
+    newenv.add_cxxfunc      = function (...) return project._api_add_cxxfunc(newenv, ...) end
     newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
    
     -- register interfaces for the package files
@@ -1080,7 +1182,9 @@ function project._load_targets(file)
     newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
         
     -- register interfaces for the functions
+    newenv.add_cfunc        = function (...) return project._api_add_cfunc(newenv, ...) end
     newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
+    newenv.add_cxxfunc      = function (...) return project._api_add_cxxfunc(newenv, ...) end
     newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
    
     -- register interfaces for the package files
