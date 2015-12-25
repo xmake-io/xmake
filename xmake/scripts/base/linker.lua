@@ -337,6 +337,9 @@ function linker.make(module, target, srcfiles, objfiles, targetfile, logfile)
     -- add flags from the linker 
     linker._addflags_from_linker(module, flags, flagname)
 
+    -- remove repeat
+    flags = utils.unique(flags)
+
     -- make the link command
     return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
 end
@@ -371,6 +374,9 @@ function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
 
     -- add flags from the linker 
     linker._addflags_from_linker(module, flags, "ldflags")
+
+    -- remove repeat
+    flags = utils.unique(flags)
 
     -- execute the link command
     return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(xmake._OPTIONS.verbose, nil, xmake._NULDEV)))
