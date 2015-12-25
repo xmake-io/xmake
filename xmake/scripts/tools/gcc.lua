@@ -76,6 +76,10 @@ function gcc.init(self, name)
         self.shflags = { "-shared", "-fPIC" }
     end
 
+    -- init cxflags for the kind: shared
+    self.shared         = {}
+    self.shared.cxflags = {"-fPIC"}
+
     -- suppress warning for the clang
     local isclang = false
     if name:find("clang") then

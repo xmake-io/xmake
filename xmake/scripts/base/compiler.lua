@@ -112,14 +112,21 @@ function compiler._getflags(module, names, flags)
 end
 
 -- add flags from the compiler 
-function compiler._addflags_from_compiler(module, flags, flagnames)
+function compiler._addflags_from_compiler(module, flags, flagnames, kind)
 
     -- check
     assert(module and flags and flagnames)
 
     -- done
     for _, flagname in ipairs(flagnames) do
+
+        -- add compiler.xxflags
         table.join2(flags, module, module[flagname])
+
+        -- add compiler.kind.xxflags
+        if kind ~= nil and module[kind] ~= nil then
+            table.join2(flags, module, module[kind][flagname])
+        end
     end
 end
 
@@ -374,6 +381,9 @@ function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
     -- add flags from the compiler 
     compiler._addflags_from_compiler(module, flags, flagnames)
 
+    -- remove repeat
+    flags = utils.unique(flags)
+
     -- execute the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
@@ -429,7 +439,10 @@ function compiler.make(module, target, srcfile, objfile, logfile)
     compiler._addflags_from_platform(module, flags, flagnames)
 
     -- add flags from the compiler 
-    compiler._addflags_from_compiler(module, flags, flagnames)
+    compiler._addflags_from_compiler(module, flags, flagnames, target.kind)
+
+    -- remove repeat
+    flags = utils.unique(flags)
 
     -- make the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
