@@ -3,15 +3,17 @@ The Automatic Cross-platform Build Tool
 
 Xmake is an automatic cross-platform build tool.
 
+It is similar to cmake, automake, premake, but more convenient and easy to use.
 
 features
 --------
 
-1. create c/c++ projects 
-2. automatically probe the host environment and configure project 
-3. build and rebuild project 
-4. clean generated target files
-5. package the project targets automatically
+1. create projects and supports many project templates
+2. support c/c++, objc/c++, swift and assembly language
+3. automatically probe the host environment and configure project 
+4. build and rebuild project 
+5. clean generated target files
+6. package the project targets automatically
    - *.ipa for ios
    - *.apk for android
    - *.pkg for library
@@ -20,9 +22,9 @@ features
    - others
    
 
-6. install target to pc or the mobile device
-7. run a given target
-8. describe the project file using lua script, more flexible and simple
+7. install target to pc or the mobile device
+8. run a given target
+9. describe the project file using lua script, more flexible and simple
 	```lua
 	
 	-- xmake.lua
@@ -34,8 +36,8 @@ features
         -- add files
         add_files("src/*.c") 
     ```
-9. custom platforms and toolchains
-10. custom rules for package/compiler/linker
+10. custom platforms and toolchains
+11. custom rules for package/compiler/linker
 
 ## 简介
 
