@@ -1193,6 +1193,7 @@ function project._load_targets(file)
     
     -- register interfaces for setting values
     local interfaces =  {   "kind"
+                        ,   "targetname"
                         ,   "config_h_prefix"
                         ,   "version"
                         ,   "strip"
