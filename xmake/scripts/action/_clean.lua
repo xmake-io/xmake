@@ -27,6 +27,7 @@ local _clean = _clean or {}
 local clean     = require("base/clean")
 local config    = require("base/config")
 local project   = require("base/project")
+local utils     = require("base/utils")
 local platform  = require("platform/platform")
 
 -- need access to the given file?
@@ -55,7 +56,7 @@ function _clean.done()
     end
 
     -- clean the current target
-    if not clean.remove(options.target) then
+    if not clean.remove(options.target, utils.ifelse(options.all, "all", "build")) then
         return false
     end
 
@@ -88,6 +89,8 @@ function _clean.menu()
                                                           , "    1. The Given Command Argument"
                                                           , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                           , "    3. The Current Directory"                                  }
+                ,   {}
+                ,   {'a', "all",        "k",  nil,          "Clean all auto-generated files by xmake."                      }
                 ,   {}
                 ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
                 ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }

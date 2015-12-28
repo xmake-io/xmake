@@ -30,6 +30,7 @@ xmake_C_FILES 			+= \
 						os/exists \
 						os/setenv \
 						os/getenv \
+						os/emptydir \
 						os/strerror \
 						path/relative \
 						path/absolute \

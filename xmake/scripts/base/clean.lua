@@ -33,8 +33,8 @@ local project   = require("base/project")
 -- remove the given files or directories
 function clean._remove(filedirs)
 
-    -- check
-    assert(filedirs)
+    -- empty?
+    if not filedirs then return true end
 
     -- wrap it first
     filedirs = utils.wrap(filedirs)
@@ -57,7 +57,7 @@ function clean._remove(filedirs)
 end
 
 -- remove the given target name
-function clean._remove_target(target_name, target, target_only, buildir)
+function clean._remove_target(target_name, target, mode, buildir)
 
     -- check
     assert(target_name and target)
@@ -68,10 +68,32 @@ function clean._remove_target(target_name, target, target_only, buildir)
     end
  
     -- not only remove target file?
-    if not target_only then
+    if mode ~= "targets" then
+
         -- remove the object files 
         if not clean._remove(rule.objectfiles(target_name, target, rule.sourcefiles(target), buildir)) then
             return false
+        end
+
+        -- remove the header files 
+        local _, dstheaders = rule.headerfiles(target)
+        if not clean._remove(dstheaders) then
+            return false
+        end
+
+        -- remove the config.h file
+        if mode == "all" and target.config_h then 
+
+            -- translate file path
+            local config_h = nil
+            if not path.is_absolute(target.config_h) then
+                config_h = path.absolute(target.config_h, xmake._PROJECT_DIR)
+            else
+                config_h = path.translate(target.config_h)
+            end
+            if not clean._remove(config_h) then
+                return false
+            end
         end
     end
 
@@ -80,7 +102,7 @@ function clean._remove_target(target_name, target, target_only, buildir)
 end
 
 -- remove the given target and all dependent targets
-function clean._remove_target_and_deps(target_name, target_only, buildir)
+function clean._remove_target_and_deps(target_name, mode, buildir)
 
     -- the targets
     local targets = project.targets()
@@ -91,7 +113,7 @@ function clean._remove_target_and_deps(target_name, target_only, buildir)
     assert(target)
 
     -- remove the target
-    if not clean._remove_target(target_name, target, target_only, buildir) then
+    if not clean._remove_target(target_name, target, mode, buildir) then
         return false 
     end
      
@@ -99,7 +121,7 @@ function clean._remove_target_and_deps(target_name, target_only, buildir)
     if target.deps then
         local deps = utils.wrap(target.deps)
         for _, dep in ipairs(deps) do
-            if not clean._remove_target_and_deps(dep, target_only, buildir) then return false end
+            if not clean._remove_target_and_deps(dep, mode, buildir) then return false end
         end
     end
 
@@ -108,16 +130,22 @@ function clean._remove_target_and_deps(target_name, target_only, buildir)
 end
 
 -- remove the target and object files for the given target
-function clean.remove(target_name, target_only)
+--
+-- mode: 
+--  all
+--  build
+--  targets
+--
+function clean.remove(target_name, mode)
 
     -- the build directory
     local buildir = config.get("buildir")
-    assert(buildir)
+    assert(buildir and mode)
 
     -- the target name
     if target_name and target_name ~= "all" then
         -- remove target
-        if not clean._remove_target_and_deps(target_name, target_only, buildir) then return false end
+        if not clean._remove_target_and_deps(target_name, mode, buildir) then return false end
     else
 
         -- the targets
@@ -126,8 +154,34 @@ function clean.remove(target_name, target_only)
 
         -- remove targets
         for target_name, target in pairs(targets) do
-            if not clean._remove_target(target_name, target, target_only, buildir) then return false end
+            if not clean._remove_target(target_name, target, mode, buildir) then return false end
         end
+    end
+
+    -- remove all
+    if mode == "all" then 
+
+        -- remove makefile
+        if not clean._remove(rule.makefile()) then
+            return false
+        end
+
+        -- remove the configure directory
+        if not clean._remove(config.directory()) then
+            return false
+        end
+
+        -- remove the log file
+        if not clean._remove(rule.logfile()) then
+            return false
+        end
+
+        -- remove build directory if be empty
+        local buildir = config.get("buildir")
+        if os.isdir(buildir) then
+            os.rm(buildir, true)
+        end
+
     end
  
     -- ok
