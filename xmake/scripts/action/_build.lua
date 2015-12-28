@@ -61,10 +61,10 @@ function _build.done()
 
     -- rebuild it?
     if options.rebuild or config.get("__rebuild") then
-        clean.remove(target_name)
+        clean.remove(target_name, "build")
     -- update it?
     elseif options.update then
-        clean.remove(target_name, true)
+        clean.remove(target_name, "targets")
     end
 
     -- clear rebuild mark and save configure to file

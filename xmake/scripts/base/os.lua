@@ -166,43 +166,43 @@ function os.mv(src, dst)
 end
 
 -- remove file or directory
-function os.rm(path)
+function os.rm(file_or_dir, emptydir)
     
     -- check
-    assert(path)
+    assert(file_or_dir)
 
     -- is file?
-    if os.isfile(path) then
+    if os.isfile(file_or_dir) then
         -- remove file
-        if not os.rmfile(path) then
-            return false, string.format("cannot remove file %s %s", path, os.strerror())
+        if not os.rmfile(file_or_dir) then
+            return false, string.format("cannot remove file %s %s", file_or_dir, os.strerror())
         end
     -- is directory?
-    elseif os.isdir(path) then
+    elseif os.isdir(file_or_dir) then
         -- remove directory
-        if not os.rmdir(path) then
-            return false, string.format("cannot remove directory %s %s", path, os.strerror())
+        if not os.rmdir(file_or_dir, emptydir) then
+            return false, string.format("cannot remove directory %s %s", file_or_dir, os.strerror())
         end
     -- not exists?
     else
-        return false, string.format("cannot remove file %s, not found this file %s", path, os.strerror())
+        return false, string.format("cannot remove file %s, not found this file %s", file_or_dir, os.strerror())
     end
-    
+
     -- ok
     return true
 end
 
 -- change to directory
-function os.cd(path)
+function os.cd(dir)
 
     -- check
-    assert(path)
+    assert(dir)
 
     -- change to the previous directory?
-    if path == "-" then
+    if dir == "-" then
         -- exists the previous directory?
         if os._PREDIR then
-            path = os._PREDIR
+            dir = os._PREDIR
             os._PREDIR = nil
         else
             -- error
@@ -211,14 +211,14 @@ function os.cd(path)
     end
     
     -- is directory?
-    if os.isdir(path) then
+    if os.isdir(dir) then
 
         -- get the current directory
         local current = os.curdir()
 
         -- change to directory
-        if not os.chdir(path) then
-            return false, string.format("cannot change directory %s %s", path, os.strerror())
+        if not os.chdir(dir) then
+            return false, string.format("cannot change directory %s %s", dir, os.strerror())
         end
 
         -- save the previous directory
@@ -226,7 +226,7 @@ function os.cd(path)
 
     -- not exists?
     else
-        return false, string.format("cannot change directory %s, not found this directory %s", path, os.strerror())
+        return false, string.format("cannot change directory %s, not found this directory %s", dir, os.strerror())
     end
     
     -- ok
