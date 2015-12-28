@@ -102,6 +102,21 @@ function project._api_archs(env, ...)
     end
 end
 
+-- the current kind is belong to the given kinds?
+function project._api_kinds(env, ...)
+
+    -- get the current kind
+    local kind = config.get("kind")
+    if not kind then return false end
+
+    -- exists this kind?
+    for _, k in ipairs(table.join(...)) do
+        if k and type(k) == "string" and k == kind then
+            return true
+        end
+    end
+end
+
 -- enable options?
 function project._api_options(env, ...)
 
@@ -1060,6 +1075,7 @@ function project._load_options(file)
     -- register interfaces for the condition
     newenv.os               = function (...) return project._api_os(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
+    newenv.kinds            = function (...) return project._api_kinds(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
 
@@ -1169,6 +1185,7 @@ function project._load_targets(file)
     -- register interfaces for the condition
     newenv.os               = function (...) return project._api_os(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
+    newenv.kinds            = function (...) return project._api_kinds(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
     newenv.options          = function (...) return project._api_options(newenv, ...) end
@@ -1193,7 +1210,6 @@ function project._load_targets(file)
     
     -- register interfaces for setting values
     local interfaces =  {   "kind"
-                        ,   "targetname"
                         ,   "config_h_prefix"
                         ,   "version"
                         ,   "strip"
