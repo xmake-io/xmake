@@ -109,11 +109,6 @@ function rule.targetfile(target_name, target, buildir)
     local targetdir = target.targetdir or buildir or config.get("buildir")
     assert(targetdir and type(targetdir) == "string")
 
-    -- modify target name?
-    if target.targetname then
-        target_name = target.targetname
-    end
-   
     -- the target file name
     local filename = rule.filename(target_name, target.kind)
     assert(filename)

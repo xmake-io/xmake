@@ -140,6 +140,10 @@ function _config.menu()
                                                           , "    - debug"
                                                           , "    - release"
                                                           , "    - profile"                                                 }
+                ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
+                                                          , "    - static"
+                                                          , "    - shared"
+                                                          , "    - binary"                                                 }
                 ,   {nil, "host",       "kv", xmake._HOST,  "The current host environment."                                 }
 
                     -- the options for project

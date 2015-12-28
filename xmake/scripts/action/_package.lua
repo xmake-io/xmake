@@ -129,7 +129,7 @@ function _package._makeconf(target_name, target)
     local configs_arch = configs_target.archs[arch]
 
     -- save name
-    configs_target.name = utils.ifelse(target.targetname, target.targetname, target_name)
+    configs_target.name = target_name
 
     -- save kind
     configs_target.kind = target.kind
