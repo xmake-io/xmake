@@ -42,7 +42,11 @@ function prober._probe_arch(configs)
     if arch then return true end
 
     -- init the default architecture
-    configs.set("arch", xmake._ARCH)
+    if configs.get("cross") then
+        configs.set("arch", "none")
+    else
+        configs.set("arch", xmake._ARCH)
+    end
 
     -- trace
     utils.printf("checking for the architecture ... %s", configs.get("arch"))
