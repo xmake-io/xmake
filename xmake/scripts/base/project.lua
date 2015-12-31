@@ -79,9 +79,9 @@ function project._api_plats(env, ...)
     local plat = config.get("plat")
     if not plat then return false end
 
-    -- exists this platform?
+    -- exists this platform? and escape '-'
     for _, p in ipairs(table.join(...)) do
-        if p and type(p) == "string" and plat:find(p) then
+        if p and type(p) == "string" and plat:find(p:gsub("%-", "%%-")) then
             return true
         end
     end
@@ -94,9 +94,9 @@ function project._api_archs(env, ...)
     local arch = config.get("arch")
     if not arch then return false end
 
-    -- exists this architecture?
+    -- exists this architecture? and escape '-'
     for _, a in ipairs(table.join(...)) do
-        if a and type(a) == "string" and arch:find(a) then
+        if a and type(a) == "string" and arch:find(a:gsub("%-", "%%-")) then
             return true
         end
     end
