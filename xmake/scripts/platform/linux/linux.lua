@@ -58,6 +58,9 @@ function linux.make(configs)
     configs.tools.ex        = config.get("ar") 
     configs.tools.sc        = config.get("sc") 
 
+    -- cross toolchains?
+    if config.get("cross") then return end
+
     -- init flags for architecture
     local archflags = nil
     local arch = config.get("arch")
