@@ -1,7 +1,7 @@
 The Automatic Cross-platform Build Tool
 ========================
 
-Xmake is an automatic cross-platform build tool.
+xmake is an automatic cross-platform build tool.
 
 It is similar to cmake, automake, premake, but more convenient and easy to use.
 
@@ -14,15 +14,14 @@ features
 4. build and rebuild project 
 5. clean generated target files
 6. package the project targets automatically
-   - *.ipa for ios
-   - *.apk for android
+   - *.ipa for ios(feature)
+   - *.apk for android(feature)
    - *.pkg for library
-   - *.app for macosx
+   - *.app for macosx(feature)
    - *.exe for windows
    - others
-   
 
-7. install target to pc or the mobile device
+7. install target
 8. run a given target
 9. describe the project file using lua script, more flexible and simple
 	```lua
@@ -38,6 +37,16 @@ features
     ```
 10. custom platforms and toolchains
 11. custom rules for package/compiler/linker
+
+projects
+--------
+
+some projects using xmake:
+
+* [tbox](https://github.com/waruqi/tbox)
+* [gbox](https://github.com/waruqi/gbox)
+* [more](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
+
 
 ## 简介
 
@@ -91,41 +100,6 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 4. 实现自动生成doxygen文档功能
 5. 增加一些实用的工程描述api，例如：下载api，可以自动下载缺少的依赖库等等。。
 6. 解析automake、cmake的工程，并自动生成xmake的描述文件，实现无缝编译（如果这个实现成功的话，以后移植编译一些开源代码就更方便了）
-
-
-contact
--------
-
-- email:   	    
-	- waruqi@gmail.com
-	- waruqi@126.com
-- source:  	    
-	- [github](https://github.com/waruqi/xmake)
-	- [coding](https://coding.net/u/waruqi/p/xmake/git)
-	- [oschina](http://git.oschina.net/tboox/xmake)
-- website: 	    
-	- http://www.tboox.org
-	- http://www.tboox.net
-- download:
- 	- [github](https://github.com/waruqi/xmake/archive/master.zip)
- 	- [coding](https://coding.net/u/waruqi/p/xmake/git/archive/master)
- 	- [oschina](http://git.oschina.net/tboox/xmake/repository/archive?ref=master)
-- document:
-	- [github](https://github.com/waruqi/xmake/wiki/)
-	- [oschina](http://git.oschina.net/tboox/xmake/wikis/home)
-- qq(group):    
-	- 343118190
-
-donate
-------
-
-####alipay
-<img src="http://www.tboox.net/ruki/alipay.png" alt="alipay" width="128" height="128">
-
-####paypal
-<a href="http://tboox.net/%E6%8D%90%E5%8A%A9/">
-<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="paypal">
-</a>
 
 install
 -------
@@ -246,3 +220,37 @@ add_target("test")
     add_files("src/*.c") 
 
 ```
+
+contact
+-------
+
+- email:   	    
+	- waruqi@gmail.com
+	- waruqi@126.com
+- source:  	    
+	- [github](https://github.com/waruqi/xmake)
+	- [coding](https://coding.net/u/waruqi/p/xmake/git)
+	- [oschina](http://git.oschina.net/tboox/xmake)
+- website: 	    
+	- http://www.tboox.org
+	- http://www.tboox.net
+- download:
+ 	- [github](https://github.com/waruqi/xmake/archive/master.zip)
+ 	- [coding](https://coding.net/u/waruqi/p/xmake/git/archive/master)
+ 	- [oschina](http://git.oschina.net/tboox/xmake/repository/archive?ref=master)
+- document:
+	- [github](https://github.com/waruqi/xmake/wiki/)
+	- [oschina](http://git.oschina.net/tboox/xmake/wikis/home)
+- qq(group):    
+	- 343118190
+
+donate
+------
+
+####alipay
+<img src="http://www.tboox.net/ruki/alipay.png" alt="alipay" width="128" height="128">
+
+####paypal
+<a href="http://tboox.net/%E6%8D%90%E5%8A%A9/">
+<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="paypal">
+</a>
