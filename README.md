@@ -180,7 +180,7 @@ some projects using xmake:
 ####donate
 
 xmake is a personal open source project, its development needs your help.
-If you would like to support the development of xmake, welcome to donate we.
+If you would like to support the development of xmake, welcome to donate us.
 
 Thanks!
 
