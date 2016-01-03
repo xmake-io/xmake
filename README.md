@@ -168,7 +168,7 @@ some projects using xmake:
 * [tbox](https://github.com/waruqi/tbox)
 * [gbox](https://github.com/waruqi/gbox)
 * [libsvx](https://github.com/caikelun/libsvx)
-* [more](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
+* [more](https://github.com/waruqi/xmake/wiki/xmake-projects)
 
 #### contacts
 
@@ -313,7 +313,7 @@ or xmake package --help
 * [tbox](https://github.com/waruqi/tbox)
 * [gbox](https://github.com/waruqi/gbox)
 * [libsvx](https://github.com/caikelun/libsvx)
-* [more](使用xmake的开源库)
+* [更多项目](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
 
 ####后续工作
 
