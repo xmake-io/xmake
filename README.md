@@ -1,12 +1,12 @@
-The Automatic Cross-platform Build Tool
-========================
+##The Automatic Cross-platform Build Tool
 
-xmake is an automatic cross-platform build tool.
+## introduction
+
+xmake is a cross-platform automatic build tool.
 
 It is similar to cmake, automake, premake, but more convenient and easy to use.
 
-features
---------
+####features
 
 1. create projects and supports many project templates
 2. support c/c++, objc/c++, swift and assembly language
@@ -38,8 +38,130 @@ features
 10. custom platforms and toolchains
 11. custom rules for package/compiler/linker
 
-projects
---------
+####examples
+
+create a c++ console project：
+
+```bash
+    xmake create -l c++ -t 1 console
+ or xmake create --language=c++ --template=1 console
+```
+
+project makefile：xmake.lua
+
+```lua
+add_target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
+
+configure project：
+
+   This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
+
+   The configuration arguments will be cached and you need not input all arguments each time.
+
+```bash
+   xmake f -p iphoneos -m debug
+or xmake f --ldflags="-Lxxx -lxxx"
+or xmake f --plat=macosx --arch=x86_64
+or xmake config --plat=iphoneos --mode=debug
+or xmake config --plat=iphonesimulator
+or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
+or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
+or xmake config --cxflags="-Dxxx -Ixxx"
+or xmake config --help
+```
+
+compile project：
+ 
+```bash
+   xmake
+or xmake -r
+or xmake --rebuild
+```
+
+run target：
+
+```bash
+   xmake r console
+or xmake run console
+```
+
+package all：
+
+```bash
+   xmake p
+or xmake p --archs="armv7, arm64"
+or xmake package
+or xmake package console
+or xmake package -o /tmp
+or xmake package --output=/tmp
+```
+
+install targets：
+
+```bash
+   xmake i
+or xmake install
+or xmake install console
+or xmake install -o /tmp
+or xmake install --output=/tmp
+```
+
+If you need known more detailed usage，please refer to [documents](https://github.com/waruqi/xmake/wiki/documents)
+or run：
+```bash
+   xmake -h
+or xmake --help
+or xmake config --help
+or xmake package --help
+...
+```
+
+The simple xmake.lua file:
+
+```lua
+-- the debug mode
+if modes("debug") then
+    
+    -- enable the debug symbols
+    set_symbols("debug")
+
+    -- disable optimization
+    set_optimize("none")
+end
+
+-- the release mode
+if modes("release") then
+
+    -- set the symbols visibility: hidden
+    set_symbols("hidden")
+
+    -- enable fastest optimization
+    set_optimize("fastest")
+
+    -- strip all symbols
+    set_strip("all")
+end
+
+-- add target
+add_target("test")
+
+    -- set kind
+    set_kind("static")
+
+    -- add files
+    add_files("src/*.c") 
+
+```
+
+####documents
+
+* [documents](https://github.com/waruqi/xmake/wiki/documents)
+* [codes](https://github.com/waruqi/xmake)
+
+####projects
 
 some projects using xmake:
 
@@ -47,6 +169,25 @@ some projects using xmake:
 * [gbox](https://github.com/waruqi/gbox)
 * [more](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
 
+#### contacts
+
+- email:   	    
+	- waruqi@gmail.com
+- website: 	    
+	- http://www.tboox.org
+	- http://www.tboox.net
+
+####donate
+
+xmake is a personal open source project, its development needs your help.
+If you would like to support the development of xmake, welcome to donate we.
+
+Thanks!
+
+#####paypal
+<a href="http://tboox.net/%E6%8D%90%E5%8A%A9/">
+<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="paypal">
+</a>
 
 ## 简介
 
@@ -86,105 +227,103 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 12. 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
 
+####简单例子
+
+创建一个c++ console项目：
+
+```bash
+    xmake create -l c++ -t 1 console
+ or xmake create --language=c++ --template=1 console
+```
+
+工程描述文件：xmake.lua
+
+```lua
+add_target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
+
+配置工程：
+
+   这个是可选的步骤，如果只想编译当前主机平台的项目，是可以不用配置的，默认编译release版本。
+   当然每次配置都会被缓存，不需要每次全部重新配置。
+
+```bash
+   xmake f -p iphoneos -m debug
+or xmake f --ldflags="-Lxxx -lxxx"
+or xmake f --plat=macosx --arch=x86_64
+or xmake config --plat=iphoneos --mode=debug
+or xmake config --plat=iphonesimulator
+or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
+or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
+or xmake config --cxflags="-Dxxx -Ixxx"
+or xmake config --help
+```
+
+编译工程：
+ 
+```bash
+   xmake
+or xmake -r
+or xmake --rebuild
+```
+
+运行目标：
+
+```bash
+   xmake r console
+or xmake run console
+```
+
+打包所有：
+
+```bash
+   xmake p
+or xmake p --archs="armv7, arm64"
+or xmake package
+or xmake package console
+or xmake package -o /tmp
+or xmake package --output=/tmp
+```
+
+安装目标：
+
+```bash
+   xmake i
+or xmake install
+or xmake install console
+or xmake install -o /tmp
+or xmake install --output=/tmp
+```
+
+详细使用方式和参数说明，请参考[文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
+或者运行：
+```bash
+   xmake -h
+or xmake --help
+or xmake config --help
+or xmake package --help
+...
+```
+
 也可以参考一些使用xmake的项目：
 
 * [tbox](https://github.com/waruqi/tbox)
 * [gbox](https://github.com/waruqi/gbox)
-* [more](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
+* [more](使用xmake的开源库)
 
 ####后续工作
 
-1. 完善打包模块，支持对ios、mac、android的app进行一键打包和签名，生成.ipa、.apk、.app的应用程序文件
+1. 完善打包模块，支持对ios、mac、android的app进行一键打包和签名，生成.ipa、.apk、.app、.deb、.rmp的应用和安装包文件
 2. 完善安装功能，支持对ios、android的app进行安装到设备
-3. 实现调试功能
+3. 实现调试功能，实现在pc、ios、android等设备进行真机调试
 4. 实现自动生成doxygen文档功能
 5. 增加一些实用的工程描述api，例如：下载api，可以自动下载缺少的依赖库等等。。
 6. 解析automake、cmake的工程，并自动生成xmake的描述文件，实现无缝编译（如果这个实现成功的话，以后移植编译一些开源代码就更方便了）
+7. 实现插件化管理，可以扩展自己的命令、脚本、api、编译平台和工具链
 
-install
--------
-
-####windows
-1. download xmake source codes
-2. enter the xmake directory
-3. run install.bat 
-4. select the install directory 
-
-####linux/macosx
-1. git clone git@github.com:waruqi/xmake.git
-2. cd ./xmake
-3. ./install
-
-usage
------
-
-Please see [wiki](https://github.com/waruqi/xmake/wiki) if you want to known more usage or run xmake --help command.
-
-
-```bash
-	// create a c++ console project 
-	xmake create -l c++ -t 1 console
- or xmake create --language=c++ --template=1 console
-	
-	// enter the project directory
-    cd ./console
-	
-	// build for the host platform
-    xmake
-    
-	// only build for the given target
-	xmake target
-    
-	// config and build for the host platform for debug
-    xmake f -m debug 
- or xmake config --mode=debug
-    xmake
-
-	// config and build for the iphoneos platform
-	xmake f -p iphoneos 
- or xmake config --plat=iphoneos 
-    xmake
-    
-	// config and build for the iphoneos platform with arm64 
-    xmake f -p iphoneos -a arm64
- or xmake config --plat=iphoneos --arch=arm64
-    xmake
-    
-	// config and build for the android platform
-    xmake f -p android --ndk=xxxxx
-    xmake
-    
-	// build and package project
-	xmake package 
-	xmake package -a "i386, x86_64"
-	xmake package --arch="armv7, arm64"
-	xmake package --output=/tmp
-	
-    // rebuild project
-    xmake -r
- or xmake --rebuild
- 
-    // clean all project targets
-    xmake c
- or xmake clean
-    
-    // clean the given project target
-    xmake c target
- or xmake clean target
-    
-    // run the given project target
-    xmake r target
- or xmake run target
-    
-    // install all targets
-    xmake i
- or xmake install
-    
-
-```
-
-example
--------
+####简单例子
 
 ```lua
 -- the debug mode
@@ -221,36 +360,25 @@ add_target("test")
 
 ```
 
-contact
--------
+#### 联系方式
 
 - email:   	    
 	- waruqi@gmail.com
 	- waruqi@126.com
-- source:  	    
-	- [github](https://github.com/waruqi/xmake)
-	- [coding](https://coding.net/u/waruqi/p/xmake/git)
-	- [oschina](http://git.oschina.net/tboox/xmake)
 - website: 	    
 	- http://www.tboox.org
 	- http://www.tboox.net
-- download:
- 	- [github](https://github.com/waruqi/xmake/archive/master.zip)
- 	- [coding](https://coding.net/u/waruqi/p/xmake/git/archive/master)
- 	- [oschina](http://git.oschina.net/tboox/xmake/repository/archive?ref=master)
-- document:
-	- [github](https://github.com/waruqi/xmake/wiki/)
-	- [oschina](http://git.oschina.net/tboox/xmake/wikis/home)
 - qq(group):    
 	- 343118190
 
-donate
-------
+####捐助
 
-####alipay
+xmake是个人开源，它的发展需要您的帮助，如果您愿意支持xmake的开发，欢迎为其捐赠，支持xmake的发展。
+
+#####alipay
 <img src="http://www.tboox.net/ruki/alipay.png" alt="alipay" width="128" height="128">
 
-####paypal
+#####paypal
 <a href="http://tboox.net/%E6%8D%90%E5%8A%A9/">
 <img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="paypal">
 </a>
