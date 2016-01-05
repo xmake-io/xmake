@@ -229,6 +229,8 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
                                     ,   gnu89       = "-std=gnu89"
                                     ,   c99         = "-std=c99"
                                     ,   gnu99       = "-std=gnu99"
+                                    ,   c11         = "-std=c11"
+                                    ,   gnu11       = "-std=gnu11"
                                     })
         elseif flagname == "cxxflags" or flagname == "mxxflags" then
             table.join2(languages, {    cxx98       = "-std=c++98"
