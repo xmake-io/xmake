@@ -68,7 +68,7 @@ local menu =
 
 
         ,   {}
-        ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously"          }
+        ,   {'j', "jobs",       "kv", nil,          "Specifies the number of jobs to build simultaneously"          }
         ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
         ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
         ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
