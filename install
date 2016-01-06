@@ -47,11 +47,15 @@ if [ -f .config.mak ]; then
     rm .config.mak
 fi
 make f DEBUG=$debug > ../install.log
-if [ $? -ne 0 ]; then exit; fi
+if [ $? -ne 0 ]; then 
+    cat ../install.log
+    exit; 
+fi
 make c >> ../install.log
 make >> ../install.log
 if [ $? -ne 0 ]; then 
     make o
+    cat ../install.log
     exit; 
 fi
 make i
@@ -71,31 +75,46 @@ fi
 if [ ! -d $xmake_dir_install ]; then
     sudo mkdir $xmake_dir_install
 fi
-if [ $? -ne 0 ]; then exit; fi
+if [ $? -ne 0 ]; then 
+    echo "create $xmake_dir_install failed!"
+    exit; 
+fi
 
 # install the xmake core file
 xmake_core=./core/bin/demo.pkg/bin/$plat/$arch/demo.b
 xmake_core_install=$xmake_dir_install/xmake
 sudo cp $xmake_core $xmake_core_install
 sudo chmod 777 $xmake_core_install
-if [ $? -ne 0 ]; then exit; fi
+if [ $? -ne 0 ]; then
+    echo "install xmake core failed!"
+    exit;
+fi
 
 # install the xmake directory
 sudo cp -r ./xmake/* $xmake_dir_install/
-if [ $? -ne 0 ]; then exit; fi
+if [ $? -ne 0 ]; then
+    echo "install xmake directory failed!"
+    exit;
+fi
 
 # make the xmake loader
 xmake_loader=/tmp/xmake_loader
 echo "#!/bin/bash" > $xmake_loader
 echo "export XMAKE_PROGRAM_DIR=$xmake_dir_install" >> $xmake_loader
 echo "$xmake_core_install $verbose \"\$@\"" >> $xmake_loader
-if [ $? -ne 0 ]; then exit; fi
+if [ $? -ne 0 ]; then 
+    echo "make xmake loader failed!"
+    exit;
+fi
 
 # install the xmake loader
 xmake_loader_install=$prefix/bin/xmake
 sudo mv $xmake_loader $xmake_loader_install
 sudo chmod 777 $xmake_loader_install
-if [ $? -ne 0 ]; then exit; fi
+if [ $? -ne 0 ]; then 
+    echo "install xmake loader failed!"
+    exit;
+fi
 
 # ok
 echo ok!
