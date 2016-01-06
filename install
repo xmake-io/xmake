@@ -12,6 +12,7 @@ prefix=/usr/local
 if [ $1 ] && [ -d $1 ]; then
     prefix=$1
 fi
+echo installing to $prefix ...
 
 # probe plat
 uname=`uname`
@@ -28,6 +29,7 @@ elif [ `uname | egrep -i cygwin` ]; then
 else
     plat=linux
 fi
+echo plat: $plat
 
 # probe arch
 arch=x86
@@ -36,9 +38,10 @@ if [ $plat = "linux" ] || [ $plat = "mac" ]; then
         arch=x64
     fi
 fi
+echo arch: $arch
 
 # compile xmake-core
-echo compiling xmake-core...
+echo compiling xmake-core ...
 cd ./core
 if [ -f .config.mak ]; then 
     rm .config.mak
