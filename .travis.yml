@@ -1,5 +1,8 @@
 sudo: required
-language: lua
+language: C
+os:
+  - linux
+  - osx
 
 install:
   - ./install
