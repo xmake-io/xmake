@@ -41,19 +41,29 @@ end
 -- the main function
 function make.main(self, mkfile, target)
 
+    -- enable jobs?
+    local jobs = ""
+    if xmake._OPTIONS.jobs ~= nil then
+        if tonumber(xmake._OPTIONS.jobs) ~= 0 then
+            jobs = "-j" .. xmake._OPTIONS.jobs
+        else
+            jobs = "-j"
+        end
+    end
+
     -- make command
     local cmd = nil
     if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s -r -j4 -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
+        cmd = string.format("%s -r %s -f %s %s VERBOSE=%s", self.name, jobs, mkfile, target or "", self._VERBOSE)
     else  
-        cmd = string.format("%s -r -j4 %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
+        cmd = string.format("%s -r %s %s VERBOSE=%s", self.name, jobs, target or "", self._VERBOSE)
     end
 
     -- done 
     local ok = os.execute(cmd)
     if ok ~= 0 then
 
-        -- attempt to execute it again for getting the error logs without -j4
+        -- attempt to execute it again for getting the error logs without jobs
         if mkfile and os.isfile(mkfile) then
             cmd = string.format("%s -r -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
         else  
