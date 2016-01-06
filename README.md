@@ -1,4 +1,4 @@
-##The Automatic Cross-platform Build Tool
+##The Automatic Cross-platform Build Tool [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://api.travis-ci.org/waruqi)
 
 ## introduction
 
