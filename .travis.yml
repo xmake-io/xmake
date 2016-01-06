@@ -1,0 +1,10 @@
+sudo: required
+language: lua
+
+install:
+  - ./install
+
+script:
+  - xmake create -P ./test 
+  - cd ./test
+  - xmake 
