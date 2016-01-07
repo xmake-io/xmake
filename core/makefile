@@ -43,7 +43,6 @@ all : .null
 # make rebuild
 rebuild : .null
 	@$(MAKE) c
-	$(if $(findstring msys,$(HOST)),,-@$(MAKE) -j4)
 	@$(MAKE)
 	@$(MAKE) i
 
