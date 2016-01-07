@@ -9,7 +9,7 @@ verbose=
 
 # prefix
 prefix=/usr/local
-if [ $1 ] && [ -d $1 ]; then
+if [ $1 ]; then
     prefix=$1
 fi
 echo installing to $prefix ...
@@ -43,20 +43,20 @@ echo arch: $arch
 # compile xmake-core
 echo compiling xmake-core ...
 cd ./core
-if [ -f .config.mak ]; then 
+if [ -f .config.mak ]; then
     rm .config.mak
 fi
 make f DEBUG=$debug > ../install.log
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
     cat ../install.log
-    exit; 
+    exit;
 fi
 make c >> ../install.log
 make >> ../install.log
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
     make o
     cat ../install.log
-    exit; 
+    exit;
 fi
 make i
 cd ..
@@ -66,18 +66,12 @@ xmake_dir_install=$prefix/share/xmake
 if [ -d $xmake_dir_install ]; then
     sudo rm -rf $xmake_dir_install
 fi
-if [ ! -d $prefix/bin ]; then
-    sudo mkdir $prefix/bin
-fi
-if [ ! -d $prefix/share ]; then
-    sudo mkdir $prefix/share
-fi
 if [ ! -d $xmake_dir_install ]; then
-    sudo mkdir $xmake_dir_install
+    sudo mkdir -p $xmake_dir_install
 fi
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
     echo "create $xmake_dir_install failed!"
-    exit; 
+    exit;
 fi
 
 # install the xmake core file
@@ -102,16 +96,19 @@ xmake_loader=/tmp/xmake_loader
 echo "#!/bin/bash" > $xmake_loader
 echo "export XMAKE_PROGRAM_DIR=$xmake_dir_install" >> $xmake_loader
 echo "$xmake_core_install $verbose \"\$@\"" >> $xmake_loader
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
     echo "make xmake loader failed!"
     exit;
 fi
 
 # install the xmake loader
 xmake_loader_install=$prefix/bin/xmake
+if [ ! -d $prefix/bin ]; then
+    sudo mkdir -p $prefix/bin
+fi
 sudo mv $xmake_loader $xmake_loader_install
 sudo chmod 777 $xmake_loader_install
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
     echo "install xmake loader failed!"
     exit;
 fi
