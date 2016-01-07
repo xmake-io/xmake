@@ -5,7 +5,7 @@ os:
   - osx
 
 install:
-  - ./install
+  - sudo ./install
 
 script:
   - xmake create -P ./test 
