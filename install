@@ -46,16 +46,15 @@ cd ./core
 if [ -f .config.mak ]; then
     rm .config.mak
 fi
-make f DEBUG=$debug > ../install.log
+make f DEBUG=$debug
 if [ $? -ne 0 ]; then
-    cat ../install.log
     exit;
 fi
-make c >> ../install.log
-make >> ../install.log
+make c
+make
+make
 if [ $? -ne 0 ]; then
     make o
-    cat ../install.log
     exit;
 fi
 make i
