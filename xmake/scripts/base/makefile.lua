@@ -50,11 +50,12 @@ function makefile._make_object_for_object(file, target, srcfile, objfile)
     if filetype ~= ".o" and filetype ~= ".obj" then return false end
     
     -- get mode
-    local mode = config.get("mode") or ""
-    if mode == "release" then mode = ".r"
-    elseif mode == "debug" then mode = ".d"
-    elseif mode == "profile" then mode = ".p"
-    else mode = "" end
+    local mode = config.get("mode")
+    if mode then
+        mode = "." .. mode 
+    else 
+        mode = ""
+    end
 
     -- make command
     local cmd = string.format("xmake l cp %s %s", srcfile, objfile)
@@ -91,11 +92,12 @@ function makefile._make_object_for_static(file, target, srcfile, objfile)
     if filetype ~= ".a" and filetype ~= ".lib" then return false end
     
     -- get mode
-    local mode = config.get("mode") or ""
-    if mode == "release" then mode = ".r"
-    elseif mode == "debug" then mode = ".d"
-    elseif mode == "profile" then mode = ".p"
-    else mode = "" end
+    local mode = config.get("mode")
+    if mode then
+        mode = "." .. mode 
+    else 
+        mode = ""
+    end
 
     -- make command
     local cmd = string.format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcfile:encode(), objfile:encode(), makefile._LOGFILE)
@@ -141,11 +143,12 @@ function makefile._make_object(file, target, srcfile, objfile)
     end
 
     -- get mode
-    local mode = config.get("mode") or ""
-    if mode == "release" then mode = ".r"
-    elseif mode == "debug" then mode = ".d"
-    elseif mode == "profile" then mode = ".p"
-    else mode = "" end
+    local mode = config.get("mode")
+    if mode then
+        mode = "." .. mode 
+    else 
+        mode = ""
+    end
 
     -- get ccache
     local ccache = platform.tool("ccache") 
@@ -263,11 +266,12 @@ function makefile._make_target(file, name, target)
     file:write("\n")
 
     -- get mode
-    local mode = config.get("mode") or ""
-    if mode == "release" then mode = ".r"
-    elseif mode == "debug" then mode = ".d"
-    elseif mode == "profile" then mode = ".p"
-    else mode = "" end
+    local mode = config.get("mode")
+    if mode then
+        mode = "." .. mode 
+    else 
+        mode = ""
+    end
    
     -- make the command
     local cmd = linker.make(l, target, srcfiles, objfiles, targetfile, makefile._LOGFILE)
