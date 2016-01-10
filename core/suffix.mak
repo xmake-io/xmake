@@ -284,7 +284,13 @@ endef
 
 
 define MAKE_ALL_SUB_PROS
-SUB_PROS_$(1)_all:
+SUB_PROS_$(1)_all: $(foreach pro, $(DEP_PROS), DEP_PROS_$(pro)_all)
+	@echo make $(1)
+	@$(MAKE) --no-print-directory -C $(1) 
+endef
+
+define MAKE_ALL_DEP_PROS
+DEP_PROS_$(1)_all:
 	@echo make $(1)
 	@$(MAKE) --no-print-directory -C $(1) 
 endef
@@ -295,6 +301,7 @@ all: \
 
 $(foreach name, $(NAMES), $(if $($(name)_FILES), $(eval $(call MAKE_ALL,$(name),$($(name)_TYPE))), ))
 $(foreach pro, $(SUB_PROS), $(eval $(call MAKE_ALL_SUB_PROS,$(pro))))
+$(foreach pro, $(DEP_PROS), $(eval $(call MAKE_ALL_DEP_PROS,$(pro))))
 
 # ######################################################################################
 # make install
@@ -405,7 +412,15 @@ SUB_PROS_$(1)_install:
 	@echo install $(1)
 	@$(MAKE) --no-print-directory -C $(1) install
 endef
+
+# make dep-projects
+define MAKE_INSTALL_DEP_PROS
+DEP_PROS_$(1)_install: $(foreach pro, $(DEP_PROS), DEP_PROS_$(pro)_install)
+	@echo install $(1)
+	@$(MAKE) --no-print-directory -C $(1) install
+endef
 $(foreach pro, $(SUB_PROS), $(eval $(call MAKE_INSTALL_SUB_PROS,$(pro))))
+$(foreach pro, $(DEP_PROS), $(eval $(call MAKE_INSTALL_DEP_PROS,$(pro))))
 
 # ######################################################################################
 # make clean
@@ -418,7 +433,13 @@ $(1)_$(2)_clean:
 endef
 
 define MAKE_CLEAN_SUB_PROS
-SUB_PROS_$(1)_clean:
+SUB_PROS_$(1)_clean: $(foreach pro, $(DEP_PROS), DEP_PROS_$(pro)_clean)
+	@echo clean $(1)
+	@$(MAKE) --no-print-directory -C $(1) clean
+endef
+
+define MAKE_CLEAN_DEP_PROS
+DEP_PROS_$(1)_clean:
 	@echo clean $(1)
 	@$(MAKE) --no-print-directory -C $(1) clean
 endef
@@ -429,13 +450,20 @@ clean: \
 
 $(foreach name, $(NAMES), $(eval $(call MAKE_CLEAN,$(name),$($(name)_TYPE))))
 $(foreach pro, $(SUB_PROS), $(eval $(call MAKE_CLEAN_SUB_PROS,$(pro))))
+$(foreach pro, $(DEP_PROS), $(eval $(call MAKE_CLEAN_DEP_PROS,$(pro))))
 
 # ######################################################################################
 # make update 
 # #
 
 define MAKE_UPDATE_SUB_PROS
-SUB_PROS_$(1)_update:
+SUB_PROS_$(1)_update: $(foreach pro, $(DEP_PROS), DEP_PROS_$(pro)_update)
+	@echo update $(1)
+	@$(MAKE) --no-print-directory -C $(1) update
+endef
+
+define MAKE_UPDATE_DEP_PROS
+DEP_PROS_$(1)_update:
 	@echo update $(1)
 	@$(MAKE) --no-print-directory -C $(1) update
 endef
@@ -444,6 +472,7 @@ update: .null $(foreach pro, $(SUB_PROS), SUB_PROS_$(pro)_update)
 	-@$(RM) *.b *.a *.so *.exe *.dll *.lib *.pdb *.ilk
 
 $(foreach pro, $(SUB_PROS), $(eval $(call MAKE_UPDATE_SUB_PROS,$(pro))))
+$(foreach pro, $(DEP_PROS), $(eval $(call MAKE_UPDATE_DEP_PROS,$(pro))))
 
 # ######################################################################################
 # null
