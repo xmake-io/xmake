@@ -53,10 +53,6 @@ xmake_INC_FILES 		= \
 						prefix/config.h \
 						prefix/version.h 
 						
-
-# demo
-SUB_PROS-$(DEMO) 		+= ../demo
-
 # suffix
 include $(PRO_DIR)/suffix.mak
 

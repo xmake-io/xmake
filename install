@@ -52,7 +52,6 @@ if [ $? -ne 0 ]; then
 fi
 make c
 make
-make
 if [ $? -ne 0 ]; then
     make o
     exit;
