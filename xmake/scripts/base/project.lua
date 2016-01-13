@@ -103,7 +103,7 @@ function project._api_archs(env, ...)
 end
 
 -- the current kind is belong to the given kinds?
-function project._api_kinds(env, ...)
+function project._api_kind(env, ...)
 
     -- get the current kind
     local kind = config.get("kind")
@@ -1074,8 +1074,8 @@ function project._load_options(file)
 
     -- register interfaces for the condition
     newenv.os               = function (...) return project._api_os(newenv, ...) end
+    newenv.kind             = function (...) return project._api_kind(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
-    newenv.kinds            = function (...) return project._api_kinds(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
 
@@ -1184,8 +1184,8 @@ function project._load_targets(file)
 
     -- register interfaces for the condition
     newenv.os               = function (...) return project._api_os(newenv, ...) end
+    newenv.kind             = function (...) return project._api_kind(newenv, ...) end
     newenv.modes            = function (...) return project._api_modes(newenv, ...) end
-    newenv.kinds            = function (...) return project._api_kinds(newenv, ...) end
     newenv.plats            = function (...) return project._api_plats(newenv, ...) end
     newenv.archs            = function (...) return project._api_archs(newenv, ...) end
     newenv.options          = function (...) return project._api_options(newenv, ...) end
