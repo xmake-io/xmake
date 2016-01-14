@@ -92,7 +92,7 @@ function _lua.done()
 
         -- attempt to load script from the tools directory
         if not os.isfile(file) then
-            file = tools.find(options.script, xmake._SCRIPTS_DIR .. "/tools")
+            file = tools.find(options.script, xmake._CORE_DIR .. "/tools")
         end
 
         -- load and run the script file

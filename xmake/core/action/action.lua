@@ -150,7 +150,7 @@ function action.list()
     
     -- find all action scripts
     local list = {}
-    local files = os.match(xmake._SCRIPTS_DIR .. "/action/_*.lua")
+    local files = os.match(xmake._CORE_DIR .. "/action/_*.lua")
     if files then
         for _, file in ipairs(files) do
             local name = path.basename(file)
