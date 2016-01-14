@@ -350,7 +350,7 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     if (!xm_machine_main_get_program_directory(impl, path, sizeof(path))) return -1;
 
     // append the main script path
-    tb_strcat(path, "/scripts/_xmake_main.lua");
+    tb_strcat(path, "/core/_xmake_main.lua");
 
     // exists this script?
     if (!tb_file_info(path, tb_null))

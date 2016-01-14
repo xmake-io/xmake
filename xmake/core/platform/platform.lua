@@ -98,7 +98,7 @@ function platform._load(plat)
     if not module then module = platform._load_from(global.directory(), plat) end
 
     -- attempt to load it from the script directory 
-    if not module then module = platform._load_from(xmake._SCRIPTS_DIR, plat) end
+    if not module then module = platform._load_from(xmake._CORE_DIR, plat) end
 
     -- cache it if ok
     if module then
@@ -259,7 +259,7 @@ function platform.plats()
     end
     
     -- get the platform list from the script directory
-    plats = os.match(xmake._SCRIPTS_DIR .. "/platform/*", true)
+    plats = os.match(xmake._CORE_DIR .. "/platform/*", true)
     if plats then
         for _, v in ipairs(plats) do
             table.insert(list, path.basename(v))

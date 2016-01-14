@@ -127,7 +127,7 @@ function tools.find(name, root)
     if not filepath then filepath = tools._find_from(platform.directory() .. "/tools", name) end
 
     -- attempt to find it from the script directory 
-    if not filepath then filepath = tools._find_from(xmake._SCRIPTS_DIR .. "/tools", name) end
+    if not filepath then filepath = tools._find_from(xmake._CORE_DIR .. "/tools", name) end
 
     -- ok?
     return filepath
