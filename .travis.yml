@@ -10,4 +10,4 @@ install:
 script:
   - xmake create -P ./test 
   - cd ./test
-  - xmake 
+  - xmake -v
