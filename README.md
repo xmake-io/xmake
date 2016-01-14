@@ -1,4 +1,4 @@
-##The Automatic Cross-platform Build Tool [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake)
+##The Automatic Cross-platform Build Tool [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://github.com/waruqi/xmake/wiki/donate)
 
 ## introduction
 
