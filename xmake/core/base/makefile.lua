@@ -34,7 +34,7 @@ local project   = require("base/project")
 local linker    = require("base/linker")
 local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- make object for the *.[o|obj] source file
 function makefile._make_object_for_object(file, target, srcfile, objfile)

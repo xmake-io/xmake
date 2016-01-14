@@ -30,7 +30,7 @@ local global    = require("base/global")
 local install   = require("base/install")
 local package   = require("base/package")
 local project   = require("base/project")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
      
 -- need access to the given file?
 function _install.need(name)

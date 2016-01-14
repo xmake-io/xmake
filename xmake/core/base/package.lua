@@ -30,7 +30,7 @@ local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- package target for the library file
 function package._done_library(target)

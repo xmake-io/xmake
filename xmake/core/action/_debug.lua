@@ -26,7 +26,7 @@ local _debug = _debug or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
     
 -- need access to the given file?
 function _debug.need(name)

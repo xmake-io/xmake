@@ -26,7 +26,7 @@ local _global = _global or {}
 -- load modules
 local utils     = require("base/utils")
 local global    = require("base/global")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- need access to the given file?
 function _global.need(name)

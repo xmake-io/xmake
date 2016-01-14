@@ -25,7 +25,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("base/config")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- define module: swiftc
 local swiftc = swiftc or {}

@@ -33,7 +33,7 @@ local table         = require("base/table")
 local config        = require("base/config")
 local linker        = require("base/linker")
 local compiler      = require("base/compiler")
-local platform      = require("platform/platform")
+local platform      = require("base/platform")
 
 -- import module
 function project._api_import(env, module)

@@ -30,7 +30,7 @@ local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- install target from the project script
 function install._done_from_project(target)

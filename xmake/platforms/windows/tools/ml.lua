@@ -17,26 +17,26 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        cl.lua
+-- @file        ml.lua
 --
 
--- define module: cl
-local cl = cl or {}
+-- define module: ml
+local ml = ml or {}
 
 -- load modules
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- init the compiler
-function cl.init(self, name)
+function ml.init(self, name)
 
     -- save name
-    self.name = name or "cl.exe"
+    self.name = name or "ml.exe"
 
-    -- init cxflags
-    self.cxflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
+    -- init asflags
+    self.asflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
 
     -- init flags map
     self.mapflags = 
@@ -58,7 +58,6 @@ function cl.init(self, name)
     ,   ["-W3"]                     = "-W3"
     ,   ["-Werror"]                 = "-WX"
     ,   ["%-Wno%-error=.*"]         = ""
-    ,   ["%-fno%-.*"]               = ""
 
         -- vectorexts
     ,   ["-mmmx"]                   = "-arch:MMX"
@@ -70,12 +69,6 @@ function cl.init(self, name)
     ,   ["-mavx2"]                  = "-arch:AVX2"
     ,   ["-mfpu=.*"]                = ""
 
-        -- language
-    ,   ["-ansi"]                   = ""
-    ,   ["-std=c99"]                = "-TP" -- compile as c++ files because msvc only support c89
-    ,   ["-std=gnu99"]              = "-TP" -- compile as c++ files because msvc only support c89
-    ,   ["-std=.*"]                 = ""
-
         -- others
     ,   ["-ftrapv"]                 = ""
     ,   ["-fsanitize=address"]      = ""
@@ -84,7 +77,7 @@ function cl.init(self, name)
 end
 
 -- make the compiler command
-function cl.command_compile(self, srcfile, objfile, flags, logfile)
+function ml.command_compile(self, srcfile, objfile, flags, logfile)
 
     -- redirect
     local redirect = ""
@@ -95,28 +88,28 @@ function cl.command_compile(self, srcfile, objfile, flags, logfile)
 end
 
 -- make the define flag
-function cl.flag_define(self, define)
+function ml.flag_define(self, define)
 
     -- make it
     return "-D" .. define:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function cl.flag_undefine(self, undefine)
+function ml.flag_undefine(self, undefine)
 
     -- make it
     return "-U" .. undefine
 end
 
 -- make the includedir flag
-function cl.flag_includedir(self, includedir)
+function ml.flag_includedir(self, includedir)
 
     -- make it
     return "-I" .. includedir
 end
 
 -- the main function
-function cl.main(self, cmd)
+function ml.main(self, cmd)
 
     -- the windows module
     local windows = platform.module()
@@ -135,5 +128,5 @@ function cl.main(self, cmd)
     return utils.ifelse(ok == 0, true, false)
 end
 
--- return module: cl
-return cl
+-- return module: ml
+return ml

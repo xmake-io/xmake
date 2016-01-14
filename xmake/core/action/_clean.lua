@@ -28,7 +28,7 @@ local clean     = require("base/clean")
 local config    = require("base/config")
 local project   = require("base/project")
 local utils     = require("base/utils")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- need access to the given file?
 function _clean.need(name)

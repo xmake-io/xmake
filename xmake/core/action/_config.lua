@@ -28,7 +28,7 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
 local makefile  = require("base/makefile")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- need access to the given file?
 function _config.need(name)

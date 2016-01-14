@@ -30,7 +30,7 @@ local utils     = require("base/utils")
 local global    = require("base/global")
 local config    = require("base/config")
 local project   = require("base/project")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- load the given action
 function action._load(name)

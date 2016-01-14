@@ -29,7 +29,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
     
 -- need access to the given file?
 function _run.need(name)
