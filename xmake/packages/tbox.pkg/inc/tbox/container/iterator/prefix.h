@@ -32,7 +32,7 @@
 #include "../../utils/utils.h"
 #include "../../memory/memory.h"
 #include "../../object/object.h"
-#include "../../base/platform.h"
+#include "../../platform/platform.h"
 
 
 #endif

@@ -32,7 +32,7 @@
 #include "../stream/stream.h"
 #include "../string/string.h"
 #include "../memory/memory.h"
-#include "../base/platform.h"
+#include "../platform/platform.h"
 #include "../container/container.h"
 
 
