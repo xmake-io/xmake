@@ -33,7 +33,7 @@
 #include "../../memory/memory.h"
 #include "../../object/object.h"
 #include "../../stream/stream.h"
-#include "../../platform/platform.h"
+#include "../../base/platform.h"
 
 
 #endif

@@ -29,7 +29,7 @@ local path      = require("base/path")
 local rule      = require("base/rule")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- package target 
 function package.main(target)

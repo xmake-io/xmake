@@ -29,7 +29,7 @@ local string    = require("base/string")
 local config    = require("base/config")
 local global    = require("base/global")
 local tools     = require("tools/tools")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- define module: prober
 local prober = prober or {}

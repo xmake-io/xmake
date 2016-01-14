@@ -29,7 +29,7 @@ local path      = require("base/path")
 local rule      = require("base/rule")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- install target for the library file
 function install._done_library(target)

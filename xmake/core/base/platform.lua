@@ -30,11 +30,21 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local global    = require("base/global")
 
+-- load platform directories
+function platform._load_directories()
+
+    -- load platform directories
+    return  {   path.join(config.directory(), "platforms")
+            ,   path.join(global.directory(), "platforms")
+            ,   path.join(xmake._PROGRAM_DIR, "platforms")
+            }
+end
+
 -- load prober the given platform directory
-function platform._load_prober(root)
+function platform._load_prober(platdir)
 
     -- the platform file path
-    local filepath = string.format("%s/prober.lua", root)
+    local filepath = path.join(platdir, "prober.lua")
     if os.isfile(filepath) then
 
         -- load script
@@ -52,11 +62,11 @@ function platform._load_prober(root)
     end
 end
 
--- load the given platform from the given root directory
-function platform._load_from(root, plat)
+-- load the given platform from the given directory
+function platform._load_from(dir, plat)
 
     -- the platform file path
-    local filepath = string.format("%s/platform/%s/%s.lua", root, plat, plat)
+    local filepath = path.join(dir, plat, plat .. ".lua")
     if os.isfile(filepath) then
 
         -- load script
@@ -84,6 +94,9 @@ end
 -- load the given platform 
 function platform._load(plat)
 
+    -- check
+    assert(plat)
+
     -- the module
     platform._MODULES = platform._MODULES or {}
     local module = platform._MODULES[plat]
@@ -91,14 +104,16 @@ function platform._load(plat)
     -- return it directory if ok
     if module then return module end
 
-    -- attempt to load it from the project configure directory 
-    if not module then module = platform._load_from(config.directory(), plat) end
+    -- load module
+    local dirs = platform._load_directories()
+    for _, dir in ipairs(dirs) do
 
-    -- attempt to load it from the global configure directory 
-    if not module then module = platform._load_from(global.directory(), plat) end
+        module = platform._load_from(dir, plat) 
+        if module then
+            break
+        end
 
-    -- attempt to load it from the script directory 
-    if not module then module = platform._load_from(xmake._CORE_DIR, plat) end
+    end
 
     -- cache it if ok
     if module then
@@ -111,6 +126,9 @@ end
 
 -- get the configure of the given platform
 function platform._configs(plat)
+
+    -- check
+    assert(plat)
 
     -- the configure
     platform._CONFIGS = platform._CONFIGS or {}
@@ -140,8 +158,12 @@ end
 -- get the current platform module
 function platform.module()
 
-    -- load it
-    return platform._load(config.get("plat"))
+    -- get the platform
+    local plat = config.get("plat")
+    if plat then
+        -- load it
+        return platform._load(plat)
+    end
 end
 
 -- get the current platform module directory
@@ -241,29 +263,17 @@ function platform.plats()
 
     -- make list
     local list = {}
+    local dirs = platform._load_directories()
+    for _, dir in ipairs(dirs) do
 
-    -- get the platform list from the project configure directory
-    local plats = os.match(config.directory() .. "/platform/*", true)
-    if plats then
-        for _, v in ipairs(plats) do
-            table.insert(list, path.basename(v))
+        -- get the platform list 
+        local plats = os.match(path.join(dir, "*"), true)
+        if plats then
+            for _, v in ipairs(plats) do
+                table.insert(list, path.basename(v))
+            end
         end
-    end
 
-    -- get the platform list from the global configure directory
-    plats = os.match(global.directory() .. "/platform/*", true)
-    if plats then
-        for _, v in ipairs(plats) do
-            table.insert(list, path.basename(v))
-        end
-    end
-    
-    -- get the platform list from the script directory
-    plats = os.match(xmake._CORE_DIR .. "/platform/*", true)
-    if plats then
-        for _, v in ipairs(plats) do
-            table.insert(list, path.basename(v))
-        end
     end
 
     -- save it

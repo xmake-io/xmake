@@ -32,7 +32,7 @@ local global    = require("base/global")
 local string    = require("base/string")
 local project   = require("base/project")
 local package   = require("base/package")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
     
 -- need access to the given file?
 function _package.need(name)

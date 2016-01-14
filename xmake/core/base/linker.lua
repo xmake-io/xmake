@@ -30,7 +30,7 @@ local string    = require("base/string")
 local config    = require("base/config")
 local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- map gcc flag to the given linker flag
 function linker._mapflag(module, flag)

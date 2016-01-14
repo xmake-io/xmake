@@ -40,7 +40,7 @@
 #include "string/string.h"
 #include "network/network.h"
 #include "charset/charset.h"
-#include "platform/platform.h"
+#include "base/platform.h"
 #include "database/database.h"
 #include "algorithm/algorithm.h"
 #include "container/container.h"

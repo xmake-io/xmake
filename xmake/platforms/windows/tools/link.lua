@@ -27,7 +27,7 @@ local link = link or {}
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
 
 -- init the compiler
 function link.init(self, name)

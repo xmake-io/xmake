@@ -24,7 +24,8 @@
 local path = path or {}
 
 -- load modules
-local string = require("base/string")
+local utils     = require("base/utils")
+local string    = require("base/string")
 
 -- get the directory of the path
 function path.directory(p)
@@ -60,12 +61,32 @@ end
 
 -- get the file extension of the path: .xxx
 function path.extension(p)
+
+    -- check
+    assert(p)
+
+    -- get extension
     local i = p:find_last(".", true)
     if i then
         return p:sub(i)
     else
         return ""
     end
+end
+
+-- join path
+function path.join(p, ...)
+
+    -- check
+    assert(p)
+
+    -- join them
+    for _, name in ipairs({...}) do
+        p = p .. "/" .. name
+    end
+
+    -- translate path
+    return path.translate(p)
 end
 
 -- return module: path

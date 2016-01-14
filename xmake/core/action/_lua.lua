@@ -30,7 +30,7 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local string    = require("base/string")
 local tools     = require("tools/tools")
-local platform  = require("platform/platform")
+local platform  = require("base/platform")
    
 -- need access to the given file?
 function _lua.need(name)
