@@ -73,7 +73,9 @@ function cl.init(self, name)
         -- language
     ,   ["-ansi"]                   = ""
     ,   ["-std=c99"]                = "-TP" -- compile as c++ files because msvc only support c89
+    ,   ["-std=c11"]                = "-TP" -- compile as c++ files because msvc only support c89
     ,   ["-std=gnu99"]              = "-TP" -- compile as c++ files because msvc only support c89
+    ,   ["-std=gnu11"]              = "-TP" -- compile as c++ files because msvc only support c89
     ,   ["-std=.*"]                 = ""
 
         -- others
