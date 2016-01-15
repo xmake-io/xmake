@@ -352,6 +352,8 @@ function compiler._kind(srcfile)
     elseif filetype == ".mm" then kind = "mxx"
     elseif filetype == ".s" or filetype == ".asm" then kind = "as"
     elseif filetype == ".swift" then kind = "sc"
+    elseif filetype == ".a" or filetype == ".lib" then kind = "lib"
+    elseif filetype == ".o" or filetype == ".obj" then kind = "obj"
     end
     
     -- ok
@@ -397,6 +399,11 @@ function compiler.get(srcfile)
     local kind = compiler._kind(srcfile)
     if not kind then
         return nil, string.format("unknown source file: %s", srcfile)
+    end
+
+    -- ignore "*.a/lib" and "*.o/obj" kind
+    if kind == "lib" or kind == "obj" then
+        return {}
     end
 
     -- get compiler from the source file type
