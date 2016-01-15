@@ -36,10 +36,6 @@ function tools._match(name, toolname)
     -- match full? ok
     if name == toolname then return 100 end
  
-    -- match the name for windows? ok
-    if name:find("^" .. toolname .. "%.exe") then return 90 end
-    if name:find(toolname .. "%.exe") then return 85 end
-    
     -- match the last word? ok
     if name:find(toolname .. "$") then return 80 end
 
@@ -119,6 +115,10 @@ function tools.find(name, root)
 
     -- init filename
     local filepath = nil
+
+    -- uses the basename only
+    name = path.basename(name)
+    assert(name)
 
     -- only find it from this directory if the given directory exists
     if root then return tools._find_from(root, name) end
