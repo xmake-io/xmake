@@ -27,5 +27,75 @@ local sandbox = sandbox or {}
 local os        = require("base/os")
 local utils     = require("base/utils")
 
+-- traceback
+function sandbox._traceback(errors)
+
+    -- init results
+    local results = ""
+    if errors then
+        results = errors .. "\n"
+    end
+    results = results .. "stack traceback:\n"
+
+    -- make results
+    local level = 2    
+    while true do    
+
+        -- get debug info
+        local info = debug.getinfo(level, "Sln")
+
+        -- end?
+        if not info or (info.name and info.name == "xpcall") then
+            break
+        end
+
+        -- function?
+        if info.what == "C" then
+            results = results .. string.format("    [C]: in function '%s'\n", info.name)
+        elseif info.name then 
+            results = results .. string.format("    [%s:%d]: in function '%s'\n", info.short_src, info.currentline, info.name)    
+        elseif info.what == "main" then
+            results = results .. string.format("    [%s:%d]: in main chunk\n", info.short_src, info.currentline)    
+        else
+            results = results .. string.format("    [%s:%d]:\n", info.short_src, info.currentline)    
+        end
+
+        -- next
+        level = level + 1    
+    end    
+
+    -- ok?
+    return results
+end
+
+-- load sandbox 
+function sandbox.load(file)
+
+    -- check
+    assert(file)
+
+    -- load the script
+    local script = loadfile(file)
+    if not script then
+        return nil, string.format("load %s failed!", file)
+    end
+
+    -- init the private scope
+    local private = {}
+
+    -- bind the environment
+    local env = {_PRIVATE = private}
+--    setfenv(script, env)
+
+    -- done the script
+    local ok, errors = xpcall(script, sandbox._traceback)
+    if not ok then
+        return nil, errors
+    end
+
+    -- get results
+    return nil
+end
+
 -- return module: sandbox
 return sandbox

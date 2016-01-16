@@ -1161,7 +1161,7 @@ function project._load_targets(file)
     -- load the project script
     local script = loadfile(file)
     if not script then
-        return string.format("load %s failed!", file)
+        return nil, string.format("load %s failed!", file)
     end
 
     -- set the current project file directory
