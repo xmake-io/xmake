@@ -17,18 +17,18 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        sandbox.lua
+-- @file        interpreter.lua
 --
 
--- define module: sandbox
-local sandbox = sandbox or {}
+-- define module: interpreter
+local interpreter = interpreter or {}
 
 -- load modules
 local os        = require("base/os")
 local utils     = require("base/utils")
 
 -- traceback
-function sandbox._traceback(errors)
+function interpreter._traceback(errors)
 
     -- init results
     local results = ""
@@ -68,8 +68,8 @@ function sandbox._traceback(errors)
     return results
 end
 
--- load sandbox 
-function sandbox.load(file)
+-- load interpreter 
+function interpreter.load(file)
 
     -- check
     assert(file)
@@ -88,7 +88,7 @@ function sandbox.load(file)
 --    setfenv(script, env)
 
     -- done the script
-    local ok, errors = xpcall(script, sandbox._traceback)
+    local ok, errors = xpcall(script, interpreter._traceback)
     if not ok then
         return nil, errors
     end
@@ -97,5 +97,5 @@ function sandbox.load(file)
     return nil
 end
 
--- return module: sandbox
-return sandbox
+-- return module: interpreter
+return interpreter

@@ -24,7 +24,7 @@
 local tests = tests or {}
 
 -- load modules
-local sandbox = require("sandbox/sandbox")
+local interpreter = require("base/interpreter")
 
 -- the main function
 function tests.main(self, file)
@@ -33,7 +33,7 @@ function tests.main(self, file)
     assert(file and #file == 1)
 
     -- load it
-    local ok, errors = sandbox.load(file[1])
+    local ok, errors = interpreter.load(file[1])
     if not ok then
         print(errors)
         return false
