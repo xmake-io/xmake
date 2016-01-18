@@ -49,6 +49,21 @@ function clean._remove(filedirs)
                 utils.error(errors)
                 return false
             end  
+        -- remove "*.o/obj" files?
+        elseif filedir:find("%*") then
+            -- match all files
+            local files = os.match(filedir)
+            if files then
+                for _, file in ipairs(files) do
+                    -- remove it
+                    local ok, errors = os.rm(file)
+                    if not ok then
+                        -- error
+                        utils.error(errors)
+                        return false
+                    end  
+                end
+            end
         end
     end
 
