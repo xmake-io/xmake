@@ -24,7 +24,8 @@
 local tests = tests or {}
 
 -- load modules
-local interpreter = require("base/interpreter")
+local utils         = require("base/utils")
+local interpreter   = require("base/interpreter")
 
 -- the main function
 function tests.main(self, file)
@@ -32,12 +33,79 @@ function tests.main(self, file)
     -- check
     assert(file and #file == 1)
 
-    -- load it
-    local ok, errors = interpreter.load(file[1])
+    -- init interpreter
+    local interp = interpreter.init()
+    assert(interp)
+
+    -- register api for scopes
+    interp:register_api_set_scope("target", "option")
+    interp:register_api_add_scope("target", "option")
+
+    -- register api for values
+    interp:register_api_set_values("target", nil,           "kind"
+                                                        ,   "config_h_prefix"
+                                                        ,   "version"
+                                                        ,   "strip"
+                                                        ,   "options"
+                                                        ,   "symbols"
+                                                        ,   "warnings"
+                                                        ,   "optimize"
+                                                        ,   "languages"
+                                                        ,   "runscript"
+                                                        ,   "installscript"
+                                                        ,   "packagescript")
+    interp:register_api_add_values("target", nil,           "deps"
+                                                        ,   "links"
+                                                        ,   "cflags" 
+                                                        ,   "cxflags" 
+                                                        ,   "cxxflags" 
+                                                        ,   "mflags" 
+                                                        ,   "mxflags" 
+                                                        ,   "mxxflags" 
+                                                        ,   "ldflags" 
+                                                        ,   "shflags" 
+                                                        ,   "options"
+                                                        ,   "defines"
+                                                        ,   "undefines"
+                                                        ,   "defines_h"
+                                                        ,   "undefines_h"
+                                                        ,   "languages"
+                                                        ,   "vectorexts")
+    interp:register_api_set_values("option", "option",      "enable"
+                                                        ,   "showmenu"
+                                                        ,   "category"
+                                                        ,   "warnings"
+                                                        ,   "optimize"
+                                                        ,   "languages"
+                                                        ,   "description")
+    interp:register_api_add_values("option", "option",      "links" 
+                                                        ,   "cincludes" 
+                                                        ,   "cxxincludes" 
+                                                        ,   "cfuncs" 
+                                                        ,   "cxxfuncs" 
+                                                        ,   "ctypes" 
+                                                        ,   "cxxtypes" 
+                                                        ,   "cflags" 
+                                                        ,   "cxflags" 
+                                                        ,   "cxxflags" 
+                                                        ,   "ldflags" 
+                                                        ,   "vectorexts"
+                                                        ,   "defines"
+                                                        ,   "defines_if_ok"
+                                                        ,   "defines_h_if_ok"
+                                                        ,   "undefines"
+                                                        ,   "undefines_if_ok"
+                                                        ,   "undefines_h_if_ok")
+
+    -- load interpreter
+    local ok, errors = interp:load(file[1])
     if not ok then
         print(errors)
         return false
     end
+
+    -- dump interpreter
+    utils.dump(interp)
 
     -- ok
     return true

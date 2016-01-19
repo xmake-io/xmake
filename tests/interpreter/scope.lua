@@ -1,9 +1,11 @@
 
-print("hello")
+set_kind("static")
 
-function test()
-    assert(false)
-end
-test()
+add_target("target1")
 
-print("hello")
+    set_kind("static")
+--    add_files("*.c", "hello.c")
+
+add_option("option1")
+
+    add_option_links("pthread", "z")
