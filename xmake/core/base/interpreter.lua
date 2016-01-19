@@ -25,6 +25,7 @@ local interpreter = interpreter or {}
 
 -- load modules
 local os        = require("base/os")
+local table     = require("base/table")
 local utils     = require("base/utils")
 
 -- traceback
@@ -56,6 +57,7 @@ function interpreter._traceback(errors)
             results = results .. string.format("    [%s:%d]: in function '%s'\n", info.short_src, info.currentline, info.name)    
         elseif info.what == "main" then
             results = results .. string.format("    [%s:%d]: in main chunk\n", info.short_src, info.currentline)    
+            break
         else
             results = results .. string.format("    [%s:%d]:\n", info.short_src, info.currentline)    
         end
@@ -68,11 +70,58 @@ function interpreter._traceback(errors)
     return results
 end
 
--- load interpreter 
-function interpreter.load(file)
+-- register api: xxx_apiname()
+function interpreter._register_api_xxx_(self, action, apifunc, ...)
 
     -- check
-    assert(file)
+    assert(self and self._PUBLIC and self._PRIVATE)
+    assert(action and apifunc)
+
+    -- done
+    for _, apiname in ipairs({...}) do
+
+        -- check
+        assert(apiname)
+
+        -- register scope api
+        self:register_api(action .. "_" .. apiname, function (...) 
+       
+            -- check
+            assert(self and self._PRIVATE and apiname)
+
+            -- the scopes
+            local scopes = self._PRIVATE._SCOPES
+            assert(scopes)
+
+            -- call function
+            apifunc(scopes, apiname, ...) 
+        end)
+    end
+end
+
+-- init interpreter
+function interpreter.init()
+
+    -- init an interpreter instance
+    local interp = {    _PUBLIC = {}
+                    ,   _PRIVATE = {_SCOPES = {}}}
+
+    -- inherit the interfaces of interpreter
+    for k, v in pairs(interpreter) do
+        if type(v) == "function" then
+            interp[k] = v
+        end
+    end
+
+    -- ok?
+    return interp
+end
+
+-- load interpreter 
+function interpreter.load(self, file)
+
+    -- check
+    assert(self and self._PUBLIC and file)
 
     -- load the script
     local script = loadfile(file)
@@ -80,21 +129,221 @@ function interpreter.load(file)
         return nil, string.format("load %s failed!", file)
     end
 
-    -- init the private scope
-    local private = {}
+    -- bind public scope
+    setfenv(script, self._PUBLIC)
 
-    -- bind the environment
-    local env = {_PRIVATE = private}
---    setfenv(script, env)
+    -- done interpreter
+    return xpcall(script, interpreter._traceback)
+end
 
-    -- done the script
-    local ok, errors = xpcall(script, interpreter._traceback)
-    if not ok then
-        return nil, errors
+-- register api 
+function interpreter.register_api(self, name, func)
+
+    -- check
+    assert(self and self._PUBLIC)
+    assert(name and func)
+
+    -- register it
+    self._PUBLIC[name] = func
+end
+
+-- register api for set_scope()
+--
+-- interp:register_api_set_scope("scope_kind1", "scope_kind2")
+--
+-- api:
+--   set_$(scope_kind1)("scope_name1")
+--       ...
+--
+--   set_$(scope_kind2)("scope_name1", "scope_name2")
+--       ...
+--   
+-- result:
+--
+-- _PRIVATE
+-- {
+--      _SCOPES
+--      {
+--          scope_kind1
+--          {  
+--              "scope_name1"
+--              {
+--
+--              }
+--          }
+--
+--          scope_kind2
+--          {  
+--              "scope_name1"
+--              {
+--
+--              }
+--
+--              "scope_name2" <-- _SCOPES._CURRENT
+--              {
+--
+--              }
+--          }
+--      }
+-- }
+--
+function interpreter.register_api_set_scope(self, ...)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE)
+
+    -- define implementation
+    local implementation = function (scopes, scope_kind, scope_name)
+
+        -- check 
+        if not scopes[scope_kind] then
+            utils.error("set_%s(\"%s\") failed, %s not found!", scope_kind, scope_name, scope_name)
+            utils.error("please uses add_%s(\"%s\") first!", scope_name)
+            utils.abort()
+        end
+
+        -- init scope for kind
+        local scope_for_kind = scopes[scope_kind] or {}
+        scopes[scope_kind] = scope_for_kind
+
+        -- init scope for name
+        scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
+
+        -- save the current scope
+        scopes._CURRENT = scope_for_kind[scope_name]
+
     end
 
-    -- get results
-    return nil
+    -- register implementation
+    self:_register_api_xxx_("set", implementation, ...)
+end
+
+-- register api for add_scope()
+function interpreter.register_api_add_scope(self, ...)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE)
+
+    -- define implementation
+    local implementation = function (scopes, scope_kind, scope_name)
+
+        -- check 
+       if scopes[scope_kind] then
+            utils.error("add_%s(\"%s\") failed, %s have been defined!", scope_name, scope_name)
+            utils.error("please uses set_%s(\"%s\")!", scope_name)
+            utils.abort()
+        end
+
+        -- init scope for kind
+        local scope_for_kind = scopes[scope_kind] or {}
+        scopes[scope_kind] = scope_for_kind
+
+        -- init scope for name
+        scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
+
+        -- save the current scope
+        scopes._CURRENT = scope_for_kind[scope_name]
+
+    end
+
+    -- register implementation
+    self:_register_api_xxx_("add", implementation, ...)
+end
+
+-- register api for set_values
+--
+-- interp:api_register_set_values("scope_kind", "name1", "name2", ...)
+--
+-- api:
+--   set_$(name1)("value1")
+--   set_$(name2)("value1", "value2", ...)
+--
+-- result:
+--
+-- _PRIVATE
+-- {
+--      _SCOPES
+--      {
+--          _ROOT
+--          {
+--              scope_kind
+--              {
+--              }
+--          }
+--
+--          scope_kind
+--          {  
+--              "scope_name" <-- _SCOPES._CURRENT
+--              {
+--                  name1 = {"value1"}
+--                  name2 = {"value1", "value2", ...}
+--              }
+--          }
+--      }
+-- }
+--
+function interpreter.register_api_set_values(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE and scope_kind)
+
+    -- define implementation
+    local implementation = function (scopes, name, ...)
+
+        -- init root scopes
+        scopes._ROOT = scopes._ROOT or {}
+
+        -- init current root scope
+        local root = scopes._ROOT[scope_kind] or {}
+        scopes._ROOT[scope_kind] = root
+
+        -- the current scope
+        local scope = scopes._CURRENT or root
+        assert(scope)
+
+        -- update values?
+        scope[name] = {}
+        table.join2(scope[name], ...)
+
+    end
+
+    -- register implementation
+    action = "set"
+    if prefix then action = "set_" .. prefix end
+    self:_register_api_xxx_(action, implementation, ...)
+end
+
+-- register api for add_values
+function interpreter.register_api_add_values(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE)
+    assert(scope_kind)
+
+    -- define implementation
+    local implementation = function (scopes, name, ...)
+
+        -- init root scopes
+        scopes._ROOT = scopes._ROOT or {}
+
+        -- init current root scope
+        local root = scopes._ROOT[scope_kind] or {}
+        scopes._ROOT[scope_kind] = root
+
+        -- the current scope
+        local scope = scopes._CURRENT or root
+        assert(scope)
+
+        -- append values?
+        scope[name] = scope[name] or {}
+        table.join2(scope[name], ...)
+
+    end
+
+    -- register implementation
+    action = "add"
+    if prefix then action = "add_" .. prefix end
+    self:_register_api_xxx_(action, implementation, ...)
 end
 
 -- return module: interpreter

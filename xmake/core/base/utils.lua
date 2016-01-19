@@ -56,6 +56,13 @@ function utils.error(msg, ...)
     print("error: " .. string.format(msg, ...))
 end
 
+-- the abort function
+function utils.abort()
+
+    -- trace
+    error()
+end
+
 -- the warning function
 function utils.warning(msg, ...)
 
