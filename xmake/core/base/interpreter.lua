@@ -25,6 +25,7 @@ local interpreter = interpreter or {}
 
 -- load modules
 local os        = require("base/os")
+local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 
@@ -71,7 +72,7 @@ function interpreter._traceback(errors)
 end
 
 -- register api: xxx_apiname()
-function interpreter._register_api_xxx_(self, action, apifunc, ...)
+function interpreter._api_register_xxx_scope(self, action, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -84,7 +85,7 @@ function interpreter._register_api_xxx_(self, action, apifunc, ...)
         assert(apiname)
 
         -- register scope api
-        self:register_api(action .. "_" .. apiname, function (...) 
+        self:api_register(action .. "_" .. apiname, function (self, ...) 
        
             -- check
             assert(self and self._PRIVATE and apiname)
@@ -94,9 +95,129 @@ function interpreter._register_api_xxx_(self, action, apifunc, ...)
             assert(scopes)
 
             -- call function
-            apifunc(scopes, apiname, ...) 
+            apifunc(self, scopes, apiname, ...) 
         end)
     end
+end
+
+-- register api: xxx_values()
+function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, apifunc, ...)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE)
+    assert(action and scope_kind and apifunc)
+
+    -- define implementation
+    local implementation = function (self, scopes, apiname, ...)
+
+        -- init root scopes
+        scopes._ROOT = scopes._ROOT or {}
+
+        -- init current root scope
+        local root = scopes._ROOT[scope_kind] or {}
+        scopes._ROOT[scope_kind] = root
+
+        -- the current scope
+        local scope = scopes._CURRENT or root
+        assert(scope)
+
+        -- call function
+        apifunc(self, scope, apiname, ...) 
+    end
+
+    -- register implementation
+    if prefix then action = action .. "_" .. prefix end
+    self:_api_register_xxx_scope(action, implementation, ...)
+end
+
+-- translate api pathes 
+function interpreter._api_translate_pathes(self, ...)
+
+    -- check
+    assert(self)
+
+    -- the current file 
+    local curfile = self._PRIVATE._CURFILE
+    assert(curfile)
+
+    -- the current directory
+    local curdir = path.directory(curfile)
+    assert(curdir)
+
+    -- get all pathes
+    local pathes = table.join(...)
+
+    -- translate the relative path 
+    local results = {}
+    for _, p in ipairs(pathes) do
+        if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
+            table.insert(results, path.relative(path.absolute(p, curdir), xmake._PROJECT_DIR))
+        else
+            table.insert(results, p)
+        end
+    end
+
+    -- ok?
+    return results
+end
+
+-- the builtin api: add_subdirs() or add_subfiles()
+function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- the current file 
+    local curfile = self._PRIVATE._CURFILE
+    assert(curfile)
+
+    -- get all subpathes 
+    local subpathes = self:_api_translate_pathes(...)
+
+    -- match all subpathes
+    local subpathes_matched = {}
+    for _, subpath in ipairs(subpathes) do
+        local files = os.match(subpath, isdirs)
+        if files then table.join2(subpathes_matched, files) end
+    end
+
+    -- done
+    for _, subpath in ipairs(subpathes_matched) do
+        if subpath and type(subpath) == "string" then
+
+            -- the file path
+            local file = subpath
+            if isdirs then
+                file = path.join(subpath, path.filename(curfile))
+            end
+
+            -- get the absolute file path
+            if not path.is_absolute(file) then
+                file = path.absolute(file, xmake._PROJECT_DIR)
+            end
+
+            -- update the current file
+            self._PRIVATE._CURFILE = file
+
+            -- load the file script
+            local script = loadfile(file)
+            if script then
+
+                -- bind public scope
+                setfenv(script, self._PUBLIC)
+
+                -- done interpreter
+                local ok, errors = xpcall(script, interpreter._traceback)
+                if not ok then
+                    utils.error(errors)
+                    utils.abort()
+                end
+            end
+        end
+    end
+
+    -- restore the current file 
+    self._PRIVATE._CURFILE = curfile
 end
 
 -- init interpreter
@@ -112,6 +233,10 @@ function interpreter.init()
             interp[k] = v
         end
     end
+
+    -- register the builtin interfaces
+    interp:api_register("add_subdirs", function (self, ...) self:_api_builtin_add_subdirfiles(true, ...) end)
+    interp:api_register("add_subfiles", function (self, ...) self:_api_builtin_add_subdirfiles(false, ...) end)
 
     -- ok?
     return interp
@@ -129,6 +254,9 @@ function interpreter.load(self, file)
         return nil, string.format("load %s failed!", file)
     end
 
+    -- init the current file 
+    self._PRIVATE._CURFILE = file
+
     -- bind public scope
     setfenv(script, self._PUBLIC)
 
@@ -137,19 +265,19 @@ function interpreter.load(self, file)
 end
 
 -- register api 
-function interpreter.register_api(self, name, func)
+function interpreter.api_register(self, name, func)
 
     -- check
     assert(self and self._PUBLIC)
     assert(name and func)
 
     -- register it
-    self._PUBLIC[name] = func
+    self._PUBLIC[name] = function (...) func(self, ...) end
 end
 
 -- register api for set_scope()
 --
--- interp:register_api_set_scope("scope_kind1", "scope_kind2")
+-- interp:api_register_set_scope("scope_kind1", "scope_kind2")
 --
 -- api:
 --   set_$(scope_kind1)("scope_name1")
@@ -187,13 +315,13 @@ end
 --      }
 -- }
 --
-function interpreter.register_api_set_scope(self, ...)
+function interpreter.api_register_set_scope(self, ...)
 
     -- check
-    assert(self and self._PUBLIC and self._PRIVATE)
+    assert(self)
 
     -- define implementation
-    local implementation = function (scopes, scope_kind, scope_name)
+    local implementation = function (self, scopes, scope_kind, scope_name)
 
         -- check 
         if not scopes[scope_kind] then
@@ -215,17 +343,17 @@ function interpreter.register_api_set_scope(self, ...)
     end
 
     -- register implementation
-    self:_register_api_xxx_("set", implementation, ...)
+    self:_api_register_xxx_scope("set", implementation, ...)
 end
 
 -- register api for add_scope()
-function interpreter.register_api_add_scope(self, ...)
+function interpreter.api_register_add_scope(self, ...)
 
     -- check
-    assert(self and self._PUBLIC and self._PRIVATE)
+    assert(self)
 
     -- define implementation
-    local implementation = function (scopes, scope_kind, scope_name)
+    local implementation = function (self, scopes, scope_kind, scope_name)
 
         -- check 
        if scopes[scope_kind] then
@@ -247,7 +375,7 @@ function interpreter.register_api_add_scope(self, ...)
     end
 
     -- register implementation
-    self:_register_api_xxx_("add", implementation, ...)
+    self:_api_register_xxx_scope("add", implementation, ...)
 end
 
 -- register api for set_values
@@ -282,24 +410,13 @@ end
 --      }
 -- }
 --
-function interpreter.register_api_set_values(self, scope_kind, prefix, ...)
+function interpreter.api_register_set_values(self, scope_kind, prefix, ...)
 
     -- check
-    assert(self and self._PUBLIC and self._PRIVATE and scope_kind)
+    assert(self)
 
     -- define implementation
-    local implementation = function (scopes, name, ...)
-
-        -- init root scopes
-        scopes._ROOT = scopes._ROOT or {}
-
-        -- init current root scope
-        local root = scopes._ROOT[scope_kind] or {}
-        scopes._ROOT[scope_kind] = root
-
-        -- the current scope
-        local scope = scopes._CURRENT or root
-        assert(scope)
+    local implementation = function (self, scope, name, ...)
 
         -- update values?
         scope[name] = {}
@@ -308,31 +425,17 @@ function interpreter.register_api_set_values(self, scope_kind, prefix, ...)
     end
 
     -- register implementation
-    action = "set"
-    if prefix then action = "set_" .. prefix end
-    self:_register_api_xxx_(action, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
 end
 
 -- register api for add_values
-function interpreter.register_api_add_values(self, scope_kind, prefix, ...)
+function interpreter.api_register_add_values(self, scope_kind, prefix, ...)
 
     -- check
-    assert(self and self._PUBLIC and self._PRIVATE)
-    assert(scope_kind)
+    assert(self)
 
     -- define implementation
-    local implementation = function (scopes, name, ...)
-
-        -- init root scopes
-        scopes._ROOT = scopes._ROOT or {}
-
-        -- init current root scope
-        local root = scopes._ROOT[scope_kind] or {}
-        scopes._ROOT[scope_kind] = root
-
-        -- the current scope
-        local scope = scopes._CURRENT or root
-        assert(scope)
+    local implementation = function (self, scope, name, ...)
 
         -- append values?
         scope[name] = scope[name] or {}
@@ -341,9 +444,45 @@ function interpreter.register_api_add_values(self, scope_kind, prefix, ...)
     end
 
     -- register implementation
-    action = "add"
-    if prefix then action = "add_" .. prefix end
-    self:_register_api_xxx_(action, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+end
+
+-- register api for set_pathes
+function interpreter.api_register_set_pathes(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- update values?
+        scope[name] = {}
+        table.join2(scope[name], self:_api_translate_pathes(...))
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+end
+
+-- register api for add_pathes
+function interpreter.api_register_add_pathes(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- append values?
+        scope[name] = scope[name] or {}
+        table.join2(scope[name], self:_api_translate_pathes(...))
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
 end
 
 -- return module: interpreter

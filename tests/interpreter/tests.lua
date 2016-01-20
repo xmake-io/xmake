@@ -38,11 +38,11 @@ function tests.main(self, file)
     assert(interp)
 
     -- register api for scopes
-    interp:register_api_set_scope("target", "option")
-    interp:register_api_add_scope("target", "option")
+    interp:api_register_set_scope("target", "option")
+    interp:api_register_add_scope("target", "option")
 
     -- register api for values
-    interp:register_api_set_values("target", nil,           "kind"
+    interp:api_register_set_values("target", nil,           "kind"
                                                         ,   "config_h_prefix"
                                                         ,   "version"
                                                         ,   "strip"
@@ -54,7 +54,7 @@ function tests.main(self, file)
                                                         ,   "runscript"
                                                         ,   "installscript"
                                                         ,   "packagescript")
-    interp:register_api_add_values("target", nil,           "deps"
+    interp:api_register_add_values("target", nil,           "deps"
                                                         ,   "links"
                                                         ,   "cflags" 
                                                         ,   "cxflags" 
@@ -71,14 +71,24 @@ function tests.main(self, file)
                                                         ,   "undefines_h"
                                                         ,   "languages"
                                                         ,   "vectorexts")
-    interp:register_api_set_values("option", "option",      "enable"
+    interp:api_register_set_pathes("target", nil,           "headerdir" 
+                                                        ,   "targetdir" 
+                                                        ,   "objectdir" 
+                                                        ,   "config_h")
+    interp:api_register_add_pathes("target", nil,           "files"
+                                                        ,   "headers" 
+                                                        ,   "linkdirs" 
+                                                        ,   "includedirs")
+
+
+    interp:api_register_set_values("option", "option",      "enable"
                                                         ,   "showmenu"
                                                         ,   "category"
                                                         ,   "warnings"
                                                         ,   "optimize"
                                                         ,   "languages"
                                                         ,   "description")
-    interp:register_api_add_values("option", "option",      "links" 
+    interp:api_register_add_values("option", "option",      "links" 
                                                         ,   "cincludes" 
                                                         ,   "cxxincludes" 
                                                         ,   "cfuncs" 
@@ -96,6 +106,9 @@ function tests.main(self, file)
                                                         ,   "undefines"
                                                         ,   "undefines_if_ok"
                                                         ,   "undefines_h_if_ok")
+    interp:api_register_add_pathes("option", "option",      "linkdirs" 
+                                                        ,   "includedirs")
+
 
     -- load interpreter
     local ok, errors = interp:load(file[1])
