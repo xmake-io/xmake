@@ -34,7 +34,7 @@ function tests.main(self, file)
     assert(file and #file == 1)
 
     -- init interpreter
-    local interp = interpreter.init()
+    local interp = interpreter.init(xmake._PROJECT_DIR)
     assert(interp)
 
     -- register api for scopes
@@ -119,6 +119,9 @@ function tests.main(self, file)
 
     -- dump interpreter
     utils.dump(interp)
+
+    -- dump mtimes
+    utils.dump(interp:results("mtimes"))
 
     -- ok
     return true

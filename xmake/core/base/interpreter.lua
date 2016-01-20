@@ -134,7 +134,7 @@ end
 function interpreter._api_translate_pathes(self, ...)
 
     -- check
-    assert(self)
+    assert(self and self._PRIVATE)
 
     -- the current file 
     local curfile = self._PRIVATE._CURFILE
@@ -151,7 +151,7 @@ function interpreter._api_translate_pathes(self, ...)
     local results = {}
     for _, p in ipairs(pathes) do
         if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
-            table.insert(results, path.relative(path.absolute(p, curdir), xmake._PROJECT_DIR))
+            table.insert(results, path.relative(path.absolute(p, curdir), self._PRIVATE._ROOTDIR))
         else
             table.insert(results, p)
         end
@@ -165,7 +165,7 @@ end
 function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
 
     -- check
-    assert(self and self._PRIVATE)
+    assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
 
     -- the current file 
     local curfile = self._PRIVATE._CURFILE
@@ -193,7 +193,7 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
 
             -- get the absolute file path
             if not path.is_absolute(file) then
-                file = path.absolute(file, xmake._PROJECT_DIR)
+                file = path.absolute(file, self._PRIVATE._ROOTDIR)
             end
 
             -- update the current file
@@ -212,6 +212,9 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
                     utils.error(errors)
                     utils.abort()
                 end
+
+                -- get mtime of the file
+                self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
             end
         end
     end
@@ -221,11 +224,16 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
 end
 
 -- init interpreter
-function interpreter.init()
+function interpreter.init(rootdir)
+
+    -- check
+    assert(rootdir)
 
     -- init an interpreter instance
     local interp = {    _PUBLIC = {}
-                    ,   _PRIVATE = {_SCOPES = {}}}
+                    ,   _PRIVATE = {    _SCOPES = {}
+                                    ,   _MTIMES = {}
+                                    ,   _ROOTDIR = rootdir}}
 
     -- inherit the interfaces of interpreter
     for k, v in pairs(interpreter) do
@@ -235,8 +243,8 @@ function interpreter.init()
     end
 
     -- register the builtin interfaces
-    interp:api_register("add_subdirs", function (self, ...) self:_api_builtin_add_subdirfiles(true, ...) end)
-    interp:api_register("add_subfiles", function (self, ...) self:_api_builtin_add_subdirfiles(false, ...) end)
+    interp:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
+    interp:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
 
     -- ok?
     return interp
@@ -246,7 +254,7 @@ end
 function interpreter.load(self, file)
 
     -- check
-    assert(self and self._PUBLIC and file)
+    assert(self and self._PUBLIC and self._PRIVATE and file)
 
     -- load the script
     local script = loadfile(file)
@@ -257,11 +265,24 @@ function interpreter.load(self, file)
     -- init the current file 
     self._PRIVATE._CURFILE = file
 
+    -- init mtime for the current file
+    self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
+
     -- bind public scope
     setfenv(script, self._PUBLIC)
 
     -- done interpreter
     return xpcall(script, interpreter._traceback)
+end
+
+-- get results
+function interpreter.results(self, name)
+
+    -- check
+    assert(self and self._PRIVATE and name)
+
+    -- get it
+    return self._PRIVATE["_" .. name:upper()]
 end
 
 -- register api 
@@ -483,6 +504,26 @@ function interpreter.api_register_add_pathes(self, scope_kind, prefix, ...)
 
     -- register implementation
     self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+end
+
+-- the builtin api: add_subdirs()
+function interpreter.api_builtin_add_subdirs(self, ...)
+    
+    -- check
+    assert(self)
+
+    -- done
+    self:_api_builtin_add_subdirfiles(true, ...)
+end
+
+-- the builtin api: add_subfiles()
+function interpreter.api_builtin_add_subfiles(self, ...)
+ 
+    -- check
+    assert(self)
+
+    -- done
+    self:_api_builtin_add_subdirfiles(false, ...)
 end
 
 -- return module: interpreter
