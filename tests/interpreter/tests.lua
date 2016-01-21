@@ -110,18 +110,15 @@ function tests.main(self, file)
                                                         ,   "includedirs")
 
 
-    -- load interpreter
-    local ok, errors = interp:load(file[1])
-    if not ok then
+    -- load targets
+    local targets, errors = interp:load(file[1], "target")
+    if not targets then
         print(errors)
         return false
     end
 
-    -- dump interpreter
-    utils.dump(interp)
-
-    -- dump mtimes
-    utils.dump(interp:results("mtimes"))
+    -- dump targets
+    utils.dump(targets)
 
     -- ok
     return true

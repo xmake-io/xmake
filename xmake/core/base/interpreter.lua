@@ -121,6 +121,11 @@ function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, 
         local scope = scopes._CURRENT or root
         assert(scope)
 
+        -- enter subscope and set values? override it
+        if scopes._CURRENT and apiname and action == "set" then
+            scope["_" .. apiname] = true
+        end
+
         -- call function
         apifunc(self, scope, apiname, ...) 
     end
@@ -223,6 +228,73 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
     self._PRIVATE._CURFILE = curfile
 end
 
+-- clear results
+function interpreter._clear(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- clear it
+    self._PRIVATE._SCOPES = {}
+    self._PRIVATE._MTIMES = {}
+end
+
+-- make results
+function interpreter._make(self, scope_kind)
+
+    -- check
+    assert(self and self._PRIVATE and scope_kind)
+
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes and scopes._ROOT)
+
+    -- the scope for kind
+    local scope_for_kind = scopes[scope_kind]
+    if not scope_for_kind then
+        return nil, string.format("this scope kind: %s not found!", scope_kind)
+    end
+
+    -- the root scope
+    local scope_root = scopes._ROOT[scope_kind]
+
+    -- make results
+    local results = {}
+    for scope_name, scope in pairs(scope_for_kind) do
+
+        -- add scope values and merge root values
+        local scope_values = {}
+        for name, values in pairs(scope) do
+            if not name:startswith("_") then
+
+                -- override values?
+                if scope["_" .. name] then
+
+                    -- override it
+                    scope_values[name] = values
+
+                -- merge root values?
+                elseif scope_root then
+                    
+                    -- the root values
+                    local root_values = scope_root[name]
+                    if root_values ~= nil then
+                        scope_values[name] = table.join(root_values, values)
+                    else
+                        scope_values[name] = values
+                    end
+                end
+            end
+        end
+
+        -- add this scope
+        results[scope_name] = scope_values
+    end
+
+    -- ok?
+    return results
+end
+
 -- init interpreter
 function interpreter.init(rootdir)
 
@@ -251,16 +323,19 @@ function interpreter.init(rootdir)
 end
 
 -- load interpreter 
-function interpreter.load(self, file)
+function interpreter.load(self, file, scope_kind)
 
     -- check
-    assert(self and self._PUBLIC and self._PRIVATE and file)
+    assert(self and self._PUBLIC and self._PRIVATE and file and scope_kind)
 
     -- load the script
     local script = loadfile(file)
     if not script then
         return nil, string.format("load %s failed!", file)
     end
+
+    -- clear first
+    self:_clear()
 
     -- init the current file 
     self._PRIVATE._CURFILE = file
@@ -272,17 +347,23 @@ function interpreter.load(self, file)
     setfenv(script, self._PUBLIC)
 
     -- done interpreter
-    return xpcall(script, interpreter._traceback)
+    local ok, errors = xpcall(script, interpreter._traceback)
+    if not ok then
+        return nil, errors
+    end
+
+    -- make results
+    return self:_make(scope_kind)
 end
 
--- get results
-function interpreter.results(self, name)
+-- get mtimes
+function interpreter.mtimes(self)
 
     -- check
-    assert(self and self._PRIVATE and name)
+    assert(self and self._PRIVATE)
 
-    -- get it
-    return self._PRIVATE["_" .. name:upper()]
+    -- get mtimes
+    return self._PRIVATE._MTIMES
 end
 
 -- register api 
@@ -417,6 +498,7 @@ end
 --          {
 --              scope_kind
 --              {
+--                  name2 = {"value3"}    
 --              }
 --          }
 --
@@ -426,6 +508,8 @@ end
 --              {
 --                  name1 = {"value1"}
 --                  name2 = {"value1", "value2", ...}
+--
+--                  _name1 = true <- override
 --              }
 --          }
 --      }
