@@ -285,7 +285,7 @@ function interpreter._filter(self, values, filter)
 end
 
 -- make results
-function interpreter._make(self, scope_kind, remove_repeat, filter)
+function interpreter._make(self, scope_kind, remove_repeat)
 
     -- check
     assert(self and self._PRIVATE and scope_kind)
@@ -302,6 +302,9 @@ function interpreter._make(self, scope_kind, remove_repeat, filter)
 
     -- the root scope
     local scope_root = scopes._ROOT[scope_kind]
+
+    -- the filter
+    local filter = self._PRIVATE._FILTER
 
     -- make results
     local results = {}
@@ -342,7 +345,7 @@ function interpreter._make(self, scope_kind, remove_repeat, filter)
             end
 
             -- filter values
-            if filter and type(filter) == "function" then
+            if filter then
                 values = self:_filter(values, filter)
             end
 
@@ -389,7 +392,7 @@ function interpreter.init(rootdir)
 end
 
 -- load results 
-function interpreter.load(self, file, scope_kind, remove_repeat, filter)
+function interpreter.load(self, file, scope_kind, remove_repeat)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file and scope_kind)
@@ -419,7 +422,7 @@ function interpreter.load(self, file, scope_kind, remove_repeat, filter)
     end
 
     -- make results
-    return self:_make(scope_kind, remove_repeat, filter)
+    return self:_make(scope_kind, remove_repeat)
 end
 
 -- get mtimes
@@ -430,6 +433,17 @@ function interpreter.mtimes(self)
 
     -- get mtimes
     return self._PRIVATE._MTIMES
+end
+
+-- set filter
+function interpreter.filter_set(self, filter)
+
+    -- check
+    assert(self and self._PRIVATE)
+    assert(filter == nil or type(filter) == "function")
+
+    -- set it
+    self._PRIVATE._FILTER = filter
 end
 
 -- register api 
@@ -494,7 +508,7 @@ function interpreter.api_register_set_scope(self, ...)
         -- check 
         if not scopes[scope_kind] then
             utils.error("set_%s(\"%s\") failed, %s not found!", scope_kind, scope_name, scope_name)
-            utils.error("please uses add_%s(\"%s\") first!", scope_name)
+            utils.error("please uses add_%s(\"%s\") first!", scope_kind, scope_name)
             utils.abort()
         end
 
@@ -525,8 +539,8 @@ function interpreter.api_register_add_scope(self, ...)
 
         -- check 
        if scopes[scope_kind] then
-            utils.error("add_%s(\"%s\") failed, %s have been defined!", scope_name, scope_name)
-            utils.error("please uses set_%s(\"%s\")!", scope_name)
+            utils.error("add_%s(\"%s\") failed, %s have been defined!", scope_kind, scope_name, scope_name)
+            utils.error("please uses set_%s(\"%s\")!", scope_kind, scope_name)
             utils.abort()
         end
 
@@ -674,6 +688,23 @@ function interpreter.api_builtin_add_subfiles(self, ...)
 
     -- done
     self:_api_builtin_add_subdirfiles(false, ...)
+end
+
+-- call api
+function interpreter.api_call(self, apiname, ...)
+
+    -- check
+    assert(self and self._PUBLIC and apiname)
+
+    -- get api function
+    local apifunc = self._PUBLIC[apiname]
+    if not apifunc then
+        utils.error("call %s() failed, the api %s not found!", apiname)
+        utils.abort() 
+    end
+
+    -- call api function
+    apifunc(self, ...)
 end
 
 -- return module: interpreter

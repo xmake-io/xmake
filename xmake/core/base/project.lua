@@ -34,16 +34,17 @@ local config        = require("base/config")
 local linker        = require("base/linker")
 local compiler      = require("base/compiler")
 local platform      = require("base/platform")
+local interpreter   = require("base/interpreter")
 
 -- import module
-function project._api_import(env, module)
+function project._api_import(interp, module)
 
     -- import 
     return require("module/" .. module)
 end
 
 -- the current os is belong to the given os?
-function project._api_os(env, ...)
+function project._api_os(interp, ...)
 
     -- get the current os
     local os = platform.os()
@@ -58,7 +59,7 @@ function project._api_os(env, ...)
 end
 
 -- the current mode is belong to the given modes?
-function project._api_modes(env, ...)
+function project._api_modes(interp, ...)
 
     -- get the current mode
     local mode = config.get("mode")
@@ -73,7 +74,7 @@ function project._api_modes(env, ...)
 end
 
 -- the current platform is belong to the given platforms?
-function project._api_plats(env, ...)
+function project._api_plats(interp, ...)
 
     -- get the current platform
     local plat = config.get("plat")
@@ -88,7 +89,7 @@ function project._api_plats(env, ...)
 end
 
 -- the current platform is belong to the given architectures?
-function project._api_archs(env, ...)
+function project._api_archs(interp, ...)
 
     -- get the current architecture
     local arch = config.get("arch")
@@ -103,7 +104,7 @@ function project._api_archs(env, ...)
 end
 
 -- the current kind is belong to the given kinds?
-function project._api_kinds(env, ...)
+function project._api_kinds(interp, ...)
 
     -- get the current kind
     local kind = config.get("kind")
@@ -118,7 +119,7 @@ function project._api_kinds(env, ...)
 end
 
 -- enable options?
-function project._api_options(env, ...)
+function project._api_options(interp, ...)
 
     -- some options are enabled?
     for _, o in ipairs(table.join(...)) do
@@ -128,34 +129,11 @@ function project._api_options(env, ...)
     end
 end
 
--- get all pathes and translate it 
-function project._api_get_pathes(...)
-
-    -- check
-    assert(project._CURDIR)
-
-    -- get all pathes
-    local pathes = table.join(...)
-
-    -- translate the relative path 
-    local results = {}
-    for _, p in ipairs(pathes) do
-        if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
-            table.insert(results, path.relative(path.absolute(p, project._CURDIR), project._PROJECT_DIR))
-        else
-            table.insert(results, p)
-        end
-    end
-
-    -- ok?
-    return results
-end
-
 -- add c function
-function project._api_add_cfunc(env, module, alias, links, includes, cfunc)
+function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
 
     -- check
-    assert(env and cfunc)
+    assert(interp and cfunc)
 
     -- make the option name
     local name = nil
@@ -174,22 +152,22 @@ function project._api_add_cfunc(env, module, alias, links, includes, cfunc)
     end
 
     -- make option
-    env.add_option(name)
-    env.set_option_category("cfuncs")
-    env.add_option_cfuncs(cfunc)
-    if links then env.add_option_links(links) end
-    if includes then env.add_option_cincludes(includes) end
-    env.add_option_defines_h_if_ok(define)
+    interp:api_call("add_option", name)
+    interp:api_call("set_option_category", "cfuncs")
+    interp:api_call("add_option_cfuncs", cfunc)
+    if links then interp:api_call("add_option_links", links) end
+    if includes then interp:api_call("add_option_cincludes", includes) end
+    interp:api_call("add_option_defines_h_if_ok", define)
 
     -- add this option 
-    env.add_options(name)
+    interp:api_call("add_options", name)
 end
 
 -- add c functions
-function project._api_add_cfuncs(env, module, links, includes, ...)
+function project._api_add_cfuncs(interp, module, links, includes, ...)
 
     -- check
-    assert(env)
+    assert(interp)
 
     -- done
     for _, cfunc in ipairs({...}) do
@@ -214,23 +192,23 @@ function project._api_add_cfuncs(env, module, links, includes, ...)
         end
 
         -- make option
-        env.add_option(name)
-        env.set_option_category("cfuncs")
-        env.add_option_cfuncs(cfunc)
-        if links then env.add_option_links(links) end
-        if includes then env.add_option_cincludes(includes) end
-        env.add_option_defines_h_if_ok(define)
+        self:api_call("add_option", name)
+        self:api_call("set_option_category", "cfuncs")
+        self:api_call("add_option_cfuncs", cfunc)
+        if links then self:api_call("add_option_links", links) end
+        if includes then self:api_call("add_option_cincludes", includes) end
+        self:api_call("add_option_defines_h_if_ok", define)
 
         -- add this option 
-        env.add_options(name)
+        self:api_call("add_options", name)
     end
 end
 
 -- add c++ function
-function project._api_add_cxxfunc(env, module, alias, links, includes, cxxfunc)
+function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfunc)
 
     -- check
-    assert(env and cxxfunc)
+    assert(interp and cxxfunc)
 
     -- make the option name
     local name = nil
@@ -249,22 +227,22 @@ function project._api_add_cxxfunc(env, module, alias, links, includes, cxxfunc)
     end
 
     -- make option
-    env.add_option(name)
-    env.set_option_category("cxxfuncs")
-    env.add_option_cxxfuncs(cxxfunc)
-    if links then env.add_option_links(links) end
-    if includes then env.add_option_cxxincludes(includes) end
-    env.add_option_defines_h_if_ok(define)
+    self:api_call("add_option", name)
+    self:api_call("set_option_category", "cxxfuncs")
+    self:api_call("add_option_cxxfuncs", cxxfunc)
+    if links then self:api_call("add_option_links", links) end
+    if includes then self:api_call("add_option_cxxincludes", includes) end
+    self:api_call("add_option_defines_h_if_ok", define)
 
     -- add this option 
-    env.add_options(name)
+    self:api_call("add_options", name)
 end
 
 -- add c++ functions
-function project._api_add_cxxfuncs(env, module, links, includes, ...)
+function project._api_add_cxxfuncs(interp, module, links, includes, ...)
 
     -- check
-    assert(env and module)
+    assert(interp and module)
 
     -- done
     for _, cxxfunc in ipairs({...}) do
@@ -289,172 +267,20 @@ function project._api_add_cxxfuncs(env, module, links, includes, ...)
         end
 
         -- make option
-        env.add_option(name)
-        env.set_option_category("cxxfuncs")
-        env.add_option_cxxfuncs(cxxfunc)
-        if links then env.add_option_links(links) end
-        if includes then env.add_option_cxxincludes(includes) end
-        env.add_option_defines_h_if_ok(define)
+        self:api_call("add_option", name)
+        self:api_call("set_option_category", "cxxfuncs")
+        self:api_call("add_option_cxxfuncs", cxxfunc)
+        if links then self:api_call("add_option_links", links) end
+        if includes then self:api_call("add_option_cxxincludes", includes) end
+        self:api_call("add_option_defines_h_if_ok", define)
 
         -- add this option 
-        env.add_options(name)
+        self:api_call("add_options", name)
     end
-end
-
--- add target 
-function project._api_add_target(env, name)
-
-    -- check
-    assert(env and name)
-
-    -- the targets
-    local targets = env._CONFIGS._TARGETS
-    assert(targets)
-
-    -- init the target scope
-    targets[name] = targets[name] or {}
-
-    -- switch to this target scope
-    env._TARGET = targets[name]
-end
-
--- add option 
-function project._api_add_option(env, name)
-
-    -- check
-    assert(env and name)
-
-    -- the options
-    local options = env._CONFIGS._OPTIONS
-    assert(options)
-
-    -- init the option scope
-    options[name] = options[name] or {}
-
-    -- switch to this option scope
-    env._OPTION = options[name]
-end
-
--- load all subprojects from the given directories
-function project._api_add_subdirs(env, ...)
-
-    -- check
-    assert(env)
-
-    -- init mtime for files
-    project._MTIMES = project._MTIMES or {}
-
-    -- save the current project file directory
-    local curdir = project._CURDIR
-
-    -- get all subdirs 
-    local subdirs = project._api_get_pathes(...)
-
-    -- match all subdirs
-    local subdirs_matched = {}
-    for _, subdir in ipairs(subdirs) do
-        local dirs = os.match(subdir, true)
-        if dirs then table.join2(subdirs_matched, dirs) end
-    end
-
-    -- done
-    for _, subdir in ipairs(subdirs_matched) do
-        if subdir and type(subdir) == "string" then
-
-            -- the project file
-            local file = subdir .. "/xmake.lua"
-            if not path.is_absolute(file) then
-                file = path.absolute(file, xmake._PROJECT_DIR)
-            end
-
-            -- update the current project file directory
-            project._CURDIR = path.directory(file)
-
-            -- load the project script
-            local script = loadfile(file)
-            if script then
-
-                -- bind environment
-                setfenv(script, env)
-
-                -- done the project script
-                local ok, errors = pcall(script)
-                if not ok then
-                    utils.error(errors)
-                    assert(false)
-                end
-
-                -- get mtime of the file
-                project._MTIMES[path.relative(file, xmake._PROJECT_DIR)] = os.mtime(file)
-            end
-        end
-    end
-
-    -- restore the current project file directory
-    project._CURDIR = curdir
-
-end
-
--- load all subprojects from the given files
-function project._api_add_subfiles(env, ...)
-
-    -- check
-    assert(env)
-
-    -- init mtime for files
-    project._MTIMES = project._MTIMES or {}
-
-    -- save the current project file directory
-    local curdir = project._CURDIR
-
-    -- get all subfiles 
-    local subfiles = project._api_get_pathes(...)
-
-    -- match all subfiles
-    local subfiles_matched = {}
-    for _, subfile in ipairs(subfiles) do
-        local files = os.match(subfile)
-        if files then table.join2(subfiles_matched, files) end
-    end
-
-    -- done
-    for _, file in ipairs(subfiles_matched) do
-        if file and type(file) == "string" then
-
-            -- the project file
-            if not path.is_absolute(file) then
-                file = path.absolute(file, xmake._PROJECT_DIR)
-            end
-
-            -- update the current project file directory
-            project._CURDIR = path.directory(file)
-
-            -- load the project script
-            local script = loadfile(file)
-            if script then
-
-                -- bind environment
-                setfenv(script, env)
-
-                -- done the project script
-                local ok, errors = pcall(script)
-                if not ok then
-                    utils.error(errors)
-                    assert(false)
-                end
-
-                -- get mtime of the file
-                project._MTIMES[path.relative(file, xmake._PROJECT_DIR)] = os.mtime(file)
-            end
-        end
-    end
-
-    -- restore the current project file directory
-    project._CURDIR = curdir
 end
 
 -- load all packages from the given directories
-function project._api_add_pkgdirs(env, ...)
+function project._api_add_pkgdirs(interp, ...)
 
     -- get all directories
     local pkgdirs = {}
@@ -464,100 +290,169 @@ function project._api_add_pkgdirs(env, ...)
     end
 
     -- add all packages
-    project._api_add_subdirs(env, pkgdirs)
+    interp:api_builtin_add_subdirs(pkgdirs)
 end
 
--- set configure values
-function project._api_set_values(scope, name, ...)
+-- get interpreter
+function project._interpreter()
 
-    -- check
-    assert(scope and name)
-
-    -- update values
-    scope[name] = {}
-    table.join2(scope[name], ...)
-end
-
--- add configure values
-function project._api_add_values(scope, name, ...)
-
-    -- check
-    assert(scope and name)
-
-    -- append values
-    scope[name] = scope[name] or {}
-    table.join2(scope[name], ...)
-end
-
--- set configure pathes
-function project._api_set_pathes(scope, name, ...)
-
-    -- check
-    assert(scope and name)
-
-    -- update pathes
-    scope[name] = {}
-    table.join2(scope[name], project._api_get_pathes(...))
-end
-
--- add configure pathes
-function project._api_add_pathes(scope, name, ...)
-
-    -- check
-    assert(scope and name)
-
-    -- append pathes
-    scope[name] = scope[name] or {}
-    table.join2(scope[name], project._api_get_pathes(...))
-end
-
--- filter the configure value
-function project._filter(values)
-
-    -- check
-    assert(values)
-
-    -- filter all
-    local newvals = {}
-    for _, v in ipairs(utils.wrap(values)) do
-        if type(v) == "string" then
-            v = v:gsub("%$%((.-)%)",    function (w) 
-                                            
-                                            -- is upper?
-                                            local isupper = false
-                                            local c = string.char(w:byte())
-                                            if c >= 'A' and c <= 'Z' then isupper = true end
-
-                                            -- attempt to get it directly from the configure
-                                            local r = config.get(w)
-                                            if not r or type(r) ~= "string" then 
-
-                                                -- attempt to get it from the configure and the lower key
-                                                w = w:lower()
-                                                r = config.get(w)
-                                                if not r or type(r) ~= "string" then 
-                                                    
-                                                    -- get the other keys
-                                                    if w == "projectdir" then r = xmake._PROJECT_DIR
-                                                    elseif w == "os" then r = platform.os()
-                                                    end 
-                                                end
-                                            end
-
-                                            -- upper?
-                                            if r and type(r) == "string" and isupper then
-                                                r = r:upper() 
-                                            end
-
-                                            -- ok?
-                                            return r
-                                        end)
-        end
-        table.insert(newvals, v)
+    -- the interpreter has been initialized? return it directly
+    if project._INTERPRETER then
+        return project._INTERPRETER
     end
 
+    -- init interpreter
+    local interp = interpreter.init(xmake._PROJECT_DIR)
+    assert(interp)
+
+    -- register api: set_target() and set_option()
+    interp:api_register_set_scope("target", "option")
+
+    -- register api: add_target() and add_option()
+    interp:api_register_add_scope("target", "option")
+
+    -- register api: set_values() for target
+    interp:api_register_set_values("target", nil,           "kind"
+                                                        ,   "config_h_prefix"
+                                                        ,   "version"
+                                                        ,   "strip"
+                                                        ,   "options"
+                                                        ,   "symbols"
+                                                        ,   "warnings"
+                                                        ,   "optimize"
+                                                        ,   "languages"
+                                                        ,   "runscript"
+                                                        ,   "installscript"
+                                                        ,   "packagescript")
+
+    -- register api: add_values() for target
+    interp:api_register_add_values("target", nil,           "deps"
+                                                        ,   "links"
+                                                        ,   "cflags" 
+                                                        ,   "cxflags" 
+                                                        ,   "cxxflags" 
+                                                        ,   "mflags" 
+                                                        ,   "mxflags" 
+                                                        ,   "mxxflags" 
+                                                        ,   "ldflags" 
+                                                        ,   "shflags" 
+                                                        ,   "options"
+                                                        ,   "defines"
+                                                        ,   "undefines"
+                                                        ,   "defines_h"
+                                                        ,   "undefines_h"
+                                                        ,   "languages"
+                                                        ,   "vectorexts")
+
+    -- register api: set_pathes() for target
+    interp:api_register_set_pathes("target", nil,           "headerdir" 
+                                                        ,   "targetdir" 
+                                                        ,   "objectdir" 
+                                                        ,   "config_h")
+
+    -- register api: add_pathes() for target
+    interp:api_register_add_pathes("target", nil,           "files"
+                                                        ,   "headers" 
+                                                        ,   "linkdirs" 
+                                                        ,   "includedirs")
+
+
+    -- register api: set_option_values() for option
+    interp:api_register_set_values("option", "option",      "enable"
+                                                        ,   "showmenu"
+                                                        ,   "category"
+                                                        ,   "warnings"
+                                                        ,   "optimize"
+                                                        ,   "languages"
+                                                        ,   "description")
+    
+    -- register api: add_option_values() for option
+    interp:api_register_add_values("option", "option",      "links" 
+                                                        ,   "cincludes" 
+                                                        ,   "cxxincludes" 
+                                                        ,   "cfuncs" 
+                                                        ,   "cxxfuncs" 
+                                                        ,   "ctypes" 
+                                                        ,   "cxxtypes" 
+                                                        ,   "cflags" 
+                                                        ,   "cxflags" 
+                                                        ,   "cxxflags" 
+                                                        ,   "ldflags" 
+                                                        ,   "vectorexts"
+                                                        ,   "defines"
+                                                        ,   "defines_if_ok"
+                                                        ,   "defines_h_if_ok"
+                                                        ,   "undefines"
+                                                        ,   "undefines_if_ok"
+                                                        ,   "undefines_h_if_ok")
+
+    -- register api: add_option_pathes() for option
+    interp:api_register_add_pathes("option", "option",      "linkdirs" 
+                                                        ,   "includedirs")
+
+
+    -- register api: import()
+    interp:api_register("import", project._api_import)
+
+    -- register api: os()
+    interp:api_register("os", project._api_os)
+
+    -- register api: kinds()
+    interp:api_register("kinds", project._api_kinds)
+
+    -- register api: modes()
+    interp:api_register("modes", project._api_modes)
+
+    -- register api: plats()
+    interp:api_register("plats", project._api_plats)
+
+    -- register api: archs()
+    interp:api_register("archs", project._api_archs)
+
+    -- register api: options()
+    interp:api_register("options", project._api_options)
+
+    -- register api: add_cfunc()
+    interp:api_register("add_cfunc", project._api_add_cfunc)
+
+    -- register api: add_cfuncs()
+    interp:api_register("add_cfuncs", project._api_add_cfuncs)
+
+    -- register api: add_cxxfunc()
+    interp:api_register("add_cxxfunc", project._api_add_cxxfunc)
+
+    -- register api: add_cxxfuncs()
+    interp:api_register("add_cxxfuncs", project._api_add_cxxfuncs)
+
+    -- register api: add_pkgdirs()
+    interp:api_register("add_pkgdirs", project._api_add_pkgdirs)
+
+    -- register api: add_pkgs()
+    interp:api_register("add_pkgs", interpreter.api_builtin_add_subdirs)
+
+    -- set filter
+    interp:filter_set(function (variable)
+
+        -- attempt to get it directly from the configure
+        local result = config.get(variable)
+        if not result or type(result) ~= "string" then 
+
+            -- get the other keys
+            if variable == "projectdir" then result = xmake._PROJECT_DIR
+            elseif variable == "os" then result = platform.os()
+            end 
+        end
+
+        -- ok?
+        return result
+
+    end)
+
+    -- save interpreter
+    project._INTERPRETER = interp
+
     -- ok?
-    return newvals
+    return interp
 end
 
 -- make configure for the given target_name
@@ -688,88 +583,6 @@ function project._makeconf_for_target_and_deps(target_name)
 
     -- ok
     return true
-end
-
--- make targets from the project file
-function project._make_targets(configs)
-
-    -- check
-    assert(configs and configs._TARGETS)
-  
-    -- init 
-    project._TARGETS = project._TARGETS or {}
-    local targets = project._TARGETS
-
-    -- make all targets
-    for k, v in pairs(configs._TARGETS) do
-        targets[k] = v
-    end
-
-    -- merge the root configures to all targets
-    for _, target in pairs(targets) do
-
-        -- merge the setted configures
-        for k, v in pairs(configs._SET) do
-            if nil == target[k] then
-                target[k] = v
-            end
-        end
-
-        -- merge the added configures 
-        for k, v in pairs(configs._ADD) do
-            if nil == target[k] then
-                target[k] = v
-            else
-                target[k] = table.join(v, target[k])
-            end
-        end
-
-        -- remove repeat values and unwrap it
-        for k, v in pairs(target) do
-
-            -- remove repeat first
-            v = utils.unique(v)
-
-            -- filter values
-            v = project._filter(v)
-
-            -- unwrap it if be only one
-            v = utils.unwrap(v)
-
-            -- update it
-            target[k] = v
-        end
-    end
-
-    -- init mtime for the project file
-    project._MTIMES = project._MTIMES or {}
-    project._MTIMES[path.relative(xmake._PROJECT_FILE, xmake._PROJECT_DIR)] = os.mtime(xmake._PROJECT_FILE)
-
-    -- get the mtimes for configure
-    local mtimes_config = config.get("__mtimes")
-    if mtimes_config then 
-
-        -- check for all project files and we need reconfig and rebuild it if them have been modified
-        for file, mtime in pairs(project._MTIMES) do
-
-            -- modified? reconfig and rebuild it
-            local mtime_old = mtimes_config[file]
-            if not mtime_old or mtime > mtime_old then
-                config._RECONFIG = true
-                config.set("__rebuild", true)
-                break
-            end
-        end
-    end
-
-    -- update mtimes
-    config.set("__mtimes", project._MTIMES)
-
-    -- reconfig it? we need reprobe it
-    if config._RECONFIG then
-        project.probe()
-        config.clearup()
-    end
 end
 
 -- make option for checking links
@@ -941,22 +754,6 @@ end
 -- make option 
 function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
 
-    -- remove repeat values and unwrap it
-    for k, v in pairs(opt) do
-
-        -- remove repeat first
-        v = utils.unique(v)
-
-        -- filter values
-        v = project._filter(v)
-
-        -- unwrap it if be only one
-        v = utils.unwrap(v)
-
-        -- update it
-        opt[k] = v
-    end
-
     -- check links
     if opt.links and not project._make_option_for_checking_links(opt, opt.links, cfile, objectfile, targetfile) then return end
 
@@ -988,10 +785,10 @@ function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
 end
 
 -- make options from the project file
-function project._make_options(configs)
+function project._make_options(options)
 
     -- check
-    assert(configs and configs._OPTIONS)
+    assert(options)
   
     -- the source file path
     local cfile     = os.tmpdir() .. "/__checking.c"
@@ -1004,7 +801,7 @@ function project._make_options(configs)
     local targetfile = os.tmpdir() .. "/" .. rule.filename("__checking", "binary")
 
     -- make all options
-    for k, v in pairs(configs._OPTIONS) do
+    for k, v in pairs(options) do
 
         -- this option need be probed automatically?
         if config.auto(k) then
@@ -1044,239 +841,6 @@ function project._make_options(configs)
 
 end
 
--- only load options from the the project file
-function project._load_options(file)
-
-    -- check
-    assert(file)
-
-    -- load the project script
-    local script = loadfile(file)
-    if not script then
-        return string.format("load %s failed!", file)
-    end
-
-    -- set the current project file directory
-    project._CURDIR = path.directory(file)
-
-    -- bind the new environment
-    local newenv = {_CONFIGS = {_OPTIONS = {}}}
-    setmetatable(newenv, {__index = function(tbl, key)
-                                        local val = rawget(tbl, key)
-                                        if nil == val then val = rawget(_G, key) end
-                                        if nil == val then return function(...) end end
-                                        return val
-                                    end})
-    setfenv(script, newenv)
-
-    -- register import
-    newenv.import           = function (module) return project._api_import(newenv, module) end
-
-    -- register interfaces for the condition
-    newenv.os               = function (...) return project._api_os(newenv, ...) end
-    newenv.kinds            = function (...) return project._api_kinds(newenv, ...) end
-    newenv.modes            = function (...) return project._api_modes(newenv, ...) end
-    newenv.plats            = function (...) return project._api_plats(newenv, ...) end
-    newenv.archs            = function (...) return project._api_archs(newenv, ...) end
-
-    -- register interfaces for the option
-    newenv.set_option       = function (...) return project._api_add_option(newenv, ...) end
-    newenv.add_option       = function (...) return project._api_add_option(newenv, ...) end
-  
-    -- register interfaces for the subproject files
-    newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
-    newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
-    
-    -- register interfaces for the functions
-    newenv.add_cfunc        = function (...) return project._api_add_cfunc(newenv, ...) end
-    newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
-    newenv.add_cxxfunc      = function (...) return project._api_add_cxxfunc(newenv, ...) end
-    newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
-   
-    -- register interfaces for the package files
-    newenv.add_pkgdirs      = function (...) return project._api_add_pkgdirs(newenv, ...) end
-    newenv.add_pkgs         = function (...) return project._api_add_subdirs(newenv, ...) end
-    
-    -- register interfaces for setting option values
-    local interfaces =  {   "enable"
-                        ,   "showmenu"
-                        ,   "category"
-                        ,   "warnings"
-                        ,   "optimize"
-                        ,   "languages"
-                        ,   "description"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["set_option_" .. interface] = function (...) return project._api_set_values(newenv._OPTION, interface, ...) end
-    end
-
-    -- register interfaces for adding option values
-    interfaces =        {   "links" 
-                        ,   "cincludes" 
-                        ,   "cxxincludes" 
-                        ,   "cfuncs" 
-                        ,   "cxxfuncs" 
-                        ,   "ctypes" 
-                        ,   "cxxtypes" 
-                        ,   "cflags" 
-                        ,   "cxflags" 
-                        ,   "cxxflags" 
-                        ,   "ldflags" 
-                        ,   "vectorexts"
-                        ,   "defines"
-                        ,   "defines_if_ok"
-                        ,   "defines_h_if_ok"
-                        ,   "undefines"
-                        ,   "undefines_if_ok"
-                        ,   "undefines_h_if_ok"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["add_option_" .. interface] = function (...) return project._api_add_values(newenv._OPTION, interface, ...) end
-    end
-
-    -- register interfaces for adding option pathes
-    interfaces =        {   "linkdirs" 
-                        ,   "includedirs"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["add_option_" .. interface] = function (...) return project._api_add_pathes(newenv._OPTION, interface, ...) end
-    end
-
-    -- done the project script
-    local ok, errors = pcall(script)
-    if not ok then
-        return nil, errors
-    end
-
-    -- get the project configure
-    return newenv._CONFIGS
-end
-
--- only load targets from the project file
-function project._load_targets(file)
-
-    -- check
-    assert(file)
-
-    -- load the project script
-    local script = loadfile(file)
-    if not script then
-        return nil, string.format("load %s failed!", file)
-    end
-
-    -- set the current project file directory
-    project._CURDIR = path.directory(file)
-
-    -- bind the new environment
-    local newenv = {_CONFIGS = {_SET = {}, _ADD = {}, _TARGETS = {}}}
-    setmetatable(newenv, {__index = function(tbl, key)
-                                        local val = rawget(tbl, key)
-                                        if nil == val then val = rawget(_G, key) end
-                                        if nil == val and type(key) == "string" and (key:startswith("add_option") or key:startswith("set_option")) then
-                                            return function(...) end 
-                                        end
-                                        return val
-                                    end})
-    setfenv(script, newenv)
-
-    -- register import
-    newenv.import           = function (module) return project._api_import(newenv, module) end
-
-    -- register interfaces for the condition
-    newenv.os               = function (...) return project._api_os(newenv, ...) end
-    newenv.kinds            = function (...) return project._api_kinds(newenv, ...) end
-    newenv.modes            = function (...) return project._api_modes(newenv, ...) end
-    newenv.plats            = function (...) return project._api_plats(newenv, ...) end
-    newenv.archs            = function (...) return project._api_archs(newenv, ...) end
-    newenv.options          = function (...) return project._api_options(newenv, ...) end
-
-    -- register interfaces for the target
-    newenv.set_target       = function (...) return project._api_add_target(newenv, ...) end
-    newenv.add_target       = function (...) return project._api_add_target(newenv, ...) end
-   
-    -- register interfaces for the subproject files
-    newenv.add_subdirs      = function (...) return project._api_add_subdirs(newenv, ...) end
-    newenv.add_subfiles     = function (...) return project._api_add_subfiles(newenv, ...) end
-        
-    -- register interfaces for the functions
-    newenv.add_cfunc        = function (...) return project._api_add_cfunc(newenv, ...) end
-    newenv.add_cfuncs       = function (...) return project._api_add_cfuncs(newenv, ...) end
-    newenv.add_cxxfunc      = function (...) return project._api_add_cxxfunc(newenv, ...) end
-    newenv.add_cxxfuncs     = function (...) return project._api_add_cxxfuncs(newenv, ...) end
-   
-    -- register interfaces for the package files
-    newenv.add_pkgdirs      = function (...) return project._api_add_pkgdirs(newenv, ...) end
-    newenv.add_pkgs         = function (...) return project._api_add_subdirs(newenv, ...) end
-    
-    -- register interfaces for setting values
-    local interfaces =  {   "kind"
-                        ,   "config_h_prefix"
-                        ,   "version"
-                        ,   "strip"
-                        ,   "options"
-                        ,   "symbols"
-                        ,   "warnings"
-                        ,   "optimize"
-                        ,   "languages"
-                        ,   "runscript"
-                        ,   "installscript"
-                        ,   "packagescript"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["set_" .. interface] = function (...) return project._api_set_values(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
-    end
- 
-    -- register interfaces for setting pathes
-    local interfaces =  {   "headerdir" 
-                        ,   "targetdir" 
-                        ,   "objectdir" 
-                        ,   "config_h"} 
-
-    for _, interface in ipairs(interfaces) do
-        newenv["set_" .. interface] = function (...) return project._api_set_pathes(newenv._TARGET or newenv._CONFIGS._SET, interface, ...) end
-    end
-
-    -- register interfaces for adding values
-    interfaces =        {   "deps"
-                        ,   "links"
-                        ,   "cflags" 
-                        ,   "cxflags" 
-                        ,   "cxxflags" 
-                        ,   "mflags" 
-                        ,   "mxflags" 
-                        ,   "mxxflags" 
-                        ,   "ldflags" 
-                        ,   "shflags" 
-                        ,   "options"
-                        ,   "defines"
-                        ,   "undefines"
-                        ,   "defines_h"
-                        ,   "undefines_h"
-                        ,   "languages"
-                        ,   "vectorexts"} 
-    for _, interface in ipairs(interfaces) do
-        newenv["add_" .. interface] = function (...) return project._api_add_values(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
-    end
-
-    -- register interfaces for adding pathes
-    interfaces =        {   "files"
-                        ,   "headers" 
-                        ,   "linkdirs" 
-                        ,   "includedirs"} 
-    for _, interface in ipairs(interfaces) do
-        newenv["add_" .. interface] = function (...) return project._api_add_pathes(newenv._TARGET or newenv._CONFIGS._ADD, interface, ...) end
-    end
-
-    -- done the project script
-    local ok, errors = pcall(script)
-    if not ok then
-        return nil, errors
-    end
-
-    -- get the project configure
-    return newenv._CONFIGS
-end
-
 -- get the current configure for targets
 function project.targets()
 
@@ -1290,37 +854,69 @@ end
 -- probe the project 
 function project.probe()
 
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
     -- load the options from the the project file
-    local configs, errors = project._load_options(xmake._PROJECT_FILE)
-    if not configs then
+    local options, errors = interp:load(xmake._PROJECT_FILE, "option", true)
+    if not options then
         return errors
     end
 
     -- make the options from the the project file
-    project._make_options(configs)
+    project._make_options(options)
 end
 
 -- load the project 
 function project.load()
 
-    -- load the targets from the the project file
-    local configs, errors = project._load_targets(xmake._PROJECT_FILE)
-    if not configs then
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- load targets
+    local targets, errors = interp:load(xmake._PROJECT_FILE, "target", true)
+    if not targets then
         return errors
     end
 
-    -- make the targets from the the project file
-    project._make_targets(configs)
+    -- save targets
+    project._TARGETS = targets
+
+    -- the mtimes for interpreter
+    local mtimes = interp:mtimes()
+    assert(mtimes)
+
+    -- get the mtimes for configure
+    local mtimes_config = config.get("__mtimes")
+    if mtimes_config then 
+
+        -- check for all project files and we need reconfig and rebuild it if them have been modified
+        for file, mtime in pairs(mtimes) do
+
+            -- modified? reconfig and rebuild it
+            local mtime_old = mtimes_config[file]
+            if not mtime_old or mtime > mtime_old then
+                config._RECONFIG = true
+                config.set("__rebuild", true)
+                break
+            end
+        end
+    end
+
+    -- update mtimes
+    config.set("__mtimes", mtimes)
+
+    -- reconfig it? we need reprobe it
+    if config._RECONFIG then
+        project.probe()
+        config.clearup()
+    end
 end
 
 -- reload the project
 function project.reload()
-
-    -- clear it first
-    project._MTIMES     = nil
-    project._TARGETS    = nil
-    project._CONFILES   = nil
-    project._CURDIR     = nil
 
     -- load it
     return project.load()
@@ -1329,12 +925,9 @@ end
 -- dump the current configure
 function project.dump()
     
-    -- check
-    assert(project._TARGETS)
-
     -- dump
     if xmake._OPTIONS.verbose then
-        utils.dump(project._TARGETS)
+        utils.dump(project.targets())
     end
    
 end
@@ -1343,7 +936,7 @@ end
 function project.makeconf(target_name)
 
     -- init files
-    project._CONFILES = project._CONFILES or {}
+    project._CONFILES = {}
 
     -- the target name
     if target_name and target_name ~= "all" then
@@ -1365,7 +958,6 @@ function project.makeconf(target_name)
     for _, file in pairs(project._CONFILES) do
         file:close()
     end
-    project._CONFILES = nil
  
     -- ok
     return true
@@ -1393,23 +985,23 @@ end
 -- get the project menu
 function project.menu()
 
-    -- attempt to load project configure
-    local configs = nil
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- attempt to load options from the project file
+    local options = nil
     local errors = nil
     local projectfile = xmake._PROJECT_FILE
     if projectfile and os.isfile(projectfile) then
-        configs, errors = project._load_options(projectfile)
+        options, errors = interp:load(projectfile, "option", true)
     end
 
     -- failed?
-    if not configs then
+    if not options then
         if errors then utils.error(errors) end
         return {}
     end
-
-    -- the options
-    local options = configs._OPTIONS 
-    if not options then return {} end
 
     -- arrange options by category
     local options_by_category = {}
