@@ -109,9 +109,15 @@ function tests.main(self, file)
     interp:api_register_add_pathes("option", "option",      "linkdirs" 
                                                         ,   "includedirs")
 
+    -- init filter
+    local filter = function (variable)
+        if variable == "projectdir" then
+            return xmake._PROJECT_DIR
+        end
+    end
 
     -- load targets
-    local targets, errors = interp:load(file[1], "target", true)
+    local targets, errors = interp:load(file[1], "target", true, filter)
     if not targets then
         print(errors)
         return false

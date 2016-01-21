@@ -239,8 +239,53 @@ function interpreter._clear(self)
     self._PRIVATE._MTIMES = {}
 end
 
+-- filter values
+function interpreter._filter(self, values, filter)
+
+    -- check
+    assert(self and values and filter)
+
+    -- done
+    local results = {}
+    for _, value in ipairs(utils.wrap(values)) do
+
+        -- only filter string value
+        if type(value) == "string" then
+
+            -- replace the builtin variables
+            value = value:gsub("%$%((.-)%)", function (variable) 
+
+                -- check
+                assert(variable)
+                                            
+                -- is upper?
+                local isupper = false
+                local c = string.char(variable:byte())
+                if c >= 'A' and c <= 'Z' then isupper = true end
+
+                -- filter it
+                local result = filter(variable:lower())
+
+                -- convert to upper?
+                if isupper and result and type(result) == "string" then
+                    result = result:upper() 
+                end
+
+                -- ok?
+                return result
+            end)
+        end
+
+        -- append value
+        table.insert(results, value)
+    end
+
+    -- ok?
+    return results
+end
+
 -- make results
-function interpreter._make(self, scope_kind, remove_repeat)
+function interpreter._make(self, scope_kind, remove_repeat, filter)
 
     -- check
     assert(self and self._PRIVATE and scope_kind)
@@ -297,7 +342,9 @@ function interpreter._make(self, scope_kind, remove_repeat)
             end
 
             -- filter values
-            -- TODO
+            if filter and type(filter) == "function" then
+                values = self:_filter(values, filter)
+            end
 
             -- unwrap it if be only one
             values = utils.unwrap(values)
@@ -342,7 +389,7 @@ function interpreter.init(rootdir)
 end
 
 -- load results 
-function interpreter.load(self, file, scope_kind, remove_repeat)
+function interpreter.load(self, file, scope_kind, remove_repeat, filter)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file and scope_kind)
@@ -372,7 +419,7 @@ function interpreter.load(self, file, scope_kind, remove_repeat)
     end
 
     -- make results
-    return self:_make(scope_kind, remove_repeat)
+    return self:_make(scope_kind, remove_repeat, filter)
 end
 
 -- get mtimes
