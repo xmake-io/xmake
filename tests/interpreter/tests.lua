@@ -111,7 +111,7 @@ function tests.main(self, file)
 
 
     -- load targets
-    local targets, errors = interp:load(file[1], "target")
+    local targets, errors = interp:load(file[1], "target", true)
     if not targets then
         print(errors)
         return false

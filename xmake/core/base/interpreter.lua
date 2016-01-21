@@ -240,7 +240,7 @@ function interpreter._clear(self)
 end
 
 -- make results
-function interpreter._make(self, scope_kind)
+function interpreter._make(self, scope_kind, remove_repeat)
 
     -- check
     assert(self and self._PRIVATE and scope_kind)
@@ -287,8 +287,27 @@ function interpreter._make(self, scope_kind)
             end
         end
 
+        -- remove repeat values and unwrap it
+        local result_values = {}
+        for name, values in pairs(scope_values) do
+
+            -- remove repeat first
+            if remove_repeat then
+                values = utils.unique(values)
+            end
+
+            -- filter values
+            -- TODO
+
+            -- unwrap it if be only one
+            values = utils.unwrap(values)
+
+            -- update it
+            result_values[name] = values
+        end
+
         -- add this scope
-        results[scope_name] = scope_values
+        results[scope_name] = result_values
     end
 
     -- ok?
@@ -322,8 +341,8 @@ function interpreter.init(rootdir)
     return interp
 end
 
--- load interpreter 
-function interpreter.load(self, file, scope_kind)
+-- load results 
+function interpreter.load(self, file, scope_kind, remove_repeat)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file and scope_kind)
@@ -353,7 +372,7 @@ function interpreter.load(self, file, scope_kind)
     end
 
     -- make results
-    return self:_make(scope_kind)
+    return self:_make(scope_kind, remove_repeat)
 end
 
 -- get mtimes
