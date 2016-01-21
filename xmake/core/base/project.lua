@@ -1030,7 +1030,7 @@ function project.menu()
                 -- the default value
                 local default = "auto"
                 if opt.enable ~= nil then
-                    default = utils.unwrap(opt.enable)
+                    default = opt.enable
                 end
 
                 -- is first?
@@ -1045,7 +1045,7 @@ function project.menu()
 
                 -- append it
                 if opt.description then
-                    table.insert(menu, {nil, name, "kv", default, utils.unwrap(opt.description)})
+                    table.insert(menu, {nil, name, "kv", default, opt.description})
                 else
                     table.insert(menu, {nil, name, "kv", default, nil})
                 end
