@@ -505,16 +505,16 @@ function interpreter.api_register_set_scope(self, ...)
     -- define implementation
     local implementation = function (self, scopes, scope_kind, scope_name)
 
+        -- init scope for kind
+        local scope_for_kind = scopes[scope_kind] or {}
+        scopes[scope_kind] = scope_for_kind
+
         -- check 
-        if not scopes[scope_kind] then
+        if not scope_for_kind[scope_name] then
             utils.error("set_%s(\"%s\") failed, %s not found!", scope_kind, scope_name, scope_name)
             utils.error("please uses add_%s(\"%s\") first!", scope_kind, scope_name)
             utils.abort()
         end
-
-        -- init scope for kind
-        local scope_for_kind = scopes[scope_kind] or {}
-        scopes[scope_kind] = scope_for_kind
 
         -- init scope for name
         scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
@@ -537,16 +537,16 @@ function interpreter.api_register_add_scope(self, ...)
     -- define implementation
     local implementation = function (self, scopes, scope_kind, scope_name)
 
+        -- init scope for kind
+        local scope_for_kind = scopes[scope_kind] or {}
+        scopes[scope_kind] = scope_for_kind
+
         -- check 
-       if scopes[scope_kind] then
+        if scope_for_kind[scope_name] then
             utils.error("add_%s(\"%s\") failed, %s have been defined!", scope_kind, scope_name, scope_name)
             utils.error("please uses set_%s(\"%s\")!", scope_kind, scope_name)
             utils.abort()
         end
-
-        -- init scope for kind
-        local scope_for_kind = scopes[scope_kind] or {}
-        scopes[scope_kind] = scope_for_kind
 
         -- init scope for name
         scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
