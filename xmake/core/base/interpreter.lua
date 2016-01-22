@@ -391,6 +391,7 @@ function interpreter.init(rootdir)
     interp:api_register_builtin("print", print)
     interp:api_register_builtin("pairs", pairs)
     interp:api_register_builtin("ipairs", ipairs)
+    interp:api_register_builtin("format", string.format)
 
     -- ok?
     return interp
