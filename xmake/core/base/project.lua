@@ -192,15 +192,15 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
         end
 
         -- make option
-        self:api_call("add_option", name)
-        self:api_call("set_option_category", "cfuncs")
-        self:api_call("add_option_cfuncs", cfunc)
-        if links then self:api_call("add_option_links", links) end
-        if includes then self:api_call("add_option_cincludes", includes) end
-        self:api_call("add_option_defines_h_if_ok", define)
+        interp:api_call("add_option", name)
+        interp:api_call("set_option_category", "cfuncs")
+        interp:api_call("add_option_cfuncs", cfunc)
+        if links then interp:api_call("add_option_links", links) end
+        if includes then interp:api_call("add_option_cincludes", includes) end
+        interp:api_call("add_option_defines_h_if_ok", define)
 
         -- add this option 
-        self:api_call("add_options", name)
+        interp:api_call("add_options", name)
     end
 end
 
@@ -227,15 +227,15 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
     end
 
     -- make option
-    self:api_call("add_option", name)
-    self:api_call("set_option_category", "cxxfuncs")
-    self:api_call("add_option_cxxfuncs", cxxfunc)
-    if links then self:api_call("add_option_links", links) end
-    if includes then self:api_call("add_option_cxxincludes", includes) end
-    self:api_call("add_option_defines_h_if_ok", define)
+    interp:api_call("add_option", name)
+    interp:api_call("set_option_category", "cxxfuncs")
+    interp:api_call("add_option_cxxfuncs", cxxfunc)
+    if links then interp:api_call("add_option_links", links) end
+    if includes then interp:api_call("add_option_cxxincludes", includes) end
+    interp:api_call("add_option_defines_h_if_ok", define)
 
     -- add this option 
-    self:api_call("add_options", name)
+    interp:api_call("add_options", name)
 end
 
 -- add c++ functions
@@ -267,15 +267,15 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
         end
 
         -- make option
-        self:api_call("add_option", name)
-        self:api_call("set_option_category", "cxxfuncs")
-        self:api_call("add_option_cxxfuncs", cxxfunc)
-        if links then self:api_call("add_option_links", links) end
-        if includes then self:api_call("add_option_cxxincludes", includes) end
-        self:api_call("add_option_defines_h_if_ok", define)
+        interp:api_call("add_option", name)
+        interp:api_call("set_option_category", "cxxfuncs")
+        interp:api_call("add_option_cxxfuncs", cxxfunc)
+        if links then interp:api_call("add_option_links", links) end
+        if includes then interp:api_call("add_option_cxxincludes", includes) end
+        interp:api_call("add_option_defines_h_if_ok", define)
 
         -- add this option 
-        self:api_call("add_options", name)
+        interp:api_call("add_options", name)
     end
 end
 
@@ -460,7 +460,7 @@ function project._makeconf_for_target(target_name, target)
 
     -- check
     assert(target_name and target)
- 
+
     -- get the target configure file 
     local config_h = target.config_h
     if not config_h then 
@@ -859,7 +859,7 @@ function project.probe()
     assert(interp) 
 
     -- load the options from the the project file
-    local options, errors = interp:load(xmake._PROJECT_FILE, "option", true)
+    local options, errors = interp:load(xmake._PROJECT_FILE, "option", true, true)
     if not options then
         return errors
     end
@@ -876,7 +876,7 @@ function project.load()
     assert(interp) 
 
     -- load targets
-    local targets, errors = interp:load(xmake._PROJECT_FILE, "target", true)
+    local targets, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
     if not targets then
         return errors
     end
@@ -994,7 +994,7 @@ function project.menu()
     local errors = nil
     local projectfile = xmake._PROJECT_FILE
     if projectfile and os.isfile(projectfile) then
-        options, errors = interp:load(projectfile, "option", true)
+        options, errors = interp:load(projectfile, "option", true, false)
     end
 
     -- failed?

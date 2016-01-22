@@ -95,7 +95,7 @@ function interpreter._api_register_xxx_scope(self, action, apifunc, ...)
             assert(scopes)
 
             -- call function
-            apifunc(self, scopes, apiname, ...) 
+            return apifunc(self, scopes, apiname, ...) 
         end)
     end
 end
@@ -123,11 +123,11 @@ function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, 
 
         -- enter subscope and set values? override it
         if scopes._CURRENT and apiname and action == "set" then
-            scope["_" .. apiname] = true
+            scope["__override_" .. apiname] = true
         end
 
         -- call function
-        apifunc(self, scope, apiname, ...) 
+        return apifunc(self, scope, apiname, ...) 
     end
 
     -- register implementation
@@ -285,7 +285,7 @@ function interpreter._filter(self, values, filter)
 end
 
 -- make results
-function interpreter._make(self, scope_kind, remove_repeat)
+function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
 
     -- check
     assert(self and self._PRIVATE and scope_kind)
@@ -310,24 +310,24 @@ function interpreter._make(self, scope_kind, remove_repeat)
     local results = {}
     for scope_name, scope in pairs(scope_for_kind) do
 
-        -- add scope values and merge root values
+        -- add scope values
         local scope_values = {}
         for name, values in pairs(scope) do
-            if not name:startswith("_") then
+            if not name:startswith("__override_") then
+                scope_values[name] = values
+            end
+        end
 
-                -- override values?
-                if scope["_" .. name] then
+        -- merge root values
+        if scope_root then
+            for name, values in pairs(scope_root) do
 
-                    -- override it
-                    scope_values[name] = values
+                -- merge values?
+                if not scope["__override_" .. name] then
 
-                -- merge root values?
-                elseif scope_root then
-                    
-                    -- the root values
-                    local root_values = scope_root[name]
-                    if root_values ~= nil then
-                        scope_values[name] = table.join(root_values, values)
+                    -- merge or add it
+                    if scope_values[name] ~= nil then
+                        scope_values[name] = table.join(values, scope_values[name])
                     else
                         scope_values[name] = values
                     end
@@ -345,7 +345,7 @@ function interpreter._make(self, scope_kind, remove_repeat)
             end
 
             -- filter values
-            if filter then
+            if filter and enable_filter then
                 values = self:_filter(values, filter)
             end
 
@@ -387,12 +387,17 @@ function interpreter.init(rootdir)
     interp:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
     interp:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
 
+    -- register the builtin interfaces for lua
+    interp:api_register_builtin("print", print)
+    interp:api_register_builtin("pairs", pairs)
+    interp:api_register_builtin("ipairs", ipairs)
+
     -- ok?
     return interp
 end
 
 -- load results 
-function interpreter.load(self, file, scope_kind, remove_repeat)
+function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file and scope_kind)
@@ -422,7 +427,7 @@ function interpreter.load(self, file, scope_kind, remove_repeat)
     end
 
     -- make results
-    return self:_make(scope_kind, remove_repeat)
+    return self:_make(scope_kind, remove_repeat, enable_filter)
 end
 
 -- get mtimes
@@ -454,7 +459,17 @@ function interpreter.api_register(self, name, func)
     assert(name and func)
 
     -- register it
-    self._PUBLIC[name] = function (...) func(self, ...) end
+    self._PUBLIC[name] = function (...) return func(self, ...) end
+end
+
+-- register api for builtin
+function interpreter.api_register_builtin(self, name, func)
+
+    -- check
+    assert(self and self._PUBLIC and func)
+
+    -- register it
+    self._PUBLIC[name] = func
 end
 
 -- register api for set_scope()
@@ -589,7 +604,7 @@ end
 --                  name1 = {"value1"}
 --                  name2 = {"value1", "value2", ...}
 --
---                  _name1 = true <- override
+--                  __override_name1 = true <- override
 --              }
 --          }
 --      }
@@ -677,7 +692,7 @@ function interpreter.api_builtin_add_subdirs(self, ...)
     assert(self)
 
     -- done
-    self:_api_builtin_add_subdirfiles(true, ...)
+    return self:_api_builtin_add_subdirfiles(true, ...)
 end
 
 -- the builtin api: add_subfiles()
@@ -687,7 +702,7 @@ function interpreter.api_builtin_add_subfiles(self, ...)
     assert(self)
 
     -- done
-    self:_api_builtin_add_subdirfiles(false, ...)
+    return self:_api_builtin_add_subdirfiles(false, ...)
 end
 
 -- call api
@@ -704,7 +719,7 @@ function interpreter.api_call(self, apiname, ...)
     end
 
     -- call api function
-    apifunc(self, ...)
+    return apifunc(...)
 end
 
 -- return module: interpreter
