@@ -151,6 +151,9 @@ function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
         define = string.format("$(prefix)_HAVE_%s", utils.ifelse(alias, alias, cfunc:upper()))
     end
 
+    -- save the current scope
+    local scope = interp:scope_save()
+
     -- make option
     interp:api_call("add_option", name)
     interp:api_call("set_option_category", "cfuncs")
@@ -159,7 +162,10 @@ function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
     if includes then interp:api_call("add_option_cincludes", includes) end
     interp:api_call("add_option_defines_h_if_ok", define)
 
-    -- add this option 
+    -- restore the current scope
+    interp:scope_restore(scope)
+
+    -- add this option to the current scope
     interp:api_call("add_options", name)
 end
 
@@ -191,6 +197,9 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
             define = string.format("$(prefix)_HAVE_%s", cfunc:upper())
         end
 
+        -- save the current scope
+        local scope = interp:scope_save()
+
         -- make option
         interp:api_call("add_option", name)
         interp:api_call("set_option_category", "cfuncs")
@@ -198,6 +207,9 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
         if links then interp:api_call("add_option_links", links) end
         if includes then interp:api_call("add_option_cincludes", includes) end
         interp:api_call("add_option_defines_h_if_ok", define)
+
+        -- restore the current scope
+        interp:scope_restore(scope)
 
         -- add this option 
         interp:api_call("add_options", name)
@@ -226,6 +238,9 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
         define = string.format("$(prefix)_HAVE_%s", utils.ifelse(alias, alias, cxxfunc:upper()))
     end
 
+    -- save the current scope
+    local scope = interp:scope_save()
+
     -- make option
     interp:api_call("add_option", name)
     interp:api_call("set_option_category", "cxxfuncs")
@@ -233,6 +248,9 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
     if links then interp:api_call("add_option_links", links) end
     if includes then interp:api_call("add_option_cxxincludes", includes) end
     interp:api_call("add_option_defines_h_if_ok", define)
+
+    -- restore the current scope
+    interp:scope_restore(scope)
 
     -- add this option 
     interp:api_call("add_options", name)
@@ -266,6 +284,9 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
             define = string.format("$(prefix)_HAVE_%s", cxxfunc:upper())
         end
 
+        -- save the current scope
+        local scope = interp:scope_save()
+
         -- make option
         interp:api_call("add_option", name)
         interp:api_call("set_option_category", "cxxfuncs")
@@ -273,6 +294,9 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
         if links then interp:api_call("add_option_links", links) end
         if includes then interp:api_call("add_option_cxxincludes", includes) end
         interp:api_call("add_option_defines_h_if_ok", define)
+
+        -- restore the current scope
+        interp:scope_restore(scope)
 
         -- add this option 
         interp:api_call("add_options", name)

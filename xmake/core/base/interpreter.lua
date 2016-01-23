@@ -28,6 +28,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
+local string    = require("base/string")
 
 -- traceback
 function interpreter._traceback(errors)
@@ -116,6 +117,11 @@ function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, 
         -- init current root scope
         local root = scopes._ROOT[scope_kind] or {}
         scopes._ROOT[scope_kind] = root
+
+        -- clear the current scope if be not belong to the current scope kind 
+        if scopes._CURRENT and scopes._CURRENT_KIND ~= scope_kind then
+            scopes._CURRENT = nil
+        end
 
         -- the current scope
         local scope = scopes._CURRENT or root
@@ -391,7 +397,11 @@ function interpreter.init(rootdir)
     interp:api_register_builtin("print", print)
     interp:api_register_builtin("pairs", pairs)
     interp:api_register_builtin("ipairs", ipairs)
-    interp:api_register_builtin("format", string.format)
+
+    -- register the builtin modules for lua
+    interp:api_register_builtin("path", path)
+    interp:api_register_builtin("table", table)
+    interp:api_register_builtin("string", string)
 
     -- ok?
     return interp
@@ -538,6 +548,9 @@ function interpreter.api_register_set_scope(self, ...)
         -- save the current scope
         scopes._CURRENT = scope_for_kind[scope_name]
 
+        -- update the current scope kind
+        scopes._CURRENT_KIND = scope_kind
+
     end
 
     -- register implementation
@@ -569,6 +582,9 @@ function interpreter.api_register_add_scope(self, ...)
 
         -- save the current scope
         scopes._CURRENT = scope_for_kind[scope_name]
+
+        -- update the current scope kind
+        scopes._CURRENT_KIND = scope_kind
 
     end
 
@@ -721,6 +737,41 @@ function interpreter.api_call(self, apiname, ...)
 
     -- call api function
     return apifunc(...)
+end
+
+-- save the current scope
+function interpreter.scope_save(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes)
+
+    -- the current scope
+    local scope = {}
+    scope._CURRENT      = scopes._CURRENT
+    scope._CURRENT_KIND = scopes._CURRENT_KIND
+
+    -- ok?
+    return scope
+end
+
+-- restore the current scope
+function interpreter.scope_restore(self, scope)
+
+    -- check
+    assert(self and self._PRIVATE and scope)
+
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes)
+
+    -- restore it
+    scopes._CURRENT      = scope._CURRENT
+    scopes._CURRENT_KIND = scope._CURRENT_KIND
+
 end
 
 -- return module: interpreter
