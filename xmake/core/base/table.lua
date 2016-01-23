@@ -95,5 +95,45 @@ function table.copy2(self, copied)
 
 end
 
+-- is array?
+function table.is_array(self)
+
+    -- not table?
+    if type(self) ~= "table" then
+        return false
+    end
+
+    -- is array?
+    for k, v in pairs(self) do
+        if type(k) == "number" then
+            return true
+        end
+        break
+    end
+
+    -- dictionary
+    return false
+end
+
+-- is dictionary?
+function table.is_dictionary(self)
+
+    -- not table?
+    if type(self) ~= "table" then
+        return false
+    end
+
+    -- is dictionary?
+    for k, v in pairs(self) do
+        if type(k) == "string" then
+            return true
+        end
+        break
+    end
+
+    -- array
+    return false
+end
+
 -- return module: table
 return table
