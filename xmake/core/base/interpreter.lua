@@ -256,39 +256,63 @@ function interpreter._filter(self, values, filter)
     -- check
     assert(self and values and filter)
 
+    -- replace value
+    local replace = function (value)
+
+        -- replace the builtin variables
+        return (value:gsub("%$%((.-)%)", function (variable) 
+
+            -- check
+            assert(variable)
+                                        
+            -- is upper?
+            local isupper = false
+            local c = string.char(variable:byte())
+            if c >= 'A' and c <= 'Z' then isupper = true end
+
+            -- filter it
+            local result = filter(variable:lower())
+
+            -- convert to upper?
+            if isupper and result and type(result) == "string" then
+                result = result:upper() 
+            end
+
+            -- ok?
+            return result
+        end))
+    end
+
     -- done
     local results = {}
-    for _, value in ipairs(utils.wrap(values)) do
-
-        -- only filter string value
-        if type(value) == "string" then
-
-            -- replace the builtin variables
-            value = value:gsub("%$%((.-)%)", function (variable) 
-
-                -- check
-                assert(variable)
-                                            
-                -- is upper?
-                local isupper = false
-                local c = string.char(variable:byte())
-                if c >= 'A' and c <= 'Z' then isupper = true end
-
-                -- filter it
-                local result = filter(variable:lower())
-
-                -- convert to upper?
-                if isupper and result and type(result) == "string" then
-                    result = result:upper() 
-                end
-
-                -- ok?
-                return result
-            end)
+    if table.is_dictionary(values) then
+        -- replace keyvalues
+        for key, value in pairs(values) do
+            results[replace(key)] = replace(value)
         end
+    else
+        for _, value in ipairs(utils.wrap(values)) do
 
-        -- append value
-        table.insert(results, value)
+            -- string?
+            if type(value) == "string" then
+                
+                -- replace value
+                value = replace(value)
+
+            -- array?
+            elseif table.is_array(value) then
+
+                -- replace values
+                local values = {}
+                for _, v in ipairs(value) do
+                    table.insert(values, replace(v))
+                end
+                value = values
+            end
+
+            -- append value
+            table.insert(results, value)
+        end
     end
 
     -- ok?
@@ -306,7 +330,7 @@ function interpreter._handle(self, scope, remove_repeat, enable_filter, filter)
     for name, values in pairs(scope) do
 
         -- remove repeat first
-        if remove_repeat then
+        if remove_repeat and not table.is_dictionary(values) then
             values = utils.unique(values)
         end
 
@@ -343,10 +367,10 @@ function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
     local results = {}
     if scope_kind then
 
-        -- the scope for kind
+        -- not this scope for kind?
         local scope_for_kind = scopes[scope_kind]
         if not scope_for_kind then
-            return nil, string.format("this scope kind: %s not found!", scope_kind)
+            return nil
         end
 
         -- the root scope
@@ -693,6 +717,107 @@ function interpreter.api_register_add_values(self, scope_kind, prefix, ...)
         -- append values?
         scope[name] = scope[name] or {}
         table.join2(scope[name], ...)
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+end
+
+-- register api for set_array
+function interpreter.api_register_set_array(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- update array?
+        scope[name] = {}
+        table.insert(scope[name], {...})
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+end
+
+-- register api for add_array
+function interpreter.api_register_add_array(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- append array?
+        scope[name] = scope[name] or {}
+        table.insert(scope[name], {...})
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+end
+
+-- register api for set_keyvalues
+function interpreter.api_register_set_keyvalues(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- update keyvalues?
+        scope[name] = {}
+        table.insert(scope[name], {...})
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+end
+
+-- register api for add_keyvalues
+function interpreter.api_register_add_keyvalues(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- append keyvalues?
+        scope[name] = scope[name] or {}
+
+        -- the values
+        local values = {...}
+        local count = #values
+
+        -- check count
+        if (count % 2) == 1 then
+            utils.error("add_%s() values must be key-value pair!", name)
+            utils.abort()
+        end
+
+        -- done
+        local i = 0
+        local keyvalues = scope[name]
+        while i + 2 <= count do
+            
+            -- the key and value
+            local key = values[i + 1]
+            local val = values[i + 2]
+
+            -- insert key and value
+            keyvalues[key] = val
+
+            -- next pair
+            i = i + 2
+        end
 
     end
 

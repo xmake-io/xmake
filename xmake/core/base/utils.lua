@@ -219,8 +219,9 @@ function utils.unique(array)
                         table.insert(unique, v)
                     end
                 else
-                    if not exists["\"" .. v .. "\""] then
-                        exists["\"" .. v .. "\""] = true
+                    local key = "\"" .. tostring(v) .. "\""
+                    if not exists[key] then
+                        exists[key] = true
                         table.insert(unique, v)
                     end
                 end

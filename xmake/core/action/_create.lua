@@ -24,6 +24,7 @@
 local _create = _create or {}
 
 -- load modules
+local path      = require("base/path")
 local utils     = require("base/utils")
 local template  = require("base/template")
     
@@ -47,61 +48,10 @@ function _create.done()
     -- trace
     utils.printf("create %s ...", targetname)
 
-    -- the language
-    local language = options.language 
-    if not language then
-        utils.error("no language!")
-        return false
-    end
-
-    -- the template id
-    local templateid = tonumber(options.template)
-    if type(templateid) ~= "number" then
-        utils.error("invalid template id: %s!", options.template)
-        return false
-    end
-
-    -- load all templates for the given language
-    local templates = template.loadall(language)
-
-    -- load the template module
-    local module = nil
-    if templates then module = templates[templateid] end
-    if not module then
-        utils.error("invalid template id: %s!", options.template)
-        return false
-    end
-
-    -- enter the template directory
-    if not module._DIRECTORY or not os.cd(module._DIRECTORY) then
-        -- error
-        utils.error("not found template id: %s!", options.template)
-        return false
-    end
-
-    -- check the template project
-    if not os.isdir("project") then
-        -- errors
-        utils.error("the template project not exists!")
-        return false
-    end
-
-    -- ensure the project directory 
-    if not os.isdir(xmake._PROJECT_DIR) then 
-        os.mkdir(xmake._PROJECT_DIR)
-    end
-
-    -- copy the project files
-    local ok, errors = os.cp("project/*", xmake._PROJECT_DIR) 
+    -- create project from template
+    local ok, errors = template.create(options.language, options.template, targetname)
     if not ok then
-        -- errors
         utils.error(errors)
-        return false
-    end
-
-    -- done the template files
-    if not module.done(targetname, xmake._PROJECT_DIR, xmake._PACKAGES_DIR) then
-        utils.error("update the template failed!")
         return false
     end
 

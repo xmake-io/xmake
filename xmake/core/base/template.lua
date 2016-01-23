@@ -25,8 +25,11 @@ local template = template or {}
 
 -- load modules
 local os            = require("base/os")
+local io            = require("base/io")
 local path          = require("base/path")
+local table         = require("base/table")
 local utils         = require("base/utils")
+local string        = require("base/string")
 local interpreter   = require("base/interpreter")
 
 -- get interpreter
@@ -45,11 +48,43 @@ function template._interpreter()
     interp:api_register_set_values(nil, nil,    "description"
                                             ,   "projectdir")
 
+    -- register api: add_values() for root
+    interp:api_register_add_values(nil, nil,    "macrofiles")
+
+    -- register api: add_keyvalues() for root
+    interp:api_register_add_keyvalues(nil, nil, "macros")
+
     -- save interpreter
     template._INTERPRETER = interp
 
     -- ok?
     return interp
+end
+
+-- replace macros
+function template._replace(macros, macrofiles)
+
+    -- check
+    assert(macros and macrofiles)
+
+    -- make all files
+    local files = {}
+    for _, macrofile in ipairs(utils.wrap(macrofiles)) do
+        local matchfiles = os.match(macrofile)
+        if matchfiles then
+            table.join2(files, matchfiles)
+        end
+    end
+
+    -- replace all files
+    for _, file in ipairs(files) do
+        for macro, value in pairs(macros) do
+            io.gsub(file, "%[" .. macro .. "%]", value)
+        end
+    end
+
+    -- ok
+    return true
 end
 
 -- get the language list
@@ -96,6 +131,9 @@ function template.loadall(language)
                 utils.abort()
             end
 
+            -- save template directory
+            results._DIRECTORY = path.directory(templatefile)
+
             -- insert to templates
             table.insert(templates, results)
 
@@ -104,6 +142,89 @@ function template.loadall(language)
 
     -- ok?
     return templates
+end
+
+-- create project from template
+function template.create(language, templateid, targetname)
+
+    -- check the language
+    if not language then
+        return false, "no language!"
+    end
+
+    -- check the template id
+    if not templateid then
+        return false, "no template id!"
+    end
+
+    templateid = tonumber(templateid)
+    if type(templateid) ~= "number" then
+        return false, "invalid template id!"
+    end
+
+    -- get interpreter
+    local interp = template._interpreter()
+    assert(interp) 
+
+    -- set filter
+    interp:filter_set(function (variable)
+
+        -- replace targetname
+        if variable == "targetname" then 
+            variable = targetname
+        end 
+
+        -- ok?
+        return variable
+
+    end)
+
+    -- load all templates for the given language
+    local templates = template.loadall(language)
+
+    -- load the template module
+    local module = nil
+    if templates then module = templates[templateid] end
+    if not module then
+        return false, string.format("invalid template id: %d!", templateid)
+    end
+
+    -- enter the template directory
+    if not module._DIRECTORY or not os.cd(module._DIRECTORY) then
+        return false, string.format("not found template id: %d!", templateid)
+    end
+
+    -- check the template project
+    if not module.projectdir or not os.isdir(module.projectdir) then
+        return false, string.format("the template project not exists!")
+    end
+
+    -- ensure the project directory 
+    if not os.isdir(xmake._PROJECT_DIR) then 
+        os.mkdir(xmake._PROJECT_DIR)
+    end
+
+    -- copy the project files
+    local ok, errors = os.cp(path.join(module.projectdir, "*"), xmake._PROJECT_DIR) 
+    if not ok then
+        return false, errors
+    end
+
+    -- enter the project directory
+    if not os.cd(xmake._PROJECT_DIR) then
+        return false, string.format("can not enter %s!", xmake._PROJECT_DIR)
+    end
+
+    -- replace macros
+    if module.macros and module.macrofiles then
+        ok, errors = template._replace(module.macros, module.macrofiles)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- ok
+    return true
 end
 
 -- return module: template
