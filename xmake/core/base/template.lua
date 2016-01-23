@@ -24,9 +24,33 @@
 local template = template or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local utils     = require("base/utils")
+local os            = require("base/os")
+local path          = require("base/path")
+local utils         = require("base/utils")
+local interpreter   = require("base/interpreter")
+
+-- get interpreter
+function template._interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if template._INTERPRETER then
+        return template._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.init()
+    assert(interp)
+
+    -- register api: set_values() for root
+    interp:api_register_set_values(nil, nil,    "description"
+                                            ,   "projectdir")
+
+    -- save interpreter
+    template._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
 
 -- get the language list
 function template.languages()
@@ -52,26 +76,35 @@ function template.loadall(language)
     -- check
     assert(language)
 
+    -- get interpreter
+    local interp = template._interpreter()
+    assert(interp) 
+
     -- load all templates
-    local modules = {}
-    local templates = os.match(string.format("%s/%s/**/_template.lua", xmake._TEMPLATES_DIR, language))
-    if templates then
-        for _, t in ipairs(templates) do
-            local script = assert(loadfile(t))
-            if script then
-                local module = script()
-                if module then 
-                    module._DIRECTORY = path.directory(t)
-                    table.insert(modules, module)
-                end
+    local templates = {}
+    local templatefiles = os.match(string.format("%s/%s/**/template.lua", xmake._TEMPLATES_DIR, language))
+    if templatefiles then
+
+        -- load template
+        for _, templatefile in ipairs(templatefiles) do
+
+            -- load templates
+            local results, errors = interp:load(templatefile, nil, true, true)
+            if not results then
+                -- trace
+                utils.error(errors)
+                utils.abort()
             end
+
+            -- insert to templates
+            table.insert(templates, results)
+
         end
     end
 
     -- ok?
-    return modules
+    return templates
 end
-
 
 -- return module: template
 return template

@@ -106,7 +106,12 @@ function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, 
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
-    assert(action and scope_kind and apifunc)
+    assert(action and apifunc)
+
+    -- uses the root scope kind if no scope kind
+    if not scope_kind then
+        scope_kind = "__rootkind"
+    end
 
     -- define implementation
     local implementation = function (self, scopes, apiname, ...)
@@ -290,80 +295,100 @@ function interpreter._filter(self, values, filter)
     return results
 end
 
+-- handle scope
+function interpreter._handle(self, scope, remove_repeat, enable_filter, filter)
+
+    -- check
+    assert(scope)
+
+    -- remove repeat values and unwrap it
+    local results = {}
+    for name, values in pairs(scope) do
+
+        -- remove repeat first
+        if remove_repeat then
+            values = utils.unique(values)
+        end
+
+        -- filter values
+        if filter and enable_filter then
+            values = self:_filter(values, filter)
+        end
+
+        -- unwrap it if be only one
+        values = utils.unwrap(values)
+
+        -- update it
+        results[name] = values
+    end
+
+    -- ok?
+    return results
+end
+
 -- make results
 function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
 
     -- check
-    assert(self and self._PRIVATE and scope_kind)
+    assert(self and self._PRIVATE)
 
     -- the scopes
     local scopes = self._PRIVATE._SCOPES
     assert(scopes and scopes._ROOT)
-
-    -- the scope for kind
-    local scope_for_kind = scopes[scope_kind]
-    if not scope_for_kind then
-        return nil, string.format("this scope kind: %s not found!", scope_kind)
-    end
-
-    -- the root scope
-    local scope_root = scopes._ROOT[scope_kind]
 
     -- the filter
     local filter = self._PRIVATE._FILTER
 
     -- make results
     local results = {}
-    for scope_name, scope in pairs(scope_for_kind) do
+    if scope_kind then
 
-        -- add scope values
-        local scope_values = {}
-        for name, values in pairs(scope) do
-            if not name:startswith("__override_") then
-                scope_values[name] = values
-            end
+        -- the scope for kind
+        local scope_for_kind = scopes[scope_kind]
+        if not scope_for_kind then
+            return nil, string.format("this scope kind: %s not found!", scope_kind)
         end
 
-        -- merge root values
-        if scope_root then
-            for name, values in pairs(scope_root) do
+        -- the root scope
+        local scope_root = scopes._ROOT[scope_kind]
 
-                -- merge values?
-                if not scope["__override_" .. name] then
+        -- merge results
+        for scope_name, scope in pairs(scope_for_kind) do
 
-                    -- merge or add it
-                    if scope_values[name] ~= nil then
-                        scope_values[name] = table.join(values, scope_values[name])
-                    else
-                        scope_values[name] = values
+            -- add scope values
+            local scope_values = {}
+            for name, values in pairs(scope) do
+                if not name:startswith("__override_") then
+                    scope_values[name] = values
+                end
+            end
+
+            -- merge root values
+            if scope_root then
+                for name, values in pairs(scope_root) do
+
+                    -- merge values?
+                    if not scope["__override_" .. name] then
+
+                        -- merge or add it
+                        if scope_values[name] ~= nil then
+                            scope_values[name] = table.join(values, scope_values[name])
+                        else
+                            scope_values[name] = values
+                        end
                     end
                 end
             end
+
+            -- add this scope
+            results[scope_name] = self:_handle(scope_values, remove_repeat, enable_filter, filter)
         end
 
-        -- remove repeat values and unwrap it
-        local result_values = {}
-        for name, values in pairs(scope_values) do
+    else
 
-            -- remove repeat first
-            if remove_repeat then
-                values = utils.unique(values)
-            end
+        -- only uses the root scope kind
+        results = self:_handle(scopes._ROOT["__rootkind"], remove_repeat, enable_filter, filter)
 
-            -- filter values
-            if filter and enable_filter then
-                values = self:_filter(values, filter)
-            end
-
-            -- unwrap it if be only one
-            values = utils.unwrap(values)
-
-            -- update it
-            result_values[name] = values
-        end
-
-        -- add this scope
-        results[scope_name] = result_values
     end
 
     -- ok?
@@ -371,16 +396,13 @@ function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
 end
 
 -- init interpreter
-function interpreter.init(rootdir)
+function interpreter.init()
 
-    -- check
-    assert(rootdir)
 
     -- init an interpreter instance
     local interp = {    _PUBLIC = {}
                     ,   _PRIVATE = {    _SCOPES = {}
-                                    ,   _MTIMES = {}
-                                    ,   _ROOTDIR = rootdir}}
+                                    ,   _MTIMES = {}}}
 
     -- inherit the interfaces of interpreter
     for k, v in pairs(interpreter) do
@@ -411,7 +433,7 @@ end
 function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
 
     -- check
-    assert(self and self._PUBLIC and self._PRIVATE and file and scope_kind)
+    assert(self and self._PUBLIC and self._PRIVATE and file)
 
     -- load the script
     local script = loadfile(file)
@@ -424,6 +446,10 @@ function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
 
     -- init the current file 
     self._PRIVATE._CURFILE = file
+
+    -- init the root directory
+    self._PRIVATE._ROOTDIR = self._PRIVATE._ROOTDIR or path.directory(file)
+    assert(self._PRIVATE._ROOTDIR)
 
     -- init mtime for the current file
     self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
@@ -460,6 +486,16 @@ function interpreter.filter_set(self, filter)
 
     -- set it
     self._PRIVATE._FILTER = filter
+end
+
+-- set root directory
+function interpreter.rootdir_set(self, rootdir)
+
+    -- check
+    assert(self and self._PRIVATE and rootdir)
+
+    -- set it
+    self._PRIVATE._ROOTDIR = rootdir
 end
 
 -- register api 
