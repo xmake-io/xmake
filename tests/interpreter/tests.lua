@@ -34,8 +34,11 @@ function tests.main(self, file)
     assert(file and #file == 1)
 
     -- init interpreter
-    local interp = interpreter.init(xmake._PROJECT_DIR)
+    local interp = interpreter.init()
     assert(interp)
+
+    -- set root directory
+    interp:rootdir_set(xmake._PROJECT_DIR)
 
     -- register api for scopes
     interp:api_register_set_scope("target", "option")

@@ -326,8 +326,11 @@ function project._interpreter()
     end
 
     -- init interpreter
-    local interp = interpreter.init(xmake._PROJECT_DIR)
+    local interp = interpreter.init()
     assert(interp)
+
+    -- set root directory
+    interp:rootdir_set(xmake._PROJECT_DIR)
 
     -- register api: set_target() and set_option()
     interp:api_register_set_scope("target", "option")
