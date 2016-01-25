@@ -17,7 +17,7 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        action_man.lua
+-- @file        man.lua
 --
 
 -- define module: action_man

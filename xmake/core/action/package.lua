@@ -17,7 +17,7 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        action_package.lua
+-- @file        package.lua
 --
 
 -- define module: action_package
