@@ -36,7 +36,7 @@ local platform  = require("base/platform")
 function action._load(name)
     
     -- load the given action
-    return require("action/_" .. name)
+    return require("action/" .. name)
 end
 
 -- load the project file
@@ -150,12 +150,12 @@ function action.list()
     
     -- find all action scripts
     local list = {}
-    local files = os.match(xmake._CORE_DIR .. "/action/_*.lua")
+    local files = os.match(xmake._CORE_DIR .. "/action/*.lua")
     if files then
         for _, file in ipairs(files) do
             local name = path.basename(file)
-            if name and name ~= "_build" then
-                table.insert(list, name:sub(2))
+            if name and name ~= "build" then
+                table.insert(list, name)
             end
         end
     end

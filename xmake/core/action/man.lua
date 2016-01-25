@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _man.lua
+-- @file        action_man.lua
 --
 
--- define module: _man
-local _man = _man or {}
+-- define module: action_man
+local action_man = action_man or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -29,7 +29,7 @@ local config    = require("base/config")
 local platform  = require("base/platform")
     
 -- need access to the given file?
-function _man.need(name)
+function action_man.need(name)
 
     -- check
     assert(name)
@@ -42,7 +42,7 @@ function _man.need(name)
 end
 
 -- done 
-function _man.done()
+function action_man.done()
 
     -- TODO
     print("not implement!")
@@ -52,7 +52,7 @@ function _man.done()
 end
 
 -- the menu
-function _man.menu()
+function action_man.menu()
 
     return {
                 -- xmake m
@@ -85,5 +85,5 @@ function _man.menu()
             }
 end
 
--- return module: _man
-return _man
+-- return module: action_man
+return action_man

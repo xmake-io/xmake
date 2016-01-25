@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _install.lua
+-- @file        action_install.lua
 --
 
--- define module: _install
-local _install = _install or {}
+-- define module: action_install
+local action_install = action_install or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -33,14 +33,14 @@ local project   = require("base/project")
 local platform  = require("base/platform")
      
 -- need access to the given file?
-function _install.need(name)
+function action_install.need(name)
 
     -- no accessors
     return false
 end
 
 -- make configure for the given target 
-function _install._makeconf(configs, target_name, target)
+function action_install._makeconf(configs, target_name, target)
 
     -- check
     assert(configs and target_name and target)
@@ -74,7 +74,7 @@ function _install._makeconf(configs, target_name, target)
 end
 
 -- package target
-function _install._package(target_name)
+function action_install._package(target_name)
 
     -- get the target name
     if not target_name or target_name == "all" then 
@@ -91,7 +91,7 @@ function _install._package(target_name)
 end
  
 -- done 
-function _install.done()
+function action_install.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -111,7 +111,7 @@ function _install.done()
     end
 
     -- package the given target first 
-    if not _install._package(options.target) then
+    if not action_install._package(options.target) then
         -- errors
         utils.error("package: failed!")
         return false
@@ -158,13 +158,13 @@ function _install.done()
 
     -- make configure for the given target
     if target_name and target_name ~= "all" then
-        if not _install._makeconf(configs, target_name, targets[target_name]) then 
+        if not action_install._makeconf(configs, target_name, targets[target_name]) then 
             utils.error("make target configure: %s failed!", target_name)
             return false
         end
     else
         for target_name, target in pairs(targets) do
-            if not _install._makeconf(configs, target_name, target) then 
+            if not action_install._makeconf(configs, target_name, target) then 
                 utils.error("make target configure: %s failed!", target_name)
                 return false
             end
@@ -186,7 +186,7 @@ function _install.done()
 end
 
 -- the menu
-function _install.menu()
+function action_install.menu()
 
     return {
                 -- xmake i
@@ -220,5 +220,5 @@ function _install.menu()
         }
 end
 
--- return module: _install
-return _install
+-- return module: action_install
+return action_install

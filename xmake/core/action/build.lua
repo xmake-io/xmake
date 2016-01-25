@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _build.lua
+-- @file        action_build.lua
 --
 
--- define module: _build
-local _build = _build or {}
+-- define module: action_build
+local action_build = action_build or {}
 
 -- load modules
 local rule      = require("base/rule")
@@ -32,7 +32,7 @@ local project   = require("base/project")
 local makefile  = require("base/makefile")
 
 -- need access to the given file?
-function _build.need(name)
+function action_build.need(name)
 
     -- check
     assert(name)
@@ -45,7 +45,7 @@ function _build.need(name)
 end
 
 -- done 
-function _build.done()
+function action_build.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -116,5 +116,5 @@ function _build.done()
     return true
 end
 
--- return module: _build
-return _build
+-- return module: action_build
+return action_build

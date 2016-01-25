@@ -28,7 +28,7 @@ local os            = require("base/os")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
-local action        = require("action/action")
+local action        = require("base/action")
 
 -- init the option menu
 local menu =

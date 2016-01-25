@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _config.lua
+-- @file        config.lua
 --
 
--- define module: _config
-local _config = _config or {}
+-- define module: action_config
+local action_config = action_config or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -31,7 +31,7 @@ local makefile  = require("base/makefile")
 local platform  = require("base/platform")
 
 -- need access to the given file?
-function _config.need(name)
+function action_config.need(name)
 
     -- check
     assert(name)
@@ -44,7 +44,7 @@ function _config.need(name)
 end
 
 -- done 
-function _config.done()
+function action_config.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -90,7 +90,7 @@ function _config.done()
 end
 
 -- the menu
-function _config.menu()
+function action_config.menu()
 
     return {
                 -- xmake f
@@ -211,5 +211,5 @@ function _config.menu()
             }
 end
 
--- return module: _config
-return _config
+-- return module: action_config
+return action_config

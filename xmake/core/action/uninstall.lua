@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _uninstall.lua
+-- @file        action_uninstall.lua
 --
 
--- define module: _uninstall
-local _uninstall = _uninstall or {}
+-- define module: action_uninstall
+local action_uninstall = action_uninstall or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -34,14 +34,14 @@ local project   = require("base/project")
 local platform  = require("base/platform")
      
 -- need access to the given file?
-function _uninstall.need(name)
+function action_uninstall.need(name)
 
     -- no accessors
     return false
 end
 
 -- package target
-function _uninstall._package(target_name)
+function action_uninstall._package(target_name)
 
     -- get the target name
     if not target_name or target_name == "all" then 
@@ -59,7 +59,7 @@ end
 
  
 -- done 
-function _uninstall.done()
+function action_uninstall.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -123,7 +123,7 @@ function _uninstall.done()
 end
 
 -- the menu
-function _uninstall.menu()
+function action_uninstall.menu()
 
     return {
                 -- xmake u
@@ -156,5 +156,5 @@ function _uninstall.menu()
         }
 end
 
--- return module: _uninstall
-return _uninstall
+-- return module: action_uninstall
+return action_uninstall

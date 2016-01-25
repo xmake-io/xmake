@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _clean.lua
+-- @file        action_clean.lua
 --
 
--- define module: _clean
-local _clean = _clean or {}
+-- define module: action_clean
+local action_clean = action_clean or {}
 
 -- load modules
 local clean     = require("base/clean")
@@ -31,7 +31,7 @@ local utils     = require("base/utils")
 local platform  = require("base/platform")
 
 -- need access to the given file?
-function _clean.need(name)
+function action_clean.need(name)
 
     -- check
     assert(name)
@@ -44,7 +44,7 @@ function _clean.need(name)
 end
 
 -- done 
-function _clean.done()
+function action_clean.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -68,7 +68,7 @@ function _clean.done()
 end
 
 -- the menu
-function _clean.menu()
+function action_clean.menu()
 
     return {
                 -- xmake c
@@ -102,5 +102,5 @@ function _clean.menu()
             }
 end
 
--- return module: _clean
-return _clean
+-- return module: action_clean
+return action_clean
