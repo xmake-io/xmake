@@ -52,13 +52,51 @@ function template._interpreter()
     interp:api_register_add_values(nil, nil,    "macrofiles")
 
     -- register api: add_keyvalues() for root
-    interp:api_register_add_keyvalues(nil, nil, "macros")
+    interp:api_register_add_keyvalues(nil, nil, "macros"
+                                            ,   "copydirs"
+                                            ,   "movedirs")
 
     -- save interpreter
     template._INTERPRETER = interp
 
     -- ok?
     return interp
+end
+
+-- copy directories
+function template._copydirs(copydirs)
+
+    -- check
+    assert(copydirs)
+
+    -- copy them
+    for srcdir, dstdir in pairs(copydirs) do
+        local ok, errors = os.cp(srcdir, dstdir)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- move directories
+function template._movedirs(movedirs)
+
+    -- check
+    assert(movedirs)
+
+    -- copy them
+    for srcdir, dstdir in pairs(movedirs) do
+        local ok, errors = os.mv(srcdir, dstdir)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- ok
+    return true
 end
 
 -- replace macros
@@ -172,6 +210,9 @@ function template.create(language, templateid, targetname)
         -- replace targetname
         if variable == "targetname" then 
             variable = targetname
+        -- replace packagesdir
+        elseif variable == "packagesdir" then
+            variable = xmake._PACKAGES_DIR
         end 
 
         -- ok?
@@ -213,6 +254,22 @@ function template.create(language, templateid, targetname)
     -- enter the project directory
     if not os.cd(xmake._PROJECT_DIR) then
         return false, string.format("can not enter %s!", xmake._PROJECT_DIR)
+    end
+
+    -- copy directories
+    if module.copydirs then
+        ok, errors = template._copydirs(module.copydirs)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- move directories
+    if module.movedirs then
+        ok, errors = template._movedirs(module.movedirs)
+        if not ok then
+            return false, errors
+        end
     end
 
     -- replace macros
