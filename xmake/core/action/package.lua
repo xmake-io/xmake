@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _package.lua
+-- @file        action_package.lua
 --
 
--- define module: _package
-local _package = _package or {}
+-- define module: action_package
+local action_package = action_package or {}
 
 -- load modules
 local rule      = require("base/rule")
@@ -35,14 +35,14 @@ local package   = require("base/package")
 local platform  = require("base/platform")
     
 -- need access to the given file?
-function _package.need(name)
+function action_package.need(name)
 
     -- no accessors
     return false
 end
  
 -- configure target for the given architecture
-function _package._config(arch, target_name)
+function action_package._config(arch, target_name)
 
     -- need not configure it
     if not arch then return true end
@@ -52,7 +52,7 @@ function _package._config(arch, target_name)
 end
 
 -- build target for the given architecture
-function _package._build(arch, target_name)
+function action_package._build(arch, target_name)
 
     -- get the target name
     if not target_name or target_name == "all" then 
@@ -60,7 +60,7 @@ function _package._build(arch, target_name)
     end
 
     -- configure it first
-    if not _package._config(arch, target_name) then return false end
+    if not action_package._config(arch, target_name) then return false end
 
     -- build it
     if os.execute(string.format("xmake -P %s %s", xmake._PROJECT_DIR, target_name)) ~= 0 then 
@@ -74,7 +74,7 @@ function _package._build(arch, target_name)
 end
 
 -- backup the target files
-function _package._backup(rootdir, filepath)
+function action_package._backup(rootdir, filepath)
 
     -- the relative file path
     if filepath and path.is_absolute(filepath) then
@@ -100,7 +100,7 @@ function _package._backup(rootdir, filepath)
 end
 
 -- make configure for the given target 
-function _package._makeconf(target_name, target)
+function action_package._makeconf(target_name, target)
 
     -- check
     assert(target_name and target)
@@ -110,7 +110,7 @@ function _package._makeconf(target_name, target)
     assert(options)
 
     -- the configs
-    local configs = _package._CONFIGS
+    local configs = action_package._CONFIGS
     assert(configs)
 
     -- the architecture 
@@ -144,10 +144,10 @@ function _package._makeconf(target_name, target)
     configs_arch.targetdir = rule.backupdir(target_name, arch)
 
     -- save the config file
-    configs_arch.config_h = _package._backup(configs_arch.targetdir, rule.config_h(target))
+    configs_arch.config_h = action_package._backup(configs_arch.targetdir, rule.config_h(target))
 
     -- save the target file
-    configs_arch.targetfile = _package._backup(configs_arch.targetdir, rule.targetfile(target_name, target))
+    configs_arch.targetfile = action_package._backup(configs_arch.targetdir, rule.targetfile(target_name, target))
 
     -- save the package script
     local packagescript = target.packagescript
@@ -174,7 +174,7 @@ function _package._makeconf(target_name, target)
 end
 
 -- load configure for the given target 
-function _package._loadconf(target_name)
+function action_package._loadconf(target_name)
 
     -- reload configure
     local errors = config.reload()
@@ -204,13 +204,13 @@ function _package._loadconf(target_name)
 
     -- make configure for the given target
     if target_name and target_name ~= "all" then
-        if not _package._makeconf(target_name, targets[target_name]) then 
+        if not action_package._makeconf(target_name, targets[target_name]) then 
             utils.error("make target configure: %s failed!", target_name)
             return false
         end
     else
         for target_name, target in pairs(targets) do
-            if not _package._makeconf(target_name, target) then 
+            if not action_package._makeconf(target_name, target) then 
                 utils.error("make target configure: %s failed!", target_name)
                 return false
             end
@@ -222,7 +222,7 @@ function _package._loadconf(target_name)
 end
 
 -- build target for all architectures
-function _package._build_all(archs, target_name)
+function action_package._build_all(archs, target_name)
 
     -- exists the given architectures?
     if archs then
@@ -238,10 +238,10 @@ function _package._build_all(archs, target_name)
             arch = arch:trim()
 
             -- build it
-            if not _package._build(arch, target_name) then return false end
+            if not action_package._build(arch, target_name) then return false end
 
             -- load configure
-            if not _package._loadconf(target_name) then return false end
+            if not action_package._loadconf(target_name) then return false end
 
         end
 
@@ -249,10 +249,10 @@ function _package._build_all(archs, target_name)
     else
 
         -- build it
-        if not _package._build(nil, target_name) then return false end
+        if not action_package._build(nil, target_name) then return false end
 
         -- load configure
-        if not _package._loadconf(target_name) then return false end
+        if not action_package._loadconf(target_name) then return false end
 
     end
 
@@ -261,7 +261,7 @@ function _package._build_all(archs, target_name)
 end
 
 -- done 
-function _package.done()
+function action_package.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -271,8 +271,8 @@ function _package.done()
     print("package: ...")
 
     -- init configs
-    _package._CONFIGS = _package._CONFIGS or {}
-    local configs = _package._CONFIGS
+    action_package._CONFIGS = action_package._CONFIGS or {}
+    local configs = action_package._CONFIGS
 
     -- load the global configure first
     global.load()
@@ -285,7 +285,7 @@ function _package.done()
     end
 
     -- build the given target first for all architectures
-    if not _package._build_all(options.archs, options.target) then
+    if not action_package._build_all(options.archs, options.target) then
         -- errors
         utils.error("build package failed!")
         return false
@@ -306,7 +306,7 @@ function _package.done()
 end
 
 -- the menu
-function _package.menu()
+function action_package.menu()
 
     return {
                 -- xmake p
@@ -361,5 +361,5 @@ function _package.menu()
             }
 end
 
--- return module: _package
-return _package
+-- return module: action_package
+return action_package

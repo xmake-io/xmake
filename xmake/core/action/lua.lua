@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _lua.lua
+-- @file        action_lua.lua
 --
 
--- define module: _lua
-local _lua = _lua or {}
+-- define module: action_lua
+local action_lua = action_lua or {}
 
 -- load modules
 local os        = require("base/os")
@@ -33,7 +33,7 @@ local tools     = require("tools/tools")
 local platform  = require("base/platform")
    
 -- need access to the given file?
-function _lua.need(name)
+function action_lua.need(name)
     
     -- the options
     local options = xmake._OPTIONS
@@ -55,7 +55,7 @@ function _lua.need(name)
 end
 
 -- done 
-function _lua.done()
+function action_lua.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -124,7 +124,7 @@ function _lua.done()
 end
 
 -- the menu
-function _lua.menu()
+function action_lua.menu()
 
     return {
                 -- xmake l
@@ -164,5 +164,5 @@ function _lua.menu()
             }
 end
 
--- return module: _lua
-return _lua
+-- return module: action_lua
+return action_lua

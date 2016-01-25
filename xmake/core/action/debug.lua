@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _debug.lua
+-- @file        action_debug.lua
 --
 
--- define module: _debug
-local _debug = _debug or {}
+-- define module: action_debug
+local action_debug = action_debug or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -29,7 +29,7 @@ local config    = require("base/config")
 local platform  = require("base/platform")
     
 -- need access to the given file?
-function _debug.need(name)
+function action_debug.need(name)
 
     -- check
     assert(name)
@@ -42,7 +42,7 @@ function _debug.need(name)
 end
 
 -- done 
-function _debug.done()
+function action_debug.done()
 
     -- TODO
     print("not implement!")
@@ -52,7 +52,7 @@ function _debug.done()
 end
 
 -- the menu
-function _debug.menu()
+function action_debug.menu()
 
     return {
                 -- xmake d
@@ -85,5 +85,5 @@ function _debug.menu()
             }
 end
 
--- return module: _debug
-return _debug
+-- return module: action_debug
+return action_debug

@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _create.lua
+-- @file        action_create.lua
 --
 
--- define module: _create
-local _create = _create or {}
+-- define module: action_create
+local action_create = action_create or {}
 
 -- load modules
 local path      = require("base/path")
@@ -29,14 +29,14 @@ local utils     = require("base/utils")
 local template  = require("base/template")
     
 -- need access to the given file?
-function _create.need(name)
+function action_create.need(name)
 
     -- no accessors
     return false
 end
 
 -- done 
-function _create.done()
+function action_create.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -63,7 +63,7 @@ function _create.done()
 end
 
 -- the menu
-function _create.menu()
+function action_create.menu()
 
     return {
                 -- usage
@@ -119,5 +119,5 @@ function _create.menu()
             }
 end
 
--- return module: _create
-return _create
+-- return module: action_create
+return action_create

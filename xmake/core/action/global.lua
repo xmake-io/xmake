@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _global.lua
+-- @file        action_global.lua
 --
 
--- define module: _global
-local _global = _global or {}
+-- define module: action_global
+local action_global = action_global or {}
 
 -- load modules
 local utils     = require("base/utils")
@@ -29,7 +29,7 @@ local global    = require("base/global")
 local platform  = require("base/platform")
 
 -- need access to the given file?
-function _global.need(name)
+function action_global.need(name)
 
     -- check
     assert(name)
@@ -42,7 +42,7 @@ function _global.need(name)
 end
 
 -- done 
-function _global.done()
+function action_global.done()
 
     -- probe the global platform configure 
     if not platform.probe(true) then
@@ -68,7 +68,7 @@ function _global.done()
 end
 
 -- the menu
-function _global.menu()
+function action_global.menu()
 
     return {
                 -- xmake g
@@ -100,5 +100,5 @@ function _global.menu()
             }
 end
 
--- return module: _global
-return _global
+-- return module: action_global
+return action_global

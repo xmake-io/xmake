@@ -17,11 +17,11 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _run.lua
+-- @file        action_run.lua
 --
 
--- define module: _run
-local _run = _run or {}
+-- define module: action_run
+local action_run = action_run or {}
 
 -- load modules
 local rule      = require("base/rule")
@@ -32,7 +32,7 @@ local project   = require("base/project")
 local platform  = require("base/platform")
     
 -- need access to the given file?
-function _run.need(name)
+function action_run.need(name)
 
     -- check
     assert(name)
@@ -45,7 +45,7 @@ function _run.need(name)
 end
 
 -- done 
-function _run.done()
+function action_run.done()
 
     -- the options
     local options = xmake._OPTIONS
@@ -138,7 +138,7 @@ function _run.done()
 end
 
 -- the menu
-function _run.menu()
+function action_run.menu()
  
     return {
                 -- xmake r
@@ -175,5 +175,5 @@ function _run.menu()
             }
 end
 
--- return module: _run
-return _run
+-- return module: action_run
+return action_run
