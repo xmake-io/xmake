@@ -29,6 +29,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local sandbox   = require("base/sandbox")
 
 -- traceback
 function interpreter._traceback(errors)
@@ -216,7 +217,7 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
             self._PRIVATE._CURFILE = file
 
             -- load the file script
-            local script = loadfile(file)
+            local script, errors = loadfile(file)
             if script then
 
                 -- bind public scope
@@ -231,6 +232,9 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
 
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
+            else
+                utils.error(errors)
+                utils.abort()
             end
         end
     end
@@ -460,9 +464,9 @@ function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
     assert(self and self._PUBLIC and self._PRIVATE and file)
 
     -- load the script
-    local script = loadfile(file)
+    local script, errors = loadfile(file)
     if not script then
-        return nil, string.format("load %s failed!", file)
+        return nil, errors
     end
 
     -- clear first
@@ -760,6 +764,32 @@ function interpreter.api_register_add_array(self, scope_kind, prefix, ...)
 
     -- register implementation
     self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+end
+
+-- register api for set_script
+function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, script)
+
+        -- bind sandbox to script
+        local ok, errors = sandbox.init():bind(script) 
+        if not ok then
+            utils.error("set_%s(\"%s\"): %s", scope, name, errors)
+            utils.abort()
+        end
+
+        -- update script?
+        scope[name] = {}
+        table.insert(scope[name], script)
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
 end
 
 -- register api for set_keyvalues
