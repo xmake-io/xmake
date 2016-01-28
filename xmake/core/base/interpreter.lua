@@ -444,6 +444,7 @@ function interpreter.init()
     interp:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
 
     -- register the builtin interfaces for lua
+    interp:api_register_builtin("print", print)
     interp:api_register_builtin("pairs", pairs)
     interp:api_register_builtin("ipairs", ipairs)
 

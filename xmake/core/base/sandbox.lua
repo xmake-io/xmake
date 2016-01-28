@@ -98,12 +98,12 @@ function sandbox.init()
 
     -- register the builtin interfaces for lua
     sbox:api_register_builtin("print", print)
---    sbox:api_register_builtin("pairs", pairs)
---    sbox:api_register_builtin("ipairs", ipairs)
+    sbox:api_register_builtin("pairs", pairs)
+    sbox:api_register_builtin("ipairs", ipairs)
 
     -- register the builtin modules for lua
     sbox:api_register_builtin("path", path)
---    sbox:api_register_builtin("table", table)
+    sbox:api_register_builtin("table", table)
     sbox:api_register_builtin("string", string)
 
     -- ok?
