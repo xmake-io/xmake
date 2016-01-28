@@ -36,13 +36,6 @@ local compiler      = require("base/compiler")
 local platform      = require("base/platform")
 local interpreter   = require("base/interpreter")
 
--- import module
-function project._api_import(interp, module)
-
-    -- import 
-    return require("module/" .. module)
-end
-
 -- the current os is belong to the given os?
 function project._api_os(interp, ...)
 
@@ -337,6 +330,11 @@ function project._interpreter()
 
     -- register api: add_target() and add_option()
     interp:api_register_add_scope("target", "option")
+   
+    -- register api: set_script() for target
+    interp:api_register_set_script("target", nil,           "runscript"
+                                                        ,   "installscript"
+                                                        ,   "packagescript")
 
     -- register api: set_values() for target
     interp:api_register_set_values("target", nil,           "kind"
@@ -347,10 +345,7 @@ function project._interpreter()
                                                         ,   "symbols"
                                                         ,   "warnings"
                                                         ,   "optimize"
-                                                        ,   "languages"
-                                                        ,   "runscript"
-                                                        ,   "installscript"
-                                                        ,   "packagescript")
+                                                        ,   "languages")
 
     -- register api: add_values() for target
     interp:api_register_add_values("target", nil,           "deps"
@@ -417,9 +412,6 @@ function project._interpreter()
     interp:api_register_add_pathes("option", "option",      "linkdirs" 
                                                         ,   "includedirs")
 
-
-    -- register api: import()
-    interp:api_register("import", project._api_import)
 
     -- register api: os()
     interp:api_register("os", project._api_os)
