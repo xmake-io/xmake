@@ -30,6 +30,7 @@ local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local sandbox   = require("base/sandbox")
 local platform  = require("base/platform")
 
 -- package target for the library file
