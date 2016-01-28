@@ -82,22 +82,8 @@ function action_run.done()
         targetfile = path.absolute(targetfile, xmake._PROJECT_DIR)
     end
 
-    -- load the run script
-    local runscript = target.runscript
-    if type(runscript) == "string" and os.isfile(runscript) then
-        local script, errors = loadfile(runscript)
-        if script then
-            runscript = script()
-            if type(runscript) == "table" and runscript.main then 
-                runscript = runscript.main
-            end
-        else
-            utils.error(errors)
-            return false
-        end
-    end
-
     -- run script
+    local runscript = target.runscript
     if runscript ~= nil then
         if type(runscript) == "function" then
             

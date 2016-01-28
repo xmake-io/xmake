@@ -72,22 +72,42 @@ function sandbox._traceback(errors)
     return results
 end
 
+-- import module
+function sandbox._api_builtin_import(self, module)
+
+    -- import 
+    return require("module/" .. module)
+end
+
 -- init sandbox
 function sandbox.init()
 
     -- init an sandbox instance
-    local box = {    _PUBLIC = {}
+    local sbox = {   _PUBLIC = {}
                  ,   _PRIVATE = {}}
 
     -- inherit the interfaces of sandbox
     for k, v in pairs(sandbox) do
         if type(v) == "function" then
-            box[k] = v
+            sbox[k] = v
         end
     end
 
+    -- register the builtin interfaces
+    sbox:api_register("import", sandbox._api_builtin_import)
+
+    -- register the builtin interfaces for lua
+    sbox:api_register_builtin("print", print)
+--    sbox:api_register_builtin("pairs", pairs)
+--    sbox:api_register_builtin("ipairs", ipairs)
+
+    -- register the builtin modules for lua
+    sbox:api_register_builtin("path", path)
+--    sbox:api_register_builtin("table", table)
+    sbox:api_register_builtin("string", string)
+
     -- ok?
-    return box
+    return sbox
 end
 
 -- bind sandbox to script
@@ -131,6 +151,27 @@ function sandbox.bind(self, script)
 
     -- ok
     return true
+end
+
+-- register api 
+function sandbox.api_register(self, name, func)
+
+    -- check
+    assert(self and self._PUBLIC)
+    assert(name and func)
+
+    -- register it
+    self._PUBLIC[name] = function (...) return func(self, ...) end
+end
+
+-- register api for builtin
+function sandbox.api_register_builtin(self, name, func)
+
+    -- check
+    assert(self and self._PUBLIC and func)
+
+    -- register it
+    self._PUBLIC[name] = func
 end
 
 -- return module: sandbox

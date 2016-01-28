@@ -50,24 +50,7 @@ function action_install._makeconf(configs, target_name, target)
     local configs_target = configs[target_name]
 
     -- save the install script
-    local installscript = target.installscript
-    if type(installscript) == "string" and os.isfile(installscript) then
-        local script, errors = loadfile(installscript)
-        if script then
-            installscript = script()
-            if type(installscript) == "table" and installscript.main then 
-                installscript = installscript.main
-            end
-        else
-            utils.error(errors)
-            return false
-        end
-    end
-    if target.installscript and type(installscript) ~= "function" then
-        utils.error("invalid install script!")
-        return false
-    end
-    configs_target.installscript = installscript
+    configs_target.installscript = target.installscript
 
     -- ok
     return true
