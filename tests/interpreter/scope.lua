@@ -1,5 +1,5 @@
 
-set_kind("static"
+set_kind("static")
 add_files("root.c")
 
 add_target("target1")

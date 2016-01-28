@@ -426,35 +426,34 @@ end
 -- init interpreter
 function interpreter.init()
 
-
     -- init an interpreter instance
-    local interp = {    _PUBLIC = {}
-                    ,   _PRIVATE = {    _SCOPES = {}
-                                    ,   _MTIMES = {}}}
+    local self = {  _PUBLIC = {}
+                ,   _PRIVATE = {    _SCOPES = {}
+                                ,   _MTIMES = {}}}
 
     -- inherit the interfaces of interpreter
     for k, v in pairs(interpreter) do
         if type(v) == "function" then
-            interp[k] = v
+            self[k] = v
         end
     end
 
     -- register the builtin interfaces
-    interp:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
-    interp:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
+    self:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
+    self:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
 
     -- register the builtin interfaces for lua
-    interp:api_register_builtin("print", print)
-    interp:api_register_builtin("pairs", pairs)
-    interp:api_register_builtin("ipairs", ipairs)
+    self:api_register_builtin("print", print)
+    self:api_register_builtin("pairs", pairs)
+    self:api_register_builtin("ipairs", ipairs)
 
     -- register the builtin modules for lua
-    interp:api_register_builtin("path", path)
-    interp:api_register_builtin("table", table)
-    interp:api_register_builtin("string", string)
+    self:api_register_builtin("path", path)
+    self:api_register_builtin("table", table)
+    self:api_register_builtin("string", string)
 
     -- ok?
-    return interp
+    return self
 end
 
 -- load results 
@@ -776,7 +775,7 @@ function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
     local implementation = function (self, scope, name, script)
 
         -- bind sandbox to script
-        local ok, errors = sandbox.init():bind(script) 
+        local ok, errors = sandbox.bind(script) 
         if not ok then
             utils.error("set_%s(\"%s\"): %s", scope, name, errors)
             utils.abort()

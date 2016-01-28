@@ -76,42 +76,68 @@ end
 function sandbox._api_builtin_import(self, module)
 
     -- import 
-    return require("module/" .. module)
+    return require("modules/" .. module)
+end
+
+-- register api 
+function sandbox._api_register(self, name, func)
+
+    -- check
+    assert(self and self._PUBLIC)
+    assert(name and func)
+
+    -- register it
+    self._PUBLIC[name] = function (...) return func(self, ...) end
+end
+
+-- register api for builtin
+function sandbox._api_register_builtin(self, name, func)
+
+    -- check
+    assert(self and self._PUBLIC and func)
+
+    -- register it
+    self._PUBLIC[name] = func
 end
 
 -- init sandbox
-function sandbox.init()
+function sandbox._init()
 
     -- init an sandbox instance
-    local sbox = {   _PUBLIC = {}
-                 ,   _PRIVATE = {}}
+    local self = {_PUBLIC = {}}
 
     -- inherit the interfaces of sandbox
     for k, v in pairs(sandbox) do
         if type(v) == "function" then
-            sbox[k] = v
+            self[k] = v
         end
     end
 
+    -- save self
+    self._PUBLIC._SELF = self
+
     -- register the builtin interfaces
-    sbox:api_register("import", sandbox._api_builtin_import)
+    self:_api_register("import", sandbox._api_builtin_import)
 
     -- register the builtin interfaces for lua
-    sbox:api_register_builtin("print", print)
-    sbox:api_register_builtin("pairs", pairs)
-    sbox:api_register_builtin("ipairs", ipairs)
+    self:_api_register_builtin("print", print)
+    self:_api_register_builtin("pairs", pairs)
+    self:_api_register_builtin("ipairs", ipairs)
 
     -- register the builtin modules for lua
-    sbox:api_register_builtin("path", path)
-    sbox:api_register_builtin("table", table)
-    sbox:api_register_builtin("string", string)
+    self:_api_register_builtin("path", path)
+    self:_api_register_builtin("table", table)
+    self:_api_register_builtin("string", string)
 
     -- ok?
-    return sbox
+    return self
 end
 
 -- bind sandbox to script
-function sandbox.bind(self, script)
+function sandbox.bind(script)
+
+    -- init self 
+    local self = sandbox._init()
 
     -- check
     assert(self and self._PUBLIC)
@@ -153,26 +179,29 @@ function sandbox.bind(self, script)
     return true
 end
 
--- register api 
-function sandbox.api_register(self, name, func)
+-- load script 
+function sandbox.load(script, ...)
 
     -- check
-    assert(self and self._PUBLIC)
-    assert(name and func)
+    assert(type(script) == "function")
 
-    -- register it
-    self._PUBLIC[name] = function (...) return func(self, ...) end
+    -- get public scope
+    local public = getfenv(script)
+    assert(public)
+
+    -- get sandbox self
+    local self = public._SELF
+    if not self then
+        return false, "this script without sandbox!"
+    end
+
+    -- clear the self 
+    public._SELF = nil
+
+    -- load script
+    return xpcall(script, sandbox._traceback, ...)
 end
 
--- register api for builtin
-function sandbox.api_register_builtin(self, name, func)
-
-    -- check
-    assert(self and self._PUBLIC and func)
-
-    -- register it
-    self._PUBLIC[name] = func
-end
 
 -- return module: sandbox
 return sandbox
