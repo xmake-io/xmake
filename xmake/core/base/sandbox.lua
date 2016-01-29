@@ -113,9 +113,6 @@ function sandbox._init()
         end
     end
 
-    -- save self
-    self._PUBLIC._SELF = self
-
     -- register the builtin interfaces
     self:_api_register("import", sandbox._api_builtin_import)
 
@@ -133,8 +130,8 @@ function sandbox._init()
     return self
 end
 
--- bind sandbox to script
-function sandbox.bind(script)
+-- load script in the sandbox
+function sandbox.load(script, ...)
 
     -- init self 
     local self = sandbox._init()
@@ -143,7 +140,12 @@ function sandbox.bind(script)
     assert(self and self._PUBLIC)
 
     -- this script is file? load it first
-    if type(script) == "string" and os.isfile(script) then
+    if type(script) == "string" then
+    
+        -- check
+        if not os.isfile(script) then
+            return false, string.format("the script file(%s) not found!", script)
+        end
 
         -- load it
         local filescript, errors = loadfile(script)
@@ -175,33 +177,9 @@ function sandbox.bind(script)
     -- bind public scope
     setfenv(script, self._PUBLIC)
 
-    -- ok
-    return true
-end
-
--- load script 
-function sandbox.load(script, ...)
-
-    -- check
-    assert(type(script) == "function")
-
-    -- get public scope
-    local public = getfenv(script)
-    assert(public)
-
-    -- get sandbox self
-    local self = public._SELF
-    if not self then
-        return false, "this script without sandbox!"
-    end
-
-    -- clear the self 
-    public._SELF = nil
-
     -- load script
     return xpcall(script, sandbox._traceback, ...)
 end
-
 
 -- return module: sandbox
 return sandbox

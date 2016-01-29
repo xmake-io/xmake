@@ -29,6 +29,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
 local project   = require("base/project")
+local sandbox   = require("base/sandbox")
 local platform  = require("base/platform")
     
 -- need access to the given file?
@@ -85,20 +86,23 @@ function action_run.done()
     -- run script
     local runscript = target.runscript
     if runscript ~= nil then
-        if type(runscript) == "function" then
-            
-            -- make passed target 
-            local target_passed         = {}
-            target_passed.name          = name
-            target_passed.arguments     = arguments
-            target_passed.targetfile    = targetfile
 
-            -- run it
-            local ok = runscript(target_passed)
-            if ok ~= 0 then return utils.ifelse(ok == 1, true, false) end
-        else
-            utils.error("invalid run script!")
+        -- make passed target 
+        local target_passed         = {}
+        target_passed.name          = name
+        target_passed.arguments     = arguments
+        target_passed.targetfile    = targetfile
+
+        -- run script
+        local ok, results = sandbox.load(runscript, target_passed)
+        if not ok then 
+            utils.error(results)
             return false
+        end
+
+        -- check results   
+        if results ~= 0 then 
+            return utils.ifelse(results == 1, true, false) 
         end
     end
 
