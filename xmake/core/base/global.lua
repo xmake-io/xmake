@@ -85,7 +85,7 @@ function global.set(name, value)
 
     -- check
     assert(global._CURRENT and global._CONFIGS)
-    assert(name and value and type(value) ~= "table")
+    assert(name and value ~= nil and type(value) ~= "table")
 
     -- set it to the current configure
     global._CURRENT[name] = value
