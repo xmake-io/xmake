@@ -30,6 +30,7 @@ local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local config    = require("base/config")
+local sandbox   = require("base/sandbox")
 local platform  = require("base/platform")
 
 -- install target from the project script
@@ -38,19 +39,24 @@ function install._done_from_project(target)
     -- check
     assert(target)
 
-    -- install it using the project script first
-    local installscript = target.installscript
-    if type(installscript) == "function" then
-
-        -- remove it
-        target.installscript = nil
-
-        -- install it
-        return installscript(target)
+    -- no script? continue
+    if target.installscript == nil then
+        return 0
     end
 
-    -- continue
-    return 0
+    -- get script
+    local script = target.installscript
+    target.installscript = nil
+
+    -- install it using the project script first
+    local ok, results = sandbox.load(script, target)
+    if not ok then 
+        utils.error(results)
+        return -1
+    end
+
+    -- ok?
+    return results
 end
 
 -- install target from the platform script
@@ -59,30 +65,21 @@ function install._done_from_platform(target)
     -- check
     assert(target)
 
+    -- no script? continue
+    local scriptfile = path.join(platform.directory(), "install.lua")
+    if not os.isfile(scriptfile) then
+        return 0
+    end
+
     -- the platform install script file
-    local installscript = nil
-    local scriptfile = platform.directory() .. "/install.lua"
-    if os.isfile(scriptfile) then 
-
-        -- load the install script
-        local script, errors = loadfile(scriptfile)
-        if script then 
-            installscript = script()
-            if type(installscript) == "table" and installscript.main then 
-                installscript = installscript.main
-            end
-        else
-            utils.error(errors)
-        end
+    local ok, results = sandbox.load(scriptfile, target)
+    if not ok then 
+        utils.error(results)
+        return -1
     end
 
-    -- install it
-    if type(installscript) == "function" then
-        return installscript(target)
-    end
-
-    -- continue
-    return 0
+    -- ok?
+    return results
 end
 
 -- install target from the given target configure

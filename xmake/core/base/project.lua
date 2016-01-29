@@ -330,7 +330,7 @@ function project._interpreter()
 
     -- register api: add_target() and add_option()
     interp:api_register_add_scope("target", "option")
-   
+    
     -- register api: set_script() for target
     interp:api_register_set_script("target", nil,           "runscript"
                                                         ,   "installscript"

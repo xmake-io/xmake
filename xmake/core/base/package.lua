@@ -206,19 +206,24 @@ function package._done_from_project(target)
     -- check
     assert(target)
 
-    -- package it using the project script first
-    local packagescript = target.packagescript
-    if type(packagescript) == "function" then
-
-        -- remove it
-        target.packagescript = nil
-
-        -- package it
-        return packagescript(target)
+    -- no script? continue
+    if target.packagescript == nil then
+        return 0
     end
 
-    -- continue
-    return 0
+    -- get script
+    local script = target.packagescript
+    target.packagescript = nil
+
+    -- package it using the project script first
+    local ok, results = sandbox.load(script, target)
+    if not ok then 
+        utils.error(results)
+        return -1
+    end
+
+    -- ok?
+    return results
 end
 
 -- package target from the platform script
@@ -227,30 +232,21 @@ function package._done_from_platform(target)
     -- check
     assert(target)
 
+    -- no script? continue
+    local scriptfile = path.join(platform.directory(), "package.lua")
+    if not os.isfile(scriptfile) then
+        return 0
+    end
+
     -- the platform package script file
-    local packagescript = nil
-    local scriptfile = platform.directory() .. "/package.lua"
-    if os.isfile(scriptfile) then 
-
-        -- load the package script
-        local script, errors = loadfile(scriptfile)
-        if script then 
-            packagescript = script()
-            if type(packagescript) == "table" and packagescript.main then 
-                packagescript = packagescript.main
-            end
-        else
-            utils.error(errors)
-        end
+    local ok, results = sandbox.load(scriptfile, target)
+    if not ok then 
+        utils.error(results)
+        return -1
     end
 
-    -- package it
-    if type(packagescript) == "function" then
-        return packagescript(target)
-    end
-
-    -- continue
-    return 0
+    -- ok?
+    return results
 end
 
 -- get the configure file
