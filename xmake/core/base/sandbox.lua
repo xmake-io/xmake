@@ -76,7 +76,7 @@ end
 function sandbox._api_builtin_import(self, module)
 
     -- import 
-    return require("modules/" .. module)
+    return require("sandbox/" .. module)
 end
 
 -- register api 
@@ -113,18 +113,34 @@ function sandbox._init()
         end
     end
 
-    -- register the builtin interfaces
+    -- load builtin module files
+    local builtin_module_files = os.match(path.join(xmake._CORE_DIR, "sandbox/builtin/*.lua"))
+    if builtin_module_files then
+        for _, builtin_module_file in ipairs(builtin_module_files) do
+
+            -- the module name
+            local module_name = path.basename(builtin_module_file)
+            assert(module_name)
+
+            -- load script
+            local script = loadfile(builtin_module_file)
+            if script then
+
+                -- load module
+                local ok, results = xpcall(script, debug.traceback)
+                if not ok then
+                    utils.error(results)
+                    utils.abort()
+                end
+
+                -- register module
+                self:_api_register_builtin(module_name, results)
+            end
+        end
+    end
+
+    -- register import() for importing the extensional sandbox modules
     self:_api_register("import", sandbox._api_builtin_import)
-
-    -- register the builtin interfaces for lua
-    self:_api_register_builtin("print", print)
-    self:_api_register_builtin("pairs", pairs)
-    self:_api_register_builtin("ipairs", ipairs)
-
-    -- register the builtin modules for lua
-    self:_api_register_builtin("path", path)
-    self:_api_register_builtin("table", table)
-    self:_api_register_builtin("string", string)
 
     -- ok?
     return self
