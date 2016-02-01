@@ -446,6 +446,7 @@ function interpreter.init()
     self:api_register_builtin("print", print)
     self:api_register_builtin("pairs", pairs)
     self:api_register_builtin("ipairs", ipairs)
+    self:api_register_builtin("format", string.format)
     self:api_register_builtin("printf", utils.printf)
 
     -- register the builtin modules for lua

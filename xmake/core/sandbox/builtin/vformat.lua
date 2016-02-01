@@ -17,12 +17,10 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        abort.lua
+-- @file        vformat.lua
 --
 
--- load modules
-local utils = require("base/utils")
+-- return module
+return require("sandbox/builtin/string").vformat
 
--- load module
-return utils.abort
 

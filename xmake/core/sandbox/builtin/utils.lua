@@ -17,29 +17,30 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        string.lua
+-- @file        utils.lua
 --
 
 -- load modules
-local string = require("base/string")
+local utils     = require("base/utils")
+local string    = require("sandbox/builtin/string")
 
 -- define module
-local sandbox_builtin_string = sandbox_builtin_string or {}
+local sandbox_builtin_utils = sandbox_builtin_utils or {}
 
--- format string with the builtin variables
-function sandbox_builtin_string.vformat(format, ...)
+-- printf with the builtin variables
+function sandbox_builtin_utils.vprintf(format, ...)
 
     -- done
-    return string.format(format, ...)
+    return print(string.vformat(format, ...))
 end
 
--- inherit the public interfaces of string
-for k, v in pairs(string) do
+-- inherit the public interfaces of utils
+for k, v in pairs(utils) do
     if not k:startswith("_") and type(v) == "function" then
-        sandbox_builtin_string[k] = v
+        sandbox_builtin_utils[k] = v
     end
 end
 
 -- return module
-return sandbox_builtin_string
+return sandbox_builtin_utils
 
