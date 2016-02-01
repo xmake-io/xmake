@@ -17,27 +17,12 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        string.lua
+-- @file        dump.lua
 --
 
 -- load modules
-local string = require("base/string")
+local utils = require("base/utils")
 
--- define module
-local sandbox_builtin_string = sandbox_builtin_string or {}
-
--- filter string
-function sandbox_builtin_string.filter(format, ...)
-
-end
-
--- inherit the public interfaces of string
-for k, v in pairs(string) do
-    if not k:startswith("_") and type(v) == "function" then
-        sandbox_builtin_string[k] = v
-    end
-end
-
--- return module
-return sandbox_builtin_string
+-- load module
+return utils.dump
 
