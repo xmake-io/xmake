@@ -23,24 +23,77 @@
 -- load modules
 local io    = require("base/io")
 local os    = require("base/os")
+local utils = require("base/utils")
 
--- define module: _os
-local _os = _os or {}
+-- define module
+local sandbox_builtin_os = sandbox_builtin_os or {}
 
--- cat the given file 
-function _os.cat(filepath, linecount)
+-- copy file or directory
+function sandbox_builtin_os.cp(src, dst)
     
-    -- cat it
-    return io.cat(filepath, linecount)
-end
+    -- check
+    assert(src and dst)
 
--- only copy the interfaces of os
-for k, v in pairs(os) do
-    if type(v) == "function" then
-        _os[k] = v
+    -- done
+    local ok, errors = os.cp(src, dst)
+    if not ok then
+        utils.error(errors)
+        utils.abort()
     end
+
 end
 
--- return module: _os
-return _os
+-- move file or directory
+function sandbox_builtin_os.mv(src, dst)
+    
+    -- check
+    assert(src and dst)
+
+    -- done
+    local ok, errors = os.mv(src, dst)
+    if not ok then
+        utils.error(errors)
+        utils.abort()
+    end
+
+end
+
+-- remove file or directory
+function sandbox_builtin_os.rm(file_or_dir, emptydir)
+    
+    -- check
+    assert(file_or_dir)
+
+    -- done
+    local ok, errors = os.rm(file_or_dir, emptydir)
+    if not ok then
+        utils.error(errors)
+        utils.abort()
+    end
+
+end
+
+-- change to directory
+function sandbox_builtin_os.cd(dir)
+
+    -- check
+    assert(dir)
+
+    -- done
+    local ok, errors = os.cd(dir)
+    if not ok then
+        utils.error(errors)
+        utils.abort()
+    end
+
+end
+
+-- register some public interfaces
+sandbox_builtin_os.match    = os.match
+sandbox_builtin_os.isdir    = os.isdir
+sandbox_builtin_os.isfile   = os.isfile
+sandbox_builtin_os.curdir   = os.curdir
+
+-- return module
+return sandbox_builtin_os
 
