@@ -48,7 +48,7 @@ function sandbox._traceback(errors)
         local info = debug.getinfo(level, "Sln")
 
         -- end?
-        if not info or (info.name and info.name == "xpcall") then
+        if not info or (info.name and (info.name == "xpcall" or info.name == "load")) then
             break
         end
 
