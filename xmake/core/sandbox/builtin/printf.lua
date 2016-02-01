@@ -20,9 +20,6 @@
 -- @file        printf.lua
 --
 
--- load modules
-local utils = require("base/utils")
-
 -- load module
-return utils.printf
+return require("sandbox/builtin/utils").printf
 
