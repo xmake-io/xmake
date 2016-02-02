@@ -29,6 +29,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local filter    = require("base/filter")
 local sandbox   = require("base/sandbox")
 
 -- traceback
@@ -255,44 +256,23 @@ function interpreter._clear(self)
 end
 
 -- filter values
-function interpreter._filter(self, values, filter)
+function interpreter._filter(self, values)
 
     -- check
-    assert(self and values and filter)
+    assert(self and values)
 
-    -- replace value
-    local replace = function (value)
-
-        -- replace the builtin variables
-        return (value:gsub("%$%((.-)%)", function (variable) 
-
-            -- check
-            assert(variable)
-                                        
-            -- is upper?
-            local isupper = false
-            local c = string.char(variable:byte())
-            if c >= 'A' and c <= 'Z' then isupper = true end
-
-            -- filter it
-            local result = filter(variable:lower())
-
-            -- convert to upper?
-            if isupper and result and type(result) == "string" then
-                result = result:upper() 
-            end
-
-            -- ok?
-            return result
-        end))
+    -- return values directly if no filter
+    local _filter = self._PRIVATE._FILTER
+    if _filter == nil then
+        return values
     end
 
     -- done
     local results = {}
     if table.is_dictionary(values) then
-        -- replace keyvalues
+        -- filter keyvalues
         for key, value in pairs(values) do
-            results[replace(key)] = replace(value)
+            results[_filter:handle(key)] = _filter:handle(value)
         end
     else
         for _, value in ipairs(utils.wrap(values)) do
@@ -300,8 +280,8 @@ function interpreter._filter(self, values, filter)
             -- string?
             if type(value) == "string" then
                 
-                -- replace value
-                value = replace(value)
+                -- filter value
+                value = _filter:handle(value)
 
             -- array?
             elseif table.is_array(value) then
@@ -309,7 +289,7 @@ function interpreter._filter(self, values, filter)
                 -- replace values
                 local values = {}
                 for _, v in ipairs(value) do
-                    table.insert(values, replace(v))
+                    table.insert(values, _filter:handle(v))
                 end
                 value = values
             end
@@ -324,7 +304,7 @@ function interpreter._filter(self, values, filter)
 end
 
 -- handle scope
-function interpreter._handle(self, scope, remove_repeat, enable_filter, filter)
+function interpreter._handle(self, scope, remove_repeat, enable_filter)
 
     -- check
     assert(scope)
@@ -339,8 +319,8 @@ function interpreter._handle(self, scope, remove_repeat, enable_filter, filter)
         end
 
         -- filter values
-        if filter and enable_filter then
-            values = self:_filter(values, filter)
+        if enable_filter then
+            values = self:_filter(values)
         end
 
         -- unwrap it if be only one
@@ -363,9 +343,6 @@ function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
     -- the scopes
     local scopes = self._PRIVATE._SCOPES
     assert(scopes and scopes._ROOT)
-
-    -- the filter
-    local filter = self._PRIVATE._FILTER
 
     -- make results
     local results = {}
@@ -409,13 +386,13 @@ function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
             end
 
             -- add this scope
-            results[scope_name] = self:_handle(scope_values, remove_repeat, enable_filter, filter)
+            results[scope_name] = self:_handle(scope_values, remove_repeat, enable_filter)
         end
 
     else
 
         -- only uses the root scope kind
-        results = self:_handle(scopes._ROOT["__rootkind"], remove_repeat, enable_filter, filter)
+        results = self:_handle(scopes._ROOT["__rootkind"], remove_repeat, enable_filter)
 
     end
 
@@ -507,14 +484,13 @@ function interpreter.mtimes(self)
 end
 
 -- set filter
-function interpreter.filter_set(self, filter)
+function interpreter.filter_set(self, _filter)
 
     -- check
     assert(self and self._PRIVATE)
-    assert(filter == nil or type(filter) == "function")
 
-    -- set it
-    self._PRIVATE._FILTER = filter
+    -- set filter
+    self._PRIVATE._FILTER = _filter
 end
 
 -- set root directory
