@@ -31,6 +31,7 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local table         = require("base/table")
 local config        = require("base/config")
+local filter        = require("base/filter")
 local linker        = require("base/linker")
 local compiler      = require("base/compiler")
 local platform      = require("base/platform")
@@ -450,22 +451,27 @@ function project._interpreter()
     interp:api_register("add_pkgs", interpreter.api_builtin_add_subdirs)
 
     -- set filter
-    interp:filter_set(function (variable)
+    interp:filter_set(filter.init(function (variable)
+
+        -- check
+        assert(variable)
 
         -- attempt to get it directly from the configure
         local result = config.get(variable)
         if not result or type(result) ~= "string" then 
 
-            -- get the other keys
+            -- $(projectdir)
             if variable == "projectdir" then result = xmake._PROJECT_DIR
+            -- $(os)
             elseif variable == "os" then result = platform.os()
+            -- $(prefix): pass to makeconf
+            elseif variable == "prefix" then result = "$(prefix)"
             end 
         end
 
         -- ok?
         return result
-
-    end)
+    end))
 
     -- save interpreter
     project._INTERPRETER = interp

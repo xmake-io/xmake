@@ -22,6 +22,7 @@
 
 -- load modules
 local string = require("base/string")
+local filter = require("base/filter")
 
 -- define module
 local sandbox_builtin_string = sandbox_builtin_string or {}
@@ -29,8 +30,9 @@ local sandbox_builtin_string = sandbox_builtin_string or {}
 -- format string with the builtin variables
 function sandbox_builtin_string.vformat(format, ...)
 
-    -- done
-    return string.format(format, ...)
+    -- TODO
+    -- format and filter it
+--    return filter.done(string.format(format, ...), filter.handler_for_project)
 end
 
 -- inherit the public interfaces of string
