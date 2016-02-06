@@ -34,9 +34,8 @@ local global    = require("base/global")
 function platform._load_directories()
 
     -- load platform directories
-    return  {   path.join(config.directory(), "platforms")
-            ,   path.join(global.directory(), "platforms")
-            ,   path.join(xmake._PROGRAM_DIR, "platforms")
+    return  {   path.join(global.directory(), "platforms")
+            ,   path.join(xmake._CORE_DIR, "platforms")
             }
 end
 
