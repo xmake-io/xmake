@@ -104,7 +104,7 @@ end
 function sandbox._init()
 
     -- init an sandbox instance
-    local self = {_PUBLIC = {}}
+    local self = {_PUBLIC = {}, _PRIVATE = {}}
 
     -- inherit the interfaces of sandbox
     for k, v in pairs(sandbox) do
@@ -142,25 +142,42 @@ function sandbox._init()
     -- register import() for importing the extensional sandbox modules
     self:_api_register("import", sandbox._api_builtin_import)
 
+    -- save self
+    setmetatable(self._PUBLIC, {    __index = function (tbl, key)
+                                        if type(key) == "string" and key == "_SANDBOX" and rawget(tbl, "_SANDBOX_READABLE") then
+                                            return self
+                                        end
+                                        return rawget(tbl, key)
+                                    end
+                                ,   __newindex = function (tbl, key, val)
+                                        if type(key) == "string" and (key == "_SANDBOX" or key == "_SANDBOX_READABLE") then
+                                            return 
+                                        end
+                                        rawset(tbl, key, val)
+                                    end}) 
+
     -- ok?
     return self
 end
 
--- load script in the sandbox
-function sandbox.load(script, ...)
+-- bind script into the sandbox
+function sandbox.bind(script, filter)
 
     -- init self 
     local self = sandbox._init()
 
     -- check
-    assert(self and self._PUBLIC)
+    assert(self and self._PUBLIC and self._PRIVATE)
+
+    -- save filter
+    self._PRIVATE._FILTER = filter
 
     -- this script is file? load it first
     if type(script) == "string" then
     
         -- check
         if not os.isfile(script) then
-            return false, string.format("the script file(%s) not found!", script)
+            return nil, string.format("the script file(%s) not found!", script)
         end
 
         -- load it
@@ -176,25 +193,77 @@ function sandbox.load(script, ...)
                 script = script.main
             end
         else
-            return false, errors
+            return nil, errors
         end
     end
 
     -- no script?
     if script == nil then
-        return false, "no script!"
+        return nil, "no script!"
     end
 
     -- invalid script?
     if script ~= nil and type(script) ~= "function" then
-        return false, "invalid script!"
+        return nil, "invalid script!"
     end
 
     -- bind public scope
     setfenv(script, self._PUBLIC)
 
+    -- ok
+    return script
+end
+
+-- load script in the sandbox
+function sandbox.load(script, ...)
+
     -- load script
     return xpcall(script, sandbox._traceback, ...)
+end
+
+-- get filter from the given sandbox
+function sandbox.filter(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- get it
+    return self._PRIVATE._FILTER
+end
+
+-- get current instance in the sandbox modules
+function sandbox.instance()
+
+    -- find self instance for the current sandbox
+    local instance = nil
+    local level = 2
+    while level < 16 do
+
+        -- get scope
+        local scope = getfenv(level)
+        if scope then
+
+            -- enable to read _SANDBOX
+            rawset(scope, "_SANDBOX_READABLE", true)
+            
+            -- attempt to get it
+            instance = scope._SANDBOX
+
+            -- disable to read _SANDBOX
+            rawset(scope, "_SANDBOX_READABLE", nil)
+        end
+
+        -- found?
+        if instance then
+            break
+        end
+
+        -- next
+        level = level + 1
+    end
+
+    -- ok?
+    return instance 
 end
 
 -- return module: sandbox
