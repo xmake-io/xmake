@@ -238,17 +238,13 @@ function template.create(language, templateid, targetname)
         end
     end
 
-    -- check
-    if not module.createscript then
-        utils.error("please set_createscript() first!")
-        return false
-    end
-
     -- create project
-    local ok, errors = sandbox.load(module.createscript)
-    if not ok then
-        utils.errors(errors)
-        return false
+    if module.createscript then
+        local ok, errors = sandbox.load(module.createscript)
+        if not ok then
+            utils.errors(errors)
+            return false
+        end
     end
 
     -- ok
