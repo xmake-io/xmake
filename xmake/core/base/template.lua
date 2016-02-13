@@ -30,6 +30,7 @@ local path          = require("base/path")
 local table         = require("base/table")
 local utils         = require("base/utils")
 local string        = require("base/string")
+local filter        = require("base/filter")
 local interpreter   = require("base/interpreter")
 
 -- get interpreter
@@ -205,7 +206,7 @@ function template.create(language, templateid, targetname)
     assert(interp) 
 
     -- set filter
-    interp:filter_set(function (variable)
+    interp:filter_set(filter.init(function (variable)
 
         -- replace targetname
         if variable == "targetname" then 
@@ -218,7 +219,7 @@ function template.create(language, templateid, targetname)
         -- ok?
         return variable
 
-    end)
+    end))
 
     -- load all templates for the given language
     local templates = template.loadall(language)

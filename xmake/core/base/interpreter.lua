@@ -29,7 +29,6 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local filter    = require("base/filter")
 local sandbox   = require("base/sandbox")
 
 -- traceback
@@ -262,8 +261,8 @@ function interpreter._filter(self, values)
     assert(self and values)
 
     -- return values directly if no filter
-    local _filter = self._PRIVATE._FILTER
-    if _filter == nil then
+    local filter = self._PRIVATE._FILTER
+    if filter == nil then
         return values
     end
 
@@ -272,7 +271,7 @@ function interpreter._filter(self, values)
     if table.is_dictionary(values) then
         -- filter keyvalues
         for key, value in pairs(values) do
-            results[_filter:handle(key)] = _filter:handle(value)
+            results[filter:handle(key)] = filter:handle(value)
         end
     else
         for _, value in ipairs(utils.wrap(values)) do
@@ -281,7 +280,7 @@ function interpreter._filter(self, values)
             if type(value) == "string" then
                 
                 -- filter value
-                value = _filter:handle(value)
+                value = filter:handle(value)
 
             -- array?
             elseif table.is_array(value) then
@@ -289,7 +288,7 @@ function interpreter._filter(self, values)
                 -- replace values
                 local values = {}
                 for _, v in ipairs(value) do
-                    table.insert(values, _filter:handle(v))
+                    table.insert(values, filter:handle(v))
                 end
                 value = values
             end
@@ -484,13 +483,13 @@ function interpreter.mtimes(self)
 end
 
 -- set filter
-function interpreter.filter_set(self, _filter)
+function interpreter.filter_set(self, filter)
 
     -- check
     assert(self and self._PRIVATE)
 
     -- set filter
-    self._PRIVATE._FILTER = _filter
+    self._PRIVATE._FILTER = filter
 end
 
 -- set root directory
