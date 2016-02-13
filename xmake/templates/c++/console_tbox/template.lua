@@ -10,6 +10,11 @@ add_macros("targetname", "$(targetname)")
 -- add macro files
 add_macrofiles("src/xmake.lua")
 
--- add copy directories
-add_copydirs("$(packagesdir)/tbox.pkg", "pkg/tbox.pkg")
-add_copydirs("$(packagesdir)/base.pkg", "pkg/base.pkg")
+-- set create script
+set_createscript(function ()
+
+    -- copy packages
+    os.cp(vformat("$(packagesdir)/tbox.pkg"), "pkg/tbox.pkg")
+    os.cp(vformat("$(packagesdir)/base.pkg"), "pkg/base.pkg")
+
+end)
