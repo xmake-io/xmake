@@ -752,19 +752,16 @@ function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
     -- define implementation
     local implementation = function (self, scope, name, script)
 
-        -- check
-        if script == nil then
-            utils.error("set_%s(\"%s\"): no script", scope, name)
-            utils.abort()
-        end
-        if type(script) == "string" and not os.isfile(script) then
-            utils.error("set_%s(\"%s\"): scriptfile(%s) not found!", scope, name, script)
+        -- bind script and get new script with sandbox
+        local newscript, errors = sandbox.bind(script, self._PRIVATE._FILTER)
+        if not newscript then
+            utils.error("set_%s(\"%s\"): %s", scope, name, errors)
             utils.abort()
         end
 
         -- update script?
         scope[name] = {}
-        table.insert(scope[name], script)
+        table.insert(scope[name], newscript)
 
     end
 

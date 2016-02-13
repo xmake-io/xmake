@@ -21,8 +21,8 @@
 --
 
 -- load modules
-local string = require("base/string")
-local filter = require("base/filter")
+local string    = require("base/string")
+local sandbox   = require("base/sandbox")
 
 -- define module
 local sandbox_builtin_string = sandbox_builtin_string or {}
@@ -30,9 +30,25 @@ local sandbox_builtin_string = sandbox_builtin_string or {}
 -- format string with the builtin variables
 function sandbox_builtin_string.vformat(format, ...)
 
-    -- TODO
-    -- format and filter it
---    return filter.done(string.format(format, ...), filter.handler_for_project)
+    -- check
+    assert(format)
+
+    -- get the current sandbox instance
+    local instance = sandbox.instance()
+    assert(instance)
+
+    -- format string
+    local result = string.format(format, ...)
+    assert(result)
+
+    -- get filter from the current sandbox
+    local filter = instance:filter()
+    if filter then
+        result = filter:handle(result)
+    end
+
+    -- ok?
+    return result
 end
 
 -- inherit the public interfaces of string
