@@ -31,6 +31,7 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local string        = require("base/string")
 local filter        = require("base/filter")
+local sandbox       = require("base/sandbox")
 local interpreter   = require("base/interpreter")
 
 -- get interpreter
@@ -53,51 +54,16 @@ function template._interpreter()
     interp:api_register_add_values(nil, nil,    "macrofiles")
 
     -- register api: add_keyvalues() for root
-    interp:api_register_add_keyvalues(nil, nil, "macros"
-                                            ,   "copydirs"
-                                            ,   "movedirs")
+    interp:api_register_add_keyvalues(nil, nil, "macros")
+
+    -- register api: set_script() for root
+    interp:api_register_set_script(nil, nil,    "createscript")
 
     -- save interpreter
     template._INTERPRETER = interp
 
     -- ok?
     return interp
-end
-
--- copy directories
-function template._copydirs(copydirs)
-
-    -- check
-    assert(copydirs)
-
-    -- copy them
-    for srcdir, dstdir in pairs(copydirs) do
-        local ok, errors = os.cp(srcdir, dstdir)
-        if not ok then
-            return false, errors
-        end
-    end
-
-    -- ok
-    return true
-end
-
--- move directories
-function template._movedirs(movedirs)
-
-    -- check
-    assert(movedirs)
-
-    -- copy them
-    for srcdir, dstdir in pairs(movedirs) do
-        local ok, errors = os.mv(srcdir, dstdir)
-        if not ok then
-            return false, errors
-        end
-    end
-
-    -- ok
-    return true
 end
 
 -- replace macros
@@ -208,13 +174,19 @@ function template.create(language, templateid, targetname)
     -- set filter
     interp:filter_set(filter.init(function (variable)
 
-        -- replace targetname
-        if variable == "targetname" then 
-            variable = targetname
-        -- replace packagesdir
-        elseif variable == "packagesdir" then
-            variable = xmake._PACKAGES_DIR
-        end 
+        -- init maps
+        local maps = 
+        {
+            targetname  = targetname
+        ,   projectdir  = xmake._PROJECT_DIR
+        ,   packagesdir = xmake._PACKAGES_DIR
+        }
+
+        -- map it
+        local result = maps[variable]
+        if result ~= nil then
+            return result
+        end
 
         -- ok?
         return variable
@@ -240,6 +212,7 @@ function template.create(language, templateid, targetname)
     if not module.projectdir or not os.isdir(module.projectdir) then
         return false, string.format("the template project not exists!")
     end
+    
 
     -- ensure the project directory 
     if not os.isdir(xmake._PROJECT_DIR) then 
@@ -257,28 +230,25 @@ function template.create(language, templateid, targetname)
         return false, string.format("can not enter %s!", xmake._PROJECT_DIR)
     end
 
-    -- copy directories
-    if module.copydirs then
-        ok, errors = template._copydirs(module.copydirs)
-        if not ok then
-            return false, errors
-        end
-    end
-
-    -- move directories
-    if module.movedirs then
-        ok, errors = template._movedirs(module.movedirs)
-        if not ok then
-            return false, errors
-        end
-    end
-
     -- replace macros
     if module.macros and module.macrofiles then
         ok, errors = template._replace(module.macros, module.macrofiles)
         if not ok then
             return false, errors
         end
+    end
+
+    -- check
+    if not module.createscript then
+        utils.error("please set_createscript() first!")
+        return false
+    end
+
+    -- create project
+    local ok, errors = sandbox.load(module.createscript)
+    if not ok then
+        utils.errors(errors)
+        return false
     end
 
     -- ok

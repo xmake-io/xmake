@@ -460,13 +460,17 @@ function project._interpreter()
         local result = config.get(variable)
         if not result or type(result) ~= "string" then 
 
-            -- $(projectdir)
-            if variable == "projectdir" then result = xmake._PROJECT_DIR
-            -- $(os)
-            elseif variable == "os" then result = platform.os()
-            -- $(prefix): pass to makeconf
-            elseif variable == "prefix" then result = "$(prefix)"
-            end 
+            -- init maps
+            local maps = 
+            {
+                os          = platform.os()
+            ,   prefix      = "$(prefix)"
+            ,   projectdir  = xmake._PROJECT_DIR
+            }
+
+            -- map it
+            result = maps[variable]
+
         end
 
         -- ok?
