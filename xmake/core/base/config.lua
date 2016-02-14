@@ -26,6 +26,7 @@ local config = config or {}
 -- load modules
 local io            = require("base/io")
 local os            = require("base/os")
+local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local global        = require("base/global")
@@ -83,7 +84,7 @@ end
 function config._file()
  
     -- get it
-    return config.directory() .. "/xmake.conf"
+    return path.join(config.directory(), "xmake.conf")
 end
 
 -- need configure?
@@ -172,7 +173,7 @@ end
 function config.directory()
 
     -- the directory
-    local dir = xmake._PROJECT_DIR .. "/.xmake"
+    local dir = path.join(xmake._PROJECT_DIR, ".xmake")
 
     -- create it directly first if not exists
     if not os.isdir(dir) then
