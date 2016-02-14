@@ -1,5 +1,5 @@
 -- the base package
-add_option("base")
+def_option("base")
     
     -- set category
     set_option_category("package")

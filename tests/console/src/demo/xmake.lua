@@ -1,5 +1,5 @@
 
-add_target("demo_c")
+def_target("demo_c")
     set_kind("binary")
     add_deps("hello1")
     add_files("*.c")
@@ -14,7 +14,7 @@ add_target("demo_c")
     if options("option3") then add_defines("OPTION3") end
     if options("option4") then add_defines("OPTION4") end
 
-add_target("demo_cpp")
+def_target("demo_cpp")
     set_kind("binary")
     add_deps("hello2") 
     add_files("*.cpp")
@@ -31,7 +31,7 @@ add_target("demo_cpp")
 
     if plats("macosx", "ios") then
 
-        add_target("demo_objc")
+        def_target("demo_objc")
             set_kind("binary")
             add_deps("hello3") 
             add_files("*.m")
@@ -40,7 +40,7 @@ add_target("demo_cpp")
             add_includedirs("$(buildir)/inc") 
             add_mflags("-DHELLO3", "-DPLAT=\"macosx\"", "-DARCH='armv7, arm64'")
 
-        add_target("demo_objcpp")
+        def_target("demo_objcpp")
             set_kind("binary")
             add_deps("hello3")
             add_files("*.mm")
@@ -52,6 +52,6 @@ add_target("demo_cpp")
             end
     end
 
-add_target("demo_swift")
+def_target("demo_swift")
     set_kind("binary")
     add_files("*.swift")

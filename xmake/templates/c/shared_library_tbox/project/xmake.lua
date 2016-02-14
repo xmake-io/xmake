@@ -105,7 +105,7 @@ if plats("windows") then
 end
 
 -- add option: demo
-add_option("demo")
+def_option("demo")
     set_option_enable(true)
     set_option_showmenu(true)
     set_option_category("option")
