@@ -1,5 +1,5 @@
 -- add target
-add_target("[targetname]")
+def_target("[targetname]")
 
     -- set kind
     set_kind("static")

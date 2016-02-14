@@ -149,7 +149,7 @@ function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
     local scope = interp:scope_save()
 
     -- make option
-    interp:api_call("add_option", name)
+    interp:api_call("def_option", name)
     interp:api_call("set_option_category", "cfuncs")
     interp:api_call("add_option_cfuncs", cfunc)
     if links then interp:api_call("add_option_links", links) end
@@ -195,7 +195,7 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
         local scope = interp:scope_save()
 
         -- make option
-        interp:api_call("add_option", name)
+        interp:api_call("def_option", name)
         interp:api_call("set_option_category", "cfuncs")
         interp:api_call("add_option_cfuncs", cfunc)
         if links then interp:api_call("add_option_links", links) end
@@ -236,7 +236,7 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
     local scope = interp:scope_save()
 
     -- make option
-    interp:api_call("add_option", name)
+    interp:api_call("def_option", name)
     interp:api_call("set_option_category", "cxxfuncs")
     interp:api_call("add_option_cxxfuncs", cxxfunc)
     if links then interp:api_call("add_option_links", links) end
@@ -282,7 +282,7 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
         local scope = interp:scope_save()
 
         -- make option
-        interp:api_call("add_option", name)
+        interp:api_call("def_option", name)
         interp:api_call("set_option_category", "cxxfuncs")
         interp:api_call("add_option_cxxfuncs", cxxfunc)
         if links then interp:api_call("add_option_links", links) end

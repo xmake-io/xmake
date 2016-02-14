@@ -22,7 +22,7 @@ if modes("release") then
 end
 
 -- add target
-add_target("[targetname]")
+def_target("[targetname]")
 
     -- set kind
     set_kind("static")
@@ -31,7 +31,7 @@ add_target("[targetname]")
     add_files("src/interface.c") 
 
 -- add target
-add_target("test")
+def_target("test")
 
     -- set kind
     set_kind("binary")

@@ -27,7 +27,7 @@ It is similar to cmake, automake, premake, but more convenient and easy to use.
 	```lua
 	
 	-- xmake.lua
-    add_target("console")
+    def_target("console")
 
         -- set kind
         set_kind("binary")
@@ -50,7 +50,7 @@ create a c++ console project：
 project makefile：xmake.lua
 
 ```lua
-add_target("console")
+def_target("console")
     set_kind("binary")
     add_files("src/*.c") 
 ```
@@ -146,7 +146,7 @@ if modes("release") then
 end
 
 -- add target
-add_target("test")
+def_target("test")
 
     -- set kind
     set_kind("static")
@@ -240,7 +240,7 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 工程描述文件：xmake.lua
 
 ```lua
-add_target("console")
+def_target("console")
     set_kind("binary")
     add_files("src/*.c") 
 ```
@@ -352,7 +352,7 @@ if modes("release") then
 end
 
 -- add target
-add_target("test")
+def_target("test")
 
     -- set kind
     set_kind("static")
