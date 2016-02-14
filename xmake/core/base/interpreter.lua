@@ -523,9 +523,9 @@ function interpreter.api_register_builtin(self, name, func)
     self._PUBLIC[name] = func
 end
 
--- register api for set_scope()
+-- register api for def_scope()
 --
--- interp:api_register_set_scope("scope_kind1", "scope_kind2")
+-- interp:api_register_def_scope("scope_kind1", "scope_kind2")
 --
 -- api:
 --   set_$(scope_kind1)("scope_name1")
@@ -563,6 +563,35 @@ end
 --      }
 -- }
 --
+function interpreter.api_register_def_scope(self, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scopes, scope_kind, scope_name)
+
+        -- init scope for kind
+        local scope_for_kind = scopes[scope_kind] or {}
+        scopes[scope_kind] = scope_for_kind
+
+        -- init scope for name
+        scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
+
+        -- save the current scope
+        scopes._CURRENT = scope_for_kind[scope_name]
+
+        -- update the current scope kind
+        scopes._CURRENT_KIND = scope_kind
+
+    end
+
+    -- register implementation
+    self:_api_register_xxx_scope("def", implementation, ...)
+end
+
+-- TODO: we will remove the deprecated api in the future 
+-- register api for set_scope()
 function interpreter.api_register_set_scope(self, ...)
 
     -- check
@@ -574,6 +603,11 @@ function interpreter.api_register_set_scope(self, ...)
         -- init scope for kind
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
+
+        -- warning
+        if not scope_name:startswith("__") then
+            utils.warning("please uses def_%s(\"%s\"), \"set_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
+        end
 
         -- check 
         if not scope_for_kind[scope_name] then
@@ -597,6 +631,7 @@ function interpreter.api_register_set_scope(self, ...)
     self:_api_register_xxx_scope("set", implementation, ...)
 end
 
+-- TODO: we will remove the deprecated api in the future 
 -- register api for add_scope()
 function interpreter.api_register_add_scope(self, ...)
 
@@ -609,6 +644,11 @@ function interpreter.api_register_add_scope(self, ...)
         -- init scope for kind
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
+
+        -- warning
+        if not scope_name:startswith("__") then
+            utils.warning("please uses def_%s(\"%s\"), \"add_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
+        end
 
         -- check 
         if scope_for_kind[scope_name] then

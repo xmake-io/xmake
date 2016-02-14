@@ -326,12 +326,14 @@ function project._interpreter()
     -- set root directory
     interp:rootdir_set(xmake._PROJECT_DIR)
 
+    -- TODO: we will remove the deprecated api in the future 
     -- register api: set_target() and set_option()
     interp:api_register_set_scope("target", "option")
-
-    -- register api: add_target() and add_option()
     interp:api_register_add_scope("target", "option")
     
+    -- register api: def_target() and def_option()
+    interp:api_register_def_scope("target", "option")
+
     -- register api: set_script() for target
     interp:api_register_set_script("target", nil,           "runscript"
                                                         ,   "installscript"
