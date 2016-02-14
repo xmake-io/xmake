@@ -72,24 +72,6 @@ function sandbox._traceback(errors)
     return results
 end
 
--- import module
-function sandbox._api_builtin_import(self, module)
-
-    -- import 
-    return require("sandbox/" .. module)
-end
-
--- register api 
-function sandbox._api_register(self, name, func)
-
-    -- check
-    assert(self and self._PUBLIC)
-    assert(name and func)
-
-    -- register it
-    self._PUBLIC[name] = function (...) return func(self, ...) end
-end
-
 -- register api for builtin
 function sandbox._api_register_builtin(self, name, func)
 
@@ -138,9 +120,6 @@ function sandbox._init()
             end
         end
     end
-
-    -- register import() for importing the extensional sandbox modules
-    self:_api_register("import", sandbox._api_builtin_import)
 
     -- save self
     setmetatable(self._PUBLIC, {    __index = function (tbl, key)
