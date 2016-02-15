@@ -62,7 +62,7 @@ tb_int_t xm_os_setenv(lua_State* lua)
     if (p)
     {
         // init filter
-        tb_bloom_filter_ref_t filter = tb_bloom_filter_init(TB_BLOOM_FILTER_PROBABILITY_0_1, 1, 32, tb_element_str(tb_true));
+        tb_hash_set_ref_t filter = tb_hash_set_init(8, tb_element_str(tb_true));
 
         // init environment 
         tb_char_t               data[TB_PATH_MAXN];
@@ -85,10 +85,13 @@ tb_int_t xm_os_setenv(lua_State* lua)
                     data[size] = '\0';
 
                     // have been not inserted?
-                    if (!filter || tb_bloom_filter_set(filter, data)) 
+                    if (!filter || !tb_hash_set_get(filter, data)) 
                     {
                         // append the environment 
                         tb_environment_insert(environment, data, tb_false);
+
+                        // save it to the filter
+                        tb_hash_set_insert(filter, data);
                     }
                 }
 
@@ -110,7 +113,7 @@ tb_int_t xm_os_setenv(lua_State* lua)
         }
 
         // exit filter
-        if (filter) tb_bloom_filter_exit(filter);
+        if (filter) tb_hash_set_exit(filter);
         filter = tb_null;
     }
     // only one?
