@@ -7,10 +7,10 @@ PRO_NAME 			= xmake
 PRO_VERSION_MAJOR 	= 1
 
 # the project minor version
-PRO_VERSION_MINOR 	= 0
+PRO_VERSION_MINOR 	= 1
 
 # the project alter version
-PRO_VERSION_ALTER 	= 5
+PRO_VERSION_ALTER 	= 0
 
 # the project prefix
 PRO_PREFIX 			= XM_
