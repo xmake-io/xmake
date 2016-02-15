@@ -9,6 +9,5 @@ install:
 
 script:
   - xmake create -P ./test 
-  - cd ./test
-  - xmake -v
+  - xmake -P ./test
   - ./tests/tests
