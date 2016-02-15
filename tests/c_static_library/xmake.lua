@@ -22,11 +22,29 @@ if modes("release") then
 end
 
 -- add target
-def_target("[targetname]")
+def_target("c_static_library")
+
+    -- set kind
+    set_kind("static")
+
+    -- add files
+    add_files("src/interface.c") 
+
+-- add target
+def_target("test")
 
     -- set kind
     set_kind("binary")
 
+    -- add deps
+    add_deps("c_static_library")
+
     -- add files
-    add_files("src/*.cpp") 
+    add_files("src/test.c") 
+
+    -- add links
+    add_links("c_static_library")
+
+    -- add link directory
+    add_linkdirs("$(buildir)")
 

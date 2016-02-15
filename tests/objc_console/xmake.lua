@@ -21,12 +21,23 @@ if modes("release") then
     set_strip("all")
 end
 
+-- for macosx or ios
+if os("macosx", "ios") then
+
+    -- add framework
+    add_mxflags("-framework Foundation", "-framework CoreFoundation")
+    add_ldflags("-framework Foundation", "-framework CoreFoundation")
+
+    -- enable arc?
+    add_mxflags("-fobjc-arc")
+end
+
 -- add target
-def_target("[targetname]")
+def_target("objc_console")
 
     -- set kind
     set_kind("binary")
 
     -- add files
-    add_files("src/*.cpp") 
+    add_files("src/*.m") 
 

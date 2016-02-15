@@ -11,3 +11,4 @@ script:
   - xmake create -P ./test 
   - cd ./test
   - xmake -v
+  - ./tests/tests
