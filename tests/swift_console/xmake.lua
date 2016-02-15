@@ -22,11 +22,11 @@ if modes("release") then
 end
 
 -- add target
-def_target("[targetname]")
+def_target("swift_console")
 
     -- set kind
     set_kind("binary")
 
     -- add files
-    add_files("src/*.cpp") 
+    add_files("src/*.swift") 
 

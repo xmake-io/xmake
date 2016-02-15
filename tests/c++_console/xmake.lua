@@ -22,7 +22,7 @@ if modes("release") then
 end
 
 -- add target
-def_target("[targetname]")
+def_target("cpp_console")
 
     -- set kind
     set_kind("binary")

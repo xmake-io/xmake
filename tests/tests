@@ -1,0 +1,28 @@
+#!/bin/bash
+
+function exec() 
+{
+    echo $1
+    eval $1 $2
+    if [ $? -ne 0 ]
+        then exit
+    fi
+    echo ""
+}
+
+verbose=$1
+
+exec "xmake -r -P ./tests/c_console" $verbose
+exec "xmake -r -P ./tests/c_static_library" $verbose
+exec "xmake -r -P ./tests/c_shared_library" $verbose
+
+exec "xmake -r -P ./tests/c++_console" $verbose
+exec "xmake -r -P ./tests/c++_static_library" $verbose
+exec "xmake -r -P ./tests/c++_shared_library" $verbose
+
+uname=`uname`
+if [ $uname = "Darwin" ] || [ `uname | egrep -i darwin` ]; then
+    exec "xmake -r -P ./tests/objc_console" $verbose
+    exec "xmake -r -P ./tests/objc++_console" $verbose
+    exec "xmake -r -P ./tests/swift_console" $verbose
+fi
