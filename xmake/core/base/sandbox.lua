@@ -140,7 +140,10 @@ function sandbox._init()
 end
 
 -- bind script into the sandbox
-function sandbox.bind(script, filter)
+function sandbox.bind(script, interp)
+
+    -- check
+    assert(script and interp)
 
     -- init self 
     local self = sandbox._init()
@@ -149,7 +152,7 @@ function sandbox.bind(script, filter)
     assert(self and self._PUBLIC and self._PRIVATE)
 
     -- save filter
-    self._PRIVATE._FILTER = filter
+    self._PRIVATE._FILTER = interp:filter()
 
     -- this script is file? load it first
     if type(script) == "string" then
