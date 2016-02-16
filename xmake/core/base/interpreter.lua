@@ -600,7 +600,7 @@ function interpreter.api_register_def_scope(self, ...)
     self:_api_register_xxx_scope("def", implementation, ...)
 end
 
--- TODO: we will remove the deprecated api in the future 
+-- TODO: deprecated
 -- register api for set_scope()
 function interpreter.api_register_set_scope(self, ...)
 
@@ -641,7 +641,7 @@ function interpreter.api_register_set_scope(self, ...)
     self:_api_register_xxx_scope("set", implementation, ...)
 end
 
--- TODO: we will remove the deprecated api in the future 
+-- TODO: deprecated
 -- register api for add_scope()
 function interpreter.api_register_add_scope(self, ...)
 
