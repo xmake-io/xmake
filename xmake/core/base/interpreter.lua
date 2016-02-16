@@ -482,6 +482,16 @@ function interpreter.mtimes(self)
     return self._PRIVATE._MTIMES
 end
 
+-- get filter
+function interpreter.filter(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- get filter
+    return self._PRIVATE._FILTER
+end
+
 -- set filter
 function interpreter.filter_set(self, filter)
 
@@ -792,7 +802,7 @@ function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
     local implementation = function (self, scope, name, script)
 
         -- bind script and get new script with sandbox
-        local newscript, errors = sandbox.bind(script, self._PRIVATE._FILTER)
+        local newscript, errors = sandbox.bind(script, self)
         if not newscript then
             utils.error("set_%s(\"%s\"): %s", scope, name, errors)
             utils.abort()
