@@ -143,7 +143,6 @@ sandbox_builtin_os.match    = os.match
 sandbox_builtin_os.isdir    = os.isdir
 sandbox_builtin_os.isfile   = os.isfile
 sandbox_builtin_os.curdir   = os.curdir
-sandbox_builtin_os.execute  = os.execute
 
 -- return module
 return sandbox_builtin_os

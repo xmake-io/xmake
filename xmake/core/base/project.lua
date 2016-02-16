@@ -326,7 +326,7 @@ function project._interpreter()
     -- set root directory
     interp:rootdir_set(xmake._PROJECT_DIR)
 
-    -- TODO: we will remove the deprecated api in the future 
+    -- TODO: deprecated
     -- register api: set_target() and set_option()
     interp:api_register_set_scope("target", "option")
     interp:api_register_add_scope("target", "option")
