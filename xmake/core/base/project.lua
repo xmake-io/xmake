@@ -38,7 +38,7 @@ local platform      = require("base/platform")
 local interpreter   = require("base/interpreter")
 
 -- the current os is belong to the given os?
-function project._api_os(interp, ...)
+function project._api_is_os(interp, ...)
 
     -- get the current os
     local os = platform.os()
@@ -53,7 +53,7 @@ function project._api_os(interp, ...)
 end
 
 -- the current mode is belong to the given modes?
-function project._api_modes(interp, ...)
+function project._api_is_mode(interp, ...)
 
     -- get the current mode
     local mode = config.get("mode")
@@ -68,7 +68,7 @@ function project._api_modes(interp, ...)
 end
 
 -- the current platform is belong to the given platforms?
-function project._api_plats(interp, ...)
+function project._api_is_plat(interp, ...)
 
     -- get the current platform
     local plat = config.get("plat")
@@ -83,7 +83,7 @@ function project._api_plats(interp, ...)
 end
 
 -- the current platform is belong to the given architectures?
-function project._api_archs(interp, ...)
+function project._api_is_arch(interp, ...)
 
     -- get the current architecture
     local arch = config.get("arch")
@@ -98,7 +98,7 @@ function project._api_archs(interp, ...)
 end
 
 -- the current kind is belong to the given kinds?
-function project._api_kinds(interp, ...)
+function project._api_is_kind(interp, ...)
 
     -- get the current kind
     local kind = config.get("kind")
@@ -113,7 +113,7 @@ function project._api_kinds(interp, ...)
 end
 
 -- enable options?
-function project._api_options(interp, ...)
+function project._api_is_option(interp, ...)
 
     -- some options are enabled?
     for _, o in ipairs(table.join(...)) do
@@ -121,6 +121,144 @@ function project._api_options(interp, ...)
             return true
         end
     end
+end
+
+-- TODO: deprecated
+-- the current os is belong to the given os?
+function project._api_os(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- warning
+    utils.warning("please uses is_os(\"%s\"), \"os()\" has been deprecated!", values)
+
+    -- done
+    return project._api_is_os(interp, ...)
+end
+
+-- TODO: deprecated
+-- the current mode is belong to the given modes?
+function project._api_modes(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- warning
+    utils.warning("please uses is_mode(\"%s\"), \"modes()\" has been deprecated!", values)
+
+    -- done
+    return project._api_is_mode(interp, ...)
+end
+
+-- TODO: deprecated
+-- the current platform is belong to the given platforms?
+function project._api_plats(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- warning
+    utils.warning("please uses is_plat(\"%s\"), \"plats()\" has been deprecated!", values)
+
+    -- done
+    return project._api_is_plat(interp, ...)
+end
+
+-- TODO: deprecated
+-- the current platform is belong to the given architectures?
+function project._api_archs(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- warning
+    utils.warning("please uses is_arch(\"%s\"), \"archs()\" has been deprecated!", values)
+
+    -- done
+    return project._api_is_arch(interp, ...)
+end
+
+-- TODO: deprecated
+-- the current kind is belong to the given kinds?
+function project._api_kinds(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- warning
+    utils.warning("please uses is_kind(\"%s\"), \"kinds()\" has been deprecated!", values)
+
+    -- done
+    return project._api_is_kind(interp, ...)
+end
+
+-- TODO: deprecated
+-- enable options?
+function project._api_options(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- warning
+    utils.warning("please uses is_option(\"%s\"), \"options()\" has been deprecated!", values)
+
+    -- done
+    return project._api_is_option(interp, ...)
 end
 
 -- add c function
@@ -149,7 +287,7 @@ function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
     local scope = interp:scope_save()
 
     -- make option
-    interp:api_call("def_option", name)
+    interp:api_call("option", name)
     interp:api_call("set_option_category", "cfuncs")
     interp:api_call("add_option_cfuncs", cfunc)
     if links then interp:api_call("add_option_links", links) end
@@ -195,7 +333,7 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
         local scope = interp:scope_save()
 
         -- make option
-        interp:api_call("def_option", name)
+        interp:api_call("option", name)
         interp:api_call("set_option_category", "cfuncs")
         interp:api_call("add_option_cfuncs", cfunc)
         if links then interp:api_call("add_option_links", links) end
@@ -236,7 +374,7 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
     local scope = interp:scope_save()
 
     -- make option
-    interp:api_call("def_option", name)
+    interp:api_call("option", name)
     interp:api_call("set_option_category", "cxxfuncs")
     interp:api_call("add_option_cxxfuncs", cxxfunc)
     if links then interp:api_call("add_option_links", links) end
@@ -282,7 +420,7 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
         local scope = interp:scope_save()
 
         -- make option
-        interp:api_call("def_option", name)
+        interp:api_call("option", name)
         interp:api_call("set_option_category", "cxxfuncs")
         interp:api_call("add_option_cxxfuncs", cxxfunc)
         if links then interp:api_call("add_option_links", links) end
@@ -331,8 +469,8 @@ function project._interpreter()
     interp:api_register_set_scope("target", "option")
     interp:api_register_add_scope("target", "option")
     
-    -- register api: def_target() and def_option()
-    interp:api_register_def_scope("target", "option")
+    -- register api: target() and option()
+    interp:api_register_scope("target", "option")
 
     -- register api: set_script() for target
     interp:api_register_set_script("target", nil,           "runscript"
@@ -416,23 +554,22 @@ function project._interpreter()
                                                         ,   "includedirs")
 
 
-    -- register api: os()
+    -- TODO: deprecated
+    -- register api: os(), kinds(), modes(), plats(), archs(), options()
     interp:api_register("os", project._api_os)
-
-    -- register api: kinds()
     interp:api_register("kinds", project._api_kinds)
-
-    -- register api: modes()
     interp:api_register("modes", project._api_modes)
-
-    -- register api: plats()
     interp:api_register("plats", project._api_plats)
-
-    -- register api: archs()
     interp:api_register("archs", project._api_archs)
-
-    -- register api: options()
     interp:api_register("options", project._api_options)
+
+    -- register api: is_os(), is_kind(), is_mode(), is_plat(), is_arch(), is_option()
+    interp:api_register("is_os", project._api_is_os)
+    interp:api_register("is_kind", project._api_is_kind)
+    interp:api_register("is_mode", project._api_is_mode)
+    interp:api_register("is_plat", project._api_is_plat)
+    interp:api_register("is_arch", project._api_is_arch)
+    interp:api_register("is_option", project._api_is_option)
 
     -- register api: add_cfunc()
     interp:api_register("add_cfunc", project._api_add_cfunc)

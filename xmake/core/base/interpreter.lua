@@ -78,7 +78,7 @@ function interpreter._api_register_xxx_scope(self, action, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
-    assert(action and apifunc)
+    assert(apifunc)
 
     -- done
     for _, apiname in ipairs({...}) do
@@ -86,8 +86,14 @@ function interpreter._api_register_xxx_scope(self, action, apifunc, ...)
         -- check
         assert(apiname)
 
+        -- the full name
+        local fullname = apiname
+        if action ~= nil then
+            fullname = action .. "_" .. apiname
+        end
+
         -- register scope api
-        self:api_register(action .. "_" .. apiname, function (self, ...) 
+        self:api_register(fullname, function (self, ...) 
        
             -- check
             assert(self and self._PRIVATE and apiname)
@@ -533,9 +539,9 @@ function interpreter.api_register_builtin(self, name, func)
     self._PUBLIC[name] = func
 end
 
--- register api for def_scope()
+-- register api for scope()
 --
--- interp:api_register_def_scope("scope_kind1", "scope_kind2")
+-- interp:api_register_scope("scope_kind1", "scope_kind2")
 --
 -- api:
 --   set_$(scope_kind1)("scope_name1")
@@ -573,7 +579,7 @@ end
 --      }
 -- }
 --
-function interpreter.api_register_def_scope(self, ...)
+function interpreter.api_register_scope(self, ...)
 
     -- check
     assert(self)
@@ -597,7 +603,7 @@ function interpreter.api_register_def_scope(self, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_scope("def", implementation, ...)
+    self:_api_register_xxx_scope(nil, implementation, ...)
 end
 
 -- TODO: deprecated
@@ -616,7 +622,7 @@ function interpreter.api_register_set_scope(self, ...)
 
         -- warning
         if not scope_name:startswith("__") then
-            utils.warning("please uses def_%s(\"%s\"), \"set_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
+            utils.warning("please uses %s(\"%s\"), \"set_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
         end
 
         -- check 
@@ -657,7 +663,7 @@ function interpreter.api_register_add_scope(self, ...)
 
         -- warning
         if not scope_name:startswith("__") then
-            utils.warning("please uses def_%s(\"%s\"), \"add_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
+            utils.warning("please uses %s(\"%s\"), \"add_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
         end
 
         -- check 

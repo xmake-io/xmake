@@ -1,6 +1,6 @@
  
 -- add tbox package
-def_option("tbox")
+option("tbox")
 
     -- show menu
     set_option_showmenu(true)
