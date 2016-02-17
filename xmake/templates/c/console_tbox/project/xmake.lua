@@ -12,7 +12,7 @@ add_cxflags("-Wno-error=deprecated-declarations")
 add_mxflags("-Wno-error=deprecated-declarations")
 
 -- the debug mode
-if modes("debug") then
+if is_mode("debug") then
     
     -- enable the debug symbols
     set_symbols("debug")
@@ -24,18 +24,18 @@ if modes("debug") then
     add_defines("__tb_debug__")
 
     -- attempt to enable some checkers for pc
-    if archs("i386", "x86_64") then
+    if is_arch("i386", "x86_64") then
         add_cxflags("-fsanitize=address", "-ftrapv")
         add_mxflags("-fsanitize=address", "-ftrapv")
         add_ldflags("-fsanitize=address")
     end
 end
 
--- the release or profile modes
-if modes("release", "profile") then
+-- the release or profile is_mode
+if is_mode("release", "profile") then
 
     -- the release mode
-    if modes("release") then
+    if is_mode("release") then
         
         -- set the symbols visibility: hidden
         set_symbols("hidden")
@@ -56,7 +56,7 @@ if modes("release", "profile") then
     end
 
     -- for pc
-    if archs("i386", "x86_64") then
+    if is_arch("i386", "x86_64") then
  
         -- enable fastest optimization
         set_optimize("fastest")
@@ -72,7 +72,7 @@ if modes("release", "profile") then
 end
 
 -- for embed
-if not archs("i386", "x86_64") then
+if not is_arch("i386", "x86_64") then
 
     -- add defines for small
     add_defines("__tb_small__")
@@ -85,13 +85,13 @@ end
 if plats("windows") then 
 
     -- the release mode
-    if modes("release") then
+    if is_mode("release") then
 
         -- link libcmt.lib
         add_cxflags("-MT") 
 
     -- the debug mode
-    elseif modes("debug") then
+    elseif is_mode("debug") then
 
         -- enable some checkers
         add_cxflags("-Gs", "-RTC1") 

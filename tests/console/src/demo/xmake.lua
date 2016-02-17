@@ -1,5 +1,5 @@
 
-def_target("demo_c")
+target("demo_c")
     set_kind("binary")
     add_deps("hello1")
     add_files("*.c")
@@ -8,13 +8,13 @@ def_target("demo_c")
     add_includedirs("$(buildir)")
     add_cflags("-DHELLO1")
 
-    if modes("release") then add_defines("NDEBUG") end
-    if options("option1") then add_defines("OPTION1") end
-    if options("option2") then add_defines("OPTION2") end
-    if options("option3") then add_defines("OPTION3") end
-    if options("option4") then add_defines("OPTION4") end
+    if is_mode("release") then add_defines("NDEBUG") end
+    if is_option("option1") then add_defines("OPTION1") end
+    if is_option("option2") then add_defines("OPTION2") end
+    if is_option("option3") then add_defines("OPTION3") end
+    if is_option("option4") then add_defines("OPTION4") end
 
-def_target("demo_cpp")
+target("demo_cpp")
     set_kind("binary")
     add_deps("hello2") 
     add_files("*.cpp")
@@ -29,9 +29,9 @@ def_target("demo_cpp")
                             return 1
                         end)
 
-    if plats("macosx", "ios") then
+    if is_plat("macosx", "ios") then
 
-        def_target("demo_objc")
+        target("demo_objc")
             set_kind("binary")
             add_deps("hello3") 
             add_files("*.m")
@@ -40,18 +40,18 @@ def_target("demo_cpp")
             add_includedirs("$(buildir)/inc") 
             add_mflags("-DHELLO3", "-DPLAT=\"macosx\"", "-DARCH='armv7, arm64'")
 
-        def_target("demo_objcpp")
+        target("demo_objcpp")
             set_kind("binary")
             add_deps("hello3")
             add_files("*.mm")
             add_mxflags("-DHELLO3")
             add_ldflags("-L$(buildir)/lib", "-lhello3", "-lhello3")
 
-            if plats("ios") then
+            if is_plat("ios") then
                 add_ldflags("-framework Cocoa", "-framework IOKit", "-framework CoreFoundation")
             end
     end
 
-def_target("demo_swift")
+target("demo_swift")
     set_kind("binary")
     add_files("*.swift")

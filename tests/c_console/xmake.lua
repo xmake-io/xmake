@@ -1,5 +1,5 @@
 -- the debug mode
-if modes("debug") then
+if is_mode("debug") then
     
     -- enable the debug symbols
     set_symbols("debug")
@@ -9,7 +9,7 @@ if modes("debug") then
 end
 
 -- the release mode
-if modes("release") then
+if is_mode("release") then
 
     -- set the symbols visibility: hidden
     set_symbols("hidden")
@@ -22,11 +22,12 @@ if modes("release") then
 end
 
 -- add target
-def_target("c_console")
+target("c_console")
 
     -- set kind
     set_kind("binary")
 
     -- add files
     add_files("src/*.c") 
+
 

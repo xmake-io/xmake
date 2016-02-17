@@ -1,5 +1,5 @@
 -- add target
-def_target("demo")
+target("demo")
 
     -- set kind
     set_kind("binary")

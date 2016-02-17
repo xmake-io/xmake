@@ -97,7 +97,7 @@ function package._done_library(target)
         -- the xmake.lua template content
         local template = [[ 
 -- add [targetname] package
-def_option("[targetname]")
+option("[targetname]")
 
     -- show menu
     set_option_showmenu(true)
