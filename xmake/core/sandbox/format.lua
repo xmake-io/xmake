@@ -17,9 +17,10 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        printf.lua
+-- @file        format.lua
 --
 
--- load module
-return require("sandbox/builtin/utils").printf
+-- return module
+return require("sandbox/string").format
+
 

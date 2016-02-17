@@ -17,10 +17,36 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        vformat.lua
+-- @file        import.lua
 --
 
--- return module
-return require("sandbox/builtin/string").vformat
+-- load modules
+local utils = require("base/utils")
 
+-- import module
+function sandbox_builtin_import(name)
+
+    -- load module
+    local module = require("sandbox/import" .. name)
+    if not module then
+        utils.error("cannot import module: %s", name)
+        utils.abort()
+    end
+
+    -- get the parent scope
+    local scope_parent = getfenv(2)
+    assert(scope_parent)
+
+    -- this module has been imported?
+    if rawget(scope_parent, name) then
+        utils.error("this module: %s has been imported!", name)
+        utils.abort()
+    end
+
+    -- import this module into the parent scope
+    scope_parent[name] = module
+end
+
+-- load module
+return sandbox_builtin_import
 
