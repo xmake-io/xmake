@@ -17,11 +17,11 @@ add_macrofiles("src/_library/xmake.lua")
 set_createscript(function ()
 
     -- rename target directory
-    os.mv("src/_library", vformat("src/$(targetname)"))
-    os.mv("src/_demo", vformat("src/$(targetname)_demo"))
+    os.mv("src/_library", "src/$(targetname)")
+    os.mv("src/_demo", "src/$(targetname)_demo")
 
     -- copy packages
-    os.cp(vformat("$(packagesdir)/tbox.pkg"), "pkg/tbox.pkg")
-    os.cp(vformat("$(packagesdir)/base.pkg"), "pkg/base.pkg")
+    os.cp("$(packagesdir)/tbox.pkg", "pkg/tbox.pkg")
+    os.cp("$(packagesdir)/base.pkg", "pkg/base.pkg")
 
 end)

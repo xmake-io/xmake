@@ -27,6 +27,13 @@ local sandbox   = require("base/sandbox")
 -- define module
 local sandbox_builtin_string = sandbox_builtin_string or {}
 
+-- inherit the public interfaces of string
+for k, v in pairs(string) do
+    if not k:startswith("_") and type(v) == "function" then
+        sandbox_builtin_string[k] = v
+    end
+end
+
 -- format string with the builtin variables
 function sandbox_builtin_string.vformat(format, ...)
 
@@ -49,13 +56,6 @@ function sandbox_builtin_string.vformat(format, ...)
 
     -- ok?
     return result
-end
-
--- inherit the public interfaces of string
-for k, v in pairs(string) do
-    if not k:startswith("_") and type(v) == "function" then
-        sandbox_builtin_string[k] = v
-    end
 end
 
 -- return module

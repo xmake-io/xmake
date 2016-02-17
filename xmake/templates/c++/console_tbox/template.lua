@@ -14,7 +14,7 @@ add_macrofiles("src/xmake.lua")
 set_createscript(function ()
 
     -- copy packages
-    os.cp(vformat("$(packagesdir)/tbox.pkg"), "pkg/tbox.pkg")
-    os.cp(vformat("$(packagesdir)/base.pkg"), "pkg/base.pkg")
+    os.cp("$(packagesdir)/tbox.pkg", "pkg/tbox.pkg")
+    os.cp("$(packagesdir)/base.pkg", "pkg/base.pkg")
 
 end)

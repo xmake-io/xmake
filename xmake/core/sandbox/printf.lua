@@ -17,30 +17,9 @@
 -- Copyright (C) 2009 - 2015, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        utils.lua
+-- @file        printf.lua
 --
 
--- load modules
-local utils     = require("base/utils")
-local string    = require("sandbox/builtin/string")
-
--- define module
-local sandbox_builtin_utils = sandbox_builtin_utils or {}
-
--- printf with the builtin variables
-function sandbox_builtin_utils.vprintf(format, ...)
-
-    -- done
-    return print(string.vformat(format, ...))
-end
-
--- inherit the public interfaces of utils
-for k, v in pairs(utils) do
-    if not k:startswith("_") and type(v) == "function" then
-        sandbox_builtin_utils[k] = v
-    end
-end
-
--- return module
-return sandbox_builtin_utils
+-- load module
+return require("sandbox/utils").printf
 
