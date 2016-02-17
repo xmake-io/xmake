@@ -41,13 +41,6 @@ function project.projectdir()
     return xmake._PROJECT_DIR
 end
 
--- get the log file
-function project.logfile()
-
-    -- get it 
-    return rule.logfile()
-end
-
 -- get the current platform
 function project.plat()
 
