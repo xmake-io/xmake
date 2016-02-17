@@ -27,7 +27,7 @@ local utils = require("base/utils")
 function sandbox_builtin_import(name)
 
     -- load module
-    local module = require("sandbox/import" .. name)
+    local module = require("sandbox/import/" .. name)
     if not module then
         utils.error("cannot import module: %s", name)
         utils.abort()
