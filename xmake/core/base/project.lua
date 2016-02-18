@@ -24,18 +24,19 @@
 local project = project or {}
 
 -- load modules
-local os            = require("base/os")
-local io            = require("base/io")
-local rule          = require("base/rule")
-local path          = require("base/path")
-local utils         = require("base/utils")
-local table         = require("base/table")
-local config        = require("base/config")
-local filter        = require("base/filter")
-local linker        = require("base/linker")
-local compiler      = require("base/compiler")
-local platform      = require("base/platform")
-local interpreter   = require("base/interpreter")
+local os                    = require("base/os")
+local io                    = require("base/io")
+local rule                  = require("base/rule")
+local path                  = require("base/path")
+local utils                 = require("base/utils")
+local table                 = require("base/table")
+local config                = require("base/config")
+local filter                = require("base/filter")
+local linker                = require("base/linker")
+local compiler              = require("base/compiler")
+local platform              = require("base/platform")
+local interpreter           = require("base/interpreter")
+local deprecated_project    = require("base/deprecated/project")
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -121,144 +122,6 @@ function project._api_is_option(interp, ...)
             return true
         end
     end
-end
-
--- TODO: deprecated
--- the current os is belong to the given os?
-function project._api_os(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- warning
-    utils.warning("please uses is_os(\"%s\"), \"os()\" has been deprecated!", values)
-
-    -- done
-    return project._api_is_os(interp, ...)
-end
-
--- TODO: deprecated
--- the current mode is belong to the given modes?
-function project._api_modes(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- warning
-    utils.warning("please uses is_mode(\"%s\"), \"modes()\" has been deprecated!", values)
-
-    -- done
-    return project._api_is_mode(interp, ...)
-end
-
--- TODO: deprecated
--- the current platform is belong to the given platforms?
-function project._api_plats(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- warning
-    utils.warning("please uses is_plat(\"%s\"), \"plats()\" has been deprecated!", values)
-
-    -- done
-    return project._api_is_plat(interp, ...)
-end
-
--- TODO: deprecated
--- the current platform is belong to the given architectures?
-function project._api_archs(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- warning
-    utils.warning("please uses is_arch(\"%s\"), \"archs()\" has been deprecated!", values)
-
-    -- done
-    return project._api_is_arch(interp, ...)
-end
-
--- TODO: deprecated
--- the current kind is belong to the given kinds?
-function project._api_kinds(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- warning
-    utils.warning("please uses is_kind(\"%s\"), \"kinds()\" has been deprecated!", values)
-
-    -- done
-    return project._api_is_kind(interp, ...)
-end
-
--- TODO: deprecated
--- enable options?
-function project._api_options(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- warning
-    utils.warning("please uses is_option(\"%s\"), \"options()\" has been deprecated!", values)
-
-    -- done
-    return project._api_is_option(interp, ...)
 end
 
 -- add c function
@@ -464,10 +327,8 @@ function project._interpreter()
     -- set root directory
     interp:rootdir_set(xmake._PROJECT_DIR)
 
-    -- TODO: deprecated
-    -- register api: set_target() and set_option()
-    interp:api_register_set_scope("target", "option")
-    interp:api_register_add_scope("target", "option")
+    -- register api: deprecated
+    deprecated_project.api_register(interp)
     
     -- register api: target() and option()
     interp:api_register_scope("target", "option")
@@ -552,16 +413,6 @@ function project._interpreter()
     -- register api: add_option_pathes() for option
     interp:api_register_add_pathes("option", "option",      "linkdirs" 
                                                         ,   "includedirs")
-
-
-    -- TODO: deprecated
-    -- register api: os(), kinds(), modes(), plats(), archs(), options()
-    interp:api_register("os", project._api_os)
-    interp:api_register("kinds", project._api_kinds)
-    interp:api_register("modes", project._api_modes)
-    interp:api_register("plats", project._api_plats)
-    interp:api_register("archs", project._api_archs)
-    interp:api_register("options", project._api_options)
 
     -- register api: is_os(), is_kind(), is_mode(), is_plat(), is_arch(), is_option()
     interp:api_register("is_os", project._api_is_os)
