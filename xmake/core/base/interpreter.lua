@@ -716,8 +716,8 @@ function interpreter.api_register_add_array(self, scope_kind, prefix, ...)
     self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
 end
 
--- register api for set_script
-function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
+-- register api for on_script
+function interpreter.api_register_on_script(self, scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -728,7 +728,7 @@ function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
         -- bind script and get new script with sandbox
         local newscript, errors = sandbox.bind(script, self)
         if not newscript then
-            utils.error("set_%s(\"%s\"): %s", scope, name, errors)
+            utils.error("on_%s(): %s", name, errors)
             utils.abort()
         end
 
@@ -739,7 +739,7 @@ function interpreter.api_register_set_script(self, scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "on", prefix, implementation, ...)
 end
 
 -- register api for set_keyvalues

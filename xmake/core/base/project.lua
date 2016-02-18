@@ -333,10 +333,10 @@ function project._interpreter()
     -- register api: target() and option()
     interp:api_register_scope("target", "option")
 
-    -- register api: set_script() for target
-    interp:api_register_set_script("target", nil,           "runscript"
-                                                        ,   "installscript"
-                                                        ,   "packagescript")
+    -- register api: on_run() and on_install() and on_package()
+    interp:api_register_on_script("target", nil,            "run"
+                                                        ,   "install"
+                                                        ,   "package")
 
     -- register api: set_values() for target
     interp:api_register_set_values("target", nil,           "kind"
