@@ -24,7 +24,6 @@ It is similar to cmake, automake, premake, but more convenient and easy to use.
 7. install target
 8. run a given target
 9. describe the project file using lua script, more flexible and simple
-	```lua
 	
 	-- xmake.lua
     def_target("console")
@@ -34,127 +33,109 @@ It is similar to cmake, automake, premake, but more convenient and easy to use.
 
         -- add files
         add_files("src/*.c") 
-    ```
+
 10. custom platforms and toolchains
 11. custom rules for package/compiler/linker
 
 ####examples
 
-create a c++ console project：
+create a c++ console project:
 
-```bash
-    xmake create -l c++ -t 1 console
- or xmake create --language=c++ --template=1 console
-```
+        xmake create -l c++ -t 1 console
+     or xmake create --language=c++ --template=1 console
 
-project makefile：xmake.lua
+project makefile: xmake.lua
 
-```lua
-def_target("console")
-    set_kind("binary")
-    add_files("src/*.c") 
-```
+    def_target("console")
+        set_kind("binary")
+        add_files("src/*.c") 
 
-configure project：
+configure project:
 
    This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
 
    The configuration arguments will be cached and you need not input all arguments each time.
 
-```bash
-   xmake f -p iphoneos -m debug
-or xmake f --ldflags="-Lxxx -lxxx"
-or xmake f --plat=macosx --arch=x86_64
-or xmake config --plat=iphoneos --mode=debug
-or xmake config --plat=iphonesimulator
-or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
-or xmake config --cxflags="-Dxxx -Ixxx"
-or xmake config --help
-```
+       xmake f -p iphoneos -m debug
+    or xmake f --ldflags="-Lxxx -lxxx"
+    or xmake f --plat=macosx --arch=x86_64
+    or xmake config --plat=iphoneos --mode=debug
+    or xmake config --plat=iphonesimulator
+    or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
+    or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
+    or xmake config --cxflags="-Dxxx -Ixxx"
+    or xmake config --help
 
 compile project：
  
-```bash
-   xmake
-or xmake -r
-or xmake --rebuild
-```
+       xmake
+    or xmake -r
+    or xmake --rebuild
 
 run target：
 
-```bash
-   xmake r console
-or xmake run console
-```
+       xmake r console
+    or xmake run console
 
 package all：
 
-```bash
-   xmake p
-or xmake p --archs="armv7, arm64"
-or xmake package
-or xmake package console
-or xmake package -o /tmp
-or xmake package --output=/tmp
-```
+       xmake p
+    or xmake p --archs="armv7, arm64"
+    or xmake package
+    or xmake package console
+    or xmake package -o /tmp
+    or xmake package --output=/tmp
 
 install targets：
 
-```bash
-   xmake i
-or xmake install
-or xmake install console
-or xmake install -o /tmp
-or xmake install --output=/tmp
-```
+       xmake i
+    or xmake install
+    or xmake install console
+    or xmake install -o /tmp
+    or xmake install --output=/tmp
 
 If you need known more detailed usage，please refer to [documents](https://github.com/waruqi/xmake/wiki/documents)
-or run：
-```bash
-   xmake -h
-or xmake --help
-or xmake config --help
-or xmake package --help
-...
-```
+or run:
+
+       xmake -h
+    or xmake --help
+    or xmake config --help
+    or xmake package --help
+    ...
 
 The simple xmake.lua file:
 
-```lua
--- the debug mode
-if modes("debug") then
-    
-    -- enable the debug symbols
-    set_symbols("debug")
+    -- the debug mode
+    if modes("debug") then
+        
+        -- enable the debug symbols
+        set_symbols("debug")
 
-    -- disable optimization
-    set_optimize("none")
-end
+        -- disable optimization
+        set_optimize("none")
+    end
 
--- the release mode
-if modes("release") then
+    -- the release mode
+    if modes("release") then
 
-    -- set the symbols visibility: hidden
-    set_symbols("hidden")
+        -- set the symbols visibility: hidden
+        set_symbols("hidden")
 
-    -- enable fastest optimization
-    set_optimize("fastest")
+        -- enable fastest optimization
+        set_optimize("fastest")
 
-    -- strip all symbols
-    set_strip("all")
-end
+        -- strip all symbols
+        set_strip("all")
+    end
 
--- add target
-def_target("test")
+    -- add target
+    def_target("test")
 
-    -- set kind
-    set_kind("static")
+        -- set kind
+        set_kind("static")
 
-    -- add files
-    add_files("src/*.c") 
-
-```
+        -- add files
+        add_files("src/*.c") 
 
 ####documents
 
@@ -220,83 +201,68 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 创建一个c++ console项目：
 
-```bash
-    xmake create -l c++ -t 1 console
- or xmake create --language=c++ --template=1 console
-```
+        xmake create -l c++ -t 1 console
+     or xmake create --language=c++ --template=1 console
 
 工程描述文件：xmake.lua
 
-```lua
-def_target("console")
-    set_kind("binary")
-    add_files("src/*.c") 
-```
+    def_target("console")
+        set_kind("binary")
+        add_files("src/*.c") 
 
 配置工程：
 
    这个是可选的步骤，如果只想编译当前主机平台的项目，是可以不用配置的，默认编译release版本。
    当然每次配置都会被缓存，不需要每次全部重新配置。
 
-```bash
-   xmake f -p iphoneos -m debug
-or xmake f --ldflags="-Lxxx -lxxx"
-or xmake f --plat=macosx --arch=x86_64
-or xmake config --plat=iphoneos --mode=debug
-or xmake config --plat=iphonesimulator
-or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
-or xmake config --cxflags="-Dxxx -Ixxx"
-or xmake config --help
-```
+       xmake f -p iphoneos -m debug
+    or xmake f --ldflags="-Lxxx -lxxx"
+    or xmake f --plat=macosx --arch=x86_64
+    or xmake config --plat=iphoneos --mode=debug
+    or xmake config --plat=iphonesimulator
+    or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
+    or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
+    or xmake config --cxflags="-Dxxx -Ixxx"
+    or xmake config --help
 
 编译工程：
- 
-```bash
-   xmake
-or xmake -r
-or xmake --rebuild
-```
+     
+       xmake
+    or xmake -r
+    or xmake --rebuild
 
 运行目标：
 
-```bash
-   xmake r console
-or xmake run console
-```
+       xmake r console
+    or xmake run console
 
 打包所有：
 
-```bash
-   xmake p
-or xmake p --archs="armv7, arm64"
-or xmake package
-or xmake package console
-or xmake package -o /tmp
-or xmake package --output=/tmp
-```
+       xmake p
+    or xmake p --archs="armv7, arm64"
+    or xmake package
+    or xmake package console
+    or xmake package -o /tmp
+    or xmake package --output=/tmp
 
 安装目标：
 
-```bash
-   xmake i
-or xmake install
-or xmake install console
-or xmake install -o /tmp
-or xmake install --output=/tmp
-```
+       xmake i
+    or xmake install
+    or xmake install console
+    or xmake install -o /tmp
+    or xmake install --output=/tmp
 
 详细使用方式和参数说明，请参考[文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
 或者运行：
-```bash
-   xmake -h
-or xmake --help
-or xmake config --help
-or xmake package --help
-...
-```
 
-也可以参考一些使用xmake的项目：
+       xmake -h
+    or xmake --help
+    or xmake config --help
+    or xmake package --help
+    ...
+
+#### 一些使用xmake的项目：
 
 * [tbox](https://github.com/waruqi/tbox)
 * [gbox](https://github.com/waruqi/gbox)
@@ -315,40 +281,37 @@ or xmake package --help
 
 ####简单例子
 
-```lua
--- the debug mode
-if modes("debug") then
-    
-    -- enable the debug symbols
-    set_symbols("debug")
+    -- the debug mode
+    if modes("debug") then
+        
+        -- enable the debug symbols
+        set_symbols("debug")
 
-    -- disable optimization
-    set_optimize("none")
-end
+        -- disable optimization
+        set_optimize("none")
+    end
 
--- the release mode
-if modes("release") then
+    -- the release mode
+    if modes("release") then
 
-    -- set the symbols visibility: hidden
-    set_symbols("hidden")
+        -- set the symbols visibility: hidden
+        set_symbols("hidden")
 
-    -- enable fastest optimization
-    set_optimize("fastest")
+        -- enable fastest optimization
+        set_optimize("fastest")
 
-    -- strip all symbols
-    set_strip("all")
-end
+        -- strip all symbols
+        set_strip("all")
+    end
 
--- add target
-def_target("test")
+    -- add target
+    def_target("test")
 
-    -- set kind
-    set_kind("static")
+        -- set kind
+        set_kind("static")
 
-    -- add files
-    add_files("src/*.c") 
-
-```
+        -- add files
+        add_files("src/*.c") 
 
 #### 联系方式
 
