@@ -82,7 +82,7 @@ if not is_arch("i386", "x86_64") then
 end
 
 -- for the windows platform (msvc)
-if plats("windows") then 
+if is_plat("windows") then 
 
     -- the release mode
     if is_mode("release") then

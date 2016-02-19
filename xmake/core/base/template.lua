@@ -24,15 +24,15 @@
 local template = template or {}
 
 -- load modules
-local os            = require("base/os")
-local io            = require("base/io")
-local path          = require("base/path")
-local table         = require("base/table")
-local utils         = require("base/utils")
-local string        = require("base/string")
-local filter        = require("base/filter")
-local sandbox       = require("base/sandbox")
-local interpreter   = require("base/interpreter")
+local os                = require("base/os")
+local io                = require("base/io")
+local path              = require("base/path")
+local table             = require("base/table")
+local utils             = require("base/utils")
+local string            = require("base/string")
+local filter            = require("base/filter")
+local sandbox           = require("base/sandbox")
+local interpreter       = require("base/interpreter")
 
 -- get interpreter
 function template._interpreter()
@@ -46,18 +46,18 @@ function template._interpreter()
     local interp = interpreter.init()
     assert(interp)
 
-    -- register api: set_values() for root
+    -- register api: set_description() and set_projectdir()
     interp:api_register_set_values(nil, nil,    "description"
                                             ,   "projectdir")
 
-    -- register api: add_values() for root
+    -- register api: add_macrofiles()
     interp:api_register_add_values(nil, nil,    "macrofiles")
 
-    -- register api: add_keyvalues() for root
+    -- register api: add_macros()
     interp:api_register_add_keyvalues(nil, nil, "macros")
 
-    -- register api: set_script() for root
-    interp:api_register_set_script(nil, nil,    "createscript")
+    -- register api: on_create()
+    interp:api_register_on_script(nil, nil,     "create")
 
     -- save interpreter
     template._INTERPRETER = interp
@@ -239,8 +239,8 @@ function template.create(language, templateid, targetname)
     end
 
     -- create project
-    if module.createscript then
-        local ok, errors = sandbox.load(module.createscript)
+    if module.create then
+        local ok, errors = sandbox.load(module.create)
         if not ok then
             utils.errors(errors)
             return false
