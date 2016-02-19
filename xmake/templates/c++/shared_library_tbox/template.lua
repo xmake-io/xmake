@@ -14,7 +14,7 @@ add_macrofiles("src/_demo/xmake.lua")
 add_macrofiles("src/_library/xmake.lua")
 
 -- set create script
-set_createscript(function ()
+on_create(function ()
 
     -- rename target directory
     os.mv("src/_library", "src/$(targetname)")

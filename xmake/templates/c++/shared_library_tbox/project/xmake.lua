@@ -82,7 +82,7 @@ if not is_arch("i386", "x86_64") then
 end
 
 -- for the windows platform (msvc)
-if plats("windows") then 
+if is_plat("windows") then 
 
     -- the release mode
     if is_mode("release") then
@@ -116,4 +116,4 @@ add_pkgdirs("pkg")
 
 -- add projects
 add_subdirs("src/[targetname]") 
-if options("demo") then add_subdirs("src/demo") end
+if is_option("demo") then add_subdirs("src/demo") end

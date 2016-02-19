@@ -11,7 +11,7 @@ add_macros("targetname", "$(targetname)")
 add_macrofiles("src/xmake.lua")
 
 -- set create script
-set_createscript(function ()
+on_create(function ()
 
     -- copy packages
     os.cp("$(packagesdir)/tbox.pkg", "pkg/tbox.pkg")
