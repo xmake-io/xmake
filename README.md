@@ -178,18 +178,6 @@ some projects using xmake:
 	- http://www.tboox.org
 	- http://www.tboox.net
 
-####donate
-
-xmake is a personal open source project, its development needs your help.
-If you would like to support the development of xmake, welcome to donate to us.
-
-Thanks!
-
-#####paypal
-<a href="http://tboox.net/%E6%8D%90%E5%8A%A9/">
-<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="paypal">
-</a>
-
 ## 简介
 
 XMake是一个跨平台自动构建工具，支持在各种主流平台上构建项目，类似cmake、automake、premake，但是更加的方便易用，工程描述语法更简洁直观，支持平台更多，并且集创建、配置、编译、打包、安装、卸载、运行于一体。
@@ -373,14 +361,3 @@ def_target("test")
 - qq(group):    
 	- 343118190
 
-####捐助
-
-xmake是个人开源，它的发展需要您的帮助，如果您愿意支持xmake的开发，欢迎为其捐赠，支持xmake的发展。
-
-#####alipay
-<img src="http://www.tboox.net/ruki/alipay.png" alt="alipay" width="128" height="128">
-
-#####paypal
-<a href="http://tboox.net/%E6%8D%90%E5%8A%A9/">
-<img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" alt="paypal">
-</a>
