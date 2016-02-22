@@ -157,7 +157,7 @@ function rule.objectfiles(target_name, target, sourcefiles, buildir)
     for _, sourcefile in ipairs(sourcefiles) do
 
         -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
-        sourcefile = sourcefile:gsub(rule.filename("(%w+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
+        sourcefile = sourcefile:gsub(rule.filename("([%w_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
         -- make object file
         local objectfile = string.format("%s/%s/%s/%s", objectdir, target_name, path.directory(sourcefile), rule.filename(path.basename(sourcefile), "object"))

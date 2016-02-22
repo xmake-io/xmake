@@ -28,7 +28,7 @@ target("merge_static_library")
     set_kind("static")
 
     -- add files
-    add_files("../static_library_c/build/*.a") 
+    add_files("../static_library_c/build/static_library_c.pkg/lib/release/$(plat)/$(arch)/*.a") 
 
 -- add target
 target("test")
