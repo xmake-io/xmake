@@ -33,7 +33,7 @@ if os("macosx", "ios") then
 end
 
 -- add target
-target("objcpp_console")
+target("console_objc++")
 
     -- set kind
     set_kind("binary")

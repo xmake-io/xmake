@@ -22,7 +22,7 @@ if is_mode("release") then
 end
 
 -- add target
-target("cpp_console")
+target("console_c++")
 
     -- set kind
     set_kind("binary")

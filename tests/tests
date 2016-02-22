@@ -18,16 +18,32 @@ function exec()
 
 function build() 
 {
-    exec "xmake -r -P $1"
+    # enter project
+    echo "build $1"
+    cd $1
 
+    # build
+    exec "xmake -r"
+#    exec "xmake p"
+
+    # build for macosx
     if [ $host = "macosx" ]; then
 
-        exec "xmake f -p iphoneos -P $1" 
-        exec "xmake -r -P $1"
+        exec "xmake f -p iphoneos" 
+        exec "xmake -r"
+#        exec "xmake p"
 
-        exec "xmake f -p iphonesimulator -P $1"
-        exec "xmake -r -P $1"
+        exec "xmake f -p iphoneos -a arm64" 
+        exec "xmake -r"
+#        exec "xmake p -a \"armv7, arm64\""
+
+        exec "xmake f -p iphonesimulator"
+        exec "xmake -r"
+#        exec "xmake p"
     fi
+
+    # leave project
+    cd -
 }
 
 build "./tests/console_c" 

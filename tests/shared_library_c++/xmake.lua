@@ -22,7 +22,7 @@ if is_mode("release") then
 end
 
 -- add target
-target("cpp_shared_library")
+target("shared_library_c++")
 
     -- set kind
     set_kind("shared")
@@ -37,13 +37,13 @@ target("test")
     set_kind("binary")
 
     -- add deps
-    add_deps("cpp_shared_library")
+    add_deps("shared_library_c++")
 
     -- add files
     add_files("src/test.cpp") 
 
     -- add links
-    add_links("cpp_shared_library")
+    add_links("shared_library_c++")
 
     -- add link directory
     add_linkdirs("$(buildir)")

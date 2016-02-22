@@ -22,7 +22,7 @@ if is_mode("release") then
 end
 
 -- add target
-target("cpp_static_library")
+target("static_library_c++")
 
     -- set kind
     set_kind("static")
@@ -37,13 +37,13 @@ target("test")
     set_kind("binary")
 
     -- add deps
-    add_deps("cpp_static_library")
+    add_deps("static_library_c++")
 
     -- add files
     add_files("src/test.cpp") 
 
     -- add links
-    add_links("cpp_static_library")
+    add_links("static_library_c++")
 
     -- add link directory
     add_linkdirs("$(buildir)")

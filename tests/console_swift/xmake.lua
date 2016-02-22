@@ -22,7 +22,7 @@ if is_mode("release") then
 end
 
 -- add target
-target("swift_console")
+target("console_swift")
 
     -- set kind
     set_kind("binary")
