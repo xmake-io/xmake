@@ -22,25 +22,26 @@ function build()
     echo "build $1"
     cd $1
 
-    # build
-    exec "xmake -r"
-#    exec "xmake p"
-
     # build for macosx
     if [ $host = "macosx" ]; then
 
         exec "xmake f -p iphoneos" 
         exec "xmake -r"
-#        exec "xmake p"
+        exec "xmake p"
 
         exec "xmake f -p iphoneos -a arm64" 
         exec "xmake -r"
-#        exec "xmake p -a \"armv7, arm64\""
+        exec "xmake p -a \"armv7, arm64\""
 
         exec "xmake f -p iphonesimulator"
         exec "xmake -r"
-#        exec "xmake p"
+        exec "xmake p"
     fi
+
+    # build
+    exec "xmake f -c"
+    exec "xmake -r"
+    exec "xmake p"
 
     # leave project
     cd -
@@ -57,7 +58,7 @@ build "./tests/static_library_c++"
 build "./tests/shared_library_c++" 
 
 # merge static library
-#build "./tests/merge_static_library"
+build "./tests/merge_static_library"
 
 # build for macosx
 if [ $host = "macosx" ]; then
