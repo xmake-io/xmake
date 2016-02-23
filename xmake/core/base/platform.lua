@@ -30,10 +30,9 @@ local utils     = require("base/utils")
 local config    = require("base/config")
 local global    = require("base/global")
 
--- load platform directories
-function platform._load_directories()
+-- the directories of platforms
+function platform._directories()
 
-    -- load platform directories
     return  {   path.join(global.directory(), "platforms")
             ,   path.join(xmake._CORE_DIR, "platforms")
             }
@@ -104,7 +103,7 @@ function platform._load(plat)
     if module then return module end
 
     -- load module
-    local dirs = platform._load_directories()
+    local dirs = platform._directories()
     for _, dir in ipairs(dirs) do
 
         module = platform._load_from(dir, plat) 
@@ -262,7 +261,7 @@ function platform.plats()
 
     -- make list
     local list = {}
-    local dirs = platform._load_directories()
+    local dirs = platform._directories()
     for _, dir in ipairs(dirs) do
 
         -- get the platform list 
