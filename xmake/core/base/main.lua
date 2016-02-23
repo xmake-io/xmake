@@ -26,6 +26,7 @@ local main = main or {}
 -- load modules
 local os            = require("base/os")
 local path          = require("base/path")
+local task          = require("base/task")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local action        = require("base/action")
@@ -157,6 +158,8 @@ end
 
 -- the main function
 function main.done()
+
+    task.tasks()
 
     -- init 
     main._init()

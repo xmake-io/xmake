@@ -347,7 +347,11 @@ function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
 
     -- the scopes
     local scopes = self._PRIVATE._SCOPES
-    assert(scopes and scopes._ROOT)
+
+    -- empty scope?
+    if not scopes or not scopes._ROOT then
+        return nil, string.format("the scope %s() is empty!", scope_kind)
+    end
 
     -- make results
     local results = {}
