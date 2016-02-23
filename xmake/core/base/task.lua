@@ -24,6 +24,7 @@
 local task = task or {}
 
 -- load modules
+local os            = require("base/os")
 local table         = require("base/table")
 local utils         = require("base/utils")
 local string        = require("base/string")
@@ -64,25 +65,70 @@ function task._interpreter()
     return interp
 end
 
--- load the given task from the given directory
-function task._load_from(dir, taskname)
-
-    -- the file path
-    local filepath = path.join(dir, taskname .. ".lua")
+-- load the given task script file
+function task._load(filepath)
 
     -- get interpreter
     local interp = task._interpreter()
     assert(interp) 
 
     -- load task
-    local results, errors = interp:load(filepath, nil, true, true)
-    if not results then
+    local results, errors = interp:load(filepath, "task", true, true)
+    if not results and os.isfile(filepath) then
         -- trace
         utils.error(errors)
-        utils.abort()
     end
+
+    -- is plugin? mark it
+    if path.basename(path.directory(filepath)) == "plugins" then
+        for _, v in pairs(results) do
+            v.plugin = true
+        end
+    end
+
+    -- ok?
+    return results
 end
 
+-- get all tasks
+function task.tasks()
+ 
+    -- return it directly if exists
+    if task._TASKS then
+        return task._TASKS 
+    end
+
+    -- load tasks
+    local tasks = {}
+    local dirs = task._directories()
+    for _, dir in ipairs(dirs) do
+
+        -- get files
+        local files = os.match(path.join(dir, "*.lua"))
+        if files then
+            for _, filepath in ipairs(files) do
+
+                -- load it
+                local results = task._load(filepath)
+                if results then
+                    table.join2(tasks, results)
+                end
+            end
+        end
+
+    end
+
+    -- save it
+    task._TASKS = tasks
+
+    -- ok?
+    return tasks
+end
+
+-- the menu
+function task.menu()
+
+end
 
 -- return module: task
 return task
