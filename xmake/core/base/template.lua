@@ -34,7 +34,7 @@ local filter            = require("base/filter")
 local sandbox           = require("base/sandbox")
 local interpreter       = require("base/interpreter")
 
--- get interpreter
+-- the interpreter
 function template._interpreter()
 
     -- the interpreter has been initialized? return it directly
