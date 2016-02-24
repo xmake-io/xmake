@@ -55,6 +55,11 @@ function task._interpreter()
     -- register api: task()
     interp:api_register_scope("task")
 
+    -- register api: set_task_category()
+    --
+    -- category: main, action, plugin
+    interp:api_register_set_values("task", "task", "category")
+
     -- register api: set_task_menu() 
     interp:api_register_set_values("task", "task", "menu")
 
@@ -77,13 +82,6 @@ function task._load(filepath)
     if not results and os.isfile(filepath) then
         -- trace
         utils.error(errors)
-    end
-
-    -- is plugin? mark it
-    if path.basename(path.directory(filepath)) == "plugins" then
-        for _, v in pairs(results) do
-            v.plugin = true
-        end
     end
 
     -- ok?
@@ -128,6 +126,45 @@ end
 -- the menu
 function task.menu()
 
+    -- load tasks
+    local tasks = task.tasks()
+    assert(tasks)
+
+    -- make menu
+    local menu = {}
+    for taskname, taskinfo in pairs(tasks) do
+
+        -- has menu?
+        if taskinfo.menu then
+
+            -- main?
+            if taskinfo.category == "main" then
+                menu.main = taskinfo.menu
+            end
+                
+            -- add menu
+            menu[taskname] = taskinfo.menu
+        end
+    end
+
+    -- add tasks to the main menu
+    if menu.main then
+
+        -- make tasks for the main menu
+        menu.main.tasks = menu.main.tasks or {}
+        for taskname, taskinfo in pairs(tasks) do
+
+            -- has menu?
+            if taskinfo.menu then
+
+                -- add task
+                menu.main.tasks[taskname] = taskinfo
+            end
+        end
+    end
+
+    -- ok?
+    return menu
 end
 
 -- return module: task

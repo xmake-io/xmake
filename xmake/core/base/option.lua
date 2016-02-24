@@ -27,8 +27,8 @@ local option = option or {}
 local utils = require("base/utils")
 local table = require("base/table")
 
--- save the option menu
-function option._save_menu(menu)
+-- translate the menu
+function option._translate(menu)
 
     -- translate the action menus if exists function
     local submenus_all = {}
@@ -45,11 +45,6 @@ function option._save_menu(menu)
         end
     end
     table.copy2(menu, submenus_all)
-
-    -- translate the actions of the main menu if exists function
-    if menu.main and type(menu.main.actions) == "function" then
-        menu.main.actions = menu.main.actions()
-    end
 
     -- translate it if exists function in the option menu
     for _, submenu in pairs(menu) do
@@ -90,6 +85,9 @@ function option.init(argv, menu)
     -- check
     assert(argv and menu)
 
+    -- translate menu
+    option._translate(menu)
+
     -- the main menu
     local main = menu.main
     assert(main)
@@ -97,9 +95,6 @@ function option.init(argv, menu)
     -- init _OPTIONS
     xmake._OPTIONS = {}
     xmake._OPTIONS._DEFAULTS = {}
-
-    -- save menu
-    option._save_menu(menu)
 
     -- parse _ARGV to _OPTIONS
     local _iter, _s, _k = ipairs(argv)
@@ -488,47 +483,83 @@ function option.print_main()
         print(main.description)
     end
 
-    -- print actions
-    if main.actions then
+    -- print tasks
+    if main.tasks then
 
-        -- print header
-        print("")
-        print("Actions: ")
-        
-        -- the padding spaces
-        local padding = 42
+        -- make task categories
+        local categories = {}
+        for taskname, taskinfo in pairs(main.tasks) do
 
-        -- print actions
-        for _, action in ipairs(main.actions) do
+            -- the category name
+            local categoryname = taskinfo.category or "task"
+            if categoryname == "main" then
+                categoryname = "action"
+            end
 
-            -- the action menu
-            local action_menu = menu[action]
+            -- the category task
+            local categorytask = categories[categoryname] or {}
+            categories[categoryname] = categorytask
 
-            -- init the action info
-            local action_info = "    "
-            if action_menu and action_menu.shortname then
-                action_info = action_info .. action_menu.shortname .. ", "
+            -- add task to the category
+            categorytask[taskname] = taskinfo
+        end
+
+        -- sort categories
+        local categories_sorted = {}
+        for categoryname, categorytask in pairs(categories) do
+            if categoryname == "action" then
+                table.insert(categories_sorted, 1, {categoryname, categorytask})
             else
-                action_info = action_info .. "   "
+                table.insert(categories_sorted, {categoryname, categorytask})
             end
+        end
+
+        -- dump tasks by categories
+        for _, categoryinfo in ipairs(categories_sorted) do
+
+            -- the category name and task
+            local categoryname = categoryinfo[1]
+            local categorytask = categoryinfo[2]
+            assert(categoryname and categorytask)
+
+            -- print category name
+            print("")
+            utils.printf("%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))
             
-            -- append the action
-            action_info = action_info .. action
+            -- the padding spaces
+            local padding = 42
 
-            if action_menu then
+            -- print tasks
+            for taskname, taskinfo in pairs(categorytask) do
+
+                -- the task menu
+                local taskmenu = taskinfo.menu
+                assert(taskmenu)
+
+                -- init the task line
+                local taskline = "    "
+                if taskmenu.shortname then
+                    taskline = taskline .. taskmenu.shortname .. ", "
+                else
+                    taskline = taskline .. "   "
+                end
+                
+                -- append the task name
+                taskline = taskline .. taskname
+
                 -- append spaces
-                for i = (#action_info), padding do
-                    action_info = action_info .. " "
+                for i = (#taskline), padding do
+                    taskline = taskline .. " "
                 end
 
-                -- append the action description
-                if action_menu.description then
-                    action_info = action_info .. action_menu.description
+                -- append the task description
+                if taskmenu.description then
+                    taskline = taskline .. taskmenu.description
                 end
+
+                -- print task line
+                print(taskline)
             end
-
-            -- print action info
-            print(action_info)
         end
     end
 

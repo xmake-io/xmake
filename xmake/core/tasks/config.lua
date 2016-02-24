@@ -1,16 +1,19 @@
 -- define task
 task("config")
 
+    -- set category
+    set_task_category("action")
+
     -- set menu
     set_task_menu({
-                    -- xmake f
-                    shortname = 'f'
-
                     -- usage
-                ,   usage = "xmake config|f [options] [target]"
+                    usage = "xmake config|f [options] [target]"
 
                     -- description
                 ,   description = "Configure the project."
+
+                    -- xmake f
+                ,   shortname = 'f'
 
                     -- options
                 ,   options = 
