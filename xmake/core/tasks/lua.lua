@@ -1,16 +1,19 @@
 -- define task
 task("lua")
 
+    -- set category
+    set_task_category("action")
+
     -- set menu
     set_task_menu({
-                    -- xmake l
-                    shortname = 'l'
-
                     -- usage
-                ,   usage = "xmake lua|l [options] [script] [arguments]"
+                    usage = "xmake lua|l [options] [script] [arguments]"
 
                     -- description
                 ,   description = "Run the lua script."
+
+                    -- xmake l
+                ,   shortname = 'l'
 
                     -- options
                 ,   options = 
