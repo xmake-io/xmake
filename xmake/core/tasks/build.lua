@@ -7,13 +7,10 @@ task("build")
     -- set menu
     set_task_menu({
                     -- usage
-                    usage = "xmake [action] [options] [target]"
+                    usage = "xmake [task] [options] [target]"
 
                     -- description
-                ,   description = "Build the project if no given action."
-
-                    -- actions
- --               ,   actions = function () return task.menu(true) end
+                ,   description = "Build the project if no given tasks."
 
                     -- options
                 ,   options = 

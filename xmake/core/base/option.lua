@@ -30,7 +30,7 @@ local table = require("base/table")
 -- translate the menu
 function option._translate(menu)
 
-    -- translate the action menus if exists function
+    -- translate the menus if exists function
     local submenus_all = {}
     for k, submenu in pairs(menu) do
         if type(submenu) == "function" then
@@ -139,7 +139,7 @@ function option.init(argv, menu)
             print("invalid option: " .. arg)
 
             -- print menu
-            option.print_menu(xmake._OPTIONS._ACTION)
+            option.print_menu(xmake._OPTIONS._TASK)
 
             -- failed
             return false
@@ -150,7 +150,7 @@ function option.init(argv, menu)
 
             -- find this option
             local opt = nil
-            for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
+            for _, o in ipairs(menu[xmake._OPTIONS._TASK or "main"].options) do
 
                 -- check
                 assert(o)
@@ -173,7 +173,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
 
                 -- print menu
-                option.print_menu(xmake._OPTIONS._ACTION)
+                option.print_menu(xmake._OPTIONS._TASK)
 
                 -- failed
                 return false
@@ -193,7 +193,7 @@ function option.init(argv, menu)
                     print("invalid option: " .. utils.ifelse(idx, arg, key))
 
                     -- print menu
-                    option.print_menu(xmake._OPTIONS._ACTION)
+                    option.print_menu(xmake._OPTIONS._TASK)
 
                     -- failed
                     return false
@@ -210,7 +210,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(xmake._OPTIONS._ACTION)
+                option.print_menu(xmake._OPTIONS._TASK)
 
                 -- failed
                 return false
@@ -226,28 +226,28 @@ function option.init(argv, menu)
             -- save option
             xmake._OPTIONS[utils.ifelse(prefix == 1 and opt[2], opt[2], key)] = value
 
-        -- action?
+        -- task?
         elseif idx == 1 then
 
-            -- find this action
-            for _, action in ipairs(main.actions) do
+            -- find the current task
+            for taskname, taskinfo in pairs(main.tasks) do
 
                 -- check
-                assert(menu[action])
+                assert(menu[taskname])
 
                 -- ok?
-                if action == key or menu[action].shortname == key then
-                    -- save this action
-                    xmake._OPTIONS._ACTION = action 
+                if taskname == key or menu[taskname].shortname == key then
+                    -- save this task
+                    xmake._OPTIONS._TASK = taskname 
                     break 
                 end
             end
 
             -- not found?
-            if not xmake._OPTIONS._ACTION or not menu[xmake._OPTIONS._ACTION] then
+            if not xmake._OPTIONS._TASK or not menu[xmake._OPTIONS._TASK] then
 
-                -- invalid action
-                print("invalid action: " .. key)
+                -- invalid task
+                print("invalid task: " .. key)
 
                 -- print the main menu
                 option.print_main()
@@ -262,7 +262,7 @@ function option.init(argv, menu)
             
             -- find a value option with name
             local opt = nil
-            for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
+            for _, o in ipairs(menu[xmake._OPTIONS._TASK or "main"].options) do
 
                 -- the mode
                 local mode = o[3]
@@ -312,7 +312,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(xmake._OPTIONS._ACTION)
+                option.print_menu(xmake._OPTIONS._TASK)
 
                 -- failed
                 return false
@@ -322,7 +322,7 @@ function option.init(argv, menu)
     end
 
     -- init the default value
-    for _, o in ipairs(menu[xmake._OPTIONS._ACTION or "main"].options) do
+    for _, o in ipairs(menu[xmake._OPTIONS._TASK or "main"].options) do
 
         -- key=value?
         if o[3] == "kv" then
@@ -376,14 +376,14 @@ function option.find(argv, name, shortname)
     end
 end
 
--- get all default options from the given action
-function option.defaults(action)
+-- get all default options from the given task
+function option.defaults(task)
 
     -- make defaults
     local defaults = {}
 
     -- init the default value
-    for _, o in ipairs(option._MENU[action or "main"].options) do
+    for _, o in ipairs(option._MENU[task or "main"].options) do
 
         -- key=value?
         if o[3] == "kv" then
@@ -406,10 +406,10 @@ function option.defaults(action)
 end
 
 -- print the menu 
-function option.print_menu(action)
+function option.print_menu(task)
 
-    -- no action? print main menu
-    if not action then 
+    -- no task? print main menu
+    if not task then 
         option.print_main()
         return 
     end
@@ -418,9 +418,9 @@ function option.print_menu(action)
     local menu = option._MENU
     assert(menu)
 
-    -- the action
-    action = menu[action]
-    assert(action)
+    -- the task menu
+    local taskmenu = menu[task]
+    assert(taskmenu)
 
     -- print title
     if menu.title then
@@ -433,20 +433,20 @@ function option.print_menu(action)
     end
 
     -- print usage
-    if action.usage then
+    if taskmenu.usage then
         print("")
-        print("Usage: " .. action.usage)
+        print("Usage: " .. taskmenu.usage)
     end
 
     -- print description
-    if action.description then
+    if taskmenu.description then
         print("")
-        print(action.description)
+        print(taskmenu.description)
     end
 
     -- print options
-    if action.options then
-        option.print_options(action.options)
+    if taskmenu.options then
+        option.print_options(taskmenu.options)
     end
 end  
 
