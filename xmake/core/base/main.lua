@@ -56,7 +56,7 @@ function main._done_help()
     if options.help then
     
         -- print menu
-        option.print_menu(options._ACTION)
+        option.print_menu(options._TASK)
 
         -- ok
         return true
@@ -92,7 +92,7 @@ function main._done_option()
     end
 
     -- done action    
-    return action.done(options._ACTION or "build")
+    return action.done(options._TASK or "build")
 end
 
 -- the init function for main

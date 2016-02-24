@@ -63,7 +63,7 @@ function action._load_project()
     end
 
     -- xmake config or marked as "reconfig"?
-    if options._ACTION == "config" or config._RECONFIG then
+    if options._TASK == "config" or config._RECONFIG then
 
         -- probe the current project 
         project.probe()
@@ -102,7 +102,7 @@ function action.done(name)
     end
 
     -- probe the platform
-    if _action.need("platform") and (options._ACTION == "config" or config._RECONFIG) then
+    if _action.need("platform") and (options._TASK == "config" or config._RECONFIG) then
         if not platform.probe(false) then
             return false
         end

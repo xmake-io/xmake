@@ -237,7 +237,7 @@ function config.load()
                     config._CONFIGS = { __rebuild = true }
 
                     -- mark as "reconfig" if the current action is not "config"
-                    if options._ACTION ~= "config" then 
+                    if options._TASK ~= "config" then 
                         config._RECONFIG = true
                     end
                 end
@@ -275,7 +275,7 @@ function config.load()
         config._CONFIGS = { __rebuild = true }
 
         -- mark as "reconfig" if the current action is not "config"
-        if options._ACTION ~= "config" then 
+        if options._TASK ~= "config" then 
             config._RECONFIG = true
         end
     end
@@ -292,7 +292,7 @@ function config.load()
     local defaults = nil
     if not configs._DEFAULTS then
         if config._RECONFIG then defaults = option.defaults("config")
-        elseif options._ACTION == "config" then defaults = options._DEFAULTS
+        elseif options._TASK == "config" then defaults = options._DEFAULTS
         end
         if defaults then
             for k, v in pairs(defaults) do
@@ -323,7 +323,7 @@ function config.load()
     assert(target and type(target) == "table")
 
     -- merge xmake._OPTIONS to target
-    if options._ACTION == "config" then
+    if options._TASK == "config" then
         for k, v in pairs(options) do
 
             -- check
