@@ -137,6 +137,15 @@ function task.menu()
         -- has menu?
         if taskinfo.menu then
 
+            -- add common options
+            local options = taskinfo.menu.options
+            if options then
+                table.insert(options, 1, {'v', "verbose",    "k",  nil,  "Print lots of verbose information." })
+                table.insert(options, 2, {nil, "version",    "k",  nil, "Print the version number and exit." })
+                table.insert(options, 3, {'h', "help",       "k",  nil, "Print this help message and exit."  })
+                table.insert(options, 4, {})
+            end
+
             -- main?
             if taskinfo.category == "main" then
                 menu.main = taskinfo.menu
