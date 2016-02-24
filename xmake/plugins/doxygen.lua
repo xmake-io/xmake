@@ -23,11 +23,6 @@ task("doxygen")
                                                               , "    3. The Current Directory"                                  }
 
                     ,   {}
-                    ,   {'v', "verbose",    "k",  nil,          "Print lots of verbose information."                            }
-                    ,   {nil, "version",    "k",  nil,          "Print the version number and exit."                            }
-                    ,   {'h', "help",       "k",  nil,          "Print this help message and exit."                             }
-                    
-                    ,   {}
                     ,   {nil, "name",       "v",  "all",        "Configure for the given document name."                               }
 
                     }
