@@ -454,6 +454,7 @@ function project._interpreter()
             local maps = 
             {
                 os          = platform.os()
+            ,   host        = xmake._HOST
             ,   prefix      = "$(prefix)"
             ,   projectdir  = xmake._PROJECT_DIR
             }

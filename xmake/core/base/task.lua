@@ -27,6 +27,7 @@ local task = task or {}
 local os            = require("base/os")
 local table         = require("base/table")
 local utils         = require("base/utils")
+local filter        = require("base/filter")
 local string        = require("base/string")
 local global        = require("base/global")
 local interpreter   = require("base/interpreter")
@@ -62,6 +63,25 @@ function task._interpreter()
 
     -- register api: set_task_menu() 
     interp:api_register_set_values("task", "task", "menu")
+
+    -- set filter
+    interp:filter_set(filter.init(function (variable)
+
+        -- check
+        assert(variable)
+
+        -- init maps
+        local maps = 
+        {
+            host = xmake._HOST
+        }
+
+        -- map it
+        result = maps[variable]
+
+        -- ok?
+        return result
+    end))
 
     -- save interpreter
     task._INTERPRETER = interp
@@ -130,6 +150,10 @@ function task.menu()
     local tasks = task.tasks()
     assert(tasks)
 
+    -- the interpreter
+    local interp = task._interpreter()
+    assert(interp)
+
     -- make menu
     local menu = {}
     for taskname, taskinfo in pairs(tasks) do
@@ -151,6 +175,20 @@ function task.menu()
                                                                       , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                                       , "    3. The Current Directory"       })
                 table.insert(options, 7, {})
+            end
+
+            -- filter options
+            if options and interp:filter() then
+
+                -- filter option
+                for _, option in ipairs(options) do
+
+                    -- filter default
+                    local default = option[4]
+                    if type(default) == "string" then
+                        option[4] = interp:filter():handle(default)
+                    end
+                end
             end
 
             -- main?
