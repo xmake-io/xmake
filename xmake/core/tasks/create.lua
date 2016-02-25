@@ -38,12 +38,6 @@ task("create")
                 ,   options = 
                     {
                         {'n', "name",       "kv", nil,          "The project name."                                             }
-                    ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
-                    ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
-                                                              , "Search priority:"
-                                                              , "    1. The Given Command Argument"
-                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"                                  }
 --[[                    ,   {'l', "language",   "kv", "c",          "The project language"
                                                               , function ()
                                                                     local descriptions = {}

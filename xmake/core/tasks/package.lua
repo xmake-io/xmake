@@ -60,14 +60,7 @@ task("package")
                                                                   return descriptions
                                                                 end                                                             }]]
 
-                    ,   {}
-                    ,   {'f', "file",       "kv", "xmake.lua",  "Create a given xmake.lua file."                                }
-                    ,   {'P', "project",    "kv", nil,          "Create from the given project directory."
-                                                              , "Search priority:"
-                                                              , "    1. The Given Command Argument"
-                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"                                  }
-                    ,   {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
+                        {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
 
                     ,   {}
                     ,   {nil, "target",     "v",  "all",        "Package a given target"                                        }   

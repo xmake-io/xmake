@@ -125,13 +125,6 @@ task("config")
                         -- the options for all platforms
 --                    ,   function () return platform.menu("config") end
 
-                    ,   {}
-                    ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-                    ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
-                                                              , "Search priority:"
-                                                              , "    1. The Given Command Argument"
-                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"                                  }
                     ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
 
