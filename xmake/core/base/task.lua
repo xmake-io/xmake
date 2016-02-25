@@ -188,6 +188,19 @@ function task.menu()
                     if type(default) == "string" then
                         option[4] = interp:filter():handle(default)
                     end
+
+                    -- filter description
+                    for i = 5, 64 do
+
+                        -- the description, @note some option may be nil
+                        local description = option[i]
+                        if not description then break end
+
+                        -- the description is string?
+                        if type(description) == "string" then
+                            option[i] = interp:filter():handle(description)
+                        end
+                    end
                 end
             end
 
