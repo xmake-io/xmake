@@ -277,7 +277,11 @@ function interpreter._filter(self, values)
     if table.is_dictionary(values) then
         -- filter keyvalues
         for key, value in pairs(values) do
-            results[filter:handle(key)] = filter:handle(value)
+            if type(value) == "string" then
+                results[filter:handle(key)] = filter:handle(value)
+            else
+                results[filter:handle(key)] = value
+            end
         end
     else
         for _, value in ipairs(utils.wrap(values)) do
@@ -294,7 +298,11 @@ function interpreter._filter(self, values)
                 -- replace values
                 local values = {}
                 for _, v in ipairs(value) do
-                    table.insert(values, filter:handle(v))
+                    if type(v) == "string" then
+                        table.insert(values, filter:handle(v))
+                    else
+                        table.insert(values, v)
+                    end
                 end
                 value = values
             end

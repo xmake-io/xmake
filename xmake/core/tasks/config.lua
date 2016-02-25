@@ -79,14 +79,14 @@ task("config")
                                                               , "    - static"
                                                               , "    - shared"
                                                               , "    - binary"                                                 }
---                    ,   {nil, "host",       "kv", xmake._HOST,  "The current host environment."                                 }
+                    ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                 }
 
                         -- the options for project
 --                    ,   function () return project.menu() end
 
                     ,   {}
-                    ,   {nil, "make",       "kv", "auto",     "Set the make path."                                              }
-                    ,   {nil, "ccache",     "kv", "auto",     "Enable or disable the c/c++ compiler cache."                     }
+                    ,   {nil, "make",       "kv", "auto",       "Set the make path."                                              }
+                    ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                     }
 
                     ,   {}
                     ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
