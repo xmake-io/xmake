@@ -20,15 +20,6 @@ task("build")
                     ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
                     ,   {}
-                    ,   {'f', "file",       "kv", "xmake.lua",  "Read a given xmake.lua file."                                  }
-                    ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
-                                                              , "Search priority:"
-                                                              , "    1. The Given Command Argument"
-                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"                                  }
-
-
-                    ,   {}
                     ,   {'j', "jobs",       "kv", nil,          "Specifies the number of jobs to build simultaneously"          }
                    
                     ,   {}

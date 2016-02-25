@@ -40,15 +40,7 @@ task("lua")
                     -- options
                 ,   options = 
                     {
-                        {'f', "file",       "kv", nil,          "Read a given xmake.lua file."                                  }
-                    ,   {'P', "project",    "kv", nil,          "Change to the given project directory."
-                                                              , "Search priority:"
-                                                              , "    1. The Given Command Argument"
-                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"                                  }
-
-                    ,   {}
-                    ,   {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
+                        {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
 
                     ,   {}
                     ,   {nil, "script",     "v",  nil,          "Run the given lua script."
