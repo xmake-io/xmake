@@ -46,8 +46,16 @@ task("global")
                                                                  ,  "    --ccache=[y|n]"                                        }
 
                     ,   {}
-                        -- the options for all platforms
---                    ,   function () return platform.menu("global") end
+
+                        -- show menu for platform
+                    ,   function () 
+
+                            -- import platform
+                            import("platform")
+
+                            -- get menu for platform
+                            return platform.menu("global") 
+                        end
 
                     }
                 })

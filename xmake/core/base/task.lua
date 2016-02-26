@@ -30,6 +30,7 @@ local utils         = require("base/utils")
 local filter        = require("base/filter")
 local string        = require("base/string")
 local global        = require("base/global")
+local sandbox       = require("base/sandbox")
 local interpreter   = require("base/interpreter")
 
 -- the directories of tasks
@@ -108,6 +109,23 @@ function task._load(filepath)
     return results
 end
 
+-- call the sandbox script
+function task._call(script, ...)
+
+    -- get interpreter
+    local interp = task._interpreter()
+    assert(interp) 
+
+    -- bind script and get new script with sandbox
+    local newscript, errors = sandbox.bind(script, interp)
+    if not newscript then
+        return false, errors
+    end
+
+    -- load it
+    return sandbox.load(script, ...)
+end
+
 -- get all tasks
 function task.tasks()
  
@@ -161,9 +179,83 @@ function task.menu()
         -- has menu?
         if taskinfo.menu then
 
-            -- add common options
+            -- translate options
             local options = taskinfo.menu.options
             if options then
+            
+                -- make full options 
+                local options_full = {}
+                for _, option in ipairs(options) do
+
+                    -- this option is function? translate it
+                    if type(option) == "function" then
+                        
+                        -- call menu script in the sandbox
+                        local ok, results = task._call(option)
+                        if ok then
+                            if results then
+                                for _, opt in ipairs(results) do
+                                    table.insert(options_full, opt)
+                                end
+                            end
+                        else
+                            -- errors
+                            utils.error("taskmenu: %s", results)
+                            utils.abort()
+                        end
+                    else
+                        table.insert(options_full, option)
+                    end
+                end
+
+                -- update the options
+                options = options_full
+                taskinfo.menu.options = options_full
+
+                -- filter options
+                if interp:filter() then
+
+                    -- filter option
+                    for _, option in ipairs(options) do
+
+                        -- filter default
+                        local default = option[4]
+                        if type(default) == "string" then
+                            option[4] = interp:filter():handle(default)
+                        end
+
+                        -- filter description
+                        for i = 5, 64 do
+
+                            -- the description, @note some option may be nil
+                            local description = option[i]
+                            if not description then break end
+
+                            -- the description is string?
+                            if type(description) == "string" then
+                                option[i] = interp:filter():handle(description)
+
+                            -- the description is function? wrap it for calling it in the sandbox
+                            elseif type(description) == "function" then
+                                option[i] = function ()
+ 
+                                    -- call it in the sandbox
+                                    local ok, results = task._call(description)
+                                    if not ok then
+                                        -- errors
+                                        utils.error("taskmenu: %s", results)
+                                        utils.abort()
+                                    end
+
+                                    -- ok
+                                    return results
+                                end
+                            end
+                        end
+                    end
+                end
+
+                -- add common options
                 table.insert(options, 1, {'v', "verbose",    "k",  nil, "Print lots of verbose information." })
                 table.insert(options, 2, {nil, "version",    "k",  nil, "Print the version number and exit." })
                 table.insert(options, 3, {'h', "help",       "k",  nil, "Print this help message and exit."  })
@@ -175,33 +267,7 @@ function task.menu()
                                                                       , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                                       , "    3. The Current Directory"       })
                 table.insert(options, 7, {})
-            end
 
-            -- filter options
-            if options and interp:filter() then
-
-                -- filter option
-                for _, option in ipairs(options) do
-
-                    -- filter default
-                    local default = option[4]
-                    if type(default) == "string" then
-                        option[4] = interp:filter():handle(default)
-                    end
-
-                    -- filter description
-                    for i = 5, 64 do
-
-                        -- the description, @note some option may be nil
-                        local description = option[i]
-                        if not description then break end
-
-                        -- the description is string?
-                        if type(description) == "string" then
-                            option[i] = interp:filter():handle(description)
-                        end
-                    end
-                end
             end
 
             -- main?

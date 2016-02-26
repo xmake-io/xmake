@@ -56,7 +56,10 @@ function utils.error(msg, ...)
     print("error: " .. string.format(msg, ...))
 end
 
--- the abort function
+-- the abort function, will raise an exception
+-- and the parent function can capture it
+--
+-- so we do not use os.exit()
 function utils.abort()
 
     -- trace

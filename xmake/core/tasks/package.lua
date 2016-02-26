@@ -40,25 +40,27 @@ task("package")
                     -- options
                 ,   options = 
                     {
---[[                        {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
+                        {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
                                                               , "    .e.g --archs=\"armv7, arm64\" or -a i386"
                                                               , ""
+                                                                -- show the description of all architectures
                                                               , function () 
-                                                                  local descriptions = {}
-                                                                  local plats = platform.plats()
-                                                                  if plats then
-                                                                      for i, plat in ipairs(plats) do
-                                                                          descriptions[i] = "    - " .. plat .. ":"
-                                                                          local archs = platform.archs(plat)
-                                                                          if archs then
-                                                                              for _, arch in ipairs(archs) do
-                                                                                  descriptions[i] = descriptions[i] .. " " .. arch
-                                                                              end
-                                                                          end
-                                                                      end
-                                                                  end
-                                                                  return descriptions
-                                                                end                                                             }]]
+
+                                                                   -- import platform
+                                                                    import("platform")
+
+                                                                    -- make description
+                                                                    local description = {}
+                                                                    for i, plat in ipairs(platform.plats()) do
+                                                                        description[i] = "    - " .. plat .. ":"
+                                                                        for _, arch in ipairs(platform.archs(plat)) do
+                                                                            description[i] = description[i] .. " " .. arch
+                                                                        end
+                                                                    end
+
+                                                                    -- get it
+                                                                    return description
+                                                                end                                                            }
 
                         {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
 
