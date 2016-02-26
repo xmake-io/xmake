@@ -17,36 +17,9 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        template.lua
+-- @file        ifelse.lua
 --
 
--- define module
-local sandbox_template = sandbox_template or {}
+-- load module
+return require("sandbox/utils").ifelse
 
--- load modules
-local template = require("base/template")
-
--- get all languages
-function sandbox_template.languages()
-
-    -- get it 
-    local languages = template.languages()
-    assert(languages)
-
-    -- ok
-    return languages
-end
-
--- load all templates from the given language 
-function sandbox_template.templates(language)
-
-    -- get it 
-    local templates = template.templates(language)
-    assert(templates)
-
-    -- ok
-    return templates
-end
-
--- return module
-return sandbox_template
