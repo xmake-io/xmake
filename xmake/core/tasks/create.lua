@@ -67,8 +67,8 @@ task("create")
                                                                     local description = {}
                                                                     for _, language in ipairs(template.languages()) do
                                                                         table.insert(description, format("    - language: %s", language))
-                                                                        for i, t in ipairs(template.loadall(language)) do
-                                                                            table.insert(description, format("      %d. %s", i, utils.ifelse(t.description, t.description, "The Unknown Project")))
+                                                                        for i, t in ipairs(template.templates(language)) do
+                                                                            table.insert(description, format("      %d. %s", i, ifelse(t.description, t.description, "The Unknown Project")))
                                                                         end
                                                                     end
 
@@ -76,7 +76,6 @@ task("create")
                                                                     return description
                                                                 end                                                             }
 
-                    ,   {}
                     ,   {}
                     ,   {nil, "target",     "v",  nil,          "Create the given target."                     
                                                               , "Uses the project name as target if not exists."                }

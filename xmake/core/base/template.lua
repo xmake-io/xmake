@@ -111,7 +111,7 @@ function template.languages()
 end
 
 -- load all templates from the given language 
-function template.loadall(language)
+function template.templates(language)
 
     -- check
     assert(language)
@@ -194,7 +194,7 @@ function template.create(language, templateid, targetname)
     end))
 
     -- load all templates for the given language
-    local templates = template.loadall(language)
+    local templates = template.templates(language)
 
     -- load the template module
     local module = nil

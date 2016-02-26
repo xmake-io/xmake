@@ -97,7 +97,7 @@ function action_create.menu()
                                                                 local languages = template.languages()
                                                                 for _, language in ipairs(languages) do
                                                                     table.insert(descriptions, string.format("    - language: %s", language))
-                                                                    local templates = template.loadall(language)
+                                                                    local templates = template.templates(language)
                                                                     if templates then
                                                                         for i, template in ipairs(templates) do
                                                                             table.insert(descriptions, string.format("      %d. %s", i, utils.ifelse(template.description, template.description, "The Unknown Project")))
