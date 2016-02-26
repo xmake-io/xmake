@@ -46,34 +46,6 @@ function option._translate(menu)
     end
     table.copy2(menu, submenus_all)
 
-    -- translate it if exists function in the option menu
-    for _, submenu in pairs(menu) do
-
-        -- exits options?
-        if submenu.options then
-            
-            -- translate options
-            local options_all = {}
-            for _, option in ipairs(submenu.options) do
-
-                -- this option is function? translate it
-                if type(option) == "function" then
-                    local _options = option()
-                    if _options then
-                        for _, o in ipairs(_options) do
-                            table.insert(options_all, o)
-                        end
-                    end
-                else
-                    table.insert(options_all, option)
-                end
-            end
-
-            -- update the options
-            submenu.options = options_all
-        end
-    end
-
     -- save menu
     option._MENU = menu
 

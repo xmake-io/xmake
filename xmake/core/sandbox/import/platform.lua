@@ -17,58 +17,43 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        project.lua
+-- @file        platform.lua
 --
 
 -- define module
-local sandbox_project = sandbox_project or {}
+local sandbox_platform = sandbox_platform or {}
 
 -- load modules
-local rule      = require("base/rule")
-local config    = require("base/config")
-local project   = require("base/project")
+local platform = require("base/platform")
 
--- get the build directory
-function sandbox_project.buildir()
+-- get the platform menu
+function sandbox_platform.menu(action)
 
     -- get it 
-    return config.get("buildir")
+    return platform.menu(action)
 end
 
--- get the project directory
-function sandbox_project.projectdir()
+-- get the all platforms
+function sandbox_platform.plats()
 
     -- get it 
-    return xmake._PROJECT_DIR
+    local plats = platform.plats()
+    assert(plats)
+
+    -- ok
+    return plats
 end
 
--- get the current platform
-function sandbox_project.plat()
+-- get the all architectures for the given platform
+function sandbox_platform.archs(plat)
 
     -- get it 
-    return config.get("plat")
-end
+    local archs = platform.archs(plat)
+    assert(archs)
 
--- get the current architecture
-function sandbox_project.arch()
-
-    -- get it 
-    return config.get("arch")
-end
-
--- get the current mode
-function sandbox_project.mode()
-
-    -- get it 
-    return config.get("mode")
-end
-
--- get the menu
-function sandbox_project.menu()
-
-    -- get it 
-    return project.menu()
+    -- ok
+    return archs
 end
 
 -- return module
-return sandbox_project
+return sandbox_platform

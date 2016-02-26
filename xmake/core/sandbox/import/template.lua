@@ -1,4 +1,4 @@
---!The Automatic Cross-platform Build Tool
+--!The Automatic Cross-template Build Tool
 -- 
 -- XMake is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
@@ -17,36 +17,36 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        import.lua
+-- @file        template.lua
 --
 
+-- define module
+local sandbox_template = sandbox_template or {}
+
 -- load modules
-local utils = require("base/utils")
+local template = require("base/template")
 
--- import module
-function sandbox_import(name)
+-- get all languages
+function sandbox_template.languages()
 
-    -- load module
-    local module = require("sandbox/import/" .. name)
-    if not module then
-        utils.error("cannot import module: %s", name)
-        utils.abort()
-    end
+    -- get it 
+    local languages = template.languages()
+    assert(languages)
 
-    -- get the parent scope
-    local scope_parent = getfenv(2)
-    assert(scope_parent)
-
-    -- this module has been imported?
-    if rawget(scope_parent, name) then
-        utils.error("this module: %s has been imported!", name)
-        utils.abort()
-    end
-
-    -- import this module into the parent scope
-    scope_parent[name] = module
+    -- ok
+    return languages
 end
 
--- load module
-return sandbox_import
+-- load all templates from the given language 
+function sandbox_template.loadall(language)
 
+    -- get it 
+    local templates = template.loadall(language)
+    assert(templates)
+
+    -- ok
+    return templates
+end
+
+-- return module
+return sandbox_template

@@ -27,13 +27,13 @@ local utils     = require("base/utils")
 local vformat   = require("sandbox/vformat")
 
 -- define module
-local sandbox_builtin_os = sandbox_builtin_os or {}
+local sandbox_os = sandbox_os or {}
 
 -- inherit the public interfaces of os
-sandbox_builtin_os.curdir   = os.curdir
+sandbox_os.curdir   = os.curdir
 
 -- copy file or directory
-function sandbox_builtin_os.cp(src, dst)
+function sandbox_os.cp(src, dst)
     
     -- check
     assert(src and dst)
@@ -52,7 +52,7 @@ function sandbox_builtin_os.cp(src, dst)
 end
 
 -- move file or directory
-function sandbox_builtin_os.mv(src, dst)
+function sandbox_os.mv(src, dst)
     
     -- check
     assert(src and dst)
@@ -71,7 +71,7 @@ function sandbox_builtin_os.mv(src, dst)
 end
 
 -- remove file or directory
-function sandbox_builtin_os.rm(file_or_dir, emptydir)
+function sandbox_os.rm(file_or_dir, emptydir)
     
     -- check
     assert(file_or_dir)
@@ -89,7 +89,7 @@ function sandbox_builtin_os.rm(file_or_dir, emptydir)
 end
 
 -- change to directory
-function sandbox_builtin_os.cd(dir)
+function sandbox_os.cd(dir)
 
     -- check
     assert(dir)
@@ -107,7 +107,7 @@ function sandbox_builtin_os.cd(dir)
 end
 
 -- create directory
-function sandbox_builtin_os.mkdir(dir)
+function sandbox_os.mkdir(dir)
     
     -- check
     assert(dir)
@@ -124,7 +124,7 @@ function sandbox_builtin_os.mkdir(dir)
 end
 
 -- remove directory
-function sandbox_builtin_os.rmdir(dir)
+function sandbox_os.rmdir(dir)
     
     -- check
     assert(dir)
@@ -143,7 +143,7 @@ function sandbox_builtin_os.rmdir(dir)
 end
 
 -- run shell
-function sandbox_builtin_os.run(cmd, ...)
+function sandbox_os.run(cmd, ...)
 
     -- make command
     cmd = vformat(cmd, ...)
@@ -163,7 +163,7 @@ function sandbox_builtin_os.run(cmd, ...)
 end
 
 -- match files or directories
-function sandbox_builtin_os.match(pattern, findir)
+function sandbox_os.match(pattern, findir)
 
     -- check
     assert(pattern)
@@ -176,7 +176,7 @@ function sandbox_builtin_os.match(pattern, findir)
 end
 
 -- is directory?
-function sandbox_builtin_os.isdir(dirpath)
+function sandbox_os.isdir(dirpath)
 
     -- check
     assert(dirpath)
@@ -189,7 +189,7 @@ function sandbox_builtin_os.isdir(dirpath)
 end
 
 -- is directory?
-function sandbox_builtin_os.isfile(filepath)
+function sandbox_os.isfile(filepath)
 
     -- check
     assert(filepath)
@@ -202,5 +202,5 @@ function sandbox_builtin_os.isfile(filepath)
 end
 
 -- return module
-return sandbox_builtin_os
+return sandbox_os
 

@@ -38,32 +38,45 @@ task("create")
                 ,   options = 
                     {
                         {'n', "name",       "kv", nil,          "The project name."                                             }
---[[                    ,   {'l', "language",   "kv", "c",          "The project language"
+                    ,   {'l', "language",   "kv", "c",          "The project language"
+
+                                                                -- show the description of all languages
                                                               , function ()
-                                                                    local descriptions = {}
-                                                                    local languages = template.languages()
-                                                                    for _, language in ipairs(languages) do
-                                                                        table.insert(descriptions, "    - " .. language)
+
+                                                                    -- import template
+                                                                    import("template")
+
+                                                                    -- make description
+                                                                    local description = {}
+                                                                    for _, language in ipairs(template.languages()) do
+                                                                        table.insert(description, "    - " .. language)
                                                                     end
-                                                                    return descriptions
+
+                                                                    -- get it
+                                                                    return description
                                                                 end                                                             }
                     ,   {'t', "template",   "kv", "1",          "Select the project template id of the given language."
+
+                                                                -- show the description of all templates
                                                               , function ()
-                                                                    local descriptions = {}
-                                                                    local languages = template.languages()
-                                                                    for _, language in ipairs(languages) do
-                                                                        table.insert(descriptions, string.format("    - language: %s", language))
-                                                                        local templates = template.loadall(language)
-                                                                        if templates then
-                                                                            for i, template in ipairs(templates) do
-                                                                                table.insert(descriptions, string.format("      %d. %s", i, utils.ifelse(template.description, template.description, "The Unknown Project")))
-                                                                            end
+
+                                                                    -- import template
+                                                                    import("template")
+
+                                                                    -- make description
+                                                                    local description = {}
+                                                                    for _, language in ipairs(template.languages()) do
+                                                                        table.insert(description, format("    - language: %s", language))
+                                                                        for i, t in ipairs(template.loadall(language)) do
+                                                                            table.insert(description, format("      %d. %s", i, utils.ifelse(t.description, t.description, "The Unknown Project")))
                                                                         end
                                                                     end
-                                                                    return descriptions
+
+                                                                    -- get it
+                                                                    return description
                                                                 end                                                             }
 
-                    ,   {}]]
+                    ,   {}
                     ,   {}
                     ,   {nil, "target",     "v",  nil,          "Create the given target."                     
                                                               , "Uses the project name as target if not exists."                }

@@ -43,34 +43,43 @@ task("config")
                         {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again."           }
 
                     ,   {}
---[[                    ,   {'p', "plat",       "kv", xmake._HOST,  "Compile for the given platform."                               
+                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
+
+                                                                -- show the description of all platforms
                                                               , function () 
-                                                                    local descriptions = {}
-                                                                    local plats = platform.plats()
-                                                                    if plats then
-                                                                        for i, plat in ipairs(plats) do
-                                                                            descriptions[i] = "    - " .. plat
-                                                                        end
+
+                                                                    -- import platform
+                                                                    import("platform")
+
+                                                                    -- make description
+                                                                    local description = {}
+                                                                    for i, plat in ipairs(platform.plats()) do
+                                                                        description[i] = "    - " .. plat
                                                                     end
-                                                                    return descriptions
+
+                                                                    -- get it
+                                                                    return description
                                                                 end                                                            }
                     ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                               
+
+                                                                -- show the description of all architectures
                                                               , function () 
-                                                                    local descriptions = {}
-                                                                    local plats = platform.plats()
-                                                                    if plats then
-                                                                        for i, plat in ipairs(plats) do
-                                                                            descriptions[i] = "    - " .. plat .. ":"
-                                                                            local archs = platform.archs(plat)
-                                                                            if archs then
-                                                                                for _, arch in ipairs(archs) do
-                                                                                    descriptions[i] = descriptions[i] .. " " .. arch
-                                                                                end
-                                                                            end
+
+                                                                    -- import platform
+                                                                    import("platform")
+
+                                                                    -- make description
+                                                                    local description = {}
+                                                                    for i, plat in ipairs(platform.plats()) do
+                                                                        description[i] = "    - " .. plat .. ":"
+                                                                        for _, arch in ipairs(platform.archs(plat)) do
+                                                                            description[i] = description[i] .. " " .. arch
                                                                         end
                                                                     end
-                                                                    return descriptions
-                                                                end                                                            }]]
+
+                                                                    -- get it
+                                                                    return description
+                                                                end                                                            }
                     ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
                                                               , "    - debug"
                                                               , "    - release"
@@ -81,8 +90,15 @@ task("config")
                                                               , "    - binary"                                                 }
                     ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                 }
 
-                        -- the options for project
---                    ,   function () return project.menu() end
+                        -- show menu for project
+                    ,   function () 
+
+                            -- import platform
+                            import("project")
+
+                            -- get menu for project
+                            return project.menu() 
+                        end
 
                     ,   {}
                     ,   {nil, "make",       "kv", "auto",       "Set the make path."                                              }
@@ -122,8 +138,15 @@ task("config")
                     ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"                                     }
                     ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"                               }
 
-                        -- the options for all platforms
---                    ,   function () return platform.menu("config") end
+                        -- show menu for platform
+                    ,   function () 
+
+                            -- import platform
+                            import("platform")
+
+                            -- get menu for platform
+                            return platform.menu("config") 
+                        end
 
                     ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
