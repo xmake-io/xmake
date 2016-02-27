@@ -45,8 +45,7 @@ function sandbox_os.cp(src, dst)
     -- done
     local ok, errors = os.cp(src, dst)
     if not ok then
-        utils.error(errors)
-        utils.abort()
+        os.raise(errors)
     end
 
 end
@@ -64,8 +63,7 @@ function sandbox_os.mv(src, dst)
     -- done
     local ok, errors = os.mv(src, dst)
     if not ok then
-        utils.error(errors)
-        utils.abort()
+        os.raise(errors)
     end
 
 end
@@ -82,8 +80,7 @@ function sandbox_os.rm(file_or_dir, emptydir)
     -- done
     local ok, errors = os.rm(file_or_dir, emptydir)
     if not ok then
-        utils.error(errors)
-        utils.abort()
+        os.raise(errors)
     end
 
 end
@@ -100,8 +97,7 @@ function sandbox_os.cd(dir)
     -- done
     local ok, errors = os.cd(dir)
     if not ok then
-        utils.error(errors)
-        utils.abort()
+        os.raise(errors)
     end
 
 end
@@ -117,8 +113,7 @@ function sandbox_os.mkdir(dir)
 
     -- done
     if not os.mkdir(dir) then
-        utils.error("create directory: %s failed!", dir)
-        utils.abort()
+        os.raise("create directory: %s failed!", dir)
     end
 
 end
@@ -135,8 +130,7 @@ function sandbox_os.rmdir(dir)
     -- done
     if os.isdir(dir) then
         if not os.rmdir(dir) then
-            utils.error("remove directory: %s failed!", dir)
-            utils.abort()
+            os.raise("remove directory: %s failed!", dir)
         end
     end
 
@@ -154,8 +148,7 @@ function sandbox_os.run(cmd, ...)
     -- run command
     if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
         io.cat(log)
-        utils.error("run: %s failed!", cmd)
-        utils.abort()
+        os.raise("run: %s failed!", cmd)
     end
 
     -- remove the temporary log file
@@ -199,6 +192,13 @@ function sandbox_os.isfile(filepath)
 
     -- done
     return os.isfile(filepath)
+end
+
+-- raise an exception and abort the current script
+function sandbox_os.raise(msg, ...)
+
+    -- raise it
+    os.raise(msg, ...)
 end
 
 -- return module

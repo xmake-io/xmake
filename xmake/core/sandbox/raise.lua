@@ -17,35 +17,9 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        import.lua
+-- @file        raise.lua
 --
 
--- load modules
-local os    = require("base/os")
-local utils = require("base/utils")
-
--- import module
-function sandbox_import(name)
-
-    -- load module
-    local module = require("sandbox/import/" .. name)
-    if not module then
-        os.raise("cannot import module: %s", name)
-    end
-
-    -- get the parent scope
-    local scope_parent = getfenv(2)
-    assert(scope_parent)
-
-    -- this module has been imported?
-    if rawget(scope_parent, name) then
-        os.raise("this module: %s has been imported!", name)
-    end
-
-    -- import this module into the parent scope
-    scope_parent[name] = module
-end
-
 -- load module
-return sandbox_import
+return require("sandbox/os").raise
 

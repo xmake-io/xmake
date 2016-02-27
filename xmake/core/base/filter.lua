@@ -24,6 +24,7 @@
 local filter = filter or {}
 
 -- load modules
+local os        = require("base/os")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
@@ -78,8 +79,7 @@ function filter.handle(self, value)
 
         -- invalid builtin variable?
         if result == nil then
-            utils.error("invalid variable: $(%s)", variable)
-            utils.abort()
+            os.raise("invalid variable: $(%s)", variable)
         end
 
         -- ok?
