@@ -52,8 +52,7 @@ function deprecated_interpreter.api_register_set_scope(self, ...)
         -- check 
         if not scope_for_kind[scope_name] then
             utils.error("set_%s(\"%s\") failed, %s not found!", scope_kind, scope_name, scope_name)
-            utils.error("please uses add_%s(\"%s\") first!", scope_kind, scope_name)
-            utils.abort()
+            os.raise("please uses add_%s(\"%s\") first!", scope_kind, scope_name)
         end
 
         -- init scope for name
@@ -92,8 +91,7 @@ function deprecated_interpreter.api_register_add_scope(self, ...)
         -- check 
         if scope_for_kind[scope_name] then
             utils.error("add_%s(\"%s\") failed, %s have been defined!", scope_kind, scope_name, scope_name)
-            utils.error("please uses set_%s(\"%s\")!", scope_kind, scope_name)
-            utils.abort()
+            os.raise("please uses set_%s(\"%s\")!", scope_kind, scope_name)
         end
 
         -- init scope for name
@@ -126,8 +124,7 @@ function deprecated_interpreter.api_register_set_script(self, scope_kind, prefix
         -- bind script and get new script with sandbox
         local newscript, errors = sandbox.bind(script, self)
         if not newscript then
-            utils.error("set_%s(): %s", name, errors)
-            utils.abort()
+            os.raise("set_%s(): %s", name, errors)
         end
 
         -- update script?

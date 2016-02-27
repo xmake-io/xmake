@@ -232,15 +232,13 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
                 -- done interpreter
                 local ok, errors = xpcall(script, interpreter._traceback)
                 if not ok then
-                    utils.error(errors)
-                    utils.abort()
+                    os.raise(errors)
                 end
 
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
             else
-                utils.error(errors)
-                utils.abort()
+                os.raise(errors)
             end
         end
     end
@@ -740,8 +738,7 @@ function interpreter.api_register_on_script(self, scope_kind, prefix, ...)
         -- bind script and get new script with sandbox
         local newscript, errors = sandbox.bind(script, self)
         if not newscript then
-            utils.error("on_%s(): %s", name, errors)
-            utils.abort()
+            os.raise("on_%s(): %s", name, errors)
         end
 
         -- update script?
@@ -791,8 +788,7 @@ function interpreter.api_register_add_keyvalues(self, scope_kind, prefix, ...)
 
         -- check count
         if (count % 2) == 1 then
-            utils.error("add_%s() values must be key-value pair!", name)
-            utils.abort()
+            os.raise("add_%s() values must be key-value pair!", name)
         end
 
         -- done
@@ -884,8 +880,7 @@ function interpreter.api_call(self, apiname, ...)
     -- get api function
     local apifunc = self._PUBLIC[apiname]
     if not apifunc then
-        utils.error("call %s() failed, the api %s not found!", apiname)
-        utils.abort() 
+        os.raise("call %s() failed, the api %s not found!", apiname)
     end
 
     -- call api function

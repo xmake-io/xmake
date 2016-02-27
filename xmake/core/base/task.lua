@@ -200,8 +200,7 @@ function task.menu()
                             end
                         else
                             -- errors
-                            utils.error("taskmenu: %s", results)
-                            utils.abort()
+                            os.raise("taskmenu: %s", results)
                         end
                     else
                         table.insert(options_full, option)
@@ -243,8 +242,7 @@ function task.menu()
                                     local ok, results = task._call(description)
                                     if not ok then
                                         -- errors
-                                        utils.error("taskmenu: %s", results)
-                                        utils.abort()
+                                        os.raise("taskmenu: %s", results)
                                     end
 
                                     -- ok

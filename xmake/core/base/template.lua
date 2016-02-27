@@ -132,8 +132,7 @@ function template.templates(language)
             local results, errors = interp:load(templatefile, nil, true, true)
             if not results then
                 -- trace
-                utils.error(errors)
-                utils.abort()
+                os.raise(errors)
             end
 
             -- save template directory

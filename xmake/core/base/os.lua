@@ -233,5 +233,20 @@ function os.cd(dir)
     return true
 end
 
+-- raise an exception and abort the current script
+--
+-- the parent function will capture it if we uses pcall or xpcall
+--
+function os.raise(msg, ...)
+
+    -- raise it
+    if msg then
+        error(string.format(msg, ...))
+    else
+        error()
+    end
+end
+
+
 -- return module: os
 return os

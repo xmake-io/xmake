@@ -111,8 +111,7 @@ function sandbox._init()
                 -- load module
                 local ok, results = xpcall(script, debug.traceback)
                 if not ok then
-                    utils.error(results)
-                    utils.abort()
+                    os.raise(results)
                 end
 
                 -- register module
