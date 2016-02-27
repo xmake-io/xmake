@@ -60,9 +60,9 @@ task("package")
 
                                                                     -- get it
                                                                     return description
-                                                                end                                                            }
+                                                                end                                                             }
 
-                        {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
+                    ,   {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
 
                     ,   {}
                     ,   {nil, "target",     "v",  "all",        "Package a given target"                                        }   
