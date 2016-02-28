@@ -27,6 +27,7 @@ local action_package = action_package or {}
 local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local config    = require("base/config")
 local global    = require("base/global")
 local string    = require("base/string")
@@ -106,7 +107,7 @@ function action_package._makeconf(target_name, target)
     assert(target_name and target)
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- the configs
@@ -247,7 +248,7 @@ end
 function action_package.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- trace

@@ -27,6 +27,7 @@ local action = action or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local global    = require("base/global")
 local config    = require("base/config")
 local project   = require("base/project")
@@ -43,7 +44,7 @@ end
 function action._load_project()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- enter the project directory
@@ -81,7 +82,7 @@ end
 function action.done(name)
     
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- load the given action

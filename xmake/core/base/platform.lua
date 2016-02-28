@@ -27,6 +27,7 @@ local platform = platform or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local config    = require("base/config")
 local global    = require("base/global")
 
@@ -245,7 +246,7 @@ function platform.dump()
     assert(platform._CONFIGS)
 
     -- dump
-    if xmake._OPTIONS.verbose then
+    if option.options().verbose then
         utils.dump(platform._configs(config.get("plat")))
     end
    

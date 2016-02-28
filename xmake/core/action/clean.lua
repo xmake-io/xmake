@@ -28,6 +28,7 @@ local clean     = require("base/clean")
 local config    = require("base/config")
 local project   = require("base/project")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local platform  = require("base/platform")
 
 -- need access to the given file?
@@ -47,7 +48,7 @@ end
 function action_clean.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- check target

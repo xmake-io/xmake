@@ -28,6 +28,7 @@ local rule      = require("base/rule")
 local utils     = require("base/utils")
 local clean     = require("base/clean")
 local config    = require("base/config")
+local option    = require("base/option")
 local project   = require("base/project")
 local makefile  = require("base/makefile")
 
@@ -48,7 +49,7 @@ end
 function action_build.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- the target name

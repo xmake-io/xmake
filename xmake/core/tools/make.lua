@@ -23,6 +23,7 @@
 -- load modules
 local os        = require("base/os")
 local utils     = require("base/utils")
+local option    = require("base/option")
 
 -- define module: make
 local make = make or {}
@@ -34,7 +35,7 @@ function make.init(self, name)
     self.name = name or "make"
 
     -- is verbose?
-    self._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+    self._VERBOSE = utils.ifelse(option.options().verbose, "-v", "")
 
 end
 
@@ -43,9 +44,9 @@ function make.main(self, mkfile, target)
 
     -- enable jobs?
     local jobs = ""
-    if xmake._OPTIONS.jobs ~= nil then
-        if tonumber(xmake._OPTIONS.jobs) ~= 0 then
-            jobs = "-j" .. xmake._OPTIONS.jobs
+    if option.options().jobs ~= nil then
+        if tonumber(option.options().jobs) ~= 0 then
+            jobs = "-j" .. option.options().jobs
         else
             jobs = "-j"
         end

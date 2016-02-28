@@ -30,6 +30,7 @@ local rule                  = require("base/rule")
 local path                  = require("base/path")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
+local option                = require("base/option")
 local config                = require("base/config")
 local filter                = require("base/filter")
 local linker                = require("base/linker")
@@ -946,7 +947,7 @@ end
 function project.dump()
     
     -- dump
-    if xmake._OPTIONS.verbose then
+    if option.options().verbose then
         utils.dump(project.targets())
     end
    

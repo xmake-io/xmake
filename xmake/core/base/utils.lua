@@ -23,6 +23,9 @@
 -- define module: utils
 local utils = utils or {}
 
+-- load modules
+local option = require("base/option")
+
 -- the printf function
 function utils.printf(msg, ...)
 
@@ -36,7 +39,7 @@ end
 -- the verbose function
 function utils.verbose(msg, ...)
 
-    if xmake._OPTIONS.verbose then
+    if option.options().verbose then
         
         -- check
         assert(msg)

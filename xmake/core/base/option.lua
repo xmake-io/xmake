@@ -24,8 +24,12 @@
 local option = option or {}
 
 -- load modules
-local utils = require("base/utils")
 local table = require("base/table")
+
+-- ifelse, a? b : c
+function option._ifelse(a, b, c)
+    if a then return b else return c end
+end
 
 -- translate the menu
 function option._translate(menu)
@@ -65,8 +69,8 @@ function option.init(argv, menu)
     assert(main)
 
     -- init _OPTIONS
-    xmake._OPTIONS = {}
-    xmake._OPTIONS._DEFAULTS = {}
+    option._OPTIONS = {}
+    option._OPTIONS._DEFAULTS = {}
 
     -- parse _ARGV to _OPTIONS
     local _iter, _s, _k = ipairs(argv)
@@ -111,7 +115,7 @@ function option.init(argv, menu)
             print("invalid option: " .. arg)
 
             -- print menu
-            option.print_menu(xmake._OPTIONS._TASK)
+            option.print_menu(option._OPTIONS._TASK)
 
             -- failed
             return false
@@ -122,7 +126,7 @@ function option.init(argv, menu)
 
             -- find this option
             local opt = nil
-            for _, o in ipairs(menu[xmake._OPTIONS._TASK or "main"].options) do
+            for _, o in ipairs(menu[option._OPTIONS._TASK or "main"].options) do
 
                 -- check
                 assert(o)
@@ -145,7 +149,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
 
                 -- print menu
-                option.print_menu(xmake._OPTIONS._TASK)
+                option.print_menu(option._OPTIONS._TASK)
 
                 -- failed
                 return false
@@ -162,10 +166,10 @@ function option.init(argv, menu)
                 if idx == nil or arg:startswith("-") then 
 
                     -- invalid option
-                    print("invalid option: " .. utils.ifelse(idx, arg, key))
+                    print("invalid option: " .. option._ifelse(idx, arg, key))
 
                     -- print menu
-                    option.print_menu(xmake._OPTIONS._TASK)
+                    option.print_menu(option._OPTIONS._TASK)
 
                     -- failed
                     return false
@@ -182,7 +186,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(xmake._OPTIONS._TASK)
+                option.print_menu(option._OPTIONS._TASK)
 
                 -- failed
                 return false
@@ -196,7 +200,7 @@ function option.init(argv, menu)
             end
 
             -- save option
-            xmake._OPTIONS[utils.ifelse(prefix == 1 and opt[2], opt[2], key)] = value
+            option._OPTIONS[option._ifelse(prefix == 1 and opt[2], opt[2], key)] = value
 
         -- task?
         elseif idx == 1 then
@@ -210,13 +214,13 @@ function option.init(argv, menu)
                 -- ok?
                 if taskname == key or menu[taskname].shortname == key then
                     -- save this task
-                    xmake._OPTIONS._TASK = taskname 
+                    option._OPTIONS._TASK = taskname 
                     break 
                 end
             end
 
             -- not found?
-            if not xmake._OPTIONS._TASK or not menu[xmake._OPTIONS._TASK] then
+            if not option._OPTIONS._TASK or not menu[option._OPTIONS._TASK] then
 
                 -- invalid task
                 print("invalid task: " .. key)
@@ -234,7 +238,7 @@ function option.init(argv, menu)
             
             -- find a value option with name
             local opt = nil
-            for _, o in ipairs(menu[xmake._OPTIONS._TASK or "main"].options) do
+            for _, o in ipairs(menu[option._OPTIONS._TASK or "main"].options) do
 
                 -- the mode
                 local mode = o[3]
@@ -246,7 +250,7 @@ function option.init(argv, menu)
                 assert(o and ((mode ~= "v" and mode ~= "vs") or name))
 
                 -- is value and with name?
-                if mode == "v" and name and not xmake._OPTIONS[name] then
+                if mode == "v" and name and not option._OPTIONS[name] then
                     opt = o
                     break 
                 -- is values and with name?
@@ -267,13 +271,13 @@ function option.init(argv, menu)
 
                 -- save value
                 if mode == "v" then
-                    xmake._OPTIONS[name] = key
+                    option._OPTIONS[name] = key
                 elseif mode == "vs" then
                     -- the option
-                    local o = xmake._OPTIONS[name]
+                    local o = option._OPTIONS[name]
                     if not o then
-                        xmake._OPTIONS[name] = {}
-                        o = xmake._OPTIONS[name]
+                        option._OPTIONS[name] = {}
+                        o = option._OPTIONS[name]
                     end
 
                     -- append value
@@ -284,7 +288,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(xmake._OPTIONS._TASK)
+                option.print_menu(option._OPTIONS._TASK)
 
                 -- failed
                 return false
@@ -294,7 +298,7 @@ function option.init(argv, menu)
     end
 
     -- init the default value
-    for _, o in ipairs(menu[xmake._OPTIONS._TASK or "main"].options) do
+    for _, o in ipairs(menu[option._OPTIONS._TASK or "main"].options) do
 
         -- key=value?
         if o[3] == "kv" then
@@ -304,11 +308,11 @@ function option.init(argv, menu)
             assert(key)
 
             -- save the default value 
-            xmake._OPTIONS._DEFAULTS[key] = o[4]    
+            option._OPTIONS._DEFAULTS[key] = o[4]    
         -- value with name?
         elseif o[3] == "v" and o[2] then
             -- save the default value 
-            xmake._OPTIONS._DEFAULTS[o[2]] = o[4]    
+            option._OPTIONS._DEFAULTS[o[2]] = o[4]    
         end
     end
 
@@ -346,6 +350,27 @@ function option.find(argv, name, shortname)
         end
 
     end
+end
+
+-- get the given option
+function option.get(name)
+
+    -- check
+    assert(name)
+
+    -- the options
+    local options = option.options()
+    assert(options)
+
+    -- get it
+    return options[name]
+end
+
+-- get all options
+function option.options()
+
+    -- get it
+    return option._OPTIONS
 end
 
 -- get all default options from the given task
@@ -496,7 +521,7 @@ function option.print_main()
 
             -- print category name
             print("")
-            utils.printf("%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))
+            print(string.format("%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2)))
             
             -- the padding spaces
             local padding = 42
@@ -555,19 +580,19 @@ function option.print_options(options)
     local padding = 42
 
     -- print options
-    for _, option in ipairs(options) do
+    for _, opt in ipairs(options) do
         
         -- init the option info
         local option_info   = ""
 
         -- append the shortname
-        local shortname = option[1];
-        local name      = option[2];
-        local mode      = option[3];
+        local shortname = opt[1];
+        local name      = opt[2];
+        local mode      = opt[3];
         if shortname then
             option_info = option_info .. "    -" .. shortname
             if mode == "kv" then
-                option_info = option_info .. " " .. utils.ifelse(name, name:upper(), "XXX")
+                option_info = option_info .. " " .. option._ifelse(name, name:upper(), "XXX")
             end
         end
 
@@ -576,7 +601,7 @@ function option.print_options(options)
             if mode == "v" then
                 option_info = option_info .. "    " .. name
             else
-                option_info = option_info .. utils.ifelse(shortname, ", --", "        --") .. name
+                option_info = option_info .. option._ifelse(shortname, ", --", "        --") .. name
             end
             if mode == "kv" then
                 option_info = option_info .. "=" .. name:upper()
@@ -591,13 +616,13 @@ function option.print_options(options)
         end
 
         -- append the option description
-        local description = option[5]
+        local description = opt[5]
         if description then
             option_info = option_info .. description
         end
 
         -- append the default value
-        local default = option[4]
+        local default = opt[4]
         if default then
             option_info = option_info .. " (default: " .. tostring(default) .. ")"
         end
@@ -609,7 +634,7 @@ function option.print_options(options)
         for i = 6, 64 do
 
             -- the description, @note some option may be nil
-            local description = option[i]
+            local description = opt[i]
             if not description then break end
 
             -- is function? get results

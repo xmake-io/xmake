@@ -49,7 +49,7 @@ local menu =
 function main._done_help()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- done help
@@ -83,7 +83,7 @@ end
 function main._done_option()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- done help?

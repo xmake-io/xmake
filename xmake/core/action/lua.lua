@@ -27,6 +27,7 @@ local action_lua = action_lua or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local config    = require("base/config")
 local string    = require("base/string")
 local tools     = require("tools/tools")
@@ -36,7 +37,7 @@ local platform  = require("base/platform")
 function action_lua.need(name)
     
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- do not load config if be not given -f or -P options
@@ -58,7 +59,7 @@ end
 function action_lua.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- no script?

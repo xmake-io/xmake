@@ -26,6 +26,7 @@ local action_install = action_install or {}
 -- load modules
 local utils     = require("base/utils")
 local config    = require("base/config")
+local option    = require("base/option")
 local global    = require("base/global")
 local install   = require("base/install")
 local package   = require("base/package")
@@ -77,7 +78,7 @@ end
 function action_install.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- trace
