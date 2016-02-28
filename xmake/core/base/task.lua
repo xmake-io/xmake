@@ -65,6 +65,12 @@ function task._interpreter()
     -- register api: set_task_menu() 
     interp:api_register_set_values("task", "task", "menu")
 
+    -- register api: on_task_run(), on_task_before(), on_task_after(), on_task_failure() 
+    interp:api_register_on_script("task", "task", "run"
+                                                , "after"
+                                                , "before"
+                                                , "failure")
+
     -- set filter
     interp:filter_set(filter.init(function (variable)
 
