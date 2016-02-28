@@ -947,7 +947,7 @@ end
 function project.dump()
     
     -- dump
-    if option.options().verbose then
+    if option.get("verbose") then
         utils.dump(project.targets())
     end
    

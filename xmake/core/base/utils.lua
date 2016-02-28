@@ -39,7 +39,7 @@ end
 -- the verbose function
 function utils.verbose(msg, ...)
 
-    if option.options().verbose then
+    if option.get("verbose") then
         
         -- check
         assert(msg)

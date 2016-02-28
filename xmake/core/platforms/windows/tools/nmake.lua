@@ -39,7 +39,7 @@ function nmake.init(self, name)
     self.name = name or "nmake.exe"
 
     -- is verbose?
-    self._VERBOSE = utils.ifelse(option.options().verbose, "-v", "")
+    self._VERBOSE = utils.ifelse(option.get("verbose"), "-v", "")
 
 end
 

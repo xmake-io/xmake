@@ -246,7 +246,7 @@ function platform.dump()
     assert(platform._CONFIGS)
 
     -- dump
-    if option.options().verbose then
+    if option.get("verbose") then
         utils.dump(platform._configs(config.get("plat")))
     end
    
