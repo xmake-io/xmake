@@ -184,7 +184,17 @@ function task.run(name)
     -- get the task info
     local taskinfo = tasks[name]
     if not taskinfo then
-        utils.error("unknown task: %s", name)
+
+        -- trace
+        utils.error("task(\"%s\"): unknown task", name)
+        return false
+    end
+
+    -- check
+    if not taskinfo.run then
+
+        -- trace
+        utils.error("task(\"%s\"): no run script, please call on_task_run() first!", name)
         return false
     end
 
