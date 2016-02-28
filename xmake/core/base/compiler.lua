@@ -487,7 +487,7 @@ function compiler.check_include(opt, include, srcpath, objpath)
     if not module then return end
 
     -- execute the compile command
-    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.options().verbose, nil, xmake._NULDEV)))
+    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- check function for the project option
@@ -531,7 +531,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     srcfile:close()
 
     -- execute the compile command
-    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.options().verbose, nil, xmake._NULDEV)))
+    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- check typedef for the project option
@@ -575,7 +575,7 @@ function compiler.check_typedef(opt, typedef, srcpath, objpath)
     srcfile:close()
 
     -- execute the compile command
-    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.options().verbose, nil, xmake._NULDEV)))
+    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- return module: compiler

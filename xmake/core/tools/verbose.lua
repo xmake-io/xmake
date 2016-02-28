@@ -33,7 +33,7 @@ local option    = require("base/option")
 function verbose.main(self, ...)
 
     -- verbose all
-    if option.options().verbose then
+    if option.get("verbose") then
         for _, v in ipairs(...) do
             io.write(string.format("%s ", v:decode()))
         end

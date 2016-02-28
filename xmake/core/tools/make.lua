@@ -35,7 +35,7 @@ function make.init(self, name)
     self.name = name or "make"
 
     -- is verbose?
-    self._VERBOSE = utils.ifelse(option.options().verbose, "-v", "")
+    self._VERBOSE = utils.ifelse(option.get("verbose"), "-v", "")
 
 end
 
@@ -44,9 +44,9 @@ function make.main(self, mkfile, target)
 
     -- enable jobs?
     local jobs = ""
-    if option.options().jobs ~= nil then
-        if tonumber(option.options().jobs) ~= 0 then
-            jobs = "-j" .. option.options().jobs
+    if option.get("jobs") ~= nil then
+        if tonumber(option.get("jobs")) ~= 0 then
+            jobs = "-j" .. option.get("jobs")
         else
             jobs = "-j"
         end

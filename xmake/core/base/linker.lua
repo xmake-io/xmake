@@ -380,7 +380,7 @@ function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
     flags = utils.unique(flags)
 
     -- execute the link command
-    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(option.options().verbose, nil, xmake._NULDEV)))
+    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- return module: linker
