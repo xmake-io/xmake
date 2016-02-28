@@ -29,7 +29,6 @@ local path          = require("base/path")
 local task          = require("base/task")
 local utils         = require("base/utils")
 local option        = require("base/option")
-local action        = require("base/action")
 
 -- init the option menu
 local menu =
@@ -46,14 +45,10 @@ local menu =
 }
 
 -- done help
-function main._done_help()
-
-    -- the options
-    local options = option.options()
-    assert(options)
+function main._help()
 
     -- done help
-    if options.help then
+    if option.get("help") then
     
         -- print menu
         option.print_menu(option.task())
@@ -62,37 +57,21 @@ function main._done_help()
         return true
 
     -- done version
-    elseif options.version then
+    elseif option.get("version") then
 
         -- print title
-        if option._MENU.title then
-            print(option._MENU.title)
+        if menu.title then
+            print(menu.title)
         end
 
         -- print copyright
-        if option._MENU.copyright then
-            print(option._MENU.copyright)
+        if menu.copyright then
+            print(menu.copyright)
         end
 
         -- ok
         return true
     end
-end
-
--- done option
-function main._done_option()
-
-    -- the options
-    local options = option.options()
-    assert(options)
-
-    -- done help?
-    if main._done_help() then
-        return true
-    end
-
-    -- done action    
-    return action.done(option.task() or "build")
 end
 
 -- the init function for main
@@ -120,8 +99,6 @@ end
 -- the main function
 function main.done()
 
-    task.tasks()
-
     -- init 
     main._init()
 
@@ -130,8 +107,14 @@ function main.done()
         return -1
     end
 
-    -- done option
-    if not main._done_option() then 
+    -- run help?
+    if main._help() then
+        return 1
+    end
+
+    -- run task    
+    local ok = task.run(option.task() or "build")
+    if not ok then
         return -1
     end
 

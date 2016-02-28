@@ -167,6 +167,62 @@ function task.tasks()
     return tasks
 end
 
+-- run task with given name
+function task.run(name)
+
+    -- check
+    assert(name)
+
+    -- load tasks
+    local tasks = task.tasks()
+    assert(tasks)
+
+    -- the interpreter
+    local interp = task._interpreter()
+    assert(interp)
+
+    -- get the task info
+    local taskinfo = tasks[name]
+    if not taskinfo then
+        utils.error("unknown task: %s", name)
+        return false
+    end
+
+    -- run on_before, on_run, on_after
+    local ok = true
+    local on_scripts = {taskinfo.before, taskinfo.run, taskinfo.after}
+    for i = 1, 3 do
+
+        -- get script
+        local on_script = on_scripts[i]
+        if on_script then
+
+            -- call it in the sandbox
+            ok, errors = task._call(on_script)
+            if not ok then
+                utils.error(errors)
+                break
+            end
+        end
+    end
+
+    -- run on_failure if be failed?
+    if not ok and taskinfo.failure then
+
+        -- call it in the sandbox
+        ok, errors = task._call(taskinfo.failure)
+        if not ok then
+            utils.error(errors)
+        end
+
+        -- failed
+        ok = false
+    end
+
+    -- ok?
+    return ok
+end
+
 -- the menu
 function task.menu()
 
