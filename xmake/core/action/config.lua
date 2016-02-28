@@ -25,6 +25,7 @@ local action_config = action_config or {}
 
 -- load modules
 local utils     = require("base/utils")
+local option    = require("base/option")
 local config    = require("base/config")
 local project   = require("base/project")
 local makefile  = require("base/makefile")
@@ -47,7 +48,7 @@ end
 function action_config.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- check target

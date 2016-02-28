@@ -27,6 +27,7 @@ local linker = linker or {}
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local option    = require("base/option")
 local config    = require("base/config")
 local compiler  = require("base/compiler")
 local tools     = require("tools/tools")
@@ -379,7 +380,7 @@ function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
     flags = utils.unique(flags)
 
     -- execute the link command
-    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(xmake._OPTIONS.verbose, nil, xmake._NULDEV)))
+    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(option.options().verbose, nil, xmake._NULDEV)))
 end
 
 -- return module: linker

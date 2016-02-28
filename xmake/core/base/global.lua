@@ -37,7 +37,7 @@ function global._make()
     assert(configs)
    
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- init current global configure
@@ -125,7 +125,7 @@ end
 function global.load()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- check
@@ -171,7 +171,7 @@ function global.load()
     -- xmake global?
     if options._TASK == "global" then
         
-        -- merge xmake._OPTIONS to the global configure
+        -- merge option.options() to the global configure
         for k, v in pairs(options) do
 
             -- check

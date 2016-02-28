@@ -26,6 +26,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("base/config")
+local option    = require("base/option")
 local platform  = require("base/platform")
 
 -- define module: nmake
@@ -38,7 +39,7 @@ function nmake.init(self, name)
     self.name = name or "nmake.exe"
 
     -- is verbose?
-    self._VERBOSE = utils.ifelse(xmake._OPTIONS.verbose, "-v", "")
+    self._VERBOSE = utils.ifelse(option.options().verbose, "-v", "")
 
 end
 

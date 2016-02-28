@@ -26,6 +26,7 @@ local action_create = action_create or {}
 -- load modules
 local path      = require("base/path")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local template  = require("base/template")
     
 -- need access to the given file?
@@ -39,7 +40,7 @@ end
 function action_create.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- the target name

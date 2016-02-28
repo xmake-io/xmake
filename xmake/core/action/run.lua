@@ -27,6 +27,7 @@ local action_run = action_run or {}
 local rule      = require("base/rule")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local config    = require("base/config")
 local project   = require("base/project")
 local sandbox   = require("base/sandbox")
@@ -49,7 +50,7 @@ end
 function action_run.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options and xmake._PROJECT_DIR)
 
     -- the target name

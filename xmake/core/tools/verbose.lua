@@ -27,12 +27,13 @@ local verbose = verbose or {}
 -- load modules
 local io        = require("base/io")
 local string    = require("base/string")
+local option    = require("base/option")
 
 -- the main function
 function verbose.main(self, ...)
 
     -- verbose all
-    if xmake._OPTIONS.verbose then
+    if option.options().verbose then
         for _, v in ipairs(...) do
             io.write(string.format("%s ", v:decode()))
         end

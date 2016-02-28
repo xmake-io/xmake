@@ -35,7 +35,7 @@ local global        = require("base/global")
 function config._make(configs)
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- init current target configure
@@ -96,7 +96,7 @@ end
 function config._target()
  
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- check
@@ -198,7 +198,7 @@ end
 function config.load()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- check
@@ -322,7 +322,7 @@ function config.load()
     local target = config._target()
     assert(target and type(target) == "table")
 
-    -- merge xmake._OPTIONS to target
+    -- merge option.options() to target
     if options._TASK == "config" then
         for k, v in pairs(options) do
 

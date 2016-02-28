@@ -27,6 +27,7 @@ local action_uninstall = action_uninstall or {}
 local utils     = require("base/utils")
 local config    = require("base/config")
 local global    = require("base/global")
+local option    = require("base/option")
 local install   = require("base/install")
 local uninstall = require("base/uninstall")
 local package   = require("base/package")
@@ -62,7 +63,7 @@ end
 function action_uninstall.done()
 
     -- the options
-    local options = xmake._OPTIONS
+    local options = option.options()
     assert(options)
 
     -- trace
