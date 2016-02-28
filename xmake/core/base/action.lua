@@ -64,7 +64,7 @@ function action._load_project()
     end
 
     -- xmake config or marked as "reconfig"?
-    if options._TASK == "config" or config._RECONFIG then
+    if option.task() == "config" or config._RECONFIG then
 
         -- probe the current project 
         project.probe()
@@ -103,14 +103,14 @@ function action.done(name)
     end
 
     -- probe the platform
-    if _action.need("platform") and (options._TASK == "config" or config._RECONFIG) then
+    if _action.need("platform") and (option.task() == "config" or config._RECONFIG) then
         if not platform.probe(false) then
             return false
         end
     end
 
     -- merge the default options
-    for k, v in pairs(options._DEFAULTS) do
+    for k, v in pairs(option.defaults()) do
         if nil == options[k] then options[k] = v end
     end
 

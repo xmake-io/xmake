@@ -115,7 +115,7 @@ function option.init(argv, menu)
             print("invalid option: " .. arg)
 
             -- print menu
-            option.print_menu(option._OPTIONS._TASK)
+            option.print_menu(option._TASK)
 
             -- failed
             return false
@@ -126,7 +126,7 @@ function option.init(argv, menu)
 
             -- find this option
             local opt = nil
-            for _, o in ipairs(menu[option._OPTIONS._TASK or "main"].options) do
+            for _, o in ipairs(menu[option._TASK or "main"].options) do
 
                 -- check
                 assert(o)
@@ -149,7 +149,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
 
                 -- print menu
-                option.print_menu(option._OPTIONS._TASK)
+                option.print_menu(option._TASK)
 
                 -- failed
                 return false
@@ -169,7 +169,7 @@ function option.init(argv, menu)
                     print("invalid option: " .. option._ifelse(idx, arg, key))
 
                     -- print menu
-                    option.print_menu(option._OPTIONS._TASK)
+                    option.print_menu(option._TASK)
 
                     -- failed
                     return false
@@ -186,7 +186,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(option._OPTIONS._TASK)
+                option.print_menu(option._TASK)
 
                 -- failed
                 return false
@@ -214,13 +214,13 @@ function option.init(argv, menu)
                 -- ok?
                 if taskname == key or menu[taskname].shortname == key then
                     -- save this task
-                    option._OPTIONS._TASK = taskname 
+                    option._TASK = taskname 
                     break 
                 end
             end
 
             -- not found?
-            if not option._OPTIONS._TASK or not menu[option._OPTIONS._TASK] then
+            if not option._TASK or not menu[option._TASK] then
 
                 -- invalid task
                 print("invalid task: " .. key)
@@ -238,7 +238,7 @@ function option.init(argv, menu)
             
             -- find a value option with name
             local opt = nil
-            for _, o in ipairs(menu[option._OPTIONS._TASK or "main"].options) do
+            for _, o in ipairs(menu[option._TASK or "main"].options) do
 
                 -- the mode
                 local mode = o[3]
@@ -288,7 +288,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(option._OPTIONS._TASK)
+                option.print_menu(option._TASK)
 
                 -- failed
                 return false
@@ -298,7 +298,7 @@ function option.init(argv, menu)
     end
 
     -- init the default value
-    for _, o in ipairs(menu[option._OPTIONS._TASK or "main"].options) do
+    for _, o in ipairs(menu[option._TASK or "main"].options) do
 
         -- key=value?
         if o[3] == "kv" then
@@ -352,7 +352,14 @@ function option.find(argv, name, shortname)
     end
 end
 
--- get the given option
+-- get the current task
+function option.task()
+
+    -- get it
+    return option._TASK
+end
+
+-- get the given option value for the current task
 function option.get(name)
 
     -- check
@@ -366,20 +373,37 @@ function option.get(name)
     return options[name]
 end
 
--- get all options
+-- get the given default option value for the current task
+function option.default(name)
+
+    -- check
+    assert(name)
+
+    -- the defaults
+    local defaults = option.defaults()
+    assert(defaults)
+
+    -- get it
+    return defaults[name]
+end
+
+-- get the current options
 function option.options()
 
     -- get it
     return option._OPTIONS
 end
 
--- get all default options from the given task
+-- get all default options for the current or given task
 function option.defaults(task)
 
-    -- make defaults
-    local defaults = {}
+    -- get the default options for the current task
+    if task == nil then
+        return option._OPTIONS._DEFAULTS
+    end
 
-    -- init the default value
+    -- get the default options for the given task
+    local defaults = {}
     for _, o in ipairs(option._MENU[task or "main"].options) do
 
         -- key=value?
