@@ -33,7 +33,6 @@ xmake._CORE_DIR         = _PROGRAM_DIR .. "/core"
 xmake._PACKAGES_DIR     = _PROGRAM_DIR .. "/packages"
 xmake._TEMPLATES_DIR    = _PROGRAM_DIR .. "/templates"
 xmake._PROJECT_FILE     = "xmake.lua"
-xmake._CONFIGS          = {}
 
 -- init package path
 package.path = xmake._CORE_DIR .. "/?.lua;" .. package.path
