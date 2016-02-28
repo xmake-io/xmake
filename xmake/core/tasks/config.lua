@@ -26,6 +26,34 @@ task("config")
     -- set category
     set_task_category("action")
 
+    -- on before
+    on_task_before(function ()
+        
+        print("before")
+        
+    end)
+
+    -- on run
+    on_task_run(function ()
+        
+        print("run")
+        
+    end)
+
+    -- on after
+    on_task_after(function ()
+        
+        print("after")
+        
+    end)
+
+    -- on failure
+    on_task_failure(function ()
+        
+        print("failure")
+        
+    end)
+
     -- set menu
     set_task_menu({
                     -- usage
