@@ -104,7 +104,7 @@ function config._target()
     assert(configs)
   
     -- the target name
-    local name = options.target or options._DEFAULTS.target
+    local name = options.target or option.default("target")
     assert(name and type(name) == "string")
 
     -- for all targets?
@@ -206,7 +206,7 @@ function config.load()
     assert(option._MENU.config)
 
     -- the target name
-    local name = options.target or options._DEFAULTS.target
+    local name = options.target or option.default("target")
     if not name then
         return "no given target name!"
     end
@@ -237,7 +237,7 @@ function config.load()
                     config._CONFIGS = { __rebuild = true }
 
                     -- mark as "reconfig" if the current action is not "config"
-                    if options._TASK ~= "config" then 
+                    if option.task() ~= "config" then 
                         config._RECONFIG = true
                     end
                 end
@@ -275,7 +275,7 @@ function config.load()
         config._CONFIGS = { __rebuild = true }
 
         -- mark as "reconfig" if the current action is not "config"
-        if options._TASK ~= "config" then 
+        if option.task() ~= "config" then 
             config._RECONFIG = true
         end
     end
@@ -292,7 +292,7 @@ function config.load()
     local defaults = nil
     if not configs._DEFAULTS then
         if config._RECONFIG then defaults = option.defaults("config")
-        elseif options._TASK == "config" then defaults = options._DEFAULTS
+        elseif option.task() == "config" then defaults = option.defaults()
         end
         if defaults then
             for k, v in pairs(defaults) do
@@ -323,7 +323,7 @@ function config.load()
     assert(target and type(target) == "table")
 
     -- merge option.options() to target
-    if options._TASK == "config" then
+    if option.task() == "config" then
         for k, v in pairs(options) do
 
             -- check

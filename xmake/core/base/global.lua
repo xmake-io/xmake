@@ -169,7 +169,7 @@ function global.load()
     local configs = global._CONFIGS
 
     -- xmake global?
-    if options._TASK == "global" then
+    if option.task() == "global" then
         
         -- merge option.options() to the global configure
         for k, v in pairs(options) do
@@ -184,7 +184,7 @@ function global.load()
         end
 
         -- merge the default global configure options to the global configure
-        local defaults = options._DEFAULTS
+        local defaults = option.defaults()
         if defaults then
             for k, v in pairs(defaults) do
 
