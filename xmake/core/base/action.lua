@@ -146,46 +146,6 @@ function action.done(name)
     return _action.done()
 end
 
--- list the all actions
-function action.list()
-    
-    -- find all action scripts
-    local list = {}
-    local files = os.match(xmake._CORE_DIR .. "/action/*.lua")
-    if files then
-        for _, file in ipairs(files) do
-            local name = path.basename(file)
-            if name and name ~= "build" then
-                table.insert(list, name)
-            end
-        end
-    end
-
-    -- ok?
-    return list
-end
-
--- get the all action menus
-function action.menu()
-
-    -- get all actions
-    local menus = {}
-    local actions = action.list()
-    for _, name in ipairs(actions) do
-        
-        -- load action
-        local a = action._load(name)
-        if a and a.menu then
-            local m = a.menu()
-            if m then
-                menus[name] = m
-            end
-        end
-    end
-
-    -- ok?
-    return menus
-end
 
 -- return module: action
 return action
