@@ -27,7 +27,9 @@ local sandbox_import = sandbox_import or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
+local table     = require("base/table")
 local string    = require("base/string")
+local sandbox   = require("base/sandbox")
 
 -- get module name
 function sandbox_import._modulename(name)
@@ -46,7 +48,7 @@ function sandbox_import._modulename(name)
 end
 
 -- load module from file
-function sandbox_import._loadfile(filepath)
+function sandbox_import._loadfile(filepath, instance)
 
     -- check
     assert(filepath)
@@ -57,7 +59,39 @@ function sandbox_import._loadfile(filepath)
         return nil, errors
     end
 
-    -- load module
+    -- with sandbox?
+    if instance then
+
+        -- fork a new sandbox for this script
+        instance, errors = instance:fork(script)
+        if not instance then
+            return nil, errors
+        end
+
+        -- backup the scope variables first
+        local scope_public = getfenv(instance:script())
+        local scope_backup = {}
+        table.copy2(scope_backup, scope_public)
+
+        -- load module with sandbox
+        local ok, errors = sandbox.load(instance:script())
+        if not ok then
+            return nil, errors
+        end
+
+        -- only export new public functions
+        local result = {}
+        for k, v in pairs(scope_public) do
+            if type(v) == "function" and scope_backup[k] == nil then
+                result[k] = v
+            end
+        end
+
+        -- get module
+        return result
+    end
+
+    -- load module without sandbox
     local ok, result = xpcall(script, debug.traceback)
     if not ok then
         return nil, result
@@ -68,7 +102,7 @@ function sandbox_import._loadfile(filepath)
 end
 
 -- load module
-function sandbox_import._load(dir, name)
+function sandbox_import._load(dir, name, instance)
 
     -- check
     assert(dir and name)
@@ -82,7 +116,7 @@ function sandbox_import._load(dir, name)
     if os.isfile(path.join(dir, name .. ".lua")) then
 
         -- load module
-        local result, errors = sandbox_import._loadfile(path.join(dir, name .. ".lua"))
+        local result, errors = sandbox_import._loadfile(path.join(dir, name .. ".lua"), instance)
         if not result then
             return nil, errors
         end
@@ -100,7 +134,7 @@ function sandbox_import._load(dir, name)
             for _, modulefile in ipairs(modulefiles) do
 
                 -- load module
-                local result, errors = sandbox_import._loadfile(modulefile)
+                local result, errors = sandbox_import._loadfile(modulefile, instance)
                 if not result then
                     return nil, errors
                 end
@@ -169,8 +203,22 @@ function sandbox_import.import(name, alias)
     -- check
     assert(name)
 
-    -- load module from the sandbox directory
-    local module, errors = sandbox_import._load(path.join(xmake._CORE_DIR, "sandbox/import"), name)
+    -- get the current sandbox instance
+    local instance = sandbox.instance()
+    assert(instance)
+
+    -- the root directory for this sandbox script
+    local rootdir = instance:rootdir()
+    assert(rootdir)
+
+    -- load module from the sandbox root directory first
+    local module, errors = sandbox_import._load(rootdir, name, instance)
+    if not module then
+        -- load module from the sandbox core directory
+        module, errors = sandbox_import._load(path.join(xmake._CORE_DIR, "sandbox/import"), name)
+    end
+
+    -- check
     if not module then
         os.raise("cannot import module: %s, %s", name, errors)
     end
