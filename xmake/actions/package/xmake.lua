@@ -47,7 +47,7 @@ task("package")
                                                               , function () 
 
                                                                    -- import platform
-                                                                    import("platform")
+                                                                    import("core/platform")
 
                                                                     -- make description
                                                                     local description = {}
