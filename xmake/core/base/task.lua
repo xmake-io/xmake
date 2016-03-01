@@ -38,7 +38,7 @@ function task._directories()
 
     return  {   path.join(global.directory(), "plugins")
             ,   path.join(xmake._PROGRAM_DIR, "plugins")
-            ,   path.join(xmake._CORE_DIR, "tasks")
+            ,   path.join(xmake._PROGRAM_DIR, "actions")
             }
 end
 
@@ -146,7 +146,7 @@ function task.tasks()
     for _, dir in ipairs(dirs) do
 
         -- get files
-        local files = os.match(path.join(dir, "*.lua"))
+        local files = os.match(path.join(dir, "**/xmake.lua"))
         if files then
             for _, filepath in ipairs(files) do
 
