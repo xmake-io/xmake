@@ -22,6 +22,7 @@
 
 -- load modules
 local os    = require("base/os")
+local path  = require("base/path")
 local utils = require("base/utils")
 
 -- import module
@@ -33,17 +34,26 @@ function sandbox_import(name)
         os.raise("cannot import module: %s", name)
     end
 
+    -- get module name
+    local modulename = path.basename(name)
+    if not modulename then
+        os.raise("cannot get module name for %s", name)
+    end
+
     -- get the parent scope
     local scope_parent = getfenv(2)
     assert(scope_parent)
 
     -- this module has been imported?
-    if rawget(scope_parent, name) then
+    if rawget(scope_parent, modulename) then
         os.raise("this module: %s has been imported!", name)
     end
 
     -- import this module into the parent scope
-    scope_parent[name] = module
+    scope_parent[modulename] = module
+
+    -- return it
+    return module
 end
 
 -- load module

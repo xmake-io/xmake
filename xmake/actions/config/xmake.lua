@@ -28,9 +28,7 @@ task("config")
 
     -- on run
     on_task_run(function ()
-        
-        print("run")
-        
+       
     end)
 
     -- set menu
@@ -47,7 +45,7 @@ task("config")
                     -- options
                 ,   options = 
                     {
-                        {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again."           }
+                        {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
 
                     ,   {}
                     ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
@@ -56,7 +54,7 @@ task("config")
                                                               , function () 
 
                                                                     -- import platform
-                                                                    import("platform")
+                                                                    import("core/platform")
 
                                                                     -- make description
                                                                     local description = {}
@@ -73,7 +71,7 @@ task("config")
                                                               , function () 
 
                                                                     -- import platform
-                                                                    import("platform")
+                                                                    import("core/platform")
 
                                                                     -- make description
                                                                     local description = {}
@@ -101,7 +99,7 @@ task("config")
                     ,   function () 
 
                             -- import platform
-                            import("project")
+                            import("core/project")
 
                             -- get menu for project
                             return project.menu() 
@@ -149,7 +147,7 @@ task("config")
                     ,   function () 
 
                             -- import platform
-                            import("platform")
+                            import("core/platform")
 
                             -- get menu for platform
                             return platform.menu("config") 

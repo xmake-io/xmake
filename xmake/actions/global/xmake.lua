@@ -51,7 +51,7 @@ task("global")
                     ,   function () 
 
                             -- import platform
-                            import("platform")
+                            import("core/platform")
 
                             -- get menu for platform
                             return platform.menu("global") 
