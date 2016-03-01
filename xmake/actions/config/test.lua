@@ -17,33 +17,20 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        main.lua
+-- @file        test.lua
 --
 
-import("test")
 import("core")
 import("core.project")
 
 print("global")
 print(project)
 print(core.project)
-print("test", test)
 
-function hello()
+function test2()
 
-    print("hello")
+    print("test2")
     print(project)
     print(core.project)
-    test.test2()
 end
 
-function main()
-
-    print("main")
-    print(project)
-    print(core.project)
-
-    -- hello
-    hello()
-
-end
