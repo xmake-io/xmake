@@ -89,5 +89,13 @@ function path.join(p, ...)
     return path.translate(p)
 end
 
+-- split path by the separator
+function path.split(p)
+
+    -- split it
+    return p:split("/\\")
+end
+
+
 -- return module: path
 return path

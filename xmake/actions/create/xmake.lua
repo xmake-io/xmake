@@ -44,7 +44,7 @@ task("create")
                                                               , function ()
 
                                                                     -- import template
-                                                                    import("core/template")
+                                                                    import("core.template")
 
                                                                     -- make description
                                                                     local description = {}
@@ -61,7 +61,7 @@ task("create")
                                                               , function ()
 
                                                                     -- import template
-                                                                    import("core/template")
+                                                                    import("core.template")
 
                                                                     -- make description
                                                                     local description = {}
