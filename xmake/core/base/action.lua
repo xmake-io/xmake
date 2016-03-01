@@ -81,10 +81,6 @@ end
 -- done the given action
 function action.done(name)
     
-    -- the options
-    local options = option.options()
-    assert(options)
-
     -- load the given action
     local _action = action._load(name)
     if not _action then return false end
@@ -107,11 +103,6 @@ function action.done(name)
         if not platform.probe(false) then
             return false
         end
-    end
-
-    -- merge the default options
-    for k, v in pairs(option.defaults()) do
-        if nil == options[k] then options[k] = v end
     end
 
     -- make the platform configure
