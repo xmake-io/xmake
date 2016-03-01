@@ -121,15 +121,15 @@ function deprecated_interpreter.api_register_set_script(self, scope_kind, prefix
         -- warning
         utils.warning("please uses on_%s(), \"set_%s()\" has been deprecated!", name, name, scope)
 
-        -- bind script and get new script with sandbox
-        local newscript, errors = sandbox.bind(script, self)
-        if not newscript then
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.make(script, self)
+        if not instance then
             os.raise("set_%s(): %s", name, errors)
         end
 
         -- update script?
         scope[name] = {}
-        table.insert(scope[name], newscript)
+        table.insert(scope[name], instance:script())
 
     end
 

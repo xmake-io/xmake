@@ -141,8 +141,8 @@ function sandbox._init()
     return self
 end
 
--- bind script into the sandbox
-function sandbox.bind(script, interp)
+-- make sandbox instance with the given script
+function sandbox.make(script, interp)
 
     -- check
     assert(script and interp)
@@ -156,29 +156,14 @@ function sandbox.bind(script, interp)
     -- save filter
     self._PRIVATE._FILTER = interp:filter()
 
+    -- save root directory
+    self._PRIVATE._ROOTDIR = interp:rootdir()
+
     -- this script is file? load it first
     if type(script) == "string" then
     
-        -- check
-        if not os.isfile(script) then
-            return nil, string.format("the script file(%s) not found!", script)
-        end
-
-        -- load it
-        local filescript, errors = loadfile(script)
-        if filescript then
-
-            -- bind public scope
-            setfenv(filescript, self._PUBLIC)
-
-            -- get main script
-            script = filescript()
-            if type(script) == "table" and script.main then 
-                script = script.main
-            end
-        else
-            return nil, errors
-        end
+        -- TODO
+        assert(false)
     end
 
     -- no script?
@@ -194,8 +179,11 @@ function sandbox.bind(script, interp)
     -- bind public scope
     setfenv(script, self._PUBLIC)
 
+    -- save script
+    self._PRIVATE._SCRIPT = script
+
     -- ok
-    return script
+    return self
 end
 
 -- load script in the sandbox
@@ -203,6 +191,51 @@ function sandbox.load(script, ...)
 
     -- load script
     return xpcall(script, sandbox._traceback, ...)
+end
+
+-- fork a new sandbox from the given sandbox
+function sandbox.fork(self, script)
+
+    -- no script?
+    if script == nil then
+        return nil, "no script!"
+    end
+
+    -- invalid script?
+    if script ~= nil and type(script) ~= "function" then
+        return nil, "invalid script!"
+    end
+
+    -- init a new sandbox instance
+    local instance = sandbox._init()
+
+    -- check
+    assert(instance and instance._PUBLIC and instance._PRIVATE)
+
+    -- inherit the filter
+    instance._PRIVATE._FILTER = self:filter()
+
+    -- inherit the root directory
+    instance._PRIVATE._ROOTDIR = self:rootdir()
+
+    -- bind public scope
+    setfenv(script, instance._PUBLIC)
+
+    -- save script
+    instance._PRIVATE._SCRIPT = script
+
+    -- ok?
+    return instance
+end
+
+-- get script from the given sandbox
+function sandbox.script(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- get it
+    return self._PRIVATE._SCRIPT
 end
 
 -- get filter from the given sandbox
@@ -213,6 +246,16 @@ function sandbox.filter(self)
 
     -- get it
     return self._PRIVATE._FILTER
+end
+
+-- get root directory from the given sandbox
+function sandbox.rootdir(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- get it
+    return self._PRIVATE._ROOTDIR
 end
 
 -- get current instance in the sandbox modules

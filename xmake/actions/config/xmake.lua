@@ -29,8 +29,13 @@ task("config")
     -- on run
     on_task_run(function ()
        
+        import("main")
         import("core.project")
+
+        print(main)
+        print(main.print)
         print(project)
+        print(main.main())
 
     end)
 

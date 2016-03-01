@@ -20,8 +20,27 @@
 -- @file        main.lua
 --
 
+import("core")
+import("core.project")
+
+print("global")
+print(project)
+print(core.project)
+
+function test()
+
+    print("test")
+    print(project)
+    print(core.project)
+end
 
 function main()
 
+    print("main")
+    print(project)
+    print(core.project)
+
+    -- test
+    test()
 
 end

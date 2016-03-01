@@ -97,6 +97,88 @@ function task._interpreter()
     return interp
 end
 
+-- bind tasks for menu with an sandbox instance
+function task._bind(tasks)
+
+    -- check
+    assert(tasks)
+
+    -- get interpreter
+    local interp = task._interpreter()
+    assert(interp) 
+
+    -- bind sandbox for menus
+    for _, taskinfo in pairs(tasks) do
+
+        -- has menu?
+        if taskinfo.menu then
+
+            -- translate options
+            local options = taskinfo.menu.options
+            if options then
+            
+                -- make full options 
+                local options_full = {}
+                for _, opt in ipairs(options) do
+
+                    -- this option is function? translate it
+                    if type(opt) == "function" then
+
+                        -- make sandbox instance with the given script
+                        local instance, errors = sandbox.make(opt, interp)
+                        if not instance then
+                            return false, errors
+                        end
+
+                        -- update option script
+                        opt = instance:script()
+                    end
+
+                    -- insert option
+                    table.insert(options_full, opt)
+                end
+
+                -- update the options
+                options = options_full
+                taskinfo.menu.options = options_full
+
+                -- bind sandbox for option description
+                for _, opt in ipairs(options) do
+
+                    -- bind description
+                    if type(opt) == "table" then
+                        for i = 5, 64 do
+
+                            -- the description, @note some option may be nil
+                            local description = opt[i]
+                            if not description then break end
+
+                            -- the description is function? wrap it for calling it in the sandbox
+                            if type(description) == "function" then
+
+                                -- make sandbox instance with the given script
+                                local instance, errors = sandbox.make(description, interp)
+                                if not instance then
+                                    return false, errors
+                                end
+
+                                -- check
+                                assert(instance:script())
+
+                                -- update option script
+                                opt[i] = instance:script()
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- ok
+    return true
+end
+
 -- load the given task script file
 function task._load(filepath)
 
@@ -104,32 +186,23 @@ function task._load(filepath)
     local interp = task._interpreter()
     assert(interp) 
 
-    -- load task
-    local results, errors = interp:load(filepath, "task", true, true)
-    if not results and os.isfile(filepath) then
+    -- load tasks
+    local tasks, errors = interp:load(filepath, "task", true, true)
+    if not tasks and os.isfile(filepath) then
         -- trace
         utils.error(errors)
     end
 
-    -- ok?
-    return results
-end
-
--- call the sandbox script
-function task._call(script, ...)
-
-    -- get interpreter
-    local interp = task._interpreter()
-    assert(interp) 
-
-    -- bind script and get new script with sandbox
-    local newscript, errors = sandbox.bind(script, interp)
-    if not newscript then
-        return false, errors
+    -- bind tasks for menu with an sandbox instance
+    local ok, errors = task._bind(tasks)
+    if not ok then
+        -- trace
+        utils.error(errors)
+        return 
     end
 
-    -- load it
-    return sandbox.load(script, ...)
+    -- ok?
+    return tasks
 end
 
 -- get all tasks
@@ -150,8 +223,10 @@ function task.tasks()
         if files then
             for _, filepath in ipairs(files) do
 
-                -- load it
+                -- load tasks
                 local results = task._load(filepath)
+
+                -- save tasks
                 if results then
                     table.join2(tasks, results)
                 end
@@ -208,7 +283,7 @@ function task.run(name)
         if on_script then
 
             -- call it in the sandbox
-            ok, errors = task._call(on_script)
+            ok, errors = sandbox.load(on_script)
             if not ok then
                 utils.error(errors)
                 break
@@ -220,7 +295,7 @@ function task.run(name)
     if not ok and taskinfo.failure then
 
         -- call it in the sandbox
-        ok, errors = task._call(taskinfo.failure)
+        ok, errors = sandbox.load(taskinfo.failure)
         if not ok then
             utils.error(errors)
         end
@@ -257,13 +332,13 @@ function task.menu()
             
                 -- make full options 
                 local options_full = {}
-                for _, option in ipairs(options) do
+                for _, opt in ipairs(options) do
 
                     -- this option is function? translate it
-                    if type(option) == "function" then
+                    if type(opt) == "function" then
                         
                         -- call menu script in the sandbox
-                        local ok, results = task._call(option)
+                        local ok, results = sandbox.load(opt)
                         if ok then
                             if results then
                                 for _, opt in ipairs(results) do
@@ -275,7 +350,7 @@ function task.menu()
                             os.raise("taskmenu: %s", results)
                         end
                     else
-                        table.insert(options_full, option)
+                        table.insert(options_full, opt)
                     end
                 end
 
@@ -287,31 +362,31 @@ function task.menu()
                 if interp:filter() then
 
                     -- filter option
-                    for _, option in ipairs(options) do
+                    for _, opt in ipairs(options) do
 
                         -- filter default
-                        local default = option[4]
+                        local default = opt[4]
                         if type(default) == "string" then
-                            option[4] = interp:filter():handle(default)
+                            opt[4] = interp:filter():handle(default)
                         end
 
                         -- filter description
                         for i = 5, 64 do
 
                             -- the description, @note some option may be nil
-                            local description = option[i]
+                            local description = opt[i]
                             if not description then break end
 
                             -- the description is string?
                             if type(description) == "string" then
-                                option[i] = interp:filter():handle(description)
+                                opt[i] = interp:filter():handle(description)
 
                             -- the description is function? wrap it for calling it in the sandbox
                             elseif type(description) == "function" then
-                                option[i] = function ()
+                                opt[i] = function ()
  
                                     -- call it in the sandbox
-                                    local ok, results = task._call(description)
+                                    local ok, results = sandbox.load(description)
                                     if not ok then
                                         -- errors
                                         os.raise("taskmenu: %s", results)

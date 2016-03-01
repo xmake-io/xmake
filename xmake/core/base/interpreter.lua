@@ -469,7 +469,7 @@ function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
     self._PRIVATE._CURFILE = file
 
     -- init the root directory
-    self._PRIVATE._ROOTDIR = self._PRIVATE._ROOTDIR or path.directory(file)
+    self._PRIVATE._ROOTDIR = path.directory(file)
     assert(self._PRIVATE._ROOTDIR)
 
     -- init mtime for the current file
@@ -504,7 +504,7 @@ function interpreter.filter(self)
     -- check
     assert(self and self._PRIVATE)
 
-    -- get filter
+    -- get it
     return self._PRIVATE._FILTER
 end
 
@@ -514,8 +514,18 @@ function interpreter.filter_set(self, filter)
     -- check
     assert(self and self._PRIVATE)
 
-    -- set filter
+    -- set it
     self._PRIVATE._FILTER = filter
+end
+
+-- get root directory
+function interpreter.rootdir(self)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- get it
+    return self._PRIVATE._ROOTDIR
 end
 
 -- set root directory
@@ -735,16 +745,15 @@ function interpreter.api_register_on_script(self, scope_kind, prefix, ...)
     -- define implementation
     local implementation = function (self, scope, name, script)
 
-        -- bind script and get new script with sandbox
-        local newscript, errors = sandbox.bind(script, self)
-        if not newscript then
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.make(script, self)
+        if not instance then
             os.raise("on_%s(): %s", name, errors)
         end
 
         -- update script?
         scope[name] = {}
-        table.insert(scope[name], newscript)
-
+        table.insert(scope[name], instance:script())
     end
 
     -- register implementation
