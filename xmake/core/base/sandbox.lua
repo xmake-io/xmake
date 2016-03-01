@@ -159,11 +159,16 @@ function sandbox.make(script, interp)
     -- save root directory
     self._PRIVATE._ROOTDIR = interp:rootdir()
 
-    -- this script is file? load it first
+    -- this script is module name? import it first
     if type(script) == "string" then
     
-        -- TODO
-        assert(false)
+        -- import module as script
+        local modulename = script
+        script = function ()
+       
+            -- import it
+            import(modulename).main()
+        end
     end
 
     -- no script?
