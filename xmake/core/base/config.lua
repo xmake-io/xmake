@@ -34,10 +34,6 @@ local global        = require("base/global")
 -- make configure for the current target
 function config._make(configs)
 
-    -- the options
-    local options = option.options()
-    assert(options)
-
     -- init current target configure
     local current = {}
 
@@ -95,16 +91,12 @@ end
 -- get the current target scope
 function config._target()
  
-    -- the options
-    local options = option.options()
-    assert(options)
-
     -- check
     local configs = config._CONFIGS
     assert(configs)
   
     -- the target name
-    local name = options.target or option.default("target")
+    local name = option.get("target")
     assert(name and type(name) == "string")
 
     -- for all targets?
@@ -206,13 +198,13 @@ function config.load()
     assert(option._MENU.config)
 
     -- the target name
-    local name = options.target or option.default("target")
+    local name = option.get("target")
     if not name then
         return "no given target name!"
     end
 
     -- does not clean the cached configure?
-    if not options.clean then
+    if not option.get("clean") then
 
         -- load and execute the xmake.xconf
         local filepath = config._file()
@@ -284,7 +276,7 @@ function config.load()
     local configs = config._CONFIGS
 
     -- mark as "rebuild" if clean the cached configure 
-    if options.clean then 
+    if option.get("clean") then 
         configs.__rebuild = true
     end
 

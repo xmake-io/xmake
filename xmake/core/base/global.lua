@@ -36,10 +36,6 @@ function global._make()
     local configs = global._CONFIGS
     assert(configs)
    
-    -- the options
-    local options = option.options()
-    assert(options)
-
     -- init current global configure
     global._CURRENT = global._CURRENT or {}
     local current = global._CURRENT
@@ -144,7 +140,7 @@ function global.load()
     end
 
     -- does not clean the cached configure?
-    if not options.clean then
+    if not option.get("clean") then
 
         -- load and execute the xmake.conf
         local filepath = global._file()

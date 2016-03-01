@@ -370,7 +370,7 @@ function option.get(name)
     assert(options)
 
     -- get it
-    return options[name]
+    return options[name] or option.default(name)
 end
 
 -- get the given default option value for the current task
