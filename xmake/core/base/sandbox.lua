@@ -105,7 +105,7 @@ function sandbox._init()
             assert(module_name)
 
             -- load script
-            local script = loadfile(builtin_module_file)
+            local script, errors = loadfile(builtin_module_file)
             if script then
 
                 -- load module
@@ -116,6 +116,9 @@ function sandbox._init()
 
                 -- register module
                 self:_api_register_builtin(module_name, results)
+            else
+                -- error
+                os.raise(errors)
             end
         end
     end

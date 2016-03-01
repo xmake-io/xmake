@@ -29,6 +29,9 @@ task("config")
     -- on run
     on_task_run(function ()
        
+        import("core.project")
+        print(project)
+
     end)
 
     -- set menu
@@ -54,7 +57,7 @@ task("config")
                                                               , function () 
 
                                                                     -- import platform
-                                                                    import("core/platform")
+                                                                    import("core.platform")
 
                                                                     -- make description
                                                                     local description = {}
@@ -71,7 +74,7 @@ task("config")
                                                               , function () 
 
                                                                     -- import platform
-                                                                    import("core/platform")
+                                                                    import("core.platform")
 
                                                                     -- make description
                                                                     local description = {}
@@ -99,7 +102,7 @@ task("config")
                     ,   function () 
 
                             -- import platform
-                            import("core/project")
+                            import("core.project")
 
                             -- get menu for project
                             return project.menu() 
@@ -147,7 +150,7 @@ task("config")
                     ,   function () 
 
                             -- import platform
-                            import("core/platform")
+                            import("core.platform")
 
                             -- get menu for platform
                             return platform.menu("config") 
