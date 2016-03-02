@@ -106,7 +106,7 @@ function global.directory()
     return dir
 end
 
--- save xmake.conf
+-- save the global configure
 function global.save()
     
     -- the configs
@@ -117,52 +117,47 @@ function global.save()
     return io.save(global._file(), configs) 
 end
  
--- load xmake.conf
+-- load the global configure
 function global.load()
 
-    -- the options
-    local options = option.options()
-    assert(options)
+    -- load configure from the file first
+    local filepath = global._file()
+    if os.isfile(filepath) then
 
-    -- check
-    assert(option._MENU)
-    assert(option._MENU.global)
+        -- load configs
+        local configs, errors = io.load(filepath)
 
-    -- get all configure names
-    local i = 1
-    local configures = {}
-    for _, o in ipairs(option._MENU.global.options) do
-        local name = o[2]
-        if global._need(name) then
-            configures[i] = name
-            i = i + 1
+        -- error?
+        if not configs and errors then
+            utils.error(errors)
         end
-    end
 
-    -- does not clean the cached configure?
-    if not option.get("clean") then
-
-        -- load and execute the xmake.conf
-        local filepath = global._file()
-        if os.isfile(filepath) then
-
-            -- load the configure file
-            local configs, errors = io.load(filepath)
-
-            -- exists local configures?
-            if configs then
-                -- save configs
-                global._CONFIGS = configs
-            elseif errors then
-                -- error
-                utils.error(errors)
-            end
-        end
+        -- save configs
+        global._CONFIGS = configs
     end
 
     -- init configs
     global._CONFIGS = global._CONFIGS or {}
-    local configs = global._CONFIGS
+
+    -- make the current configs
+    global._CURRENT = global._make(global._CONFIGS)
+
+    -- ok
+    return true
+
+     --[[
+    -- the options
+    local options = option.options()
+    assert(options)
+
+    -- does not clean the cached configure?
+    if not option.get("clean") then
+
+        TODO
+    end
+    ]]
+
+    --[[
 
     -- xmake global?
     if option.task() == "global" then
@@ -198,12 +193,13 @@ function global.load()
             end
         end
     end
+    ]]
 
-    -- make the current global
-    global._make()
 end
 
+-- TODO move into probe()
 -- clear up and remove all auto values
+--[[ 
 function global.clearup()
 
     -- clear up the current configure
@@ -226,6 +222,7 @@ function global.clearup()
         end
     end
 end
+]]
 
 -- dump the current configure
 function global.dump()
