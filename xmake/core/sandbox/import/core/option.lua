@@ -17,31 +17,21 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        hello.lua
+-- @file        option.lua
 --
 
--- define task
-task("hello")
+-- define module
+local sandbox_option = sandbox_option or {}
 
-    -- set category
-    set_task_category("plugin")
+-- load modules
+local option = require("base/option")
 
-    -- on run
-    on_task_run(function ()
-        
-        -- trace
-        print("hello xmake!")
+-- get the option
+function sandbox_option.get(name)
 
-    end)
+    -- get it
+    return option.get(name)
+end
 
-    -- set menu
-    set_task_menu({
-                    -- usage
-                    usage = "xmake hello [options]"
-
-                    -- description
-                ,   description = "Hello xmake!"
-
-                    -- options
-                ,   options = {}
-                })
+-- return module
+return sandbox_option

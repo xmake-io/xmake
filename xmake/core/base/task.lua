@@ -80,7 +80,8 @@ function task._interpreter()
         -- init maps
         local maps = 
         {
-            host = xmake._HOST
+            host        = xmake._HOST
+        ,   globaldir   = global.directory()
         }
 
         -- map it
@@ -270,6 +271,14 @@ function task.run(name)
 
         -- trace
         utils.error("task(\"%s\"): no run script, please call on_task_run() first!", name)
+        return false
+    end
+
+    -- load global
+    if not global.load() then
+
+        -- trace
+        utils.error("load global configure failed!")
         return false
     end
 

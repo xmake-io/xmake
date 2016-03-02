@@ -26,6 +26,16 @@ task("global")
     -- set category
     set_task_category("action")
 
+    -- on run
+    on_task_run(function ()
+
+        -- imports
+        import("core.option")
+        import("core.global")
+        
+
+    end)
+
     -- set menu
     set_task_menu({
                     -- usage
