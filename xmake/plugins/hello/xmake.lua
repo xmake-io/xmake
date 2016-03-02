@@ -17,20 +17,33 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        test.lua
+-- @file        hello.lua
 --
 
-import("core")
-import("core.project")
+-- define task
+task("hello")
 
-print("global")
-print(project)
-print(core.project)
+    -- set category
+    set_task_category("plugin")
 
-function test2()
+    -- on run
+    on_task_run(function ()
+        
+        -- trace
+        print("hello xmake!")
 
-    print("test2")
-    print(project)
-    print(core.project)
-end
+    end)
+
+    -- set menu
+    set_task_menu({
+                    -- usage
+                    usage = "xmake hello [options]"
+
+                    -- description
+                ,   description = "Hello xmake!"
+
+                    -- options
+                ,   options = {}
+                })
+
 
