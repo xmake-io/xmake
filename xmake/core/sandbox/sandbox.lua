@@ -86,12 +86,12 @@ end
 function sandbox._init()
 
     -- init an sandbox instance
-    local self = {_PUBLIC = {}, _PRIVATE = {}}
+    local instance = {_PUBLIC = {}, _PRIVATE = {}}
 
     -- inherit the interfaces of sandbox
     for k, v in pairs(sandbox) do
         if type(v) == "function" then
-            self[k] = v
+            instance[k] = v
         end
     end
 
@@ -115,7 +115,7 @@ function sandbox._init()
                 end
 
                 -- register module
-                self:_api_register_builtin(module_name, results)
+                instance:_api_register_builtin(module_name, results)
             else
                 -- error
                 os.raise(errors)
@@ -123,10 +123,10 @@ function sandbox._init()
         end
     end
 
-    -- save self
-    setmetatable(self._PUBLIC, {    __index = function (tbl, key)
+    -- save instance
+    setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
                                         if type(key) == "string" and key == "_SANDBOX" and rawget(tbl, "_SANDBOX_READABLE") then
-                                            return self
+                                            return instance
                                         end
                                         return rawget(tbl, key)
                                     end
@@ -138,7 +138,7 @@ function sandbox._init()
                                     end}) 
 
     -- ok?
-    return self
+    return instance
 end
 
 -- make sandbox instance with the given script
