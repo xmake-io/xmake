@@ -29,9 +29,6 @@ local vformat   = require("sandbox/modules/vformat")
 -- define module
 local sandbox_os = sandbox_os or {}
 
--- inherit the public interfaces of os
-sandbox_os.curdir   = os.curdir
-
 -- copy file or directory
 function sandbox_os.cp(src, dst)
     
@@ -134,6 +131,17 @@ function sandbox_os.rmdir(dir)
         end
     end
 
+end
+
+-- get the current directory
+function sandbox_os.curdir()
+   
+    -- get it
+    local curdir = os.curdir()
+    assert(curdir)
+
+    -- ok
+    return curdir
 end
 
 -- run shell
