@@ -97,22 +97,6 @@ function io._save(file, object)
     return io._save_with_level(file, object, 0)
 end
 
--- create directory and open a writable file
-function io.openmk(filepath)
-
-    -- check
-    assert(filepath)
-
-    -- get the file directory
-    local dir = path.directory(filepath)
-
-    -- ensure the file directory 
-    if not os.isdir(dir) then os.mkdir(dir) end
-
-    -- open it
-    return io.open(filepath, "w")
-end
-
 -- read all data from file 
 function io.readall(filepath)
 
