@@ -29,7 +29,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
-local sandbox   = require("base/sandbox")
+local sandbox   = require("sandbox/sandbox")
 
 -- get module name
 function sandbox_import._modulename(name)
@@ -215,7 +215,7 @@ function sandbox_import.import(name, alias)
     local module, errors = sandbox_import._load(rootdir, name, instance)
     if not module then
         -- load module from the sandbox core directory
-        module, errors = sandbox_import._load(path.join(xmake._CORE_DIR, "sandbox/import"), name)
+        module, errors = sandbox_import._load(path.join(xmake._CORE_DIR, "sandbox/modules/import"), name)
     end
 
     -- check

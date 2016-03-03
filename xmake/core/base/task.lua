@@ -29,7 +29,7 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local filter        = require("base/filter")
 local string        = require("base/string")
-local sandbox       = require("base/sandbox")
+local sandbox       = require("sandbox/sandbox")
 local interpreter   = require("base/interpreter")
 
 -- the directories of tasks

@@ -17,10 +17,10 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        vformat.lua
+-- @file        format.lua
 --
 
 -- return module
-return require("sandbox/string").vformat
+return require("sandbox/modules/string").format
 
 

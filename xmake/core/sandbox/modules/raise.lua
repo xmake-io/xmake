@@ -17,9 +17,9 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        ifelse.lua
+-- @file        raise.lua
 --
 
 -- load module
-return require("sandbox/utils").ifelse
+return require("sandbox/modules/os").raise
 
