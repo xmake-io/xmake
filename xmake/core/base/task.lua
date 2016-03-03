@@ -29,15 +29,13 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local filter        = require("base/filter")
 local string        = require("base/string")
-local global        = require("base/global")
 local sandbox       = require("base/sandbox")
 local interpreter   = require("base/interpreter")
 
 -- the directories of tasks
 function task._directories()
 
-    return  {   path.join(global.directory(), "plugins")
-            ,   path.join(xmake._PROGRAM_DIR, "plugins")
+    return  {   path.join(xmake._PROGRAM_DIR, "plugins")
             ,   path.join(xmake._PROGRAM_DIR, "actions")
             }
 end
@@ -81,7 +79,6 @@ function task._interpreter()
         local maps = 
         {
             host        = xmake._HOST
-        ,   globaldir   = global.directory()
         }
 
         -- map it
@@ -271,14 +268,6 @@ function task.run(name)
 
         -- trace
         utils.error("task(\"%s\"): no run script, please call on_task_run() first!", name)
-        return false
-    end
-
-    -- load global
-    if not global.load() then
-
-        -- trace
-        utils.error("load global configure failed!")
         return false
     end
 
