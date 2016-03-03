@@ -29,7 +29,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local sandbox   = require("base/sandbox")
+local sandbox   = require("sandbox/sandbox")
 
 -- register api for set_scope()
 function deprecated_interpreter.api_register_set_scope(self, ...)

@@ -22,7 +22,7 @@
 
 -- load modules
 local string    = require("base/string")
-local sandbox   = require("base/sandbox")
+local sandbox   = require("sandbox/sandbox")
 
 -- define module
 local sandbox_string = sandbox_string or {}

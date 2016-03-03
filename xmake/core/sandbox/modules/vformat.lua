@@ -17,9 +17,10 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        raise.lua
+-- @file        vformat.lua
 --
 
--- load module
-return require("sandbox/os").raise
+-- return module
+return require("sandbox/modules/string").vformat
+
 

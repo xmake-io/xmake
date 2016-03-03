@@ -24,7 +24,7 @@
 local io        = require("base/io")
 local os        = require("base/os")
 local utils     = require("base/utils")
-local vformat   = require("sandbox/vformat")
+local vformat   = require("sandbox/modules/vformat")
 
 -- define module
 local sandbox_os = sandbox_os or {}

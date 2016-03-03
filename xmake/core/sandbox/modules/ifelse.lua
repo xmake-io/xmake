@@ -17,9 +17,9 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        printf.lua
+-- @file        ifelse.lua
 --
 
 -- load module
-return require("sandbox/utils").printf
+return require("sandbox/modules/utils").ifelse
 
