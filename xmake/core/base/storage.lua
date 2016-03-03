@@ -29,43 +29,43 @@ local io    = require("base/io")
 local path  = require("base/path")
 local utils = require("base/utils")
 
--- init the storage instance
+-- get root directory from the given scope name
 --
 -- global:      ~/.xmake
 -- output:      projectdir/output
 -- project:     projectdir/.xmake
 -- temporary:   tmpdir/.xmake
-function storage._init(rootdir)
+function storage.rootdir(scopename)
 
+    -- init root directories
+    local rootdirs =
+    {
+        global      = path.translate("~/.xmake")
+    ,   output      = path.join(xmake._PROJECT_DIR, "output")
+    ,   project     = path.join(xmake._PROJECT_DIR, ".xmake")
+    ,   temporary   = path.join(os.tmpdir(), ".xmake")
+    }
+    storage._ROOTDIRS = storage._ROOTDIRS or {}
+
+    -- get root directory from the given scope name
+    local rootdir = storage._ROOTDIRS[scopename] or rootdirs[scopename]
+    if not rootdir then
+        os.raise("unknown scope %s for storage!", scopename)
+    end
+
+    -- ok
+    return rootdir
 end
 
--- the global storage instance
-function storage.global()
+-- register storage scope from the given root directory
+function storage.register(scopename, rootdir)
 
-    -- get it
-    return storage._init(path.translate("~/.xmake"))
-end
+    -- check
+    assert(scopename and rootdir)
 
--- the output storage instance
-function storage.output()
-
-    -- TODO 
-    -- get it
-    return storage._init(path.join(xmake._PROJECT_DIR, "output"))
-end
-
--- the project storage instance
-function storage.project()
-
-    -- get it
-    return storage._init(path.join(xmake._PROJECT_DIR, ".xmake"))
-end
-
--- the temporary storage instance
-function storage.temporary()
-
-    -- get it
-    return storage._init(path.join(os.tmpdir(), ".xmake"))
+    -- register it
+    storage._ROOTDIRS = storage._ROOTDIRS or {}
+    storage._ROOTDIRS[scopename] = rootdir
 end
 
 -- return module

@@ -419,35 +419,35 @@ end
 function interpreter.init()
 
     -- init an interpreter instance
-    local self = {  _PUBLIC = {}
+    local instance = {  _PUBLIC = {}
                 ,   _PRIVATE = {    _SCOPES = {}
                                 ,   _MTIMES = {}}}
 
     -- inherit the interfaces of interpreter
     for k, v in pairs(interpreter) do
         if type(v) == "function" then
-            self[k] = v
+            instance[k] = v
         end
     end
 
     -- register the builtin interfaces
-    self:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
-    self:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
+    instance:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
+    instance:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
 
     -- register the builtin interfaces for lua
-    self:api_register_builtin("print", print)
-    self:api_register_builtin("pairs", pairs)
-    self:api_register_builtin("ipairs", ipairs)
-    self:api_register_builtin("format", string.format)
-    self:api_register_builtin("printf", utils.printf)
+    instance:api_register_builtin("print", print)
+    instance:api_register_builtin("pairs", pairs)
+    instance:api_register_builtin("ipairs", ipairs)
+    instance:api_register_builtin("format", string.format)
+    instance:api_register_builtin("printf", utils.printf)
 
     -- register the builtin modules for lua
-    self:api_register_builtin("path", path)
-    self:api_register_builtin("table", table)
-    self:api_register_builtin("string", string)
+    instance:api_register_builtin("path", path)
+    instance:api_register_builtin("table", table)
+    instance:api_register_builtin("string", string)
 
     -- ok?
-    return self
+    return instance
 end
 
 -- load results 
