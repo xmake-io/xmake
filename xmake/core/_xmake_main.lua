@@ -38,7 +38,7 @@ xmake._PROJECT_FILE     = "xmake.lua"
 package.path = xmake._CORE_DIR .. "/?.lua;" .. package.path
 
 -- load modules
-local main = require("base/main")
+local main = require("main")
 
 -- the main function
 function _xmake_main()

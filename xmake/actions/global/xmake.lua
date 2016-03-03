@@ -29,9 +29,6 @@ task("global")
     -- on run
     on_task_run(function ()
 
-        -- imports
-        import("core.option")
-        import("core.global")
         
 
     end)
@@ -58,7 +55,7 @@ task("global")
                     ,   {}
 
                         -- show menu for platform
-                    ,   function () 
+--[[                    ,   function () 
 
                             -- import platform
                             import("core.platform")
@@ -66,7 +63,7 @@ task("global")
                             -- get menu for platform
                             return platform.menu("global") 
                         end
-
+]]
                     }
                 })
 
