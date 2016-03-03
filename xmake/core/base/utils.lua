@@ -20,7 +20,7 @@
 -- @file        utils.lua
 --
 
--- define module: utils
+-- define module
 local utils = utils or {}
 
 -- load modules
@@ -288,5 +288,5 @@ function utils.call(funcs, pred, ...)
     return true
 end
 
--- return module: utils
+-- return module
 return utils

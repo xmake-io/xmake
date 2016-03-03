@@ -20,7 +20,7 @@
 -- @file        os.lua
 --
 
--- define module: os
+-- define module
 local os = os or {}
 
 -- load modules
@@ -248,5 +248,5 @@ function os.raise(msg, ...)
 end
 
 
--- return module: os
+-- return module
 return os
