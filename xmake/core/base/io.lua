@@ -20,7 +20,7 @@
 -- @file        io.lua
 --
 
--- define module: io
+-- define module
 local io = io or {}
 
 -- load modules
@@ -304,5 +304,5 @@ function io.tail(filepath, linecount)
     end
 end
 
--- return module: io
+-- return module
 return io

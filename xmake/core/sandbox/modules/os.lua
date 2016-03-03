@@ -144,6 +144,17 @@ function sandbox_os.curdir()
     return curdir
 end
 
+-- get the temporary directory
+function sandbox_os.tmpdir()
+   
+    -- get it
+    local tmpdir = os.tmpdir()
+    assert(tmpdir)
+
+    -- ok
+    return tmpdir
+end
+
 -- run shell
 function sandbox_os.run(cmd, ...)
 
