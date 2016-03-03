@@ -40,7 +40,7 @@ task("package")
                     -- options
                 ,   options = 
                     {
-                        {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
+--[[                        {'a', "archs",      "kv", nil,          "Package multiple given architectures."                             
                                                               , "    .e.g --archs=\"armv7, arm64\" or -a i386"
                                                               , ""
                                                                 -- show the description of all architectures
@@ -62,7 +62,7 @@ task("package")
                                                                     return description
                                                                 end                                                             }
 
-                    ,   {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
+                    ,]]   {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
 
                     ,   {}
                     ,   {nil, "target",     "v",  "all",        "Package a given target"                                        }   

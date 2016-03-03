@@ -46,7 +46,7 @@ task("config")
                         {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
 
                     ,   {}
-                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
+--[[                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
 
                                                                 -- show the description of all platforms
                                                               , function () 
@@ -83,7 +83,7 @@ task("config")
                                                                     -- get it
                                                                     return description
                                                                 end                                                            }
-                    ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
+]]                    ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
                                                               , "    - debug"
                                                               , "    - release"
                                                               , "    - profile"                                                 }
@@ -94,7 +94,7 @@ task("config")
                     ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                 }
 
                         -- show menu for project
-                    ,   function () 
+--[[                    ,   function () 
 
                             -- import platform
                             import("core.project")
@@ -102,7 +102,7 @@ task("config")
                             -- get menu for project
                             return project.menu() 
                         end
-
+]]
                     ,   {}
                     ,   {nil, "make",       "kv", "auto",       "Set the make path."                                              }
                     ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                     }
@@ -142,7 +142,7 @@ task("config")
                     ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"                               }
 
                         -- show menu for platform
-                    ,   function () 
+--[[                    ,   function () 
 
                             -- import platform
                             import("core.platform")
@@ -150,7 +150,7 @@ task("config")
                             -- get menu for platform
                             return platform.menu("config") 
                         end
-
+]]
                     ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
 
