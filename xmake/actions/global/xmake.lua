@@ -29,7 +29,11 @@ task("global")
     -- on run
     on_task_run(function ()
 
-        
+        printf("$(tmpdir)")
+        printf("$(buildir)")
+        printf("$(configdir)")
+        printf("$(globaldir)")
+        printf("$(projectdir)")
 
     end)
 
