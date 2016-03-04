@@ -24,7 +24,7 @@
 local macosx = macosx or {}
 
 -- load modules
-local config    = require("base/config")
+local config    = require("project/config")
 
 -- init host
 macosx._HOST   = "macosx"

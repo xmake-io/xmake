@@ -38,13 +38,13 @@ task("create")
                 ,   options = 
                     {
                         {'n', "name",       "kv", nil,          "The project name."                                             }
---[[                    ,   {'l', "language",   "kv", "c",          "The project language"
+                    ,   {'l', "language",   "kv", "c",          "The project language"
 
                                                                 -- show the description of all languages
                                                               , function ()
 
                                                                     -- import template
-                                                                    import("core.template")
+                                                                    import("core.project.template")
 
                                                                     -- make description
                                                                     local description = {}
@@ -61,7 +61,7 @@ task("create")
                                                               , function ()
 
                                                                     -- import template
-                                                                    import("core.template")
+                                                                    import("core.project.template")
 
                                                                     -- make description
                                                                     local description = {}
@@ -75,7 +75,7 @@ task("create")
                                                                     -- get it
                                                                     return description
                                                                 end                                                             }
-]]
+
                     ,   {}
                     ,   {nil, "target",     "v",  nil,          "Create the given target."                     
                                                               , "Uses the project name as target if not exists."                }

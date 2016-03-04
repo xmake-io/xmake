@@ -24,7 +24,7 @@
 local watchsimulator = watchsimulator or {}
 
 -- load modules
-local config                = require("base/config")
+local config                = require("project/config")
 
 -- init host
 watchsimulator._HOST       = "macosx"

@@ -54,16 +54,16 @@ task("global")
 
                     ,   {}
 
-                        -- show menu for platform
---[[                    ,   function () 
+                        -- show platform menu options
+                    ,   function () 
 
-                            -- import platform
-                            import("core.platform")
+                            -- import platform menu
+                            import("core.platform.menu")
 
-                            -- get menu for platform
-                            return platform.menu("global") 
+                            -- get global menu options
+                            return menu.options_global() 
                         end
-]]
+
                     }
                 })
 

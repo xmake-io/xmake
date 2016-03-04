@@ -31,7 +31,7 @@ local table             = require("base/table")
 local utils             = require("base/utils")
 local string            = require("base/string")
 local filter            = require("base/filter")
-local sandbox           = require("base/sandbox")
+local sandbox           = require("sandbox/sandbox")
 local interpreter       = require("base/interpreter")
 
 -- the interpreter

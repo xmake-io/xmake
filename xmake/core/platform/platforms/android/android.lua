@@ -24,7 +24,7 @@
 local android = android or {}
 
 -- load modules
-local config        = require("base/config")
+local config        = require("project/config")
 
 -- init host
 android._HOST       = xmake._HOST

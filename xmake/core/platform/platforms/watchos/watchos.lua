@@ -24,7 +24,7 @@
 local watchos = watchos or {}
 
 -- load modules
-local config        = require("base/config")
+local config        = require("project/config")
 
 -- init host
 watchos._HOST      = "macosx"

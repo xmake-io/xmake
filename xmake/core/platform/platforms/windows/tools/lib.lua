@@ -29,8 +29,8 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local config    = require("base/config")
-local platform  = require("base/platform")
+local config    = require("project/config")
+local platform  = require("platform/platform")
 
 -- init the compiler
 function lib.init(self, name)

@@ -26,14 +26,14 @@ local compiler = compiler or {}
 -- load modules
 local io        = require("base/io")
 local path      = require("base/path")
-local rule      = require("base/rule")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local option    = require("base/option")
 local string    = require("base/string")
-local config    = require("base/config")
-local tools     = require("platform/tool")
-local platform  = require("base/platform")
+local rule      = require("project/rule")
+local config    = require("project/config")
+local tool      = require("platform/tool")
+local platform  = require("platform/platform")
 
 -- map gcc flag to the given compiler flag
 function compiler._mapflag(module, flag)
@@ -408,7 +408,7 @@ function compiler.get(srcfile)
     end
 
     -- get compiler from the source file type
-    local module = tools.get(kind)
+    local module = tool.get(kind)
     if module then 
         
         -- invalid compiler

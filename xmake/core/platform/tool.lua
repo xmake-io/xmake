@@ -28,7 +28,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local platform  = require("base/platform")
+local platform  = require("platform/platform")
 
 -- match the tool name
 function tool._match(name, toolname)
@@ -124,10 +124,10 @@ function tool.find(name, root)
     if root then return tool._find_from(root, name) end
 
     -- attempt to find it from the current platform directory first
-    if not filepath then filepath = tool._find_from(platform.directory() .. "/tool", name) end
+    if not filepath then filepath = tool._find_from(path.join(platform.directory(), "tools"), name) end
 
     -- attempt to find it from the script directory 
-    if not filepath then filepath = tool._find_from(xmake._CORE_DIR .. "/tool", name) end
+    if not filepath then filepath = tool._find_from(path.join(xmake._CORE_DIR, "platform/tools"), name) end
 
     -- ok?
     return filepath

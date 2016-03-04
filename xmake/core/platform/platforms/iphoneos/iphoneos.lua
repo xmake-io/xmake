@@ -24,7 +24,7 @@
 local iphoneos = iphoneos or {}
 
 -- load modules
-local config        = require("base/config")
+local config        = require("project/config")
 
 -- init host
 iphoneos._HOST      = "macosx"

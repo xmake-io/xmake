@@ -25,12 +25,12 @@ local deprecated_project = deprecated_project or {}
 
 -- load modules
 local os                        = require("base/os")
-local rule                      = require("base/rule")
 local path                      = require("base/path")
 local utils                     = require("base/utils")
 local table                     = require("base/table")
-local config                    = require("base/config")
-local platform                  = require("base/platform")
+local rule                      = require("project/rule")
+local config                    = require("project/config")
+local platform                  = require("platform/platform")
 local deprecated_interpreter    = require("base/deprecated/interpreter")
 
 -- the current os is belong to the given os?

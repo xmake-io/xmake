@@ -46,17 +46,17 @@ task("config")
                         {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
 
                     ,   {}
---[[                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
+                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
 
                                                                 -- show the description of all platforms
                                                               , function () 
 
-                                                                    -- import platform
-                                                                    import("core.platform")
+                                                                    -- import platform menu
+                                                                    import("core.platform.menu")
 
                                                                     -- make description
                                                                     local description = {}
-                                                                    for i, plat in ipairs(platform.plats()) do
+                                                                    for i, plat in ipairs(menu.plats()) do
                                                                         description[i] = "    - " .. plat
                                                                     end
 
@@ -68,14 +68,14 @@ task("config")
                                                                 -- show the description of all architectures
                                                               , function () 
 
-                                                                    -- import platform
-                                                                    import("core.platform")
+                                                                    -- import platform menu
+                                                                    import("core.platform.menu")
 
                                                                     -- make description
                                                                     local description = {}
-                                                                    for i, plat in ipairs(platform.plats()) do
+                                                                    for i, plat in ipairs(menu.plats()) do
                                                                         description[i] = "    - " .. plat .. ":"
-                                                                        for _, arch in ipairs(platform.archs(plat)) do
+                                                                        for _, arch in ipairs(menu.archs(plat)) do
                                                                             description[i] = description[i] .. " " .. arch
                                                                         end
                                                                     end
@@ -83,7 +83,7 @@ task("config")
                                                                     -- get it
                                                                     return description
                                                                 end                                                            }
-]]                    ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
+                    ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
                                                               , "    - debug"
                                                               , "    - release"
                                                               , "    - profile"                                                 }
@@ -93,16 +93,16 @@ task("config")
                                                               , "    - binary"                                                 }
                     ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                 }
 
-                        -- show menu for project
---[[                    ,   function () 
+                        -- show project menu options
+                    ,   function () 
 
-                            -- import platform
-                            import("core.project")
+                            -- import project menu 
+                            import("core.project.menu")
 
-                            -- get menu for project
-                            return project.menu() 
+                            -- get project menu options 
+                            return menu.options() 
                         end
-]]
+
                     ,   {}
                     ,   {nil, "make",       "kv", "auto",       "Set the make path."                                              }
                     ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                     }
@@ -141,16 +141,16 @@ task("config")
                     ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"                                     }
                     ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"                               }
 
-                        -- show menu for platform
---[[                    ,   function () 
+                        -- show platform menu options
+                    ,   function () 
 
-                            -- import platform
-                            import("core.platform")
+                            -- import platform menu
+                            import("core.platform.menu")
 
-                            -- get menu for platform
-                            return platform.menu("config") 
+                            -- get config menu options
+                            return menu.options_config() 
                         end
-]]
+
                     ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
 

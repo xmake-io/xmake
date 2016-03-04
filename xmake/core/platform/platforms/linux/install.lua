@@ -26,10 +26,10 @@ local install = install or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
-local rule      = require("base/rule")
+local rule      = require("project/rule")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local platform  = require("base/platform")
+local platform  = require("platform/platform")
 
 -- install target for the library file
 function install._done_library(target)
