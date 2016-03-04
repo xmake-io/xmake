@@ -83,9 +83,12 @@ function task._interpreter()
         {
             host        = xmake._HOST
         ,   tmpdir      = os.tmpdir()
+        ,   curdir      = os.curdir()
         ,   globaldir   = global.directory()
         ,   configdir   = config.directory()
         ,   projectdir  = xmake._PROJECT_DIR
+            -- TODO
+            -- buildir
         }
 
         -- map it
