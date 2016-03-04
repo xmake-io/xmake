@@ -70,7 +70,7 @@ function option.init(argv, menu)
 
     -- init _OPTIONS
     option._OPTIONS = {}
-    option._OPTIONS._DEFAULTS = {}
+    option._DEFAULTS = {}
 
     -- parse _ARGV to _OPTIONS
     local _iter, _s, _k = ipairs(argv)
@@ -308,11 +308,11 @@ function option.init(argv, menu)
             assert(key)
 
             -- save the default value 
-            option._OPTIONS._DEFAULTS[key] = o[4]    
+            option._DEFAULTS[key] = o[4]    
         -- value with name?
         elseif o[3] == "v" and o[2] then
             -- save the default value 
-            option._OPTIONS._DEFAULTS[o[2]] = o[4]    
+            option._DEFAULTS[o[2]] = o[4]    
         end
     end
 
@@ -399,7 +399,7 @@ function option.defaults(task)
 
     -- get the default options for the current task
     if task == nil then
-        return option._OPTIONS._DEFAULTS
+        return option._DEFAULTS
     end
 
     -- get the default options for the given task

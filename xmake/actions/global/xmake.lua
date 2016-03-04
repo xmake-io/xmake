@@ -29,12 +29,43 @@ task("global")
     -- on run
     on_task_run(function ()
 
-        printf("$(tmpdir)")
-        printf("$(curdir)")
-        printf("$(configdir)")
-        printf("$(globaldir)")
-        printf("$(projectdir)")
+        -- imports
+        import("core.base.option")
+        import("core.project.global")
 
+        -- clean the cached configure?
+        if option.get("clean") then
+            
+            -- clean it
+            global.clean()
+        end
+
+        -- merge the options 
+        for name, value in pairs(option.options()) do
+            if name ~= "verbose" and name ~= "clean" then
+                global.set(name, value)
+            end
+        end
+
+        -- merge the default options 
+        for name, value in pairs(option.defaults()) do
+            if name ~= "verbose" and name ~= "clean" then
+                global.set(name, value)
+            end
+        end
+
+        -- probe the configure with value: "auto"
+        global.probe()
+       
+        -- save it
+        global.save()
+
+        -- dump it
+        global.dump()
+
+        -- trace
+        print("configure ok!")
+        
     end)
 
     -- set menu

@@ -26,38 +26,33 @@ local global = global or {}
 -- load modules
 local io            = require("base/io")
 local os            = require("base/os")
+local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
 -- make configure
-function global._make()
+function global._make(configs)
 
-    -- the configs
-    local configs = global._CONFIGS
+    -- check
     assert(configs)
    
-    -- init current global configure
-    global._CURRENT = global._CURRENT or {}
-    local current = global._CURRENT
-
     -- make current global configure
+    local current = {}
     for k, v in pairs(configs) do 
         if type(k) == "string" and not k:find("^_%u+") then
             current[k] = v
         end
     end
+
+    -- ok
+    return current
 end
 
 -- get the configure file
 function global._file()
     
     -- get it
-    return global.directory() .. "/xmake.conf"
-end
-
--- need configure?
-function global._need(name)
-    return name and name ~= "verbose" and name ~= "clean"
+    return path.join(global.directory(), "/xmake.conf")
 end
 
 -- get the given configure from the current 
@@ -68,7 +63,7 @@ function global.get(name)
 
     -- the value
     local value = global._CURRENT[name]
-    if value and value == "auto" then
+    if type(value) == "string" and value == "auto" then
         value = nil
     end
 
@@ -91,32 +86,39 @@ function global.set(name, value)
 
 end
 
+-- clean the global configure 
+function global.clean()
+
+    -- check
+    assert(global._CURRENT and global._CONFIGS)
+
+    -- clean it
+    global._CURRENT = {}
+    global._CONFIGS = {}
+
+    -- save it
+    if os.isfile(global._file()) then
+        local ok, errors = os.rm(global._file())
+        if not ok then
+            os.raise(errors)
+        end
+    end
+end
+
+-- get all options
+function global.options()
+        
+    -- get it
+    return global._CURRENT
+end
+
 -- get the global configure directory
 function global.directory()
 
-    -- the directory
-    local dir = path.translate("~/.xmake")
-
-    -- create it directly first if not exists
-    if not os.isdir(dir) then
-        assert(os.mkdir(dir))
-    end
-
     -- get it
-    return dir
+    return path.translate("~/.xmake")
 end
 
--- save the global configure
-function global.save()
-    
-    -- the configs
-    local configs = global._CONFIGS
-    assert(configs)
-
-    -- save to the configure file
-    return io.save(global._file(), configs) 
-end
- 
 -- load the global configure
 function global.load()
 
@@ -145,93 +147,42 @@ function global.load()
     -- ok
     return true
 
-     --[[
-    -- the options
-    local options = option.options()
-    assert(options)
-
-    -- does not clean the cached configure?
-    if not option.get("clean") then
-
-        TODO
-    end
-    ]]
-
-    --[[
-
-    -- xmake global?
-    if option.task() == "global" then
-        
-        -- merge option.options() to the global configure
-        for k, v in pairs(options) do
-
-            -- check
-            assert(type(k) == "string")
-
-            -- need configure it?
-            if not k:startswith("_") and global._need(k) then
-                configs[k] = v
-            end
-        end
-
-        -- merge the default global configure options to the global configure
-        local defaults = option.defaults()
-        if defaults then
-            for k, v in pairs(defaults) do
-
-                -- check
-                assert(type(k) == "string")
-
-                -- need configure it?
-                if global._need(k) then
-
-                    -- save the default option
-                    if nil == configs[k] then
-                        configs[k] = v
-                    end
-                end
-            end
-        end
-    end
-    ]]
-
 end
 
--- TODO move into probe()
--- clear up and remove all auto values
---[[ 
-function global.clearup()
+-- save the global configure
+function global.save()
 
-    -- clear up the current configure
-    local current = global._CURRENT
-    if current then
-        for k, v in pairs(current) do
-            if v and type(v) and v == "auto" then
-                current[k] = nil
-            end
+    -- check
+    assert(global._CONFIGS)
+   
+    -- remove values with "auto" from the configure
+    local configs = {}
+    for name, value in pairs(global._CONFIGS) do
+        if type(value) ~= "string" or value ~= "auto" then
+            configs[name] = value
         end
     end
 
-    -- clear up the configure
-    local configs = global._CONFIGS
-    if configs then
-        for k, v in pairs(configs) do
-            if v and type(v) and v == "auto" then
-                configs[k] = nil
-            end
-        end
-    end
+    -- save it
+    return io.save(global._file(), configs) 
 end
-]]
 
 -- dump the current configure
 function global.dump()
     
     -- check
     assert(global._CURRENT)
+ 
+    -- remove values with "auto" from the configure
+    local configs = {}
+    for name, value in pairs(global._CURRENT) do
+        if type(value) ~= "string" or value ~= "auto" then
+            configs[name] = value
+        end
+    end
 
     -- dump
-    utils.dump(global._CURRENT, "__%w*", "configure")
+    utils.dump(configs, "__%w*", "configure")
    
 end
 
