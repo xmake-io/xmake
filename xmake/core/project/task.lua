@@ -281,6 +281,14 @@ function task.run(name)
         return false
     end
 
+    -- load global
+    if not global.load() then
+
+        -- trace
+        utils.error("load global configure failed!")
+        return false
+    end
+
     -- run on_before, on_run, on_after
     local ok = true
     local on_scripts = {taskinfo.before, taskinfo.run, taskinfo.after}
