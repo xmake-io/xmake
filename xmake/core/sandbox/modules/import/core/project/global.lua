@@ -25,6 +25,7 @@ local sandbox_core_project_global = sandbox_core_project_global or {}
 
 -- load modules
 local global    = require("project/global")
+local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
 -- get the configure
@@ -39,6 +40,39 @@ function sandbox_core_project_global.set(name, value)
 
     -- set it
     global.set(name, value)
+end
+
+-- dump the configure
+function sandbox_core_project_global.dump()
+
+    -- dump it
+    global.dump()
+end
+
+-- save the configure
+function sandbox_core_project_global.save()
+
+    -- get all
+    local ok, errors = global.save()
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- clean the configure
+function sandbox_core_project_global.clean()
+
+    -- clean it
+    global.clean()
+end
+
+-- probe the configure
+function sandbox_core_project_global.probe()
+
+    -- probe it
+    if not platform.probe(true) then
+        raise("probe the global configure failed!")
+    end
 end
 
 -- get the configure directory

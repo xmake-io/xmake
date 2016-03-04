@@ -139,9 +139,18 @@ end
 
 -- save object the the given filepath
 function io.save(filepath, object)
+
+    -- check 
+    assert(filepath and object)
+
+    -- ensure directory
+    local dir = path.directory(filepath)
+    if not os.isdir(dir) then
+        os.mkdir(dir)
+    end
     
     -- open the file
-    local file = io.openmk(filepath)
+    local file = io.open(filepath, "w")
     if not file then
         -- error
         return false, string.format("open %s failed!", filepath)
@@ -163,6 +172,9 @@ end
  
 -- load object from the given file
 function io.load(filepath)
+
+    -- check
+    assert(filepath)
 
     -- open the file
     local file = io.open(filepath, "r")
