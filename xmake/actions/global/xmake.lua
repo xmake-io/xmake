@@ -30,7 +30,7 @@ task("global")
     on_task_run(function ()
 
         printf("$(tmpdir)")
-        printf("$(buildir)")
+        printf("$(curdir)")
         printf("$(configdir)")
         printf("$(globaldir)")
         printf("$(projectdir)")
