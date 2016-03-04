@@ -25,9 +25,9 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local config    = require("base/config")
 local option    = require("base/option")
-local platform  = require("base/platform")
+local config    = require("project/config")
+local platform  = require("platform/platform")
 
 -- define module: nmake
 local nmake = nmake or {}

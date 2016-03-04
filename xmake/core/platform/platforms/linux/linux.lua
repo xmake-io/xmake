@@ -24,7 +24,7 @@
 local linux = linux or {}
 
 -- load modules
-local config    = require("base/config")
+local config    = require("project/config")
 
 -- init host
 linux._HOST    = "linux"

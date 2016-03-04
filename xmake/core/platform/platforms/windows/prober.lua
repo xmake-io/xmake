@@ -26,10 +26,10 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local config    = require("base/config")
-local global    = require("base/global")
+local config    = require("project/config")
+local global    = require("project/global")
 local tool      = require("platform/tool")
-local platform  = require("base/platform")
+local platform  = require("platform/platform")
 
 -- define module: prober
 local prober = prober or {}

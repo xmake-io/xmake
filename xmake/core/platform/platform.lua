@@ -28,14 +28,14 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local option    = require("base/option")
-local config    = require("base/config")
-local global    = require("base/global")
+local config    = require("project/config")
+local global    = require("project/global")
 
 -- the directories of platforms
 function platform._directories()
 
     return  {   path.join(global.directory(), "platforms")
-            ,   path.join(xmake._CORE_DIR, "platforms")
+            ,   path.join(xmake._CORE_DIR, "platform/platforms")
             }
 end
 

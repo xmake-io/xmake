@@ -25,7 +25,7 @@ local windows = windows or {}
 
 -- load modules
 local os            = require("base/os")
-local config        = require("base/config")
+local config        = require("project/config")
 
 -- init host
 windows._HOST       = "windows"

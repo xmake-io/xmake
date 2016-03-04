@@ -26,8 +26,8 @@ local cl = cl or {}
 -- load modules
 local utils     = require("base/utils")
 local string    = require("base/string")
-local config    = require("base/config")
-local platform  = require("base/platform")
+local config    = require("project/config")
+local platform  = require("platform/platform")
 
 -- init the compiler
 function cl.init(self, name)

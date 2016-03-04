@@ -26,8 +26,8 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local tool      = require("platform/tool")
-local config    = require("base/config")
-local global    = require("base/global")
+local config    = require("project/config")
+local global    = require("project/global")
 
 -- define module: prober
 local prober = prober or {}

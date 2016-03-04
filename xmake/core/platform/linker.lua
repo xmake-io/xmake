@@ -28,10 +28,10 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
-local config    = require("base/config")
-local compiler  = require("base/compiler")
-local tools     = require("platform/tool")
-local platform  = require("base/platform")
+local config    = require("project/config")
+local compiler  = require("platform/compiler")
+local tool      = require("platform/tool")
+local platform  = require("platform/platform")
 
 -- map gcc flag to the given linker flag
 function linker._mapflag(module, flag)
@@ -289,7 +289,7 @@ function linker.get(kind)
     else return end
  
     -- get it
-    local module = tools.get(name)
+    local module = tool.get(name)
 
     -- invalid linker?
     if module and not module.command_link then

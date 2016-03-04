@@ -26,7 +26,7 @@ local ar = ar or {}
 -- load modules
 local utils     = require("base/utils")
 local string    = require("base/string")
-local config    = require("base/config")
+local config    = require("project/config")
 
 -- init the linker
 function ar.init(self, name)

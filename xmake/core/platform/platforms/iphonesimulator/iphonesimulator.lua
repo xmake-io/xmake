@@ -24,7 +24,7 @@
 local iphonesimulator = iphonesimulator or {}
 
 -- load modules
-local config                = require("base/config")
+local config                = require("project/config")
 
 -- init host
 iphonesimulator._HOST       = "macosx"

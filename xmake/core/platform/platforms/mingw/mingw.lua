@@ -24,7 +24,7 @@
 local mingw = mingw or {}
 
 -- load modules
-local config    = require("base/config")
+local config    = require("project/config")
 
 -- init host
 mingw._HOST    = xmake._HOST
