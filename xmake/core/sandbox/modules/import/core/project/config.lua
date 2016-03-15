@@ -24,9 +24,9 @@
 local sandbox_core_project_config = sandbox_core_project_config or {}
 
 -- load modules
-local rule      = require("project/rule")
 local config    = require("project/config")
-local project   = require("project/project")
+local platform  = require("platform/platform")
+local raise     = require("sandbox/modules/raise")
 
 -- get the build directory
 function sandbox_core_project_config.buildir()
@@ -64,7 +64,7 @@ function sandbox_core_project_config.mode()
 end
 
 -- get the configure directory
-function sandbox_core_project_global.directory()
+function sandbox_core_project_config.directory()
 
     -- get it
     local dir = config.directory()
@@ -86,6 +86,25 @@ function sandbox_core_project_config.set(name, value)
 
     -- set it
     return config.set(name, value)
+end
+
+-- clean the configure
+function sandbox_core_project_config.clean()
+
+    -- clean it
+    local ok, errors = config.clean()
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- probe the configure
+function sandbox_core_project_config.probe()
+
+    -- probe it
+    if not platform.probe(false) then
+        raise("probe the project configure failed!")
+    end
 end
 
 

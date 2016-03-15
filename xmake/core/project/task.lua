@@ -267,27 +267,21 @@ function task.run(name)
     -- get the task info
     local taskinfo = tasks[name]
     if not taskinfo then
-
-        -- trace
         utils.error("task(\"%s\"): unknown task", name)
         return false
     end
 
     -- check
     if not taskinfo.run then
-
-        -- trace
         utils.error("task(\"%s\"): no run script, please call on_task_run() first!", name)
         return false
     end
 
     -- load global
-    if not global.load() then
+    global.load()
 
-        -- trace
-        utils.error("load global configure failed!")
-        return false
-    end
+    -- load config
+    config.load()
 
     -- run on_before, on_run, on_after
     local ok = true

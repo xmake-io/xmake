@@ -20,8 +20,37 @@
 -- @file        main.lua
 --
 
+-- imports
+import("core.base.option")
+import("core.project.config")
+
+-- main
 function main()
 
-    print("main")
+    -- clean the cached configure?
+    if option.get("clean") then
+        
+        -- clean it
+        config.clean()
+    end
+
+    --[[
+    -- merge the options 
+    for name, value in pairs(option.options()) do
+        if name ~= "verbose" and name ~= "clean" then
+            config.set(name, value)
+        end
+    end
+
+    -- merge the default options 
+    for name, value in pairs(option.defaults()) do
+        if name ~= "verbose" and name ~= "clean" then
+            config.set(name, value)
+        end
+    end
+    ]]
+
+    -- probe the configure with value: "auto"
+--    config.probe()
 
 end
