@@ -88,6 +88,16 @@ function sandbox_core_project_config.set(name, value)
     return config.set(name, value)
 end
 
+-- load the configure
+function sandbox_core_project_config.load(targetname)
+
+    -- load it
+    local ok, errors = config.load(targetname)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- clean the configure
 function sandbox_core_project_config.clean()
 

@@ -38,60 +38,94 @@ function config._file()
     return path.join(config.directory(), "/xmake.conf")
 end
 
--- make configure 
-function config._make(configs)
+-- get the target scope
+function config._target()
+ 
+    -- check
+    local configs = config._CONFIGS
+    if not configs then
+        return 
+    end
+  
+    -- the target name
+    local targetname = config._TARGETNAME
+    assert(targetname)
 
-    -- init current target configure
-    local current = {}
+    -- for all targets?
+    if targetname == "all" then
+        return configs
+    elseif configs._TARGETS then
+        -- get it
+        return configs._TARGETS[targetname]
+    end
+end
 
-    --[[
-    -- get configs from the default configure 
-    if configs._DEFAULTS then
-        for k, v in pairs(configs._DEFAULTS) do 
-            if type(v) ~= "string" or v ~= "auto" then current[k] = v end
+-- get the current given configure
+function config.get(name)
+
+    -- get the target
+    local target = config._target()
+    if not target then
+        return 
+    end
+
+    -- the value
+    local value = target[name]
+    if type(value) == "string" and value == "auto" then
+        value = nil
+    end
+
+    -- get it from the root scope if not found
+    if value == nil then
+        value = config._CONFIGS[name]
+        if type(value) == "string" and value == "auto" then
+            value = nil
         end
     end
-    ]]
 
-    -- make current configure from the global configure 
-    for k, v in pairs(global.options()) do 
-        current[k] = v
-    end
+    -- get it
+    return value
+end
 
-    -- make current configure from the project configure
-    for k, v in pairs(configs) do 
-        if type(k) == "string" and not k:find("^_%u+") then
-            current[k] = v
+-- set the given configure to the current 
+function config.set(name, value)
+
+    -- check
+    assert(name)
+
+    -- get the current target
+    local target = config._target()
+    assert(target)
+
+    -- set it 
+    target[name] = value
+end
+
+-- get all options
+function config.options()
+
+    -- check
+    assert(config._CONFIGS)
+         
+    -- remove values with "auto" and private item
+    local configs = {}
+    for name, value in pairs(config._CONFIGS) do
+        if not name:find("^_%u+") and (type(value) ~= "string" or value ~= "auto") then
+            configs[name] = value
         end
     end
 
-    --[[
-    -- get configs from the current target 
-    if configs._TARGETS and current.target ~= "all" then
-
-        -- get the target config
-        local target_config = configs._TARGETS[current.target]
-        if target_config then
-
-            -- merge it
-            for k, v in pairs(target_config) do
-                current[k] = v
-            end
-        end
-    end]]
-
-    -- ok
-    return current
+    -- get it
+    return configs
 end
 
 -- clean the project configure 
 function config.clean()
 
     -- check
-    assert(config._CURRENT and config._CONFIGS)
+    assert(config._CONFIGS)
 
     -- clean it
-    config._CURRENT = {}
     config._CONFIGS = {}
 
     -- save it
@@ -113,9 +147,14 @@ function config.directory()
     return path.join(xmake._PROJECT_DIR, ".xmake")
 end
 
--- TODO: reconfig, rebuild, defaults, targets
+-- TODO: reconfig, rebuild
 -- load the project configure
-function config.load()
+function config.load(targetname)
+
+    -- check
+    if not targetname then
+        return false, "no target name!"
+    end
 
     -- load configure from the file first
     local filepath = config._file()
@@ -135,10 +174,27 @@ function config.load()
 
     -- init configs
     config._CONFIGS = config._CONFIGS or {}
+    local configs = config._CONFIGS
 
-    -- make the current configs
-    config._CURRENT = config._make(global._CONFIGS)
+    -- init targets
+    configs._TARGETS = configs._TARGETS or {}
+    if targetname ~= "all" then
+        configs._TARGETS[targetname] = configs._TARGETS[targetname] or {}
+    end
 
+    -- save the target name
+    config._TARGETNAME = targetname
+
+    -- ok
+    return true
+end
+
+-- dump the configure
+function config.dump()
+   
+    -- dump
+    utils.dump(config.options(), "__%w*", "configure")
+   
 end
 
 -- return module

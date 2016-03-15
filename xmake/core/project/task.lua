@@ -277,12 +277,6 @@ function task.run(name)
         return false
     end
 
-    -- load global
-    global.load()
-
-    -- load config
-    config.load()
-
     -- run on_before, on_run, on_after
     local ok = true
     local on_scripts = {taskinfo.before, taskinfo.run, taskinfo.after}
