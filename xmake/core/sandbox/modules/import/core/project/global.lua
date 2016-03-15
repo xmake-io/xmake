@@ -63,7 +63,10 @@ end
 function sandbox_core_project_global.clean()
 
     -- clean it
-    global.clean()
+    local ok, errors = global.clean()
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- probe the configure

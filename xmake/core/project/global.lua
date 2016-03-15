@@ -20,7 +20,7 @@
 -- @file        global.lua
 --
 
--- define module: global
+-- define module
 local global = global or {}
 
 -- load modules
@@ -30,13 +30,20 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
+-- get the configure file
+function global._file()
+    
+    -- get it
+    return path.join(global.directory(), "/xmake.conf")
+end
+
 -- make configure
 function global._make(configs)
 
     -- check
     assert(configs)
    
-    -- make current global configure
+    -- make current configure
     local current = {}
     for k, v in pairs(configs) do 
         if type(k) == "string" and not k:find("^_%u+") then
@@ -46,13 +53,6 @@ function global._make(configs)
 
     -- ok
     return current
-end
-
--- get the configure file
-function global._file()
-    
-    -- get it
-    return path.join(global.directory(), "/xmake.conf")
 end
 
 -- get the given configure from the current 
@@ -100,9 +100,12 @@ function global.clean()
     if os.isfile(global._file()) then
         local ok, errors = os.rm(global._file())
         if not ok then
-            os.raise(errors)
+            return false, errors
         end
     end
+
+    -- ok
+    return true
 end
 
 -- get all options
@@ -143,9 +146,6 @@ function global.load()
 
     -- make the current configs
     global._CURRENT = global._make(global._CONFIGS)
-
-    -- ok
-    return true
 
 end
 
@@ -189,5 +189,5 @@ function global.dump()
    
 end
 
--- return module: global
+-- return module
 return global

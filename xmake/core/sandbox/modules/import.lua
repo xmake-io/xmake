@@ -220,6 +220,7 @@ function sandbox_import.import(name, alias)
 
     -- check
     if not module then
+        print(errors)
         os.raise("cannot import module: %s, %s", name, errors)
     end
 
