@@ -163,6 +163,9 @@ function global.save()
         end
     end
 
+    -- add version
+    configs.__version = xmake._VERSION
+
     -- save it
     return io.save(global._file(), configs) 
 end
