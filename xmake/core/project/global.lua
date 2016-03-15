@@ -37,32 +37,14 @@ function global._file()
     return path.join(global.directory(), "/xmake.conf")
 end
 
--- make configure
-function global._make(configs)
-
-    -- check
-    assert(configs)
-   
-    -- make current configure
-    local current = {}
-    for k, v in pairs(configs) do 
-        if type(k) == "string" and not k:find("^_%u+") then
-            current[k] = v
-        end
-    end
-
-    -- ok
-    return current
-end
-
--- get the given configure from the current 
+-- get the current given configure from  
 function global.get(name)
 
     -- check
-    assert(global._CURRENT)
+    assert(name and global._CONFIGS)
 
     -- the value
-    local value = global._CURRENT[name]
+    local value = global._CONFIGS[name]
     if type(value) == "string" and value == "auto" then
         value = nil
     end
@@ -71,17 +53,13 @@ function global.get(name)
     return value
 end
 
--- set the given configure to the current 
+-- set the current given configure  
 function global.set(name, value)
 
     -- check
-    assert(global._CURRENT and global._CONFIGS)
-    assert(name and type(value) ~= "table")
+    assert(global._CONFIGS and name)
 
-    -- set it to the current configure
-    global._CURRENT[name] = value
-
-    -- set it to the configure for saving to file
+    -- set it 
     global._CONFIGS[name] = value
 
 end
@@ -90,10 +68,9 @@ end
 function global.clean()
 
     -- check
-    assert(global._CURRENT and global._CONFIGS)
+    assert(global._CONFIGS)
 
     -- clean it
-    global._CURRENT = {}
     global._CONFIGS = {}
 
     -- save it
@@ -110,9 +87,20 @@ end
 
 -- get all options
 function global.options()
-        
+         
+    -- check
+    assert(global._CONFIGS)
+         
+    -- remove values with "auto" and private item
+    local configs = {}
+    for name, value in pairs(global._CONFIGS) do
+        if not name:find("^_%u+") and (type(value) ~= "string" or value ~= "auto") then
+            configs[name] = value
+        end
+    end
+
     -- get it
-    return global._CURRENT
+    return configs
 end
 
 -- get the global configure directory
@@ -144,9 +132,8 @@ function global.load()
     -- init configs
     global._CONFIGS = global._CONFIGS or {}
 
-    -- make the current configs
-    global._CURRENT = global._make(global._CONFIGS)
-
+    -- ok
+    return true
 end
 
 -- save the global configure
@@ -170,22 +157,11 @@ function global.save()
     return io.save(global._file(), configs) 
 end
 
--- dump the current configure
+-- dump the configure
 function global.dump()
-    
-    -- check
-    assert(global._CURRENT)
- 
-    -- remove values with "auto" from the configure
-    local configs = {}
-    for name, value in pairs(global._CURRENT) do
-        if type(value) ~= "string" or value ~= "auto" then
-            configs[name] = value
-        end
-    end
-
+   
     -- dump
-    utils.dump(configs, "__%w*", "configure")
+    utils.dump(global.options(), "__%w*", "configure")
    
 end
 

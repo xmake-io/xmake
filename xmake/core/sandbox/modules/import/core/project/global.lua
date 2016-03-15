@@ -49,10 +49,20 @@ function sandbox_core_project_global.dump()
     global.dump()
 end
 
+-- load the configure
+function sandbox_core_project_global.load()
+
+    -- load it
+    local ok, errors = global.load()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- save the configure
 function sandbox_core_project_global.save()
 
-    -- get all
+    -- save it
     local ok, errors = global.save()
     if not ok then
         raise(errors)
@@ -76,6 +86,13 @@ function sandbox_core_project_global.probe()
     if not platform.probe(true) then
         raise("probe the global configure failed!")
     end
+end
+
+-- get all options
+function sandbox_core_project_global.options()
+        
+    -- get it
+    return global.options()
 end
 
 -- get the configure directory
