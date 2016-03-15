@@ -101,6 +101,36 @@ function sandbox_import._loadfile(filepath, instance)
     return result
 end
 
+-- find module
+function sandbox_import._find(dir, name)
+
+    -- check
+    assert(dir and name)
+
+    -- replace "package.module" => "package/module"
+    name = (name:gsub("%.", "/"))
+    assert(name)
+
+    -- load the single module?
+    local module = nil
+    if os.isfile(path.join(dir, name .. ".lua")) then
+
+        -- ok
+        return true
+
+    -- load modules
+    elseif os.isdir(path.join(dir, name)) then
+
+        -- ok
+        return true
+
+    end
+
+    -- not found
+    return false
+
+end
+
 -- load module
 function sandbox_import._load(dir, name, instance)
 
@@ -211,16 +241,19 @@ function sandbox_import.import(name, alias)
     local rootdir = instance:rootdir()
     assert(rootdir)
 
-    -- load module from the sandbox root directory first
-    local module, errors = sandbox_import._load(rootdir, name, instance)
-    if not module then
+    -- load module
+    local module = nil
+    local errors = nil
+    if sandbox_import._find(rootdir, name) then
+        -- load module from the sandbox root directory 
+        module, errors = sandbox_import._load(rootdir, name, instance)
+    else
         -- load module from the sandbox core directory
         module, errors = sandbox_import._load(path.join(xmake._CORE_DIR, "sandbox/modules/import"), name)
     end
 
     -- check
     if not module then
-        print(errors)
         os.raise("cannot import module: %s, %s", name, errors)
     end
 
