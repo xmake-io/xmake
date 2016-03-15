@@ -70,4 +70,12 @@ function main()
     -- probe the configure with value: "auto"
     config.probe()
 
+    -- TODO
+
+    -- dump it
+    config.dump()
+
+    -- trace
+    print("configure ok!")
+    
 end
