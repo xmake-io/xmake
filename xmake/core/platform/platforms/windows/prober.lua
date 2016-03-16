@@ -164,7 +164,7 @@ function prober._probe_vs_path(configs)
 
     -- make the call(vcvarsall.bat) file
     local callpath = tmpdir .. "\\call_vcvarsall.bat"
-    local callfile = io.openmk(callpath)
+    local callfile = io.open(callpath, "w")
     assert(callfile)
 
     -- make call scripts

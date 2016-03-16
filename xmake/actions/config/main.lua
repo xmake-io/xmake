@@ -24,6 +24,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.global")
+import("core.project.project")
 
 -- filter option 
 function _option_filter(name)
@@ -69,6 +70,18 @@ function main()
 
     -- probe the configure with value: "auto"
     config.probe()
+
+    -- translate the build directory
+    local buildir = option.get("buildir")
+    if buildir and path.is_absolute(buildir) then
+        config.set("buildir", path.relative(buildir, project.directory()))
+    end
+
+    -- probe the project options
+    project.probe()
+
+    -- load project
+    project.load()
 
     -- TODO
 

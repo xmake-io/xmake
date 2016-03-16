@@ -17,22 +17,43 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        g++.lua
+-- @file        project.lua
 --
 
+-- define module
+local sandbox_core_project_project = sandbox_core_project_project or {}
+
 -- load modules
-local gcc = require("platform/tools/gcc")
+local config    = require("project/config")
+local project   = require("project/project")
+local raise     = require("sandbox/modules/raise")
 
--- define module: gxx
-local gxx = gxx or {}
+-- load project
+function sandbox_core_project_project.load()
 
--- only copy the interfaces of gcc to g++
-for k, v in pairs(gcc) do
-    if type(v) == "function" then
-        gxx[k] = v
+    -- load it
+    local ok, errors = project.load()
+    if not ok then
+        raise(errors)
     end
 end
 
--- return module: g++
-return gxx
+-- probe project options
+function sandbox_core_project_project.probe()
 
+    -- probe it
+    local ok, errors = project.probe()
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- get the project directory
+function sandbox_core_project_project.directory()
+
+    -- get it
+    return xmake._PROJECT_DIR
+end
+
+-- return module
+return sandbox_core_project_project

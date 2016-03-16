@@ -499,7 +499,7 @@ function project._makeconf_for_target(target_name, target)
     local prefix = target.config_h_prefix or (target_name:upper() .. "_CONFIG")
 
     -- open the file
-    local file = project._CONFILES[config_h] or io.openmk(config_h)
+    local file = project._CONFILES[config_h] or io.open(config_h, "w")
     assert(file)
 
     -- make the head
@@ -825,7 +825,7 @@ function project._make_options(options)
     for k, v in pairs(options) do
 
         -- this option need be probed automatically?
-        if config.auto(k) then
+        if config.get(name) == nil then
 
             -- make option
             local o = project._make_option(k, v, cfile, cxxfile, objectfile, targetfile)
@@ -879,14 +879,23 @@ function project.probe()
     local interp = project._interpreter()
     assert(interp) 
 
+    -- enter the project directory
+    local ok, errors = os.cd(xmake._PROJECT_DIR)
+    if not ok then
+        return failse, errors
+    end
+
     -- load the options from the the project file
     local options, errors = interp:load(xmake._PROJECT_FILE, "option", true, true)
     if not options then
-        return errors
+        return false, errors
     end
 
     -- make the options from the the project file
     project._make_options(options)
+
+    -- ok
+    return true
 end
 
 -- load the project 
@@ -896,51 +905,23 @@ function project.load()
     local interp = project._interpreter()
     assert(interp) 
 
+    -- enter the project directory
+    local ok, errors = os.cd(xmake._PROJECT_DIR)
+    if not ok then
+        return failse, errors
+    end
+
     -- load targets
     local targets, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
     if not targets then
-        return errors
+        return false, errors
     end
 
     -- save targets
     project._TARGETS = targets
 
-    -- the mtimes for interpreter
-    local mtimes = interp:mtimes()
-    assert(mtimes)
-
-    -- get the mtimes for configure
-    local mtimes_config = config.get("__mtimes")
-    if mtimes_config then 
-
-        -- check for all project files and we need reconfig and rebuild it if them have been modified
-        for file, mtime in pairs(mtimes) do
-
-            -- modified? reconfig and rebuild it
-            local mtime_old = mtimes_config[file]
-            if not mtime_old or mtime > mtime_old then
-                config._RECONFIG = true
-                config.set("__rebuild", true)
-                break
-            end
-        end
-    end
-
-    -- update mtimes
-    config.set("__mtimes", mtimes)
-
-    -- reconfig it? we need reprobe it
-    if config._RECONFIG then
-        project.probe()
-        config.clearup()
-    end
-end
-
--- reload the project
-function project.reload()
-
-    -- load it
-    return project.load()
+    -- ok
+    return true
 end
 
 -- dump the current configure
