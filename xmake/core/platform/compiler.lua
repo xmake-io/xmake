@@ -465,7 +465,7 @@ function compiler.check_include(opt, include, srcpath, objpath)
     assert(opt and srcpath and objpath)
 
     -- open the checking source file
-    local srcfile = io.openmk(srcpath)
+    local srcfile = io.open(srcpath, "w")
     if not srcfile then return end
 
     -- make include
@@ -497,7 +497,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     assert(opt and interface)
 
     -- open the checking source file
-    local srcfile = io.openmk(srcpath)
+    local srcfile = io.open(srcpath, "w")
     if not srcfile then return end
 
     -- get the compiler
@@ -541,7 +541,7 @@ function compiler.check_typedef(opt, typedef, srcpath, objpath)
     assert(opt and typedef)
 
     -- open the checking source file
-    local srcfile = io.openmk(srcpath)
+    local srcfile = io.open(srcpath, "w")
     if not srcfile then return end
 
     -- get the compiler

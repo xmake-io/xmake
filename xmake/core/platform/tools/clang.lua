@@ -21,7 +21,7 @@
 --
 
 -- load modules
-local gcc = require("tools/gcc")
+local gcc = require("platform/tools/gcc")
 
 -- define module: clang
 local clang = clang or {}

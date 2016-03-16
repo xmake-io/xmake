@@ -27,6 +27,9 @@ local io = io or {}
 local path  = require("base/path")
 local utils = require("base/utils")
 
+-- save original open
+io._open = io._open or io.open
+
 -- save object with the level
 function io._save_with_level(file, object, level)
  
@@ -135,6 +138,28 @@ function io.writall(filepath, data)
 
     -- ok?
     return true
+end
+
+-- replace the original open interface
+function io.open(filepath, mode)
+
+    -- check
+    assert(filepath)
+
+    -- write file?
+    if mode == "w" then
+
+        -- get the file directory
+        local dir = path.directory(filepath)
+
+        -- ensure the file directory 
+        if not os.isdir(dir) then
+            os.mkdir(dir) 
+        end
+    end
+
+    -- open it
+    return io._open(filepath, mode)
 end
 
 -- save object the the given filepath

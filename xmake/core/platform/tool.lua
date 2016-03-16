@@ -157,19 +157,24 @@ function tool.load(name, root)
     local script, errors = loadfile(toolpath)
     if script then
         
-        -- load tool
-        local tool = script()
+        -- load tool 
+        local ok, result = pcall(script)
+        if not ok then
+            utils.error(result)
+            utils.error("load %s failed!", toolpath)
+            assert(false)
+        end
 
         -- init tool 
-        if tool and tool.init then
-            tool:init(name)
+        if result and result.init then
+            result:init(name)
         end
 
         -- save tool to the cache
-        tool._TOOLS[name] = tool
+        tool._TOOLS[name] = result
 
         -- ok?
-        return tool
+        return result
     else
         utils.error(errors)
         utils.error("load %s failed!", toolpath)
