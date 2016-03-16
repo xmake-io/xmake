@@ -189,6 +189,20 @@ function config.load(targetname)
     return true
 end
 
+-- save the project configure
+function config.save()
+
+    -- the options
+    local options = config.options()
+    assert(options)
+
+    -- add version
+    options.__version = xmake._VERSION
+
+    -- save it
+    return io.save(config._file(), options) 
+end
+
 -- dump the configure
 function config.dump()
    

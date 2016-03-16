@@ -139,22 +139,15 @@ end
 -- save the global configure
 function global.save()
 
-    -- check
-    assert(global._CONFIGS)
-   
-    -- remove values with "auto" from the configure
-    local configs = {}
-    for name, value in pairs(global._CONFIGS) do
-        if type(value) ~= "string" or value ~= "auto" then
-            configs[name] = value
-        end
-    end
+    -- the options
+    local options = global.options()
+    assert(options)
 
     -- add version
-    configs.__version = xmake._VERSION
+    options.__version = xmake._VERSION
 
     -- save it
-    return io.save(global._file(), configs) 
+    return io.save(global._file(), options) 
 end
 
 -- dump the configure
