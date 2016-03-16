@@ -34,11 +34,14 @@ end
 -- main
 function main()
 
+    -- the target name
+    local targetname = option.get("target")
+
     -- load global configure
     global.load()
 
     -- load project configure
-    config.load(option.get("target"))
+    config.load(targetname)
 
     -- clean the cached configure?
     if option.get("clean") then
@@ -82,6 +85,14 @@ function main()
 
     -- load project
     project.load()
+
+    -- check target
+    if nil == project.target(targetname) then
+        raise("unknown target: %s", targetname)
+    end
+
+    -- save the project configure
+    config.save()
 
     -- TODO
 

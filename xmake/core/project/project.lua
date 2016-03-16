@@ -862,6 +862,20 @@ function project._make_options(options)
 
 end
 
+-- get the given target
+function project.target(targetname)
+
+    -- check
+    assert(targetname and targetname ~= "all")
+
+    -- the targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- get it
+    return targets[targetname]
+end
+
 -- get the current configure for targets
 function project.targets()
 
@@ -961,25 +975,6 @@ function project.makeconf(target_name)
         file:close()
     end
  
-    -- ok
-    return true
-end
-
--- check target
-function project.checktarget(target_name)
-
-    -- the targets
-    local targets = project.targets()
-
-    -- invalid target?
-    if target_name and target_name ~= "all" and targets and not targets[target_name] then
-        utils.error("invalid target: %s!", target_name)
-        return false
-    elseif not target_name then
-        utils.error("no target!")
-        return false
-    end
-
     -- ok
     return true
 end

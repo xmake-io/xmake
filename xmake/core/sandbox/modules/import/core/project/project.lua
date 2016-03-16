@@ -48,6 +48,13 @@ function sandbox_core_project_project.probe()
     end
 end
 
+-- get the given target
+function sandbox_core_project_project.target(targetname)
+
+    -- get it
+    return project.target(targetname)
+end
+
 -- get the project directory
 function sandbox_core_project_project.directory()
 
