@@ -80,10 +80,29 @@ function table.clear(self)
 end
 
 -- copy the table to self
+function table.copy(copied)
+
+    -- init it
+    copied = copied or {}
+
+    -- copy it
+    local result = {}
+    for k, v in pairs(copied) do
+        result[k] = v
+    end
+
+    -- ok
+    return result
+end
+
+-- copy the table to self
 function table.copy2(self, copied)
 
     -- check
-    assert(self and copied)
+    assert(self)
+
+    -- init it
+    copied = copied or {}
 
     -- clear self first
     table.clear(self)

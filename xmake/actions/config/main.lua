@@ -25,6 +25,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.global")
 import("core.project.project")
+import("config_h")
 
 -- filter option 
 function _option_filter(name)
@@ -87,12 +88,15 @@ function main()
     project.load()
 
     -- check target
-    if nil == project.target(targetname) then
+    if targetname and targetname ~= "all" and nil == project.target(targetname) then
         raise("unknown target: %s", targetname)
     end
 
     -- save the project configure
     config.save()
+
+    -- make the config.h
+    config_h.make()
 
     -- TODO
 
