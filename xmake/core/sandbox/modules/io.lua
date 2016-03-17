@@ -48,6 +48,25 @@ function sandbox_io.gsub(filepath, pattern, replace)
     return data, count
 end
 
+-- open file
+function sandbox_io.open(filepath, mode)
+ 
+    -- check
+    assert(filepath)
+
+    -- format it first
+    filepath = vformat(filepath)
+
+    -- open it
+    local file, errors = io.open(filepath, mode)
+    if not file then
+        raise(errors)
+    end
+
+    -- ok?
+    return file
+end
+
 -- load object from the given file
 function sandbox_io.load(filepath)
  

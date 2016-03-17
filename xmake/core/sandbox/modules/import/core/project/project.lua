@@ -55,6 +55,17 @@ function sandbox_core_project_project.target(targetname)
     return project.target(targetname)
 end
 
+-- get the all targets
+function sandbox_core_project_project.targets()
+
+    -- get targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- ok
+    return targets
+end
+
 -- get the project directory
 function sandbox_core_project_project.directory()
 

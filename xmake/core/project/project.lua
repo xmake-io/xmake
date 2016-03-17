@@ -476,136 +476,6 @@ function project._interpreter()
     return interp
 end
 
--- make configure for the given target_name
-function project._makeconf_for_target(target_name, target)
-
-    -- check
-    assert(target_name and target)
-
-    -- get the target configure file 
-    local config_h = target.config_h
-    if not config_h then 
-        return true
-    end
-
-    -- translate file path
-    if not path.is_absolute(config_h) then
-        config_h = path.absolute(config_h, xmake._PROJECT_DIR)
-    else
-        config_h = path.translate(config_h)
-    end
-
-    -- the prefix
-    local prefix = target.config_h_prefix or (target_name:upper() .. "_CONFIG")
-
-    -- open the file
-    local file = project._CONFILES[config_h] or io.open(config_h, "w")
-    assert(file)
-
-    -- make the head
-    if project._CONFILES[config_h] then file:write("\n") end
-    file:write(string.format("#ifndef %s_H\n", prefix))
-    file:write(string.format("#define %s_H\n", prefix))
-    file:write("\n")
-
-    -- make version
-    if target.version then
-        file:write("// version\n")
-        file:write(string.format("#define %s_VERSION \"%s\"\n", prefix, target.version))
-        local i = 1
-        local m = {"MAJOR", "MINOR", "ALTER"}
-        for v in target.version:gmatch("%d+") do
-            file:write(string.format("#define %s_VERSION_%s %s\n", prefix, m[i], v))
-            i = i + 1
-            if i > 3 then break end
-        end
-        file:write(string.format("#define %s_VERSION_BUILD %s\n", prefix, os.date("%Y%m%d%H%M", os.time())))
-        file:write("\n")
-    end
-
-    -- make the defines
-    local defines = {}
-    if target.defines_h then table.join2(defines, target.defines_h) end
-
-    -- make the undefines
-    local undefines = {}
-    if target.undefines_h then table.join2(undefines, target.undefines_h) end
-
-    -- the options
-    if target.options then
-        for _, name in ipairs(utils.wrap(target.options)) do
-
-            -- get option if be enabled
-            local opt = nil
-            if config.get(name) then opt = config.get("__" .. name) end
-            if nil ~= opt then
-
-                -- get the option defines
-                if opt.defines_h_if_ok then table.join2(defines, opt.defines_h_if_ok) end
-
-                -- get the option undefines
-                if opt.undefines_h_if_ok then table.join2(undefines, opt.undefines_h_if_ok) end
-
-            end
-        end
-    end
-
-    -- make the defines
-    if #defines ~= 0 then
-        file:write("// defines\n")
-        for _, define in ipairs(defines) do
-            file:write(string.format("#define %s 1\n", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
-        end
-        file:write("\n")
-    end
-
-    -- make the undefines 
-    if #undefines ~= 0 then
-        file:write("// undefines\n")
-        for _, undefine in ipairs(undefines) do
-            file:write(string.format("#undef %s\n", undefine:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
-        end
-        file:write("\n")
-    end
-
-    -- make the tail
-    file:write("#endif\n")
-
-    -- cache the file
-    project._CONFILES[config_h] = file
-
-    -- ok
-    return true
-end
-
--- make the configure file for the given target and dependents
-function project._makeconf_for_target_and_deps(target_name)
-
-    -- the targets
-    local targets = project.targets()
-    assert(targets)
-
-    -- the target
-    local target = targets[target_name]
-    assert(target)
-
-    -- make configure for the target
-    if not project._makeconf_for_target(target_name, target) then
-        return false 
-    end
-     
-    -- exists the dependent targets?
-    if target.deps then
-        local deps = utils.wrap(target.deps)
-        for _, dep in ipairs(deps) do
-            if not project._makeconf_for_target_and_deps(dep) then return false end
-        end
-    end
-
-    -- ok
-    return true
-end
-
 -- make option for checking links
 function project._make_option_for_checking_links(opt, links, cfile, objectfile, targetfile)
 
@@ -896,7 +766,7 @@ function project.probe()
     -- enter the project directory
     local ok, errors = os.cd(xmake._PROJECT_DIR)
     if not ok then
-        return failse, errors
+        return false, errors
     end
 
     -- load the options from the the project file
@@ -907,6 +777,12 @@ function project.probe()
 
     -- make the options from the the project file
     project._make_options(options)
+
+    -- leave the project directory
+    ok, errors = os.cd("-")
+    if not ok then
+        return false, errors
+    end
 
     -- ok
     return true
@@ -922,12 +798,18 @@ function project.load()
     -- enter the project directory
     local ok, errors = os.cd(xmake._PROJECT_DIR)
     if not ok then
-        return failse, errors
+        return false, errors
     end
 
     -- load targets
     local targets, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
     if not targets then
+        return false, errors
+    end
+
+    -- leave the project directory
+    ok, errors = os.cd("-")
+    if not ok then
         return false, errors
     end
 
@@ -946,37 +828,6 @@ function project.dump()
         utils.dump(project.targets())
     end
    
-end
-
--- make the configure file for the given target
-function project.makeconf(target_name)
-
-    -- init files
-    project._CONFILES = {}
-
-    -- the target name
-    if target_name and target_name ~= "all" then
-        -- make configure for the target and dependents
-        if not project._makeconf_for_target_and_deps(target_name) then return false end
-    else
-
-        -- the targets
-        local targets = project.targets()
-        assert(targets)
-
-        -- make configure for the targets
-        for target_name, target in pairs(targets) do
-            if not project._makeconf_for_target(target_name, target) then return false end
-        end
-    end
-
-    -- exit files
-    for _, file in pairs(project._CONFILES) do
-        file:close()
-    end
- 
-    -- ok
-    return true
 end
 
 -- get the project menu

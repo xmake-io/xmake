@@ -159,7 +159,7 @@ function io.open(filepath, mode)
     end
 
     -- open it
-    return io._open(filepath, mode)
+    return io._open(path.translate(filepath), mode)
 end
 
 -- save object the the given filepath
