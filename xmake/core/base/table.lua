@@ -267,7 +267,7 @@ end
 function table.wrap(object)
 
     -- no object?
-    if not object then
+    if nil == object then
         return {}
     end
 
