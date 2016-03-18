@@ -319,6 +319,40 @@ function table.unique(array)
     return array
 end
 
+-- inherit interfaces and create a new instance
+function table.inherit(self)
+
+    -- check
+    assert(self)
+
+    -- init instance
+    local instance = {}
+    for k, v in pairs(self) do
+        if type(v) == "function" then
+            instance[k] = v
+        end
+    end
+
+    -- ok?
+    return instance
+end
+
+-- inherit interfaces from the given class
+function table.inherit2(self, clasz)
+
+    -- check
+    assert(self and clasz)
+
+    -- init instance
+    for k, v in pairs(clasz) do
+        if type(v) == "function" then
+            self[k] = v
+        end
+    end
+
+    -- ok?
+    return self
+end
 
 -- return module: table
 return table
