@@ -32,7 +32,7 @@ local table                 = require("base/table")
 local option                = require("base/option")
 local filter                = require("base/filter")
 local interpreter           = require("base/interpreter")
-local rule                  = require("project/rule")
+local target                = require("project/target")
 local config                = require("project/config")
 local deprecated_project    = require("project/deprecated/project")
 local linker                = require("platform/linker")
@@ -686,10 +686,10 @@ function project._make_options(options)
     local cxxfile   = os.tmpdir() .. "/__checking.cpp"
 
     -- the object file path
-    local objectfile = os.tmpdir() .. "/" .. rule.filename("__checking", "object")
+    local objectfile = os.tmpdir() .. "/" .. target.filename("__checking", "object")
 
     -- the target file path
-    local targetfile = os.tmpdir() .. "/" .. rule.filename("__checking", "binary")
+    local targetfile = os.tmpdir() .. "/" .. target.filename("__checking", "binary")
 
     -- make all options
     for k, v in pairs(options) do
