@@ -70,7 +70,7 @@ function linker._mapflags(module, flags)
     assert(module)
 
     -- wrap flags first
-    flags = utils.wrap(flags)
+    flags = table.wrap(flags)
 
     -- need not map flags? return it directly
     if not module.mapflags then
@@ -101,7 +101,7 @@ function linker._getflags(module, names, flags)
     local flags_mapped = {}
 
     -- wrap it first
-    names = utils.wrap(names)
+    names = table.wrap(names)
     for _, name in ipairs(names) do
         table.join2(flags_mapped, linker._mapflags(module, flags[name]))
     end
@@ -119,7 +119,7 @@ function linker._addflags_from_links(module, flags, links)
 
     -- done
     if module.flag_link then
-        for _, link in ipairs(utils.wrap(links)) do
+        for _, link in ipairs(table.wrap(links)) do
             table.join2(flags, module:flag_link(link))
         end
     end
@@ -144,7 +144,7 @@ function linker._addflags_from_compiler(module, flags, flagname, srcfiles)
     -- add the flags for compiler
     local flags_for_compiler = {}
     if srcfiles then
-        for _, srcfile in ipairs(utils.wrap(srcfiles)) do
+        for _, srcfile in ipairs(table.wrap(srcfiles)) do
 
             -- get the compiler 
             local c, errors = compiler.get(srcfile)
@@ -160,7 +160,7 @@ function linker._addflags_from_compiler(module, flags, flagname, srcfiles)
     end
 
     -- done
-    table.join2(flags, utils.unique(flags_for_compiler))
+    table.join2(flags, table.unique(flags_for_compiler))
 end
 
 -- add flags from the configure 
@@ -184,14 +184,14 @@ function linker._addflags_from_platform(module, flags, flagname)
 
     -- add the linkdirs flags 
     if module.flag_linkdir then
-        for _, linkdir in ipairs(utils.wrap(platform.get("linkdirs"))) do
+        for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
             table.join2(flags, module:flag_linkdir(linkdir))
         end
     end
 
     -- add the links flags 
     if module.flag_link then
-        for _, link in ipairs(utils.wrap(platform.get("links"))) do
+        for _, link in ipairs(table.wrap(platform.get("links"))) do
             table.join2(flags, module:flag_link(link))
         end
     end
@@ -208,21 +208,21 @@ function linker._addflags_from_target(module, flags, flagname, target)
 
     -- add the linkdirs flags from the current project
     if module.flag_linkdir then
-        for _, linkdir in ipairs(utils.wrap(target.linkdirs)) do
+        for _, linkdir in ipairs(table.wrap(target.linkdirs)) do
             table.join2(flags, module:flag_linkdir(linkdir))
         end
     end
 
     -- add the links flags from the current project
     if module.flag_link then
-        for _, link in ipairs(utils.wrap(target.links)) do
+        for _, link in ipairs(table.wrap(target.links)) do
             table.join2(flags, module:flag_link(link))
         end
     end
 
     -- the options
     if target.options then
-        for _, name in ipairs(utils.wrap(target.options)) do
+        for _, name in ipairs(table.wrap(target.options)) do
 
             -- get option if be enabled
             local opt = nil
@@ -234,14 +234,14 @@ function linker._addflags_from_target(module, flags, flagname, target)
                 
                 -- add the linkdirs flags from the option
                 if module.flag_linkdir then
-                    for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
+                    for _, linkdir in ipairs(table.wrap(opt.linkdirs)) do
                         table.join2(flags, module:flag_linkdir(linkdir))
                     end
                 end
 
                 -- add the links flags from the option
                 if module.flag_link then
-                    for _, link in ipairs(utils.wrap(opt.links)) do
+                    for _, link in ipairs(table.wrap(opt.links)) do
                         table.join2(flags, module:flag_link(link))
                     end
                 end
@@ -269,7 +269,7 @@ function linker._addflags_from_option(module, flags, flagname, opt)
 
     -- append the linkdirs flags 
     if opt.linkdirs and module.flag_linkdir then
-        for _, linkdir in ipairs(utils.wrap(opt.linkdirs)) do
+        for _, linkdir in ipairs(table.wrap(opt.linkdirs)) do
             table.join2(flags, module:flag_linkdir(linkdir))
         end
     end
@@ -339,7 +339,7 @@ function linker.make(module, target, srcfiles, objfiles, targetfile, logfile)
     linker._addflags_from_linker(module, flags, flagname)
 
     -- remove repeat
-    flags = utils.unique(flags)
+    flags = table.unique(flags)
 
     -- make the link command
     return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
@@ -377,7 +377,7 @@ function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
     linker._addflags_from_linker(module, flags, "ldflags")
 
     -- remove repeat
-    flags = utils.unique(flags)
+    flags = table.unique(flags)
 
     -- execute the link command
     return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))

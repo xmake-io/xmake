@@ -222,7 +222,7 @@ function prober._probe_toolpath(configs, kind, cross, names, description)
     -- done
     local toolpath = nil
     local toolchains = configs.get("toolchains") 
-    for _, name in ipairs(utils.wrap(names)) do
+    for _, name in ipairs(table.wrap(names)) do
 
         -- attempt to get it from the given cross toolchains
         if toolchains then

@@ -480,7 +480,7 @@ end
 function project._make_option_for_checking_links(opt, links, cfile, objectfile, targetfile)
 
     -- the links string
-    local links_str = table.concat(utils.wrap(links), ", ")
+    local links_str = table.concat(table.wrap(links), ", ")
     
     -- this links has been checked?
     project._CHECKED_LINKS = project._CHECKED_LINKS or {}
@@ -506,7 +506,7 @@ end
 function project._make_option_for_checking_cincludes(opt, cincludes, cfile, objectfile)
 
     -- done
-    for _, cinclude in ipairs(utils.wrap(cincludes)) do
+    for _, cinclude in ipairs(table.wrap(cincludes)) do
         
         -- this cinclude has been checked?
         project._CHECKED_CINCLUDES = project._CHECKED_CINCLUDES or {}
@@ -533,7 +533,7 @@ end
 function project._make_option_for_checking_cxxincludes(opt, cxxincludes, cxxfile, objectfile)
 
     -- done
-    for _, cxxinclude in ipairs(utils.wrap(cxxincludes)) do
+    for _, cxxinclude in ipairs(table.wrap(cxxincludes)) do
          
         -- this cxxinclude has been checked?
         project._CHECKED_CXXINCLUDES = project._CHECKED_CXXINCLUDES or {}
@@ -560,7 +560,7 @@ end
 function project._make_option_for_checking_cfuncs(opt, cfuncs, cfile, objectfile, targetfile)
 
     -- done
-    for _, cfunc in ipairs(utils.wrap(cfuncs)) do
+    for _, cfunc in ipairs(table.wrap(cfuncs)) do
         
         -- check function
         local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
@@ -583,7 +583,7 @@ end
 function project._make_option_for_checking_cxxfuncs(opt, cxxfuncs, cxxfile, objectfile, targetfile)
 
     -- done
-    for _, cxxfunc in ipairs(utils.wrap(cxxfuncs)) do
+    for _, cxxfunc in ipairs(table.wrap(cxxfuncs)) do
         
         -- check function
         local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
@@ -606,7 +606,7 @@ end
 function project._make_option_for_checking_ctypes(opt, ctypes, cfile, objectfile, targetfile)
 
     -- done
-    for _, ctype in ipairs(utils.wrap(ctypes)) do
+    for _, ctype in ipairs(table.wrap(ctypes)) do
         
         -- check type
         local ok = compiler.check_typedef(opt, ctype, cfile, objectfile)
@@ -626,7 +626,7 @@ end
 function project._make_option_for_checking_cxxtypes(opt, cxxtypes, cxxfile, objectfile, targetfile)
 
     -- done
-    for _, cxxtype in ipairs(utils.wrap(cxxtypes)) do
+    for _, cxxtype in ipairs(table.wrap(cxxtypes)) do
         
         -- check type
         local ok = compiler.check_typedef(opt, cxxtype, cxxfile, objectfile)
@@ -857,7 +857,7 @@ function project.menu()
 
         -- make the category
         local category = "default"
-        if opt.category then category = utils.unwrap(opt.category) end
+        if opt.category then category = table.unwrap(opt.category) end
         options_by_category[category] = options_by_category[category] or {}
 
         -- append option to the current category

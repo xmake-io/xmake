@@ -282,7 +282,7 @@ function interpreter._filter(self, values)
             end
         end
     else
-        for _, value in ipairs(utils.wrap(values)) do
+        for _, value in ipairs(table.wrap(values)) do
 
             -- string?
             if type(value) == "string" then
@@ -326,7 +326,7 @@ function interpreter._handle(self, scope, remove_repeat, enable_filter)
 
         -- remove repeat first
         if remove_repeat and not table.is_dictionary(values) then
-            values = utils.unique(values)
+            values = table.unique(values)
         end
 
         -- filter values
@@ -335,7 +335,7 @@ function interpreter._handle(self, scope, remove_repeat, enable_filter)
         end
 
         -- unwrap it if be only one
-        values = utils.unwrap(values)
+        values = table.unwrap(values)
 
         -- update it
         results[name] = values

@@ -209,7 +209,7 @@ function tool.probe(name, dirs)
 
     -- attempt to get it from the given directories
     if dirs then
-        for _, dir in ipairs(utils.wrap(dirs)) do
+        for _, dir in ipairs(table.wrap(dirs)) do
             
             -- probe it
             local toolpath = tool._probe(dir, name)
