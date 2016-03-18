@@ -21,40 +21,18 @@
 --
 
 -- define module
-local target = target or {}
+local sandbox_core_project_target = sandbox_core_project_target or {}
 
 -- load modules
-local platform  = require("platform/platform")
+local project   = require("project/project")
+local raise     = require("sandbox/modules/raise")
 
 -- get the filename from the given name and kind
-function target.filename(name, kind)
-
-    -- check
-    assert(name and kind)
-
-    -- get format
-    local format = platform.format(kind) or {"", ""}
-
-    -- make it
-    return format[1] .. name .. format[2]
-end
-
--- get the target info
-function target.get(self, infoname)
-
-    -- check
-    assert(self and self._INFO and infoname)
+function sandbox_core_project_target.filename(name, kind)
 
     -- get it
-    return self._INFO[infoname]
-end
-
--- get the target name
-function target.name(self)
-
-    -- get it
-    return self._NAME
+    return target.filename(name, kind)
 end
 
 -- return module
-return target
+return sandbox_core_project_target

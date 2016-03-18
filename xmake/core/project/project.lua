@@ -801,9 +801,9 @@ function project.load()
         return false, errors
     end
 
-    -- load targets
-    local targets, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
-    if not targets then
+    -- load results
+    local results, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
+    if not results then
         return false, errors
     end
 
@@ -811,6 +811,22 @@ function project.load()
     ok, errors = os.cd("-")
     if not ok then
         return false, errors
+    end
+
+    -- make targets
+    local targets = {}
+    for targetname, targetinfo in pairs(results) do
+        
+        -- init a target instance
+        local instance = table.inherit(target)
+        assert(instance)
+
+        -- save name and info
+        instance._NAME = targetname
+        instance._INFO = targetinfo
+
+        -- save it
+        targets[targetname] = instance
     end
 
     -- save targets
