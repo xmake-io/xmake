@@ -92,26 +92,26 @@ function _file.close(self)
 end
 
 -- save object with the level
-function io._save_with_level(file, object, level)
+function _file._save(self, object, level)
  
     -- save string
     if type(object) == "string" then  
-        file:write(string.format("%q", object))  
+        self:printf("%q", object)
     -- save boolean
     elseif type(object) == "boolean" then  
-        file:write(tostring(object))  
+        self:write(tostring(object))  
     -- save number 
     elseif type(object) == "number" then  
-        file:write(object)  
+        self:write(object)  
     -- save table
     elseif type(object) == "table" then  
 
         -- save head
-        file:write("\n")  
+        self:write("\n")  
         for l = 1, level do
-            file:write("    ")
+            self:write("    ")
         end
-        file:write("{\n")
+        self:write("{\n")
 
         -- save body
         local i = 0
@@ -119,31 +119,31 @@ function io._save_with_level(file, object, level)
 
             -- save spaces and separator
             for l = 1, level do
-                file:write("    ")
+                self:write("    ")
             end
 
-            file:write(utils.ifelse(i == 0, "    ", ",   "))
+            self:write(utils.ifelse(i == 0, "    ", ",   "))
             
             -- save key
             if type(k) == "string" then
-                file:write(string.format("[%q]", k), " = ")  
+                self:write(string.format("[%q]", k), " = ")  
             end
 
             -- save value
-            if not io._save_with_level(file, v, level + 1) then 
+            if not self:_save(v, level + 1) then 
                 return false
             end
 
             -- save newline
-            file:write("\n")
+            self:write("\n")
             i = i + 1
         end  
 
         -- save tail
         for l = 1, level do
-            file:write("    ")
+            self:write("    ")
         end
-        file:write("}\n")  
+        self:write("}\n")  
     else  
         -- error
         utils.error("invalid object type: %s", type(object))
@@ -154,11 +154,46 @@ function io._save_with_level(file, object, level)
     return true
 end
 
--- save object to given file
-function io._save(file, object)
+-- save object
+function _file.save(self, object)
    
     -- save it
-    return io._save_with_level(file, object, 0)
+    return self:_save(object, 0)
+end
+
+-- load object
+function _file.load(self)
+
+    -- check
+    assert(self)
+
+    -- load data
+    local result = nil
+    local errors = nil
+    local data = self:read("*all")
+    if data and type(data) == "string" then
+
+        -- load script
+        local script, errs = loadstring("return " .. data)
+        if script then
+            
+            -- load object
+            local ok, object = pcall(script)
+            if ok and object then
+                result = object
+            elseif object then
+                -- error
+                errors = object
+            else
+                -- error
+                errors = string.format("load %s failed!", filepath)
+            end
+        -- errors
+        else errors = errs end
+    end
+
+    -- ok?
+    return result, errors
 end
 
 -- read all data from file 
@@ -260,7 +295,7 @@ function io.save(filepath, object)
     end
 
     -- save object to file
-    if not io._save(file, object) then
+    if not file:save(object) then
         -- error 
         file:close()
         return false, string.format("save %s failed!", filepath)
@@ -286,30 +321,8 @@ function io.load(filepath)
         return nil, string.format("open %s failed!", filepath)
     end
 
-    -- load data
-    local result = nil
-    local errors = nil
-    local data = file:read("*all")
-    if data and type(data) == "string" then
-
-        -- load script
-        local script, errs = loadstring("return " .. data)
-        if script then
-            
-            -- load object
-            local ok, object = pcall(script)
-            if ok and object then
-                result = object
-            elseif object then
-                -- error
-                errors = object
-            else
-                -- error
-                errors = string.format("load %s failed!", filepath)
-            end
-        -- errors
-        else errors = errs end
-    end
+    -- load object
+    local result, errors = file:load()
 
     -- close file
     file:close()
