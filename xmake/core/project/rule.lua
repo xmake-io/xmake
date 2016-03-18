@@ -198,7 +198,7 @@ function rule.sourcefiles(target)
     end
 
     -- wrap files first
-    local targetfiles = utils.wrap(target.files)
+    local targetfiles = table.wrap(target.files)
 
     -- match files
     local i = 1
@@ -239,7 +239,7 @@ function rule.sourcefiles(target)
     end
 
     -- remove repeat files
-    sourcefiles = utils.unique(sourcefiles)
+    sourcefiles = table.unique(sourcefiles)
 
     -- ok?
     return sourcefiles
@@ -262,7 +262,7 @@ function rule.headerfiles(target, headerdir)
     -- get the source pathes and destinate pathes
     local srcheaders = {}
     local dstheaders = {}
-    for _, header in ipairs(utils.wrap(headers)) do
+    for _, header in ipairs(table.wrap(headers)) do
 
         -- get the root directory
         local rootdir = header:gsub("%(.*%)", ""):gsub("|.*$", "")

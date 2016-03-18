@@ -72,7 +72,7 @@ function compiler._mapflags(module, flags)
     assert(module)
 
     -- wrap flags first
-    flags = utils.wrap(flags)
+    flags = table.wrap(flags)
 
     -- need not map flags? return it directly
     if not module.mapflags then
@@ -103,7 +103,7 @@ function compiler._getflags(module, names, flags)
     local flags_mapped = {}
 
     -- wrap it first
-    names = utils.wrap(names)
+    names = table.wrap(names)
     for _, name in ipairs(names) do
         table.join2(flags_mapped, compiler._mapflags(module, flags[name]))
     end
@@ -156,21 +156,21 @@ function compiler._addflags_from_platform(module, flags, flagnames)
 
     -- add the includedirs flags
     if module.flag_includedir then
-        for _, includedir in ipairs(utils.wrap(platform.get("includedirs"))) do
+        for _, includedir in ipairs(table.wrap(platform.get("includedirs"))) do
             table.join2(flags, module:flag_includedir(includedir))
         end
     end
 
     -- add the defines flags 
     if module.flag_define then
-        for _, define in ipairs(utils.wrap(platform.get("defines"))) do
+        for _, define in ipairs(table.wrap(platform.get("defines"))) do
             table.join2(flags, module:flag_define(define))
         end
     end
 
     -- append the undefines flags
     if module.flag_undefine then
-        for _, undefine in ipairs(utils.wrap(platform.get("undefines"))) do
+        for _, undefine in ipairs(table.wrap(platform.get("undefines"))) do
             table.join2(flags, module:flag_undefine(undefine))
         end
     end
@@ -247,28 +247,28 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
 
     -- add the includedirs flags from the current project
     if module.flag_includedir then
-        for _, includedir in ipairs(utils.wrap(target.includedirs)) do
+        for _, includedir in ipairs(table.wrap(target.includedirs)) do
             table.join2(flags, module:flag_includedir(includedir))
         end
     end
 
     -- add the defines flags from the current project
     if module.flag_define then
-        for _, define in ipairs(utils.wrap(target.defines)) do
+        for _, define in ipairs(table.wrap(target.defines)) do
             table.join2(flags, module:flag_define(define))
         end
     end
 
     -- append the undefines flags from the current project
     if module.flag_undefine then
-        for _, undefine in ipairs(utils.wrap(target.undefines)) do
+        for _, undefine in ipairs(table.wrap(target.undefines)) do
             table.join2(flags, module:flag_undefine(undefine))
         end
     end
 
     -- the options
     if target.options then
-        for _, name in ipairs(utils.wrap(target.options)) do
+        for _, name in ipairs(table.wrap(target.options)) do
 
             -- get option if be enabled
             local opt = nil
@@ -280,7 +280,7 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
 
                 -- append the defines flags
                 if opt.defines_if_ok and module.flag_define then
-                    local defines = utils.wrap(opt.defines_if_ok)
+                    local defines = table.wrap(opt.defines_if_ok)
                     for _, define in ipairs(defines) do
                         table.join2(flags, module:flag_define(define))
                     end
@@ -288,7 +288,7 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
 
                 -- append the undefines flags 
                 if opt.undefines_if_ok and module.flag_undefine then
-                    local undefines = utils.wrap(opt.undefines_if_ok)
+                    local undefines = table.wrap(opt.undefines_if_ok)
                     for _, undefine in ipairs(undefines) do
                         table.join2(flags, module:flag_undefine(undefine))
                     end
@@ -387,7 +387,7 @@ function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
     compiler._addflags_from_compiler(module, flags, flagnames)
 
     -- remove repeat
-    flags = utils.unique(flags)
+    flags = table.unique(flags)
 
     -- execute the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
@@ -452,7 +452,7 @@ function compiler.make(module, target, srcfile, objfile, logfile)
     compiler._addflags_from_compiler(module, flags, flagnames, target.kind)
 
     -- remove repeat
-    flags = utils.unique(flags)
+    flags = table.unique(flags)
 
     -- make the compile command
     return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
@@ -510,7 +510,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     elseif module._KIND == "cxx" then includes = opt.cxxincludes 
     end
     if includes then
-        for _, include in ipairs(utils.wrap(includes)) do
+        for _, include in ipairs(table.wrap(includes)) do
             srcfile:write(string.format("#include <%s>\n", include))
         end
         srcfile:write("\n")
@@ -554,7 +554,7 @@ function compiler.check_typedef(opt, typedef, srcpath, objpath)
     elseif module._KIND == "cxx" then includes = opt.cxxincludes 
     end
     if includes then
-        for _, include in ipairs(utils.wrap(includes)) do
+        for _, include in ipairs(table.wrap(includes)) do
             srcfile:write(string.format("#include <%s>\n", include))
         end
         srcfile:write("\n")

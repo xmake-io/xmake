@@ -66,7 +66,7 @@ function _make_for_target(files, targetname, target)
     local undefines = table.copy(target.undefines_h) 
 
     -- make the options
-    for _, name in ipairs(utils.wrap(target.options)) do
+    for _, name in ipairs(table.wrap(target.options)) do
 
         -- get option if be enabled
         local opt = nil
@@ -118,7 +118,7 @@ function _make_for_target_with_deps(files, targetname)
     _make_for_target(files, targetname, target)
      
     -- make configure for the dependent targets?
-    for _, dep in ipairs(utils.wrap(target.deps)) do
+    for _, dep in ipairs(table.wrap(target.deps)) do
         _make_for_target_with_deps(files, dep)
     end
 

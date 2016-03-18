@@ -74,7 +74,7 @@ function template._replace(macros, macrofiles)
 
     -- make all files
     local files = {}
-    for _, macrofile in ipairs(utils.wrap(macrofiles)) do
+    for _, macrofile in ipairs(table.wrap(macrofiles)) do
         local matchfiles = os.match(macrofile)
         if matchfiles then
             table.join2(files, matchfiles)
