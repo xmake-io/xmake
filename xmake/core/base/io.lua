@@ -26,6 +26,7 @@ local _file = _file or {}
 
 -- load modules
 local path  = require("base/path")
+local table = require("base/table")
 local utils = require("base/utils")
 
 -- save original open
@@ -255,12 +256,7 @@ function io.open(filepath, mode)
     end
 
     -- init file instance
-    local file = {}
-    for k, v in pairs(_file) do
-        if type(v) == "function" then
-            file[k] = v
-        end
-    end
+    local file = table.inherit(_file)
 
     -- open it
     local handle, errors = io._open(path.translate(filepath), mode)

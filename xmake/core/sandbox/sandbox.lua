@@ -89,11 +89,7 @@ function sandbox._init()
     local instance = {_PUBLIC = {}, _PRIVATE = {}}
 
     -- inherit the interfaces of sandbox
-    for k, v in pairs(sandbox) do
-        if type(v) == "function" then
-            instance[k] = v
-        end
-    end
+    table.inherit2(instance, sandbox)
 
     -- load builtin module files
     local builtin_module_files = os.match(path.join(xmake._CORE_DIR, "sandbox/modules/*.lua"))

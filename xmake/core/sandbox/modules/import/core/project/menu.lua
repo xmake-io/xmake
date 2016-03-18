@@ -24,7 +24,6 @@
 local sandbox_core_project_menu = sandbox_core_project_menu or {}
 
 -- load modules
-local rule      = require("project/rule")
 local config    = require("project/config")
 local project   = require("project/project")
 

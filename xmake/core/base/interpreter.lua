@@ -424,11 +424,7 @@ function interpreter.init()
                                 ,   _MTIMES = {}}}
 
     -- inherit the interfaces of interpreter
-    for k, v in pairs(interpreter) do
-        if type(v) == "function" then
-            instance[k] = v
-        end
-    end
+    table.inherit2(instance, interpreter)
 
     -- register the builtin interfaces
     instance:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
