@@ -21,7 +21,8 @@
 --
 
 -- define module
-local io = io or {}
+local io    = io or {}
+local _file = _file or {}
 
 -- load modules
 local path  = require("base/path")
@@ -29,6 +30,66 @@ local utils = require("base/utils")
 
 -- save original open
 io._open = io._open or io.open
+
+-- read file
+function _file.read(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- read it
+    return self._FILE:read(...)
+end
+
+-- write file
+function _file.write(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- write it
+    return self._FILE:write(...)
+end
+
+-- print file
+function _file.print(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- print it
+    return self._FILE:write(string.format(...) .. "\n")
+end
+
+-- printf file
+function _file.printf(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- printf it
+    return self._FILE:write(string.format(...))
+end
+
+-- get lines
+function _file.lines(self)
+
+    -- check
+    assert(self._FILE)
+    
+    -- get it
+    return self._FILE:lines()
+end
+
+-- close file
+function _file.close(self)
+
+    -- check
+    assert(self._FILE)
+    
+    -- close it
+    return self._FILE:close()
+end
 
 -- save object with the level
 function io._save_with_level(file, object, level)
@@ -158,8 +219,25 @@ function io.open(filepath, mode)
         end
     end
 
+    -- init file instance
+    local file = {}
+    for k, v in pairs(_file) do
+        if type(v) == "function" then
+            file[k] = v
+        end
+    end
+
     -- open it
-    return io._open(path.translate(filepath), mode)
+    local handle, errors = io._open(path.translate(filepath), mode)
+    if not handle then
+        return nil, errors
+    end
+
+    -- save file handle
+    file._FILE = handle
+
+    -- ok?
+    return file, errors
 end
 
 -- save object the the given filepath

@@ -39,24 +39,24 @@ function _make_for_target(files, targetname, target)
     local file = files[config_h] or io.open(config_h, "w")
 
     -- make the head
-    if files[config_h] then file:write("\n") end
-    file:write(format("#ifndef %s_H\n", prefix))
-    file:write(format("#define %s_H\n", prefix))
-    file:write("\n")
+    if files[config_h] then file:print("") end
+    file:print("#ifndef %s_H", prefix)
+    file:print("#define %s_H", prefix)
+    file:print("")
 
     -- make version
     if target.version then
-        file:write("// version\n")
-        file:write(format("#define %s_VERSION \"%s\"\n", prefix, target.version))
+        file:print("// version")
+        file:print("#define %s_VERSION \"%s\"", prefix, target.version)
         local i = 1
         local m = {"MAJOR", "MINOR", "ALTER"}
         for v in target.version:gmatch("%d+") do
-            file:write(format("#define %s_VERSION_%s %s\n", prefix, m[i], v))
+            file:print("#define %s_VERSION_%s %s", prefix, m[i], v)
             i = i + 1
             if i > 3 then break end
         end
-        file:write(format("#define %s_VERSION_BUILD %s\n", prefix, os.date("%Y%m%d%H%M", os.time())))
-        file:write("\n")
+        file:print("#define %s_VERSION_BUILD %s", prefix, os.date("%Y%m%d%H%M", os.time()))
+        file:print("")
     end
 
     -- make the defines
@@ -84,24 +84,24 @@ function _make_for_target(files, targetname, target)
 
     -- make the defines
     if #defines ~= 0 then
-        file:write("// defines\n")
+        file:print("// defines")
         for _, define in ipairs(defines) do
-            file:write(format("#define %s 1\n", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
+            file:print("#define %s 1", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
         end
-        file:write("\n")
+        file:print("")
     end
 
     -- make the undefines 
     if #undefines ~= 0 then
-        file:write("// undefines\n")
+        file:print("// undefines")
         for _, undefine in ipairs(undefines) do
-            file:write(format("#undef %s\n", undefine:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end)))
+            file:print("#undef %s", undefine:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
         end
-        file:write("\n")
+        file:print("")
     end
 
     -- make the tail
-    file:write("#endif\n")
+    file:print("#endif")
 
     -- cache the file
     files[config_h] = file
