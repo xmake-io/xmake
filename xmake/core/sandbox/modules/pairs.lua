@@ -20,6 +20,16 @@
 -- @file        pairs.lua
 --
 
+-- load modules
+local table = require("base/table")
+
+-- pairs
+function sandbox_pairs(...)
+
+    -- wrap it for nil
+    return pairs(table.wrap(...))
+end
+
 -- load module
-return pairs
+return sandbox_pairs
 

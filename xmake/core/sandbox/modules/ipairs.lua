@@ -20,6 +20,16 @@
 -- @file        ipairs.lua
 --
 
+-- load modules
+local table = require("base/table")
+
+-- ipairs
+function sandbox_ipairs(...)
+
+    -- wrap it for nil
+    return ipairs(table.wrap(...))
+end
+
 -- load module
-return ipairs
+return sandbox_ipairs
 
