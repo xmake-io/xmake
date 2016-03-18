@@ -825,7 +825,7 @@ function project.dump()
     
     -- dump
     if option.get("verbose") then
-        utils.dump(project.targets())
+        table.dump(project.targets())
     end
    
 end

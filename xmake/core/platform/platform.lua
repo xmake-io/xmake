@@ -247,7 +247,7 @@ function platform.dump()
 
     -- dump
     if option.get("verbose") then
-        utils.dump(platform._configs(config.get("plat")))
+        table.dump(platform._configs(config.get("plat")))
     end
    
 end

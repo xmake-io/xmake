@@ -207,7 +207,7 @@ end
 function config.dump()
    
     -- dump
-    utils.dump(config.options(), "__%w*", "configure")
+    table.dump(config.options(), "__%w*", "configure")
    
 end
 

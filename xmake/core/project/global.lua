@@ -154,7 +154,7 @@ end
 function global.dump()
    
     -- dump
-    utils.dump(global.options(), "__%w*", "configure")
+    table.dump(global.options(), "__%w*", "configure")
    
 end
 
