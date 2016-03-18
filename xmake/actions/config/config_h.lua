@@ -26,14 +26,14 @@ import("core.project.config")
 import("core.project.project")
 
 -- make configure for the given target name
-function _make_for_target(files, targetname, target)
+function _make_for_target(files, target)
 
     -- get the target configure file 
-    local config_h = target.config_h
+    local config_h = target:get("config_h")
     if not config_h then return end
 
     -- the prefix
-    local prefix = target.config_h_prefix or (targetname:upper() .. "_CONFIG")
+    local prefix = target:get("config_h_prefix") or (target:name():upper() .. "_CONFIG")
 
     -- open the file
     local file = files[config_h] or io.open(config_h, "w")
@@ -45,12 +45,13 @@ function _make_for_target(files, targetname, target)
     file:print("")
 
     -- make version
-    if target.version then
+    local version = target:get("version")
+    if version then
         file:print("// version")
-        file:print("#define %s_VERSION \"%s\"", prefix, target.version)
+        file:print("#define %s_VERSION \"%s\"", prefix, version)
         local i = 1
         local m = {"MAJOR", "MINOR", "ALTER"}
-        for v in target.version:gmatch("%d+") do
+        for v in version:gmatch("%d+") do
             file:print("#define %s_VERSION_%s %s", prefix, m[i], v)
             i = i + 1
             if i > 3 then break end
@@ -60,13 +61,13 @@ function _make_for_target(files, targetname, target)
     end
 
     -- make the defines
-    local defines = table.copy(target.defines_h) 
+    local defines = table.copy(target:get("defines_h")) 
 
     -- make the undefines
-    local undefines = table.copy(target.undefines_h) 
+    local undefines = table.copy(target:get("undefines_h")) 
 
     -- make the options
-    for _, name in ipairs(table.wrap(target.options)) do
+    for _, name in ipairs(table.wrap(target:get("options"))) do
 
         -- get option if be enabled
         local opt = nil
@@ -115,10 +116,10 @@ function _make_for_target_with_deps(files, targetname)
     local target = project.target(targetname)
 
     -- make configure for the target
-    _make_for_target(files, targetname, target)
+    _make_for_target(files, target)
      
     -- make configure for the dependent targets?
-    for _, dep in ipairs(table.wrap(target.deps)) do
+    for _, dep in ipairs(table.wrap(target:get("deps"))) do
         _make_for_target_with_deps(files, dep)
     end
 
@@ -142,8 +143,8 @@ function make()
     else
 
         -- make configure for all targets
-        for name, target in pairs(project.targets()) do
-            _make_for_target(files, name, target)
+        for _, target in pairs(project.targets()) do
+            _make_for_target(files, target)
         end
     end
 
