@@ -154,5 +154,97 @@ function table.is_dictionary(self)
     return false
 end
 
+-- dump it with the level
+function table._dump(self, exclude, level)
+ 
+    -- dump string
+    if type(self) == "string" then  
+        io.write(string.format("%q", self))  
+    -- dump boolean
+    elseif type(self) == "boolean" then  
+        io.write(tostring(self))  
+    -- dump number 
+    elseif type(self) == "number" then  
+        io.write(self)  
+    -- dump function 
+    elseif type(self) == "function" then  
+        io.write("<function>")  
+    -- dump table
+    elseif type(self) == "table" then  
+
+        -- dump head
+        io.write("\n")  
+        for l = 1, level do
+            io.write("    ")
+        end
+        io.write("{\n")
+
+        -- dump body
+        local i = 0
+        for k, v in pairs(self) do  
+
+            -- exclude some keys
+            if not exclude or type(k) ~= "string" or not k:find(exclude) then
+
+                -- dump spaces and separator
+                for l = 1, level do
+                    io.write("    ")
+                end
+
+                if i == 0 then
+                    io.write("    ")
+                else
+                    io.write(",   ")
+                end
+                
+                -- dump key
+                if type(k) == "string" then
+                    io.write(k, " = ")  
+                end
+
+                -- dump value
+                if not table._dump(v, exclude, level + 1) then 
+                    return false
+                end
+
+                -- dump newline
+                io.write("\n")
+                i = i + 1
+            end
+        end  
+
+        -- dump tail
+        for l = 1, level do
+            io.write("    ")
+        end
+        io.write("}\n")  
+    -- dump userdata
+    elseif type(self) == "userdata" then  
+        io.write("<userdata>")  
+    else  
+        -- error
+        print("error: invalid object type: %s", type(self))
+        return false
+    end  
+
+    -- ok
+    return true
+end
+
+-- dump it
+function table.dump(self, exclude, prefix)
+
+    -- dump prefix
+    if prefix then
+        io.write(prefix)
+    end
+  
+    -- dump it
+    table._dump(self, exclude, 0)
+
+    -- return it
+    return self
+end
+
 -- return module: table
 return table
