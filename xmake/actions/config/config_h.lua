@@ -132,7 +132,7 @@ function make()
     local targetname = option.get("target")
 
     -- enter project directory
-    os.cd(project.directory())
+    os.cd("$(projectdir)")
 
     -- init files
     local files = {}

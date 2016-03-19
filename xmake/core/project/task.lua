@@ -87,8 +87,7 @@ function task._interpreter()
         ,   globaldir   = global.directory()
         ,   configdir   = config.directory()
         ,   projectdir  = xmake._PROJECT_DIR
-            -- TODO
-            -- buildir
+        ,   buildir     = config.get("buildir")
         }
 
         -- map it

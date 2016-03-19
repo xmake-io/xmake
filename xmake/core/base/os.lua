@@ -183,9 +183,6 @@ function os.rm(file_or_dir, emptydir)
         if not os.rmdir(file_or_dir, emptydir) then
             return false, string.format("cannot remove directory %s %s", file_or_dir, os.strerror())
         end
-    -- not exists?
-    else
-        return false, string.format("cannot remove file %s, not found this file %s", file_or_dir, os.strerror())
     end
 
     -- ok

@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("config_h")
+import("makefile")
 
 -- filter option 
 function _option_filter(name)
@@ -98,7 +99,8 @@ function main()
     -- make the config.h
     config_h.make()
 
-    -- TODO
+    -- make makefile
+    makefile.make()
 
     -- dump it
     config.dump()
