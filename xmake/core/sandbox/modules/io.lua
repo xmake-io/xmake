@@ -29,6 +29,26 @@ local vformat   = require("sandbox/modules/vformat")
 -- define module
 local sandbox_io = sandbox_io or {}
 
+-- print file
+function sandbox_io._print(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- print it
+    return self._FILE:write(vformat(...) .. "\n")
+end
+
+-- printf file
+function sandbox_io._printf(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- printf it
+    return self._FILE:write(vformat(...))
+end
+
 -- gsub the given file and return replaced data
 function sandbox_io.gsub(filepath, pattern, replace)
  
@@ -62,6 +82,10 @@ function sandbox_io.open(filepath, mode)
     if not file then
         raise(errors)
     end
+
+    -- replace print with vformat
+    file.print  = sandbox_io._print
+    file.printf = sandbox_io._printf
 
     -- ok?
     return file
