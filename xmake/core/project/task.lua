@@ -78,20 +78,25 @@ function task._interpreter()
         -- check
         assert(variable)
 
-        -- init maps
-        local maps = 
-        {
-            host        = xmake._HOST
-        ,   tmpdir      = os.tmpdir()
-        ,   curdir      = os.curdir()
-        ,   globaldir   = global.directory()
-        ,   configdir   = config.directory()
-        ,   projectdir  = xmake._PROJECT_DIR
-        ,   buildir     = config.get("buildir")
-        }
+        -- attempt to get it directly from the configure
+        local result = config.get(variable)
+        if not result or type(result) ~= "string" then 
 
-        -- map it
-        result = maps[variable]
+            -- init maps
+            local maps = 
+            {
+                host        = xmake._HOST
+            ,   tmpdir      = os.tmpdir()
+            ,   curdir      = os.curdir()
+            ,   globaldir   = global.directory()
+            ,   configdir   = config.directory()
+            ,   projectdir  = xmake._PROJECT_DIR
+            }
+
+            -- map it
+            result = maps[variable]
+
+        end 
 
         -- ok?
         return result

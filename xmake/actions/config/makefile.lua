@@ -87,10 +87,9 @@ function _make_target(makefile, target)
         verbose = verbose:encode()
     end
 
-    -- TODO: $(mode)
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
-    makefile:print("\t@xmake l $(VERBOSE) verbose \"%s\"", verbose)
+    makefile:write("\t@xmake l $(VERBOSE) verbose \"%s\"\n", verbose)
     makefile:print("\t@xmake l mkdir %s", path.directory(targetfile))
     makefile:print("\t@%s", cmd)
 
