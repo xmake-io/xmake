@@ -87,7 +87,7 @@ function table.copy(copied)
 
     -- copy it
     local result = {}
-    for k, v in pairs(copied) do
+    for k, v in pairs(table.wrap(copied)) do
         result[k] = v
     end
 
@@ -108,7 +108,7 @@ function table.copy2(self, copied)
     table.clear(self)
 
     -- copy it
-    for k, v in pairs(copied) do
+    for k, v in pairs(table.wrap(copied)) do
         self[k] = v
     end
 

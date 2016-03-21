@@ -29,11 +29,11 @@ local io                    = require("base/io")
 local path                  = require("base/path")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
-local option                = require("base/option")
 local filter                = require("base/filter")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
 local config                = require("project/config")
+local option                = require("project/option")
 local deprecated_project    = require("project/deprecated/project")
 local linker                = require("platform/linker")
 local compiler              = require("platform/compiler")
@@ -150,7 +150,7 @@ function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
     -- save the current scope
     local scope = interp:scope_save()
 
-    -- make option
+    -- check option
     interp:api_call("option", name)
     interp:api_call("set_option_category", "cfuncs")
     interp:api_call("add_option_cfuncs", cfunc)
@@ -196,7 +196,7 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
         -- save the current scope
         local scope = interp:scope_save()
 
-        -- make option
+        -- check option
         interp:api_call("option", name)
         interp:api_call("set_option_category", "cfuncs")
         interp:api_call("add_option_cfuncs", cfunc)
@@ -237,7 +237,7 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
     -- save the current scope
     local scope = interp:scope_save()
 
-    -- make option
+    -- check option
     interp:api_call("option", name)
     interp:api_call("set_option_category", "cxxfuncs")
     interp:api_call("add_option_cxxfuncs", cxxfunc)
@@ -283,7 +283,7 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
         -- save the current scope
         local scope = interp:scope_save()
 
-        -- make option
+        -- check option
         interp:api_call("option", name)
         interp:api_call("set_option_category", "cxxfuncs")
         interp:api_call("add_option_cxxfuncs", cxxfunc)
@@ -476,292 +476,8 @@ function project._interpreter()
     return interp
 end
 
--- make option for checking links
-function project._make_option_for_checking_links(opt, links, cfile, objectfile, targetfile)
-
-    -- the links string
-    local links_str = table.concat(table.wrap(links), ", ")
-    
-    -- this links has been checked?
-    project._CHECKED_LINKS = project._CHECKED_LINKS or {}
-    if project._CHECKED_LINKS[links_str] then return true end
-    
-    -- only for compile a object file
-    local ok = compiler.check_include(opt, nil, cfile, objectfile)
-
-    -- check link
-    if ok then ok = linker.check_links(opt, links, cfile, objectfile, targetfile) end
-
-    -- trace
-    utils.printf("checking for the links %s ... %s", links_str, utils.ifelse(ok, "ok", "no"))
-
-    -- cache the result
-    project._CHECKED_LINKS[links_str] = ok
-
-    -- ok?
-    return ok
-end
-
--- make option for checking cincludes
-function project._make_option_for_checking_cincludes(opt, cincludes, cfile, objectfile)
-
-    -- done
-    for _, cinclude in ipairs(table.wrap(cincludes)) do
-        
-        -- this cinclude has been checked?
-        project._CHECKED_CINCLUDES = project._CHECKED_CINCLUDES or {}
-        if project._CHECKED_CINCLUDES[cinclude] then return true end
-        
-        -- check cinclude
-        local ok = compiler.check_include(opt, cinclude, cfile, objectfile)
-
-        -- trace
-        utils.printf("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
-
-        -- cache the result
-        project._CHECKED_CINCLUDES[cinclude] = ok
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- make option for checking cxxincludes
-function project._make_option_for_checking_cxxincludes(opt, cxxincludes, cxxfile, objectfile)
-
-    -- done
-    for _, cxxinclude in ipairs(table.wrap(cxxincludes)) do
-         
-        -- this cxxinclude has been checked?
-        project._CHECKED_CXXINCLUDES = project._CHECKED_CXXINCLUDES or {}
-        if project._CHECKED_CXXINCLUDES[cinclude] then return true end
-        
-        -- check cinclude
-        local ok = compiler.check_include(opt, cxxinclude, cxxfile, objectfile)
-
-        -- trace
-        utils.printf("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
-
-        -- cache the result
-        project._CHECKED_CXXINCLUDES[cxxinclude] = ok
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- make option for checking cfunctions
-function project._make_option_for_checking_cfuncs(opt, cfuncs, cfile, objectfile, targetfile)
-
-    -- done
-    for _, cfunc in ipairs(table.wrap(cfuncs)) do
-        
-        -- check function
-        local ok = compiler.check_function(opt, cfunc, cfile, objectfile)
-
-        -- check link
-        if ok and opt.links then ok = linker.check_links(opt, opt.links, cfile, objectfile, targetfile) end
-
-        -- trace
-        utils.printf("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- make option for checking cxxfunctions
-function project._make_option_for_checking_cxxfuncs(opt, cxxfuncs, cxxfile, objectfile, targetfile)
-
-    -- done
-    for _, cxxfunc in ipairs(table.wrap(cxxfuncs)) do
-        
-        -- check function
-        local ok = compiler.check_function(opt, cxxfunc, cxxfile, objectfile)
-
-        -- check link
-        if ok and opt.links then ok = linker.check_links(opt, opt.links, cxxfile, objectfile, targetfile) end
-
-        -- trace
-        utils.printf("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- make option for checking ctypes
-function project._make_option_for_checking_ctypes(opt, ctypes, cfile, objectfile, targetfile)
-
-    -- done
-    for _, ctype in ipairs(table.wrap(ctypes)) do
-        
-        -- check type
-        local ok = compiler.check_typedef(opt, ctype, cfile, objectfile)
-
-        -- trace
-        utils.printf("checking for the c type %s ... %s", ctype, utils.ifelse(ok, "ok", "no"))
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- make option for checking cxxtypes
-function project._make_option_for_checking_cxxtypes(opt, cxxtypes, cxxfile, objectfile, targetfile)
-
-    -- done
-    for _, cxxtype in ipairs(table.wrap(cxxtypes)) do
-        
-        -- check type
-        local ok = compiler.check_typedef(opt, cxxtype, cxxfile, objectfile)
-
-        -- trace
-        utils.printf("checking for the c++ type %s ... %s", cxxtype, utils.ifelse(ok, "ok", "no"))
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- make option 
-function project._make_option(name, opt, cfile, cxxfile, objectfile, targetfile)
-
-    -- check links
-    if opt.links and not project._make_option_for_checking_links(opt, opt.links, cfile, objectfile, targetfile) then return end
-
-    -- check ctypes
-    if opt.ctypes and not project._make_option_for_checking_ctypes(opt, opt.ctypes, cfile, objectfile, targetfile) then return end
-
-    -- check cxxtypes
-    if opt.cxxtypes and not project._make_option_for_checking_cxxtypes(opt, opt.cxxtypes, cxxfile, objectfile, targetfile) then return end
-
-    -- check includes and functions
-    if opt.cincludes or opt.cxxincludes then
-
-        -- check cincludes
-        if opt.cincludes and not project._make_option_for_checking_cincludes(opt, opt.cincludes, cfile, objectfile) then return end
-
-        -- check cxxincludes
-        if opt.cxxincludes and not project._make_option_for_checking_cxxincludes(opt, opt.cxxincludes, cxxfile, objectfile) then return end
-
-        -- check cfuncs
-        if opt.cfuncs and not project._make_option_for_checking_cfuncs(opt, opt.cfuncs, cfile, objectfile, targetfile) then return end
-
-        -- check cxxfuncs
-        if opt.cxxfuncs and not project._make_option_for_checking_cxxfuncs(opt, opt.cxxfuncs, cxxfile, objectfile, targetfile) then return end
-
-    end
-
-    -- ok
-    return opt
-end
-
--- make options from the project file
-function project._make_options(options)
-
-    -- check
-    assert(options)
-  
-    -- the source file path
-    local cfile     = os.tmpdir() .. "/__checking.c"
-    local cxxfile   = os.tmpdir() .. "/__checking.cpp"
-
-    -- the object file path
-    local objectfile = os.tmpdir() .. "/" .. target.filename("__checking", "object")
-
-    -- the target file path
-    local targetfile = os.tmpdir() .. "/" .. target.filename("__checking", "binary")
-
-    -- make all options
-    for k, v in pairs(options) do
-
-        -- this option need be probed automatically?
-        if config.get(name) == nil then
-
-            -- make option
-            local o = project._make_option(k, v, cfile, cxxfile, objectfile, targetfile)
-            if o then
-
-                -- enable this option
-                config.set(k, true)
-
-                -- save this option to configure 
-                config.set("__" .. k, o)
-
-            else
-
-                -- disable this option
-                config.set(k, false)
-
-                -- clear this option to configure 
-                config.set("__" .. k, nil)
-
-            end
-
-        elseif nil == config.get("__" .. k) then
-
-            -- save this option to configure 
-            config.set("__" .. k, v)
-        end
-    end
-
-    -- remove files
-    os.rm(cfile)
-    os.rm(cxxfile)
-    os.rm(objectfile)
-    os.rm(targetfile)
-
-end
-
--- get the given target
-function project.target(targetname)
-
-    -- check
-    assert(targetname and targetname ~= "all")
-
-    -- the targets
-    local targets = project.targets()
-    assert(targets)
-
-    -- get it
-    return targets[targetname]
-end
-
--- get the current configure for targets
-function project.targets()
-
-    -- check
-    assert(project._TARGETS)
-
-    -- return it
-    return project._TARGETS
-end
-
 -- probe the project 
 function project.probe()
-
-    -- get interpreter
-    local interp = project._interpreter()
-    assert(interp) 
 
     -- enter the project directory
     local ok, errors = os.cd(xmake._PROJECT_DIR)
@@ -770,13 +486,58 @@ function project.probe()
     end
 
     -- load the options from the the project file
-    local options, errors = interp:load(xmake._PROJECT_FILE, "option", true, true)
+    local options, errors = project.options(true)
     if not options then
         return false, errors
     end
+ 
+    -- the source file path
+    local cfile     = path.join(os.tmpdir(), "__checking.c")
+    local cxxfile   = path.join(os.tmpdir(), "__checking.cpp")
 
-    -- make the options from the the project file
-    project._make_options(options)
+    -- the object file path
+    local objectfile = path.join(os.tmpdir(), target.filename("__checking", "object"))
+
+    -- the target file path
+    local targetfile = path.join(os.tmpdir(), target.filename("__checking", "binary"))
+
+    -- make all options
+    for name, opt in pairs(options) do
+
+        -- this option need be probed automatically?
+        if config.get(name) == nil then
+
+            -- check option
+            if opt:check(cfile, cxxfile, objectfile, targetfile) then
+
+                -- enable this option
+                config.set(name, true)
+
+                -- save this option to configure 
+                opt:save()
+
+            else
+
+                -- disable this option
+                config.set(name, false)
+
+                -- clear this option to configure 
+                opt:clear()
+
+            end
+
+        elseif nil == option.load(name) then
+
+            -- save this option to configure 
+            opt:save()
+        end
+    end
+
+    -- remove files
+    os.rm(cfile)
+    os.rm(cxxfile)
+    os.rm(objectfile)
+    os.rm(targetfile)
 
     -- leave the project directory
     ok, errors = os.cd("-")
@@ -836,29 +597,72 @@ function project.load()
     return true
 end
 
--- dump the current configure
-function project.dump()
-    
-    -- dump
-    if option.get("verbose") then
-        table.dump(project.targets())
-    end
-   
+-- get the given target
+function project.target(targetname)
+
+    -- check
+    assert(targetname and targetname ~= "all")
+
+    -- the targets
+    local targets = project.targets()
+    assert(targets)
+
+    -- get it
+    return targets[targetname]
 end
 
--- get the project menu
-function project.menu()
+-- get the current configure for targets
+function project.targets()
+
+    -- check
+    assert(project._TARGETS)
+
+    -- return it
+    return project._TARGETS
+end
+
+-- get options
+function project.options(enable_filter)
 
     -- get interpreter
     local interp = project._interpreter()
     assert(interp) 
 
+    -- load the options from the the project file
+    local results, errors = interp:load(xmake._PROJECT_FILE, "option", true, enable_filter)
+    if not results then
+        return nil, errors
+    end
+
+    -- check options
+    local options = {}
+    for optionname, optioninfo in pairs(results) do
+        
+        -- init a option instance
+        local instance = table.inherit(option)
+        assert(instance)
+
+        -- save name and info
+        instance._NAME = optionname
+        instance._INFO = optioninfo
+
+        -- save it
+        options[optionname] = instance
+    end
+
+    -- ok?
+    return options
+
+end
+
+-- get the project menu
+function project.menu()
+
     -- attempt to load options from the project file
     local options = nil
     local errors = nil
-    local projectfile = xmake._PROJECT_FILE
-    if projectfile and os.isfile(projectfile) then
-        options, errors = interp:load(projectfile, "option", true, false)
+    if os.isfile(xmake._PROJECT_FILE) then
+        options, errors = project.options(false)
     end
 
     -- failed?
@@ -873,7 +677,7 @@ function project.menu()
 
         -- make the category
         local category = "default"
-        if opt.category then category = table.unwrap(opt.category) end
+        if opt:get("category") then category = table.unwrap(opt:get("category")) end
         options_by_category[category] = options_by_category[category] or {}
 
         -- append option to the current category
@@ -889,12 +693,12 @@ function project.menu()
         for name, opt in pairs(opts) do
 
             -- show menu?
-            if opt.showmenu then
+            if opt:get("showmenu") then
 
                 -- the default value
                 local default = "auto"
-                if opt.enable ~= nil then
-                    default = opt.enable
+                if opt:get("enable") ~= nil then
+                    default = opt:get("enable")
                 end
 
                 -- is first?
@@ -908,8 +712,8 @@ function project.menu()
                 end
 
                 -- append it
-                if opt.description then
-                    table.insert(menu, {nil, name, "kv", default, opt.description})
+                if opt:get("description") then
+                    table.insert(menu, {nil, name, "kv", default, opt:get("description")})
                 else
                     table.insert(menu, {nil, name, "kv", default, nil})
                 end

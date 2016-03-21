@@ -27,7 +27,9 @@ local target = target or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
+local option    = require("project/option")
 local config    = require("project/config")
+local linker    = require("platform/linker")
 local platform  = require("platform/platform")
 
 -- get the filename from the given name and kind
@@ -58,6 +60,39 @@ function target.name(self)
 
     -- get it
     return self._NAME
+end
+
+-- get the linker with the target kind
+function target.linker(self)
+
+    -- init the linker from the given kind
+    local result = linker.init(self:get("kind"))
+    if not result then 
+        os.raise("cannot get linker with kind: %s", self:get("kind"))
+    end
+
+    -- ok?
+    return result
+
+end
+
+-- get the options 
+function target.options(self)
+
+    -- the options
+    local options = {}
+    for _, name in ipairs(table.wrap(self:get("options"))) do
+
+        -- get option if be enabled
+        local opt = nil
+        if config.get(name) then opt = poption.load(name) end
+        if nil ~= opt then
+            options[name] = opt
+        end
+    end
+
+    -- ok?
+    return options
 end
 
 -- get the object file directory

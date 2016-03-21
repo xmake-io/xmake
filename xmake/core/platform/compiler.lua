@@ -20,7 +20,7 @@
 -- @file        compiler.lua
 --
 
--- define module: compiler
+-- define module
 local compiler = compiler or {}
 
 -- load modules
@@ -28,29 +28,29 @@ local io        = require("base/io")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
-local option    = require("base/option")
 local string    = require("base/string")
+local option    = require("base/option")
 local config    = require("project/config")
 local tool      = require("platform/tool")
 local platform  = require("platform/platform")
 
 -- map gcc flag to the given compiler flag
-function compiler._mapflag(module, flag)
+function compiler._mapflag(self, flag)
 
     -- check
-    assert(module.mapflags and flag)
+    assert(self.mapflags and flag)
 
     -- attempt to map it directly
-    local flag_mapped = module.mapflags[flag]
+    local flag_mapped = self.mapflags[flag]
     if flag_mapped and type(flag_mapped) == "string" then
         return flag_mapped
     end
 
     -- find and replace it using pattern
-    for k, v in pairs(module.mapflags) do
+    for k, v in pairs(self.mapflags) do
         local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) 
                                                     if type(v) == "function" then
-                                                        return v(module, w)
+                                                        return v(self, w)
                                                     else
                                                         return v
                                                     end
@@ -65,16 +65,16 @@ function compiler._mapflag(module, flag)
 end
 
 -- map gcc flags to the given compiler flags
-function compiler._mapflags(module, flags)
+function compiler._mapflags(self, flags)
 
     -- check
-    assert(module)
+    assert(self)
 
     -- wrap flags first
     flags = table.wrap(flags)
 
     -- need not map flags? return it directly
-    if not module.mapflags then
+    if not self.mapflags then
         return flags
     end
 
@@ -82,7 +82,7 @@ function compiler._mapflags(module, flags)
     local flags_mapped = {}
     for _, flag in pairs(flags) do
         -- map it
-        local flag_mapped = compiler._mapflag(module, flag)
+        local flag_mapped = compiler._mapflag(self, flag)
         if flag_mapped then
             table.insert(flags_mapped, flag_mapped)
         end
@@ -93,7 +93,7 @@ function compiler._mapflags(module, flags)
 end
 
 -- get the compiler flags from names
-function compiler._getflags(module, names, flags)
+function compiler._getflags(self, names, flags)
 
     -- check
     assert(flags)
@@ -104,7 +104,7 @@ function compiler._getflags(module, names, flags)
     -- wrap it first
     names = table.wrap(names)
     for _, name in ipairs(names) do
-        table.join2(flags_mapped, compiler._mapflags(module, flags[name]))
+        table.join2(flags_mapped, compiler._mapflags(self, flags[name]))
     end
 
     -- get it
@@ -112,29 +112,29 @@ function compiler._getflags(module, names, flags)
 end
 
 -- add flags from the compiler 
-function compiler._addflags_from_compiler(module, flags, flagnames, kind)
+function compiler._addflags_from_compiler(self, flags, flagnames, kind)
 
     -- check
-    assert(module and flags and flagnames)
+    assert(self and flags and flagnames)
 
     -- done
     for _, flagname in ipairs(flagnames) do
 
         -- add compiler.xxflags
-        table.join2(flags, module, module[flagname])
+        table.join2(flags, self, self[flagname])
 
         -- add compiler.kind.xxflags
-        if kind ~= nil and module[kind] ~= nil then
-            table.join2(flags, module, module[kind][flagname])
+        if kind ~= nil and self[kind] ~= nil then
+            table.join2(flags, self, self[kind][flagname])
         end
     end
 end
 
 -- add flags from the configure 
-function compiler._addflags_from_config(module, flags, flagnames)
+function compiler._addflags_from_config(self, flags, flagnames)
 
     -- check
-    assert(module and flags and flagnames)
+    assert(self and flags and flagnames)
 
     -- done
     for _, flagname in ipairs(flagnames) do
@@ -143,82 +143,82 @@ function compiler._addflags_from_config(module, flags, flagnames)
 end
 
 -- add flags from the platform 
-function compiler._addflags_from_platform(module, flags, flagnames)
+function compiler._addflags_from_platform(self, flags, flagnames)
 
     -- check
-    assert(module and flags and flagnames)
+    assert(self and flags and flagnames)
 
     -- add flags 
     for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, platform.get(flagname)))
+        table.join2(flags, compiler._mapflags(self, platform.get(flagname)))
     end
 
     -- add the includedirs flags
-    if module.flag_includedir then
+    if self.flag_includedir then
         for _, includedir in ipairs(table.wrap(platform.get("includedirs"))) do
-            table.join2(flags, module:flag_includedir(includedir))
+            table.join2(flags, self:flag_includedir(includedir))
         end
     end
 
     -- add the defines flags 
-    if module.flag_define then
+    if self.flag_define then
         for _, define in ipairs(table.wrap(platform.get("defines"))) do
-            table.join2(flags, module:flag_define(define))
+            table.join2(flags, self:flag_define(define))
         end
     end
 
     -- append the undefines flags
-    if module.flag_undefine then
+    if self.flag_undefine then
         for _, undefine in ipairs(table.wrap(platform.get("undefines"))) do
-            table.join2(flags, module:flag_undefine(undefine))
+            table.join2(flags, self:flag_undefine(undefine))
         end
     end
 end
 
 
 -- add flags from the target 
-function compiler._addflags_from_target(module, flags, flagnames, target)
+function compiler._addflags_from_target(self, flags, flagnames, target)
 
     -- check
-    assert(module and flags and flagnames and target)
+    assert(self and flags and flagnames and target)
 
     -- add the target flags from the current project
     for _, flagname in ipairs(flagnames) do
-        table.join2(flags, compiler._mapflags(module, target[flagname]))
+        table.join2(flags, compiler._mapflags(self, target:get(flagname)))
     end
 
     -- add the symbols flags from the current project
-    table.join2(flags, compiler._getflags(module, target.symbols, {     debug       = "-g"
-                                                                    ,   hidden      = "-fvisibility=hidden"
-                                                                    }))
+    table.join2(flags, compiler._getflags(self, target:get("symbols"), {      debug       = "-g"
+                                                                            ,   hidden      = "-fvisibility=hidden"
+                                                                            }))
 
     -- add the warning flags from the current project
-    table.join2(flags, compiler._getflags(module, target.warnings,  {   none        = "-w"
-                                                                    ,   less        = "-W1"
-                                                                    ,   more        = "-W3"
-                                                                    ,   all         = "-Wall"
-                                                                    ,   error       = "-Werror"
-                                                                    }))
+    table.join2(flags, compiler._getflags(self, target:get("warnings"),  {    none        = "-w"
+                                                                            ,   less        = "-W1"
+                                                                            ,   more        = "-W3"
+                                                                            ,   all         = "-Wall"
+                                                                            ,   error       = "-Werror"
+                                                                            }))
  
     -- add the optimize flags from the current project
-    table.join2(flags, compiler._getflags(module, target.optimize, {    none        = "-O0"
-                                                                    ,   fast        = "-O1"
-                                                                    ,   faster      = "-O2"
-                                                                    ,   fastest     = "-O3"
-                                                                    ,   smallest    = "-Os"
-                                                                    ,   aggressive  = "-Ofast"
-                                                                    }))
+    table.join2(flags, compiler._getflags(self, target:get("optimize"), {     none        = "-O0"
+                                                                            ,   fast        = "-O1"
+                                                                            ,   faster      = "-O2"
+                                                                            ,   fastest     = "-O3"
+                                                                            ,   smallest    = "-Os"
+                                                                            ,   aggressive  = "-Ofast"
+                                                                            }))
  
     -- add the vector extensions flags from the current project
-    table.join2(flags, compiler._getflags(module, target.vectorexts, {      mmx         = "-mmmx"
-                                                                        ,   sse         = "-msse"
-                                                                        ,   sse2        = "-msse2"
-                                                                        ,   sse3        = "-msse3"
-                                                                        ,   ssse3       = "-mssse3"
-                                                                        ,   avx         = "-mavx"
-                                                                        ,   avx2        = "-mavx2"
-                                                                        ,   neon        = "-mfpu=neon"
-                                                                        }))
+    table.join2(flags, compiler._getflags(self, target:get("vectorexts"), {   mmx         = "-mmmx"
+                                                                            ,   sse         = "-msse"
+                                                                            ,   sse2        = "-msse2"
+                                                                            ,   sse3        = "-msse3"
+                                                                            ,   ssse3       = "-mssse3"
+                                                                            ,   avx         = "-mavx"
+                                                                            ,   avx2        = "-mavx2"
+                                                                            ,   neon        = "-mfpu=neon"
+                                                                            }))
 
     -- add the language flags from the current project
     local languages = {}
@@ -242,55 +242,49 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
                                     })
         end
     end
-    table.join2(flags, compiler._getflags(module, target.languages, languages))
+    table.join2(flags, compiler._getflags(self, target:get("languages"), languages))
 
     -- add the includedirs flags from the current project
-    if module.flag_includedir then
-        for _, includedir in ipairs(table.wrap(target.includedirs)) do
-            table.join2(flags, module:flag_includedir(includedir))
+    if self.flag_includedir then
+        for _, includedir in ipairs(table.wrap(target:get("includedirs"))) do
+            table.join2(flags, self:flag_includedir(includedir))
         end
     end
 
     -- add the defines flags from the current project
-    if module.flag_define then
-        for _, define in ipairs(table.wrap(target.defines)) do
-            table.join2(flags, module:flag_define(define))
+    if self.flag_define then
+        for _, define in ipairs(table.wrap(target:get("defines"))) do
+            table.join2(flags, self:flag_define(define))
         end
     end
 
     -- append the undefines flags from the current project
-    if module.flag_undefine then
-        for _, undefine in ipairs(table.wrap(target.undefines)) do
-            table.join2(flags, module:flag_undefine(undefine))
+    if self.flag_undefine then
+        for _, undefine in ipairs(table.wrap(target:get("undefines"))) do
+            table.join2(flags, self:flag_undefine(undefine))
         end
     end
 
-    -- the options
+    -- is target? 
     if target.options then
-        for _, name in ipairs(table.wrap(target.options)) do
 
-            -- get option if be enabled
-            local opt = nil
-            if config.get(name) then opt = config.get("__" .. name) end
-            if nil ~= opt then
+        -- add the flags for the target options
+        for name, opt in ipairs(target:options()) do
 
-                -- add the flags from the option
-                compiler._addflags_from_target(module, flags, flagnames, opt)
+            -- add the flags from the option
+            compiler._addflags_from_target(self, flags, flagnames, opt)
 
-                -- append the defines flags
-                if opt.defines_if_ok and module.flag_define then
-                    local defines = table.wrap(opt.defines_if_ok)
-                    for _, define in ipairs(defines) do
-                        table.join2(flags, module:flag_define(define))
-                    end
+            -- append the defines flags
+            if self.flag_define then
+                for _, define in ipairs(table.wrap(opt:get("defines_if_ok"))) do
+                    table.join2(flags, self:flag_define(define))
                 end
+            end
 
-                -- append the undefines flags 
-                if opt.undefines_if_ok and module.flag_undefine then
-                    local undefines = table.wrap(opt.undefines_if_ok)
-                    for _, undefine in ipairs(undefines) do
-                        table.join2(flags, module:flag_undefine(undefine))
-                    end
+            -- append the undefines flags 
+            if self.flag_undefine then
+                for _, undefine in ipairs(table.wrap(opt:get("undefines_if_ok"))) do
+                    table.join2(flags, self:flag_undefine(undefine))
                 end
             end
         end
@@ -298,13 +292,13 @@ function compiler._addflags_from_target(module, flags, flagnames, target)
 end
 
 -- add flags from the option 
-function compiler._addflags_from_option(module, flags, flagnames, opt)
+function compiler._addflags_from_option(self, flags, flagnames, opt)
 
     -- check
-    assert(module and flags and flagnames and opt)
+    assert(self and flags and flagnames and opt)
 
     -- add the flags from the option
-    compiler._addflags_from_target(module, flags, flagnames, opt)
+    compiler._addflags_from_target(self, flags, flagnames, opt)
 
 end
 
@@ -361,39 +355,39 @@ function compiler._kind(srcfile)
 end
     
 -- make the compile command for option
-function compiler._make_for_option(module, opt, srcfile, objfile, logfile)
+function compiler._make_for_option(self, opt, srcfile, objfile, logfile)
 
     -- check
-    assert(module and opt)
+    assert(self and self._TOOL and opt)
 
     -- the flag names
-    local flagnames = compiler._flagnames(module._KIND)
+    local flagnames = compiler._flagnames(self._KIND)
     assert(flagnames)
 
     -- init flags
     local flags = {}
 
     -- add flags from the configure 
-    compiler._addflags_from_config(module, flags, flagnames)
+    compiler._addflags_from_config(self, flags, flagnames)
 
     -- add flags from the option 
-    compiler._addflags_from_option(module, flags, flagnames, opt)
+    compiler._addflags_from_option(self, flags, flagnames, opt)
 
     -- add flags from the platform 
-    compiler._addflags_from_platform(module, flags, flagnames)
+    compiler._addflags_from_platform(self, flags, flagnames)
 
     -- add flags from the compiler 
-    compiler._addflags_from_compiler(module, flags, flagnames)
+    compiler._addflags_from_compiler(self, flags, flagnames)
 
     -- remove repeat
     flags = table.unique(flags)
 
     -- execute the compile command
-    return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
+    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
 
--- get the compiler from the given source file
-function compiler.get(srcfile)
+-- init the compiler from the given source file
+function compiler.init(srcfile)
 
     -- get the compiler kind
     local kind = compiler._kind(srcfile)
@@ -401,60 +395,73 @@ function compiler.get(srcfile)
         return nil, string.format("unknown source file: %s", srcfile)
     end
 
+    -- init instance
+    local instance = table.inherit(compiler)
+
     -- ignore "*.a/lib" and "*.o/obj" kind
     if kind == "lib" or kind == "obj" then
-        return {}
+        return instance
     end
 
-    -- get compiler from the source file type
-    local module = tool.get(kind)
-    if module then 
+    -- get compiler tool from the source file type
+    instance._TOOL = tool.get(kind)
+    if instance._TOOL then 
         
         -- invalid compiler
-        if not module.command_compile then
+        if not instance._TOOL.command_compile then
             return nil, string.format("invalid compiler for %s", kind)
         end
 
         -- save kind 
-        module._KIND = kind 
+        instance._KIND = kind 
     else
         return nil, string.format("unknown compiler for %s", kind)
     end
 
-    -- ok?
-    return module
+    -- ok
+    return instance
 end
 
 -- make the compile command
-function compiler.make(module, target, srcfile, objfile, logfile)
+function compiler.makecmd(self, target, srcfile, objfile, logfile)
 
     -- check
-    assert(module and target)
+    assert(self and self._TOOL and target)
 
     -- the flag names
-    local flagnames = compiler._flagnames(module._KIND)
+    local flagnames = compiler._flagnames(self._KIND)
     assert(flagnames)
+
+    -- get flags 
+    local flags = self:flags(flagnames, target)
+
+    -- make the compile command
+    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
+end
+
+-- get flags from the given flag names
+function compiler.flags(self, flagnames, target)
 
     -- init flags 
     local flags = {}
 
     -- add flags from the configure 
-    compiler._addflags_from_config(module, flags, flagnames)
+    self:_addflags_from_config(flags, flagnames)
 
     -- add flags from the target 
-    compiler._addflags_from_target(module, flags, flagnames, target)
+    self:_addflags_from_target(flags, flagnames, target)
 
     -- add flags from the platform 
-    compiler._addflags_from_platform(module, flags, flagnames)
+    self:_addflags_from_platform(flags, flagnames)
 
     -- add flags from the compiler 
-    compiler._addflags_from_compiler(module, flags, flagnames, target.kind)
+    self:_addflags_from_compiler(flags, flagnames, target:get("kind"))
 
     -- remove repeat
     flags = table.unique(flags)
 
-    -- make the compile command
-    return module:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
+    -- ok?
+    return flags
 end
 
 -- check include for the project option
@@ -469,24 +476,24 @@ function compiler.check_include(opt, include, srcpath, objpath)
 
     -- make include
     if include then
-        srcfile:write(string.format("#include <%s>\n\n", include))
+        srcfile:print("#include <%s>\n", include)
     end
 
     -- make the main function header
-    srcfile:write("int main(int argc, char** argv)\n")
-    srcfile:write("{\n")
-    srcfile:write("    return 0;\n")
-    srcfile:write("}\n")
+    srcfile:print("int main(int argc, char** argv)")
+    srcfile:print("{")
+    srcfile:print("    return 0;")
+    srcfile:print("}")
 
     -- exit this file
     srcfile:close()
 
     -- get the compiler
-    local module = compiler.get(srcpath)
-    if not module then return end
+    local self = compiler.init(srcpath)
+    if not self then return end
 
     -- execute the compile command
-    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self._TOOL:main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- check function for the project option
@@ -500,37 +507,37 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     if not srcfile then return end
 
     -- get the compiler
-    local module = compiler.get(srcpath)
-    if not module then return end
+    local self = compiler.init(srcpath)
+    if not self then return end
 
     -- make includes 
     local includes = nil
-    if module._KIND == "cc" then includes = opt.cincludes
-    elseif module._KIND == "cxx" then includes = opt.cxxincludes 
+    if self._KIND == "cc" then includes = opt:get("cincludes")
+    elseif self._KIND == "cxx" then includes = opt:get("cxxincludes") 
     end
     if includes then
         for _, include in ipairs(table.wrap(includes)) do
-            srcfile:write(string.format("#include <%s>\n", include))
+            srcfile:print("#include <%s>", include)
         end
-        srcfile:write("\n")
+        srcfile:print("")
     end
 
     -- make the main function header
-    srcfile:write("int main(int argc, char** argv)\n")
-    srcfile:write("{\n")
+    srcfile:print("int main(int argc, char** argv)")
+    srcfile:print("{")
 
     -- make interfaces
-    srcfile:write(string.format("    volatile void* p%s = (void*)&%s;\n\n", interface, interface))
+    srcfile:print("    volatile void* p%s = (void*)&%s;\n", interface, interface)
 
     -- make the main function tailer
-    srcfile:write("    return 0;\n")
-    srcfile:write("}\n")
+    srcfile:print("    return 0;")
+    srcfile:print("}")
 
     -- exit this file
     srcfile:close()
 
     -- execute the compile command
-    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self._TOOL:main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- check typedef for the project option
@@ -544,38 +551,38 @@ function compiler.check_typedef(opt, typedef, srcpath, objpath)
     if not srcfile then return end
 
     -- get the compiler
-    local module = compiler.get(srcpath)
-    if not module then return end
+    local self = compiler.init(srcpath)
+    if not self then return end
 
     -- make includes 
     local includes = nil
-    if module._KIND == "cc" then includes = opt.cincludes
-    elseif module._KIND == "cxx" then includes = opt.cxxincludes 
+    if self._KIND == "cc" then includes = opt:get("cincludes")
+    elseif self._KIND == "cxx" then includes = opt:get("cxxincludes") 
     end
     if includes then
         for _, include in ipairs(table.wrap(includes)) do
-            srcfile:write(string.format("#include <%s>\n", include))
+            srcfile:print("#include <%s>", include)
         end
-        srcfile:write("\n")
+        srcfile:print("")
     end
 
     -- make the main function header
-    srcfile:write("int main(int argc, char** argv)\n")
-    srcfile:write("{\n")
+    srcfile:print("int main(int argc, char** argv)")
+    srcfile:print("{")
 
     -- make interfaces
-    srcfile:write(string.format("    typedef %s __type_xxx;\n\n", typedef))
+    srcfile:print("    typedef %s __type_xxx;\n", typedef)
 
     -- make the main function tailer
-    srcfile:write("    return 0;\n")
-    srcfile:write("}\n")
+    srcfile:print("    return 0;")
+    srcfile:print("}")
 
     -- exit this file
     srcfile:close()
 
     -- execute the compile command
-    return module:main(compiler._make_for_option(module, opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self._TOOL:main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
--- return module: compiler
+-- return module
 return compiler
