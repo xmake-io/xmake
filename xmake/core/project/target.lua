@@ -85,7 +85,7 @@ function target.options(self)
 
         -- get option if be enabled
         local opt = nil
-        if config.get(name) then opt = poption.load(name) end
+        if config.get(name) then opt = option.load(name) end
         if nil ~= opt then
             options[name] = opt
         end

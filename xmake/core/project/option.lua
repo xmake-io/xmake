@@ -282,7 +282,7 @@ function option.load(name)
     end
 
     -- init option instance
-    local instance = {}
+    local instance = table.inherit(option)
     instance._INFO = info
     instance._NAME = name
 

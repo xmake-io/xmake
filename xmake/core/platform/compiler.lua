@@ -269,10 +269,10 @@ function compiler._addflags_from_target(self, flags, flagnames, target)
     if target.options then
 
         -- add the flags for the target options
-        for name, opt in ipairs(target:options()) do
+        for name, opt in pairs(target:options()) do
 
             -- add the flags from the option
-            compiler._addflags_from_target(self, flags, flagnames, opt)
+            self:_addflags_from_target(flags, flagnames, opt)
 
             -- append the defines flags
             if self.flag_define then
@@ -298,8 +298,40 @@ function compiler._addflags_from_option(self, flags, flagnames, opt)
     assert(self and flags and flagnames and opt)
 
     -- add the flags from the option
-    compiler._addflags_from_target(self, flags, flagnames, opt)
+    self:_addflags_from_target(flags, flagnames, opt)
 
+end
+ 
+-- make the compile command for option
+function compiler._make_for_option(self, opt, srcfile, objfile, logfile)
+
+    -- check
+    assert(self and self._TOOL and opt)
+
+    -- the flag names
+    local flagnames = compiler._flagnames(self._KIND)
+    assert(flagnames)
+
+    -- init flags
+    local flags = {}
+
+    -- add flags from the configure 
+    compiler._addflags_from_config(self, flags, flagnames)
+
+    -- add flags from the option 
+    compiler._addflags_from_option(self, flags, flagnames, opt)
+
+    -- add flags from the platform 
+    compiler._addflags_from_platform(self, flags, flagnames)
+
+    -- add flags from the compiler 
+    compiler._addflags_from_compiler(self, flags, flagnames)
+
+    -- remove repeat
+    flags = table.unique(flags)
+
+    -- execute the compile command
+    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- get the flag names from the given compiler name
@@ -353,38 +385,6 @@ function compiler._kind(srcfile)
     -- ok
     return kind
 end
-    
--- make the compile command for option
-function compiler._make_for_option(self, opt, srcfile, objfile, logfile)
-
-    -- check
-    assert(self and self._TOOL and opt)
-
-    -- the flag names
-    local flagnames = compiler._flagnames(self._KIND)
-    assert(flagnames)
-
-    -- init flags
-    local flags = {}
-
-    -- add flags from the configure 
-    compiler._addflags_from_config(self, flags, flagnames)
-
-    -- add flags from the option 
-    compiler._addflags_from_option(self, flags, flagnames, opt)
-
-    -- add flags from the platform 
-    compiler._addflags_from_platform(self, flags, flagnames)
-
-    -- add flags from the compiler 
-    compiler._addflags_from_compiler(self, flags, flagnames)
-
-    -- remove repeat
-    flags = table.unique(flags)
-
-    -- execute the compile command
-    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
-end
 
 -- init the compiler from the given source file
 function compiler.init(srcfile)
@@ -422,23 +422,6 @@ function compiler.init(srcfile)
     return instance
 end
 
--- make the compile command
-function compiler.makecmd(self, target, srcfile, objfile, logfile)
-
-    -- check
-    assert(self and self._TOOL and target)
-
-    -- the flag names
-    local flagnames = compiler._flagnames(self._KIND)
-    assert(flagnames)
-
-    -- get flags 
-    local flags = self:flags(flagnames, target)
-
-    -- make the compile command
-    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
-end
-
 -- get flags from the given flag names
 function compiler.flags(self, flagnames, target)
 
@@ -462,6 +445,23 @@ function compiler.flags(self, flagnames, target)
 
     -- ok?
     return flags
+end
+
+-- make the compile command
+function compiler.makecmd(self, target, srcfile, objfile, logfile)
+
+    -- check
+    assert(self and self._TOOL and target)
+
+    -- the flag names
+    local flagnames = compiler._flagnames(self._KIND)
+    assert(flagnames)
+
+    -- get flags 
+    local flags = self:flags(flagnames, target)
+
+    -- make the compile command
+    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- check include for the project option
