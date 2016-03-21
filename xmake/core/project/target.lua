@@ -30,6 +30,7 @@ local table     = require("base/table")
 local option    = require("project/option")
 local config    = require("project/config")
 local linker    = require("platform/linker")
+local compiler  = require("platform/compiler")
 local platform  = require("platform/platform")
 
 -- get the filename from the given name and kind
@@ -62,13 +63,33 @@ function target.name(self)
     return self._NAME
 end
 
--- get the linker with the target kind
+-- get the linker 
 function target.linker(self)
+
+    -- check
+    assert(self)
 
     -- init the linker from the given kind
     local result = linker.init(self:get("kind"))
     if not result then 
         os.raise("cannot get linker with kind: %s", self:get("kind"))
+    end
+
+    -- ok?
+    return result
+
+end
+
+-- get the compiler with the given source file
+function target.compiler(self, srcfile)
+
+    -- check
+    assert(self and srcfile)
+
+    -- init the linker from the given kind
+    local result, errors = compiler.init(srcfile)
+    if not result then 
+        os.raise(errors)
     end
 
     -- ok?
