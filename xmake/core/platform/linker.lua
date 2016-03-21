@@ -20,7 +20,7 @@
 -- @file        linker.lua
 --
 
--- define module: linker
+-- define module
 local linker = linker or {}
 
 -- load modules
@@ -34,22 +34,22 @@ local tool      = require("platform/tool")
 local platform  = require("platform/platform")
 
 -- map gcc flag to the given linker flag
-function linker._mapflag(module, flag)
+function linker._mapflag(self, flag)
 
     -- check
-    assert(module.mapflags and flag)
+    assert(self.mapflags and flag)
 
     -- attempt to map it directly
-    local flag_mapped = module.mapflags[flag]
+    local flag_mapped = self.mapflags[flag]
     if flag_mapped and type(flag_mapped) == "string" then
         return flag_mapped
     end
 
     -- find and replace it using pattern
-    for k, v in pairs(module.mapflags) do
+    for k, v in pairs(self.mapflags) do
         local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) 
                                                     if type(v) == "function" then
-                                                        return v(module, w)
+                                                        return v(self, w)
                                                     else
                                                         return v
                                                     end
@@ -64,16 +64,16 @@ function linker._mapflag(module, flag)
 end
 
 -- map gcc flags to the given linker flags
-function linker._mapflags(module, flags)
+function linker._mapflags(self, flags)
 
     -- check
-    assert(module)
+    assert(self)
 
     -- wrap flags first
     flags = table.wrap(flags)
 
     -- need not map flags? return it directly
-    if not module.mapflags then
+    if not self.mapflags then
         return flags
     end
 
@@ -81,7 +81,7 @@ function linker._mapflags(module, flags)
     local flags_mapped = {}
     for _, flag in pairs(flags) do
         -- map it
-        local flag_mapped = linker._mapflag(module, flag)
+        local flag_mapped = linker._mapflag(self, flag)
         if flag_mapped then
             table.insert(flags_mapped, flag_mapped)
         end
@@ -92,7 +92,7 @@ function linker._mapflags(module, flags)
 end
 
 -- get the linker flags from names
-function linker._getflags(module, names, flags)
+function linker._getflags(self, names, flags)
 
     -- check
     assert(flags)
@@ -103,7 +103,7 @@ function linker._getflags(module, names, flags)
     -- wrap it first
     names = table.wrap(names)
     for _, name in ipairs(names) do
-        table.join2(flags_mapped, linker._mapflags(module, flags[name]))
+        table.join2(flags_mapped, linker._mapflags(self, flags[name]))
     end
 
     -- get it
@@ -112,42 +112,42 @@ end
 
 
 -- add flags from the links
-function linker._addflags_from_links(module, flags, links)
+function linker._addflags_from_links(self, flags, links)
 
     -- check
-    assert(module and flags and links)
+    assert(self and flags and links)
 
     -- done
-    if module.flag_link then
+    if self.flag_link then
         for _, link in ipairs(table.wrap(links)) do
-            table.join2(flags, module:flag_link(link))
+            table.join2(flags, self:flag_link(link))
         end
     end
 end
 
 -- add flags from the linker 
-function linker._addflags_from_linker(module, flags, flagname)
+function linker._addflags_from_linker(self, flags, flagname)
 
     -- check
-    assert(module and flags and flagname)
+    assert(self and flags and flagname)
 
     -- done
-    table.join2(flags, module[flagname])
+    table.join2(flags, self[flagname])
 end
 
 -- add flags from the compiler 
-function linker._addflags_from_compiler(module, flags, flagname, srcfiles)
+function linker._addflags_from_compiler(self, flags, flagname, srcfiles)
 
     -- check
-    assert(module and flags and flagname)
+    assert(self and flags and flagname)
     
     -- add the flags for compiler
     local flags_for_compiler = {}
     if srcfiles then
         for _, srcfile in ipairs(table.wrap(srcfiles)) do
 
-            -- get the compiler 
-            local c, errors = compiler.get(srcfile)
+            -- init a compiler instance
+            local c, errors = compiler.init(srcfile)
             if not c then
                 -- error
                 utils.error(errors)
@@ -164,119 +164,117 @@ function linker._addflags_from_compiler(module, flags, flagname, srcfiles)
 end
 
 -- add flags from the configure 
-function linker._addflags_from_config(module, flags, flagname)
+function linker._addflags_from_config(self, flags, flagname)
 
     -- check
-    assert(module and flags and flagname)
+    assert(self and flags and flagname)
 
     -- done
     table.join2(flags, config.get(flagname))
 end
 
 -- add flags from the platform 
-function linker._addflags_from_platform(module, flags, flagname)
+function linker._addflags_from_platform(self, flags, flagname)
 
     -- check
-    assert(module and flags and flagname)
+    assert(self and flags and flagname)
 
     -- add flags
-    table.join2(flags, linker._mapflags(module, platform.get(flagname)))
+    table.join2(flags, linker._mapflags(self, platform.get(flagname)))
 
     -- add the linkdirs flags 
-    if module.flag_linkdir then
+    if self.flag_linkdir then
         for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
-            table.join2(flags, module:flag_linkdir(linkdir))
+            table.join2(flags, self:flag_linkdir(linkdir))
         end
     end
 
     -- add the links flags 
-    if module.flag_link then
+    if self.flag_link then
         for _, link in ipairs(table.wrap(platform.get("links"))) do
-            table.join2(flags, module:flag_link(link))
+            table.join2(flags, self:flag_link(link))
         end
     end
 end
 
 -- add flags from the target 
-function linker._addflags_from_target(module, flags, flagname, target)
+function linker._addflags_from_target(self, flags, flagname, target)
 
     -- check
-    assert(module and flags and flagname and target)
+    assert(self and flags and flagname and target)
 
     -- add the target flags from the current project
-    table.join2(flags, linker._mapflags(module, target[flagname]))
+    table.join2(flags, linker._mapflags(self, target[flagname]))
 
     -- add the linkdirs flags from the current project
-    if module.flag_linkdir then
-        for _, linkdir in ipairs(table.wrap(target.linkdirs)) do
-            table.join2(flags, module:flag_linkdir(linkdir))
+    if self.flag_linkdir then
+        for _, linkdir in ipairs(table.wrap(target:get("linkdirs"))) do
+            table.join2(flags, self:flag_linkdir(linkdir))
         end
     end
 
     -- add the links flags from the current project
-    if module.flag_link then
-        for _, link in ipairs(table.wrap(target.links)) do
-            table.join2(flags, module:flag_link(link))
+    if self.flag_link then
+        for _, link in ipairs(table.wrap(target:get("links"))) do
+            table.join2(flags, self:flag_link(link))
         end
     end
 
     -- the options
-    if target.options then
-        for _, name in ipairs(table.wrap(target.options)) do
+    for _, name in ipairs(table.wrap(target:get("options"))) do
 
-            -- get option if be enabled
-            local opt = nil
-            if config.get(name) then opt = config.get("__" .. name) end
-            if nil ~= opt then
+        -- get option if be enabled
+        local opt = nil
+        if config.get(name) then opt = config.get("__" .. name) end
+        if nil ~= opt then
 
-                -- add the flags from the option
-                table.join2(flags, linker._mapflags(module, opt[flagname]))
-                
-                -- add the linkdirs flags from the option
-                if module.flag_linkdir then
-                    for _, linkdir in ipairs(table.wrap(opt.linkdirs)) do
-                        table.join2(flags, module:flag_linkdir(linkdir))
-                    end
+            -- add the flags from the option
+            table.join2(flags, linker._mapflags(self, opt[flagname]))
+            
+            -- add the linkdirs flags from the option
+            if self.flag_linkdir then
+                for _, linkdir in ipairs(table.wrap(opt.linkdirs)) do
+                    table.join2(flags, self:flag_linkdir(linkdir))
                 end
+            end
 
-                -- add the links flags from the option
-                if module.flag_link then
-                    for _, link in ipairs(table.wrap(opt.links)) do
-                        table.join2(flags, module:flag_link(link))
-                    end
+            -- add the links flags from the option
+            if self.flag_link then
+                for _, link in ipairs(table.wrap(opt.links)) do
+                    table.join2(flags, self:flag_link(link))
                 end
             end
         end
     end
 
     -- add the flags from the configure
-    table.join2(flags, linker._mapflags(module, config.get(flagname)))
+    table.join2(flags, linker._mapflags(self, config.get(flagname)))
 
     -- add the strip flags from the current project
-    table.join2(flags, linker._getflags(module, target.strip, {     debug       = "-S"
-                                                                ,   all         = "-s"
-                                                                }))
+    table.join2(flags, linker._getflags(self, target:get("strip"), {  debug       = "-S"
+                                                                    ,   all         = "-s"
+                                                                    }))
 end
 
 -- add flags from the option 
-function linker._addflags_from_option(module, flags, flagname, opt)
+function linker._addflags_from_option(self, flags, flagname, opt)
 
     -- check
-    assert(module and flags and flagname and opt)
+    assert(self and flags and flagname and opt)
 
     -- append the option flags
-    table.join2(flags, linker._mapflags(module, opt[flagname]))
+    table.join2(flags, linker._mapflags(self, opt:get("flagname")))
 
     -- append the linkdirs flags 
-    if opt.linkdirs and module.flag_linkdir then
-        for _, linkdir in ipairs(table.wrap(opt.linkdirs)) do
-            table.join2(flags, module:flag_linkdir(linkdir))
+    if opt.linkdirs and self.flag_linkdir then
+        for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
+            table.join2(flags, self:flag_linkdir(linkdir))
         end
     end
 end
 
--- get the linker from the given kind
-function linker.get(kind)
+-- init a linker instance from the given kind
+function linker.init(kind)
 
     -- check
     assert(kind)
@@ -287,27 +285,54 @@ function linker.get(kind)
     elseif kind == "static" then name = "ar"
     elseif kind == "shared" then name = "sh"
     else return end
- 
-    -- get it
-    local module = tool.get(name)
 
-    -- invalid linker?
-    if module and not module.command_link then
-        return 
-    end
+    -- init instance
+    local instance = table.inherit(linker)
+ 
+    -- get the linker tool
+    instance._TOOL = tool.get(name)
+    assert(instance._TOOL and instance._TOOL.command_link)
 
     -- ok?
-    return module
+    return instance
+end
+
+-- get flags from the given flag name
+function linker.flags(self, flagname, target)
+
+    -- init flags
+    local flags = {}
+
+    -- add flags from the configure
+    self:_addflags_from_config(flags, flagname)
+
+    -- add flags from the target 
+    self:_addflags_from_target(flags, flagname, target)
+
+    -- add flags from the platform
+    self:_addflags_from_platform(flags, flagname)
+
+    -- add flags from the compiler 
+    self:_addflags_from_compiler(flags, flagname, target:sourcefiles())
+
+    -- add flags from the linker 
+    self:_addflags_from_linker(flags, flagname)
+
+    -- remove repeat
+    flags = table.unique(flags)
+
+    -- ok?
+    return flags
 end
 
 -- make the link command
-function linker.make(module, target, srcfiles, objfiles, targetfile, logfile)
+function linker.makecmd(self, target, objfiles, targetfile, logfile)
 
     -- check
-    assert(module and target)
+    assert(self and self._TOOL and target)
 
     -- the target kind
-    local kind = target.kind or ""
+    local kind = target:get("kind") or ""
 
     -- the flag name
     local flagname = nil
@@ -316,72 +341,53 @@ function linker.make(module, target, srcfiles, objfiles, targetfile, logfile)
     elseif kind == "shared" then flagname = "shflags"
     else
         -- error
-        utils.error("unknown type for linker: %s", kind)
-        return 
+        os.raise("unknown type for linker: %s", kind)
     end
 
-    -- init flags
-    local flags = {}
-
-    -- add flags from the configure
-    linker._addflags_from_config(module, flags, flagname)
-
-    -- add flags from the target 
-    linker._addflags_from_target(module, flags, flagname, target)
-
-    -- add flags from the platform
-    linker._addflags_from_platform(module, flags, flagname)
-
-    -- add flags from the compiler 
-    linker._addflags_from_compiler(module, flags, flagname, srcfiles)
-
-    -- add flags from the linker 
-    linker._addflags_from_linker(module, flags, flagname)
-
-    -- remove repeat
-    flags = table.unique(flags)
+    -- get flags
+    local flags = self:flags(flagname, target)
 
     -- make the link command
-    return module:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
+    return self._TOOL:command_link(table.concat(objfiles, " "), targetfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- check link for the project option
-function linker.check_links(opt, links, sourcefile, objectfile, targetfile)
+function linker.check_links(opt,  sourcefile, objectfile, targetfile)
 
     -- check
-    assert(opt and links and objectfile and targetfile)
+    assert(opt and objectfile and targetfile)
 
-    -- get the linker
-    local module = linker.get("binary")
-    assert(module and module.flag_link)
+    -- init the linker
+    local self = linker.init("binary")
+    assert(self and self._TOOL)
 
     -- init flags
     local flags = {}
 
     -- add flags from the configure
-    linker._addflags_from_config(module, flags, "ldflags")
+    linker._addflags_from_config(self, flags, "ldflags")
 
     -- add flags from the option
-    linker._addflags_from_option(module, flags, "ldflags", opt)
+    linker._addflags_from_option(self, flags, "ldflags", opt)
 
     -- add flags from the platform
-    linker._addflags_from_platform(module, flags, "ldflags")
+    linker._addflags_from_platform(self, flags, "ldflags")
 
     -- add flags from the links
-    linker._addflags_from_links(module, flags, links)
+    linker._addflags_from_links(self, flags, opt:get("links"))
 
     -- add flags from the compiler 
-    linker._addflags_from_compiler(module, flags, "ldflags", sourcefile)
+    linker._addflags_from_compiler(self, flags, "ldflags", sourcefile)
 
     -- add flags from the linker 
-    linker._addflags_from_linker(module, flags, "ldflags")
+    linker._addflags_from_linker(self, flags, "ldflags")
 
     -- remove repeat
     flags = table.unique(flags)
 
     -- execute the link command
-    return module:main(module:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self._TOOL:main(self._TOOL:command_link(objectfile, targetfile, table.concat(flags, " "):trim(), utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
--- return module: linker
+-- return module
 return linker

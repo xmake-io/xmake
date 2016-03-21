@@ -23,6 +23,13 @@
 -- imports
 import("core.project.project")
 
+-- get log file
+function _logfile()
+
+    -- get it
+    return vformat("$(buildir)/.build.log")
+end
+
 -- make the object
 function _make_object(makefile, target, srcfile, objfile)
 
@@ -47,14 +54,6 @@ end
 -- make target
 function _make_target(makefile, target)
 
---[[    -- get the linker from the given kind
-    local l = linker.get(target.kind)
-    if not l then 
-        utils.error("cannot get linker with kind: %s", target.kind)
-        return false
-    end
-]]
-
     -- make head
     local targetfile = target:targetfile()
     makefile:printf("%s: %s\n", name, targetfile)
@@ -77,13 +76,13 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make the command
-    local srcfiles = target:sourcefiles()
-    local cmd = ""--linker.make(l, target, srcfiles, objfiles, targetfile, makefile._LOGFILE)
+    local linker    = target:linker()
+    local cmd       = linker:makecmd(target, objfiles, targetfile, _logfile())
 
     -- make the verbose info
     local verbose = cmd:encode()
     if verbose and #verbose > 256 then
-        verbose = nil--linker.make(l, target, srcfiles, {rule.filename("*", "object")}, targetfile)
+        verbose = linker:makecmd(target, {target.filename("*", "object")}, targetfile)
         verbose = verbose:encode()
     end
 
@@ -110,7 +109,7 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make objects for this target
-    _make_objects(makefile, target, srcfiles, objfiles) 
+    _make_objects(makefile, target, target:sourcefiles(), objfiles) 
 
 end
 
@@ -145,7 +144,7 @@ function make()
     os.cd("$(projectdir)")
 
     -- remove the log file first
-    os.rm("$(buildir)/.build.log")
+    os.rm(_logfile())
 
     -- open the makefile
     local makefile = io.open("$(buildir)/makefile", "w")
