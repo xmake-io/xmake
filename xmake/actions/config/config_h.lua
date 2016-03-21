@@ -67,20 +67,13 @@ function _make_for_target(files, target)
     local undefines = table.copy(target:get("undefines_h")) 
 
     -- make the options
-    for _, name in ipairs(target:get("options")) do
+    for name, opt in pairs(target:options()) do
 
-        -- get option if be enabled
-        local opt = nil
-        if config.get(name) then opt = config.get("__" .. name) end
-        if nil ~= opt then
+        -- get the option defines
+        table.join2(defines, opt:get("defines_h_if_ok")) 
 
-            -- get the option defines
-            table.join2(defines, opt.defines_h_if_ok) 
-
-            -- get the option undefines
-            table.join2(undefines, opt.undefines_h_if_ok) 
-
-        end
+        -- get the option undefines
+        table.join2(undefines, opt:get("undefines_h_if_ok")) 
     end
 
     -- make the defines
