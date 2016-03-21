@@ -21,9 +21,10 @@
 --
 
 -- imports
+import("core.platform.tool")
 import("core.project.project")
 
--- get log file
+-- get log makefile
 function _logfile()
 
     -- get it
@@ -32,6 +33,34 @@ end
 
 -- make the object
 function _make_object(makefile, target, srcfile, objfile)
+
+    -- make object for the *.o/obj source makefile
+--[[    if _make_object_for_object(makefile, target, srcfile, objfile) then return 
+    elseif _make_object_for_static(makefile, target, srcfile, objfile) then return 
+    end]]
+
+    -- make command
+    local ccache    = tool.shellname("ccache") 
+    local compiler  = target:compiler(srcfile)
+    local cmd       = compiler:makecmd(target, srcfile, objfile, _logfile())
+    if ccache then
+        cmd = ccache:append(cmd, " ")
+    end
+
+    -- make head
+    makefile:printf("%s:", objfile)
+
+    -- make dependence
+    makefile:print(" %s", srcfile)
+
+    -- make body
+    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), srcfile)
+    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
+    makefile:print("\t@xmake l mkdir %s", path.directory(objfile))
+    makefile:print("\t@%s", cmd)
+
+    -- make tail
+    makefile:print("")
 
 end
  
@@ -88,7 +117,7 @@ function _make_target(makefile, target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
-    makefile:write("\t@xmake l $(VERBOSE) verbose \"%s\"\n", verbose)
+    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", verbose))
     makefile:print("\t@xmake l mkdir %s", path.directory(targetfile))
     makefile:print("\t@%s", cmd)
 
@@ -143,7 +172,7 @@ function make()
     -- enter project directory
     os.cd("$(projectdir)")
 
-    -- remove the log file first
+    -- remove the log makefile first
     os.rm(_logfile())
 
     -- open the makefile
