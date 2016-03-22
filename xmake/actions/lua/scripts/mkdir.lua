@@ -17,27 +17,17 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        mv.lua
+-- @file        mkdir.lua
 --
 
--- define module: mv
-local mv = mv or {}
+-- main
+function main(...)
 
--- load modules
-local os = require("base/os")
-
--- the main function
-function mv.main(self, ...)
-
-    -- mv it
-    local pathes = ...
-    if pathes and table.getn(pathes) == 2 then
-        return os.mv(pathes[1], pathes[2])
+    -- mkdir all
+    for _, dir in ipairs(...) do
+        if not os.exists(dir) then
+            os.mkdir(dir)
+        end
     end
-
-    -- failed
-    return false
 end
 
--- return module: mv
-return mv

@@ -20,7 +20,7 @@
 -- @file        echo.lua
 --
 
--- the main function
+-- main
 function main(...)
 
     -- echo all

@@ -17,30 +17,16 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        rm.lua
+-- @file        mv.lua
 --
 
--- define module: rm
-local rm = rm or {}
+-- main 
+function mv.main(...)
 
--- load modules
-local os = require("base/os")
-
--- the main function
-function rm.main(self, ...)
-
-    -- rm all
-    for _, file_or_dir in ipairs(...) do
-        if os.exists(file_or_dir) then
-            if not os.rm(file_or_dir) then
-                return false
-            end
-        end
+    -- mv it
+    local pathes = ...
+    if pathes and table.getn(pathes) == 2 then
+        os.mv(pathes[1], pathes[2])
     end
-
-    -- ok
-    return true
 end
 
--- return module: rm
-return rm

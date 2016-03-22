@@ -17,30 +17,18 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        mkdir.lua
+-- @file        rm.lua
 --
 
--- define module: mkdir
-local mkdir = mkdir or {}
+-- main
+function main(...)
 
--- load modules
-local os = require("base/os")
-
--- the main function
-function mkdir.main(self, ...)
-
-    -- mkdir all
-    for _, dir in ipairs(...) do
-        if not os.exists(dir) then
-            if not os.mkdir(dir) then
-                return false
-            end
+    -- rm all
+    for _, file_or_dir in ipairs(...) do
+        if os.exists(file_or_dir) then
+            os.rm(file_or_dir)
         end
     end
 
-    -- ok
-    return true
 end
 
--- return module: mkdir
-return mkdir
