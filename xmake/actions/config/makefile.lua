@@ -45,7 +45,7 @@ function _make_object_for_object(makefile, target, srcfile, objfile)
 
     -- make body
     makefile:print("\t@echo inserting.$(mode) %s", srcfile)
-    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
+    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", cmd:encode())
     makefile:print("\t@%s", cmd)
 
     -- make tail
@@ -67,7 +67,7 @@ function _make_object_for_static(makefile, target, srcfile, objfile)
 
     -- make body
     makefile:print("\t@echo inserting.$(mode) %s", srcfile)
-    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
+    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", cmd:encode())
     makefile:print("\t@xmake l rmdir %s\n", path.directory(objfile))
     makefile:print("\t@%s", cmd)
 
@@ -106,7 +106,7 @@ function _make_object(makefile, target, srcfile, objfile)
 
     -- make body
     makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), srcfile)
-    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
+    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", cmd:encode())
     makefile:print("\t@xmake l mkdir %s", path.directory(objfile))
     makefile:print("\t@%s", cmd)
 
@@ -168,7 +168,7 @@ function _make_target(makefile, target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
-    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", verbose))
+    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", verbose)
     makefile:print("\t@xmake l mkdir %s", path.directory(targetfile))
     makefile:print("\t@%s", cmd)
 
