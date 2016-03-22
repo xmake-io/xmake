@@ -38,6 +38,11 @@ end
 -- print with the builtin variables and newline
 function sandbox_utils.print(format, ...)
 
+    -- print non-formated string
+    if type(format) ~= "string" then
+        return print(format, ...)
+    end
+
     -- done
     return io.write(vformat(format, ...) .. "\n")
 end
