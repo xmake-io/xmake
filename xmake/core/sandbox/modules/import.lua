@@ -227,8 +227,12 @@ end
 -- import("core")
 -- => core
 -- => core.platform
+---
+-- import("core", nil, "/scripts")
+-- => core
+-- => core.platform
 --
-function sandbox_import.import(name, alias)
+function sandbox_import.import(name, alias, rootdir)
 
     -- check
     assert(name)
@@ -238,7 +242,7 @@ function sandbox_import.import(name, alias)
     assert(instance)
 
     -- the root directory for this sandbox script
-    local rootdir = instance:rootdir()
+    local rootdir = rootdir or instance:rootdir()
     assert(rootdir)
 
     -- load module
