@@ -20,25 +20,13 @@
 -- @file        echo.lua
 --
 
--- define module: echo
-local echo = echo or {}
-
--- load modules
-local io        = require("base/io")
-local string    = require("base/string")
-
 -- the main function
-function echo.main(self, ...)
+function main(...)
 
     -- echo all
     for _, v in ipairs(...) do
-        io.write(string.format("%s ", v:decode()))
+        printf("%s ", v:decode())
     end
-    io.write("\n")
+    print("")
 
-    -- ok
-    return true
 end
-
--- return module: echo
-return echo

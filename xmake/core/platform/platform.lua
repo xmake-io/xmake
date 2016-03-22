@@ -27,7 +27,6 @@ local platform = platform or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
-local option    = require("base/option")
 local config    = require("project/config")
 local global    = require("project/global")
 
@@ -123,8 +122,29 @@ function platform._load(plat)
     return module
 end
 
--- get the configure of the given platform
-function platform._configs(plat)
+-- get the current platform module
+function platform.module()
+
+    -- get the platform
+    local plat = config.get("plat")
+    if plat then
+        -- load it
+        return platform._load(plat)
+    end
+end
+
+-- get the current platform module directory
+function platform.directory()
+
+    -- load it
+    local module = platform.module()
+    if module then
+        return module._DIRECTORY
+    end
+end
+
+-- load the configure of the given platform
+function platform.load(plat)
 
     -- check
     assert(plat)
@@ -154,38 +174,6 @@ function platform._configs(plat)
     return configs
 end
 
--- get the current platform module
-function platform.module()
-
-    -- get the platform
-    local plat = config.get("plat")
-    if plat then
-        -- load it
-        return platform._load(plat)
-    end
-end
-
--- get the current platform module directory
-function platform.directory()
-
-    -- load it
-    local module = platform.module()
-    if module then
-        return module._DIRECTORY
-    end
-end
-
--- make the current platform configure
-function platform.make()
-
-    -- get the platform
-    local plat = config.get("plat")
-    assert(plat)
-
-    -- make and get the current platform configure
-    return platform._configs(plat)
-end
-
 -- get the platform os
 function platform.os()
 
@@ -204,7 +192,7 @@ function platform.get(name)
     assert(platform._CONFIGS)
 
     -- get the current platform configure
-    local configs = platform._configs(config.get("plat"))
+    local configs = platform.load(config.get("plat"))
     if configs then
         -- get it
         return configs[name]
@@ -237,19 +225,6 @@ function platform.format(kind)
         return formats[kind]
     end
 
-end
-
--- dump the platform configure
-function platform.dump()
-    
-    -- check
-    assert(platform._CONFIGS)
-
-    -- dump
-    if option.get("verbose") then
-        table.dump(platform._configs(config.get("plat")))
-    end
-   
 end
 
 -- list all platforms

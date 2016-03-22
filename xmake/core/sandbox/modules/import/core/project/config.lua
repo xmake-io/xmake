@@ -126,11 +126,6 @@ function sandbox_core_project_config.probe()
         raise("probe the project configure failed!")
     end
 
-    -- make the platform configure
-    if not platform.make() then
-        raise("make platform configure: %s failed!", config.get("plat"))
-    end
-
 end
 
 -- dump the configure

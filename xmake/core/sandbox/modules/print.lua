@@ -21,5 +21,5 @@
 --
 
 -- load module
-return print
+return require("sandbox/modules/utils").print
 
