@@ -17,38 +17,28 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        utils.lua
+-- @file        platform.lua
 --
 
--- load modules
-local io        = require("base/io")
-local utils     = require("base/utils")
-local vformat   = require("sandbox/modules/vformat")
-
 -- define module
-local sandbox_utils = sandbox_utils or {}
+local sandbox_core_platform_platform = sandbox_core_platform_platform or {}
 
--- inherit the public interfaces of utils
-for k, v in pairs(utils) do
-    if not k:startswith("_") and type(v) == "function" then
-        sandbox_utils[k] = v
+-- load modules
+local platform  = require("platform/platform")
+local raise     = require("sandbox/modules/raise")
+
+-- load the current platform
+function sandbox_core_platform_platform.load(plat)
+
+    -- check
+    assert(plat)
+
+    -- load the platform configure
+    if not platform.load(plat) then
+        raise("load platform: %s failed!", plat)
     end
 end
 
--- print with the builtin variables and newline
-function sandbox_utils.print(format, ...)
-
-    -- done
-    return io.write(vformat(format, ...) .. "\n")
-end
-
--- printf with the builtin variables
-function sandbox_utils.printf(format, ...)
-
-    -- done
-    return io.write(vformat(format, ...))
-end
 
 -- return module
-return sandbox_utils
-
+return sandbox_core_platform_platform

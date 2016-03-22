@@ -26,6 +26,40 @@ task("lua")
     -- set category
     set_task_category("action")
 
+    -- on run
+    on_task_run(function ()
+           
+        -- imports
+        import("core.base.option")
+        import("core.project.config")
+        import("core.project.global")
+        import("core.platform.platform")
+
+        -- do not load config if be not given -f or -P options
+        if option.get("file") or option.get("project") then
+
+            -- load global configure
+            global.load()
+
+            -- load project configure
+            config.load()
+
+            -- load platform
+            platform.load(config.plat())
+
+        end
+
+        -- get script name
+        local name = option.get("script")
+        if not name then
+            raise("no script!")
+        end
+
+        -- import script
+        import("scripts." .. name).main(option.get("arguments"))
+
+    end)
+
     -- set menu
     set_task_menu({
                     -- usage
@@ -40,14 +74,8 @@ task("lua")
                     -- options
                 ,   options = 
                     {
-                        {'s', "string",     "k",  nil,          "Run the lua string script."                                    }
-
-                    ,   {}
-                    ,   {nil, "script",     "v",  nil,          "Run the given lua script."
-                                                              , "    - The script name from the xmake tool directory"
-                                                              , "    - The script file"
-                                                              , "    - The script string"                                       }      
-                    ,   {nil, "arguments",  "vs", nil,          "The script arguments"                                          }
+                        {nil, "script",     "v",  nil,          "Run the given lua script."     }      
+                    ,   {nil, "arguments",  "vs", nil,          "The script arguments"          }
                     }
                 })
 

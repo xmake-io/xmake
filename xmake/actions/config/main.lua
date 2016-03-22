@@ -25,6 +25,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.global")
 import("core.project.project")
+import("core.platform.platform")
 import("config_h")
 import("makefile")
 
@@ -75,6 +76,9 @@ function main()
 
     -- probe the configure with value: "auto"
     config.probe()
+
+    -- load platform
+    platform.load(config.plat())
 
     -- translate the build directory
     local buildir = option.get("buildir")

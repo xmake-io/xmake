@@ -151,10 +151,8 @@ end
 -- load the project configure
 function config.load(targetname)
 
-    -- check
-    if not targetname then
-        return false, "no target name!"
-    end
+    -- get the target name
+    targetname = targetname or "all"
 
     -- load configure from the file first
     local filepath = config._file()
