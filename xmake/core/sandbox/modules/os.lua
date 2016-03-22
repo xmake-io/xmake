@@ -217,6 +217,19 @@ function sandbox_os.isfile(filepath)
     return os.isfile(filepath)
 end
 
+-- exists file or directory?
+function sandbox_os.exists(file_or_dir)
+
+    -- check
+    assert(file_or_dir)
+
+    -- format it first
+    file_or_dir = vformat(file_or_dir)
+
+    -- done
+    return os.exists(file_or_dir)
+end
+
 -- raise an exception and abort the current script
 function sandbox_os.raise(msg, ...)
 

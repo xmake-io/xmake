@@ -17,30 +17,22 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        rmdir.lua
+-- @file        verbose.lua
 --
+ 
+-- imports
+import("core.base.option")
 
--- define module: rmdir
-local rmdir = rmdir or {}
+-- main
+function main(...)
 
--- load modules
-local os = require("base/os")
-
--- the main function
-function rmdir.main(self, ...)
-
-    -- rmdir all
-    for _, dir in ipairs(...) do
-        if os.isdir(dir) then
-            if not os.rmdir(dir) then
-                return false
-            end
+    -- verbose all
+    if option.get("verbose") then
+        for _, v in ipairs(...) do
+            printf("%s ", v:decode())
         end
+        print("")
     end
 
-    -- ok
-    return true
 end
 
--- return module: rmdir
-return rmdir

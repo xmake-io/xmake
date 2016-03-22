@@ -17,32 +17,17 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        verbose.lua
+-- @file        rmdir.lua
 --
 
+-- main
+function rmdir.main(self, ...)
 
--- define module: verbose
-local verbose = verbose or {}
-
--- load modules
-local io        = require("base/io")
-local string    = require("base/string")
-local option    = require("base/option")
-
--- the main function
-function verbose.main(self, ...)
-
-    -- verbose all
-    if option.get("verbose") then
-        for _, v in ipairs(...) do
-            io.write(string.format("%s ", v:decode()))
+    -- rmdir all
+    for _, dir in ipairs(...) do
+        if os.isdir(dir) then
+            os.rmdir(dir) 
         end
-        io.write("\n")
     end
 
-    -- ok
-    return true
 end
-
--- return module: verbose
-return verbose
