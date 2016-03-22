@@ -31,13 +31,64 @@ function _logfile()
     return vformat("$(buildir)/.build.log")
 end
 
+-- make the object for the *.[o|obj] source file
+function _make_object_for_object(makefile, target, srcfile, objfile)
+
+    -- make command
+    local cmd = format("xmake l cp %s %s", srcfile, objfile)
+
+    -- make head
+    makefile:printf("%s:", objfile)
+
+    -- make dependence
+    makefile:print(" %s", srcfile)
+
+    -- make body
+    makefile:print("\t@echo inserting.$(mode) %s", srcfile)
+    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
+    makefile:print("\t@%s", cmd)
+
+    -- make tail
+    makefile:print("")
+
+end
+
+-- make the object for the *.[a|lib] source file
+function _make_object_for_static(makefile, target, srcfile, objfile)
+
+    -- make command
+    local cmd = format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcmakefile:encode(), objmakefile:encode(), makefile._LOGFILE)
+
+    -- make head
+    makefile:printf("%s:", objfile)
+
+    -- make dependence
+    makefile:print(" %s", srcfile)
+
+    -- make body
+    makefile:print("\t@echo inserting.$(mode) %s", srcfile)
+    makefile:write(format("\t@xmake l $(VERBOSE) verbose \"%s\"\n", cmd:encode()))
+    makefile:print("\t@xmake l rmdir %s\n", path.directory(objfile))
+    makefile:print("\t@%s", cmd)
+
+    -- make tail
+    makefile:print("")
+
+end
+
 -- make the object
 function _make_object(makefile, target, srcfile, objfile)
 
-    -- make object for the *.o/obj source makefile
---[[    if _make_object_for_object(makefile, target, srcfile, objfile) then return 
-    elseif _make_object_for_static(makefile, target, srcfile, objfile) then return 
-    end]]
+    -- get the source file type
+    local filetype = path.extension(srcfile):lower()
+
+    -- make the object for the *.o/obj source makefile
+    if filetype == ".o" or filetype ~= ".obj" then 
+        return _make_object_for_object(makefile, target, srcfile, objfile)
+    -- make the object for the *.[a|lib] source file
+    elseif filetype == ".a" or filetype ~= ".lib" then 
+        return _make_object_for_static(makefile, target, srcfile, objfile)
+    end
 
     -- make command
     local ccache    = tool.shellname("ccache") 
@@ -85,7 +136,7 @@ function _make_target(makefile, target)
 
     -- make head
     local targetfile = target:targetfile()
-    makefile:printf("%s: %s\n", name, targetfile)
+    makefile:print("%s: %s", target:name(), targetfile)
     makefile:printf("%s:", targetfile)
 
     -- make dependence for the dependent targets
