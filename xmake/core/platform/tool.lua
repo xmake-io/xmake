@@ -150,7 +150,7 @@ function tool.load(name, root)
 
     -- not exists?
     if not toolpath or not os.isfile(toolpath) then
-        return 
+        return nil, string.format("%s not found!", name)
     end
 
     -- load script
@@ -160,9 +160,7 @@ function tool.load(name, root)
         -- load tool 
         local ok, result = pcall(script)
         if not ok then
-            utils.error(result)
-            utils.error("load %s failed!", toolpath)
-            assert(false)
+            return nil, result
         end
 
         -- init tool 
@@ -175,11 +173,11 @@ function tool.load(name, root)
 
         -- ok?
         return result
-    else
-        utils.error(errors)
-        utils.error("load %s failed!", toolpath)
-        assert(false)
     end
+
+
+    -- failed
+    return nil, errors
 end
     
 -- get the given tool script from the given kind
@@ -188,8 +186,7 @@ function tool.get(kind)
     -- get the tool name
     local toolname = platform.tool(kind)
     if not toolname then
-        utils.error("cannot get tool name for %s", kind)
-        return 
+        return nil, string.format("cannot get tool name for %s", kind)
     end
 
     -- load it

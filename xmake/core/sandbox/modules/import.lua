@@ -30,6 +30,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local sandbox   = require("sandbox/sandbox")
+local raise     = require("sandbox/modules/raise")
 
 -- get module name
 function sandbox_import._modulename(name)
@@ -258,13 +259,13 @@ function sandbox_import.import(name, alias, rootdir)
 
     -- check
     if not module then
-        os.raise("cannot import module: %s, %s", name, errors)
+        raise("cannot import module: %s, %s", name, errors)
     end
 
     -- get module name
     local modulename = sandbox_import._modulename(name)
     if not modulename then
-        os.raise("cannot get module name for %s", name)
+        raise("cannot get module name for %s", name)
     end
 
     -- get the parent scope
@@ -273,7 +274,7 @@ function sandbox_import.import(name, alias, rootdir)
 
     -- this module has been imported?
     if rawget(scope_parent, modulename) then
-        os.raise("this module: %s has been imported!", name)
+        raise("this module: %s has been imported!", name)
     end
 
     -- import this module into the parent scope

@@ -384,6 +384,11 @@ end
 -- tail the given file 
 function io.tail(filepath, linecount)
 
+    -- all?
+    if linecount < 0 then
+        return io.cat(filepath)
+    end
+
     -- open file
     local file = io.open(filepath, "r")
     if file then

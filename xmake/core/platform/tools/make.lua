@@ -40,7 +40,7 @@ function make.init(self, name)
 end
 
 -- the main function
-function make.main(self, mkfile, target)
+function make.main(self, makefile, target)
 
     -- enable jobs?
     local jobs = ""
@@ -54,8 +54,8 @@ function make.main(self, mkfile, target)
 
     -- make command
     local cmd = nil
-    if mkfile and os.isfile(mkfile) then
-        cmd = string.format("%s -r %s -f %s %s VERBOSE=%s", self.name, jobs, mkfile, target or "", self._VERBOSE)
+    if makefile and os.isfile(makefile) then
+        cmd = string.format("%s -r %s -f %s %s VERBOSE=%s", self.name, jobs, makefile, target or "", self._VERBOSE)
     else  
         cmd = string.format("%s -r %s %s VERBOSE=%s", self.name, jobs, target or "", self._VERBOSE)
     end
@@ -65,8 +65,8 @@ function make.main(self, mkfile, target)
     if ok ~= 0 then
 
         -- attempt to execute it again for getting the error logs without jobs
-        if mkfile and os.isfile(mkfile) then
-            cmd = string.format("%s -r -f %s %s VERBOSE=%s", self.name, mkfile, target or "", self._VERBOSE)
+        if makefile and os.isfile(makefile) then
+            cmd = string.format("%s -r -f %s %s VERBOSE=%s", self.name, makefile, target or "", self._VERBOSE)
         else  
             cmd = string.format("%s -r %s VERBOSE=%s", self.name, target or "", self._VERBOSE)
         end

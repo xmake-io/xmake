@@ -70,9 +70,9 @@ function target.linker(self)
     assert(self)
 
     -- init the linker from the given kind
-    local result = linker.init(self:get("kind"))
+    local result, errors = linker.init(self:get("kind"))
     if not result then 
-        os.raise("cannot get linker with kind: %s", self:get("kind"))
+        os.raise(errors)
     end
 
     -- ok?

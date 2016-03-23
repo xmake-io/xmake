@@ -404,7 +404,7 @@ function compiler.init(srcfile)
     end
 
     -- get compiler tool from the source file type
-    instance._TOOL = tool.get(kind)
+    instance._TOOL, errors = tool.get(kind)
     if instance._TOOL then 
         
         -- invalid compiler
@@ -415,7 +415,7 @@ function compiler.init(srcfile)
         -- save kind 
         instance._KIND = kind 
     else
-        return nil, string.format("unknown compiler for %s", kind)
+        return nil, errors
     end
 
     -- ok
