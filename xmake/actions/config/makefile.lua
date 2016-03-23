@@ -83,10 +83,10 @@ function _make_object(makefile, target, srcfile, objfile)
     local filetype = path.extension(srcfile):lower()
 
     -- make the object for the *.o/obj source makefile
-    if filetype == ".o" or filetype ~= ".obj" then 
+    if filetype == ".o" or filetype == ".obj" then 
         return _make_object_for_object(makefile, target, srcfile, objfile)
     -- make the object for the *.[a|lib] source file
-    elseif filetype == ".a" or filetype ~= ".lib" then 
+    elseif filetype == ".a" or filetype == ".lib" then 
         return _make_object_for_static(makefile, target, srcfile, objfile)
     end
 
