@@ -37,16 +37,16 @@ local platform  = require("platform/platform")
 function linker._mapflag(self, flag)
 
     -- check
-    assert(self.mapflags and flag)
+    assert(self._TOOL.mapflags and flag)
 
     -- attempt to map it directly
-    local flag_mapped = self.mapflags[flag]
+    local flag_mapped = self._TOOL.mapflags[flag]
     if flag_mapped and type(flag_mapped) == "string" then
         return flag_mapped
     end
 
     -- find and replace it using pattern
-    for k, v in pairs(self.mapflags) do
+    for k, v in pairs(self._TOOL.mapflags) do
         local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) 
                                                     if type(v) == "function" then
                                                         return v(self, w)
@@ -73,7 +73,7 @@ function linker._mapflags(self, flags)
     flags = table.wrap(flags)
 
     -- need not map flags? return it directly
-    if not self.mapflags then
+    if not self._TOOL.mapflags then
         return flags
     end
 
@@ -118,9 +118,9 @@ function linker._addflags_from_links(self, flags, links)
     assert(self and flags and links)
 
     -- done
-    if self.flag_link then
+    if self._TOOL.flag_link then
         for _, link in ipairs(table.wrap(links)) do
-            table.join2(flags, self:flag_link(link))
+            table.join2(flags, self._TOOL:flag_link(link))
         end
     end
 end
@@ -132,7 +132,7 @@ function linker._addflags_from_linker(self, flags, flagname)
     assert(self and flags and flagname)
 
     -- done
-    table.join2(flags, self[flagname])
+    table.join2(flags, self._TOOL[flagname])
 end
 
 -- add flags from the compiler 
@@ -183,16 +183,16 @@ function linker._addflags_from_platform(self, flags, flagname)
     table.join2(flags, linker._mapflags(self, platform.get(flagname)))
 
     -- add the linkdirs flags 
-    if self.flag_linkdir then
+    if self._TOOL.flag_linkdir then
         for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
-            table.join2(flags, self:flag_linkdir(linkdir))
+            table.join2(flags, self._TOOL:flag_linkdir(linkdir))
         end
     end
 
     -- add the links flags 
-    if self.flag_link then
+    if self._TOOL.flag_link then
         for _, link in ipairs(table.wrap(platform.get("links"))) do
-            table.join2(flags, self:flag_link(link))
+            table.join2(flags, self._TOOL:flag_link(link))
         end
     end
 end
@@ -207,42 +207,36 @@ function linker._addflags_from_target(self, flags, flagname, target)
     table.join2(flags, linker._mapflags(self, target[flagname]))
 
     -- add the linkdirs flags from the current project
-    if self.flag_linkdir then
+    if self._TOOL.flag_linkdir then
         for _, linkdir in ipairs(table.wrap(target:get("linkdirs"))) do
-            table.join2(flags, self:flag_linkdir(linkdir))
+            table.join2(flags, self._TOOL:flag_linkdir(linkdir))
         end
     end
 
     -- add the links flags from the current project
-    if self.flag_link then
+    if self._TOOL.flag_link then
         for _, link in ipairs(table.wrap(target:get("links"))) do
-            table.join2(flags, self:flag_link(link))
+            table.join2(flags, self._TOOL:flag_link(link))
         end
     end
 
-    -- the options
-    for _, name in ipairs(table.wrap(target:get("options"))) do
+    -- add the flags for the target options
+    for _, opt in pairs(target:options()) do
 
-        -- get option if be enabled
-        local opt = nil
-        if config.get(name) then opt = config.get("__" .. name) end
-        if nil ~= opt then
-
-            -- add the flags from the option
-            table.join2(flags, linker._mapflags(self, opt[flagname]))
-            
-            -- add the linkdirs flags from the option
-            if self.flag_linkdir then
-                for _, linkdir in ipairs(table.wrap(opt.linkdirs)) do
-                    table.join2(flags, self:flag_linkdir(linkdir))
-                end
+        -- add the flags from the option
+        table.join2(flags, linker._mapflags(self, opt:get(flagname)))
+        
+        -- add the linkdirs flags from the option
+        if self._TOOL.flag_linkdir then
+            for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
+                table.join2(flags, self._TOOL:flag_linkdir(linkdir))
             end
+        end
 
-            -- add the links flags from the option
-            if self.flag_link then
-                for _, link in ipairs(table.wrap(opt.links)) do
-                    table.join2(flags, self:flag_link(link))
-                end
+        -- add the links flags from the option
+        if self._TOOL.flag_link then
+            for _, link in ipairs(table.wrap(opt:get("links"))) do
+                table.join2(flags, self._TOOL:flag_link(link))
             end
         end
     end
@@ -266,9 +260,9 @@ function linker._addflags_from_option(self, flags, flagname, opt)
     table.join2(flags, linker._mapflags(self, opt:get("flagname")))
 
     -- append the linkdirs flags 
-    if opt.linkdirs and self.flag_linkdir then
+    if opt:get("linkdirs") and self._TOOL.flag_linkdir then
         for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
-            table.join2(flags, self:flag_linkdir(linkdir))
+            table.join2(flags, self._TOOL:flag_linkdir(linkdir))
         end
     end
 end
