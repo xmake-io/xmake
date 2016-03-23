@@ -284,14 +284,18 @@ function linker.init(kind)
     if kind == "binary" then name = "ld"
     elseif kind == "static" then name = "ar"
     elseif kind == "shared" then name = "sh"
-    else return end
+    else 
+        return nil, string.format("unknown kind: %s for linker", kind)
+    end
 
     -- init instance
     local instance = table.inherit(linker)
  
     -- get the linker tool
-    instance._TOOL = tool.get(name)
-    assert(instance._TOOL and instance._TOOL.command_link)
+    instance._TOOL, errors = tool.get(name)
+    if not instance._TOOL then
+        return nil, errors   
+    end
 
     -- ok?
     return instance

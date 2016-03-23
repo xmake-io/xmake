@@ -24,13 +24,31 @@
 local sandbox_core_platform_tool = sandbox_core_platform_tool or {}
 
 -- load modules
-local platform = require("platform/platform")
+local tool      = require("platform/tool")
+local platform  = require("platform/platform")
+local raise     = require("sandbox/modules/raise")
 
 -- get the tool shell name
 function sandbox_core_platform_tool.shellname(name)
 
     -- get it
     return platform.tool(name)
+end
+
+-- run the tool
+function sandbox_core_platform_tool.run(name, ...)
+
+    -- check
+    assert(name)
+
+    -- get the tool instance 
+    local instance, errors = tool.get(name)
+    if not instance then
+        raise(errors)
+    end
+ 
+    -- run it
+    return instance:main(...)
 end
 
 -- return module
