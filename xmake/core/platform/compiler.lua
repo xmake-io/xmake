@@ -306,7 +306,7 @@ end
 function compiler._make_for_option(self, opt, srcfile, objfile, logfile)
 
     -- check
-    assert(self and self._TOOL and opt)
+    assert(self and self:_tool() and opt)
 
     -- the flag names
     local flagnames = compiler._flagnames(self._KIND)
@@ -331,7 +331,7 @@ function compiler._make_for_option(self, opt, srcfile, objfile, logfile)
     flags = table.unique(flags)
 
     -- execute the compile command
-    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
+    return self:_tool():command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- get the flag names from the given compiler name
@@ -356,6 +356,16 @@ function compiler._flagnames(name)
 
     -- ok
     return flagnames
+end
+
+-- get the tool
+function compiler._tool(self)
+
+    -- check
+    assert(self and self:_tool())
+
+    -- get it
+    return self:_tool()
 end
 
 -- get the compiler kind from the source file type
@@ -451,7 +461,7 @@ end
 function compiler.makecmd(self, target, srcfile, objfile, logfile)
 
     -- check
-    assert(self and self._TOOL and target)
+    assert(self and self:_tool() and target)
 
     -- the flag names
     local flagnames = compiler._flagnames(self._KIND)
@@ -461,7 +471,7 @@ function compiler.makecmd(self, target, srcfile, objfile, logfile)
     local flags = self:flags(flagnames, target)
 
     -- make the compile command
-    return self._TOOL:command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
+    return self:_tool():command_compile(srcfile, objfile, table.concat(flags, " "):trim(), logfile)
 end
 
 -- check include for the project option
@@ -493,7 +503,7 @@ function compiler.check_include(opt, include, srcpath, objpath)
     if not self then return end
 
     -- execute the compile command
-    return self._TOOL:main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self:_tool():main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- check function for the project option
@@ -537,7 +547,7 @@ function compiler.check_function(opt, interface, srcpath, objpath)
     srcfile:close()
 
     -- execute the compile command
-    return self._TOOL:main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self:_tool():main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- check typedef for the project option
@@ -581,7 +591,7 @@ function compiler.check_typedef(opt, typedef, srcpath, objpath)
     srcfile:close()
 
     -- execute the compile command
-    return self._TOOL:main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
+    return self:_tool():main(self:_make_for_option(opt, srcpath, objpath, utils.ifelse(option.get("verbose"), nil, xmake._NULDEV)))
 end
 
 -- return module
