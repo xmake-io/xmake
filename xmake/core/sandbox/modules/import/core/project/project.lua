@@ -66,6 +66,13 @@ function sandbox_core_project_project.targets()
     return targets
 end
 
+-- get the project file
+function sandbox_core_project_project.file()
+
+    -- get it
+    return xmake._PROJECT_FILE
+end
+
 -- get the project directory
 function sandbox_core_project_project.directory()
 

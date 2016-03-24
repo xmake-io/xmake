@@ -221,7 +221,7 @@ end
 function make()
 
     -- enter project directory
-    os.cd("$(projectdir)")
+    os.cd(project.directory())
 
     -- remove the log makefile first
     os.rm(_logfile())
