@@ -29,9 +29,22 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local option    = require("base/option")
 
 -- traceback
 function sandbox._traceback(errors)
+
+    -- not verbose?
+    if not option.get("verbose") then
+        if errors then
+            -- remove the prefix info
+            local _, pos = errors:find(":%d+: ")
+            if pos then
+                return errors:sub(pos + 1)
+            end
+        end
+        return errors
+    end
 
     -- init results
     local results = ""
