@@ -40,16 +40,17 @@ function make.init(self, name)
 end
 
 -- the main function
-function make.main(self, makefile, target)
+function make.main(self, makefile, target, jobs)
 
     -- enable jobs?
-    local jobs = ""
-    if option.get("jobs") ~= nil then
-        if tonumber(option.get("jobs")) ~= 0 then
-            jobs = "-j" .. option.get("jobs")
+    if jobs ~= nil then
+        if tonumber(jobs) ~= 0 then
+            jobs = "-j" .. jobs
         else
             jobs = "-j"
         end
+    else
+        jobs = ""
     end
 
     -- make command
