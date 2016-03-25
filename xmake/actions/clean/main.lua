@@ -27,6 +27,102 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 
+-- remove the given files or directories
+function _remove(filedirs)
+
+    -- done
+    for _, filedir in ipairs(filedirs) do
+ 
+        -- exists? remove it
+        if os.exists(filedir) then
+
+            -- remove it
+            os.rm(filedir)
+
+        -- remove "*.o/obj" files?
+        elseif filedir:find("%*") then
+
+            -- match all files
+            for _, file in ipairs(os.match(filedir)) do
+
+                -- remove it
+                os.rm(file)
+
+            end
+        end
+    end
+end
+
+-- clean the given target files
+function _clean_target(target)
+
+    -- remove the target file 
+    _remove(target:targetfile()) 
+
+    -- remove the object files 
+    _remove(target:objectfiles())
+
+    -- remove the header files 
+    local _, dstheaders = target:headerfiles()
+    _remove(dstheaders) 
+
+    -- remove all?
+    if option.get("all") then 
+
+        -- remove the config.h file
+        _remove(target:get("config_h")) 
+    end
+
+end
+
+-- clean the given target and all dependent targets
+function _clean_target_and_deps(target)
+
+    -- remove the target
+    _clean_target(target) 
+     
+    -- exists the dependent targets?
+    for _, dep in ipairs(target:get("deps")) do
+        _clean_target_and_deps(project.target(dep))
+    end
+
+end
+
+-- clean the given target 
+function _clean(targetname)
+
+    -- the target name
+    if targetname and targetname ~= "all" then
+
+        -- clean target
+        _clean_target_and_deps(project.target(targetname)) 
+
+    else
+
+        -- clean targets
+        for _, target in pairs(project.targets()) do
+            _clean_target(target) 
+        end
+    end
+
+    -- remove all
+    if option.get("all") then 
+
+        -- remove makefile
+        _remove("$(buildir)/makefile") 
+
+        -- remove the configure directory
+        _remove(config.directory())
+
+        -- remove the log file
+        _remove("$(buildir)/.build.log")
+
+        -- remove build directory if be empty
+        os.rm("$(buildir)", true)
+    end
+ 
+end
+
 -- main
 function main()
 
@@ -57,6 +153,9 @@ function main()
 
     -- enter project directory
     os.cd(project.directory())
+
+    -- clean the current target
+    _clean(targetname) 
 
     -- leave project directory
     os.cd("-")
