@@ -33,7 +33,7 @@ local utils = require("base/utils")
 io._open = io._open or io.open
 
 -- read file
-function _file.read(self, ...)
+function _file:read(...)
 
     -- check
     assert(self._FILE)
@@ -43,7 +43,7 @@ function _file.read(self, ...)
 end
 
 -- write file
-function _file.write(self, ...)
+function _file:write(...)
 
     -- check
     assert(self._FILE)
@@ -53,7 +53,7 @@ function _file.write(self, ...)
 end
 
 -- print file
-function _file.print(self, ...)
+function _file:print(...)
 
     -- check
     assert(self._FILE)
@@ -63,7 +63,7 @@ function _file.print(self, ...)
 end
 
 -- printf file
-function _file.printf(self, ...)
+function _file:printf(...)
 
     -- check
     assert(self._FILE)
@@ -73,7 +73,7 @@ function _file.printf(self, ...)
 end
 
 -- get lines
-function _file.lines(self)
+function _file:lines()
 
     -- check
     assert(self._FILE)
@@ -83,7 +83,7 @@ function _file.lines(self)
 end
 
 -- close file
-function _file.close(self)
+function _file:close()
 
     -- check
     assert(self._FILE)
@@ -93,7 +93,7 @@ function _file.close(self)
 end
 
 -- save object with the level
-function _file._save(self, object, level)
+function _file:_save(object, level)
  
     -- save string
     if type(object) == "string" then  
@@ -156,14 +156,14 @@ function _file._save(self, object, level)
 end
 
 -- save object
-function _file.save(self, object)
+function _file:save(object)
    
     -- save it
     return self:_save(object, 0)
 end
 
 -- load object
-function _file.load(self)
+function _file:load()
 
     -- check
     assert(self)

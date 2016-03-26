@@ -95,8 +95,8 @@ function sandbox._api_register_builtin(self, name, func)
     self._PUBLIC[name] = func
 end
 
--- init sandbox
-function sandbox._init()
+-- new a sandbox instance
+function sandbox._new()
 
     -- init an sandbox instance
     local instance = {_PUBLIC = {}, _PRIVATE = {}}
@@ -150,14 +150,14 @@ function sandbox._init()
     return instance
 end
 
--- make sandbox instance with the given script
-function sandbox.make(script, interp)
+-- new a sandbox instance with the given script
+function sandbox.new(script, interp)
 
     -- check
     assert(script and interp)
 
-    -- init self 
-    local self = sandbox._init()
+    -- new instance 
+    local self = sandbox._new()
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -208,7 +208,7 @@ function sandbox.load(script, ...)
 end
 
 -- fork a new sandbox from the given sandbox
-function sandbox.fork(self, script)
+function sandbox:fork(script)
 
     -- no script?
     if script == nil then
@@ -221,7 +221,7 @@ function sandbox.fork(self, script)
     end
 
     -- init a new sandbox instance
-    local instance = sandbox._init()
+    local instance = sandbox._new()
 
     -- check
     assert(instance and instance._PUBLIC and instance._PRIVATE)
@@ -243,7 +243,7 @@ function sandbox.fork(self, script)
 end
 
 -- get script from the given sandbox
-function sandbox.script(self)
+function sandbox:script()
 
     -- check
     assert(self and self._PRIVATE)
@@ -253,7 +253,7 @@ function sandbox.script(self)
 end
 
 -- get filter from the given sandbox
-function sandbox.filter(self)
+function sandbox:filter()
 
     -- check
     assert(self and self._PRIVATE)
@@ -263,7 +263,7 @@ function sandbox.filter(self)
 end
 
 -- get root directory from the given sandbox
-function sandbox.rootdir(self)
+function sandbox:rootdir()
 
     -- check
     assert(self and self._PRIVATE)

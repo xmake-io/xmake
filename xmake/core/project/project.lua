@@ -322,7 +322,7 @@ function project._interpreter()
     end
 
     -- init interpreter
-    local interp = interpreter.init()
+    local interp = interpreter.new()
     assert(interp)
 
     -- set root directory

@@ -47,7 +47,7 @@ function filter.init(handler)
 end
 
 -- filter the builtin variables: "hello $(variable)" for string
-function filter.handle(self, value)
+function filter:handle(value)
 
     -- check
     assert(type(value) == "string")

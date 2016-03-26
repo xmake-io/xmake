@@ -28,6 +28,7 @@ local os            = require("base/os")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
+local profiler      = require("base/profiler")
 local task          = require("project/task")
 
 -- init the option menu
