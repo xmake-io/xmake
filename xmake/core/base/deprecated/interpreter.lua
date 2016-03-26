@@ -32,7 +32,7 @@ local string    = require("base/string")
 local sandbox   = require("sandbox/sandbox")
 
 -- register api for set_scope()
-function deprecated_interpreter.api_register_set_scope(self, ...)
+function deprecated_interpreter:api_register_set_scope(...)
 
     -- check
     assert(self)
@@ -71,7 +71,7 @@ function deprecated_interpreter.api_register_set_scope(self, ...)
 end
 
 -- register api for add_scope()
-function deprecated_interpreter.api_register_add_scope(self, ...)
+function deprecated_interpreter:api_register_add_scope(...)
 
     -- check
     assert(self)
@@ -110,7 +110,7 @@ function deprecated_interpreter.api_register_add_scope(self, ...)
 end
 
 -- register api for set_script
-function deprecated_interpreter.api_register_set_script(self, scope_kind, prefix, ...)
+function deprecated_interpreter:api_register_set_script(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -122,7 +122,7 @@ function deprecated_interpreter.api_register_set_script(self, scope_kind, prefix
         utils.warning("please uses on_%s(), \"set_%s()\" has been deprecated!", name, name, scope)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.make(script, self)
+        local instance, errors = sandbox.new(script, self)
         if not instance then
             os.raise("set_%s(): %s", name, errors)
         end

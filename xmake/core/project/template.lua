@@ -43,7 +43,7 @@ function template._interpreter()
     end
 
     -- init interpreter
-    local interp = interpreter.init()
+    local interp = interpreter.new()
     assert(interp)
 
     -- register api: set_description() and set_projectdir()

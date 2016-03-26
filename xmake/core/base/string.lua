@@ -24,7 +24,7 @@
 local string = string or {}
 
 -- find the last substring with the given pattern
-function string.find_last(self, pattern, plain)
+function string:find_last(pattern, plain)
 
     -- find the last substring
     local curr = 0
@@ -42,7 +42,7 @@ function string.find_last(self, pattern, plain)
 end
 
 -- split string with the given pattern
-function string.split(self, pattern)
+function string:split(pattern)
 
     -- split it
     local list = {}
@@ -51,24 +51,24 @@ function string.split(self, pattern)
 end
 
 -- trim the spaces
-function string.trim(self)
+function string:trim()
     return (self:gsub("^%s*(.-)%s*$", "%1"))
 end
 
 -- trim the left spaces
-function string.ltrim(self)
+function string:ltrim()
     return (self:gsub("^%s*", ""))
 end
 
 -- trim the right spaces
-function string.rtrim(self)
+function string:rtrim()
     local n = #self
     while n > 0 and s:find("^%s", n) do n = n - 1 end
     return self:sub(1, n)
 end
 
 -- append a substring with a given separator
-function string.append(self, substr, separator)
+function string:append(substr, separator)
 
     -- check
     assert(self)
@@ -91,7 +91,7 @@ function string.append(self, substr, separator)
 end
 
 -- encode: ' ', '=', '\"', '<'
-function string.encode(self)
+function string:encode()
 
     -- null?
     if self == nil then return end
@@ -101,7 +101,7 @@ function string.encode(self)
 end
 
 -- decode: ' ', '=', '\"'
-function string.decode(self)
+function string:decode()
 
     -- null?
     if self == nil then return end

@@ -74,7 +74,7 @@ function interpreter._traceback(errors)
 end
 
 -- register api: xxx_apiname()
-function interpreter._api_register_xxx_scope(self, action, apifunc, ...)
+function interpreter:_api_register_xxx_scope(action, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -109,7 +109,7 @@ function interpreter._api_register_xxx_scope(self, action, apifunc, ...)
 end
 
 -- register api: xxx_values()
-function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, apifunc, ...)
+function interpreter:_api_register_xxx_values(scope_kind, action, prefix, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -154,7 +154,7 @@ function interpreter._api_register_xxx_values(self, scope_kind, action, prefix, 
 end
 
 -- translate api pathes 
-function interpreter._api_translate_pathes(self, ...)
+function interpreter:_api_translate_pathes(...)
 
     -- check
     assert(self and self._PRIVATE)
@@ -185,7 +185,7 @@ function interpreter._api_translate_pathes(self, ...)
 end
 
 -- the builtin api: add_subdirs() or add_subfiles()
-function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
+function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
 
     -- check
     assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
@@ -248,7 +248,7 @@ function interpreter._api_builtin_add_subdirfiles(self, isdirs, ...)
 end
 
 -- clear results
-function interpreter._clear(self)
+function interpreter:_clear()
 
     -- check
     assert(self and self._PRIVATE)
@@ -259,7 +259,7 @@ function interpreter._clear(self)
 end
 
 -- filter values
-function interpreter._filter(self, values)
+function interpreter:_filter(values)
 
     -- check
     assert(self and values)
@@ -315,7 +315,7 @@ function interpreter._filter(self, values)
 end
 
 -- handle scope
-function interpreter._handle(self, scope, remove_repeat, enable_filter)
+function interpreter:_handle(scope, remove_repeat, enable_filter)
 
     -- check
     assert(scope)
@@ -346,7 +346,7 @@ function interpreter._handle(self, scope, remove_repeat, enable_filter)
 end
 
 -- make results
-function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
+function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
     -- check
     assert(self and self._PRIVATE)
@@ -415,8 +415,8 @@ function interpreter._make(self, scope_kind, remove_repeat, enable_filter)
     return results
 end
 
--- init interpreter
-function interpreter.init()
+-- new an interpreter instance
+function interpreter.new()
 
     -- init an interpreter instance
     local instance = {  _PUBLIC = {}
@@ -447,7 +447,7 @@ function interpreter.init()
 end
 
 -- load results 
-function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
+function interpreter:load(file, scope_kind, remove_repeat, enable_filter)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file)
@@ -485,7 +485,7 @@ function interpreter.load(self, file, scope_kind, remove_repeat, enable_filter)
 end
 
 -- get mtimes
-function interpreter.mtimes(self)
+function interpreter:mtimes()
 
     -- check
     assert(self and self._PRIVATE)
@@ -495,7 +495,7 @@ function interpreter.mtimes(self)
 end
 
 -- get filter
-function interpreter.filter(self)
+function interpreter:filter()
 
     -- check
     assert(self and self._PRIVATE)
@@ -505,7 +505,7 @@ function interpreter.filter(self)
 end
 
 -- set filter
-function interpreter.filter_set(self, filter)
+function interpreter:filter_set(filter)
 
     -- check
     assert(self and self._PRIVATE)
@@ -515,7 +515,7 @@ function interpreter.filter_set(self, filter)
 end
 
 -- get root directory
-function interpreter.rootdir(self)
+function interpreter:rootdir()
 
     -- check
     assert(self and self._PRIVATE)
@@ -525,7 +525,7 @@ function interpreter.rootdir(self)
 end
 
 -- set root directory
-function interpreter.rootdir_set(self, rootdir)
+function interpreter:rootdir_set(rootdir)
 
     -- check
     assert(self and self._PRIVATE and rootdir)
@@ -535,7 +535,7 @@ function interpreter.rootdir_set(self, rootdir)
 end
 
 -- register api 
-function interpreter.api_register(self, name, func)
+function interpreter:api_register(name, func)
 
     -- check
     assert(self and self._PUBLIC)
@@ -546,7 +546,7 @@ function interpreter.api_register(self, name, func)
 end
 
 -- register api for builtin
-function interpreter.api_register_builtin(self, name, func)
+function interpreter:api_register_builtin(name, func)
 
     -- check
     assert(self and self._PUBLIC and func)
@@ -595,7 +595,7 @@ end
 --      }
 -- }
 --
-function interpreter.api_register_scope(self, ...)
+function interpreter:api_register_scope(...)
 
     -- check
     assert(self)
@@ -657,7 +657,7 @@ end
 --      }
 -- }
 --
-function interpreter.api_register_set_values(self, scope_kind, prefix, ...)
+function interpreter:api_register_set_values(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -676,7 +676,7 @@ function interpreter.api_register_set_values(self, scope_kind, prefix, ...)
 end
 
 -- register api for add_values
-function interpreter.api_register_add_values(self, scope_kind, prefix, ...)
+function interpreter:api_register_add_values(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -695,7 +695,7 @@ function interpreter.api_register_add_values(self, scope_kind, prefix, ...)
 end
 
 -- register api for set_array
-function interpreter.api_register_set_array(self, scope_kind, prefix, ...)
+function interpreter:api_register_set_array(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -714,7 +714,7 @@ function interpreter.api_register_set_array(self, scope_kind, prefix, ...)
 end
 
 -- register api for add_array
-function interpreter.api_register_add_array(self, scope_kind, prefix, ...)
+function interpreter:api_register_add_array(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -733,7 +733,7 @@ function interpreter.api_register_add_array(self, scope_kind, prefix, ...)
 end
 
 -- register api for on_script
-function interpreter.api_register_on_script(self, scope_kind, prefix, ...)
+function interpreter:api_register_on_script(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -742,7 +742,7 @@ function interpreter.api_register_on_script(self, scope_kind, prefix, ...)
     local implementation = function (self, scope, name, script)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.make(script, self)
+        local instance, errors = sandbox.new(script, self)
         if not instance then
             os.raise("on_%s(): %s", name, errors)
         end
@@ -757,7 +757,7 @@ function interpreter.api_register_on_script(self, scope_kind, prefix, ...)
 end
 
 -- register api for set_keyvalues
-function interpreter.api_register_set_keyvalues(self, scope_kind, prefix, ...)
+function interpreter:api_register_set_keyvalues(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -776,7 +776,7 @@ function interpreter.api_register_set_keyvalues(self, scope_kind, prefix, ...)
 end
 
 -- register api for add_keyvalues
-function interpreter.api_register_add_keyvalues(self, scope_kind, prefix, ...)
+function interpreter:api_register_add_keyvalues(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -819,7 +819,7 @@ function interpreter.api_register_add_keyvalues(self, scope_kind, prefix, ...)
 end
 
 -- register api for set_pathes
-function interpreter.api_register_set_pathes(self, scope_kind, prefix, ...)
+function interpreter:api_register_set_pathes(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -838,7 +838,7 @@ function interpreter.api_register_set_pathes(self, scope_kind, prefix, ...)
 end
 
 -- register api for add_pathes
-function interpreter.api_register_add_pathes(self, scope_kind, prefix, ...)
+function interpreter:api_register_add_pathes(scope_kind, prefix, ...)
 
     -- check
     assert(self)
@@ -857,7 +857,7 @@ function interpreter.api_register_add_pathes(self, scope_kind, prefix, ...)
 end
 
 -- the builtin api: add_subdirs()
-function interpreter.api_builtin_add_subdirs(self, ...)
+function interpreter:api_builtin_add_subdirs(...)
     
     -- check
     assert(self)
@@ -867,7 +867,7 @@ function interpreter.api_builtin_add_subdirs(self, ...)
 end
 
 -- the builtin api: add_subfiles()
-function interpreter.api_builtin_add_subfiles(self, ...)
+function interpreter:api_builtin_add_subfiles(...)
  
     -- check
     assert(self)
@@ -877,7 +877,7 @@ function interpreter.api_builtin_add_subfiles(self, ...)
 end
 
 -- call api
-function interpreter.api_call(self, apiname, ...)
+function interpreter:api_call(apiname, ...)
 
     -- check
     assert(self and self._PUBLIC and apiname)
@@ -893,7 +893,7 @@ function interpreter.api_call(self, apiname, ...)
 end
 
 -- save the current scope
-function interpreter.scope_save(self)
+function interpreter:scope_save()
 
     -- check
     assert(self and self._PRIVATE)
@@ -912,7 +912,7 @@ function interpreter.scope_save(self)
 end
 
 -- restore the current scope
-function interpreter.scope_restore(self, scope)
+function interpreter:scope_restore(scope)
 
     -- check
     assert(self and self._PRIVATE and scope)

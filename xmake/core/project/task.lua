@@ -52,7 +52,7 @@ function task._interpreter()
     end
 
     -- init interpreter
-    local interp = interpreter.init()
+    local interp = interpreter.new()
     assert(interp)
  
     -- register api: task()
@@ -137,7 +137,7 @@ function task._bind(tasks)
                     if type(opt) == "function" then
 
                         -- make sandbox instance with the given script
-                        local instance, errors = sandbox.make(opt, interp)
+                        local instance, errors = sandbox.new(opt, interp)
                         if not instance then
                             return false, errors
                         end
@@ -169,7 +169,7 @@ function task._bind(tasks)
                             if type(description) == "function" then
 
                                 -- make sandbox instance with the given script
-                                local instance, errors = sandbox.make(description, interp)
+                                local instance, errors = sandbox.new(description, interp)
                                 if not instance then
                                     return false, errors
                                 end
