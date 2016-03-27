@@ -79,8 +79,8 @@ function profiler:_func_report(funcinfo)
     return report
 end
 
--- hook call
-function profiler:_hook_call(funcinfo)
+-- profiling call
+function profiler:_profiling_call(funcinfo)
 
     -- get the function report
     local report = self:_func_report(funcinfo)
@@ -94,8 +94,8 @@ function profiler:_hook_call(funcinfo)
 
 end
 
--- hook return
-function profiler:_hook_return(funcinfo)
+-- profiling return
+function profiler:_profiling_return(funcinfo)
 
     -- get the stoptime
     local stoptime = os.clock()
@@ -110,56 +110,95 @@ function profiler:_hook_return(funcinfo)
 	end
 end
 
--- the hook handler
-function profiler._hook_handler(hooktype)
+-- the profiling handler
+function profiler._profiling_handler(hooktype)
 
     -- the function info
     local funcinfo = debug.getinfo(2, 'nS')
 
     -- dispatch it
     if hooktype == "call" then
-        profiler:_hook_call(funcinfo)
+        profiler:_profiling_call(funcinfo)
     elseif hooktype == "return" then
-        profiler:_hook_return(funcinfo)
+        profiler:_profiling_return(funcinfo)
+    end
+end
+
+-- the tracing handler
+function profiler._tracing_handler(hooktype)
+
+    -- the function info
+    local funcinfo = debug.getinfo(2, 'nS')
+
+    -- is call?
+    if hooktype == "call" then
+
+        -- is xmake function?
+        local name = funcinfo.name 
+        local source = funcinfo.short_src or 'C_FUNC'
+        if name and os.isfile(source) then
+
+            -- the function line
+            local line = string.format("%d", funcinfo.linedefined or 0)
+
+            -- get the relative source
+            source = path.relative(source, xmake._PROGRAM_DIR)
+
+            -- trace it
+            utils.printf("%-30s: %s: %s", name, source, line)
+        end
     end
 end
 
 -- start profiling
-function profiler:start()
+function profiler:start(mode)
 
-    -- init reports
-    self._REPORTS           = {}
-    self._REPORTS_BY_TITLE  = {}
+    -- trace?
+    if mode and mode == "trace" then
+        debug.sethook(profiler._tracing_handler, 'cr', 0)
+    else
+        -- init reports
+        self._REPORTS           = {}
+        self._REPORTS_BY_TITLE  = {}
 
-    -- save the start time
-    self._STARTIME = os.clock()
+        -- save the start time
+        self._STARTIME = os.clock()
 
-    -- start to hook
-    debug.sethook(profiler._hook_handler, 'cr', 0)
-
+        -- start to hook
+        debug.sethook(profiler._profiling_handler, 'cr', 0)
+    end
 end
 
 -- stop profiling
-function profiler:stop()
+function profiler:stop(mode)
 
-    -- save the stop time
-    self._STOPTIME = os.clock()
+    -- trace?
+    if mode and mode == "trace" then
 
-    -- stop to hook
-    debug.sethook()
+        -- stop to hook
+        debug.sethook()
 
-    -- calculate the total time 
-    local totaltime = self._STOPTIME - self._STARTIME
+    else
 
-    -- sort reports
-    table.sort(self._REPORTS, function(a, b)
-        return a.totaltime > b.totaltime
-    end)
+        -- save the stop time
+        self._STOPTIME = os.clock()
 
-    -- show reports
-    for _, report in ipairs(self._REPORTS) do
-        utils.printf("%04.3f, %5.2f%%, %7d, %s", report.totaltime, (report.totaltime / totaltime) * 100, report.callcount, report.title)
-    end
+        -- stop to hook
+        debug.sethook()
+
+        -- calculate the total time 
+        local totaltime = self._STOPTIME - self._STARTIME
+
+        -- sort reports
+        table.sort(self._REPORTS, function(a, b)
+            return a.totaltime > b.totaltime
+        end)
+
+        -- show reports
+        for _, report in ipairs(self._REPORTS) do
+            utils.printf("%04.3f, %5.2f%%, %7d, %s", report.totaltime, (report.totaltime / totaltime) * 100, report.callcount, report.title)
+        end
+   end
 end
 
 -- return module
