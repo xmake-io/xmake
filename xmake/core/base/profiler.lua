@@ -21,14 +21,146 @@
 --
 
 -- define module
-local profiler = profiler or {}
+local profiler = {}
 
 -- load modules
 local os        = require("base/os")
+local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
+-- get the function title
+function profiler:_func_title(funcinfo)
+
+    -- check
+    assert(funcinfo)
+
+    -- the function name
+    local name = funcinfo.name or 'anonymous'
+
+    -- the function line
+    local line = string.format("%d", funcinfo.linedefined or 0)
+
+    -- the function source
+    local source = funcinfo.short_src or 'C_FUNC'
+    if os.isfile(source) then
+        source = path.relative(source, xmake._PROGRAM_DIR)
+    end
+
+    -- make title
+    return string.format("%-30s: %s: %s", name, source, line)
+end
+
+-- get the function report
+function profiler:_func_report(funcinfo)
+
+    -- get the function title
+    local title = self:_func_title(funcinfo)
+
+    -- get the function report
+    local report = self._REPORTS_BY_TITLE[title]
+    if not report then
+        
+        -- init report
+        report = 
+        {
+            title       = self:_func_title(funcinfo)
+        ,   callcount   = 0
+        ,   totaltime   = 0
+        }
+
+        -- save it
+        self._REPORTS_BY_TITLE[title] = report
+        table.insert(self._REPORTS, report)
+    end
+
+    -- ok?
+    return report
+end
+
+-- hook call
+function profiler:_hook_call(funcinfo)
+
+    -- get the function report
+    local report = self:_func_report(funcinfo)
+    assert(report)
+
+    -- save the call time
+    report.calltime    = os.clock()
+
+    -- update the call count
+    report.callcount   = report.callcount + 1
+
+end
+
+-- hook return
+function profiler:_hook_return(funcinfo)
+
+    -- get the stoptime
+    local stoptime = os.clock()
+
+    -- get the function report
+    local report = self:_func_report(funcinfo)
+    assert(report)
+
+    -- update the total time
+    if report.calltime then
+		report.totaltime = report.totaltime + (stoptime - report.calltime)
+	end
+end
+
+-- the hook handler
+function profiler._hook_handler(hooktype)
+
+    -- the function info
+    local funcinfo = debug.getinfo(2, 'nS')
+
+    -- dispatch it
+    if hooktype == "call" then
+        profiler:_hook_call(funcinfo)
+    elseif hooktype == "return" then
+        profiler:_hook_return(funcinfo)
+    end
+end
+
+-- start profiling
+function profiler:start()
+
+    -- init reports
+    self._REPORTS           = {}
+    self._REPORTS_BY_TITLE  = {}
+
+    -- save the start time
+    self._STARTIME = os.clock()
+
+    -- start to hook
+    debug.sethook(profiler._hook_handler, 'cr', 0)
+
+end
+
+-- stop profiling
+function profiler:stop()
+
+    -- save the stop time
+    self._STOPTIME = os.clock()
+
+    -- stop to hook
+    debug.sethook()
+
+    -- calculate the total time 
+    local totaltime = self._STOPTIME - self._STARTIME
+
+    -- sort reports
+    table.sort(self._REPORTS, function(a, b)
+        return a.totaltime > b.totaltime
+    end)
+
+    -- show reports
+    for _, report in ipairs(self._REPORTS) do
+        utils.printf("%04.3f, %5.2f%%, %7d, %s", report.totaltime, (report.totaltime / totaltime) * 100, report.callcount, report.title)
+    end
+end
 
 -- return module
 return profiler
