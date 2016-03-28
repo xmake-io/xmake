@@ -55,6 +55,30 @@ function option._translate(menu)
 
 end
 
+-- get the task menu
+function option._taskmenu(task)
+
+    -- check
+    assert(option._MENU)
+   
+    -- the current task
+    task = task or option._TASK or "main"
+
+    -- get the task menu
+    local taskmenu = option._MENU[task]
+    if type(taskmenu) == "function" then
+
+        -- load this task menu
+        taskmenu = taskmenu()
+
+        -- save this task menu
+        option._MENU[task] = taskmenu
+    end
+
+    -- get it
+    return taskmenu
+end
+
 -- init the option
 function option.init(argv, menu)
 
@@ -65,7 +89,7 @@ function option.init(argv, menu)
     option._translate(menu)
 
     -- the main menu
-    local main = menu.main
+    local main = option._taskmenu("main")
     assert(main)
 
     -- init _OPTIONS
@@ -126,7 +150,7 @@ function option.init(argv, menu)
 
             -- find this option
             local opt = nil
-            for _, o in ipairs(menu[option._TASK or "main"].options) do
+            for _, o in ipairs(option._taskmenu().options) do
 
                 -- check
                 assert(o)
@@ -208,11 +232,8 @@ function option.init(argv, menu)
             -- find the current task
             for taskname, taskinfo in pairs(main.tasks) do
 
-                -- check
-                assert(menu[taskname])
-
                 -- ok?
-                if taskname == key or menu[taskname].shortname == key then
+                if taskname == key or taskinfo.shortname == key then
                     -- save this task
                     option._TASK = taskname 
                     break 
@@ -238,7 +259,7 @@ function option.init(argv, menu)
             
             -- find a value option with name
             local opt = nil
-            for _, o in ipairs(menu[option._TASK or "main"].options) do
+            for _, o in ipairs(option._taskmenu().options) do
 
                 -- the mode
                 local mode = o[3]
@@ -298,7 +319,7 @@ function option.init(argv, menu)
     end
 
     -- init the default value
-    for _, o in ipairs(menu[option._TASK or "main"].options) do
+    for _, o in ipairs(option._taskmenu().options) do
 
         -- key=value?
         if o[3] == "kv" then
@@ -404,7 +425,7 @@ function option.defaults(task)
 
     -- get the default options for the given task
     local defaults = {}
-    for _, o in ipairs(option._MENU[task or "main"].options) do
+    for _, o in ipairs(option._taskmenu(task).options) do
 
         -- key=value?
         if o[3] == "kv" then
@@ -440,7 +461,7 @@ function option.print_menu(task)
     assert(menu)
 
     -- the task menu
-    local taskmenu = menu[task]
+    local taskmenu = option._taskmenu(task)
     assert(taskmenu)
 
     -- print title
@@ -479,7 +500,7 @@ function option.print_main()
     assert(menu)
 
     -- the main menu
-    local main = menu.main
+    local main = option._taskmenu("main")
     assert(main)
 
     -- print title
@@ -553,14 +574,10 @@ function option.print_main()
             -- print tasks
             for taskname, taskinfo in pairs(categorytask) do
 
-                -- the task menu
-                local taskmenu = taskinfo.menu
-                assert(taskmenu)
-
                 -- init the task line
                 local taskline = "    "
-                if taskmenu.shortname then
-                    taskline = taskline .. taskmenu.shortname .. ", "
+                if taskinfo.shortname then
+                    taskline = taskline .. taskinfo.shortname .. ", "
                 else
                     taskline = taskline .. "   "
                 end
@@ -574,8 +591,8 @@ function option.print_main()
                 end
 
                 -- append the task description
-                if taskmenu.description then
-                    taskline = taskline .. taskmenu.description
+                if taskinfo.description then
+                    taskline = taskline .. taskinfo.description
                 end
 
                 -- print task line
