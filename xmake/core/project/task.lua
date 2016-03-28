@@ -43,6 +43,109 @@ function task._directories()
             }
 end
 
+-- translate menu
+function task._translate_menu(menu)
+
+    -- check
+    assert(menu)
+
+    -- the interpreter
+    local interp = task._interpreter()
+    assert(interp)
+
+    -- translate options
+    local options = menu.options
+    if options then
+    
+        -- make full options 
+        local options_full = {}
+        for _, opt in ipairs(options) do
+
+            -- this option is function? translate it
+            if type(opt) == "function" then
+                
+                -- call menu script in the sandbox
+                local ok, results = sandbox.load(opt)
+                if ok then
+                    if results then
+                        for _, opt in ipairs(results) do
+                            table.insert(options_full, opt)
+                        end
+                    end
+                else
+                    -- errors
+                    os.raise("taskmenu: %s", results)
+                end
+            else
+                table.insert(options_full, opt)
+            end
+        end
+
+        -- update the options
+        options = options_full
+        menu.options = options_full
+
+        -- filter options
+        if interp:filter() then
+
+            -- filter option
+            for _, opt in ipairs(options) do
+
+                -- filter default
+                local default = opt[4]
+                if type(default) == "string" then
+                    opt[4] = interp:filter():handle(default)
+                end
+
+                -- filter description
+                for i = 5, 64 do
+
+                    -- the description, @note some option may be nil
+                    local description = opt[i]
+                    if not description then break end
+
+                    -- the description is string?
+                    if type(description) == "string" then
+                        opt[i] = interp:filter():handle(description)
+
+                    -- the description is function? wrap it for calling it in the sandbox
+                    elseif type(description) == "function" then
+                        opt[i] = function ()
+
+                            -- call it in the sandbox
+                            local ok, results = sandbox.load(description)
+                            if not ok then
+                                -- errors
+                                os.raise("taskmenu: %s", results)
+                            end
+
+                            -- ok
+                            return results
+                        end
+                    end
+                end
+            end
+        end
+
+        -- add common options
+        table.insert(options, 1, {'v', "verbose",    "k",  nil, "Print lots of verbose information." })
+        table.insert(options, 2, {nil, "version",    "k",  nil, "Print the version number and exit." })
+        table.insert(options, 3, {'h', "help",       "k",  nil, "Print this help message and exit."  })
+        table.insert(options, 4, {})
+        table.insert(options, 5, {'f', "file",       "kv", nil, "Read a given xmake.lua file."       })
+        table.insert(options, 6, {'P', "project",    "kv", nil, "Change to the given project directory."
+                                                              , "Search priority:"
+                                                              , "    1. The Given Command Argument"
+                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                              , "    3. The Current Directory"       })
+        table.insert(options, 7, {})
+
+    end
+
+    -- ok
+    return menu
+end
+
 -- the interpreter
 function task._interpreter()
 
@@ -323,10 +426,6 @@ function task.menu()
     local tasks = task.tasks()
     assert(tasks)
 
-    -- the interpreter
-    local interp = task._interpreter()
-    assert(interp)
-
     -- make menu
     local menu = {}
     for taskname, taskinfo in pairs(tasks) do
@@ -334,117 +433,40 @@ function task.menu()
         -- has menu?
         if taskinfo.menu then
 
-            -- translate options
-            local options = taskinfo.menu.options
-            if options then
-            
-                -- make full options 
-                local options_full = {}
-                for _, opt in ipairs(options) do
-
-                    -- this option is function? translate it
-                    if type(opt) == "function" then
-                        
-                        -- call menu script in the sandbox
-                        local ok, results = sandbox.load(opt)
-                        if ok then
-                            if results then
-                                for _, opt in ipairs(results) do
-                                    table.insert(options_full, opt)
-                                end
-                            end
-                        else
-                            -- errors
-                            os.raise("taskmenu: %s", results)
-                        end
-                    else
-                        table.insert(options_full, opt)
-                    end
-                end
-
-                -- update the options
-                options = options_full
-                taskinfo.menu.options = options_full
-
-                -- filter options
-                if interp:filter() then
-
-                    -- filter option
-                    for _, opt in ipairs(options) do
-
-                        -- filter default
-                        local default = opt[4]
-                        if type(default) == "string" then
-                            opt[4] = interp:filter():handle(default)
-                        end
-
-                        -- filter description
-                        for i = 5, 64 do
-
-                            -- the description, @note some option may be nil
-                            local description = opt[i]
-                            if not description then break end
-
-                            -- the description is string?
-                            if type(description) == "string" then
-                                opt[i] = interp:filter():handle(description)
-
-                            -- the description is function? wrap it for calling it in the sandbox
-                            elseif type(description) == "function" then
-                                opt[i] = function ()
- 
-                                    -- call it in the sandbox
-                                    local ok, results = sandbox.load(description)
-                                    if not ok then
-                                        -- errors
-                                        os.raise("taskmenu: %s", results)
-                                    end
-
-                                    -- ok
-                                    return results
-                                end
-                            end
-                        end
-                    end
-                end
-
-                -- add common options
-                table.insert(options, 1, {'v', "verbose",    "k",  nil, "Print lots of verbose information." })
-                table.insert(options, 2, {nil, "version",    "k",  nil, "Print the version number and exit." })
-                table.insert(options, 3, {'h', "help",       "k",  nil, "Print this help message and exit."  })
-                table.insert(options, 4, {})
-                table.insert(options, 5, {'f', "file",       "kv", nil, "Read a given xmake.lua file."       })
-                table.insert(options, 6, {'P', "project",    "kv", nil, "Change to the given project directory."
-                                                                      , "Search priority:"
-                                                                      , "    1. The Given Command Argument"
-                                                                      , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                                      , "    3. The Current Directory"       })
-                table.insert(options, 7, {})
-
-            end
-
             -- main?
             if taskinfo.category == "main" then
-                menu.main = taskinfo.menu
+
+                -- delay to load main menu
+                menu.main = function ()
+
+                    -- translate main menu
+                    local mainmenu = task._translate_menu(taskinfo.menu)
+
+                    -- make tasks for the main menu
+                    mainmenu.tasks = {}
+                    for name, info in pairs(tasks) do
+
+                        -- has menu?
+                        if info.menu then
+
+                            -- add task
+                            mainmenu.tasks[name] = 
+                            {
+                                category    = info.category
+                            ,   shortname   = info.menu.shortname
+                            ,   description = info.menu.description
+                            }
+                        end
+                    end
+
+                    -- ok
+                    return mainmenu
+                end
             end
-                
-            -- add menu
-            menu[taskname] = taskinfo.menu
-        end
-    end
 
-    -- add tasks to the main menu
-    if menu.main then
-
-        -- make tasks for the main menu
-        menu.main.tasks = menu.main.tasks or {}
-        for taskname, taskinfo in pairs(tasks) do
-
-            -- has menu?
-            if taskinfo.menu then
-
-                -- add task
-                menu.main.tasks[taskname] = taskinfo
+            -- delay to load task menu
+            menu[taskname] = function ()
+                return task._translate_menu(taskinfo.menu)
             end
         end
     end

@@ -175,7 +175,7 @@ function compiler._addflags_from_platform(self, flags, flagnames)
     end
 end
 
-
+-- TODO optimize speed, cache it
 -- add flags from the target 
 function compiler._addflags_from_target(self, flags, flagnames, target)
 
@@ -188,37 +188,37 @@ function compiler._addflags_from_target(self, flags, flagnames, target)
     end
 
     -- add the symbols flags from the current project
-    table.join2(flags, compiler._getflags(self, target:get("symbols"), {      debug       = "-g"
-                                                                            ,   hidden      = "-fvisibility=hidden"
-                                                                            }))
+    table.join2(flags, compiler._getflags(self, target:get("symbols"), {    debug       = "-g"
+                                                                        ,   hidden      = "-fvisibility=hidden"
+                                                                        }))
 
     -- add the warning flags from the current project
-    table.join2(flags, compiler._getflags(self, target:get("warnings"),  {    none        = "-w"
-                                                                            ,   less        = "-W1"
-                                                                            ,   more        = "-W3"
-                                                                            ,   all         = "-Wall"
-                                                                            ,   error       = "-Werror"
-                                                                            }))
+    table.join2(flags, compiler._getflags(self, target:get("warnings"),  {  none        = "-w"
+                                                                        ,   less        = "-W1"
+                                                                        ,   more        = "-W3"
+                                                                        ,   all         = "-Wall"
+                                                                        ,   error       = "-Werror"
+                                                                        }))
  
     -- add the optimize flags from the current project
-    table.join2(flags, compiler._getflags(self, target:get("optimize"), {     none        = "-O0"
-                                                                            ,   fast        = "-O1"
-                                                                            ,   faster      = "-O2"
-                                                                            ,   fastest     = "-O3"
-                                                                            ,   smallest    = "-Os"
-                                                                            ,   aggressive  = "-Ofast"
-                                                                            }))
+    table.join2(flags, compiler._getflags(self, target:get("optimize"), {   none        = "-O0"
+                                                                        ,   fast        = "-O1"
+                                                                        ,   faster      = "-O2"
+                                                                        ,   fastest     = "-O3"
+                                                                        ,   smallest    = "-Os"
+                                                                        ,   aggressive  = "-Ofast"
+                                                                        }))
  
     -- add the vector extensions flags from the current project
-    table.join2(flags, compiler._getflags(self, target:get("vectorexts"), {   mmx         = "-mmmx"
-                                                                            ,   sse         = "-msse"
-                                                                            ,   sse2        = "-msse2"
-                                                                            ,   sse3        = "-msse3"
-                                                                            ,   ssse3       = "-mssse3"
-                                                                            ,   avx         = "-mavx"
-                                                                            ,   avx2        = "-mavx2"
-                                                                            ,   neon        = "-mfpu=neon"
-                                                                            }))
+    table.join2(flags, compiler._getflags(self, target:get("vectorexts"), { mmx         = "-mmmx"
+                                                                        ,   sse         = "-msse"
+                                                                        ,   sse2        = "-msse2"
+                                                                        ,   sse3        = "-msse3"
+                                                                        ,   ssse3       = "-mssse3"
+                                                                        ,   avx         = "-mavx"
+                                                                        ,   avx2        = "-mavx2"
+                                                                        ,   neon        = "-mfpu=neon"
+                                                                        }))
 
     -- add the language flags from the current project
     local languages = {}

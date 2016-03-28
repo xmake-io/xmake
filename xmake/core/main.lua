@@ -101,7 +101,7 @@ end
 function main.done()
 
     -- start profiling
-    profiler:start()
+--    profiler:start()
 
     -- init 
     main._init()
@@ -123,7 +123,7 @@ function main.done()
     end
 
     -- stop profiling
-    profiler:stop()
+--    profiler:stop()
 
     -- ok
     return 0
