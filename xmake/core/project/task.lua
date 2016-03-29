@@ -169,11 +169,10 @@ function task._interpreter()
     -- register api: set_task_menu() 
     interp:api_register_set_values("task", "task", "menu")
 
-    -- register api: on_task_run(), on_task_before(), on_task_after(), on_task_failure() 
+    -- register api: on_task_run(), on_task_before(), on_task_after()
     interp:api_register_on_script("task", "task", "run"
                                                 , "after"
-                                                , "before"
-                                                , "failure")
+                                                , "before")
 
     -- set filter
     interp:filter_set(filter.init(function (variable)
@@ -400,19 +399,6 @@ function task.run(name)
                 break
             end
         end
-    end
-
-    -- run on_failure if be failed?
-    if not ok and taskinfo.failure then
-
-        -- call it in the sandbox
-        ok, errors = sandbox.load(taskinfo.failure)
-        if not ok then
-            utils.error(errors)
-        end
-
-        -- failed
-        ok = false
     end
 
     -- ok?

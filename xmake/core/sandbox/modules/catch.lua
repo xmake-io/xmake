@@ -17,41 +17,15 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        tool.lua
+-- @file        catch.lua
 --
 
--- define module
-local sandbox_core_platform_tool = sandbox_core_platform_tool or {}
+-- catch 
+function sandbox_catch(block)
 
--- load modules
-local tool      = require("platform/tool")
-local platform  = require("platform/platform")
-local raise     = require("sandbox/modules/raise")
-
--- get the tool shell name
-function sandbox_core_platform_tool.shellname(name)
-
-    -- get it
-    return platform.tool(name)
-end
-
--- run the tool
-function sandbox_core_platform_tool.run(name, ...)
-
-    -- check
-    assert(name)
-
-    -- get the tool instance 
-    local instance, errors = tool.get(name)
-    if not instance then
-        raise(errors)
-    end
- 
-    -- run it
-    if not instance:main(...) then
-        raise("run tool: %s failed!", name)
-    end
+    -- get the catch block function
+    return {catch = block[1]}
 end
 
 -- return module
-return sandbox_core_platform_tool
+return sandbox_catch

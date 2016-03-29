@@ -20,7 +20,7 @@
 -- @file        sandbox.lua
 --
 
--- define module: sandbox
+-- define module
 local sandbox = sandbox or {}
 
 -- load modules
@@ -307,5 +307,5 @@ function sandbox.instance()
     return instance 
 end
 
--- return module: sandbox
+-- return module
 return sandbox

@@ -17,41 +17,40 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        tool.lua
+-- @file        task.lua
 --
 
 -- define module
-local sandbox_core_platform_tool = sandbox_core_platform_tool or {}
+local sandbox_core_project_task = sandbox_core_project_task or {}
 
 -- load modules
-local tool      = require("platform/tool")
-local platform  = require("platform/platform")
+local os        = require("base/os")
+local io        = require("base/io")
+local string    = require("base/string")
+local task      = require("project/task")
 local raise     = require("sandbox/modules/raise")
 
--- get the tool shell name
-function sandbox_core_platform_tool.shellname(name)
+-- run the given task
+function sandbox_core_project_task.run(taskname, args)
 
-    -- get it
-    return platform.tool(name)
-end
-
--- run the tool
-function sandbox_core_platform_tool.run(name, ...)
-
-    -- check
-    assert(name)
-
-    -- get the tool instance 
-    local instance, errors = tool.get(name)
-    if not instance then
-        raise(errors)
+    -- make command
+    local cmd = "xmake " .. (taskname or "")
+    for name, value in pairs(args) do
+        cmd = string.format("%s --%s=%s", cmd, name, tostring(value))
     end
- 
-    -- run it
-    if not instance:main(...) then
-        raise("run tool: %s failed!", name)
+
+    -- make temporary log file
+    log = os.tmpname()
+
+    -- run command
+    if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
+        io.cat(log)
+        os.raise("run: %s failed!", taskname or cmd)
     end
+
+    -- remove the temporary log file
+    os.rm(log)
 end
 
 -- return module
-return sandbox_core_platform_tool
+return sandbox_core_project_task
