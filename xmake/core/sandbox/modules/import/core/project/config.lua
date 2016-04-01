@@ -63,6 +63,13 @@ function sandbox_core_project_config.mode()
     return config.get("mode")
 end
 
+-- get the current host
+function sandbox_core_project_config.host()
+
+    -- get it 
+    return config.get("host")
+end
+
 -- get the configure directory
 function sandbox_core_project_config.directory()
 
