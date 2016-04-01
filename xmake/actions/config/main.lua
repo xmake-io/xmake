@@ -34,6 +34,20 @@ function _option_filter(name)
     return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" and name ~= "clean"
 end
 
+-- need clean the cached configure?
+function _need_clean_cache()
+
+    -- the host has been changed? clean it
+    if config.host() ~= vformat("$(host)") then
+        return true
+    end
+
+    -- the plat has been changed? clean it
+    if option.get("plat") and config.plat() and option.get("plat") ~= config.plat() then
+        return true
+    end
+end
+
 -- main
 function main()
 
@@ -52,7 +66,7 @@ function main()
     config.load(targetname)
 
     -- clean the cached configure?
-    if option.get("clean") then
+    if option.get("clean") or _need_clean_cache() then
         
         -- clean it
         config.clean()
