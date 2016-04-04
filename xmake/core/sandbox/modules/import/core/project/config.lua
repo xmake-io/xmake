@@ -106,20 +106,10 @@ function sandbox_core_project_config.load(targetname)
 end
 
 -- save the configure
-function sandbox_core_project_config.save()
+function sandbox_core_project_config.save(targetname)
 
     -- save it
-    local ok, errors = config.save()
-    if not ok then
-        raise(errors)
-    end
-end
-
--- clean the configure
-function sandbox_core_project_config.clean()
-
-    -- clean it
-    local ok, errors = config.clean()
+    local ok, errors = config.save(targetname)
     if not ok then
         raise(errors)
     end

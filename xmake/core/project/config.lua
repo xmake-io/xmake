@@ -27,6 +27,7 @@ local config = config or {}
 local io            = require("base/io")
 local os            = require("base/os")
 local path          = require("base/path")
+local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local global        = require("project/global")
@@ -38,49 +39,16 @@ function config._file()
     return path.join(config.directory(), "/xmake.conf")
 end
 
--- get the target scope
-function config._target()
- 
-    -- check
-    local configs = config._CONFIGS
-    if not configs then
-        return 
-    end
-  
-    -- the target name
-    local targetname = config._TARGETNAME
-    assert(targetname)
-
-    -- for all targets?
-    if targetname == "all" then
-        return configs
-    elseif configs._TARGETS then
-        -- get it
-        return configs._TARGETS[targetname]
-    end
-end
-
 -- get the current given configure
 function config.get(name)
 
-    -- get the target
-    local target = config._target()
-    if not target then
-        return 
-    end
+    -- get configs
+    local configs = config._CONFIGS or {}
 
-    -- the value
-    local value = target[name]
+    -- get it 
+    local value = configs[name]
     if type(value) == "string" and value == "auto" then
         value = nil
-    end
-
-    -- get it from the root scope if not found
-    if value == nil then
-        value = config._CONFIGS[name]
-        if type(value) == "string" and value == "auto" then
-            value = nil
-        end
     end
 
     -- get it
@@ -93,12 +61,12 @@ function config.set(name, value)
     -- check
     assert(name)
 
-    -- get the current target
-    local target = config._target()
-    assert(target)
+    -- get configs
+    local configs = config._CONFIGS or {}
+    config._CONFIGS = configs
 
     -- set it 
-    target[name] = value
+    configs[name] = value
 end
 
 -- get all options
@@ -119,27 +87,6 @@ function config.options()
     return configs
 end
 
--- clean the project configure 
-function config.clean()
-
-    -- check
-    assert(config._CONFIGS)
-
-    -- clean it
-    config._CONFIGS = {}
-
-    -- save it
-    if os.isfile(config._file()) then
-        local ok, errors = os.rm(config._file())
-        if not ok then
-            return false, errors
-        end
-    end
-
-    -- ok
-    return true
-end
-
 -- get the configure directory
 function config.directory()
 
@@ -158,47 +105,68 @@ function config.load(targetname)
     local filepath = config._file()
     if os.isfile(filepath) then
 
-        -- load configs
-        local configs, errors = io.load(filepath)
+        -- load it 
+        local results, errors = io.load(filepath)
 
         -- error?
-        if not configs and errors then
+        if not results and errors then
             utils.error(errors)
         end
 
-        -- save configs
-        config._CONFIGS = configs
+        -- merge the target configure first
+        if targetname ~= "all" and results._TARGETS then
+            for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
+                if config.get(name) == nil then
+                    config.set(name, value)
+                end
+            end
+        end
+
+        -- merge the root configure 
+        for name, value in pairs(results) do
+            if config.get(name) == nil then
+                config.set(name, value)
+            end
+        end
     end
-
-    -- init configs
-    config._CONFIGS = config._CONFIGS or {}
-    local configs = config._CONFIGS
-
-    -- init targets
-    configs._TARGETS = configs._TARGETS or {}
-    if targetname ~= "all" then
-        configs._TARGETS[targetname] = configs._TARGETS[targetname] or {}
-    end
-
-    -- save the target name
-    config._TARGETNAME = targetname
 
     -- ok
     return true
 end
 
 -- save the project configure
-function config.save()
+function config.save(targetname)
 
-    -- the options
-    local options = config.options()
-    assert(options)
+    -- get the target name
+    targetname = targetname or "all"
+
+    -- load configure from the file first
+    local results = {}
+    local filepath = config._file()
+    if os.isfile(filepath) then
+        results = io.load(filepath)
+    end
 
     -- add version
-    options.__version = xmake._VERSION
+    results.__version = xmake._VERSION
+
+    -- update options for the given target
+    local target = results
+    if targetname ~= "all" then
+        
+        -- get target
+        target = results._TARGETS or {}
+        results._TARGETS = target
+
+    end
+
+    -- update it
+    for name, value in pairs(config.options()) do
+        target[name] = value
+    end
 
     -- save it
-    return io.save(config._file(), options) 
+    return io.save(config._file(), results) 
 end
 
 -- dump the configure
