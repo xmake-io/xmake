@@ -504,32 +504,23 @@ function project.probe()
     -- make all options
     for name, opt in pairs(options) do
 
-        -- this option need be probed automatically?
-        if config.get(name) == nil then
+        -- check option
+        if opt:check(cfile, cxxfile, objectfile, targetfile) then
 
-            -- check option
-            if opt:check(cfile, cxxfile, objectfile, targetfile) then
-
-                -- enable this option
-                config.set(name, true)
-
-                -- save this option to configure 
-                opt:save()
-
-            else
-
-                -- disable this option
-                config.set(name, false)
-
-                -- clear this option to configure 
-                opt:clear()
-
-            end
-
-        elseif nil == option.load(name) then
+            -- enable this option
+            config.set(name, true)
 
             -- save this option to configure 
             opt:save()
+
+        else
+
+            -- disable this option
+            config.set(name, false)
+
+            -- clear this option to configure 
+            opt:clear()
+
         end
     end
 

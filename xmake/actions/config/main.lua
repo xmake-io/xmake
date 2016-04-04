@@ -34,20 +34,6 @@ function _option_filter(name)
     return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" and name ~= "clean"
 end
 
--- need clean the cached configure?
-function _need_clean_cache()
-
-    -- the host has been changed? clean it
-    if config.host() ~= vformat("$(host)") then
-        return true
-    end
-
-    -- the plat has been changed? clean it
-    if option.get("plat") and config.plat() and option.get("plat") ~= config.plat() then
-        return true
-    end
-end
-
 -- main
 function main()
 
@@ -62,17 +48,10 @@ function main()
     -- load global configure
     global.load()
 
-    -- load project configure
-    config.load(targetname)
-
-    -- clean the cached configure?
-    if option.get("clean") or _need_clean_cache() then
-        
-        -- clean it
-        config.clean()
-    end
-
-    -- override the configure for the current options
+    -- override the option configure
+    --
+    -- priority: option > global > option_default > config_check > config_cache
+    --
     for name, value in pairs(option.options()) do
         if _option_filter(name) then
             config.set(name, value)
@@ -93,8 +72,13 @@ function main()
         end
     end
 
-    -- probe the configure with value: "auto"
+    -- merge the checked configure 
     config.probe()
+
+    -- merge the cached configure
+    if not option.get("clean") then
+        config.load(targetname)
+    end
 
     -- load platform
     platform.load(config.plat())
@@ -122,7 +106,7 @@ function main()
     end
 
     -- save the project configure
-    config.save()
+    config.save(targetname)
 
     -- make the config.h
     config_h.make()

@@ -59,7 +59,6 @@ function sandbox_core_project_task.run(taskname, options, ...)
 
     -- run command
     if 0 ~= os.execute(cmd) then
-        io.cat(log)
         os.raise("run task: %s failed!", taskname or cmd)
     end
 end
@@ -90,7 +89,7 @@ function sandbox_core_project_task.qrun(taskname, options, ...)
     end
 
     -- make temporary log file
-    log = os.tmpname()
+    local log = os.tmpname()
 
     -- run command
     if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then

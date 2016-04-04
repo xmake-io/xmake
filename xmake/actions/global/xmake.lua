@@ -34,6 +34,9 @@ task("global")
         import("core.project.global")
 
         -- load configure
+        --
+        -- priority: option > config_check > global_cache > option_default
+        --
         global.load()
 
         -- clean the cached configure?
@@ -43,13 +46,6 @@ task("global")
             global.clean()
         end
 
-        -- override the configure for the current options
-        for name, value in pairs(option.options()) do
-            if name ~= "verbose" and name ~= "clean" then
-                global.set(name, value)
-            end
-        end
-
         -- merge the default options 
         for name, value in pairs(option.defaults()) do
             if name ~= "verbose" and name ~= "clean" and global.get(name) == nil then
@@ -57,9 +53,16 @@ task("global")
             end
         end
 
-        -- probe the configure with value: "auto"
+        -- override the checked configure 
         global.probe()
        
+        -- override the option configure 
+        for name, value in pairs(option.options()) do
+            if name ~= "verbose" and name ~= "clean" then
+                global.set(name, value)
+            end
+        end
+
         -- save it
         global.save()
 
