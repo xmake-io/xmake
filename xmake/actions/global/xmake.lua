@@ -27,52 +27,7 @@ task("global")
     set_task_category("action")
 
     -- on run
-    on_task_run(function ()
-
-        -- imports
-        import("core.base.option")
-        import("core.project.global")
-
-        -- load configure
-        --
-        -- priority: option > config_check > global_cache > option_default
-        --
-        global.load()
-
-        -- clean the cached configure?
-        if option.get("clean") then
-            
-            -- clean it
-            global.clean()
-        end
-
-        -- merge the default options 
-        for name, value in pairs(option.defaults()) do
-            if name ~= "verbose" and name ~= "clean" and global.get(name) == nil then
-                global.set(name, value)
-            end
-        end
-
-        -- override the checked configure 
-        global.probe()
-       
-        -- override the option configure 
-        for name, value in pairs(option.options()) do
-            if name ~= "verbose" and name ~= "clean" then
-                global.set(name, value)
-            end
-        end
-
-        -- save it
-        global.save()
-
-        -- dump it
-        global.dump()
-
-        -- trace
-        print("configure ok!")
-        
-    end)
+    on_task_run("main")
 
     -- set menu
     set_task_menu({
