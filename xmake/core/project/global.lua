@@ -34,17 +34,17 @@ local option        = require("base/option")
 function global._file()
     
     -- get it
-    return path.join(global.directory(), "/xmake.conf")
+    return path.join(global.directory(), "xmake.conf")
 end
 
 -- get the current given configure from  
 function global.get(name)
 
-    -- check
-    assert(name and global._CONFIGS)
+    -- get configs
+    local configs = global._CONFIGS or {}
 
     -- the value
-    local value = global._CONFIGS[name]
+    local value = configs[name]
     if type(value) == "string" and value == "auto" then
         value = nil
     end
@@ -56,33 +56,13 @@ end
 -- set the current given configure  
 function global.set(name, value)
 
-    -- check
-    assert(global._CONFIGS and name)
+    -- get configs
+    local configs = global._CONFIGS or {}
+    global._CONFIGS = configs
 
     -- set it 
-    global._CONFIGS[name] = value
+    configs[name] = value
 
-end
-
--- clean the global configure 
-function global.clean()
-
-    -- check
-    assert(global._CONFIGS)
-
-    -- clean it
-    global._CONFIGS = {}
-
-    -- save it
-    if os.isfile(global._file()) then
-        local ok, errors = os.rm(global._file())
-        if not ok then
-            return false, errors
-        end
-    end
-
-    -- ok
-    return true
 end
 
 -- get all options
@@ -118,19 +98,20 @@ function global.load()
     if os.isfile(filepath) then
 
         -- load configs
-        local configs, errors = io.load(filepath)
+        local results, errors = io.load(filepath)
 
         -- error?
-        if not configs and errors then
+        if not results and errors then
             utils.error(errors)
         end
 
-        -- save configs
-        global._CONFIGS = configs
+        -- merge the configure 
+        for name, value in pairs(results) do
+            if global.get(name) == nil then
+                global.set(name, value)
+            end
+        end
     end
-
-    -- init configs
-    global._CONFIGS = global._CONFIGS or {}
 
     -- ok
     return true

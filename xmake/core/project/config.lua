@@ -36,7 +36,7 @@ local global        = require("project/global")
 function config._file()
     
     -- get it
-    return path.join(config.directory(), "/xmake.conf")
+    return path.join(config.directory(), "xmake.conf")
 end
 
 -- get the current given configure

@@ -48,6 +48,7 @@ function sandbox_core_project_task.run(taskname, options, ...)
         end
     end
 
+    -- FIXME --verbose no value
     -- make command
     local cmd = "xmake " .. (taskname or "")
     for name, value in pairs(options) do
