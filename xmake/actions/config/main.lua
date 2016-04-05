@@ -105,6 +105,9 @@ function main()
         raise("unknown target: %s", targetname)
     end
 
+    -- need rebuild it
+    config.set("__rebuild", true)
+
     -- save the project configure
     config.save(targetname)
 

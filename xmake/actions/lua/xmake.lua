@@ -38,9 +38,6 @@ task("lua")
         -- do not load config if be not given -f or -P options
         if option.get("file") or option.get("project") then
 
-            -- load global configure
-            global.load()
-
             -- load project configure
             config.load()
 
