@@ -165,18 +165,6 @@ function sandbox_os.run(cmd, ...)
     -- make command
     cmd = vformat(cmd, ...)
 
-    -- run command
-    if 0 ~= os.execute(cmd) then
-        os.raise("run: %s failed!", cmd)
-    end
-end
-
--- quietly run shell
-function sandbox_os.qrun(cmd, ...)
-
-    -- make command
-    cmd = vformat(cmd, ...)
-
     -- make temporary log file
     local log = os.tmpname()
 

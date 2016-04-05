@@ -52,7 +52,7 @@ function main._help()
     if option.get("help") then
     
         -- print menu
-        option.print_menu(option.task())
+        option.show_menu(option.taskname())
 
         -- ok
         return true
@@ -117,8 +117,9 @@ function main.done()
     end
 
     -- run task    
-    local ok = task.run(option.task() or "build")
+    local ok, errors = task.run(option.taskname() or "build")
     if not ok then
+        utils.error(errors)
         return -1
     end
 
