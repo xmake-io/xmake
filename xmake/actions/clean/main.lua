@@ -134,9 +134,6 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- load global configure
-    global.load()
-
     -- load project configure
     config.load(targetname)
 

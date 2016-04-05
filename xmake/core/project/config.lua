@@ -151,16 +151,28 @@ function config.save(targetname)
     results.__version = xmake._VERSION
 
     -- update options for the given target
-    local target = results
+    local target = nil
     if targetname ~= "all" then
         
-        -- get target
-        target = results._TARGETS or {}
-        results._TARGETS = target
+        -- the targets
+        local targets = results._TARGETS or {}
+        results._TARGETS = targets
+
+        -- clear target and get it
+        targets[targetname] = {}
+        target = targets[targetname]
+    else
+
+        -- the targets
+        local targets = results._TARGETS
+
+        -- clear the root target and get it
+        results = {_TARGETS = targets}
+        target = results
 
     end
 
-    -- update it
+    -- update target
     for name, value in pairs(config.options()) do
         target[name] = value
     end
