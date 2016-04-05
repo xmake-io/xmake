@@ -33,10 +33,7 @@ local task      = require("project/task")
 local raise     = require("sandbox/modules/raise")
 
 -- run the given task
-function sandbox_core_project_task.run(taskname, options, ...)
-
-    -- init values
-    local values = table.wrap(...)
+function sandbox_core_project_task.run(taskname, options)
 
     -- init options
     options = table.wrap(options)
@@ -48,58 +45,22 @@ function sandbox_core_project_task.run(taskname, options, ...)
         end
     end
 
-    -- FIXME --verbose no value
-    -- make command
-    local cmd = "xmake " .. (taskname or "")
+    -- save the current option and push a new option context
+    option.save(taskname)
+
+    -- init the new options
     for name, value in pairs(options) do
-        cmd = string.format("%s --%s=%s", cmd, name, tostring(value))
-    end
-    for _, value in pairs(values) do
-        cmd = string.format("%s %s", cmd, value)
+        option.set(name, value)
     end
 
-    -- run command
-    if 0 ~= os.execute(cmd) then
-        os.raise("run task: %s failed!", taskname or cmd)
-    end
-end
-
--- quietly run the given task
-function sandbox_core_project_task.qrun(taskname, options, ...)
-
-    -- init values
-    local values = table.wrap(...)
-
-    -- init options
-    options = table.wrap(options)
-
-    -- inherit some parent options
-    for _, name in ipairs({"file", "project", "verbose"}) do
-        if not options[name] and option.get(name) then
-            options[name] = option.get(name)
-        end
+    -- run the task
+    local ok, errors = task.run(taskname)
+    if not ok then
+        raise(errors)
     end
 
-    -- make command
-    local cmd = "xmake " .. (taskname or "")
-    for name, value in pairs(options) do
-        cmd = string.format("%s --%s=%s", cmd, name, tostring(value))
-    end
-    for _, value in pairs(values) do
-        cmd = string.format("%s %s", cmd, value)
-    end
-
-    -- make temporary log file
-    local log = os.tmpname()
-
-    -- run command
-    if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
-        io.cat(log)
-        os.raise("run task: %s failed!", taskname or cmd)
-    end
-
-    -- remove the temporary log file
-    os.rm(log)
+    -- restore the previous option context
+    option.restore()
 end
 
 -- return module

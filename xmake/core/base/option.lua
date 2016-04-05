@@ -62,7 +62,7 @@ function option._taskmenu(task)
     assert(option._MENU)
    
     -- the current task
-    task = task or option._TASK or "main"
+    task = task or option.taskname() or "main"
 
     -- get the task menu
     local taskmenu = option._MENU[task]
@@ -79,6 +79,42 @@ function option._taskmenu(task)
     return taskmenu
 end
 
+-- get the top context
+function option._context()
+
+    -- the contexts
+    local contexts = option._CONTEXTS
+    assert(contexts)
+
+    -- get it
+    return contexts[#contexts]
+end
+
+-- save context
+function option.save(taskname)
+
+    -- init contexts
+    option._CONTEXTS = option._CONTEXTS or {}
+
+    -- new a context
+    local context = {options = {}, defaults = {}, taskname = taskname}
+
+    -- push this new context to the top stack
+    table.insert(option._CONTEXTS, context)
+
+    -- ok
+    return context
+end
+
+-- restore context
+function option.restore()
+
+    -- pop it
+    if option._CONTEXTS then
+        table.remove(option._CONTEXTS)
+    end
+end
+
 -- init the option
 function option.init(argv, menu)
 
@@ -92,11 +128,11 @@ function option.init(argv, menu)
     local main = option._taskmenu("main")
     assert(main)
 
-    -- init _OPTIONS
-    option._OPTIONS = {}
-    option._DEFAULTS = {}
+    -- new top context
+    local context = option.save()
+    assert(context)
 
-    -- parse _ARGV to _OPTIONS
+    -- parse _ARGV 
     local _iter, _s, _k = ipairs(argv)
     while true do
 
@@ -139,7 +175,7 @@ function option.init(argv, menu)
             print("invalid option: " .. arg)
 
             -- print menu
-            option.print_menu(option._TASK)
+            option.show_menu(context.taskname)
 
             -- failed
             return false
@@ -173,7 +209,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
 
                 -- print menu
-                option.print_menu(option._TASK)
+                option.show_menu(context.taskname)
 
                 -- failed
                 return false
@@ -193,7 +229,7 @@ function option.init(argv, menu)
                     print("invalid option: " .. option._ifelse(idx, arg, key))
 
                     -- print menu
-                    option.print_menu(option._TASK)
+                    option.show_menu(context.taskname)
 
                     -- failed
                     return false
@@ -210,7 +246,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(option._TASK)
+                option.show_menu(context.taskname)
 
                 -- failed
                 return false
@@ -224,7 +260,7 @@ function option.init(argv, menu)
             end
 
             -- save option
-            option._OPTIONS[option._ifelse(prefix == 1 and opt[2], opt[2], key)] = value
+            context.options[option._ifelse(prefix == 1 and opt[2], opt[2], key)] = value
 
         -- task?
         elseif idx == 1 then
@@ -235,19 +271,19 @@ function option.init(argv, menu)
                 -- ok?
                 if taskname == key or taskinfo.shortname == key then
                     -- save this task
-                    option._TASK = taskname 
+                    context.taskname = taskname 
                     break 
                 end
             end
 
             -- not found?
-            if not option._TASK or not menu[option._TASK] then
+            if not context.taskname or not menu[context.taskname] then
 
                 -- invalid task
                 print("invalid task: " .. key)
 
                 -- print the main menu
-                option.print_main()
+                option.show_main()
 
                 -- failed
                 return false
@@ -271,7 +307,7 @@ function option.init(argv, menu)
                 assert(o and ((mode ~= "v" and mode ~= "vs") or name))
 
                 -- is value and with name?
-                if mode == "v" and name and not option._OPTIONS[name] then
+                if mode == "v" and name and not context.options[name] then
                     opt = o
                     break 
                 -- is values and with name?
@@ -292,13 +328,13 @@ function option.init(argv, menu)
 
                 -- save value
                 if mode == "v" then
-                    option._OPTIONS[name] = key
+                    context.options[name] = key
                 elseif mode == "vs" then
                     -- the option
-                    local o = option._OPTIONS[name]
+                    local o = context.options[name]
                     if not o then
-                        option._OPTIONS[name] = {}
-                        o = option._OPTIONS[name]
+                        context.options[name] = {}
+                        o = context.options[name]
                     end
 
                     -- append value
@@ -309,7 +345,7 @@ function option.init(argv, menu)
                 print("invalid option: " .. arg)
             
                 -- print menu
-                option.print_menu(option._TASK)
+                option.show_menu(context.taskname)
 
                 -- failed
                 return false
@@ -329,11 +365,11 @@ function option.init(argv, menu)
             assert(key)
 
             -- save the default value 
-            option._DEFAULTS[key] = o[4]    
+            context.defaults[key] = o[4]    
         -- value with name?
         elseif o[3] == "v" and o[2] then
             -- save the default value 
-            option._DEFAULTS[o[2]] = o[4]    
+            context.defaults[o[2]] = o[4]    
         end
     end
 
@@ -373,11 +409,11 @@ function option.find(argv, name, shortname)
     end
 end
 
--- get the current task
-function option.task()
+-- get the current task name
+function option.taskname()
 
     -- get it
-    return option._TASK
+    return option._context().taskname
 end
 
 -- get the given option value for the current task
@@ -392,6 +428,23 @@ function option.get(name)
 
     -- get it
     return options[name] or option.default(name)
+end
+
+-- set the given option for the current task
+function option.set(name, value)
+
+    -- check
+    assert(name)
+
+    -- cannot be the first context for menu
+    assert(#option._CONTEXTS > 1)
+
+    -- the options
+    local options = option.options()
+    assert(options)
+
+    -- set it
+    options[name] = value
 end
 
 -- get the given default option value for the current task
@@ -412,7 +465,7 @@ end
 function option.options()
 
     -- get it
-    return option._OPTIONS
+    return option._context().options
 end
 
 -- get all default options for the current or given task
@@ -420,7 +473,7 @@ function option.defaults(task)
 
     -- get the default options for the current task
     if task == nil then
-        return option._DEFAULTS
+        return option._context().defaults
     end
 
     -- get the default options for the given task
@@ -447,12 +500,12 @@ function option.defaults(task)
     return defaults
 end
 
--- print the menu 
-function option.print_menu(task)
+-- show the menu 
+function option.show_menu(task)
 
     -- no task? print main menu
     if not task then 
-        option.print_main()
+        option.show_main()
         return 
     end
 
@@ -488,12 +541,12 @@ function option.print_menu(task)
 
     -- print options
     if taskmenu.options then
-        option.print_options(taskmenu.options)
+        option.show_options(taskmenu.options)
     end
 end  
 
--- print the main menu
-function option.print_main()
+-- show the main menu
+function option.show_main()
 
     -- the menu
     local menu = option._MENU
@@ -603,12 +656,12 @@ function option.print_main()
 
     -- print options
     if main.options then
-        option.print_options(main.options)
+        option.show_options(main.options)
     end
 end  
 
--- print the options menu 
-function option.print_options(options)
+-- show the options menu 
+function option.show_options(options)
 
     -- check
     assert(options)

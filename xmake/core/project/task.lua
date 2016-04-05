@@ -373,18 +373,15 @@ function task.run(name)
     -- get the task info
     local taskinfo = tasks[name]
     if not taskinfo then
-        utils.error("task(\"%s\"): unknown task", name)
-        return false
+        return false, string.format("task(\"%s\"): unknown task", name)
     end
 
     -- check
     if not taskinfo.run then
-        utils.error("task(\"%s\"): no run script, please call on_task_run() first!", name)
-        return false
+        return false, string.format("task(\"%s\"): no run script, please call on_task_run() first!", name)
     end
 
     -- run on_before, on_run, on_after
-    local ok = true
     local on_scripts = {taskinfo.before, taskinfo.run, taskinfo.after}
     for i = 1, 3 do
 
@@ -393,16 +390,15 @@ function task.run(name)
         if on_script then
 
             -- call it in the sandbox
-            ok, errors = sandbox.load(on_script)
+            local ok, errors = sandbox.load(on_script)
             if not ok then
-                utils.error(errors)
-                break
+                return false, errors
             end
         end
     end
 
-    -- ok?
-    return ok
+    -- ok
+    return true
 end
 
 -- the menu
