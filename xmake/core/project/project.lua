@@ -646,6 +646,17 @@ function project.options(enable_filter)
 
 end
 
+-- get the mtimes
+function project.mtimes()
+
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- get it
+    return interp:mtimes()
+end
+
 -- get the project menu
 function project.menu()
 
