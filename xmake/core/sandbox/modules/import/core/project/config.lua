@@ -70,6 +70,13 @@ function sandbox_core_project_config.host()
     return config.get("host")
 end
 
+-- host has been changed?
+function sandbox_core_project_config.host_changed()
+
+    -- changed?
+    return config.get("host") ~= xmake._HOST
+end
+
 -- get the configure directory
 function sandbox_core_project_config.directory()
 
@@ -113,6 +120,13 @@ function sandbox_core_project_config.save(targetname)
     if not ok then
         raise(errors)
     end
+end
+
+-- init the configure
+function sandbox_core_project_config.init()
+
+    -- init it
+    config.init()
 end
 
 -- probe the configure

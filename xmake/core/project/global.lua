@@ -131,6 +131,14 @@ function global.save()
     return io.save(global._file(), options) 
 end
 
+-- init the config
+function global.init()
+
+    -- clear it
+    global._CONFIGS = {}
+
+end
+
 -- dump the configure
 function global.dump()
    

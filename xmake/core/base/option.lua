@@ -99,6 +99,11 @@ function option.save(taskname)
     -- new a context
     local context = {options = {}, defaults = {}, taskname = taskname}
 
+    -- init defaults
+    if taskname then
+        context.defaults = option.defaults(taskname) or context.defaults
+    end
+
     -- push this new context to the top stack
     table.insert(option._CONTEXTS, context)
 

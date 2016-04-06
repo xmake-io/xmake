@@ -69,6 +69,13 @@ function sandbox_core_project_global.save()
     end
 end
 
+-- init the configure
+function sandbox_core_project_global.init()
+
+    -- init it
+    global.init()
+end
+
 -- probe the configure
 function sandbox_core_project_global.probe()
 

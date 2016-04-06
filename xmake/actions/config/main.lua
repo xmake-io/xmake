@@ -48,10 +48,13 @@ function main()
     -- load global configure
     global.load()
 
-    -- override the option configure
+    -- init the project configure
     --
     -- priority: option > global > option_default > config_check > config_cache
     --
+    config.init()
+
+    -- override the option configure
     for name, value in pairs(option.options()) do
         if _option_filter(name) then
             config.set(name, value)

@@ -27,10 +27,13 @@ import("core.project.global")
 -- main
 function main()
 
-    -- override the option configure 
+    -- init the global configure
     --
     -- priority: option > option_default > config_check > global_cache 
     --
+    global.init()
+
+    -- override the option configure 
     for name, value in pairs(option.options()) do
         if name ~= "verbose" and name ~= "clean" then
             global.set(name, value)

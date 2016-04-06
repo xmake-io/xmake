@@ -94,7 +94,6 @@ function config.directory()
     return path.join(xmake._PROJECT_DIR, ".xmake")
 end
 
--- TODO: reconfig, rebuild
 -- load the project configure
 function config.load(targetname)
 
@@ -179,6 +178,14 @@ function config.save(targetname)
 
     -- save it
     return io.save(config._file(), results) 
+end
+
+-- init the config
+function config.init()
+
+    -- clear it
+    config._CONFIGS = {}
+
 end
 
 -- dump the configure
