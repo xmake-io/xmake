@@ -67,6 +67,7 @@ function config.set(name, value)
 
     -- set it 
     configs[name] = value
+
 end
 
 -- get all options

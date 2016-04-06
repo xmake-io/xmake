@@ -80,5 +80,12 @@ function sandbox_core_project_project.directory()
     return xmake._PROJECT_DIR
 end
 
+-- get the project mtimes
+function sandbox_core_project_project.mtimes()
+
+    -- get it
+    return project.mtimes()
+end
+
 -- return module
 return sandbox_core_project_project
