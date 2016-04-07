@@ -28,12 +28,12 @@ local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
-local config    = require("project/config")
+local cache     = require("project/cache")("local.option")
 local linker    = require("platform/linker")
 local compiler  = require("platform/compiler")
 
 -- check option for checking links
-function option._check_links(self, cfile, objectfile, targetfile)
+function option:_check_links(cfile, objectfile, targetfile)
 
     -- get links
     local links = self:get("links")
@@ -67,7 +67,7 @@ function option._check_links(self, cfile, objectfile, targetfile)
 end
 
 -- check option for checking cincludes
-function option._check_cincludes(self, cfile, objectfile)
+function option:_check_cincludes(cfile, objectfile)
 
     -- done
     for _, cinclude in ipairs(table.wrap(self:get("cincludes"))) do
@@ -94,7 +94,7 @@ function option._check_cincludes(self, cfile, objectfile)
 end
 
 -- check option for checking cxxincludes
-function option._check_cxxincludes(self, cxxfile, objectfile)
+function option:_check_cxxincludes(cxxfile, objectfile)
 
     -- done
     for _, cxxinclude in ipairs(table.wrap(self:get("cxxincludes"))) do
@@ -121,7 +121,7 @@ function option._check_cxxincludes(self, cxxfile, objectfile)
 end
 
 -- check option for checking cfunctions
-function option._check_cfuncs(self, cfile, objectfile, targetfile)
+function option:_check_cfuncs(cfile, objectfile, targetfile)
 
     -- done
     for _, cfunc in ipairs(table.wrap(self:get("cfuncs"))) do
@@ -144,7 +144,7 @@ function option._check_cfuncs(self, cfile, objectfile, targetfile)
 end
 
 -- check option for checking cxxfunctions
-function option._check_cxxfuncs(self, cxxfile, objectfile, targetfile)
+function option:_check_cxxfuncs(cxxfile, objectfile, targetfile)
 
     -- done
     for _, cxxfunc in ipairs(table.wrap(self:get("cxxfuncs"))) do
@@ -167,7 +167,7 @@ function option._check_cxxfuncs(self, cxxfile, objectfile, targetfile)
 end
 
 -- check option for checking ctypes
-function option._check_ctypes(self, cfile, objectfile, targetfile)
+function option:_check_ctypes(cfile, objectfile, targetfile)
 
     -- done
     for _, ctype in ipairs(table.wrap(self:get("ctypes"))) do
@@ -187,7 +187,7 @@ function option._check_ctypes(self, cfile, objectfile, targetfile)
 end
 
 -- check option for checking cxxtypes
-function option._check_cxxtypes(self, cxxfile, objectfile, targetfile)
+function option:_check_cxxtypes(cxxfile, objectfile, targetfile)
 
     -- done
     for _, cxxtype in ipairs(table.wrap(self:get("cxxtypes"))) do
@@ -207,7 +207,7 @@ function option._check_cxxtypes(self, cxxfile, objectfile, targetfile)
 end
 
 -- check option 
-function option.check(self, cfile, cxxfile, objectfile, targetfile)
+function option:check(cfile, cxxfile, objectfile, targetfile)
 
     -- check links
     if not self:_check_links(cfile, objectfile, targetfile) then return false end
@@ -240,43 +240,42 @@ function option.check(self, cfile, cxxfile, objectfile, targetfile)
 end
 
 -- get the option info
-function option.get(self, infoname)
-
-    -- check
-    assert(self and self._INFO and infoname)
+function option:get(infoname)
 
     -- get it
     return self._INFO[infoname]
 end
 
--- save the option info to the project configure
-function option.save(self, is_clear)
-
-    -- check
-    assert(self)
+-- save the option info to the cache
+function option:save(is_clear)
 
     -- save it
-    config.set("__option_" .. self:name(), self._INFO)
+    cache:set(self:name(), self._INFO)
+    cache:flush()
 end
 
--- clear the option info for the project configure
-function option.clear(self)
-
-    -- check
-    assert(self)
+-- clear the option info for cache
+function option:clear()
 
     -- clear it
-    config.set("__option_" .. self:name(), nil)
+    cache:set(self:name(), nil)
 end
 
--- load the option info from the project configure
+-- get the option name
+function option:name()
+
+    -- get it
+    return self._NAME
+end
+
+-- load the option info from the cache
 function option.load(name)
 
     -- check
     assert(name)
 
     -- get info
-    local info = config.get("__option_" .. name)
+    local info = cache:get(name)
     if info == nil then
         return 
     end
@@ -289,14 +288,6 @@ function option.load(name)
     -- ok
     return instance
 end
-
--- get the option name
-function option.name(self)
-
-    -- get it
-    return self._NAME
-end
-
 
 -- return module
 return option
