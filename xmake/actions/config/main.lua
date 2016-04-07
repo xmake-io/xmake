@@ -22,6 +22,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.cache")
 import("core.project.config")
 import("core.project.global")
 import("core.project.project")
@@ -109,7 +110,8 @@ function main()
     end
 
     -- need rebuild it
-    config.set("__rebuild", true)
+    cache("local.build"):set("rebuild", true)
+    cache("local.build"):flush()
 
     -- save the project configure
     config.save(targetname)
