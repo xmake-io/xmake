@@ -22,11 +22,11 @@
 
 -- imports
 import("core.base.option")
-import("core.project.cache")
 import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
+import("core.project.cache", {instance = "local.build"})
 import("config_h")
 import("makefile")
 
@@ -110,8 +110,8 @@ function main()
     end
 
     -- need rebuild it
-    cache("local.build"):set("rebuild", true)
-    cache("local.build"):flush()
+    cache:set("rebuild", true)
+    cache:flush()
 
     -- save the project configure
     config.save(targetname)

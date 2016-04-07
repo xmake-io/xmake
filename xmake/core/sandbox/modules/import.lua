@@ -222,28 +222,34 @@ end
 -- import("core.platform")
 -- => platform
 -- 
--- import("core.platform", "p")
+-- import("core.platform", {alias = "p"})
 -- => p
 --
 -- import("core")
 -- => core
 -- => core.platform
 ---
--- import("core", nil, "/scripts")
+-- import("core", {rootdir = "/scripts"})
 -- => core
 -- => core.platform
 --
-function sandbox_import.import(name, alias, rootdir)
+-- import("core.project.cache", {instance = "local.build"})
+-- => cache == cache("local.build")
+--
+function sandbox_import.import(name, args)
 
     -- check
     assert(name)
+
+    -- the arguments
+    args = args or {}
 
     -- get the current sandbox instance
     local instance = sandbox.instance()
     assert(instance)
 
     -- the root directory for this sandbox script
-    local rootdir = rootdir or instance:rootdir()
+    local rootdir = args.rootdir or instance:rootdir()
     assert(rootdir)
 
     -- load module
@@ -262,6 +268,14 @@ function sandbox_import.import(name, alias, rootdir)
         raise("cannot import module: %s, %s", name, errors)
     end
 
+    -- init module instance
+    if args.instance and type(module) == "function" then
+        module = module(args.instance)
+        if not module then
+            raise("cannot construct module: %s, %s", name, errors)
+        end
+    end
+
     -- get module name
     local modulename = sandbox_import._modulename(name)
     if not modulename then
@@ -278,7 +292,7 @@ function sandbox_import.import(name, alias, rootdir)
     end
 
     -- import this module into the parent scope
-    scope_parent[alias or modulename] = module
+    scope_parent[args.alias or modulename] = module
 
     -- return it
     return module
