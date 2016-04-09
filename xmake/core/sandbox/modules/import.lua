@@ -83,7 +83,7 @@ function sandbox_import._loadfile(filepath, instance)
         -- only export new public functions
         local result = {}
         for k, v in pairs(scope_public) do
-            if type(v) == "function" and scope_backup[k] == nil then
+            if type(v) == "function" and not k:startswith("_") and scope_backup[k] == nil then
                 result[k] = v
             end
         end
@@ -233,9 +233,6 @@ end
 -- => core
 -- => core.platform
 --
--- import("core.project.cache", {instance = "local.build"})
--- => cache == cache("local.build")
---
 function sandbox_import.import(name, args)
 
     -- check
@@ -266,14 +263,6 @@ function sandbox_import.import(name, args)
     -- check
     if not module then
         raise("cannot import module: %s, %s", name, errors)
-    end
-
-    -- init module instance
-    if args.instance and type(module) == "function" then
-        module = module(args.instance)
-        if not module then
-            raise("cannot construct module: %s, %s", name, errors)
-        end
     end
 
     -- get module name

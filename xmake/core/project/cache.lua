@@ -101,10 +101,7 @@ end
 function cache:flush()
 
     -- save to file
-    local ok, errors = io.save(self._CACHEPATH, self._CACHEDATA) 
-    if not ok then
-        os.raise(errors)
-    end
+    return io.save(self._CACHEPATH, self._CACHEDATA) 
 end
 
 -- return module
