@@ -17,7 +17,9 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        gcc.lua
+-- @file        _g.lua
 --
 
+-- return new instance
+return {}
 

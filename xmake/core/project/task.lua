@@ -175,7 +175,7 @@ function task._interpreter()
                                                 , "before")
 
     -- set filter
-    interp:filter_set(filter.init(function (variable)
+    interp:filter_set(filter.new(function (variable)
 
         -- check
         assert(variable)
@@ -188,6 +188,7 @@ function task._interpreter()
             local maps = 
             {
                 host        = xmake._HOST
+            ,   nuldev      = xmake._NULDEV
             ,   tmpdir      = os.tmpdir()
             ,   curdir      = os.curdir()
             ,   globaldir   = global.directory()
@@ -239,7 +240,7 @@ function task._bind(tasks)
                     if type(opt) == "function" then
 
                         -- make sandbox instance with the given script
-                        local instance, errors = sandbox.new(opt, interp)
+                        local instance, errors = sandbox.new(opt, interp:filter(), interp:rootdir())
                         if not instance then
                             return false, errors
                         end
@@ -271,7 +272,7 @@ function task._bind(tasks)
                             if type(description) == "function" then
 
                                 -- make sandbox instance with the given script
-                                local instance, errors = sandbox.new(description, interp)
+                                local instance, errors = sandbox.new(description, interp:filter(), interp:rootdir())
                                 if not instance then
                                     return false, errors
                                 end

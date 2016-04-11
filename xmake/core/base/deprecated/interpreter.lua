@@ -122,7 +122,7 @@ function deprecated_interpreter:api_register_set_script(scope_kind, prefix, ...)
         utils.warning("please uses on_%s(), \"set_%s()\" has been deprecated!", name, name, scope)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self)
+        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
         if not instance then
             os.raise("set_%s(): %s", name, errors)
         end

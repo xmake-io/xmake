@@ -742,7 +742,7 @@ function interpreter:api_register_on_script(scope_kind, prefix, ...)
     local implementation = function (self, scope, name, script)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self)
+        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
         if not instance then
             os.raise("on_%s(): %s", name, errors)
         end

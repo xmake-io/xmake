@@ -442,7 +442,7 @@ function project._interpreter()
     interp:api_register("add_pkgs", interpreter.api_builtin_add_subdirs)
 
     -- set filter
-    interp:filter_set(filter.init(function (variable)
+    interp:filter_set(filter.new(function (variable)
 
         -- check
         assert(variable)
