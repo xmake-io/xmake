@@ -151,10 +151,10 @@ function sandbox._new()
 end
 
 -- new a sandbox instance with the given script
-function sandbox.new(script, interp)
+function sandbox.new(script, filter, rootdir)
 
     -- check
-    assert(script and interp)
+    assert(script)
 
     -- new instance 
     local self = sandbox._new()
@@ -163,10 +163,10 @@ function sandbox.new(script, interp)
     assert(self and self._PUBLIC and self._PRIVATE)
 
     -- save filter
-    self._PRIVATE._FILTER = interp:filter()
+    self._PRIVATE._FILTER = filter
 
     -- save root directory
-    self._PRIVATE._ROOTDIR = interp:rootdir()
+    self._PRIVATE._ROOTDIR = rootdir
 
     -- this script is module name? import it first
     if type(script) == "string" then
@@ -240,6 +240,41 @@ function sandbox:fork(script)
 
     -- ok?
     return instance
+end
+
+-- load script and import module 
+function sandbox:import()
+
+    -- this module has been imported?
+    if self._PRIVATE._MODULE then
+        return self._PRIVATE._MODULE
+    end
+
+    -- backup the scope variables first
+    local scope_public = getfenv(self:script())
+    local scope_backup = {}
+    table.copy2(scope_backup, scope_public)
+
+    -- load module with sandbox
+    local ok, errors = sandbox.load(self:script())
+    if not ok then
+        return nil, errors
+    end
+
+    -- only export new public functions
+    local module = {}
+    for k, v in pairs(scope_public) do
+        if type(v) == "function" and not k:startswith("_") and scope_backup[k] == nil then
+            module[k] = v
+        end
+    end
+
+    -- save module
+    self._PRIVATE._MODULE = module
+
+    -- ok
+    return module
+
 end
 
 -- get script from the given sandbox

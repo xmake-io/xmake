@@ -171,7 +171,7 @@ function template.create(language, templateid, targetname)
     assert(interp) 
 
     -- set filter
-    interp:filter_set(filter.init(function (variable)
+    interp:filter_set(filter.new(function (variable)
 
         -- init maps
         local maps = 

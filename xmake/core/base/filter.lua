@@ -29,18 +29,14 @@ local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
--- init filter
-function filter.init(handler)
+-- new filter instance
+function filter.new(handler)
 
     -- init an filter instance
-    local self = {_HANDLER = handler}
+    local self = table.inherit(filter)
 
-    -- inherit the interfaces of filter
-    for k, v in pairs(filter) do
-        if type(v) == "function" then
-            self[k] = v
-        end
-    end
+    -- save handler
+    self._HANDLER = handler
 
     -- ok
     return self

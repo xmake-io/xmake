@@ -69,27 +69,8 @@ function sandbox_import._loadfile(filepath, instance)
             return nil, errors
         end
 
-        -- backup the scope variables first
-        local scope_public = getfenv(instance:script())
-        local scope_backup = {}
-        table.copy2(scope_backup, scope_public)
-
-        -- load module with sandbox
-        local ok, errors = sandbox.load(instance:script())
-        if not ok then
-            return nil, errors
-        end
-
-        -- only export new public functions
-        local result = {}
-        for k, v in pairs(scope_public) do
-            if type(v) == "function" and not k:startswith("_") and scope_backup[k] == nil then
-                result[k] = v
-            end
-        end
-
-        -- get module
-        return result
+        -- import module
+        return instance:import()
     end
 
     -- load module without sandbox
