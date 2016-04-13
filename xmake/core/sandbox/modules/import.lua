@@ -70,7 +70,13 @@ function sandbox_import._loadfile(filepath, instance)
         end
 
         -- import module
-        return instance:import(), instance:script()
+        local result, errors = instance:import()
+        if not result then
+            return nil, errors
+        end
+        
+        -- ok
+        return result, instance:script()
     end
 
     -- load module without sandbox
