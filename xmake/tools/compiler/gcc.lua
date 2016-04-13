@@ -34,9 +34,6 @@ function init(shellname)
                 ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
                 ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
 
-    -- init shflags
-    _g.shflags = { "-shared", "-fPIC" }
-
     -- init cxflags for the kind: shared
     _g.shared         = {}
     _g.shared.cxflags = {"-fPIC"}
@@ -115,13 +112,5 @@ function check(flags)
 
     -- ok?
     return ok
-end
-
--- run the command
-function run(cmd, ...)
-
-    -- check it
-    os.run(cmd, ...)
-            
 end
 

@@ -345,7 +345,7 @@ function table.inherit2(self, clasz)
 
     -- init instance
     for k, v in pairs(clasz) do
-        if type(v) == "function" then
+        if type(v) == "function" and self[k] == nil then
             self[k] = v
         end
     end
