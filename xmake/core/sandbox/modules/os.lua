@@ -172,6 +172,16 @@ function sandbox_os.run(cmd, ...)
     end
 end
 
+-- execute shell
+function sandbox_os.execute(cmd, ...)
+
+    -- make command
+    cmd = vformat(cmd, ...)
+
+    -- run it
+    return os.execute(cmd)
+end
+
 -- match files or directories
 function sandbox_os.match(pattern, findir)
 

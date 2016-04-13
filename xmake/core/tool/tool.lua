@@ -169,14 +169,15 @@ function tool._directories(name)
     -- the kinds
     local kinds = 
     {
-        cc  = "compiler"
-    ,   cxx = "compiler"
-    ,   mm  = "compiler"
-    ,   mxx = "compiler"
-    ,   sc  = "compiler"
-    ,   ar  = "archiver"
-    ,   sh  = "linker"
-    ,   ld  = "linker"
+        cc      = "compiler"
+    ,   cxx     = "compiler"
+    ,   mm      = "compiler"
+    ,   mxx     = "compiler"
+    ,   sc      = "compiler"
+    ,   ar      = "archiver"
+    ,   sh      = "linker"
+    ,   ld      = "linker"
+    ,   make    = "other"
     }
 
     -- get kind sub-directory
