@@ -128,8 +128,10 @@ function compiler:_mapflag(flag, mapflags)
         end
     end
 
-    -- return it directly
-    return flag
+    -- check it 
+    if self:_tool():check(flag) then
+        return flag
+    end
 end
 
 -- map gcc flags to the given compiler flags
