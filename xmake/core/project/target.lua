@@ -30,7 +30,7 @@ local table     = require("base/table")
 local option    = require("project/option")
 local config    = require("project/config")
 local linker    = require("platform/linker")
-local compiler  = require("platform/compiler")
+local compiler  = require("tool/compiler")
 local platform  = require("platform/platform")
 
 -- get the filename from the given name and kind
@@ -47,7 +47,7 @@ function target.filename(name, kind)
 end
 
 -- get the target info
-function target.get(self, infoname)
+function target:get(infoname)
 
     -- check
     assert(self and self._INFO and infoname)
@@ -57,14 +57,14 @@ function target.get(self, infoname)
 end
 
 -- get the target name
-function target.name(self)
+function target:name()
 
     -- get it
     return self._NAME
 end
 
 -- get the linker 
-function target.linker(self)
+function target:linker()
 
     -- check
     assert(self)
@@ -81,13 +81,13 @@ function target.linker(self)
 end
 
 -- get the compiler with the given source file
-function target.compiler(self, srcfile)
+function target:compiler(srcfile)
 
     -- check
     assert(self and srcfile)
 
-    -- init the linker from the given kind
-    local result, errors = compiler.init(srcfile)
+    -- load the compiler 
+    local result, errors = compiler.load(srcfile)
     if not result then 
         os.raise(errors)
     end
@@ -98,7 +98,7 @@ function target.compiler(self, srcfile)
 end
 
 -- get the options 
-function target.options(self)
+function target:options()
 
     -- the options
     local options = {}
@@ -117,7 +117,7 @@ function target.options(self)
 end
 
 -- get the object file directory
-function target.objectdir(self)
+function target:objectdir()
 
     -- check
     assert(self)
@@ -135,7 +135,7 @@ function target.objectdir(self)
 end
 
 -- get the target file 
-function target.targetfile(self)
+function target:targetfile()
 
     -- check
     assert(self)
@@ -153,7 +153,7 @@ function target.targetfile(self)
 end
 
 -- get the source files 
-function target.sourcefiles(self)
+function target:sourcefiles()
 
     -- check
     assert(self)
@@ -212,7 +212,7 @@ function target.sourcefiles(self)
 end
 
 -- get the object files
-function target.objectfiles(self)
+function target:objectfiles()
 
     -- check
     assert(self)
@@ -261,7 +261,7 @@ function target.objectfiles(self)
 end
 
 -- get the header files
-function target.headerfiles(self)
+function target:headerfiles()
 
     -- check
     assert(self)

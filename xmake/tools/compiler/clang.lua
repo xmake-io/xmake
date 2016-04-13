@@ -17,14 +17,14 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        gcc.lua
+-- @file        clang.lua
 --
 
 -- init it
 function init(shellname)
     
     -- save the shell name
-    _g.shellname = shellname or "gcc"
+    _g.shellname = shellname or "clang"
 
     -- init mxflags
     _g.mxflags = {  "-fmessage-length=0"
@@ -35,7 +35,12 @@ function init(shellname)
                 ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
 
     -- init shflags
-    _g.shflags = { "-shared", "-fPIC" }
+    _g.shflags = { "-dynamiclib", "-fPIC" }
+
+    -- suppress warning 
+    _g.cxflags = {"-Qunused-arguments"}
+    _g.mxflags = {"-Qunused-arguments"}
+    _g.asflags = {"-Qunused-arguments"}
 
     -- init cxflags for the kind: shared
     _g.shared         = {}
@@ -50,8 +55,8 @@ function init(shellname)
     ,   ["-W3"]                     = "-Wall"
 
         -- strip
-    ,   ["-s"]                      = "-s"
-    ,   ["-S"]                      = "-S"
+    ,   ["-s"]                      = "-Wl,-S"
+    ,   ["-S"]                      = "-Wl,-S"
  
     }
 end
@@ -120,7 +125,7 @@ end
 -- run the command
 function run(cmd, ...)
 
-    -- check it
+    -- run it
     os.run(cmd, ...)
             
 end

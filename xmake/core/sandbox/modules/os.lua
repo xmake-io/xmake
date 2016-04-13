@@ -165,17 +165,11 @@ function sandbox_os.run(cmd, ...)
     -- make command
     cmd = vformat(cmd, ...)
 
-    -- make temporary log file
-    local log = os.tmpname()
-
-    -- run command
-    if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
-        io.cat(log)
-        os.raise("run: %s failed!", cmd)
+    -- run it
+    local ok, errors = os.run(cmd)
+    if not ok then
+        os.raise(errors)
     end
-
-    -- remove the temporary log file
-    os.rm(log)
 end
 
 -- match files or directories

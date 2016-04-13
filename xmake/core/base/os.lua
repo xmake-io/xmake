@@ -24,6 +24,7 @@
 local os = os or {}
 
 -- load modules
+local io        = require("base/io")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
@@ -226,6 +227,32 @@ function os.cd(dir)
         return false, string.format("cannot change directory %s, not found this directory %s", dir, os.strerror())
     end
     
+    -- ok
+    return true
+end
+
+-- run shell
+function os.run(cmd, ...)
+
+    -- make temporary log file
+    local log = os.tmpname()
+
+    -- run command
+    if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
+
+        -- make errors
+        local errors = string.format("%s\nrun: %s failed!", io.readall(log), cmd)
+
+        -- remove the temporary log file
+        os.rm(log)
+
+        -- failed
+        return false, errors
+    end
+
+    -- remove the temporary log file
+    os.rm(log)
+
     -- ok
     return true
 end
