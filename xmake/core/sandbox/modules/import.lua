@@ -70,7 +70,7 @@ function sandbox_import._loadfile(filepath, instance)
         end
 
         -- import module
-        return instance:import()
+        return instance:import(), instance:script()
     end
 
     -- load module without sandbox
@@ -80,7 +80,7 @@ function sandbox_import._loadfile(filepath, instance)
     end
 
     -- ok?
-    return result
+    return result, script
 end
 
 -- find module
@@ -125,6 +125,7 @@ function sandbox_import._load(dir, name, instance)
 
     -- load the single module?
     local module = nil
+    local script = nil
     if os.isfile(path.join(dir, name .. ".lua")) then
 
         -- load module
@@ -135,6 +136,9 @@ function sandbox_import._load(dir, name, instance)
 
         -- save module
         module = result
+
+        -- save script
+        script = errors
 
     -- load modules
     elseif os.isdir(path.join(dir, name)) then
@@ -159,6 +163,9 @@ function sandbox_import._load(dir, name, instance)
 
                 -- init the root module
                 module = module or {}
+
+                -- save script
+                script = errors
 
                 -- save module
                 local scope = module
@@ -193,7 +200,7 @@ function sandbox_import._load(dir, name, instance)
     end
 
     -- return it
-    return module
+    return module, script
 end
 
 -- import module
@@ -213,6 +220,11 @@ end
 -- import("core", {rootdir = "/scripts"})
 -- => core
 -- => core.platform
+--
+-- import("core.platform", {inherit = true})
+-- => inherit the all interfaces of core.platform to the current scope
+--
+-- @note the polymiorphism is not supported for import.inherit mode now.
 --
 function sandbox_import.import(name, args)
 
@@ -246,6 +258,9 @@ function sandbox_import.import(name, args)
         raise("cannot import module: %s, %s", name, errors)
     end
 
+    -- get module script
+    local script = errors
+
     -- get module name
     local modulename = sandbox_import._modulename(name)
     if not modulename then
@@ -256,13 +271,48 @@ function sandbox_import.import(name, args)
     local scope_parent = getfenv(2)
     assert(scope_parent)
 
+    -- the imported name
+    local imported_name = args.alias or modulename
+
+    -- inherit?
+    if args.inherit then
+ 
+        -- inherit this module into the parent scope
+        table.inherit2(scope_parent, module)
+
+        -- import as super module
+        imported_name = "_super"
+
+        -- public the script scope for the super module
+        --
+        -- we can access the all scope members of _super in the child module
+        --
+        -- .e.g
+        --
+        -- import("core.platform.xxx", {inherit = true})
+        --
+        -- print(_super._g)
+        -- 
+        if script ~= nil then
+            setmetatable(module, {  __index = function (tbl, key)
+                                        local val = rawget(tbl, key)
+                                        if val == nil then
+                                            val = rawget(getfenv(script), key)
+                                        end
+                                        return val
+                                    end})
+
+        end
+
+    end
+
     -- this module has been imported?
-    if rawget(scope_parent, modulename) then
+    if rawget(scope_parent, imported_name) then
         raise("this module: %s has been imported!", name)
     end
 
     -- import this module into the parent scope
-    scope_parent[args.alias or modulename] = module
+    scope_parent[imported_name] = module
 
     -- return it
     return module

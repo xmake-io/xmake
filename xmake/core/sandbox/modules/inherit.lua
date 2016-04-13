@@ -17,22 +17,23 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        clang.lua
+-- @file        inherit.lua
 --
 
--- inherit gcc
-inherit("gcc")
+-- load modules
+local import = require("sandbox/modules/import")
 
--- init it
-function init(shellname)
-    
-    -- init super
-    _super.init(shellname or "clang")
+-- inherit module
+--
+-- we can access all super interfaces by _super
+--
+-- @note the polymiorphism is not supported for import.inherit mode now.
+function sandbox_inherit(name)
 
-    -- suppress warning 
-    _super._g.cxflags = {"-Qunused-arguments"}
-    _super._g.mxflags = {"-Qunused-arguments"}
-    _super._g.asflags = {"-Qunused-arguments"}
-
+    -- import and inherit it
+    return import(name, {inherit = true})
 end
+
+-- load module
+return sandbox_inherit
 

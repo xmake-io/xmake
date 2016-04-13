@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        clang.lua
+-- @file        g++.lua
 --
 
 -- inherit gcc
@@ -27,12 +27,7 @@ inherit("gcc")
 function init(shellname)
     
     -- init super
-    _super.init(shellname or "clang")
-
-    -- suppress warning 
-    _super._g.cxflags = {"-Qunused-arguments"}
-    _super._g.mxflags = {"-Qunused-arguments"}
-    _super._g.asflags = {"-Qunused-arguments"}
+    _super.init(shellname or "g++")
 
 end
 
