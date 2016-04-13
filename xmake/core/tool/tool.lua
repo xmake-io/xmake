@@ -135,6 +135,9 @@ function _module:check(flags)
         os.raise(results)
     end
 
+    -- trace
+    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(results, "ok", "no"))
+
     -- save the checked result
     interface.checked[flags] = results
 
