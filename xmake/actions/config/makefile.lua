@@ -93,7 +93,7 @@ function _make_object(makefile, target, srcfile, objfile)
     -- make command
     local ccache    = tool.shellname("ccache") 
     local compiler  = target:compiler(srcfile)
-    local cmd       = compiler:makecmd(target, srcfile, objfile, _logfile())
+    local cmd       = compiler:command(target, srcfile, objfile, _logfile())
     if ccache then
         cmd = ccache:append(cmd, " ")
     end

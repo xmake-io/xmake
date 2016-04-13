@@ -24,13 +24,165 @@
 local option = option or {}
 
 -- load modules
+local io        = require("base/io")
 local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
+local option_   = require("base/option")
 local cache     = require("project/cache")("local.option")
 local linker    = require("platform/linker")
-local compiler  = require("platform/compiler")
+local compiler  = require("tool/compiler")
+
+-- check include 
+function option:_check_include(include, srcpath, objpath)
+
+    -- check
+    assert(srcpath and objpath)
+
+    -- open the checking source file
+    local srcfile = io.open(srcpath, "w")
+    if not srcfile then 
+        return false
+    end
+
+    -- make include
+    if include then
+        srcfile:print("#include <%s>\n", include)
+    end
+
+    -- make the main function header
+    srcfile:print("int main(int argc, char** argv)")
+    srcfile:print("{")
+    srcfile:print("    return 0;")
+    srcfile:print("}")
+
+    -- exit this file
+    srcfile:close()
+
+    -- load the compiler instance
+    local instance = compiler.load(srcpath)
+    if not instance then 
+        return false 
+    end
+
+    -- attempt to run this command
+    local ok, errors = instance:run(instance:command(self, srcpath, objpath))
+    if not ok and option_.get("verbose") then
+        print(errors)
+    end
+
+    -- ok?
+    return ok
+end
+
+-- check function 
+function option:_check_function(interface, srcpath, objpath)
+
+    -- check
+    assert(interface)
+
+    -- open the checking source file
+    local srcfile = io.open(srcpath, "w")
+    if not srcfile then
+        return false 
+     end
+
+    -- load the compiler instance
+    local instance = compiler.load(srcpath)
+    if not instance then 
+        return false 
+    end
+
+    -- make includes 
+    local includes = nil
+    if instance:kind() == "cc" then includes = self:get("cincludes")
+    elseif instance:kind() == "cxx" then includes = self:get("cxxincludes") 
+    end
+    if includes then
+        for _, include in ipairs(table.wrap(includes)) do
+            srcfile:print("#include <%s>", include)
+        end
+        srcfile:print("")
+    end
+
+    -- make the main function header
+    srcfile:print("int main(int argc, char** argv)")
+    srcfile:print("{")
+
+    -- make interfaces
+    srcfile:print("    volatile void* p%s = (void*)&%s;\n", interface, interface)
+
+    -- make the main function tailer
+    srcfile:print("    return 0;")
+    srcfile:print("}")
+
+    -- exit this file
+    srcfile:close()
+
+    -- execute the compile command
+    local ok, errors = instance:run(instance:command(self, srcpath, objpath))
+    if not ok and option_.get("verbose") then
+        print(errors)
+    end
+
+    -- ok?
+    return ok
+end
+
+-- check typedef 
+function option:_check_typedef(typedef, srcpath, objpath)
+
+    -- check
+    assert(typedef)
+
+    -- open the checking source file
+    local srcfile = io.open(srcpath, "w")
+    if not srcfile then 
+        return false 
+    end
+
+    -- load the compiler instance
+    local instance = compiler.load(srcpath)
+    if not instance then 
+        return false 
+    end
+
+    -- make includes 
+    local includes = nil
+    if instance:kind() == "cc" then includes = self:get("cincludes")
+    elseif instance:kind() == "cxx" then includes = self:get("cxxincludes") 
+    end
+    if includes then
+        for _, include in ipairs(table.wrap(includes)) do
+            srcfile:print("#include <%s>", include)
+        end
+        srcfile:print("")
+    end
+
+    -- make the main function header
+    srcfile:print("int main(int argc, char** argv)")
+    srcfile:print("{")
+
+    -- make interfaces
+    srcfile:print("    typedef %s __type_xxx;\n", typedef)
+
+    -- make the main function tailer
+    srcfile:print("    return 0;")
+    srcfile:print("}")
+
+    -- exit this file
+    srcfile:close()
+
+    -- execute the compile command
+    local ok, errors = instance:run(instance:command(self, srcpath, objpath))
+    if not ok and option_.get("verbose") then
+        print(errors)
+    end
+
+    -- ok?
+    return ok
+end
 
 -- check option for checking links
 function option:_check_links(cfile, objectfile, targetfile)
@@ -51,7 +203,7 @@ function option:_check_links(cfile, objectfile, targetfile)
     end
     
     -- only for compile a object file
-    local ok = compiler.check_include(self, nil, cfile, objectfile)
+    local ok = self:_check_include(nil, cfile, objectfile)
 
     -- check link
     if ok then ok = linker.check_links(self, cfile, objectfile, targetfile) end
@@ -77,7 +229,7 @@ function option:_check_cincludes(cfile, objectfile)
         if option._CHECKED_CINCLUDES[cinclude] then return true end
         
         -- check cinclude
-        local ok = compiler.check_include(self, cinclude, cfile, objectfile)
+        local ok = self:_check_include(cinclude, cfile, objectfile)
 
         -- trace
         utils.printf("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "ok", "no"))
@@ -104,7 +256,7 @@ function option:_check_cxxincludes(cxxfile, objectfile)
         if option._CHECKED_CXXINCLUDES[cinclude] then return true end
         
         -- check cinclude
-        local ok = compiler.check_include(self, cxxinclude, cxxfile, objectfile)
+        local ok = self:_check_include(cxxinclude, cxxfile, objectfile)
 
         -- trace
         utils.printf("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "ok", "no"))
@@ -127,7 +279,7 @@ function option:_check_cfuncs(cfile, objectfile, targetfile)
     for _, cfunc in ipairs(table.wrap(self:get("cfuncs"))) do
         
         -- check function
-        local ok = compiler.check_function(self, cfunc, cfile, objectfile)
+        local ok = self:_check_function(cfunc, cfile, objectfile)
 
         -- check link
         if ok and self:get("links") then ok = linker.check_links(self, cfile, objectfile, targetfile) end
@@ -150,7 +302,7 @@ function option:_check_cxxfuncs(cxxfile, objectfile, targetfile)
     for _, cxxfunc in ipairs(table.wrap(self:get("cxxfuncs"))) do
         
         -- check function
-        local ok = compiler.check_function(self, cxxfunc, cxxfile, objectfile)
+        local ok = self:_check_function(cxxfunc, cxxfile, objectfile)
 
         -- check link
         if ok and self:get("links") then ok = linker.check_links(self, cxxfile, objectfile, targetfile) end
@@ -173,7 +325,7 @@ function option:_check_ctypes(cfile, objectfile, targetfile)
     for _, ctype in ipairs(table.wrap(self:get("ctypes"))) do
         
         -- check type
-        local ok = compiler.check_typedef(self, ctype, cfile, objectfile)
+        local ok = self:_check_typedef(ctype, cfile, objectfile)
 
         -- trace
         utils.printf("checking for the c type %s ... %s", ctype, utils.ifelse(ok, "ok", "no"))
@@ -193,7 +345,7 @@ function option:_check_cxxtypes(cxxfile, objectfile, targetfile)
     for _, cxxtype in ipairs(table.wrap(self:get("cxxtypes"))) do
         
         -- check type
-        local ok = compiler.check_typedef(self, cxxtype, cxxfile, objectfile)
+        local ok = self:_check_typedef(cxxtype, cxxfile, objectfile)
 
         -- trace
         utils.printf("checking for the c++ type %s ... %s", cxxtype, utils.ifelse(ok, "ok", "no"))
