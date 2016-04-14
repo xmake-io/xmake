@@ -30,6 +30,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("project/config")
+local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
 local tool      = require("tool/tool")
 local compiler  = require("tool/compiler")
@@ -122,7 +123,7 @@ function linker:_mapflag(flag, mapflags)
     end
 
     -- check it 
-    if self:_tool():check(flag) then
+    if self:check(flag) then
         return flag
     end
 end
@@ -133,12 +134,9 @@ function linker:_mapflags(flags)
     -- wrap flags first
     flags = table.wrap(flags)
 
-    -- the linker tool  
-    local ctool = self:_tool()
-
     -- done
     local results = {}
-    local mapflags = ctool:get("mapflags")
+    local mapflags = self:get("mapflags")
     if mapflags then
 
         -- map flags
@@ -153,7 +151,7 @@ function linker:_mapflags(flags)
 
         -- check flags
         for _, flag in pairs(flags) do
-            if ctool:check(flag) then
+            if self:check(flag) then
                 table.insert(results, flag)
             end
         end
@@ -187,20 +185,17 @@ end
 -- add flags from the target 
 function linker:_addflags_from_target(flags, target)
 
-    -- the compiler tool
-    local ctool = self:_tool()
-
     -- add the target flags 
     table.join2(flags, self:_mapflags(target:get(self:_flagname())))
 
     -- add the linkdirs flags 
     for _, linkdir in ipairs(table.wrap(target:get("linkdirs"))) do
-        table.join2(flags, ctool:linkdir(linkdir))
+        table.join2(flags, self:linkdir(linkdir))
     end
 
     -- add the links flags 
     for _, link in ipairs(table.wrap(target:get("links"))) do
-        table.join2(flags, ctool:link(link))
+        table.join2(flags, self:link(link))
     end
 
     -- for target options? 
@@ -214,12 +209,12 @@ function linker:_addflags_from_target(flags, target)
             
             -- add the linkdirs flags from the option
             for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
-                table.join2(flags, ctool:linkdir(linkdir))
+                table.join2(flags, self:linkdir(linkdir))
             end
 
             -- add the links flags from the option
             for _, link in ipairs(table.wrap(opt:get("links"))) do
-                table.join2(flags, ctool:link(link))
+                table.join2(flags, self:link(link))
             end
         end
     end
@@ -233,20 +228,17 @@ end
 -- add flags from the platform 
 function linker:_addflags_from_platform(flags)
 
-    -- the compiler tool
-    local ctool = self:_tool()
-
     -- add flags 
     table.join2(flags, self:_mapflags(platform.get(self:_flagname())))
 
     -- add the linkdirs flags 
     for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
-        table.join2(flags, ctool:linkdir(linkdir))
+        table.join2(flags, self:linkdir(linkdir))
     end
 
     -- add the links flags
     for _, link in ipairs(table.wrap(platform.get("links"))) do
-        table.join2(flags, ctool:link(link))
+        table.join2(flags, self:link(link))
     end
 end
 
@@ -272,7 +264,7 @@ end
 function linker:_addflags_from_linker(flags)
 
     -- done
-    table.join2(flags, self:_tool():get(self:_flagname()))
+    table.join2(flags, self:get(self:_flagname()))
 end
 
 -- get the current kind
@@ -337,21 +329,78 @@ end
 function linker:get(name)
 
     -- get it
-    return self:_tool():get(name)
-end
-
--- run the command
-function linker:run(cmd)
-
-    -- get it
-    return self:_tool():run(cmd)
+    return self:_tool().get(name)
 end
 
 -- get the command
 function linker:command(target, objfiles, targetfile, logfile)
 
     -- get it
-    return self:_tool():command(table.concat(table.wrap(objfiles), " "), targetfile, self:_flags(target), logfile)
+    return self:_tool().command(table.concat(table.wrap(objfiles), " "), targetfile, self:_flags(target), logfile)
+end
+
+-- make the link flag
+function linker:link(lib)
+
+    -- make it
+    return self:_tool().link(lib)
+end
+
+-- make the linkdir flag
+function linker:linkdir(dir)
+
+    -- make it
+    return self:_tool().linkdir(dir)
+end
+
+-- check the given flags 
+function linker:check(flags)
+
+    -- the linker tool
+    local ltool = self:_tool()
+
+    -- no check?
+    if not ltool.check then
+        return true
+    end
+
+    -- have been checked? return it directly
+    self._CHECKED = self._CHECKED or {}
+    if self._CHECKED[flags] ~= nil then
+        return self._CHECKED[flags]
+    end
+
+    -- check it
+    local ok, results = sandbox.load(ltool.check, flags)
+    if not ok then
+        os.raise(results)
+    end
+
+    -- trace
+    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(results, "ok", "no"))
+
+    -- save the checked result
+    self._CHECKED[flags] = results
+
+    -- ok?
+    return ok
+end
+
+-- run the command
+function linker:run(...)
+
+    -- the linker tool
+    local ltool = self:_tool()
+
+    -- no run interface?
+    if not ltool.run then
+
+        -- run it
+        return os.run(...)
+    end
+
+    -- run it
+    return sandbox.load(ltool.run, ...)
 end
 
 -- return module

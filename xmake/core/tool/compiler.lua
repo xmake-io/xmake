@@ -29,9 +29,10 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
-local config    = require("project/config")
-local platform  = require("platform/platform")
 local tool      = require("tool/tool")
+local config    = require("project/config")
+local sandbox   = require("sandbox/sandbox")
+local platform  = require("platform/platform")
 
 -- get the current tool
 function compiler:_tool()
@@ -103,7 +104,7 @@ function compiler:_mapflag(flag, mapflags)
     end
 
     -- check it 
-    if self:_tool():check(flag) then
+    if self:check(flag) then
         return flag
     end
 end
@@ -114,12 +115,9 @@ function compiler:_mapflags(flags)
     -- wrap flags first
     flags = table.wrap(flags)
 
-    -- the compiler tool  
-    local ctool = self:_tool()
-
     -- done
     local results = {}
-    local mapflags = ctool:get("mapflags")
+    local mapflags = self:get("mapflags")
     if mapflags then
 
         -- map flags
@@ -134,7 +132,7 @@ function compiler:_mapflags(flags)
 
         -- check flags
         for _, flag in pairs(flags) do
-            if ctool:check(flag) then
+            if self:check(flag) then
                 table.insert(results, flag)
             end
         end
@@ -169,9 +167,6 @@ end
 
 -- add flags from the target 
 function compiler:_addflags_from_target(flags, target)
-
-    -- the compiler tool
-    local ctool = self:_tool()
 
     -- add the target flags 
     for _, flagname in ipairs(self:_flagnames()) do
@@ -237,17 +232,17 @@ function compiler:_addflags_from_target(flags, target)
 
     -- add the includedirs flags 
     for _, includedir in ipairs(table.wrap(target:get("includedirs"))) do
-        table.join2(flags, ctool:includedir(includedir))
+        table.join2(flags, self:includedir(includedir))
     end
 
     -- add the defines flags 
     for _, define in ipairs(table.wrap(target:get("defines"))) do
-        table.join2(flags, ctool:define(define))
+        table.join2(flags, self:define(define))
     end
 
     -- append the undefines flags 
     for _, undefine in ipairs(table.wrap(target:get("undefines"))) do
-        table.join2(flags, ctool:undefine(undefine))
+        table.join2(flags, self:undefine(undefine))
     end
 
     -- for target options? 
@@ -261,12 +256,12 @@ function compiler:_addflags_from_target(flags, target)
 
             -- append the defines flags
             for _, define in ipairs(table.wrap(opt:get("defines_if_ok"))) do
-                table.join2(flags, ctool:define(define))
+                table.join2(flags, self:define(define))
             end
 
             -- append the undefines flags 
             for _, undefine in ipairs(table.wrap(opt:get("undefines_if_ok"))) do
-                table.join2(flags, ctool:undefine(undefine))
+                table.join2(flags, self:undefine(undefine))
             end
         end
     end
@@ -275,9 +270,6 @@ end
 -- add flags from the platform 
 function compiler:_addflags_from_platform(flags)
 
-    -- the compiler tool
-    local ctool = self:_tool()
-
     -- add flags 
     for _, flagname in ipairs(self:_flagnames()) do
         table.join2(flags, self:_mapflags(platform.get(flagname)))
@@ -285,35 +277,32 @@ function compiler:_addflags_from_platform(flags)
 
     -- add the includedirs flags
     for _, includedir in ipairs(table.wrap(platform.get("includedirs"))) do
-        table.join2(flags, ctool:includedir(includedir))
+        table.join2(flags, self:includedir(includedir))
     end
 
     -- add the defines flags 
     for _, define in ipairs(table.wrap(platform.get("defines"))) do
-        table.join2(flags, ctool:define(define))
+        table.join2(flags, self:define(define))
     end
 
     -- append the undefines flags
     for _, undefine in ipairs(table.wrap(platform.get("undefines"))) do
-        table.join2(flags, ctool:undefine(undefine))
+        table.join2(flags, self:undefine(undefine))
     end
 end
 
 -- add flags from the compiler 
 function compiler:_addflags_from_compiler(flags, kind)
 
-    -- the compiler tool
-    local ctool = self:_tool()
-
     -- done
     for _, flagname in ipairs(self:_flagnames()) do
 
         -- add compiler.xxflags
-        table.join2(flags, ctool:get(flagname))
+        table.join2(flags, self:get(flagname))
 
         -- add compiler.kind.xxflags
-        if kind ~= nil and ctool:get(kind) ~= nil then
-            table.join2(flags, ctool:get(kind)[flagname])
+        if kind ~= nil and self:get(kind) ~= nil then
+            table.join2(flags, self:get(kind)[flagname])
         end
     end
 end
@@ -406,21 +395,85 @@ end
 function compiler:get(name)
 
     -- get it
-    return self:_tool():get(name)
-end
-
--- run the command
-function compiler:run(cmd)
-
-    -- get it
-    return self:_tool():run(cmd)
+    return self:_tool().get(name)
 end
 
 -- get the command
 function compiler:command(target, srcfile, objfile, logfile)
 
     -- get it
-    return self:_tool():command(srcfile, objfile, self:_flags(target), logfile)
+    return self:_tool().command(srcfile, objfile, self:_flags(target), logfile)
+end
+
+-- make the define flag
+function compiler:define(macro)
+
+    -- make it
+    return self:_tool().define(macro)
+end
+
+-- make the undefine flag
+function compiler:undefine(macro)
+
+    -- make it
+    return self:_tool().undefine(macro)
+end
+
+-- make the includedir flag
+function compiler:includedir(dir)
+
+    -- make it
+    return self:_tool().includedir(dir)
+end
+
+-- check the given flags 
+function compiler:check(flags)
+
+    -- the compiler tool
+    local ctool = self:_tool()
+
+    -- no check?
+    if not ctool.check then
+        return true
+    end
+
+    -- have been checked? return it directly
+    self._CHECKED = self._CHECKED or {}
+    if self._CHECKED[flags] ~= nil then
+        return self._CHECKED[flags]
+    end
+
+    -- check it
+    local ok, results = sandbox.load(ctool.check, flags)
+    if not ok then
+        os.raise(results)
+    end
+
+    -- trace
+    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(results, "ok", "no"))
+
+    -- save the checked result
+    self._CHECKED[flags] = results
+
+    -- ok?
+    return ok
+end
+
+-- run the command
+function compiler:run(...)
+
+    -- the compiler tool
+    local ctool = self:_tool()
+
+    -- no run interface?
+    if not ctool.run then
+
+        -- run it
+        return os.run(...)
+    end
+
+    -- run it
+    return sandbox.load(ctool.run, ...)
 end
 
 -- return module
