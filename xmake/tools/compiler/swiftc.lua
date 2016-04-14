@@ -64,6 +64,13 @@ function init(shellname)
 
 end
 
+-- get the property
+function get(name)
+
+    -- get it
+    return _g[name]
+end
+
 -- make the compile command
 function command(srcfile, objfile, flags, logfile)
 
