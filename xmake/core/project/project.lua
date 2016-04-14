@@ -35,7 +35,6 @@ local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
 local deprecated_project    = require("project/deprecated/project")
-local linker                = require("platform/linker")
 local platform              = require("platform/platform")
 
 -- the current os is belong to the given os?

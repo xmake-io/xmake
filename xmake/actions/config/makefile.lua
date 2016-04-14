@@ -21,7 +21,7 @@
 --
 
 -- imports
-import("core.platform.tool")
+import("core.tool.tool")
 import("core.project.project")
 
 -- get log makefile
@@ -157,12 +157,12 @@ function _make_target(makefile, target)
 
     -- make the command
     local linker    = target:linker()
-    local cmd       = linker:makecmd(target, objfiles, targetfile, _logfile())
+    local cmd       = linker:command(target, objfiles, targetfile, _logfile())
 
     -- make the verbose info
     local verbose = cmd:encode()
     if verbose and #verbose > 256 then
-        verbose = linker:makecmd(target, {target.filename("*", "object")}, targetfile)
+        verbose = linker:command(target, target.filename("*", "object"), targetfile)
         verbose = verbose:encode()
     end
 

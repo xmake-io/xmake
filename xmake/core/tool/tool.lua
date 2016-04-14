@@ -100,6 +100,39 @@ function _module:includedir(dir)
     return interface.includedir(dir)
 end
 
+-- make the link flag
+function _module:link(lib)
+
+    -- the interface
+    local interface = self._INTERFACE
+    assert(interface)
+
+    -- check
+    if not interface.link then
+        return 
+    end
+
+    -- make it
+    return interface.link(lib)
+end
+
+-- TODO wrap dynamic
+-- make the linkdir flag
+function _module:linkdir(dir)
+
+    -- the interface
+    local interface = self._INTERFACE
+    assert(interface)
+
+    -- check
+    if not interface.linkdir then
+        return 
+    end
+
+    -- make it
+    return interface.linkdir(dir)
+end
+
 -- make the command
 function _module:command(srcfile, objfile, flags, logfile)
 
@@ -174,15 +207,13 @@ function tool._directories(name)
     ,   mm      = "compiler"
     ,   mxx     = "compiler"
     ,   sc      = "compiler"
-    ,   ar      = "archiver"
+    ,   ar      = "linker"
     ,   sh      = "linker"
     ,   ld      = "linker"
-    ,   make    = "other"
     }
 
     -- get kind sub-directory
-    local subdir = kinds[name]
-    assert(subdir)
+    local subdir = kinds[name] or ""
 
     -- the directories
     return  {   path.join(path.join(config.directory(), "tools"), subdir)

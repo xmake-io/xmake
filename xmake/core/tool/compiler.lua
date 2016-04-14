@@ -30,8 +30,8 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local config    = require("project/config")
-local tool      = require("tool/tool")
 local platform  = require("platform/platform")
+local tool      = require("tool/tool")
 
 -- get the current tool
 function compiler:_tool()
@@ -45,32 +45,6 @@ function compiler:_flagnames()
 
     -- get it
     return self._FLAGNAMES
-end
-
--- get the compiler kind of the source file 
-function compiler._kind_of_file(srcfile)
-
-    -- get the source file type
-    local filetype = path.extension(srcfile)
-    if not filetype then
-        return nil
-    end
-
-    -- the kinds
-    local kinds = 
-    {
-        [".c"]      = "cc"
-    ,   [".cc"]     = "cxx"
-    ,   [".cpp"]    = "cxx"
-    ,   [".m"]      = "mm"
-    ,   [".mm"]     = "mxx"
-    ,   [".s"]      = "as"
-    ,   [".asm"]    = "as"
-    ,   [".swift"]  = "sc"
-    }
-
-    -- get kind
-    return kinds[filetype:lower()]
 end
 
 -- get the flags
@@ -280,7 +254,7 @@ function compiler:_addflags_from_target(flags, target)
     if target.options then
 
         -- add the flags for the target options
-        for name, opt in pairs(target:options()) do
+        for _, opt in pairs(target:options()) do
 
             -- add the flags from the option
             self:_addflags_from_target(flags, opt)
@@ -344,6 +318,32 @@ function compiler:_addflags_from_compiler(flags, kind)
     end
 end
 
+-- get the compiler kind of the source file 
+function compiler.kind_of_file(srcfile)
+
+    -- get the source file type
+    local filetype = path.extension(srcfile)
+    if not filetype then
+        return nil
+    end
+
+    -- the kinds
+    local kinds = 
+    {
+        [".c"]      = "cc"
+    ,   [".cc"]     = "cxx"
+    ,   [".cpp"]    = "cxx"
+    ,   [".m"]      = "mm"
+    ,   [".mm"]     = "mxx"
+    ,   [".s"]      = "as"
+    ,   [".asm"]    = "as"
+    ,   [".swift"]  = "sc"
+    }
+
+    -- get kind
+    return kinds[filetype:lower()]
+end
+
 -- get the current kind
 function compiler:kind()
 
@@ -351,26 +351,23 @@ function compiler:kind()
     return self._KIND
 end
 
--- load the compiler from the given source file
-function compiler.load(srcfile)
+-- load the compiler from the given source kind
+function compiler.load(sourcekind)
 
-    -- get the compiler kind
-    local kind = compiler._kind_of_file(srcfile)
-    if not kind then
-        return nil, string.format("unknown source file: %s", srcfile)
-    end
+    -- check
+    assert(sourcekind)
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}
-    if compiler._INSTANCES[kind] then
-        return compiler._INSTANCES[kind]
+    if compiler._INSTANCES[sourcekind] then
+        return compiler._INSTANCES[sourcekind]
     end
 
     -- new instance
     local instance = table.inherit(compiler)
 
     -- load the compiler tool from the source file type
-    local result, errors = tool.load(kind)
+    local result, errors = tool.load(sourcekind)
     if not result then 
         return nil, errors
     end
@@ -379,7 +376,7 @@ function compiler.load(srcfile)
     instance._TOOL = result
 
     -- save kind 
-    instance._KIND = kind 
+    instance._KIND = sourcekind 
 
     -- save flagnames
     local flagnames =
@@ -391,18 +388,25 @@ function compiler.load(srcfile)
     ,   as =    { "asflags"             }
     ,   sc =    { "scflags"             }
     }
-    instance._FLAGNAMES = flagnames[kind]
+    instance._FLAGNAMES = flagnames[sourcekind]
 
     -- check
     if not instance._FLAGNAMES then
-        return nil, string.format("unknown compiler for kind: %s", kind)
+        return nil, string.format("unknown compiler for kind: %s", sourcekind)
     end
 
     -- save this instance
-    compiler._INSTANCES[kind] = instance
+    compiler._INSTANCES[sourcekind] = instance
 
     -- ok
     return instance
+end
+
+-- get properties of the tool
+function compiler:get(name)
+
+    -- get it
+    return self:_tool():get(name)
 end
 
 -- run the command

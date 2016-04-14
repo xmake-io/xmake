@@ -29,7 +29,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local option    = require("project/option")
 local config    = require("project/config")
-local linker    = require("platform/linker")
+local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
 local platform  = require("platform/platform")
 
@@ -70,7 +70,7 @@ function target:linker()
     assert(self)
 
     -- init the linker from the given kind
-    local result, errors = linker.init(self:get("kind"))
+    local result, errors = linker.load(self:get("kind"))
     if not result then 
         os.raise(errors)
     end
@@ -87,7 +87,7 @@ function target:compiler(srcfile)
     assert(self and srcfile)
 
     -- load the compiler 
-    local result, errors = compiler.load(srcfile)
+    local result, errors = compiler.load(compiler.kind_of_file(srcfile))
     if not result then 
         os.raise(errors)
     end
@@ -309,6 +309,38 @@ function target:headerfiles()
 
     -- ok?
     return srcheaders, dstheaders
+end
+
+-- get the kinds of sourcefiles
+--
+-- .e.g cc cxx mm mxx as ...
+--
+function target:sourcekinds()
+
+    -- cached? return it directly
+    if self._SOURCEKINDS then
+        return self._SOURCEKINDS
+    end
+
+    -- make kinds
+    local kinds = {}
+    for _, sourcefile in pairs(self:sourcefiles()) do
+
+        -- get kind
+        local kind = compiler.kind_of_file(sourcefile)
+        if kind then
+            table.insert(kinds, kind)
+        end
+    end
+
+    -- remove repeat
+    kinds = table.unique(kinds)
+
+    -- cache it
+    self._SOURCEKINDS = kinds
+
+    -- ok?
+    return kinds 
 end
 
 
