@@ -25,7 +25,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
-local tool      = require("platform/tool")
+local tool      = require("tool/tool")
 local config    = require("project/config")
 local global    = require("project/global")
 
@@ -108,7 +108,7 @@ function prober._probe_make(configs)
     if make then return true end
 
     -- probe the make path
-    make = tool.probe("make", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
+    make = tool.check("make", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
 
     -- probe ok? update it
     if make then configs.set("make", make) end
@@ -134,7 +134,7 @@ function prober._probe_ccache(configs)
     end
 
     -- probe the ccache path
-    local ccache_path = tool.probe("ccache", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
+    local ccache_path = tool.check("ccache", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
 
     -- probe ok? update it
     if ccache_path then
@@ -164,7 +164,7 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
     local toolpath = nil
     local toolchains = configs.get("toolchains") 
     if toolchains then
-        toolpath = tool.probe(cross .. (configs.get(kind) or name), toolchains)
+        toolpath = tool.check(cross .. (configs.get(kind) or name), toolchains)
     end
 
     -- attempt to get it directly from the configure
@@ -188,7 +188,7 @@ function prober._probe_toolpath(configs, kind, cross, name, description)
             -- probe the tool path
             if toolchains then
                 for _, filepath in ipairs(toolchains) do
-                    toolpath = tool.probe(cross .. name, path.directory(filepath))
+                    toolpath = tool.check(cross .. name, path.directory(filepath))
                     if toolpath then break end
                 end
             end

@@ -28,7 +28,6 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 local config    = require("project/config")
 local global    = require("project/global")
-local tool      = require("platform/tool")
 local platform  = require("platform/platform")
 
 -- define module: prober

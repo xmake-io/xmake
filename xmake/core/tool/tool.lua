@@ -388,6 +388,7 @@ function tool.check(shellname, dirs)
     -- check
     assert(shellname)
 
+    -- FIXME: 7f00
     -- attempt to run it directly first
     if os.execute(string.format("%s > %s 2>&1", shellname, xmake._NULDEV)) ~= 0x7f00 then
         return shellname
