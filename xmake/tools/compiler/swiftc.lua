@@ -20,24 +20,17 @@
 -- @file        swiftc.lua
 --
 
--- load modules
-local utils     = require("base/utils")
-local table     = require("base/table")
-local string    = require("base/string")
-local config    = require("project/config")
-local platform  = require("platform/platform")
+-- imports
+import("core.project.config")
 
--- define module: swiftc
-local swiftc = swiftc or {}
-
--- the init function
-function swiftc.init(self, name)
-
-    -- save name
-    self.name = name or "swiftc"
+-- init it
+function init(shellname)
+    
+    -- save the shell name
+    _g.shellname = shellname or "swiftc"
 
     -- init flags map
-    self.mapflags = 
+    _g.mapflags = 
     {
         -- symbols
         ["-fvisibility=hidden"]     = ""
@@ -66,52 +59,40 @@ function swiftc.init(self, name)
     -- init ldflags
     local swift_linkdirs = config.get("__swift_linkdirs")
     if swift_linkdirs then
-        self.ldflags = { "-L" .. swift_linkdirs }
+        _g.ldflags = { "-L" .. swift_linkdirs }
     end
 
 end
 
 -- make the compile command
-function swiftc.command_compile(self, srcfile, objfile, flags, logfile)
+function command(srcfile, objfile, flags, logfile)
 
     -- redirect
     local redirect = ""
-    if logfile then redirect = string.format(" > %s 2>&1", logfile) end
+    if logfile then redirect = format(" > %s 2>&1", logfile) end
 
     -- make it
-    return string.format("%s -c %s -o %s %s%s", self.name, flags, objfile, srcfile, redirect)
+    return format("%s -c %s -o %s %s%s", _g.shellname, flags, objfile, srcfile, redirect)
 end
 
 -- make the includedir flag
-function swiftc.flag_includedir(self, includedir)
+function includedir(dir)
 
     -- make it
-    return "-Xcc -I" .. includedir
+    return "-Xcc -I" .. dir
 end
 
 -- make the define flag
-function swiftc.flag_define(self, define)
+function define(macro)
 
     -- make it
-    return "-Xcc -D" .. define:gsub("\"", "\\\"")
+    return "-Xcc -D" .. macro:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function swiftc.flag_undefine(self, undefine)
+function undefine(macro)
 
     -- make it
-    return "-Xcc -U" .. undefine
+    return "-Xcc -U" .. macro
 end
 
--- the main function
-function swiftc.main(self, cmd)
-
-    -- execute it
-    local ok = os.execute(cmd)
-
-    -- ok?
-    return utils.ifelse(ok == 0, true, false)
-end
-
--- return module: swiftc
-return swiftc
