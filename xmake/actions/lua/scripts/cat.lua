@@ -20,24 +20,13 @@
 -- @file        cat.lua
 --
 
--- define module: cat
-local cat = cat or {}
-
--- load modules
-local io = require("base/io")
-local os = require("base/os")
-
--- the main function
-function cat.main(self, ...)
+-- main
+function main(...)
 
     -- cat all
     for _, v in ipairs(...) do
         if os.isfile(v) then io.cat(v) end
     end
+    print("")
 
-    -- ok
-    return true
 end
-
--- return module: cat
-return cat
