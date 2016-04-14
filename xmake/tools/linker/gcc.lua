@@ -93,3 +93,9 @@ function check(flags)
     return ok
 end
 
+-- run command
+function run(...)
+
+    -- run it
+    os.run(...)
+end

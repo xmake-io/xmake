@@ -48,10 +48,7 @@ function sandbox_core_tool.run(name, ...)
     end
  
     -- run it
-    local ok, errors = instance:run(...) 
-    if not ok then
-        raise(errors)
-    end
+    instance.run(...) 
 end
 
 -- return module

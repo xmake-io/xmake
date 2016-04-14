@@ -22,7 +22,6 @@
 
 -- define module
 local tool      = tool or {}
-local _module   = _module or {}
 
 -- load modules
 local os        = require("base/os")
@@ -35,166 +34,6 @@ local config    = require("project/config")
 local global    = require("project/global")
 local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
-
--- get the property
-function _module:get(name)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- check
-    if not interface.get then
-        return 
-    end
-
-    -- get it
-    return interface.get(name)
-end
-
--- make the define flag
-function _module:define(macro)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- check
-    if not interface.define then
-        return 
-    end
-
-    -- make it
-    return interface.define(macro)
-end
-
--- make the undefine flag
-function _module:undefine(macro)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- check
-    if not interface.undefine then
-        return 
-    end
-
-    -- make it
-    return interface.undefine(macro)
-end
-
--- make the includedir flag
-function _module:includedir(dir)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- check
-    if not interface.includedir then
-        return 
-    end
-
-    -- make it
-    return interface.includedir(dir)
-end
-
--- make the link flag
-function _module:link(lib)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- check
-    if not interface.link then
-        return 
-    end
-
-    -- make it
-    return interface.link(lib)
-end
-
--- TODO wrap dynamic
--- make the linkdir flag
-function _module:linkdir(dir)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- check
-    if not interface.linkdir then
-        return 
-    end
-
-    -- make it
-    return interface.linkdir(dir)
-end
-
--- make the command
-function _module:command(srcfile, objfile, flags, logfile)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface and interface.command)
-
-    -- make it
-    return interface.command(srcfile, objfile, flags, logfile)
-end
-
--- check the given flags 
-function _module:check(flags)
-
-    -- the interface
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- no check?
-    if not interface.check then
-        return true
-    end
-
-    -- have been checked? return it directly
-    interface.checked = interface.checked or {}
-    if interface.checked[flags] ~= nil then
-        return interface.checked[flags]
-    end
-
-    -- check it
-    local ok, results = sandbox.load(interface.check, flags)
-    if not ok then
-        os.raise(results)
-    end
-
-    -- trace
-    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(results, "ok", "no"))
-
-    -- save the checked result
-    interface.checked[flags] = results
-
-    -- ok?
-    return ok
-end
-
--- run the command
-function _module:run(cmd, ...)
-
-    -- the private
-    local interface = self._INTERFACE
-    assert(interface)
-
-    -- no run interface?
-    if not interface.run then
-
-        -- run it
-        return os.run(cmd, ...)
-    end
-
-    -- run it
-    return sandbox.load(interface.run, cmd, ...)
-end
 
 -- the directories of tools
 function tool._directories(name)
@@ -367,15 +206,11 @@ function tool.load(kind)
             module.init(shellname)
         end
     
-        -- wrap this module
-        local result = table.inherit(_module)
-        result._INTERFACE = module
-
         -- save tool to the cache
-        tool._TOOLS[kind] = result
+        tool._TOOLS[kind] = module
 
         -- ok?
-        return result
+        return module
     end
 
     -- failed

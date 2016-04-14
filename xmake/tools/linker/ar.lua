@@ -38,6 +38,14 @@ function get(name)
     return _g[name]
 end
 
+-- make the link flag
+function link(lib)
+end
+
+-- make the linkdir flag
+function linkdir(dir)
+end
+
 -- make the command
 function command(objfiles, targetfile, flags, logfile)
 
@@ -49,3 +57,9 @@ function command(objfiles, targetfile, flags, logfile)
     return format("%s %s %s %s%s", _g.shellname, flags, targetfile, objfiles, redirect)
 end
 
+-- run command
+function run(...)
+
+    -- run it
+    os.run(...)
+end
