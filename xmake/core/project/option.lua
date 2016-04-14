@@ -31,8 +31,33 @@ local table     = require("base/table")
 local utils     = require("base/utils")
 local option_   = require("base/option")
 local cache     = require("project/cache")("local.option")
-local linker    = require("platform/linker")
+local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
+
+-- check link 
+function option:_check_link(sourcefile, objectfile, targetfile)
+
+    -- check
+    assert(sourcefile and objectfile and targetfile)
+
+    -- update source kinds
+    self._SOURCEKINDS = compiler.kind_of_file(sourcefile)
+
+    -- load the linker instance
+    local instance = linker.load("binary")
+    if not instance then 
+        return false 
+    end
+
+    -- attempt to run this command
+    local ok, errors = instance:run(instance:command(self, objectfile, targetfile))
+    if not ok and option_.get("verbose") then
+        print(errors)
+    end
+
+    -- ok?
+    return ok
+end
 
 -- check include 
 function option:_check_include(include, srcpath, objpath)
@@ -61,7 +86,7 @@ function option:_check_include(include, srcpath, objpath)
     srcfile:close()
 
     -- load the compiler instance
-    local instance = compiler.load(srcpath)
+    local instance = compiler.load(compiler.kind_of_file(srcpath))
     if not instance then 
         return false 
     end
@@ -89,7 +114,7 @@ function option:_check_function(interface, srcpath, objpath)
      end
 
     -- load the compiler instance
-    local instance = compiler.load(srcpath)
+    local instance = compiler.load(compiler.kind_of_file(srcpath))
     if not instance then 
         return false 
     end
@@ -143,7 +168,7 @@ function option:_check_typedef(typedef, srcpath, objpath)
     end
 
     -- load the compiler instance
-    local instance = compiler.load(srcpath)
+    local instance = compiler.load(compiler.kind_of_file(srcpath))
     if not instance then 
         return false 
     end
@@ -206,7 +231,7 @@ function option:_check_links(cfile, objectfile, targetfile)
     local ok = self:_check_include(nil, cfile, objectfile)
 
     -- check link
-    if ok then ok = linker.check_links(self, cfile, objectfile, targetfile) end
+    if ok then ok = self:_check_link(cfile, objectfile, targetfile) end
 
     -- trace
     utils.printf("checking for the links %s ... %s", links_str, utils.ifelse(ok, "ok", "no"))
@@ -282,7 +307,7 @@ function option:_check_cfuncs(cfile, objectfile, targetfile)
         local ok = self:_check_function(cfunc, cfile, objectfile)
 
         -- check link
-        if ok and self:get("links") then ok = linker.check_links(self, cfile, objectfile, targetfile) end
+        if ok and self:get("links") then ok = self:_check_link(cfile, objectfile, targetfile) end
 
         -- trace
         utils.printf("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
@@ -305,7 +330,7 @@ function option:_check_cxxfuncs(cxxfile, objectfile, targetfile)
         local ok = self:_check_function(cxxfunc, cxxfile, objectfile)
 
         -- check link
-        if ok and self:get("links") then ok = linker.check_links(self, cxxfile, objectfile, targetfile) end
+        if ok and self:get("links") then ok = self:_check_link(cxxfile, objectfile, targetfile) end
 
         -- trace
         utils.printf("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
@@ -439,6 +464,18 @@ function option.load(name)
 
     -- ok
     return instance
+end
+
+-- get the kinds of sourcefiles
+function option:sourcekinds()
+
+    -- cached? return it directly
+    if self._SOURCEKINDS then
+        return self._SOURCEKINDS
+    end
+
+    -- ok?
+    return {"cc", "cxx"} 
 end
 
 -- return module

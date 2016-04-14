@@ -26,25 +26,15 @@ function init(shellname)
     -- save the shell name
     _g.shellname = shellname or "gcc"
 
-    -- init mxflags
-    _g.mxflags = {  "-fmessage-length=0"
-                ,   "-pipe"
-                ,   "-fpascal-strings"
-                ,   "\"-DIBOutlet=__attribute__((iboutlet))\""
-                ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
-                ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
-
-    -- init cxflags for the kind: shared
-    _g.shared         = {}
-    _g.shared.cxflags = {"-fPIC"}
+    -- init shflags
+    _g.shflags = { "-shared", "-fPIC" }
 
     -- init flags map
     _g.mapflags = 
     {
-        -- warnings
-        ["-W1"]                     = "-Wall"
-    ,   ["-W2"]                     = "-Wall"
-    ,   ["-W3"]                     = "-Wall"
+        -- strip
+        ["-s"]  = "-s"
+    ,   ["-S"]  = "-S"
  
     }
 end
@@ -56,36 +46,29 @@ function get(name)
     return _g[name]
 end
 
--- make the define flag
-function define(macro)
+-- make the link flag
+function link(lib)
 
     -- make it
-    return "-D" .. macro:gsub("\"", "\\\"")
+    return "-l" .. lib
 end
 
--- make the undefine flag
-function undefine(macro)
+-- make the linkdir flag
+function linkdir(dir)
 
     -- make it
-    return "-U" .. macro
-end
-
--- make the includedir flag
-function includedir(dir)
-
-    -- make it
-    return "-I" .. dir
+    return "-L" .. dir
 end
 
 -- make the command
-function command(srcfile, objfile, flags, logfile)
+function command(objfiles, targetfile, flags, logfile)
 
     -- redirect
     local redirect = ""
     if logfile then redirect = format(" > %s 2>&1", logfile) end
 
     -- make it
-    return format("%s -c %s -o %s %s%s", _g.shellname, flags, objfile, srcfile, redirect)
+    return format("%s -o %s %s %s%s", _g.shellname, targetfile, objfiles, flags, redirect)
 end
 
 -- check the given flags 
