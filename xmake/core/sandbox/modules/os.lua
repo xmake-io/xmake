@@ -159,6 +159,13 @@ function sandbox_os.tmpdir()
     return tmpdir
 end
 
+-- get the program directory
+function sandbox_os.programdir()
+   
+    -- get it
+    return xmake._PROGRAM_DIR
+end
+
 -- run shell
 function sandbox_os.run(cmd, ...)
 
