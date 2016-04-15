@@ -38,11 +38,11 @@ function sandbox_core_project_project.load()
     end
 end
 
--- probe project options
-function sandbox_core_project_project.probe()
+-- check project options
+function sandbox_core_project_project.check()
 
-    -- probe it
-    local ok, errors = project.probe()
+    -- check it
+    local ok, errors = project.check()
     if not ok then
         raise(errors)
     end

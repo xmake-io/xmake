@@ -48,7 +48,7 @@ function main()
     end
 
     -- merge the checked configure 
-    global.probe()
+    global.check()
   
     -- merge the cached configure
     if not option.get("clean") then

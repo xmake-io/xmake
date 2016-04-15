@@ -39,12 +39,5 @@ function sandbox_core_platform_platform.load(plat)
     end
 end
 
--- get the current host
-function sandbox_core_platform_platform.host()
-
-    -- get it
-    return xmake._HOST
-end
-
 -- return module
 return sandbox_core_platform_platform

@@ -51,5 +51,12 @@ function sandbox_core_tool.run(name, ...)
     instance.run(...) 
 end
 
+-- check the tool and return the absolute path if exists
+function sandbox_core_tool.check(shellname, dirs)
+
+    -- check it
+    return tool.check(shellname, dirs)
+end
+
 -- return module
 return sandbox_core_tool

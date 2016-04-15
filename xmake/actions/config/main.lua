@@ -77,7 +77,7 @@ function main()
     end
 
     -- merge the checked configure 
-    config.probe()
+    config.check()
 
     -- merge the cached configure
     if not option.get("clean") then
@@ -93,8 +93,8 @@ function main()
         config.set("buildir", path.relative(buildir, project.directory()))
     end
 
-    -- probe the project options
-    project.probe()
+    -- check the project options
+    project.check()
 
     -- load project
     project.load()

@@ -38,28 +38,6 @@ function platform._directories()
             }
 end
 
--- load prober the given platform directory
-function platform._load_prober(platdir)
-
-    -- the platform file path
-    local filepath = path.join(platdir, "prober.lua")
-    if os.isfile(filepath) then
-
-        -- load script
-        local script = loadfile(filepath)
-        if script then
-
-            -- load prober
-            local prober = script()
-            if prober then
-
-                -- ok
-                return prober
-            end
-        end
-    end
-end
-
 -- load the given platform from the given directory
 function platform._load_from(dir, plat)
 
@@ -78,9 +56,6 @@ function platform._load_from(dir, plat)
                 -- save directory
                 module._DIRECTORY = path.directory(filepath)
                 assert(module._DIRECTORY)
-
-                -- attempt to load prober
-                module._PROBER = platform._load_prober(module._DIRECTORY)
 
                 -- ok
                 return module
@@ -332,37 +307,6 @@ function platform.menu(action)
 
     -- get all platform menus
     return menus
-end
-
--- probe the platform configure 
-function platform.probe(is_global)
-
-    -- probe global
-    if is_global then
-
-        -- get all platforms
-        local plats = platform.plats()
-        assert(plats)
-
-        -- probe all platforms with the current host
-        for _, plat in ipairs(plats) do
-            local module = platform._load(plat)
-            if module and module._PROBER and module._PROBER.global and module._HOST and module._HOST == xmake._HOST then
-                if not module._PROBER.global() then return false end
-            end
-        end
-
-    -- probe config
-    else
-        -- probe it
-        local module = platform.module()
-        if module and module._PROBER and module._PROBER.config then
-            if not module._PROBER.config() then return false end
-        end
-    end
-
-    -- ok
-    return true
 end
 
 -- return module: platform
