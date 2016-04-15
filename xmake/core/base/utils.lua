@@ -39,11 +39,8 @@ end
 -- the verbose function
 function utils.verbose(msg, ...)
 
-    if option.get("verbose") then
+    if option.get("verbose") and msg ~= nil then
         
-        -- check
-        assert(msg)
-
         -- trace
         print(string.format(msg, ...))
     end
@@ -52,11 +49,10 @@ end
 -- the error function
 function utils.error(msg, ...)
 
-    -- check
-    assert(msg)
-
     -- trace
-    print("error: " .. string.format(msg, ...))
+    if msg ~= nil then
+        print("error: " .. string.format(msg, ...))
+    end
 end
 
 -- the warning function

@@ -71,9 +71,11 @@ function _check_xcode(config)
             print("checking for the Xcode application directory ... %s", xcode_dir)
         else
             -- failed
-            raise("checking for the Xcode application directory ... no\n" ..
-                  "    - xmake config --xcode_dir=xxx\n" ..
-                  "or  - xmake global --xcode_dir=xxx")
+            print("checking for the Xcode application directory ... no")
+            print("please run:")
+            print("    - xmake config --xcode_dir=xxx")
+            print("or  - xmake global --xcode_dir=xxx")
+            raise()
         end
     end
 end
@@ -106,9 +108,11 @@ function _check_xcode_sdkver(config)
             print("checking for the Xcode SDK version for %s ... %s", config.get("plat"), xcode_sdkver)
         else
             -- failed
-            raise("checking for the Xcode SDK version for %s ... no\n" .. 
-                  "    - xmake config --xcode_sdkver=xxx" ..
-                  "or  - xmake global --xcode_sdkver=xxx", config.get("plat"))
+            print("checking for the Xcode SDK version for %s ... no", config.get("plat"))
+            print("please run:")
+            print("    - xmake config --xcode_sdkver=xxx")
+            print("or  - xmake global --xcode_sdkver=xxx")
+            raise()
         end
     end
 end
