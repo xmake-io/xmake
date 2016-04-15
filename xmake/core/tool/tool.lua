@@ -122,31 +122,6 @@ function tool._find(root, name)
     return file_ok
 end
 
--- the tool filter
-function tool._filter()
-
-    -- new filter
-    return filter.new(function (variable)
-
-    -- check
-    assert(variable)
-
-        -- init maps
-        local maps = 
-        {
-            host        = xmake._HOST
-        ,   nuldev      = xmake._NULDEV
-        ,   tmpdir      = os.tmpdir()
-        ,   curdir      = os.curdir()
-        }
-
-        -- map it
-        return maps[variable]
-
-        end)
-
-end
-
 -- load the given tool from the given kind
 --
 -- the kinds:
@@ -190,7 +165,7 @@ function tool.load(kind)
     if script then
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, tool._filter(), path.directory(toolpath))
+        local instance, errors = sandbox.new(script, nil, path.directory(toolpath))
         if not instance then
             return nil, errors
         end

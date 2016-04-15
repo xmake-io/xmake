@@ -98,7 +98,7 @@ function check(flags)
         function ()
     
             -- check it
-            os.run("%s %s -S -o $(nuldev) -xc $(nuldev) > $(nuldev) 2>&1", _g.shellname, flags)
+            os.run("%s %s -S -o %s -xc %s > %s 2>&1", _g.shellname, flags, os.nuldev(), os.nuldev(), os.nuldev())
             
             -- ok
             ok = true

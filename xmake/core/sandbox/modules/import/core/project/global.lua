@@ -25,6 +25,7 @@ local sandbox_core_project_global = sandbox_core_project_global or {}
 
 -- load modules
 local global    = require("project/global")
+local checker   = require("platform/checker")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
@@ -76,12 +77,13 @@ function sandbox_core_project_global.init()
     global.init()
 end
 
--- probe the configure
-function sandbox_core_project_global.probe()
+-- check the configure
+function sandbox_core_project_global.check()
 
-    -- probe it
-    if not platform.probe(true) then
-        raise("probe the global configure failed!")
+    -- check it
+    local ok, errors = checker.check("global") 
+    if not ok then
+        raise(errors)
     end
 end
 

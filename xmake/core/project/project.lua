@@ -474,8 +474,8 @@ function project._interpreter()
     return interp
 end
 
--- probe the project 
-function project.probe()
+-- check the project 
+function project.check()
 
     -- enter the project directory
     local ok, errors = os.cd(xmake._PROJECT_DIR)
