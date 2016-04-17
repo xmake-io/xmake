@@ -24,59 +24,6 @@
 import("core.tool.tool")
 import("platforms.checker", {rootdir = os.programdir()})
 
--- check the xcode sdk version
-function _check_xcode_sdkver(config)
-
-    -- get the xcode sdk version
-    local xcode_sdkver = config.get("xcode_sdkver")
-    if not xcode_sdkver then
-
-        -- attempt to match the directory
-        if not xcode_sdkver then
-            local dirs = os.match(config.get("xcode_dir") .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk", true)
-            if dirs then
-                for _, dir in ipairs(dirs) do
-                    xcode_sdkver = string.match(dir, "%d+%.%d+")
-                    if xcode_sdkver then break end
-                end
-            end
-        end
-
-        -- check ok? update it
-        if xcode_sdkver then
-            
-            -- save it
-            config.set("xcode_sdkver", xcode_sdkver)
-
-            -- trace
-            print("checking for the Xcode SDK version for %s ... %s", config.get("plat"), xcode_sdkver)
-        else
-            -- failed
-            print("checking for the Xcode SDK version for %s ... no", config.get("plat"))
-            print("please run:")
-            print("    - xmake config --xcode_sdkver=xxx")
-            print("or  - xmake global --xcode_sdkver=xxx")
-            raise()
-        end
-    end
-end
-
--- check the target minimal version
-function _check_target_minver(config)
-
-    -- get the target minimal version
-    local target_minver = config.get("target_minver")
-    if not target_minver then
-
-        -- init the default target minimal version
-        config.set("target_minver", "10.9")
-
-        -- trace
-        print("checking for the target minimal version ... %s", config.get("target_minver"))
-
-    end
-end
-
 -- check the toolchains
 function _check_toolchains(config)
 
@@ -108,8 +55,8 @@ function init()
     {
         checker.check_arch
     ,   checker.check_xcode
-    ,   _check_xcode_sdkver
-    ,   _check_target_minver
+    ,   checker.check_xcode_sdkver
+    ,   checker.check_target_minver
     ,   checker.check_make
     ,   checker.check_ccache
     ,   _check_toolchains
