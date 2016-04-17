@@ -80,6 +80,81 @@ function check_xcode(config)
     end
 end
 
+-- check the xcode sdk version
+function check_xcode_sdkver(config)
+
+    -- get plat
+    local plat = config.get("plat")
+
+    -- the xcode sdk directories
+    local xcode_sdkdirs =
+    {
+        macosx          = "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk"
+    ,   iphoneos        = "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk"
+    ,   iphonesimulator = "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.sdk"
+    ,   watchos         = "/Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS*.sdk"
+    ,   watchsimulator  = "/Contents/Developer/Platforms/WatchSimulator.platform/Developer/SDKs/WatchSimulator*.sdk"
+    }
+
+    -- get the xcode sdk version
+    local xcode_sdkver = config.get("xcode_sdkver")
+    if not xcode_sdkver then
+
+        -- attempt to match the directory
+        if not xcode_sdkver then
+            local dirs = os.match(config.get("xcode_dir") .. xcode_sdkdirs[plat], true)
+            for _, dir in ipairs(dirs) do
+                xcode_sdkver = string.match(dir, "%d+%.%d+")
+                if xcode_sdkver then break end
+            end
+        end
+
+        -- check ok? update it
+        if xcode_sdkver then
+            
+            -- save it
+            config.set("xcode_sdkver", xcode_sdkver)
+
+            -- trace
+            print("checking for the Xcode SDK version for %s ... %s", plat, xcode_sdkver)
+        else
+            -- failed
+            print("checking for the Xcode SDK version for %s ... no", plat)
+            print("please run:")
+            print("    - xmake config --xcode_sdkver=xxx")
+            print("or  - xmake global --xcode_sdkver=xxx")
+            raise()
+        end
+    end
+end
+
+-- check the target minimal version
+function check_target_minver(config)
+
+    -- get the target minimal version
+    local target_minver = config.get("target_minver")
+    if not target_minver then
+
+        -- TODO
+        -- the default versions
+        local versions =
+        {
+            macosx          = "10.9"
+        ,   iphoneos        = "7.0"
+        ,   iphonesimulator = "7.0"
+        ,   watchos         = "7.0"
+        ,   watchsimulator  = "7.0"
+        }
+
+        -- init the default target minimal version
+        config.set("target_minver", versions[config.get("plat")])
+
+        -- trace
+        print("checking for the target minimal version ... %s", config.get("target_minver"))
+
+    end
+end
+
 -- check the make
 function check_make(config)
 
