@@ -31,6 +31,13 @@ function init(shellname)
 
 end
 
+-- get the property
+function get(name)
+
+    -- get it
+    return _g[name]
+end
+
 -- run it
 function run(makefile, target, jobs)
 
@@ -73,4 +80,18 @@ function run(makefile, target, jobs)
         raise(ok)
     end
 
+end
+
+-- check the given flags 
+function check(flags)
+
+    -- make an empty makefile
+    local tmpfile = os.tmpfile()
+    io.write(tmpfile, "all:\n")
+
+    -- check it
+    os.run("%s %s -f %s", _g.shellname, ifelse(flags, flags, ""), tmpfile)
+
+    -- remove this makefile
+    os.rm(tmpfile)
 end

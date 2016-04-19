@@ -38,26 +38,10 @@ local platform  = require("platform/platform")
 -- the directories of tools
 function tool._directories(name)
 
-    -- the kinds
-    local kinds = 
-    {
-        cc      = "compiler"
-    ,   cxx     = "compiler"
-    ,   mm      = "compiler"
-    ,   mxx     = "compiler"
-    ,   sc      = "compiler"
-    ,   ar      = "linker"
-    ,   sh      = "linker"
-    ,   ld      = "linker"
-    }
-
-    -- get kind sub-directory
-    local subdir = kinds[name] or ""
-
     -- the directories
-    return  {   path.join(path.join(config.directory(), "tools"), subdir)
-            ,   path.join(path.join(global.directory(), "tools"), subdir)
-            ,   path.join(path.join(xmake._PROGRAM_DIR, "tools"), subdir)
+    return  {   path.join(config.directory(), "tools")
+            ,   path.join(global.directory(), "tools")
+            ,   path.join(xmake._PROGRAM_DIR, "tools")
             }
 end
 
@@ -122,30 +106,19 @@ function tool._find(root, name)
     return file_ok
 end
 
--- load the given tool from the given kind
---
--- the kinds:
--- 
--- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
---
-function tool.load(kind)
-
-    -- get the shell name 
-    local shellname = platform.tool(kind)
-    if not shellname then
-        return nil, string.format("cannot get tool for %s", kind)
-    end
+-- load the given tool from the given shell name
+function tool._load(shellname)
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[kind] then
-        return tool._TOOLS[kind]
+    if tool._TOOLS[shellname] then
+        return tool._TOOLS[shellname]
     end
 
     -- find the tool script path
     local toolpath = nil
     local toolname = path.basename(shellname)
-    for _, dir in ipairs(tool._directories(kind)) do
+    for _, dir in ipairs(tool._directories()) do
 
         -- find this directory
         toolpath = tool._find(dir, toolname)
@@ -182,7 +155,7 @@ function tool.load(kind)
         end
     
         -- save tool to the cache
-        tool._TOOLS[kind] = module
+        tool._TOOLS[shellname] = module
 
         -- ok?
         return module
@@ -192,25 +165,72 @@ function tool.load(kind)
     return nil, errors
 end
 
+-- check the shellname
+function tool._check(shellname)
+ 
+    -- load the tool module
+    local module = tool._load(shellname)
+    if not module then
+        return false
+    end
+
+    -- no checker? attempt to run it directly
+    if not module.check then
+        return 0 == os.execute(string.format("%s > %s 2>&1", shellname, xmake._NULDEV))
+    end
+
+    -- check it
+    local ok, errors = sandbox.load(module.check) 
+    if not ok then
+        utils.verbose(errors)
+    end
+
+    -- ok?
+    return ok
+end
+
+-- load the given tool from the given kind
+--
+-- the kinds:
+-- 
+-- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+--
+function tool.load(kind)
+
+    -- get the shell name 
+    local shellname = platform.tool(kind)
+    if not shellname then
+        return nil, string.format("cannot get tool for %s", kind)
+    end
+
+    -- load it
+    return tool._load(shellname)
+end
+
 -- check the tool and return the absolute path if exists
 function tool.check(shellname, dirs)
 
     -- check
     assert(shellname)
-
-    -- FIXME: 7f00
-    -- attempt to run it directly first
-    if os.execute(string.format("%s > %s 2>&1", shellname, xmake._NULDEV)) ~= 0x7f00 then
+    
+    -- attempt to check it directly first
+    if tool._check(shellname) then
         return shellname
     end
 
-    -- attempt to get it from the given directories
-    for _, dir in ipairs(table.wrap(dirs)) do
-        
-        -- check it
-        local toolpath = path.translate(string.format("%s/%s", dir, shellname))
-        if os.isfile(toolpath) and os.execute(string.format("%s > %s 2>&1", toolpath, xmake._NULDEV)) ~= 0x7f00 then
-            return toolpath
+    -- attempt to check it from the given directories
+    if not path.is_absolute(shellname) then
+        for _, dir in ipairs(table.wrap(dirs)) do
+
+            -- the tool path
+            local toolpath = path.join(dir, shellname)
+            if os.isfile(toolpath) then
+            
+                -- check it
+                if tool._check(toolpath) then
+                    return toolpath
+                end
+            end
         end
     end
 end

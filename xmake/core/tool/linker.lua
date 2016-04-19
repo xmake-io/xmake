@@ -336,7 +336,7 @@ end
 function linker:command(target, objfiles, targetfile, logfile)
 
     -- get it
-    return self:_tool().command(table.concat(table.wrap(objfiles), " "), targetfile, self:_flags(target), logfile)
+    return self:_tool().linkcmd(table.concat(table.wrap(objfiles), " "), targetfile, self:_flags(target), logfile)
 end
 
 -- make the link flag
@@ -371,16 +371,16 @@ function linker:check(flags)
     end
 
     -- check it
-    local ok, results = sandbox.load(ltool.check, flags)
-    if not ok then
-        os.raise(results)
-    end
+    local ok, errors = sandbox.load(ltool.check, flags)
 
     -- trace
-    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(results, "ok", "no"))
+    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(ok, "ok", "no"))
+    if not ok then
+        utils.verbose(errors)
+    end
 
     -- save the checked result
-    self._CHECKED[flags] = results
+    self._CHECKED[flags] = ok
 
     -- ok?
     return ok

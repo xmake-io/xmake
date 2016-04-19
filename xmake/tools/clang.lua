@@ -17,49 +17,29 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        ar.lua
+-- @file        clang.lua
 --
+
+-- inherit gcc
+inherit("gcc")
 
 -- init it
 function init(shellname)
     
-    -- save the shell name
-    _g.shellname = shellname or "ar"
+    -- init super
+    _super.init(shellname or "clang")
 
-    -- init arflags
-    _g.arflags = { "-cr" }
+    -- init shflags
+    _super._g.shflags = { "-dynamiclib", "-fPIC" }
 
+    -- suppress warning 
+    _super._g.cxflags = {"-Qunused-arguments"}
+    _super._g.mxflags = {"-Qunused-arguments"}
+    _super._g.asflags = {"-Qunused-arguments"}
+
+    -- init flags map
+    _super._g.mapflags["-s"] = "-Wl,-S"
+    _super._g.mapflags["-S"] = "-Wl,-S"
+ 
 end
 
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
-
--- make the link flag
-function link(lib)
-end
-
--- make the linkdir flag
-function linkdir(dir)
-end
-
--- make the command
-function command(objfiles, targetfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
-
-    -- make it
-    return format("%s %s %s %s%s", _g.shellname, flags, targetfile, objfiles, redirect)
-end
-
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
-end

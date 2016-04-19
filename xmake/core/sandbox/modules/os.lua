@@ -159,6 +159,13 @@ function sandbox_os.tmpdir()
     return tmpdir
 end
 
+-- get the temporary file
+function sandbox_os.tmpfile()
+   
+    -- get it
+    return os.tmpname()
+end
+
 -- get the program directory
 function sandbox_os.programdir()
    
