@@ -212,7 +212,7 @@ function tool.check(shellname, dirs)
 
     -- check
     assert(shellname)
-    
+
     -- attempt to check it directly first
     if tool._check(shellname) then
         return shellname

@@ -110,3 +110,10 @@ function run(...)
     os.run(...)
 end
 
+-- check the given flags 
+function check(flags)
+
+    -- check it
+    os.run("%s -h", _g.shellname)
+
+end

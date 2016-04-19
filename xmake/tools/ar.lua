@@ -68,5 +68,8 @@ end
 function check(flags)
 
     -- check it
-    os.run("%s %s", _g.shellname, ifelse(flags, flags, ""))
+    local ok = os.execute("%s %s > %s 2>&1", _g.shellname, ifelse(flags, flags, ""), os.nuldev())
+    if ok ~= 0 and ok ~= 256 then
+        raise("not found!")
+    end
 end
