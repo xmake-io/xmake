@@ -26,16 +26,33 @@ function init(shellname)
     -- save the shell name
     _g.shellname = shellname or "gcc"
 
+    -- init mxflags
+    _g.mxflags = {  "-fmessage-length=0"
+                ,   "-pipe"
+                ,   "-fpascal-strings"
+                ,   "\"-DIBOutlet=__attribute__((iboutlet))\""
+                ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
+                ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
+
     -- init shflags
     _g.shflags = { "-shared", "-fPIC" }
+
+    -- init cxflags for the kind: shared
+    _g.shared         = {}
+    _g.shared.cxflags = {"-fPIC"}
 
     -- init flags map
     _g.mapflags = 
     {
-        -- strip
-        ["-s"]  = "-s"
+        -- warnings
+        ["-W1"] = "-Wall"
+    ,   ["-W2"] = "-Wall"
+    ,   ["-W3"] = "-Wall"
+
+         -- strip
+    ,   ["-s"]  = "-s"
     ,   ["-S"]  = "-S"
- 
+
     }
 end
 
@@ -44,6 +61,27 @@ function get(name)
 
     -- get it
     return _g[name]
+end
+
+-- make the define flag
+function define(macro)
+
+    -- make it
+    return "-D" .. macro:gsub("\"", "\\\"")
+end
+
+-- make the undefine flag
+function undefine(macro)
+
+    -- make it
+    return "-U" .. macro
+end
+
+-- make the includedir flag
+function includedir(dir)
+
+    -- make it
+    return "-I" .. dir
 end
 
 -- make the link flag
@@ -60,8 +98,19 @@ function linkdir(dir)
     return "-L" .. dir
 end
 
--- make the command
-function command(objfiles, targetfile, flags, logfile)
+-- make the complie command
+function compcmd(srcfile, objfile, flags, logfile)
+
+    -- redirect
+    local redirect = ""
+    if logfile then redirect = format(" > %s 2>&1", logfile) end
+
+    -- make it
+    return format("%s -c %s -o %s %s%s", _g.shellname, flags, objfile, srcfile, redirect)
+end
+
+-- make the link command
+function linkcmd(objfiles, targetfile, flags, logfile)
 
     -- redirect
     local redirect = ""
@@ -71,31 +120,17 @@ function command(objfiles, targetfile, flags, logfile)
     return format("%s -o %s %s %s%s", _g.shellname, targetfile, objfiles, flags, redirect)
 end
 
--- check the given flags 
-function check(flags)
-
-    -- done
-    local ok = false
-    try
-    {
-        function ()
-    
-            -- check it
-            os.run("%s %s -S -o %s -xc %s > %s 2>&1", _g.shellname, flags, os.nuldev(), os.nuldev(), os.nuldev())
-            
-            -- ok
-            ok = true
-
-        end
-    }
-
-    -- ok?
-    return ok
-end
-
 -- run command
 function run(...)
 
     -- run it
     os.run(...)
 end
+
+-- check the given flags 
+function check(flags)
+
+    -- check it
+    os.run("%s %s -S -o %s -xc %s", _g.shellname, ifelse(flags, flags, ""), os.nuldev(), os.nuldev())
+end
+

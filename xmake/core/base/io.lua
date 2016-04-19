@@ -217,7 +217,7 @@ function io.readall(filepath)
     return data
 end
 
--- write all data to file 
+-- write data to file 
 function io.writall(filepath, data)
 
     -- open file

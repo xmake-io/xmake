@@ -72,7 +72,7 @@ function get(name)
 end
 
 -- make the compile command
-function command(srcfile, objfile, flags, logfile)
+function compcmd(srcfile, objfile, flags, logfile)
 
     -- redirect
     local redirect = ""
@@ -101,5 +101,12 @@ function undefine(macro)
 
     -- make it
     return "-Xcc -U" .. macro
+end
+
+-- run command
+function run(...)
+
+    -- run it
+    os.run(...)
 end
 

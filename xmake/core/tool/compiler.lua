@@ -402,7 +402,7 @@ end
 function compiler:command(target, srcfile, objfile, logfile)
 
     -- get it
-    return self:_tool().command(srcfile, objfile, self:_flags(target), logfile)
+    return self:_tool().compcmd(srcfile, objfile, self:_flags(target), logfile)
 end
 
 -- make the define flag
@@ -444,16 +444,16 @@ function compiler:check(flags)
     end
 
     -- check it
-    local ok, results = sandbox.load(ctool.check, flags)
-    if not ok then
-        os.raise(results)
-    end
+    local ok, errors = sandbox.load(ctool.check, flags)
 
     -- trace
-    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(results, "ok", "no"))
+    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(ok, "ok", "no"))
+    if not ok then
+        utils.verbose(errors)
+    end
 
     -- save the checked result
-    self._CHECKED[flags] = results
+    self._CHECKED[flags] = ok
 
     -- ok?
     return ok

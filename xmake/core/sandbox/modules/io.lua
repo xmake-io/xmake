@@ -136,7 +136,7 @@ function sandbox_io.read(filepath)
     filepath = vformat(filepath)
 
     -- done
-    local result, errors = io.read(filepath)
+    local result, errors = io.readall(filepath)
     if not result then
         raise(errors)
     end
@@ -155,7 +155,7 @@ function sandbox_io.write(filepath, data)
     filepath = vformat(filepath)
 
     -- done
-    local ok, errors = io.write(filepath, data)
+    local ok, errors = io.writall(filepath, data)
     if not ok then
         raise(errors)
     end
