@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        lua.lua
+-- @file        xmake.lua
 --
 
 -- define task

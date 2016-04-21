@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        package.lua
+-- @file        xmake.lua
 --
 
 -- define task
@@ -46,14 +46,14 @@ task("package")
                                                                 -- show the description of all architectures
                                                               , function () 
 
-                                                                    -- import platform menu
-                                                                    import("core.platform.menu")
+                                                                    -- import platform 
+                                                                    import("core.platform.platform")
 
                                                                     -- make description
                                                                     local description = {}
-                                                                    for i, plat in ipairs(menu.plats()) do
+                                                                    for i, plat in ipairs(platform.plats()) do
                                                                         description[i] = "    - " .. plat .. ":"
-                                                                        for _, arch in ipairs(menu.archs(plat)) do
+                                                                        for _, arch in ipairs(platform.archs(plat)) do
                                                                             description[i] = description[i] .. " " .. arch
                                                                         end
                                                                     end

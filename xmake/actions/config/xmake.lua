@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        config.lua
+-- @file        xmake.lua
 --
 
 -- define task
@@ -51,12 +51,12 @@ task("config")
                                                                 -- show the description of all platforms
                                                               , function () 
 
-                                                                    -- import platform menu
-                                                                    import("core.platform.menu")
+                                                                    -- import platform 
+                                                                    import("core.platform.platform")
 
                                                                     -- make description
                                                                     local description = {}
-                                                                    for i, plat in ipairs(menu.plats()) do
+                                                                    for i, plat in ipairs(platform.plats()) do
                                                                         description[i] = "    - " .. plat
                                                                     end
 
@@ -68,14 +68,14 @@ task("config")
                                                                 -- show the description of all architectures
                                                               , function () 
 
-                                                                    -- import platform menu
-                                                                    import("core.platform.menu")
+                                                                    -- import platform 
+                                                                    import("core.platform.platform")
 
                                                                     -- make description
                                                                     local description = {}
-                                                                    for i, plat in ipairs(menu.plats()) do
+                                                                    for i, plat in ipairs(platform.plats()) do
                                                                         description[i] = "    - " .. plat .. ":"
-                                                                        for _, arch in ipairs(menu.archs(plat)) do
+                                                                        for _, arch in ipairs(platform.archs(plat)) do
                                                                             description[i] = description[i] .. " " .. arch
                                                                         end
                                                                     end
@@ -148,7 +148,7 @@ task("config")
                             import("core.platform.menu")
 
                             -- get config menu options
-                            return menu.options_config() 
+                            return menu.options("config")
                         end
 
                     ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }

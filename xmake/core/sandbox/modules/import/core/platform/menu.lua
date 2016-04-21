@@ -24,43 +24,22 @@
 local sandbox_core_platform_menu = sandbox_core_platform_menu or {}
 
 -- load modules
-local platform = require("platform/platform")
+local menu      = require("platform/menu")
+local raise     = require("sandbox/modules/raise")
 
--- get the all platforms
-function sandbox_core_platform_menu.plats()
-
-    -- get it 
-    local plats = platform.plats()
-    assert(plats)
-
-    -- ok
-    return plats
-end
-
--- get the all architectures for the given platform
-function sandbox_core_platform_menu.archs(plat)
+-- get the platform menu options for the given action: config or global
+function sandbox_core_platform_menu.options(action)
 
     -- get it 
-    local archs = platform.archs(plat)
-    assert(archs)
+    local options, errors = menu.options(action)
+    if not options then
+        raise(errors)
+    end
 
-    -- ok
-    return archs
+    -- ok?
+    return options
 end
 
--- get the platform menu options for global
-function sandbox_core_platform_menu.options_global()
-
-    -- get it 
-    return platform.menu("global")
-end
-
--- get the platform menu options for config
-function sandbox_core_platform_menu.options_config()
-
-    -- get it 
-    return platform.menu("config")
-end
 
 -- return module
 return sandbox_core_platform_menu

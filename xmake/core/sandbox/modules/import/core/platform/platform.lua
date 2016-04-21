@@ -30,13 +30,33 @@ local raise     = require("sandbox/modules/raise")
 -- load the current platform
 function sandbox_core_platform_platform.load(plat)
 
-    -- check
-    assert(plat)
-
     -- load the platform configure
-    if not platform.load(plat) then
-        raise("load platform: %s failed!", plat)
+    local ok, errors = platform.load(plat) 
+    if not ok then
+        raise(errors)
     end
+end
+
+-- get the all platforms
+function sandbox_core_platform_platform.plats()
+
+    -- get it 
+    local plats = platform.plats()
+    assert(plats)
+
+    -- ok
+    return plats
+end
+
+-- get the all architectures for the given platform
+function sandbox_core_platform_platform.archs(plat)
+
+    -- get it 
+    local archs = platform.archs(plat)
+    assert(archs)
+
+    -- ok
+    return archs
 end
 
 -- return module
