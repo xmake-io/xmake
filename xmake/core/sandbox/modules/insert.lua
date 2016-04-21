@@ -17,32 +17,10 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        insert.lua
 --
 
--- define task
-task("uninstall")
-
-    -- set category
-    set_task_category("action")
-
-    -- set menu
-    set_task_menu({
-                    -- usage
-                    usage = "xmake uninstall|u [options] [target]"
-
-                    -- description
-                ,   description = "Uninstall the project binary files."
-
-                    -- xmake u
-                ,   shortname = 'u'
-
-                    -- options
-                ,   options = 
-                    {
-                        {nil, "target",     "v",  "all",        "Install the given target."                                     }
-                    }
-                })
-
+-- return module
+return require("sandbox/modules/table").insert
 
 

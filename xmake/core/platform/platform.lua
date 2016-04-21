@@ -20,189 +20,179 @@
 -- @file        platform.lua
 --
 
--- define module: platform
-local platform = platform or {}
+-- define module
+local platform      = platform or {}
+local _instance     = _instance or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local utils     = require("base/utils")
-local config    = require("project/config")
-local global    = require("project/global")
+local os            = require("base/os")
+local path          = require("base/path")
+local utils         = require("base/utils")
+local table         = require("base/table")
+local interpreter   = require("base/interpreter")
+local config        = require("project/config")
+local global        = require("project/global")
 
--- the directories of platforms
+-- get the platform os
+function _instance:os()
+
+    -- get it
+    return self._INFO.os
+end
+
+-- get the platform menu
+function _instance:menu()
+
+    -- get it
+    return self._INFO.menu
+end
+
+-- get the platform hosts
+function _instance:hosts()
+
+    -- get it
+    return self._INFO.hosts
+end
+
+-- get the platform archs
+function _instance:archs()
+
+    -- get it
+    return self._INFO.archs
+end
+
+-- the directories of platform
 function platform._directories()
 
-    return  {   path.join(global.directory(), "platforms")
-            ,   path.join(xmake._CORE_DIR, "platform/platforms")
+    -- the directories
+    return  {   path.join(config.directory(), "platforms")
+            ,   path.join(global.directory(), "platforms")
+            ,   path.join(xmake._PROGRAM_DIR, "platforms")
             }
 end
 
--- load the given platform from the given directory
-function platform._load_from(dir, plat)
+-- the interpreter
+function platform._interpreter()
 
-    -- the platform file path
-    local filepath = path.join(dir, plat, plat .. ".lua")
-    if os.isfile(filepath) then
-
-        -- load script
-        local script = loadfile(filepath)
-        if script then
-
-            -- load module
-            local module = script()
-            if module then
-
-                -- save directory
-                module._DIRECTORY = path.directory(filepath)
-                assert(module._DIRECTORY)
-
-                -- ok
-                return module
-            end
-        end
+    -- the interpreter has been initialized? return it directly
+    if platform._INTERPRETER then
+        return platform._INTERPRETER
     end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+ 
+    -- register api: platform()
+    interp:api_register_scope("platform")
+
+    -- register api: set_platform_os()
+    interp:api_register_set_values("platform", "platform", "os")
+
+    -- register api: set_platform_hosts() 
+    interp:api_register_set_values("platform", "platform", "hosts")
+
+    -- register api: set_platform_archs() 
+    interp:api_register_set_values("platform", "platform", "archs")
+
+    -- register api: set_platform_menu() 
+    interp:api_register_set_values("platform", "platform", "menu")
+
+    -- register api: on_platform_load()
+    interp:api_register_on_script("platform", "platform", "load")
+
+    -- save interpreter
+    platform._INTERPRETER = interp
+
+    -- ok?
+    return interp
 end
 
 -- load the given platform 
-function platform._load(plat)
-
-    -- check
-    assert(plat)
-
-    -- the module
-    platform._MODULES = platform._MODULES or {}
-    local module = platform._MODULES[plat]
-
-    -- return it directory if ok
-    if module then return module end
-
-    -- load module
-    local dirs = platform._directories()
-    for _, dir in ipairs(dirs) do
-
-        module = platform._load_from(dir, plat) 
-        if module then
-            break
-        end
-
-    end
-
-    -- cache it if ok
-    if module then
-        platform._MODULES[plat] = module
-    end
-
-    -- ok?
-    return module
-end
-
--- get the current platform module
-function platform.module()
-
-    -- get the platform
-    local plat = config.get("plat")
-    if plat then
-        -- load it
-        return platform._load(plat)
-    end
-end
-
--- get the current platform module directory
-function platform.directory()
-
-    -- load it
-    local module = platform.module()
-    if module then
-        return module._DIRECTORY
-    end
-end
-
--- load the configure of the given platform
 function platform.load(plat)
 
-    -- check
-    assert(plat)
+    -- get platform name
+    plat = plat or config.get("plat")
+    if not plat then
+        return nil, string.format("unknown platform!")
+    end
 
-    -- the configure
-    platform._CONFIGS = platform._CONFIGS or {}
-    local configs = platform._CONFIGS[plat]
+    -- get it directly from cache dirst
+    platform._PLATFORMS = platform._PLATFORMS or {}
+    if platform._PLATFORMS[plat] then
+        return platform._PLATFORMS[plat]
+    end
 
-    -- return it directly if exists
-    if configs then
-        return configs
+    -- find the platform script path
+    local scriptpath = nil
+    for _, dir in ipairs(platform._directories()) do
+
+        -- find this directory
+        scriptpath = path.join(path.join(dir, plat), "xmake.lua")
+        if os.isfile(scriptpath) then
+            break
+        end
+    end
+
+    -- not exists?
+    if not scriptpath or not os.isfile(scriptpath) then
+        return nil, string.format("the platform %s not found!", plat)
     end
 
     -- load platform
-    local module = platform._load(plat)
-    if module then
-          
-        -- init configure
-        platform._CONFIGS[plat]= {}
-        configs = platform._CONFIGS[plat]
-
-        -- make configure
-        module.make(configs)
+    local results, errors = platform._interpreter():load(scriptpath, "platform", true, false)
+    if not results and os.isfile(scriptpath) then
+        -- failed
+        return nil, errors
     end
 
-    -- ok?
-    return configs
+    -- check the platform name
+    if not results[plat] then
+        return nil, string.format("the platform %s not found!", plat)
+    end
+
+    -- new an instance
+    local instance = table.inherit(_instance)
+
+    -- save name and info
+    instance._NAME = plat
+    instance._INFO = results[plat]
+
+    -- save instance to the cache
+    platform._PLATFORMS[plat] = instance
+
+    -- ok
+    return instance
+
 end
 
 -- get the platform os
-function platform.os()
+function platform.os(plat)
 
-    -- get module
-    local module = platform.module()
-    if not module then return end
-
-    -- ok?
-    return module._OS
-end
-
--- get the given configure
-function platform.get(name)
-
-    -- check
-    assert(platform._CONFIGS)
-
-    -- get the current platform configure
-    local configs = platform.load(config.get("plat"))
-    if configs then
-        -- get it
-        return configs[name]
-    end
-end
-
--- get the given tool
-function platform.tool(name)
-
-    -- check
-    assert(name)
-
-    -- get tools
-    local tools = platform.get("tools")
-    if tools then
-        return tools[name]
+    -- load the platform 
+    local instance = platform.load(plat)
+    if not instance then
+        return 
     end
 
+    -- get it
+    return instance:os()
 end
 
--- get the given format
-function platform.format(kind)
+-- get the platform archs
+function platform.archs(plat)
 
-    -- check
-    assert(kind)
-
-    -- get formats
-    local formats = platform.get("formats")
-    if formats then
-        return formats[kind]
+    -- load the platform 
+    local instance = platform.load(plat)
+    if not instance then
+        return 
     end
 
+    -- get it
+    return instance:archs()
 end
 
--- list all platforms
+-- get the all platforms
 function platform.plats()
     
     -- return it directly if exists
@@ -210,104 +200,28 @@ function platform.plats()
         return platform._PLATS 
     end
 
-    -- make list
-    local list = {}
-    local dirs = platform._directories()
+    -- get all platforms
+    local plats = {}
+    local dirs  = platform._directories()
     for _, dir in ipairs(dirs) do
 
         -- get the platform list 
-        local plats = os.match(path.join(dir, "*"), true)
-        if plats then
-            for _, v in ipairs(plats) do
-                table.insert(list, path.basename(v))
-            end
-        end
-
-    end
-
-    -- save it
-    platform._PLATS = list
-
-    -- ok
-    return list
-end
-
--- list all architectures
-function platform.archs(plat)
-
-    -- check
-    assert(plat)
- 
-    -- load all platform configs
-    local archs = {}
-    local module = platform._load(plat)
-    if module and module._ARCHS then
-       for _, arch in ipairs(module._ARCHS) do
-            table.insert(archs, arch)
-       end
-    end
-
-    -- ok
-    return archs
-end
-
--- get the option menu for action: xmake config or global
-function platform.menu(action)
-    
-    -- check
-    assert(action)
-
-    -- get all platforms
-    local plats = platform.plats()
-    assert(plats)
-
-    -- load and merge all platform menus
-    local menus = {}
-    local exist = {}
-    for _, plat in ipairs(plats) do
-
-        -- load platform
-        local module = platform._load(plat)
-        if module and module.menu then
-
-            -- get the platform menu
-            local menu = module.menu(action)
-            if menu then
-
-                -- exists options?
-                local exists = false
-                for _, option in ipairs(menu) do
-                    local name = option[2]
-                    if name and not exist[name] then
-                        exists = true
-                        break
-                    end
-                end
-
-                -- merge it and remove repeat if exists options
-                if exists then
-                    -- get the platform menu option
-                    for _, option in ipairs(menu) do
-
-                        -- merge it and remove repeat 
-                        local name = option[2]
-                        if name then
-                            if not exist[name] then
-                                table.insert(menus, option)
-                                exist[name] = true
-                            end
-                        else
-                            table.insert(menus, option)
-                        end
-                    end
+        local platpathes = os.match(path.join(dir, "*"), true)
+        if platpathes then
+            for _, platpath in ipairs(platpathes) do
+                if os.isfile(path.join(platpath, "xmake.lua")) then
+                    table.insert(plats, path.basename(platpath))
                 end
             end
         end
     end
 
-    -- get all platform menus
-    return menus
+    -- save them
+    platform._PLATS = plats
+
+    -- ok
+    return plats
 end
 
--- return module: platform
+-- return module
 return platform

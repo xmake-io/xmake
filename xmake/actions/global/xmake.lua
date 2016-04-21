@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        global.lua
+-- @file        xmake.lua
 --
 
 -- define task
@@ -57,7 +57,7 @@ task("global")
                             import("core.platform.menu")
 
                             -- get global menu options
-                            return menu.options_global() 
+                            return menu.options("global")
                         end
 
                     }
