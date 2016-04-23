@@ -24,27 +24,14 @@
 import("core.tool.tool")
 
 -- check the architecture
-function check_arch(config)
+function check_arch(config, default)
 
     -- get the architecture
     local arch = config.get("arch")
     if not arch then
 
-        -- the default architecture
-        local archs =
-        {
-            macosx          = os.arch()
-        ,   linux           = os.arch()
-        ,   windows         = os.arch()
-        ,   iphoneos        = "armv7"
-        ,   iphonesimulator = os.arch()
-        ,   watchos         = "armv7"
-        ,   watchsimulator  = os.arch()
-        ,   android         = "armv7-a"
-        }
-
         -- init the default architecture
-        config.set("arch", archs[config.get("plat")])
+        config.set("arch", default or os.arch())
 
         -- trace
         print("checking for the architecture ... %s", config.get("arch"))

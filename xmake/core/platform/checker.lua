@@ -32,14 +32,26 @@ local global    = require("project/global")
 local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
 
--- check the list
-function checker._checklist(funclist, ...)
+-- check it
+function checker._check(callers, ...)
 
     -- check all
-    for _, func in ipairs(table.wrap(funclist)) do
+    for _, caller in ipairs(table.wrap(callers)) do
+
+        -- has arguments?
+        local args = nil
+        if type(caller) == "table" then
+            if #caller > 1 then
+                args = caller[2]
+            end
+            caller = caller[1]
+        end
+
+        -- check
+        assert(type(caller) == "function")
         
         -- call it
-        local ok, errors = sandbox.load(func, ...)
+        local ok, errors = sandbox.load(caller, ..., args)
         if not ok then
             return false, errors
         end
@@ -84,7 +96,7 @@ function checker.check(name)
         end
 
         -- check it
-        return checker._checklist(module.get("config"), config)
+        return checker._check(module.get("config"), config)
 
     -- check the global configure?
     elseif name == "global" then
@@ -108,7 +120,7 @@ function checker.check(name)
                 end
 
                 -- check it
-                local ok, errors = checker._checklist(module.get("global"), global)
+                local ok, errors = checker._check(module.get("global"), global)
                 if not ok then
                     return false, errors
                 end
