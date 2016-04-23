@@ -30,8 +30,23 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local table         = require("base/table")
 local interpreter   = require("base/interpreter")
+local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local global        = require("project/global")
+
+-- new an instance
+function _instance.new(name, info)
+
+    -- new an instance
+    local instance = table.inherit(_instance)
+
+    -- save name and info
+    instance._NAME = name
+    instance._INFO = info
+
+    -- ok
+    return instance
+end
 
 -- get the platform os
 function _instance:os()
@@ -59,6 +74,31 @@ function _instance:archs()
 
     -- get it
     return self._INFO.archs
+end
+
+-- get the platform configure
+function _instance:get(name)
+
+    -- the info
+    local info = self._INFO
+
+    -- load it first
+    if self._g == nil and info.load ~= nil then
+
+        -- load it
+        local ok, errors = sandbox.load(info.load)
+        if not ok then
+            raise(errors)
+        end
+
+        -- save _g
+        self._g = getfenv(info.load)._g
+    end
+
+    -- get it
+    if self._g ~= nil then
+        return self._g[name]
+    end
 end
 
 -- the directories of platform
@@ -142,7 +182,6 @@ function platform.load(plat)
     -- load platform
     local results, errors = platform._interpreter():load(scriptpath, "platform", true, false)
     if not results and os.isfile(scriptpath) then
-        -- failed
         return nil, errors
     end
 
@@ -152,11 +191,10 @@ function platform.load(plat)
     end
 
     -- new an instance
-    local instance = table.inherit(_instance)
-
-    -- save name and info
-    instance._NAME = plat
-    instance._INFO = results[plat]
+    local instance, errors = _instance.new(plat, results[plat])
+    if not instance then
+        return nil, errors
+    end
 
     -- save instance to the cache
     platform._PLATFORMS[plat] = instance
@@ -177,6 +215,16 @@ function platform.os(plat)
 
     -- get it
     return instance:os()
+end
+
+-- get the given platform configure
+function platform.get(name)
+
+    -- get the current platform configure
+    local instance = platform.load()
+    if instance then
+        return instance:get(name)
+    end
 end
 
 -- get the platform archs
@@ -222,6 +270,27 @@ function platform.plats()
     -- ok
     return plats
 end
+
+-- get the given tool
+function platform.tool(name)
+
+    -- get tools
+    local tools = platform.get("tools")
+    if tools then
+        return tools[name]
+    end
+end
+
+-- get the given format
+function platform.format(kind)
+
+    -- get formats
+    local formats = platform.get("formats")
+    if formats then
+        return formats[kind]
+    end
+end
+
 
 -- return module
 return platform
