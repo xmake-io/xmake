@@ -223,7 +223,7 @@ function table._dump(self, exclude, level)
         io.write("<userdata>")  
     else  
         -- error
-        print("error: invalid object type: %s", type(self))
+        print(string.format("error: invalid object type: %s", type(self)))
         return false
     end  
 

@@ -30,12 +30,24 @@ function check_arch(config)
     local arch = config.get("arch")
     if not arch then
 
+        -- the default architecture
+        local archs =
+        {
+            macosx          = os.arch()
+        ,   linux           = os.arch()
+        ,   windows         = os.arch()
+        ,   iphoneos        = "armv7"
+        ,   iphonesimulator = os.arch()
+        ,   watchos         = "armv7"
+        ,   watchsimulator  = os.arch()
+        ,   android         = "armv7-a"
+        }
+
         -- init the default architecture
-        config.set("arch", os.arch())
+        config.set("arch", archs[config.get("plat")])
 
         -- trace
         print("checking for the architecture ... %s", config.get("arch"))
-
     end
 end
 
@@ -199,7 +211,7 @@ function check_ccache(config)
 end
 
 -- check the toolchain
-function check_toolchain(config, kind, cross, name, description)
+function check_toolchain(config, kind, cross, name, description, check)
 
     -- get the tool path
     local toolpath = config.get(kind)
@@ -207,6 +219,23 @@ function check_toolchain(config, kind, cross, name, description)
 
         -- get the cross
         cross = config.get("cross") or cross
+
+        -- check it using the custom script
+        if not toolpath and check then
+
+            -- check it
+            try
+            {
+                function ()
+
+                    -- check it
+                    check(cross .. name)
+
+                    -- ok
+                    toolpath = cross .. name
+                end
+            }
+        end
 
         -- attempt to get it from the given cross toolchains
         local toolchains = config.get("toolchains") 

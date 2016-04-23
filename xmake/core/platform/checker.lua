@@ -32,16 +32,6 @@ local global    = require("project/global")
 local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
 
--- the directories of checker
-function checker._directories(plat)
-
-    -- the directories
-    return  {   path.join(path.join(config.directory(), "platforms"), plat)
-            ,   path.join(path.join(global.directory(), "platforms"), plat)
-            ,   path.join(path.join(xmake._PROGRAM_DIR, "platforms"), plat)
-            }
-end
-
 -- check the list
 function checker._checklist(funclist, ...)
 
@@ -62,62 +52,14 @@ end
 -- load the given checker from the given platform
 function checker.load(plat)
 
-    -- check
-    assert(plat)
-
-    -- get it directly from cache dirst
-    checker._CHECKERS = checker._CHECKERS or {}
-    if checker._CHECKERS[plat] then
-        return checker._CHECKERS[plat]
+    -- load platform
+    local instance, errors = platform.load(plat)
+    if not instance then
+        return nil, errors
     end
 
-    -- find the checker script path
-    local scriptpath = nil
-    for _, dir in ipairs(checker._directories(plat)) do
-
-        -- find this directory
-        scriptpath = path.join(dir, "checker.lua")
-        if os.isfile(scriptpath) then
-            break
-        end
-
-    end
-
-    -- not exists?
-    if not scriptpath or not os.isfile(scriptpath) then
-        return nil, string.format("the checker of %s not found!", plat)
-    end
-
-    -- load script
-    local script, errors = loadfile(scriptpath)
-    if script then
-
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, nil, path.directory(scriptpath))
-        if not instance then
-            return nil, errors
-        end
-
-        -- import the module
-        local module, errors = instance:import()
-        if not module then
-            return nil, errors
-        end
-
-        -- init the module
-        if module.init then
-            module.init()
-        end
-    
-        -- save tool to the cache
-        checker._CHECKERS[plat] = module
-
-        -- ok?
-        return module
-    end
-
-    -- failed
-    return nil, errors
+    -- get checker
+    return instance:checker()
 end
 
 -- check the project or global configure
@@ -150,14 +92,20 @@ function checker.check(name)
         -- check all platforms with the current host
         for _, plat in ipairs(table.wrap(platform.plats())) do
 
-            -- load the checker module
-            local module, errors = checker.load(plat)
-            if not module then
+            -- load platform
+            local instance, errors = platform.load(plat)
+            if not instance then
                 return false, errors
             end
 
             -- belong to the current host?
-            if module.get("host") == xmake._HOST then
+            if instance:host() == xmake._HOST then
+
+                -- get the checker module
+                local module, errors = instance:checker()
+                if not module then
+                    return false, errors
+                end
 
                 -- check it
                 local ok, errors = checker._checklist(module.get("global"), global)
