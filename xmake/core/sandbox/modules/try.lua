@@ -21,6 +21,7 @@
 --
 
 -- load modules
+local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
@@ -107,8 +108,11 @@ function sandbox_try.try(block)
 
     -- run the finally function
     if funcs and funcs.finally then
-        funcs.finally()
+        funcs.finally(utils.ifelse(ok, errors, nil))
     end
+
+    -- ok?
+    return utils.ifelse(ok, errors, nil)
 end
 
 -- return module

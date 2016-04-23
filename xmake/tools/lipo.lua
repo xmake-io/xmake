@@ -17,33 +17,38 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        _xmake_main.lua
+-- @file        lipo.lua
 --
 
--- init namespace: xmake
-xmake                   = xmake or {}
-xmake._ARGV             = _ARGV
-xmake._HOST             = _HOST
-xmake._ARCH             = _ARCH
-xmake._NULDEV           = _NULDEV
-xmake._VERSION          = _VERSION
-xmake._PROGRAM_DIR      = _PROGRAM_DIR
-xmake._PROJECT_DIR      = _PROJECT_DIR
-xmake._CORE_DIR         = _PROGRAM_DIR .. "/core"
-xmake._TOOLS_DIR        = _PROGRAM_DIR .. "/tools"
-xmake._PACKAGES_DIR     = _PROGRAM_DIR .. "/packages"
-xmake._TEMPLATES_DIR    = _PROGRAM_DIR .. "/templates"
-xmake._PROJECT_FILE     = "xmake.lua"
+-- imports
+import("core.base.option")
 
--- init package path
-package.path = xmake._CORE_DIR .. "/?.lua;" .. package.path
+-- init it
+function init(shellname)
 
--- load modules
-local main = require("main")
+    -- save name
+    _g.shellname = shellname or "lipo"
 
--- the main function
-function _xmake_main()
-
-    -- done main
-    return main.done()
 end
+
+-- get the property
+function get(name)
+
+    -- get it
+    return _g[name]
+end
+
+-- run command
+function run(...)
+
+    -- run it
+    os.run(...)
+end
+
+-- check the given flags 
+function check(flags)
+
+    -- check it
+    os.run("xcrun -find lipo")
+end
+

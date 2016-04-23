@@ -59,7 +59,6 @@ function sandbox._traceback(errors)
 
         -- get debug info
         local info = debug.getinfo(level, "Sln")
-        table.dump(info)
 
         -- end?
         if not info then

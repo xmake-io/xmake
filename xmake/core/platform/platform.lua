@@ -35,14 +35,15 @@ local config        = require("project/config")
 local global        = require("project/global")
 
 -- new an instance
-function _instance.new(name, info)
+function _instance.new(name, info, rootdir)
 
     -- new an instance
     local instance = table.inherit(_instance)
 
-    -- save name and info
-    instance._NAME = name
-    instance._INFO = info
+    -- init instance
+    instance._NAME      = name
+    instance._INFO      = info
+    instance._ROOTDIR   = rootdir
 
     -- ok
     return instance
@@ -74,6 +75,59 @@ function _instance:archs()
 
     -- get it
     return self._INFO.archs
+end
+
+-- get the checker
+function _instance:checker()
+
+    -- return it directly if cached
+    if self._CHECKER then
+        return self._CHECKER
+    end
+
+    -- get checker
+    if not self._INFO.checker then
+        return nil, string.format("the checker of %s not found!", self._NAME)
+    end
+
+    -- get the script path
+    local scriptpath = path.join(self._ROOTDIR, self._INFO.checker .. ".lua")
+    
+    -- not exists?
+    if not scriptpath or not os.isfile(scriptpath) then
+        return nil, string.format("the checker of %s not found!", self._NAME)
+    end
+
+    -- load script
+    local script, errors = loadfile(scriptpath)
+    if script then
+
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.new(script, nil, self._ROOTDIR)
+        if not instance then
+            return nil, errors
+        end
+
+        -- import the module
+        local module, errors = instance:import()
+        if not module then
+            return nil, errors
+        end
+
+        -- init the module
+        if module.init then
+            module.init()
+        end
+    
+        -- save tool to the cache
+        self._CHECKER = module
+
+        -- ok?
+        return module
+    end
+
+    -- failed
+    return nil, errors
 end
 
 -- get the platform configure
@@ -138,6 +192,9 @@ function platform._interpreter()
     -- register api: set_platform_menu() 
     interp:api_register_set_values("platform", "platform", "menu")
 
+    -- register api: set_platform_checker()
+    interp:api_register_set_values("platform", "platform", "checker")
+
     -- register api: on_platform_load()
     interp:api_register_on_script("platform", "platform", "load")
 
@@ -191,7 +248,7 @@ function platform.load(plat)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(plat, results[plat])
+    local instance, errors = _instance.new(plat, results[plat], platform._interpreter():rootdir())
     if not instance then
         return nil, errors
     end

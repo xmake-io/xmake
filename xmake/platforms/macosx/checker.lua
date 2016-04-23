@@ -47,9 +47,6 @@ end
 -- init it
 function init()
 
-    -- init host
-    _g.host = "macosx"
-
     -- init the check list of config
     _g.config = 
     {

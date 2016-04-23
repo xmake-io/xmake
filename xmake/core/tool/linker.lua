@@ -229,7 +229,7 @@ end
 function linker:_addflags_from_platform(flags)
 
     -- add flags 
-    table.join2(flags, self:_mapflags(platform.get(self:_flagname())))
+    table.join2(flags, platform.get(self:_flagname()))
 
     -- add the linkdirs flags 
     for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do

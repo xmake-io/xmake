@@ -117,7 +117,7 @@ function tool._load(shellname)
 
     -- find the tool script path
     local toolpath = nil
-    local toolname = path.basename(shellname)
+    local toolname = path.filename(shellname)
     for _, dir in ipairs(tool._directories()) do
 
         -- find this directory

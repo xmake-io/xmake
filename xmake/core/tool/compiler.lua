@@ -272,7 +272,7 @@ function compiler:_addflags_from_platform(flags)
 
     -- add flags 
     for _, flagname in ipairs(self:_flagnames()) do
-        table.join2(flags, self:_mapflags(platform.get(flagname)))
+        table.join2(flags, platform.get(flagname))
     end
 
     -- add the includedirs flags

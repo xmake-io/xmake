@@ -166,6 +166,13 @@ function sandbox_os.tmpfile()
     return os.tmpname()
 end
 
+-- get the tools directory
+function sandbox_os.toolsdir()
+   
+    -- get it
+    return xmake._TOOLS_DIR
+end
+
 -- get the program directory
 function sandbox_os.programdir()
    
