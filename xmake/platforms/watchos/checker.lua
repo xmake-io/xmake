@@ -64,7 +64,7 @@ function init()
     -- init the check list of config
     _g.config = 
     {
-        { checker.check_arch, "armv7" }
+        { checker.check_arch, "armv7k" }
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver

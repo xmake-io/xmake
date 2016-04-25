@@ -69,8 +69,8 @@ platform("iphonesimulator")
         _g.cxflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
         _g.mxflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
         _g.asflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
-        _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphonesimulator-version-min=" .. target_minver }
-        _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphonesimulator-version-min=" .. target_minver }
+        _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+        _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
         _g.ldflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
         _g.shflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
         _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) }

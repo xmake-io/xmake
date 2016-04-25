@@ -30,7 +30,7 @@ platform("watchsimulator")
     set_platform_hosts("macosx")
 
     -- set archs
-    set_platform_archs("i386", "x86_64")
+    set_platform_archs("i386")
 
     -- set checker
     set_platform_checker("checker")
@@ -66,13 +66,13 @@ platform("watchsimulator")
         -- init flags for architecture
         local arch          = config.get("arch")
         local target_minver = config.get("target_minver")
-        _g.cxflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
-        _g.mxflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
-        _g.asflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
-        _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mwatchsimulator-version-min=" .. target_minver }
-        _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mwatchsimulator-version-min=" .. target_minver }
-        _g.ldflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
-        _g.shflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+        _g.cxflags = { "-arch " .. arch, "-mwatchos-simulator-version-min=" .. target_minver }
+        _g.mxflags = { "-arch " .. arch, "-mwatchos-simulator-version-min=" .. target_minver }
+        _g.asflags = { "-arch " .. arch, "-mwatchos-simulator-version-min=" .. target_minver }
+        _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mwatchos-simulator-version-min=" .. target_minver }
+        _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mwatchos-simulator-version-min=" .. target_minver }
+        _g.ldflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mwatchos-simulator-version-min=" .. target_minver }
+        _g.shflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mwatchos-simulator-version-min=" .. target_minver }
         _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) }
 
         -- init flags for the xcode sdk directory

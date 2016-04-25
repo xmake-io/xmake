@@ -134,19 +134,18 @@ function check_target_minver(config)
     local target_minver = config.get("target_minver")
     if not target_minver then
 
-        -- TODO
         -- the default versions
         local versions =
         {
             macosx          = "10.9"
         ,   iphoneos        = "7.0"
         ,   iphonesimulator = "7.0"
-        ,   watchos         = "7.0"
-        ,   watchsimulator  = "7.0"
+        ,   watchos         = "2.1"
+        ,   watchsimulator  = "2.1"
         }
 
         -- init the default target minimal version
-        config.set("target_minver", versions[config.get("plat")])
+        config.set("target_minver", config.get("xcode_sdkver") or versions[config.get("plat")])
 
         -- trace
         print("checking for the target minimal version ... %s", config.get("target_minver"))
