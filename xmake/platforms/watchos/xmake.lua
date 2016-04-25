@@ -30,7 +30,7 @@ platform("watchos")
     set_platform_hosts("macosx")
 
     -- set archs
-    set_platform_archs("armv7", "armv7s", "arm64")
+    set_platform_archs("armv7k")
 
     -- set checker
     set_platform_checker("checker")

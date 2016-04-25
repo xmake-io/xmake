@@ -50,7 +50,7 @@ function init()
     -- init the check list of config
     _g.config = 
     {
-        { checker.check_arch, "x86_64" }
+        { checker.check_arch, "i386" }
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
