@@ -204,13 +204,13 @@ function sandbox_os.execute(cmd, ...)
 end
 
 -- match files or directories
-function sandbox_os.match(pattern, findir)
+function sandbox_os.match(pattern, findir, ...)
 
     -- check
     assert(pattern)
 
     -- format it first
-    pattern = vformat(pattern)
+    pattern = vformat(pattern, ...)
 
     -- match it
     return os.match(pattern, findir)
