@@ -63,6 +63,7 @@ function init()
     _g.global = 
     {
         checker.check_xcode
+    ,   checker.check_make
     ,   checker.check_ccache
     }
 

@@ -111,18 +111,23 @@ function checker.check(name)
             end
 
             -- belong to the current host?
-            if instance:host() == xmake._HOST then
+            for _, host in ipairs(table.wrap(instance:hosts())) do
+                if host == xmake._HOST then
 
-                -- get the checker module
-                local module, errors = instance:checker()
-                if not module then
-                    return false, errors
-                end
+                    -- get the checker module
+                    local module, errors = instance:checker()
+                    if not module then
+                        return false, errors
+                    end
 
-                -- check it
-                local ok, errors = checker._check(module.get("global"), global)
-                if not ok then
-                    return false, errors
+                    -- check it
+                    local ok, errors = checker._check(module.get("global"), global)
+                    if not ok then
+                        return false, errors
+                    end
+
+                    -- ok
+                    break
                 end
             end
         end
