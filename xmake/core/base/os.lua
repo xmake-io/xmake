@@ -235,7 +235,7 @@ end
 function os.run(cmd, ...)
 
     -- make temporary log file
-    local log = os.tmpname()
+    local log = path.join(os.tmpdir(), "xmake.os.run.log")
 
     -- run command
     if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then

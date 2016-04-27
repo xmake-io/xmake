@@ -86,7 +86,7 @@ end
 function check(flags)
 
     -- make an empty makefile
-    local tmpfile = os.tmpfile()
+    local tmpfile = path.join(os.tmpdir(), "xmake.checker.make")
     io.write(tmpfile, "all:\n")
 
     -- check it
