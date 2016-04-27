@@ -159,13 +159,6 @@ function sandbox_os.tmpdir()
     return tmpdir
 end
 
--- get the temporary file
-function sandbox_os.tmpfile()
-   
-    -- get it
-    return os.tmpname()
-end
-
 -- get the tools directory
 function sandbox_os.toolsdir()
    
@@ -283,6 +276,25 @@ function sandbox_os.nuldev()
     return xmake._NULDEV
 end
 
+-- get the envirnoment variables
+function sandbox_os.getenv(name)
+
+    -- check
+    assert(name)
+
+    -- get it
+    return os.getenv(name)
+end
+
+-- set the envirnoment variables
+function sandbox_os.setenv(name, values)
+
+    -- check
+    assert(name)
+
+    -- set it
+    os.setenv(name, values)
+end
 
 -- return module
 return sandbox_os
