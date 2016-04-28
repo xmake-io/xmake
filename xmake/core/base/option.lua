@@ -52,7 +52,6 @@ function option._translate(menu)
 
     -- save menu
     option._MENU = menu
-
 end
 
 -- get the task menu
