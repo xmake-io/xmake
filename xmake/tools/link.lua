@@ -128,10 +128,9 @@ function check(flags)
     local srcfile = path.join(os.tmpdir(), "xmake.cl.c")
     io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
 
-    -- TODO import compiler
     -- check it
     os.run("cl -c -Fo%s %s", objfile, srcfile)
-    os.run("%s %s -out:%s %s", _g.shellname, flags, exefile, objfile)
+    os.run("%s %s -out:%s %s", _g.shellname, ifelse(flags, flags, ""), exefile, objfile)
 
     -- remove files
     os.rm(objfile)

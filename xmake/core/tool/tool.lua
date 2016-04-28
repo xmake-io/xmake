@@ -76,6 +76,9 @@ function tool._find(root, name)
     -- make the lower name
     name = name:lower()
 
+    -- remove arguments: -xxx or --xxx
+    name = (name:gsub("%s%-+%w+", " "))
+
     -- get all tool files
     local file_ok = nil
     local score_maxn = 0
