@@ -79,6 +79,9 @@ function tool._find(root, name)
     -- remove arguments: -xxx or --xxx
     name = (name:gsub("%s%-+%w+", " "))
 
+    -- remove suffix: ".xxx"
+    name = (name:gsub("%.%w+", ""))
+
     -- get all tool files
     local file_ok = nil
     local score_maxn = 0
@@ -205,7 +208,7 @@ function tool.load(kind)
     if not shellname then
         return nil, string.format("cannot get tool for %s", kind)
     end
-
+   
     -- load it
     return tool._load(shellname)
 end
