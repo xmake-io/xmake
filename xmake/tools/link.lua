@@ -85,7 +85,7 @@ function linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(srcfile, objfile, flags, logfile)
+function linkcmd(objfiles, targetfile, flags, logfile)
 
     -- redirect
     local redirect = ""
