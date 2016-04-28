@@ -17,17 +17,18 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        make.lua
+-- @file        nmake.lua
 --
 
 -- imports
+import("utils.vsenv")
 import("core.base.option")
 
 -- init it
 function init(shellname)
 
     -- save name
-    _g.shellname = shellname or "make"
+    _g.shellname = shellname or "nmake.exe"
 
 end
 
@@ -41,57 +42,34 @@ end
 -- run it
 function run(makefile, target, jobs)
 
-    -- enable jobs?
-    if jobs ~= nil then
-        if tonumber(jobs) ~= 0 then
-            jobs = "-j" .. jobs
-        else
-            jobs = "-j"
-        end
-    else
-        jobs = ""
-    end
-
     -- is verbose?
     local verbose = ifelse(option.get("verbose"), "-v", "")
 
-    -- run it
-    local ok = -1
+    -- enter vs envirnoment
+    vsenv.enter()
+
+    -- run command
     if makefile and os.isfile(makefile) then
-        ok = os.execute("%s -r %s -f %s %s VERBOSE=%s", _g.shellname, jobs, makefile, target or "", verbose)
+        os.run("%s /nologo /f %s %s VERBOSE=%s", _g.shellname, makefile, target or "", verbose)
     else  
-        ok = os.execute("%s -r %s %s VERBOSE=%s", _g.shellname, jobs, target or "", verbose)
+        os.run("%s /nologo %s VERBOSE=%s", _g.shellname, target or "", verbose)
     end
 
-    -- failed 
-    if ok ~= 0 then
-
-        -- attempt to run it again for getting the error logs without jobs
-        if makefile and os.isfile(makefile) then
-            ok = os.execute("%s -r -f %s %s VERBOSE=%s", _g.shellname, makefile, target or "", verbose)
-        else  
-            ok = os.execute("%s -r %s VERBOSE=%s", _g.shellname, target or "", verbose)
-        end
-
-    end
-
-    -- always failed?
-    if ok ~= 0 then
-        raise(ok)
-    end
-
+    -- leave vs envirnoment
+    vsenv.leave()
 end
 
 -- check the given flags 
 function check(flags)
 
     -- make an empty makefile
-    local makefile = path.join(os.tmpdir(), "xmake.checker.make")
+    local makefile = path.join(os.tmpdir(), "xmake.checker.nmake")
     io.write(makefile, "all:\n")
 
     -- check it
-    os.run("%s %s -f %s", _g.shellname, ifelse(flags, flags, ""), makefile)
+    os.run("%s /nologo %s /f %s", _g.shellname, ifelse(flags, flags, ""), makefile)
 
     -- remove this makefile
     os.rm(makefile)
 end
+
