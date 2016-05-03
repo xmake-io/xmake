@@ -382,24 +382,8 @@ function task.run(name)
         return false, string.format("task(\"%s\"): no run script, please call on_task_run() first!", name)
     end
 
-    -- run on_before, on_run, on_after
-    local on_scripts = {taskinfo.before, taskinfo.run, taskinfo.after}
-    for i = 1, 3 do
-
-        -- get script
-        local on_script = on_scripts[i]
-        if on_script then
-
-            -- call it in the sandbox
-            local ok, errors = sandbox.load(on_script)
-            if not ok then
-                return false, errors
-            end
-        end
-    end
-
-    -- ok
-    return true
+    -- run task
+    return sandbox.load(taskinfo.run)
 end
 
 -- the menu

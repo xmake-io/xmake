@@ -379,6 +379,30 @@ function project._interpreter()
                                                         ,   "linkdirs" 
                                                         ,   "includedirs")
 
+ 
+    -- register api: on_action() for target
+    interp.api_register_on_script(interp, "target", nil,    "run"
+                                                        ,   "build"
+                                                        ,   "clean"
+                                                        ,   "package"
+                                                        ,   "install"
+                                                        ,   "uninstall")
+
+    -- register api: before_action() for target
+    interp.api_register_before_script(interp, "target", nil,    "run"
+                                                            ,   "build"
+                                                            ,   "clean"
+                                                            ,   "package"
+                                                            ,   "install"
+                                                            ,   "uninstall")
+
+    -- register api: after_action() for target
+    interp.api_register_after_script(interp, "target", nil, "run"
+                                                        ,   "build"
+                                                        ,   "clean"
+                                                        ,   "package"
+                                                        ,   "install"
+                                                        ,   "uninstall")
 
     -- register api: set_option_values() for option
     interp:api_register_set_values("option", "option",      "enable"

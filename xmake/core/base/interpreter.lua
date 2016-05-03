@@ -756,6 +756,54 @@ function interpreter:api_register_on_script(scope_kind, prefix, ...)
     self:_api_register_xxx_values(scope_kind, "on", prefix, implementation, ...)
 end
 
+-- register api for before_script
+function interpreter:api_register_before_script(scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, script)
+
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
+        if not instance then
+            os.raise("before_%s(): %s", name, errors)
+        end
+
+        -- update script?
+        scope[name] = {}
+        table.insert(scope[name], instance:script())
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "before", prefix, implementation, ...)
+end
+
+-- register api for after_script
+function interpreter:api_register_after_script(scope_kind, prefix, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, script)
+
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
+        if not instance then
+            os.raise("after_%s(): %s", name, errors)
+        end
+
+        -- update script?
+        scope[name] = {}
+        table.insert(scope[name], instance:script())
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "after", prefix, implementation, ...)
+end
+
 -- register api for set_keyvalues
 function interpreter:api_register_set_keyvalues(scope_kind, prefix, ...)
 

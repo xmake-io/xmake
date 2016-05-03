@@ -54,9 +54,6 @@ function tool._match(name, toolname)
     -- match the last word? ok
     if name:find(toolname .. "$") then return 80 end
 
-    -- match the partial word? ok
-    if name:find("%-" .. toolname) then return 60 end
-
     -- contains it? ok
     if name:find(toolname, 1, true) then return 30 end
 
@@ -78,6 +75,18 @@ function tool._find(root, name)
 
     -- remove arguments: -xxx or --xxx
     name = (name:gsub("%s%-+%w+", " "))
+
+    -- get the last name by ' ': xxx xxx toolname
+    local names = name:split("%s+")
+    if #names > 0 then
+        name = names[#names]
+    end
+
+    -- get the last name by '-': xxx-xxx-toolname
+    local names = name:split("%-")
+    if #names > 0 then
+        name = names[#names]
+    end
 
     -- remove suffix: ".xxx"
     name = (name:gsub("%.%w+", ""))
