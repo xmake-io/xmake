@@ -366,7 +366,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
         -- not this scope for kind?
         local scope_for_kind = scopes[scope_kind]
         if not scope_for_kind then
-            return nil
+            return {}
         end
 
         -- the root scope
