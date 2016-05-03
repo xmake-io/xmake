@@ -56,16 +56,18 @@ function init(shellname)
     ,   ["-fsanitize=address"]      = ""
     }
 
-    -- init ldflags
-    local swift_linkdirs = config.get("__swift_linkdirs")
-    if swift_linkdirs then
-        _g.ldflags = { "-L" .. swift_linkdirs }
-    end
-
 end
 
 -- get the property
 function get(name)
+
+    -- init ldflags
+    if not _g.ldflags then
+        local swift_linkdirs = config.get("__swift_linkdirs")
+        if swift_linkdirs then
+            _g.ldflags = { "-L" .. swift_linkdirs }
+        end
+    end
 
     -- get it
     return _g[name]
