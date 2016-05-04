@@ -748,8 +748,7 @@ function interpreter:api_register_on_script(scope_kind, prefix, ...)
         end
 
         -- update script?
-        scope[name] = {}
-        table.insert(scope[name], instance:script())
+        scope[name] = instance:script()
     end
 
     -- register implementation
@@ -772,8 +771,7 @@ function interpreter:api_register_before_script(scope_kind, prefix, ...)
         end
 
         -- update script?
-        scope[name] = {}
-        table.insert(scope[name], instance:script())
+        scope[name .. "_before"] = instance:script()
     end
 
     -- register implementation
@@ -796,8 +794,7 @@ function interpreter:api_register_after_script(scope_kind, prefix, ...)
         end
 
         -- update script?
-        scope[name] = {}
-        table.insert(scope[name], instance:script())
+        scope[name .. "_after"] = instance:script()
     end
 
     -- register implementation

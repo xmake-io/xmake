@@ -53,8 +53,8 @@ function _remove(filedirs)
     end
 end
 
--- clean the given target files
-function _clean_target(target)
+-- on clean target 
+function _on_clean_target(target)
 
     -- remove the target file 
     _remove(target:targetfile()) 
@@ -72,7 +72,26 @@ function _clean_target(target)
         -- remove the config.h file
         _remove(target:get("config_h")) 
     end
+end
 
+-- clean the given target files
+function _clean_target(target)
+
+    -- the target scripts
+    local scripts =
+    {
+        target:get("clean_before")
+    ,   target:get("clean") or _on_clean_target
+    ,   target:get("clean_after")
+    }
+
+    -- run the target scripts
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(target)
+        end
+    end
 end
 
 -- clean the given target and all dependent targets
