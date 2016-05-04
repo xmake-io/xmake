@@ -24,7 +24,8 @@
 local sandbox_core_project_template = sandbox_core_project_template or {}
 
 -- load modules
-local template = require("project/template")
+local template  = require("project/template")
+local raise     = require("sandbox/modules/raise")
 
 -- get all languages
 function sandbox_core_project_template.languages()
@@ -46,6 +47,16 @@ function sandbox_core_project_template.templates(language)
 
     -- ok
     return templates
+end
+
+-- create project from template
+function sandbox_core_project_template.create(language, templateid, targetname)
+
+    -- create it
+    local ok, errors = template.create(language, templateid, targetname)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- return module

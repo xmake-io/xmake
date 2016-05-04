@@ -209,7 +209,7 @@ end
 function platform.load(plat)
 
     -- get platform name
-    plat = plat or config.get("plat")
+    plat = plat or config.get("plat") 
     if not plat then
         return nil, string.format("unknown platform!")
     end
