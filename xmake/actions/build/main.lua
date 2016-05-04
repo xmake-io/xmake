@@ -74,12 +74,6 @@ function main()
     -- load project configure
     config.load(targetname)
 
-    -- load platform
-    platform.load(config.plat())
-
-    -- load project
-    project.load()
-
     -- enter cache scope: build
     cache.enter("local.build")
 
@@ -89,6 +83,12 @@ function main()
         -- config it first
         task.run("config", {target = targetname})
     end
+
+    -- load platform
+    platform.load(config.plat())
+
+    -- load project
+    project.load()
 
     -- rebuild?
     if option.get("rebuild") or cache.get("rebuild") then

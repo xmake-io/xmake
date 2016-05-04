@@ -26,6 +26,9 @@ task("create")
     -- set category
     set_task_category("action")
 
+    -- on run
+    on_task_run("main")
+
     -- set menu
     set_task_menu({
                     -- usage
