@@ -21,5 +21,5 @@
 --
 
 -- load module
-return assert
+return require("sandbox/modules/utils").assert
 

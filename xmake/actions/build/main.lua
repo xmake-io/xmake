@@ -103,11 +103,6 @@ function main()
     -- flush cache to file
     cache.flush()
 
-    -- check target
-    if targetname and targetname ~= "all" and nil == project.target(targetname) then
-        raise("unknown target: %s", targetname)
-    end
-
     -- enter project directory
     os.cd(project.directory())
 
@@ -116,11 +111,11 @@ function main()
     {
         function ()
 
-            -- make target
---            builder.make(targetname)
+            -- make 
+--            builder.make(targetname or "all")
         
-            -- make target from makefile
-            builder.make_from_makefile(targetname)
+            -- make from makefile
+            builder.make_from_makefile(targetname or "all")
         
         end,
 
@@ -130,10 +125,13 @@ function main()
 
                 -- show error log
                 io.tail("$(buildir)/.build.log", ifelse(option.get("verbose"), -1, 32))
-
+                
                 -- failed
-                raise("build target: %s failed!", targetname)
-
+                if errors then
+                    raise(errors)
+                else
+                    raise("build target: %s failed!", targetname)
+                end
             end
         }
     }
