@@ -112,10 +112,8 @@ function main()
         function ()
 
             -- make 
---            builder.make(targetname or "all")
-        
-            -- make from makefile
-            builder.make_from_makefile(targetname or "all")
+            builder.make(targetname or "all")
+--            builder.make_from_makefile(targetname or "all")
         
         end,
 

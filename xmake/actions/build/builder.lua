@@ -35,32 +35,118 @@ function _target(targetname)
     return assert(project.target(targetname), "unknown target: %s", targetname)
 end
 
--- make the given target
-function _make_target(target)
+-- make the object for the *.[o|obj] source file
+function _make_object_for_object(target, srcfile, objfile)
+end
 
-    -- make for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _make_target(_target(depname))
+-- make the object for the *.[a|lib] source file
+function _make_object_for_static(target, srcfile, objfile)
+end
+
+-- make object
+function _make_object(target, sourcefile, objectfile)
+
+    -- get the source file type
+    local filetype = path.extension(sourcefile):lower()
+
+    -- make the object for the *.o/obj source makefile
+    if filetype == ".o" or filetype == ".obj" then 
+        return _make_object_for_object(target, sourcefile, objectfile)
+    -- make the object for the *.[a|lib] source file
+    elseif filetype == ".a" or filetype == ".lib" then 
+        return _make_object_for_static(target, sourcefile, objectfile)
+    end
+
+    -- make command
+    local ccache    = tool.shellname("ccache") 
+    local compiler  = target:compiler(sourcefile)
+    local cmd       = compiler:command(target, sourcefile, objectfile)
+    if ccache then
+        cmd = ccache:append(cmd, " ")
     end
 
     -- trace
-    print("make target: %s", target:name())
+    print("%scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
+
+    -- trace verbose info
+    if option.get("verbose") then
+        print(cmd)
+    end
+
+    -- create directory if not exists
+    os.mkdir(path.directory(objectfile))
+
+    -- run cmd
+    os.run(cmd)
+end
+
+-- make objects for the given target
+function _make_objects(target)
+
+    -- make all objects
+    local i = 1
+    local objectfiles = target:objectfiles()
+    local sourcefiles = target:sourcefiles()
+    for _, objectfile in ipairs(objectfiles) do
+
+        -- make object
+        _make_object(target, sourcefiles[i], objectfile)
+
+        -- next
+        i = i + 1
+    end
+end
+
+-- make the given target
+function _make_target(target)
+
+    -- trace
+    print("building.$(mode) %s", target:name())
+
+    -- make objects
+    _make_objects(target)
+
+    -- make target
+    -- ...
+end
+
+-- make the given target and deps
+function _make_target_and_deps(target)
+
+    -- this target have been finished?
+    if _g.finished[target:name()] then
+        return 
+    end
+
+    -- make for all dependent targets
+    for _, depname in ipairs(target:get("deps")) do
+        _make_target_and_deps(_target(depname))
+    end
+
+    -- make target
+    _make_target(target)
+
+    -- finished
+    _g.finished[target:name()] = true
 end
 
 -- make
 function make(targetname)
 
-    -- make all targets
+    -- init finished states
+    _g.finished = {}
+
+    -- for all?
     if targetname == "all" then
 
         -- make all targets
         for _, target in pairs(project.targets()) do
-            _make_target(target)
+            _make_target_and_deps(target)
         end
     else
 
         -- make target
-        _make_target(_target(targetname))
+        _make_target_and_deps(_target(targetname))
     end
 end
 
