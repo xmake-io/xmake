@@ -24,6 +24,7 @@
 local io        = require("base/io")
 local utils     = require("base/utils")
 local vformat   = require("sandbox/modules/vformat")
+local raise     = require("sandbox/modules/raise")
 
 -- define module
 local sandbox_utils = sandbox_utils or {}
@@ -53,6 +54,23 @@ function sandbox_utils.printf(format, ...)
     -- done
     return io.write(vformat(format, ...))
 end
+
+-- assert
+function sandbox_utils.assert(value, format, ...)
+
+    -- check
+    if not value then
+        if format ~= nil then
+            raise(format, ...)
+        else
+            raise("assertion failed!")  
+        end
+    end
+
+    -- return it 
+    return value
+end
+
 
 -- return module
 return sandbox_utils
