@@ -37,10 +37,16 @@ end
 
 -- make the object for the *.[o|obj] source file
 function _make_object_for_object(target, srcfile, objfile)
+
+    -- TODO
+    raise("not implemented")
 end
 
 -- make the object for the *.[a|lib] source file
 function _make_object_for_static(target, srcfile, objfile)
+
+    raise("not implemented")
+    -- TODO
 end
 
 -- make object
@@ -60,9 +66,9 @@ function _make_object(target, sourcefile, objectfile)
     -- make command
     local ccache    = tool.shellname("ccache") 
     local compiler  = target:compiler(sourcefile)
-    local cmd       = compiler:command(target, sourcefile, objectfile)
+    local command   = compiler:command(target, sourcefile, objectfile)
     if ccache then
-        cmd = ccache:append(cmd, " ")
+        command = ccache:append(command, " ")
     end
 
     -- trace
@@ -70,14 +76,14 @@ function _make_object(target, sourcefile, objectfile)
 
     -- trace verbose info
     if option.get("verbose") then
-        print(cmd)
+        print(command)
     end
 
     -- create directory if not exists
     os.mkdir(path.directory(objectfile))
 
     -- run cmd
-    os.run(cmd)
+    os.run(command)
 end
 
 -- make objects for the given target
@@ -106,8 +112,35 @@ function _make_target(target)
     -- make objects
     _make_objects(target)
 
-    -- make target
-    -- ...
+    -- make the command for linking target
+    local command = target:linker():command(target, target:objectfiles(), target:targetfile())
+
+    -- trace
+    print("linking.$(mode) %s", path.filename(target:targetfile()))
+
+    -- trace verbose info
+    if option.get("verbose") then
+        print(command)
+    end
+
+    -- create directory if not exists
+    os.mkdir(path.directory(target:targetfile()))
+
+    -- run command
+    os.run(command)
+
+    -- make headers
+    local srcheaders, dstheaders = target:headerfiles()
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                os.cp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
 end
 
 -- make the given target and deps
