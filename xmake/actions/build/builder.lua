@@ -83,7 +83,7 @@ function _make_object(target, sourcefile, objectfile)
     os.mkdir(path.directory(objectfile))
 
     -- run cmd
-    os.run(command)
+    compiler:run(command)
 end
 
 -- make objects for the given target
@@ -113,7 +113,8 @@ function _make_target(target)
     _make_objects(target)
 
     -- make the command for linking target
-    local command = target:linker():command(target, target:objectfiles(), target:targetfile())
+    local linker    = target:linker()
+    local command   = linker:command(target, target:objectfiles(), target:targetfile())
 
     -- trace
     print("linking.$(mode) %s", path.filename(target:targetfile()))
@@ -127,7 +128,7 @@ function _make_target(target)
     os.mkdir(path.directory(target:targetfile()))
 
     -- run command
-    os.run(command)
+    linker:run(command)
 
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
