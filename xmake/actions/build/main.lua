@@ -24,11 +24,11 @@
 import("core.base.option")
 import("core.project.task")
 import("core.project.config")
-import("core.project.global")
 import("core.project.project")
 import("core.project.cache")
 import("core.platform.platform")
 import("core.tool.tool")
+import("builder")
 
 -- project files(xmake.lua) have been changed?
 function _project_changed(targetname)
@@ -115,9 +115,12 @@ function main()
     try
     {
         function ()
-    
-            -- run make
-            tool.run("make", path.join(config.get("buildir"), "makefile"), targetname, option.get("jobs"))
+
+            -- make target
+--            builder.make(targetname)
+        
+            -- make target from makefile
+            builder.make_from_makefile(targetname)
         
         end,
 
