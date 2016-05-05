@@ -45,14 +45,14 @@ function sandbox_utils.print(format, ...)
     end
 
     -- done
-    return io.write(vformat(format, ...) .. "\n")
+    io.write(vformat(format, ...) .. "\n")
 end
 
 -- printf with the builtin variables
 function sandbox_utils.printf(format, ...)
 
     -- done
-    return io.write(vformat(format, ...))
+    io.write(vformat(format, ...))
 end
 
 -- assert

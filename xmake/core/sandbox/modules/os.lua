@@ -113,10 +113,11 @@ function sandbox_os.mkdir(dir)
     dir = vformat(dir)
 
     -- done
-    if not os.mkdir(dir) then
-        os.raise("create directory: %s failed!", dir)
+    if not os.isdir(dir) then
+        if not os.mkdir(dir) then
+            os.raise("create directory: %s failed!", dir)
+        end
     end
-
 end
 
 -- remove directory
@@ -134,7 +135,6 @@ function sandbox_os.rmdir(dir)
             os.raise("remove directory: %s failed!", dir)
         end
     end
-
 end
 
 -- get the current directory

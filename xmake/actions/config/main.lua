@@ -28,7 +28,6 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
 import("config_h")
-import("makefile")
 
 -- filter option 
 function _option_filter(name)

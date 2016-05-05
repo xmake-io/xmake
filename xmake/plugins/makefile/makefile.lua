@@ -56,24 +56,8 @@ end
 -- make the object for the *.[a|lib] source file
 function _make_object_for_static(makefile, target, srcfile, objfile)
 
-    -- make command
-    local cmd = format("xmake l -P %s -f %s dispatcher ex extract %s %s > %s 2>&1", xmake._PROJECT_DIR, xmake._PROJECT_FILE, srcmakefile:encode(), objmakefile:encode(), makefile._LOGFILE)
-
-    -- make head
-    makefile:printf("%s:", objfile)
-
-    -- make dependence
-    makefile:print(" %s", srcfile)
-
-    -- make body
-    makefile:print("\t@echo inserting.$(mode) %s", srcfile)
-    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", cmd:encode())
-    makefile:print("\t@xmake l rmdir %s\n", path.directory(objfile))
-    makefile:print("\t@%s", cmd)
-
-    -- make tail
-    makefile:print("")
-
+    -- not supported
+    raise("source file: %s not supported!", srcfile)
 end
 
 -- make the object

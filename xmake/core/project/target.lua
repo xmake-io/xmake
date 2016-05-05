@@ -158,6 +158,11 @@ function target:sourcefiles()
     -- check
     assert(self)
 
+    -- cached? return it directly
+    if self._SOURCEFILES then
+        return self._SOURCEFILES
+    end
+
     -- get files
     local files = self:get("files")
 
@@ -207,6 +212,9 @@ function target:sourcefiles()
     -- remove repeat files
     sourcefiles = table.unique(sourcefiles)
 
+    -- cache it
+    self._SOURCEFILES = sourcefiles
+
     -- ok?
     return sourcefiles
 end
@@ -216,6 +224,11 @@ function target:objectfiles()
 
     -- check
     assert(self)
+
+    -- cached? return it directly
+    if self._OBJECTFILES then
+        return self._OBJECTFILES
+    end
 
     -- get the object directory
     local objectdir = self:objectdir()
@@ -256,6 +269,9 @@ function target:objectfiles()
 
     end
 
+    -- cache it
+    self._OBJECTFILES = objectfiles
+
     -- ok?
     return objectfiles
 end
@@ -265,6 +281,11 @@ function target:headerfiles()
 
     -- check
     assert(self)
+
+    -- cached? return it directly
+    if self._HEADERFILES then
+        return self._HEADERFILES[1], self._HEADERFILES[2]
+    end
 
     -- no headers?
     local headers = self:get("headers")
@@ -306,6 +327,9 @@ function target:headerfiles()
             end
         end
     end
+
+    -- cache it
+    self._HEADERFILES = {srcheaders, dstheaders}
 
     -- ok?
     return srcheaders, dstheaders
