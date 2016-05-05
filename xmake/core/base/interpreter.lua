@@ -229,6 +229,9 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- bind public scope
                 setfenv(script, self._PUBLIC)
 
+                -- clear the current scope, force to enter root scope
+                self._PRIVATE._SCOPES._CURRENT = nil
+
                 -- done interpreter
                 local ok, errors = xpcall(script, interpreter._traceback)
                 if not ok then
