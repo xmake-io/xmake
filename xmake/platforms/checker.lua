@@ -175,9 +175,9 @@ end
 -- check the ccache
 function check_ccache(config)
 
-    -- ok? 
+    -- get the ccache
     local ccache = config.get("ccache")
-    if ccache ~= nil then
+    if ccache == nil then
 
         -- check the ccache path
         local ccache_path = tool.check("ccache", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
