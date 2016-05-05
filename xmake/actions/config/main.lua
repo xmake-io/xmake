@@ -120,9 +120,6 @@ function main()
     -- make the config.h
     config_h.make()
 
-    -- make makefile
-    makefile.make()
-
     -- dump it
     config.dump()
 
