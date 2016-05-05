@@ -447,7 +447,7 @@ function compiler:check(flags)
     local ok, errors = sandbox.load(ctool.check, flags)
 
     -- trace
-    utils.printf("checking for the flags %s ... %s", flags, utils.ifelse(ok, "ok", "no"))
+    utils.verbose("checking for the flags %s ... %s", flags, utils.ifelse(ok, "ok", "no"))
     if not ok then
         utils.verbose(errors)
     end

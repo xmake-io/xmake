@@ -493,10 +493,12 @@ function option.defaults(task)
 
             -- save the default value 
             defaults[key] = o[4]    
+
         -- value with name?
         elseif o[3] == "v" and o[2] then
+
             -- save the default value 
-            defaults[o[2]] = o[4]    
+            defaults[o[2]] = o[4] 
         end
     end
 

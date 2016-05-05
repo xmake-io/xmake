@@ -77,10 +77,19 @@ function main()
     -- enter cache scope: build
     cache.enter("local.build")
 
-    -- host changed or project changed? reconfig it
-    if config.host() ~= os.host() or _project_changed(targetname) then
+    -- host changed? 
+    if config.host() ~= os.host() then
 
-        -- config it first
+        -- reinit config
+        config.init()
+
+        -- reconfig it
+        task.run("config", {target = targetname, clean = true})
+
+    -- project changed? 
+    elseif _project_changed(targetname) then
+        
+        -- reconfig it
         task.run("config", {target = targetname})
     end
 
