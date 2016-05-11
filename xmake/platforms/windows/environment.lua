@@ -54,8 +54,8 @@ function _leave(name, old)
     end
 end
 
--- enter the vs environment
-function enter()
+-- enter the toolchains environment (vs)
+function _enter_toolchains()
 
     _g.pathes    = _enter("path")
     _g.libs      = _enter("lib")
@@ -64,12 +64,38 @@ function enter()
 
 end
 
--- leave the vs environment
-function leave()
+-- leave the toolchains environment (vs)
+function _leave_toolchains()
 
     _leave("path",      _g.pathes)
     _leave("lib",       _g.libs)
     _leave("include",   _g.includes)
     _leave("libpath",   _g.libpathes)
 
+end
+
+-- enter the toolchains environment (vs)
+function enter(name)
+
+    -- the maps
+    local maps = {toolchains = _enter_toolchains}
+    
+    -- enter it
+    local func = maps[name]
+    if func then
+        func()
+    end
+end
+
+-- leave the toolchains environment (vs)
+function leave(name)
+
+    -- the maps
+    local maps = {toolchains = _leave_toolchains}
+    
+    -- leave it
+    local func = maps[name]
+    if func then
+        func()
+    end
 end

@@ -17,34 +17,28 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        lib.lua
+-- @file        linker.lua
 --
 
--- init it
-function init(shellname)
-    
-    -- save the shell name
-    _g.shellname = shellname or "lib.exe"
+-- define module
+local sandbox_core_tool_linker = sandbox_core_tool_linker or {}
+
+-- load modules
+local platform  = require("platform/platform")
+local raise     = require("sandbox/modules/raise")
+
+-- make command for linking target file
+function sandbox_core_tool_linker.command(target)
+ 
+    -- get the linker instance
+    local instance, errors = target:linker()
+    if not instance then
+        raise(errors)
+    end
+
+    -- make command
+    return instance:command(target, target:objectfiles(), target:targetfile())
 end
 
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
-
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
-end
-
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s", _g.shellname, ifelse(flags, flags, ""))
-end
-
+-- return module
+return sandbox_core_tool_linker

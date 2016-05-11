@@ -109,8 +109,9 @@ function config.load(targetname)
         local results, errors = io.load(filepath)
 
         -- error?
-        if not results and errors then
+        if not results then
             utils.error(errors)
+            return true
         end
 
         -- merge the target configure first
@@ -144,7 +145,7 @@ function config.save(targetname)
     local results = {}
     local filepath = config._file()
     if os.isfile(filepath) then
-        results = io.load(filepath)
+        results = io.load(filepath) or {}
     end
 
     -- add version

@@ -21,7 +21,6 @@
 --
 
 -- imports
-import("utils.vsenv")
 import("core.base.option")
 
 -- init it
@@ -45,9 +44,6 @@ function run(makefile, target, jobs)
     -- is verbose?
     local verbose = ifelse(option.get("verbose"), "-v", "")
 
-    -- enter vs envirnoment
-    vsenv.enter()
-
     -- run command
     local ok = -1
     if makefile and os.isfile(makefile) then
@@ -55,9 +51,6 @@ function run(makefile, target, jobs)
     else  
         ok = os.execute("%s /nologo %s VERBOSE=%s", _g.shellname, target or "", verbose)
     end
-
-    -- leave vs envirnoment
-    vsenv.leave()
 
     -- always failed?
     if ok ~= 0 then
@@ -72,15 +65,9 @@ function check(flags)
     local makefile = path.join(os.tmpdir(), "xmake.checker.nmake")
     io.write(makefile, "all:\n")
 
-    -- enter vs envirnoment
-    vsenv.enter()
-
     -- check it
     os.run("%s /nologo %s /f %s", _g.shellname, ifelse(flags, flags, ""), makefile)
 
-    -- leave vs envirnoment
-    vsenv.leave()
-    
     -- remove this makefile
     os.rm(makefile)
 end

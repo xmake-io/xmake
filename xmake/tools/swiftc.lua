@@ -74,14 +74,10 @@ function get(name)
 end
 
 -- make the compile command
-function compcmd(srcfile, objfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
+function compcmd(srcfile, objfile, flags)
 
     -- make it
-    return format("%s -c %s -o %s %s%s", _g.shellname, flags, objfile, srcfile, redirect)
+    return format("%s -c %s -o %s %s", _g.shellname, flags, objfile, srcfile)
 end
 
 -- make the includedir flag

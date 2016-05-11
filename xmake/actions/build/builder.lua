@@ -27,6 +27,9 @@ import("core.project.config")
 import("core.project.project")
 import("core.project.cache")
 import("core.tool.tool")
+import("core.tool.linker")
+import("core.tool.compiler")
+import("core.platform.environment")
 
 -- get target
 function _target(targetname)
@@ -65,8 +68,7 @@ function _make_object(target, sourcefile, objectfile)
 
     -- make command
     local ccache    = tool.shellname("ccache") 
-    local compiler  = target:compiler(sourcefile)
-    local command   = compiler:command(target, sourcefile, objectfile)
+    local command   = compiler.command(target, sourcefile, objectfile)
     if ccache then
         command = ccache:append(command, " ")
     end
@@ -83,7 +85,7 @@ function _make_object(target, sourcefile, objectfile)
     os.mkdir(path.directory(objectfile))
 
     -- run cmd
-    compiler:run(command)
+    os.run(command)
 end
 
 -- make objects for the given target
@@ -113,11 +115,11 @@ function _make_target(target)
     _make_objects(target)
 
     -- make the command for linking target
-    local linker    = target:linker()
-    local command   = linker:command(target, target:objectfiles(), target:targetfile())
+    local targetfile    = target:targetfile()
+    local command       = linker.command(target)
 
     -- trace
-    print("linking.$(mode) %s", path.filename(target:targetfile()))
+    print("linking.$(mode) %s", path.filename(targetfile))
 
     -- trace verbose info
     if option.get("verbose") then
@@ -125,10 +127,10 @@ function _make_target(target)
     end
 
     -- create directory if not exists
-    os.mkdir(path.directory(target:targetfile()))
+    os.mkdir(path.directory(targetfile))
 
     -- run command
-    linker:run(command)
+    os.run(command)
 
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
@@ -167,6 +169,9 @@ end
 -- make
 function make(targetname)
 
+    -- enter toolchains environment
+    environment.enter("toolchains")
+
     -- init finished states
     _g.finished = {}
 
@@ -182,19 +187,8 @@ function make(targetname)
         -- make target
         _make_target_and_deps(_target(targetname))
     end
+
+    -- leave toolchains environment
+    environment.leave("toolchains")
 end
 
--- make from makefile
-function make_from_makefile(targetname)
-
-    -- check target
-    if targetname ~= "all" then
-        _target(targetname)
-    end
-
-    -- make makefile
-    task.run("makefile", {output = path.join(config.get("buildir"), "makefile")})
-
-    -- run make
-    tool.run("make", path.join(config.get("buildir"), "makefile"), targetname, option.get("jobs"))
-end

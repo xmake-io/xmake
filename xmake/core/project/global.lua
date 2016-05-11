@@ -98,8 +98,9 @@ function global.load()
         local results, errors = io.load(filepath)
 
         -- error?
-        if not results and errors then
+        if not results then
             utils.error(errors)
+            return true
         end
 
         -- merge the configure 

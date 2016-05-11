@@ -241,7 +241,7 @@ function os.run(cmd, ...)
     if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
 
         -- make errors
-        local errors = string.format("%s\nrun: %s failed!", io.readall(log), cmd)
+        local errors = io.readall(log)
 
         -- remove the temporary log file
         os.rm(log)

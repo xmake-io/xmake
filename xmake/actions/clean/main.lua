@@ -59,6 +59,9 @@ function _on_clean_target(target)
     -- remove the target file 
     _remove(target:targetfile()) 
 
+    -- remove the target arguments file if exists
+    _remove(target:targetfile() .. ".arg") 
+
     -- remove the object files 
     _remove(target:objectfiles())
 

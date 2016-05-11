@@ -69,15 +69,8 @@ function target:linker()
     -- check
     assert(self)
 
-    -- init the linker from the given kind
-    local result, errors = linker.load(self:get("kind"))
-    if not result then 
-        os.raise(errors)
-    end
-
-    -- ok?
-    return result
-
+    -- load the linker from the given kind
+    return linker.load(self:get("kind"))
 end
 
 -- get the compiler with the given source file
@@ -87,14 +80,7 @@ function target:compiler(srcfile)
     assert(self and srcfile)
 
     -- load the compiler 
-    local result, errors = compiler.load(compiler.kind_of_file(srcfile))
-    if not result then 
-        os.raise(errors)
-    end
-
-    -- ok?
-    return result
-
+    return compiler.load(compiler.kind_of_file(srcfile))
 end
 
 -- get the options 

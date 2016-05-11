@@ -122,7 +122,6 @@ function main()
 
             -- make 
             builder.make(targetname or "all")
---            builder.make_from_makefile(targetname or "all")
         
         end,
 
@@ -130,9 +129,6 @@ function main()
         {
             function (errors)
 
-                -- show error log
-                io.tail("$(buildir)/.build.log", ifelse(option.get("verbose"), -1, 32))
-                
                 -- failed
                 if errors then
                     raise(errors)

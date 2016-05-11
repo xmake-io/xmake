@@ -23,6 +23,7 @@
 -- imports
 import("core.tool.tool")
 import("platforms.checker", {rootdir = os.programdir()})
+import("environment")
 
 -- check the vs version
 function _check_vs_version(config)
@@ -146,6 +147,9 @@ end
 -- check the toolchains
 function _check_toolchains(config)
 
+    -- enter environment
+    environment.enter("toolchains")
+
     -- done
     checker.check_toolchain(config, "cc",   "", "cl.exe",           "the c compiler") 
     checker.check_toolchain(config, "cxx",  "", "cl.exe",           "the c++ compiler") 
@@ -155,6 +159,9 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sh",   "", "link.exe -dll",    "the shared library linker") 
     checker.check_toolchain(config, "ex",   "", "lib.exe",          "the library extractor") 
     checker.check_toolchain(config, "make", "", "nmake.exe",        "the make") 
+
+    -- leave environment
+    environment.leave("toolchains")
 end
 
 -- init it

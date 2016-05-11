@@ -21,7 +21,6 @@
 --
 
 -- imports
-import("utils.vsenv")
 import("core.project.config")
 
 -- init it
@@ -85,18 +84,16 @@ function linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(objfiles, targetfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
+function linkcmd(objfiles, targetfile, flags)
 
     -- make it
-    local cmd = format("%s %s -out:%s %s%s", _g.shellname, flags, targetfile, objfiles, redirect)
+    local cmd = format("%s %s -out:%s %s", _g.shellname, flags, targetfile, objfiles)
 
     -- too long?
-    if #cmd > 256 then
-        cmd = format("%s%s @<<\n%s -out:%s %s\n<<", _g.shellname, redirect, flags, targetfile, objfiles)
+    if #cmd > 4096 then
+        local argfile = targetfile .. ".arg"
+        io.printf(argfile, "%s -out:%s %s", flags, targetfile, objfiles)
+        cmd = format("%s @%s", _g.shellname, argfile)
     end
 
     -- ok?
@@ -106,21 +103,12 @@ end
 -- run command
 function run(...)
 
-    -- enter vs envirnoment
-    vsenv.enter()
-
     -- run it
     os.run(...)
-
-    -- leave vs envirnoment
-    vsenv.leave()
 end
 
 -- check the given flags 
 function check(flags)
-
-    -- enter vs envirnoment
-    vsenv.enter()
 
     -- make an stub source file
     local exefile = path.join(os.tmpdir(), "xmake.cl.exe")
@@ -136,8 +124,5 @@ function check(flags)
     os.rm(objfile)
     os.rm(srcfile)
     os.rm(exefile)
-
-    -- leave vs envirnoment
-    vsenv.leave()
 end
 
