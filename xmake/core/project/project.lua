@@ -36,6 +36,7 @@ local config                = require("project/config")
 local option                = require("project/option")
 local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
+local environment           = require("platform/environment")
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -512,6 +513,9 @@ function project.check()
     if not options then
         return false, errors
     end
+
+    -- enter toolchains environment
+    environment.enter("toolchains")
  
     -- the source file path
     local cfile     = path.join(os.tmpdir(), "__checking.c")
@@ -526,23 +530,27 @@ function project.check()
     -- make all options
     for name, opt in pairs(options) do
 
-        -- check option
-        if opt:check(cfile, cxxfile, objectfile, targetfile) then
+        -- need check?
+        if config.get(name) == nil then
 
-            -- enable this option
-            config.set(name, true)
+            -- check option
+            if opt:check(cfile, cxxfile, objectfile, targetfile) then
 
-            -- save this option to configure 
-            opt:save()
+                -- enable this option
+                config.set(name, true)
 
-        else
+                -- save this option to configure 
+                opt:save()
 
-            -- disable this option
-            config.set(name, false)
+            else
 
-            -- clear this option to configure 
-            opt:clear()
+                -- disable this option
+                config.set(name, false)
 
+                -- clear this option to configure 
+                opt:clear()
+
+            end
         end
     end
 
@@ -552,6 +560,9 @@ function project.check()
     os.rm(objectfile)
     os.rm(targetfile)
 
+    -- leave toolchains environment
+    environment.leave("toolchains")
+ 
     -- leave the project directory
     ok, errors = os.cd("-")
     if not ok then

@@ -17,34 +17,36 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        lib.lua
+-- @file        environment.lua
 --
 
--- init it
-function init(shellname)
-    
-    -- save the shell name
-    _g.shellname = shellname or "lib.exe"
+-- define module
+local sandbox_core_platform_environment = sandbox_core_platform_environment or {}
+
+-- load modules
+local platform      = require("platform/platform")
+local environment   = require("platform/environment")
+local raise         = require("sandbox/modules/raise")
+
+-- enter the given environment
+function sandbox_core_platform_environment.enter(name)
+ 
+    -- enter it
+    local ok, errors = environment.enter(name)
+    if not ok then
+        raise(errors)
+    end
 end
 
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
+-- leave the given environment
+function sandbox_core_platform_environment.leave(name)
+ 
+    -- enter it
+    local ok, errors = environment.leave(name)
+    if not ok then
+        raise(errors)
+    end
 end
 
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
-end
-
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s", _g.shellname, ifelse(flags, flags, ""))
-end
-
+-- return module
+return sandbox_core_platform_environment

@@ -47,14 +47,10 @@ function linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(objfiles, targetfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
+function linkcmd(objfiles, targetfile, flags)
 
     -- make it
-    return format("%s %s %s %s%s", _g.shellname, flags, targetfile, objfiles, redirect)
+    return format("%s %s %s %s", _g.shellname, flags, targetfile, objfiles)
 end
 
 -- run command

@@ -184,8 +184,9 @@ end
 function tool._check(shellname)
  
     -- load the tool module
-    local module = tool._load(shellname)
+    local module, errors = tool._load(shellname)
     if not module then
+        utils.verbose(errors)
         return false
     end
 

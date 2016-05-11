@@ -20,9 +20,6 @@
 -- @file        cl.lua
 --
 
--- imports
-import("utils.vsenv")
-
 -- init it
 function init(shellname)
     
@@ -108,34 +105,21 @@ function includedir(dir)
 end
 
 -- make the complie command
-function compcmd(srcfile, objfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
+function compcmd(srcfile, objfile, flags)
 
     -- make it
-    return format("%s -c %s -Fo%s %s%s", _g.shellname, flags, objfile, srcfile, redirect)
+    return format("%s -c %s -Fo%s %s", _g.shellname, flags, objfile, srcfile)
 end
 
 -- run command
 function run(...)
 
-    -- enter vs envirnoment
-    vsenv.enter()
-
     -- run it
     os.run(...)
-
-    -- leave vs envirnoment
-    vsenv.leave()
 end
 
 -- check the given flags 
 function check(flags)
-
-    -- enter vs envirnoment
-    vsenv.enter()
 
     -- make an stub source file
     local objfile = path.join(os.tmpdir(), "xmake.cl.obj")
@@ -148,8 +132,5 @@ function check(flags)
     -- remove files
     os.rm(objfile)
     os.rm(srcfile)
-
-    -- leave vs envirnoment
-    vsenv.leave()
 end
 

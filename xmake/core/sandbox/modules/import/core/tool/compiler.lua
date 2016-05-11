@@ -17,34 +17,28 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        lib.lua
+-- @file        compiler.lua
 --
 
--- init it
-function init(shellname)
-    
-    -- save the shell name
-    _g.shellname = shellname or "lib.exe"
+-- define module
+local sandbox_core_tool_compiler = sandbox_core_tool_compiler or {}
+
+-- load modules
+local platform  = require("platform/platform")
+local raise     = require("sandbox/modules/raise")
+
+-- make command for compiling source file
+function sandbox_core_tool_compiler.command(target, sourcefile, objectfile, logfile)
+ 
+    -- get the compiler instance
+    local instance, errors = target:compiler(sourcefile)
+    if not instance then
+        raise(errors)
+    end
+
+    -- make command
+    return instance:command(target, sourcefile, objectfile, logfile)
 end
 
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
-
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
-end
-
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s", _g.shellname, ifelse(flags, flags, ""))
-end
-
+-- return module
+return sandbox_core_tool_compiler

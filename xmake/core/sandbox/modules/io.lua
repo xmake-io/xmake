@@ -161,6 +161,30 @@ function sandbox_io.write(filepath, data)
     end
 end
 
+-- print line to file
+function sandbox_io.print(filepath, ...)
+
+    -- print it
+    sandbox_io.write(filepath, vformat(...) .. "\n")
+end
+
+-- print data to file
+function sandbox_io.printf(filepath, ...)
+
+    -- print it
+    sandbox_io.write(filepath, vformat(...))
+end
+
+-- printf file
+function sandbox_io._printf(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- printf it
+    return self._FILE:write(vformat(...))
+end
+
 -- cat the given file 
 function sandbox_io.cat(filepath, linecount)
  

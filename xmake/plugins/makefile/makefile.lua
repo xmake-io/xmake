@@ -22,6 +22,8 @@
 
 -- imports
 import("core.tool.tool")
+import("core.tool.linker")
+import("core.tool.compiler")
 import("core.project.project")
 
 -- get log makefile
@@ -76,10 +78,9 @@ function _make_object(makefile, target, srcfile, objfile)
 
     -- make command
     local ccache    = tool.shellname("ccache") 
-    local compiler  = target:compiler(srcfile)
-    local cmd       = compiler:command(target, srcfile, objfile, _logfile())
+    local command   = compiler.command(target, srcfile, objfile)
     if ccache then
-        cmd = ccache:append(cmd, " ")
+        command = ccache:append(command, " ")
     end
 
     -- make head
@@ -90,13 +91,12 @@ function _make_object(makefile, target, srcfile, objfile)
 
     -- make body
     makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), srcfile)
-    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", cmd:encode())
+    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", command:encode())
     makefile:print("\t@xmake l mkdir %s", path.directory(objfile))
-    makefile:print("\t@%s", cmd)
+    makefile:print("\t@%s > %s 2>&1", command, _logfile())
 
     -- make tail
     makefile:print("")
-
 end
  
 -- make all objects of the given target 
@@ -140,21 +140,13 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make the command
-    local linker    = target:linker()
-    local cmd       = linker:command(target, objfiles, targetfile, _logfile())
-
-    -- make the verbose info
-    local verbose = cmd:encode()
-    if verbose and #verbose > 256 then
-        verbose = linker:command(target, target.filename("*", "object"), targetfile)
-        verbose = verbose:encode()
-    end
+    local command = linker.command(target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
-    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", verbose)
+    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", command:encode())
     makefile:print("\t@xmake l mkdir %s", path.directory(targetfile))
-    makefile:print("\t@%s", cmd)
+    makefile:print("\t@%s > %s 2>&1", command, _logfile())
 
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
@@ -174,7 +166,6 @@ function _make_target(makefile, target)
 
     -- make objects for this target
     _make_objects(makefile, target, target:sourcefiles(), objfiles) 
-
 end
 
 -- make all

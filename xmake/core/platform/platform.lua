@@ -85,9 +85,9 @@ function _instance:checker()
         return self._CHECKER
     end
 
-    -- get checker
+    -- no checker
     if not self._INFO.checker then
-        return nil, string.format("the checker of %s not found!", self._NAME)
+        return nil
     end
 
     -- get the script path
@@ -119,8 +119,56 @@ function _instance:checker()
             module.init()
         end
     
-        -- save tool to the cache
+        -- save it to the cache
         self._CHECKER = module
+
+        -- ok?
+        return module
+    end
+
+    -- failed
+    return nil, errors
+end
+
+-- get the environment
+function _instance:environment()
+
+    -- return it directly if cached
+    if self._ENVIRONMENT then
+        return self._ENVIRONMENT
+    end
+
+    -- no environment
+    if not self._INFO.environment then
+        return nil
+    end
+
+    -- get the script path
+    local scriptpath = path.join(self._ROOTDIR, self._INFO.environment .. ".lua")
+    
+    -- not exists?
+    if not scriptpath or not os.isfile(scriptpath) then
+        return nil, string.format("the environment of %s not found!", self._NAME)
+    end
+
+    -- load script
+    local script, errors = loadfile(scriptpath)
+    if script then
+
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.new(script, nil, self._ROOTDIR)
+        if not instance then
+            return nil, errors
+        end
+
+        -- import the module
+        local module, errors = instance:import()
+        if not module then
+            return nil, errors
+        end
+
+        -- save it to the cache
+        self._ENVIRONMENT = module
 
         -- ok?
         return module
@@ -194,6 +242,9 @@ function platform._interpreter()
 
     -- register api: set_platform_checker()
     interp:api_register_set_values("platform", "platform", "checker")
+
+    -- register api: set_platform_environment()
+    interp:api_register_set_values("platform", "platform", "environment")
 
     -- register api: on_platform_load()
     interp:api_register_on_script("platform", "platform", "load")

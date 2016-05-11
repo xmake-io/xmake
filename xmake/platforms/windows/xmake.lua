@@ -35,6 +35,9 @@ platform("windows")
     -- set checker
     set_platform_checker("checker")
 
+    -- set environment
+    set_platform_environment("environment")
+
     -- on load
     on_platform_load(function ()
 

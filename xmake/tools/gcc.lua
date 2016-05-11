@@ -99,25 +99,17 @@ function linkdir(dir)
 end
 
 -- make the complie command
-function compcmd(srcfile, objfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
+function compcmd(srcfile, objfile, flags)
 
     -- make it
-    return format("%s -c %s -o %s %s%s", _g.shellname, flags, objfile, srcfile, redirect)
+    return format("%s -c %s -o %s %s", _g.shellname, flags, objfile, srcfile)
 end
 
 -- make the link command
-function linkcmd(objfiles, targetfile, flags, logfile)
-
-    -- redirect
-    local redirect = ""
-    if logfile then redirect = format(" > %s 2>&1", logfile) end
+function linkcmd(objfiles, targetfile, flags)
 
     -- make it
-    return format("%s -o %s %s %s%s", _g.shellname, targetfile, objfiles, flags, redirect)
+    return format("%s -o %s %s %s", _g.shellname, targetfile, objfiles, flags)
 end
 
 -- run command

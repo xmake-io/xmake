@@ -50,7 +50,7 @@ function main()
 
     -- init the project configure
     --
-    -- priority: option > global > option_default > config_check > config_cache
+    -- priority: option > global > option_default > config_check > project_check > config_cache
     --
     config.init()
 
@@ -77,6 +77,7 @@ function main()
 
     -- merge the checked configure 
     config.check()
+    project.check()
 
     -- merge the cached configure
     if not option.get("clean") then
@@ -91,9 +92,6 @@ function main()
     if buildir and path.is_absolute(buildir) then
         config.set("buildir", path.relative(buildir, project.directory()))
     end
-
-    -- check the project options
-    project.check()
 
     -- load project
     project.load()
