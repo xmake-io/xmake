@@ -190,7 +190,7 @@ function _instance:get(name)
         -- load it
         local ok, errors = sandbox.load(info.load)
         if not ok then
-            raise(errors)
+            os.raise(errors)
         end
 
         -- save _g

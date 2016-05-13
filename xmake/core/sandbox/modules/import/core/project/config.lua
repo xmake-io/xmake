@@ -116,6 +116,13 @@ function sandbox_core_project_config.save(targetname)
     end
 end
 
+-- the configure has been changed for the given target?
+function sandbox_core_project_config.changed(targetname)
+
+    -- changed?
+    return config.changed(targetname)
+end
+
 -- init the configure
 function sandbox_core_project_config.init()
 

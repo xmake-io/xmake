@@ -34,8 +34,48 @@ function _option_filter(name)
     return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" and name ~= "clean"
 end
 
+-- need check
+function _need_check()
+
+    -- the configure has been changed? reconfig it
+    if config.changed() then
+        return true
+    end
+
+    -- get the current mtimes 
+    local mtimes = project.mtimes()
+
+    -- get the previous mtimes 
+    local changed = false
+    local mtimes_prev = cache.get("mtimes")
+    if mtimes_prev then 
+
+        -- check for all project files
+        for file, mtime in pairs(mtimes) do
+
+            -- modified? reconfig and rebuild it
+            local mtime_prev = mtimes_prev[file]
+            if not mtime_prev or mtime > mtime_prev then
+                changed = true
+                break
+            end
+        end
+    end
+
+    -- update mtimes
+    cache.set("mtimes", mtimes)
+
+    -- changed?
+    return changed
+end
+
 -- main
 function main()
+
+    -- avoid to run this task repeatly
+    if _g.finished then
+        return 
+    end
 
     -- check xmake.lua
     if not os.isfile(project.file()) then
@@ -75,9 +115,14 @@ function main()
         end
     end
 
+    -- enter cache scope
+    cache.enter("local.config")
+
     -- merge the checked configure 
-    config.check()
-    project.check()
+    if _need_check() then
+        config.check()
+        project.check()
+    end
 
     -- merge the cached configure
     if not option.get("clean") then
@@ -107,7 +152,6 @@ function main()
     end
 
     -- need rebuild it
-    cache.enter("local.build")
     cache.set("rebuild", true)
     cache.flush()
 
@@ -119,6 +163,9 @@ function main()
 
     -- dump it
     config.dump()
+
+    -- finished 
+    _g.finished = true
 
     -- trace
     print("configure ok!")

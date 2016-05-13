@@ -22,6 +22,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.task")
 import("core.project.config")
 import("core.project.global")
 import("core.project.project")
@@ -156,19 +157,8 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- load project configure
-    config.load(targetname)
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- load project
-    project.load()
-
-    -- check target
-    if targetname and targetname ~= "all" and nil == project.target(targetname) then
-        raise("unknown target: %s", targetname)
-    end
+    -- config it first
+    task.run("config", {target = targetname})
 
     -- enter project directory
     os.cd(project.directory())

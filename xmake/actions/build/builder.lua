@@ -31,13 +31,6 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("core.platform.environment")
 
--- get target
-function _target(targetname)
-
-    -- get and check it
-    return assert(project.target(targetname), "unknown target: %s", targetname)
-end
-
 -- make the object for the *.[o|obj] source file
 function _make_object_for_object(target, srcfile, objfile)
 
@@ -156,7 +149,7 @@ function _make_target_and_deps(target)
 
     -- make for all dependent targets
     for _, depname in ipairs(target:get("deps")) do
-        _make_target_and_deps(_target(depname))
+        _make_target_and_deps(project.target(depname))
     end
 
     -- make target
@@ -185,7 +178,7 @@ function make(targetname)
     else
 
         -- make target
-        _make_target_and_deps(_target(targetname))
+        _make_target_and_deps(project.target(targetname))
     end
 
     -- leave toolchains environment

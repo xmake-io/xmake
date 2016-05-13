@@ -240,6 +240,25 @@ function sandbox_import.import(name, args)
     -- the arguments
     args = args or {}
 
+    -- get the parent scope
+    local scope_parent = getfenv(2)
+    assert(scope_parent)
+
+    -- get module name
+    local modulename = sandbox_import._modulename(name)
+    if not modulename then
+        raise("cannot get module name for %s", name)
+    end
+
+    -- the imported name
+    local imported_name = args.alias or modulename
+
+    -- this module has been imported?
+    local module = rawget(scope_parent, imported_name)
+    if module ~= nil then
+        return module
+    end
+
     -- get the current sandbox instance
     local instance = sandbox.instance()
     assert(instance)
@@ -266,19 +285,6 @@ function sandbox_import.import(name, args)
 
     -- get module script
     local script = errors
-
-    -- get module name
-    local modulename = sandbox_import._modulename(name)
-    if not modulename then
-        raise("cannot get module name for %s", name)
-    end
-
-    -- get the parent scope
-    local scope_parent = getfenv(2)
-    assert(scope_parent)
-
-    -- the imported name
-    local imported_name = args.alias or modulename
 
     -- inherit?
     if args.inherit then
@@ -310,11 +316,6 @@ function sandbox_import.import(name, args)
 
         end
 
-    end
-
-    -- this module has been imported?
-    if rawget(scope_parent, imported_name) then
-        raise("this module: %s has been imported!", name)
     end
 
     -- import this module into the parent scope
