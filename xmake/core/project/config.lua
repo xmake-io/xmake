@@ -198,5 +198,46 @@ function config.dump()
    
 end
 
+-- the configure has been changed for the given target?
+function config.changed(targetname)
+
+    -- get the target name
+    targetname = targetname or "all"
+
+    -- load configure from the file 
+    local fileinfo = {}
+    local filepath = config._file()
+    if os.isfile(filepath) then
+
+        -- load it 
+        local results = io.load(filepath)
+        if results then
+
+            -- get the target configure first
+            if targetname ~= "all" and results._TARGETS then
+                for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
+                    fileinfo[name] = value
+                end
+            end
+
+            -- merge the root configure 
+            for name, value in pairs(results) do
+                if fileinfo[name] == nil then
+                    fileinfo[name] = value
+                end
+            end
+        end
+    end
+
+    -- compare the current configure
+    for name, value in pairs(config.options()) do
+
+        -- changed?
+        if fileinfo[name] ~= value then
+            return true
+        end
+    end
+end
+
 -- return module
 return config

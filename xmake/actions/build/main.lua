@@ -30,36 +30,6 @@ import("core.platform.platform")
 import("core.tool.tool")
 import("builder")
 
--- project files(xmake.lua) have been changed?
-function _project_changed(targetname)
-
-    -- get the current mtimes 
-    local mtimes = project.mtimes()
-
-    -- get the previous mtimes 
-    local changed = false
-    local mtimes_prev = cache.get("mtimes")
-    if mtimes_prev then 
-
-        -- check for all project files
-        for file, mtime in pairs(mtimes) do
-
-            -- modified? reconfig and rebuild it
-            local mtime_prev = mtimes_prev[file]
-            if not mtime_prev or mtime > mtime_prev then
-                changed = true
-                break
-            end
-        end
-    end
-
-    -- update mtimes
-    cache.set("mtimes", mtimes)
-
-    -- changed?
-    return changed
-end
-
 -- main
 function main()
 
@@ -71,33 +41,11 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- load project configure
-    config.load(targetname)
+    -- config it first
+    task.run("config", {target = targetname})
 
-    -- enter cache scope: build
-    cache.enter("local.build")
-
-    -- host changed? 
-    if config.host() ~= os.host() then
-
-        -- reinit config
-        config.init()
-
-        -- reconfig it
-        task.run("config", {target = targetname, clean = true})
-
-    -- project changed? 
-    elseif _project_changed(targetname) then
-        
-        -- reconfig it
-        task.run("config", {target = targetname})
-    end
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- load project
-    project.load()
+    -- enter cache scope
+    cache.enter("local.config")
 
     -- rebuild?
     if option.get("rebuild") or cache.get("rebuild") then

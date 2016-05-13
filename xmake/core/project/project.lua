@@ -551,6 +551,12 @@ function project.check()
                 opt:clear()
 
             end
+
+        -- no check
+        elseif config.get(name) then
+
+            -- save this option to configure directly
+            opt:save()
         end
     end
 
