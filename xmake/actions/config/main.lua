@@ -31,7 +31,7 @@ import("config_h")
 
 -- filter option 
 function _option_filter(name)
-    return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose" and name ~= "clean"
+    return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose"
 end
 
 -- need check
@@ -90,15 +90,26 @@ function main()
 
     -- init the project configure
     --
-    -- priority: option > global > option_default > config_check > project_check > config_cache
+    -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache
     --
     config.init()
 
-    -- override the option configure
+    -- enter cache scope
+    cache.enter("local.config")
+
+    -- get the options
+    local options = nil
     for name, value in pairs(option.options()) do
         if _option_filter(name) then
-            config.set(name, value)
+            options = options or {}
+            options[name] = value
         end
+    end
+
+    -- override configure from the options or cache 
+    options = options or cache.get("options_" .. targetname)
+    for name, value in pairs(options) do
+        config.set(name, value)
     end
 
     -- merge the global configure 
@@ -115,9 +126,6 @@ function main()
         end
     end
 
-    -- enter cache scope
-    cache.enter("local.config")
-
     -- merge the checked configure 
     if _need_check() then
         config.check()
@@ -125,15 +133,13 @@ function main()
     end
 
     -- merge the cached configure
-    if not option.get("clean") then
-        config.load(targetname)
-    end
+    config.load(targetname)
 
     -- load platform
     platform.load(config.plat())
 
     -- translate the build directory
-    local buildir = option.get("buildir")
+    local buildir = config.get("buildir")
     if buildir and path.is_absolute(buildir) then
         config.set("buildir", path.relative(buildir, project.directory()))
     end
@@ -153,6 +159,11 @@ function main()
 
     -- need rebuild it
     cache.set("rebuild", true)
+
+    -- save options
+    cache.set("options_" .. targetname, options)
+
+    -- flush cache
     cache.flush()
 
     -- save the project configure

@@ -35,14 +35,14 @@ function main()
 
     -- override the option configure 
     for name, value in pairs(option.options()) do
-        if name ~= "verbose" and name ~= "clean" then
+        if name ~= "verbose" then
             global.set(name, value)
         end
     end
 
     -- merge the default options 
     for name, value in pairs(option.defaults()) do
-        if name ~= "verbose" and name ~= "clean" and global.get(name) == nil then
+        if name ~= "verbose" and global.get(name) == nil then
             global.set(name, value)
         end
     end
@@ -51,9 +51,7 @@ function main()
     global.check()
   
     -- merge the cached configure
-    if not option.get("clean") then
-        global.load()
-    end
+    global.load()
 
     -- save it
     global.save()
