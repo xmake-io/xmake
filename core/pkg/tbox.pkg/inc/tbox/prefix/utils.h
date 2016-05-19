@@ -72,7 +72,7 @@
 #define tb_align_u64(x, b)              (((tb_uint64_t)(x) + ((tb_uint64_t)(b) - 1)) & ~((tb_uint64_t)(b) - 1))
 
 /// align by pow2
-#define tb_align_pow2(x)                (((x) > 1)? (tb_ispow2(x)? (x) : (1 << (32 - tb_bits_cl0_u32_be((tb_uint32_t)(x))))) : 1)
+#define tb_align_pow2(x)                (((x) > 1)? (tb_ispow2(x)? (x) : ((tb_size_t)1 << (32 - tb_bits_cl0_u32_be((tb_uint32_t)(x))))) : 1)
 
 /*! @def tb_align_cpu
  *

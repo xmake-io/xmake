@@ -186,6 +186,19 @@ function sandbox_os.run(cmd, ...)
     end
 end
 
+-- run shell with coroutine
+function sandbox_os.corun(cmd, ...)
+
+    -- make command
+    cmd = vformat(cmd, ...)
+
+    -- run it
+    local ok, errors = os.corun(cmd)
+    if not ok then
+        os.raise(errors)
+    end
+end
+
 -- execute shell
 function sandbox_os.execute(cmd, ...)
 

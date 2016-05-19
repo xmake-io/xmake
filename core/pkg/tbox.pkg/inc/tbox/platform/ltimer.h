@@ -80,6 +80,12 @@ tb_ltimer_ref_t         tb_ltimer_init(tb_size_t maxn, tb_size_t tick, tb_bool_t
  */
 tb_void_t               tb_ltimer_exit(tb_ltimer_ref_t timer);
 
+/*! kill timer for tb_ltimer_loop()
+ *
+ * @param timer         the timer 
+ */
+tb_void_t               tb_ltimer_kill(tb_ltimer_ref_t timer);
+
 /*! clear timer
  *
  * @param timer         the timer 
@@ -105,17 +111,17 @@ tb_size_t               tb_ltimer_delay(tb_ltimer_ref_t timer);
 /*! spak timer for the external loop at the single thread
  *
  * @code
- * tb_void_t tb_ltimer_loop()
- * {
- *      while (1)
- *      {
- *          // wait
- *          wait(tb_ltimer_delay(timer))
- *
- *          // spak timer
- *          tb_ltimer_spak(timer);
- *      }
- * }
+   tb_void_t tb_ltimer_loop()
+   {
+        while (1)
+        {
+            // wait
+            wait(tb_ltimer_delay(timer))
+  
+            // spak timer
+            tb_ltimer_spak(timer);
+        }
+   }
  * @endcode
  *
  * @param timer         the timer 
@@ -127,11 +133,10 @@ tb_bool_t               tb_ltimer_spak(tb_ltimer_ref_t timer);
 /*! loop timer for the external thread
  *
  * @code
- * tb_void_t tb_ltimer_thread(tb_cpointer_t priv)
-
- * {
- *      tb_ltimer_loop(timer);
- * }
+   tb_void_t tb_ltimer_thread(tb_cpointer_t priv)
+   {
+        tb_ltimer_loop(timer);
+   }
  * @endcode
  *
  * @param timer         the timer 

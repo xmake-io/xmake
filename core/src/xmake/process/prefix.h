@@ -17,39 +17,19 @@
  * Copyright (C) 2015 - 2016, ruki All rights reserved.
  *
  * @author      ruki
- * @file        setenv.c
+ * @file        prefix.h
  *
  */
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME                "setenv"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#ifndef XM_PROCESS_PREFIX_H
+#define XM_PROCESS_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
+#include "../prefix.h"
+#include "luajit/luajit.h"
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
- */
-// ok = os.setenv(name, value) 
-tb_int_t xm_os_setenv(lua_State* lua)
-{
-    // check
-    tb_assert_and_check_return_val(lua, 0);
 
-    // get the name and value 
-    size_t              value_size = 0;
-    tb_char_t const*    name = luaL_checkstring(lua, 1);
-    tb_char_t const*    value = luaL_checklstring(lua, 2, &value_size);
-    tb_check_return_val(name, 0);
+#endif
 
-    // set it
-    lua_pushboolean(lua, value? tb_environment_set(name, value) : tb_false);
 
-    // ok
-    return 1;
-}

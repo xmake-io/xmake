@@ -306,6 +306,8 @@
 #   pragma warning(disable:4197)
 #   pragma warning(disable:4141)
 #   pragma warning(disable:4996)
+#   pragma warning(disable:4359)
+#   pragma warning(disable:4838)
 
 #else
 #   define TB_COMPILER_STRING                       "unknown compiler"

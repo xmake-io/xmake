@@ -83,6 +83,32 @@ typedef tb_iterator_ref_t tb_vector_ref_t;
  */
 
 /*! init vector
+ * 
+ * @code
+ *
+    // init vector
+    tb_vector_ref_t vector = tb_vector_init(0, tb_element_str(tb_true));
+    if (vector)
+    {
+        // insert elements into head
+        tb_vector_insert_head(vector, "hi!");
+
+        // insert elements into tail
+        tb_vector_insert_tail(vector, "how");
+        tb_vector_insert_tail(vector, "are");
+        tb_vector_insert_tail(vector, "you");
+
+        // dump elements
+        tb_for_all (tb_char_t const*, cstr, vector)
+        {
+            // trace
+            tb_trace_d("%s", cstr);
+        }
+
+        // exit vector
+        tb_vector_exit(vector);
+    }
+ * @endcode
  *
  * @param grow      the item grow
  * @param element   the element

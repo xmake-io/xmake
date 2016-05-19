@@ -146,7 +146,7 @@ static __tb_inline__ tb_fixed6_t tb_long_to_fixed6_check(tb_long_t x)
     tb_assert(x >= (TB_MINS32 >> 10) && x <= (TB_MAXS32 >> 10));
 
     // ok
-    return (x << 6);
+    return (tb_fixed6_t)(x << 6);
 }
 static __tb_inline__ tb_long_t tb_fixed6_to_int_check(tb_fixed6_t x)
 {
@@ -154,7 +154,7 @@ static __tb_inline__ tb_long_t tb_fixed6_to_int_check(tb_fixed6_t x)
     tb_assert(x >= TB_FIXED6_MIN && x <= TB_FIXED6_MAX);
 
     // ok
-    return (x >> 6);
+    return (tb_fixed6_t)(x >> 6);
 }
 #endif
 static __tb_inline__ tb_fixed6_t tb_fixed6_mul_inline(tb_fixed6_t x, tb_fixed6_t y)

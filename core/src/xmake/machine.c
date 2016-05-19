@@ -57,6 +57,7 @@ tb_int_t xm_os_mkdir(lua_State* lua);
 tb_int_t xm_os_cpdir(lua_State* lua);
 tb_int_t xm_os_chdir(lua_State* lua);
 tb_int_t xm_os_mtime(lua_State* lua);
+tb_int_t xm_os_mclock(lua_State* lua);
 tb_int_t xm_os_curdir(lua_State* lua);
 tb_int_t xm_os_tmpdir(lua_State* lua);
 tb_int_t xm_os_isfile(lua_State* lua);
@@ -79,6 +80,11 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
 
+// the process functions
+tb_int_t xm_process_open(lua_State* lua);
+tb_int_t xm_process_wait(lua_State* lua);
+tb_int_t xm_process_close(lua_State* lua);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -93,6 +99,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "cpdir",          xm_os_cpdir     }
 ,   { "chdir",          xm_os_chdir     }
 ,   { "mtime",          xm_os_mtime     }
+,   { "mclock",         xm_os_mclock    }
 ,   { "curdir",         xm_os_curdir    }
 ,   { "tmpdir",         xm_os_tmpdir    }
 ,   { "isfile",         xm_os_isfile    }
@@ -123,6 +130,15 @@ static luaL_Reg const g_string_functions[] =
     { "endswith",       xm_string_endswith      }
 ,   { "startswith",     xm_string_startswith    }
 ,   { tb_null,          tb_null                 }
+};
+
+// the process functions
+static luaL_Reg const g_process_functions[] = 
+{
+    { "open",           xm_process_open     }
+,   { "wait",           xm_process_wait     }
+,   { "close",          xm_process_close    }
+,   { tb_null,          tb_null             }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -162,7 +178,7 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
     {
         // get it from the environment variable 
         tb_char_t data[TB_PATH_MAXN] = {0};
-        if (!tb_environment_get_one("XMAKE_PROGRAM_DIR", data, sizeof(data)))
+        if (!tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)))
         {
             // error
             tb_printf("error: please set XMAKE_PROGRAM_DIR first!\n");
@@ -198,7 +214,7 @@ static tb_bool_t xm_machine_main_get_project_directory(xm_machine_impl_t* impl, 
     {
         // attempt to get it from the environment variable first
         tb_char_t data[TB_PATH_MAXN] = {0};
-        if (    !tb_environment_get_one("XMAKE_PROJECT_DIR", data, sizeof(data))
+        if (    !tb_environment_first("XMAKE_PROJECT_DIR", data, sizeof(data))
             ||  !tb_path_absolute(data, path, maxn))
         {
             // get it from the current directory
@@ -253,6 +269,9 @@ xm_machine_ref_t xm_machine_init()
 
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
+
+        // bind process functions
+        luaL_register(impl->lua, "process", g_process_functions);
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)

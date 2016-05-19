@@ -17,14 +17,14 @@
  * Copyright (C) 2015 - 2016, ruki All rights reserved.
  *
  * @author      ruki
- * @file        setenv.c
+ * @file        mclock.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "setenv"
+#define TB_TRACE_MODULE_NAME                "mclock"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -35,20 +35,15 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-// ok = os.setenv(name, value) 
-tb_int_t xm_os_setenv(lua_State* lua)
+
+// os.mclock()
+tb_int_t xm_os_mclock(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the name and value 
-    size_t              value_size = 0;
-    tb_char_t const*    name = luaL_checkstring(lua, 1);
-    tb_char_t const*    value = luaL_checklstring(lua, 2, &value_size);
-    tb_check_return_val(name, 0);
-
-    // set it
-    lua_pushboolean(lua, value? tb_environment_set(name, value) : tb_false);
+    // save result
+    lua_pushnumber(lua, tb_mclock());
 
     // ok
     return 1;
