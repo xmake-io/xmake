@@ -260,9 +260,8 @@ end
 -- run shell with coroutine
 function os.corun(cmd)
 
-    -- FIXME
     -- make temporary log file
-    local log = path.join(os.tmpdir(), "xmake.os.corun.log")
+    local log = os.tmpname()
 
     -- open command
     local p = process.open(cmd, log, log)
