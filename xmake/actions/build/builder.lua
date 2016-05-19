@@ -77,26 +77,8 @@ function _make_object(target, sourcefile, objectfile)
     -- create directory if not exists
     os.mkdir(path.directory(objectfile))
 
-    -- run cmd
---    os.run(command)
+    -- run cmd with coroutine
     os.corun(command)
-end
-
--- make objects for the given target
-function _make_objects_(target)
-
-    -- make all objects
-    local i = 1
-    local objectfiles = target:objectfiles()
-    local sourcefiles = target:sourcefiles()
-    for _, objectfile in ipairs(objectfiles) do
-
-        -- make object
-        _make_object(target, sourcefiles[i], objectfile)
-
-        -- next
-        i = i + 1
-    end
 end
 
 -- make objects for the given target
@@ -107,7 +89,7 @@ function _make_objects(target)
     local sourcefiles = target:sourcefiles()
 
     -- get the max job count
-    local jobs  = 4
+    local jobs = tonumber(option.get("jobs") or "4")
 
     -- make objects
     local index = 1
@@ -133,7 +115,7 @@ function _make_objects(target)
                 table.insert(finished, i)
             else
                 -- resume it
-                local ok, errors = coroutine.resume(job, target, sourcefiles[job_index], objectfiles[job_index])
+                local ok, errors = coroutine.resume(job, job_index)
                 if not ok then
                     raise(errors)
                 end
@@ -147,27 +129,18 @@ function _make_objects(target)
 
         -- produce tasks
         while #tasks < jobs and index <= total do
-            table.insert(tasks, {coroutine.create(_make_object), index})
+            table.insert(tasks, {coroutine.create(function (index)
+
+                        -- make object
+                        _make_object(target, sourcefiles[index], objectfiles[index])
+
+                    end), index})
             index = index + 1
         end
 
     until #tasks == 0
 
 end
- 
---[[
-    co = coroutine.create(function ()
-            os.corun("echo hello world")
-        end)
-
-    while true do
-        local ok = coroutine.resume(co)
-        print(ok)
-        if not ok then
-            break
-        end
-    end
-]]
 
 -- make the given target
 function _make_target(target)

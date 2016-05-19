@@ -44,7 +44,7 @@ task("build")
                     ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
                     ,   {}
-                    ,   {'j', "jobs",       "kv", nil,          "Specifies the number of jobs to build simultaneously"          }
+                    ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously"          }
                    
                     ,   {}
                     ,   {nil, "target",     "v",  "all",        "Build the given target."                                       } 
