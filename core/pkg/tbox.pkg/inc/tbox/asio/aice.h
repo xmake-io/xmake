@@ -75,7 +75,7 @@ typedef struct __tb_aice_acpt_t
     tb_aico_ref_t               aico;
 
     /// the client addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
     /// the private data for using the left space of the union
     tb_cpointer_t               priv[1];
@@ -86,7 +86,7 @@ typedef struct __tb_aice_acpt_t
 typedef struct __tb_aice_conn_t
 {
     /// the addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_conn_t;
 
@@ -95,7 +95,7 @@ typedef struct __tb_aice_conn_t
 typedef struct __tb_aice_recv_t
 {
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the recv data for (tb_iovec_t*)->data
     tb_byte_t*                  data;
@@ -109,7 +109,7 @@ typedef struct __tb_aice_recv_t
 typedef struct __tb_aice_send_t
 {
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the send data for (tb_iovec_t*)->data
     tb_byte_t const*            data;
@@ -123,7 +123,7 @@ typedef struct __tb_aice_send_t
 typedef struct __tb_aice_urecv_t
 {
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the recv data for (tb_iovec_t*)->data
     tb_byte_t*                  data;
@@ -132,7 +132,7 @@ typedef struct __tb_aice_urecv_t
     tb_size_t                   real;
 
     /// the addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_urecv_t;
 
@@ -140,7 +140,7 @@ typedef struct __tb_aice_urecv_t
 typedef struct __tb_aice_usend_t
 {
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the send data for (tb_iovec_t*)->data
     tb_byte_t const*            data;
@@ -149,7 +149,7 @@ typedef struct __tb_aice_usend_t
     tb_size_t                   real;
 
     /// the peer addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_usend_t;
 
@@ -157,7 +157,7 @@ typedef struct __tb_aice_usend_t
 typedef struct __tb_aice_read_t
 {
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the read data for (tb_iovec_t*)->data
     tb_byte_t*                  data;
@@ -174,7 +174,7 @@ typedef struct __tb_aice_read_t
 typedef struct __tb_aice_writ_t
 {
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the writ data for (tb_iovec_t*)->data
     tb_byte_t const*            data;
@@ -194,7 +194,7 @@ typedef struct __tb_aice_recv_t
     tb_byte_t*                  data;
 
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the data real
     tb_size_t                   real;
@@ -208,7 +208,7 @@ typedef struct __tb_aice_send_t
     tb_byte_t const*            data;
 
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the data real
     tb_size_t                   real;
@@ -222,13 +222,13 @@ typedef struct __tb_aice_urecv_t
     tb_byte_t*                  data;
 
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the data real
     tb_size_t                   real;
 
     /// the addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_urecv_t;
 
@@ -239,13 +239,13 @@ typedef struct __tb_aice_usend_t
     tb_byte_t const*            data;
 
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the data real
     tb_size_t                   real;
 
     /// the addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_usend_t;
 
@@ -256,7 +256,7 @@ typedef struct __tb_aice_read_t
     tb_byte_t*                  data;
 
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the data real
     tb_size_t                   real;
@@ -273,7 +273,7 @@ typedef struct __tb_aice_writ_t
     tb_byte_t const*            data;
 
     /// the data size for (tb_iovec_t*)->size
-    tb_size_t                   size;
+    tb_iovec_size_t             size;
 
     /// the data real
     tb_size_t                   real;
@@ -325,7 +325,7 @@ typedef struct __tb_aice_urecvv_t
     tb_size_t                   real;
 
     /// the peer addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_urecvv_t;
 
@@ -342,7 +342,7 @@ typedef struct __tb_aice_usendv_t
     tb_size_t                   real;
 
     /// the addr
-    tb_ipaddr_t                   addr;
+    tb_ipaddr_t                 addr;
 
 }tb_aice_usendv_t;
 

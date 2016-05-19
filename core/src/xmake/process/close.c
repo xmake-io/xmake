@@ -17,14 +17,14 @@
  * Copyright (C) 2015 - 2016, ruki All rights reserved.
  *
  * @author      ruki
- * @file        setenv.c
+ * @file        close.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "setenv"
+#define TB_TRACE_MODULE_NAME                "process.close"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -35,20 +35,26 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-// ok = os.setenv(name, value) 
-tb_int_t xm_os_setenv(lua_State* lua)
+
+// process.close(p)
+tb_int_t xm_process_close(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the name and value 
-    size_t              value_size = 0;
-    tb_char_t const*    name = luaL_checkstring(lua, 1);
-    tb_char_t const*    value = luaL_checklstring(lua, 2, &value_size);
-    tb_check_return_val(name, 0);
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
 
-    // set it
-    lua_pushboolean(lua, value? tb_environment_set(name, value) : tb_false);
+    // get the process
+    tb_process_ref_t process = (tb_process_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(process, 0);
+
+    // exit process
+    tb_process_exit(process);
+
+    // save result: ok
+    lua_pushboolean(lua, tb_true);
 
     // ok
     return 1;

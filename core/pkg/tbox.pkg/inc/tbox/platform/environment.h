@@ -143,7 +143,7 @@ tb_bool_t               tb_environment_save(tb_environment_ref_t environment, tb
         // load variable
         if (tb_environment_load(environment, "PATH"))
         {
-            tb_char_t const* value = tb_environment_get(environment, 0);
+            tb_char_t const* value = tb_environment_at(environment, 0);
             if (value)
             {
                 // ...
@@ -161,9 +161,9 @@ tb_bool_t               tb_environment_save(tb_environment_ref_t environment, tb
  *
  * @return              the variable value
  */
-tb_char_t const*        tb_environment_get(tb_environment_ref_t environment, tb_size_t index);
+tb_char_t const*        tb_environment_at(tb_environment_ref_t environment, tb_size_t index);
 
-/*! set the environment variable and will overwrite it
+/*! replace the environment variable and will overwrite it
  *
  * we will clear environment and overwrite it
  *
@@ -172,7 +172,7 @@ tb_char_t const*        tb_environment_get(tb_environment_ref_t environment, tb_
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_environment_set(tb_environment_ref_t environment, tb_char_t const* value);
+tb_bool_t               tb_environment_replace(tb_environment_ref_t environment, tb_char_t const* value);
 
 /*! set the environment variable 
  *
@@ -198,7 +198,7 @@ tb_void_t               tb_environment_dump(tb_environment_ref_t environment, tb
  * @code
  
     tb_char_t value[TB_PATH_MAXN];
-    if (tb_environment_get_one("HOME", value, sizeof(value)))
+    if (tb_environment_first("HOME", value, sizeof(value)))
     {
         // ...
     }
@@ -211,19 +211,56 @@ tb_void_t               tb_environment_dump(tb_environment_ref_t environment, tb
  *
  * @return              the variable value size
  */
-tb_size_t               tb_environment_get_one(tb_char_t const* name, tb_char_t* value, tb_size_t maxn);
+tb_size_t               tb_environment_first(tb_char_t const* name, tb_char_t* value, tb_size_t maxn);
 
-/*! set the environment variable value
+/*! get the environment variable values 
  *
- * we will set only one value and overwrite it,
- * and remove this environment variable if the value is null 
+ * @code
+ 
+    tb_char_t value[TB_PATH_MAXN];
+    if (tb_environment_get("HOME", value, sizeof(value)))
+    {
+        // ...
+    }
+
+ * @endcode
  *
  * @param name          the variable name
- * @param value         the variable value
+ * @param values        the variable values, separator: windows(';') or other(';')
+ * @param maxn          the variable values maxn
+ *
+ * @return              the variable values size
+ */
+tb_size_t               tb_environment_get(tb_char_t const* name, tb_char_t* values, tb_size_t maxn);
+
+/*! set the environment variable values
+ *
+ * we will set all values and overwrite it
+ *
+ * @param name          the variable name
+ * @param values        the variable values, separator: windows(';') or other(';')
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_environment_set_one(tb_char_t const* name, tb_char_t const* value);
+tb_bool_t               tb_environment_set(tb_char_t const* name, tb_char_t const* values);
+
+/*! add the environment variable values and not overwrite it
+ *
+ * @param name          the variable name
+ * @param values        the variable values, separator: windows(';') or other(';')
+ * @param to_head       add value into the head?
+ *
+ * @return              tb_true or tb_false
+ */
+tb_bool_t               tb_environment_add(tb_char_t const* name, tb_char_t const* values, tb_bool_t to_head);
+
+/*! remove the given environment variable 
+ *
+ * @param name          the variable name
+ *
+ * @return              tb_true or tb_false
+ */
+tb_bool_t               tb_environment_remove(tb_char_t const* name);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

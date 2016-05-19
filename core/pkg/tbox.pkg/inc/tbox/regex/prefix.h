@@ -17,31 +17,19 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        utils.h
- * @defgroup    utils
+ * @file        prefix.h
+ * @ingroup     regex
  *
  */
-#ifndef TB_UTILS_H
-#define TB_UTILS_H
+#ifndef TB_REGEX_PREFIX_H
+#define TB_REGEX_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "bits.h"
-#include "sha.h"
-#include "md5.h"
-#include "crc.h"
-#include "url.h"
-#include "dump.h"
-#include "used.h"
-#include "trace.h"
-#include "base32.h"
-#include "base64.h"
-#include "option.h"
-#include "adler32.h"
-#include "singleton.h"
-#include "lock_profiler.h"
-#include "fnv32.h"
+#include "../prefix.h"
+#include "../libc/libc.h"
+#include "../container/container.h"
+
 
 #endif

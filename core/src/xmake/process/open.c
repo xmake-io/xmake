@@ -17,14 +17,14 @@
  * Copyright (C) 2015 - 2016, ruki All rights reserved.
  *
  * @author      ruki
- * @file        setenv.c
+ * @file        open.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "setenv"
+#define TB_TRACE_MODULE_NAME                "process.open"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -35,20 +35,52 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-// ok = os.setenv(name, value) 
-tb_int_t xm_os_setenv(lua_State* lua)
+
+// p = process.open(command) 
+tb_int_t xm_process_open(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the name and value 
-    size_t              value_size = 0;
-    tb_char_t const*    name = luaL_checkstring(lua, 1);
-    tb_char_t const*    value = luaL_checklstring(lua, 2, &value_size);
-    tb_check_return_val(name, 0);
+    // get the command
+    size_t              command_size = 0;
+    tb_char_t const*    command = luaL_checklstring(lua, 1, &command_size);
+    tb_char_t const*    outfile = lua_tostring(lua, 2);
+    tb_char_t const*    errfile = lua_tostring(lua, 3);
+    tb_check_return_val(command, 0);
 
-    // set it
-    lua_pushboolean(lua, value? tb_environment_set(name, value) : tb_false);
+    // init attributes
+    tb_process_attr_t attr = {0};
+
+    // redirect stdout?
+    if (outfile)
+    {
+        // redirect stdout to file
+        attr.outfile = outfile;
+        attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_APPEND;
+
+        // remove the outfile first
+        if (tb_file_info(outfile, tb_null))
+            tb_file_remove(outfile);
+    }
+
+    // redirect stderr?
+    if (errfile)
+    {
+        // redirect stderr to file
+        attr.errfile = errfile;
+        attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_APPEND;
+
+        // remove the errfile first
+        if (tb_file_info(errfile, tb_null))
+            tb_file_remove(errfile);
+    }
+
+    // init process
+    tb_process_ref_t process = tb_process_init_cmd(command, &attr);
+
+    // save the process reference
+    lua_pushlightuserdata(lua, process);
 
     // ok
     return 1;

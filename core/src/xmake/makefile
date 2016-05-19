@@ -21,6 +21,7 @@ xmake_C_FILES 			+= \
 						os/cpdir \
 						os/chdir \
 						os/mtime \
+						os/mclock \
 						os/curdir \
 						os/tmpdir \
 						os/isfile \
@@ -37,7 +38,10 @@ xmake_C_FILES 			+= \
 						path/translate \
 						path/is_absolute \
 						string/endswith \
-						string/startswith 
+						string/startswith \
+						process/open \
+						process/wait \
+						process/close 
 						
 
 # flags

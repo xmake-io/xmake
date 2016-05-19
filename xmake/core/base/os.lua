@@ -232,13 +232,63 @@ function os.cd(dir)
 end
 
 -- run shell
-function os.run(cmd, ...)
+function os.run(cmd)
 
     -- make temporary log file
     local log = path.join(os.tmpdir(), "xmake.os.run.log")
 
     -- run command
     if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
+
+        -- make errors
+        local errors = io.readall(log)
+
+        -- remove the temporary log file
+        os.rm(log)
+
+        -- failed
+        return false, errors
+    end
+
+    -- remove the temporary log file
+    os.rm(log)
+
+    -- ok
+    return true
+end
+
+-- run shell with coroutine
+function os.corun(cmd)
+
+    -- FIXME
+    -- make temporary log file
+    local log = path.join(os.tmpdir(), "xmake.os.corun.log")
+
+    -- open command
+    local p = process.open(cmd, log, log)
+    if nil == p then
+        return false, string.format("cannot run %s", cmd)
+    end
+
+    -- wait process
+    local waitok = -1
+    local status = -1 
+    repeat
+        
+        -- poll it
+        waitok, status = process.wait(p, 0)
+        if waitok == 0 then
+            coroutine.yield()
+        end
+
+    until waitok ~= 0
+
+    -- close process
+    process.close(p)
+
+    -- ok?
+    local ok = utils.ifelse(waitok > 0, status, -1)
+    if ok ~= 0 then
 
         -- make errors
         local errors = io.readall(log)

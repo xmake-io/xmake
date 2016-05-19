@@ -76,6 +76,12 @@ tb_timer_ref_t      tb_timer_init(tb_size_t maxn, tb_bool_t ctime);
  */
 tb_void_t           tb_timer_exit(tb_timer_ref_t timer);
 
+/*! kill timer for tb_timer_loop()
+ *
+ * @param timer     the timer 
+ */
+tb_void_t           tb_timer_kill(tb_timer_ref_t timer);
+
 /*! clear timer
  *
  * @param timer     the timer 

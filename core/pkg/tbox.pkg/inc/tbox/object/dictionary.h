@@ -62,12 +62,35 @@ typedef struct __tb_object_dictionary_item_t
 
 /*! init dictionary
  *
+ * @code
+    // init dictionary
+    // {"key1": "hello", "key2" :"world", "key3": 12345, "key4": true}
+    tb_object_ref_t dict = tb_object_dictionary_init(0, tb_false);
+    if (dict)
+    {
+        // key1 => hello
+        tb_object_dictionary_insert(dict, "key1", tb_object_string_init_from_cstr("hello"));
+
+        // key2 => world
+        tb_object_dictionary_insert(dict, "key2", tb_object_string_init_from_cstr("world"));
+
+        // key3 => 12345
+        tb_object_dictionary_insert(dict, "key3", tb_object_number_init_from_sint32(12345));
+
+        // key4 => true
+        tb_object_dictionary_insert(dict, "key4", tb_object_boolean_true());
+
+        // exit dictionary
+        tb_object_exit(dict);
+    }
+ * @endcode
+ *
  * @param size          the dictionary size, using the default size if be zero
  * @param incr          is increase refn?
  *
  * @return              the dictionary object
  */
-tb_object_ref_t         tb_object_dictionary_init(tb_size_t size, tb_size_t incr);
+tb_object_ref_t         tb_object_dictionary_init(tb_size_t size, tb_bool_t incr);
 
 /*! the dictionary size
  *
@@ -91,16 +114,16 @@ tb_void_t               tb_object_dictionary_incr(tb_object_ref_t dictionary, tb
  * @return              the dictionary iterator
  *
  * @code
- * tb_for_all (tb_object_dictionary_item_t*, item, tb_object_dictionary_itor(dictionary))
- * {
- *      if (item)
- *      {
- *          tb_char_t const*    key = item->key;
- *          tb_object_ref_t     val = item->val;
- *
- *          // ...
- *      }
- * }
+    tb_for_all (tb_object_dictionary_item_t*, item, tb_object_dictionary_itor(dictionary))
+    {
+        if (item)
+        {
+            tb_char_t const*    key = item->key;
+            tb_object_ref_t     val = item->val;
+
+            // ...
+        }
+    }
  * @endcode
  */
 tb_iterator_ref_t       tb_object_dictionary_itor(tb_object_ref_t dictionary);

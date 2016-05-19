@@ -70,12 +70,12 @@ __tb_extern_c_enter__
 #       define tb_assertf_and_check_continue(x, fmt, ...)                   tb_assertf(x, fmt, __VA_ARGS__)
 #   else
 #       define tb_assertf                                   
-#       define tb_assertf_and_check_abort                                   tb_abort();
-#       define tb_assertf_and_check_return                                  tb_abort();
-#       define tb_assertf_and_check_return_val                              tb_abort();
-#       define tb_assertf_and_check_goto                                    tb_abort();
-#       define tb_assertf_and_check_break                                   tb_abort();
-#       define tb_assertf_and_check_continue                                tb_abort();
+#       define tb_assertf_and_check_abort                                 
+#       define tb_assertf_and_check_return                                
+#       define tb_assertf_and_check_return_val                           
+#       define tb_assertf_and_check_goto                                 
+#       define tb_assertf_and_check_break                                  
+#       define tb_assertf_and_check_continue                               
 #   endif
 #else
 #   if defined(TB_COMPILER_IS_GCC)
@@ -95,13 +95,13 @@ __tb_extern_c_enter__
 #       define tb_assertf_and_check_break(x, fmt, ...)                      tb_check_break(x)
 #       define tb_assertf_and_check_continue(x, fmt, ...)                   tb_check_continue(x)
 #   else
-#       define tb_assertf                                                   tb_abort();
-#       define tb_assertf_and_check_abort                                   tb_abort();
-#       define tb_assertf_and_check_return                                  tb_abort();
-#       define tb_assertf_and_check_return_val                              tb_abort();
-#       define tb_assertf_and_check_goto                                    tb_abort();
-#       define tb_assertf_and_check_break                                   tb_abort();
-#       define tb_assertf_and_check_continue                                tb_abort();
+#       define tb_assertf                                              
+#       define tb_assertf_and_check_abort                                 
+#       define tb_assertf_and_check_return                                
+#       define tb_assertf_and_check_return_val                            
+#       define tb_assertf_and_check_goto                                 
+#       define tb_assertf_and_check_break                                   
+#       define tb_assertf_and_check_continue                                
 #   endif
 #endif
 
@@ -124,6 +124,120 @@ __tb_extern_c_enter__
 #   define tb_assert_and_check_continue(x)                  tb_check_continue(x)
 #   define tb_assert_and_check_break_state(x, s, v)         tb_check_break_state(x, s, v)
 #endif
+
+// assert and pass code, not abort it
+#ifdef __tb_debug__
+#   if defined(TB_COMPILER_IS_GCC)
+#       define tb_assertf_pass_return(x, fmt, arg...)                           do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); return ; } } while(0)
+#       define tb_assertf_pass_return_val(x, v, fmt, arg...)                    do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); return (v); } } while(0)
+#       define tb_assertf_pass_goto(x, b, fmt, arg...)                          do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); goto b; } } while(0)
+#       define tb_assertf_pass_break(x, fmt, arg...)                            { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); break ; } }
+#       define tb_assertf_pass_continue(x, fmt, arg...)                         { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); continue ; } }
+#       define tb_assertf_pass_and_check_abort(x, fmt, arg...)                  tb_assertf_pass_abort(x, fmt, ##arg)
+#       define tb_assertf_pass_and_check_return(x, fmt, arg...)                 tb_assertf_pass_return(x, fmt, ##arg)
+#       define tb_assertf_pass_and_check_return_val(x, v, fmt, arg...)          tb_assertf_pass_return_val(x, v, fmt, ##arg)
+#       define tb_assertf_pass_and_check_goto(x, b, fmt, arg...)                tb_assertf_pass_goto(x, b, fmt, ##arg)
+#       define tb_assertf_pass_and_check_break(x, fmt, arg...)                  tb_assertf_pass_break(x, fmt, ##arg)
+#       define tb_assertf_pass_and_check_continue(x, fmt, arg...)               tb_assertf_pass_continue(x, fmt, ##arg)
+#   elif defined(TB_COMPILER_IS_MSVC) && TB_COMPILER_VERSION_BE(13, 0)
+#       define tb_assertf_pass_return(x, fmt, ...)                              do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_trace_sync(); return ; } } while(0)
+#       define tb_assertf_pass_return_val(x, v, fmt, ...)                       do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_trace_sync(); return (v); } } while(0)
+#       define tb_assertf_pass_goto(x, b, fmt, ...)                             do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_trace_sync(); goto b; } } while(0)
+#       define tb_assertf_pass_break(x, fmt, ...)                               { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_trace_sync(); break ; } }
+#       define tb_assertf_pass_continue(x, fmt, ...)                            { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, __VA_ARGS__); tb_assert_backtrace_dump(); tb_trace_sync(); continue ; } }
+#       define tb_assertf_pass_and_check_abort(x, fmt, ...)                     tb_assertf_pass_abort(x, fmt, __VA_ARGS__)
+#       define tb_assertf_pass_and_check_return(x, fmt, ...)                    tb_assertf_pass_return(x, fmt, __VA_ARGS__)
+#       define tb_assertf_pass_and_check_return_val(x, v, fmt, ...)             tb_assertf_pass_return_val(x, v, fmt, __VA_ARGS__)
+#       define tb_assertf_pass_and_check_goto(x, b, fmt, ...)                   tb_assertf_pass_goto(x, b, fmt, __VA_ARGS__)
+#       define tb_assertf_pass_and_check_break(x, fmt, ...)                     tb_assertf_pass_break(x, fmt, __VA_ARGS__)
+#       define tb_assertf_pass_and_check_continue(x, fmt, ...)                  tb_assertf_pass_continue(x, fmt, __VA_ARGS__)
+#   else
+#       define tb_assertf_pass_return                            
+#       define tb_assertf_pass_return_val              
+#       define tb_assertf_pass_goto                       
+#       define tb_assertf_pass_break                             
+#       define tb_assertf_pass_continue                          
+#       define tb_assertf_pass_and_check_abort                            
+#       define tb_assertf_pass_and_check_return                             
+#       define tb_assertf_pass_and_check_return_val                     
+#       define tb_assertf_pass_and_check_goto                                  
+#       define tb_assertf_pass_and_check_break                              
+#       define tb_assertf_pass_and_check_continue                                
+#   endif
+#else
+#   if defined(TB_COMPILER_IS_GCC)
+#       define tb_assertf_pass_return(x, fmt, arg...)                            
+#       define tb_assertf_pass_return_val(x, v, fmt, arg...)                     
+#       define tb_assertf_pass_goto(x, b, fmt, arg...)                           
+#       define tb_assertf_pass_break(x, fmt, arg...)                             
+#       define tb_assertf_pass_continue(x, fmt, arg...)                          
+#       define tb_assertf_pass_and_check_abort(x, fmt, arg...)                  tb_check_abort(x)
+#       define tb_assertf_pass_and_check_return(x, fmt, arg...)                 tb_check_return(x)
+#       define tb_assertf_pass_and_check_return_val(x, v, fmt, arg...)          tb_check_return_val(x, v)
+#       define tb_assertf_pass_and_check_goto(x, b, fmt, arg...)                tb_check_goto(x, b)
+#       define tb_assertf_pass_and_check_break(x, fmt, arg...)                  tb_check_break(x)
+#       define tb_assertf_pass_and_check_continue(x, fmt, arg...)               tb_check_continue(x)
+#   elif defined(TB_COMPILER_IS_MSVC) && TB_COMPILER_VERSION_BE(13, 0)
+#       define tb_assertf_pass_return(x, fmt, ...)                            
+#       define tb_assertf_pass_return_val(x, v, fmt, ...)                     
+#       define tb_assertf_pass_goto(x, b, fmt, ...)                           
+#       define tb_assertf_pass_break(x, fmt, ...)                             
+#       define tb_assertf_pass_continue(x, fmt, ...)                          
+#       define tb_assertf_pass_and_check_abort(x, fmt, ...)                     tb_check_abort(x)
+#       define tb_assertf_pass_and_check_return(x, fmt, ...)                    tb_check_return(x)
+#       define tb_assertf_pass_and_check_return_val(x, v, fmt, ...)             tb_check_return_val(x, v)
+#       define tb_assertf_pass_and_check_goto(x, b, fmt, ...)                   tb_check_goto(x, b)
+#       define tb_assertf_pass_and_check_break(x, fmt, ...)                     tb_check_break(x)
+#       define tb_assertf_pass_and_check_continue(x, fmt, ...)                  tb_check_continue(x)
+#   else
+#       define tb_assertf_pass_return                            
+#       define tb_assertf_pass_return_val               
+#       define tb_assertf_pass_goto                       
+#       define tb_assertf_pass_break                             
+#       define tb_assertf_pass_continue                          
+#       define tb_assertf_pass_and_check_abort                                 
+#       define tb_assertf_pass_and_check_return                                 
+#       define tb_assertf_pass_and_check_return_val                            
+#       define tb_assertf_pass_and_check_goto                                   
+#       define tb_assertf_pass_and_check_break                                 
+#       define tb_assertf_pass_and_check_continue                               
+#   endif
+#endif
+
+#ifdef __tb_debug__
+#   define tb_assert_pass_return(x)                             do { if (!(x)) {tb_trace_a("expr[%s]", #x); tb_assert_backtrace_dump(); tb_trace_sync(); return ; } } while(0)
+#   define tb_assert_pass_return_val(x, v)                      do { if (!(x)) {tb_trace_a("expr[%s]", #x); tb_assert_backtrace_dump(); tb_trace_sync(); return (v); } } while(0)
+#   define tb_assert_pass_goto(x, b)                            do { if (!(x)) {tb_trace_a("expr[%s]", #x); tb_assert_backtrace_dump(); tb_trace_sync(); goto b; } } while(0)
+#   define tb_assert_pass_break(x)                              { if (!(x)) {tb_trace_a("expr[%s]", #x); tb_assert_backtrace_dump(); tb_trace_sync(); break ; } }
+#   define tb_assert_pass_continue(x)                           { if (!(x)) {tb_trace_a("expr[%s]", #x); tb_assert_backtrace_dump(); tb_trace_sync(); continue ; } }
+#   define tb_assert_pass_break_state(x, s, v)                  { if (!(x)) { (s) = (v); tb_trace_a("expr[%s]", #x); tb_assert_backtrace_dump(); tb_trace_sync(); break ; } }
+
+#   define tb_assert_pass_and_check_abort(x)                    tb_assert_pass_abort(x)
+#   define tb_assert_pass_and_check_return(x)                   tb_assert_pass_return(x)
+#   define tb_assert_pass_and_check_return_val(x, v)            tb_assert_pass_return_val(x, v)
+#   define tb_assert_pass_and_check_goto(x, b)                  tb_assert_pass_goto(x, b)
+#   define tb_assert_pass_and_check_break(x)                    tb_assert_pass_break(x)
+#   define tb_assert_pass_and_check_continue(x)                 tb_assert_pass_continue(x)
+#   define tb_assert_pass_and_check_break_state(x, s, v)        tb_assert_pass_break_state(x, s, v)
+#else
+#   define tb_assert_pass_return(x)
+#   define tb_assert_pass_return_val(x, v)
+#   define tb_assert_pass_goto(x, b)
+#   define tb_assert_pass_break(x)
+#   define tb_assert_pass_continue(x)
+#   define tb_assert_pass_break_state(x, s, v)
+
+#   define tb_assert_pass_and_check_abort(x)                    tb_check_abort(x)
+#   define tb_assert_pass_and_check_return(x)                   tb_check_return(x)
+#   define tb_assert_pass_and_check_return_val(x, v)            tb_check_return_val(x, v)
+#   define tb_assert_pass_and_check_goto(x, b)                  tb_check_goto(x, b)
+#   define tb_assert_pass_and_check_break(x)                    tb_check_break(x)
+#   define tb_assert_pass_and_check_continue(x)                 tb_check_continue(x)
+#   define tb_assert_pass_and_check_break_state(x, s, v)        tb_check_break_state(x, s, v)
+#endif
+
+/// assert: noimpl
+#define tb_assert_noimpl()                                  tb_assertf(0, "noimpl")
 
 /*! the static assert
  *

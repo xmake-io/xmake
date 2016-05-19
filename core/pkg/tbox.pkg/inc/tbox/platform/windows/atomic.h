@@ -27,7 +27,6 @@
  * includes
  */
 #include "prefix.h"
-#include "interface/interface.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -61,10 +60,9 @@ static __tb_inline__ tb_long_t tb_atomic_fetch_and_pset_windows(tb_atomic_t* a, 
 {
     // check
     tb_assert_static(sizeof(tb_atomic_t) == sizeof(LONGLONG));
-    tb_assert(tb_kernel32()->InterlockedCompareExchange64);
 
     // done
-    return (tb_long_t)tb_kernel32()->InterlockedCompareExchange64((LONGLONG __tb_volatile__*)a, v, p);
+    return (tb_long_t)InterlockedCompareExchange64((LONGLONG __tb_volatile__*)a, v, p);
 }
 #else
 static __tb_inline__ tb_long_t tb_atomic_fetch_and_set_windows(tb_atomic_t* a, tb_long_t v)

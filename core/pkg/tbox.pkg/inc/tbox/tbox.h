@@ -34,6 +34,7 @@
 #include "libc/libc.h"
 #include "math/math.h"
 #include "utils/utils.h"
+#include "regex/regex.h"
 #include "object/object.h"
 #include "memory/memory.h"
 #include "stream/stream.h"

@@ -118,13 +118,18 @@ typedef unsigned long long          tb_uint64_t;
 #endif
 typedef tb_int64_t                  tb_sint64_t;
 
-// hong & hize
+// hong and hize
 typedef tb_sint64_t                 tb_hong_t;
 typedef tb_uint64_t                 tb_hize_t;
 
-// long & size
+// long and size
+#if defined(TB_CONFIG_OS_WINDOWS) && TB_CPU_BIT64
+typedef tb_int64_t                  tb_long_t;
+typedef tb_uint64_t                 tb_ulong_t;
+#else
 typedef signed long                 tb_long_t;
 typedef unsigned long               tb_ulong_t;
+#endif
 typedef tb_ulong_t                  tb_size_t;
 
 // double
@@ -140,7 +145,11 @@ typedef tb_int32_t                  tb_fixed30_t;
 typedef tb_fixed16_t                tb_fixed_t;
 
 /// the atomic type
+#if TB_CPU_BIT64
+typedef __tb_volatile__ __tb_aligned__(8) tb_long_t     tb_atomic_t;
+#else
 typedef __tb_volatile__ __tb_aligned__(4) tb_long_t     tb_atomic_t;
+#endif
 
 /// the atomic64 type, need be aligned for arm, ..
 typedef __tb_volatile__  __tb_aligned__(8) tb_hong_t    tb_atomic64_t;
