@@ -231,6 +231,13 @@ function os.cd(dir)
     return true
 end
 
+-- generate the temporary file path
+function os.tmpfile()
+
+    -- make it
+    return path.join(os.tmpdir(), path.filename(os.tmpname()))
+end
+
 -- run shell
 function os.run(cmd)
 
@@ -261,7 +268,7 @@ end
 function os.corun(cmd)
 
     -- make temporary log file
-    local log = os.tmpname()
+    local log = os.tmpfile()
 
     -- open command
     local p = process.open(cmd, log, log)
