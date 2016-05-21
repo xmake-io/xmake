@@ -134,7 +134,8 @@ function main()
     end
 
     -- merge the checked configure 
-    if _need_check() then
+    local recheck = _need_check()
+    if recheck then
         config.check()
         project.check()
     end
@@ -167,7 +168,7 @@ function main()
     end
 
     -- need rebuild it
-    cache.set("rebuild", true)
+    cache.set("rebuild", recheck)
 
     -- save options
     cache.set("options_" .. targetname, options)
