@@ -31,22 +31,22 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("core.platform.environment")
 
--- make the object for the *.[o|obj] source file
-function _make_object_for_object(target, srcfile, objfile)
+-- build the object for the *.[o|obj] source file
+function _build_object_for_object(target, srcfile, objfile)
 
     -- TODO
     raise("not implemented")
 end
 
--- make the object for the *.[a|lib] source file
-function _make_object_for_static(target, srcfile, objfile)
+-- build the object for the *.[a|lib] source file
+function _build_object_for_static(target, srcfile, objfile)
 
     raise("not implemented")
     -- TODO
 end
 
--- make object
-function _make_object(target, index)
+-- build object
+function _build_object(target, index)
 
     -- the object and source files
     local objectfiles = target:objectfiles()
@@ -59,12 +59,12 @@ function _make_object(target, index)
     -- get the source file type
     local filetype = path.extension(sourcefile):lower()
 
-    -- make the object for the *.o/obj source makefile
+    -- build the object for the *.o/obj source makefile
     if filetype == ".o" or filetype == ".obj" then 
-        return _make_object_for_object(target, sourcefile, objectfile)
-    -- make the object for the *.[a|lib] source file
+        return _build_object_for_object(target, sourcefile, objectfile)
+    -- build the object for the *.[a|lib] source file
     elseif filetype == ".a" or filetype == ".lib" then 
-        return _make_object_for_static(target, sourcefile, objectfile)
+        return _build_object_for_static(target, sourcefile, objectfile)
     end
 
     -- make command
@@ -93,7 +93,7 @@ function _make_object(target, index)
 end
 
 -- make objects for the given target
-function _make_objects(target)
+function _build_objects(target)
 
     -- get the max job count
     local jobs = tonumber(option.get("jobs") or "4")
@@ -135,8 +135,8 @@ function _make_objects(target)
         while #tasks < jobs and index <= total do
             table.insert(tasks, {coroutine.create(function (index)
 
-                        -- make object
-                        _make_object(target, index)
+                        -- build object
+                        _build_object(target, index)
 
                     end), index})
             index = index + 1
@@ -146,14 +146,14 @@ function _make_objects(target)
 
 end
 
--- make the given target
-function _make_target(target)
+-- build the given target
+function _build_target(target)
 
     -- trace
     print("[%02d%%]: building.$(mode) %s", _g.targetindex * 100 / _g.targetcount, target:name())
 
-    -- make objects
-    _make_objects(target)
+    -- build objects
+    _build_objects(target)
 
     -- make the command for linking target
     local targetfile    = target:targetfile()
@@ -188,6 +188,26 @@ function _make_target(target)
 
     -- update target index
     _g.targetindex = _g.targetindex + 1
+end
+
+-- make the given target 
+function _make_target(target)
+
+    -- the target scripts
+    local scripts =
+    {
+        target:get("build_before")
+    ,   target:get("build") or _build_target
+    ,   target:get("build_after")
+    }
+
+    -- run the target scripts
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(target)
+        end
+    end
 end
 
 -- make the given target and deps
