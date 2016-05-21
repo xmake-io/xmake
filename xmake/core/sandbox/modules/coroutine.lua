@@ -20,6 +20,47 @@
 -- @file        coroutine.lua
 --
 
+-- define module
+local sandbox_coroutine = sandbox_coroutine or {}
+
+-- load modules
+local option    = require("base/option")
+local raise     = require("sandbox/modules/raise")
+
+-- inherit some builtin interfaces
+sandbox_coroutine.create    = coroutine.create
+sandbox_coroutine.wrap      = coroutine.wrap
+sandbox_coroutine.yield     = coroutine.yield
+sandbox_coroutine.status    = coroutine.status
+sandbox_coroutine.running   = coroutine.running
+
+-- resume coroutine
+function sandbox_coroutine.resume(co, ...)
+
+    -- resume it
+    local ok, results = coroutine.resume(co, ...)
+    if not ok then
+
+        -- get errors
+        local errors = results
+        if option.get("verbose") then
+            errors = debug.traceback(co, results)
+        elseif type(results) == "string" then
+            -- remove the prefix info
+            local _, pos = results:find(":%d+: ")
+            if pos then
+                errors = results:sub(pos + 1)
+            end
+        end
+
+        -- raise it
+        raise(errors)
+    end
+
+    -- ok
+    return results
+end
+
 -- load module
-return coroutine
+return sandbox_coroutine
 
