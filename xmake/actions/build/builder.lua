@@ -115,10 +115,7 @@ function _make_objects(target)
                 table.insert(finished, i)
             else
                 -- resume it
-                local ok, errors = coroutine.resume(job, job_index)
-                if not ok then
-                    raise(errors)
-                end
+                coroutine.resume(job, job_index)
             end
         end
 
