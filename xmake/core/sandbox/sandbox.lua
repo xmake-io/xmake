@@ -35,7 +35,7 @@ local option    = require("base/option")
 function sandbox._traceback(errors)
 
     -- not verbose?
-    if not option.get("verbose") then
+    if not option.get("backtrace") then
         if errors then
             -- remove the prefix info
             local _, pos = errors:find(":%d+: ")

@@ -43,7 +43,7 @@ function sandbox_coroutine.resume(co, ...)
 
         -- get errors
         local errors = results
-        if option.get("verbose") then
+        if option.get("backtrace") then
             errors = debug.traceback(co, results)
         elseif type(results) == "string" then
             -- remove the prefix info
