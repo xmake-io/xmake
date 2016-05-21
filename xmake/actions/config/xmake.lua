@@ -43,7 +43,10 @@ task("config")
                     -- options
                 ,   options = 
                     {
-                        {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
+                        {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
+
+                    ,   {}
+                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
 
                                                                 -- show the description of all platforms
                                                               , function () 

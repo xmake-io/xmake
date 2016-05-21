@@ -37,6 +37,11 @@ end
 -- need check
 function _need_check()
 
+    -- clean?
+    if option.get("clean") then
+        return true
+    end
+
     -- the configure has been changed? reconfig it
     if config.changed() then
         return true
@@ -107,7 +112,9 @@ function main()
     end
 
     -- override configure from the options or cache 
-    options = options or cache.get("options_" .. targetname)
+    if not option.get("clean") then
+        options = options or cache.get("options_" .. targetname)
+    end
     for name, value in pairs(options) do
         config.set(name, value)
     end
@@ -133,7 +140,9 @@ function main()
     end
 
     -- merge the cached configure
-    config.load(targetname)
+    if not option.get("clean") then
+        config.load(targetname)
+    end
 
     -- load platform
     platform.load(config.plat())
