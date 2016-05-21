@@ -46,7 +46,15 @@ function _make_object_for_static(target, srcfile, objfile)
 end
 
 -- make object
-function _make_object(target, sourcefile, objectfile)
+function _make_object(target, index)
+
+    -- the object and source files
+    local objectfiles = target:objectfiles()
+    local sourcefiles = target:sourcefiles()
+
+    -- get the object and source with the given index
+    local sourcefile = sourcefiles[index]
+    local objectfile = objectfiles[index]
 
     -- get the source file type
     local filetype = path.extension(sourcefile):lower()
@@ -66,8 +74,11 @@ function _make_object(target, sourcefile, objectfile)
         command = ccache:append(command, " ")
     end
 
+    -- calculate percent
+    local percent = ((_g.targetindex + (index - 1) / #objectfiles) * 100 / _g.targetcount)
+
     -- trace
-    print("%scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
+    print("[%02d%%]: %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
 
     -- trace verbose info
     if option.get("verbose") then
@@ -84,16 +95,12 @@ end
 -- make objects for the given target
 function _make_objects(target)
 
-    -- the object and source files
-    local objectfiles = target:objectfiles()
-    local sourcefiles = target:sourcefiles()
-
     -- get the max job count
     local jobs = tonumber(option.get("jobs") or "4")
 
     -- make objects
     local index = 1
-    local total = #objectfiles
+    local total = #target:objectfiles()
     local tasks = {}
     repeat
 
@@ -129,7 +136,7 @@ function _make_objects(target)
             table.insert(tasks, {coroutine.create(function (index)
 
                         -- make object
-                        _make_object(target, sourcefiles[index], objectfiles[index])
+                        _make_object(target, index)
 
                     end), index})
             index = index + 1
@@ -143,7 +150,7 @@ end
 function _make_target(target)
 
     -- trace
-    print("building.$(mode) %s", target:name())
+    print("[%02d%%]: building.$(mode) %s", _g.targetindex * 100 / _g.targetcount, target:name())
 
     -- make objects
     _make_objects(target)
@@ -153,7 +160,7 @@ function _make_target(target)
     local command       = linker.command(target)
 
     -- trace
-    print("linking.$(mode) %s", path.filename(targetfile))
+    print("[%02d%%]: linking.$(mode) %s", (_g.targetindex + 1) * 100 / _g.targetcount, path.filename(targetfile))
 
     -- trace verbose info
     if option.get("verbose") then
@@ -178,6 +185,9 @@ function _make_target(target)
             i = i + 1
         end
     end
+
+    -- update target index
+    _g.targetindex = _g.targetindex + 1
 end
 
 -- make the given target and deps
@@ -200,14 +210,64 @@ function _make_target_and_deps(target)
     _g.finished[target:name()] = true
 end
 
+
+-- stats the given target and deps
+function _stat_target_count_and_deps(target)
+
+    -- this target have been finished?
+    if _g.finished[target:name()] then
+        return 
+    end
+
+    -- make for all dependent targets
+    for _, depname in ipairs(target:get("deps")) do
+        _stat_target_count_and_deps(project.target(depname))
+    end
+
+    -- update count
+    _g.targetcount = _g.targetcount + 1
+
+    -- finished
+    _g.finished[target:name()] = true
+end
+
+-- stats targets count
+function _stat_target_count(targetname)
+
+    -- init finished states
+    _g.finished = {}
+
+    -- init targets count
+    _g.targetcount = 0
+
+    -- for all?
+    if targetname == "all" then
+
+        -- make all targets
+        for _, target in pairs(project.targets()) do
+            _stat_target_count_and_deps(target)
+        end
+    else
+
+        -- make target
+        _stat_target_count_and_deps(project.target(targetname))
+    end
+end
+
 -- make
 function make(targetname)
 
     -- enter toolchains environment
     environment.enter("toolchains")
 
-    -- init finished states
+    -- stat targets count
+    _stat_target_count(targetname)
+
+    -- clear finished states
     _g.finished = {}
+
+    -- init target index
+    _g.targetindex = 0
 
     -- for all?
     if targetname == "all" then
