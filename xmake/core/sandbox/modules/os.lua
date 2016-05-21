@@ -30,8 +30,9 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_os = sandbox_os or {}
 
 -- inherit some builtin interfaces
-sandbox_os.date = os.date
-sandbox_os.time = os.time
+sandbox_os.date     = os.date
+sandbox_os.time     = os.time
+sandbox_os.mtime    = os.mtime
 
 -- copy file or directory
 function sandbox_os.cp(src, dst)

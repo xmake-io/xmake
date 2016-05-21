@@ -25,10 +25,10 @@ import("core.base.option")
 import("core.project.task")
 import("core.project.config")
 import("core.project.project")
-import("core.project.cache")
 import("core.tool.tool")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("core.project.cache")
 import("core.platform.environment")
 
 -- build the object for the *.[o|obj] source file
@@ -55,6 +55,11 @@ function _build_object(target, index)
     -- get the object and source with the given index
     local sourcefile = sourcefiles[index]
     local objectfile = objectfiles[index]
+
+    -- we need not rebuild it if the files are not modified 
+    if os.mtime(sourcefile) < os.mtime(objectfile) then
+        return 
+    end
 
     -- get the source file type
     local filetype = path.extension(sourcefile):lower()
@@ -149,29 +154,8 @@ end
 -- build the given target
 function _build_target(target)
 
-    -- trace
-    print("[%02d%%]: building.$(mode) %s", _g.targetindex * 100 / _g.targetcount, target:name())
-
     -- build objects
     _build_objects(target)
-
-    -- make the command for linking target
-    local targetfile    = target:targetfile()
-    local command       = linker.command(target)
-
-    -- trace
-    print("[%02d%%]: linking.$(mode) %s", (_g.targetindex + 1) * 100 / _g.targetcount, path.filename(targetfile))
-
-    -- trace verbose info
-    if option.get("verbose") then
-        print(command)
-    end
-
-    -- create directory if not exists
-    os.mkdir(path.directory(targetfile))
-
-    -- run command
-    os.run(command)
 
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
@@ -188,6 +172,24 @@ function _build_target(target)
 
     -- update target index
     _g.targetindex = _g.targetindex + 1
+
+    -- make the command for linking target
+    local targetfile    = target:targetfile()
+    local command       = linker.command(target)
+
+    -- trace
+    print("[%02d%%]: linking.$(mode) %s", _g.targetindex * 100 / _g.targetcount, path.filename(targetfile))
+
+    -- trace verbose info
+    if option.get("verbose") then
+        print(command)
+    end
+
+    -- create directory if not exists
+    os.mkdir(path.directory(targetfile))
+
+    -- run command
+    os.run(command)
 end
 
 -- make the given target 
@@ -205,7 +207,7 @@ function _make_target(target)
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            return script(target)
         end
     end
 end
@@ -220,7 +222,7 @@ function _make_target_and_deps(target)
 
     -- make for all dependent targets
     for _, depname in ipairs(target:get("deps")) do
-        _make_target_and_deps(project.target(depname))
+        _make_target_and_deps(project.target(depname)) 
     end
 
     -- make target
@@ -229,7 +231,6 @@ function _make_target_and_deps(target)
     -- finished
     _g.finished[target:name()] = true
 end
-
 
 -- stats the given target and deps
 function _stat_target_count_and_deps(target)
