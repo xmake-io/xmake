@@ -32,14 +32,22 @@ import("core.project.cache")
 import("core.platform.environment")
 
 -- build the object for the *.[o|obj] source file
-function _build_object_for_object(target, srcfile, objfile)
+function _build_object_for_object(target, sourcefile, objectfile, percent)
 
-    -- TODO
-    raise("not implemented")
+    -- trace
+    print("[%02d%%]: inserting.$(mode) %s", percent, sourcefile)
+
+    -- trace verbose info
+    if option.get("verbose") then
+        print("cp %s %s", sourcefile, objectfile)
+    end
+
+    -- insert this object file
+    os.cp(sourcefile, objectfile)
 end
 
 -- build the object for the *.[a|lib] source file
-function _build_object_for_static(target, srcfile, objfile)
+function _build_object_for_static(target, sourcefile, objectfile, percent)
 
     raise("not implemented")
     -- TODO
@@ -64,12 +72,15 @@ function _build_object(target, index)
     -- get the source file type
     local filetype = path.extension(sourcefile):lower()
 
+    -- calculate percent
+    local percent = ((_g.targetindex + (index - 1) / #objectfiles) * 100 / _g.targetcount)
+
     -- build the object for the *.o/obj source makefile
     if filetype == ".o" or filetype == ".obj" then 
-        return _build_object_for_object(target, sourcefile, objectfile)
+        return _build_object_for_object(target, sourcefile, objectfile, percent)
     -- build the object for the *.[a|lib] source file
     elseif filetype == ".a" or filetype == ".lib" then 
-        return _build_object_for_static(target, sourcefile, objectfile)
+        return _build_object_for_static(target, sourcefile, objectfile, percent)
     end
 
     -- make command
@@ -78,9 +89,6 @@ function _build_object(target, index)
     if ccache then
         command = ccache:append(command, " ")
     end
-
-    -- calculate percent
-    local percent = ((_g.targetindex + (index - 1) / #objectfiles) * 100 / _g.targetcount)
 
     -- trace
     print("[%02d%%]: %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)

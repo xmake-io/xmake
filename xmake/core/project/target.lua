@@ -26,6 +26,7 @@ local target = target or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local utils     = require("base/utils")
 local table     = require("base/table")
 local option    = require("project/option")
 local config    = require("project/config")
