@@ -123,7 +123,7 @@ function global.save()
     assert(options)
 
     -- add version
-    options.__version = xmake._VERSION
+    options.__version = xmake._VERSION_SHORT
 
     -- save it
     return io.save(global._file(), options) 
