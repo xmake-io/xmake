@@ -67,7 +67,7 @@ function cache._instance(scopename)
     if results then
         instance._CACHEDATA = results
     end
-    instance._CACHEDATA = instance._CACHEDATA or {__version = xmake._VERSION}
+    instance._CACHEDATA = instance._CACHEDATA or {__version = xmake._VERSION_SHORT}
 
     -- save instance
     instances[scopename] = instance
@@ -94,7 +94,7 @@ end
 function cache:clear()
 
     -- clear it
-    self._CACHEDATA = {__version = xmake._VERSION}
+    self._CACHEDATA = {__version = xmake._VERSION_SHORT}
 end
 
 -- flush to cache file

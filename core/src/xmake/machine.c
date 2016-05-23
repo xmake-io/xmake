@@ -309,16 +309,20 @@ xm_machine_ref_t xm_machine_init()
 #endif
         lua_setglobal(impl->lua, "_NULDEV");
 
-        // init version
+        // get version
         tb_version_t const* version = xm_version();
-        if (version)
-        {
-            tb_char_t version_cstr[256] = {0};
-            tb_snprintf(version_cstr, sizeof(version_cstr), "XMake v%u.%u.%u.%llu", version->major, version->minor, version->alter, version->build);
-            lua_pushstring(impl->lua, version_cstr);
-        }
-        else lua_pushstring(impl->lua, "XMake");
+        tb_assert_and_check_break(version);
+
+        // init version string
+        tb_char_t version_cstr[256] = {0};
+        tb_snprintf(version_cstr, sizeof(version_cstr), "XMake v%u.%u.%u.%llu", version->major, version->minor, version->alter, version->build);
+        lua_pushstring(impl->lua, version_cstr);
         lua_setglobal(impl->lua, "_VERSION");
+
+        // init short version string
+        tb_snprintf(version_cstr, sizeof(version_cstr), "XMake v%u.%u.%u", version->major, version->minor, version->alter);
+        lua_pushstring(impl->lua, version_cstr);
+        lua_setglobal(impl->lua, "_VERSION_SHORT");
 
         // init namespace: xmake
         lua_newtable(impl->lua);

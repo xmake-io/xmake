@@ -149,7 +149,7 @@ function config.save(targetname)
     end
 
     -- add version
-    results.__version = xmake._VERSION
+    results.__version = xmake._VERSION_SHORT
 
     -- update options for the given target
     local target = nil
