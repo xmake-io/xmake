@@ -24,27 +24,13 @@
 task("lua")
 
     -- set category
-    set_task_category("action")
+    set_task_category("plugin")
 
     -- on run
     on_task_run(function ()
            
         -- imports
         import("core.base.option")
-        import("core.project.config")
-        import("core.project.global")
-        import("core.platform.platform")
-
-        -- do not load config if be not given -f or -P options
-        if option.get("file") or option.get("project") then
-
-            -- load project configure
-            config.load()
-
-            -- load platform
-            platform.load(config.plat())
-
-        end
 
         -- get script name
         local name = option.get("script")
