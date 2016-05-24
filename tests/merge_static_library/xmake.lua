@@ -22,28 +22,36 @@ if is_mode("release") then
 end
 
 -- add target
-target("merge_static_library")
+target("add")
 
     -- set kind
     set_kind("static")
 
     -- add files
-    add_files("../static_library_c/build/static_library_c.pkg/lib/release/$(plat)/$(arch)/*.a") 
+    add_files("src/add.c") 
 
 -- add target
-target("test")
+target("sub")
 
     -- set kind
-    set_kind("binary")
-
-    -- add deps
-    add_deps("merge_static_library")
+    set_kind("static")
 
     -- add files
-    add_files("src/test.c") 
+    add_files("src/sub.c") 
 
-    -- add links
-    add_links("merge_static_library")
+-- add target
+target("mul")
+
+    -- set kind
+    set_kind("static")
+
+    -- add deps
+    add_deps("add", "sub")
+
+    -- add files
+    add_files("src/mul.c") 
+    add_files("build/libadd.a")
+    add_files("build/libsub.a")
 
     -- add link directory
     add_linkdirs("$(buildir)")

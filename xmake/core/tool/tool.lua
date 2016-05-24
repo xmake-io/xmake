@@ -124,10 +124,13 @@ end
 -- load the given tool from the given shell name
 function tool._load(shellname, kind)
 
+    -- calculate the cache key
+    local key = shellname .. (kind or "")
+
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[shellname] then
-        return tool._TOOLS[shellname]
+    if tool._TOOLS[key] then
+        return tool._TOOLS[key]
     end
 
     -- find the tool script path
@@ -170,7 +173,7 @@ function tool._load(shellname, kind)
         end
     
         -- save tool to the cache
-        tool._TOOLS[shellname] = module
+        tool._TOOLS[key] = module
 
         -- ok?
         return module
