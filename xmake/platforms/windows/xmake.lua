@@ -53,7 +53,6 @@ platform("windows")
 
         -- init the toolchains
         _g.tools            = {}
-        _g.tools.make       = config.get("make")
         _g.tools.cc         = config.get("cc")
         _g.tools.cxx        = config.get("cxx")
         _g.tools.ld         = config.get("ld") 

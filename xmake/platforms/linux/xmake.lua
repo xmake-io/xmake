@@ -49,7 +49,6 @@ platform("linux")
      
         -- init the toolchains
         _g.tools            = {}
-        _g.tools.make       = config.get("make")
         _g.tools.ccache     = config.get("__ccache")
         _g.tools.cc         = config.get("cc") 
         _g.tools.cxx        = config.get("cxx") 

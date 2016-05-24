@@ -54,7 +54,6 @@ function init()
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
-    ,   checker.check_make
     ,   checker.check_ccache
     ,   _check_toolchains
     }
@@ -63,7 +62,6 @@ function init()
     _g.global = 
     {
         checker.check_xcode
-    ,   checker.check_make
     ,   checker.check_ccache
     }
 

@@ -153,25 +153,6 @@ function check_target_minver(config)
     end
 end
 
--- check the make
-function check_make(config)
-
-    -- get the make
-    local make = config.get("make")
-    if not make then 
-
-        -- check the make path
-        make = tool.check("make", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
-
-        -- check ok? update it
-        if make then config.set("make", make) end
-
-        -- trace
-        print("checking for the make ... %s", ifelse(make, make, "no"))
-
-    end
-end
-
 -- check the ccache
 function check_ccache(config)
 
