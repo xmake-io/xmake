@@ -157,7 +157,7 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "ld",   "", "link.exe",         "the linker") 
     checker.check_toolchain(config, "ar",   "", "link.exe -lib",    "the static library linker") 
     checker.check_toolchain(config, "sh",   "", "link.exe -dll",    "the shared library linker") 
-    checker.check_toolchain(config, "ex",   "", "lib.exe",          "the library extractor") 
+    checker.check_toolchain(config, "ex",   "", "lib.exe",          "the static library extractor") 
 
     -- leave environment
     environment.leave("toolchains")

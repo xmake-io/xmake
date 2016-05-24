@@ -21,10 +21,13 @@
 --
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
     
     -- save the shell name
     _g.shellname = shellname or "ar"
+
+    -- save the tool kind
+    _g.kind = kind or "ar"
 
     -- init arflags
     _g.arflags = { "-cr" }
@@ -47,14 +50,41 @@ function linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(objfiles, targetfile, flags)
+function linkcmd(objectfiles, targetfile, flags)
 
     -- make it
-    return format("%s %s %s %s", _g.shellname, flags, targetfile, objfiles)
+    return format("%s %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+end
+
+-- extract the static library to object directory
+function extract(libraryfile, objectdir)
+
+    -- make the object directory first
+    os.mkdir(objectdir)
+
+    -- get the absolute path of this library
+    libraryfile = path.absolute(libraryfile)
+
+    -- enter the object directory
+    os.cd(objectdir)
+
+    -- extract it
+    os.run("%s -x %s", _g.shellname, libraryfile)
+
+    -- TODO 
+    -- check repeat object name
+
+    -- leave the object directory
+    os.cd("-")
 end
 
 -- run command
 function run(...)
+
+    -- extract it
+    if _g.kind == "ex" then
+        return extract(...)
+    end
 
     -- run it
     os.run(...)

@@ -49,8 +49,16 @@ end
 -- build the object for the *.[a|lib] source file
 function _build_object_for_static(target, sourcefile, objectfile, percent)
 
-    raise("not implemented")
-    -- TODO
+    -- trace
+    print("[%02d%%]: inserting.$(mode) %s", percent, sourcefile)
+
+    -- trace verbose info
+    if option.get("verbose") then
+        print("ex %s %s", sourcefile, objectfile)
+    end
+
+    -- extract the static library to object directory
+    tool.run("ex", sourcefile, path.directory(objectfile))
 end
 
 -- build object

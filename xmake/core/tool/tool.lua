@@ -122,7 +122,7 @@ function tool._find(root, name)
 end
 
 -- load the given tool from the given shell name
-function tool._load(shellname)
+function tool._load(shellname, kind)
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
@@ -166,7 +166,7 @@ function tool._load(shellname)
 
         -- init the tool module
         if module.init then
-            module.init(shellname)
+            module.init(shellname, kind)
         end
     
         -- save tool to the cache
@@ -220,7 +220,7 @@ function tool.load(kind)
     end
    
     -- load it
-    return tool._load(shellname)
+    return tool._load(shellname, kind)
 end
 
 -- check the tool and return the absolute path if exists
