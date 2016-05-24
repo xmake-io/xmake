@@ -41,5 +41,5 @@ target("test")
 
     -- add files
     add_files("src/test.c") 
-    add_files("src/interface.o") 
+    add_files("build/.objs/merge_object/src/interface.o") 
 

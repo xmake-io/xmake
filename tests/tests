@@ -58,7 +58,7 @@ build "./tests/static_library_c++"
 build "./tests/shared_library_c++" 
 
 # merge object 
-#build "./tests/merge_object"
+build "./tests/merge_object"
 
 # merge static library
 #build "./tests/merge_static_library"

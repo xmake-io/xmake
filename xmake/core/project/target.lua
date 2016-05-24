@@ -147,7 +147,7 @@ function target:sourcefiles()
 
     -- cached? return it directly
     if self._SOURCEFILES then
-        return self._SOURCEFILES
+        return self._SOURCEFILES, false
     end
 
     -- get files
@@ -155,25 +155,37 @@ function target:sourcefiles()
 
     -- no files?
     if not files then
-        return {}
+        return {}, false
     end
+
+    -- the patterns
+    local patterns = 
+    {
+        {"([%w%*]+)%.obj|",     "%1|",  "object"}
+    ,   {"([%w%*]+)%.obj$",     "%1",   "object"}
+    ,   {"([%w%*]+)%.o|",       "%1|",  "object"}
+    ,   {"([%w%*]+)%.o$",       "%1",   "object"}
+    ,   {"([%w%*]+)%.lib|",     "%1|",  "static"}
+    ,   {"([%w%*]+)%.lib$",     "%1",   "static"}
+    ,   {"lib([%w%*]+)%.a|",    "%1|",  "static"}
+    ,   {"lib([%w%*]+)%.a$",    "%1",   "static"}
+    }
 
     -- match files
     local i = 1
+    local count = 0
+    local cache = true
     local sourcefiles = {}
     for _, file in ipairs(table.wrap(files)) do
 
-        -- normalize *.[o|obj] filename
-        file = file:gsub("([%w%*]+)%.obj|", target.filename("%1|", "object"))
-        file = file:gsub("([%w%*]+)%.obj$", target.filename("%1", "object"))
-        file = file:gsub("([%w%*]+)%.o|", target.filename("%1|", "object"))
-        file = file:gsub("([%w%*]+)%.o$", target.filename("%1", "object"))
-
-        -- normalize [lib]*.[a|lib] filename
-        file = file:gsub("([%w%*]+)%.lib|", target.filename("%1|", "static"))
-        file = file:gsub("([%w%*]+)%.lib$", target.filename("%1", "static"))
-        file = file:gsub("lib([%w%*]+)%.a|", target.filename("%1|", "static"))
-        file = file:gsub("lib([%w%*]+)%.a$", target.filename("%1", "static"))
+        -- normalize *.[o|obj] and [lib]*.[a|lib] filename
+        for _, pattern in ipairs(patterns) do
+            file, count = file:gsub(pattern[1], target.filename(pattern[2], pattern[3]))
+            if count > 0 then
+                -- disable cache because the object and library files will be modified.
+                cache = false
+            end
+        end
 
         -- match source files
         local srcfiles = os.match(file)
@@ -200,10 +212,12 @@ function target:sourcefiles()
     sourcefiles = table.unique(sourcefiles)
 
     -- cache it
-    self._SOURCEFILES = sourcefiles
+    if cache then
+        self._SOURCEFILES = sourcefiles
+    end
 
-    -- ok?
-    return sourcefiles
+    -- ok? modified?
+    return sourcefiles, not cache
 end
 
 -- get the object files
@@ -212,8 +226,12 @@ function target:objectfiles()
     -- check
     assert(self)
 
+    -- get the source files
+    local sourcefiles, modified = self:sourcefiles()
+    assert(sourcefiles)
+   
     -- cached? return it directly
-    if self._OBJECTFILES then
+    if self._OBJECTFILES and not modified then
         return self._OBJECTFILES
     end
 
@@ -221,10 +239,6 @@ function target:objectfiles()
     local objectdir = self:objectdir()
     assert(objectdir and type(objectdir) == "string")
 
-    -- get the source files
-    local sourcefiles = self:sourcefiles()
-    assert(sourcefiles)
-   
     -- make object files
     local i = 1
     local objectfiles = {}
