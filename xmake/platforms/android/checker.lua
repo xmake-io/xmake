@@ -123,7 +123,6 @@ function init()
     _g.config = 
     {
         { checker.check_arch, "armv7-a" }
-    ,   checker.check_make
     ,   checker.check_ccache
     ,   _check_ndk_sdkver
     ,   _check_toolchains
@@ -132,8 +131,7 @@ function init()
     -- init the check list of global
     _g.global = 
     {
-        checker.check_make
-    ,   checker.check_ccache
+        checker.check_ccache
     ,   _check_ndk_sdkver
     }
 

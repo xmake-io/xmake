@@ -104,7 +104,6 @@ task("config")
                         end
 
                     ,   {}
-                    ,   {nil, "make",       "kv", "auto",       "Set the make path."                                              }
                     ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                     }
 
                     ,   {}
