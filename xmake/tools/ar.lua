@@ -73,12 +73,12 @@ function extract(libraryfile, objectdir)
 
     -- check repeat object name
     local repeats = {}
-    local results = os.iorun("%s -t %s", _g.shellname, libraryfile)
-    for _, line in ipairs(results:split('\n')) do
-        if repeats[line] then
-            raise("object name(%s) conflicts in library: %s", line, libraryfile)
+    local objectfiles = os.iorun("%s -t %s", _g.shellname, libraryfile)
+    for _, objectfile in ipairs(objectfiles:split('\n')) do
+        if repeats[objectfile] then
+            raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)
         end
-        repeats[line] = true
+        repeats[objectfile] = true
     end                                                          
 
     -- leave the object directory
