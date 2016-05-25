@@ -68,30 +68,10 @@ function utils.warning(msg, ...)
     utils._WARNINGS = utils._WARNINGS or {}
     local warnings = utils._WARNINGS
 
-    -- the cached file path
-    local cachedpath = path.translate(xmake._PROJECT_DIR .. "/.xmake/warnings")
-
-    -- load warnings from the cached file
-    local cachedfile = io.open(cachedpath, "r")
-    if cachedfile then
-        for line in cachedfile:lines() do
-            warnings[line] = true
-        end
-    end
-
     -- trace only once
     if not warnings[msg] then
         print(msg)
         warnings[msg] = true
-    end
-
-    -- cache warnings
-    cachedfile = io.open(cachedpath, "w")
-    if cachedfile then
-        for line, _ in pairs(warnings) do
-            cachedfile:write(line .. "\n")
-        end
-        cachedfile:close()
     end
 end
 

@@ -24,12 +24,13 @@
 local deprecated_interpreter = deprecated_interpreter or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
-local utils     = require("base/utils")
-local string    = require("base/string")
-local sandbox   = require("sandbox/sandbox")
+local os            = require("base/os")
+local path          = require("base/path")
+local table         = require("base/table")
+local utils         = require("base/utils")
+local string        = require("base/string")
+local deprecated    = require("base/deprecated")
+local sandbox       = require("sandbox/sandbox")
 
 -- register api for set_scope()
 function deprecated_interpreter:api_register_set_scope(...)
@@ -44,9 +45,9 @@ function deprecated_interpreter:api_register_set_scope(...)
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
 
-        -- warning
+        -- deprecated
         if not scope_name:startswith("__") then
-            utils.warning("please uses %s(\"%s\"), \"set_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
+            deprecated.add("%s(\"%s\")", "set_%s(\"%s\")", scope_kind, scope_name)
         end
 
         -- check 
@@ -83,9 +84,9 @@ function deprecated_interpreter:api_register_add_scope(...)
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
 
-        -- warning
+        -- deprecated
         if not scope_name:startswith("__") then
-            utils.warning("please uses %s(\"%s\"), \"add_%s\" has been deprecated!", scope_kind, scope_name, scope_kind)
+            deprecated.add("%s(\"%s\")", "add_%s(\"%s\")", scope_kind, scope_name)
         end
 
         -- check 
@@ -118,8 +119,8 @@ function deprecated_interpreter:api_register_set_script(scope_kind, prefix, ...)
     -- define implementation
     local implementation = function (self, scope, name, script)
 
-        -- warning
-        utils.warning("please uses on_%s(), \"set_%s()\" has been deprecated!", name, name, scope)
+        -- deprecated
+        deprecated.add("on_%s()", "set_%s()", name)
 
         -- make sandbox instance with the given script
         local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
