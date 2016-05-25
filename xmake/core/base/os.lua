@@ -264,6 +264,25 @@ function os.run(cmd)
     return true
 end
 
+-- run shell with io
+function os.iorun(cmd)
+
+    -- make temporary data file
+    local datafile = path.join(os.tmpdir(), "xmake.os.iorun.data")
+
+    -- run command
+    local ok = os.execute(cmd .. string.format(" > %s 2>&1", datafile)) 
+
+    -- get results
+    local results = io.readall(datafile)
+
+    -- remove the temporary data file
+    os.rm(datafile)
+
+    -- ok?
+    return ok == 0, results
+end
+
 -- run shell with coroutine
 function os.corun(cmd)
 

@@ -187,6 +187,22 @@ function sandbox_os.run(cmd, ...)
     end
 end
 
+-- run shell with io
+function sandbox_os.iorun(cmd, ...)
+
+    -- make command
+    cmd = vformat(cmd, ...)
+
+    -- run it
+    local ok, results = os.iorun(cmd)
+    if not ok then
+        os.raise(results)
+    end
+
+    -- ok
+    return results
+end
+
 -- run shell with coroutine
 function sandbox_os.corun(cmd, ...)
 
