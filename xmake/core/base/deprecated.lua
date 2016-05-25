@@ -27,6 +27,7 @@ local deprecated = deprecated or {}
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local option    = require("base/option")
 
 -- add deprecated entry
 function deprecated.add(newformat, oldformat, ...)
@@ -50,8 +51,20 @@ function deprecated.dump()
 
     -- dump all
     print("")
+    local index = 0
     for old, new in pairs(deprecated._ENTRIES) do
+
+        -- trace
         utils.printf("deprecated: please uses %s instead of %s", new, old)
+
+        -- too much?
+        if index > 6 and not option.get("verbose") then
+            utils.printf("deprecated: add -v for getting more ..")
+            break
+        end
+
+        -- update index
+        index = index + 1
     end
 end
 
