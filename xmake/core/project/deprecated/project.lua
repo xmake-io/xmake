@@ -30,6 +30,7 @@ local utils                     = require("base/utils")
 local table                     = require("base/table")
 local config                    = require("project/config")
 local platform                  = require("platform/platform")
+local deprecated                = require("base/deprecated")
 local deprecated_interpreter    = require("base/deprecated/interpreter")
 
 -- the current os is belong to the given os?
@@ -133,8 +134,8 @@ function deprecated_project._api_os(interp, ...)
         end
     end
 
-    -- warning
-    utils.warning("please uses is_os(\"%s\"), \"os()\" has been deprecated!", values)
+    -- deprecated
+    deprecated.add("is_os(\"%s\")", "os(\"%s\")", values)
 
     -- done
     return deprecated_project._api_is_os(interp, ...)
@@ -155,8 +156,8 @@ function deprecated_project._api_modes(interp, ...)
         end
     end
 
-    -- warning
-    utils.warning("please uses is_mode(\"%s\"), \"modes()\" has been deprecated!", values)
+    -- deprecated
+    deprecated.add("is_mode(\"%s\")", "modes(\"%s\")", values)
 
     -- done
     return deprecated_project._api_is_mode(interp, ...)
@@ -177,8 +178,8 @@ function deprecated_project._api_plats(interp, ...)
         end
     end
 
-    -- warning
-    utils.warning("please uses is_plat(\"%s\"), \"plats()\" has been deprecated!", values)
+    -- deprecated
+    deprecated.add("is_plat(\"%s\")", "plats(\"%s\")", values)
 
     -- done
     return deprecated_project._api_is_plat(interp, ...)
@@ -199,8 +200,8 @@ function deprecated_project._api_archs(interp, ...)
         end
     end
 
-    -- warning
-    utils.warning("please uses is_arch(\"%s\"), \"archs()\" has been deprecated!", values)
+    -- deprecated
+    deprecated.add("is_arch(\"%s\")", "archs(\"%s\")", values)
 
     -- done
     return deprecated_project._api_is_arch(interp, ...)
@@ -221,8 +222,8 @@ function deprecated_project._api_kinds(interp, ...)
         end
     end
 
-    -- warning
-    utils.warning("please uses is_kind(\"%s\"), \"kinds()\" has been deprecated!", values)
+    -- deprecated
+    deprecated.add("is_kind(\"%s\")", "kinds(\"%s\")", values)
 
     -- done
     return deprecated_project._api_is_kind(interp, ...)
@@ -243,8 +244,8 @@ function deprecated_project._api_options(interp, ...)
         end
     end
 
-    -- warning
-    utils.warning("please uses is_option(\"%s\"), \"options()\" has been deprecated!", values)
+    -- deprecated
+    deprecated.add("is_option(\"%s\")", "options(\"%s\")", values)
 
     -- done
     return deprecated_project._api_is_option(interp, ...)

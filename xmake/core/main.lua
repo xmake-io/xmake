@@ -29,6 +29,7 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local profiler      = require("base/profiler")
+local deprecated    = require("base/deprecated")
 local task          = require("project/task")
 
 -- init the option menu
@@ -122,6 +123,9 @@ function main.done()
         utils.error(errors)
         return -1
     end
+
+    -- dump deprecated entries
+    deprecated.dump()
 
     -- stop profiling
 --    profiler:stop()

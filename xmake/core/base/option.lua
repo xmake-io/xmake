@@ -175,11 +175,11 @@ function option.init(argv, menu)
         -- check key
         if prefix and #key == 0 then
 
-            -- invalid option
-            print("invalid option: " .. arg)
-
             -- print menu
             option.show_menu(context.taskname)
+
+            -- invalid option
+            print("\nerror: invalid option: " .. arg)
 
             -- failed
             return false
@@ -209,11 +209,11 @@ function option.init(argv, menu)
             -- not found?
             if not opt then
 
-                -- invalid option
-                print("invalid option: " .. arg)
-
                 -- print menu
                 option.show_menu(context.taskname)
+
+                -- invalid option
+                print("\nerror: invalid option: " .. arg)
 
                 -- failed
                 return false
@@ -229,11 +229,11 @@ function option.init(argv, menu)
                 _k = idx
                 if idx == nil or arg:startswith("-") then 
 
-                    -- invalid option
-                    print("invalid option: " .. option._ifelse(idx, arg, key))
-
                     -- print menu
                     option.show_menu(context.taskname)
+
+                    -- invalid option
+                    print("\nerror: invalid option: " .. option._ifelse(idx, arg, key))
 
                     -- failed
                     return false
@@ -246,12 +246,12 @@ function option.init(argv, menu)
             -- check mode
             if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
 
-                -- invalid option
-                print("invalid option: " .. arg)
-            
                 -- print menu
                 option.show_menu(context.taskname)
 
+                -- invalid option
+                print("\nerror: invalid option: " .. arg)
+            
                 -- failed
                 return false
             end
@@ -283,11 +283,11 @@ function option.init(argv, menu)
             -- not found?
             if not context.taskname or not menu[context.taskname] then
 
-                -- invalid task
-                print("invalid task: " .. key)
-
                 -- print the main menu
                 option.show_main()
+
+                -- invalid task
+                print("\nerror: invalid task: " .. key)
 
                 -- failed
                 return false
@@ -345,11 +345,12 @@ function option.init(argv, menu)
                     table.insert(o, key)
                 end
             else
-                -- invalid option
-                print("invalid option: " .. arg)
             
                 -- print menu
                 option.show_menu(context.taskname)
+
+                -- invalid option
+                print("\nerror: invalid option: " .. arg)
 
                 -- failed
                 return false
