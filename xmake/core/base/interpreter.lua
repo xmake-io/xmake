@@ -250,6 +250,28 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
     self._PRIVATE._CURFILE = curfile
 end
 
+-- get api function within scope
+function interpreter:_api_within_scope(scope_kind, apiname)
+
+    -- the private
+    local priv = self._PRIVATE
+    assert(priv)
+
+    -- the scopes
+    local scopes = priv._SCOPES
+    assert(scopes)
+
+    -- done
+    if scope_kind and priv._APIS then
+
+        -- get api function
+        local api_scope = priv._APIS[scope_kind]
+        if api_scope then
+            return api_scope[apiname]
+        end
+    end
+end
+
 -- clear results
 function interpreter:_clear()
 
@@ -432,18 +454,12 @@ function interpreter.new()
     -- dispatch the api calling for scope
     setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
 
-                                            -- get scope kind
-                                            local apifunc       = nil
-                                            local priv          = instance._PRIVATE
-                                            local scope_kind    = priv._SCOPES._CURRENT_KIND or priv._ROOTSCOPE
-                                            if scope_kind and priv._APIS then
+                                            -- get the scope kind
+                                            local priv = instance._PRIVATE
+                                            local scope_kind = priv._SCOPES._CURRENT_KIND or priv._ROOTSCOPE
 
-                                                -- get api function
-                                                apifunc = priv._APIS[scope_kind][key]
-                                            end
-
-                                            -- ok?
-                                            return apifunc
+                                            -- get the api function from the given scope
+                                            return instance:_api_within_scope(scope_kind, key)
                                     end}) 
 
     -- register the builtin interfaces
