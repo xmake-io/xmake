@@ -330,9 +330,6 @@ function project._interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
-    -- register api: deprecated
-    deprecated_project.api_register(interp)
-
     -- register api: target() and option()
     interp:api_register_scope("target", "option")
 
@@ -461,6 +458,9 @@ function project._interpreter()
 
     -- register api: add_pkgs() to root
     interp:api_register(nil, "add_pkgs",    interpreter.api_builtin_add_subdirs)
+
+    -- register api: deprecated
+    deprecated_project.api_register(interp)
 
     -- set filter
     interp:filter_set(filter.new(function (variable)

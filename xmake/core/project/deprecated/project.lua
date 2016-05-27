@@ -28,6 +28,7 @@ local os                        = require("base/os")
 local path                      = require("base/path")
 local utils                     = require("base/utils")
 local table                     = require("base/table")
+local string                    = require("base/string")
 local config                    = require("project/config")
 local platform                  = require("platform/platform")
 local deprecated                = require("base/deprecated")
@@ -259,9 +260,7 @@ function deprecated_project.api_register(interp)
     deprecated_interpreter.api_register_add_scope(interp, "target", "option")
    
     -- register api: set_runscript() and set_installscript() and set_packagescript()
-    deprecated_interpreter.api_register_set_script(interp, "target", nil,   "runscript"
-                                                                        ,   "installscript"
-                                                                        ,   "packagescript")
+    deprecated_interpreter.api_register_set_script(interp, "target", "runscript", "installscript", "packagescript")
 
     -- register api: os(), kinds(), modes(), plats(), archs(), options()
     interp:api_register(nil, "os",      deprecated_project._api_os)
@@ -271,6 +270,38 @@ function deprecated_project.api_register(interp)
     interp:api_register(nil, "archs",   deprecated_project._api_archs)
     interp:api_register(nil, "options", deprecated_project._api_options)
 
+    -- register api: set_values() to option
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "enable")
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "showmenu")
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "category")
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "warnings")
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "optimize")
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "languages")
+    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "description")
+
+    -- register api: add_values() to option
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "links")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cincludes")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxincludes")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cfuncs")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxfuncs")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "ctypes")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxtypes")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cflags")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxflags")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxflags")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "ldflags")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "vectorexts")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "defines")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "defines_if_ok")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "defines_h_if_ok")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "undefines")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "undefines_if_ok")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "undefines_h_if_ok")
+
+    -- register api: add_pathes() to option
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "linkdirs")
+    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "includedirs")
 end
 
 -- return module: deprecated_project
