@@ -68,7 +68,7 @@ function deprecated_interpreter:api_register_set_scope(...)
     end
 
     -- register implementation
-    self:_api_register_xxx_scope("set", implementation, ...)
+    self:_api_register_xxx_scope(nil, "set", implementation, ...)
 end
 
 -- register api for add_scope()
@@ -107,11 +107,11 @@ function deprecated_interpreter:api_register_add_scope(...)
     end
 
     -- register implementation
-    self:_api_register_xxx_scope("add", implementation, ...)
+    self:_api_register_xxx_scope(nil, "add", implementation, ...)
 end
 
 -- register api for set_script
-function deprecated_interpreter:api_register_set_script(scope_kind, prefix, ...)
+function deprecated_interpreter:api_register_set_script(scope_kind, ...)
 
     -- check
     assert(self)
@@ -135,7 +135,7 @@ function deprecated_interpreter:api_register_set_script(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
 -- return module: deprecated_interpreter

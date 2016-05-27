@@ -151,11 +151,11 @@ function project._api_add_cfunc(interp, module, alias, links, includes, cfunc)
 
     -- check option
     interp:api_call("option", name)
-    interp:api_call("set_option_category", "cfuncs")
-    interp:api_call("add_option_cfuncs", cfunc)
-    if links then interp:api_call("add_option_links", links) end
-    if includes then interp:api_call("add_option_cincludes", includes) end
-    interp:api_call("add_option_defines_h_if_ok", define)
+    interp:api_call("set_category", "cfuncs")
+    interp:api_call("add_cfuncs", cfunc)
+    if links then interp:api_call("add_links", links) end
+    if includes then interp:api_call("add_cincludes", includes) end
+    interp:api_call("add_defines_h_if_ok", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -197,11 +197,11 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
 
         -- check option
         interp:api_call("option", name)
-        interp:api_call("set_option_category", "cfuncs")
-        interp:api_call("add_option_cfuncs", cfunc)
-        if links then interp:api_call("add_option_links", links) end
-        if includes then interp:api_call("add_option_cincludes", includes) end
-        interp:api_call("add_option_defines_h_if_ok", define)
+        interp:api_call("set_category", "cfuncs")
+        interp:api_call("add_cfuncs", cfunc)
+        if links then interp:api_call("add_links", links) end
+        if includes then interp:api_call("add_cincludes", includes) end
+        interp:api_call("add_defines_h_if_ok", define)
 
         -- restore the current scope
         interp:scope_restore(scope)
@@ -238,11 +238,11 @@ function project._api_add_cxxfunc(interp, module, alias, links, includes, cxxfun
 
     -- check option
     interp:api_call("option", name)
-    interp:api_call("set_option_category", "cxxfuncs")
-    interp:api_call("add_option_cxxfuncs", cxxfunc)
-    if links then interp:api_call("add_option_links", links) end
-    if includes then interp:api_call("add_option_cxxincludes", includes) end
-    interp:api_call("add_option_defines_h_if_ok", define)
+    interp:api_call("set_category", "cxxfuncs")
+    interp:api_call("add_cxxfuncs", cxxfunc)
+    if links then interp:api_call("add_links", links) end
+    if includes then interp:api_call("add_cxxincludes", includes) end
+    interp:api_call("add_defines_h_if_ok", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -284,11 +284,11 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
 
         -- check option
         interp:api_call("option", name)
-        interp:api_call("set_option_category", "cxxfuncs")
-        interp:api_call("add_option_cxxfuncs", cxxfunc)
-        if links then interp:api_call("add_option_links", links) end
-        if includes then interp:api_call("add_option_cxxincludes", includes) end
-        interp:api_call("add_option_defines_h_if_ok", define)
+        interp:api_call("set_category", "cxxfuncs")
+        interp:api_call("add_cxxfuncs", cxxfunc)
+        if links then interp:api_call("add_links", links) end
+        if includes then interp:api_call("add_cxxincludes", includes) end
+        interp:api_call("add_defines_h_if_ok", define)
 
         -- restore the current scope
         interp:scope_restore(scope)
@@ -327,142 +327,140 @@ function project._interpreter()
     -- set root directory
     interp:rootdir_set(xmake._PROJECT_DIR)
 
+    -- set root scope
+    interp:rootscope_set("target")
+
     -- register api: deprecated
     deprecated_project.api_register(interp)
-    
+
     -- register api: target() and option()
     interp:api_register_scope("target", "option")
 
-    -- register api: on_run() and on_install() and on_package()
-    interp:api_register_on_script("target", nil,            "run"
-                                                        ,   "install"
-                                                        ,   "package")
+    -- register api: set_values() to target
+    interp:api_register_set_values("target",    "kind"
+                                            ,   "config_h_prefix"
+                                            ,   "version"
+                                            ,   "strip"
+                                            ,   "options"
+                                            ,   "symbols"
+                                            ,   "warnings"
+                                            ,   "optimize"
+                                            ,   "languages")
 
-    -- register api: set_values() for target
-    interp:api_register_set_values("target", nil,           "kind"
-                                                        ,   "config_h_prefix"
-                                                        ,   "version"
-                                                        ,   "strip"
-                                                        ,   "options"
-                                                        ,   "symbols"
-                                                        ,   "warnings"
-                                                        ,   "optimize"
-                                                        ,   "languages")
+    -- register api: add_values() to target
+    interp:api_register_add_values("target",    "deps"
+                                            ,   "links"
+                                            ,   "cflags" 
+                                            ,   "cxflags" 
+                                            ,   "cxxflags" 
+                                            ,   "mflags" 
+                                            ,   "mxflags" 
+                                            ,   "mxxflags" 
+                                            ,   "ldflags" 
+                                            ,   "shflags" 
+                                            ,   "options"
+                                            ,   "defines"
+                                            ,   "undefines"
+                                            ,   "defines_h"
+                                            ,   "undefines_h"
+                                            ,   "languages"
+                                            ,   "vectorexts")
 
-    -- register api: add_values() for target
-    interp:api_register_add_values("target", nil,           "deps"
-                                                        ,   "links"
-                                                        ,   "cflags" 
-                                                        ,   "cxflags" 
-                                                        ,   "cxxflags" 
-                                                        ,   "mflags" 
-                                                        ,   "mxflags" 
-                                                        ,   "mxxflags" 
-                                                        ,   "ldflags" 
-                                                        ,   "shflags" 
-                                                        ,   "options"
-                                                        ,   "defines"
-                                                        ,   "undefines"
-                                                        ,   "defines_h"
-                                                        ,   "undefines_h"
-                                                        ,   "languages"
-                                                        ,   "vectorexts")
+    -- register api: set_pathes() to target
+    interp:api_register_set_pathes("target",    "headerdir" 
+                                            ,   "targetdir" 
+                                            ,   "objectdir" 
+                                            ,   "config_h")
 
-    -- register api: set_pathes() for target
-    interp:api_register_set_pathes("target", nil,           "headerdir" 
-                                                        ,   "targetdir" 
-                                                        ,   "objectdir" 
-                                                        ,   "config_h")
-
-    -- register api: add_pathes() for target
-    interp:api_register_add_pathes("target", nil,           "files"
-                                                        ,   "headers" 
-                                                        ,   "linkdirs" 
-                                                        ,   "includedirs")
+    -- register api: add_pathes() to target
+    interp:api_register_add_pathes("target",    "files"
+                                            ,   "headers" 
+                                            ,   "linkdirs" 
+                                            ,   "includedirs")
 
  
-    -- register api: on_action() for target
-    interp.api_register_on_script(interp, "target", nil,    "run"
-                                                        ,   "build"
-                                                        ,   "clean"
-                                                        ,   "package"
-                                                        ,   "install"
-                                                        ,   "uninstall")
+    -- register api: on_action() to target
+    interp:api_register_on_script("target",     "run"
+                                            ,   "build"
+                                            ,   "clean"
+                                            ,   "package"
+                                            ,   "install"
+                                            ,   "uninstall")
 
-    -- register api: before_action() for target
-    interp.api_register_before_script(interp, "target", nil,    "run"
-                                                            ,   "build"
-                                                            ,   "clean"
-                                                            ,   "package"
-                                                            ,   "install"
-                                                            ,   "uninstall")
+    -- register api: before_action() to target
+    interp:api_register_before_script("target", "run"
+                                            ,   "build"
+                                            ,   "clean"
+                                            ,   "package"
+                                            ,   "install"
+                                            ,   "uninstall")
 
-    -- register api: after_action() for target
-    interp.api_register_after_script(interp, "target", nil, "run"
-                                                        ,   "build"
-                                                        ,   "clean"
-                                                        ,   "package"
-                                                        ,   "install"
-                                                        ,   "uninstall")
+    -- register api: after_action() to target
+    interp:api_register_after_script("target",  "run"
+                                            ,   "build"
+                                            ,   "clean"
+                                            ,   "package"
+                                            ,   "install"
+                                            ,   "uninstall")
 
-    -- register api: set_option_values() for option
-    interp:api_register_set_values("option", "option",      "enable"
-                                                        ,   "showmenu"
-                                                        ,   "category"
-                                                        ,   "warnings"
-                                                        ,   "optimize"
-                                                        ,   "languages"
-                                                        ,   "description")
+    -- register api: set_values() to option
+    interp:api_register_set_values("option",    "enable"
+                                            ,   "showmenu"
+                                            ,   "category"
+                                            ,   "warnings"
+                                            ,   "optimize"
+                                            ,   "languages"
+                                            ,   "description")
     
-    -- register api: add_option_values() for option
-    interp:api_register_add_values("option", "option",      "links" 
-                                                        ,   "cincludes" 
-                                                        ,   "cxxincludes" 
-                                                        ,   "cfuncs" 
-                                                        ,   "cxxfuncs" 
-                                                        ,   "ctypes" 
-                                                        ,   "cxxtypes" 
-                                                        ,   "cflags" 
-                                                        ,   "cxflags" 
-                                                        ,   "cxxflags" 
-                                                        ,   "ldflags" 
-                                                        ,   "vectorexts"
-                                                        ,   "defines"
-                                                        ,   "defines_if_ok"
-                                                        ,   "defines_h_if_ok"
-                                                        ,   "undefines"
-                                                        ,   "undefines_if_ok"
-                                                        ,   "undefines_h_if_ok")
+    -- register api: add_values() to option
+    interp:api_register_add_values("option",    "links" 
+                                            ,   "cincludes" 
+                                            ,   "cxxincludes" 
+                                            ,   "cfuncs" 
+                                            ,   "cxxfuncs" 
+                                            ,   "ctypes" 
+                                            ,   "cxxtypes" 
+                                            ,   "cflags" 
+                                            ,   "cxflags" 
+                                            ,   "cxxflags" 
+                                            ,   "ldflags" 
+                                            ,   "vectorexts"
+                                            ,   "defines"
+                                            ,   "defines_if_ok"
+                                            ,   "defines_h_if_ok"
+                                            ,   "undefines"
+                                            ,   "undefines_if_ok"
+                                            ,   "undefines_h_if_ok")
 
-    -- register api: add_option_pathes() for option
-    interp:api_register_add_pathes("option", "option",      "linkdirs" 
-                                                        ,   "includedirs")
+    -- register api: add_pathes() to option
+    interp:api_register_add_pathes("option",    "linkdirs"
+                                            ,   "includedirs")
 
-    -- register api: is_os(), is_kind(), is_mode(), is_plat(), is_arch(), is_option()
-    interp:api_register("is_os", project._api_is_os)
-    interp:api_register("is_kind", project._api_is_kind)
-    interp:api_register("is_mode", project._api_is_mode)
-    interp:api_register("is_plat", project._api_is_plat)
-    interp:api_register("is_arch", project._api_is_arch)
-    interp:api_register("is_option", project._api_is_option)
+    -- register api: add_cfunc() to target
+    interp:api_register("target", "add_cfunc", project._api_add_cfunc)
 
-    -- register api: add_cfunc()
-    interp:api_register("add_cfunc", project._api_add_cfunc)
+    -- register api: add_cfuncs() to target
+    interp:api_register("target", "add_cfuncs", project._api_add_cfuncs)
 
-    -- register api: add_cfuncs()
-    interp:api_register("add_cfuncs", project._api_add_cfuncs)
+    -- register api: add_cxxfunc() to target
+    interp:api_register("target", "add_cxxfunc", project._api_add_cxxfunc)
 
-    -- register api: add_cxxfunc()
-    interp:api_register("add_cxxfunc", project._api_add_cxxfunc)
+    -- register api: add_cxxfuncs() to target
+    interp:api_register("target", "add_cxxfuncs", project._api_add_cxxfuncs)
 
-    -- register api: add_cxxfuncs()
-    interp:api_register("add_cxxfuncs", project._api_add_cxxfuncs)
+    -- register api: is_xxx() to root
+    interp:api_register(nil, "is_os",       project._api_is_os)
+    interp:api_register(nil, "is_kind",     project._api_is_kind)
+    interp:api_register(nil, "is_mode",     project._api_is_mode)
+    interp:api_register(nil, "is_plat",     project._api_is_plat)
+    interp:api_register(nil, "is_arch",     project._api_is_arch)
+    interp:api_register(nil, "is_option",   project._api_is_option)
 
-    -- register api: add_pkgdirs()
-    interp:api_register("add_pkgdirs", project._api_add_pkgdirs)
+    -- register api: add_pkgdirs() to root
+    interp:api_register(nil, "add_pkgdirs", project._api_add_pkgdirs)
 
-    -- register api: add_pkgs()
-    interp:api_register("add_pkgs", interpreter.api_builtin_add_subdirs)
+    -- register api: add_pkgs() to root
+    interp:api_register(nil, "add_pkgs",    interpreter.api_builtin_add_subdirs)
 
     -- set filter
     interp:filter_set(filter.new(function (variable)

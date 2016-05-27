@@ -24,13 +24,13 @@
 task("build")
 
     -- set category
-    set_task_category("main")
+    set_category("main")
 
     -- on run
-    on_task_run("main")
+    on_run("main")
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake [task] [options] [target]"
 

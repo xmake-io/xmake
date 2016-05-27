@@ -24,19 +24,19 @@
 platform("mingw")
 
     -- set os
-    set_platform_os("windows")
+    set_os("windows")
 
     -- set hosts
-    set_platform_hosts("macosx", "linux", "windows")
+    set_hosts("macosx", "linux", "windows")
 
     -- set archs
-    set_platform_archs("i386", "x86_64")
+    set_archs("i386", "x86_64")
 
     -- set checker
-    set_platform_checker("checker")
+    set_checker("checker")
 
     -- on load
-    on_platform_load(function ()
+    on_load(function ()
 
         -- imports
         import("core.project.config")

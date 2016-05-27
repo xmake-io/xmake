@@ -24,19 +24,19 @@
 platform("iphoneos")
 
     -- set os
-    set_platform_os("ios")
+    set_os("ios")
 
     -- set hosts
-    set_platform_hosts("macosx")
+    set_hosts("macosx")
 
     -- set archs
-    set_platform_archs("armv7", "armv7s", "arm64")
+    set_archs("armv7", "armv7s", "arm64")
 
     -- set checker
-    set_platform_checker("checker")
+    set_checker("checker")
 
     -- on load
-    on_platform_load(function ()
+    on_load(function ()
 
         -- imports
         import("core.project.config")
@@ -89,35 +89,35 @@ platform("iphoneos")
     end)
 
     -- set menu
-    set_platform_menu({
-                        config = 
-                        {   
-                            {}   
-                        ,   {nil, "mm",             "kv", nil,          "the objc compiler"                 }
-                        ,   {nil, "mxx",            "kv", nil,          "the objc++ compiler"               }
-                        ,   {nil, "mflags",         "kv", nil,          "the objc compiler flags"           }
-                        ,   {nil, "mxflags",        "kv", nil,          "the objc/c++ compiler flags"       }
-                        ,   {nil, "mxxflags",       "kv", nil,          "the objc++ compiler flags"         }
-                        ,   {}
-                        ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                        ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
-                        ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
-                        ,   {}
-                        ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
-                        ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
-                        ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
-                        }
+    set_menu({
+                config = 
+                {   
+                    {}   
+                ,   {nil, "mm",             "kv", nil,          "the objc compiler"                 }
+                ,   {nil, "mxx",            "kv", nil,          "the objc++ compiler"               }
+                ,   {nil, "mflags",         "kv", nil,          "the objc compiler flags"           }
+                ,   {nil, "mxflags",        "kv", nil,          "the objc/c++ compiler flags"       }
+                ,   {nil, "mxxflags",       "kv", nil,          "the objc++ compiler flags"         }
+                ,   {}
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
+                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
+                ,   {}
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                }
 
-                    ,   global = 
-                        {   
-                            {}
-                        ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                        ,   {}
-                        ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
-                        ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
-                        ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
-                        }
-                    })
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {}
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                }
+            })
 
 
 
