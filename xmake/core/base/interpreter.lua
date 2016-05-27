@@ -517,7 +517,13 @@ function interpreter:load(file, scope_kind, remove_repeat, enable_filter)
     end
 
     -- make results
-    return self:_make(scope_kind, remove_repeat, enable_filter)
+    local ok, results = xpcall(interpreter._make, interpreter._traceback, self, scope_kind, remove_repeat, enable_filter)
+    if not ok then
+        return nil, results 
+    end
+
+    -- ok
+    return results
 end
 
 -- get mtimes

@@ -152,13 +152,18 @@ function deprecated_interpreter:_api_register_set_xxx_xxx(scope_kind, apiname)
     assert(apifunc)
 
     -- register api
-    self:api_register(nil, oldapi, function (...) 
+    self:api_register_builtin(oldapi, function (value, ...) 
+
+                                        -- check
+                                        if type(value) ~= "string" then
+                                            value = type(value)
+                                        end
 
                                         -- deprecated
-                                        deprecated.add(newapi .. "()", oldapi .. "()")
+                                        deprecated.add(newapi .. "(\"%s\")", oldapi .. "(\"%s\")", value)
                                       
                                         -- dispatch it
-                                        apifunc(...)
+                                        apifunc(value, ...)
                                     end)
 end
 
@@ -176,13 +181,18 @@ function deprecated_interpreter:_api_register_add_xxx_xxx(scope_kind, apiname)
     assert(apifunc)
 
     -- register api
-    self:api_register(nil, oldapi, function (...) 
+    self:api_register_builtin(oldapi, function (value, ...) 
+
+                                        -- check
+                                        if type(value) ~= "string" then
+                                            value = type(value)
+                                        end
 
                                         -- deprecated
-                                        deprecated.add(newapi .. "()", oldapi .. "()")
+                                        deprecated.add(newapi .. "(\"%s\")", oldapi .. "(\"%s\")", value)
                                       
                                         -- dispatch it
-                                        apifunc(...)
+                                        apifunc(value, ...)
                                     end)
 end
 
