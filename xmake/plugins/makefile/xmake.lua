@@ -24,13 +24,13 @@
 task("makefile")
 
     -- set category
-    set_task_category("plugin")
+    set_category("plugin")
 
     -- on run
-    on_task_run("main")
+    on_run("main")
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake makefile [options] [target]"
 

@@ -162,18 +162,16 @@ function task._interpreter()
     -- register api: task()
     interp:api_register_scope("task")
 
-    -- register api: set_task_category()
+    -- register api: set_category()
     --
     -- category: main, action, plugin
-    interp:api_register_set_values("task", "task", "category")
+    interp:api_register_set_values("task", "category")
 
-    -- register api: set_task_menu() 
-    interp:api_register_set_values("task", "task", "menu")
+    -- register api: set_menu() 
+    interp:api_register_set_values("task", "menu")
 
-    -- register api: on_task_run(), on_task_before(), on_task_after()
-    interp:api_register_on_script("task", "task", "run"
-                                                , "after"
-                                                , "before")
+    -- register api: on_run()
+    interp:api_register_on_script("task", "run")
 
     -- set filter
     interp:filter_set(filter.new(function (variable)

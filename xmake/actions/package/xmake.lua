@@ -24,10 +24,10 @@
 task("package")
 
     -- set category
-    set_task_category("action")
+    set_category("action")
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake package|p [options] [target]"
 

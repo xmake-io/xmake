@@ -22,7 +22,7 @@ if is_mode("release") then
 end
 
 -- for macosx or ios
-if os("macosx", "ios") then
+if is_os("macosx", "ios") then
 
     -- add framework
     add_mxflags("-framework Foundation", "-framework CoreFoundation")

@@ -47,17 +47,16 @@ function template._interpreter()
     assert(interp)
 
     -- register api: set_description() and set_projectdir()
-    interp:api_register_set_values(nil, nil,    "description"
-                                            ,   "projectdir")
+    interp:api_register_set_values(nil, "description", "projectdir")
 
     -- register api: add_macrofiles()
-    interp:api_register_add_values(nil, nil,    "macrofiles")
+    interp:api_register_add_values(nil, "macrofiles")
 
     -- register api: add_macros()
-    interp:api_register_add_keyvalues(nil, nil, "macros")
+    interp:api_register_add_keyvalues(nil, "macros")
 
     -- register api: on_create()
-    interp:api_register_on_script(nil, nil,     "create")
+    interp:api_register_on_script(nil, "create")
 
     -- save interpreter
     template._INTERPRETER = interp

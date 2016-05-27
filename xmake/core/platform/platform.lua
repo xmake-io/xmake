@@ -229,25 +229,25 @@ function platform._interpreter()
     interp:api_register_scope("platform")
 
     -- register api: set_platform_os()
-    interp:api_register_set_values("platform", "platform", "os")
+    interp:api_register_set_values("platform", "os")
 
     -- register api: set_platform_hosts() 
-    interp:api_register_set_values("platform", "platform", "hosts")
+    interp:api_register_set_values("platform", "hosts")
 
     -- register api: set_platform_archs() 
-    interp:api_register_set_values("platform", "platform", "archs")
+    interp:api_register_set_values("platform", "archs")
 
     -- register api: set_platform_menu() 
-    interp:api_register_set_values("platform", "platform", "menu")
+    interp:api_register_set_values("platform", "menu")
 
     -- register api: set_platform_checker()
-    interp:api_register_set_values("platform", "platform", "checker")
+    interp:api_register_set_values("platform", "checker")
 
     -- register api: set_platform_environment()
-    interp:api_register_set_values("platform", "platform", "environment")
+    interp:api_register_set_values("platform", "environment")
 
     -- register api: on_platform_load()
-    interp:api_register_on_script("platform", "platform", "load")
+    interp:api_register_on_script("platform", "load")
 
     -- save interpreter
     platform._INTERPRETER = interp

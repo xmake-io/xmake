@@ -24,10 +24,10 @@
 task("doxygen")
 
     -- set category
-    set_task_category("plugin")
+    set_category("plugin")
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake doxygen [options] [name] [arguments]"
 

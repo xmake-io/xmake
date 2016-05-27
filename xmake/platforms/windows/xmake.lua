@@ -24,22 +24,22 @@
 platform("windows")
 
     -- set os
-    set_platform_os("windows")
+    set_os("windows")
 
     -- set hosts
-    set_platform_hosts("windows")
+    set_hosts("windows")
 
     -- set archs
-    set_platform_archs("x86", "x64", "amd64", "x86_amd64")
+    set_archs("x86", "x64", "amd64", "x86_amd64")
 
     -- set checker
-    set_platform_checker("checker")
+    set_checker("checker")
 
     -- set environment
-    set_platform_environment("environment")
+    set_environment("environment")
 
     -- on load
-    on_platform_load(function ()
+    on_load(function ()
 
         -- imports
         import("core.project.config")
@@ -64,18 +64,18 @@ platform("windows")
     end)
 
     -- set menu
-    set_platform_menu({
-                        config = 
-                        {   
-                            {}   
-                        ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
-                        }
+    set_menu({
+                config = 
+                {   
+                    {}   
+                ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
+                }
 
-                    ,   global = 
-                        {   
-                            {}
-                        ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
-                        }
-                    })
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
+                }
+            })
 
 

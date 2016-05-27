@@ -24,13 +24,13 @@
 task("clean")
 
     -- set category
-    set_task_category("action")
+    set_category("action")
 
     -- on run
-    on_task_run("main")
+    on_run("main")
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake clean|c [options] [target]"
 

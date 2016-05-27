@@ -259,17 +259,17 @@ function deprecated_project.api_register(interp)
     deprecated_interpreter.api_register_add_scope(interp, "target", "option")
    
     -- register api: set_runscript() and set_installscript() and set_packagescript()
-    deprecated_interpreter.api_register_set_script(interp, "target", nil,           "runscript"
-                                                                                ,   "installscript"
-                                                                                ,   "packagescript")
+    deprecated_interpreter.api_register_set_script(interp, "target", nil,   "runscript"
+                                                                        ,   "installscript"
+                                                                        ,   "packagescript")
 
     -- register api: os(), kinds(), modes(), plats(), archs(), options()
-    interp:api_register("os",       deprecated_project._api_os)
-    interp:api_register("kinds",    deprecated_project._api_kinds)
-    interp:api_register("modes",    deprecated_project._api_modes)
-    interp:api_register("plats",    deprecated_project._api_plats)
-    interp:api_register("archs",    deprecated_project._api_archs)
-    interp:api_register("options",  deprecated_project._api_options)
+    interp:api_register(nil, "os",      deprecated_project._api_os)
+    interp:api_register(nil, "kinds",   deprecated_project._api_kinds)
+    interp:api_register(nil, "modes",   deprecated_project._api_modes)
+    interp:api_register(nil, "plats",   deprecated_project._api_plats)
+    interp:api_register(nil, "archs",   deprecated_project._api_archs)
+    interp:api_register(nil, "options", deprecated_project._api_options)
 
 end
 

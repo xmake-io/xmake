@@ -24,10 +24,10 @@
 task("hello")
 
     -- set category
-    set_task_category("plugin")
+    set_category("plugin")
 
     -- on run
-    on_task_run(function ()
+    on_run(function ()
         
         -- trace
         print("hello xmake!")
@@ -35,7 +35,7 @@ task("hello")
     end)
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake hello [options]"
 

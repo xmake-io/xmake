@@ -24,19 +24,19 @@
 platform("macosx")
 
     -- set os
-    set_platform_os("macosx")
+    set_os("macosx")
 
     -- set hosts
-    set_platform_hosts("macosx")
+    set_hosts("macosx")
 
     -- set archs
-    set_platform_archs("i386", "x86_64")
+    set_archs("i386", "x86_64")
 
     -- set checker
-    set_platform_checker("checker")
+    set_checker("checker")
 
     -- on load
-    on_platform_load(function ()
+    on_load(function ()
 
         -- imports
         import("core.project.config")
@@ -98,27 +98,27 @@ platform("macosx")
     end)
 
     -- set menu
-    set_platform_menu({
-                        config = 
-                        {   
-                            {}   
-                        ,   {nil, "mm",             "kv", nil,          "the objc compiler"                 }
-                        ,   {nil, "mxx",            "kv", nil,          "the objc++ compiler"               }
-                        ,   {nil, "mflags",         "kv", nil,          "the objc compiler flags"           }
-                        ,   {nil, "mxflags",        "kv", nil,          "the objc/c++ compiler flags"       }
-                        ,   {nil, "mxxflags",       "kv", nil,          "the objc++ compiler flags"         }
-                        ,   {}
-                        ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                        ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
-                        ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
-                        }
+    set_menu({
+                config = 
+                {   
+                    {}   
+                ,   {nil, "mm",             "kv", nil,          "the objc compiler"                 }
+                ,   {nil, "mxx",            "kv", nil,          "the objc++ compiler"               }
+                ,   {nil, "mflags",         "kv", nil,          "the objc compiler flags"           }
+                ,   {nil, "mxflags",        "kv", nil,          "the objc/c++ compiler flags"       }
+                ,   {nil, "mxxflags",       "kv", nil,          "the objc++ compiler flags"         }
+                ,   {}
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
+                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
+                }
 
-                    ,   global = 
-                        {   
-                            {}
-                        ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                        }
-                    })
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                }
+            })
 
 
 

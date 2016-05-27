@@ -24,19 +24,19 @@
 platform("android")
 
     -- set os
-    set_platform_os("android")
+    set_os("android")
 
     -- set hosts
-    set_platform_hosts("macosx", "linux", "windows")
+    set_hosts("macosx", "linux", "windows")
 
     -- set archs
-    set_platform_archs("armv5te", "armv6", "armv7-a", "armv8-a", "arm64-v8a")
+    set_archs("armv5te", "armv6", "armv7-a", "armv8-a", "arm64-v8a")
 
     -- set checker
-    set_platform_checker("checker")
+    set_checker("checker")
 
     -- on load
-    on_platform_load(function ()
+    on_load(function ()
 
         -- imports
         import("core.project.config")
@@ -93,21 +93,21 @@ platform("android")
     end)
 
     -- set menu
-    set_platform_menu({
-                        config = 
-                        {   
-                            {}
-                        ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"             }
-                        ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"       }
-                        }
+    set_menu({
+                config = 
+                {   
+                    {}
+                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"             }
+                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"       }
+                }
 
-                    ,   global = 
-                        {   
-                            {}
-                        ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"             }
-                        ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"       }
-                        }
-                    })
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"             }
+                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"       }
+                }
+            })
 
 
 

@@ -24,10 +24,10 @@
 task("lua")
 
     -- set category
-    set_task_category("plugin")
+    set_category("plugin")
 
     -- on run
-    on_task_run(function ()
+    on_run(function ()
            
         -- imports
         import("core.base.option")
@@ -44,7 +44,7 @@ task("lua")
     end)
 
     -- set menu
-    set_task_menu({
+    set_menu({
                     -- usage
                     usage = "xmake lua|l [options] [script] [arguments]"
 

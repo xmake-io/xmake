@@ -74,7 +74,7 @@ function interpreter._traceback(errors)
 end
 
 -- register api: xxx_apiname()
-function interpreter:_api_register_xxx_scope(action, apifunc, ...)
+function interpreter:_api_register_xxx_scope(scope_kind, action, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -93,7 +93,7 @@ function interpreter:_api_register_xxx_scope(action, apifunc, ...)
         end
 
         -- register scope api
-        self:api_register(fullname, function (self, ...) 
+        self:api_register(scope_kind, fullname, function (self, ...) 
        
             -- check
             assert(self and self._PRIVATE and apiname)
@@ -104,12 +104,13 @@ function interpreter:_api_register_xxx_scope(action, apifunc, ...)
 
             -- call function
             return apifunc(self, scopes, apiname, ...) 
+
         end)
     end
 end
 
 -- register api: xxx_values()
-function interpreter:_api_register_xxx_values(scope_kind, action, prefix, apifunc, ...)
+function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -149,8 +150,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, prefix, apifun
     end
 
     -- register implementation
-    if prefix then action = action .. "_" .. prefix end
-    self:_api_register_xxx_scope(action, implementation, ...)
+    self:_api_register_xxx_scope(scope_kind, action, implementation, ...)
 end
 
 -- translate api pathes 
@@ -423,15 +423,32 @@ function interpreter.new()
 
     -- init an interpreter instance
     local instance = {  _PUBLIC = {}
-                ,   _PRIVATE = {    _SCOPES = {}
-                                ,   _MTIMES = {}}}
+                    ,   _PRIVATE = {    _SCOPES = {}
+                                    ,   _MTIMES = {}}}
 
     -- inherit the interfaces of interpreter
     table.inherit2(instance, interpreter)
 
+    -- dispatch the api calling for scope
+    setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
+
+                                            -- get scope kind
+                                            local apifunc       = nil
+                                            local priv          = instance._PRIVATE
+                                            local scope_kind    = priv._SCOPES._CURRENT_KIND or priv._ROOTSCOPE
+                                            if scope_kind and priv._APIS then
+
+                                                -- get api function
+                                                apifunc = priv._APIS[scope_kind][key]
+                                            end
+
+                                            -- ok?
+                                            return apifunc
+                                    end}) 
+
     -- register the builtin interfaces
-    instance:api_register("add_subdirs", interpreter.api_builtin_add_subdirs)
-    instance:api_register("add_subfiles", interpreter.api_builtin_add_subfiles)
+    instance:api_register(nil, "add_subdirs", interpreter.api_builtin_add_subdirs)
+    instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
 
     -- register the builtin interfaces for lua
     instance:api_register_builtin("print", print)
@@ -537,15 +554,65 @@ function interpreter:rootdir_set(rootdir)
     self._PRIVATE._ROOTDIR = rootdir
 end
 
--- register api 
-function interpreter:api_register(name, func)
+-- set root scope kind
+--
+-- the root api will affect these scopes
+--
+function interpreter:rootscope_set(scope_kind)
 
     -- check
-    assert(self and self._PUBLIC)
+    assert(self and self._PRIVATE)
+
+    -- set it
+    self._PRIVATE._ROOTSCOPE = scope_kind
+end
+
+-- register api 
+--
+-- interp:api_register(nil, "apiroot", function () end)
+-- interp:api_register("scope_kind", "apiname", function () end)
+--
+-- result:
+--
+-- _PUBLIC 
+-- {
+--      apiroot = function () end
+-- }
+--
+-- _PRIVATE
+-- {
+--      _APIS
+--      {
+--          scope_kind
+--          {  
+--              apiname = function () end
+--          }
+--      }
+-- }
+--
+function interpreter:api_register(scope_kind, name, func)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE)
     assert(name and func)
 
-    -- register it
-    self._PUBLIC[name] = function (...) return func(self, ...) end
+    -- register api to the given scope kind 
+    if scope_kind and scope_kind ~= "__rootkind" then
+
+        -- get apis
+        self._PRIVATE._APIS = self._PRIVATE._APIS or {}
+        local apis = self._PRIVATE._APIS
+
+        -- get scope
+        apis[scope_kind] = apis[scope_kind] or {}
+        local scope = apis[scope_kind]
+
+        -- register api
+        scope[name] = function (...) return func(self, ...) end
+    else
+        -- register api to the root scope
+        self._PUBLIC[name] = function (...) return func(self, ...) end
+    end
 end
 
 -- register api for builtin
@@ -610,19 +677,26 @@ function interpreter:api_register_scope(...)
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
 
-        -- init scope for name
-        scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
+        -- enter the given scope
+        if scope_name ~= nil then
 
-        -- save the current scope
-        scopes._CURRENT = scope_for_kind[scope_name]
+            -- init scope for name
+            scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
+
+            -- save the current scope
+            scopes._CURRENT = scope_for_kind[scope_name]
+        else
+
+            -- enter root scope
+            scopes._CURRENT = nil
+        end
 
         -- update the current scope kind
         scopes._CURRENT_KIND = scope_kind
-
     end
 
     -- register implementation
-    self:_api_register_xxx_scope(nil, implementation, ...)
+    self:_api_register_xxx_scope(nil, nil, implementation, ...)
 end
 
 -- register api for set_values
@@ -660,7 +734,7 @@ end
 --      }
 -- }
 --
-function interpreter:api_register_set_values(scope_kind, prefix, ...)
+function interpreter:api_register_set_values(scope_kind, ...)
 
     -- check
     assert(self)
@@ -675,11 +749,11 @@ function interpreter:api_register_set_values(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
 -- register api for add_values
-function interpreter:api_register_add_values(scope_kind, prefix, ...)
+function interpreter:api_register_add_values(scope_kind, ...)
 
     -- check
     assert(self)
@@ -694,11 +768,11 @@ function interpreter:api_register_add_values(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
 end
 
 -- register api for set_array
-function interpreter:api_register_set_array(scope_kind, prefix, ...)
+function interpreter:api_register_set_array(scope_kind, ...)
 
     -- check
     assert(self)
@@ -713,11 +787,11 @@ function interpreter:api_register_set_array(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
 -- register api for add_array
-function interpreter:api_register_add_array(scope_kind, prefix, ...)
+function interpreter:api_register_add_array(scope_kind, ...)
 
     -- check
     assert(self)
@@ -732,11 +806,11 @@ function interpreter:api_register_add_array(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
 end
 
 -- register api for on_script
-function interpreter:api_register_on_script(scope_kind, prefix, ...)
+function interpreter:api_register_on_script(scope_kind, ...)
 
     -- check
     assert(self)
@@ -755,11 +829,11 @@ function interpreter:api_register_on_script(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "on", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "on", implementation, ...)
 end
 
 -- register api for before_script
-function interpreter:api_register_before_script(scope_kind, prefix, ...)
+function interpreter:api_register_before_script(scope_kind, ...)
 
     -- check
     assert(self)
@@ -778,11 +852,11 @@ function interpreter:api_register_before_script(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "before", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "before", implementation, ...)
 end
 
 -- register api for after_script
-function interpreter:api_register_after_script(scope_kind, prefix, ...)
+function interpreter:api_register_after_script(scope_kind, ...)
 
     -- check
     assert(self)
@@ -801,11 +875,11 @@ function interpreter:api_register_after_script(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "after", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "after", implementation, ...)
 end
 
 -- register api for set_keyvalues
-function interpreter:api_register_set_keyvalues(scope_kind, prefix, ...)
+function interpreter:api_register_set_keyvalues(scope_kind, ...)
 
     -- check
     assert(self)
@@ -820,11 +894,11 @@ function interpreter:api_register_set_keyvalues(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
 -- register api for add_keyvalues
-function interpreter:api_register_add_keyvalues(scope_kind, prefix, ...)
+function interpreter:api_register_add_keyvalues(scope_kind, ...)
 
     -- check
     assert(self)
@@ -863,11 +937,11 @@ function interpreter:api_register_add_keyvalues(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
 end
 
 -- register api for set_pathes
-function interpreter:api_register_set_pathes(scope_kind, prefix, ...)
+function interpreter:api_register_set_pathes(scope_kind, ...)
 
     -- check
     assert(self)
@@ -882,11 +956,11 @@ function interpreter:api_register_set_pathes(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "set", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
 -- register api for add_pathes
-function interpreter:api_register_add_pathes(scope_kind, prefix, ...)
+function interpreter:api_register_add_pathes(scope_kind, ...)
 
     -- check
     assert(self)
@@ -901,7 +975,7 @@ function interpreter:api_register_add_pathes(scope_kind, prefix, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "add", prefix, implementation, ...)
+    self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
 end
 
 -- the builtin api: add_subdirs()
@@ -933,7 +1007,7 @@ function interpreter:api_call(apiname, ...)
     -- get api function
     local apifunc = self._PUBLIC[apiname]
     if not apifunc then
-        os.raise("call %s() failed, the api %s not found!", apiname)
+        os.raise("call %s() failed, this api not found!", apiname)
     end
 
     -- call api function
