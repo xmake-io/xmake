@@ -223,7 +223,7 @@ function _make_target(target)
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            return script(target)
+            script(target)
         end
     end
 end

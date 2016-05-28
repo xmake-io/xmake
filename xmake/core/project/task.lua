@@ -33,6 +33,7 @@ local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
 local global        = require("project/global")
 local config        = require("project/config")
+local project       = require("project/project")
 
 -- the directories of tasks
 function task._directories()
@@ -164,7 +165,7 @@ function task._interpreter()
 
     -- register api: set_category()
     --
-    -- category: main, action, plugin
+    -- category: main, action, plugin, task (default)
     interp:api_register_set_values("task", "category")
 
     -- register api: set_menu() 
@@ -346,7 +347,20 @@ function task.tasks()
                 end
             end
         end
+    end
 
+    -- merge project tasks if exists
+    local projectasks, errors = project.tasks()
+    if projectasks then
+        for taskname, taskinfo in pairs(projectasks) do
+            if tasks[taskname] == nil then
+                tasks[taskname] = taskinfo
+            else
+                utils.warning("task(\"%s\") has been defined!", taskname)
+            end
+        end
+    else
+        os.raise(errors)
     end
 
     -- save it
