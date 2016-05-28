@@ -357,7 +357,7 @@ function task.tasks()
 end
 
 -- run task with given name
-function task.run(name)
+function task.run(name, ...)
 
     -- check
     assert(name)
@@ -382,7 +382,7 @@ function task.run(name)
     end
 
     -- run task
-    return sandbox.load(taskinfo.run)
+    return sandbox.load(taskinfo.run, ...)
 end
 
 -- the menu

@@ -28,7 +28,7 @@ task("hello")
 
     -- on run
     on_run(function ()
-        
+
         -- trace
         print("hello xmake!")
 
@@ -44,4 +44,4 @@ task("hello")
 
                     -- options
                 ,   options = {}
-                })
+                }) 
