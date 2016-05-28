@@ -481,25 +481,30 @@ function option.defaults(task)
         return option._context().defaults
     end
 
+    -- the task menu
+    local taskmenu = option._taskmenu(task)
+
     -- get the default options for the given task
     local defaults = {}
-    for _, o in ipairs(option._taskmenu(task).options) do
+    if taskmenu then
+        for _, o in ipairs(taskmenu.options) do
 
-        -- key=value?
-        if o[3] == "kv" then
+            -- key=value?
+            if o[3] == "kv" then
 
-            -- the key
-            local key = o[2] or o[1]
-            assert(key)
+                -- the key
+                local key = o[2] or o[1]
+                assert(key)
 
-            -- save the default value 
-            defaults[key] = o[4]    
+                -- save the default value 
+                defaults[key] = o[4]    
 
-        -- value with name?
-        elseif o[3] == "v" and o[2] then
+            -- value with name?
+            elseif o[3] == "v" and o[2] then
 
-            -- save the default value 
-            defaults[o[2]] = o[4] 
+                -- save the default value 
+                defaults[o[2]] = o[4] 
+            end
         end
     end
 

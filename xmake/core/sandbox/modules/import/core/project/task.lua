@@ -33,7 +33,7 @@ local task      = require("project/task")
 local raise     = require("sandbox/modules/raise")
 
 -- run the given task
-function sandbox_core_project_task.run(taskname, options)
+function sandbox_core_project_task.run(taskname, options, ...)
 
     -- init options
     options = table.wrap(options)
@@ -54,7 +54,7 @@ function sandbox_core_project_task.run(taskname, options)
     end
 
     -- run the task
-    local ok, errors = task.run(taskname)
+    local ok, errors = task.run(taskname, ...)
     if not ok then
         raise(errors)
     end
