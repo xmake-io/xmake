@@ -330,8 +330,8 @@ function project._interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
-    -- register api: target() and option()
-    interp:api_register_scope("target", "option")
+    -- register api: target(), option() and task()
+    interp:api_register_scope("target", "option", "task")
 
     -- register api: set_values() to target
     interp:api_register_set_values("target",    "kind"
@@ -444,6 +444,17 @@ function project._interpreter()
 
     -- register api: add_cxxfuncs() to target
     interp:api_register("target", "add_cxxfuncs", project._api_add_cxxfuncs)
+
+    -- register api: set_category()
+    --
+    -- category: main, action, plugin, task (default)
+    interp:api_register_set_values("task", "category")
+
+    -- register api: set_menu() 
+    interp:api_register_set_values("task", "menu")
+
+    -- register api: on_run()
+    interp:api_register_on_script("task", "run")
 
     -- register api: is_xxx() to root
     interp:api_register(nil, "is_os",       project._api_is_os)
@@ -680,7 +691,28 @@ function project.options(enable_filter)
 
     -- ok?
     return options
+end
 
+-- get tasks
+function project.tasks()
+
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- the project file is not found?
+    if not os.isfile(xmake._PROJECT_FILE) then
+        return {}
+    end
+
+    -- load the tasks from the the project file
+    local results, errors = interp:load(xmake._PROJECT_FILE, "task", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- ok?
+    return results
 end
 
 -- get the mtimes

@@ -912,7 +912,6 @@ function interpreter:api_register_set_keyvalues(scope_kind, ...)
         -- update keyvalues?
         scope[name] = {}
         table.insert(scope[name], {...})
-
     end
 
     -- register implementation
