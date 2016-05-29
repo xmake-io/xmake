@@ -278,13 +278,13 @@ function target:objectfiles()
 end
 
 -- get the header files
-function target:headerfiles()
+function target:headerfiles(outputdir)
 
     -- check
     assert(self)
 
     -- cached? return it directly
-    if self._HEADERFILES then
+    if self._HEADERFILES and outputdir == nil then
         return self._HEADERFILES[1], self._HEADERFILES[2]
     end
 
@@ -293,7 +293,7 @@ function target:headerfiles()
     if not headers then return end
 
     -- get the headerdir
-    local headerdir = self:get("headerdir") or config.get("buildir")
+    local headerdir = outputdir or self:get("headerdir") or config.get("buildir")
     assert(headerdir)
 
     -- get the source pathes and destinate pathes
@@ -330,7 +330,9 @@ function target:headerfiles()
     end
 
     -- cache it
-    self._HEADERFILES = {srcheaders, dstheaders}
+    if outputdir == nil then
+        self._HEADERFILES = {srcheaders, dstheaders}
+    end
 
     -- ok?
     return srcheaders, dstheaders
