@@ -24,16 +24,6 @@ It is similar to cmake, automake, premake, but more convenient and easy to use.
 7. install target
 8. run a given target
 9. describe the project file using lua script, more flexible and simple
-	
-	-- xmake.lua
-    target("console")
-
-        -- set kind
-        set_kind("binary")
-
-        -- add files
-        add_files("src/*.c") 
-
 10. custom platforms and toolchains
 11. custom rules for package/compiler/linker
 
@@ -44,7 +34,7 @@ create a c++ console project:
         xmake create -l c++ -t 1 console
      or xmake create --language=c++ --template=1 console
 
-project makefile: xmake.lua
+project xmakefile: xmake.lua
 
     target("console")
         set_kind("binary")
@@ -106,7 +96,7 @@ or run:
 The simple xmake.lua file:
 
     -- the debug mode
-    if modes("debug") then
+    if is_mode("debug") then
         
         -- enable the debug symbols
         set_symbols("debug")
@@ -116,7 +106,7 @@ The simple xmake.lua file:
     end
 
     -- the release mode
-    if modes("release") then
+    if is_mode("release") then
 
         -- set the symbols visibility: hidden
         set_symbols("hidden")
@@ -282,7 +272,7 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 ####简单例子
 
     -- the debug mode
-    if modes("debug") then
+    if is_mode("debug") then
         
         -- enable the debug symbols
         set_symbols("debug")
@@ -292,7 +282,7 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
     end
 
     -- the release mode
-    if modes("release") then
+    if is_mode("release") then
 
         -- set the symbols visibility: hidden
         set_symbols("hidden")
