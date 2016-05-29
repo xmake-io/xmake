@@ -157,11 +157,6 @@ function main()
     -- load project
     project.load()
 
-    -- check xmake.lua
-    if not os.isfile(project.file()) then
-        raise("xmake.lua not found!")
-    end
-
     -- check target
     if targetname and targetname ~= "all" and nil == project.target(targetname) then
         raise("unknown target: %s", targetname)
@@ -190,5 +185,4 @@ function main()
 
     -- trace
     print("configure ok!")
-    
 end

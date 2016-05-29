@@ -33,11 +33,6 @@ import("builder")
 -- main
 function main()
 
-    -- check xmake.lua
-    if not os.isfile(project.file()) then
-        raise("xmake.lua not found!")
-    end
-
     -- get the target name
     local targetname = option.get("target")
 

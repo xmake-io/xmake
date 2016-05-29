@@ -48,7 +48,7 @@ function _run_target(target)
     }
 
     -- check
-    assert(scripts[kind], "this target(%s) with kind(%s) is not executable!", target:name(), kind)
+    assert(scripts[kind], "this target(%s) with kind(%s) can not be executed!", target:name(), kind)
 
     -- run it
     scripts[kind](target) 
@@ -76,11 +76,6 @@ end
 
 -- main
 function main()
-
-    -- check xmake.lua
-    if not os.isfile(project.file()) then
-        raise("xmake.lua not found!")
-    end
 
     -- get the target name
     local targetname = option.get("target")
