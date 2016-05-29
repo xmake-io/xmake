@@ -108,7 +108,6 @@ function _clean_target_and_deps(target)
     for _, dep in ipairs(target:get("deps")) do
         _clean_target_and_deps(project.target(dep))
     end
-
 end
 
 -- clean the given target 
@@ -131,19 +130,12 @@ function _clean(targetname)
     -- remove all
     if option.get("all") then 
 
-        -- remove makefile
-        _remove("$(buildir)/makefile") 
-
         -- remove the configure directory
         _remove(config.directory())
-
-        -- remove the log file
-        _remove("$(buildir)/.build.log")
 
         -- remove build directory if be empty
         os.rm("$(buildir)", true)
     end
- 
 end
 
 -- main
