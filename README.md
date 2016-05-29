@@ -14,13 +14,6 @@ It is similar to cmake, automake, premake, but more convenient and easy to use.
 4. build and rebuild project 
 5. clean generated target files
 6. package the project targets automatically
-   - *.ipa for ios(feature)
-   - *.apk for android(feature)
-   - *.pkg for library
-   - *.app for macosx(feature)
-   - *.exe for windows
-   - others
-
 7. install target
 8. run a given target
 9. describe the project file using lua script, more flexible and simple
