@@ -28,15 +28,11 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 
--- uninstall binary 
-function _uninstall_binary(target)
+-- uninstall package 
+function _uninstall_package(target)
 
-end
-
--- uninstall library 
-function _uninstall_library(target)
-
-
+    -- remove the package 
+    os.rm(format("$(packagedir)/%s.pkg", target:name()))
 end
 
 -- uninstall target 
@@ -48,9 +44,9 @@ function _uninstall_target(target)
     -- get script 
     local scripts =
     {
-        binary = _uninstall_binary
-    ,   static = _uninstall_library
-    ,   shared = _uninstall_library
+        binary = _uninstall_package
+    ,   static = _uninstall_package
+    ,   shared = _uninstall_package
     }
 
     -- check
@@ -115,8 +111,8 @@ function main()
     -- init finished states
     _g.finished = {}
 
-    -- build it first
-    task.run("build", {target = targetname})
+    -- config it first
+    task.run("config", {target = targetname})
 
     -- uninstall all?
     if targetname == "all" then
