@@ -17,35 +17,22 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        package.lua
 --
 
--- define task
-task("uninstall")
+-- define module
+local sandbox_core_project_package = sandbox_core_project_package or {}
 
-    -- set category
-    set_category("action")
+-- load modules
+local package   = require("project/package")
+local raise     = require("sandbox/modules/raise")
 
-    -- on run
-    on_run("main")
+-- run the given package
+function sandbox_core_project_package.directory()
 
-    -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake uninstall|u [options] [target]"
+    -- get it
+    return package.directory()
+end
 
-                    -- description
-                ,   description = "Uninstall the project binary files."
-
-                    -- xmake u
-                ,   shortname = 'u'
-
-                    -- options
-                ,   options = 
-                    {
-                        {nil, "target",     "v",  "all",        "Install the given target."                                     }
-                    }
-                })
-
-
-
+-- return module
+return sandbox_core_project_package

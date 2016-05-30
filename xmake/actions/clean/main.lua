@@ -132,9 +132,6 @@ function _clean(targetname)
 
         -- remove the configure directory
         _remove(config.directory())
-
-        -- remove build directory if be empty
-        os.rm("$(buildir)", true)
     end
 end
 

@@ -26,6 +26,9 @@ task("install")
     -- set category
     set_category("action")
 
+    -- on run
+    on_run("main")
+
     -- set menu
     set_menu({
                     -- usage
