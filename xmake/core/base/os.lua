@@ -106,7 +106,7 @@ function os.cp(src, dst)
         
         -- the destination is directory? append the filename
         if os.isdir(dst) then
-            dst = string.format("%s/%s", dst, path.filename(src))
+            dst = path.join(dst, path.filename(src))
         end
 
         -- copy file
@@ -115,6 +115,12 @@ function os.cp(src, dst)
         end
     -- is directory?
     elseif os.isdir(src) then
+        
+        -- the destination directory exists? append the filename
+        if os.isdir(dst) then
+            dst = path.join(dst, path.filename(path.translate(src)))
+        end
+
         -- copy directory
         if not os.cpdir(src, dst) then
             return false, string.format("cannot copy directory %s to %s %s", src, dst, os.strerror())

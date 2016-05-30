@@ -34,6 +34,7 @@ local sandbox       = require("sandbox/sandbox")
 local global        = require("project/global")
 local config        = require("project/config")
 local project       = require("project/project")
+local package       = require("project/package")
 
 -- the directories of tasks
 function task._directories()
@@ -194,11 +195,11 @@ function task._interpreter()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = xmake._PROJECT_DIR
+            ,   packagedir  = package.directory()
             }
 
             -- map it
             result = maps[variable]
-
         end 
 
         -- ok?

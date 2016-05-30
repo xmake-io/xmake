@@ -33,7 +33,9 @@ local filter                = require("base/filter")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
 local config                = require("project/config")
+local global                = require("project/global")
 local option                = require("project/option")
+local package               = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
@@ -489,12 +491,16 @@ function project._interpreter()
                 os          = platform.os()
             ,   host        = xmake._HOST
             ,   prefix      = "$(prefix)"
+            ,   tmpdir      = os.tmpdir()
+            ,   curdir      = os.curdir()
+            ,   globaldir   = global.directory()
+            ,   configdir   = config.directory()
             ,   projectdir  = xmake._PROJECT_DIR
+            ,   packagedir  = package.directory()
             }
 
             -- map it
             result = maps[variable]
-
         end
 
         -- ok?

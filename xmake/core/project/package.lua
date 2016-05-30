@@ -17,35 +17,26 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        package.lua
 --
 
--- define task
-task("uninstall")
+-- define module: package
+local package = package or {}
 
-    -- set category
-    set_category("action")
+-- load modules
+local os                = require("base/os")
+local io                = require("base/io")
+local path              = require("base/path")
+local table             = require("base/table")
+local utils             = require("base/utils")
+local string            = require("base/string")
 
-    -- on run
-    on_run("main")
+-- the package directory
+function package.directory()
 
-    -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake uninstall|u [options] [target]"
+    -- the global directory
+    return path.translate("~/.xmake/packages")
+end
 
-                    -- description
-                ,   description = "Uninstall the project binary files."
-
-                    -- xmake u
-                ,   shortname = 'u'
-
-                    -- options
-                ,   options = 
-                    {
-                        {nil, "target",     "v",  "all",        "Install the given target."                                     }
-                    }
-                })
-
-
-
+-- return module: package
+return package
