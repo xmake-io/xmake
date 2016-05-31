@@ -327,7 +327,7 @@ function project._interpreter()
     assert(interp)
 
     -- set root directory
-    interp:rootdir_set(xmake._PROJECT_DIR)
+    interp:rootdir_set(project.directory())
 
     -- set root scope
     interp:rootscope_set("target")
@@ -495,7 +495,7 @@ function project._interpreter()
             ,   curdir      = os.curdir()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
-            ,   projectdir  = xmake._PROJECT_DIR
+            ,   projectdir  = project.directory()
             ,   packagedir  = package.directory()
             }
 
@@ -514,11 +514,18 @@ function project._interpreter()
     return interp
 end
 
+-- get the project directory
+function project.directory()
+
+    -- get it
+    return xmake._PROJECT_DIR
+end
+
 -- check the project 
 function project.check()
 
     -- enter the project directory
-    local ok, errors = os.cd(xmake._PROJECT_DIR)
+    local ok, errors = os.cd(project.directory())
     if not ok then
         return false, errors
     end
@@ -602,7 +609,7 @@ function project.load()
     assert(interp) 
 
     -- enter the project directory
-    local ok, errors = os.cd(xmake._PROJECT_DIR)
+    local ok, errors = os.cd(project.directory())
     if not ok then
         return false, errors
     end

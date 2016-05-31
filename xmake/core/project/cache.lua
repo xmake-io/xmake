@@ -54,6 +54,11 @@ function cache._instance(scopename)
     -- init instance
     local instance = table.inherit(cache)
 
+    -- check scopename
+    if not scopename:find("local%.") and not scopename:find("global%.") then
+        os.raise("invalid cache scope: %s", scopename)
+    end
+
     -- make the cache path
     local cachepath = (scopename:gsub("%.", "/"))
     cachepath = (cachepath:gsub("^local%/", path.join(config.directory(), "cache") .. "/"))

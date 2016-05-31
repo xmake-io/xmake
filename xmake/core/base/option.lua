@@ -119,11 +119,28 @@ function option.restore()
     end
 end
 
+-- the command line
+function option.cmdline()
+
+    -- make command 
+    local line = "xmake"
+    local argv = xmake._ARGV
+    for _, arg in ipairs(argv) do
+        if arg:find("%s") then
+            arg = "\"" .. arg .. "\""
+        end
+        line = line .. " " .. arg
+    end
+
+    -- ok?
+    return line
+end
+
 -- init the option
-function option.init(argv, menu)
+function option.init(menu)
 
     -- check
-    assert(argv and menu)
+    assert(menu)
 
     -- translate menu
     option._translate(menu)
@@ -137,6 +154,7 @@ function option.init(argv, menu)
     assert(context)
 
     -- parse _ARGV 
+    local argv = xmake._ARGV
     local _iter, _s, _k = ipairs(argv)
     while true do
 

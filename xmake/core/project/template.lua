@@ -32,6 +32,7 @@ local utils             = require("base/utils")
 local string            = require("base/string")
 local filter            = require("base/filter")
 local sandbox           = require("sandbox/sandbox")
+local project           = require("project/project")
 local interpreter       = require("base/interpreter")
 
 -- the interpreter
@@ -176,7 +177,7 @@ function template.create(language, templateid, targetname)
         local maps = 
         {
             targetname  = targetname
-        ,   projectdir  = xmake._PROJECT_DIR
+        ,   projectdir  = project.directory()
         ,   packagesdir = xmake._PACKAGES_DIR
         }
 
@@ -213,19 +214,19 @@ function template.create(language, templateid, targetname)
     
 
     -- ensure the project directory 
-    if not os.isdir(xmake._PROJECT_DIR) then 
-        os.mkdir(xmake._PROJECT_DIR)
+    if not os.isdir(project.directory()) then 
+        os.mkdir(project.directory())
     end
 
     -- copy the project files
-    local ok, errors = os.cp(path.join(module.projectdir, "*"), xmake._PROJECT_DIR) 
+    local ok, errors = os.cp(path.join(module.projectdir, "*"), project.directory()) 
     if not ok then
         return false, errors
     end
 
     -- enter the project directory
-    if not os.cd(xmake._PROJECT_DIR) then
-        return false, string.format("can not enter %s!", xmake._PROJECT_DIR)
+    if not os.cd(project.directory()) then
+        return false, string.format("can not enter %s!", project.directory())
     end
 
     -- replace macros
