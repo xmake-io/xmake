@@ -31,6 +31,7 @@ local option        = require("base/option")
 local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
 local task          = require("project/task")
+local history       = require("project/history")
 
 -- init the option menu
 local menu =
@@ -108,9 +109,12 @@ function main.done()
     main._init()
 
     -- init option 
-    if not option.init(xmake._ARGV, menu) then 
+    if not option.init(menu) then 
         return -1
     end
+
+    -- save command lines to history
+    history.save("cmdlines", option.cmdline())
 
     -- run help?
     if main._help() then

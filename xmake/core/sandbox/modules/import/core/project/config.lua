@@ -36,13 +36,6 @@ function sandbox_core_project_config.buildir()
     return config.get("buildir")
 end
 
--- get the project directory
-function sandbox_core_project_config.projectdir()
-
-    -- get it 
-    return xmake._PROJECT_DIR
-end
-
 -- get the current platform
 function sandbox_core_project_config.plat()
 
