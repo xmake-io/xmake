@@ -39,5 +39,12 @@ function sandbox_core_project_history.load(key)
     return history.load(key)
 end
 
+-- save the history data
+function sandbox_core_project_history.save(key, value)
+
+    -- save it
+    history.save(key, value)
+end
+
 -- return module
 return sandbox_core_project_history

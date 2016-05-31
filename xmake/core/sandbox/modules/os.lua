@@ -216,7 +216,20 @@ function sandbox_os.corun(cmd, ...)
     end
 end
 
--- execute shell
+-- execute shell 
+function sandbox_os.exec(cmd, ...)
+
+    -- make command
+    cmd = vformat(cmd, ...)
+
+    -- run it
+    local retval = os.execute(cmd)
+    if retval ~= 0 then
+        os.raise("exec %s failed(%d)!", cmd, retval)
+    end
+end
+
+-- execute shell and return error code
 function sandbox_os.execute(cmd, ...)
 
     -- make command

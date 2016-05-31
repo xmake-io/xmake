@@ -131,7 +131,7 @@ function task._translate_menu(menu)
 
         -- add common options
         table.insert(options, 1, {'v', "verbose",   "k",  nil, "Print lots of verbose information."         })
-        table.insert(options, 1, {'b', "backtrace", "k",  nil, "Print backtrace information for debugging." })
+        table.insert(options, 1, {nil, "backtrace", "k",  nil, "Print backtrace information for debugging." })
         table.insert(options, 2, {nil, "version",   "k",  nil, "Print the version number and exit."         })
         table.insert(options, 3, {'h', "help",      "k",  nil, "Print this help message and exit."          })
         table.insert(options, 4, {})
