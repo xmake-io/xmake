@@ -28,6 +28,27 @@ import("core.project.project")
 import("core.platform.platform")
 import("makefile")
 
+-- make makefile
+function _make_makefile(outputdir)
+
+    -- make makefile
+    makefile.make(path.join(outputdir, "makefile"))
+end
+
+-- make project
+function _make(kind)
+
+    -- the maps
+    local maps = 
+    {
+        makefile = _make_makefile
+    }
+    assert(maps[kind], "the project kind(%s) is not supported!", kind)
+    
+    -- make it
+    maps[kind](option.get("outputdir"))
+end
+
 -- main
 function main()
 
@@ -45,8 +66,8 @@ function main()
     -- load project
     project.load()
 
-    -- make makefile
-    makefile.make(option.get("output"))
+    -- make project
+    _make(option.get("kind"))
 
     -- trace
     print("create ok!")
