@@ -173,7 +173,7 @@ function _end(macroname)
     for _, cmdline in ipairs(block) do
 
         -- save command line
-        file:print("    os.exec(\"%s\")", cmdline)
+        file:print("    os.exec(\"%s\")", (cmdline:gsub("[\\\"]", function (w) return "\\" .. w end)))
     end
 
     -- save the macro end 
