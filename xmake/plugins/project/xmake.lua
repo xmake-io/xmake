@@ -21,7 +21,7 @@
 --
 
 -- define task
-task("makefile")
+task("project")
 
     -- set category
     set_category("plugin")
@@ -32,15 +32,17 @@ task("makefile")
     -- set menu
     set_menu({
                     -- usage
-                    usage = "xmake makefile [options] [target]"
+                    usage = "xmake project [options] [target]"
 
                     -- description
-                ,   description = "Create the project makefile."
+                ,   description = "Create the project file."
 
                     -- options
                 ,   options = 
                     {
-                        {'o', "output",    "kv", "makefile",      "Set the output file."     }
+                        {'k', "kind",      "kv", "makefile",    "Set the project kind." 
+                                                           ,    "    - makefile"                }
+                    ,   {nil, "outputdir", "v",  ".",           "Set the output directory."     }
                     }
                 })
 
