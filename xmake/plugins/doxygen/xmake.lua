@@ -32,7 +32,7 @@ task("doxygen")
                     usage = "xmake doxygen [options] [name] [arguments]"
 
                     -- description
-                ,   description = "Generate the doxygen document for the given name"
+                ,   description = "Generate the doxygen document for the given name."
 
                     -- options
                 ,   options = 

@@ -24,6 +24,7 @@
 local io        = require("base/io")
 local os        = require("base/os")
 local utils     = require("base/utils")
+local sandbox   = require("sandbox/sandbox")
 local vformat   = require("sandbox/modules/vformat")
 
 -- define module
@@ -172,6 +173,21 @@ function sandbox_os.programdir()
    
     -- get it
     return xmake._PROGRAM_DIR
+end
+
+-- get the script directory
+function sandbox_os.scriptdir()
+  
+    -- get the current sandbox instance
+    local instance = sandbox.instance()
+    assert(instance)
+
+    -- the root directory for this sandbox script
+    local rootdir = instance:rootdir()
+    assert(rootdir)
+
+    -- ok
+    return rootdir
 end
 
 -- run shell

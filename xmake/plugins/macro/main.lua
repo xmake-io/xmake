@@ -201,7 +201,7 @@ function _run(macroname)
     macro = import(macroname, {rootdir = _directory()})
 
     -- run macro
-    macro.main((option.get("argv") or ""):split("%s"))
+    macro.main(option.get("arguments"))
 
     -- trace
     print("run macro(%s) ok!", macroname)

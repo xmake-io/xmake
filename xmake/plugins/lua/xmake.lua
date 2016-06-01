@@ -32,6 +32,16 @@ task("lua")
         -- imports
         import("core.base.option")
 
+        -- list all scripts?
+        print("scripts:")
+        if option.get("list") then
+            local files = os.match(path.join(os.scriptdir(), "scripts/*.lua"))
+            for _, file in ipairs(files) do
+                print("    " .. path.basename(file))
+            end
+            return 
+        end
+
         -- get script name
         local name = option.get("script")
         if not name then
@@ -57,8 +67,9 @@ task("lua")
                     -- options
                 ,   options = 
                     {
-                        {nil, "script",     "v",  nil,          "Run the given lua script."     }      
-                    ,   {nil, "arguments",  "vs", nil,          "The script arguments"          }
+                        {'l', "list",       "k",  nil,          "List all scripts."             }      
+                    ,   {nil, "script",     "v",  nil,          "Run the given lua script."     }      
+                    ,   {nil, "arguments",  "vs", nil,          "The script arguments."         }
                     }
                 })
 

@@ -71,5 +71,4 @@ function main()
 
     -- trace
     print("create ok!")
-    
 end

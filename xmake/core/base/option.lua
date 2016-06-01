@@ -724,13 +724,15 @@ function option.show_options(options)
         if name then
             if mode == "v" then
                 option_info = option_info .. "    " .. name
+            elseif mode == "vs" then
+                option_info = option_info .. "    " .. name .. " ..."
             else
                 option_info = option_info .. option._ifelse(shortname, ", --", "        --") .. name
             end
             if mode == "kv" then
                 option_info = option_info .. "=" .. name:upper()
             end
-        elseif mode == "v" then
+        elseif mode == "v" or mode == "vs" then
             option_info = option_info .. "    ..."
         end
 
