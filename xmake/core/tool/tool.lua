@@ -184,17 +184,29 @@ function tool._load(shellname, kind)
 end
 
 -- check the shellname
-function tool._check(shellname)
+function tool._check(shellname, check)
+
+    -- uses the passed checker
+    if check ~= nil then
+
+        -- check it
+        local ok, errors = sandbox.load(check, shellname) 
+        if not ok then
+            utils.verbose(errors)
+        end
+
+        -- ok?
+        return ok
+    end
  
     -- load the tool module
     local module, errors = tool._load(shellname)
     if not module then
         utils.verbose(errors)
-        return false
     end
 
     -- no checker? attempt to run it directly
-    if not module.check then
+    if not module or not module.check then
         return 0 == os.execute(string.format("%s > %s 2>&1", shellname, xmake._NULDEV))
     end
 
@@ -227,13 +239,13 @@ function tool.load(kind)
 end
 
 -- check the tool and return the absolute path if exists
-function tool.check(shellname, dirs)
+function tool.check(shellname, dirs, check)
 
     -- check
     assert(shellname)
 
     -- attempt to check it directly first
-    if tool._check(shellname) then
+    if tool._check(shellname, check) then
         return shellname
     end
 
@@ -246,7 +258,7 @@ function tool.check(shellname, dirs)
             if os.isfile(toolpath) then
             
                 -- check it
-                if tool._check(toolpath) then
+                if tool._check(toolpath, check) then
                     return toolpath
                 end
             end

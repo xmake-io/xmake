@@ -77,6 +77,13 @@ function _instance:archs()
     return self._INFO.archs
 end
 
+-- get the platform tooldirs
+function _instance:tooldirs()
+
+    -- get it
+    return self._INFO.tooldirs
+end
+
 -- get the checker
 function _instance:checker()
 
@@ -228,25 +235,28 @@ function platform._interpreter()
     -- register api: platform()
     interp:api_register_scope("platform")
 
-    -- register api: set_platform_os()
+    -- register api: set_os()
     interp:api_register_set_values("platform", "os")
 
-    -- register api: set_platform_hosts() 
+    -- register api: set_hosts() 
     interp:api_register_set_values("platform", "hosts")
 
-    -- register api: set_platform_archs() 
+    -- register api: set_archs() 
     interp:api_register_set_values("platform", "archs")
 
-    -- register api: set_platform_menu() 
+    -- register api: set_menu() 
     interp:api_register_set_values("platform", "menu")
 
-    -- register api: set_platform_checker()
+    -- register api: set_checker()
     interp:api_register_set_values("platform", "checker")
 
-    -- register api: set_platform_environment()
+    -- register api: set_tooldirs()
+    interp:api_register_set_values("platform", "tooldirs")
+
+    -- register api: set_environment()
     interp:api_register_set_values("platform", "environment")
 
-    -- register api: on_platform_load()
+    -- register api: on_load()
     interp:api_register_on_script("platform", "load")
 
     -- save interpreter
@@ -260,7 +270,7 @@ end
 function platform.load(plat)
 
     -- get platform name
-    plat = plat or config.get("plat") 
+    plat = plat or config.get("plat") or xmake._HOST
     if not plat then
         return nil, string.format("unknown platform!")
     end
@@ -317,12 +327,9 @@ function platform.os(plat)
 
     -- load the platform 
     local instance = platform.load(plat)
-    if not instance then
-        return 
+    if instance then
+        return instance:os()
     end
-
-    -- get it
-    return instance:os()
 end
 
 -- get the given platform configure
@@ -340,12 +347,9 @@ function platform.archs(plat)
 
     -- load the platform 
     local instance = platform.load(plat)
-    if not instance then
-        return 
+    if instance then
+        return instance:archs()
     end
-
-    -- get it
-    return instance:archs()
 end
 
 -- get the all platforms
@@ -377,6 +381,16 @@ function platform.plats()
 
     -- ok
     return plats
+end
+
+-- get the tool directories
+function platform.tooldirs(plat)
+
+    -- get the tool directories for the current platform
+    local instance = platform.load(plat)
+    if instance then
+        return instance:tooldirs()
+    end
 end
 
 -- get the given tool
