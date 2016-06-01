@@ -17,34 +17,34 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        doxygen.lua
+-- @file        ccache.lua
 --
 
--- define task
-task("doxygen")
+-- init it
+function init(shellname)
 
-    -- set category
-    set_category("plugin")
+    -- save name
+    _g.shellname = shellname or "doxygen"
 
-    -- on run
-    on_run("main")
+end
 
-    -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake doxygen [options] [arguments]"
+-- get the property
+function get(name)
 
-                    -- description
-                ,   description = "Generate the doxygen document."
+    -- get it
+    return _g[name]
+end
 
-                    -- options
-                ,   options = 
-                    {
-                        {nil, "doxyfile",     "kv", "Doxyfile",   "Set the doxygen config file."        }
-                    ,   {}
-                    ,   {nil, "srcdir",       "v",  "src",        "Set the source code directory."      }
-                    }
-                })
+-- run it
+function run(...)
 
+    -- run it
+    os.run(...)
+end
 
+-- check the given flags 
+function check(flags)
 
+    -- check it
+    os.run("%s %s -h", _g.shellname, ifelse(flags, flags, ""))
+end

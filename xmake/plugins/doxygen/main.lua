@@ -17,34 +17,19 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        doxygen.lua
+-- @file        main.lua
 --
 
--- define task
-task("doxygen")
+-- imports
+import("core.base.option")
+import("core.tool.tool")
 
-    -- set category
-    set_category("plugin")
+-- main
+function main()
 
-    -- on run
-    on_run("main")
-
-    -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake doxygen [options] [arguments]"
-
-                    -- description
-                ,   description = "Generate the doxygen document."
-
-                    -- options
-                ,   options = 
-                    {
-                        {nil, "doxyfile",     "kv", "Doxyfile",   "Set the doxygen config file."        }
-                    ,   {}
-                    ,   {nil, "srcdir",       "v",  "src",        "Set the source code directory."      }
-                    }
-                })
-
-
-
+    -- generate doxyfile first if not exists
+    local doxyfile = option.get("doxyfile")
+    if not os.isfile(doxyfile) then
+        tool.run("doxygen", "doxygen -g " .. doxyfile)
+    end
+end
