@@ -35,6 +35,9 @@ platform("macosx")
     -- set checker
     set_checker("checker")
 
+    -- set tooldirs
+    set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+
     -- on load
     on_load(function ()
 
