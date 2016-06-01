@@ -26,15 +26,36 @@ import("core.project.cache")
 import("core.project.config")
 import("core.project.history")
 
--- the macro directory
-function _directory()
+-- the macro directories
+function _directories()
 
-    -- get it
-    return path.join(config.directory(), "macros")
+    return {    path.join(config.directory(), "macros")
+            ,   path.join(os.scriptdir(), "macros")}
 end
 
--- the macro file 
-function _file(macroname)
+-- the macro directory
+function _directory(macroname)
+
+    -- find macro directory
+    local macrodir = nil
+    for _, dir in ipairs(_directories()) do
+
+        -- found?
+        if os.isfile(path.join(dir, macroname .. ".lua")) then
+            macrodir = dir
+            break
+        end
+    end
+
+    -- check
+    assert(macrodir, "macro(%s) not found!", macroname)
+
+    -- ok
+    return macrodir
+end
+
+-- the readable macro file
+function _rfile(macroname)
 
     -- is anonymous?
     if macroname == '.' then
@@ -42,7 +63,19 @@ function _file(macroname)
     end
 
     -- get it
-    return path.join(_directory(), macroname .. ".lua")
+    return path.join(_directory(macroname), macroname .. ".lua")
+end
+
+-- the writable macro file
+function _wfile(macroname)
+
+    -- is anonymous?
+    if macroname == '.' then
+        macroname = "anonymous"
+    end
+
+    -- get it
+    return path.join(path.join(config.directory(), "macros"), macroname .. ".lua")
 end
 
 -- list macros
@@ -52,17 +85,19 @@ function _list()
     print("macros:")
 
     -- find all macros
-    local macrofiles = os.match(path.join(_directory(), "*.lua"))
-    for _, macrofile in ipairs(macrofiles) do
+    for _, dir in ipairs(_directories()) do
+        local macrofiles = os.match(path.join(dir, "*.lua"))
+        for _, macrofile in ipairs(macrofiles) do
 
-        -- get macro name
-        local macroname = path.basename(macrofile)
-        if macroname == "anonymous" then
-            macroname = ".<anonymous>"
+            -- get macro name
+            local macroname = path.basename(macrofile)
+            if macroname == "anonymous" then
+                macroname = ".<anonymous>"
+            end
+
+            -- show it
+            print("    " .. macroname)
         end
-
-        -- show it
-        print("    " .. macroname)
     end
 end
 
@@ -70,7 +105,7 @@ end
 function _show(macroname)
 
     -- show it
-    local file = _file(macroname)
+    local file = _rfile(macroname)
     if os.isfile(file) then
         io.cat(file)
     else
@@ -82,7 +117,13 @@ end
 function _delete(macroname)
 
     -- remove it
-    os.rm(_file(macroname))
+    if os.isfile(_wfile(macroname)) then
+        os.rm(_wfile(macroname))
+    elseif os.isfile(_rfile(macroname)) then
+        raise("macro(%s) cannot be deleted!", macroname)
+    else
+        raise("macro(%s) not found!", macroname)
+    end
 
     -- trace
     print("delete macro(%s) ok!", macroname)
@@ -92,7 +133,7 @@ end
 function _import(macrofile, macroname)
 
     -- import it
-    os.cp(macrofile, _file(macroname))
+    os.cp(macrofile, _wfile(macroname))
 
     -- trace
     print("import macro(%s) ok!", macroname)
@@ -102,7 +143,7 @@ end
 function _export(macrofile, macroname)
 
     -- export it
-    os.cp(_file(macroname), macrofile)
+    os.cp(_rfile(macroname), macrofile)
 
     -- trace
     print("export macro(%s) ok!", macroname)
@@ -164,7 +205,7 @@ function _end(macroname)
     history.save("cmdlines", "__macro_end__")
 
     -- open the macro file
-    local file = io.open(_file(macroname), "w")
+    local file = io.open(_wfile(macroname), "w")
 
     -- save the macro begin 
     file:print("function main(argv)")
@@ -197,11 +238,11 @@ function _run(macroname)
         macroname = "anonymous"
     end
 
-    -- import macro
-    macro = import(macroname, {rootdir = _directory()})
+    -- load macro
+    local macro = import(macroname, {rootdir = _directory(macroname)})
 
     -- run macro
-    macro.main(option.get("arguments"))
+    macro.main(option.get("arguments") or {})
 
     -- trace
     print("run macro(%s) ok!", macroname)
