@@ -28,7 +28,7 @@ import("core.platform.platform")
 -- .e.g
 -- xmake m package 
 -- xmake m package linux
--- xmake m package iphoneos "--demo=false --xxx ..."
+-- xmake m package iphoneos "-m debug --xxx ..."
 --
 function main(argv)
 
@@ -41,14 +41,8 @@ function main(argv)
     -- package all archs
     for _, arch in ipairs(platform.archs(plat)) do
 
-        -- package debug
-        os.exec("xmake f -p %s -a %s -m debug %s", plat, arch, args)
-        os.exec("xmake -r")
-        os.exec("xmake p")
-
-        -- package release
-        os.exec("xmake f -p %s -a %s -m release %s", plat, arch, args)
-        os.exec("xmake -r")
+        -- package it
+        os.exec("xmake f -p %s -a %s %s", plat, arch, args)
         os.exec("xmake p")
     end
 end
