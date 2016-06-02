@@ -40,10 +40,9 @@ task("doxygen")
                     -- options
                 ,   options = 
                     {
-                        {nil, "doxyfile",   "kv", "Doxyfile",       "Set the doxygen config file."      }
-                    ,   {'o', "outputdir",  "kv", "build/doxygen",  "Set the output directory."         }
+                        {'o', "outputdir",  "kv", nil,      "Set the output directory."         }
                     ,   {}
-                    ,   {nil, "srcdir",     "v",  "src",            "Set the source code directory."    }
+                    ,   {nil, "srcdir",     "v",  "src",    "Set the source code directory."    }
                     }
                 })
 
