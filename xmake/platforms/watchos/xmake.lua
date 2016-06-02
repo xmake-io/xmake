@@ -63,7 +63,6 @@ platform("watchos")
         _g.tools.sh         = config.get("sh") 
         _g.tools.ex         = config.get("ar") 
         _g.tools.sc         = config.get("sc") 
-        _g.tools.lipo       = config.get("lipo") 
 
         -- init flags for architecture
         local arch          = config.get("arch")
