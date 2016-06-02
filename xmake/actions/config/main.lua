@@ -136,8 +136,15 @@ function main()
     -- merge the checked configure 
     local recheck = _need_check()
     if recheck then
+
+        -- check configure
         config.check()
+
+        -- check project options
         project.check()
+
+        -- rebuild it
+        cache.set("rebuild", true)
     end
 
     -- merge the cached configure
@@ -161,9 +168,6 @@ function main()
     if targetname and targetname ~= "all" and nil == project.target(targetname) then
         raise("unknown target: %s", targetname)
     end
-
-    -- need rebuild it
-    cache.set("rebuild", recheck)
 
     -- save options
     cache.set("options_" .. targetname, options)
