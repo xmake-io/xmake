@@ -21,34 +21,29 @@
 --
 
 -- imports
-import("core.base.option")
+import("core.tool.tool")
 
--- init it
-function init(shellname)
+-- main
+--
+-- .e.g.
+--
+-- xmake l lipo "-create -arch armv7 file -arch arm64 file -output file"
+function main(...)
 
-    -- save name
-    _g.shellname = shellname or "lipo"
+    -- get arguments
+    local args = ...
+    if not args or #args ~= 1 then
+        raise("invalid arguments!")
+    end
+    args = args[1]
 
-end
-
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
-
--- run command
-function run(...)
+    -- check the lipo
+    local lipo = tool.check("xcrun lipo", function (shellname)
+                        os.run("xcrun -find lipo")
+                    end)
+    assert(lipo, "lipo not found!")
 
     -- run it
-    os.run(...)
-end
-
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("xcrun -find lipo")
+    os.run("%s %s", lipo, args)
 end
 

@@ -25,7 +25,7 @@ function main(...)
 
     -- cp it
     local pathes = ...
-    if pathes and table.getn(pathes) == 2 then
+    if pathes and #pathes == 2 then
         os.cp(pathes[1], pathes[2])
     end
 
