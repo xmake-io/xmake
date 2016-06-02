@@ -24,6 +24,7 @@
 local sandbox_core_project_project = sandbox_core_project_project or {}
 
 -- load modules
+local table     = require("base/table")
 local config    = require("project/config")
 local project   = require("project/project")
 local raise     = require("sandbox/modules/raise")
@@ -85,6 +86,33 @@ function sandbox_core_project_project.mtimes()
 
     -- get it
     return project.mtimes()
+end
+
+-- get the project version
+function sandbox_core_project_project.version()
+  
+    -- get version
+    for _, target in pairs(table.wrap(project.targets())) do
+        local version = target:get("version")
+        if version then
+            return version
+        end
+    end
+end
+
+-- get the project name
+function sandbox_core_project_project.name()
+  
+    -- get version
+    for _, target in pairs(table.wrap(project.targets())) do
+        local name = target:get("project")
+        if name then
+            return name
+        end
+    end
+
+    -- uses the project directory name
+    return path.basename(project.directory())
 end
 
 -- return module

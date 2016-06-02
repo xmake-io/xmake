@@ -339,6 +339,7 @@ function project._interpreter()
     interp:api_register_set_values("target",    "kind"
                                             ,   "config_h_prefix"
                                             ,   "version"
+                                            ,   "project"
                                             ,   "strip"
                                             ,   "options"
                                             ,   "symbols"

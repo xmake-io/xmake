@@ -23,6 +23,8 @@
 -- imports
 import("core.base.option")
 import("core.tool.tool")
+import("core.project.config")
+import("core.project.project")
 
 -- main
 function main()
@@ -33,51 +35,82 @@ function main()
                     end)
     assert(doxygen, "doxygen not found!")
 
-    -- generate doxyfile first if not exists
-    local doxyfile = option.get("doxyfile")
-    if not os.isfile(doxyfile) then
+    -- generate doxyfile first
+    local doxyfile = path.join(os.tmpdir(), "doxyfile")
 
-        -- generate the default doxyfile
-        os.run("%s -g %s", doxygen, doxyfile)
+    -- generate the default doxyfile
+    os.run("%s -g %s", doxygen, doxyfile)
 
-        -- enable recursive
-        --
-        -- RECURSIVE = YES
-        --
-        io.gsub(doxyfile, "RECURSIVE%s-=%s-NO", "RECURSIVE = YES")
+    -- load configure
+    config.load()
 
-        -- set the source directory
-        --
-        -- INPUT = xxx
-        --
-        local srcdir = option.get("srcdir")
-        if srcdir and os.isdir(srcdir) then
-            io.gsub(doxyfile, "INPUT%s-=.-\n", format("INPUT = %s\n", srcdir))
-        end
+    -- load project
+    project.load()
 
-        -- set the output directory
-        --
-        -- HTML_OUTPUT  = html
-        -- LATEX_OUTPUT = latex
-        --
-        local outputdir = option.get("outputdir")
-        if outputdir then
+    -- enable recursive
+    --
+    -- RECURSIVE = YES
+    --
+    io.gsub(doxyfile, "RECURSIVE%s-=%s-NO", "RECURSIVE = YES")
 
-            -- update the doxyfile
-            io.gsub(doxyfile, "HTML_OUTPUT%s-=.-\n", format("HTML_OUTPUT = %s/html\n", outputdir))
-            io.gsub(doxyfile, "LATEX_OUTPUT%s-=.-\n", format("LATEX_OUTPUT = %s/latex\n", outputdir))
+    -- set the source directory
+    --
+    -- INPUT = xxx
+    --
+    local srcdir = option.get("srcdir")
+    if srcdir and os.isdir(srcdir) then
+        io.gsub(doxyfile, "INPUT%s-=.-\n", format("INPUT = %s\n", srcdir))
+    end
 
-            -- ensure the output directory
-            os.mkdir(outputdir)
-        end
+    -- set the output directory
+    --
+    -- OUTPUT_DIRECTORY = 
+    --
+    local outputdir = option.get("outputdir") or config.get("buildir") or "build"
+    if outputdir then
+
+        -- update the doxyfile
+        io.gsub(doxyfile, "OUTPUT_DIRECTORY%s-=.-\n", format("OUTPUT_DIRECTORY = %s\n", outputdir))
+
+        -- ensure the output directory
+        os.mkdir(outputdir)
+    end
+
+    -- set the project version
+    --
+    -- PROJECT_NUMBER = 
+    --
+    local version = project.version()
+    if version then
+        io.gsub(doxyfile, "PROJECT_NUMBER%s-=.-\n", format("PROJECT_NUMBER = %s\n", version))
+    end
+
+    -- set the project name
+    --
+    -- PROJECT_NAME = 
+    --
+    local name = project.name()
+    if name then
+        io.gsub(doxyfile, "PROJECT_NAME%s-=.-\n", format("PROJECT_NAME = %s\n", name))
     end
 
     -- check
     assert(os.isfile(doxyfile), "%s not found!", doxyfile)
 
+    -- enter the project directory
+    os.cd(project.directory())
+
     -- generate document
-    os.run("%s %s", doxygen, doxyfile)
+    if option.get("verbose") then
+        os.exec("%s %s", doxygen, doxyfile)
+    else
+        os.run("%s %s", doxygen, doxyfile)
+    end
+
+    -- leave the project directory
+    os.cd("-")
 
     -- trace
+    print("result: %s/html/index.html", outputdir)
     print("doxygen ok!")
 end
