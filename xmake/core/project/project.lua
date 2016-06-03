@@ -556,8 +556,9 @@ function project.check()
         -- need check?
         if config.get(name) == nil then
 
-            -- check option
-            if opt:check(cfile, cxxfile, objectfile, targetfile) then
+            -- enable it?
+            local enable = opt:get("enable")
+            if enable ~= nil and enable then
 
                 -- enable this option
                 config.set(name, true)
@@ -565,6 +566,14 @@ function project.check()
                 -- save this option to configure 
                 opt:save()
 
+            -- check option
+            elseif enable == nil and opt:check(cfile, cxxfile, objectfile, targetfile) then
+
+                -- enable this option
+                config.set(name, true)
+
+                -- save this option to configure 
+                opt:save()
             else
 
                 -- disable this option
@@ -572,7 +581,6 @@ function project.check()
 
                 -- clear this option to configure 
                 opt:clear()
-
             end
 
         -- no check
