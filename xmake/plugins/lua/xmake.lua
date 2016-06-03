@@ -33,8 +33,8 @@ task("lua")
         import("core.base.option")
 
         -- list all scripts?
-        print("scripts:")
         if option.get("list") then
+            print("scripts:")
             local files = os.match(path.join(os.scriptdir(), "scripts/*.lua"))
             for _, file in ipairs(files) do
                 print("    " .. path.basename(file))
@@ -50,7 +50,6 @@ task("lua")
 
         -- import script
         import("scripts." .. name).main(option.get("arguments"))
-
     end)
 
     -- set menu

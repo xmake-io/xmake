@@ -50,9 +50,13 @@ function deprecated.dump()
     deprecated._ENTRIES = deprecated._ENTRIES or {}
 
     -- dump all
-    print("")
     local index = 0
     for old, new in pairs(deprecated._ENTRIES) do
+
+        -- trace newline
+        if index == 0 then
+            print("")
+        end
 
         -- trace
         utils.printf("deprecated: please uses %s instead of %s", new, old)
