@@ -168,9 +168,10 @@ function option.init(menu)
         -- parse key and value
         local key, value
         local i = arg:find("=", 1, true)
+        local hasspace = arg:find("%s")
 
         -- key=value?
-        if i then
+        if i and not hasspace then
             key = arg:sub(1, i - 1)
             value = arg:sub(i + 1)
         -- only key?
@@ -181,11 +182,11 @@ function option.init(menu)
 
         -- --key?
         local prefix = 0
-        if key:startswith("--") then
+        if not hasspace and key:startswith("--") then
             key = key:sub(3)
             prefix = 2
         -- -k?
-        elseif key:startswith("-") then
+        elseif not hasspace and key:startswith("-") then
             key = key:sub(2)
             prefix = 1
         end
@@ -314,7 +315,7 @@ function option.init(menu)
 
         -- value?
         else 
-            
+
             -- find a value option with name
             local opt = nil
             for _, o in ipairs(option._taskmenu().options) do
