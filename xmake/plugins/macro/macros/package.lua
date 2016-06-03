@@ -21,6 +21,8 @@
 --
 
 -- imports
+import("core.project.config")
+import("core.project.project")
 import("core.platform.platform")
 
 -- package all
@@ -44,5 +46,50 @@ function main(argv)
         -- package it
         os.exec("xmake f -p %s -a %s %s", plat, arch, args)
         os.exec("xmake p")
+    end
+
+    -- package universal for iphoneos, watchos ...
+    if plat:startswith("iphone") or plat:startswith("watch") then
+
+        -- load configure
+        config.load()
+
+        -- load project
+        project.load()
+
+        -- the outputdir directory
+        local outputdir = config.get("buildir")
+
+        -- package all targets
+        for _, target in pairs(project.targets()) do
+
+            -- get all modes
+            local modedirs = os.match(format("%s/%s.pkg/lib/*", outputdir, target:name()), true)
+            for _, modedir in ipairs(modedirs) do
+                
+                -- get mode
+                local mode = path.basename(modedir)
+
+                -- make lipo arguments
+                local lipoargs = nil
+                for _, arch in ipairs(platform.archs(plat)) do
+                    local archfile = format("%s/%s.pkg/lib/%s/%s/%s/%s", outputdir, target:name(), mode, plat, arch, path.filename(target:targetfile())) 
+                    if os.isfile(archfile) then
+                        lipoargs = format("%s -arch %s %s", lipoargs or "", arch, archfile) 
+                    end
+                end
+                if lipoargs then
+
+                    -- make full lipo arguments
+                    lipoargs = format("-create %s -output %s/%s.pkg/lib/%s/%s/universal/%s", lipoargs, outputdir, target:name(), mode, plat, path.filename(target:targetfile()))
+
+                    -- make universal directory
+                    os.mkdir(format("%s/%s.pkg/lib/%s/%s/universal", outputdir, target:name(), mode, plat))
+
+                    -- package all archs
+                    os.exec("xmake l lipo \" %s\"", lipoargs)
+                end
+            end
+        end
     end
 end
