@@ -92,8 +92,13 @@ function _build_object(target, index)
     end
 
     -- make command
-    local ccache    = tool.shellname("ccache") 
     local command   = compiler.command(target, sourcefile, objectfile)
+
+    -- uses ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = tool.shellname("ccache") 
+    end
     if ccache then
         command = ccache:append(command, " ")
     end
