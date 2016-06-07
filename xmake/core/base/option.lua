@@ -277,8 +277,8 @@ function option.init(menu)
 
             -- value is "true" or "false", translate it
             if type(value) == "string" then
-                if value == "true" then value = true
-                elseif value == "false" then value = false
+                if value == "true" or value == "yes" or value == "y" then value = true
+                elseif value == "false" or value == "no" or value == "n" then value = false
                 end
             end
 
