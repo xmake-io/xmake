@@ -86,12 +86,12 @@ task("config")
                     ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
                                                               , "    - debug"
                                                               , "    - release"
-                                                              , "    - profile"                                                 }
+                                                              , "    - ... (custom)"                                           } 
                     ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
                                                               , "    - static"
                                                               , "    - shared"
                                                               , "    - binary"                                                 }
-                    ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                 }
+                    ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                }
 
                         -- show project menu options
                     ,   function () 
