@@ -29,6 +29,7 @@ import("core.platform.platform")
 --
 -- .e.g
 -- xmake m package 
+-- xmake m package . "-m debug"
 -- xmake m package linux
 -- xmake m package iphoneos "-m debug --xxx ..."
 --
@@ -36,6 +37,9 @@ function main(argv)
 
     -- get plat
     local plat = argv[1] or os.host()
+    if plat == "." then
+        plat = os.host()
+    end
 
     -- get args
     local args = argv[2] or ""
