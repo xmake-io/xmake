@@ -30,6 +30,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option_   = require("base/option")
+local config    = require("project/config")
 local cache     = require("project/cache")("local.option")
 local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
@@ -384,7 +385,13 @@ function option:_check_cxxtypes(cxxfile, objectfile, targetfile)
 end
 
 -- check option 
-function option:check(cfile, cxxfile, objectfile, targetfile)
+function option:_check()
+ 
+    -- the files
+    local cfile         = path.join(os.tmpdir(), "__checking.c")
+    local cxxfile       = path.join(os.tmpdir(), "__checking.cpp")
+    local objectfile    = path.join(os.tmpdir(), "__checking.obj")
+    local targetfile    = path.join(os.tmpdir(), "__checking.bin")
 
     -- check links
     if not self:_check_links(cfile, objectfile, targetfile) then return false end
@@ -412,8 +419,58 @@ function option:check(cfile, cxxfile, objectfile, targetfile)
 
     end
 
+    -- remove files
+    os.rm(cfile)
+    os.rm(cxxfile)
+    os.rm(objectfile)
+    os.rm(targetfile)
+
     -- ok
     return true
+end
+
+-- attempt to check option 
+function option:check()
+
+    -- the option name
+    local name = self:name()
+
+    -- need check?
+    if config.get(name) == nil then
+
+        -- enable it?
+        local enable = self:get("enable")
+        if enable ~= nil and enable then
+
+            -- enable this option
+            config.set(name, true)
+
+            -- save this option to configure 
+            self:save()
+
+        -- check option
+        elseif enable == nil and self:_check() then
+
+            -- enable this option
+            config.set(name, true)
+
+            -- save this option to configure 
+            self:save()
+        else
+
+            -- disable this option
+            config.set(name, false)
+
+            -- clear this option to configure 
+            self:clear()
+        end
+
+    -- no check
+    elseif config.get(name) then
+
+        -- save this option to configure directly
+        self:save()
+    end
 end
 
 -- get the option info

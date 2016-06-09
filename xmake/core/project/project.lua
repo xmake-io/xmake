@@ -539,63 +539,11 @@ function project.check()
 
     -- enter toolchains environment
     environment.enter("toolchains")
- 
-    -- the source file path
-    local cfile     = path.join(os.tmpdir(), "__checking.c")
-    local cxxfile   = path.join(os.tmpdir(), "__checking.cpp")
 
-    -- the object file path
-    local objectfile = path.join(os.tmpdir(), target.filename("__checking", "object"))
-
-    -- the target file path
-    local targetfile = path.join(os.tmpdir(), target.filename("__checking", "binary"))
-
-    -- make all options
-    for name, opt in pairs(options) do
-
-        -- need check?
-        if config.get(name) == nil then
-
-            -- enable it?
-            local enable = opt:get("enable")
-            if enable ~= nil and enable then
-
-                -- enable this option
-                config.set(name, true)
-
-                -- save this option to configure 
-                opt:save()
-
-            -- check option
-            elseif enable == nil and opt:check(cfile, cxxfile, objectfile, targetfile) then
-
-                -- enable this option
-                config.set(name, true)
-
-                -- save this option to configure 
-                opt:save()
-            else
-
-                -- disable this option
-                config.set(name, false)
-
-                -- clear this option to configure 
-                opt:clear()
-            end
-
-        -- no check
-        elseif config.get(name) then
-
-            -- save this option to configure directly
-            opt:save()
-        end
+    -- check all options
+    for _, opt in pairs(options) do
+        opt:check()
     end
-
-    -- remove files
-    os.rm(cfile)
-    os.rm(cxxfile)
-    os.rm(objectfile)
-    os.rm(targetfile)
 
     -- leave toolchains environment
     environment.leave("toolchains")
