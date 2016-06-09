@@ -113,6 +113,13 @@ function _show(macroname)
     end
 end
 
+-- clear all macros
+function _clear()
+
+    -- clear all 
+    os.rm(path.join(config.directory(), "macros"))
+end
+
 -- delete macro
 function _delete(macroname)
 
@@ -132,21 +139,61 @@ end
 -- import macro
 function _import(macrofile, macroname)
 
-    -- import it
-    os.cp(macrofile, _wfile(macroname))
+    -- import all macros
+    if os.isdir(macrofile) then
 
-    -- trace
-    print("import macro(%s) ok!", macroname)
+        -- the macro directory
+        local macrodir = macrofile
+        local macrofiles = os.match(path.join(macrodir, "*.lua"))
+        for _, macrofile in ipairs(macrofiles) do
+
+            -- the macro name
+            macroname = path.basename(macrofile)
+
+            -- import it
+            os.cp(macrofile, _wfile(macroname))
+
+            -- trace
+            print("import macro(%s) ok!", macroname)
+        end
+    else
+
+        -- import it
+        os.cp(macrofile, _wfile(macroname))
+
+        -- trace
+        print("import macro(%s) ok!", macroname)
+    end
 end
 
 -- export macro
 function _export(macrofile, macroname)
 
-    -- export it
-    os.cp(_rfile(macroname), macrofile)
+    -- export all macros
+    if os.isdir(macrofile) then
 
-    -- trace
-    print("export macro(%s) ok!", macroname)
+        -- the output directory
+        local outputdir = macrofile
+
+        -- export all macros
+        for _, dir in ipairs(_directories()) do
+            local macrofiles = os.match(path.join(dir, "*.lua"))
+            for _, macrofile in ipairs(macrofiles) do
+
+                -- export it
+                os.cp(macrofile, outputdir)
+
+                -- trace
+                print("export macro(%s) ok!", path.basename(macrofile))
+            end
+        end
+    else        
+        -- export it
+        os.cp(_rfile(macroname), macrofile)
+
+        -- trace
+        print("export macro(%s) ok!", macroname)
+    end
 end
 
 -- begin to record macro
@@ -260,6 +307,11 @@ function main()
     elseif option.get("show") then
 
         _show(option.get("name"))
+
+    -- clear macro
+    elseif option.get("clear") then
+
+        _clear()
 
     -- delete macro
     elseif option.get("delete") then
