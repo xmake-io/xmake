@@ -63,7 +63,18 @@ platform("linux")
         _g.tools.sc         = config.get("sc") 
 
         -- cross toolchains?
-        if config.get("cross") then return end
+        if config.get("cross") then 
+
+            -- init linkdirs and includedirs
+            local sdkdir = config.get("sdk") 
+            if sdkdir then
+                _g.includedirs = {path.join(sdkdir, "include")}
+                _g.linkdirs    = {path.join(sdkdir, "lib")}
+            end
+
+            -- ok
+            return 
+        end
 
         -- init flags for architecture
         local archflags = nil
@@ -83,7 +94,6 @@ platform("linux")
         -- init linkdirs and includedirs
         _g.linkdirs    = {"/usr/lib", "/usr/local/lib"}
         _g.includedirs = {"/usr/include", "/usr/local/include"}
-
     end)
 
 

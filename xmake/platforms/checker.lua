@@ -161,7 +161,7 @@ function check_ccache(config)
     if ccache == nil then
 
         -- check the ccache path
-        local ccache_path = tool.check("ccache", {"/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin"})
+        local ccache_path = tool.check("ccache")
 
         -- check ok? update it
         if ccache_path then
@@ -204,8 +204,16 @@ function check_toolchain(config, kind, cross, name, description, check)
             }
         end
 
+        -- get toolchains
+        local toolchains = config.get("toolchains")
+        if not toolchains then
+            local sdkdir = config.get("sdk")
+            if sdkdir then
+                toolchains = path.join(sdkdir, "bin")
+            end
+        end
+
         -- attempt to get it from the given cross toolchains
-        local toolchains = config.get("toolchains") 
         if not toolpath and toolchains then
             toolpath = tool.check(cross .. name, toolchains)
         end

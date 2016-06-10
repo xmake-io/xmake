@@ -38,7 +38,7 @@ function main(...)
     args = args[1]
 
     -- check the lipo
-    local lipo = tool.check("xcrun lipo", function (shellname)
+    local lipo = tool.check("xcrun lipo", nil, function (shellname)
                         os.run("xcrun -find lipo")
                     end)
     assert(lipo, "lipo not found!")

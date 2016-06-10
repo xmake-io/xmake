@@ -27,16 +27,24 @@ import("platforms.checker", {rootdir = os.programdir()})
 -- check the toolchains
 function _check_toolchains(config)
 
-    -- init the default cross
+    -- get toolchains
+    local toolchains = config.get("toolchains")
+    if not toolchains then
+        local sdkdir = config.get("sdk")
+        if sdkdir then
+            toolchains = path.join(sdkdir, "bin")
+        end
+    end
+
+    -- get cross
     local cross = ""
-    local arch = config.get("arch")
-    if arch then
-        if os.host() == "macosx" and arch == "i386" then
-            cross = "i386-mingw32-"
-        elseif arch == "i386" then
-            cross = "i686-w64-mingw32-"
-        elseif arch == "x86_64" then
-            cross = "x86_64-w64-mingw32-"
+    if toolchains then
+        local arpathes = os.match(path.join(toolchains, "*-ar"))
+        for _, arpath in ipairs(arpathes) do
+            local arname = path.basename(arpath)
+            if arname then
+                cross = arname:sub(1, -3)
+            end
         end
     end
 

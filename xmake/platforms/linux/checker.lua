@@ -42,13 +42,34 @@ end
 -- check the toolchains
 function _check_toolchains(config)
 
+    -- get toolchains
+    local toolchains = config.get("toolchains")
+    if not toolchains then
+        local sdkdir = config.get("sdk")
+        if sdkdir then
+            toolchains = path.join(sdkdir, "bin")
+        end
+    end
+
+    -- get cross
+    local cross = ""
+    if toolchains then
+        local arpathes = os.match(path.join(toolchains, "*-ar"))
+        for _, arpath in ipairs(arpathes) do
+            local arname = path.basename(arpath)
+            if arname then
+                cross = arname:sub(1, -3)
+            end
+        end
+    end
+
     -- done
-    checker.check_toolchain(config, "cc",   "", "gcc",  "the c compiler") 
-    checker.check_toolchain(config, "cxx",  "", "g++",  "the c++ compiler") 
-    checker.check_toolchain(config, "as",   "", "gcc",  "the assember")
-    checker.check_toolchain(config, "ld",   "", "g++",  "the linker") 
-    checker.check_toolchain(config, "ar",   "", "ar",   "the static library linker") 
-    checker.check_toolchain(config, "sh",   "", "g++",  "the shared library linker") 
+    checker.check_toolchain(config, "cc",   cross, "gcc",  "the c compiler") 
+    checker.check_toolchain(config, "cxx",  cross, "g++",  "the c++ compiler") 
+    checker.check_toolchain(config, "as",   cross, "gcc",  "the assember")
+    checker.check_toolchain(config, "ld",   cross, "g++",  "the linker") 
+    checker.check_toolchain(config, "ar",   cross, "ar",   "the static library linker") 
+    checker.check_toolchain(config, "sh",   cross, "g++",  "the shared library linker") 
 end
 
 -- init it
