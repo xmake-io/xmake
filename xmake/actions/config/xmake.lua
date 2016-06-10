@@ -104,15 +104,21 @@ task("config")
                         end
 
                     ,   {}
-                    ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                     }
+                    ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                   }
 
                     ,   {}
                     ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
                                                               , ".e.g"
                                                               , "    - i386-mingw32-"
                                                               , "    - arm-linux-androideabi-"                                  }
-                    ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory"                                }
-
+                    ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory" 
+                                                              , ".e.g"
+                                                              , "    - sdk/bin (/arm-linux-gcc ..)"                             }
+                    ,   {nil, "sdk",        "kv", nil,          "The cross sdk directory" 
+                                                              , ".e.g"
+                                                              , "    - sdk/bin (toolchains)"
+                                                              , "    - sdk/lib"
+                                                              , "    - sdk/include"                                             }
                     ,   {}
                     ,   {nil, "cc",         "kv", nil,          "The C Compiler"                                                }
                     ,   {nil, "cxx",        "kv", nil,          "The C++ Compiler"                                              }

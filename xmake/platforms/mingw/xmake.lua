@@ -73,7 +73,11 @@ platform("mingw")
         _g.ldflags = { archflags }
         _g.shflags = { archflags }
 
+        -- init linkdirs and includedirs
+        local sdkdir = config.get("sdk") 
+        if sdkdir then
+            _g.includedirs = {path.join(sdkdir, "include")}
+            _g.linkdirs    = {path.join(sdkdir, "lib")}
+        end
     end)
-
-
 

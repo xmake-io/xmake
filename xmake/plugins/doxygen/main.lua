@@ -30,7 +30,7 @@ import("core.project.project")
 function main()
 
     -- check the doxygen
-    local doxygen = tool.check("doxygen", function (shellname)
+    local doxygen = tool.check("doxygen", nil, function (shellname)
                         os.run("%s -v", shellname)
                     end)
     assert(doxygen, "doxygen not found!")
