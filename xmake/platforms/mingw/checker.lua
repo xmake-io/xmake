@@ -39,11 +39,11 @@ function _check_toolchains(config)
     -- get cross
     local cross = ""
     if toolchains then
-        local arpathes = os.match(path.join(toolchains, "*-ar"))
-        for _, arpath in ipairs(arpathes) do
-            local arname = path.basename(arpath)
-            if arname then
-                cross = arname:sub(1, -3)
+        local ldpathes = os.match(path.join(toolchains, "*-ld"))
+        for _, ldpath in ipairs(ldpathes) do
+            local ldname = path.basename(ldpath)
+            if ldname then
+                cross = ldname:sub(1, -3)
             end
         end
     end
