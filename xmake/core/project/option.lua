@@ -385,7 +385,7 @@ function option:_check_cxxtypes(cxxfile, objectfile, targetfile)
 end
 
 -- check option 
-function option:_check()
+function option:_check_condition()
  
     -- the files
     local cfile         = path.join(os.tmpdir(), "__checking.c")
@@ -429,8 +429,8 @@ function option:_check()
     return true
 end
 
--- attempt to check option 
-function option:check()
+-- check option
+function option:_check()
 
     -- the option name
     local name = self:name()
@@ -442,27 +442,18 @@ function option:check()
         local enable = self:get("enable")
         if enable ~= nil and enable then
 
-            -- enable this option
-            config.set(name, true)
-
-            -- save this option to configure 
-            self:save()
+            -- enable option
+            self:enable()
 
         -- check option
-        elseif enable == nil and self:_check() then
+        elseif enable == nil and self:_check_condition() then
 
-            -- enable this option
-            config.set(name, true)
-
-            -- save this option to configure 
-            self:save()
+            -- enable option
+            self:enable()
         else
 
-            -- disable this option
-            config.set(name, false)
-
-            -- clear this option to configure 
-            self:clear()
+            -- disable option
+            self:disable()
         end
 
     -- no check
@@ -470,7 +461,55 @@ function option:check()
 
         -- save this option to configure directly
         self:save()
+    end    
+end
+
+-- enable this option
+function option:enable()
+
+    -- enable this option
+    config.set(self:name(), true)
+
+    -- save this option to configure 
+    self:save()
+end
+
+-- disable this option
+function option:disable()
+
+    -- disable this option
+    config.set(self:name(), false)
+
+    -- clear this option to configure 
+    self:clear()
+end
+
+-- attempt to check option 
+function option:check()
+
+    -- have been checked?
+    if self._CHECKED then
+        return 
     end
+
+    -- the option scripts
+    local scripts =
+    {
+        self:get("check_before")
+    ,   self:get("check") or option._check
+    ,   self:get("check_after")
+    }
+
+    -- run the target scripts
+    for i = 1, 3 do
+        local script = scripts[i]
+        if script ~= nil then
+            script(self)
+        end
+    end
+
+    -- checked
+    self._CHECKED = true
 end
 
 -- get the option info
@@ -481,10 +520,18 @@ function option:get(infoname)
 end
 
 -- save the option info to the cache
-function option:save(is_clear)
+function option:save()
+
+    -- remove functions first before saving option
+    local info = {}
+    for k, v in pairs(self._INFO) do
+        if type(v) ~= "function" then
+            info[k] = v
+        end
+    end
 
     -- save it
-    cache:set(self:name(), self._INFO)
+    cache:set(self:name(), info)
     cache:flush()
 end
 
