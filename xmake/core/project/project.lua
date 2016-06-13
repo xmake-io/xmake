@@ -441,7 +441,8 @@ function project._interpreter()
                                             ,   "includedirs")
  
     -- register api: on_action() to option
-    interp:api_register_on_script("option",     "check")
+    interp:api_register_on_script("option",     "check"
+                                            ,   "result")
 
     -- register api: before_action() to option
     interp:api_register_before_script("option", "check")
@@ -539,7 +540,7 @@ function project._check(options, opt)
 
         -- no this option?
         if not opt then
-            raise("invalid dependent option: %s", dep)
+            os.raise("invalid dependent option: %s", dep)
         end
 
         -- check this dependent option
