@@ -413,7 +413,8 @@ function project._interpreter()
                                             ,   "description")
     
     -- register api: add_values() to option
-    interp:api_register_add_values("option",    "links" 
+    interp:api_register_add_values("option",    "deps"
+                                            ,   "links" 
                                             ,   "cincludes" 
                                             ,   "cxxincludes" 
                                             ,   "cfuncs" 
@@ -438,6 +439,15 @@ function project._interpreter()
     -- register api: add_pathes() to option
     interp:api_register_add_pathes("option",    "linkdirs"
                                             ,   "includedirs")
+ 
+    -- register api: on_action() to option
+    interp:api_register_on_script("option",     "check")
+
+    -- register api: before_action() to option
+    interp:api_register_before_script("option", "check")
+
+    -- register api: after_action() to option
+    interp:api_register_after_script("option",  "check")
 
     -- register api: add_cfunc() to target
     interp:api_register("target", "add_cfunc", project._api_add_cfunc)
@@ -518,6 +528,28 @@ function project._interpreter()
     return interp
 end
 
+-- check option
+function project._check(options, opt)
+
+    -- exists the dependent options?
+    for _, dep in ipairs(table.wrap(opt:get("deps"))) do
+
+        -- get the dependent option
+        opt = options[dep]
+
+        -- no this option?
+        if not opt then
+            raise("invalid dependent option: %s", dep)
+        end
+
+        -- check this dependent option
+        project._check(options, opt)
+    end
+
+    -- check option
+    opt:check() 
+end
+
 -- get the project directory
 function project.directory()
 
@@ -545,7 +577,7 @@ function project.check()
 
     -- check all options
     for _, opt in pairs(options) do
-        opt:check()
+        project._check(options, opt)
     end
 
     -- leave toolchains environment
