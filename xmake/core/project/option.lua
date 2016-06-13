@@ -34,6 +34,7 @@ local config    = require("project/config")
 local cache     = require("project/cache")("local.option")
 local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
+local sandbox   = require("sandbox/sandbox")
 
 -- check link 
 function option:_check_link(sourcefile, objectfile, targetfile)
@@ -432,36 +433,23 @@ end
 -- check option
 function option:_check()
 
-    -- the option name
-    local name = self:name()
+    -- enable it?
+    local enable = self:get("enable")
+    if enable ~= nil and enable then
 
-    -- need check?
-    if config.get(name) == nil then
+        -- enable option
+        self:enable()
 
-        -- enable it?
-        local enable = self:get("enable")
-        if enable ~= nil and enable then
+    -- check option
+    elseif enable == nil and self:_check_condition() then
 
-            -- enable option
-            self:enable()
+        -- enable option
+        self:enable()
+    else
 
-        -- check option
-        elseif enable == nil and self:_check_condition() then
-
-            -- enable option
-            self:enable()
-        else
-
-            -- disable option
-            self:disable()
-        end
-
-    -- no check
-    elseif config.get(name) then
-
-        -- save this option to configure directly
-        self:save()
-    end    
+        -- disable option
+        self:disable()
+    end
 end
 
 -- enable this option
@@ -484,6 +472,13 @@ function option:disable()
     self:clear()
 end
 
+-- is enabled?
+function option:enabled()
+
+    -- ok?
+    return config.get(self:name())
+end
+
 -- attempt to check option 
 function option:check()
 
@@ -492,19 +487,44 @@ function option:check()
         return 
     end
 
-    -- the option scripts
-    local scripts =
-    {
-        self:get("check_before")
-    ,   self:get("check") or option._check
-    ,   self:get("check_after")
-    }
+    -- the option name
+    local name = self:name()
 
-    -- run the target scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(self)
+    -- need check?
+    if config.get(name) == nil then
+    
+        -- the option scripts
+        local scripts =
+        {
+            self:get("check_before")
+        ,   self:get("check") or option._check
+        ,   self:get("check_after")
+        }
+
+        -- run the target scripts
+        for i = 1, 3 do
+            local script = scripts[i]
+            if script ~= nil then
+                local ok, errors = sandbox.load(script, self)
+                if not ok then
+                    os.raise(errors)
+                end
+            end
+        end
+
+    -- no check
+    elseif config.get(name) then
+
+        -- save this option to configure directly
+        self:save()
+    end    
+
+    -- on result
+    local on_result = self:get("result")
+    if on_result ~= nil then
+        local ok, errors = sandbox.load(on_result, self, self:enabled())
+        if not ok then
+            os.raise(errors)
         end
     end
 
