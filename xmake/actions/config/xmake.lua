@@ -158,7 +158,6 @@ task("config")
 
                     ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
-
                     ,   {}
                     ,   {nil, "target",     "v",  "all",        "Configure for the given target."                               }
                     }

@@ -413,8 +413,7 @@ function project._interpreter()
                                             ,   "description")
     
     -- register api: add_values() to option
-    interp:api_register_add_values("option",    "deps"
-                                            ,   "links" 
+    interp:api_register_add_values("option",    "links" 
                                             ,   "cincludes" 
                                             ,   "cxxincludes" 
                                             ,   "cfuncs" 
@@ -429,6 +428,8 @@ function project._interpreter()
                                             ,   "mxxflags"
                                             ,   "ldflags" 
                                             ,   "vectorexts"
+                                            ,   "bindings"
+                                            ,   "rbindings"
                                             ,   "defines"
                                             ,   "defines_if_ok"
                                             ,   "defines_h_if_ok"
@@ -440,16 +441,6 @@ function project._interpreter()
     interp:api_register_add_pathes("option",    "linkdirs"
                                             ,   "includedirs")
  
-    -- register api: on_action() to option
-    interp:api_register_on_script("option",     "check"
-                                            ,   "result")
-
-    -- register api: before_action() to option
-    interp:api_register_before_script("option", "check")
-
-    -- register api: after_action() to option
-    interp:api_register_after_script("option",  "check")
-
     -- register api: add_cfunc() to target
     interp:api_register("target", "add_cfunc", project._api_add_cfunc)
 
@@ -788,11 +779,26 @@ function project.menu()
                     first = false
                 end
 
+                -- make bindings
+                local bindings = nil
+                if opt:get("bindings") then
+                    bindings = string.join(table.wrap(opt:get("bindings")), ',')
+                end
+                if opt:get("rbindings") then
+                    bindings = "!" .. string.join(table.wrap(opt:get("rbindings")), ",!")
+                end
+
+                -- make longname
+                local longname = name
+                if bindings ~= nil then
+                    longname = longname .. ":" .. bindings
+                end
+
                 -- append it
                 if opt:get("description") then
-                    table.insert(menu, {nil, name, "kv", default, opt:get("description")})
+                    table.insert(menu, {nil, longname, "kv", default, opt:get("description")})
                 else
-                    table.insert(menu, {nil, name, "kv", default, nil})
+                    table.insert(menu, {nil, longname, "kv", default, nil})
                 end
             end
         end
