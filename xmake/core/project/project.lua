@@ -314,6 +314,20 @@ function project._api_add_pkgdirs(interp, ...)
     interp:api_builtin_add_subdirs(pkgdirs)
 end
 
+-- load all plugins from the given directories
+function project._api_add_plugindirs(interp, ...)
+
+    -- get all directories
+    local plugindirs = {}
+    local dirs = table.join(...)
+    for _, dir in ipairs(dirs) do
+        table.insert(plugindirs, dir .. "/*")
+    end
+
+    -- add all plugins
+    interp:api_builtin_add_subdirs(plugindirs)
+end
+
 -- get interpreter
 function project._interpreter()
 
@@ -477,6 +491,12 @@ function project._interpreter()
 
     -- register api: add_pkgs() to root
     interp:api_register(nil, "add_pkgs",    interpreter.api_builtin_add_subdirs)
+
+    -- register api: add_plugindirs() to root
+    interp:api_register(nil, "add_plugindirs", project._api_add_plugindirs)
+
+    -- register api: add_plugins() to root
+    interp:api_register(nil, "add_plugins",    interpreter.api_builtin_add_subdirs)
 
     -- register api: deprecated
     deprecated_project.api_register(interp)
