@@ -43,9 +43,10 @@ platform("mingw")
        
         -- init the file formats
         _g.formats          = {}
-        _g.formats.static   = {"lib", ".a"}
-        _g.formats.object   = {"",    ".o"}
-        _g.formats.shared   = {"lib", ".so"}
+        _g.formats.static   = {"", ".lib"}
+        _g.formats.object   = {"", ".obj"}
+        _g.formats.shared   = {"", ".dll"}
+        _g.formats.binary   = {"", ".exe"}
      
         -- init the toolchains
         _g.tools            = {}
