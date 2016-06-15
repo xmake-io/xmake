@@ -116,6 +116,11 @@ function _build_object(target, index)
 
     -- run cmd with coroutine
     os.corun(command)
+
+    -- check the object file
+    while not os.isfile(objectfile) do
+        coroutine.yield()
+    end
 end
 
 -- make objects for the given target
