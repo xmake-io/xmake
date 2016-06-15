@@ -437,46 +437,28 @@ function option:_check()
     local enable = self:get("enable")
     if enable ~= nil and enable then
 
-        -- enable option
-        self:enable()
+        -- enable this option
+        config.set(self:name(), true)
+
+        -- save this option to configure 
+        self:save()
 
     -- check option
     elseif enable == nil and self:_check_condition() then
 
-        -- enable option
-        self:enable()
+        -- enable this option
+        config.set(self:name(), true)
+
+        -- save this option to configure 
+        self:save()
     else
 
-        -- disable option
-        self:disable()
+        -- disable this option
+        config.set(self:name(), false)
+
+        -- clear this option to configure 
+        self:clear()
     end
-end
-
--- enable this option
-function option:enable()
-
-    -- enable this option
-    config.set(self:name(), true)
-
-    -- save this option to configure 
-    self:save()
-end
-
--- disable this option
-function option:disable()
-
-    -- disable this option
-    config.set(self:name(), false)
-
-    -- clear this option to configure 
-    self:clear()
-end
-
--- is enabled?
-function option:enabled()
-
-    -- ok?
-    return config.get(self:name())
 end
 
 -- attempt to check option 
@@ -542,16 +524,8 @@ end
 -- save the option info to the cache
 function option:save()
 
-    -- remove functions first before saving option
-    local info = {}
-    for k, v in pairs(self._INFO) do
-        if type(v) ~= "function" then
-            info[k] = v
-        end
-    end
-
     -- save it
-    cache:set(self:name(), info)
+    cache:set(self:name(), self._INFO)
     cache:flush()
 end
 

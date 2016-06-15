@@ -89,6 +89,41 @@ function option._context()
     return contexts[#contexts]
 end
 
+-- get longname
+function option._longname(name)
+
+    -- the long name and bindings
+    --
+    -- .e.g test:xxx1,xxx2,xxx3
+    --
+    -- longname: test
+    -- bindings: xxx1 xxx2 xxx3
+    --
+    if name ~= nil then
+        return name:split(':')[1]
+    end
+end
+
+-- get bindings
+function option._bindings(name)
+
+    -- the long name and bindings
+    --
+    -- .e.g test:xxx1,xxx2,xxx3
+    --
+    -- longname: test
+    -- bindings: xxx1 xxx2 xxx3
+    --
+    if name ~= nil then
+        local names = name:split(':')
+        if names then
+            if names[2] then
+                return names[2]:split(',')
+            end
+        end
+    end
+end
+
 -- save context
 function option.save(taskname)
 
@@ -209,17 +244,30 @@ function option.init(menu)
 
             -- find this option
             local opt = nil
+            local longname = nil
             for _, o in ipairs(option._taskmenu().options) do
 
                 -- check
                 assert(o)
 
+                -- the short name
+                local shortname = o[1]
+
+                -- the long name and bindings
+                --
+                -- .e.g test:xxx1,xxx2,xxx3
+                --
+                -- longname: test
+                -- bindings: xxx1 xxx2 xxx3
+                --
+                longname = option._longname(o[2])
+
                 -- --key?
-                if prefix == 2 and key == o[2] then
+                if prefix == 2 and key == longname then
                     opt = o
                     break 
                 -- k?
-                elseif prefix == 1 and key == o[1] then
+                elseif prefix == 1 and key == shortname then
                     opt = o
                     break
                 end
@@ -283,7 +331,21 @@ function option.init(menu)
             end
 
             -- save option
-            context.options[option._ifelse(prefix == 1 and opt[2], opt[2], key)] = value
+            context.options[longname] = value
+
+            -- save bindings 
+            local bindings = option._bindings(opt[2])
+            if bindings then
+                for _, bindname in ipairs(bindings) do
+                    if bindname:startswith("!") then
+                        if type(value) == "boolean" then
+                            context.options[bindname:sub(2, -1)] = not value
+                        end
+                    else
+                        context.options[bindname] = value
+                    end
+                end
+            end
 
         -- task?
         elseif idx == 1 then
@@ -324,7 +386,7 @@ function option.init(menu)
                 local mode = o[3]
 
                 -- the name
-                local name = o[2]
+                local name = option._longname(o[2])
 
                 -- check
                 assert(o and ((mode ~= "v" and mode ~= "vs") or name))
@@ -347,7 +409,7 @@ function option.init(menu)
                 local mode = opt[3]
 
                 -- the name
-                local name = opt[2]
+                local name = option._longname(opt[2])
 
                 -- save value
                 if mode == "v" then
@@ -381,19 +443,22 @@ function option.init(menu)
     -- init the default value
     for _, o in ipairs(option._taskmenu().options) do
 
+        -- the long name
+        local longname = option._longname(o[2])
+
         -- key=value?
         if o[3] == "kv" then
 
             -- the key
-            local key = o[2] or o[1]
+            local key = longname or o[1]
             assert(key)
 
             -- save the default value 
             context.defaults[key] = o[4]    
         -- value with name?
-        elseif o[3] == "v" and o[2] then
+        elseif o[3] == "v" and longname then
             -- save the default value 
-            context.defaults[o[2]] = o[4]    
+            context.defaults[longname] = o[4]    
         end
     end
 
@@ -508,21 +573,24 @@ function option.defaults(task)
     if taskmenu then
         for _, o in ipairs(taskmenu.options) do
 
+            -- the long name
+            local longname = option._longname(o[2])
+
             -- key=value?
             if o[3] == "kv" then
 
                 -- the key
-                local key = o[2] or o[1]
+                local key = longname or o[1]
                 assert(key)
 
                 -- save the default value 
                 defaults[key] = o[4]    
 
             -- value with name?
-            elseif o[3] == "v" and o[2] then
+            elseif o[3] == "v" and longname then
 
                 -- save the default value 
-                defaults[o[2]] = o[4] 
+                defaults[longname] = o[4] 
             end
         end
     end
@@ -711,9 +779,9 @@ function option.show_options(options)
         local option_info   = ""
 
         -- append the shortname
-        local shortname = opt[1];
-        local name      = opt[2];
-        local mode      = opt[3];
+        local shortname = opt[1]
+        local name      = option._longname(opt[2])
+        local mode      = opt[3]
         if shortname then
             option_info = option_info .. "    -" .. shortname
             if mode == "kv" then

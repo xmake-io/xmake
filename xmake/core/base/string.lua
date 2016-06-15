@@ -110,6 +110,25 @@ function string:decode()
     return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
 end
 
+-- join array to string with the given separator
+function string.join(items, sep)
+
+    -- join them
+    local str = ""
+    local index = 1
+    local count = #items
+    for _, item in ipairs(items) do
+        str = str .. item
+        if index ~= count and sep ~= nil then
+            str = str .. sep
+        end
+        index = index + 1
+    end
+
+    -- ok?
+    return str
+end
+
 
 -- return module: string
 return string
