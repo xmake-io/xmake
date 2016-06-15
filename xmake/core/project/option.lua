@@ -430,37 +430,6 @@ function option:_check_condition()
     return true
 end
 
--- check option
-function option:_check()
-
-    -- enable it?
-    local enable = self:get("enable")
-    if enable ~= nil and enable then
-
-        -- enable this option
-        config.set(self:name(), true)
-
-        -- save this option to configure 
-        self:save()
-
-    -- check option
-    elseif enable == nil and self:_check_condition() then
-
-        -- enable this option
-        config.set(self:name(), true)
-
-        -- save this option to configure 
-        self:save()
-    else
-
-        -- disable this option
-        config.set(self:name(), false)
-
-        -- clear this option to configure 
-        self:clear()
-    end
-end
-
 -- attempt to check option 
 function option:check()
 
@@ -474,24 +443,32 @@ function option:check()
 
     -- need check?
     if config.get(name) == nil then
-    
-        -- the option scripts
-        local scripts =
-        {
-            self:get("check_before")
-        ,   self:get("check") or option._check
-        ,   self:get("check_after")
-        }
+       
+        -- enable it?
+        local enable = self:get("enable")
+        if enable ~= nil and enable then
 
-        -- run the target scripts
-        for i = 1, 3 do
-            local script = scripts[i]
-            if script ~= nil then
-                local ok, errors = sandbox.load(script, self)
-                if not ok then
-                    os.raise(errors)
-                end
-            end
+            -- enable this option
+            config.set(name, true)
+
+            -- save this option to configure 
+            self:save()
+
+        -- check option
+        elseif enable == nil and self:_check_condition() then
+
+            -- enable this option
+            config.set(name, true)
+
+            -- save this option to configure 
+            self:save()
+        else
+
+            -- disable this option
+            config.set(name, false)
+
+            -- clear this option to configure 
+            self:clear()
         end
 
     -- no check
@@ -500,15 +477,6 @@ function option:check()
         -- save this option to configure directly
         self:save()
     end    
-
-    -- on result
-    local on_result = self:get("result")
-    if on_result ~= nil then
-        local ok, errors = sandbox.load(on_result, self, self:enabled())
-        if not ok then
-            os.raise(errors)
-        end
-    end
 
     -- checked
     self._CHECKED = true

@@ -520,28 +520,6 @@ function project._interpreter()
     return interp
 end
 
--- check option
-function project._check(options, opt)
-
-    -- exists the dependent options?
-    for _, dep in ipairs(table.wrap(opt:get("deps"))) do
-
-        -- get the dependent option
-        opt = options[dep]
-
-        -- no this option?
-        if not opt then
-            os.raise("invalid dependent option: %s", dep)
-        end
-
-        -- check this dependent option
-        project._check(options, opt)
-    end
-
-    -- check option
-    opt:check() 
-end
-
 -- get the project directory
 function project.directory()
 
@@ -569,7 +547,7 @@ function project.check()
 
     -- check all options
     for _, opt in pairs(options) do
-        project._check(options, opt)
+        opt:check() 
     end
 
     -- leave toolchains environment
