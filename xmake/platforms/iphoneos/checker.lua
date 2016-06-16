@@ -41,21 +41,39 @@ end
 -- check the toolchains
 function _check_toolchains(config)
 
-    -- done
-    checker.check_toolchain(config, "cc",   "xcrun -sdk iphoneos ", "clang",    "the c compiler") 
-    checker.check_toolchain(config, "cxx",  "xcrun -sdk iphoneos ", "clang",    "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",  "xcrun -sdk iphoneos ", "clang++",  "the c++ compiler") 
-    checker.check_toolchain(config, "mm",   "xcrun -sdk iphoneos ", "clang",    "the objc compiler") 
-    checker.check_toolchain(config, "mxx",  "xcrun -sdk iphoneos ", "clang++",  "the objc++ compiler") 
-    checker.check_toolchain(config, "mxx",  "xcrun -sdk iphoneos ", "clang",    "the objc++ compiler") 
-    checker.check_toolchain(config, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl xcrun -sdk iphoneos "), "clang", "the assember", _check_as)
-    checker.check_toolchain(config, "ld",   "xcrun -sdk iphoneos ", "clang++",  "the linker") 
-    checker.check_toolchain(config, "ld",   "xcrun -sdk iphoneos ", "clang",    "the linker") 
-    checker.check_toolchain(config, "ar",   "xcrun -sdk iphoneos ", "ar",       "the static library linker") 
-    checker.check_toolchain(config, "sh",   "xcrun -sdk iphoneos ", "clang++",  "the shared library linker") 
-    checker.check_toolchain(config, "sh",   "xcrun -sdk iphoneos ", "clang",    "the shared library linker") 
-    checker.check_toolchain(config, "sc",   "xcrun -sdk iphoneos ", "swiftc",   "the swift compiler") 
-    checker.check_toolchain(config, "lipo", "xcrun -sdk iphoneos ", "lipo",     "the universal files creater") 
+    -- iphoneos or iphonesimulator?
+    local arch = config.get("arch")
+    if arch == "i386" or arch == "x86_64" then
+        checker.check_toolchain(config, "cc",   "xcrun -sdk iphonesimulator ", "clang",    "the c compiler") 
+        checker.check_toolchain(config, "cxx",  "xcrun -sdk iphonesimulator ", "clang",    "the c++ compiler") 
+        checker.check_toolchain(config, "cxx",  "xcrun -sdk iphonesimulator ", "clang++",  "the c++ compiler") 
+        checker.check_toolchain(config, "mm",   "xcrun -sdk iphonesimulator ", "clang",    "the objc compiler") 
+        checker.check_toolchain(config, "mxx",  "xcrun -sdk iphonesimulator ", "clang++",  "the objc++ compiler") 
+        checker.check_toolchain(config, "mxx",  "xcrun -sdk iphonesimulator ", "clang",    "the objc++ compiler") 
+        checker.check_toolchain(config, "as",   "xcrun -sdk iphonesimulator ", "clang",     "the assember") 
+        checker.check_toolchain(config, "ld",   "xcrun -sdk iphonesimulator ", "clang++",  "the linker") 
+        checker.check_toolchain(config, "ld",   "xcrun -sdk iphonesimulator ", "clang",    "the linker") 
+        checker.check_toolchain(config, "ar",   "xcrun -sdk iphonesimulator ", "ar",       "the static library linker") 
+        checker.check_toolchain(config, "sh",   "xcrun -sdk iphonesimulator ", "clang++",  "the shared library linker") 
+        checker.check_toolchain(config, "sh",   "xcrun -sdk iphonesimulator ", "clang",    "the shared library linker") 
+        checker.check_toolchain(config, "sc",   "xcrun -sdk iphonesimulator ", "swiftc",   "the swift compiler") 
+        checker.check_toolchain(config, "lipo", "xcrun -sdk iphonesimulator ", "lipo",     "the universal files creater")
+    else
+        checker.check_toolchain(config, "cc",   "xcrun -sdk iphoneos ", "clang",    "the c compiler") 
+        checker.check_toolchain(config, "cxx",  "xcrun -sdk iphoneos ", "clang",    "the c++ compiler") 
+        checker.check_toolchain(config, "cxx",  "xcrun -sdk iphoneos ", "clang++",  "the c++ compiler") 
+        checker.check_toolchain(config, "mm",   "xcrun -sdk iphoneos ", "clang",    "the objc compiler") 
+        checker.check_toolchain(config, "mxx",  "xcrun -sdk iphoneos ", "clang++",  "the objc++ compiler") 
+        checker.check_toolchain(config, "mxx",  "xcrun -sdk iphoneos ", "clang",    "the objc++ compiler") 
+        checker.check_toolchain(config, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl xcrun -sdk iphoneos "), "clang", "the assember", _check_as)
+        checker.check_toolchain(config, "ld",   "xcrun -sdk iphoneos ", "clang++",  "the linker") 
+        checker.check_toolchain(config, "ld",   "xcrun -sdk iphoneos ", "clang",    "the linker") 
+        checker.check_toolchain(config, "ar",   "xcrun -sdk iphoneos ", "ar",       "the static library linker") 
+        checker.check_toolchain(config, "sh",   "xcrun -sdk iphoneos ", "clang++",  "the shared library linker") 
+        checker.check_toolchain(config, "sh",   "xcrun -sdk iphoneos ", "clang",    "the shared library linker") 
+        checker.check_toolchain(config, "sc",   "xcrun -sdk iphoneos ", "swiftc",   "the swift compiler") 
+        checker.check_toolchain(config, "lipo", "xcrun -sdk iphoneos ", "lipo",     "the universal files creater") 
+    end
 end
 
 -- init it
