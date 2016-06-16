@@ -120,6 +120,27 @@ function deprecated_project._api_is_option(interp, ...)
     end
 end
 
+-- load all packages from the given directories
+function deprecated_project._api_add_pkgdirs(interp, ...)
+
+    -- get all directories
+    local pkgdirs = {}
+    local dirs = table.join(...)
+    for _, dir in ipairs(dirs) do
+        table.insert(pkgdirs, dir .. "/*.pkg")
+    end
+
+    -- add all packages
+    interp:api_builtin_add_subdirs(pkgdirs)
+end
+
+-- load the given packages
+function deprecated_project._api_add_pkgs(interp, ...)
+
+    -- add all packages
+    interp:api_builtin_add_subdirs(...)
+end
+
 -- the current os is belong to the given os?
 function deprecated_project._api_os(interp, ...)
 
@@ -252,6 +273,50 @@ function deprecated_project._api_options(interp, ...)
     return deprecated_project._api_is_option(interp, ...)
 end
 
+-- load all packages from the given directories
+function deprecated_project._api_add_packagedirs(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- deprecated
+    deprecated.add("add_pkgdirs(\"%s\")", "add_packagedirs(\"%s\")", values)
+
+    -- done
+    return deprecated_project._api_add_pkgdirs(interp, ...)
+end
+
+-- load the given packages
+function deprecated_project._api_add_packages(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- deprecated
+    deprecated.add("add_pkgs(\"%s\")", "add_packages(\"%s\")", values)
+
+    -- done
+    return deprecated_project._api_add_pkgs(interp, ...)
+end
+
 -- register api
 function deprecated_project.api_register(interp)
 
@@ -269,6 +334,12 @@ function deprecated_project.api_register(interp)
     interp:api_register(nil, "plats",   deprecated_project._api_plats)
     interp:api_register(nil, "archs",   deprecated_project._api_archs)
     interp:api_register(nil, "options", deprecated_project._api_options)
+
+    -- register api: add_pkgdirs() to root
+    interp:api_register(nil, "add_pkgdirs", deprecated_project._api_add_packagedirs)
+
+    -- register api: add_pkgs() to root
+    interp:api_register(nil, "add_pkgs",    deprecated_project._api_add_packages)
 
     -- register api: set_values() to option
     deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "enable")
