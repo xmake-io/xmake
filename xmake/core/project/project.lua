@@ -486,17 +486,14 @@ function project._interpreter()
     interp:api_register(nil, "is_arch",     project._api_is_arch)
     interp:api_register(nil, "is_option",   project._api_is_option)
 
-    -- register api: add_pkgdirs() to root
-    interp:api_register(nil, "add_pkgdirs", project._api_add_pkgdirs)
+    -- register api: add_packagedirs() to root
+    interp:api_register(nil, "add_packagedirs", project._api_add_pkgdirs)
 
-    -- register api: add_pkgs() to root
-    interp:api_register(nil, "add_pkgs",    interpreter.api_builtin_add_subdirs)
+    -- register api: add_packages() to root
+    interp:api_register(nil, "add_packages",    interpreter.api_builtin_add_subdirs)
 
     -- register api: add_plugindirs() to root
     interp:api_register(nil, "add_plugindirs", project._api_add_plugindirs)
-
-    -- register api: add_plugins() to root
-    interp:api_register(nil, "add_plugins",    interpreter.api_builtin_add_subdirs)
 
     -- register api: deprecated
     deprecated_project.api_register(interp)
