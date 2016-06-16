@@ -467,6 +467,9 @@ function project._interpreter()
     -- register api: add_cxxfuncs() to target
     interp:api_register("target", "add_cxxfuncs", project._api_add_cxxfuncs)
 
+    -- register api: add_packages() to target
+    interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
+
     -- register api: set_category()
     --
     -- category: main, action, plugin, task (default)
@@ -488,9 +491,6 @@ function project._interpreter()
 
     -- register api: add_packagedirs() to root
     interp:api_register(nil, "add_packagedirs", project._api_add_pkgdirs)
-
-    -- register api: add_packages() to root
-    interp:api_register(nil, "add_packages",    interpreter.api_builtin_add_subdirs)
 
     -- register api: add_plugindirs() to root
     interp:api_register(nil, "add_plugindirs", project._api_add_plugindirs)
