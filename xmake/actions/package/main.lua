@@ -184,6 +184,16 @@ end
 -- main
 function main()
 
+    -- --archs? deprecated 
+    if option.get("archs") then
+
+        -- load config
+        config.load()
+            
+        -- deprecated
+        raise("please run \"xmake m package %s\" instead of \"xmake p --archs=%s\"", config.get("plat"), option.get("archs"))
+    end
+
     -- get the target name
     local targetname = option.get("target")
 
