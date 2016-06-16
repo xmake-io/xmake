@@ -30,7 +30,7 @@ platform("iphoneos")
     set_hosts("macosx")
 
     -- set archs
-    set_archs("armv7", "armv7s", "arm64")
+    set_archs("armv7", "armv7s", "arm64", "i386", "x86_64")
 
     -- set checker
     set_checker("checker")
@@ -64,30 +64,59 @@ platform("iphoneos")
         _g.tools.ex         = config.get("ar") 
         _g.tools.sc         = config.get("sc") 
 
-        -- init flags for architecture
-        local arch          = config.get("arch")
-        local target_minver = config.get("target_minver")
-        _g.cxflags = { "-arch " .. arch, "-miphoneos-version-min=" .. target_minver }
-        _g.mxflags = { "-arch " .. arch, "-miphoneos-version-min=" .. target_minver }
-        _g.asflags = { "-arch " .. arch, "-miphoneos-version-min=" .. target_minver }
-        _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
-        _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
-        _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) }
+        -- iphoneos or iphonesimulator?
+        local arch = config.get("arch")
+        if arch == "i386" or arch == "x86_64" then
 
-        -- init flags for the xcode sdk directory
-        local xcode_dir     = config.get("xcode_dir")
-        local xcode_sdkver  = config.get("xcode_sdkver")
-        local xcode_sdkdir  = xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. xcode_sdkver .. ".sdk"
-        insert(_g.cxflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.ldflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.shflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.scflags, "-sdk " .. xcode_sdkdir)
+            -- init flags for architecture
+            local target_minver = config.get("target_minver")
+            _g.cxflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
+            _g.mxflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
+            _g.asflags = { "-arch " .. arch, "-mios-simulator-version-min=" .. target_minver }
+            _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+            _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+            _g.ldflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+            _g.shflags = { "-arch " .. arch, "-Xlinker -objc_abi_version", "-Xlinker 2 -stdlib=libc++", "-Xlinker -no_implicit_dylibs", "-fobjc-link-runtime", "-mios-simulator-version-min=" .. target_minver }
+            _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) }
 
-        -- save swift link directory for tools
-        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos")
+            -- init flags for the xcode sdk directory
+            local xcode_dir     = config.get("xcode_dir")
+            local xcode_sdkver  = config.get("xcode_sdkver")
+            local xcode_sdkdir  = xcode_dir .. "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator" .. xcode_sdkver .. ".sdk"
+            insert(_g.cxflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.ldflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.shflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.scflags, "-sdk " .. xcode_sdkdir)
 
+            -- save swift link directory for tools
+            config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator")
+        else
+
+            -- init flags for architecture
+            local target_minver = config.get("target_minver")
+            _g.cxflags = { "-arch " .. arch, "-miphoneos-version-min=" .. target_minver }
+            _g.mxflags = { "-arch " .. arch, "-miphoneos-version-min=" .. target_minver }
+            _g.asflags = { "-arch " .. arch, "-miphoneos-version-min=" .. target_minver }
+            _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
+            _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", "-miphoneos-version-min=" .. target_minver }
+            _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) }
+
+            -- init flags for the xcode sdk directory
+            local xcode_dir     = config.get("xcode_dir")
+            local xcode_sdkver  = config.get("xcode_sdkver")
+            local xcode_sdkdir  = xcode_dir .. "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS" .. xcode_sdkver .. ".sdk"
+            insert(_g.cxflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.ldflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.shflags, "-isysroot " .. xcode_sdkdir)
+            insert(_g.scflags, "-sdk " .. xcode_sdkdir)
+
+            -- save swift link directory for tools
+            config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos")
+        end
     end)
 
     -- set menu
