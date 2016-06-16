@@ -4,10 +4,10 @@
 PRO_NAME 			= xmake
 
 # the project major version
-PRO_VERSION_MAJOR 	= 1
+PRO_VERSION_MAJOR 	= 2
 
 # the project minor version
-PRO_VERSION_MINOR 	= 1
+PRO_VERSION_MINOR 	= 0
 
 # the project alter version
 PRO_VERSION_ALTER 	= 1
