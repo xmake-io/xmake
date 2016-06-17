@@ -1,4 +1,4 @@
-##The Automatic Cross-platform Build Tool [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![donate](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://github.com/waruqi/xmake/wiki/donate)
+##The Automatic Cross-platform Build Tool [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![donate](http://tboox.org/static/img/donate.gif)](http://tboox.org/donation/)
 
 ## introduction
 
@@ -11,14 +11,13 @@ It is similar to cmake, automake, premake, but more convenient and easy to use.
 1. create projects and supports many project templates
 2. support c/c++, objc/c++, swift and assembly language
 3. automatically probe the host environment and configure project 
-4. build and rebuild project 
-5. clean generated target files
-6. package the project targets automatically
-7. install target
-8. run a given target
-9. describe the project file using lua script, more flexible and simple
-10. custom platforms and toolchains
-11. custom rules for package/compiler/linker
+4. provide some built-in actions (config, build, package, clean, install, uninstall and run)
+5. provide some built-in plugins (doxygen, macro, project) 
+6. project some built-in macros (batch packaging)
+7. describe the project file using lua script, more flexible and simple
+8. custom packages, platforms, plugins, templates, tasks, macros, options and actions
+9. do not generate makefile and build project directly
+10. support multitasking with argument: -j 
 
 ####examples
 
@@ -37,16 +36,14 @@ configure project:
 
    This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
 
-   The configuration arguments will be cached and you need not input all arguments each time.
-
        xmake f -p iphoneos -m debug
-    or xmake f --ldflags="-Lxxx -lxxx"
     or xmake f --plat=macosx --arch=x86_64
+    or xmake f -p windows
     or xmake config --plat=iphoneos --mode=debug
-    or xmake config --plat=iphonesimulator
     or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-    or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
-    or xmake config --cxflags="-Dxxx -Ixxx"
+    or xmake config -p linux -a i386
+    or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
+    or xmake config -p mingw --sdk=/mingwsdk
     or xmake config --help
 
 compile project：
@@ -63,11 +60,17 @@ run target：
 package all：
 
        xmake p
-    or xmake p --archs="armv7, arm64"
     or xmake package
     or xmake package console
     or xmake package -o /tmp
     or xmake package --output=/tmp
+
+package all archs using macro:
+       
+       xmake m package 
+    or xmake m package -p iphoneos
+    or xmake m package -p macosx -f "-m debug" -o /tmp/
+    or xmake m package --help
 
 install targets：
 
@@ -84,6 +87,7 @@ or run:
     or xmake --help
     or xmake config --help
     or xmake package --help
+    or xmake macro --help
     ...
 
 The simple xmake.lua file:
@@ -160,7 +164,7 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 4. 支持创建模板工程、配置项目、编译项目、运行、打包、安装和卸载等常用功能（后续还会增加：自动生成文档、调试等模块）
 
-5. 支持编译c/c++/objc/swift成静态库、动态库、命令行可执行程序（后续还会增加：mac、ios、android的app的生成规则）
+5. 支持编译c/c++/objc/swift成静态库、动态库、命令行可执行程序
 
 6. 提供丰富的工程描述api，使用简单灵活，例如添加编译文件只需（还支持过滤排除）：
 
@@ -170,15 +174,25 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 8. 支持自定义编译配置开关，例如如果在工程描述文件中增加了enable_xxx的开关，那么配置编译的时候就可以手动进行配置来启用它：
 
-   `xmake config --enable_xxx=true`
+   `xmake config --enable_xxx=y`
 
 9. 提供一键打包功能，不管在哪个平台上进行打包，都只需要执行一条相同的命令，非常的方便
 
-10. 支持自定义编译工具和规则，例如想要增加对masm/yasm的编译规则，只需将自己写的masm.lua/yasm.lua规则文件，放到当前项目目录下即可。。
+10. 支持全局配置，一些常用的项目配置，例如工具链、规则描述等等，都可以进行全局配置，这样就不需要每次编译不同工程，都去配置一遍
 
-11. 支持全局配置，一些常用的项目配置，例如工具链、规则描述等等，都可以进行全局配置，这样就不需要每次编译不同工程，都去配置一遍
+11. 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
 
-12. 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
+12. 支持插件扩展、平台扩展、模板扩展、选项自定义等高级功能
+
+13. 提供一些内置的常用插件（例如：自动生成doxygen文档插件，宏脚本记录和运行插件）
+
+14. 宏记录插件里面提供了一些内置的宏脚本（例如：批量打包一个平台的所有archs等），也可以在命令行中手动记录宏并回放执行
+
+15. 提供强大的task任务机制
+
+16. 不依赖makefile和make，实现直接编译，内置自动多任务加速编译, xmake是一个真正的构架工具，而不仅仅是一个工程文件生成器
+
+17. 自动检测ccache，进行自动缓存提升构建速度
 
 ####简单例子
 
@@ -196,16 +210,15 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 配置工程：
 
    这个是可选的步骤，如果只想编译当前主机平台的项目，是可以不用配置的，默认编译release版本。
-   当然每次配置都会被缓存，不需要每次全部重新配置。
 
        xmake f -p iphoneos -m debug
-    or xmake f --ldflags="-Lxxx -lxxx"
     or xmake f --plat=macosx --arch=x86_64
+    or xmake f -p windows
     or xmake config --plat=iphoneos --mode=debug
-    or xmake config --plat=iphonesimulator
     or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-    or xmake config --cross=i386-mingw32- --toolchains=/xxx/bin
-    or xmake config --cxflags="-Dxxx -Ixxx"
+    or xmake config -p linux -a i386
+    or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
+    or xmake config -p mingw --sdk=/mingwsdk
     or xmake config --help
 
 编译工程：
@@ -222,11 +235,17 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 打包所有：
 
        xmake p
-    or xmake p --archs="armv7, arm64"
     or xmake package
     or xmake package console
     or xmake package -o /tmp
     or xmake package --output=/tmp
+
+通过宏脚本打包所有架构:
+       
+       xmake m package 
+    or xmake m package -p iphoneos
+    or xmake m package -p macosx -f "-m debug" -o /tmp/
+    or xmake m package --help
 
 安装目标：
 
@@ -243,6 +262,7 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
     or xmake --help
     or xmake config --help
     or xmake package --help
+    or xmake macro --help
     ...
 
 #### 一些使用xmake的项目：
@@ -254,13 +274,10 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 
 ####后续工作
 
-1. 完善打包模块，支持对ios、mac、android的app进行一键打包和签名，生成.ipa、.apk、.app、.deb、.rmp的应用和安装包文件
-2. 完善安装功能，支持对ios、android的app进行安装到设备
-3. 实现调试功能，实现在pc、ios、android等设备进行真机调试
-4. 实现自动生成doxygen文档功能
-5. 增加一些实用的工程描述api，例如：下载api，可以自动下载缺少的依赖库等等。。
-6. 解析automake、cmake的工程，并自动生成xmake的描述文件，实现无缝编译（如果这个实现成功的话，以后移植编译一些开源代码就更方便了）
-7. 实现插件化管理，可以扩展自己的命令、脚本、api、编译平台和工具链
+1. 实现生成.ipa、.apk、.app、.deb、.rmp的打包插件
+2. 实现包的自动依赖管理，如果依赖包不存在，会去自动下载编译安装后，继续进行构建，支持交叉平台的包管理
+3. 实现转换automake、cmake的工到xmake的描述文件的插件，实现无缝编译
+4. 实现vs、xcode等工程文件生成插件
 
 ####简单例子
 
