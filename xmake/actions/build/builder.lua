@@ -116,11 +116,6 @@ function _build_object(target, index)
 
     -- run cmd with coroutine
     os.corun(command)
-
-    -- check the object file
-    while not os.isfile(objectfile) do
-        coroutine.yield()
-    end
 end
 
 -- make objects for the given target
@@ -136,7 +131,7 @@ function _build_objects(target)
     repeat
 
         -- consume tasks
-        local finished = {}
+        local pendings = {}
         for i, task in ipairs(tasks) do
 
             -- get job
@@ -145,22 +140,20 @@ function _build_objects(target)
             -- get job index
             local job_index = task[2]
 
-            -- get status
+            -- pending?
             local status = coroutine.status(job)
+            if status ~= "dead" then
 
-            -- finished?
-            if status == "dead" then
-                table.insert(finished, i)
-            else
                 -- resume it
                 coroutine.resume(job, job_index)
+
+                -- append the pending task
+                table.insert(pendings, task)
             end
         end
 
-        -- remove finished tasks
-        for _, i in ipairs(finished) do
-            table.remove(tasks, i)
-        end
+        -- update the pending tasks
+        tasks = pendings
 
         -- produce tasks
         while #tasks < jobs and index <= total do
