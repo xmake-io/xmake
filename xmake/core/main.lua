@@ -91,7 +91,7 @@ function main._init()
     assert(projectdir)
 
     -- init the xmake.lua file path
-    local projectfile = option.find(xmake._ARGV, "file", "f") or xmake._PROJECT_FILE
+    local projectfile = option.find(xmake._ARGV, "file", "F") or xmake._PROJECT_FILE
     if projectfile and not path.is_absolute(projectfile) then
         projectfile = path.absolute(projectfile, projectdir)
     end
