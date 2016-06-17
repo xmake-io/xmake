@@ -80,7 +80,11 @@ function _make_for_target(files, target)
     if #defines ~= 0 then
         file:print("// defines")
         for _, define in ipairs(defines) do
-            file:print("#define %s 1", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
+            if define:find("=") then
+                file:print("#define %s", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
+            else
+                file:print("#define %s 1", define:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
+            end
         end
         file:print("")
     end
