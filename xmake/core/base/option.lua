@@ -501,6 +501,242 @@ function option.find(argv, name, shortname)
     end
 end
 
+-- parse arguments with the given options
+function option.parse(argv, options)
+
+    -- check
+    assert(argv and options)
+
+    -- parse arguments
+    local results   = {}
+    local argkv_end = false
+    local _iter, _s, _k = ipairs(argv)
+    while true do
+
+        -- the idx and arg
+        local idx, arg = _iter(_s, _k)
+
+        -- end?
+        _k = idx
+        if idx == nil then break end
+
+        -- parse key and value
+        local key, value
+        local i = arg:find("=", 1, true)
+
+        -- key=value?
+        if i and not argkv_end then
+            key = arg:sub(1, i - 1)
+            value = arg:sub(i + 1)
+        -- only key?
+        else
+            key = arg
+            value = true
+        end
+
+        -- --key?
+        local prefix = 0
+        if not argkv_end and key:startswith("--") then
+            key = key:sub(3)
+            prefix = 2
+        -- -k?
+        elseif not argkv_end and key:startswith("-") then
+            key = key:sub(2)
+            prefix = 1
+        end
+
+        -- check key
+        if prefix and #key == 0 then
+
+            -- failed
+            return nil, "invalid option: " .. arg
+        end
+
+        -- --key=value or -k value or -k?
+        if prefix ~= 0 then
+
+            -- find this option
+            local opt = nil
+            local longname = nil
+            for _, o in ipairs(options) do
+
+                -- check
+                assert(o)
+
+                -- the short name
+                local shortname = o[1]
+
+                -- the long name and bindings
+                --
+                -- .e.g test:xxx1,xxx2,xxx3
+                --
+                -- longname: test
+                -- bindings: xxx1 xxx2 xxx3
+                --
+                longname = option._longname(o[2])
+
+                -- --key?
+                if prefix == 2 and key == longname then
+                    opt = o
+                    break 
+                -- k?
+                elseif prefix == 1 and key == shortname then
+                    opt = o
+                    break
+                end
+            end
+
+            -- not found?
+            if not opt then
+
+                -- failed
+                return nil, "invalid option: " .. arg
+            end
+
+            -- -k value? continue to get the value
+            if prefix == 1 and opt[3] == "kv" then
+
+                -- get the next idx and arg
+                idx, arg = _iter(_s, _k)
+
+                -- exists value?
+                _k = idx
+                if idx == nil or arg:startswith("-") then 
+
+                    -- failed
+                    return nil, "invalid option: " .. option._ifelse(idx, arg, key)
+                end
+
+                -- get value
+                value = arg
+            end
+
+            -- check mode
+            if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
+
+                -- failed
+                return nil, "invalid option: " .. arg
+            end
+
+            -- value is "true" or "false", translate it
+            if type(value) == "string" then
+                if value == "true" or value == "yes" or value == "y" then value = true
+                elseif value == "false" or value == "no" or value == "n" then value = false
+                end
+            end
+
+            -- save option
+            results[longname] = value
+
+            -- save bindings 
+            local bindings = option._bindings(opt[2])
+            if bindings then
+                for _, bindname in ipairs(bindings) do
+                    if bindname:startswith("!") then
+                        if type(value) == "boolean" then
+                            results[bindname:sub(2, -1)] = not value
+                        end
+                    else
+                        results[bindname] = value
+                    end
+                end
+            end
+
+        -- value?
+        else 
+
+            -- stop to parse key-value arguments
+            argkv_end = true
+
+            -- find a value option with name
+            local opt = nil
+            for _, o in ipairs(options) do
+
+                -- the mode
+                local mode = o[3]
+
+                -- the name
+                local name = option._longname(o[2])
+
+                -- check
+                assert(o and ((mode ~= "v" and mode ~= "vs") or name))
+
+                -- is value and with name?
+                if mode == "v" and name and not results[name] then
+                    opt = o
+                    break 
+                -- is values and with name?
+                elseif mode == "vs" and name then
+                    opt = o
+                    break
+                end
+            end
+
+            -- ok? save this value with name opt[2]
+            if opt then 
+
+                -- the mode
+                local mode = opt[3]
+
+                -- the name
+                local name = option._longname(opt[2])
+
+                -- save value
+                if mode == "v" then
+                    results[name] = key
+                elseif mode == "vs" then
+                    -- the option
+                    local o = results[name]
+                    if not o then
+                        results[name] = {}
+                        o = results[name]
+                    end
+
+                    -- append value
+                    table.insert(o, key)
+                end
+            else
+           
+                -- failed
+                return nil, "invalid option: " .. arg
+            end
+
+        end
+    end
+
+    -- init the default value
+    for _, o in ipairs(options) do
+
+        -- the long name
+        local longname = option._longname(o[2])
+
+        -- key=value?
+        if o[3] == "kv" then
+
+            -- the key
+            local key = longname or o[1]
+            assert(key)
+
+            -- save the default value 
+            if results[key] == nil then
+                results[key] = o[4]
+            end
+
+        -- value with name?
+        elseif o[3] == "v" and longname then
+
+            -- save the default value 
+            if results[longname] == nil then
+                results[longname] = o[4]    
+            end
+        end
+    end
+
+    -- ok
+    return results
+end
+
+
 -- get the current task name
 function option.taskname()
 

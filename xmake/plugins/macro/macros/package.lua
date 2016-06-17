@@ -21,9 +21,18 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
+
+-- the options
+local options =
+{
+    {'p', "plat",       "kv",  os.host(),   "Set the platform."                                    }
+,   {'f', "config",     "kv",  nil,         "Pass the config arguments to \"xmake config\" .."     }
+,   {'o', "outputdir",  "kv",  nil,         "Set the output directory of the package."             }
+}
 
 -- package all
 --
@@ -35,25 +44,26 @@ import("core.platform.platform")
 --
 function main(argv)
 
-    -- get plat
-    local plat = argv[1] or os.host()
-    if plat == "." then
-        plat = os.host()
-    end
-
-    -- get args
-    local args = argv[2] or ""
+    -- parse arguments
+    local args = option.parse(argv, options, "Package all architectures for the given the platform."
+                                           , ""
+                                           , "Usage: xmake macro package [options]")
 
     -- package all archs
+    local plat = args.plat
     for _, arch in ipairs(platform.archs(plat)) do
 
         -- package it
-        os.exec("xmake f -p %s -a %s %s", plat, arch, args)
-        os.exec("xmake p")
+        os.exec("xmake f -p %s -a %s %s", plat, arch, args.config or "")
+        if args.outputdir then
+            os.exec("xmake p -o %s", args.outputdir)
+        else
+            os.exec("xmake p")
+        end
     end
 
     -- package universal for iphoneos, watchos ...
-    if plat:startswith("iphone") or plat:startswith("watch") then
+    if plat == "iphoneos" or plat == "watchos" then
 
         -- load configure
         config.load()
@@ -62,7 +72,7 @@ function main(argv)
         project.load()
 
         -- the outputdir directory
-        local outputdir = config.get("buildir")
+        local outputdir = args.outputdir or config.get("buildir")
 
         -- package all targets
         for _, target in pairs(project.targets()) do
