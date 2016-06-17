@@ -129,7 +129,7 @@ MMFLAGS 			=
 # ldflags
 LDFLAGS_RELEASE 	= 
 LDFLAGS_DEBUG 		=  
-LDFLAGS 			= -m$(BITS) -all_load -pagezero_size 10000 -image_base 100000000
+LDFLAGS 			= -m$(BITS) -all_load -pagezero_size 10000 -image_base 100000000 -mmacosx-version-min=10.7
 LDFLAGS-L 			= -L
 LDFLAGS-l 			= -l
 LDFLAGS-f 			=
@@ -157,7 +157,7 @@ ARFLAGS-o 			=
 
 # shflags
 SHFLAGS_RELEASE 	= -s
-SHFLAGS 			= $(ARCH_LDFLAGS) -dynamiclib
+SHFLAGS 			= $(ARCH_LDFLAGS) -dynamiclib -mmacosx-version-min=10.7
 
 # include directory
 INC_DIR 			+= /usr/include /usr/local/include
