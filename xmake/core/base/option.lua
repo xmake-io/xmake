@@ -204,7 +204,7 @@ function option.init(menu)
         -- parse key and value
         local key, value
         local i = arg:find("=", 1, true)
-
+ 
         -- key=value?
         if i and not argkv_end then
             key = arg:sub(1, i - 1)
@@ -294,7 +294,7 @@ function option.init(menu)
 
                 -- exists value?
                 _k = idx
-                if idx == nil or arg:startswith("-") then 
+                if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
 
                     -- print menu
                     option.show_menu(context.taskname)
@@ -601,7 +601,7 @@ function option.parse(argv, options)
 
                 -- exists value?
                 _k = idx
-                if idx == nil or arg:startswith("-") then 
+                if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
 
                     -- failed
                     return nil, "invalid option: " .. option._ifelse(idx, arg, key)
