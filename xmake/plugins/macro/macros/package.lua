@@ -38,9 +38,10 @@ local options =
 --
 -- .e.g
 -- xmake m package 
--- xmake m package . "-m debug"
--- xmake m package linux
--- xmake m package iphoneos "-m debug --xxx ..."
+-- xmake m package -f "-m debug"
+-- xmake m package -p linux
+-- xmake m package -p iphoneos -f "-m debug --xxx ..." -o /tmp/xxx
+-- xmake m package -f \"--mode=debug\"
 --
 function main(argv)
 
