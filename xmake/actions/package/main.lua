@@ -28,16 +28,6 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 
--- package binary 
-function _package_binary(target)
-
-    -- the output directory
-    local outputdir = option.get("outputdir") or config.get("buildir")
-
-    -- copy the target file
-    os.cp(target:targetfile(), format("%s/%s.pkg/bin/$(mode)/$(plat)/$(arch)/%s", outputdir, target:name(), path.filename(target:targetfile()))) 
-end
-
 -- package library 
 function _package_library(target)
 
@@ -123,7 +113,7 @@ function _package_target(target)
     -- get script 
     local scripts =
     {
-        binary = _package_binary
+        binary = function (target) end
     ,   static = _package_library
     ,   shared = _package_library
     }
