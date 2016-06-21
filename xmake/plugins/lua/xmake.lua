@@ -49,7 +49,11 @@ task("lua")
         end
 
         -- import script
-        import("scripts." .. name).main(option.get("arguments"))
+        if os.isfile(name) then
+            import(path.basename(name), {rootdir = path.directory(name)}).main(option.get("arguments"))
+        else
+            import("scripts." .. name).main(option.get("arguments"))
+        end
     end)
 
     -- set menu

@@ -257,17 +257,17 @@ endef
 endif
 
 # config base
-ifeq ($(HOST),mac)
+ifeq ($(PLAT),mac)
 base_LIBPATH 	:= /usr/local/lib
 base_LIBNAMES 	:= m dl pthread
 endif
 
-ifeq ($(HOST),msvc)
+ifeq ($(PLAT),msvc)
 base_LIBPATH 	:= 
 base_LIBNAMES 	:= ws2_32
 endif
 
-ifeq ($(HOST),linux)
+ifeq ($(PLAT),linux)
 base_LIBPATH 	:= 
 base_LIBNAMES 	:= rt m dl pthread
 endif

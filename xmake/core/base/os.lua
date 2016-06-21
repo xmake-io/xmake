@@ -88,7 +88,7 @@ function os.match(pattern, findir)
 
     -- patch "./" for matching ok if root directory is '.'
     if rootdir == '.' then
-        pattern = "./" .. pattern
+        pattern = "." .. path.seperator() .. pattern
     end
     
     -- find it
