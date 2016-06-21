@@ -96,6 +96,16 @@ function path.split(p)
     return p:split("/\\")
 end
 
+-- get the path seperator
+function path.seperator()
+
+    -- windows?
+    if xmake._HOST == "windows" then
+        return '\\'
+    else
+        return '/'
+    end
+end
 
 -- return module: path
 return path
