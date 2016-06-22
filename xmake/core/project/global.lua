@@ -71,7 +71,7 @@ function global.options()
     -- remove values with "auto" and private item
     local configs = {}
     for name, value in pairs(table.wrap(global._CONFIGS)) do
-        if not name:find("^_%u+") and (type(value) ~= "string" or value ~= "auto") then
+        if not name:find("^_%u+") and name ~= "__version" and (type(value) ~= "string" or value ~= "auto") then
             configs[name] = value
         end
     end
