@@ -194,6 +194,10 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
     local curfile = self._PRIVATE._CURFILE
     assert(curfile)
 
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes)
+
     -- get all subpathes 
     local subpathes = self:_api_translate_pathes(...)
 
@@ -229,14 +233,26 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- bind public scope
                 setfenv(script, self._PUBLIC)
 
+                -- save the previous scope
+                local scope_prev = scopes._CURRENT
+
+                -- save the previous scope kind
+                local scope_kind_prev = scopes._CURRENT_KIND
+
                 -- clear the current scope, force to enter root scope
-                self._PRIVATE._SCOPES._CURRENT = nil
+                scopes._CURRENT = nil
 
                 -- done interpreter
                 local ok, errors = xpcall(script, interpreter._traceback)
                 if not ok then
                     os.raise(errors)
                 end
+
+                -- restore the previous scope kind
+                scopes._CURRENT_KIND = scope_kind_prev
+
+                -- restore the previous scope
+                scopes._CURRENT = scope_prev
 
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
