@@ -1,5 +1,7 @@
 ##The Automatic Cross-platform Build Tool [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![donate](http://tboox.org/static/img/donate.gif)](http://tboox.org/donation/)
 
+[![Join the chat at https://gitter.im/waruqi/xmake](https://badges.gitter.im/waruqi/xmake.svg)](https://gitter.im/waruqi/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## introduction
 
 xmake is a cross-platform automatic build tool.
