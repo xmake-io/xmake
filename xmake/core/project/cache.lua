@@ -105,6 +105,9 @@ end
 -- flush to cache file
 function cache:flush()
 
+    -- flush the version 
+    self._CACHEDATA.__version = xmake._VERSION_SHORT
+
     -- save to file
     return io.save(self._CACHEPATH, self._CACHEDATA) 
 end
