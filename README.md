@@ -4,7 +4,7 @@
 
 ## introduction
 
-xmake is a cross-platform automatic build tool.
+xmake is a make-like build utility based on lua. 
 
 It is similar to cmake, automake, premake, but more convenient and easy to use.
 
