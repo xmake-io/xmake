@@ -122,7 +122,16 @@ end
 -- check the given flags 
 function check(flags)
 
+    -- make an stub source file
+    local objfile = path.join(os.tmpdir(), "xmake.gcc.o")
+    local srcfile = path.join(os.tmpdir(), "xmake.gcc.c")
+    io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
+
     -- check it
-    os.run("%s %s -S -o %s -xc %s", _g.shellname, ifelse(flags, flags, ""), os.nuldev(), os.nuldev())
+    os.run("%s -c %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objfile, srcfile)
+
+    -- remove files
+    os.rm(objfile)
+    os.rm(srcfile)
 end
 
