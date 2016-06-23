@@ -21,10 +21,13 @@
 --
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
     
     -- save the shell name
     _g.shellname = shellname or "gcc"
+
+    -- save the kind
+    _g.kind = kind
 
     -- init mxflags
     _g.mxflags = {  "-fmessage-length=0"
@@ -124,7 +127,9 @@ function check(flags)
 
     -- make an stub source file
     local objfile = path.join(os.tmpdir(), "xmake.gcc.o")
-    local srcfile = path.join(os.tmpdir(), "xmake.gcc.c")
+    local srcfile = path.join(os.tmpdir(), "xmake.gcc.c" .. ifelse(_g.kind == "cxx", "pp", ""))
+
+    -- make stub code
     io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it

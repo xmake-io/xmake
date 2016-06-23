@@ -24,10 +24,10 @@
 inherit("clang")
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
     
     -- init super
-    _super.init(shellname or "clang++")
+    _super.init(shellname or "clang++", kind)
 
 end
 
