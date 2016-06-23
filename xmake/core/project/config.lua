@@ -98,7 +98,7 @@ end
 -- load the project configure
 function config.load(targetname)
 
-    -- get the target name
+    -- check
     targetname = targetname or "all"
 
     -- load configure from the file first
@@ -115,18 +115,11 @@ function config.load(targetname)
         end
 
         -- merge the target configure first
-        if targetname ~= "all" and results._TARGETS then
+        if results._TARGETS then
             for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
                 if config.get(name) == nil then
                     config.set(name, value)
                 end
-            end
-        end
-
-        -- merge the root configure 
-        for name, value in pairs(results) do
-            if config.get(name) == nil then
-                config.set(name, value)
             end
         end
     end
@@ -138,45 +131,31 @@ end
 -- save the project configure
 function config.save(targetname)
 
-    -- get the target name
+    -- check
     targetname = targetname or "all"
 
-    -- load configure from the file first
+    -- load the previous results from configure
     local results = {}
     local filepath = config._file()
     if os.isfile(filepath) then
         results = io.load(filepath) or {}
     end
 
-    -- add version
-    results.__version = xmake._VERSION_SHORT
+    -- the targets
+    local targets = results._TARGETS or {}
+    results._TARGETS = targets
 
-    -- update options for the given target
-    local target = nil
-    if targetname ~= "all" then
-        
-        -- the targets
-        local targets = results._TARGETS or {}
-        results._TARGETS = targets
-
-        -- clear target and get it
-        targets[targetname] = {}
-        target = targets[targetname]
-    else
-
-        -- the targets
-        local targets = results._TARGETS
-
-        -- clear the root target and get it
-        results = {_TARGETS = targets}
-        target = results
-
-    end
+    -- clear target first
+    targets[targetname] = {}
 
     -- update target
+    local target = targets[targetname]
     for name, value in pairs(config.options()) do
         target[name] = value
     end
+
+    -- add version
+    results.__version = xmake._VERSION_SHORT
 
     -- save it
     return io.save(config._file(), results) 
@@ -201,7 +180,7 @@ end
 -- the configure has been changed for the given target?
 function config.changed(targetname)
 
-    -- get the target name
+    -- check
     targetname = targetname or "all"
 
     -- load configure from the file 
@@ -211,20 +190,9 @@ function config.changed(targetname)
 
         -- load it 
         local results = io.load(filepath)
-        if results then
-
-            -- get the target configure first
-            if targetname ~= "all" and results._TARGETS then
-                for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
-                    fileinfo[name] = value
-                end
-            end
-
-            -- merge the root configure 
-            for name, value in pairs(results) do
-                if fileinfo[name] == nil then
-                    fileinfo[name] = value
-                end
+        if results and results._TARGETS then
+            for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
+                fileinfo[name] = value
             end
         end
     end

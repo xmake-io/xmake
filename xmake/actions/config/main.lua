@@ -169,14 +169,20 @@ function main()
         raise("unknown target: %s", targetname)
     end
 
-    -- save options
+    -- save options and configure for the given target
+    config.save(targetname)
     cache.set("options_" .. targetname, options)
+
+    -- save options and configure for each targets if be all
+    if targetname == "all" then
+        for _, target in pairs(project.targets()) do
+            config.save(target:name())
+            cache.set("options_" .. target:name(), options)
+        end
+    end
 
     -- flush cache
     cache.flush()
-
-    -- save the project configure
-    config.save(targetname)
 
     -- make the config.h
     config_h.make()
