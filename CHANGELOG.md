@@ -8,6 +8,7 @@
 * [#9](https://github.com/waruqi/xmake/issues/9): Support clang with c++11
 * Fix api scope leaks bug
 * Fix path bug for windows
+* Fix check function bug
 
 ## v2.0.1
 
@@ -105,6 +106,7 @@
 * [#9](https://github.com/waruqi/xmake/issues/9): 修复clang不支持c++11的问题
 * 修复api作用域泄露问题
 * 修复在windows上的一些路径问题
+* 修复检测宏函数失败问题
 
 ## v2.0.1
 
