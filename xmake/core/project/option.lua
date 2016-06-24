@@ -138,7 +138,9 @@ function option:_check_function(interface, srcpath, objpath)
     srcfile:print("{")
 
     -- make interfaces
-    srcfile:print("    volatile void* p%s = (void*)&%s;\n", interface, interface)
+    srcfile:print("#ifndef %s\n", interface)
+    srcfile:print("    volatile void* p%s = (void*)&%s;", interface, interface)
+    srcfile:print("#endif")
 
     -- make the main function tailer
     srcfile:print("    return 0;")
@@ -192,7 +194,7 @@ function option:_check_typedef(typedef, srcpath, objpath)
     srcfile:print("{")
 
     -- make interfaces
-    srcfile:print("    typedef %s __type_xxx;\n", typedef)
+    srcfile:print("    typedef %s __type_xxx;", typedef)
 
     -- make the main function tailer
     srcfile:print("    return 0;")
