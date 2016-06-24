@@ -22,4 +22,23 @@ try to follow these guidelines when you do so.
 * Use the same coding conventions as the rest of the project.
 * Ensure your edited codes with four spaces instead of TAB.
 
+# 贡献代码
+
+如果你发现一些问题，或者想新增或者改进某些新特性，或者想贡献一个新的模块
+那么你可以在[issues][1]上提交反馈，或者发起一个提交代码的请求(pull request).
+
+## 问题反馈
+
+* 确认这个问题没有被反馈过
+* 确认这个问题最近还没有被修复，请先检查下 `master` 的最新提交
+* 请清晰详细地描述你的问题
+* 如果发现某些代码存在问题，请在issue上引用相关代码
+
+## 提交代码
+
+* 请先更新你的本地分支到最新，再进行提交代码请求，确保没有合并冲突
+* 编写友好可读的提交信息
+* 请使用余工程代码相同的代码规范
+* 确保提交的代码缩进是四个空格，而不是tab
+
 [1]: https://github.com/waruqi/xmake/issues
