@@ -21,6 +21,7 @@ try to follow these guidelines when you do so.
 * Write good commit messages.
 * Use the same coding conventions as the rest of the project.
 * Ensure your edited codes with four spaces instead of TAB.
+* Please commit code to `dev` branch and we will merge into `master` branch in feature
 
 # 贡献代码
 
@@ -40,5 +41,6 @@ try to follow these guidelines when you do so.
 * 编写友好可读的提交信息
 * 请使用余工程代码相同的代码规范
 * 确保提交的代码缩进是四个空格，而不是tab
+* 请提交代码到`dev`分支，如果通过，我们会在特定时间合并到`master`分支上
 
 [1]: https://github.com/waruqi/xmake/issues
