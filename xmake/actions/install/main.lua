@@ -105,8 +105,8 @@ function main()
     -- init finished states
     _g.finished = {}
 
-    -- package it first
-    task.run("package", {target = targetname})
+    -- build it first
+    task.run("build", {target = targetname})
 
     -- install all?
     if targetname == "all" then
