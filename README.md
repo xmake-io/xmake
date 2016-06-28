@@ -2,39 +2,50 @@
 
 [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![Join the chat at https://gitter.im/waruqi/xmake](https://badges.gitter.im/waruqi/xmake.svg)](https://gitter.im/waruqi/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.gif)](http://tboox.org/donation/)
 
-## introduction
+## Introduction
 
 xmake is a make-like build utility based on lua. 
 
-It is similar to cmake, automake, premake, but more convenient and easy to use.
+The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
+so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
-####features
+It supports the following platforms:
 
-1. create projects and supports many project templates
-2. support c/c++, objc/c++, swift and assembly language
-3. automatically probe the host environment and configure project 
-4. provide some built-in actions (config, build, package, clean, install, uninstall and run)
-5. provide some built-in plugins (doxygen, macro, project) 
-6. project some built-in macros (batch packaging)
-7. describe the project file using lua script, more flexible and simple
-8. custom packages, platforms, plugins, templates, tasks, macros, options and actions
-9. do not generate makefile and build project directly
-10. support multitasking with argument: -j 
+- Windows (x86, x64, amd64, x86_amd64)
+- Macosx (i386, x86_64)
+- Linux (i386, x86_64, cross-toolchains ...)
+- Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
+- iPhoneos (armv7, armv7s, arm64, i386, x86_64)
+- Watchos (armv7k, i386)
+- Mingw (i386, x86_64)
 
-####examples
+####Features
 
-create a c++ console project:
+1. Create projects and supports many project templates
+2. Support c/c++, objc/c++, swift and assembly language
+3. Automatically probe the host environment and configure project 
+4. Provide some built-in actions (config, build, package, clean, install, uninstall and run)
+5. Provide some built-in plugins (doxygen, macro, project) 
+6. Provide some built-in macros (batch packaging)
+7. Describe the project file using lua script, more flexible and simple
+8. Custom packages, platforms, plugins, templates, tasks, macros, options and actions
+9. Do not generate makefile and build project directly
+10. Support multitasking with argument: -j 
+
+####Examples
+
+Create a c++ console project:
 
         xmake create -l c++ -t 1 console
      or xmake create --language=c++ --template=1 console
 
-project xmakefile: xmake.lua
+Project xmakefile: xmake.lua
 
     target("console")
         set_kind("binary")
         add_files("src/*.c") 
 
-configure project:
+Configure project:
 
    This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
 
@@ -48,18 +59,18 @@ configure project:
     or xmake config -p mingw --sdk=/mingwsdk
     or xmake config --help
 
-compile project：
+Compile project：
  
        xmake
     or xmake -r
     or xmake --rebuild
 
-run target：
+Run target：
 
        xmake r console
     or xmake run console
 
-package all：
+Package all：
 
        xmake p
     or xmake package
@@ -67,14 +78,14 @@ package all：
     or xmake package -o /tmp
     or xmake package --output=/tmp
 
-package all archs using macro:
+Package all archs using macro:
        
        xmake m package 
     or xmake m package -p iphoneos
     or xmake m package -p macosx -f "-m debug" -o /tmp/
     or xmake m package --help
 
-install targets：
+Install targets：
 
        xmake i
     or xmake install
@@ -126,31 +137,45 @@ The simple xmake.lua file:
         -- add files
         add_files("src/*.c") 
 
-####documents
+If you want to know more, please refer to:
 
-* [documents](https://github.com/waruqi/xmake/wiki/documents)
-* [codes](https://github.com/waruqi/xmake)
+####Documents
 
-####projects
+* [Documents](https://github.com/waruqi/xmake/wiki/documents)
+* [Codes](https://github.com/waruqi/xmake)
 
-some projects using xmake:
+####Projects
+
+Some projects using xmake:
 
 * [tbox](https://github.com/waruqi/tbox)
 * [gbox](https://github.com/waruqi/gbox)
 * [libsvx](https://github.com/caikelun/libsvx)
 * [more](https://github.com/waruqi/xmake/wiki/xmake-projects)
 
-#### contacts
+#### Contacts
 
-- email:   	    
+- Email:   	    
 	- waruqi@gmail.com
-- website: 	    
+- Website: 	    
 	- http://www.tboox.org
 	- http://www.tboox.net
 
 ## 简介
 
 XMake是一个跨平台自动构建工具，支持在各种主流平台上构建项目，类似cmake、automake、premake，但是更加的方便易用，工程描述语法更简洁直观，支持平台更多，并且集创建、配置、编译、打包、安装、卸载、运行于一体。
+
+目前支持的编译平台有：
+
+- Windows (x86, x64, amd64, x86_amd64)
+- Macosx (i386, x86_64)
+- Linux (i386, x86_64, cross-toolchains ...)
+- Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
+- iPhoneos (armv7, armv7s, arm64, i386, x86_64)
+- Watchos (armv7k, i386)
+- Mingw (i386, x86_64)
+
+如果你想要了解更多，请参考：
 
 * [在线文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
 * [在线源码](https://github.com/waruqi/xmake)
