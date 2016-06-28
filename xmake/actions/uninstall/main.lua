@@ -27,13 +27,7 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-
--- uninstall package 
-function _uninstall_package(target)
-
-    -- remove the package 
-    os.rm(format("$(packagedir)/%s.pkg", target:name()))
-end
+import("core.platform.installer")
 
 -- uninstall target 
 function _uninstall_target(target)
@@ -44,9 +38,9 @@ function _uninstall_target(target)
     -- get script 
     local scripts =
     {
-        binary = _uninstall_package
-    ,   static = _uninstall_package
-    ,   shared = _uninstall_package
+        binary = installer.uninstall
+    ,   static = installer.uninstall
+    ,   shared = installer.uninstall
     }
 
     -- check

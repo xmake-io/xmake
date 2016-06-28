@@ -27,16 +27,7 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-
--- install package 
-function _install_package(target)
-
-    -- make the package directory first if not exists
-    os.mkdir("$(packagedir)")
-
-    -- copy the package to the output directory
-    os.cp(format("$(buildir)/%s.pkg", target:name()), "$(packagedir)") 
-end
+import("core.platform.installer")
 
 -- install target 
 function _install_target(target)
@@ -47,9 +38,9 @@ function _install_target(target)
     -- get script 
     local scripts =
     {
-        binary = _install_package
-    ,   static = _install_package
-    ,   shared = _install_package
+        binary = installer.install
+    ,   static = installer.install
+    ,   shared = installer.install
     }
 
     -- check

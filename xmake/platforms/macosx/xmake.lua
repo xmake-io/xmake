@@ -35,6 +35,9 @@ platform("macosx")
     -- set checker
     set_checker("checker")
 
+    -- set installer
+    set_installer("installer")
+
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
 
