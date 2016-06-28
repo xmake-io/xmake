@@ -17,18 +17,18 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        environment.lua
+-- @file        installer.lua
 --
 
 -- define module
-local environment = environment or {}
+local installer = installer or {}
 
 -- load modules
 local platform  = require("platform/platform")
 local sandbox   = require("sandbox/sandbox")
 
--- load the given environment from the given platform
-function environment.load(plat)
+-- load the given installer from the given platform
+function installer.load(plat)
 
     -- load platform
     local instance, errors = platform.load(plat)
@@ -36,22 +36,22 @@ function environment.load(plat)
         return nil, errors
     end
 
-    -- get environment
-    return instance:environment()
+    -- get installer
+    return instance:installer()
 end
 
--- enter the environment for the current platform
-function environment.enter(name)
+-- install the target for the current platform
+function installer.install(target, plat)
 
-    -- load the environment module
-    local module, errors = environment.load()
+    -- load the installer module
+    local module, errors = installer.load()
     if not module and errors then
         return false, errors
     end
 
-    -- enter it
+    -- install it
     if module then
-        local ok, errors = sandbox.load(module.enter, name)
+        local ok, errors = sandbox.load(module.install, target)
         if not ok then
             return false, errors
         end
@@ -61,18 +61,18 @@ function environment.enter(name)
     return true
 end
 
--- leave the environment for the current platform
-function environment.leave(name)
+-- uninstall target for the current platform
+function installer.uninstall(target)
 
-    -- load the environment module
-    local module, errors = environment.load()
+    -- load the installer module
+    local module, errors = installer.load()
     if not module and errors then
         return false, errors
     end
 
-    -- leave it
+    -- uninstall it
     if module then
-        local ok, errors = sandbox.load(module.leave, name)
+        local ok, errors = sandbox.load(module.uninstall, target)
         if not ok then
             return false, errors
         end
@@ -83,4 +83,4 @@ function environment.leave(name)
 end
 
 -- return module
-return environment
+return installer
