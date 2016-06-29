@@ -9,7 +9,46 @@ xmake is a make-like build utility based on lua.
 The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
-It supports the following platforms:
+####Features
+
+- Create projects and supports many project templates
+- Support c/c++, objc/c++, swift and assembly language
+- Automatically probe the host environment and configure project 
+- Provide some built-in actions (config, build, package, clean, install, uninstall and run)
+- Provide some built-in plugins (doxygen, macro, project) 
+- Provide some built-in macros (batch packaging)
+- Describe the project file using lua script, more flexible and simple
+- Custom packages, platforms, plugins, templates, tasks, macros, options and actions
+- Do not generate makefile and build project directly
+- Support multitasking with argument: -j 
+
+####Actions
+
+- config: Configure project before building. 
+- global: Configure the global options for xmake.
+- build: Build project.
+- clean: Remove all binary and temporary files.
+- create: Create a new project using template.
+- package: Package the given target
+- install: Install the project binary files.
+- uninstall: Uninstall the project binary files.
+- run: Run the project target.
+
+####Plugins
+
+- The doxygen plugin: Make doxygen document from source codes
+- The macro plugin: Record and playback commands 
+- The hello plugin: A simple plugin demo to show 'hello xmake!'
+- The project plugin: Create the project file for IDE (.e.g makefile and vs, xcode in the feature ...)
+
+####Languages
+
+- C/C++
+- Objc/Objc++
+- Swift
+- Assembly
+
+####Platforms
 
 - Windows (x86, x64, amd64, x86_amd64)
 - Macosx (i386, x86_64)
@@ -19,18 +58,13 @@ It supports the following platforms:
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-####Features
+####In the plans
 
-1. Create projects and supports many project templates
-2. Support c/c++, objc/c++, swift and assembly language
-3. Automatically probe the host environment and configure project 
-4. Provide some built-in actions (config, build, package, clean, install, uninstall and run)
-5. Provide some built-in plugins (doxygen, macro, project) 
-6. Provide some built-in macros (batch packaging)
-7. Describe the project file using lua script, more flexible and simple
-8. Custom packages, platforms, plugins, templates, tasks, macros, options and actions
-9. Do not generate makefile and build project directly
-10. Support multitasking with argument: -j 
+- Manage package and dependence
+- Download package automaticlly
+- Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
+- Implement more plugins
+- Create more project file for IDE (.e.g vs, xcode ..)
 
 ####Examples
 
@@ -163,9 +197,90 @@ Some projects using xmake:
 
 ## 简介
 
-XMake是一个跨平台自动构建工具，支持在各种主流平台上构建项目，类似cmake、automake、premake，但是更加的方便易用，工程描述语法更简洁直观，支持平台更多，并且集创建、配置、编译、打包、安装、卸载、运行于一体。
+XMake是一个基于Lua的轻量级跨平台自动构建工具，支持在各种主流平台上构建项目
 
-目前支持的编译平台有：
+xmake的目标是开发者更加关注于项目本身开发，简化项目的描述和构建，并且提供平台无关性，使得一次编写，随处构建
+
+它跟cmake、automake、premake有点类似，但是机制不同，它默认不会去生成IDE相关的工程文件，采用直接编译，并且更加的方便易用
+采用lua的工程描述语法更简洁直观，支持在大部分常用平台上进行构建，以及交叉编译
+
+并且xmake提供了创建、配置、编译、打包、安装、卸载、运行等一些actions，使得开发和构建更加的方便和流程化。
+
+不仅如此，它还提供了许多更加高级的特性，例如插件扩展、脚本宏记录、批量打包、自动文档生成等等。。
+
+如果你想要了解更多，请参考：
+
+* [在线文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
+* [在线源码](https://github.com/waruqi/xmake)
+
+#### 支持特性
+
+- 支持windows、mac、linux、ios、android等平台，自动检测不同平台上的编译工具链（也可手动配置）
+   编译windows项目采用原生vs的工具链，不需要使用cygwin、mingw（当然这些也支持）
+
+- 支持自定义平台编译配置，可以很方便的扩展第三方平台支持
+
+- 采用lua脚本语法描述项目，描述规则简单高效，逻辑规则可灵活修改，并且不会生成相关平台的工程文件，是工程更加简单明了
+
+- 支持创建模板工程、配置项目、编译项目、运行、打包、安装和卸载等常用功能（后续还会增加：自动生成文档、调试等模块）
+
+- 支持编译c/c++/objc/swift成静态库、动态库、命令行可执行程序
+
+- 提供丰富的工程描述api，使用简单灵活，例如添加编译文件只需（还支持过滤排除）：
+
+   `add_files("src/*.c", "src/asm/**.S", "src/*.m")`
+
+- 支持头文件、接口、链接库依赖、类型的自动检测，并可自动生成配置头文件config.h
+
+- 支持自定义编译配置开关，例如如果在工程描述文件中增加了`enable_xxx`的开关，那么配置编译的时候就可以手动进行配置来启用它：
+
+   `xmake config --enable_xxx=y`
+
+- 提供一键打包功能，不管在哪个平台上进行打包，都只需要执行一条相同的命令，非常的方便
+
+- 支持全局配置，一些常用的项目配置，例如工具链、规则描述等等，都可以进行全局配置，这样就不需要每次编译不同工程，都去配置一遍
+
+- 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
+
+- 支持插件扩展、平台扩展、模板扩展、选项自定义等高级功能
+
+- 提供一些内置的常用插件（例如：自动生成doxygen文档插件，宏脚本记录和运行插件）
+
+- 宏记录插件里面提供了一些内置的宏脚本（例如：批量打包一个平台的所有archs等），也可以在命令行中手动记录宏并回放执行
+
+- 提供强大的task任务机制
+
+- 不依赖makefile和make，实现直接编译，内置自动多任务加速编译, xmake是一个真正的构架工具，而不仅仅是一个工程文件生成器
+
+- 自动检测ccache，进行自动缓存提升构建速度
+
+####常用Actions
+
+- config: 构建之前的编译参数配置
+- global: 配置一些全局参数
+- build: 构建项目
+- clean: 清理一些二进制文件、临时文件
+- create: 使用模板创建新工程
+- package: 打包指定目标
+- install: 安装编译后的目标文件
+- uninstall: 卸载安装的所有文件
+- run: 运行可执行的项目目标
+
+####一些内置插件
+
+- doxygen文档生成插件: 从指定源码目录生成doxygen文档
+- 宏记录脚本插件: 记录和回放宏脚本，简化重复的命令操作（例如：批量打包。。）
+- hello插件: 插件开发demo
+- 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile，后续支持：vs, xcode等等)
+
+####支持编译语言
+
+- C/C++
+- Objc/Objc++
+- Swift
+- Assembly
+
+####支持的构建平台
 
 - Windows (x86, x64, amd64, x86_amd64)
 - Macosx (i386, x86_64)
@@ -175,51 +290,12 @@ XMake是一个跨平台自动构建工具，支持在各种主流平台上构建
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-如果你想要了解更多，请参考：
+####后续计划
 
-* [在线文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
-* [在线源码](https://github.com/waruqi/xmake)
-
-#### 支持特性
-
-1. 支持windows、mac、linux、ios、android等平台，自动检测不同平台上的编译工具链（也可手动配置）
-   编译windows项目采用原生vs的工具链，不需要使用cygwin、mingw（当然这些也支持）
-
-2. 支持自定义平台编译配置，可以很方便的扩展第三方平台支持
-
-3. 采用lua脚本语法描述项目，描述规则简单高效，逻辑规则可灵活修改，并且不会生成相关平台的工程文件，是工程更加简单明了
-
-4. 支持创建模板工程、配置项目、编译项目、运行、打包、安装和卸载等常用功能（后续还会增加：自动生成文档、调试等模块）
-
-5. 支持编译c/c++/objc/swift成静态库、动态库、命令行可执行程序
-
-6. 提供丰富的工程描述api，使用简单灵活，例如添加编译文件只需（还支持过滤排除）：
-
-   `add_files("src/*.c", "src/asm/**.S", "src/*.m")`
-
-7. 支持头文件、接口、链接库依赖、类型的自动检测，并可自动生成配置头文件config.h
-
-8. 支持自定义编译配置开关，例如如果在工程描述文件中增加了enable_xxx的开关，那么配置编译的时候就可以手动进行配置来启用它：
-
-   `xmake config --enable_xxx=y`
-
-9. 提供一键打包功能，不管在哪个平台上进行打包，都只需要执行一条相同的命令，非常的方便
-
-10. 支持全局配置，一些常用的项目配置，例如工具链、规则描述等等，都可以进行全局配置，这样就不需要每次编译不同工程，都去配置一遍
-
-11. 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
-
-12. 支持插件扩展、平台扩展、模板扩展、选项自定义等高级功能
-
-13. 提供一些内置的常用插件（例如：自动生成doxygen文档插件，宏脚本记录和运行插件）
-
-14. 宏记录插件里面提供了一些内置的宏脚本（例如：批量打包一个平台的所有archs等），也可以在命令行中手动记录宏并回放执行
-
-15. 提供强大的task任务机制
-
-16. 不依赖makefile和make，实现直接编译，内置自动多任务加速编译, xmake是一个真正的构架工具，而不仅仅是一个工程文件生成器
-
-17. 自动检测ccache，进行自动缓存提升构建速度
+- 自动包依赖管理和下载
+- 创建移植仓库，实现`一人移植，多人共享`
+- 更多的插件开发
+- 自动生成vs,xcode等工程文件
 
 ####简单例子
 
