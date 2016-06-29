@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Change install and uninstall actions
+
 ### Bugs fixed
 
 * [#7](https://github.com/waruqi/xmake/issues/7): Fix create project bug with '[targetname]'
