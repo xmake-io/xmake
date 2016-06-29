@@ -98,6 +98,10 @@
 
 ## master (开发中)
 
+### 改进
+
+* 修改安装和卸载的action处理
+
 ### Bugs修复
 
 * [#7](https://github.com/waruqi/xmake/issues/7): 修复用模板创建工程后，target名不对问题：'[targetname]'
