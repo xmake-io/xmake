@@ -21,10 +21,17 @@
 --
 
 -- imports
+import("core.project.config")
 import("platforms.installer", {rootdir = os.programdir()})
 
 -- install target
 function install(target)
+
+    -- check architecture
+    local arch = config.get("arch")
+    if arch ~= "i386" and arch ~= "x86_64" then
+        raise("cannot install target(%s) for arch(%s)!", target:name(), arch)
+    end
 
     -- the scripts
     local scripts =
@@ -43,6 +50,12 @@ end
 
 -- uninstall target
 function uninstall(target)
+
+    -- check architecture
+    local arch = config.get("arch")
+    if arch ~= "i386" and arch ~= "x86_64" then
+        raise("cannot uninstall target(%s) for arch(%s)!", target:name(), arch)
+    end
 
     -- the scripts
     local scripts =
