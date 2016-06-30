@@ -106,10 +106,10 @@ end
 
 -- add option: demo
 option("demo")
-    set_option_enable(true)
-    set_option_showmenu(true)
-    set_option_category("option")
-    set_option_description("Enable or disable the demo module")
+    set_enable(true)
+    set_showmenu(true)
+    set_category("option")
+    set_description("Enable or disable the demo module")
 
 -- add packages
 add_packagedirs("pkg") 
