@@ -80,11 +80,14 @@ function _check_target_deps(target)
     -- check 
     for _, depname in ipairs(target:get("deps")) do
 
+        -- check dependent target name
+        assert(depname ~= target:name(), "the target(%s) cannot depend self!", depname)
+
         -- get dependent target
         local deptarget = project.target(depname)
 
-        -- check target name
-        assert(deptarget, "unknown target: %s for %s.deps!", depname, target:name())
+        -- check dependent target name
+        assert(deptarget, "unknown target(%s) for %s.deps!", depname, target:name())
 
         -- check the dependent targets
         _check_target_deps(deptarget)
