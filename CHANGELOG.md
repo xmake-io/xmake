@@ -5,6 +5,7 @@
 ### Changes
 
 * Change install and uninstall actions
+* Update templates
 
 ### Bugs fixed
 
