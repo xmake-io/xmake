@@ -1,5 +1,5 @@
  
--- add tbox package
+-- the tbox package
 option("tbox")
 
     -- show menu

@@ -337,7 +337,7 @@ static __tb_inline__ tb_fixed16_t tb_long_to_fixed16_check(tb_long_t x)
     tb_assert(x == (tb_int16_t)x);
 
     // ok
-    return (x << 16);
+    return (tb_fixed16_t)(x << 16);
 }
 static __tb_inline__ tb_long_t tb_fixed16_to_long_check(tb_fixed16_t x)
 {
@@ -400,7 +400,7 @@ static __tb_inline__ tb_fixed16_t tb_fixed16_idiv_check(tb_fixed16_t x, tb_long_
     tb_assert(y);
 
     // ok
-    return x / y;
+    return (tb_fixed16_t)(x / y);
 }
 static __tb_inline__ tb_fixed16_t tb_fixed16_imuldiv_check(tb_fixed16_t x, tb_long_t y, tb_long_t z)
 {

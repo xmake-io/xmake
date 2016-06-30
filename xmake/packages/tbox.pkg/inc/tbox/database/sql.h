@@ -18,7 +18,7 @@
  *
  * @author      ruki
  * @file        sql.h
- * @defgroup    database
+ * @ingroup     database
  */
 #ifndef TB_DATABASE_SQL_H
 #define TB_DATABASE_SQL_H

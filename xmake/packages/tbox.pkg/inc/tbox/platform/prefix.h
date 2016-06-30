@@ -48,12 +48,23 @@
  * types
  */
 
+/*! the iovec size type
+ *
+ * @note
+ * we cannot use tb_size_t because sizeof(tb_size_t) != sizeof(u_long) for windows 64bits
+ */
+#ifdef TB_CONFIG_OS_WINDOWS
+typedef  unsigned long      tb_iovec_size_t;
+#else
+typedef  tb_size_t          tb_iovec_size_t;
+#endif
+
 #ifdef TB_CONFIG_OS_WINDOWS
 /// the iovec type for WSASend, WSARecv using WSABUF
 typedef struct __tb_iovec_t
 {
     /// the size
-    tb_size_t               size;
+    tb_iovec_size_t         size;
 
     /// the data
     tb_byte_t*              data;
@@ -67,7 +78,7 @@ typedef struct __tb_iovec_t
     tb_byte_t*              data;
 
     /// the size
-    tb_size_t               size;
+    tb_iovec_size_t         size;
 
 }tb_iovec_t;
 #endif

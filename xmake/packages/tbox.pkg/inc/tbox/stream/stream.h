@@ -106,81 +106,81 @@ __tb_extern_c_enter__
 
 // the stream bitops
 #ifdef TB_WORDS_BIGENDIAN
-#   define tb_stream_bread_u16_ne(stream)         tb_stream_bread_u16_be(stream)
-#   define tb_stream_bread_s16_ne(stream)         tb_stream_bread_s16_be(stream)
-#   define tb_stream_bread_u24_ne(stream)         tb_stream_bread_u24_be(stream)
-#   define tb_stream_bread_s24_ne(stream)         tb_stream_bread_s24_be(stream)
-#   define tb_stream_bread_u32_ne(stream)         tb_stream_bread_u32_be(stream)
-#   define tb_stream_bread_s32_ne(stream)         tb_stream_bread_s32_be(stream)
-#   define tb_stream_bread_u64_ne(stream)         tb_stream_bread_u64_be(stream)
-#   define tb_stream_bread_s64_ne(stream)         tb_stream_bread_s64_be(stream)
+#   define tb_stream_bread_u16_ne(stream, pvalue)   tb_stream_bread_u16_be(stream, pvalue)
+#   define tb_stream_bread_s16_ne(stream, pvalue)   tb_stream_bread_s16_be(stream, pvalue)
+#   define tb_stream_bread_u24_ne(stream, pvalue)   tb_stream_bread_u24_be(stream, pvalue)
+#   define tb_stream_bread_s24_ne(stream, pvalue)   tb_stream_bread_s24_be(stream, pvalue)
+#   define tb_stream_bread_u32_ne(stream, pvalue)   tb_stream_bread_u32_be(stream, pvalue)
+#   define tb_stream_bread_s32_ne(stream, pvalue)   tb_stream_bread_s32_be(stream, pvalue)
+#   define tb_stream_bread_u64_ne(stream, pvalue)   tb_stream_bread_u64_be(stream, pvalue)
+#   define tb_stream_bread_s64_ne(stream, pvalue)   tb_stream_bread_s64_be(stream, pvalue)
 
-#   define tb_stream_bwrit_u16_ne(stream, val)    tb_stream_bwrit_u16_be(stream, val)
-#   define tb_stream_bwrit_s16_ne(stream, val)    tb_stream_bwrit_s16_be(stream, val)
-#   define tb_stream_bwrit_u24_ne(stream, val)    tb_stream_bwrit_u24_be(stream, val)
-#   define tb_stream_bwrit_s24_ne(stream, val)    tb_stream_bwrit_s24_be(stream, val)
-#   define tb_stream_bwrit_u32_ne(stream, val)    tb_stream_bwrit_u32_be(stream, val)
-#   define tb_stream_bwrit_s32_ne(stream, val)    tb_stream_bwrit_s32_be(stream, val)
-#   define tb_stream_bwrit_u64_ne(stream, val)    tb_stream_bwrit_u64_be(stream, val)
-#   define tb_stream_bwrit_s64_ne(stream, val)    tb_stream_bwrit_s64_be(stream, val)
+#   define tb_stream_bwrit_u16_ne(stream, value)    tb_stream_bwrit_u16_be(stream, value)
+#   define tb_stream_bwrit_s16_ne(stream, value)    tb_stream_bwrit_s16_be(stream, value)
+#   define tb_stream_bwrit_u24_ne(stream, value)    tb_stream_bwrit_u24_be(stream, value)
+#   define tb_stream_bwrit_s24_ne(stream, value)    tb_stream_bwrit_s24_be(stream, value)
+#   define tb_stream_bwrit_u32_ne(stream, value)    tb_stream_bwrit_u32_be(stream, value)
+#   define tb_stream_bwrit_s32_ne(stream, value)    tb_stream_bwrit_s32_be(stream, value)
+#   define tb_stream_bwrit_u64_ne(stream, value)    tb_stream_bwrit_u64_be(stream, value)
+#   define tb_stream_bwrit_s64_ne(stream, value)    tb_stream_bwrit_s64_be(stream, value)
 
 #else
-#   define tb_stream_bread_u16_ne(stream)         tb_stream_bread_u16_le(stream)
-#   define tb_stream_bread_s16_ne(stream)         tb_stream_bread_s16_le(stream)
-#   define tb_stream_bread_u24_ne(stream)         tb_stream_bread_u24_le(stream)
-#   define tb_stream_bread_s24_ne(stream)         tb_stream_bread_s24_le(stream)
-#   define tb_stream_bread_u32_ne(stream)         tb_stream_bread_u32_le(stream)
-#   define tb_stream_bread_s32_ne(stream)         tb_stream_bread_s32_le(stream)
-#   define tb_stream_bread_u64_ne(stream)         tb_stream_bread_u64_le(stream)
-#   define tb_stream_bread_s64_ne(stream)         tb_stream_bread_s64_le(stream)
+#   define tb_stream_bread_u16_ne(stream, pvalue)   tb_stream_bread_u16_le(stream, pvalue)
+#   define tb_stream_bread_s16_ne(stream, pvalue)   tb_stream_bread_s16_le(stream, pvalue)
+#   define tb_stream_bread_u24_ne(stream, pvalue)   tb_stream_bread_u24_le(stream, pvalue)
+#   define tb_stream_bread_s24_ne(stream, pvalue)   tb_stream_bread_s24_le(stream, pvalue)
+#   define tb_stream_bread_u32_ne(stream, pvalue)   tb_stream_bread_u32_le(stream, pvalue)
+#   define tb_stream_bread_s32_ne(stream, pvalue)   tb_stream_bread_s32_le(stream, pvalue)
+#   define tb_stream_bread_u64_ne(stream, pvalue)   tb_stream_bread_u64_le(stream, pvalue)
+#   define tb_stream_bread_s64_ne(stream, pvalue)   tb_stream_bread_s64_le(stream, pvalue)
 
-#   define tb_stream_bwrit_u16_ne(stream, val)    tb_stream_bwrit_u16_le(stream, val)
-#   define tb_stream_bwrit_s16_ne(stream, val)    tb_stream_bwrit_s16_le(stream, val)
-#   define tb_stream_bwrit_u24_ne(stream, val)    tb_stream_bwrit_u24_le(stream, val)
-#   define tb_stream_bwrit_s24_ne(stream, val)    tb_stream_bwrit_s24_le(stream, val)
-#   define tb_stream_bwrit_u32_ne(stream, val)    tb_stream_bwrit_u32_le(stream, val)
-#   define tb_stream_bwrit_s32_ne(stream, val)    tb_stream_bwrit_s32_le(stream, val)
-#   define tb_stream_bwrit_u64_ne(stream, val)    tb_stream_bwrit_u64_le(stream, val)
-#   define tb_stream_bwrit_s64_ne(stream, val)    tb_stream_bwrit_s64_le(stream, val)
+#   define tb_stream_bwrit_u16_ne(stream, value)    tb_stream_bwrit_u16_le(stream, value)
+#   define tb_stream_bwrit_s16_ne(stream, value)    tb_stream_bwrit_s16_le(stream, value)
+#   define tb_stream_bwrit_u24_ne(stream, value)    tb_stream_bwrit_u24_le(stream, value)
+#   define tb_stream_bwrit_s24_ne(stream, value)    tb_stream_bwrit_s24_le(stream, value)
+#   define tb_stream_bwrit_u32_ne(stream, value)    tb_stream_bwrit_u32_le(stream, value)
+#   define tb_stream_bwrit_s32_ne(stream, value)    tb_stream_bwrit_s32_le(stream, value)
+#   define tb_stream_bwrit_u64_ne(stream, value)    tb_stream_bwrit_u64_le(stream, value)
+#   define tb_stream_bwrit_s64_ne(stream, value)    tb_stream_bwrit_s64_le(stream, value)
 
 #endif
 
 #ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 #   ifdef TB_FLOAT_BIGENDIAN
-#       define tb_stream_bread_double_nbe(stream)         tb_stream_bread_double_bbe(stream)
-#       define tb_stream_bread_double_nle(stream)         tb_stream_bread_double_ble(stream)
+#       define tb_stream_bread_double_nbe(stream, pvalue)   tb_stream_bread_double_bbe(stream, pvalue)
+#       define tb_stream_bread_double_nle(stream, pvalue)   tb_stream_bread_double_ble(stream, pvalue)
 
-#       define tb_stream_bwrit_double_nbe(stream, val)    tb_stream_bwrit_double_bbe(stream, val)
-#       define tb_stream_bwrit_double_nle(stream, val)    tb_stream_bwrit_double_ble(stream, val)
+#       define tb_stream_bwrit_double_nbe(stream, value)    tb_stream_bwrit_double_bbe(stream, value)
+#       define tb_stream_bwrit_double_nle(stream, value)    tb_stream_bwrit_double_ble(stream, value)
 #   else
-#       define tb_stream_bread_double_nbe(stream)         tb_stream_bread_double_lbe(stream)
-#       define tb_stream_bread_double_nle(stream)         tb_stream_bread_double_lle(stream)
+#       define tb_stream_bread_double_nbe(stream, pvalue)   tb_stream_bread_double_lbe(stream, pvalue)
+#       define tb_stream_bread_double_nle(stream, pvalue)   tb_stream_bread_double_lle(stream, pvalue)
 
-#       define tb_stream_bwrit_double_nbe(stream, val)    tb_stream_bwrit_double_lbe(stream, val)
-#       define tb_stream_bwrit_double_nle(stream, val)    tb_stream_bwrit_double_lle(stream, val)
+#       define tb_stream_bwrit_double_nbe(stream, value)    tb_stream_bwrit_double_lbe(stream, value)
+#       define tb_stream_bwrit_double_nle(stream, value)    tb_stream_bwrit_double_lle(stream, value)
 #   endif
 #   ifdef TB_WORDS_BIGENDIAN
-#       define tb_stream_bread_float_ne(stream)           tb_stream_bread_float_be(stream)
-#       define tb_stream_bwrit_float_ne(stream, val)      tb_stream_bwrit_float_be(stream, val)
+#       define tb_stream_bread_float_ne(stream, pvalue)     tb_stream_bread_float_be(stream, pvalue)
+#       define tb_stream_bwrit_float_ne(stream, value)      tb_stream_bwrit_float_be(stream, value)
 
-#       define tb_stream_bread_double_nne(stream)         tb_stream_bread_double_nbe(stream)
-#       define tb_stream_bread_double_bne(stream)         tb_stream_bread_double_bbe(stream)
-#       define tb_stream_bread_double_lne(stream)         tb_stream_bread_double_lbe(stream)
+#       define tb_stream_bread_double_nne(stream, pvalue)   tb_stream_bread_double_nbe(stream, pvalue)
+#       define tb_stream_bread_double_bne(stream, pvalue)   tb_stream_bread_double_bbe(stream, pvalue)
+#       define tb_stream_bread_double_lne(stream, pvalue)   tb_stream_bread_double_lbe(stream, pvalue)
 
-#       define tb_stream_bwrit_double_nne(stream, val)    tb_stream_bwrit_double_nbe(stream, val)
-#       define tb_stream_bwrit_double_bne(stream, val)    tb_stream_bwrit_double_bbe(stream, val)
-#       define tb_stream_bwrit_double_lne(stream, val)    tb_stream_bwrit_double_lbe(stream, val)
+#       define tb_stream_bwrit_double_nne(stream, value)    tb_stream_bwrit_double_nbe(stream, value)
+#       define tb_stream_bwrit_double_bne(stream, value)    tb_stream_bwrit_double_bbe(stream, value)
+#       define tb_stream_bwrit_double_lne(stream, value)    tb_stream_bwrit_double_lbe(stream, value)
 #   else
-#       define tb_stream_bread_float_ne(stream)           tb_stream_bread_float_le(stream)
-#       define tb_stream_bwrit_float_ne(stream, val)      tb_stream_bwrit_float_le(stream, val)
+#       define tb_stream_bread_float_ne(stream, pvalue)     tb_stream_bread_float_le(stream, pvalue)
+#       define tb_stream_bwrit_float_ne(stream, value)      tb_stream_bwrit_float_le(stream, value)
 
-#       define tb_stream_bread_double_nne(stream)         tb_stream_bread_double_nle(stream)
-#       define tb_stream_bread_double_bne(stream)         tb_stream_bread_double_ble(stream)
-#       define tb_stream_bread_double_lne(stream)         tb_stream_bread_double_lle(stream)
+#       define tb_stream_bread_double_nne(stream, pvalue)   tb_stream_bread_double_nle(stream, pvalue)
+#       define tb_stream_bread_double_bne(stream, pvalue)   tb_stream_bread_double_ble(stream, pvalue)
+#       define tb_stream_bread_double_lne(stream, pvalue)   tb_stream_bread_double_lle(stream, pvalue)
 
-#       define tb_stream_bwrit_double_nne(stream, val)    tb_stream_bwrit_double_nle(stream, val)
-#       define tb_stream_bwrit_double_bne(stream, val)    tb_stream_bwrit_double_ble(stream, val)
-#       define tb_stream_bwrit_double_lne(stream, val)    tb_stream_bwrit_double_lle(stream, val)
+#       define tb_stream_bwrit_double_nne(stream, value)    tb_stream_bwrit_double_nle(stream, value)
+#       define tb_stream_bwrit_double_bne(stream, value)    tb_stream_bwrit_double_ble(stream, value)
+#       define tb_stream_bwrit_double_lne(stream, value)    tb_stream_bwrit_double_lle(stream, value)
 #   endif
 #endif
 
@@ -794,412 +794,436 @@ tb_byte_t*              tb_stream_bread_all(tb_stream_ref_t stream, tb_bool_t is
 /*! block read uint8 integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint8 integer
+ * @return              tb_true or tb_false
  */
-tb_uint8_t              tb_stream_bread_u8(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u8(tb_stream_ref_t stream, tb_uint8_t* pvalue);
 
 /*! block read sint8 integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint8 integer
+ * @return              tb_true or tb_false
  */
-tb_sint8_t              tb_stream_bread_s8(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s8(tb_stream_ref_t stream, tb_sint8_t* pvalue);
 
 /*! block read uint16-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint16-le integer
+ * @return              tb_true or tb_false
  */
-tb_uint16_t             tb_stream_bread_u16_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u16_le(tb_stream_ref_t stream, tb_uint16_t* pvalue);
 
 /*! block read sint16-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint16-le integer
+ * @return              tb_true or tb_false
  */
-tb_sint16_t             tb_stream_bread_s16_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s16_le(tb_stream_ref_t stream, tb_sint16_t* pvalue);
 
 /*! block read uint24-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint24-le integer
+ * @return              tb_true or tb_false
  */
-tb_uint32_t             tb_stream_bread_u24_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u24_le(tb_stream_ref_t stream, tb_uint32_t* pvalue);
 
 /*! block read sint24-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint24-le integer
+ * @return              tb_true or tb_false
  */
-tb_sint32_t             tb_stream_bread_s24_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s24_le(tb_stream_ref_t stream, tb_sint32_t* pvalue);
 
 /*! block read uint32-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint32-le integer
+ * @return              tb_true or tb_false
  */
-tb_uint32_t             tb_stream_bread_u32_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u32_le(tb_stream_ref_t stream, tb_uint32_t* pvalue);
 
 /*! block read sint32-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint32-le integer
+ * @return              tb_true or tb_false
  */
-tb_sint32_t             tb_stream_bread_s32_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s32_le(tb_stream_ref_t stream, tb_sint32_t* pvalue);
 
 /*! block read uint64-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint64-le integer
+ * @return              tb_true or tb_false
  */
-tb_uint64_t             tb_stream_bread_u64_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u64_le(tb_stream_ref_t stream, tb_uint64_t* pvalue);
 
 /*! block read sint64-le integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint64-le integer
+ * @return              tb_true or tb_false
  */
-tb_sint64_t             tb_stream_bread_s64_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s64_le(tb_stream_ref_t stream, tb_sint64_t* pvalue);
 
 /*! block read uint16-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint16-be integer
+ * @return              tb_true or tb_false
  */
-tb_uint16_t             tb_stream_bread_u16_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u16_be(tb_stream_ref_t stream, tb_uint16_t* pvalue);
 
 /*! block read sint16-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint16-be integer
+ * @return              tb_true or tb_false
  */
-tb_sint16_t             tb_stream_bread_s16_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s16_be(tb_stream_ref_t stream, tb_sint16_t* pvalue);
 
 /*! block read uint24-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint24-be integer
+ * @return              tb_true or tb_false
  */
-tb_uint32_t             tb_stream_bread_u24_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u24_be(tb_stream_ref_t stream, tb_uint32_t* pvalue);
 
 /*! block read sint24-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint24-be integer
+ * @return              tb_true or tb_false
  */
-tb_sint32_t             tb_stream_bread_s24_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s24_be(tb_stream_ref_t stream, tb_sint32_t* pvalue);
 
 /*! block read uint32-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint32-be integer
+ * @return              tb_true or tb_false
  */
-tb_uint32_t             tb_stream_bread_u32_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u32_be(tb_stream_ref_t stream, tb_uint32_t* pvalue);
 
 /*! block read sint32-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint32-be integer
+ * @return              tb_true or tb_false
  */
-tb_sint32_t             tb_stream_bread_s32_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s32_be(tb_stream_ref_t stream, tb_sint32_t* pvalue);
 
 /*! block read uint64-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the uint64-be integer
+ * @return              tb_true or tb_false
  */
-tb_uint64_t             tb_stream_bread_u64_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_u64_be(tb_stream_ref_t stream, tb_uint64_t* pvalue);
 
 /*! block read sint64-be integer
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the sint64-be integer
+ * @return              tb_true or tb_false
  */
-tb_sint64_t             tb_stream_bread_s64_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_s64_be(tb_stream_ref_t stream, tb_sint64_t* pvalue);
 
 /*! block writ uint8 integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u8(tb_stream_ref_t stream, tb_uint8_t val);
+tb_bool_t               tb_stream_bwrit_u8(tb_stream_ref_t stream, tb_uint8_t value);
 
 /*! block writ sint8 integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s8(tb_stream_ref_t stream, tb_sint8_t val);
+tb_bool_t               tb_stream_bwrit_s8(tb_stream_ref_t stream, tb_sint8_t value);
 
 /*! block writ uint16-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u16_le(tb_stream_ref_t stream, tb_uint16_t val);
+tb_bool_t               tb_stream_bwrit_u16_le(tb_stream_ref_t stream, tb_uint16_t value);
 
 /*! block writ sint16-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s16_le(tb_stream_ref_t stream, tb_sint16_t val);
+tb_bool_t               tb_stream_bwrit_s16_le(tb_stream_ref_t stream, tb_sint16_t value);
 
 /*! block writ uint24-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u24_le(tb_stream_ref_t stream, tb_uint32_t val);
+tb_bool_t               tb_stream_bwrit_u24_le(tb_stream_ref_t stream, tb_uint32_t value);
 
 /*! block writ sint24-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s24_le(tb_stream_ref_t stream, tb_sint32_t val);
+tb_bool_t               tb_stream_bwrit_s24_le(tb_stream_ref_t stream, tb_sint32_t value);
 
 /*! block writ uint32-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u32_le(tb_stream_ref_t stream, tb_uint32_t val);
+tb_bool_t               tb_stream_bwrit_u32_le(tb_stream_ref_t stream, tb_uint32_t value);
 
 /*! block writ sint32-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s32_le(tb_stream_ref_t stream, tb_sint32_t val);
+tb_bool_t               tb_stream_bwrit_s32_le(tb_stream_ref_t stream, tb_sint32_t value);
 
 /*! block writ uint64-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u64_le(tb_stream_ref_t stream, tb_uint64_t val);
+tb_bool_t               tb_stream_bwrit_u64_le(tb_stream_ref_t stream, tb_uint64_t value);
 
 /*! block writ sint64-le integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s64_le(tb_stream_ref_t stream, tb_sint64_t val);
+tb_bool_t               tb_stream_bwrit_s64_le(tb_stream_ref_t stream, tb_sint64_t value);
 
 /*! block writ uint16-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u16_be(tb_stream_ref_t stream, tb_uint16_t val);
+tb_bool_t               tb_stream_bwrit_u16_be(tb_stream_ref_t stream, tb_uint16_t value);
 
 /*! block writ sint16-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s16_be(tb_stream_ref_t stream, tb_sint16_t val);
+tb_bool_t               tb_stream_bwrit_s16_be(tb_stream_ref_t stream, tb_sint16_t value);
 
 /*! block writ uint24-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u24_be(tb_stream_ref_t stream, tb_uint32_t val);
+tb_bool_t               tb_stream_bwrit_u24_be(tb_stream_ref_t stream, tb_uint32_t value);
 
 /*! block writ sint24-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s24_be(tb_stream_ref_t stream, tb_sint32_t val);
+tb_bool_t               tb_stream_bwrit_s24_be(tb_stream_ref_t stream, tb_sint32_t value);
 
 /*! block writ uint32-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u32_be(tb_stream_ref_t stream, tb_uint32_t val);
+tb_bool_t               tb_stream_bwrit_u32_be(tb_stream_ref_t stream, tb_uint32_t value);
 
 /*! block writ sint32-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s32_be(tb_stream_ref_t stream, tb_sint32_t val);
+tb_bool_t               tb_stream_bwrit_s32_be(tb_stream_ref_t stream, tb_sint32_t value);
 
 /*! block writ uint64-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_u64_be(tb_stream_ref_t stream, tb_uint64_t val);
+tb_bool_t               tb_stream_bwrit_u64_be(tb_stream_ref_t stream, tb_uint64_t value);
 
 /*! block writ sint64-be integer
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_s64_be(tb_stream_ref_t stream, tb_sint64_t val);
+tb_bool_t               tb_stream_bwrit_s64_be(tb_stream_ref_t stream, tb_sint64_t value);
 
 #ifdef TB_CONFIG_TYPE_HAVE_FLOAT
 
 /*! read float-le number
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the float-le number
+ * @return              tb_true or tb_false
  */
-tb_float_t              tb_stream_bread_float_le(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_float_le(tb_stream_ref_t stream, tb_float_t* pvalue);
 
 /*! read float-be number
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the float-be number
+ * @return              tb_true or tb_false
  */
-tb_float_t              tb_stream_bread_float_be(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_float_be(tb_stream_ref_t stream, tb_float_t* pvalue);
 
 /*! read double-ble number
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the double-ble number
+ * @return              tb_true or tb_false
  */
-tb_double_t             tb_stream_bread_double_ble(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_double_ble(tb_stream_ref_t stream, tb_double_t* pvalue);
 
 /*! read double-bbe number
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the double-bbe number
+ * @return              tb_true or tb_false
  */
-tb_double_t             tb_stream_bread_double_bbe(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_double_bbe(tb_stream_ref_t stream, tb_double_t* pvalue);
 
 /*! read double-lle number
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the double-lle number
+ * @return              tb_true or tb_false
  */
-tb_double_t             tb_stream_bread_double_lle(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_double_lle(tb_stream_ref_t stream, tb_double_t* pvalue);
 
 /*! read double-lbe number
  *
  * @param stream        the stream
+ * @param pvalue        the value pointer
  *
- * @return              the double-lbe number
+ * @return              tb_true or tb_false
  */
-tb_double_t             tb_stream_bread_double_lbe(tb_stream_ref_t stream);
+tb_bool_t               tb_stream_bread_double_lbe(tb_stream_ref_t stream, tb_double_t* pvalue);
 
 /*! writ float-le number
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_float_le(tb_stream_ref_t stream, tb_float_t val);
+tb_bool_t               tb_stream_bwrit_float_le(tb_stream_ref_t stream, tb_float_t value);
 
 /*! writ float-be number
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_float_be(tb_stream_ref_t stream, tb_float_t val);
+tb_bool_t               tb_stream_bwrit_float_be(tb_stream_ref_t stream, tb_float_t value);
 
 /*! writ double-ble number
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_double_ble(tb_stream_ref_t stream, tb_double_t val);
+tb_bool_t               tb_stream_bwrit_double_ble(tb_stream_ref_t stream, tb_double_t value);
 
 /*! writ double-bbe number
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_double_bbe(tb_stream_ref_t stream, tb_double_t val);
+tb_bool_t               tb_stream_bwrit_double_bbe(tb_stream_ref_t stream, tb_double_t value);
 
 /*! writ double-lle number
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_double_lle(tb_stream_ref_t stream, tb_double_t val);
+tb_bool_t               tb_stream_bwrit_double_lle(tb_stream_ref_t stream, tb_double_t value);
 
 /*! writ double-lbe number
  *
  * @param stream        the stream
- * @param val           the value
+ * @param value         the value
  *
  * @return              tb_true or tb_false
  */
-tb_bool_t               tb_stream_bwrit_double_lbe(tb_stream_ref_t stream, tb_double_t val);
+tb_bool_t               tb_stream_bwrit_double_lbe(tb_stream_ref_t stream, tb_double_t value);
 
 #endif
 

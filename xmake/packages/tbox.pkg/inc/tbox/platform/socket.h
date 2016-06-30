@@ -66,6 +66,8 @@ typedef enum __tb_socket_ctrl_e
 ,   TB_SOCKET_CTRL_GET_RECV_BUFF_SIZE   = 3
 ,   TB_SOCKET_CTRL_SET_SEND_BUFF_SIZE   = 4
 ,   TB_SOCKET_CTRL_GET_SEND_BUFF_SIZE   = 5
+,   TB_SOCKET_CTRL_SET_TCP_NODELAY      = 6
+,   TB_SOCKET_CTRL_GET_TCP_NODELAY      = 7
 
 }tb_socket_ctrl_e;
 
