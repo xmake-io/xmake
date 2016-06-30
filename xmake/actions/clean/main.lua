@@ -74,7 +74,7 @@ function _on_clean_target(target)
     if option.get("all") then 
 
         -- remove the config.h file
-        _remove(target:get("config_h")) 
+        _remove(target:configheader()) 
     end
 end
 

@@ -105,7 +105,7 @@ if is_plat("windows") then
 end
 
 -- add packages
-add_pkgdirs("pkg") 
+add_packagedirs("pkg") 
 
 -- add projects
 add_subdirs("src") 

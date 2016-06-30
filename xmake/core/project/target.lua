@@ -139,6 +139,38 @@ function target:targetfile()
     return path.join(targetdir, filename)
 end
 
+-- get the config header files
+function target:configheader(outputdir)
+
+    -- get config header
+    local configheader = self:get("config_h")
+    if not configheader then
+        return 
+    end
+
+    -- get the root directory
+    local rootdir, count = configheader:gsub("|.*$", ""):gsub("%(.*%)$", "")
+    if count == 0 then
+        rootdir = nil
+    end
+
+    -- remove '(' and ')'
+    configheader = configheader:gsub("[%(%)]", "")
+
+    -- get the output header
+    local outputheader = nil
+    if outputdir then
+        if rootdir then
+            outputheader = path.absolute(path.relative(configheader, rootdir), outputdir)
+        else
+            outputheader = path.join(outputdir, path.filename(configheader))
+        end
+    end
+
+    -- ok
+    return configheader, outputheader
+end
+
 -- get the source files 
 function target:sourcefiles()
 
@@ -302,7 +334,10 @@ function target:headerfiles(outputdir)
     for _, header in ipairs(table.wrap(headers)) do
 
         -- get the root directory
-        local rootdir = header:gsub("%(.*%)", ""):gsub("|.*$", "")
+        local rootdir, count = header:gsub("|.*$", ""):gsub("%(.*%)$", "")
+        if count == 0 then
+            rootdir = nil
+        end
 
         -- remove '(' and ')'
         local srcpathes = header:gsub("[%(%)]", "")
@@ -318,8 +353,13 @@ function target:headerfiles(outputdir)
                 -- add the destinate headers
                 for _, srcpath in ipairs(srcpathes) do
 
-                    -- the header
-                    local dstheader = path.absolute(path.relative(srcpath, rootdir), headerdir)
+                    -- the destinate header
+                    local dstheader = nil
+                    if rootdir then
+                        dstheader = path.absolute(path.relative(srcpath, rootdir), headerdir)
+                    else
+                        dstheader = path.join(headerdir, path.filename(srcpath))
+                    end
                     assert(dstheader)
 
                     -- add it

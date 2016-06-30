@@ -27,7 +27,7 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
-import("config_h")
+import("configheader")
 
 -- filter option 
 function _option_filter(name)
@@ -185,7 +185,7 @@ function main()
     cache.flush()
 
     -- make the config.h
-    config_h.make()
+    configheader.make()
 
     -- dump it
     config.dump()

@@ -62,9 +62,9 @@ function _install_library(target)
     os.cp(target:targetfile(), librarydir)
 
     -- copy the config.h to the include directory
-    local config_h = target:get("config_h")
-    if config_h then
-        os.cp(config_h, includedir) 
+    local configheader, configoutput = target:configheader(includedir)
+    if configheader and configoutput then
+        os.cp(configheader, configoutput) 
     end
 
     -- copy headers to the include directory
@@ -110,9 +110,9 @@ function _uninstall_library(target)
     os.rm(path.join(librarydir, path.filename(target:targetfile())))
 
     -- reove the config.h from the include directory
-    local config_h = target:get("config_h")
-    if config_h then
-        os.rm(path.join(includedir, path.filename(config_h))) 
+    local _, configoutput = target:configheader(includedir)
+    if configoutput then
+        os.rm(configoutput) 
     end
 
     -- remove headers from the include directory
