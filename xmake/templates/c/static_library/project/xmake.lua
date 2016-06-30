@@ -31,7 +31,7 @@ target("[targetname]")
     add_files("src/interface.c") 
 
 -- add target
-target("test")
+target("[targetname]_demo")
 
     -- set kind
     set_kind("binary")
