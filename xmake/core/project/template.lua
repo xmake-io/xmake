@@ -140,9 +140,11 @@ function template.templates(language)
 
             -- insert to templates
             table.insert(templates, results)
-
         end
     end
+
+    -- sort templates
+    table.sort(templates, function(a, b) return string.strcmp(a.description, b.description) < 0 end)
 
     -- ok?
     return templates
