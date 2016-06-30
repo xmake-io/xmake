@@ -77,7 +77,7 @@ function tool._find(root, name)
     name = (name:gsub("%s%-+%w+", " "))
 
     -- get the last name by ' ': xxx xxx toolname
-    local names = name:split("%s+")
+    local names = name:split("%s")
     if #names > 0 then
         name = names[#names]
     end
