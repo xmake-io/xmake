@@ -14,6 +14,7 @@
 * Fix api scope leaks bug
 * Fix path bug for windows
 * Fix check function bug
+* Fix check toolchains failed
 
 ## v2.0.1
 
@@ -102,6 +103,7 @@
 ### 改进
 
 * 修改安装和卸载的action处理
+* 更新工程模板
 
 ### Bugs修复
 
@@ -110,6 +112,7 @@
 * 修复api作用域泄露问题
 * 修复在windows上的一些路径问题
 * 修复检测宏函数失败问题
+* 修复检测工具链失败问题
 
 ## v2.0.1
 

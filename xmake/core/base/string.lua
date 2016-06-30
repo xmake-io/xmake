@@ -41,12 +41,12 @@ function string:find_last(pattern, plain)
     end
 end
 
--- split string with the given pattern
-function string:split(pattern)
+-- split string with the given characters
+function string:split(chars)
 
     -- split it
     local list = {}
-    self:gsub("[^" .. pattern .."]+", function(v) table.insert(list, v) end )
+    self:gsub("[^" .. chars .."]+", function(v) table.insert(list, v) end )
     return list
 end
 
