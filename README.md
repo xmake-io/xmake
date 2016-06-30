@@ -375,13 +375,6 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 * [libsvx](https://github.com/caikelun/libsvx)
 * [更多项目](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
 
-####后续工作
-
-1. 实现生成.ipa、.apk、.app、.deb、.rmp的打包插件
-2. 实现包的自动依赖管理，如果依赖包不存在，会去自动下载编译安装后，继续进行构建，支持交叉平台的包管理
-3. 实现转换automake、cmake的工到xmake的描述文件的插件，实现无缝编译
-4. 实现vs、xcode等工程文件生成插件
-
 ####简单例子
 
     -- the debug mode

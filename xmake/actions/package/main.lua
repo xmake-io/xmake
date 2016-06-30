@@ -41,9 +41,9 @@ function _package_library(target)
     os.cp(target:targetfile(), format("%s/%s.pkg/lib/$(mode)/$(plat)/$(arch)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
 
     -- copy the config.h to the output directory
-    local config_h = target:get("config_h")
-    if config_h then
-        os.cp(config_h, format("%s/%s.pkg/inc/$(plat)/%s", outputdir, targetname, path.filename(config_h))) 
+    local configheader = target:configheader()
+    if configheader then
+        os.cp(configheader, format("%s/%s.pkg/inc/$(plat)/%s", outputdir, targetname, path.filename(configheader))) 
     end
 
     -- copy headers

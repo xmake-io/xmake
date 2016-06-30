@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        config_h.lua
+-- @file        configheader.lua
 --
 
 -- imports
@@ -29,17 +29,17 @@ import("core.project.project")
 function _make_for_target(files, target)
 
     -- get the target configure file 
-    local config_h = target:get("config_h")
-    if not config_h then return end
+    local configheader = target:configheader()
+    if not configheader then return end
 
     -- the prefix
     local prefix = target:get("config_h_prefix") or (target:name():upper() .. "_CONFIG")
 
     -- open the file
-    local file = files[config_h] or io.open(config_h, "w")
+    local file = files[configheader] or io.open(configheader, "w")
 
     -- make the head
-    if files[config_h] then file:print("") end
+    if files[configheader] then file:print("") end
     file:print("#ifndef %s_H", prefix)
     file:print("#define %s_H", prefix)
     file:print("")
@@ -102,7 +102,7 @@ function _make_for_target(files, target)
     file:print("#endif")
 
     -- cache the file
-    files[config_h] = file
+    files[configheader] = file
 
 end
 
