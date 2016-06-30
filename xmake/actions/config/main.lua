@@ -74,6 +74,49 @@ function _need_check()
     return changed
 end
 
+-- check dependent target
+function _check_target_deps(target)
+
+    -- check 
+    for _, depname in ipairs(target:get("deps")) do
+
+        -- get dependent target
+        local deptarget = project.target(depname)
+
+        -- check target name
+        assert(deptarget, "unknown target: %s for %s.deps!", depname, target:name())
+
+        -- check the dependent targets
+        _check_target_deps(deptarget)
+    end
+end
+
+-- check target
+function _check_target(targetname)
+
+    -- check
+    assert(targetname)
+
+    -- all?
+    if targetname == "all" then
+
+        -- check the dependent targets
+        for _, target in pairs(project.targets()) do
+            _check_target_deps(target)
+        end
+    else
+
+        -- get target
+        local target = project.target(targetname)
+
+        -- check target name
+        assert(target, "unknown target: %s", targetname)
+
+        -- check the dependent targets
+        _check_target_deps(target)
+    end
+end
+
 -- main
 function main()
 
@@ -88,7 +131,7 @@ function main()
     end
 
     -- the target name
-    local targetname = option.get("target")
+    local targetname = option.get("target") or "all"
 
     -- load global configure
     global.load()
@@ -165,9 +208,7 @@ function main()
     project.load()
 
     -- check target
-    if targetname and targetname ~= "all" and nil == project.target(targetname) then
-        raise("unknown target: %s", targetname)
-    end
+    _check_target(targetname)
 
     -- save options and configure for the given target
     config.save(targetname)
