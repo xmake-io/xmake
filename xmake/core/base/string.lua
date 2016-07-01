@@ -129,6 +129,12 @@ function string.join(items, sep)
     return str
 end
 
+-- less than
+function string:less(other)
+
+    -- < ?
+    return string.strcmp(self, other) < 0
+end
 
 -- return module: string
 return string
