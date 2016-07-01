@@ -1,7 +1,7 @@
 # Setup
 title:        xmake
 tagline:      A make-like build utility based on Lua
-baseurl:      ""
+baseurl:      "xmake"
 paginate:     1
 
 # About/contact
