@@ -72,7 +72,7 @@ function sandbox_os.mv(src, dst)
 end
 
 -- remove file or directory
-function sandbox_os.rm(file_or_dir, emptydir)
+function sandbox_os.rm(file_or_dir, rm_superdir_if_empty)
     
     -- check
     assert(file_or_dir)
@@ -81,7 +81,7 @@ function sandbox_os.rm(file_or_dir, emptydir)
     file_or_dir = vformat(file_or_dir)
 
     -- done
-    local ok, errors = os.rm(file_or_dir, emptydir)
+    local ok, errors = os.rm(file_or_dir, rm_superdir_if_empty)
     if not ok then
         os.raise(errors)
     end

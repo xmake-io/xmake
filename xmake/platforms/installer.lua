@@ -111,12 +111,12 @@ function uninstall_library_on_unix(target)
     -- reove the config.h from the include directory
     local _, configoutput = target:configheader(includedir)
     if configoutput then
-        os.rm(configoutput) 
+        os.rm(configoutput, true) 
     end
 
     -- remove headers from the include directory
     local _, dstheaders = target:headerfiles(includedir)
     for _, dstheader in ipairs(dstheaders) do
-        os.rm(dstheader)
+        os.rm(dstheader, true)
     end
 end
