@@ -7,7 +7,7 @@ paginate:     1
 # About/contact
 author:
   name:       waruqi
-  url:        http://xmake.io 
+  url:        http://tboox.org 
 
 # Gems
 gems:
