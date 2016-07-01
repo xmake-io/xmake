@@ -9,9 +9,22 @@ title: {{ site.name }}
         set_kind("binary")
         add_files("src/*.c") 
 
-## Fast building 
+## Build project
 
     xmake
+
+## Run target
+
+    xmake run console
+
+## Support features
+
+* Tasks
+* Macros
+* Actions
+* Options
+* Plugins
+* Templates
 
 ## Support platforms
 
@@ -29,3 +42,11 @@ title: {{ site.name }}
 * Objc/Objc++
 * Swift
 * Assembly
+
+## In the plans
+
+* Manage package and dependence
+* Download package automaticlly
+* Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
+* Implement more plugins
+* Create more project files for IDE (.e.g vs, xcode ..)
