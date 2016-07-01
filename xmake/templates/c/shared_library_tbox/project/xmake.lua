@@ -10,9 +10,12 @@ set_languages("c99", "cxx11")
 -- disable some compiler errors
 add_cxflags("-Wno-error=deprecated-declarations")
 add_mxflags("-Wno-error=deprecated-declarations")
+ 
+-- add defines for c files
+add_defines("_GNU_SOURCE=1", "_REENTRANT")
 
--- the debug mode
-if is_mode("debug") then
+-- the debug or check or coverage mode
+if is_mode("debug", "check", "coverage") then
     
     -- enable the debug symbols
     set_symbols("debug")
@@ -24,14 +27,21 @@ if is_mode("debug") then
     add_defines("__tb_debug__")
 
     -- attempt to enable some checkers for pc
-    if is_arch("i386", "x86_64") then
+    if is_mode("check") and is_arch("i386", "x86_64") then
         add_cxflags("-fsanitize=address", "-ftrapv")
         add_mxflags("-fsanitize=address", "-ftrapv")
         add_ldflags("-fsanitize=address")
     end
+
+    -- enable coverage
+    if is_mode("coverage") then
+        add_cxflags("--coverage")
+        add_mxflags("--coverage")
+        add_ldflags("--coverage")
+    end
 end
 
--- the release or profile is_mode
+-- the release or profile mode
 if is_mode("release", "profile") then
 
     -- the release mode
@@ -53,36 +63,23 @@ if is_mode("release", "profile") then
         -- enable the debug symbols
         set_symbols("debug")
 
+        -- enable gprof
+        add_cxflags("-pg")
+        add_ldflags("-pg")
     end
 
-    -- for pc
-    if is_arch("i386", "x86_64") then
- 
-        -- enable fastest optimization
-        set_optimize("fastest")
-
-    -- for embed
-    else
-        -- enable smallest optimization
-        set_optimize("smallest")
-    end
+    -- enable fastest optimization
+    set_optimize("fastest")
 
     -- attempt to add vector extensions 
     add_vectorexts("sse2", "sse3", "ssse3", "mmx")
 end
 
--- for embed
-if not is_arch("i386", "x86_64") then
-
-    -- add defines for small
-    add_defines("__tb_small__")
-
-    -- add defines to config.h
-    add_defines_h("$(prefix)_SMALL")
-end
-
 -- for the windows platform (msvc)
 if is_plat("windows") then 
+
+    -- add some defines only for windows
+    add_defines("NOCRYPT", "NOGDI")
 
     -- the release mode
     if is_mode("release") then
