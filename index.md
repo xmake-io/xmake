@@ -12,6 +12,8 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ###Features
 
+s
+
 - Create projects and supports many project templates
 - Support c/c++, objc/c++, swift and assembly language
 - Automatically probe the host environment and configure project 
