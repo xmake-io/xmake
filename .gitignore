@@ -22,6 +22,7 @@
 .svn
 .DS_Store
 .xmake
+_site
 cscope.*
 gmon.out
 other
