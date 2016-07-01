@@ -10,9 +10,7 @@ xmake is a make-like build utility based on lua.
 The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
-###Features
-
-s
+##Features
 
 - Create projects and supports many project templates
 - Support c/c++, objc/c++, swift and assembly language
