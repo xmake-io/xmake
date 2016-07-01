@@ -172,8 +172,8 @@ function os.mv(src, dst)
     return true
 end
 
--- remove file or directory
-function os.rm(file_or_dir, emptydir)
+-- remove file or directory and remove it if the super directory be empty
+function os.rm(file_or_dir, rm_superdir_if_empty)
     
     -- check
     assert(file_or_dir)
@@ -187,8 +187,16 @@ function os.rm(file_or_dir, emptydir)
     -- is directory?
     elseif os.isdir(file_or_dir) then
         -- remove directory
-        if not os.rmdir(file_or_dir, emptydir) then
+        if not os.rmdir(file_or_dir) then
             return false, string.format("cannot remove directory %s %s", file_or_dir, os.strerror())
+        end
+    end
+
+    -- remove the super directory if be empty
+    if rm_superdir_if_empty then
+        local superdir = path.directory(file_or_dir)
+        if os.isdir(superdir) then
+            os.rmdir(superdir, true)
         end
     end
 
