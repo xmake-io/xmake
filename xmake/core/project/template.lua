@@ -144,7 +144,7 @@ function template.templates(language)
     end
 
     -- sort templates
-    table.sort(templates, function(a, b) return string.strcmp(a.description, b.description) < 0 end)
+    table.sort(templates, function(a, b) return a.description:less(b.description) end)
 
     -- ok?
     return templates
