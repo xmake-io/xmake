@@ -10,7 +10,7 @@ xmake is a make-like build utility based on lua.
 The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
-####Features
+###Features
 
 - Create projects and supports many project templates
 - Support c/c++, objc/c++, swift and assembly language
@@ -23,7 +23,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Do not generate makefile and build project directly
 - Support multitasking with argument: -j 
 
-####Actions
+###Actions
 
 - config: Configure project before building. 
 - global: Configure the global options for xmake.
@@ -35,21 +35,21 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - uninstall: Uninstall the project binary files.
 - run: Run the project target.
 
-####Plugins
+###Plugins
 
 - The doxygen plugin: Make doxygen document from source codes
 - The macro plugin: Record and playback commands 
 - The hello plugin: A simple plugin demo to show 'hello xmake!'
 - The project plugin: Create the project file for IDE (.e.g makefile and vs, xcode in the feature ...)
 
-####Languages
+###Languages
 
 - C/C++
 - Objc/Objc++
 - Swift
 - Assembly
 
-####Platforms
+###Platforms
 
 - Windows (x86, x64, amd64, x86_amd64)
 - Macosx (i386, x86_64)
@@ -59,7 +59,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-####In the plans
+###In the plans
 
 - Manage package and dependence
 - Download package automaticlly
@@ -67,7 +67,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Implement more plugins
 - Create more project file for IDE (.e.g vs, xcode ..)
 
-####Examples
+###Examples
 
 Create a c++ console project:
 
