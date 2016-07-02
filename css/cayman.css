@@ -273,3 +273,43 @@ a {
   top: 2px;
   left: 24px;
 }
+
+#nav,
+#translations {
+  list-style-type: none;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+#nav li,
+#translations li {
+  display: inline-block;
+  position: relative;
+  line-height: 40px;
+}
+#nav li:last-child .nav-link,
+#translations li:last-child .nav-link {
+  margin-right: 0;
+}
+#translations {
+  margin-bottom: 0em;
+}
+#translations .delimiter {
+  color: #7f8c8d;
+  margin: 0 5px;
+}
+#translations .nav-link {
+  margin: 0;
+}
+.nav-link {
+  color: #7f8c8d;
+  padding-bottom: 3px;
+  margin: 0 1.5em;
+}
+.nav-link:first-child {
+  margin-left: 0;
+}
+.nav-link:hover,
+.nav-link.current {
+  border-bottom: 3px solid #42b983;
+}
