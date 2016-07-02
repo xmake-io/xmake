@@ -360,6 +360,23 @@ function os.raise(msg, ...)
     end
 end
 
+-- is executable program?
+function os.isexec(filepath)
+
+    -- check
+    assert(filepath)
+
+    -- TODO
+    -- check permission
+
+    -- is *.exe for windows?
+    if xmake._HOST == "windows" and not filepath:find("%.exe") then
+        filepath = filepath .. ".exe"
+    end
+
+    -- file exists?
+    return os.isfile(filepath)
+end
 
 -- return module
 return os
