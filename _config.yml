@@ -1,6 +1,7 @@
 # Setup
 title:        xmake
 tagline:      A make-like build utility based on Lua
+tagline_cn:   一个基于Lua的轻量级自动构建工具
 baseurl:      ""
 paginate:     1
 
@@ -9,9 +10,10 @@ author:
   name:       waruqi
   url:        http://tboox.org 
 
-# Gems
-gems:
-  - jekyll-paginate
-
 #Others
 markdown: kramdown
+
+# multiple-languages
+gems:               ['jekyll-paginate', 'jekyll-multiple-languages']
+languages:          ['en', 'cn']
+language_default:   'en'
