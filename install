@@ -8,7 +8,11 @@ verbose=
 #verbose=-v
 
 # prefix
-prefix=/usr/local
+if [ -d "/usr/local" ]; then
+    prefix=/usr/local
+elif [ -d "/usr" ]; then
+    prefix=/usr
+fi
 if [ $1 ]; then
     prefix=$1
 fi
