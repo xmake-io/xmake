@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  
+  <head>
+  <meta charset="UTF-8">
+  <title>xmake</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/css/cayman.css">
+</head>
+
+  <body>
+    <section class="page-header">
+  <h1 class="project-name">xmake</h1>
+  <h2 class="project-tagline">一个基于Lua的轻量级自动构建工具</h2>
+  <a href="https://github.com/waruqi/xmake/wiki" class="btn">开始使用</a>
+  <br><br>
+  <iframe src="https://ghbtns.com/github-btn.html?user=waruqi&amp;repo=xmake&amp;type=star&amp;count=true" frameborder="0" scrolling="0" width="110px" height="20px"></iframe>
+    <span class="donate" style="width: 108px">
+      <img src="/img/patreon.png">
+      <a href="http://tboox.org/donation/">支持我们</a>
+    </span>
+  <br><br>
+<ul id="translations">
+      <li><a href="/cn/" class="nav-link">中文</a></li>
+      <li class="delimiter">|</li>
+      <li><a href="/" class="nav-link">English</a></li>
+    </ul>
+</section>
+
+
+
+    <section class="main-content">
+      
+      <h2 id="section">简单的工程描述</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+</code></pre>
+</div>
+
+<h2 id="section-1">构建工程</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>xmake
+</code></pre>
+</div>
+
+<h2 id="section-2">运行目标</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>xmake run console
+</code></pre>
+</div>
+
+<h2 id="section-3">支持特性</h2>
+
+<ul>
+  <li>Tasks</li>
+  <li>Macros</li>
+  <li>Actions</li>
+  <li>Options</li>
+  <li>Plugins</li>
+  <li>Templates</li>
+</ul>
+
+<h2 id="section-4">支持平台</h2>
+
+<ul>
+  <li>Windows (x86, x64, amd64, x86_amd64)</li>
+  <li>Macosx (i386, x86_64)</li>
+  <li>Linux (i386, x86_64, cross-toolchains …)</li>
+  <li>Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)</li>
+  <li>iPhoneOS (armv7, armv7s, arm64, i386, x86_64)</li>
+  <li>WatchOS (armv7k, i386)</li>
+  <li>Mingw (i386, x86_64)</li>
+</ul>
+
+<h2 id="section-5">支持语言</h2>
+
+<ul>
+  <li>C/C++</li>
+  <li>Objc/Objc++</li>
+  <li>Swift</li>
+  <li>Assembly</li>
+</ul>
+
+<h2 id="section-6">后续计划</h2>
+
+<ul>
+  <li>自动包依赖管理和下载</li>
+  <li>创建移植仓库，实现<code class="highlighter-rouge">一人移植，多人共享</code></li>
+  <li>更多的插件开发</li>
+  <li>自动生成vs, xcode等工程文件</li>
+</ul>
+
+
+      <footer class="site-footer">
+  <span class="site-footer-owner">Copyright (c) 2016 <a href="http://tboox.org">tboox.org</a>.</span>
+</footer>
+
+
+    </section>
+
+  </body>
+</html>
