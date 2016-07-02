@@ -4,6 +4,21 @@ This is a [Jekyll][1] theme for [@jasonlong][2]'s [Cayman theme][4] on [GitHub P
 
 # Developing
 
-Please checkout the sitesrc branch first!
+Start a local server at localhost:4000:
+
+```
+$ jekyll serve
+```
+
+# Publishing site
+
+```
+$ ./build gh-pages
+$ git commit -a -m "..."
+$ git push origin gh-pages
+$ git checkout sitesrc
+```
+
+For more details read about [Jekyll][1] on its web page.
 
 
