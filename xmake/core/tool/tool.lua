@@ -255,7 +255,7 @@ function tool.check(shellname, dirs, check)
 
             -- the tool path
             local toolpath = path.join(dir, shellname)
-            if os.isfile(toolpath) then
+            if os.isexec(toolpath) then
             
                 -- check it
                 if tool._check(toolpath, check) then

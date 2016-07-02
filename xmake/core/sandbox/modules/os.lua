@@ -294,6 +294,19 @@ function sandbox_os.isfile(filepath)
     return os.isfile(filepath)
 end
 
+-- is execute program?
+function sandbox_os.isexec(filepath)
+
+    -- check
+    assert(filepath)
+
+    -- format it first
+    filepath = vformat(filepath)
+
+    -- done
+    return os.isexec(filepath)
+end
+
 -- exists file or directory?
 function sandbox_os.exists(file_or_dir)
 
