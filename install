@@ -8,9 +8,9 @@ verbose=
 #verbose=-v
 
 # prefix
-if [ -d "/usr/local" ]; then
+if [[ "$PATH" =~ "/usr/local/bin" ]]; then
     prefix=/usr/local
-elif [ -d "/usr" ]; then
+else
     prefix=/usr
 fi
 if [ $1 ]; then
@@ -113,6 +113,11 @@ chmod 777 $xmake_loader_install
 if [ $? -ne 0 ]; then
     echo "install xmake loader failed!"
     exit;
+fi
+
+# tip
+if [[ ! "$PATH" =~ "$prefix/bin" ]]; then
+    echo 'please export PATH=$PATH:'"$prefix/bin"
 fi
 
 # ok
