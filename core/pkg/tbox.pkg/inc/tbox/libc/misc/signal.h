@@ -77,6 +77,8 @@
 #   define TB_SIGPWR                        (30)                    // power failure restart (system v).
 #   define TB_SIGSYS                        (31)                    // bad system call.
 #   define TB_SIGUNUSED                     (31)
+
+#   define TB_SIG_DFL                       ((tb_void_t (*)(tb_int_t))0)
 #endif
 
 #endif

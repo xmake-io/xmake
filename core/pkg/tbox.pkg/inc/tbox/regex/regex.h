@@ -29,6 +29,11 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
@@ -406,5 +411,10 @@ tb_char_t const*        tb_regex_replace_done_cstr(tb_char_t const* pattern, tb_
  */
 tb_char_t const*        tb_regex_replace_done_simple(tb_char_t const* pattern, tb_size_t mode, tb_char_t const* cstr, tb_char_t const* replace_cstr);
 
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif
