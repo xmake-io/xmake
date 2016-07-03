@@ -78,7 +78,7 @@ function _make_object(makefile, target, srcfile, objfile)
 
     -- make command
     local ccache    = tool.shellname("ccache") 
-    local command   = compiler.command(target, srcfile, objfile)
+    local command   = compiler.compcmd(srcfile, objfile, target)
     if ccache then
         command = ccache:append(command, " ")
     end
@@ -140,7 +140,7 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make the command
-    local command = linker.command(target)
+    local command = linker.linkcmd(target:objectfiles, targetfile, target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))

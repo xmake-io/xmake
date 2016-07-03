@@ -92,7 +92,7 @@ function _build_object(target, index)
     end
 
     -- make command
-    local command   = compiler.command(target, sourcefile, objectfile)
+    local command = compiler.compcmd(sourcefile, objectfile, target)
 
     -- uses ccache
     local ccache = nil
@@ -194,7 +194,7 @@ function _build_target(target)
 
     -- make the command for linking target
     local targetfile    = target:targetfile()
-    local command       = linker.command(target)
+    local command       = linker.linkcmd(target:objectfiles(), targetfile, target)
 
     -- trace
     print("[%02d%%]: linking.$(mode) %s", _g.targetindex * 100 / _g.targetcount, path.filename(targetfile))

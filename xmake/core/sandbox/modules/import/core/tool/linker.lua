@@ -25,19 +25,20 @@ local sandbox_core_tool_linker = sandbox_core_tool_linker or {}
 
 -- load modules
 local platform  = require("platform/platform")
+local linker    = require("tool/linker")
 local raise     = require("sandbox/modules/raise")
 
 -- make command for linking target file
-function sandbox_core_tool_linker.command(target)
+function sandbox_core_tool_linker.linkcmd(objectfiles, targetfile, target)
  
     -- get the linker instance
-    local instance, errors = target:linker()
+    local instance, errors = linker.load(target:get("kind"))
     if not instance then
         raise(errors)
     end
 
     -- make command
-    return instance:command(target, target:objectfiles(), target:targetfile())
+    return instance:linkcmd(objectfiles, targetfile, target)
 end
 
 -- return module

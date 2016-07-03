@@ -25,19 +25,20 @@ local sandbox_core_tool_compiler = sandbox_core_tool_compiler or {}
 
 -- load modules
 local platform  = require("platform/platform")
+local compiler  = require("tool/compiler")
 local raise     = require("sandbox/modules/raise")
 
 -- make command for compiling source file
-function sandbox_core_tool_compiler.command(target, sourcefile, objectfile, logfile)
+function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target)
  
     -- get the compiler instance
-    local instance, errors = target:compiler(sourcefile)
+    local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))
     if not instance then
         raise(errors)
     end
 
     -- make command
-    return instance:command(target, sourcefile, objectfile, logfile)
+    return instance:compcmd(sourcefile, objectfile, target)
 end
 
 -- return module

@@ -398,11 +398,17 @@ function compiler:get(name)
     return self:_tool().get(name)
 end
 
--- get the command
-function compiler:command(target, srcfile, objfile, logfile)
+-- get the compile command
+function compiler:compcmd(srcfile, objfile, target)
+
+    -- get flags
+    local flags = nil
+    if target then
+        flags = self:_flags(target)
+    end
 
     -- get it
-    return self:_tool().compcmd(srcfile, objfile, self:_flags(target), logfile)
+    return self:_tool().compcmd(srcfile, objfile, flags or "")
 end
 
 -- make the define flag
