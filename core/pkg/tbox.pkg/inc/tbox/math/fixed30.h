@@ -133,7 +133,7 @@ static __tb_inline__ tb_fixed30_t tb_float_to_fixed30_check(tb_float_t x)
 static __tb_inline__ tb_fixed30_t tb_fixed16_to_fixed30_check(tb_fixed16_t x)
 {
     // check overflow, [-2, 2]
-    tb_assert(x >= (-2 << 16) && x <= (2 << 16) - 1);
+    tb_assert((x >> 16) >= -2 && (x >> 16) <= 2);
     return (x << 14);
 }
 #endif
