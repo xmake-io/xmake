@@ -15,6 +15,7 @@
 * Fix path bug for windows
 * Fix check function bug
 * Fix check toolchains failed
+* Fix compile failed for android on windows 
 
 ## v2.0.1
 
@@ -113,6 +114,7 @@
 * 修复在windows上的一些路径问题
 * 修复检测宏函数失败问题
 * 修复检测工具链失败问题
+* 修复windows上编译android版本失败
 
 ## v2.0.1
 
