@@ -332,11 +332,17 @@ function linker:get(name)
     return self:_tool().get(name)
 end
 
--- get the command
-function linker:command(target, objfiles, targetfile, logfile)
+-- get the link command
+function linker:linkcmd(objfiles, targetfile, target)
+
+    -- get flags
+    local flags = nil
+    if target then
+        flags = self:_flags(target)
+    end
 
     -- get it
-    return self:_tool().linkcmd(table.concat(table.wrap(objfiles), " "), targetfile, self:_flags(target), logfile)
+    return self:_tool().linkcmd(table.concat(table.wrap(objfiles), " "), targetfile, flags or "")
 end
 
 -- make the link flag

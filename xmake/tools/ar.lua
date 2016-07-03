@@ -20,6 +20,9 @@
 -- @file        ar.lua
 --
 
+-- imports
+import("core.tool.compiler")
+
 -- init it
 function init(shellname, kind)
     
@@ -100,9 +103,26 @@ end
 -- check the given flags 
 function check(flags)
 
-    -- check it
-    local ok = os.execute("%s %s > %s 2>&1", _g.shellname, ifelse(flags, flags, ""), os.nuldev())
-    if ok ~= 0 and ok ~= 256 then
-        raise("not found!")
+    -- make an stub source file
+    local libfile = path.join(os.tmpdir(), "xmake.ar.a")
+    local objfile = path.join(os.tmpdir(), "xmake.ar.o")
+    local srcfile = path.join(os.tmpdir(), "xmake.ar.c")
+    io.write(srcfile, "int test(void)\n{return 0;}")
+
+    -- make flags
+    local arflags = table.concat(_g.arflags, " ")
+    if flags then
+        arflags = arflags .. " " .. flags
     end
+
+    -- make the compile command
+    os.run(compiler.compcmd(srcfile, objfile))
+
+    -- check it
+    os.run(linkcmd(objfile, libfile, arflags))
+
+    -- remove files
+    os.rm(objfile)
+    os.rm(srcfile)
+    os.rm(libfile)
 end
