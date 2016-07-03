@@ -258,8 +258,21 @@ function os.run(cmd)
     -- make temporary log file
     local log = path.join(os.tmpdir(), "xmake.os.run.log")
 
-    -- run command
-    if 0 ~= os.execute(cmd .. string.format(" > %s 2>&1", log)) then
+    -- open command
+    local p = process.open(cmd, log, log)
+    if nil == p then
+        return false, string.format("cannot run %s", cmd)
+    end
+
+    -- wait process
+    local waitok, status = process.wait(p, -1)
+
+    -- close process
+    process.close(p)
+
+    -- ok?
+    local ok = utils.ifelse(waitok > 0, status, -1)
+    if ok ~= 0 then
 
         -- make errors
         local errors = io.readall(log)
