@@ -192,9 +192,9 @@ Some projects using xmake:
 - Email:   	    
 	- waruqi@gmail.com
 - website: 	    
-	- [xmake.io](http://www.xmake.io/cn)
-	- [tboox.org](http://www.tboox.org/cn)
-	- [tboox.net](http://www.tboox.net/cn)
+	- [xmake.io](http://www.xmake.io)
+	- [tboox.org](http://www.tboox.org)
+	- [tboox.net](http://www.tboox.net)
 
 ## 简介
 
