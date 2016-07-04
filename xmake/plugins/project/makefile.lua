@@ -196,7 +196,7 @@ end
 function make(outputfile)
 
     -- enter project directory
-    os.cd(project.directory())
+    local olddir = os.cd(project.directory())
 
     -- remove the log makefile first
     os.rm(_logfile())
@@ -211,6 +211,6 @@ function make(outputfile)
     makefile:close()
  
     -- leave project directory
-    os.cd("-")
+    os.cd(olddir)
 
 end

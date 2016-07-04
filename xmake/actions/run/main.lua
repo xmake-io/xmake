@@ -84,11 +84,11 @@ function main()
     task.run("build", {target = targetname})
 
     -- enter project directory
-    os.cd(project.directory())
+    local olddir = os.cd(project.directory())
 
     -- run the current target
     _run(project.target(targetname)) 
 
     -- leave project directory
-    os.cd("-")
+    os.cd(olddir)
 end

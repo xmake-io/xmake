@@ -54,7 +54,7 @@ end
 function _uninstall(target)
 
     -- enter project directory
-    os.cd(project.directory())
+    local olddir = os.cd(project.directory())
 
     -- the target scripts
     local scripts =
@@ -73,7 +73,7 @@ function _uninstall(target)
     end
 
     -- leave project directory
-    os.cd("-")
+    os.cd(olddir)
 end
 
 -- uninstall the given target and deps
