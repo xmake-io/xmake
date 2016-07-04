@@ -191,7 +191,7 @@ Some projects using xmake:
 
 - Email:   	    
 	- waruqi@gmail.com
-- website: 	    
+- Website: 	    
 	- [xmake.io](http://www.xmake.io)
 	- [tboox.org](http://www.tboox.org)
 	- [tboox.net](http://www.tboox.net)
@@ -412,13 +412,13 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 #### 联系方式
 
-- email:   	    
+- Email:   	    
 	- waruqi@gmail.com
 	- waruqi@126.com
-- website: 	    
+- Website: 	    
 	- [xmake.io](http://www.xmake.io/cn)
 	- [tboox.org](http://www.tboox.org/cn)
 	- [tboox.net](http://www.tboox.net/cn)
-- qq(group):    
+- QQ(group):    
 	- 343118190
 
