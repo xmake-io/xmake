@@ -51,16 +51,6 @@ platform("windows")
         _g.formats.shared   = {"", ".dll"}
         _g.formats.binary   = {"", ".exe"}
 
-        -- init the toolchains
-        _g.tools            = {}
-        _g.tools.cc         = config.get("cc")
-        _g.tools.cxx        = config.get("cxx")
-        _g.tools.ld         = config.get("ld") 
-        _g.tools.ar         = config.get("ar") 
-        _g.tools.sh         = config.get("sh") 
-        _g.tools.as         = config.get("as") 
-        _g.tools.ex         = config.get("ex") 
-
     end)
 
     -- set menu

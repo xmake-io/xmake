@@ -53,20 +53,6 @@ platform("macosx")
         _g.formats.object   = {"",    ".o"}
         _g.formats.shared   = {"lib", ".dylib"}
 
-        -- init the tools
-        _g.tools            = {}
-        _g.tools.ccache     = config.get("__ccache")
-        _g.tools.cc         = config.get("cc")
-        _g.tools.cxx        = config.get("cxx")
-        _g.tools.mm         = config.get("mm") 
-        _g.tools.mxx        = config.get("mxx") 
-        _g.tools.as         = config.get("as") 
-        _g.tools.ld         = config.get("ld") 
-        _g.tools.ar         = config.get("ar") 
-        _g.tools.sh         = config.get("sh") 
-        _g.tools.ex         = config.get("ar") 
-        _g.tools.sc         = config.get("sc") 
-
         -- init flags for architecture
         local arch          = config.get("arch")
         local target_minver = config.get("target_minver")

@@ -25,6 +25,7 @@ local sandbox_core_tool = sandbox_core_tool or {}
 
 -- load modules
 local tool      = require("tool/tool")
+local config    = require("project/config")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
@@ -32,7 +33,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_core_tool.shellname(name)
 
     -- get it
-    return platform.tool(name)
+    return config.get(name)
 end
 
 -- run the tool
