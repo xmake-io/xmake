@@ -24,24 +24,15 @@ function build()
 
     # build for macosx
     if [ $host = "macosx" ]; then
-
-        exec "xmake f -p iphoneos" 
-        exec "xmake -r"
-#        exec "xmake p"
-
-        exec "xmake f -p iphoneos -a arm64" 
-        exec "xmake -r"
-#        exec "xmake p -a \"armv7, arm64\""
-
-        exec "xmake f -p iphonesimulator"
-        exec "xmake -r"
-#        exec "xmake p"
+        
+        # package all archs for iphoneos
+        exec "xmake m package -p iphoneos" 
     fi
 
     # build
     exec "xmake f -c"
-    exec "xmake -r"
-#    exec "xmake p"
+    exec "xmake "
+    exec "xmake p"
 
     # leave project
     cd -
