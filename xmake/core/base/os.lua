@@ -291,6 +291,77 @@ function os.run(cmd)
     return true
 end
 
+-- run shell with arguments list
+function os.runv(shellname, argv)
+
+    -- make temporary log file
+    local log = path.join(os.tmpdir(), "xmake.os.runv.log")
+
+    -- execute it
+    local ok = os.execv(shellname, argv, log, log)
+    if ok ~= 0 then
+
+        -- make errors
+        local errors = io.readall(log)
+
+        -- remove the temporary log file
+        os.rm(log)
+
+        -- failed
+        return false, errors
+    end
+
+    -- remove the temporary log file
+    os.rm(log)
+
+    -- ok
+    return true
+end
+
+-- execute shell 
+function os.exec(cmd, outfile, errfile)
+
+    -- open command
+    local ok = -1
+    local proc = process.open(cmd, outfile, errfile)
+    if proc ~= nil then
+
+        -- wait process
+        local waitok, status = process.wait(proc, -1)
+        if waitok > 0 then
+            ok = status
+        end
+
+        -- close process
+        process.close(proc)
+    end
+
+    -- ok?
+    return ok
+end
+
+-- execute shell with arguments list
+function os.execv(shellname, argv, outfile, errfile)
+
+    -- open command
+    local ok = -1
+    local proc = process.openv(shellname, argv, outfile, errfile)
+    if proc ~= nil then
+
+        -- wait process
+        local waitok, status = process.wait(proc, -1)
+        if waitok > 0 then
+            ok = status
+        end
+
+        -- close process
+        process.close(proc)
+    end
+
+    -- ok?
+    return ok
+end
+
 -- run shell with io
 function os.iorun(cmd)
 

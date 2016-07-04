@@ -31,8 +31,8 @@ import("core.platform.platform")
 -- run binary target
 function _run_binary(target)
 
-    -- run it
-    os.execute("%s %s", target:targetfile(), table.concat(option.get("arguments") or {}, " "))
+    -- execute it
+    os.execv(target:targetfile(), option.get("arguments"))
 end
 
 -- run target 

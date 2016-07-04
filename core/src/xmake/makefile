@@ -41,6 +41,7 @@ xmake_C_FILES 			+= \
 						string/endswith \
 						string/startswith \
 						process/open \
+						process/openv \
 						process/wait \
 						process/close 
 						

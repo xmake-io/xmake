@@ -17,14 +17,14 @@
  * Copyright (C) 2015 - 2016, ruki All rights reserved.
  *
  * @author      ruki
- * @file        open.c
+ * @file        openv.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "process.open"
+#define TB_TRACE_MODULE_NAME                "process.openv"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -36,18 +36,60 @@
  * implementation
  */
 
-// p = process.open(command, outfile, errfile) 
-tb_int_t xm_process_open(lua_State* lua)
+// p = process.openv(shellname, argv, outfile, errfile) 
+tb_int_t xm_process_openv(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the command
-    size_t              command_size = 0;
-    tb_char_t const*    command = luaL_checklstring(lua, 1, &command_size);
-    tb_char_t const*    outfile = lua_tostring(lua, 2);
-    tb_char_t const*    errfile = lua_tostring(lua, 3);
-    tb_check_return_val(command, 0);
+    // check table
+    if (!lua_istable(lua, 2))
+    {
+        // error
+        lua_pushfstring(lua, "invalid argv type(%s) for process.openv", luaL_typename(lua, 2));
+        lua_error(lua);
+        return 0;
+    }
+
+    // get the output and error file
+    tb_char_t const* shellname  = lua_tostring(lua, 1);
+    tb_char_t const* outfile    = lua_tostring(lua, 3);
+    tb_char_t const* errfile    = lua_tostring(lua, 4);
+    tb_check_return_val(shellname, 0);
+
+    // get the arguments count
+    tb_long_t argn = lua_objlen(lua, 2);
+    tb_check_return_val(argn >= 0, 0);
+    
+    // get arguments
+    tb_size_t           argi = 0;
+    tb_char_t const**   argv = tb_nalloc0_type(1 + argn + 1, tb_char_t const*);
+    tb_check_return_val(argv, 0);
+
+    // fill arguments
+    argv[0] = shellname;
+    for (argi = 0; argi < argn; argi++)
+    {
+        // get argv[i]
+        lua_pushinteger(lua, argi + 1);
+        lua_gettable(lua, 2);
+
+        // is string?
+        if (lua_isstring(lua, -1))
+        {
+            // pass this argument
+            argv[1 + argi] = lua_tostring(lua, -1);
+        }
+        else
+        {
+            // error
+            lua_pushfstring(lua, "invalid argv[%ld] type(%s) for process.openv", argi, luaL_typename(lua, -1));
+            lua_error(lua);
+        }
+
+        // pop it
+        lua_pop(lua, 1);
+    }
 
     // init attributes
     tb_process_attr_t attr = {0};
@@ -77,10 +119,14 @@ tb_int_t xm_process_open(lua_State* lua)
     }
 
     // init process
-    tb_process_ref_t process = tb_process_init_cmd(command, &attr);
+    tb_process_ref_t process = tb_process_init(shellname, argv, &attr);
 
     // save the process reference
     lua_pushlightuserdata(lua, process);
+
+    // exit argv
+    if (argv) tb_free(argv);
+    argv = tb_null;
 
     // ok
     return 1;
