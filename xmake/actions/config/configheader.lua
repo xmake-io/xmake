@@ -129,7 +129,7 @@ function make()
     local targetname = option.get("target")
 
     -- enter project directory
-    os.cd(project.directory())
+    local olddir = os.cd(project.directory())
 
     -- init files
     local files = {}
@@ -151,6 +151,5 @@ function make()
     end
  
     -- leave project directory
-    os.cd("-")
-
+    os.cd(olddir)
 end

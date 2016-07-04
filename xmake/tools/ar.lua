@@ -69,7 +69,7 @@ function extract(libraryfile, objectdir)
     libraryfile = path.absolute(libraryfile)
 
     -- enter the object directory
-    os.cd(objectdir)
+    local olddir = os.cd(objectdir)
 
     -- extract it
     os.run("%s -x %s", _g.shellname, libraryfile)
@@ -85,7 +85,7 @@ function extract(libraryfile, objectdir)
     end                                                          
 
     -- leave the object directory
-    os.cd("-")
+    os.cd(olddir)
 end
 
 -- run command

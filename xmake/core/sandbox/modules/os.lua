@@ -97,12 +97,17 @@ function sandbox_os.cd(dir)
     -- format it first
     dir = vformat(dir)
 
+    -- the previous directory
+    local olddir = os.curdir()
+
     -- done
     local ok, errors = os.cd(dir)
     if not ok then
         os.raise(errors)
     end
 
+    -- ok
+    return olddir
 end
 
 -- create directory

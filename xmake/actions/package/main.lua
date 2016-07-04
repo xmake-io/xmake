@@ -129,7 +129,7 @@ end
 function _package(target)
 
     -- enter project directory
-    os.cd(project.directory())
+    local olddir = os.cd(project.directory())
 
     -- the target scripts
     local scripts =
@@ -148,7 +148,7 @@ function _package(target)
     end
 
     -- leave project directory
-    os.cd("-")
+    os.cd(olddir)
 end
 
 -- package the given target and deps
