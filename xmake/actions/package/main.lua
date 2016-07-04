@@ -165,7 +165,7 @@ function _package_target_and_deps(target)
     end
 
     -- package target
-    _package_target(target)
+    _package(target)
 
     -- finished
     _g.finished[target:name()] = true

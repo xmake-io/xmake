@@ -192,9 +192,22 @@ function _build_target(target)
     -- update target index
     _g.targetindex = _g.targetindex + 1
 
+    -- expand object files with *.o/obj
+    local objectfiles = {}
+    for _, objectfile in ipairs(target:objectfiles()) do
+        if objectfile:find("%*") then
+            local matchfiles = os.match(objectfile)
+            if matchfiles then
+                table.join2(objectfiles, matchfiles)
+            end
+        else
+            table.insert(objectfiles, objectfile)
+        end
+    end
+
     -- make the command for linking target
     local targetfile    = target:targetfile()
-    local command       = linker.linkcmd(target:objectfiles(), targetfile, target)
+    local command       = linker.linkcmd(objectfiles, targetfile, target)
 
     -- trace
     print("[%02d%%]: linking.$(mode) %s", _g.targetindex * 100 / _g.targetcount, path.filename(targetfile))
