@@ -95,10 +95,16 @@ function _clean_target(target)
             script(target)
         end
     end
+
 end
 
 -- clean the given target and all dependent targets
 function _clean_target_and_deps(target)
+
+    -- this target have been finished?
+    if _g.finished[target:name()] then
+        return 
+    end
 
     -- remove the target
     _clean_target(target) 
@@ -107,6 +113,9 @@ function _clean_target_and_deps(target)
     for _, dep in ipairs(target:get("deps")) do
         _clean_target_and_deps(project.target(dep))
     end
+
+    -- finished
+    _g.finished[target:name()] = true
 end
 
 -- clean the given target 
@@ -122,7 +131,7 @@ function _clean(targetname)
 
         -- clean targets
         for _, target in pairs(project.targets()) do
-            _clean_target(target) 
+            _clean_target_and_deps(target) 
         end
     end
 
@@ -147,6 +156,9 @@ function main()
 
     -- config it first
     task.run("config", {target = targetname})
+
+    -- init finished states
+    _g.finished = {}
 
     -- enter project directory
     local olddir = os.cd(project.directory())
