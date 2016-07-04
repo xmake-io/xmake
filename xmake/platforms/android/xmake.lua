@@ -49,19 +49,7 @@ platform("android")
         _g.formats.static   = {"lib", ".a"}
         _g.formats.object   = {"",    ".o"}
         _g.formats.shared   = {"lib", ".so"}
-     
-        -- init the toolchains
-        _g.tools            = {}
-        _g.tools.ccache     = config.get("__ccache")
-        _g.tools.cc         = config.get("cc") 
-        _g.tools.cxx        = config.get("cxx") 
-        _g.tools.as         = config.get("as") 
-        _g.tools.ld         = config.get("ld") 
-        _g.tools.ar         = config.get("ar")
-        _g.tools.sh         = config.get("sh") 
-        _g.tools.ex         = config.get("ar") 
-        _g.tools.sc         = config.get("sc") 
-
+    
         -- init flags
         local arch = config.get("arch")
         if arch:startswith("arm64") then

@@ -370,16 +370,6 @@ function platform.tooldirs(plat)
     end
 end
 
--- get the given tool
-function platform.tool(name)
-
-    -- get tools
-    local tools = platform.get("tools")
-    if tools then
-        return tools[name]
-    end
-end
-
 -- get the given format
 function platform.format(kind)
 

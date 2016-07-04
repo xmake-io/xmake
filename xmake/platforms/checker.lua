@@ -158,22 +158,20 @@ function check_ccache(config)
 
     -- get the ccache
     local ccache = config.get("ccache")
-    if ccache == nil then
+    if ccache == nil or (type(ccache) == "boolean" and ccache) then
 
         -- check the ccache path
         local ccache_path = tool.check("ccache")
 
         -- check ok? update it
         if ccache_path then
-            config.set("ccache", true)
-            config.set("__ccache", ccache_path)
+            config.set("ccache", ccache_path)
         else
             config.set("ccache", false)
         end
 
         -- trace
         print("checking for the ccache ... %s", ifelse(ccache_path, ccache_path, "no"))
-
     end
 end
 
