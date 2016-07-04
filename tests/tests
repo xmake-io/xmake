@@ -11,7 +11,7 @@ function exec()
     echo $1
     eval $1 $verbose
     if [ $? -ne 0 ]
-        then exit
+        then exit -1
     fi
     echo ""
 }
