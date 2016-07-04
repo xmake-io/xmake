@@ -244,9 +244,22 @@ function sandbox_os.exec(cmd, ...)
     cmd = vformat(cmd, ...)
 
     -- run it
-    local retval = os.execute(cmd)
-    if retval ~= 0 then
-        os.raise("exec %s failed(%d)!", cmd, retval)
+    local ok = os.execute(cmd)
+    if ok ~= 0 then
+        os.raise("exec(%s) failed(%d)!", cmd, ok)
+    end
+end
+
+-- execute shell with arguments list
+function sandbox_os.execv(shellname, argv)
+
+    -- make shellname
+    shellname = vformat(shellname)
+
+    -- run it
+    local ok = os.execv(shellname, argv)
+    if ok ~= 0 then
+        os.raise("execv(%s) failed(%d)!", shellname, ok)
     end
 end
 
