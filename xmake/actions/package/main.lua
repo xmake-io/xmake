@@ -187,11 +187,11 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- init finished states
-    _g.finished = {}
-
     -- build it first
     task.run("build", {target = targetname})
+
+    -- init finished states
+    _g.finished = {}
 
     -- package all?
     if targetname == "all" then
