@@ -104,10 +104,10 @@ function option:_check_include(include, srcpath, objpath)
 end
 
 -- check function 
-function option:_check_function(interface, srcpath, objpath)
+function option:_check_function(checkcode, srcpath, objpath)
 
     -- check
-    assert(interface)
+    assert(checkcode)
 
     -- open the checking source file
     local srcfile = io.open(srcpath, "w")
@@ -137,10 +137,8 @@ function option:_check_function(interface, srcpath, objpath)
     srcfile:print("int main(int argc, char** argv)")
     srcfile:print("{")
 
-    -- make interfaces
-    srcfile:print("#ifndef %s\n", interface)
-    srcfile:print("    volatile void* p%s = (void*)&%s;", interface, interface)
-    srcfile:print("#endif")
+    -- make check code
+    srcfile:print("    %s;", checkcode)
 
     -- make the main function tailer
     srcfile:print("    return 0;")
@@ -305,16 +303,20 @@ end
 function option:_check_cfuncs(cfile, objectfile, targetfile)
 
     -- done
-    for _, cfunc in ipairs(table.wrap(self:get("cfuncs"))) do
+    for _, checkinfo in ipairs(table.wrap(self:get("cfuncs"))) do
         
+        -- parse the check code
+        local checkname, checkcode = option.checkinfo(checkinfo)
+        assert(checkname and checkcode)
+
         -- check function
-        local ok = self:_check_function(cfunc, cfile, objectfile)
+        local ok = self:_check_function(checkcode, cfile, objectfile)
 
         -- check link
         if ok and self:get("links") then ok = self:_check_link(cfile, objectfile, targetfile) end
 
         -- trace
-        utils.printf("checking for the c function %s ... %s", cfunc, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c function %s ... %s", checkname, utils.ifelse(ok, "ok", "no"))
 
         -- failed
         if not ok then return false end
@@ -328,16 +330,20 @@ end
 function option:_check_cxxfuncs(cxxfile, objectfile, targetfile)
 
     -- done
-    for _, cxxfunc in ipairs(table.wrap(self:get("cxxfuncs"))) do
-        
+    for _, checkinfo in ipairs(table.wrap(self:get("cxxfuncs"))) do
+         
+        -- parse the check code
+        local checkname, checkcode = option.checkinfo(checkinfo)
+        assert(checkname and checkcode)
+
         -- check function
-        local ok = self:_check_function(cxxfunc, cxxfile, objectfile)
+        local ok = self:_check_function(checkcode, cxxfile, objectfile)
 
         -- check link
         if ok and self:get("links") then ok = self:_check_link(cxxfile, objectfile, targetfile) end
 
         -- trace
-        utils.printf("checking for the c++ function %s ... %s", cxxfunc, utils.ifelse(ok, "ok", "no"))
+        utils.printf("checking for the c++ function %s ... %s", checkname, utils.ifelse(ok, "ok", "no"))
 
         -- failed
         if not ok then return false end
@@ -544,6 +550,32 @@ function option:sourcekinds()
 
     -- ok?
     return {"cc", "cxx"} 
+end
+
+-- get function name and check code
+--
+-- sigsetjmp
+-- sigsetjmp((void*)0, 0)
+-- sigsetjmp{sigsetjmp((void*)0, 0);}
+-- sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
+--
+function option.checkinfo(checkinfo)
+
+    -- parse name and code
+    local name, code = string.match(checkinfo, "(.+){(.+)}")
+    if code == nil then
+        local pos = checkinfo:find("%(")
+        if pos then
+            name = checkinfo:sub(1, pos - 1)
+            code = checkinfo
+        else
+            name = checkinfo
+            code = string.format("volatile void* p%s = (void*)&%s;", name, name)
+        end
+    end
+
+    -- ok
+    return name:trim(), code
 end
 
 -- return module

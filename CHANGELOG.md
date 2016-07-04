@@ -6,6 +6,7 @@
 
 * Change install and uninstall actions
 * Update templates
+* Improve to check function 
 
 ### Bugs fixed
 
@@ -105,6 +106,7 @@
 
 * 修改安装和卸载的action处理
 * 更新工程模板
+* 增强函数检测
 
 ### Bugs修复
 
