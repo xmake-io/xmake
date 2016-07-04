@@ -99,24 +99,6 @@ option("[targetname]")
         -- save file
         file:write((content:gsub("%[targetname%]", targetname):gsub("%[TARGETNAME%]", targetname:upper())))
 
-        -- get all defines from the target
-        local defines = nil
-        for _, define in ipairs(target:get("defines")) do
-            if defines then
-                defines = defines .. ", " 
-            else
-                defines = ""
-            end
-            defines = defines .. "\"" .. define .. "\""
-        end
-
-        -- append defines to the package
-        if defines then
-            file:print("")
-            file:print("    -- add defines")
-            file:print("    add_defines(%s)", defines)
-        end
-
         -- exit file
         file:close()
     end
