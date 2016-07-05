@@ -54,8 +54,10 @@ function main(argv)
     local plat = args.plat
     for _, arch in ipairs(platform.archs(plat)) do
 
-        -- package it
+        -- config it
         os.exec("xmake f -p %s -a %s %s", plat, arch, args.config or "")
+
+        -- package it
         if args.outputdir then
             os.exec("xmake p -o %s", args.outputdir)
         else
