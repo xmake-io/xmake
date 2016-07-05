@@ -58,7 +58,6 @@ function _check_toolchains(config)
         checker.check_toolchain(config, "sh",   "xcrun -sdk iphonesimulator ", "clang++",  "the shared library linker") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk iphonesimulator ", "clang",    "the shared library linker") 
         checker.check_toolchain(config, "sc",   "xcrun -sdk iphonesimulator ", "swiftc",   "the swift compiler") 
-        checker.check_toolchain(config, "lipo", "xcrun -sdk iphonesimulator ", "lipo",     "the universal files creater")
     else
         checker.check_toolchain(config, "cc",   "xcrun -sdk iphoneos ", "clang",    "the c compiler") 
         checker.check_toolchain(config, "cxx",  "xcrun -sdk iphoneos ", "clang",    "the c++ compiler") 
@@ -74,7 +73,6 @@ function _check_toolchains(config)
         checker.check_toolchain(config, "sh",   "xcrun -sdk iphoneos ", "clang++",  "the shared library linker") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk iphoneos ", "clang",    "the shared library linker") 
         checker.check_toolchain(config, "sc",   "xcrun -sdk iphoneos ", "swiftc",   "the swift compiler") 
-        checker.check_toolchain(config, "lipo", "xcrun -sdk iphoneos ", "lipo",     "the universal files creater") 
     end
 end
 

@@ -298,7 +298,7 @@ function os.runv(shellname, argv)
     local log = path.join(os.tmpdir(), "xmake.os.runv.log")
 
     -- execute it
-    local ok = os.execv(shellname, argv, log, log)
+    local ok = os.execv(shellname, table.wrap(argv), log, log)
     if ok ~= 0 then
 
         -- make errors
@@ -345,7 +345,7 @@ function os.execv(shellname, argv, outfile, errfile)
 
     -- open command
     local ok = -1
-    local proc = process.openv(shellname, argv, outfile, errfile)
+    local proc = process.openv(shellname, table.wrap(argv), outfile, errfile)
     if proc ~= nil then
 
         -- wait process
@@ -369,7 +369,7 @@ function os.iorun(cmd)
     local datafile = path.join(os.tmpdir(), "xmake.os.iorun.data")
 
     -- run command
-    local ok = os.execute(cmd .. string.format(" > %s 2>&1", datafile)) 
+    local ok = os.exec(cmd, datafile, datafile) 
 
     -- get results
     local results = io.readall(datafile)

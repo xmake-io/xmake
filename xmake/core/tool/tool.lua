@@ -206,7 +206,7 @@ function tool._check(shellname, check)
 
     -- no checker? attempt to run it directly
     if not module or not module.check then
-        return 0 == os.execute(string.format("%s > %s 2>&1", shellname, xmake._NULDEV))
+        return 0 == os.exec(shellname, xmake._NULDEV, xmake._NULDEV)
     end
 
     -- check it

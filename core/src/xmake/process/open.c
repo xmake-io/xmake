@@ -78,9 +78,8 @@ tb_int_t xm_process_open(lua_State* lua)
 
     // init process
     tb_process_ref_t process = tb_process_init_cmd(command, &attr);
-
-    // save the process reference
-    lua_pushlightuserdata(lua, process);
+    if (process) lua_pushlightuserdata(lua, process);
+    else lua_pushnil(lua);
 
     // ok
     return 1;

@@ -104,7 +104,7 @@ function main(argv)
                     os.mkdir(format("%s/%s.pkg/lib/%s/%s/universal", outputdir, target:name(), mode, plat))
 
                     -- package all archs
-                    os.exec("xmake l lipo \"%s\"", lipoargs)
+                    os.execv("xmake", {"l", "lipo", lipoargs})
                 end
             end
         end
