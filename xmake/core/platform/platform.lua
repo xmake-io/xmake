@@ -319,6 +319,16 @@ function platform.get(name)
     end
 end
 
+-- get the platform tool from the kind
+--
+-- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+--
+function platform.tool(kind)
+
+    -- get it
+    return config.get(kind)
+end
+
 -- get the platform archs
 function platform.archs(plat)
 
