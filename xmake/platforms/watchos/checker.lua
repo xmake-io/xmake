@@ -58,7 +58,6 @@ function _check_toolchains(config)
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchsimulator ", "clang++",  "the shared library linker") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchsimulator ", "clang",    "the shared library linker") 
         checker.check_toolchain(config, "sc",   "xcrun -sdk watchsimulator ", "swiftc",   "the swift compiler") 
-        checker.check_toolchain(config, "lipo", "xcrun -sdk watchsimulator ", "lipo",     "the universal files creater") 
     else
         checker.check_toolchain(config, "cc",   "xcrun -sdk watchos ", "clang",    "the c compiler") 
         checker.check_toolchain(config, "cxx",  "xcrun -sdk watchos ", "clang",    "the c++ compiler") 
@@ -74,7 +73,6 @@ function _check_toolchains(config)
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchos ", "clang++",  "the shared library linker") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchos ", "clang",    "the shared library linker") 
         checker.check_toolchain(config, "sc",   "xcrun -sdk watchos ", "swiftc",   "the swift compiler") 
-        checker.check_toolchain(config, "lipo", "xcrun -sdk watchos ", "lipo",     "the universal files creater") 
     end
 end
 

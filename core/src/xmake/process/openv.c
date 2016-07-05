@@ -120,9 +120,8 @@ tb_int_t xm_process_openv(lua_State* lua)
 
     // init process
     tb_process_ref_t process = tb_process_init(shellname, argv, &attr);
-
-    // save the process reference
-    lua_pushlightuserdata(lua, process);
+    if (process) lua_pushlightuserdata(lua, process);
+    else lua_pushnil(lua);
 
     // exit argv
     if (argv) tb_free(argv);

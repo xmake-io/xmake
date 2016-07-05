@@ -208,6 +208,19 @@ function sandbox_os.run(cmd, ...)
     end
 end
 
+-- run shell with arguments list
+function sandbox_os.runv(shellname, argv)
+
+    -- make shellname
+    shellname = vformat(shellname)
+
+    -- run it
+    local ok, errors = os.runv(shellname, argv)
+    if not ok then
+        os.raise(errors)
+    end
+end
+
 -- run shell with io
 function sandbox_os.iorun(cmd, ...)
 
@@ -244,7 +257,7 @@ function sandbox_os.exec(cmd, ...)
     cmd = vformat(cmd, ...)
 
     -- run it
-    local ok = os.execute(cmd)
+    local ok = os.exec(cmd)
     if ok ~= 0 then
         os.raise("exec(%s) failed(%d)!", cmd, ok)
     end
@@ -259,18 +272,8 @@ function sandbox_os.execv(shellname, argv)
     -- run it
     local ok = os.execv(shellname, argv)
     if ok ~= 0 then
-        os.raise("execv(%s) failed(%d)!", shellname, ok)
+        os.raise("execv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
     end
-end
-
--- execute shell and return error code
-function sandbox_os.execute(cmd, ...)
-
-    -- make command
-    cmd = vformat(cmd, ...)
-
-    -- run it
-    return os.execute(cmd)
 end
 
 -- match files or directories
