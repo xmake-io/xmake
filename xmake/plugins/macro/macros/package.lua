@@ -55,7 +55,7 @@ function main(argv)
     for _, arch in ipairs(platform.archs(plat)) do
 
         -- config it
-        os.exec("xmake f -p %s -a %s %s", plat, arch, args.config or "")
+        os.exec("xmake f -p %s -a %s %s -c", plat, arch, args.config or "")
 
         -- package it
         if args.outputdir then
