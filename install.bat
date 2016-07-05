@@ -42,22 +42,11 @@ cd ..
 rem install the xmake core file
 echo installing xmake-core...
 set xmake_core=core\bin\demo.pkg\bin\msvc\x86\demo.exe
-set xmake_core_install=%xmake_dir_install%\xmake_core.exe
+set xmake_core_install=%xmake_dir_install%\xmake.exe
 copy /Y "%xmake_core%" "%xmake_core_install%" > install.log
 
 rem install the xmake directory
 xcopy /S /Q /Y "xmake" "%xmake_dir_install%" >> install.log
-
-rem make the xmake loader
-echo installing xmake-loader...
-set xmake_loader=%temp%\xmake_loader
-echo @echo off > %xmake_loader%
-echo set XMAKE_PROGRAM_DIR=%xmake_dir_install%>> %xmake_loader%
-echo "%xmake_core_install%" %%* >> %xmake_loader%
-
-rem install the xmake loader
-set xmake_loader_install=%xmake_dir_install%\xmake.bat
-copy /Y "%xmake_loader%" "%xmake_loader_install%" >> install.log
 
 rem set global PATH=%xmake_dir_install%
 echo register xmake...
