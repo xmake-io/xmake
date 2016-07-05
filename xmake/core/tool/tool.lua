@@ -33,6 +33,7 @@ local filter    = require("base/filter")
 local config    = require("project/config")
 local global    = require("project/global")
 local sandbox   = require("sandbox/sandbox")
+local platform  = require("platform/platform")
 
 -- the directories of tools
 function tool._directories(name)
@@ -228,7 +229,7 @@ end
 function tool.load(kind)
 
     -- get the shell name 
-    local shellname = config.get(kind)
+    local shellname = platform.tool(kind)
     if not shellname then
         return nil, string.format("cannot get tool for %s", kind)
     end

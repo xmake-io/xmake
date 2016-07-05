@@ -33,7 +33,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_core_tool.shellname(name)
 
     -- get it
-    return config.get(name)
+    return platform.tool(name)
 end
 
 -- run the tool
