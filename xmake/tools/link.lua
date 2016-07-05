@@ -53,12 +53,12 @@ function init(shellname)
     _g.mapflags = 
     {
         -- strip
-        ["-s"]                     = ""
-    ,   ["-S"]                     = ""
+        ["-s"]                  = ""
+    ,   ["-S"]                  = ""
  
         -- others
-    ,   ["-ftrapv"]                = ""
-    ,   ["-fsanitize=address"]     = ""
+    ,   ["-ftrapv"]             = ""
+    ,   ["-fsanitize=address"]  = ""
     }
 end
 
@@ -114,7 +114,13 @@ function check(flags)
     local exefile = path.join(os.tmpdir(), "xmake.cl.exe")
     local objfile = path.join(os.tmpdir(), "xmake.cl.obj")
     local srcfile = path.join(os.tmpdir(), "xmake.cl.c")
-    io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
+
+    -- main entry
+    if flags and flags:lower():find("subsystem:windows") then
+        io.write(srcfile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
+    else
+        io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
+    end
 
     -- check it
     os.run("cl -c -Fo%s %s", objfile, srcfile)
