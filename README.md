@@ -60,8 +60,8 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ####In the plans
 
-- Manage package and dependence
-- Download package automaticlly
+- Manage package and dependencies
+- Download package automatically
 - Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
 - Implement more plugins
 - Create more project file for IDE (.e.g vs, xcode ..)
