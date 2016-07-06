@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.0.2
+
 ### Changes
 
 * Change install and uninstall actions
@@ -101,6 +103,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.0.2
 
 ### 改进
 
