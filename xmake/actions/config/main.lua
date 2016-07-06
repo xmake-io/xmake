@@ -34,6 +34,11 @@ function _option_filter(name)
     return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose"
 end
 
+-- host changed?
+function _host_changed(targetname)
+    return os.host() ~= config.read("host", targetname)
+end
+
 -- need check
 function _need_check()
 
@@ -194,7 +199,7 @@ function main()
     end
 
     -- merge the cached configure
-    if not option.get("clean") then
+    if not option.get("clean") and not _host_changed(targetname) then
         config.load(targetname)
     end
 
