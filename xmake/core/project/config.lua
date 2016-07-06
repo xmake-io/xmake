@@ -39,6 +39,32 @@ function config._file()
     return path.join(config.directory(), "xmake.conf")
 end
 
+-- load the project configure
+function config._load(targetname)
+
+    -- check
+    targetname = targetname or "all"
+
+    -- load configure from the file first
+    local filepath = config._file()
+    if os.isfile(filepath) then
+
+        -- load it 
+        local results, errors = io.load(filepath)
+        if not results then
+            return nil, errors
+        end
+
+        -- load the target configure 
+        if results._TARGETS then
+            return table.wrap(results._TARGETS[targetname])
+        end
+    end
+
+    -- empty
+    return {}
+end
+
 -- get the current given configure
 function config.get(name)
 
@@ -98,29 +124,16 @@ end
 -- load the project configure
 function config.load(targetname)
 
-    -- check
-    targetname = targetname or "all"
+    local results, errors = config._load(targetname)
+    if not results then
+        utils.error(errors)
+        return true
+    end
 
-    -- load configure from the file first
-    local filepath = config._file()
-    if os.isfile(filepath) then
-
-        -- load it 
-        local results, errors = io.load(filepath)
-
-        -- error?
-        if not results then
-            utils.error(errors)
-            return true
-        end
-
-        -- merge the target configure first
-        if results._TARGETS then
-            for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
-                if config.get(name) == nil then
-                    config.set(name, value)
-                end
-            end
+    -- merge the target configure first
+    for name, value in pairs(results) do
+        if config.get(name) == nil then
+            config.set(name, value)
         end
     end
 
@@ -159,6 +172,25 @@ function config.save(targetname)
 
     -- save it
     return io.save(config._file(), results) 
+end
+
+-- read value from the configure file directly
+function config.read(name, targetname)
+
+    -- load configs
+    local configs = config._load(targetname)
+
+    -- get it
+    local value = nil
+    if configs then
+        value = configs[name]
+        if type(value) == "string" and value == "auto" then
+            value = nil
+        end
+    end
+
+    -- ok?
+    return value
 end
 
 -- init the config

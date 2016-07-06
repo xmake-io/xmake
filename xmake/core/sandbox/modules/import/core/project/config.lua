@@ -109,6 +109,13 @@ function sandbox_core_project_config.save(targetname)
     end
 end
 
+-- read the value from the configure file directly
+function sandbox_core_project_config.read(name, targetname)
+
+    -- read it
+    return config.read(name, targetname)
+end
+
 -- the configure has been changed for the given target?
 function sandbox_core_project_config.changed(targetname)
 
