@@ -1,4 +1,4 @@
-##The Automatic Cross-platform Build Tool 
+##A make-like build utility based on Lua 
 
 [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![Join the chat at https://gitter.im/waruqi/xmake](https://badges.gitter.im/waruqi/xmake.svg)](https://gitter.im/waruqi/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html)
 
