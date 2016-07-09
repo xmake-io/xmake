@@ -69,8 +69,8 @@ function get(name)
     return _g[name]
 end
 
--- make the link flag
-function link(lib)
+-- make the linklib flag
+function linklib(lib)
 
     -- make it
     return lib .. ".lib"
@@ -84,20 +84,30 @@ function linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(objfiles, targetfile, flags)
+function linkcmd(objectfiles, targetfile, flags)
 
     -- make it
-    local cmd = format("%s %s -out:%s %s", _g.shellname, flags, targetfile, objfiles)
+    local cmd = format("%s %s -out:%s %s", _g.shellname, flags, targetfile, objectfiles)
 
     -- too long?
     if #cmd > 4096 then
         local argfile = targetfile .. ".arg"
-        io.printf(argfile, "%s -out:%s %s", flags, targetfile, objfiles)
+        io.printf(argfile, "%s -out:%s %s", flags, targetfile, objectfiles)
         cmd = format("%s @%s", _g.shellname, argfile)
     end
 
     -- ok?
     return cmd
+end
+
+-- link the target file
+function link(objectfiles, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(linkcmd(objectfiles, targetfile, flags))
 end
 
 -- run command
@@ -111,24 +121,24 @@ end
 function check(flags)
 
     -- make an stub source file
-    local exefile = path.join(os.tmpdir(), "xmake.cl.exe")
-    local objfile = path.join(os.tmpdir(), "xmake.cl.obj")
-    local srcfile = path.join(os.tmpdir(), "xmake.cl.c")
+    local binaryfile = path.join(os.tmpdir(), "xmake.cl.exe")
+    local objectfile = path.join(os.tmpdir(), "xmake.cl.obj")
+    local sourcefile = path.join(os.tmpdir(), "xmake.cl.c")
 
     -- main entry
     if flags and flags:lower():find("subsystem:windows") then
-        io.write(srcfile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
+        io.write(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
     else
-        io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
+        io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end
 
     -- check it
-    os.run("cl -c -Fo%s %s", objfile, srcfile)
-    os.run("%s %s -out:%s %s", _g.shellname, ifelse(flags, flags, ""), exefile, objfile)
+    os.run("cl -c -Fo%s %s", objectfile, sourcefile)
+    os.run("%s %s -out:%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, objectfile)
 
     -- remove files
-    os.rm(objfile)
-    os.rm(srcfile)
-    os.rm(exefile)
+    os.rm(objectfile)
+    os.rm(sourcefile)
+    os.rm(binaryfile)
 end
 

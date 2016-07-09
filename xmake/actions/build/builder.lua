@@ -91,16 +91,10 @@ function _build_object(target, index)
         return _build_object_for_static(target, sourcefile, objectfile, percent)
     end
 
-    -- make command
-    local command = compiler.compcmd(sourcefile, objectfile, target)
-
     -- uses ccache
     local ccache = nil
     if config.get("ccache") then
         ccache = tool.shellname("ccache") 
-    end
-    if ccache then
-        command = ccache:append(command, " ")
     end
 
     -- trace
@@ -108,14 +102,19 @@ function _build_object(target, index)
 
     -- trace verbose info
     if option.get("verbose") then
+
+        -- make command
+        local command = compiler.compcmd(sourcefile, objectfile, target)
+        if ccache then
+            command = ccache:append(command, " ")
+        end
+
+        -- trace
         print(command)
     end
 
-    -- create directory if not exists
-    os.mkdir(path.directory(objectfile))
-
-    -- run cmd with coroutine
-    os.corun(command)
+    -- complie it and enable multitasking
+    compiler.compile(sourcefile, objectfile, target, true)
 end
 
 -- make objects for the given target
@@ -205,23 +204,19 @@ function _build_target(target)
         end
     end
 
-    -- make the command for linking target
-    local targetfile    = target:targetfile()
-    local command       = linker.linkcmd(objectfiles, targetfile, target)
+    -- the target file
+    local targetfile = target:targetfile()
 
     -- trace
     print("[%02d%%]: linking.$(mode) %s", _g.targetindex * 100 / _g.targetcount, path.filename(targetfile))
 
     -- trace verbose info
     if option.get("verbose") then
-        print(command)
+        print(linker.linkcmd(objectfiles, targetfile, target))
     end
 
-    -- create directory if not exists
-    os.mkdir(path.directory(targetfile))
-
-    -- run command
-    os.run(command)
+    -- link it
+    linker.link(objectfiles, targetfile, target)
 end
 
 -- make the given target 

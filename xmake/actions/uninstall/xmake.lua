@@ -43,7 +43,10 @@ task("uninstall")
                     -- options
                 ,   options = 
                     {
-                        {nil, "target",     "v",  "all",        "Install the given target."                                     }
+                        {nil, "installdir", "kv", nil,      "Set the install directory."    }
+
+                    ,   {}
+                    ,   {nil, "target",     "v",  "all",    "Uninstall the given target."   }
                     }
                 })
 

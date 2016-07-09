@@ -26,11 +26,11 @@ import("core.base.option")
 -- install binary
 function install_binary_on_unix(target)
 
-    -- the output directory
-    local outputdir = option.get("outputdir") or "/usr/local"
+    -- the install directory
+    local installdir = option.get("installdir") or "/usr/local"
 
     -- the binary directory
-    local binarydir = path.join(outputdir, "bin")
+    local binarydir = path.join(installdir, "bin")
 
     -- make the binary directory
     os.mkdir(binarydir)
@@ -42,14 +42,14 @@ end
 -- install library
 function install_library_on_unix(target)
 
-    -- the output directory
-    local outputdir = option.get("outputdir") or "/usr/local"
+    -- the install directory
+    local installdir = option.get("installdir") or "/usr/local"
 
     -- the library directory
-    local librarydir = path.join(outputdir, "lib")
+    local librarydir = path.join(installdir, "lib")
 
     -- the include directory
-    local includedir = path.join(outputdir, "include")
+    local includedir = path.join(installdir, "include")
 
     -- make the library directory
     os.mkdir(librarydir)
@@ -83,11 +83,11 @@ end
 -- uninstall binary
 function uninstall_binary_on_unix(target)
 
-    -- the output directory
-    local outputdir = option.get("outputdir") or "/usr/local"
+    -- the install directory
+    local installdir = option.get("installdir") or "/usr/local"
 
     -- the binary directory
-    local binarydir = path.join(outputdir, "bin")
+    local binarydir = path.join(installdir, "bin")
 
     -- remove the target file
     os.rm(path.join(binarydir, path.filename(target:targetfile())))
@@ -96,14 +96,14 @@ end
 -- uninstall library
 function uninstall_library_on_unix(target)
 
-    -- the output directory
-    local outputdir = option.get("outputdir") or "/usr/local"
+    -- the install directory
+    local installdir = option.get("installdir") or "/usr/local"
 
     -- the library directory
-    local librarydir = path.join(outputdir, "lib")
+    local librarydir = path.join(installdir, "lib")
 
     -- the include directory
-    local includedir = path.join(outputdir, "include")
+    local includedir = path.join(installdir, "include")
 
     -- remove the target file
     os.rm(path.join(librarydir, path.filename(target:targetfile())))

@@ -74,10 +74,24 @@ function get(name)
 end
 
 -- make the compile command
-function compcmd(srcfile, objfile, flags)
+function compcmd(sourcefile, objectfile, flags)
 
     -- make it
-    return format("%s -c %s -o %s %s", _g.shellname, flags, objfile, srcfile)
+    return format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+end
+
+-- complie the source file
+function compile(sourcefile, objectfile, flags, multitasking)
+
+    -- ensure the object directory
+    os.mkdir(path.directory(objectfile))
+
+    -- compile it
+    if multitasking then
+        os.corun(compcmd(sourcefile, objectfile, flags))
+    else
+        os.run(compcmd(sourcefile, objectfile, flags))
+    end
 end
 
 -- make the includedir flag
@@ -113,5 +127,4 @@ function check(flags)
 
     -- check it
     os.run("%s -h", _g.shellname)
-
 end

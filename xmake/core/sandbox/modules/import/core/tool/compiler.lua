@@ -41,5 +41,21 @@ function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target)
     return instance:compcmd(sourcefile, objectfile, target)
 end
 
+-- compile source file
+function sandbox_core_tool_compiler.compile(sourcefile, objectfile, target, multitasking)
+ 
+    -- get the compiler instance
+    local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))
+    if not instance then
+        raise(errors)
+    end
+
+    -- compile it
+    local ok, errors = instance:compile(sourcefile, objectfile, target, multitasking)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- return module
 return sandbox_core_tool_compiler

@@ -195,7 +195,7 @@ function linker:_addflags_from_target(flags, target)
 
     -- add the links flags 
     for _, link in ipairs(table.wrap(target:get("links"))) do
-        table.join2(flags, self:link(link))
+        table.join2(flags, self:linklib(link))
     end
 
     -- for target options? 
@@ -214,7 +214,7 @@ function linker:_addflags_from_target(flags, target)
 
             -- add the links flags from the option
             for _, link in ipairs(table.wrap(opt:get("links"))) do
-                table.join2(flags, self:link(link))
+                table.join2(flags, self:linklib(link))
             end
         end
     end
@@ -238,7 +238,7 @@ function linker:_addflags_from_platform(flags)
 
     -- add the links flags
     for _, link in ipairs(table.wrap(platform.get("links"))) do
-        table.join2(flags, self:link(link))
+        table.join2(flags, self:linklib(link))
     end
 end
 
@@ -332,8 +332,8 @@ function linker:get(name)
     return self:_tool().get(name)
 end
 
--- get the link command
-function linker:linkcmd(objfiles, targetfile, target)
+-- link the target file
+function linker:link(objectfiles, targetfile, target)
 
     -- get flags
     local flags = nil
@@ -342,14 +342,27 @@ function linker:linkcmd(objfiles, targetfile, target)
     end
 
     -- get it
-    return self:_tool().linkcmd(table.concat(table.wrap(objfiles), " "), targetfile, flags or "")
+    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
 end
 
--- make the link flag
-function linker:link(lib)
+-- get the link command
+function linker:linkcmd(objectfiles, targetfile, target)
+
+    -- get flags
+    local flags = nil
+    if target then
+        flags = self:_flags(target)
+    end
+
+    -- get it
+    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
+end
+
+-- make the linklib flag
+function linker:linklib(lib)
 
     -- make it
-    return self:_tool().link(lib)
+    return self:_tool().linklib(lib)
 end
 
 -- make the linkdir flag
