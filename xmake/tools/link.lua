@@ -117,7 +117,7 @@ end
 
 -- archive the library file
 function archive(objectfiles, targetfile, flags)
-    link(objectfile, targetfile, flags)
+    link(objectfiles, targetfile, flags)
 end
 
 -- check the given flags 
