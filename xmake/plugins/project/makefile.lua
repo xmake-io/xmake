@@ -140,7 +140,7 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make the command
-    local command = linker.linkcmd(target:objectfiles, targetfile, target)
+    local command = linker.linkcmd(target:objectfiles(), targetfile, target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))

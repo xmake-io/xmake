@@ -308,10 +308,10 @@ function compiler:_addflags_from_compiler(flags, kind)
 end
 
 -- get the compiler kind of the source file 
-function compiler.kind_of_file(srcfile)
+function compiler.kind_of_file(sourcefile)
 
     -- get the source file type
-    local filetype = path.extension(srcfile)
+    local filetype = path.extension(sourcefile)
     if not filetype then
         return nil
     end
@@ -398,8 +398,21 @@ function compiler:get(name)
     return self:_tool().get(name)
 end
 
+-- compile the source file
+function compiler:compile(sourcefile, objectfile, target, multitasking)
+
+    -- get flags
+    local flags = nil
+    if target then
+        flags = self:_flags(target)
+    end
+
+    -- compile it
+    return sandbox.load(self:_tool().compile, sourcefile, objectfile, flags or "", multitasking)
+end
+
 -- get the compile command
-function compiler:compcmd(srcfile, objfile, target)
+function compiler:compcmd(sourcefile, objectfile, target)
 
     -- get flags
     local flags = nil
@@ -408,7 +421,7 @@ function compiler:compcmd(srcfile, objfile, target)
     end
 
     -- get it
-    return self:_tool().compcmd(srcfile, objfile, flags or "")
+    return self:_tool().compcmd(sourcefile, objectfile, flags or "")
 end
 
 -- make the define flag

@@ -44,8 +44,8 @@ function get(name)
     return _g[name]
 end
 
--- make the link flag
-function link(lib)
+-- make the linklib flag
+function linklib(lib)
 end
 
 -- make the linkdir flag
@@ -57,6 +57,16 @@ function linkcmd(objectfiles, targetfile, flags)
 
     -- make it
     return format("%s %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+end
+
+-- link the target file
+function link(objectfiles, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(linkcmd(objectfiles, targetfile, flags))
 end
 
 -- extract the static library to object directory

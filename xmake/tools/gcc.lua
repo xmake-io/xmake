@@ -87,8 +87,8 @@ function includedir(dir)
     return "-I" .. dir
 end
 
--- make the link flag
-function link(lib)
+-- make the linklib flag
+function linklib(lib)
 
     -- make it
     return "-l" .. lib
@@ -101,18 +101,42 @@ function linkdir(dir)
     return "-L" .. dir
 end
 
--- make the complie command
-function compcmd(srcfile, objfile, flags)
+-- make the link command
+function linkcmd(objectfiles, targetfile, flags)
 
     -- make it
-    return format("%s -c %s -o %s %s", _g.shellname, flags, objfile, srcfile)
+    return format("%s -o %s %s %s", _g.shellname, targetfile, objectfiles, flags)
 end
 
--- make the link command
-function linkcmd(objfiles, targetfile, flags)
+-- make the complie command
+function compcmd(sourcefile, objectfile, flags)
 
     -- make it
-    return format("%s -o %s %s %s", _g.shellname, targetfile, objfiles, flags)
+    return format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+end
+
+-- link the target file
+function link(objectfiles, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(linkcmd(objectfiles, targetfile, flags))
+end
+
+-- complie the source file
+function compile(sourcefile, objectfile, flags, multitasking)
+
+    -- ensure the object directory
+    os.mkdir(path.directory(objectfile))
+
+    -- compile it
+    if multitasking then
+        os.corun(compcmd(sourcefile, objectfile, flags))
+    else
+        os.run(compcmd(sourcefile, objectfile, flags))
+    end
 end
 
 -- run command
@@ -126,17 +150,17 @@ end
 function check(flags)
 
     -- make an stub source file
-    local objfile = path.join(os.tmpdir(), "xmake.gcc.o")
-    local srcfile = path.join(os.tmpdir(), "xmake.gcc.c" .. ifelse(_g.kind == "cxx", "pp", ""))
+    local objectfile = path.join(os.tmpdir(), "xmake.gcc.o")
+    local sourcefile = path.join(os.tmpdir(), "xmake.gcc.c" .. ifelse(_g.kind == "cxx", "pp", ""))
 
     -- make stub code
-    io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
+    io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it
-    os.run("%s -c %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objfile, srcfile)
+    os.run("%s -c %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
-    os.rm(objfile)
-    os.rm(srcfile)
+    os.rm(objectfile)
+    os.rm(sourcefile)
 end
 

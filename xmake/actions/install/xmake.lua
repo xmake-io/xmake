@@ -43,10 +43,10 @@ task("install")
                     -- options
                 ,   options = 
                     {
-                        {'o', "installdir",  "kv", nil,         "Set the install directory."                                    }
+                        {'o', "installdir", "kv", nil,      "Set the install directory."    }
 
                     ,   {}
-                    ,   {nil, "target",     "v",  "all",        "Install the given target."                                     }
+                    ,   {nil, "target",     "v",  "all",    "Install the given target."     }
                     }
                 })
 

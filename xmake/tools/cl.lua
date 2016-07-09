@@ -105,10 +105,24 @@ function includedir(dir)
 end
 
 -- make the complie command
-function compcmd(srcfile, objfile, flags)
+function compcmd(sourcefile, objectfile, flags)
 
     -- make it
-    return format("%s -c %s -Fo%s %s", _g.shellname, flags, objfile, srcfile)
+    return format("%s -c %s -Fo%s %s", _g.shellname, flags, objectfile, sourcefile)
+end
+
+-- complie the source file
+function compile(sourcefile, objectfile, flags, multitasking)
+
+    -- ensure the object directory
+    os.mkdir(path.directory(objectfile))
+
+    -- compile it
+    if multitasking then
+        os.corun(compcmd(sourcefile, objectfile, flags))
+    else
+        os.run(compcmd(sourcefile, objectfile, flags))
+    end
 end
 
 -- run command
@@ -122,15 +136,15 @@ end
 function check(flags)
 
     -- make an stub source file
-    local objfile = path.join(os.tmpdir(), "xmake.cl.obj")
-    local srcfile = path.join(os.tmpdir(), "xmake.cl.c")
-    io.write(srcfile, "int main(int argc, char** argv)\n{return 0;}")
+    local objectfile = path.join(os.tmpdir(), "xmake.cl.obj")
+    local sourcefile = path.join(os.tmpdir(), "xmake.cl.c")
+    io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it
-    os.run("%s -c %s -Fo%s %s", _g.shellname, ifelse(flags, flags, ""), objfile, srcfile)
+    os.run("%s -c %s -Fo%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
-    os.rm(objfile)
-    os.rm(srcfile)
+    os.rm(objectfile)
+    os.rm(sourcefile)
 end
 
