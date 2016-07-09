@@ -1,0 +1,61 @@
+--!The Automatic Cross-platform Build Tool
+-- 
+-- XMake is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU Lesser General Public License as published by
+-- the Free Software Foundation; either version 2.1 of the License, or
+-- (at your option) any later version.
+-- 
+-- XMake is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU Lesser General Public License for more details.
+-- 
+-- You should have received a copy of the GNU Lesser General Public License
+-- along with XMake; 
+-- If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
+-- 
+-- Copyright (C) 2015 - 2016, ruki All rights reserved.
+--
+-- @author      ruki
+-- @file        binary.lua
+--
+
+-- imports
+import("core.base.option")
+import("core.tool.linker")
+import("kinds.object")
+
+-- build binary target
+function build(target, g)
+
+    -- build all objects
+    object.buildall(target, g)
+
+    -- expand object files with *.o/obj
+    local objectfiles = {}
+    for _, objectfile in ipairs(target:objectfiles()) do
+        if objectfile:find("%*") then
+            local matchfiles = os.match(objectfile)
+            if matchfiles then
+                table.join2(objectfiles, matchfiles)
+            end
+        else
+            table.insert(objectfiles, objectfile)
+        end
+    end
+
+    -- the target file
+    local targetfile = target:targetfile()
+
+    -- trace
+    print("[%02d%%]: linking.$(mode) %s", (g.targetindex + 1) * 100 / g.targetcount, path.filename(targetfile))
+
+    -- trace verbose info
+    if option.get("verbose") then
+        print(linker.linkcmd(objectfiles, targetfile, target))
+    end
+
+    -- link it
+    linker.link(objectfiles, targetfile, target)
+end
+

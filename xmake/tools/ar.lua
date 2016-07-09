@@ -44,29 +44,21 @@ function get(name)
     return _g[name]
 end
 
--- make the linklib flag
-function linklib(lib)
-end
-
--- make the linkdir flag
-function linkdir(dir)
-end
-
--- make the link command
-function linkcmd(objectfiles, targetfile, flags)
+-- make the archive command
+function archivecmd(objectfiles, targetfile, flags)
 
     -- make it
     return format("%s %s %s %s", _g.shellname, flags, targetfile, objectfiles)
 end
 
--- link the target file
-function link(objectfiles, targetfile, flags)
+-- archive the library file
+function archive(objectfiles, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetfile, flags))
+    os.run(archivecmd(objectfiles, targetfile, flags))
 end
 
 -- extract the static library to object directory
@@ -98,26 +90,14 @@ function extract(libraryfile, objectdir)
     os.cd(olddir)
 end
 
--- run command
-function run(...)
-
-    -- extract it
-    if _g.kind == "ex" then
-        return extract(...)
-    end
-
-    -- run it
-    os.run(...)
-end
-
 -- check the given flags 
 function check(flags)
 
     -- make an stub source file
-    local libfile = path.join(os.tmpdir(), "xmake.ar.a")
-    local objfile = path.join(os.tmpdir(), "xmake.ar.o")
-    local srcfile = path.join(os.tmpdir(), "xmake.ar.c")
-    io.write(srcfile, "int test(void)\n{return 0;}")
+    local libraryfile   = path.join(os.tmpdir(), "xmake.ar.a")
+    local objectfile    = path.join(os.tmpdir(), "xmake.ar.o")
+    local sourcefile    = path.join(os.tmpdir(), "xmake.ar.c")
+    io.write(sourcefile, "int test(void)\n{return 0;}")
 
     -- make flags
     local arflags = table.concat(_g.arflags, " ")
@@ -125,14 +105,14 @@ function check(flags)
         arflags = arflags .. " " .. flags
     end
 
-    -- make the compile command
-    os.run(compiler.compcmd(srcfile, objfile))
+    -- compile it
+    compiler.compile(sourcefile, objectfile)
 
     -- check it
-    os.run(linkcmd(objfile, libfile, arflags))
+    archive(objectfile, libraryfile, arflags)
 
     -- remove files
-    os.rm(objfile)
-    os.rm(srcfile)
-    os.rm(libfile)
+    os.rm(objectfile)
+    os.rm(sourcefile)
+    os.rm(libraryfile)
 end

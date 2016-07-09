@@ -110,11 +110,14 @@ function link(objectfiles, targetfile, flags)
     os.run(linkcmd(objectfiles, targetfile, flags))
 end
 
--- run command
-function run(...)
+-- make the archive command
+function archivecmd(objectfiles, targetfile, flags)
+    return linkcmd(objectfiles, targetfile, flags)
+end
 
-    -- run it
-    os.run(...)
+-- archive the library file
+function archive(objectfiles, targetfile, flags)
+    link(objectfile, targetfile, flags)
 end
 
 -- check the given flags 

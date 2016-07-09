@@ -63,8 +63,8 @@ function main()
     {
         function ()
 
-            -- make 
-            builder.make(targetname or "all")
+            -- build 
+            builder.build(targetname or "all")
         
         end,
 

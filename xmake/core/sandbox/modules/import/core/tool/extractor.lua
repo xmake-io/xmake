@@ -17,31 +17,32 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        tool.lua
+-- @file        extractor.lua
 --
 
 -- define module
-local sandbox_core_tool = sandbox_core_tool or {}
+local sandbox_core_tool_extractor = sandbox_core_tool_extractor or {}
 
 -- load modules
-local tool      = require("tool/tool")
-local config    = require("project/config")
 local platform  = require("platform/platform")
+local extractor = require("tool/extractor")
 local raise     = require("sandbox/modules/raise")
 
--- get the tool shell name
-function sandbox_core_tool.shellname(name)
+-- extract library file
+function sandbox_core_tool_extractor.extract(libraryfile, objectdir)
+ 
+    -- get the extractor instance
+    local instance, errors = extractor.load()
+    if not instance then
+        raise(errors)
+    end
 
-    -- get it
-    return platform.tool(name)
-end
-
--- check the tool and return the absolute path if exists
-function sandbox_core_tool.check(shellname, dirs, check)
-
-    -- check it
-    return tool.check(shellname, dirs or platform.tooldirs(), check)
+    -- extract it
+    local ok, errors = instance:extract(libraryfile, objectdir)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- return module
-return sandbox_core_tool
+return sandbox_core_tool_extractor

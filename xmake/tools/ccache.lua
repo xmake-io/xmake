@@ -35,13 +35,6 @@ function get(name)
     return _g[name]
 end
 
--- run it
-function run(...)
-
-    -- run it
-    os.run(...)
-end
-
 -- check the given flags 
 function check(flags)
 

@@ -23,6 +23,7 @@
 -- imports
 import("core.tool.tool")
 import("core.tool.linker")
+import("core.tool.archiver")
 import("core.tool.compiler")
 import("core.project.project")
 
@@ -79,9 +80,6 @@ function _make_object(makefile, target, srcfile, objfile)
     -- make command
     local ccache    = tool.shellname("ccache") 
     local command   = compiler.compcmd(srcfile, objfile, target)
-    if ccache then
-        command = ccache:append(command, " ")
-    end
 
     -- make head
     makefile:printf("%s:", objfile)
@@ -140,7 +138,12 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make the command
-    local command = linker.linkcmd(target:objectfiles(), targetfile, target)
+    local command = nil
+    if target:get("kind") == "static" then
+        command = archiver.archivecmd(target:objectfiles(), targetfile, target)
+    else
+        command = linker.linkcmd(target:objectfiles(), targetfile, target)
+    end
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
@@ -212,5 +215,4 @@ function make(outputfile)
  
     -- leave project directory
     os.cd(olddir)
-
 end

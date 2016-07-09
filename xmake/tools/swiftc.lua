@@ -21,6 +21,7 @@
 --
 
 -- imports
+import("core.tool.tool")
 import("core.project.config")
 
 -- init it
@@ -76,8 +77,20 @@ end
 -- make the compile command
 function compcmd(sourcefile, objectfile, flags)
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = tool.shellname("ccache")
+    end
+
     -- make it
-    return format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+    local command = format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+    if ccache then
+        command = ccache:append(command, " ")
+    end
+
+    -- ok
+    return command
 end
 
 -- complie the source file
@@ -113,13 +126,6 @@ function undefine(macro)
 
     -- make it
     return "-Xcc -U" .. macro
-end
-
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
 end
 
 -- check the given flags 

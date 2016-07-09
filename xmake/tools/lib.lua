@@ -72,18 +72,6 @@ function extract(libraryfile, objectdir)
     end
 end
 
--- run command
-function run(...)
-
-    -- extract it
-    if _g.kind == "ex" then
-        return extract(...)
-    end
-
-    -- run it
-    os.run(...)
-end
-
 -- check the given flags 
 function check(flags)
 
