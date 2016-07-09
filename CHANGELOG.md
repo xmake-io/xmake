@@ -2,6 +2,12 @@
 
 ## master (unreleased)
 
+### Changes
+
+### Bugs fixed
+
+* Fix install directory bug
+
 ## v2.0.2
 
 ### Changes
@@ -103,6 +109,12 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+### Bugs修复
+
+* 修复安装目录错误问题
 
 ## v2.0.2
 
