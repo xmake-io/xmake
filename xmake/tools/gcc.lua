@@ -20,6 +20,10 @@
 -- @file        gcc.lua
 --
 
+-- imports
+import("core.tool.tool")
+import("core.project.config")
+
 -- init it
 function init(shellname, kind)
     
@@ -111,8 +115,20 @@ end
 -- make the complie command
 function compcmd(sourcefile, objectfile, flags)
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = tool.shellname("ccache")
+    end
+
     -- make it
-    return format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+    local command = format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+    if ccache then
+        command = ccache:append(command, " ")
+    end
+
+    -- ok
+    return command
 end
 
 -- link the target file
@@ -137,13 +153,6 @@ function compile(sourcefile, objectfile, flags, multitasking)
     else
         os.run(compcmd(sourcefile, objectfile, flags))
     end
-end
-
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
 end
 
 -- check the given flags 

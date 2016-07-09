@@ -478,22 +478,5 @@ function compiler:check(flags)
     return ok
 end
 
--- run the command
-function compiler:run(...)
-
-    -- the compiler tool
-    local ctool = self:_tool()
-
-    -- no run interface?
-    if not ctool.run then
-
-        -- run it
-        return os.run(...)
-    end
-
-    -- run it
-    return sandbox.load(ctool.run, ...)
-end
-
 -- return module
 return compiler

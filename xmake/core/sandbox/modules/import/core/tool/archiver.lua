@@ -17,31 +17,45 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        tool.lua
+-- @file        archiver.lua
 --
 
 -- define module
-local sandbox_core_tool = sandbox_core_tool or {}
+local sandbox_core_tool_archiver = sandbox_core_tool_archiver or {}
 
 -- load modules
-local tool      = require("tool/tool")
-local config    = require("project/config")
 local platform  = require("platform/platform")
+local archiver  = require("tool/archiver")
 local raise     = require("sandbox/modules/raise")
 
--- get the tool shell name
-function sandbox_core_tool.shellname(name)
+-- make command for archiving library file
+function sandbox_core_tool_archiver.archivecmd(objectfiles, targetfile, target)
+ 
+    -- get the archiver instance
+    local instance, errors = archiver.load()
+    if not instance then
+        raise(errors)
+    end
 
-    -- get it
-    return platform.tool(name)
+    -- make command
+    return instance:archivecmd(objectfiles, targetfile, target)
 end
 
--- check the tool and return the absolute path if exists
-function sandbox_core_tool.check(shellname, dirs, check)
+-- archive library file
+function sandbox_core_tool_archiver.archive(objectfiles, targetfile, target)
+ 
+    -- get the archiver instance
+    local instance, errors = archiver.load()
+    if not instance then
+        raise(errors)
+    end
 
-    -- check it
-    return tool.check(shellname, dirs or platform.tooldirs(), check)
+    -- archive it
+    local ok, errors = instance:archive(objectfiles, targetfile, target)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- return module
-return sandbox_core_tool
+return sandbox_core_tool_archiver

@@ -17,11 +17,11 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        linker.lua
+-- @file        archiver.lua
 --
 
 -- define module
-local linker = linker or {}
+local archiver = archiver or {}
 
 -- load modules
 local io        = require("base/io")
@@ -33,38 +33,23 @@ local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
 local tool      = require("tool/tool")
-local compiler  = require("tool/compiler")
 
 -- get the current tool
-function linker:_tool()
+function archiver:_tool()
 
     -- get it
     return self._TOOL
 end
 
 -- get the current flag name
-function linker:_flagname()
+function archiver:_flagname()
 
     -- get it
     return self._FLAGNAME
 end
 
--- get the link kind of the target kind
-function linker._kind_of_target(targetkind)
-
-    -- the kinds
-    local kinds = 
-    {
-        ["binary"] = "ld"
-    ,   ["shared"] = "sh"
-    }
-
-    -- get kind
-    return kinds[targetkind]
-end
-
 -- get the flags
-function linker:_flags(target)
+function archiver:_flags(target)
 
     -- get the target key
     local key = tostring(target)
@@ -85,11 +70,8 @@ function linker:_flags(target)
     -- add flags from the platform 
     self:_addflags_from_platform(flags)
 
-    -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:sourcekinds())
-
-    -- add flags from the linker 
-    self:_addflags_from_linker(flags)
+    -- add flags from the archiver 
+    self:_addflags_from_archiver(flags)
 
     -- remove repeat
     flags = table.unique(flags)
@@ -104,8 +86,8 @@ function linker:_flags(target)
     return flags
 end
 
--- map gcc flag to the given linker flag
-function linker:_mapflag(flag, mapflags)
+-- map gcc flag to the given archiver flag
+function archiver:_mapflag(flag, mapflags)
 
     -- attempt to map it directly
     local flag_mapped = mapflags[flag]
@@ -127,8 +109,8 @@ function linker:_mapflag(flag, mapflags)
     end
 end
 
--- map gcc flags to the given linker flags
-function linker:_mapflags(flags)
+-- map gcc flags to the given archiver flags
+function archiver:_mapflags(flags)
 
     -- wrap flags first
     flags = table.wrap(flags)
@@ -162,7 +144,7 @@ function linker:_mapflags(flags)
 end
 
 -- get the named flags
-function linker:_named_flags(names, flags)
+function archiver:_named_flags(names, flags)
 
     -- map it 
     local flags_mapped = {}
@@ -175,48 +157,17 @@ function linker:_named_flags(names, flags)
 end
 
 -- add flags from the configure 
-function linker:_addflags_from_config(flags)
+function archiver:_addflags_from_config(flags)
 
     -- done
     table.join2(flags, config.get(self:_flagname()))
 end
 
 -- add flags from the target 
-function linker:_addflags_from_target(flags, target)
+function archiver:_addflags_from_target(flags, target)
 
     -- add the target flags 
     table.join2(flags, self:_mapflags(target:get(self:_flagname())))
-
-    -- add the linkdirs flags 
-    for _, linkdir in ipairs(table.wrap(target:get("linkdirs"))) do
-        table.join2(flags, self:linkdir(linkdir))
-    end
-
-    -- add the links flags 
-    for _, link in ipairs(table.wrap(target:get("links"))) do
-        table.join2(flags, self:linklib(link))
-    end
-
-    -- for target options? 
-    if target.options then
-
-        -- add the flags for the target options
-        for _, opt in pairs(target:options()) do
-
-            -- add the flags from the option
-            table.join2(flags, self:_mapflags(opt:get(self:_flagname())))
-            
-            -- add the linkdirs flags from the option
-            for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
-                table.join2(flags, self:linkdir(linkdir))
-            end
-
-            -- add the links flags from the option
-            for _, link in ipairs(table.wrap(opt:get("links"))) do
-                table.join2(flags, self:linklib(link))
-            end
-        end
-    end
 
     -- add the strip flags 
     table.join2(flags, self:_named_flags(target:get("strip"), {     debug       = "-S"
@@ -225,74 +176,32 @@ function linker:_addflags_from_target(flags, target)
 end
 
 -- add flags from the platform 
-function linker:_addflags_from_platform(flags)
+function archiver:_addflags_from_platform(flags)
 
     -- add flags 
     table.join2(flags, platform.get(self:_flagname()))
-
-    -- add the linkdirs flags 
-    for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
-        table.join2(flags, self:linkdir(linkdir))
-    end
-
-    -- add the links flags
-    for _, link in ipairs(table.wrap(platform.get("links"))) do
-        table.join2(flags, self:linklib(link))
-    end
 end
 
--- add flags from the compiler 
-function linker:_addflags_from_compiler(flags, srckinds)
-
-    -- done 
-    local flags_of_compiler = {}
-    for _, srckind in ipairs(table.wrap(srckinds)) do
-
-        -- load compiler
-        local instance, errors = compiler.load(srckind)
-        if instance then
-            table.join2(flags_of_compiler, instance:get(self:_flagname()))
-        end
-    end
-
-    -- add flags
-    table.join2(flags, table.unique(flags_of_compiler))
-end
-
--- add flags from the linker 
-function linker:_addflags_from_linker(flags)
+-- add flags from the archiver 
+function archiver:_addflags_from_archiver(flags)
 
     -- done
     table.join2(flags, self:get(self:_flagname()))
 end
 
--- get the current kind
-function linker:kind()
-
-    -- get it
-    return self._KIND
-end
-
--- load the linker from the given target kind
-function linker.load(targetkind)
-
-    -- get the linker kind
-    local kind = linker._kind_of_target(targetkind)
-    if not kind then
-        return nil, string.format("unknown target kind: %s", targetkind)
-    end
+-- load the archiver 
+function archiver.load()
 
     -- get it directly from cache dirst
-    linker._INSTANCES = linker._INSTANCES or {}
-    if linker._INSTANCES[kind] then
-        return linker._INSTANCES[kind]
+    if archiver._INSTANCE then
+        return archiver._INSTANCE
     end
 
     -- new instance
-    local instance = table.inherit(linker)
+    local instance = table.inherit(archiver)
 
-    -- load the linker tool from the source file type
-    local result, errors = tool.load(kind)
+    -- load the archiver tool from the source file type
+    local result, errors = tool.load("ar")
     if not result then 
         return nil, errors
     end
@@ -300,38 +209,25 @@ function linker.load(targetkind)
     -- save tool
     instance._TOOL = result
 
-    -- save kind 
-    instance._KIND = kind 
-
-    -- save flagname
-    local flagname =
-    {
-        ld = "ldflags"
-    ,   sh = "shflags"
-    }
-    instance._FLAGNAME = flagname[kind]
-
-    -- check
-    if not instance._FLAGNAME then
-        return nil, string.format("unknown linker for kind: %s", kind)
-    end
+    -- init flag name
+    instance._FLAGNAME = "arflags"
 
     -- save this instance
-    linker._INSTANCES[kind] = instance
+    archiver._INSTANCE = instance
 
     -- ok
     return instance
 end
 
 -- get properties of the tool
-function linker:get(name)
+function archiver:get(name)
 
     -- get it
     return self:_tool().get(name)
 end
 
--- link the target file
-function linker:link(objectfiles, targetfile, target)
+-- archive the library file
+function archiver:archive(objectfiles, targetfile, target)
 
     -- get flags
     local flags = nil
@@ -339,12 +235,12 @@ function linker:link(objectfiles, targetfile, target)
         flags = self:_flags(target)
     end
 
-    -- link it
-    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
+    -- archive it
+    return sandbox.load(self:_tool().archive, table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
 end
 
--- get the link command
-function linker:linkcmd(objectfiles, targetfile, target)
+-- get the archive command
+function archiver:archivecmd(objectfiles, targetfile, target)
 
     -- get flags
     local flags = nil
@@ -353,27 +249,13 @@ function linker:linkcmd(objectfiles, targetfile, target)
     end
 
     -- get it
-    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
-end
-
--- make the linklib flag
-function linker:linklib(lib)
-
-    -- make it
-    return self:_tool().linklib(lib)
-end
-
--- make the linkdir flag
-function linker:linkdir(dir)
-
-    -- make it
-    return self:_tool().linkdir(dir)
+    return self:_tool().archivecmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
 end
 
 -- check the given flags 
-function linker:check(flags)
+function archiver:check(flags)
 
-    -- the linker tool
+    -- the archiver tool
     local ltool = self:_tool()
 
     -- no check?
@@ -404,4 +286,4 @@ function linker:check(flags)
 end
 
 -- return module
-return linker
+return archiver

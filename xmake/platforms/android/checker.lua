@@ -112,7 +112,7 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "cxx",  cross, "g++",  "the c++ compiler") 
     checker.check_toolchain(config, "as",   cross, "gcc",  "the assember")
     checker.check_toolchain(config, "ld",   cross, "g++",  "the linker") 
-    checker.check_toolchain(config, "ar",   cross, "ar",   "the static library linker") 
+    checker.check_toolchain(config, "ar",   cross, "ar",   "the static library archiver") 
     checker.check_toolchain(config, "ex",   cross, "ar",   "the static library extractor") 
     checker.check_toolchain(config, "sh",   cross, "g++",  "the shared library linker") 
 end

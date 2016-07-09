@@ -64,26 +64,6 @@ function target:name()
     return self._NAME
 end
 
--- get the linker 
-function target:linker()
-
-    -- check
-    assert(self)
-
-    -- load the linker from the given kind
-    return linker.load(self:get("kind"))
-end
-
--- get the compiler with the given source file
-function target:compiler(srcfile)
-
-    -- check
-    assert(self and srcfile)
-
-    -- load the compiler 
-    return compiler.load(compiler.kind_of_file(srcfile))
-end
-
 -- get the options 
 function target:options()
 

@@ -125,13 +125,6 @@ function compile(sourcefile, objectfile, flags, multitasking)
     end
 end
 
--- run command
-function run(...)
-
-    -- run it
-    os.run(...)
-end
-
 -- check the given flags 
 function check(flags)
 
