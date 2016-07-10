@@ -162,7 +162,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
         -- translate it
         local results = {}
         local incdeps = io.read(tmpfile)
-        for includefile in string.gmatch(incdeps, "([%w|/|%.|%-|%+|_|%$]-%.[h|hpp])") do
+        for includefile in string.gmatch(incdeps, "([%w|/|%.|%-|%+|_|%$]-%.hp*)") do
             table.insert(results, includefile)
         end
 

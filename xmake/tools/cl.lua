@@ -128,7 +128,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
 
         -- translate it
         local results = {}
-        for includefile in string.gmatch(outdata, "including file:%s*(.-%.[h|hpp])") do
+        for includefile in string.gmatch(outdata, "including file:%s*(.-%.hp*)") do
             table.insert(results, includefile)
         end
 
