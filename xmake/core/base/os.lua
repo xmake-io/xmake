@@ -318,6 +318,11 @@ function os.exec(cmd, outfile, errfile)
         local waitok = -1
         local status = -1 
         if coroutine.running() then
+
+            -- save the current directory
+            local curdir = os.curdir()
+
+            -- wait it
             repeat
                 -- poll it
                 waitok, status = process.wait(proc, 0)
@@ -325,6 +330,9 @@ function os.exec(cmd, outfile, errfile)
                     coroutine.yield()
                 end
             until waitok ~= 0
+
+            -- resume the current directory
+            os.cd(curdir)
         else
             waitok, status = process.wait(proc, -1)
         end
@@ -354,13 +362,21 @@ function os.execv(shellname, argv, outfile, errfile)
         local waitok = -1
         local status = -1 
         if coroutine.running() then
+
+            -- save the current directory
+            local curdir = os.curdir()
+
+            -- wait it
             repeat
                 -- poll it
-                waitok, status = process.wait(prpoc, 0)
+                waitok, status = process.wait(proc, 0)
                 if waitok == 0 then
                     coroutine.yield()
                 end
             until waitok ~= 0
+
+            -- resume the current directory
+            os.cd(curdir)
         else
             waitok, status = process.wait(proc, -1)
         end

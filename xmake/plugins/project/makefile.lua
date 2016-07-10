@@ -25,6 +25,7 @@ import("core.tool.tool")
 import("core.tool.linker")
 import("core.tool.archiver")
 import("core.tool.compiler")
+import("core.project.config")
 import("core.project.project")
 
 -- get log makefile
@@ -78,8 +79,7 @@ function _make_object(makefile, target, srcfile, objfile)
     end
 
     -- make command
-    local ccache    = tool.shellname("ccache") 
-    local command   = compiler.compcmd(srcfile, objfile, target)
+    local command = compiler.compcmd(srcfile, objfile, target)
 
     -- make head
     makefile:printf("%s:", objfile)
@@ -88,7 +88,7 @@ function _make_object(makefile, target, srcfile, objfile)
     makefile:print(" %s", srcfile)
 
     -- make body
-    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), srcfile)
+    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), srcfile)
     makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", command:encode())
     makefile:print("\t@xmake l mkdir %s", path.directory(objfile))
     makefile:print("\t@%s > %s 2>&1", command, _logfile())
