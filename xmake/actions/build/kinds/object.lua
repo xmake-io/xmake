@@ -70,6 +70,20 @@ function _build(target, g, index)
     local objectfile = objectfiles[index]
     local incdepfile = incdepfiles[index]
 
+    -- get the source file type
+    local filetype = path.extension(sourcefile):lower()
+
+    -- calculate percent
+    local percent = ((g.targetindex + (index - 1) / #objectfiles) * 100 / g.targetcount)
+
+    -- build the object for the *.o/obj source makefile
+    if filetype == ".o" or filetype == ".obj" then 
+        return _build_from_object(target, sourcefile, objectfile, percent)
+    -- build the object for the *.[a|lib] source file
+    elseif filetype == ".a" or filetype == ".lib" then 
+        return _build_from_static(target, sourcefile, objectfile, percent)
+    end
+
     -- get dependent files
     local depfiles = {}
     if incdepfile and os.isfile(incdepfile) then
@@ -91,28 +105,8 @@ function _build(target, g, index)
         return 
     end
 
-    -- get the source file type
-    local filetype = path.extension(sourcefile):lower()
-
-    -- calculate percent
-    local percent = ((g.targetindex + (index - 1) / #objectfiles) * 100 / g.targetcount)
-
-    -- build the object for the *.o/obj source makefile
-    if filetype == ".o" or filetype == ".obj" then 
-        return _build_from_object(target, sourcefile, objectfile, percent)
-    -- build the object for the *.[a|lib] source file
-    elseif filetype == ".a" or filetype == ".lib" then 
-        return _build_from_static(target, sourcefile, objectfile, percent)
-    end
-
-    -- get ccache
-    local ccache = nil
-    if config.get("ccache") then
-        ccache = tool.shellname("ccache") 
-    end
-
     -- trace
-    print("[%02d%%]: %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
+    print("[%02d%%]: %scompiling.$(mode) %s", percent, ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
 
     -- trace verbose info
     if option.get("verbose") then
@@ -161,8 +155,12 @@ function buildall(target, g)
         tasks = pendings
 
         -- produce tasks
+        local curdir = os.curdir()
         while #tasks < jobs and index <= total do
             table.insert(tasks, {coroutine.create(function (index)
+
+                        -- force to set the current directory first because the other jobs maybe changed it
+                        os.cd(curdir)
 
                         -- build object
                         _build(target, g, index)
