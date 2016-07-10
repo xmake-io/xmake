@@ -2,11 +2,18 @@
 
 ## master (unreleased)
 
+### New features 
+
+* Add check includes dependence automatically
+
 ### Changes
+
+* Improve the interfaces of run shell
 
 ### Bugs fixed
 
 * Fix install directory bug
+* Fix the root directory error for `import` interface
 
 ## v2.0.2
 
@@ -110,11 +117,18 @@
 
 ## master (开发中)
 
+### 新特性
+
+* 增加头文件依赖自动检测和增量编译，提高编译速度
+
 ### 改进
+
+* 增强运行shell的系列接口
 
 ### Bugs修复
 
 * 修复安装目录错误问题
+* 修复`import`根目录错误问题
 
 ## v2.0.2
 
