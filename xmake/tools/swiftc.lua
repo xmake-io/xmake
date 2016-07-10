@@ -94,7 +94,7 @@ function compcmd(sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, flags, multitasking)
+function compile(sourcefile, objectfile, incdepfile, flags, multitasking)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))

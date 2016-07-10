@@ -142,16 +142,32 @@ function link(objectfiles, targetfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, flags, multitasking)
+function compile(sourcefile, objectfile, incdepfile, flags, multitasking)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
+    -- run function
+    local run = ifelse(multitasking, os.corun, os.run) 
+
     -- compile it
-    if multitasking then
-        os.corun(compcmd(sourcefile, objectfile, flags))
-    else
-        os.run(compcmd(sourcefile, objectfile, flags))
+    run(compcmd(sourcefile, objectfile, flags))
+
+    -- generate includes file
+    if incdepfile then
+
+        -- generate it
+        run(compcmd(sourcefile, incdepfile, flags .. " -MM"))
+
+        -- translate it
+        local results = {}
+        local incdeps = io.read(incdepfile)
+        for includefile in string.gmatch(incdeps, "([%w|/|%.|%-|%+|_|%$]-%.[h|hpp])") do
+            table.insert(results, includefile)
+        end
+
+        -- update it
+        io.save(incdepfile, results)
     end
 end
 

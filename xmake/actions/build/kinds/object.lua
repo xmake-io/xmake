@@ -63,13 +63,31 @@ function _build(target, g, index)
     -- the object and source files
     local objectfiles = target:objectfiles()
     local sourcefiles = target:sourcefiles()
+    local incdepfiles = target:incdepfiles()
 
     -- get the object and source with the given index
     local sourcefile = sourcefiles[index]
     local objectfile = objectfiles[index]
+    local incdepfile = incdepfiles[index]
+
+    -- get dependent files
+    local depfiles = {}
+    if incdepfile and os.isfile(incdepfile) then
+        depfiles = io.load(incdepfile)
+    end
+    table.insert(depfiles, sourcefile)
+
+    -- check the dependent files are modified?
+    local modified = false
+    for _, depfile in ipairs(depfiles) do
+        if os.mtime(depfile) > os.mtime(objectfile) then
+            modified = true
+            break
+        end
+    end
 
     -- we need not rebuild it if the files are not modified 
-    if os.mtime(sourcefile) < os.mtime(objectfile) then
+    if not modified then
         return 
     end
 
@@ -102,7 +120,7 @@ function _build(target, g, index)
     end
 
     -- complie it and enable multitasking
-    compiler.compile(sourcefile, objectfile, target, true)
+    compiler.compile(sourcefile, objectfile, incdepfile, target, true)
 end
 
 -- build objects for the given target
