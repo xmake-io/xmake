@@ -64,7 +64,7 @@ function sandbox_import._loadfile(filepath, instance)
     if instance then
 
         -- fork a new sandbox for this script
-        instance, errors = instance:fork(script)
+        instance, errors = instance:fork(script, path.directory(filepath))
         if not instance then
             return nil, errors
         end

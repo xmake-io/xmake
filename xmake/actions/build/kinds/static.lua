@@ -23,7 +23,7 @@
 -- imports
 import("core.base.option")
 import("core.tool.archiver")
-import("kinds.object")
+import("object")
 
 -- build binary target
 function build(target, g)
