@@ -208,7 +208,7 @@ function sandbox.load(script, ...)
 end
 
 -- fork a new sandbox from the given sandbox
-function sandbox:fork(script)
+function sandbox:fork(script, rootdir)
 
     -- no script?
     if script == nil then
@@ -230,7 +230,7 @@ function sandbox:fork(script)
     instance._PRIVATE._FILTER = self:filter()
 
     -- inherit the root directory
-    instance._PRIVATE._ROOTDIR = self:rootdir()
+    instance._PRIVATE._ROOTDIR = rootdir or self:rootdir()
 
     -- bind public scope
     setfenv(script, instance._PUBLIC)
