@@ -142,32 +142,35 @@ function link(objectfiles, targetfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, incdepfile, flags, multitasking)
+function compile(sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
-    -- run function
-    local run = ifelse(multitasking, os.corun, os.run) 
-
     -- compile it
-    run(compcmd(sourcefile, objectfile, flags))
+    os.run(compcmd(sourcefile, objectfile, flags))
 
     -- generate includes file
     if incdepfile then
 
+        -- the temporary file
+        local tmpfile = os.tmpfile()
+
         -- generate it
-        run(compcmd(sourcefile, incdepfile, flags .. " -MM"))
+        os.run(compcmd(sourcefile, tmpfile, (flags or "") .. " -MM"))
 
         -- translate it
         local results = {}
-        local incdeps = io.read(incdepfile)
+        local incdeps = io.read(tmpfile)
         for includefile in string.gmatch(incdeps, "([%w|/|%.|%-|%+|_|%$]-%.[h|hpp])") do
             table.insert(results, includefile)
         end
 
         -- update it
         io.save(incdepfile, results)
+
+        -- remove the temporary file
+        os.rm(tmpfile)
     end
 end
 

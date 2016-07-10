@@ -120,7 +120,7 @@ function _build(target, g, index)
     end
 
     -- complie it and enable multitasking
-    compiler.compile(sourcefile, objectfile, incdepfile, target, true)
+    compiler.compile(sourcefile, objectfile, incdepfile, target)
 end
 
 -- build objects for the given target

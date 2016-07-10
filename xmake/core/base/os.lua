@@ -256,22 +256,10 @@ end
 function os.run(cmd)
 
     -- make temporary log file
-    local log = path.join(os.tmpdir(), "xmake.os.run.log")
+    local log = os.tmpfile()
 
-    -- open command
-    local p = process.open(cmd, log, log)
-    if nil == p then
-        return false, string.format("cannot run %s", cmd)
-    end
-
-    -- wait process
-    local waitok, status = process.wait(p, -1)
-
-    -- close process
-    process.close(p)
-
-    -- ok?
-    local ok = utils.ifelse(waitok > 0, status, -1)
+    -- execute it
+    local ok = os.exec(cmd, log, log)
     if ok ~= 0 then
 
         -- make errors
@@ -295,7 +283,7 @@ end
 function os.runv(shellname, argv)
 
     -- make temporary log file
-    local log = path.join(os.tmpdir(), "xmake.os.runv.log")
+    local log = os.tmpfile()
 
     -- execute it
     local ok = os.execv(shellname, table.wrap(argv), log, log)
@@ -327,7 +315,21 @@ function os.exec(cmd, outfile, errfile)
     if proc ~= nil then
 
         -- wait process
-        local waitok, status = process.wait(proc, -1)
+        local waitok = -1
+        local status = -1 
+        if coroutine.running() then
+            repeat
+                -- poll it
+                waitok, status = process.wait(proc, 0)
+                if waitok == 0 then
+                    coroutine.yield()
+                end
+            until waitok ~= 0
+        else
+            waitok, status = process.wait(proc, -1)
+        end
+
+        -- get status
         if waitok > 0 then
             ok = status
         end
@@ -349,7 +351,21 @@ function os.execv(shellname, argv, outfile, errfile)
     if proc ~= nil then
 
         -- wait process
-        local waitok, status = process.wait(proc, -1)
+        local waitok = -1
+        local status = -1 
+        if coroutine.running() then
+            repeat
+                -- poll it
+                waitok, status = process.wait(prpoc, 0)
+                if waitok == 0 then
+                    coroutine.yield()
+                end
+            until waitok ~= 0
+        else
+            waitok, status = process.wait(proc, -1)
+        end
+
+        -- get status
         if waitok > 0 then
             ok = status
         end
@@ -362,72 +378,48 @@ function os.execv(shellname, argv, outfile, errfile)
     return ok
 end
 
--- run shell with io
+-- run shell and return output and error data
 function os.iorun(cmd)
 
-    -- make temporary data file
-    local datafile = path.join(os.tmpdir(), "xmake.os.iorun.data")
+    -- make temporary output and error file
+    local outfile = os.tmpfile()
+    local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.exec(cmd, datafile, datafile) 
+    local ok = os.exec(cmd, outfile, errfile) 
 
-    -- get results
-    local results = io.readall(datafile)
+    -- get output and error data
+    local outdata = io.readall(outfile)
+    local errdata = io.readall(errfile)
 
-    -- remove the temporary data file
-    os.rm(datafile)
+    -- remove the temporary output and error file
+    os.rm(outfile)
+    os.rm(errfile)
 
     -- ok?
-    return ok == 0, results
+    return ok == 0, outdata, errdata
 end
 
--- run shell with coroutine
-function os.corun(cmd)
+-- run shell with arguments and return output and error data
+function os.iorunv(shellname, argv)
 
-    -- make temporary log file
-    local log = os.tmpfile()
+    -- make temporary output and error file
+    local outfile = os.tmpfile()
+    local errfile = os.tmpfile()
 
-    -- open command
-    local p = process.open(cmd, log, log)
-    if nil == p then
-        return false, string.format("cannot run %s", cmd)
-    end
+    -- run command
+    local ok = os.execv(shellname, argv, outfile, errfile) 
 
-    -- wait process
-    local waitok = -1
-    local status = -1 
-    repeat
-        
-        -- poll it
-        waitok, status = process.wait(p, 0)
-        if waitok == 0 then
-            coroutine.yield()
-        end
+    -- get output and error data
+    local outdata = io.readall(outfile)
+    local errdata = io.readall(errfile)
 
-    until waitok ~= 0
-
-    -- close process
-    process.close(p)
+    -- remove the temporary output and error file
+    os.rm(outfile)
+    os.rm(errfile)
 
     -- ok?
-    local ok = utils.ifelse(waitok > 0, status, -1)
-    if ok ~= 0 then
-
-        -- make errors
-        local errors = io.readall(log)
-
-        -- remove the temporary log file
-        os.rm(log)
-
-        -- failed
-        return false, errors
-    end
-
-    -- remove the temporary log file
-    os.rm(log)
-
-    -- ok
-    return true
+    return ok == 0, outfile, errdata
 end
 
 -- raise an exception and abort the current script

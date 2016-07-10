@@ -112,16 +112,28 @@ function compcmd(sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, incdepfile, flags, multitasking)
+function compile(sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
+    -- generate includes file
+    if incdepfile then
+        flags = (flags or "") .. " -showIncludes"
+    end
+
     -- compile it
-    if multitasking then
-        os.corun(compcmd(sourcefile, objectfile, flags))
-    else
-        os.run(compcmd(sourcefile, objectfile, flags))
+    local outdata = os.iorun(compcmd(sourcefile, objectfile, flags))
+    if incdepfile and outdata then
+
+        -- translate it
+        local results = {}
+        for includefile in string.gmatch(outdata, "including file:%s*(.-%.[h|hpp])") do
+            table.insert(results, includefile)
+        end
+
+        -- update it
+        io.save(incdepfile, results)
     end
 end
 

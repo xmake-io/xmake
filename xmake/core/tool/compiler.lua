@@ -399,7 +399,7 @@ function compiler:get(name)
 end
 
 -- compile the source file
-function compiler:compile(sourcefile, objectfile, incdepfile, target, multitasking)
+function compiler:compile(sourcefile, objectfile, incdepfile, target)
 
     -- get flags
     local flags = nil
@@ -408,7 +408,7 @@ function compiler:compile(sourcefile, objectfile, incdepfile, target, multitaski
     end
 
     -- compile it
-    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, flags or "", multitasking)
+    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, flags or "")
 end
 
 -- get the compile command

@@ -94,17 +94,13 @@ function compcmd(sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, incdepfile, flags, multitasking)
+function compile(sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    if multitasking then
-        os.corun(compcmd(sourcefile, objectfile, flags))
-    else
-        os.run(compcmd(sourcefile, objectfile, flags))
-    end
+    os.run(compcmd(sourcefile, objectfile, flags))
 end
 
 -- make the includedir flag
