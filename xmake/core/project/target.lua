@@ -358,6 +358,34 @@ function target:headerfiles(outputdir)
     return srcheaders, dstheaders
 end
 
+-- get the dependent include files
+function target:incdepfiles()
+
+    -- the previous object files
+    local objectfiles_prev = self._OBJECTFILES
+    
+    -- the object files
+    local objectfiles = self:objectfiles()
+ 
+    -- cached? return it directly
+    local modified = objectfiles_prev ~= objectfiles
+    if self._INCDEPFILES and not modified then
+        return self._INCDEPFILES
+    end
+
+    -- make include files
+    local incdepfiles = {}
+    for _, objectfile in ipairs(objectfiles) do
+        table.insert(incdepfiles, path.join(path.directory(objectfile), path.basename(objectfile) .. ".d"))
+    end
+
+    -- cache it
+    self._INCDEPFILES = incdepfiles
+
+    -- ok
+    return incdepfiles
+end
+
 -- get the kinds of sourcefiles
 --
 -- .e.g cc cxx mm mxx as ...

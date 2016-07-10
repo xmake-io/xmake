@@ -94,7 +94,7 @@ function option:_check_include(include, srcpath, objpath)
     end
 
     -- attempt to run this command
-    local ok, errors = instance:compile(srcpath, objpath, self)
+    local ok, errors = instance:compile(srcpath, objpath, nil, self)
     if not ok and option_.get("verbose") then
         print(errors)
     end
@@ -148,7 +148,7 @@ function option:_check_function(checkcode, srcpath, objpath)
     srcfile:close()
 
     -- execute the compile command
-    local ok, errors = instance:compile(srcpath, objpath, self)
+    local ok, errors = instance:compile(srcpath, objpath, nil, self)
     if not ok and option_.get("verbose") then
         print(errors)
     end
@@ -202,7 +202,7 @@ function option:_check_typedef(typedef, srcpath, objpath)
     srcfile:close()
 
     -- execute the compile command
-    local ok, errors = instance:compile(srcpath, objpath, self)
+    local ok, errors = instance:compile(srcpath, objpath, nil, self)
     if not ok and option_.get("verbose") then
         print(errors)
     end
