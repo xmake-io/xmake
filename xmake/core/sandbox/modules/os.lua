@@ -166,6 +166,17 @@ function sandbox_os.tmpdir()
     return tmpdir
 end
 
+-- get the temporary file
+function sandbox_os.tmpfile()
+   
+    -- get it
+    local tmpfile = os.tmpfile()
+    assert(tmpfile)
+
+    -- ok
+    return tmpfile
+end
+
 -- get the tools directory
 function sandbox_os.toolsdir()
    
@@ -221,33 +232,36 @@ function sandbox_os.runv(shellname, argv)
     end
 end
 
--- run shell with io
+-- run shell and return output and error data
 function sandbox_os.iorun(cmd, ...)
 
     -- make command
     cmd = vformat(cmd, ...)
 
     -- run it
-    local ok, results = os.iorun(cmd)
+    local ok, outdata, errdata = os.iorun(cmd)
     if not ok then
-        os.raise(results)
+        os.raise(errdata)
     end
 
     -- ok
-    return results
+    return outdata, errdata
 end
 
--- run shell with coroutine
-function sandbox_os.corun(cmd, ...)
+-- run shell and return output and error data
+function sandbox_os.iorunv(shellname, argv)
 
-    -- make command
-    cmd = vformat(cmd, ...)
+    -- make shellname
+    shellname = vformat(shellname)
 
     -- run it
-    local ok, errors = os.corun(cmd)
+    local ok, outdata, errdata = os.iorunv(shellname, argv)
     if not ok then
-        os.raise(errors)
+        os.raise(errdata)
     end
+
+    -- ok
+    return outdata, errdata
 end
 
 -- execute shell 

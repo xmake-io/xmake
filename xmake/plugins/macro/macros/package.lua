@@ -55,13 +55,13 @@ function main(argv)
     for _, arch in ipairs(platform.archs(plat)) do
 
         -- config it
-        os.exec("xmake f -p %s -a %s %s -c", plat, arch, args.config or "")
+        os.exec("xmake f -p %s -a %s %s -c %s", plat, arch, args.config or "", ifelse(option.get("verbose"), "-v", ""))
 
         -- package it
         if args.outputdir then
-            os.exec("xmake p -o %s", args.outputdir)
+            os.exec("xmake p -o %s %s", args.outputdir, ifelse(option.get("verbose"), "-v", ""))
         else
-            os.exec("xmake p")
+            os.exec("xmake p %s", ifelse(option.get("verbose"), "-v", ""))
         end
     end
 
