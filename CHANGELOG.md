@@ -9,6 +9,7 @@
 ### Changes
 
 * Improve the interfaces of run shell
+* Upgrade luajit to v2.0.4
 
 ### Bugs fixed
 
@@ -124,6 +125,7 @@
 ### 改进
 
 * 增强运行shell的系列接口
+* 更新luajit到v2.0.4版本
 
 ### Bugs修复
 
