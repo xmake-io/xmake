@@ -99,26 +99,43 @@ function _build(target, g, index)
 
     -- check the dependent files are modified?
     local modified      = false
-    _g.depfile_mtimes   = _g.depfile_mtimes or {}
+    local objectmtime   = nil
+    _g.depfile_results  = _g.depfile_results or {}
     for _, depfile in ipairs(depfiles) do
 
-        -- cache the mtimes for depfiles
-        local depfile_mtime = _g.depfile_mtimes[depfile]
-        if not depfile_mtime then
-            depfile_mtime               = os.mtime(depfile)
-            _g.depfile_mtimes[depfile]  = depfile_mtime
-        end
+        -- optimization: this depfile has been not checked?
+        local status = _g.depfile_results[depfile]
+        if status == nil then
 
-        -- source and header files have been modified?
-        if depfile_mtime > os.mtime(objectfile) then
+            -- optimization: only uses the mtime of first object file
+            objectmtime = objectmtime or os.mtime(objectfile)
 
-            -- ignore the config header, because it always changed with build version.
-            -- and other config content will not be changed when building each time(without reconfig or rebuild)
-            -- 
-            if depfile ~= configheader then 
-                modified = true
-                break
+            -- source and header files have been modified?
+            if os.mtime(depfile) > objectmtime then
+
+                -- ignore the config header, because it always changed with build version.
+                -- and other config content will not be changed when building each time(without reconfig or rebuild)
+                -- 
+                if depfile ~= configheader then 
+
+                    -- modified
+                    modified = true
+
+                    -- mark this depfile as modified
+                    _g.depfile_results[depfile] = true
+                    break
+                end
             end
+
+            -- mark this depfile as not modified
+            _g.depfile_results[depfile] = false
+        
+        -- has been checked and modified?
+        elseif status then
+        
+            -- modified
+            modified = true
+            break
         end
     end
 

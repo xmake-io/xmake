@@ -23,6 +23,7 @@
 -- imports
 import("core.tool.tool")
 import("core.project.config")
+import("core.project.project")
 
 -- init it
 function init(shellname, kind)
@@ -163,7 +164,11 @@ function compile(sourcefile, objectfile, incdepfile, flags)
         local results = {}
         local incdeps = io.read(tmpfile)
         for includefile in string.gmatch(incdeps, "([%w|/|%.|%-|%+|_|%$]-%.hp*)") do
-            table.insert(results, includefile)
+
+            -- save it if belong to the project
+            if not path.is_absolute(includefile) then
+                table.insert(results, includefile)
+            end
         end
 
         -- update it
