@@ -131,12 +131,22 @@ function compile(sourcefile, objectfile, incdepfile, flags)
 
         -- translate it
         local results = {}
-        for includefile in string.gmatch(outdata, "including file:%s*(.-%.hp*)") do
-            table.insert(results, includefile)
+        for includefile in string.gmatch(outdata, "including file:%s*(.-)\r*\n") do
+
+            -- check
+            assert(os.isfile(includefile), "invalid include file: %s for %s", includefile, incdepfile)
+
+            -- get the relative
+            includefile = path.relative(includefile, project.directory())
+
+            -- save it if belong to the project
+            if not path.is_absolute(includefile) then
+                table.insert(results, includefile)
+            end
         end
 
         -- update it
-        io.save(incdepfile, results)
+        io.save(incdepfile, table.unique(results))
     end
 end
 

@@ -91,10 +91,10 @@ function _build(target, g, index)
     end
     table.insert(depfiles, sourcefile)
 
-    -- get config header
-    local configheader = target:get("config_h")
+    -- the config header
+    local configheader  = target:get("config_h")
     if configheader then
-        configheader = path.absolute(configheader)
+        configheader = path.translate(configheader)
     end
 
     -- check the dependent files are modified?
@@ -110,25 +110,25 @@ function _build(target, g, index)
         end
 
         -- source and header files have been modified?
-        if os.mtime(depfile) > os.mtime(objectfile) then
+        if depfile_mtime > os.mtime(objectfile) then
 
             -- ignore the config header, because it always changed with build version.
             -- and other config content will not be changed when building each time(without reconfig or rebuild)
             -- 
-            if path.absolute(depfile) ~= configheader then 
+            if depfile ~= configheader then 
                 modified = true
                 break
             end
         end
     end
 
-    -- trace
-    print("[%02d%%]: %s%s.$(mode) %s", percent, ifelse(config.get("ccache"), "ccache ", ""), ifelse(modified, "compiling", "passing"), sourcefile)
-
     -- we need not rebuild it if the files are not modified 
     if not modified then
         return 
     end
+
+    -- trace
+    print("[%02d%%]: %scompiling.$(mode) %s", percent, ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
 
     -- trace verbose info
     if option.get("verbose") then
