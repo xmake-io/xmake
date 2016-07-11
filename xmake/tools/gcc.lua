@@ -163,7 +163,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
         -- translate it
         local results = {}
         local incdeps = io.read(tmpfile)
-        for includefile in string.gmatch(incdeps, "([%w|/|%.|%-|%+|_|%$]-%.hp*)") do
+        for includefile in string.gmatch(incdeps, "%s+([%w/%.%-%+_%$%.]+)") do
 
             -- save it if belong to the project
             if not path.is_absolute(includefile) then
