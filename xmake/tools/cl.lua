@@ -20,6 +20,9 @@
 -- @file        cl.lua
 --
 
+-- imports
+import("core.project.project")
+
 -- init it
 function init(shellname)
     
