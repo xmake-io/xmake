@@ -34,6 +34,7 @@ local sandbox_os = sandbox_os or {}
 sandbox_os.date     = os.date
 sandbox_os.time     = os.time
 sandbox_os.mtime    = os.mtime
+sandbox_os.mclock   = os.mclock
 
 -- copy file or directory
 function sandbox_os.cp(src, dst)
