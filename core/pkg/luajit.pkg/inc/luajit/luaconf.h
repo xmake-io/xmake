@@ -1,6 +1,6 @@
 /*
 ** Configuration header.
-** Copyright (C) 2005-2014 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef luaconf_h
@@ -37,7 +37,7 @@
 #endif
 #define LUA_LROOT	"/usr/local"
 #define LUA_LUADIR	"/lua/5.1/"
-#define LUA_LJDIR	"/luajit-2.0.3/"
+#define LUA_LJDIR	"/luajit-2.0.4/"
 
 #ifdef LUA_ROOT
 #define LUA_JROOT	LUA_ROOT
@@ -127,8 +127,8 @@
 #define LUA_INTFRMLEN		"l"
 #define LUA_INTFRM_T		long
 
-#if 0
 /* Linkage of public API functions. */
+#if 0
 #if defined(LUA_BUILD_AS_DLL)
 #if defined(LUA_CORE) || defined(LUA_LIB)
 #define LUA_API		__declspec(dllexport)

@@ -40,7 +40,7 @@ local menu =
     title = xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
 
     -- copyright
-,   copyright = "Copyright (C) 2015-2016 Ruki Wang, tboox.org\nCopyright (C) 2005-2014 Mike Pall, luajit.org"
+,   copyright = "Copyright (C) 2015-2016 Ruki Wang, tboox.org\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
 
     -- the tasks: xmake [task]
 ,   task.menu
