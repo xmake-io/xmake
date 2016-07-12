@@ -91,12 +91,6 @@ function _build(target, g, index)
     end
     table.insert(depfiles, sourcefile)
 
-    -- the config header
-    local configheader  = target:get("config_h")
-    if configheader then
-        configheader = path.translate(configheader)
-    end
-
     -- check the dependent files are modified?
     local modified      = false
     local objectmtime   = nil
@@ -113,18 +107,12 @@ function _build(target, g, index)
             -- source and header files have been modified?
             if os.mtime(depfile) > objectmtime then
 
-                -- ignore the config header, because it always changed with build version.
-                -- and other config content will not be changed when building each time(without reconfig or rebuild)
-                -- 
-                if depfile ~= configheader then 
+                -- modified
+                modified = true
 
-                    -- modified
-                    modified = true
-
-                    -- mark this depfile as modified
-                    _g.depfile_results[depfile] = true
-                    break
-                end
+                -- mark this depfile as modified
+                _g.depfile_results[depfile] = true
+                break
             end
 
             -- mark this depfile as not modified
