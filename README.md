@@ -21,6 +21,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Custom packages, platforms, plugins, templates, tasks, macros, options and actions
 - Do not generate makefile and build project directly
 - Support multitasking with argument: -j 
+- Check includes dependence automatically
 
 ####Actions
 
@@ -254,6 +255,8 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - 不依赖makefile和make，实现直接编译，内置自动多任务加速编译, xmake是一个真正的构架工具，而不仅仅是一个工程文件生成器
 
 - 自动检测ccache，进行自动缓存提升构建速度
+
+- 自动检测头文件依赖，并且快速自动构建修改的文件
 
 ####常用Actions
 
