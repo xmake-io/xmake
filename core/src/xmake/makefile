@@ -43,6 +43,7 @@ xmake_C_FILES 			+= \
 						process/open \
 						process/openv \
 						process/wait \
+						process/waitlist \
 						process/close 
 						
 
