@@ -158,7 +158,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
         local tmpfile = os.tmpfile()
 
         -- generate it
-        os.run(compcmd(sourcefile, tmpfile, (flags or "") .. " -MM"))
+        os.run("%s -c -MM %s -o %s %s", _g.shellname, flags or "", tmpfile, sourcefile)
 
         -- translate it
         local results = {}

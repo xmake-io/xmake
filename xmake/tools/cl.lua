@@ -126,7 +126,26 @@ function compile(sourcefile, objectfile, incdepfile, flags)
     end
 
     -- compile it
-    local outdata = os.iorun(compcmd(sourcefile, objectfile, flags))
+    local outdata = try
+    {
+        function ()
+            return os.iorun(compcmd(sourcefile, objectfile, flags))
+        end,
+        
+        catch
+        {
+            function (errors)
+
+                -- filter includes notes
+                if errors then
+                   errors = errors:gsub("Note: including file:%s*.-\r*\n", "")
+                end
+                os.raise(errors)
+            end
+        }
+    }
+
+    -- parse include dependencies
     if incdepfile and outdata then
 
         -- translate it

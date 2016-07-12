@@ -242,7 +242,7 @@ function sandbox_os.iorun(cmd, ...)
     -- run it
     local ok, outdata, errdata = os.iorun(cmd)
     if not ok then
-        os.raise(errdata)
+        os.raise((outdata or "") .. (errdata or ""))
     end
 
     -- ok
