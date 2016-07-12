@@ -76,9 +76,9 @@ end
 function check(flags)
 
     -- make an stub source file
-    local libfile = path.join(os.tmpdir(), "xmake.lib.lib")
-    local objfile = path.join(os.tmpdir(), "xmake.lib.obj")
-    local srcfile = path.join(os.tmpdir(), "xmake.lib.c")
+    local libfile = os.tmpfile() .. ".lib"
+    local objfile = os.tmpfile() .. ".obj"
+    local srcfile = os.tmpfile() .. ".c"
     io.write(srcfile, "int test(void)\n{return 0;}")
 
     -- check it

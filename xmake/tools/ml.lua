@@ -120,8 +120,8 @@ end
 function check(flags)
 
     -- make an stub source file
-    local objectfile = path.join(os.tmpdir(), "xmake.ml.obj")
-    local sourcefile = path.join(os.tmpdir(), "xmake.ml.asm")
+    local objectfile = os.tmpfile() .. ".obj"
+    local sourcefile = os.tmpfile() .. ".asm"
     io.write(sourcefile, "end")
 
     -- check it
