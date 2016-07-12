@@ -77,6 +77,9 @@ typedef BOOL (WINAPI* tb_kernel32_CloseHandle_t)(HANDLE hObject);
 // the WaitForSingleObject func type
 typedef DWORD (WINAPI* tb_kernel32_WaitForSingleObject_t)(HANDLE hHandle, DWORD dwMilliseconds);
 
+// the WaitForMultipleObjects func type
+typedef DWORD (WINAPI* tb_kernel32_WaitForMultipleObjects_t)(DWORD  nCount, const HANDLE *lpHandles, BOOL bWaitAll, DWORD dwMilliseconds);
+
 // the GetExitCodeProcess func type
 typedef BOOL (WINAPI* tb_kernel32_GetExitCodeProcess_t)(HANDLE hProcess, LPDWORD lpExitCode);
 
@@ -130,6 +133,9 @@ typedef struct __tb_kernel32_t
 
     // WaitForSingleObject
     tb_kernel32_WaitForSingleObject_t           WaitForSingleObject;
+
+    // WaitForMultipleObjects
+    tb_kernel32_WaitForMultipleObjects_t        WaitForMultipleObjects;
 
     // GetExitCodeProcess
     tb_kernel32_GetExitCodeProcess_t            GetExitCodeProcess;

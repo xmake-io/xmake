@@ -36,7 +36,7 @@
  * implementation
  */
 
-// ok, status = process.wait(p, timeout)
+// ok, status = process.wait(proc, timeout)
 tb_int_t xm_process_wait(lua_State* lua)
 {
     // check
@@ -44,7 +44,12 @@ tb_int_t xm_process_wait(lua_State* lua)
 
     // is user data?
     if (!lua_isuserdata(lua, 1)) 
+    { 
+        // error
+        lua_pushfstring(lua, "invalid argument type(%s) for process.wait", luaL_typename(lua, 1));
+        lua_error(lua);
         return 0;
+    }
 
     // get the process
     tb_process_ref_t process = (tb_process_ref_t)lua_touserdata(lua, 1);
