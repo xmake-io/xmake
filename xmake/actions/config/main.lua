@@ -234,7 +234,9 @@ function main()
     cache.flush()
 
     -- make the config.h
-    configheader.make()
+    if recheck then
+        configheader.make()
+    end
 
     -- dump it
     config.dump()
