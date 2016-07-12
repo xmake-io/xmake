@@ -179,8 +179,8 @@ end
 function check(flags)
 
     -- make an stub source file
-    local objectfile = path.join(os.tmpdir(), "xmake.cl.obj")
-    local sourcefile = path.join(os.tmpdir(), "xmake.cl.c")
+    local objectfile = os.tmpfile() .. ".obj"
+    local sourcefile = os.tmpfile() .. ".c"
     io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it

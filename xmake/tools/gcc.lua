@@ -183,8 +183,8 @@ end
 function check(flags)
 
     -- make an stub source file
-    local objectfile = path.join(os.tmpdir(), "xmake.gcc.o")
-    local sourcefile = path.join(os.tmpdir(), "xmake.gcc.c" .. ifelse(_g.kind == "cxx", "pp", ""))
+    local objectfile = os.tmpfile() .. ".o"
+    local sourcefile = os.tmpfile() .. ".c" .. ifelse(_g.kind == "cxx", "pp", ""))
 
     -- make stub code
     io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")

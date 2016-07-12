@@ -124,9 +124,9 @@ end
 function check(flags)
 
     -- make an stub source file
-    local binaryfile = path.join(os.tmpdir(), "xmake.cl.exe")
-    local objectfile = path.join(os.tmpdir(), "xmake.cl.obj")
-    local sourcefile = path.join(os.tmpdir(), "xmake.cl.c")
+    local binaryfile = os.tmpfile() .. ".exe"
+    local objectfile = os.tmpfile() .. ".obj"
+    local sourcefile = os.tmpfile() .. ".c"
 
     -- main entry
     if flags and flags:lower():find("subsystem:windows") then
