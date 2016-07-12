@@ -35,7 +35,7 @@ task("project")
                     usage = "xmake project [options] [target]"
 
                     -- description
-                ,   description = "Create the project file."
+                ,   description = "Generate the project file."
 
                     -- options
                 ,   options = 

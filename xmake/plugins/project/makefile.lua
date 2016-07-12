@@ -35,6 +35,30 @@ function _logfile()
     return vformat("$(buildir)/.build.log")
 end
 
+-- mkdir directory
+function _mkdir(makefile, dir)
+
+    if config.get("plat") == "windows" then
+        makefile:print("\t-@mkdir %s > /null 2>&1", dir)
+    else
+        makefile:print("\t@mkdir -p %s", dir)
+    end
+end
+
+-- copy file
+function _cp(makefile, srcfile, dstfile)
+
+    -- ensure the destinate directory
+    _mkdir(makefile, path.directory(dstfile))
+
+    -- copy file
+    if config.get("plat") == "windows" then
+        makefile:print("\t@copy /Y %s %s > /null 2>&1", srcfile, dstfile)
+    else
+        makefile:print("\t@cp %s %s", srcfile, dstfile)
+    end
+end
+
 -- make the object for the *.[o|obj] source file
 function _make_object_for_object(makefile, target, srcfile, objfile)
 
@@ -49,7 +73,6 @@ function _make_object_for_object(makefile, target, srcfile, objfile)
 
     -- make body
     makefile:print("\t@echo inserting.$(mode) %s", srcfile)
-    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", cmd:encode())
     makefile:print("\t@%s", cmd)
 
     -- make tail
@@ -89,8 +112,7 @@ function _make_object(makefile, target, srcfile, objfile)
 
     -- make body
     makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), srcfile)
-    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", command:encode())
-    makefile:print("\t@xmake l mkdir %s", path.directory(objfile))
+    _mkdir(makefile, path.directory(objfile))
     makefile:print("\t@%s > %s 2>&1", command, _logfile())
 
     -- make tail
@@ -147,8 +169,7 @@ function _make_target(makefile, target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
-    makefile:print("\t@xmake l %$(VERBOSE) verbose \"%s\"", command:encode())
-    makefile:print("\t@xmake l mkdir %s", path.directory(targetfile))
+    _mkdir(makefile, path.directory(targetfile))
     makefile:print("\t@%s > %s 2>&1", command, _logfile())
 
     -- make headers
@@ -158,7 +179,7 @@ function _make_target(makefile, target)
         for _, srcheader in ipairs(srcheaders) do
             local dstheader = dstheaders[i]
             if dstheader then
-                makefile:print("\t@xmake l cp %s %s", srcheader, dstheader)
+                _cp(makefile, srcheader, dstheader)
             end
             i = i + 1
         end
