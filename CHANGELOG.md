@@ -11,6 +11,7 @@
 * Improve the interfaces of run shell
 * Upgrade luajit to v2.0.4
 * Improve to generate makefile plugin
+* Optimizate the multitasking compiling speed
 
 ### Bugs fixed
 
@@ -128,6 +129,7 @@
 * 增强运行shell的系列接口
 * 更新luajit到v2.0.4版本
 * 改进makefile生成插件，移除对xmake的依赖，并且支持`windows/linux/macosx`等大部分pc平台
+* 优化多任务编译速度，在windows下编译提升较为明显
 
 ### Bugs修复
 
