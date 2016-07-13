@@ -25,44 +25,76 @@ local utils = utils or {}
 
 -- load modules
 local option = require("base/option")
+local colors = require("base/colors")
 
--- the printf function
-function utils.printf(msg, ...)
+-- print format string with newline
+function utils.print(format, ...)
 
     -- check
-    assert(msg)
+    assert(format)
 
     -- trace
-    print(string.format(msg, ...))
+    print(string.format(format, ...))
+end
+
+-- print format string without newline
+function utils.printf(format, ...)
+
+    -- check
+    assert(format)
+
+    -- trace
+    io.write(string.format(format, ...))
+end
+
+-- print format string and colors with newline
+function utils.cprint(format, ...)
+
+    -- check
+    assert(format)
+
+    -- trace
+    print(colors(string.format(format, ...)))
+end
+
+-- print format string and colors without newline
+function utils.cprintf(format, ...)
+
+    -- check
+    assert(format)
+
+    -- trace
+    io.write(colors(string.format(format, ...)))
 end
 
 -- the verbose function
-function utils.verbose(msg, ...)
+function utils.verbose(format, ...)
 
-    if option.get("verbose") and msg ~= nil then
+    -- enable verbose?
+    if option.get("verbose") and format ~= nil then
         
         -- trace
-        print(string.format(msg, ...))
+        print(string.format(format, ...))
     end
 end
 
 -- the error function
-function utils.error(msg, ...)
+function utils.error(format, ...)
 
     -- trace
-    if msg ~= nil then
-        print("error: " .. string.format(msg, ...))
+    if format ~= nil then
+        utils.cprint("${bright red}error: ${default red}" .. string.format(format, ...))
     end
 end
 
 -- the warning function
-function utils.warning(msg, ...)
+function utils.warning(format, ...)
 
     -- check
-    assert(msg)
+    assert(format)
 
     -- format message
-    msg = "warning: " .. string.format(msg, ...)
+    local msg = "${bright yellow}warning: ${default yellow}" .. string.format(format, ...)
 
     -- init warnings
     utils._WARNINGS = utils._WARNINGS or {}
@@ -70,7 +102,7 @@ function utils.warning(msg, ...)
 
     -- trace only once
     if not warnings[msg] then
-        print(msg)
+        utils.cprint(msg)
         warnings[msg] = true
     end
 end

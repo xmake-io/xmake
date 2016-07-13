@@ -24,7 +24,8 @@
 local option = option or {}
 
 -- load modules
-local table = require("base/table")
+local table     = require("base/table")
+local colors    = require("base/colors")
 
 -- ifelse, a? b : c
 function option._ifelse(a, b, c)
@@ -233,7 +234,7 @@ function option.init(menu)
             option.show_menu(context.taskname)
 
             -- invalid option
-            print("\nerror: invalid option: " .. arg)
+            print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
 
             -- failed
             return false
@@ -280,7 +281,7 @@ function option.init(menu)
                 option.show_menu(context.taskname)
 
                 -- invalid option
-                print("\nerror: invalid option: " .. arg)
+                print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
 
                 -- failed
                 return false
@@ -300,7 +301,7 @@ function option.init(menu)
                     option.show_menu(context.taskname)
 
                     -- invalid option
-                    print("\nerror: invalid option: " .. option._ifelse(idx, arg, key))
+                    print(colors("\n${bright red}error: ${default red}invalid option: " .. option._ifelse(idx, arg, key)))
 
                     -- failed
                     return false
@@ -317,7 +318,7 @@ function option.init(menu)
                 option.show_menu(context.taskname)
 
                 -- invalid option
-                print("\nerror: invalid option: " .. arg)
+                print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
             
                 -- failed
                 return false
@@ -368,7 +369,7 @@ function option.init(menu)
                 option.show_main()
 
                 -- invalid task
-                print("\nerror: invalid task: " .. key)
+                print(colors("\n${bright red}error: ${default red}invalid task: " .. key))
 
                 -- failed
                 return false
@@ -434,7 +435,7 @@ function option.init(menu)
                 option.show_menu(context.taskname)
 
                 -- invalid option
-                print("\nerror: invalid option: " .. arg)
+                print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
 
                 -- failed
                 return false
@@ -868,7 +869,7 @@ function option.show_menu(task)
     -- print usage
     if taskmenu.usage then
         print("")
-        print("Usage: " .. taskmenu.usage)
+        print(colors("Usage: ${green}" .. taskmenu.usage))
     end
 
     -- print description
@@ -907,7 +908,7 @@ function option.show_main()
     -- print usage
     if main.usage then
         print("")
-        print("Usage: " .. main.usage)
+        print(colors("Usage: ${green}" .. main.usage))
     end
 
     -- print description
@@ -976,6 +977,9 @@ function option.show_main()
                 -- append the task name
                 taskline = taskline .. taskname
 
+                -- append color
+                taskline = "${magenta}" .. taskline .. "${clear}"
+
                 -- append spaces
                 for i = (#taskline), padding do
                     taskline = taskline .. " "
@@ -987,7 +991,7 @@ function option.show_main()
                 end
 
                 -- print task line
-                print(taskline)
+                print(colors(taskline))
             end
         end
     end
@@ -1049,6 +1053,9 @@ function option.show_options(options)
             option_info = option_info .. " "
         end
 
+        -- append color
+        option_info = "${blue}" .. option_info .. "${clear}"
+
         -- append the option description
         local description = opt[5]
         if description then
@@ -1062,7 +1069,7 @@ function option.show_options(options)
         end
 
         -- print option info
-        print(option_info)
+        print(colors(option_info))
 
         -- print more description if exists
         for i = 6, 64 do

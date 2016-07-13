@@ -23,6 +23,7 @@
 -- load modules
 local io        = require("base/io")
 local utils     = require("base/utils")
+local colors    = require("base/colors")
 local vformat   = require("sandbox/modules/vformat")
 local raise     = require("sandbox/modules/raise")
 
@@ -36,23 +37,32 @@ for k, v in pairs(utils) do
     end
 end
 
--- print with the builtin variables and newline
+-- print format string and the builtin variables with newline
 function sandbox_utils.print(format, ...)
-
-    -- print non-formated string
-    if type(format) ~= "string" then
-        return print(format, ...)
-    end
 
     -- done
     io.write(vformat(format, ...) .. "\n")
 end
 
--- printf with the builtin variables
+-- print format string and the builtin variables without newline
 function sandbox_utils.printf(format, ...)
 
     -- done
     io.write(vformat(format, ...))
+end
+
+-- print format string, the builtin variables and colors with newline
+function sandbox_utils.cprint(format, ...)
+
+    -- done
+    io.write(colors(vformat(format, ...) .. "\n"))
+end
+
+-- print format string, the builtin variables and colors without newline
+function sandbox_utils.cprintf(format, ...)
+
+    -- done
+    io.write(colors(vformat(format, ...)))
 end
 
 -- assert
