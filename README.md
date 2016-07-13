@@ -59,13 +59,14 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-####In the plans
+####Todolist
 
 - Manage package and dependencies
 - Download package automatically
 - Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
-- Implement more plugins
+- Implement more plugins(.e.g generate .deb, .rpm package)
 - Create more project file for IDE (.e.g vs, xcode ..)
+- Add debugger integration to `xmake run -d`
 
 ####Examples
 
@@ -294,12 +295,13 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-####后续计划
+####后续任务
 
 - 自动包依赖管理和下载
 - 创建移植仓库，实现`一人移植，多人共享`
-- 更多的插件开发
+- 更多的插件开发(例如：生成.deb, .rpm的安装包)
 - 自动生成vs,xcode等工程文件
+- 添加调试器集成到`xmake run -d`
 
 ####简单例子
 
