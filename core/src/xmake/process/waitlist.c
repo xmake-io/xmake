@@ -87,7 +87,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
         if (lua_isuserdata(lua, -1))
         {
             // save this process
-            processes[i] = lua_touserdata(lua, -1);
+            processes[i] = (tb_process_ref_t)lua_touserdata(lua, -1);
             if (!processes[i])
             {
                 // error

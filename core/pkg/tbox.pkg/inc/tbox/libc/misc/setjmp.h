@@ -70,6 +70,7 @@ typedef jmp_buf     tb_jmpbuf_t;
 
 // the sigjmpbuf type
 #ifdef TB_CONFIG_LIBC_HAVE_SIGSETJMP
+#error
 typedef sigjmp_buf  tb_sigjmpbuf_t;
 #endif
 
