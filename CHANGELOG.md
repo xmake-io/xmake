@@ -5,6 +5,7 @@
 ### New features 
 
 * Add check includes dependence automatically
+* Add print colors 
 
 ### Changes
 
@@ -123,6 +124,7 @@
 ### 新特性
 
 * 增加头文件依赖自动检测和增量编译，提高编译速度
+* 在终端中进行颜色高亮提示
 
 ### 改进
 
