@@ -118,7 +118,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
 
     // save process info count
     lua_pushinteger(lua, infosize);
-    if (infosize > 0)
+    if (infosize >= 0)
     {
         // save process info list
         lua_newtable(lua);
