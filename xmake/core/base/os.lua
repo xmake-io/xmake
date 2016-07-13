@@ -29,6 +29,9 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
+-- save original tmpdir
+os._tmpdir = os._tmpdir or os.tmpdir
+
 -- match files or directories
 --
 -- @param pattern   the search pattern 
@@ -243,6 +246,11 @@ function os.cd(dir)
     
     -- ok
     return true
+end
+
+-- get the temporary directory
+function os.tmpdir()
+    return path.join(os._tmpdir(), ".xmake")
 end
 
 -- generate the temporary file path
