@@ -154,45 +154,88 @@ function buildall(target, g)
     local index = 1
     local total = #target:objectfiles()
     local tasks = {}
+    local procs = {}
     repeat
 
-        -- consume tasks
-        local pendings = {}
-        for i, task in ipairs(tasks) do
+        -- wait processes
+        local tasks_finished = {}
+        local procs_count = #procs
+        if procs_count > 0 then
 
-            -- get job
-            local job = task[1]
+            -- wait them
+            local procinfos = process.waitlist(procs, ifelse(procs_count < jobs, 0, -1))
+            for _, procinfo in ipairs(procinfos) do
+                
+                -- the process info
+                local proc      = procinfo[1]
+                local procid    = procinfo[2]
+                local status    = procinfo[3]
 
-            -- get job index
-            local job_index = task[2]
+                -- check
+                assert(procs[procid] == proc)
 
-            -- pending?
-            local status = coroutine.status(job)
-            if status ~= "dead" then
+                -- resume this task
+                local job_task = tasks[procid]
+                local job_proc = coroutine.resume(job_task, 1, status)
 
-                -- resume it
-                coroutine.resume(job, job_index)
+                -- the other process is pending for this task?
+                if coroutine.status(job_task) ~= "dead" then
 
-                -- append the pending task
-                table.insert(pendings, task)
+                    -- check
+                    assert(job_proc)
+
+                    -- update the pending process
+                    procs[procid] = job_proc
+
+                -- this task has been finised?
+                else
+
+                    -- mark this task as finised
+                    tasks_finished[procid] = true
+                end
             end
         end
 
-        -- update the pending tasks
-        tasks = pendings
+        -- update the pending tasks and procs
+        local tasks_pending = {}
+        local procs_pending = {}
+        for taskid, job_task in ipairs(tasks) do
+            if not tasks_finished[taskid] then
+                table.insert(tasks_pending, job_task)
+                table.insert(procs_pending, procs[taskid])
+            end
+        end
+        tasks = tasks_pending
+        procs = procs_pending
 
         -- produce tasks
         local curdir = os.curdir()
         while #tasks < jobs and index <= total do
-            table.insert(tasks, {coroutine.create(function (index)
 
-                        -- force to set the current directory first because the other jobs maybe changed it
-                        os.cd(curdir)
+            -- new task
+            local job_task = coroutine.create(function (index)
 
-                        -- build object
-                        _build(target, g, index)
+                            -- force to set the current directory first because the other jobs maybe changed it
+                            os.cd(curdir)
 
-                    end), index})
+                            -- build object
+                            _build(target, g, index)
+
+                        end)
+
+            -- resume it first
+            local job_proc = coroutine.resume(job_task, index)
+            if coroutine.status(job_task) ~= "dead" then
+
+                -- check
+                assert(job_proc)
+
+                -- put task and proc to the pendings tasks
+                table.insert(tasks, job_task)
+                table.insert(procs, job_proc)
+            end
+
+            -- next index
             index = index + 1
         end
 

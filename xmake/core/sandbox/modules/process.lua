@@ -121,11 +121,8 @@ function sandbox_process.waitlist(processes, timeout)
         raise("wait processes(%d) failed(%d)", #processes, count)
     end
 
-    -- check infos
-    assert(infos and count == #infos)
-
     -- timeout or finished
-    return count, infos
+    return infos
 end
 
 -- return module

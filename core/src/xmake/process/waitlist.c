@@ -45,9 +45,9 @@
  * failed: -1
  *
  * for _, procinfo in ipairs(list) do
- *     print("index: ", procinfo[1])
- *     print("status: ", procinfo[2])
- *     print("process: ", procinfo[3])
+ *     print("proc: ", procinfo[1])
+ *     print("index: ", procinfo[2])
+ *     print("status: ", procinfo[3])
  * end
  */
 tb_int_t xm_process_waitlist(lua_State* lua)
@@ -126,11 +126,11 @@ tb_int_t xm_process_waitlist(lua_State* lua)
         {
             // save one process info
             lua_newtable(lua);
-            lua_pushinteger(lua, infolist[i].index + 1);
-            lua_rawseti(lua, -2, 1);
-            lua_pushinteger(lua, infolist[i].status);
-            lua_rawseti(lua, -2, 2);
             lua_pushlightuserdata(lua, infolist[i].process);
+            lua_rawseti(lua, -2, 1);
+            lua_pushinteger(lua, infolist[i].index + 1);
+            lua_rawseti(lua, -2, 2);
+            lua_pushinteger(lua, infolist[i].status);
             lua_rawseti(lua, -2, 3);
 
             lua_rawseti(lua, -2, i + 1);

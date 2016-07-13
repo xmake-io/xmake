@@ -327,7 +327,7 @@ function os.exec(cmd, outfile, errfile)
                 -- poll it
                 waitok, status = process.wait(proc, 0)
                 if waitok == 0 then
-                    coroutine.yield()
+                    waitok, status = coroutine.yield(proc)
                 end
             until waitok ~= 0
 
@@ -371,7 +371,7 @@ function os.execv(shellname, argv, outfile, errfile)
                 -- poll it
                 waitok, status = process.wait(proc, 0)
                 if waitok == 0 then
-                    coroutine.yield()
+                    waitok, status = coroutine.yield(proc)
                 end
             until waitok ~= 0
 
