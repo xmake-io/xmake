@@ -145,7 +145,7 @@ function profiler._tracing_handler(hooktype)
             source = path.relative(source, xmake._PROGRAM_DIR)
 
             -- trace it
-            utils.printf("%-30s: %s: %s", name, source, line)
+            utils.print("%-30s: %s: %s", name, source, line)
         end
     end
 end
@@ -196,7 +196,7 @@ function profiler:stop(mode)
 
         -- show reports
         for _, report in ipairs(self._REPORTS) do
-            utils.printf("%04.3f, %5.2f%%, %7d, %s", report.totaltime, (report.totaltime / totaltime) * 100, report.callcount, report.title)
+            utils.print("%04.3f, %5.2f%%, %7d, %s", report.totaltime, (report.totaltime / totaltime) * 100, report.callcount, report.title)
         end
    end
 end
