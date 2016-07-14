@@ -152,7 +152,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
     os.run(compcmd(sourcefile, objectfile, flags))
 
     -- generate includes file
-    if incdepfile then
+    if incdepfile and _g.kind ~= "as" then
 
         -- the temporary file
         local tmpfile = os.tmpfile()
