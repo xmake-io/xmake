@@ -132,11 +132,19 @@ function _build(target, g, index)
         return 
     end
 
-    -- trace
-    print("[%02d%%]: %scompiling.$(mode) %s", percent, ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    -- is verbose?
+    local verbose = option.get("verbose")
+
+    -- trace percent info
+    cprintf("${yellow}[%02d%%]:${clear} ", percent)
+    if verbose then
+        cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    else
+        print("%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    end
 
     -- trace verbose info
-    if option.get("verbose") then
+    if verbose then
         print(compiler.compcmd(sourcefile, objectfile, target))
     end
 

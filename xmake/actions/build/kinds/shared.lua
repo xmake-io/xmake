@@ -60,11 +60,19 @@ function build(target, g)
     -- the target file
     local targetfile = target:targetfile()
 
-    -- trace
-    print("[%02d%%]: linking.$(mode) %s", (g.targetindex + 1) * 100 / g.targetcount, path.filename(targetfile))
+    -- is verbose?
+    local verbose = option.get("verbose")
+
+    -- trace percent info
+    cprintf("${yellow}[%02d%%]:${clear} ", (g.targetindex + 1) * 100 / g.targetcount)
+    if verbose then
+        cprint("${dim}linking.$(mode) %s", path.filename(targetfile))
+    else
+        print("linking.$(mode) %s", path.filename(targetfile))
+    end
 
     -- trace verbose info
-    if option.get("verbose") then
+    if verbose then
         print(linker.linkcmd(objectfiles, targetfile, target))
     end
 

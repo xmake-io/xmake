@@ -29,6 +29,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local option    = require("base/option")
 local tool      = require("tool/tool")
 local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
@@ -466,9 +467,11 @@ function compiler:check(flags)
     local ok, errors = sandbox.load(ctool.check, flags)
 
     -- trace
-    utils.verbose("checking for the flags %s ... %s", flags, utils.ifelse(ok, "ok", "no"))
-    if not ok then
-        utils.verbose(errors)
+    if option.get("verbose") then
+        utils.cprint("checking for the flags %s ... %s", flags, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok then
+            utils.cprint("${red}" .. errors or "")
+        end
     end
 
     -- save the checked result
