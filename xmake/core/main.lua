@@ -1,4 +1,4 @@
---!The Automatic Cross-platform Build Tool
+--!The Make-like Build Utility based on Lua
 -- 
 -- XMake is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
@@ -37,7 +37,7 @@ local history       = require("project/history")
 local menu =
 {
     -- title
-    title = xmake._VERSION .. ", The Automatic Cross-platform Build Tool"
+    title = xmake._VERSION .. ", The Make-like Build Utility based on Lua"
 
     -- copyright
 ,   copyright = "Copyright (C) 2015-2016 Ruki Wang, tboox.org\nCopyright (C) 2005-2015 Mike Pall, luajit.org"

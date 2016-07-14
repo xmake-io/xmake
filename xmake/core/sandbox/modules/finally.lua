@@ -1,4 +1,4 @@
---!The Automatic Cross-platform Build Tool
+--!The Make-like Build Utility based on Lua
 -- 
 -- XMake is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU Lesser General Public License as published by
