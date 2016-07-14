@@ -70,5 +70,5 @@ function main()
     _make(option.get("kind"))
 
     -- trace
-    print("create ok!")
+    cprint("${bright}create ok!")
 end

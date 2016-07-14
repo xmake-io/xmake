@@ -118,5 +118,5 @@ function main()
     end
 
     -- trace
-    print("install ok!")
+    cprint("${bright}install ok!")
 end

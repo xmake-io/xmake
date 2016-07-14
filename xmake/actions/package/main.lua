@@ -203,5 +203,5 @@ function main()
     end
 
     -- trace
-    print("package ok!")
+    cprint("${bright}package ok!")
 end

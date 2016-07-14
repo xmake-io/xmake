@@ -118,5 +118,5 @@ function main()
     end
 
     -- trace
-    print("uninstall ok!")
+    cprint("${bright}uninstall ok!")
 end

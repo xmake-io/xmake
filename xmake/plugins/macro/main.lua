@@ -82,7 +82,7 @@ end
 function _list()
 
     -- trace
-    print("macros:")
+    cprint("${bright}macros:")
 
     -- find all macros
     for _, dir in ipairs(_directories()) do
@@ -133,7 +133,7 @@ function _delete(macroname)
     end
 
     -- trace
-    print("delete macro(%s) ok!", macroname)
+    cprint("${bright}delete macro(%s) ok!", macroname)
 end
 
 -- import macro
@@ -154,7 +154,7 @@ function _import(macrofile, macroname)
             os.cp(macrofile, _wfile(macroname))
 
             -- trace
-            print("import macro(%s) ok!", macroname)
+            cprint("${bright}import macro(%s) ok!", macroname)
         end
     else
 
@@ -162,7 +162,7 @@ function _import(macrofile, macroname)
         os.cp(macrofile, _wfile(macroname))
 
         -- trace
-        print("import macro(%s) ok!", macroname)
+        cprint("${bright}import macro(%s) ok!", macroname)
     end
 end
 
@@ -184,7 +184,7 @@ function _export(macrofile, macroname)
                 os.cp(macrofile, outputdir)
 
                 -- trace
-                print("export macro(%s) ok!", path.basename(macrofile))
+                cprint("${bright}export macro(%s) ok!", path.basename(macrofile))
             end
         end
     else        
@@ -192,7 +192,7 @@ function _export(macrofile, macroname)
         os.cp(_rfile(macroname), macrofile)
 
         -- trace
-        print("export macro(%s) ok!", macroname)
+        cprint("${bright}export macro(%s) ok!", macroname)
     end
 end
 
@@ -274,7 +274,7 @@ function _end(macroname)
     _show(macroname)
 
     -- trace
-    print("define macro(%s) ok!", macroname)
+    cprint("${bright}define macro(%s) ok!", macroname)
 end
 
 -- run macro
@@ -292,7 +292,7 @@ function _run(macroname)
     macro.main(option.get("arguments") or {})
 
     -- trace
-    print("run macro(%s) ok!", macroname)
+    cprint("${bright}run macro(%s) ok!", macroname)
 end
 
 -- main
