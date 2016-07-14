@@ -37,7 +37,9 @@ emoji.keys =
 function emoji.translate(str)
 
     -- check supported?
-    -- TODO
+    if xmake._HOST ~= "macosx" then
+        return nil
+    end
 
     -- translate it
     return emoji.keys[str]
