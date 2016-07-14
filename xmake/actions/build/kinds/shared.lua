@@ -66,9 +66,9 @@ function build(target, g)
     -- trace percent info
     cprintf("${yellow}[%02d%%]:${clear} ", (g.targetindex + 1) * 100 / g.targetcount)
     if verbose then
-        cprint("${dim}linking.$(mode) %s", path.filename(targetfile))
+        cprint("${dim blue}linking.$(mode) %s", path.filename(targetfile))
     else
-        print("linking.$(mode) %s", path.filename(targetfile))
+        cprint("${blue}linking.$(mode) %s", path.filename(targetfile))
     end
 
     -- trace verbose info

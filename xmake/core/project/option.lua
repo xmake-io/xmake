@@ -51,14 +51,8 @@ function option:_check_link(sourcefile, objectfile, targetfile)
         return false 
     end
 
-    -- attempt to run this command
-    local ok, errors = instance:link(objectfile, targetfile, self)
-    if not ok and option_.get("verbose") then
-        utils.cprint("${red}" .. (errors or ""))
-    end
-
-    -- ok?
-    return ok
+    -- attempt to link it
+    return instance:link(objectfile, targetfile, self)
 end
 
 -- check include 
@@ -93,14 +87,8 @@ function option:_check_include(include, srcpath, objpath)
         return false 
     end
 
-    -- attempt to run this command
-    local ok, errors = instance:compile(srcpath, objpath, nil, self)
-    if not ok and option_.get("verbose") then
-        utils.cprint("${red}" .. (errors or ""))
-    end
-
-    -- ok?
-    return ok
+    -- attempt to compile it
+    return instance:compile(srcpath, objpath, nil, self)
 end
 
 -- check function 
@@ -147,14 +135,8 @@ function option:_check_function(checkcode, srcpath, objpath)
     -- exit this file
     srcfile:close()
 
-    -- execute the compile command
-    local ok, errors = instance:compile(srcpath, objpath, nil, self)
-    if not ok and option_.get("verbose") then
-        utils.cprint("${red}" .. (errors or ""))
-    end
-
-    -- ok?
-    return ok
+    -- attempt to compile it
+    return instance:compile(srcpath, objpath, nil, self)
 end
 
 -- check typedef 
@@ -201,14 +183,8 @@ function option:_check_typedef(typedef, srcpath, objpath)
     -- exit this file
     srcfile:close()
 
-    -- execute the compile command
-    local ok, errors = instance:compile(srcpath, objpath, nil, self)
-    if not ok and option_.get("verbose") then
-        utils.cprint("${red}" .. (errors or ""))
-    end
-
-    -- ok?
-    return ok
+    -- attempt to compile it
+    return instance:compile(srcpath, objpath, nil, self)
 end
 
 -- check option for checking links
@@ -230,13 +206,16 @@ function option:_check_links(cfile, objectfile, targetfile)
     end
     
     -- only for compile a object file
-    local ok = self:_check_include(nil, cfile, objectfile)
+    local ok, errors = self:_check_include(nil, cfile, objectfile)
 
     -- check link
-    if ok then ok = self:_check_link(cfile, objectfile, targetfile) end
+    if ok then ok, errors = self:_check_link(cfile, objectfile, targetfile) end
 
     -- trace
     utils.cprint("checking for the links %s ... %s", links_str, utils.ifelse(ok, "${green}ok", "${red}no"))
+    if not ok and option_.get("verbose") then
+        utils.cprint("${red}" .. (errors or ""))
+    end
 
     -- cache the result
     option._CHECKED_LINKS[links_str] = ok
@@ -256,10 +235,13 @@ function option:_check_cincludes(cfile, objectfile)
         if option._CHECKED_CINCLUDES[cinclude] then return true end
         
         -- check cinclude
-        local ok = self:_check_include(cinclude, cfile, objectfile)
+        local ok, errors = self:_check_include(cinclude, cfile, objectfile)
 
         -- trace
         utils.cprint("checking for the c include %s ... %s", cinclude, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok and option_.get("verbose") then
+            utils.cprint("${red}" .. (errors or ""))
+        end
 
         -- cache the result
         option._CHECKED_CINCLUDES[cinclude] = ok
@@ -283,10 +265,13 @@ function option:_check_cxxincludes(cxxfile, objectfile)
         if option._CHECKED_CXXINCLUDES[cinclude] then return true end
         
         -- check cinclude
-        local ok = self:_check_include(cxxinclude, cxxfile, objectfile)
+        local ok, errors = self:_check_include(cxxinclude, cxxfile, objectfile)
 
         -- trace
         utils.cprint("checking for the c++ include %s ... %s", cxxinclude, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok and option_.get("verbose") then
+            utils.cprint("${red}" .. (errors or ""))
+        end
 
         -- cache the result
         option._CHECKED_CXXINCLUDES[cxxinclude] = ok
@@ -310,13 +295,16 @@ function option:_check_cfuncs(cfile, objectfile, targetfile)
         assert(checkname and checkcode)
 
         -- check function
-        local ok = self:_check_function(checkcode, cfile, objectfile)
+        local ok, errors = self:_check_function(checkcode, cfile, objectfile)
 
         -- check link
-        if ok and self:get("links") then ok = self:_check_link(cfile, objectfile, targetfile) end
+        if ok and self:get("links") then ok, errors = self:_check_link(cfile, objectfile, targetfile) end
 
         -- trace
         utils.cprint("checking for the c function %s ... %s", checkname, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok and option_.get("verbose") then
+            utils.cprint("${red}" .. (errors or ""))
+        end
 
         -- failed
         if not ok then return false end
@@ -337,13 +325,16 @@ function option:_check_cxxfuncs(cxxfile, objectfile, targetfile)
         assert(checkname and checkcode)
 
         -- check function
-        local ok = self:_check_function(checkcode, cxxfile, objectfile)
+        local ok, errors = self:_check_function(checkcode, cxxfile, objectfile)
 
         -- check link
-        if ok and self:get("links") then ok = self:_check_link(cxxfile, objectfile, targetfile) end
+        if ok and self:get("links") then ok, errors = self:_check_link(cxxfile, objectfile, targetfile) end
 
         -- trace
         utils.cprint("checking for the c++ function %s ... %s", checkname, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok and option_.get("verbose") then
+            utils.cprint("${red}" .. (errors or ""))
+        end
 
         -- failed
         if not ok then return false end
@@ -360,10 +351,13 @@ function option:_check_ctypes(cfile, objectfile, targetfile)
     for _, ctype in ipairs(table.wrap(self:get("ctypes"))) do
         
         -- check type
-        local ok = self:_check_typedef(ctype, cfile, objectfile)
+        local ok, errors = self:_check_typedef(ctype, cfile, objectfile)
 
         -- trace
         utils.cprint("checking for the c type %s ... %s", ctype, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok and option_.get("verbose") then
+            utils.cprint("${red}" .. (errors or ""))
+        end
 
         -- failed
         if not ok then return false end
@@ -380,10 +374,13 @@ function option:_check_cxxtypes(cxxfile, objectfile, targetfile)
     for _, cxxtype in ipairs(table.wrap(self:get("cxxtypes"))) do
         
         -- check type
-        local ok = self:_check_typedef(cxxtype, cxxfile, objectfile)
+        local ok, errors = self:_check_typedef(cxxtype, cxxfile, objectfile)
 
         -- trace
         utils.cprint("checking for the c++ type %s ... %s", cxxtype, utils.ifelse(ok, "${green}ok", "${red}no"))
+        if not ok and option_.get("verbose") then
+            utils.cprint("${red}" .. (errors or ""))
+        end
 
         -- failed
         if not ok then return false end

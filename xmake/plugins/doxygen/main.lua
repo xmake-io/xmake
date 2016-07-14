@@ -100,6 +100,9 @@ function main()
     -- enter the project directory
     os.cd(project.directory())
 
+    -- trace
+    cprint("generating ..${beer}")
+
     -- generate document
     if option.get("verbose") then
         os.exec("%s %s", doxygen, doxyfile)
