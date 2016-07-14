@@ -869,7 +869,7 @@ function option.show_menu(task)
     -- print usage
     if taskmenu.usage then
         print("")
-        print(colors("Usage: ${green}" .. taskmenu.usage))
+        print(colors("${bright}Usage: ${default cyan}" .. taskmenu.usage))
     end
 
     -- print description
@@ -908,7 +908,7 @@ function option.show_main()
     -- print usage
     if main.usage then
         print("")
-        print(colors("Usage: ${green}" .. main.usage))
+        print(colors("${bright}Usage: ${default cyan}" .. main.usage))
     end
 
     -- print description
