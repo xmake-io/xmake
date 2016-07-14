@@ -38,5 +38,5 @@ function main()
     template.create(option.get("language"), option.get("template"), targetname)
 
     -- trace
-    cprint("${bright}create ok!")
+    cprint("${bright}create ok!${ok_hand}")
 end
