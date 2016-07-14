@@ -34,7 +34,7 @@ function check_arch(config, default)
         config.set("arch", default or os.arch())
 
         -- trace
-        print("checking for the architecture ... %s", config.get("arch"))
+        cprint("checking for the architecture ... ${green}%s", config.get("arch"))
     end
 end
 
@@ -67,13 +67,13 @@ function check_xcode(config)
             config.set("xcode_dir", xcode_dir)
 
             -- trace
-            print("checking for the Xcode application directory ... %s", xcode_dir)
+            cprint("checking for the Xcode application directory ... ${green}%s", xcode_dir)
         else
             -- failed
-            print("checking for the Xcode application directory ... no")
-            print("please run:")
-            print("    - xmake config --xcode_dir=xxx")
-            print("or  - xmake global --xcode_dir=xxx")
+            cprint("checking for the Xcode application directory ... ${red}no")
+            cprint("${bright red}please run:")
+            cprint("${red}    - xmake config --xcode_dir=xxx")
+            cprint("${red}or  - xmake global --xcode_dir=xxx")
             raise()
         end
     end
@@ -115,13 +115,13 @@ function check_xcode_sdkver(config)
             config.set("xcode_sdkver", xcode_sdkver)
 
             -- trace
-            print("checking for the Xcode SDK version for %s ... %s", plat, xcode_sdkver)
+            cprint("checking for the Xcode SDK version for %s ... ${green}%s", plat, xcode_sdkver)
         else
             -- failed
-            print("checking for the Xcode SDK version for %s ... no", plat)
-            print("please run:")
-            print("    - xmake config --xcode_sdkver=xxx")
-            print("or  - xmake global --xcode_sdkver=xxx")
+            cprint("checking for the Xcode SDK version for %s ... ${red}no", plat)
+            cprint("${bright red}please run:")
+            cprint("${red}    - xmake config --xcode_sdkver=xxx")
+            cprint("${red}or  - xmake global --xcode_sdkver=xxx")
             raise()
         end
     end
@@ -148,8 +148,7 @@ function check_target_minver(config)
         config.set("target_minver", config.get("xcode_sdkver") or versions[config.get("plat")])
 
         -- trace
-        print("checking for the target minimal version ... %s", config.get("target_minver"))
-
+        cprint("checking for the target minimal version ... ${green}%s", config.get("target_minver"))
     end
 end
 
@@ -171,7 +170,11 @@ function check_ccache(config)
         end
 
         -- trace
-        print("checking for the ccache ... %s", ifelse(ccache_path, ccache_path, "no"))
+        if ccache_path then
+            cprint("checking for the ccache ... ${green}%s", ccache_path)
+        else
+            cprint("checking for the ccache ... ${red}no")
+        end
     end
 end
 
@@ -231,9 +234,9 @@ function check_toolchain(config, kind, cross, name, description, check)
 
         -- trace
         if toolpath then
-            print("checking for %s (%s) ... %s", description, kind, path.filename(toolpath))
+            cprint("checking for %s (%s) ... ${green}%s", description, kind, path.filename(toolpath))
         else
-            print("checking for %s (%s) ... no", description, kind)
+            cprint("checking for %s (%s) ... ${red}no", description, kind)
         end
     end
 end
