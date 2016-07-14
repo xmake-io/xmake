@@ -18,6 +18,7 @@
 
 * Fix install directory bug
 * Fix the root directory error for `import` interface
+* Fix check visual stdio error on windows
 
 ## v2.0.2
 
@@ -137,6 +138,7 @@
 
 * 修复安装目录错误问题
 * 修复`import`根目录错误问题
+* 修复在多版本vs同时存在的情况下，检测vs环境失败问题
 
 ## v2.0.2
 

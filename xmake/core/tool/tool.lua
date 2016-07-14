@@ -192,7 +192,7 @@ function tool._check(shellname, check)
         -- check it
         local ok, errors = sandbox.load(check, shellname) 
         if not ok then
-            utils.verbose(errors)
+            utils.verror(errors)
         end
 
         -- ok?
@@ -202,7 +202,7 @@ function tool._check(shellname, check)
     -- load the tool module
     local module, errors = tool._load(shellname)
     if not module then
-        utils.verbose(errors)
+        utils.verror(errors)
     end
 
     -- no checker? attempt to run it directly
@@ -213,7 +213,7 @@ function tool._check(shellname, check)
     -- check it
     local ok, errors = sandbox.load(module.check) 
     if not ok then
-        utils.verbose(errors)
+        utils.verror(errors)
     end
 
     -- ok?

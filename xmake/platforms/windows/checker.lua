@@ -22,125 +22,155 @@
 
 -- imports
 import("core.tool.tool")
+import("core.base.option")
 import("platforms.checker", {rootdir = os.programdir()})
 import("environment")
 
--- check the vs version
-function _check_vs_version(config)
+-- attempt to apply this visual stdio from the given the envirnoment variable
+function _apply_vs(config, envalue)
 
-    -- get the vs version
+    -- get the vcvarsall.bat path
+    local vcvarsall = format("%s\\..\\..\\VC\\vcvarsall.bat", envalue)
+
+    -- skip it if vcvarsall.bat not found
+    if not os.isfile(vcvarsall) then
+        if option.get("verbose") then
+            print("not found %s", vcvarsall)
+        end
+        return 
+    end
+
+    -- make the genvcvars.bat 
+    local genvcvars_bat = path.join(os.tmpdir(), "xmake.genvcvars.bat")
+    local genvcvars_dat = path.join(os.tmpdir(), "xmake.genvcvars.dat")
+    local file = io.open(genvcvars_bat, "w")
+    file:print("@echo off")
+    file:print("call \"%s\" %s > nul", vcvarsall, config.get("arch"))
+    file:print("echo { > %s", genvcvars_dat)
+    file:print("echo     path = \"%%path%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   lib = \"%%lib%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   libpath = \"%%libpath%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   include = \"%%include%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   devenvdir = \"%%devenvdir%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   vsinstalldir = \"%%vsinstalldir%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   vcinstalldir = \"%%vcinstalldir%%\" >> %s", genvcvars_dat)
+    file:print("echo } >> %s", genvcvars_dat)
+    file:close()
+
+    -- run genvcvars.bat
+    os.run(genvcvars_bat)
+
+    -- replace "\" => "\\"
+    io.gsub(genvcvars_dat, "\\", "\\\\")
+
+    -- load all envirnoment variables
+    local variables = io.load(genvcvars_dat)
+
+    -- save the variables
+    for k, v in pairs(variables) do
+        config.set("__vsenv_" .. k, v)
+    end
+
+    -- enter environment
+    environment.enter("toolchains")
+
+    -- done
+    local toolpath = tool.check("cl.exe")
+
+    -- leave environment
+    environment.leave("toolchains")
+
+    -- ok?
+    return toolpath 
+end
+
+-- check the visual stdio
+function _check_vs(config)
+
+    -- checked?
+    if config.get("vs") and config.get("__vsenv_path") then 
+        return 
+    end
+
+    -- envname => version
+    local envname2version =
+    {
+        VS140COMNTOOLS  = "2015"
+    ,   VS120COMNTOOLS  = "2013"
+    ,   VS110COMNTOOLS  = "2012"
+    ,   VS100COMNTOOLS  = "2010"
+    ,   VS90COMNTOOLS   = "2008"
+    ,   VS80COMNTOOLS   = "2005"
+    ,   VS71COMNTOOLS   = "2003"
+    ,   VS70COMNTOOLS   = "7.0"
+    ,   VS60COMNTOOLS   = "6.0"
+    ,   VS50COMNTOOLS   = "5.0"
+    ,   VS42COMNTOOLS   = "4.2"
+    }
+
+    -- version => envname
+    local version2envname =
+    {
+        ["2015"]    = "VS140COMNTOOLS"
+    ,   ["2013"]    = "VS120COMNTOOLS"
+    ,   ["2012"]    = "VS110COMNTOOLS"
+    ,   ["2010"]    = "VS100COMNTOOLS"
+    ,   ["2008"]    = "VS90COMNTOOLS"
+    ,   ["2005"]    = "VS80COMNTOOLS"
+    ,   ["2003"]    = "VS71COMNTOOLS"
+    ,   ["7.0"]     = "VS70COMNTOOLS"
+    ,   ["6.0"]     = "VS60COMNTOOLS"
+    ,   ["5.0"]     = "VS50COMNTOOLS"
+    ,   ["4.2"]     = "VS42COMNTOOLS"
+    }
+
+    -- attempt to check the given vs version first
     local vs = config.get("vs")
-    if not vs then 
+    if vs then
+        
+        -- get the envname
+        local envname = version2envname[vs]
 
-        -- make the map table
-        local map =
-        {
-            VS140COMNTOOLS  = "2015"
-        ,   VS120COMNTOOLS  = "2013"
-        ,   VS110COMNTOOLS  = "2012"
-        ,   VS100COMNTOOLS  = "2010"
-        ,   VS90COMNTOOLS   = "2008"
-        ,   VS80COMNTOOLS   = "2005"
-        ,   VS71COMNTOOLS   = "2003"
-        ,   VS70COMNTOOLS   = "7.0"
-        ,   VS60COMNTOOLS   = "6.0"
-        ,   VS50COMNTOOLS   = "5.0"
-        ,   VS42COMNTOOLS   = "4.2"
-        }
+        -- clear vs first
+        vs = nil
 
-        -- attempt to get it from the envirnoment variable
-        for k, v in pairs(map) do
-            if os.getenv(k) then
-                vs = v
+        -- attempt to check it
+        if envname then
+            local envalue = os.getenv(envname)
+            if envalue and _apply_vs(config, envalue) then
+                vs = version
+            end
+        end
+    end
+
+    -- attempt to check them from the envirnoment variables again
+    if not vs then
+        for envname, version in pairs(envname2version) do
+
+            -- attempt to get envirnoment variable and check it
+            local envalue = os.getenv(envname)
+            if envalue and _apply_vs(config, envalue) then
+                vs = version
                 break
             end
         end
-
-        -- check ok? update it
-        if vs then
-
-            -- save it
-            config.set("vs", vs)
-
-            -- trace
-            print("checking for the Microsoft Visual Studio version ... %s", vs)
-        else
-            -- failed
-            print("checking for the Microsoft Visual Studio version ... no")
-            print("please run:")
-            print("    - xmake config --vs=xxx")
-            print("or  - xmake global --vs=xxx")
-            raise()
-        end
     end
-end
 
--- check the vs path
-function _check_vs_path(config)
+    -- check ok? update it
+    if vs then
 
-    -- no vs path?
-    if not config.get("__vsenv_path") then 
+        -- save it
+        config.set("vs", vs)
 
-        -- get the vs version
-        local vs = config.get("vs")
-
-        -- make the map table
-        local map =
-        {
-            ["2015"]    = "VS140COMNTOOLS"
-        ,   ["2013"]    = "VS120COMNTOOLS"
-        ,   ["2012"]    = "VS110COMNTOOLS"
-        ,   ["2010"]    = "VS100COMNTOOLS"
-        ,   ["2008"]    = "VS90COMNTOOLS"
-        ,   ["2005"]    = "VS80COMNTOOLS"
-        ,   ["2003"]    = "VS71COMNTOOLS"
-        ,   ["7.0"]     = "VS70COMNTOOLS"
-        ,   ["6.0"]     = "VS60COMNTOOLS"
-        ,   ["5.0"]     = "VS50COMNTOOLS"
-        ,   ["4.2"]     = "VS42COMNTOOLS"
-        }
-
-        -- check
-        if not map[vs] then
-            raise("vs %s not support!", vs)
-        end
-
-        -- the vcvarsall.bat path
-        local vcvarsall = format("%s\\..\\..\\VC\\vcvarsall.bat", os.getenv(map[vs]))
-        if not os.isfile(vcvarsall) then
-            raise("not found %s", vcvarsall)
-        end
-
-        -- make the genvcvars.bat 
-        local genvcvars_bat = path.join(os.tmpdir(), "xmake.genvcvars.bat")
-        local genvcvars_dat = path.join(os.tmpdir(), "xmake.genvcvars.dat")
-        local file = io.open(genvcvars_bat, "w")
-        file:print("@echo off")
-        file:print("call \"%s\" %s > nul", vcvarsall, config.get("arch"))
-        file:print("echo { > %s", genvcvars_dat)
-        file:print("echo     path = \"%%path%%\" >> %s", genvcvars_dat)
-        file:print("echo ,   lib = \"%%lib%%\" >> %s", genvcvars_dat)
-        file:print("echo ,   libpath = \"%%libpath%%\" >> %s", genvcvars_dat)
-        file:print("echo ,   include = \"%%include%%\" >> %s", genvcvars_dat)
-        file:print("echo ,   devenvdir = \"%%devenvdir%%\" >> %s", genvcvars_dat)
-        file:print("echo ,   vsinstalldir = \"%%vsinstalldir%%\" >> %s", genvcvars_dat)
-        file:print("echo ,   vcinstalldir = \"%%vcinstalldir%%\" >> %s", genvcvars_dat)
-        file:print("echo } >> %s", genvcvars_dat)
-        file:close()
-
-        -- run genvcvars.bat
-        os.run(genvcvars_bat)
-
-        -- replace "\" => "\\"
-        io.gsub(genvcvars_dat, "\\", "\\\\")
-
-        -- load all envirnoment variables
-        local variables = io.load(genvcvars_dat)
-
-        -- save the variables
-        for k, v in pairs(variables) do
-            config.set("__vsenv_" .. k, v)
-        end
+        -- trace
+        print("checking for the Microsoft Visual Studio version ... %s", vs)
+    else
+        -- failed
+        print("checking for the Microsoft Visual Studio version ... no")
+        print("please run:")
+        print("    - xmake config --vs=xxx")
+        print("or  - xmake global --vs=xxx")
+        raise()
     end
 end
 
@@ -170,16 +200,14 @@ function init()
     _g.config = 
     {
         { checker.check_arch, "x86" }
-    ,   _check_vs_version
-    ,   _check_vs_path
+    ,   _check_vs
     ,   _check_toolchains
     }
 
     -- init the check list of global
     _g.global = 
     {
-        _check_vs_version
-    ,   _check_vs_path
+        _check_vs
     }
 
 end
