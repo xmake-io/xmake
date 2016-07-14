@@ -111,6 +111,6 @@ function main()
     os.cd("-")
 
     -- trace
-    print("result: %s/html/index.html", outputdir)
-    print("doxygen ok!")
+    cprint("${bright green}result: ${default green}%s/html/index.html", outputdir)
+    cprint("${bright}doxygen ok!")
 end

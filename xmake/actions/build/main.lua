@@ -86,5 +86,5 @@ function main()
     os.cd(olddir)
 
     -- trace
-    print("build ok!")
+    cprint("${bright}build ok!")
 end

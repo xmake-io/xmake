@@ -60,6 +60,5 @@ function main()
     global.dump()
 
     -- trace
-    print("configure ok!")
-       
+    cprint("${bright}configure ok!")
 end

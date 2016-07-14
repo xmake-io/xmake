@@ -863,13 +863,13 @@ function option.show_menu(task)
 
     -- print copyright
     if menu.copyright then
-        print(menu.copyright)
+        print(colors(menu.copyright))
     end
 
     -- print usage
     if taskmenu.usage then
         print("")
-        print(colors("${bright}Usage: ${default cyan}" .. taskmenu.usage))
+        print(colors("${bright}Usage: $${default cyan}" .. taskmenu.usage))
     end
 
     -- print description
@@ -902,13 +902,13 @@ function option.show_main()
 
     -- print copyright
     if menu.copyright then
-        print(menu.copyright)
+        print(colors(menu.copyright))
     end
 
     -- print usage
     if main.usage then
         print("")
-        print(colors("${bright}Usage: ${default cyan}" .. main.usage))
+        print(colors("${bright}Usage: $${default cyan}" .. main.usage))
     end
 
     -- print description
@@ -958,7 +958,7 @@ function option.show_main()
 
             -- print category name
             print("")
-            print(string.format("%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2)))
+            print(colors(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
             
             -- the padding spaces
             local padding = 42
@@ -1010,7 +1010,7 @@ function option.show_options(options)
 
     -- print header
     print("")
-    print("Options: ")
+    print(colors("${bright}Options: "))
     
     -- the padding spaces
     local padding = 42
@@ -1065,7 +1065,7 @@ function option.show_options(options)
         -- append the default value
         local default = opt[4]
         if default then
-            option_info = option_info .. " (default: " .. tostring(default) .. ")"
+            option_info = option_info .. " (default: ${bright}" .. tostring(default) .. "${clear})"
         end
 
         -- print option info

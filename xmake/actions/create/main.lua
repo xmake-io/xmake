@@ -32,11 +32,11 @@ function main()
     local targetname = option.get("target") or option.get("name") or path.basename(project.directory()) or "demo"
 
     -- trace
-    print("create %s ...", targetname)
+    cprint("${bright}create %s ...", targetname)
 
     -- create project from template
     template.create(option.get("language"), option.get("template"), targetname)
 
     -- trace
-    print("create ok!")
+    cprint("${bright}create ok!")
 end

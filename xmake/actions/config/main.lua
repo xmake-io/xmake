@@ -245,5 +245,5 @@ function main()
     _g.finished = true
 
     -- trace
-    print("configure ok!")
+    cprint("${bright}configure ok!")
 end
