@@ -30,11 +30,19 @@ import("core.project.config")
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
 
-    -- trace
-    print("[%02d%%]: inserting.$(mode) %s", percent, sourcefile)
+    -- is verbose?
+    local verbose = option.get("verbose")
+
+    -- trace percent info
+    cprintf("${yellow}[%02d%%]:${clear} ", percent)
+    if verbose then
+        cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
+    else
+        cprint("${magenta}inserting.$(mode) %s", sourcefile)
+    end
 
     -- trace verbose info
-    if option.get("verbose") then
+    if verbose then
         print("cp %s %s", sourcefile, objectfile)
     end
 
@@ -45,11 +53,19 @@ end
 -- build the object from the *.[a|lib] source file
 function _build_from_static(target, sourcefile, objectfile, percent)
 
-    -- trace
-    print("[%02d%%]: inserting.$(mode) %s", percent, sourcefile)
+    -- is verbose?
+    local verbose = option.get("verbose")
+
+    -- trace percent info
+    cprintf("${yellow}[%02d%%]:${clear} ", percent)
+    if verbose then
+        cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
+    else
+        cprint("${magenta}inserting.$(mode) %s", sourcefile)
+    end
 
     -- trace verbose info
-    if option.get("verbose") then
+    if verbose then
         print("ex %s %s", sourcefile, objectfile)
     end
 
