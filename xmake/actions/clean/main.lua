@@ -173,6 +173,5 @@ function main()
     os.cd(olddir)
 
     -- trace
-    print("clean ok!")
-    
+    cprint("${bright}clean ok!")
 end
