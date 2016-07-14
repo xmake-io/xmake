@@ -78,6 +78,17 @@ function utils.verbose(format, ...)
     end
 end
 
+-- the verbose error function
+function utils.verror(format, ...)
+
+    -- enable verbose?
+    if option.get("verbose") and format ~= nil then
+        
+        -- trace
+        utils.cprint("${bright red}error: ${default red}" .. string.format(format, ...))
+    end
+end
+
 -- the error function
 function utils.error(format, ...)
 
