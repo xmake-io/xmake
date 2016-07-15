@@ -6,6 +6,7 @@
 
 * Add check includes dependence automatically
 * Add print colors 
+* Add debugger support, .e.g `xmake run -d program ...`
 
 ### Changes
 
@@ -126,6 +127,7 @@
 
 * 增加头文件依赖自动检测和增量编译，提高编译速度
 * 在终端中进行颜色高亮提示
+* 添加调试器支持，`xmake run -d program ...`
 
 ### 改进
 
