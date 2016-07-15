@@ -38,6 +38,12 @@ end
 -- run the debugged program with arguments
 function run(shellname, argv)
 
+    -- patch arguments
+    table.insert(argv, 1, shellname)
+    table.insert(argv, 1, "--args")
+
+    -- run it
+    os.execv(_g.shellname, argv)
 end
 
 -- check the given flags 
