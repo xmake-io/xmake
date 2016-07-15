@@ -145,6 +145,9 @@ task("config")
                     ,   {}
                     ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"                                     }
                     ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"                               }
+ 
+                    ,   {}
+                    ,   {nil, "debugger",   "kv", "auto",       "The Debugger"                                                  }
 
                         -- show platform menu options
                     ,   function () 
