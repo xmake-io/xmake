@@ -27,12 +27,21 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
+import("core.tool.debugger")
 
 -- run binary target
 function _run_binary(target)
 
-    -- execute it
-    os.execv(target:targetfile(), option.get("arguments"))
+    -- debugging?
+    if option.get("debug") then
+
+        -- debug it
+        debugger.run(target:targetfile(), option.get("arguments"))
+    else
+
+        -- run it
+        os.execv(target:targetfile(), option.get("arguments"))
+    end
 end
 
 -- run target 

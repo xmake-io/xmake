@@ -71,6 +71,7 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "ar",   cross, "ar",   "the static library archiver") 
     checker.check_toolchain(config, "ex",   cross, "ar",   "the static library extractor") 
     checker.check_toolchain(config, "sh",   cross, "g++",  "the shared library linker") 
+    checker.check_toolchain(config, "dd",   cross, "gdb",  "the debugger") 
 end
 
 -- init it

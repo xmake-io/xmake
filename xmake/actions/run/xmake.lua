@@ -44,7 +44,6 @@ task("run")
                 ,   options = 
                     {
                         {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
-                    ,   {nil, "debugger",   "kv", "auto",       "Set the debugger path."                                        }
 
                     ,   {}
                     ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      

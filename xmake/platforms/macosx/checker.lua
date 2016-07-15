@@ -42,7 +42,7 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sh",   "xcrun -sdk macosx ",  "clang++",   "the shared library linker") 
     checker.check_toolchain(config, "sh",   "xcrun -sdk macosx ",  "clang",     "the shared library linker") 
     checker.check_toolchain(config, "sc",   "xcrun -sdk macosx ",  "swiftc",    "the swift compiler") 
-
+    checker.check_toolchain(config, "dd",   "xcrun -sdk macosx ",  "lldb",      "the debugger") 
 end
 
 -- init it
