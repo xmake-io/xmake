@@ -39,6 +39,7 @@ end
 function run(shellname, argv)
 
     -- patch arguments
+    argv = argv or {}
     table.insert(argv, 1, shellname)
     table.insert(argv, 1, "--args")
 
