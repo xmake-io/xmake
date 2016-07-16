@@ -42,6 +42,7 @@ function run(shellname, argv)
     local shellnames = _g.shellname:split("%s")
 
     -- patch arguments
+    argv = argv or {}
     table.insert(argv, 1, shellname)
     for i = #shellnames, 2, -1 do
         table.insert(argv, 1, shellnames[i])
