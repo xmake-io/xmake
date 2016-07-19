@@ -42,7 +42,41 @@ function filter.new(handler)
     return self
 end
 
+-- filter the shell command
+-- 
+-- .e.g
+--
+-- print("$(shell echo hello xmake)")
+-- add_ldflags("$(shell pkg-config --libs sqlite3)")
+--
+function filter.shell(cmd)
+
+    -- empty?
+    if #cmd == 0 then
+        os.raise("empty $(shell)!")
+    end
+
+    -- run shell
+    local ok, outdata, errdata = os.iorun(cmd)
+    if not ok then
+        os.raise("run $(shell %s) failed, errors: %s", cmd, errdata or "")
+    end
+
+    -- trim it
+    if outdata then
+        outdata = outdata:trim()
+    end
+
+    -- return the shell result
+    return outdata or ""
+end
+
 -- filter the builtin variables: "hello $(variable)" for string
+--
+-- .e.g  
+--
+-- print("$(host)")
+--
 function filter:handle(value)
 
     -- check
@@ -59,6 +93,11 @@ function filter:handle(value)
 
         -- check
         assert(variable)
+
+        -- is shell?
+        if variable:startswith("shell ") then
+            return filter.shell(variable:sub(7, -1))
+        end
                                     
         -- is upper?
         local isupper = false
