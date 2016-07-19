@@ -6,6 +6,10 @@
 
 * Add native shell support for `xmake.lua`. .e.g `add_ldflags("$(shell pkg-config --libs sqlite3)")`
 
+### Bugs fixed
+
+* Fix check ld failed without g++ on linux 
+
 ## v2.0.3
 
 ### New features 
@@ -132,6 +136,10 @@
 ### 新特性
 
 * 在`xmake.lua`中添加原生shell支持，例如：`add_ldflags("$(shell pkg-config --libs sqlite3)")`
+
+### Bugs修复
+
+* 修复在linux下检测ld连接器失败，如果没装g++的话
 
 ## v2.0.3
 
