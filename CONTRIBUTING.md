@@ -42,5 +42,6 @@ try to follow these guidelines when you do so.
 * 请使用余工程代码相同的代码规范
 * 确保提交的代码缩进是四个空格，而不是tab
 * 请提交代码到`dev`分支，如果通过，我们会在特定时间合并到`master`分支上
+* 为了规范化提交日志的格式，commit消息，不要用中文，请用英文描述
 
 [1]: https://github.com/waruqi/xmake/issues
