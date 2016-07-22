@@ -4,6 +4,11 @@ os:
   - linux
   - osx
 
+branches:
+  only:
+    - master
+    - dev
+
 install:
   - sudo ./install
 
