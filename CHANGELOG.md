@@ -5,6 +5,7 @@
 ### New features
 
 * Add native shell support for `xmake.lua`. .e.g `add_ldflags("$(shell pkg-config --libs sqlite3)")`
+* Enable pdb symbol files for windows
 
 ### Bugs fixed
 
@@ -136,6 +137,7 @@
 ### 新特性
 
 * 在`xmake.lua`中添加原生shell支持，例如：`add_ldflags("$(shell pkg-config --libs sqlite3)")`
+* 编译windows目标程序，默认默认启用pdb符号文件
 
 ### Bugs修复
 
