@@ -162,19 +162,6 @@ function linker:_mapflags(flags)
     return results
 end
 
--- get the named flags
-function linker:_named_flags(names, flags)
-
-    -- map it 
-    local flags_mapped = {}
-    for _, name in ipairs(table.wrap(names)) do
-        table.join2(flags_mapped, self:_mapflags(flags[name]))
-    end
-
-    -- get it
-    return flags_mapped
-end
-
 -- add flags from the configure 
 function linker:_addflags_from_config(flags)
 
@@ -220,9 +207,9 @@ function linker:_addflags_from_target(flags, target)
     end
 
     -- add the strip flags 
-    table.join2(flags, self:_named_flags(target:get("strip"), {     debug       = "-S"
-                                                                ,   all         = "-s"
-                                                                }))
+    for _, strip in ipairs(table.wrap(target:get("strip"))) do
+        table.join2(flags, self:strip(strip))
+    end
 end
 
 -- add flags from the platform 
@@ -355,6 +342,13 @@ function linker:linkcmd(objectfiles, targetfile, target)
 
     -- get it
     return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
+end
+
+-- make the strip flag
+function linker:strip(level)
+
+    -- make it
+    return self:_tool().strip(level)
 end
 
 -- make the linklib flag

@@ -71,6 +71,128 @@ function get(name)
     return _g[name]
 end
 
+-- make the strip flag
+function strip(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-S"
+    ,   all         = "-s"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the symbol flag
+function symbol(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-g"
+    ,   hidden      = "-fvisibility=hidden"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the warning flag
+function warning(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-w"
+    ,   less        = "-W1"
+    ,   more        = "-W3"
+    ,   all         = "-Wall"
+    ,   error       = "-Werror"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the optimize flag
+function optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-O0"
+    ,   fast        = "-O1"
+    ,   faster      = "-O2"
+    ,   fastest     = "-O3"
+    ,   smallest    = "-Os"
+    ,   aggressive  = "-Ofast"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the vector extension flag
+function vectorext(extension)
+
+    -- the maps
+    local maps = 
+    {   
+        mmx         = "-mmmx"
+    ,   sse         = "-msse"
+    ,   sse2        = "-msse2"
+    ,   sse3        = "-msse3"
+    ,   ssse3       = "-mssse3"
+    ,   avx         = "-mavx"
+    ,   avx2        = "-mavx2"
+    ,   neon        = "-mfpu=neon"
+    }
+
+    -- make it
+    return maps[extension] or ""
+end
+
+-- make the language flag
+function language(stdname)
+
+    -- the stdc maps
+    local cmaps = 
+    {
+        -- stdc
+        ansi        = "-ansi"
+    ,   c89         = "-std=c89"
+    ,   gnu89       = "-std=gnu89"
+    ,   c99         = "-std=c99"
+    ,   gnu99       = "-std=gnu99"
+    ,   c11         = "-std=c11"
+    ,   gnu11       = "-std=gnu11"
+    }
+
+    -- the stdc++ maps
+    local cxxmaps = 
+    {
+        cxx98       = "-std=c++98"
+    ,   gnuxx98     = "-std=gnu++98"
+    ,   cxx11       = "-std=c++11"
+    ,   gnuxx11     = "-std=gnu++11"
+    ,   cxx14       = "-std=c++14"
+    ,   gnuxx14     = "-std=gnu++14"
+    }
+
+    -- select maps
+    local maps = cmaps
+    if _g.kind == "cxx" or _g.kind == "mxx" then
+        maps = cxxmaps
+    elseif _g.kind == "sc" then
+        maps = {}
+    end
+
+    -- make it
+    return maps[stdname] or ""
+end
+
 -- make the define flag
 function define(macro)
 

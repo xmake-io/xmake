@@ -144,19 +144,6 @@ function compiler:_mapflags(flags)
     return results
 end
 
--- get the named flags
-function compiler:_named_flags(names, flags)
-
-    -- map it 
-    local flags_mapped = {}
-    for _, name in ipairs(table.wrap(names)) do
-        table.join2(flags_mapped, self:_mapflags(flags[name]))
-    end
-
-    -- get it
-    return flags_mapped
-end
-
 -- add flags from the configure 
 function compiler:_addflags_from_config(flags)
 
@@ -174,62 +161,28 @@ function compiler:_addflags_from_target(flags, target)
         table.join2(flags, self:_mapflags(target:get(flagname)))
     end
 
-    -- add the symbols flags 
-    table.join2(flags, self:_named_flags(target:get("symbols"), {   debug       = "-g"
-                                                                ,   hidden      = "-fvisibility=hidden"
-                                                                }))
+    -- add the symbol flags 
+    for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
+        table.join2(flags, self:symbol(symbol))
+    end
 
     -- add the warning flags 
-    table.join2(flags, self:_named_flags(target:get("warnings"),  {     none        = "-w"
-                                                                    ,   less        = "-W1"
-                                                                    ,   more        = "-W3"
-                                                                    ,   all         = "-Wall"
-                                                                    ,   error       = "-Werror"
-                                                                    }))
+    for _, warning in ipairs(table.wrap(target:get("warnings"))) do
+        table.join2(flags, self:warning(warning))
+    end
 
     -- add the optimize flags 
-    table.join2(flags, self:_named_flags(target:get("optimize"), {      none        = "-O0"
-                                                                    ,   fast        = "-O1"
-                                                                    ,   faster      = "-O2"
-                                                                    ,   fastest     = "-O3"
-                                                                    ,   smallest    = "-Os"
-                                                                    ,   aggressive  = "-Ofast"
-                                                                    }))
+    table.join2(flags, self:optimize(target:get("optimize") or ""))
 
     -- add the vector extensions flags 
-    table.join2(flags, self:_named_flags(target:get("vectorexts"), {    mmx         = "-mmmx"
-                                                                    ,   sse         = "-msse"
-                                                                    ,   sse2        = "-msse2"
-                                                                    ,   sse3        = "-msse3"
-                                                                    ,   ssse3       = "-mssse3"
-                                                                    ,   avx         = "-mavx"
-                                                                    ,   avx2        = "-mavx2"
-                                                                    ,   neon        = "-mfpu=neon"
-                                                                    }))
+    for _, vectorext in ipairs(table.wrap(target:get("vectorexts"))) do
+        table.join2(flags, self:vectorext(vectorext))
+    end
 
     -- add the language flags 
-    local languages = {}
-    for _, flagname in ipairs(self:_flagnames()) do
-        if flagname == "cflags" or flagname == "mflags" then
-            table.join2(languages, {    ansi        = "-ansi"
-                                    ,   c89         = "-std=c89"
-                                    ,   gnu89       = "-std=gnu89"
-                                    ,   c99         = "-std=c99"
-                                    ,   gnu99       = "-std=gnu99"
-                                    ,   c11         = "-std=c11"
-                                    ,   gnu11       = "-std=gnu11"
-                                    })
-        elseif flagname == "cxxflags" or flagname == "mxxflags" then
-            table.join2(languages, {    cxx98       = "-std=c++98"
-                                    ,   gnuxx98     = "-std=gnu++98"
-                                    ,   cxx11       = "-std=c++11"
-                                    ,   gnuxx11     = "-std=gnu++11"
-                                    ,   cxx14       = "-std=c++14"
-                                    ,   gnuxx14     = "-std=gnu++14"
-                                    })
-        end
+    for _, language in ipairs(table.wrap(target:get("languages"))) do
+        table.join2(flags, self:language(language))
     end
-    table.join2(flags, self:_named_flags(target:get("languages"), languages))
 
     -- add the includedirs flags 
     for _, includedir in ipairs(table.wrap(target:get("includedirs"))) do
@@ -423,6 +376,41 @@ function compiler:compcmd(sourcefile, objectfile, target)
 
     -- get it
     return self:_tool().compcmd(sourcefile, objectfile, flags or "")
+end
+
+-- make the symbol flag
+function compiler:symbol(level)
+
+    -- make it
+    return self:_tool().symbol(level)
+end
+
+-- make the language flag
+function compiler:language(stdname)
+
+    -- make it
+    return self:_tool().language(stdname)
+end
+
+-- make the vector extension flag
+function compiler:vectorext(extension)
+
+    -- make it
+    return self:_tool().vectorext(extension)
+end
+
+-- make the optimize flag
+function compiler:optimize(level)
+
+    -- make it
+    return self:_tool().optimize(level)
+end
+
+-- make the warning flag
+function compiler:warning(level)
+
+    -- make it
+    return self:_tool().warning(level)
 end
 
 -- make the define flag

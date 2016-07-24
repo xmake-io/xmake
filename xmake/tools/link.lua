@@ -69,6 +69,11 @@ function get(name)
     return _g[name]
 end
 
+-- make the strip flag
+function strip(level)
+    return ""
+end
+
 -- make the linklib flag
 function linklib(lib)
 

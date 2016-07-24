@@ -50,6 +50,7 @@ platform("windows")
         _g.formats.object   = {"", ".obj"}
         _g.formats.shared   = {"", ".dll"}
         _g.formats.binary   = {"", ".exe"}
+        _g.formats.symbol   = {"", ".pdb"}
 
     end)
 

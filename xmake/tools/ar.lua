@@ -44,6 +44,20 @@ function get(name)
     return _g[name]
 end
 
+-- make the strip flag
+function strip(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-S"
+    ,   all         = "-s"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
 -- make the archive command
 function archivecmd(objectfiles, targetfile, flags)
 

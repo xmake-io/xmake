@@ -74,6 +74,79 @@ function get(name)
     return _g[name]
 end
 
+-- make the symbol flag
+function symbol(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-g"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the warning flag
+function warning(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-w"
+    ,   less        = "-W1"
+    ,   more        = "-W3"
+    ,   all         = "-Wall"
+    ,   error       = "-Werror"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the optimize flag
+function optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-Onone"
+    ,   fast        = "-O"
+    ,   faster      = "-O"
+    ,   fastest     = "-O"
+    ,   smallest    = "-O"
+    ,   aggressive  = "-Ounchecked"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the vector extension flag
+function vectorext(extension)
+
+    -- the maps
+    local maps = 
+    {   
+        mmx         = "-mmmx"
+    ,   sse         = "-msse"
+    ,   sse2        = "-msse2"
+    ,   sse3        = "-msse3"
+    ,   ssse3       = "-mssse3"
+    ,   avx         = "-mavx"
+    ,   avx2        = "-mavx2"
+    ,   neon        = "-mfpu=neon"
+    }
+
+    -- make it
+    return maps[extension] or ""
+end
+
+-- make the language flag
+function language(stdname)
+    return ""
+end
+
 -- make the compile command
 function compcmd(sourcefile, objectfile, flags)
 
