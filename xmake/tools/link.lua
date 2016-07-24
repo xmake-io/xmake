@@ -74,6 +74,18 @@ function strip(level)
     return ""
 end
 
+-- make the symbol flag
+function symbol(level, symbolfile)
+
+    -- debug? generate *.pdb file
+    if level == "debug" and symbolfile then
+        return "-debug -pdb:" .. symbolfile
+    end
+
+    -- none
+    return ""
+end
+
 -- make the linklib flag
 function linklib(lib)
 

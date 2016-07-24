@@ -119,6 +119,24 @@ function target:targetfile()
     return path.join(targetdir, filename)
 end
 
+-- get the symbol file
+function target:symbolfile()
+
+    -- check
+    assert(self)
+
+    -- the target directory
+    local targetdir = self:get("targetdir") or config.get("buildir")
+    assert(targetdir and type(targetdir) == "string")
+
+    -- the symbol file name
+    local filename = target.filename(self:name(), "symbol")
+    assert(filename)
+
+    -- make the symbol file path
+    return path.join(targetdir, filename)
+end
+
 -- get the config header files
 function target:configheader(outputdir)
 

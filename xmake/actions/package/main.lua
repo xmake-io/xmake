@@ -40,6 +40,12 @@ function _package_library(target)
     -- copy the library file to the output directory
     os.cp(target:targetfile(), format("%s/%s.pkg/lib/$(mode)/$(plat)/$(arch)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
 
+    -- copy the symbol file to the output directory
+    local symbolfile = target:symbolfile()
+    if os.isfile(symbolfile) then
+        os.cp(symbolfile, format("%s/%s.pkg/lib/$(mode)/$(plat)/$(arch)/%s", outputdir, targetname, path.filename(symbolfile))) 
+    end
+
     -- copy the config.h to the output directory
     local configheader = target:configheader()
     if configheader then

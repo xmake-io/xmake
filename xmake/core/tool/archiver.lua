@@ -161,6 +161,12 @@ function archiver:_addflags_from_target(flags, target)
     for _, strip in ipairs(table.wrap(target:get("strip"))) do
         table.join2(flags, self:strip(strip))
     end
+
+    -- add the symbol flags 
+    local symbolfile = target:symbolfile()
+    for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
+        table.join2(flags, self:symbol(symbol, symbolfile))
+    end
 end
 
 -- add flags from the platform 
@@ -245,6 +251,13 @@ function archiver:strip(level)
 
     -- make it
     return self:_tool().strip(level)
+end
+
+-- make the symbol flag
+function archiver:symbol(level, symbolfile)
+
+    -- make it
+    return self:_tool().symbol(level, symbolfile)
 end
 
 -- check the given flags 

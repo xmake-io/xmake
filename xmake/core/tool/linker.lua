@@ -210,6 +210,14 @@ function linker:_addflags_from_target(flags, target)
     for _, strip in ipairs(table.wrap(target:get("strip"))) do
         table.join2(flags, self:strip(strip))
     end
+
+    -- add the symbol flags 
+    if target.symbolfile then
+        local symbolfile = target:symbolfile()
+        for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
+            table.join2(flags, self:symbol(symbol, symbolfile))
+        end
+    end
 end
 
 -- add flags from the platform 
@@ -349,6 +357,13 @@ function linker:strip(level)
 
     -- make it
     return self:_tool().strip(level)
+end
+
+-- make the symbol flag
+function linker:symbol(level, symbolfile)
+
+    -- make it
+    return self:_tool().symbol(level, symbolfile)
 end
 
 -- make the linklib flag
