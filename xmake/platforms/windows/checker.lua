@@ -193,6 +193,64 @@ function _check_toolchains(config)
     environment.leave("toolchains")
 end
 
+-- check the debugger
+function _check_debugger(config)
+
+    -- get debugger
+    local debugger = config.get("dd")
+    if debugger then
+        return
+    end
+
+    -- query the debugger info for x64
+    local info = try
+    {
+        function ()
+            return os.iorun("reg query \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug\" /v Debugger")
+        end
+    }
+    -- query the debugger info for x86
+    if not info then
+        info = try
+        {
+            function ()
+                return os.iorun("reg query \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug\" /v Debugger")
+            end
+        }
+    end
+
+    -- parse the debugger path
+    --
+    -- ! REG.EXE VERSION 3.0
+    --
+    -- HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug
+    -- Debugger    REG_SZ  "C:\WINDOWS\system32\vsjitdebugger.exe" -p %ld -e %ld
+    if info then
+        debugger = info:match("Debugger%s+REG_SZ%s+\"(.+)\"")
+        if debugger then
+            debugger = debugger:trim()
+        end
+    end
+
+    -- this debugger exists?
+    if debugger and path.is_absolute(debugger) and not os.isfile(debugger) then
+        debugger = nil
+    end
+
+    -- check ok? update it
+    if debugger then
+
+        -- save it
+        config.set("dd", debugger)
+
+        -- trace
+        print("checking for the debugger ... %s", path.filename(debugger))
+    else
+        -- failed
+        print("checking for the debugger ... no")
+    end
+end
+
 -- init it
 function init()
 
@@ -202,6 +260,7 @@ function init()
         { checker.check_arch, "x86" }
     ,   _check_vs
     ,   _check_toolchains
+    ,   _check_debugger
     }
 
     -- init the check list of global
