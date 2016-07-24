@@ -92,7 +92,7 @@ function symbol(level, symbolfile)
     -- debug? generate *.pdb file
     if level == "debug" then
         if symbolfile then
-            return "-ZI -Fd" .. symbolfile 
+            return "-ZI -FS -Fd" .. symbolfile 
         else
             return "-ZI"
         end
