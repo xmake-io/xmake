@@ -144,19 +144,6 @@ function archiver:_mapflags(flags)
     return results
 end
 
--- get the named flags
-function archiver:_named_flags(names, flags)
-
-    -- map it 
-    local flags_mapped = {}
-    for _, name in ipairs(table.wrap(names)) do
-        table.join2(flags_mapped, self:_mapflags(flags[name]))
-    end
-
-    -- get it
-    return flags_mapped
-end
-
 -- add flags from the configure 
 function archiver:_addflags_from_config(flags)
 
@@ -171,9 +158,9 @@ function archiver:_addflags_from_target(flags, target)
     table.join2(flags, self:_mapflags(target:get(self:_flagname())))
 
     -- add the strip flags 
-    table.join2(flags, self:_named_flags(target:get("strip"), {     debug       = "-S"
-                                                                ,   all         = "-s"
-                                                                }))
+    for _, strip in ipairs(table.wrap(target:get("strip"))) do
+        table.join2(flags, self:strip(strip))
+    end
 end
 
 -- add flags from the platform 
@@ -251,6 +238,13 @@ function archiver:archivecmd(objectfiles, targetfile, target)
 
     -- get it
     return self:_tool().archivecmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
+end
+
+-- make the strip flag
+function archiver:strip(level)
+
+    -- make it
+    return self:_tool().strip(level)
 end
 
 -- check the given flags 

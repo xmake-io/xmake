@@ -86,6 +86,96 @@ function get(name)
     return _g[name]
 end
 
+-- make the symbol flag
+function symbol(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-Z7"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the warning flag
+function warning(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-w"
+    ,   less        = "-W1"
+    ,   more        = "-W3"
+    ,   all         = "-W3"
+    ,   error       = "-WX"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the optimize flag
+function optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-Od"
+    ,   fast        = "-O1"
+    ,   faster      = "-O2"
+    ,   fastest     = "-Ot"
+    ,   smallest    = "-Os"
+    ,   aggressive  = "-Ox"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the vector extension flag
+function vectorext(extension)
+
+    -- the maps
+    local maps = 
+    {   
+        mmx         = "-arch:MMX"
+    ,   sse         = "-arch:SSE"
+    ,   sse2        = "-arch:SSE2"
+    ,   sse3        = "-arch:SSE3"
+    ,   ssse3       = "-arch:SSSE3"
+    ,   avx         = "-arch:AVX"
+    ,   avx2        = "-arch:AVX2"
+    }
+
+    -- make it
+    return maps[extension] or ""
+end
+
+-- make the language flag
+function language(stdname)
+
+    -- the stdc maps
+    local cmaps = 
+    {
+        -- stdc
+        c99         = "-TP" -- compile as c++ files because msvc only support c89
+    ,   gnu99       = "-TP"
+    ,   c11         = "-TP"
+    ,   gnu11       = "-TP"
+    }
+
+    -- select maps
+    local maps = cmaps
+    if _g.kind == "cxx" or _g.kind == "mxx" then
+        maps = {}
+    end
+
+    -- make it
+    return maps[stdname] or ""
+end
+
 -- make the define flag
 function define(macro)
 
