@@ -43,10 +43,12 @@ task("global")
                     -- options
                 ,   options = 
                     {
-                        {nil, "make",       "kv",   "auto",         "Set the make path."                                        }
-                    ,   {nil, "ccache",     "kv",   "auto",         "Enable or disable the c/c++ compiler cache." 
-                                                                 ,  "    --ccache=[y|n]"                                        }
+                        {nil, "make",       "kv", "auto",   "Set the make path."                                        }
+                    ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
+                                                        ,   "    --ccache=[y|n]"                                        }
 
+                    ,   {}
+                    ,   {nil, "dd",         "kv", "auto",   "The Debugger"                                              }
                     ,   {}
 
                         -- show platform menu options
