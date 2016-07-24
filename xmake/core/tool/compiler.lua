@@ -162,8 +162,11 @@ function compiler:_addflags_from_target(flags, target)
     end
 
     -- add the symbol flags 
-    for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
-        table.join2(flags, self:symbol(symbol))
+    if target.symbolfile then
+        local symbolfile = target:symbolfile()
+        for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
+            table.join2(flags, self:symbol(symbol, symbolfile))
+        end
     end
 
     -- add the warning flags 
@@ -379,10 +382,10 @@ function compiler:compcmd(sourcefile, objectfile, target)
 end
 
 -- make the symbol flag
-function compiler:symbol(level)
+function compiler:symbol(level, symbolfile)
 
     -- make it
-    return self:_tool().symbol(level)
+    return self:_tool().symbol(level, symbolfile)
 end
 
 -- make the language flag

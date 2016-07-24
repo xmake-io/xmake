@@ -87,16 +87,19 @@ function get(name)
 end
 
 -- make the symbol flag
-function symbol(level)
+function symbol(level, symbolfile)
 
-    -- the maps
-    local maps = 
-    {   
-        debug       = "-Z7"
-    }
+    -- debug? generate *.pdb file
+    if level == "debug" then
+        if symbolfile then
+            return "-ZI -Fd" .. symbolfile 
+        else
+            return "-ZI"
+        end
+    end
 
-    -- make it
-    return maps[level] or ""
+    -- none
+    return ""
 end
 
 -- make the warning flag

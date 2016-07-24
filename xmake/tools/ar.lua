@@ -58,6 +58,11 @@ function strip(level)
     return maps[level] or ""
 end
 
+-- make the symbol flag
+function symbol(level, symbolfile)
+    return ""
+end
+
 -- make the archive command
 function archivecmd(objectfiles, targetfile, flags)
 

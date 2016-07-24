@@ -86,7 +86,7 @@ function strip(level)
 end
 
 -- make the symbol flag
-function symbol(level)
+function symbol(level, symbolfile)
 
     -- the maps
     local maps = 
