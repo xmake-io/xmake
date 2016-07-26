@@ -52,6 +52,7 @@ platform("macosx")
         _g.formats.static   = {"lib", ".a"}
         _g.formats.object   = {"",    ".o"}
         _g.formats.shared   = {"lib", ".dylib"}
+        _g.formats.symbol   = {"",    ".sym"}
 
         -- init flags for architecture
         local arch          = config.get("arch")

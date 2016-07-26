@@ -49,6 +49,7 @@ platform("iphoneos")
         _g.formats.static   = {"lib", ".a"}
         _g.formats.object   = {"",    ".o"}
         _g.formats.shared   = {"lib", ".dylib"}
+        _g.formats.symbol   = {"",    ".sym"}
 
         -- iphoneos or iphonesimulator?
         local arch = config.get("arch")
