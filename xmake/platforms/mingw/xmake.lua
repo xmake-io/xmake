@@ -47,6 +47,7 @@ platform("mingw")
         _g.formats.object   = {"", ".obj"}
         _g.formats.shared   = {"", ".dll"}
         _g.formats.binary   = {"", ".exe"}
+        _g.formats.symbol   = {"", ".pdb"}
     
         -- init flags for architecture
         local archflags = nil

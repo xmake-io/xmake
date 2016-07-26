@@ -52,6 +52,7 @@ platform("linux")
         _g.formats.static   = {"lib", ".a"}
         _g.formats.object   = {"",    ".o"}
         _g.formats.shared   = {"lib", ".so"}
+        _g.formats.symbol   = {"",    ".sym"}
     
         -- cross toolchains?
         if config.get("cross") then 

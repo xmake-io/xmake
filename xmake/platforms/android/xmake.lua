@@ -49,6 +49,7 @@ platform("android")
         _g.formats.static   = {"lib", ".a"}
         _g.formats.object   = {"",    ".o"}
         _g.formats.shared   = {"lib", ".so"}
+        _g.formats.symbol   = {"",    ".sym"}
     
         -- init flags
         local arch = config.get("arch")
