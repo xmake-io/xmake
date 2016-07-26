@@ -392,14 +392,30 @@ end
 function compiler:language(stdname)
 
     -- make it
-    return self:_tool().language(stdname)
+    local flags = self:_tool().language(stdname)
+
+    -- check it
+    if self:check(flags) then
+        return flags
+    end
+
+    -- not support
+    return ""
 end
 
 -- make the vector extension flag
 function compiler:vectorext(extension)
 
     -- make it
-    return self:_tool().vectorext(extension)
+    local flags = self:_tool().vectorext(extension)
+
+    -- check it
+    if self:check(flags) then
+        return flags
+    end
+
+    -- not support
+    return ""
 end
 
 -- make the optimize flag
