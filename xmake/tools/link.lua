@@ -78,12 +78,17 @@ end
 function symbol(level, symbolfile)
 
     -- debug? generate *.pdb file
-    if level == "debug" and symbolfile then
-        return "-debug -pdb:" .. symbolfile
+    local flags = ""
+    if level == "debug" then
+        if symbolfile then
+            flags = "-debug -pdb:" .. symbolfile
+        else
+            flags = "-debug"
+        end
     end
 
     -- none
-    return ""
+    return flags
 end
 
 -- make the linklib flag
