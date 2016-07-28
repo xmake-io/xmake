@@ -27,7 +27,7 @@ import("platforms.checker", {rootdir = os.programdir()})
 -- check the toolchains
 function _check_toolchains(config)
 
-    -- done
+    -- check with xcrun
     checker.check_toolchain(config, "cc",   "xcrun -sdk macosx ",  "clang",     "the c compiler") 
     checker.check_toolchain(config, "cxx",  "xcrun -sdk macosx ",  "clang",     "the c++ compiler") 
     checker.check_toolchain(config, "cxx",  "xcrun -sdk macosx ",  "clang++",   "the c++ compiler") 
@@ -43,6 +43,23 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sh",   "xcrun -sdk macosx ",  "clang",     "the shared library linker") 
     checker.check_toolchain(config, "sc",   "xcrun -sdk macosx ",  "swiftc",    "the swift compiler") 
     checker.check_toolchain(config, "dd",   "xcrun -sdk macosx ",  "lldb",      "the debugger") 
+
+    -- check without xcrun
+    checker.check_toolchain(config, "cc",   "",  "clang",     "the c compiler") 
+    checker.check_toolchain(config, "cxx",  "",  "clang",     "the c++ compiler") 
+    checker.check_toolchain(config, "cxx",  "",  "clang++",   "the c++ compiler") 
+    checker.check_toolchain(config, "mm",   "",  "clang",     "the objc compiler") 
+    checker.check_toolchain(config, "mxx",  "",  "clang++",   "the objc++ compiler") 
+    checker.check_toolchain(config, "mxx",  "",  "clang",     "the objc++ compiler") 
+    checker.check_toolchain(config, "as",   "",  "clang",     "the assember") 
+    checker.check_toolchain(config, "ld",   "",  "clang++",   "the linker") 
+    checker.check_toolchain(config, "ld",   "",  "clang",     "the linker") 
+    checker.check_toolchain(config, "ar",   "",  "ar",        "the static library archiver") 
+    checker.check_toolchain(config, "ex",   "",  "ar",        "the static library extractor") 
+    checker.check_toolchain(config, "sh",   "",  "clang++",   "the shared library linker") 
+    checker.check_toolchain(config, "sh",   "",  "clang",     "the shared library linker") 
+    checker.check_toolchain(config, "sc",   "",  "swiftc",    "the swift compiler") 
+    checker.check_toolchain(config, "dd",   "",  "lldb",      "the debugger") 
 end
 
 -- init it
