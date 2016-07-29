@@ -56,4 +56,4 @@ tools\dtreg.exe -MachineEnvSet path="%path%;%xmake_dir_install%" >> install.log
 
 rem ok
 echo ok!
-pause
+if not "%1" == "noinput" pause
