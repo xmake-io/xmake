@@ -136,5 +136,17 @@ function string:less(other)
     return string.strcmp(self, other) < 0
 end
 
+-- try to format
+function string.tryformat(format, ...)
+
+    -- attempt to format it
+    local ok, str = pcall(string.format, format, ...)
+    if ok then
+        return str
+    else
+        return format
+    end
+end
+
 -- return module: string
 return string

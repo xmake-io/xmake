@@ -26,6 +26,7 @@ local utils = utils or {}
 -- load modules
 local option = require("base/option")
 local colors = require("base/colors")
+local string = require("base/string")
 
 -- print format string with newline
 function utils.print(format, ...)
@@ -34,7 +35,7 @@ function utils.print(format, ...)
     assert(format)
 
     -- trace
-    print(string.format(format, ...))
+    print(string.tryformat(format, ...))
 end
 
 -- print format string without newline
@@ -44,7 +45,7 @@ function utils.printf(format, ...)
     assert(format)
 
     -- trace
-    io.write(string.format(format, ...))
+    io.write(string.tryformat(format, ...))
 end
 
 -- print format string and colors with newline
@@ -54,7 +55,7 @@ function utils.cprint(format, ...)
     assert(format)
 
     -- trace
-    print(colors(string.format(format, ...)))
+    print(colors(string.tryformat(format, ...)))
 end
 
 -- print format string and colors without newline
@@ -64,7 +65,7 @@ function utils.cprintf(format, ...)
     assert(format)
 
     -- trace
-    io.write(colors(string.format(format, ...)))
+    io.write(colors(string.tryformat(format, ...)))
 end
 
 -- the verbose function
@@ -74,7 +75,7 @@ function utils.verbose(format, ...)
     if option.get("verbose") and format ~= nil then
         
         -- trace
-        print(string.format(format, ...))
+        print(string.tryformat(format, ...))
     end
 end
 
@@ -85,7 +86,7 @@ function utils.verror(format, ...)
     if option.get("verbose") and format ~= nil then
         
         -- trace
-        utils.cprint("${bright red}error: ${default red}" .. string.format(format, ...))
+        utils.cprint("${bright red}error: ${default red}" .. string.tryformat(format, ...))
     end
 end
 
@@ -94,7 +95,7 @@ function utils.error(format, ...)
 
     -- trace
     if format ~= nil then
-        utils.cprint("${bright red}error: ${default red}" .. string.format(format, ...))
+        utils.cprint("${bright red}error: ${default red}" .. string.tryformat(format, ...))
     end
 end
 
@@ -105,7 +106,7 @@ function utils.warning(format, ...)
     assert(format)
 
     -- format message
-    local msg = "${bright yellow}warning: ${default yellow}" .. string.format(format, ...)
+    local msg = "${bright yellow}warning: ${default yellow}" .. string.tryformat(format, ...)
 
     -- init warnings
     utils._WARNINGS = utils._WARNINGS or {}

@@ -15,6 +15,7 @@ xmake_C_FILES 			+= \
 						xmake \
 						machine \
 						os/find \
+						os/uuid \
 						os/isdir \
 						os/rmdir \
 						os/mkdir \
