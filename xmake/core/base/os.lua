@@ -454,7 +454,7 @@ function os.raise(msg, ...)
 
     -- raise it
     if msg then
-        error(string.format(msg, ...))
+        error(string.tryformat(msg, ...))
     else
         error()
     end
