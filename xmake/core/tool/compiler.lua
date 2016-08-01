@@ -279,6 +279,7 @@ function compiler.kind_of_file(sourcefile)
         [".c"]      = "cc"
     ,   [".cc"]     = "cxx"
     ,   [".cpp"]    = "cxx"
+    ,   [".cxx"]    = "cxx"
     ,   [".m"]      = "mm"
     ,   [".mm"]     = "mxx"
     ,   [".s"]      = "as"
