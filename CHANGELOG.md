@@ -7,6 +7,7 @@
 * Add native shell support for `xmake.lua`. .e.g `add_ldflags("$(shell pkg-config --libs sqlite3)")`
 * Enable pdb symbol files for windows
 * Add debugger support on windows (vsjitdebugger, ollydbg, windbg ... )
+* Add `getenv` interface for the global scope of `xmake.lua`
 
 ### Changes
 
@@ -144,6 +145,7 @@
 * 在`xmake.lua`中添加原生shell支持，例如：`add_ldflags("$(shell pkg-config --libs sqlite3)")`
 * 编译windows目标程序，默认默认启用pdb符号文件
 * 在windows上添加调试器支持（vsjitdebugger, ollydbg, windbg ... ）
+* 添加`getenv`接口到`xmake.lua`的全局作用域中
 
 ### Bugs修复
 
