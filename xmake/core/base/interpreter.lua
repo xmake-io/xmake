@@ -488,6 +488,7 @@ function interpreter.new()
     instance:api_register_builtin("ipairs", ipairs)
     instance:api_register_builtin("format", string.format)
     instance:api_register_builtin("printf", utils.print)
+    instance:api_register_builtin("getenv", os.getenv)
 
     -- register the builtin modules for lua
     instance:api_register_builtin("path", path)
