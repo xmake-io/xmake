@@ -8,9 +8,13 @@
 * Enable pdb symbol files for windows
 * Add debugger support on windows (vsjitdebugger, ollydbg, windbg ... )
 
+### Changes
+
+
 ### Bugs fixed
 
 * Fix check ld failed without g++ on linux 
+* Fix compile `*.cxx` files failed
 
 ## v2.0.3
 
@@ -144,6 +148,7 @@
 ### Bugs修复
 
 * 修复在linux下检测ld连接器失败，如果没装g++的话
+* 修复`*.cxx`编译失败问题
 
 ## v2.0.3
 
