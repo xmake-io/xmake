@@ -17,16 +17,24 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        random.h
+ * @file        crc.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_MATH_IMPL_RANDOM_H
-#define TB_MATH_IMPL_RANDOM_H
+#ifndef TB_HASH_DEPRECATED_CRC_H
+#define TB_HASH_DEPRECATED_CRC_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// encode value
+#define tb_crc_encode_value(mode, crc, value)       tb_crc_encode(mode, crc, (tb_byte_t const*)&(value), sizeof(value))
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -37,45 +45,50 @@ __tb_extern_c_enter__
  * types
  */
 
-// the random type enum
-typedef enum __tb_random_type_e
+/// the crc mode type
+typedef enum __tb_crc_mode_t
 {
-    TB_RANDOM_TYPE_NONE       = 0
-,   TB_RANDOM_TYPE_LINEAR     = 1
+#ifdef __tb_small__
+    TB_CRC_MODE_16_CCITT    = 0
+,   TB_CRC_MODE_32_IEEE_LE  = 1
+,   TB_CRC_MODE_MAX         = 2
+#else
+    TB_CRC_MODE_8_ATM       = 0
+,   TB_CRC_MODE_16_ANSI     = 1
+,   TB_CRC_MODE_16_CCITT    = 2
+,   TB_CRC_MODE_32_IEEE     = 3
+,   TB_CRC_MODE_32_IEEE_LE  = 4
+,   TB_CRC_MODE_MAX         = 5
+#endif
 
-}tb_random_type_e;
-
-// the random impl type
-typedef struct __tb_random_impl_t
-{
-    // the type
-    tb_size_t           type;
-
-    // exit 
-    tb_void_t           (*exit)(struct __tb_random_impl_t* random);
-
-    // seed
-    tb_void_t           (*seed)(struct __tb_random_impl_t* random, tb_size_t seed);
-
-    // clear
-    tb_void_t           (*clear)(struct __tb_random_impl_t* random);
-
-    // range
-    tb_long_t           (*range)(struct __tb_random_impl_t* random, tb_long_t beg, tb_long_t end);
-
-}tb_random_impl_t;
+}tb_crc_mode_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * declaration
+ * interfaces
  */
 
-/* init the linear random
+/*! encode crc
  *
- * @param seed          the seed
+ * @param mode      the crc mode
+ * @param crc       the initial crc value
+ * @param data      the input data
+ * @param size      the input size
  *
- * @return              the random
+ * @return          the crc value
  */
-tb_random_impl_t*       tb_random_linear_init(tb_size_t seed);
+__tb_deprecated__
+tb_uint32_t         tb_crc_encode(tb_crc_mode_t mode, tb_uint32_t crc, tb_byte_t const* data, tb_size_t size);
+
+/*! encode crc for cstr
+ *
+ * @param mode      the crc mode
+ * @param crc       the initial crc value
+ * @param cstr      the input cstr
+ *
+ * @return          the crc value
+ */
+__tb_deprecated__
+tb_uint32_t         tb_crc_encode_cstr(tb_crc_mode_t mode, tb_uint32_t crc, tb_char_t const* cstr);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -83,3 +96,4 @@ tb_random_impl_t*       tb_random_linear_init(tb_size_t seed);
 __tb_extern_c_leave__
 
 #endif
+

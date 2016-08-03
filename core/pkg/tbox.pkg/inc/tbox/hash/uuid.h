@@ -17,23 +17,17 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        math.h
- * @defgroup    math
+ * @file        uuid.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_MATH_H
-#define TB_MATH_H
+#ifndef TB_HASH_UUID_H
+#define TB_HASH_UUID_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "int32.h"
-#include "fixed6.h"
-#include "fixed16.h"
-#include "fixed30.h"
-#include "fixed.h"
-#include "random/random.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -44,14 +38,23 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! init math 
+/*! make an uuid
  *
- * @return      tb_true or tb_false
+ * @param uuid      the uuid output buffer
+ * @param name      we only generate it using a simple hashing function for speed if name is supplied 
+ *
+ * @return          tb_true or tb_false
  */
-tb_bool_t       tb_math_init(tb_noarg_t);
+tb_bool_t           tb_uuid_make(tb_byte_t uuid[16], tb_char_t const* name);
 
-/// exit math 
-tb_void_t       tb_math_exit(tb_noarg_t);
+/*! make an uuid string
+ *
+ * @param uuid_cstr the uuid output c-string
+ * @param name      we only generate it using a simple hashing function for speed if name is supplied 
+ *
+ * @return          the uuid c-string or tb_null
+ */
+tb_char_t const*    tb_uuid_make_cstr(tb_char_t uuid_cstr[37], tb_char_t const* name);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

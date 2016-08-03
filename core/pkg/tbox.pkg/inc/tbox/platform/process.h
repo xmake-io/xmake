@@ -286,7 +286,7 @@ tb_long_t               tb_process_wait(tb_process_ref_t process, tb_long_t* pst
 
         // wait processes
         tb_long_t               infosize = -1;
-        tb_process_waitinfo_t   infolist[4] = {{0}};
+        tb_process_waitinfo_t   infolist[4];
         if ((infosize = tb_process_waitlist(processes1, infolist, tb_arrayn(infolist), -1)) > 0)
         {
             tb_size_t i = 0;

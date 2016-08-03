@@ -33,6 +33,7 @@
 #include "libm/libm.h"
 #include "libc/libc.h"
 #include "math/math.h"
+#include "hash/hash.h"
 #include "utils/utils.h"
 #include "regex/regex.h"
 #include "object/object.h"

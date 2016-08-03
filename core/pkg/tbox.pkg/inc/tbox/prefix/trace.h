@@ -300,6 +300,9 @@ __tb_extern_c_enter__
 // nosafe
 #define tb_trace_nosafe()                           tb_trace1_w("nosafe")
 
+// deprecated
+#define tb_trace_deprecated()                       tb_trace1_w("deprecated")
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * declaration
  */

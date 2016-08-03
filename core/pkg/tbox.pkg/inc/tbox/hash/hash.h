@@ -17,23 +17,35 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        interface.h
+ * @file        hash.h
+ * @defgroup    hash
  *
  */
-#ifndef TB_PLATFORM_WINDOWS_INTERFACE_H
-#define TB_PLATFORM_WINDOWS_INTERFACE_H
+#ifndef TB_HASH_H
+#define TB_HASH_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "ole32.h"
-#include "user32.h"
-#include "ws2_32.h"
-#include "mswsock.h"
-#include "shell32.h"
-#include "dbghelp.h"
-#include "kernel32.h"
-#include "iphlpapi.h"
+#include "ap.h"
+#include "rs.h"
+#include "sha.h"
+#include "md5.h"
+#include "uuid.h"
+#include "djb2.h"
+#include "sdbm.h"
+#include "bkdr.h"
+#include "crc8.h"
+#include "crc16.h"
+#include "crc32.h"
+#include "fnv32.h"
+#include "fnv64.h"
+#include "murmur.h"
+#include "adler32.h"
+#include "blizzard.h"
+#ifdef TB_CONFIG_API_HAVE_DEPRECATED
+#   include "deprecated/deprecated.h"
+#endif
 
 #endif

@@ -17,23 +17,41 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        interface.h
+ * @file        adler32.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_PLATFORM_WINDOWS_INTERFACE_H
-#define TB_PLATFORM_WINDOWS_INTERFACE_H
+#ifndef TB_HASH_DEPRECATED_ADLER32_H
+#define TB_HASH_DEPRECATED_ADLER32_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "ole32.h"
-#include "user32.h"
-#include "ws2_32.h"
-#include "mswsock.h"
-#include "shell32.h"
-#include "dbghelp.h"
-#include "kernel32.h"
-#include "iphlpapi.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*! encode adler32 hash
+ *
+ * @param data      the data
+ * @param size      the size
+ *
+ * @return          the adler32 value
+ */
+__tb_deprecated__
+tb_uint32_t         tb_adler32_encode(tb_byte_t const* data, tb_size_t size);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif
+

@@ -29,9 +29,6 @@
  */
 #include "prefix.h"
 #include "bits.h"
-#include "sha.h"
-#include "md5.h"
-#include "crc.h"
 #include "url.h"
 #include "dump.h"
 #include "used.h"
@@ -39,9 +36,7 @@
 #include "base32.h"
 #include "base64.h"
 #include "option.h"
-#include "adler32.h"
 #include "singleton.h"
 #include "lock_profiler.h"
-#include "fnv32.h"
 
 #endif

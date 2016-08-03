@@ -14,26 +14,20 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2016, Olexander Yermakov and ruki All rights reserved.
  *
- * @author      ruki
- * @file        math.h
- * @defgroup    math
+ * @author      alexyer, ruki
+ * @file        fnv32.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_MATH_H
-#define TB_MATH_H
+#ifndef TB_HASH_FNV32_H
+#define TB_HASH_FNV32_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "int32.h"
-#include "fixed6.h"
-#include "fixed16.h"
-#include "fixed30.h"
-#include "fixed.h"
-#include "random/random.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -44,14 +38,43 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! init math 
+/*! make fnv32 hash
  *
- * @return      tb_true or tb_false
+ * @param data      the data
+ * @param size      the size
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the fnv32 value
  */
-tb_bool_t       tb_math_init(tb_noarg_t);
+tb_uint32_t         tb_fnv32_make(tb_byte_t const* data, tb_size_t size, tb_uint32_t seed);
 
-/// exit math 
-tb_void_t       tb_math_exit(tb_noarg_t);
+/*! make fnv32 hash from c-string
+ *
+ * @param cstr      the c-string
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the fnv32 value
+ */
+tb_uint32_t         tb_fnv32_make_from_cstr(tb_char_t const* cstr, tb_uint32_t seed);
+
+/*! make fnv32(1a) hash
+ *
+ * @param data      the data
+ * @param size      the size
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the fnv32 value
+ */
+tb_uint32_t         tb_fnv32_1a_make(tb_byte_t const* data, tb_size_t size, tb_uint32_t seed);
+
+/*! make fnv32(1a) hash from c-string
+ *
+ * @param cstr      the c-string
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the fnv32 value
+ */
+tb_uint32_t         tb_fnv32_1a_make_from_cstr(tb_char_t const* cstr, tb_uint32_t seed);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -59,4 +82,3 @@ tb_void_t       tb_math_exit(tb_noarg_t);
 __tb_extern_c_leave__
 
 #endif
-
