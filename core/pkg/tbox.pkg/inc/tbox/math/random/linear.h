@@ -17,23 +17,43 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        interface.h
+ * @file        linear.h
+ * @ingroup     math
  *
  */
-#ifndef TB_PLATFORM_WINDOWS_INTERFACE_H
-#define TB_PLATFORM_WINDOWS_INTERFACE_H
+#ifndef TB_MATH_RANDOM_LINEAR_H
+#define TB_MATH_RANDOM_LINEAR_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "ole32.h"
-#include "user32.h"
-#include "ws2_32.h"
-#include "mswsock.h"
-#include "shell32.h"
-#include "dbghelp.h"
-#include "kernel32.h"
-#include "iphlpapi.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*! set the linear random seed
+ *
+ * @param seed      the random seed
+ */
+tb_void_t           tb_random_linear_seed(tb_size_t seed);
+
+/*! generate the linear random value
+ *
+ * @return          the random value
+ */
+tb_long_t           tb_random_linear_value(tb_noarg_t);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif
+

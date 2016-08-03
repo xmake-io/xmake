@@ -17,23 +17,24 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        math.h
- * @defgroup    math
+ * @file        crc8.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_MATH_H
-#define TB_MATH_H
+#ifndef TB_HASH_CRC8_H
+#define TB_HASH_CRC8_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "int32.h"
-#include "fixed6.h"
-#include "fixed16.h"
-#include "fixed30.h"
-#include "fixed.h"
-#include "random/random.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// encode value
+#define tb_crc8_make_value(mode, crc, value)       tb_crc8_make(mode, crc, (tb_byte_t const*)&(value), sizeof(value))
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -44,14 +45,24 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! init math 
+/*! make crc8 (ATM)
  *
- * @return      tb_true or tb_false
+ * @param data      the input data
+ * @param size      the input size
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the crc value
  */
-tb_bool_t       tb_math_init(tb_noarg_t);
+tb_uint8_t         tb_crc8_make(tb_byte_t const* data, tb_size_t size, tb_uint8_t seed);
 
-/// exit math 
-tb_void_t       tb_math_exit(tb_noarg_t);
+/*! make crc8 (ATM) for cstr
+ *
+ * @param cstr      the input cstr
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the crc value
+ */
+tb_uint8_t         tb_crc8_make_from_cstr(tb_char_t const* cstr, tb_uint8_t seed);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

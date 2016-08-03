@@ -188,7 +188,6 @@ tb_void_t           tb_vector_insert_next(tb_vector_ref_t vector, tb_size_t itor
 /*! insert the vector head item
  *
  * @param vector    the vector
- * @param itor      the item itor
  * @param data      the item data
  */
 tb_void_t           tb_vector_insert_head(tb_vector_ref_t vector, tb_cpointer_t data);
@@ -196,7 +195,6 @@ tb_void_t           tb_vector_insert_head(tb_vector_ref_t vector, tb_cpointer_t 
 /*! insert the vector tail item
  *
  * @param vector    the vector
- * @param itor      the item itor
  * @param data      the item data
  */
 tb_void_t           tb_vector_insert_tail(tb_vector_ref_t vector, tb_cpointer_t data);

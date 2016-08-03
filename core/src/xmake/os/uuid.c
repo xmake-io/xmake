@@ -41,9 +41,11 @@ tb_int_t xm_os_uuid(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get the name  
-    tb_char_t const* name = luaL_checkstring(lua, 1);
-    tb_used(name);
+    tb_char_t const* name = luaL_optstring(lua, 1, tb_null);
 
+    // make uuid
+    tb_char_t uuid[37];
+	lua_pushstring(lua, tb_uuid_make_cstr(uuid, name));
 
     // ok
     return 1;

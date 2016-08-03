@@ -179,6 +179,14 @@
 #   define __tb_export__         
 #endif
 
+#if defined(TB_COMPILER_IS_GCC) && __GNUC__ >= 3
+#   define __tb_deprecated__                    __attribute__((deprecated))
+#elif defined(TB_COMPILER_IS_MSVC) && defined(_MSC_VER) && _MSC_VER >= 1300
+#   define __tb_deprecated__                    __declspec(deprecated)
+#else
+#   define __tb_deprecated__
+#endif
+
 // has feature
 #ifdef __has_feature
 #   define __tb_has_feature__(x)                            __has_feature(x)

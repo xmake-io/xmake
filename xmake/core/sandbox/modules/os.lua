@@ -404,6 +404,17 @@ function sandbox_os.setenv(name, values)
     os.setenv(name, values)
 end
 
+-- make a new uuid
+function sandbox_os.uuid(name)
+
+    -- make it
+    local uuid = os.uuid(name)
+    assert(uuid)
+
+    -- ok?
+    return uuid
+end
+
 -- return module
 return sandbox_os
 

@@ -5,7 +5,7 @@
  * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  * 
- * TBox is distributed in the hope that it will be useful,
+ * TBox is distributed ip the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
@@ -17,23 +17,17 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        math.h
- * @defgroup    math
+ * @file        sha.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_MATH_H
-#define TB_MATH_H
+#ifndef TB_HASH_DEPRECATED_SHA_H
+#define TB_HASH_DEPRECATED_SHA_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "int32.h"
-#include "fixed6.h"
-#include "fixed16.h"
-#include "fixed30.h"
-#include "fixed.h"
-#include "random/random.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -44,14 +38,17 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! init math 
+/*! encode sha 
  *
- * @return      tb_true or tb_false
+ * @param ib            the input data
+ * @param in            the input size
+ * @param ob            the output data
+ * @param on            the output size
+ *
+ * @return              the real size
  */
-tb_bool_t       tb_math_init(tb_noarg_t);
-
-/// exit math 
-tb_void_t       tb_math_exit(tb_noarg_t);
+__tb_deprecated__
+tb_size_t               tb_sha_encode(tb_size_t mode, tb_byte_t const* ib, tb_size_t ip, tb_byte_t* ob, tb_size_t on);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

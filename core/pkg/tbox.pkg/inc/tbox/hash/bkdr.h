@@ -16,13 +16,13 @@
  * 
  * Copyright (C) 2016, Olexander Yermakov All rights reserved.
  *
- * @author      alexyer
- * @file        fnv32.h
- * @ingroup     utils
+ * @author      ruki
+ * @file        bkdr.h
+ * @ingroup     hash
  *
  */
-#ifndef TB_UTILS_FNV32_H
-#define TB_UTILS_FNV32_H
+#ifndef TB_HASH_BKDR_H
+#define TB_HASH_BKDR_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -38,14 +38,24 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! encode fnv32
+/*! make bkdr hash
  *
  * @param data      the data
  * @param size      the size
+ * @param seed      uses this seed if be non-zero
  *
- * @return          the fnv32 value
+ * @return          the bkdr value
  */
-tb_uint32_t         tb_fnv32_encode(tb_byte_t const* data, tb_size_t size);
+tb_size_t           tb_bkdr_make(tb_byte_t const* data, tb_size_t size, tb_size_t seed);
+
+/*! make bkdr hash from c-string
+ *
+ * @param cstr      the c-string
+ * @param seed      uses this seed if be non-zero
+ *
+ * @return          the bkdr value
+ */
+tb_size_t           tb_bkdr_make_from_cstr(tb_char_t const* cstr, tb_size_t seed);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

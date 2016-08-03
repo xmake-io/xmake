@@ -17,23 +17,17 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        interface.h
+ * @file        prefix.h
  *
  */
-#ifndef TB_PLATFORM_WINDOWS_INTERFACE_H
-#define TB_PLATFORM_WINDOWS_INTERFACE_H
+#ifndef TB_HASH_PREFIX_H
+#define TB_HASH_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "ole32.h"
-#include "user32.h"
-#include "ws2_32.h"
-#include "mswsock.h"
-#include "shell32.h"
-#include "dbghelp.h"
-#include "kernel32.h"
-#include "iphlpapi.h"
+#include "../prefix.h"
+#include "../libc/libc.h"
+
 
 #endif

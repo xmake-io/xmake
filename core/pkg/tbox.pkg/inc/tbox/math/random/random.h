@@ -17,23 +17,16 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        math.h
- * @defgroup    math
+ * @file        random.h
  *
  */
-#ifndef TB_MATH_H
-#define TB_MATH_H
+#ifndef TB_MATH_RANDOM_H
+#define TB_MATH_RANDOM_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
-#include "int32.h"
-#include "fixed6.h"
-#include "fixed16.h"
-#include "fixed30.h"
-#include "fixed.h"
-#include "random/random.h"
+#include "linear.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -44,19 +37,48 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/*! init math 
+/*! set the random seed
  *
- * @return      tb_true or tb_false
+ * @param seed      the random seed
  */
-tb_bool_t       tb_math_init(tb_noarg_t);
+tb_void_t           tb_random_seed(tb_size_t seed);
 
-/// exit math 
-tb_void_t       tb_math_exit(tb_noarg_t);
+/*! reset value using the initial seed
+ */
+tb_void_t           tb_random_reset(tb_noarg_t);
+
+/*! generate the random value
+ *
+ * it will generate a pseudo-random sequence if the seed is not modified manually.
+ *
+ * @return          the random value
+ */
+tb_long_t           tb_random_value(tb_noarg_t);
+
+/*! generate the random with range: [begin, end)
+ *
+ * @param begin     the begin value
+ * @param end       the end value
+ *
+ * @return          the random value
+ */
+tb_long_t           tb_random_range(tb_long_t begin, tb_long_t end);
+
+#ifdef TB_CONFIG_TYPE_HAVE_FLOAT
+/*! generate the float random with range: [begin, end)
+ *
+ * @param begin     the begin value
+ * @param end       the end value
+ *
+ * @return          the random value
+ */
+tb_float_t          tb_random_rangef(tb_float_t begin, tb_float_t end);
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
  */
 __tb_extern_c_leave__
 
-#endif
 
+#endif

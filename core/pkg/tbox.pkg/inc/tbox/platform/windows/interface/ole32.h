@@ -17,23 +17,16 @@
  * Copyright (C) 2009 - 2015, ruki All rights reserved.
  *
  * @author      ruki
- * @file        math.h
- * @defgroup    math
+ * @file        ole32.h
  *
  */
-#ifndef TB_MATH_H
-#define TB_MATH_H
+#ifndef TB_PLATFORM_WINDOWS_INTERFACE_OLE32_H
+#define TB_PLATFORM_WINDOWS_INTERFACE_OLE32_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
-#include "int32.h"
-#include "fixed6.h"
-#include "fixed16.h"
-#include "fixed30.h"
-#include "fixed.h"
-#include "random/random.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -41,17 +34,29 @@
 __tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * types
+ */
+
+// the CoCreateGuid func type
+typedef HRESULT (WSAAPI* tb_ole32_CoCreateGuid_t)(GUID* pguid);
+
+// the ole32 interfaces type
+typedef struct __tb_ole32_t
+{
+    // CoCreateGuid
+    tb_ole32_CoCreateGuid_t     CoCreateGuid;
+
+}tb_ole32_t, *tb_ole32_ref_t;
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! init math 
+/* the ole32 interfaces
  *
- * @return      tb_true or tb_false
+ * @return          the ole32 interfaces pointer
  */
-tb_bool_t       tb_math_init(tb_noarg_t);
-
-/// exit math 
-tb_void_t       tb_math_exit(tb_noarg_t);
+tb_ole32_ref_t      tb_ole32(tb_noarg_t);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -59,4 +64,3 @@ tb_void_t       tb_math_exit(tb_noarg_t);
 __tb_extern_c_leave__
 
 #endif
-
