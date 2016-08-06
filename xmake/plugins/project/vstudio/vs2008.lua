@@ -21,15 +21,11 @@
 --
 
 -- imports
-import("core.project.project")
+import("impl.vs200x")
 
 -- make
 function make(outputdir)
 
-    -- enter project directory
-    local olddir = os.cd(project.directory())
-
- 
-    -- leave project directory
-    os.cd(olddir)
+    -- make project
+    vs200x.make(outputdir)
 end
