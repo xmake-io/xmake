@@ -26,14 +26,9 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-import("makefile")
-
--- make makefile
-function _make_makefile(outputdir)
-
-    -- make makefile
-    makefile.make(path.join(outputdir, "makefile"))
-end
+import("makefile.makefile")
+import("vstudio.vs2005")
+import("vstudio.vs2008")
 
 -- make project
 function _make(kind)
@@ -41,7 +36,9 @@ function _make(kind)
     -- the maps
     local maps = 
     {
-        makefile = _make_makefile
+        makefile    = makefile.make
+    ,   vs2005      = vs2005.make
+    ,   vs2008      = vs2008.make
     }
     assert(maps[kind], "the project kind(%s) is not supported!", kind)
     

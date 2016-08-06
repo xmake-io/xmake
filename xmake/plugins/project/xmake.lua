@@ -41,7 +41,9 @@ task("project")
                 ,   options = 
                     {
                         {'k', "kind",      "kv", "makefile",    "Set the project kind." 
-                                                           ,    "    - makefile"                }
+                                                           ,    "    - makefile"
+                                                           ,    "    - vs2005"
+                                                           ,    "    - vs2008"                  }
                     ,   {nil, "outputdir", "v",  ".",           "Set the output directory."     }
                     }
                 })

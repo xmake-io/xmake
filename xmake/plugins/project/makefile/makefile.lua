@@ -217,7 +217,7 @@ function _make_all(makefile)
 end
 
 -- make
-function make(outputfile)
+function make(outputdir)
 
     -- enter project directory
     local olddir = os.cd(project.directory())
@@ -226,7 +226,7 @@ function make(outputfile)
     os.rm(_logfile())
 
     -- open the makefile
-    local makefile = io.open(outputfile, "w")
+    local makefile = io.open(path.join(outputdir, "makefile"), "w")
 
     -- make all
     _make_all(makefile)
