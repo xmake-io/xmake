@@ -26,6 +26,7 @@ import("vsfile")
 
 -- make header
 function _make_header(slnfile, vsinfo)
+    slnfile:print("")
     slnfile:print("Microsoft Visual Studio Solution File, Format Version %s.00", vsinfo.solution_version)
     slnfile:print("# Visual Studio %s", vsinfo.vstudio_version)
 end
