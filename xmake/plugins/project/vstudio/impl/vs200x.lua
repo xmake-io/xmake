@@ -22,45 +22,16 @@
 
 -- imports
 import("core.project.project")
-import("vsfile")
+import("vs200x_solution")
 
--- make
-function make(outputdir)
+-- make vstudio project
+function make(outputdir, vsinfo)
 
     -- enter project directory
     local olddir = os.cd(project.directory())
 
-    --[[
-    local slnfile = vsfile.open(path.join(outputdir, "vs2008.sln"), "w")
-    if slnfile then
-
-        slnfile:print("Microsoft Visual Studio Solution File, Format Version 10.00")
-        slnfile:print("# Visual Studio 2008")
-        slnfile:enter("Project")
-            slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                slnfile:print("{ED657C29-5162-4124-AF9D-0F5889E7868A} = {ED657C29-5162-4124-AF9D-0F5889E7868A}")
-            slnfile:leave("EndProjectSection")
-        slnfile:leave("EndProject")
-        slnfile:enter("Project")
-        slnfile:leave("EndProject")
-        slnfile:enter("Global")
-            slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                    slnfile:print("1111")
-                    slnfile:print("1111")
-                    slnfile:print("1111")
-                    slnfile:print("1111")
-                slnfile:leave("EndProjectSection")
-            slnfile:leave("EndProjectSection")
-
-            slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                slnfile:print("1111")
-            slnfile:leave("EndProjectSection")
-        slnfile:leave("EndGlobal")
-
-        slnfile:close()
-    end
-    ]]
+    -- make solution
+    vs200x_solution.make(outputdir, vsinfo)
 
     -- leave project directory
     os.cd(olddir)
