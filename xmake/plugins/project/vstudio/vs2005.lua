@@ -26,6 +26,13 @@ import("impl.vs200x")
 -- make
 function make(outputdir)
 
+    -- init vstudio info
+    local vsinfo = 
+    {
+        vstudio_version     = "2005"
+    ,   solution_version    = "9"
+    }
+
     -- make project
-    vs200x.make(outputdir)
+    vs200x.make(outputdir, vsinfo)
 end
