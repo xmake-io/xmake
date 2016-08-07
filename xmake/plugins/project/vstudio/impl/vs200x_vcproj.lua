@@ -17,28 +17,22 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        vs200x.lua
+-- @file        vs200x_vcproj.lua
 --
 
 -- imports
-import("core.project.project")
-import("vs200x_solution")
-import("vs200x_vcproj")
+import("vsfile")
 
--- make vstudio project
-function make(outputdir, vsinfo)
+-- make vcproj
+function make(outputdir, vsinfo, target)
 
-    -- enter project directory
-    local olddir = os.cd(project.directory())
+    -- the target name
+    local targetname = target:name()
 
-    -- make solution
-    vs200x_solution.make(outputdir, vsinfo)
+    -- open vcproj file
+    local vcprojfile = vsfile.open(format("%s/vs%s/%s/%s.vsproj", outputdir, vsinfo.vstudio_version, targetname, targetname), "w")
 
-    -- make vsprojs
-    for _, target in pairs(project.targets()) do
-        vs200x_vcproj.make(outputdir, vsinfo, target)
-    end
 
-    -- leave project directory
-    os.cd(olddir)
+    -- exit solution file
+    vcprojfile:close()
 end
