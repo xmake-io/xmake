@@ -49,44 +49,6 @@ function compiler:_flagnames()
     return self._FLAGNAMES
 end
 
--- get the flags
-function compiler:_flags(target)
-
-    -- get the target key
-    local key = tostring(target)
-
-    -- get it directly from cache dirst
-    self._FLAGS = self._FLAGS or {}
-    if self._FLAGS[key] then
-        return self._FLAGS[key]
-    end
-
-    -- add flags from the configure 
-    local flags = {}
-    self:_addflags_from_config(flags)
-
-    -- add flags from the target 
-    self:_addflags_from_target(flags, target)
-
-    -- add flags from the platform 
-    self:_addflags_from_platform(flags)
-
-    -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:get("kind"))
-
-    -- remove repeat
-    flags = table.unique(flags)
-
-    -- merge flags
-    flags = table.concat(flags, " "):trim()
-
-    -- save flags
-    self._FLAGS[key] = flags
-
-    -- get it
-    return flags
-end
-
 -- map gcc flag to the given compiler flag
 function compiler:_mapflag(flag, mapflags)
 
@@ -359,27 +321,58 @@ end
 -- compile the source file
 function compiler:compile(sourcefile, objectfile, incdepfile, target)
 
-    -- get flags
-    local flags = nil
-    if target then
-        flags = self:_flags(target)
-    end
-
     -- compile it
-    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, flags or "")
+    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, self:compflags(target))
 end
 
 -- get the compile command
 function compiler:compcmd(sourcefile, objectfile, target)
 
-    -- get flags
-    local flags = nil
-    if target then
-        flags = self:_flags(target)
+    -- get it
+    return self:_tool().compcmd(sourcefile, objectfile, self:compflags(target))
+end
+
+-- get the compling flags
+function compiler:compflags(target)
+
+    -- no target?
+    if not target then
+        return ""
     end
 
+    -- get the target key
+    local key = tostring(target)
+
+    -- get it directly from cache dirst
+    self._FLAGS = self._FLAGS or {}
+    if self._FLAGS[key] then
+        return self._FLAGS[key]
+    end
+
+    -- add flags from the configure 
+    local flags = {}
+    self:_addflags_from_config(flags)
+
+    -- add flags from the target 
+    self:_addflags_from_target(flags, target)
+
+    -- add flags from the platform 
+    self:_addflags_from_platform(flags)
+
+    -- add flags from the compiler 
+    self:_addflags_from_compiler(flags, target:get("kind"))
+
+    -- remove repeat
+    flags = table.unique(flags)
+
+    -- merge flags
+    flags = table.concat(flags, " "):trim()
+
+    -- save flags
+    self._FLAGS[key] = flags
+
     -- get it
-    return self:_tool().compcmd(sourcefile, objectfile, flags or "")
+    return flags
 end
 
 -- make the symbol flag

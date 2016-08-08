@@ -41,6 +41,19 @@ function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target)
     return instance:compcmd(sourcefile, objectfile, target)
 end
 
+-- make compiling flags for the given target
+function sandbox_core_tool_compiler.compflags(sourcefile)
+ 
+    -- get the compiler instance
+    local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))
+    if not instance then
+        raise(errors)
+    end
+
+    -- make flags
+    return instance:compflags(target)
+end
+
 -- compile source file
 function sandbox_core_tool_compiler.compile(sourcefile, objectfile, incdepfile, target)
  

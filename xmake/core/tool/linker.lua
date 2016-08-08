@@ -64,47 +64,6 @@ function linker._kind_of_target(targetkind)
     return kinds[targetkind]
 end
 
--- get the flags
-function linker:_flags(target)
-
-    -- get the target key
-    local key = tostring(target)
-
-    -- get it directly from cache dirst
-    self._FLAGS = self._FLAGS or {}
-    if self._FLAGS[key] then
-        return self._FLAGS[key]
-    end
-
-    -- add flags from the configure 
-    local flags = {}
-    self:_addflags_from_config(flags)
-
-    -- add flags from the target 
-    self:_addflags_from_target(flags, target)
-
-    -- add flags from the platform 
-    self:_addflags_from_platform(flags)
-
-    -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:sourcekinds())
-
-    -- add flags from the linker 
-    self:_addflags_from_linker(flags)
-
-    -- remove repeat
-    flags = table.unique(flags)
-
-    -- merge flags
-    flags = table.concat(flags, " "):trim()
-
-    -- save flags
-    self._FLAGS[key] = flags
-
-    -- get it
-    return flags
-end
-
 -- map gcc flag to the given linker flag
 function linker:_mapflag(flag, mapflags)
 
@@ -329,27 +288,61 @@ end
 -- link the target file
 function linker:link(objectfiles, targetfile, target)
 
-    -- get flags
-    local flags = nil
-    if target then
-        flags = self:_flags(target)
-    end
-
     -- link it
-    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
+    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), targetfile, self:linkflags(target))
 end
 
 -- get the link command
 function linker:linkcmd(objectfiles, targetfile, target)
 
-    -- get flags
-    local flags = nil
-    if target then
-        flags = self:_flags(target)
+    -- get it
+    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), targetfile, self:linkflags(target))
+end
+
+-- get the link flags
+function linker:linkflags(target)
+
+    -- no target?
+    if not target then
+        return ""
     end
 
+    -- get the target key
+    local key = tostring(target)
+
+    -- get it directly from cache dirst
+    self._FLAGS = self._FLAGS or {}
+    if self._FLAGS[key] then
+        return self._FLAGS[key]
+    end
+
+    -- add flags from the configure 
+    local flags = {}
+    self:_addflags_from_config(flags)
+
+    -- add flags from the target 
+    self:_addflags_from_target(flags, target)
+
+    -- add flags from the platform 
+    self:_addflags_from_platform(flags)
+
+    -- add flags from the compiler 
+    self:_addflags_from_compiler(flags, target:sourcekinds())
+
+    -- add flags from the linker 
+    self:_addflags_from_linker(flags)
+
+    -- remove repeat
+    flags = table.unique(flags)
+
+    -- merge flags
+    flags = table.concat(flags, " "):trim()
+
+    -- save flags
+    self._FLAGS[key] = flags
+
     -- get it
-    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
+    return flags
 end
 
 -- make the strip flag
