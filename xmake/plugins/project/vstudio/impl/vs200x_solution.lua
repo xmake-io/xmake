@@ -84,13 +84,13 @@ function _make_global(slnfile, vsinfo)
 end
 
 -- make solution
-function make(outputdir, vsinfo)
+function make(vsinfo)
 
     -- init solution name
     vsinfo.solution_name = project.name() or "vs" .. vsinfo.vstudio_version
 
     -- open solution file
-    local slnfile = vsfile.open(format("%s/vs%s/%s.sln", outputdir, vsinfo.vstudio_version, vsinfo.solution_name), "w")
+    local slnfile = vsfile.open(path.join(vsinfo.solution_dir, vsinfo.solution_name .. ".sln"), "w")
 
     -- make header
     _make_header(slnfile, vsinfo)
