@@ -41,6 +41,19 @@ function sandbox_core_tool_linker.linkcmd(objectfiles, targetfile, target)
     return instance:linkcmd(objectfiles, targetfile, target)
 end
 
+-- make link flags for the given target
+function sandbox_core_tool_linker.linkflags(target)
+ 
+    -- get the linker instance
+    local instance, errors = linker.load(target:get("kind"))
+    if not instance then
+        raise(errors)
+    end
+
+    -- make flags
+    return instance:linkflags(target)
+end
+
 -- link target file
 function sandbox_core_tool_linker.link(objectfiles, targetfile, target)
  
