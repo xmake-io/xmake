@@ -42,7 +42,7 @@ function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target)
 end
 
 -- make compiling flags for the given target
-function sandbox_core_tool_compiler.compflags(sourcefile)
+function sandbox_core_tool_compiler.compflags(sourcefile, target)
  
     -- get the compiler instance
     local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))

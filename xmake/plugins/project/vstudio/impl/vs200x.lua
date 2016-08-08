@@ -31,12 +31,15 @@ function make(outputdir, vsinfo)
     -- enter project directory
     local olddir = os.cd(project.directory())
 
+    -- init solution directory
+    vsinfo.solution_dir = path.join(outputdir, "vs" .. vsinfo.vstudio_version)
+
     -- make solution
-    vs200x_solution.make(outputdir, vsinfo)
+    vs200x_solution.make(vsinfo)
 
     -- make vsprojs
     for _, target in pairs(project.targets()) do
-        vs200x_vcproj.make(outputdir, vsinfo, target)
+        vs200x_vcproj.make(vsinfo, target)
     end
 
     -- leave project directory

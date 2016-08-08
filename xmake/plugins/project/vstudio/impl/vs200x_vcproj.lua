@@ -136,7 +136,7 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target)
     -- make it
     vcprojfile:enter("<Tool")
         vcprojfile:print("Name=\"VCLinkerTool\"")
-        vcprojfile:print("AdditionalOptions=\"%s\"", linker.linkflags(target))
+        vcprojfile:print("AdditionalOptions=\"%s\"", (linker.linkflags(target):gsub("\"", "&quot;")))
 		vcprojfile:print("AdditionalDependencies=\"\"")
 		vcprojfile:print("AdditionalLibraryDirectories=\"\"")
         vcprojfile:print("LinkIncremental=\"2\"") -- enable: 2, disable: 1
@@ -260,33 +260,116 @@ end
 
 -- make references
 function _make_references(vcprojfile, vsinfo, target)
- 
     vcprojfile:enter("<References>")
 	vcprojfile:leave("</References>")
 end
 
+-- make file
+--
+-- .e.g
+--  <File
+--      RelativePath="..\..\..\src\file3.c"
+--      >
+--      <FileConfiguration
+--          Name="Debug|Win32"
+--          >
+--          <Tool
+--              Name="VCCLCompilerTool"
+--              AdditionalOptions="-Dtest"
+--          />
+--      </FileConfiguration>
+--  </File>
+function _make_file(vcprojfile, vsinfo, target, sourcefile, vcprojdir)
+
+    -- enter file
+    vcprojfile:enter("<File")
+
+        -- add file path
+        vcprojfile:print("RelativePath=\"%s\"", path.relative(path.absolute(sourcefile), vcprojdir))
+        vcprojfile:print(">")
+
+        -- add file configuration
+        vcprojfile:enter("<FileConfiguration")
+            vcprojfile:print("Name=\"$(mode)|Win32\"")
+            vcprojfile:print(">")
+
+            -- add compiling options
+            vcprojfile:enter("<Tool")
+                vcprojfile:print("Name=\"VCCLCompilerTool\"")
+                vcprojfile:print("AdditionalOptions=\"%s\"", (compiler.compflags(sourcefile, target):gsub("\"", "&quot;")))
+            vcprojfile:leave("/>")
+        vcprojfile:leave("</FileConfiguration>")
+
+    -- leave file
+    vcprojfile:leave("</File>")
+end
+
 -- make files
-function _make_files(vcprojfile, vsinfo, target)
- 
+--
+-- .e.g
+-- <Filter
+--      Name="Source Files"
+--      >
+--      <File
+--          RelativePath="..\..\..\src\file1.c"
+--          >
+--      </File>
+--      <File
+--          RelativePath="..\..\..\src\file2.c"
+--          >
+--      </File>
+--      <File
+--          RelativePath="..\..\..\src\file3.c"
+--          >
+--          <FileConfiguration
+--              Name="Debug|Win32"
+--              >
+--              <Tool
+--                  Name="VCCLCompilerTool"
+--                  AdditionalOptions="-Dtest"
+--              />
+--          </FileConfiguration>
+--      </File>
+--      <File
+--          RelativePath="..\..\..\src\file4.c"
+--          >
+--      </File>
+-- </Filter>
+function _make_files(vcprojfile, vsinfo, target, vcprojdir)
+
+    -- enter files
     vcprojfile:enter("<Files>")
+        vcprojfile:enter("<Filter")
+            vcprojfile:print("Name=\"Source Files\"")
+            vcprojfile:print(">")
+
+            -- add files
+            for _, sourcefile in ipairs(target:sourcefiles()) do
+                _make_file(vcprojfile, vsinfo, target, sourcefile, vcprojdir) 
+            end
+
+        -- leave files
+        vcprojfile:leave("</Filter>")
 	vcprojfile:leave("</Files>")
 end
 
 -- make globals
 function _make_globals(vcprojfile, vsinfo, target)
- 
     vcprojfile:enter("<Globals>")
 	vcprojfile:leave("</Globals>")
 end
 
 -- make vcproj
-function make(outputdir, vsinfo, target)
+function make(vsinfo, target)
 
     -- the target name
     local targetname = target:name()
 
+    -- the vcproj directory
+    local vcprojdir = path.join(vsinfo.solution_dir, targetname)
+
     -- open vcproj file
-    local vcprojfile = vsfile.open(format("%s/vs%s/%s/%s.vcproj", outputdir, vsinfo.vstudio_version, targetname, targetname), "w")
+    local vcprojfile = vsfile.open(path.join(vcprojdir, targetname .. ".vcproj"), "w")
 
     -- make header
     _make_header(vcprojfile, vsinfo, target)
@@ -304,7 +387,7 @@ function make(outputdir, vsinfo, target)
     _make_references(vcprojfile, vsinfo, target)
 
     -- make files
-    _make_files(vcprojfile, vsinfo, target)
+    _make_files(vcprojfile, vsinfo, target, vcprojdir)
 
     -- make globals
     _make_globals(vcprojfile, vsinfo, target)
