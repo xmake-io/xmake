@@ -32,9 +32,11 @@ function _make_compflags(sourcefile, target, vcprojdir)
     -- make the compiling flags
     local _, compflags = compiler.compflags(sourcefile, target)
 
-    -- replace -Idir or /Idir
+    -- replace -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
     local flags = {}
     for _, flag in ipairs(compflags) do
+
+        -- replace -Idir or /Idir
         flag = flag:gsub("[%-|/]I(.*)", function (dir)
                         dir = dir:trim()
                         if not path.is_absolute(dir) then
@@ -42,9 +44,20 @@ function _make_compflags(sourcefile, target, vcprojdir)
                         end
                         return "/I" .. dir
                     end)
+
+        -- replace -Fdsymbol.pdb or /Fdsymbol.pdb
+        flag = flag:gsub("[%-|/]Fd(.*)", function (dir)
+                        dir = dir:trim()
+                        if not path.is_absolute(dir) then
+                            dir = path.relative(path.absolute(dir), vcprojdir)
+                        end
+                        return "/Fd" .. dir
+                    end)
+
+        -- save flag
         table.insert(flags, flag)
     end
-    
+
     -- concat flags
     flags = table.concat(flags, " "):trim()
 
@@ -61,9 +74,11 @@ function _make_linkflags(target, vcprojdir)
     -- make the linking flags
     local _, linkflags = linker.linkflags(target)
 
-    -- replace -libpath:dir or /libpath:dir
+    -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}
     for _, flag in ipairs(linkflags) do
+
+        -- replace -libpath:dir or /libpath:dir
         flag = flag:gsub("[%-|/]libpath:(.*)", function (dir)
                         dir = dir:trim()
                         if not path.is_absolute(dir) then
@@ -71,6 +86,17 @@ function _make_linkflags(target, vcprojdir)
                         end
                         return "/libpath:" .. dir
                     end)
+
+        -- replace -pdb:symbol.pdb or /pdb:symbol.pdb
+        flag = flag:gsub("[%-|/]pdb:(.*)", function (dir)
+                        dir = dir:trim()
+                        if not path.is_absolute(dir) then
+                            dir = path.relative(path.absolute(dir), vcprojdir)
+                        end
+                        return "/pdb:" .. dir
+                    end)
+
+        -- save flag
         table.insert(flags, flag)
     end
     
@@ -155,6 +181,7 @@ end
 function _make_VCCLCompilerTool(vcprojfile, vsinfo, target)
     vcprojfile:enter("<Tool")
         vcprojfile:print("Name=\"VCCLCompilerTool\"")
+        vcprojfile:print("ProgramDataBaseFileName=\"\"") -- disable pdb file default
     vcprojfile:leave("/>")
 end
 
@@ -336,7 +363,17 @@ end
 --          />
 --      </FileConfiguration>
 --  </File>
-function _make_file(vcprojfile, vsinfo, target, sourcefile, vcprojdir)
+function _make_file(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
+
+    -- get the target key
+    local key = tostring(target)
+
+    -- make flags cache
+    _g.flags = _g.flags or {}
+
+    -- make flags
+    local flags = _g.flags[key] or _make_compflags(sourcefile, target, vcprojdir)
+    _g.flags[key] = flags
 
     -- enter file
     vcprojfile:enter("<File")
@@ -353,7 +390,13 @@ function _make_file(vcprojfile, vsinfo, target, sourcefile, vcprojdir)
             -- add compiling options
             vcprojfile:enter("<Tool")
                 vcprojfile:print("Name=\"VCCLCompilerTool\"")
-                vcprojfile:print("AdditionalOptions=\"%s\"", _make_compflags(sourcefile, target, vcprojdir))
+                vcprojfile:print("AdditionalOptions=\"%s\"", flags)
+                vcprojfile:print("ObjectFile=\"%s\"", path.relative(path.absolute(objectfile), vcprojdir))
+
+                -- complie as c++ if exists flag: /TP
+                if flags:find("[%-|/]TP") then
+                    vcprojfile:print("CompileAs=\"2\"")
+                end
             vcprojfile:leave("/>")
         vcprojfile:leave("</FileConfiguration>")
 
@@ -401,8 +444,9 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
             vcprojfile:print(">")
 
             -- add files
-            for _, sourcefile in ipairs(target:sourcefiles()) do
-                _make_file(vcprojfile, vsinfo, target, sourcefile, vcprojdir) 
+            local objectfiles = target:objectfiles()
+            for idx, sourcefile in ipairs(target:sourcefiles()) do
+                _make_file(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
             end
 
         -- leave files
