@@ -25,7 +25,7 @@ function _print(self, ...)
 
     -- print indent
     for i = 1, self._indent do
-        self:_write(" ")
+        self:_write("\t")
     end
 
     -- print it
@@ -37,7 +37,7 @@ function _printf(self, ...)
 
     -- print indent
     for i = 1, self._indent do
-        self:_write(" ")
+        self:_write("\t")
     end
 
     -- printf it
@@ -49,7 +49,7 @@ function _write(self, ...)
 
     -- print indent
     for i = 1, self._indent do
-        self:_write(" ")
+        self:_write("\t")
     end
 
     -- write it
@@ -63,15 +63,15 @@ function _enter(self, ...)
     self:print(...)
 
     -- increase indent
-    self._indent = self._indent + 4
+    self._indent = self._indent + 1
 end
 
 -- leave and print file
 function _leave(self, ...)
 
     -- decrease indent
-    if self._indent >= 4 then
-        self._indent = self._indent - 4
+    if self._indent >= 1 then
+        self._indent = self._indent - 1
     else
         self._indent = 0
     end
