@@ -322,14 +322,14 @@ end
 function compiler:compile(sourcefile, objectfile, incdepfile, target)
 
     -- compile it
-    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, self:compflags(target))
+    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, (self:compflags(target)))
 end
 
 -- get the compile command
 function compiler:compcmd(sourcefile, objectfile, target)
 
     -- get it
-    return self:_tool().compcmd(sourcefile, objectfile, self:compflags(target))
+    return self:_tool().compcmd(sourcefile, objectfile, (self:compflags(target)))
 end
 
 -- get the compling flags
@@ -337,7 +337,7 @@ function compiler:compflags(target)
 
     -- no target?
     if not target then
-        return ""
+        return "", {}
     end
 
     -- get the target key
@@ -345,8 +345,9 @@ function compiler:compflags(target)
 
     -- get it directly from cache dirst
     self._FLAGS = self._FLAGS or {}
-    if self._FLAGS[key] then
-        return self._FLAGS[key]
+    local flags_cached = self._FLAGS[key]
+    if flags_cached then
+        return flags_cached[1], flags_cached[2]
     end
 
     -- add flags from the configure 
@@ -365,14 +366,14 @@ function compiler:compflags(target)
     -- remove repeat
     flags = table.unique(flags)
 
-    -- merge flags
-    flags = table.concat(flags, " "):trim()
+    -- concat
+    local flags_str = table.concat(flags, " "):trim()
 
     -- save flags
-    self._FLAGS[key] = flags
+    self._FLAGS[key] = {flags_str, flags}
 
     -- get it
-    return flags
+    return flags_str, flags 
 end
 
 -- make the symbol flag

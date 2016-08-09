@@ -161,11 +161,8 @@ function vectorext(extension)
     -- the maps
     local maps = 
     {   
-        mmx         = "-arch:MMX"
-    ,   sse         = "-arch:SSE"
+        sse         = "-arch:SSE"
     ,   sse2        = "-arch:SSE2"
-    ,   sse3        = "-arch:SSE3"
-    ,   ssse3       = "-arch:SSSE3"
     ,   avx         = "-arch:AVX"
     ,   avx2        = "-arch:AVX2"
     }

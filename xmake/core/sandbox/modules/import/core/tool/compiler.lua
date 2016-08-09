@@ -70,5 +70,10 @@ function sandbox_core_tool_compiler.compile(sourcefile, objectfile, incdepfile, 
     end
 end
 
+-- get kind of the compiling source file
+function sandbox_core_tool_compiler.kind_of_file(sourcefile)
+    return compiler.kind_of_file(sourcefile)
+end
+
 -- return module
 return sandbox_core_tool_compiler

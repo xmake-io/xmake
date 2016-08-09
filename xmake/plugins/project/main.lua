@@ -22,10 +22,8 @@
 
 -- imports
 import("core.base.option")
-import("core.project.config")
-import("core.project.global")
-import("core.project.project")
-import("core.platform.platform")
+import("core.project.task")
+import("core.platform.environment")
 import("makefile.makefile")
 import("vstudio.vs2005")
 import("vstudio.vs2008")
@@ -49,22 +47,17 @@ end
 -- main
 function main()
 
-    -- check xmake.lua
-    if not os.isfile(project.file()) then
-        raise("xmake.lua not found!")
-    end
+    -- config it first
+    task.run("config")
 
-    -- load project configure
-    config.load()
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- load project
-    project.load()
+    -- enter toolchains environment
+    environment.enter("toolchains")
 
     -- make project
     _make(option.get("kind"))
+
+    -- leave toolchains environment
+    environment.leave("toolchains")
 
     -- trace
     cprint("${bright}create ok!${ok_hand}")
