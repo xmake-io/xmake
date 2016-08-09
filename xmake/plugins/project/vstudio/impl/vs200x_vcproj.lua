@@ -22,10 +22,67 @@
 
 -- imports
 import("core.tool.linker")
-import("core.tool.archiver")
 import("core.tool.compiler")
 import("core.project.config")
 import("vsfile")
+
+-- make compiling flags
+function _make_compflags(sourcefile, target, vcprojdir)
+
+    -- make the compiling flags
+    local _, compflags = compiler.compflags(sourcefile, target)
+
+    -- replace -Idir or /Idir
+    local flags = {}
+    for _, flag in ipairs(compflags) do
+        flag = flag:gsub("[%-|/]I(.*)", function (dir)
+                        dir = dir:trim()
+                        if not path.is_absolute(dir) then
+                            dir = path.relative(path.absolute(dir), vcprojdir)
+                        end
+                        return "/I" .. dir
+                    end)
+        table.insert(flags, flag)
+    end
+    
+    -- concat flags
+    flags = table.concat(flags, " "):trim()
+
+    -- replace " => &quot;
+    flags = flags:gsub("\"", "&quot;")
+
+    -- ok?
+    return flags
+end
+
+-- make linking flags
+function _make_linkflags(target, vcprojdir)
+
+    -- make the linking flags
+    local _, linkflags = linker.linkflags(target)
+
+    -- replace -libpath:dir or /libpath:dir
+    local flags = {}
+    for _, flag in ipairs(linkflags) do
+        flag = flag:gsub("[%-|/]libpath:(.*)", function (dir)
+                        dir = dir:trim()
+                        if not path.is_absolute(dir) then
+                            dir = path.relative(path.absolute(dir), vcprojdir)
+                        end
+                        return "/libpath:" .. dir
+                    end)
+        table.insert(flags, flag)
+    end
+    
+    -- concat flags
+    flags = table.concat(flags, " "):trim()
+
+    -- replace " => &quot;
+    flags = flags:gsub("\"", "&quot;")
+
+    -- ok?
+    return flags
+end
 
 -- make header
 function _make_header(vcprojfile, vsinfo, target)
@@ -113,7 +170,7 @@ end
 --      SubSystem="1"
 --      TargetMachine="1"
 -- />
-function _make_VCLinkerTool(vcprojfile, vsinfo, target)
+function _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
 
     -- need not linker?
     local kind = target:get("kind")
@@ -136,7 +193,7 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target)
     -- make it
     vcprojfile:enter("<Tool")
         vcprojfile:print("Name=\"VCLinkerTool\"")
-        vcprojfile:print("AdditionalOptions=\"%s\"", (linker.linkflags(target):gsub("\"", "&quot;")))
+        vcprojfile:print("AdditionalOptions=\"%s\"", _make_linkflags(target, vcprojdir))
 		vcprojfile:print("AdditionalDependencies=\"\"")
 		vcprojfile:print("AdditionalLibraryDirectories=\"\"")
         vcprojfile:print("LinkIncremental=\"2\"") -- enable: 2, disable: 1
@@ -147,7 +204,7 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target)
 end
 
 -- make configurations
-function _make_configurations(vcprojfile, vsinfo, target)
+function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
 
     -- init configuration type
     local configuration_types =
@@ -163,7 +220,7 @@ function _make_configurations(vcprojfile, vsinfo, target)
         -- make configuration for the current mode
         vcprojfile:enter("<Configuration")
             vcprojfile:print("Name=\"$(mode)|Win32\"")
-			vcprojfile:print("OutputDirectory=\"$(buildir)\\%s\"", target:name())
+			vcprojfile:print("OutputDirectory=\"%s\"", path.relative(path.absolute(config.get("buildir")), vcprojdir))
 			vcprojfile:print("IntermediateDirectory=\"%$(ConfigurationName)\"")
 			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
             vcprojfile:print("CharacterSet=\"2\"") -- mbc: 2, wcs: 1
@@ -213,7 +270,7 @@ function _make_configurations(vcprojfile, vsinfo, target)
             vcprojfile:leave("/>")
 
             -- make VCLinkerTool
-            _make_VCLinkerTool(vcprojfile, vsinfo, target)
+            _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
 
             -- make VCALinkTool
             vcprojfile:enter("<Tool")
@@ -296,7 +353,7 @@ function _make_file(vcprojfile, vsinfo, target, sourcefile, vcprojdir)
             -- add compiling options
             vcprojfile:enter("<Tool")
                 vcprojfile:print("Name=\"VCCLCompilerTool\"")
-                vcprojfile:print("AdditionalOptions=\"%s\"", (compiler.compflags(sourcefile, target):gsub("\"", "&quot;")))
+                vcprojfile:print("AdditionalOptions=\"%s\"", _make_compflags(sourcefile, target, vcprojdir))
             vcprojfile:leave("/>")
         vcprojfile:leave("</FileConfiguration>")
 
@@ -381,7 +438,7 @@ function make(vsinfo, target)
     _make_toolfiles(vcprojfile, vsinfo, target)
 
     -- make configurations
-    _make_configurations(vcprojfile, vsinfo, target)
+    _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
 
     -- make references
     _make_references(vcprojfile, vsinfo, target)
