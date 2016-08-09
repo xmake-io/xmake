@@ -257,7 +257,7 @@ end
 function os.tmpfile()
 
     -- make it
-    return path.join(os.tmpdir(), path.filename(os.tmpname()))
+    return path.join(os.tmpdir(), os.uuid())
 end
 
 -- run shell
