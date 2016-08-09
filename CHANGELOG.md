@@ -12,6 +12,8 @@
 
 ### Changes
 
+* Improve builtin-variable format
+* Support option for string type
 
 ### Bugs fixed
 
@@ -148,6 +150,11 @@
 * 在windows上添加调试器支持（vsjitdebugger, ollydbg, windbg ... ）
 * 添加`getenv`接口到`xmake.lua`的全局作用域中
 * 添加生成vs200x工程插件
+
+### 改进
+
+* 增强内建变量的处理
+* 支持字符串类型的选项option设置
 
 ### Bugs修复
 

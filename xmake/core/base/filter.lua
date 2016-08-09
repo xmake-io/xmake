@@ -98,23 +98,27 @@ function filter:handle(value)
         if variable:startswith("shell ") then
             return filter.shell(variable:sub(7, -1))
         end
-                                    
-        -- is upper?
-        local isupper = false
-        local c = string.char(variable:byte())
-        if c >= 'A' and c <= 'Z' then isupper = true end
 
+        -- parse variable:mode
+        local varmode   = variable:split(':')
+        local mode      = varmode[2]
+        variable        = varmode[1]
+       
         -- handler it
-        local result = handler(variable:lower())
-
-        -- convert to upper?
-        if isupper and result and type(result) == "string" then
-            result = result:upper() 
-        end
+        local result = handler(variable)
 
         -- invalid builtin variable?
         if result == nil then
             os.raise("invalid variable: $(%s)", variable)
+        end
+ 
+        -- handle mode
+        if mode then
+            if mode == "upper" then
+                result = result:upper()
+            elseif mode == "lower" then
+                result = result:lower()
+            end
         end
 
         -- ok?
