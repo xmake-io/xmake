@@ -8,6 +8,7 @@
 * Enable pdb symbol files for windows
 * Add debugger support on windows (vsjitdebugger, ollydbg, windbg ... )
 * Add `getenv` interface for the global scope of `xmake.lua`
+* Add plugin for generating vs200x project file 
 
 ### Changes
 
@@ -146,6 +147,7 @@
 * 编译windows目标程序，默认默认启用pdb符号文件
 * 在windows上添加调试器支持（vsjitdebugger, ollydbg, windbg ... ）
 * 添加`getenv`接口到`xmake.lua`的全局作用域中
+* 添加生成vs200x工程插件
 
 ### Bugs修复
 
