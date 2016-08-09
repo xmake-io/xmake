@@ -43,3 +43,16 @@ function init(shellname, kind)
  
 end
 
+-- make the strip flag
+function strip(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-Wl,-S"
+    ,   all         = "-Wl,-S"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
