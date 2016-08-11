@@ -30,6 +30,7 @@ local path                  = require("base/path")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
 local filter                = require("base/filter")
+local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
 local config                = require("project/config")
@@ -441,6 +442,16 @@ function project._interpreter()
 
             -- map it
             result = maps[variable]
+
+            -- deprecated for "$(OS)"
+            if result == nil and variable == "OS" then
+
+                -- get os:upper()
+                result = platform.os():upper()
+
+                -- deprecated
+                deprecated.add("$(\"OS\")", "$(\"os:upper\")")
+            end
         end
 
         -- ok?
