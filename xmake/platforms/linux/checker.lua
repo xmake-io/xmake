@@ -63,6 +63,22 @@ function _check_toolchains(config)
         end
     end
 
+    -- no cross toolchains?
+    if cross and cross:trim() == "" then
+        -- check from env
+        checker.check_toolchain_from_env(config, "cc",   "CC",   "the c compiler") 
+        checker.check_toolchain_from_env(config, "cxx",  "CXX",  "the c++ compiler") 
+        checker.check_toolchain_from_env(config, "mm",   "MM",   "the objc compiler") 
+        checker.check_toolchain_from_env(config, "mxx",  "MXX",  "the objc++ compiler") 
+        checker.check_toolchain_from_env(config, "as",   "AS",   "the assember") 
+        checker.check_toolchain_from_env(config, "ld",   "LD",   "the linker") 
+        checker.check_toolchain_from_env(config, "ar",   "AR",   "the static library archiver") 
+        checker.check_toolchain_from_env(config, "ex",   "AR",   "the static library extractor") 
+        checker.check_toolchain_from_env(config, "sh",   "SH",   "the shared library linker") 
+        checker.check_toolchain_from_env(config, "sc",   "SC",   "the swift compiler") 
+        checker.check_toolchain_from_env(config, "dd",   "DD",   "the debugger") 
+    end
+
     -- check for gcc
     checker.check_toolchain(config, "cc",   cross, "gcc",  "the c compiler") 
     checker.check_toolchain(config, "cxx",  cross, "gcc",  "the c++ compiler") 

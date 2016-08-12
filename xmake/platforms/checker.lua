@@ -240,3 +240,14 @@ function check_toolchain(config, kind, cross, name, description, check)
         end
     end
 end
+
+-- check the toolchain from env
+function check_toolchain_from_env(config, kind, envname, description, check)
+
+    -- get shell name from the env
+    local shellname = os.getenv(envname)
+    if shellname and shellname:trim() ~= "" then
+        check_toolchain(config, kind, "", shellname, description, check) 
+    end
+end
+
