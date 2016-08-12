@@ -342,7 +342,7 @@ function project._interpreter()
                                             ,   "uninstall")
 
     -- register api: set_values() to option
-    interp:api_register_set_values("option",    "enable"
+    interp:api_register_set_values("option",    "default"
                                             ,   "showmenu"
                                             ,   "category"
                                             ,   "warnings"
@@ -688,8 +688,8 @@ function project.menu()
 
                 -- the default value
                 local default = "auto"
-                if opt:get("enable") ~= nil then
-                    default = opt:get("enable")
+                if opt:get("default") ~= nil then
+                    default = opt:get("default")
                 end
 
                 -- is first?
