@@ -317,6 +317,24 @@ function deprecated_project._api_add_packages(interp, ...)
     return deprecated_project._api_add_pkgs(interp, ...)
 end
 
+-- set_enable for option
+function deprecated_project._api_option_set_enable(interp, ...)
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("option", "set_default")
+    assert(apifunc)
+
+    -- register api
+    interp:api_register_builtin("set_enable", function (value) 
+
+                                            -- deprecated
+                                            deprecated.add("set_default(%s)", "set_enable(%s)", tostring(value))
+                                          
+                                            -- dispatch it
+                                            apifunc(value)
+                                        end)
+end
+
 -- register api
 function deprecated_project.api_register(interp)
 
@@ -340,6 +358,9 @@ function deprecated_project.api_register(interp)
 
     -- register api: add_pkgs() to root
     interp:api_register(nil, "add_pkgs",    deprecated_project._api_add_packages)
+
+    -- register api: set_enable() to option
+    interp:api_register("option", "set_enable", deprecated_project._api_option_set_enable)
 
     -- register api: set_values() to option
     deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "enable")
