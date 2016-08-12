@@ -63,9 +63,13 @@ function _check_toolchains(config)
         end
     end
 
-    -- done
+    -- check for gcc
     checker.check_toolchain(config, "cc",   cross, "gcc",  "the c compiler") 
+    checker.check_toolchain(config, "cxx",  cross, "gcc",  "the c++ compiler") 
     checker.check_toolchain(config, "cxx",  cross, "g++",  "the c++ compiler") 
+    checker.check_toolchain(config, "mm",   cross, "gcc",  "the objc compiler") 
+    checker.check_toolchain(config, "mxx",  cross, "gcc",  "the objc++ compiler") 
+    checker.check_toolchain(config, "mxx",  cross, "g++",  "the objc++ compiler") 
     checker.check_toolchain(config, "as",   cross, "gcc",  "the assember")
     checker.check_toolchain(config, "ld",   cross, "g++",  "the linker") 
     checker.check_toolchain(config, "ld",   cross, "gcc",  "the linker") 
@@ -74,7 +78,23 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sh",   cross, "g++",  "the shared library linker") 
     checker.check_toolchain(config, "sh",   cross, "gcc",  "the shared library linker") 
     checker.check_toolchain(config, "dd",   cross, "gdb",  "the debugger") 
-    checker.check_toolchain(config, "dd",   cross, "lldb",  "the debugger") 
+
+    -- check for clang
+    checker.check_toolchain(config, "cc",   cross,  "clang",     "the c compiler") 
+    checker.check_toolchain(config, "cxx",  cross,  "clang",     "the c++ compiler") 
+    checker.check_toolchain(config, "cxx",  cross,  "clang++",   "the c++ compiler") 
+    checker.check_toolchain(config, "mm",   cross,  "clang",     "the objc compiler") 
+    checker.check_toolchain(config, "mxx",  cross,  "clang++",   "the objc++ compiler") 
+    checker.check_toolchain(config, "mxx",  cross,  "clang",     "the objc++ compiler") 
+    checker.check_toolchain(config, "as",   cross,  "clang",     "the assember") 
+    checker.check_toolchain(config, "ld",   cross,  "clang++",   "the linker") 
+    checker.check_toolchain(config, "ld",   cross,  "clang",     "the linker") 
+    checker.check_toolchain(config, "ar",   cross,  "ar",        "the static library archiver") 
+    checker.check_toolchain(config, "ex",   cross,  "ar",        "the static library extractor") 
+    checker.check_toolchain(config, "sh",   cross,  "clang++",   "the shared library linker") 
+    checker.check_toolchain(config, "sh",   cross,  "clang",     "the shared library linker") 
+    checker.check_toolchain(config, "sc",   cross,  "swiftc",    "the swift compiler") 
+    checker.check_toolchain(config, "dd",   cross,  "lldb",      "the debugger") 
 end
 
 -- init it
