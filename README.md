@@ -22,6 +22,8 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Do not generate makefile and build project directly
 - Support multitasking with argument: -j 
 - Check includes dependence automatically
+- Run and debug the target program
+- Generate IDE project file
 
 ####Actions
 
@@ -40,7 +42,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - The doxygen plugin: Make doxygen document from source codes
 - The macro plugin: Record and playback commands 
 - The hello plugin: A simple plugin demo to show 'hello xmake!'
-- The project plugin: Create the project file for IDE (.e.g makefile and vs, xcode in the feature ...)
+- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2008, developing vs2010 - vs2015)
 
 ####Languages
 
@@ -65,8 +67,6 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - Download package automatically
 - Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
 - Implement more plugins(.e.g generate .deb, .rpm package)
-- Create more project file for IDE (.e.g vs, xcode ..)
-- Add debugger integration to `xmake run -d`
 
 ####Examples
 
@@ -105,6 +105,11 @@ Run target：
 
        xmake r console
     or xmake run console
+
+Debug target：
+
+       xmake r -d console
+    or xmake run -d console
 
 Package all：
 
@@ -191,12 +196,9 @@ Some projects using xmake:
 
 #### Contacts
 
-- Email:   	    
-	- waruqi@gmail.com
-- Website: 	    
-	- [xmake.io](http://www.xmake.io)
-	- [tboox.org](http://www.tboox.org)
-	- [tboox.net](http://www.tboox.net)
+* Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
+* Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)
+* Community：[TBOOX Open Source Community](http://www.tboox.org/forum)
 
 ## 简介
 
@@ -259,6 +261,10 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 - 自动检测头文件依赖，并且快速自动构建修改的文件
 
+- 调试器支持，实现直接加载运行调试
+
+- 提供产生IDE工程文件的插件
+
 ####常用Actions
 
 - config: 构建之前的编译参数配置
@@ -276,7 +282,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - doxygen文档生成插件: 从指定源码目录生成doxygen文档
 - 宏记录脚本插件: 记录和回放宏脚本，简化重复的命令操作（例如：批量打包。。）
 - hello插件: 插件开发demo
-- 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile，后续支持：vs, xcode等等)
+- 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile, vs2002 - vs2008，后续支持：vs2010以上版本, xcode等等)
 
 ####支持编译语言
 
@@ -300,8 +306,6 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - 自动包依赖管理和下载
 - 创建移植仓库，实现`一人移植，多人共享`
 - 更多的插件开发(例如：生成.deb, .rpm的安装包)
-- 自动生成vs,xcode等工程文件
-- 添加调试器集成到`xmake run -d`
 
 ####简单例子
 
@@ -340,6 +344,11 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
        xmake r console
     or xmake run console
+
+调试目标：
+
+       xmake r -d console
+    or xmake run -d console
 
 打包所有：
 
@@ -417,13 +426,9 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 #### 联系方式
 
-- Email:   	    
-	- waruqi@gmail.com
-	- waruqi@126.com
-- Website: 	    
-	- [xmake.io](http://www.xmake.io/cn)
-	- [tboox.org](http://www.tboox.org/cn)
-	- [tboox.net](http://www.tboox.net/cn)
-- QQ(group):    
-	- 343118190
+* 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
+* 主页：[TBOOX开源工程](http://www.tboox.org/cn)
+* 社区：[TBOOX开源社区](http://www.tboox.org/forum)
+* QQ群：343118190
+* 微信公众号：tboox-os
 
