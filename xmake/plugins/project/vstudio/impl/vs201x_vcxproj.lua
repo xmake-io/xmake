@@ -193,8 +193,8 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- make OutputDirectory and IntermediateDirectory
     vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">")
-        vcxprojfile:print("<OutDir>%s</OutDir>", path.relative(path.absolute(config.get("buildir")), vcxprojdir))
-        vcxprojfile:print("<IntDir>%$(Configuration)</IntDir>")
+        vcxprojfile:print("<OutDir>%s\\</OutDir>", path.relative(path.absolute(config.get("buildir")), vcxprojdir))
+        vcxprojfile:print("<IntDir>%$(Configuration)\\</IntDir>")
         if target:get("kind") == "binary" then
             vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
         end
@@ -204,36 +204,43 @@ end
 -- make ItemDefinitionGroup
 function _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir)
 
-    -- make ItemDefinitionGroup for linker
+    -- enter ItemDefinitionGroup 
+    vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">")
+    
+    -- for linker?
     if target:get("kind") == "binary" then
-        vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">")
-            vcxprojfile:enter("<Link>")
+        vcxprojfile:enter("<Link>")
 
-                -- make AdditionalOptions
-                vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", _make_linkflags(target, vcxprojdir))
+            -- make AdditionalOptions
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", _make_linkflags(target, vcxprojdir))
 
-                -- generate debug infomation?
-                local debug = false
-                for _, symbol in ipairs(target:get("symbols")) do
-                    if symbol == "debug" then
-                        debug = true
-                        break
-                    end
+            -- generate debug infomation?
+            local debug = false
+            for _, symbol in ipairs(target:get("symbols")) do
+                if symbol == "debug" then
+                    debug = true
+                    break
                 end
-                vcxprojfile:print("<GenerateDebugInformation>%s</GenerateDebugInformation>", tostring(debug))
+            end
+            vcxprojfile:print("<GenerateDebugInformation>%s</GenerateDebugInformation>", tostring(debug))
 
-                -- make SubSystem
-                vcxprojfile:print("<SubSystem>Console</SubSystem>")
-            
-                -- make TargetMachine
-                vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(config.arch() == "x64", "MachineX64", "MachineX86"))
+            -- make SubSystem
+            vcxprojfile:print("<SubSystem>Console</SubSystem>")
+        
+            -- make TargetMachine
+            vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(config.arch() == "x64", "MachineX64", "MachineX86"))
 
-            vcxprojfile:leave("</Link>")
-        vcxprojfile:leave("</ItemDefinitionGroup>")
-    else
-        vcxprojfile:enter("<ItemDefinitionGroup>")
-        vcxprojfile:leave("</ItemDefinitionGroup>")
+        vcxprojfile:leave("</Link>")
     end
+
+    -- for compiler?
+    vcxprojfile:enter("<ClCompile>")
+        vcxprojfile:print("<Optimization>Disabled</Optimization>") -- disable optimization default
+        vcxprojfile:print("<ProgramDataBaseFileName></ProgramDataBaseFileName>") -- disable pdb file default
+    vcxprojfile:leave("</ClCompile>")
+
+    -- leave ItemDefinitionGroup 
+    vcxprojfile:leave("</ItemDefinitionGroup>")
 end
 
 -- make file
