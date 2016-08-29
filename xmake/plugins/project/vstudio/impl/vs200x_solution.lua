@@ -39,8 +39,14 @@ function _make_projects(slnfile, vsinfo)
     -- make all targets
     for targetname, target in pairs(project.targets()) do
 
+        -- the project suffix
+        local suffix = "vcproj"
+        if tonumber(vsinfo.vstudio_version) >= 2010 then
+            suffix = "vcxproj"
+        end
+
         -- enter project
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, os.uuid(targetname))
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.%s\", \"{%s}\"", vctool, targetname, targetname, targetname, suffix, os.uuid(targetname))
 
         -- add dependences
         for _, dep in ipairs(target:get("deps")) do
@@ -90,6 +96,9 @@ function make(vsinfo)
 
     -- open solution file
     local slnfile = vsfile.open(path.join(vsinfo.solution_dir, vsinfo.solution_name .. ".sln"), "w")
+
+    -- init indent character
+    vsfile.indentchar('\t')
 
     -- make header
     _make_header(slnfile, vsinfo)

@@ -20,12 +20,15 @@
 -- @file        vsfile.lua
 --
 
+-- init the default indent character
+_g.indentchar = '\t'
+
 -- print file
 function _print(self, ...)
 
     -- print indent
     for i = 1, self._indent do
-        self:_write("\t")
+        self:_write(_g.indentchar)
     end
 
     -- print it
@@ -37,7 +40,7 @@ function _printf(self, ...)
 
     -- print indent
     for i = 1, self._indent do
-        self:_write("\t")
+        self:_write(_g.indentchar)
     end
 
     -- printf it
@@ -49,7 +52,7 @@ function _write(self, ...)
 
     -- print indent
     for i = 1, self._indent do
-        self:_write("\t")
+        self:_write(_g.indentchar)
     end
 
     -- write it
@@ -105,3 +108,7 @@ function open(filepath, mode)
     return file
 end
 
+-- set indent character
+function indentchar(ch)
+    _g.indentchar = ch or '\t'
+end

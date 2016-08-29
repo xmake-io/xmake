@@ -472,6 +472,9 @@ function make(vsinfo, target)
     -- open vcproj file
     local vcprojfile = vsfile.open(path.join(vcprojdir, targetname .. ".vcproj"), "w")
 
+    -- init indent character
+    vsfile.indentchar('\t')
+
     -- make header
     _make_header(vcprojfile, vsinfo, target)
 
