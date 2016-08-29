@@ -170,7 +170,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.Default.props\" />")
 
     -- make Configuration
-    vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'release|Win32\'\" Label=\"Configuration\">")
+    vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\" Label=\"Configuration\">")
         vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target:get("kind")]))
         vcxprojfile:print("<PlatformToolset>v%s0</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
         vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
