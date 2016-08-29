@@ -42,7 +42,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 - The doxygen plugin: Make doxygen document from source codes
 - The macro plugin: Record and playback commands 
 - The hello plugin: A simple plugin demo to show 'hello xmake!'
-- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2008, developing vs2010 - vs2015)
+- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2015)
 
 ####Languages
 
@@ -263,7 +263,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 - 调试器支持，实现直接加载运行调试
 
-- 提供产生IDE工程文件的插件
+- 提供产生IDE工程文件的插件（支持vs2002 - vs2015）
 
 ####常用Actions
 
