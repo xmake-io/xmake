@@ -30,7 +30,7 @@ function make(outputdir)
     local vsinfo = 
     {
         vstudio_version     = "2015"
-    ,   solution_version    = "14"
+    ,   solution_version    = "12"
     }
 
     -- make project
