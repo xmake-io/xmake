@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.0.4
+
 ### New features
 
 * Add native shell support for `xmake.lua`. .e.g `add_ldflags("$(shell pkg-config --libs sqlite3)")`
@@ -143,6 +145,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.0.4
 
 ### 新特性
 
