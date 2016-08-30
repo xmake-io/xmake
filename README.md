@@ -1,4 +1,4 @@
-##A make-like build utility based on Lua 
+## A make-like build utility based on Lua 
 
 [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![Join the chat at https://gitter.im/waruqi/tboox](https://badges.gitter.im/waruqi/tboox.svg)](https://gitter.im/waruqi/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate)
 
@@ -15,7 +15,7 @@ If you want to known more, please refer to:
 * [Github](https://github.com/waruqi/xmake)
 * [HomePage](http://xmake.io)
 
-####Features
+#### Features
 
 - Create projects and supports many project templates
 - Support c/c++, objc/c++, swift and assembly language
@@ -31,7 +31,7 @@ If you want to known more, please refer to:
 - Run and debug the target program
 - Generate IDE project file
 
-####Actions
+#### Actions
 
 - config: Configure project before building. 
 - global: Configure the global options for xmake.
@@ -43,21 +43,21 @@ If you want to known more, please refer to:
 - uninstall: Uninstall the project binary files.
 - run: Run the project target.
 
-####Plugins
+#### Plugins
 
 - The doxygen plugin: Make doxygen document from source codes
 - The macro plugin: Record and playback commands 
 - The hello plugin: A simple plugin demo to show 'hello xmake!'
 - The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2015)
 
-####Languages
+#### Languages
 
 - C/C++
 - Objc/Objc++
 - Swift
 - Assembly
 
-####Platforms
+#### Platforms
 
 - Windows (x86, x64, amd64, x86_amd64)
 - Macosx (i386, x86_64)
@@ -67,14 +67,14 @@ If you want to known more, please refer to:
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-####Todolist
+#### Todolist
 
 - Manage package and dependencies
 - Download package automatically
 - Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
 - Implement more plugins(.e.g generate .deb, .rpm package)
 
-####Examples
+#### Examples
 
 Create a c++ console project:
 
@@ -186,12 +186,12 @@ The simple xmake.lua file:
 
 If you want to know more, please refer to:
 
-####Documents
+#### Documents
 
 * [Documents](https://github.com/waruqi/xmake/wiki/documents)
 * [Codes](https://github.com/waruqi/xmake)
 
-####Projects
+#### Projects
 
 Some projects using xmake:
 
@@ -272,7 +272,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 - 提供产生IDE工程文件的插件（支持vs2002 - vs2015）
 
-####常用Actions
+#### 常用Actions
 
 - config: 构建之前的编译参数配置
 - global: 配置一些全局参数
@@ -284,21 +284,21 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - uninstall: 卸载安装的所有文件
 - run: 运行可执行的项目目标
 
-####一些内置插件
+#### 一些内置插件
 
 - doxygen文档生成插件: 从指定源码目录生成doxygen文档
 - 宏记录脚本插件: 记录和回放宏脚本，简化重复的命令操作（例如：批量打包。。）
 - hello插件: 插件开发demo
 - 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile, vs2002 - vs2008，后续支持：vs2010以上版本, xcode等等)
 
-####支持编译语言
+#### 支持编译语言
 
 - C/C++
 - Objc/Objc++
 - Swift
 - Assembly
 
-####支持的构建平台
+#### 支持的构建平台
 
 - Windows (x86, x64, amd64, x86_amd64)
 - Macosx (i386, x86_64)
@@ -308,13 +308,13 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - Watchos (armv7k, i386)
 - Mingw (i386, x86_64)
 
-####后续任务
+#### 后续任务
 
 - 自动包依赖管理和下载
 - 创建移植仓库，实现`一人移植，多人共享`
 - 更多的插件开发(例如：生成.deb, .rpm的安装包)
 
-####简单例子
+#### 简单例子
 
 创建一个c++ console项目：
 
@@ -397,7 +397,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 * [libsvx](https://github.com/caikelun/libsvx)
 * [更多项目](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
 
-####简单例子
+#### 简单例子
 
     -- the debug mode
     if is_mode("debug") then
