@@ -9,6 +9,12 @@ xmake is a make-like build utility based on lua.
 The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
+If you want to known more, please refer to:
+
+* [Documents](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
+* [Github](https://github.com/waruqi/xmake)
+* [HomePage](http://xmake.io)
+
 ####Features
 
 - Create projects and supports many project templates
@@ -217,6 +223,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 * [在线文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
 * [在线源码](https://github.com/waruqi/xmake)
+* [项目主页](http://xmake.io/cn)
 
 #### 支持特性
 
