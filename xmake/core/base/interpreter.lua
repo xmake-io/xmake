@@ -482,18 +482,33 @@ function interpreter.new()
     instance:api_register(nil, "add_subdirs", interpreter.api_builtin_add_subdirs)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
 
-    -- register the builtin interfaces for lua
-    instance:api_register_builtin("print", print)
-    instance:api_register_builtin("pairs", pairs)
-    instance:api_register_builtin("ipairs", ipairs)
-    instance:api_register_builtin("format", string.format)
-    instance:api_register_builtin("printf", utils.print)
-    instance:api_register_builtin("getenv", os.getenv)
+    -- load builtin module files
+    local builtin_module_files = os.match(path.join(xmake._CORE_DIR, "sandbox/modules/interpreter/*.lua"))
+    if builtin_module_files then
+        for _, builtin_module_file in ipairs(builtin_module_files) do
 
-    -- register the builtin modules for lua
-    instance:api_register_builtin("path", path)
-    instance:api_register_builtin("table", table)
-    instance:api_register_builtin("string", string)
+            -- the module name
+            local module_name = path.basename(builtin_module_file)
+            assert(module_name)
+
+            -- load script
+            local script, errors = loadfile(builtin_module_file)
+            if script then
+
+                -- load module
+                local ok, results = xpcall(script, debug.traceback)
+                if not ok then
+                    os.raise(results)
+                end
+
+                -- register module
+                instance:api_register_builtin(module_name, results)
+            else
+                -- error
+                os.raise(errors)
+            end
+        end
+    end
 
     -- ok?
     return instance

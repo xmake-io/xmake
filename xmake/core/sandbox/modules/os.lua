@@ -304,6 +304,16 @@ function sandbox_os.match(pattern, findir, ...)
     return os.match(pattern, findir)
 end
 
+-- match files
+function sandbox_os.files(pattern, ...)
+    return sandbox_os.match(pattern, false, ...)
+end
+
+-- match directories
+function sandbox_os.dirs(pattern, ...)
+    return sandbox_os.match(pattern, true, ...)
+end
+
 -- is directory?
 function sandbox_os.isdir(dirpath)
 
