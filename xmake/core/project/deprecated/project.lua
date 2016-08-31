@@ -34,21 +34,6 @@ local platform                  = require("platform/platform")
 local deprecated                = require("base/deprecated")
 local deprecated_interpreter    = require("base/deprecated/interpreter")
 
--- the current os is belong to the given os?
-function deprecated_project._api_is_os(interp, ...)
-
-    -- get the current os
-    local os = platform.os()
-    if not os then return false end
-
-    -- exists this os?
-    for _, o in ipairs(table.join(...)) do
-        if o and type(o) == "string" and o == os then
-            return true
-        end
-    end
-end
-
 -- the current mode is belong to the given modes?
 function deprecated_project._api_is_mode(interp, ...)
 
@@ -345,8 +330,7 @@ function deprecated_project.api_register(interp)
     -- register api: set_runscript() and set_installscript() and set_packagescript()
     deprecated_interpreter.api_register_set_script(interp, "target", "runscript", "installscript", "packagescript")
 
-    -- register api: os(), kinds(), modes(), plats(), archs(), options()
-    interp:api_register(nil, "os",      deprecated_project._api_os)
+    -- register api: kinds(), modes(), plats(), archs(), options()
     interp:api_register(nil, "kinds",   deprecated_project._api_kinds)
     interp:api_register(nil, "modes",   deprecated_project._api_modes)
     interp:api_register(nil, "plats",   deprecated_project._api_plats)
