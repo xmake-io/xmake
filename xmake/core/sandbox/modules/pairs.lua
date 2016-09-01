@@ -24,10 +24,41 @@
 local table = require("base/table")
 
 -- pairs
-function sandbox_pairs(...)
+--
+-- .e.g
+--
+-- @code
+-- 
+-- local t = {a = "a", b = "b", c = "c", d = "d", e = "e", f = "f"}
+--
+-- for key, val in pairs(t) do
+--      print("%s: %s", key, val)
+-- end
+--
+-- for key, val in pairs(t, function (v) return v:upper() end) do
+--      print("%s: %s", key, val)
+-- end
+--  
+-- for key, val in pairs(t, function (v, a, b) return v:upper() .. a .. b end, "a", "b") do
+--      print("%s: %s", key, val)
+-- end
+--
+-- @endcode
+--
+function sandbox_pairs(t, filter, ...)
 
-    -- wrap it for nil
-    return pairs(table.wrap(...))
+    -- init iterator
+    local args = {...}
+    local iter = function (t, i)
+        local k, v = next(t, i)
+        if v and filter ~= nil then
+            v = filter(v, unpack(args))
+        end
+        return k, v
+    end
+
+    -- return iterator and initialized state
+    return iter, table.wrap(t), nil
 end
 
 -- load module

@@ -2,6 +2,14 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add some interpreter builtin-modules
+
+### Changes
+
+* Improve ipairs and pairs interfaces and support filter
+
 ## v2.0.4
 
 ### New features
@@ -145,6 +153,14 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 为解释器作用域增加一些内建模块支持
+
+### 改进
+
+* 增强ipairs和pairs接口，支持过滤器模式，简化脚本代码
 
 ## v2.0.4
 
