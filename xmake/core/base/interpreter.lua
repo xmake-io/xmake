@@ -199,7 +199,7 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
     assert(scopes)
 
     -- get all subpathes 
-    local subpathes = self:_api_translate_pathes(...)
+    local subpathes = table.join(...)
 
     -- match all subpathes
     local subpathes_matched = {}
@@ -220,7 +220,7 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
 
             -- get the absolute file path
             if not path.is_absolute(file) then
-                file = path.absolute(file, self._PRIVATE._ROOTDIR)
+                file = path.absolute(file)
             end
 
             -- update the current file
