@@ -224,7 +224,7 @@ function os.cd(dir)
             return false, string.format("not found the previous directory %s", os.strerror())
         end
     end
-    
+
     -- is directory?
     if os.isdir(dir) then
 

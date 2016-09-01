@@ -242,11 +242,20 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- clear the current scope, force to enter root scope
                 scopes._CURRENT = nil
 
+                -- save the current directory
+                local olddir = os.curdir()
+
+                -- enter the script directory
+                os.cd(path.directory(file))
+
                 -- done interpreter
                 local ok, errors = xpcall(script, interpreter._traceback)
                 if not ok then
                     os.raise(errors)
                 end
+
+                -- leave the script directory
+                os.cd(olddir)
 
                 -- restore the previous scope kind
                 scopes._CURRENT_KIND = scope_kind_prev
