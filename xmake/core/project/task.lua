@@ -396,8 +396,17 @@ function task.run(name, ...)
         return false, string.format("task(\"%s\"): no run script, please call on_task_run() first!", name)
     end
 
+    -- save the current directory
+    local curdir = os.curdir()
+
     -- run task
-    return sandbox.load(taskinfo.run, ...)
+    local ok, errors = sandbox.load(taskinfo.run, ...)
+
+    -- restore the current directory
+    os.cd(curdir)
+
+    -- ok?
+    return ok, errors
 end
 
 -- the menu
