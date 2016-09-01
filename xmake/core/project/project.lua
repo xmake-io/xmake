@@ -622,7 +622,7 @@ function project.tasks()
 
     -- the project file is not found?
     if not os.isfile(xmake._PROJECT_FILE) then
-        return {}
+        return {}, nil
     end
 
     -- load the tasks from the the project file
@@ -632,7 +632,7 @@ function project.tasks()
     end
 
     -- ok?
-    return results
+    return results, interp
 end
 
 -- get the mtimes

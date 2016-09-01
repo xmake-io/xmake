@@ -214,13 +214,13 @@ function task._interpreter()
 end
 
 -- bind tasks for menu with an sandbox instance
-function task._bind(tasks)
+function task._bind(tasks, interp)
 
     -- check
     assert(tasks)
 
     -- get interpreter
-    local interp = task._interpreter()
+    interp = interp or task._interpreter()
     assert(interp) 
 
     -- bind sandbox for menus
@@ -306,14 +306,14 @@ function task._load(filepath)
     local tasks, errors = interp:load(filepath, "task", true, true)
     if not tasks and os.isfile(filepath) then
         -- trace
-        utils.error(errors)
+        os.raise(errors)
     end
 
     -- bind tasks for menu with an sandbox instance
     local ok, errors = task._bind(tasks)
     if not ok then
         -- trace
-        utils.error(errors)
+        os.raise(errors)
         return 
     end
 
@@ -353,6 +353,19 @@ function task.tasks()
     -- merge project tasks if exists
     local projectasks, errors = project.tasks()
     if projectasks then
+
+        -- the project interpreter
+        local interp = errors
+
+        -- bind tasks for menu with an sandbox instance
+        local ok, errors = task._bind(projectasks, interp)
+        if not ok then
+            -- trace
+            os.raise(errors)
+            return 
+        end
+
+        -- save tasks
         for taskname, taskinfo in pairs(projectasks) do
             if tasks[taskname] == nil then
                 tasks[taskname] = taskinfo
