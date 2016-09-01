@@ -24,10 +24,41 @@
 local table = require("base/table")
 
 -- ipairs
-function sandbox_ipairs(...)
+--
+-- .e.g
+--
+-- @code
+-- 
+-- for idx, val in ipairs({"a", "b", "c", "d", "e", "f"}) do
+--      print("%d %s", idx, val)
+-- end
+--
+-- for idx, val in ipairs({"a", "b", "c", "d", "e", "f"}, function (v) return v:upper() end) do
+--      print("%d %s", idx, val)
+-- end
+--
+-- for idx, val in ipairs({"a", "b", "c", "d", "e", "f"}, function (v, a, b) return v:upper() .. a .. b end, "a", "b") do
+--      print("%d %s", idx, val)
+-- end
+--
+-- @endcode
+function sandbox_ipairs(t, filter, ...)
 
-    -- wrap it for nil
-    return ipairs(table.wrap(...))
+    -- init iterator
+    local args = {...}
+    local iter = function (t, i)
+        i = i + 1
+        local v = t[i]
+        if v then
+            if filter ~= nil then
+                v = filter(v, unpack(args))
+            end
+            return i, v
+        end
+    end
+
+    -- return iterator and initialized state
+    return iter, table.wrap(t), 0
 end
 
 -- load module
