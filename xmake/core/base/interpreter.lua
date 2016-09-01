@@ -617,6 +617,16 @@ function interpreter:rootdir_set(rootdir)
     self._PRIVATE._ROOTDIR = rootdir
 end
 
+-- get script directory
+function interpreter:scriptdir()
+
+    -- check
+    assert(self and self._PRIVATE and self._PRIVATE._CURFILE)
+
+    -- get it
+    return path.directory(self._PRIVATE._CURFILE)
+end
+
 -- set root scope kind
 --
 -- the root api will affect these scopes
@@ -882,7 +892,7 @@ function interpreter:api_register_on_script(scope_kind, ...)
     local implementation = function (self, scope, name, script)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
+        local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
         if not instance then
             os.raise("on_%s(): %s", name, errors)
         end
@@ -905,7 +915,7 @@ function interpreter:api_register_before_script(scope_kind, ...)
     local implementation = function (self, scope, name, script)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
+        local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
         if not instance then
             os.raise("before_%s(): %s", name, errors)
         end
@@ -928,7 +938,7 @@ function interpreter:api_register_after_script(scope_kind, ...)
     local implementation = function (self, scope, name, script)
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self:filter(), self:rootdir())
+        local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
         if not instance then
             os.raise("after_%s(): %s", name, errors)
         end
