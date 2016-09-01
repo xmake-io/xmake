@@ -44,13 +44,16 @@ local table = require("base/table")
 -- @endcode
 function sandbox_ipairs(t, filter, ...)
 
+    -- has filter?
+    local has_filter = type(filter) == "function"
+
     -- init iterator
     local args = {...}
     local iter = function (t, i)
         i = i + 1
         local v = t[i]
         if v then
-            if filter ~= nil then
+            if has_filter then
                 v = filter(v, unpack(args))
             end
             return i, v
