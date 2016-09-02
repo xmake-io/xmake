@@ -10,6 +10,10 @@
 
 * Improve ipairs and pairs interfaces and support filter
 
+### Bugs fixed
+
+* Fix `-def:xxx.def` flags failed for msvc
+
 ## v2.0.4
 
 ### New features
@@ -161,6 +165,10 @@
 ### 改进
 
 * 增强ipairs和pairs接口，支持过滤器模式，简化脚本代码
+
+### Bugs修复
+
+* 修复msvc的编译选项不支持问题：`-def:xxx.def`
 
 ## v2.0.4
 

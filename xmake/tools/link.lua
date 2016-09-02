@@ -145,6 +145,11 @@ end
 -- check the given flags 
 function check(flags)
 
+    -- -def:"xxx.def"? pass directly
+    if flags and flags:lower():find("def:") then
+        return 
+    end
+
     -- make an stub source file
     local binaryfile = os.tmpfile() .. ".exe"
     local objectfile = os.tmpfile() .. ".obj"
