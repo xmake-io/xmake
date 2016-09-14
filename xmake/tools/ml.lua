@@ -74,6 +74,96 @@ function get(name)
     return _g[name]
 end
 
+-- make the symbol flag
+function symbol(level, symbolfile)
+
+    -- check -FS flags
+    if _g._FS == nil then
+        local ok = try
+        {
+            function ()
+                check("-ZI -FS -Fd" .. os.tmpfile() .. ".pdb")
+                return true
+            end
+        }
+        if ok then
+            _g._FS = true
+        end
+    end
+
+    -- debug? generate *.pdb file
+    local flags = ""
+    if level == "debug" then
+        if symbolfile then
+            flags = "-ZI -Fd" .. symbolfile 
+            if _g._FS then
+                flags = "-FS " .. flags
+            end
+        else
+            flags = "-ZI"
+        end
+    end
+
+    -- none
+    return flags
+end
+
+-- make the warning flag
+function warning(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-w"
+    ,   less        = "-W1"
+    ,   more        = "-W3"
+    ,   all         = "-W3"
+    ,   error       = "-WX"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the optimize flag
+function optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-Od"
+    ,   fast        = "-O1"
+    ,   faster      = "-O2"
+    ,   fastest     = "-Ot"
+    ,   smallest    = "-Os"
+    ,   aggressive  = "-Ox"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the vector extension flag
+function vectorext(extension)
+
+    -- the maps
+    local maps = 
+    {   
+        sse         = "-arch:SSE"
+    ,   sse2        = "-arch:SSE2"
+    ,   avx         = "-arch:AVX"
+    ,   avx2        = "-arch:AVX2"
+    }
+
+    -- make it
+    return maps[extension] or ""
+end
+
+-- make the language flag
+function language(stdname)
+    return ""
+end
+
 -- make the define flag
 function define(macro)
 
@@ -103,17 +193,13 @@ function compcmd(sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, flags, multitasking)
+function compile(sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    if multitasking then
-        os.corun(compcmd(sourcefile, objectfile, flags))
-    else
-        os.run(compcmd(sourcefile, objectfile, flags))
-    end
+    os.run(compcmd(sourcefile, objectfile, flags))
 end
 
 -- check the given flags 
