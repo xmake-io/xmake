@@ -27,19 +27,17 @@ function init(shellname)
     _g.shellname = shellname or "ml.exe"
 
     -- init asflags
-    _g.asflags = { "-nologo", "-Gd"}
+    if _g.shellname:find("64") then
+        _g.asflags = { "-nologo"}
+    else
+        _g.asflags = { "-nologo", "-Gd"}
+    end
 
     -- init flags map
     _g.mapflags = 
     {
-        -- optimize
-        ["-O0"]                     = "-Od"
-    ,   ["-O3"]                     = "-Ot"
-    ,   ["-Ofast"]                  = "-Ox"
-    ,   ["-fomit-frame-pointer"]    = "-Oy"
-
         -- symbols
-    ,   ["-g"]                      = "-Z7"
+        ["-g"]                      = "-Z7"
     ,   ["-fvisibility=.*"]         = ""
 
         -- warnings
@@ -49,16 +47,6 @@ function init(shellname)
     ,   ["-W3"]                     = "-W3"
     ,   ["-Werror"]                 = "-WX"
     ,   ["%-Wno%-error=.*"]         = ""
-
-        -- vectorexts
-    ,   ["-mmmx"]                   = "-arch:MMX"
-    ,   ["-msse"]                   = "-arch:SSE"
-    ,   ["-msse2"]                  = "-arch:SSE2"
-    ,   ["-msse3"]                  = "-arch:SSE3"
-    ,   ["-mssse3"]                 = "-arch:SSSE3"
-    ,   ["-mavx"]                   = "-arch:AVX"
-    ,   ["-mavx2"]                  = "-arch:AVX2"
-    ,   ["-mfpu=.*"]                = ""
 
         -- others
     ,   ["-ftrapv"]                 = ""
