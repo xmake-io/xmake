@@ -64,36 +64,7 @@ end
 
 -- make the symbol flag
 function symbol(level, symbolfile)
-
-    -- check -FS flags
-    if _g._FS == nil then
-        local ok = try
-        {
-            function ()
-                check("-ZI -FS -Fd" .. os.tmpfile() .. ".pdb")
-                return true
-            end
-        }
-        if ok then
-            _g._FS = true
-        end
-    end
-
-    -- debug? generate *.pdb file
-    local flags = ""
-    if level == "debug" then
-        if symbolfile then
-            flags = "-ZI -Fd" .. symbolfile 
-            if _g._FS then
-                flags = "-FS " .. flags
-            end
-        else
-            flags = "-ZI"
-        end
-    end
-
-    -- none
-    return flags
+    return ""
 end
 
 -- make the warning flag
