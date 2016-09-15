@@ -27,7 +27,7 @@ function init(shellname)
     _g.shellname = shellname or "ml.exe"
 
     -- init asflags
-    _g.asflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
+    _g.asflags = { "-nologo", "-Gd"}
 
     -- init flags map
     _g.mapflags = 
@@ -127,36 +127,12 @@ end
 
 -- make the optimize flag
 function optimize(level)
-
-    -- the maps
-    local maps = 
-    {   
-        none        = "-Od"
-    ,   fast        = "-O1"
-    ,   faster      = "-O2"
-    ,   fastest     = "-Ot"
-    ,   smallest    = "-Os"
-    ,   aggressive  = "-Ox"
-    }
-
-    -- make it
-    return maps[level] or ""
+    return ""
 end
 
 -- make the vector extension flag
 function vectorext(extension)
-
-    -- the maps
-    local maps = 
-    {   
-        sse         = "-arch:SSE"
-    ,   sse2        = "-arch:SSE2"
-    ,   avx         = "-arch:AVX"
-    ,   avx2        = "-arch:AVX2"
-    }
-
-    -- make it
-    return maps[extension] or ""
+    return ""
 end
 
 -- make the language flag
