@@ -5,6 +5,7 @@
 ### New features
 
 * Add some interpreter builtin-modules
+* Support ml64 assembler for windows x64
 
 ### Changes
 
@@ -13,6 +14,7 @@
 ### Bugs fixed
 
 * Fix `-def:xxx.def` flags failed for msvc
+* Fix ml.exe assembler script
 
 ## v2.0.4
 
@@ -161,6 +163,7 @@
 ### 新特性
 
 * 为解释器作用域增加一些内建模块支持
+* 针对windows x64平台，支持ml64汇编器
 
 ### 改进
 
@@ -169,6 +172,7 @@
 ### Bugs修复
 
 * 修复msvc的编译选项不支持问题：`-def:xxx.def`
+* 修复ml.exe汇编器脚本
 
 ## v2.0.4
 

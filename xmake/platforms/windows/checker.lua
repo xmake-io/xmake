@@ -183,11 +183,15 @@ function _check_toolchains(config)
     -- done
     checker.check_toolchain(config, "cc",   "", "cl.exe",           "the c compiler") 
     checker.check_toolchain(config, "cxx",  "", "cl.exe",           "the c++ compiler") 
-    checker.check_toolchain(config, "as",   "", "ml.exe",           "the assember") 
     checker.check_toolchain(config, "ld",   "", "link.exe",         "the linker") 
     checker.check_toolchain(config, "ar",   "", "link.exe -lib",    "the static library archiver") 
     checker.check_toolchain(config, "sh",   "", "link.exe -dll",    "the shared library linker") 
     checker.check_toolchain(config, "ex",   "", "lib.exe",          "the static library extractor") 
+    if config.get("arch"):find("64") then
+        checker.check_toolchain(config, "as",   "", "ml64.exe",     "the assember") 
+    else
+        checker.check_toolchain(config, "as",   "", "ml.exe",       "the assember") 
+    end
 
     -- leave environment
     environment.leave("toolchains")
