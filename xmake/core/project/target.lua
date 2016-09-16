@@ -137,6 +137,11 @@ function target:symbolfile()
     return path.join(targetdir, filename)
 end
 
+-- get the script directory of xmake.lua
+function target:scriptdir()
+    return self:get("__scriptdir")
+end
+
 -- get the config header files
 function target:configheader(outputdir)
 

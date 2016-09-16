@@ -453,12 +453,10 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             -- add this scope
             results[scope_name] = self:_handle(scope_values, remove_repeat, enable_filter)
         end
-
     else
 
         -- only uses the root scope kind
         results = self:_handle(scopes._ROOT["__rootkind"], remove_repeat, enable_filter)
-
     end
 
     -- ok?
@@ -732,7 +730,7 @@ end
 --
 --              "scope_name2" <-- _SCOPES._CURRENT
 --              {
---
+--                   __scriptdir = "" (the directory of xmake.lua)
 --              }
 --          }
 --      }
@@ -754,10 +752,14 @@ function interpreter:api_register_scope(...)
         if scope_name ~= nil then
 
             -- init scope for name
-            scope_for_kind[scope_name] = scope_for_kind[scope_name] or {}
+            local scope = scope_for_kind[scope_name] or {}
+            scope_for_kind[scope_name] = scope
 
             -- save the current scope
-            scopes._CURRENT = scope_for_kind[scope_name]
+            scopes._CURRENT = scope
+
+            -- save script directory of scope when enter this scope first
+            scope.__scriptdir = scope.__scriptdir or self:scriptdir()
         else
 
             -- enter root scope
