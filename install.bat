@@ -21,11 +21,11 @@ if '%errorlevel%' neq '0' (
 
 rem create the xmake install directory
 if %PROCESSOR_ARCHITECTURE%==x86_64 (
-    set xmake_dir_install_default=C:\Program Files (x86^)\xmake
+    set xmake_dir_install_default=D:\Program Files (x86^)\xmake
 ) else if %PROCESSOR_ARCHITECTURE%==AMD64 (
-    set xmake_dir_install_default=C:\Program Files (x86^)\xmake
+    set xmake_dir_install_default=D:\Program Files (x86^)\xmake
 ) else (
-    set xmake_dir_install_default=C:\Program Files\xmake
+    set xmake_dir_install_default=D:\Program Files\xmake
 )
 echo please input the install directory
 if not "%1" == "noinput" set /p xmake_dir_install=(default: %xmake_dir_install_default%): 
