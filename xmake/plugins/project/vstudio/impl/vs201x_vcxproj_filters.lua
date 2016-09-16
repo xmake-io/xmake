@@ -67,13 +67,16 @@ function _make_filters(filtersfile, vsinfo, target, vcxprojdir)
     -- add filters
     filtersfile:enter("<ItemGroup>")
         local exists = {}
-        for _, filepath in pairs(table.join(target:sourcefiles(), target:headerfiles())) do
+        for _, filepath in pairs(table.join(target:sourcefiles(), (target:headerfiles()))) do
             local filter = _make_filter(filepath, target, vcxprojdir)
-            if filter and not exists[filter] then
-                filtersfile:enter("<Filter Include=\"%s\">", filter)
-                filtersfile:print("<UniqueIdentifier>{%s}</UniqueIdentifier>", os.uuid(filter))
-                filtersfile:leave("</Filter>")
-                exists[filter] = true
+            while filter and filter ~= '.' do
+                if not exists[filter] then
+                    filtersfile:enter("<Filter Include=\"%s\">", filter)
+                    filtersfile:print("<UniqueIdentifier>{%s}</UniqueIdentifier>", os.uuid(filter))
+                    filtersfile:leave("</Filter>")
+                    exists[filter] = true
+                end
+                filter = path.directory(filter)
             end
         end
     filtersfile:leave("</ItemGroup>")

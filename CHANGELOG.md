@@ -10,6 +10,7 @@
 ### Changes
 
 * Improve ipairs and pairs interfaces and support filter
+* Add filters for generating vs201x project
 
 ### Bugs fixed
 
@@ -128,7 +129,6 @@
 * Support switch static and share library
 * Add -j/--jobs argument for supporting multi-jobs 
 
-
 ### Changes
 
 * Improve `add_files` api and support to add *.o/obj/a/lib files for merging static library and object files
@@ -168,6 +168,7 @@
 ### 改进
 
 * 增强ipairs和pairs接口，支持过滤器模式，简化脚本代码
+* 为vs201x工程生成增加文件filter
 
 ### Bugs修复
 
