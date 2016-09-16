@@ -30,6 +30,7 @@ function make(outputdir)
     local vsinfo = 
     {
         vstudio_version     = "2013"
+    ,   filters_version     = "4.0"
     ,   solution_version    = "12"
     }
 
