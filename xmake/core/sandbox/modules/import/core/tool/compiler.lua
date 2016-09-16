@@ -75,5 +75,10 @@ function sandbox_core_tool_compiler.kind_of_file(sourcefile)
     return compiler.kind_of_file(sourcefile)
 end
 
+-- get the type of file
+function sandbox_core_tool_compiler.type_of_file(sourcefile)
+    return compiler.type_of_file(sourcefile)
+end
+
 -- return module
 return sandbox_core_tool_compiler
