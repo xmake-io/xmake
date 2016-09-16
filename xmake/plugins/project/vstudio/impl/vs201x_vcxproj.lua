@@ -291,7 +291,7 @@ function _make_source_code_list(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:enter("<ItemGroup>")
 
         -- add headers
-        for idx, includefile in ipairs(target:headerfiles()) do
+        for _, includefile in ipairs(target:headerfiles()) do
             _make_header_file(vcxprojfile, includefile, vcxprojdir)
         end
     vcxprojfile:leave("</ItemGroup>")
