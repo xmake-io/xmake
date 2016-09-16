@@ -269,6 +269,10 @@ function _make_file(vcxprojfile, vsinfo, target, sourcefile, objectfile, vcxproj
     vcxprojfile:leave("</ClCompile>")
 end
 
+function _make_header_file(vcxprojfile, includefile, vcxprojdir)
+    vcxprojfile:print("<ClInclude Include=\"%s\" />", path.relative(path.absolute(includefile), vcxprojdir))
+end
+
 -- make source code list
 function _make_source_code_list(vcxprojfile, vsinfo, target, vcxprojdir)
 
@@ -281,6 +285,15 @@ function _make_source_code_list(vcxprojfile, vsinfo, target, vcxprojdir)
             _make_file(vcxprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcxprojdir) 
         end
 
+    vcxprojfile:leave("</ItemGroup>")
+
+    -- enter header group
+    vcxprojfile:enter("<ItemGroup>")
+
+        -- add headers
+        for idx, includefile in ipairs(target:headerfiles()) do
+            _make_header_file(vcxprojfile, includefile, vcxprojdir)
+        end
     vcxprojfile:leave("</ItemGroup>")
 end
 
