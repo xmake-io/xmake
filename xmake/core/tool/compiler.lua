@@ -253,6 +253,35 @@ function compiler.kind_of_file(sourcefile)
     return kinds[filetype:lower()]
 end
 
+-- get the type of file
+function compiler.type_of_file(sourcefile)
+
+    -- get the source file type
+    local filetype = path.extension(sourcefile)
+    if not filetype then
+        return nil
+    end
+
+    -- the kinds
+    local kinds = 
+    {
+        [".c"]      = "source"
+    ,   [".cc"]     = "source"
+    ,   [".cpp"]    = "source"
+    ,   [".cxx"]    = "source"
+    ,   [".h"]      = "header"
+    ,   [".hpp"]    = "header"
+    ,   [".m"]      = "source"
+    ,   [".mm"]     = "source"
+    ,   [".s"]      = "source"
+    ,   [".asm"]    = "source"
+    ,   [".swift"]  = "source"
+    }
+
+    -- get kind
+    return kinds[filetype:lower()]
+end
+
 -- get the current kind
 function compiler:kind()
 

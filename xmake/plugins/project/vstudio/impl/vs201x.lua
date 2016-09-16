@@ -24,6 +24,7 @@
 import("core.project.project")
 import("vs200x_solution")
 import("vs201x_vcxproj")
+import("vs201x_vcxproj_filters")
 
 -- make vstudio project
 function make(outputdir, vsinfo)
@@ -40,6 +41,7 @@ function make(outputdir, vsinfo)
     -- make vsprojs
     for _, target in pairs(project.targets()) do
         vs201x_vcxproj.make(vsinfo, target)
+        vs201x_vcxproj_filters.make(vsinfo, target)
     end
 
     -- leave project directory
