@@ -140,29 +140,30 @@ endif
 
 # host
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i linux},linux,))
-HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i darwin},mac,))
+HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i darwin},macosx,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i cygwin},cygwin,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i mingw},msys,))
-HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i msvc},msys,))
+HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i windows},msys,))
 HOST 		:=$(if $(HOST),$(HOST),linux)
 
 # platform
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},mac,))
+PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i mingw},mingw,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i msvc},msvc,))
+PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i windows},windows,))
 PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 
 # architecture
 ifeq ($(ARCH),)
 
-ARCH 		:=$(if $(findstring msvc,$(PLAT)),x86,$(ARCH))
+ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(ARCH))
 ARCH 		:=$(if $(findstring mingw,$(PLAT)),x86,$(ARCH))
-ARCH 		:=$(if $(findstring mac,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
+ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring linux,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring x32,$(ARCH)),x86,$(ARCH))
-ARCH 		:=$(if $(findstring ios,$(PLAT)),armv7,$(ARCH))
+ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
+ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
+ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(ARCH))
 ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
 
 endif
@@ -175,7 +176,7 @@ DTYPE 		:=$(if $(findstring y,$(DEBUG)),d,r)
 
 # small
 SMALL 		:=$(if $(SMALL),$(SMALL),n)
-SMALL 		:=$(if $(findstring ios,$(PLAT)),y,$(SMALL))
+SMALL 		:=$(if $(findstring iphoneos,$(PLAT)),y,$(SMALL))
 SMALL 		:=$(if $(findstring android,$(PLAT)),y,$(SMALL))
 
 # demo
@@ -188,10 +189,10 @@ PROF 		:=$(if $(PROF),$(PROF),n)
 ARM 		:=$(if $(findstring arm,$(ARCH)),y,n)
 
 # x86
-x86 		:=$(if $(findstring x86,$(ARCH)),y,n)
+x86 		:=$(if $(findstring i386,$(ARCH)),y,n)
 
 # x64
-x64 		:=$(if $(findstring x64,$(ARCH)),y,n)
+x64 		:=$(if $(findstring x86_64,$(ARCH)),y,n)
 
 # sh4
 SH4 		:=$(if $(findstring sh4,$(ARCH)),y,n)
@@ -229,7 +230,7 @@ DISTCC		:=
 endif
 
 # sed
-ifeq ($(HOST),mac)
+ifeq ($(HOST),macosx)
 #SED			:= sed -i ''
 SED			:= perl -pi -e
 else
@@ -237,7 +238,7 @@ SED			:= sed -i
 endif
 
 # echo
-ifeq ($(HOST),mac)
+ifeq ($(HOST),macosx)
 SHELL 		= bash
 endif
 ifeq ($(HOST),linux)
@@ -246,7 +247,7 @@ endif
 ECHO 		:= echo -e
 
 # make upper 
-ifeq ($(HOST),mac)
+ifeq ($(HOST),macosx)
 define MAKE_UPPER
 ${shell echo $(1) | perl -p -e "s/(.*)/\U\1/g"}
 endef
@@ -257,12 +258,12 @@ endef
 endif
 
 # config base
-ifeq ($(PLAT),mac)
+ifeq ($(PLAT),macosx)
 base_LIBPATH 	:= /usr/local/lib
 base_LIBNAMES 	:= m dl pthread
 endif
 
-ifeq ($(PLAT),msvc)
+ifeq ($(PLAT),windows)
 base_LIBPATH 	:= 
 base_LIBNAMES 	:= ws2_32
 endif
@@ -446,7 +447,7 @@ config : .null
 	@$(ECHO) "tbox_LIBPATH ="							>> .config.mak
 	@$(ECHO) "tbox_INCFLAGS ="							>> .config.mak
 	@$(ECHO) "tbox_LIBFLAGS ="							>> .config.mak
-	@$(ECHO) "tbox_LIBNAMES =tboxr"						>> .config.mak
+	@$(ECHO) "tbox_LIBNAMES =tbox"						>> .config.mak
 	@$(ECHO) "export TBOX"								>> .config.mak
 	@$(ECHO) "export tbox_INCPATH"						>> .config.mak
 	@$(ECHO) "export tbox_LIBPATH"						>> .config.mak
