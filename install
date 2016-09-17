@@ -21,25 +21,25 @@ echo installing to $prefix ...
 # probe plat
 uname=`uname`
 if [ $uname = "MSVC" ]; then
-    plat=msvc
+    plat=windows
 elif [ $uname = "Darwin" ] || [ `uname | egrep -i darwin` ]; then
-    plat=mac
+    plat=macosx
 elif [ $uname = "Linux" ] || [ `uname | egrep -i linux` ]; then
     plat=linux
 elif [ `uname | egrep -i msys` ]; then
-    plat=msvc
+    plat=windows
 elif [ `uname | egrep -i cygwin` ]; then
-    plat=msvc
+    plat=windows
 else
     plat=linux
 fi
 echo plat: $plat
 
 # probe arch
-arch=x86
-if [ $plat = "linux" ] || [ $plat = "mac" ]; then
+arch=i386
+if [ $plat = "linux" ] || [ $plat = "macosx" ]; then
     if [ `getconf LONG_BIT` = "64" ]; then
-        arch=x64
+        arch=x86_64
     fi
 fi
 echo arch: $arch
