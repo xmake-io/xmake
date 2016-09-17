@@ -64,12 +64,12 @@ function main._help()
 
         -- print title
         if menu.title then
-            print(menu.title)
+            utils.cprint(menu.title)
         end
 
         -- print copyright
         if menu.copyright then
-            print(menu.copyright)
+            utils.cprint(menu.copyright)
         end
 
         -- ok
