@@ -180,7 +180,6 @@ function template.create(language, templateid, targetname)
         {
             targetname  = targetname
         ,   projectdir  = project.directory()
-        ,   packagesdir = xmake._PACKAGES_DIR
         }
 
         -- map it
