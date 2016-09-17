@@ -32,7 +32,6 @@ xmake._PROGRAM_DIR      = _PROGRAM_DIR
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._CORE_DIR         = _PROGRAM_DIR .. "/core"
 xmake._TOOLS_DIR        = _PROGRAM_DIR .. "/tools"
-xmake._PACKAGES_DIR     = _PROGRAM_DIR .. "/packages"
 xmake._TEMPLATES_DIR    = _PROGRAM_DIR .. "/templates"
 xmake._PROJECT_FILE     = "xmake.lua"
 

@@ -20,8 +20,7 @@ on_create(function ()
     os.mv("src/_library", "src/$(targetname)")
     os.mv("src/_demo", "src/$(targetname)_demo")
 
-    -- copy packages
-    os.cp("$(packagesdir)/tbox.pkg", "pkg/tbox.pkg")
-    os.cp("$(packagesdir)/base.pkg", "pkg/base.pkg")
+    -- show tips
+    print("please put tbox.pkg into pkg before building it!")
 
 end)
