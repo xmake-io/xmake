@@ -41,8 +41,8 @@ MKDIR 				= mkdir -p
 MAKE 				= make -r
 
 # architecture flags
-AHFLAGS 			:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring x64,$(ARCH)),-m64,))
-AHFLAGS 			:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring x86,$(ARCH)),-m32,))
+AHFLAGS 			:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring x86_64,$(ARCH)),-m64,))
+AHFLAGS 			:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring i386,$(ARCH)),-m32,))
 
 # check flags for x64 or x86
 ifneq ($(AHFLAGS),)

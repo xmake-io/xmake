@@ -187,6 +187,15 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
     tb_bool_t ok = tb_false;
     do
     {
+        // get it from the environment variable first
+        tb_char_t data[TB_PATH_MAXN] = {0};
+        if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn))
+        {
+            // ok
+            ok = tb_true;
+            break;
+        }
+
 #ifdef TB_CONFIG_OS_WINDOWS
         // get the program directory
         tb_size_t size = GetModuleFileName(tb_null, path, maxn);
@@ -204,30 +213,23 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
                 break;
             }
         }
-#else
-        // get it from the environment variable 
-        tb_char_t data[TB_PATH_MAXN] = {0};
-        if (!tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)))
-        {
-            // error
-            tb_printf("error: please set XMAKE_PROGRAM_DIR first!\n");
-            break;
-        }
- 
-        // get the full path
-        if (!tb_path_absolute(data, path, maxn)) break;
+
+        // ok
+        ok = tb_true;
 #endif
+
+    } while (0);
+
+    // ok?
+    if (ok)
+    {
         // trace
         tb_trace_d("program: %s", path);
 
         // save the directory to the global variable: _PROGRAM_DIR
         lua_pushstring(impl->lua, path);
         lua_setglobal(impl->lua, "_PROGRAM_DIR");
-
-        // ok
-        ok = tb_true;
-
-    } while (0);
+    }
 
     // ok?
     return ok;
