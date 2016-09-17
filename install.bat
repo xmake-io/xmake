@@ -37,6 +37,7 @@ rem compile xmake-core
 echo compiling xmake-core...
 set XMAKE_PROGRAM_DIR=%~dp0\xmake
 cd core
+..\tools\xmake.exe f -c
 ..\tools\xmake.exe
 cd ..
 
