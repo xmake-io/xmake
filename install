@@ -120,5 +120,10 @@ if [[ ! "$PATH" =~ "$prefix/bin" ]]; then
     echo 'please export PATH=$PATH:'"$prefix/bin"
 fi
 
+# remove xmake.out
+if [[ -f "/tmp/xmake.out" ]]; then
+    rm /tmp/xmake.out
+fi
+
 # ok
 echo ok!
