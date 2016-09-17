@@ -11,6 +11,7 @@
 
 * Improve ipairs and pairs interfaces and support filter
 * Add filters for generating vs201x project
+* Remove `core/tools` (msys toolchains) and uses xmake to compile core sources on windows
 
 ### Bugs fixed
 
@@ -169,6 +170,7 @@
 
 * 增强ipairs和pairs接口，支持过滤器模式，简化脚本代码
 * 为vs201x工程生成增加文件filter
+* 移除`core/tools`目录以及msys工具链，在windows上使用xmake自编译core源码进行安装，优化xmake源码磁盘空间
 
 ### Bugs修复
 
