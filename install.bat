@@ -34,16 +34,17 @@ if exist "%xmake_dir_install%" rmdir /s /q "%xmake_dir_install%"
 if not exist "%xmake_dir_install%" mkdir "%xmake_dir_install%"
 
 rem compile xmake-core
-echo compiling xmake-core...
-set XMAKE_PROGRAM_DIR=%~dp0\xmake
-cd core
-..\tools\xmake.exe f -c
-..\tools\xmake.exe
-cd ..
+rem echo compiling xmake-core...
+rem set XMAKE_PROGRAM_DIR=%~dp0\xmake
+rem cd core
+rem ..\tools\xmake.exe f -c
+rem ..\tools\xmake.exe
+rem cd ..
 
 rem install the xmake core file
 echo installing xmake-core...
-set xmake_core=core\build\demo.exe
+rem set xmake_core=core\build\demo.exe
+set xmake_core=tools\xmake.exe
 set xmake_core_install=%xmake_dir_install%\xmake.exe
 copy /Y "%xmake_core%" "%xmake_core_install%" > install.log
 
