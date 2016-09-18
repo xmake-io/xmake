@@ -36,6 +36,11 @@
 #   include <windows.h>
 #endif
 
+// patch for linking error on vs2015: unresolved external symbol ___iob_func
+#if defined(TB_COMPILER_IS_MSVC) && _MSC_VER >= 1900
+#   pragma comment(lib, "legacy_stdio_definitions.lib")
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
@@ -151,14 +156,6 @@ static luaL_Reg const g_process_functions[] =
 ,   { "close",          xm_process_close    }
 ,   { tb_null,          tb_null             }
 };
-
-// patch for linking error on vs2015: unresolved external symbol ___iob_func
-#if defined(TB_COMPILER_IS_MSVC) && _MSC_VER >= 1900
-extern "C" 
-{
-    FILE __iob_func[3] = { *stdin, *stdout, *stderr }; 
-}
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
