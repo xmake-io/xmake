@@ -152,13 +152,6 @@ static luaL_Reg const g_process_functions[] =
 ,   { tb_null,          tb_null             }
 };
 
-// patch for linking error on vs2015: unresolved external symbol ___iob_func, fprintf, fscanf
-#if defined(TB_COMPILER_IS_MSVC) && _MSC_VER >= 1900
-#   pragma comment(lib, "legacy_stdio_definitions.lib")
-FILE                        _iob[] =                { *stdin, *stdout, *stderr }; 
-extern "C" FILE* __cdecl    __iob_func(tb_void_t)   { return _iob; }
-#endif
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
