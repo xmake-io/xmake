@@ -118,7 +118,7 @@ function main.done()
 
     -- run help?
     if main._help() then
-        return 1
+        return 0
     end
 
     -- run task    
