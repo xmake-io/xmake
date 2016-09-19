@@ -110,8 +110,8 @@ function _make_header(vcxprojfile, vsinfo, target)
     -- the versions
     local versions = 
     {
-        vs2010 = '10'
-    ,   vs2012 = '11'
+        vs2010 = '4'
+    ,   vs2012 = '4'
     ,   vs2013 = '12'
     ,   vs2015 = '14'
     }
