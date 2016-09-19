@@ -118,7 +118,7 @@ function _make_header(vcxprojfile, vsinfo, target)
 
     -- make header
     vcxprojfile:print("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-    vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", assert(versions["vs" .. vsinfo.vstudio_version]))
+    vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", vsinfo.filters_version)
 end
 
 -- make tailer
