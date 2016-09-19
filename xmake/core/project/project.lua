@@ -127,6 +127,55 @@ function project._api_is_option(interp, ...)
     end
 end
 
+-- add c function
+function project._api_add_cfunc(interp, module, alias, links, includes, checkinfo)
+
+    -- check
+    assert(interp)
+
+    -- parse the check code
+    local checkname, checkcode = option.checkinfo(checkinfo)
+    assert(checkname and checkcode)
+
+    -- make the option name
+    local name = nil
+    if module ~= nil then
+        name = string.format("__%s_%s", module, checkname)
+    else
+        name = string.format("__%s", checkname)
+    end
+
+    -- uses the alias name
+    if alias ~= nil then
+        checkname = alias
+    end
+
+    -- make the option define
+    local define = nil
+    if module ~= nil then
+        define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), checkname:upper())
+    else
+        define = string.format("$(prefix)_HAVE_%s", checkname:upper())
+    end
+
+    -- save the current scope
+    local scope = interp:scope_save()
+
+    -- check option
+    interp:api_call("option", name)
+    interp:api_call("set_category", "cfuncs")
+    interp:api_call("add_cfuncs", checkinfo)
+    if links then interp:api_call("add_links", links) end
+    if includes then interp:api_call("add_cincludes", includes) end
+    interp:api_call("add_defines_h_if_ok", define)
+
+    -- restore the current scope
+    interp:scope_restore(scope)
+
+    -- add this option 
+    interp:api_call("add_options", name)
+end
+
 -- add c functions
 function project._api_add_cfuncs(interp, module, links, includes, ...)
 
@@ -135,44 +184,57 @@ function project._api_add_cfuncs(interp, module, links, includes, ...)
 
     -- done
     for _, checkinfo in ipairs({...}) do
-
-        -- parse the check code
-        local checkname, checkcode = option.checkinfo(checkinfo)
-        assert(checkname and checkcode)
-
-        -- make the option name
-        local name = nil
-        if module ~= nil then
-            name = string.format("__%s_%s", module, checkname)
-        else
-            name = string.format("__%s", checkname)
-        end
-
-        -- make the option define
-        local define = nil
-        if module ~= nil then
-            define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), checkname:upper())
-        else
-            define = string.format("$(prefix)_HAVE_%s", checkname:upper())
-        end
-
-        -- save the current scope
-        local scope = interp:scope_save()
-
-        -- check option
-        interp:api_call("option", name)
-        interp:api_call("set_category", "cfuncs")
-        interp:api_call("add_cfuncs", checkinfo)
-        if links then interp:api_call("add_links", links) end
-        if includes then interp:api_call("add_cincludes", includes) end
-        interp:api_call("add_defines_h_if_ok", define)
-
-        -- restore the current scope
-        interp:scope_restore(scope)
-
-        -- add this option 
-        interp:api_call("add_options", name)
+        project._api_add_cfunc(interp, module, nil, links, includes, checkinfo)
     end
+end
+
+-- add c++ function
+function project._api_add_cxxfunc(interp, module, alias, links, includes, checkinfo)
+
+    -- check
+    assert(interp and module)
+
+    -- parse the check code
+    local checkname, checkcode = option.checkinfo(checkinfo)
+    assert(checkname and checkcode)
+
+    -- make the option name
+    local name = nil
+    if module ~= nil then
+        name = string.format("__%s_%s", module, checkname)
+    else
+        name = string.format("__%s", checkname)
+    end
+
+    -- uses the alias name
+    if alias ~= nil then
+        checkname = alias
+    end
+
+    -- make the option define
+    local define = nil
+    if module ~= nil then
+        define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), checkname:upper())
+    else
+        define = string.format("$(prefix)_HAVE_%s", checkname:upper())
+    end
+
+    -- save the current scope
+    local scope = interp:scope_save()
+
+    -- check option
+    interp:api_call("option", name)
+    interp:api_call("set_category", "cxxfuncs")
+    interp:api_call("add_cxxfuncs", checkinfo)
+    if links then interp:api_call("add_links", links) end
+    if includes then interp:api_call("add_cxxincludes", includes) end
+    interp:api_call("add_defines_h_if_ok", define)
+
+    -- restore the current scope
+    interp:scope_restore(scope)
+
+    -- add this option 
+    interp:api_call("add_options", name)
 end
 
 -- add c++ functions
@@ -183,43 +245,7 @@ function project._api_add_cxxfuncs(interp, module, links, includes, ...)
 
     -- done
     for _, checkinfo in ipairs({...}) do
-
-        -- parse the check code
-        local checkname, checkcode = option.checkinfo(checkinfo)
-        assert(checkname and checkcode)
-
-        -- make the option name
-        local name = nil
-        if module ~= nil then
-            name = string.format("__%s_%s", module, checkname)
-        else
-            name = string.format("__%s", checkname)
-        end
-
-        -- make the option define
-        local define = nil
-        if module ~= nil then
-            define = string.format("$(prefix)_%s_HAVE_%s", module:upper(), checkname:upper())
-        else
-            define = string.format("$(prefix)_HAVE_%s", checkname:upper())
-        end
-
-        -- save the current scope
-        local scope = interp:scope_save()
-
-        -- check option
-        interp:api_call("option", name)
-        interp:api_call("set_category", "cxxfuncs")
-        interp:api_call("add_cxxfuncs", checkinfo)
-        if links then interp:api_call("add_links", links) end
-        if includes then interp:api_call("add_cxxincludes", includes) end
-        interp:api_call("add_defines_h_if_ok", define)
-
-        -- restore the current scope
-        interp:scope_restore(scope)
-
-        -- add this option 
-        interp:api_call("add_options", name)
+        project._api_add_cxxfunc(interp, module, nil, links, includes, checkinfo)
     end
 end
 
@@ -379,10 +405,12 @@ function project._interpreter()
     interp:api_register_add_pathes("option",    "linkdirs"
                                             ,   "includedirs")
  
-    -- register api: add_cfuncs() to target
+    -- register api: add_cfunc() and add_cfuncs() to target
+    interp:api_register("target", "add_cfunc", project._api_add_cfunc)
     interp:api_register("target", "add_cfuncs", project._api_add_cfuncs)
 
-    -- register api: add_cxxfuncs() to target
+    -- register api: add_cxxfunc() and add_cxxfuncs() to target
+    interp:api_register("target", "add_cxxfunc", project._api_add_cxxfunc)
     interp:api_register("target", "add_cxxfuncs", project._api_add_cxxfuncs)
 
     -- register api: add_packages() to target
