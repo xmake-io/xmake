@@ -38,7 +38,7 @@ function _make_header(filtersfile, vsinfo, target)
 
     -- make header
     filtersfile:print("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-    filtersfile:enter("<Project ToolsVersion=\"%s\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", vsinfo.filters_version or version[vsinfo.vstudio_version])
+    filtersfile:enter("<Project ToolsVersion=\"%s\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", vsinfo.filters_version or versions[vsinfo.vstudio_version])
 end
 
 -- make tailer
