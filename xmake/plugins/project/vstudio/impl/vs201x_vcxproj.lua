@@ -164,7 +164,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:enter("<PropertyGroup Label=\"Globals\">")
         vcxprojfile:print("<ProjectGuid>{%s}</ProjectGuid>", os.uuid(targetname))
         vcxprojfile:print("<RootNamespace>%s</RootNamespace>", targetname)
-	vcxprojfile:leave("</PropertyGroup>")
+    vcxprojfile:leave("</PropertyGroup>")
 
     -- import Microsoft.Cpp.Default.props
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.Default.props\" />")
@@ -174,19 +174,19 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target:get("kind")]))
         vcxprojfile:print("<PlatformToolset>v%s0</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
         vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
-	vcxprojfile:leave("</PropertyGroup>")
+    vcxprojfile:leave("</PropertyGroup>")
 
     -- import Microsoft.Cpp.props
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.props\" />")
 
     -- make ExtensionSettings
     vcxprojfile:enter("<ImportGroup Label=\"ExtensionSettings\">")
-	vcxprojfile:leave("</ImportGroup>")
+    vcxprojfile:leave("</ImportGroup>")
 
     -- make PropertySheets
     vcxprojfile:enter("<ImportGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\" Label=\"PropertySheets\">")
         vcxprojfile:print("<Import Project=\"%$(UserRootDir)\\Microsoft.Cpp.%$(Platform).user.props\" Condition=\"exists(\'%$(UserRootDir)\\Microsoft.Cpp.%$(Platform).user.props\')\" Label=\"LocalAppDataPlatform\" />")
-	vcxprojfile:leave("</ImportGroup>")
+    vcxprojfile:leave("</ImportGroup>")
 
     -- make UserMacros
     vcxprojfile:print("<PropertyGroup Label=\"UserMacros\" />")
@@ -198,7 +198,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         if target:get("kind") == "binary" then
             vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
         end
-	vcxprojfile:leave("</PropertyGroup>")
+    vcxprojfile:leave("</PropertyGroup>")
 end
 
 -- make ItemDefinitionGroup
