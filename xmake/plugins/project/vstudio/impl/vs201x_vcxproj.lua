@@ -110,15 +110,15 @@ function _make_header(vcxprojfile, vsinfo, target)
     -- the versions
     local versions = 
     {
-        vs2010 = '10'
-    ,   vs2012 = '11'
+        vs2010 = '4'
+    ,   vs2012 = '4'
     ,   vs2013 = '12'
     ,   vs2015 = '14'
     }
 
     -- make header
     vcxprojfile:print("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-    vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", vsinfo.filters_version)
+    vcxprojfile:enter("<Project DefaultTargets=\"Build\" ToolsVersion=\"%s.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">", assert(versions["vs" .. vsinfo.vstudio_version]))
 end
 
 -- make tailer
