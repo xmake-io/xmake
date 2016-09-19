@@ -287,7 +287,11 @@ function sandbox_os.execv(shellname, argv)
     -- run it
     local ok = os.execv(shellname, argv)
     if ok ~= 0 then
-        os.raise("execv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
+        if argv ~= nil then
+            os.raise("execv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
+        else
+            os.raise("execv(%s) failed(%d)!", shellname, ok)
+        end
     end
 end
 
