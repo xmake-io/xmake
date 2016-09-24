@@ -274,7 +274,7 @@ function deprecated_project._api_add_packagedirs(interp, ...)
     end
 
     -- deprecated
-    deprecated.add("add_pkgdirs(\"%s\")", "add_packagedirs(\"%s\")", values)
+    deprecated.add("add_packagedirs(\"%s\")", "add_pkgdirs(\"%s\")", values)
 
     -- done
     return deprecated_project._api_add_pkgdirs(interp, ...)
@@ -296,7 +296,7 @@ function deprecated_project._api_add_packages(interp, ...)
     end
 
     -- deprecated
-    deprecated.add("add_pkgs(\"%s\")", "add_packages(\"%s\")", values)
+    deprecated.add("add_packages(\"%s\")", "add_pkgs(\"%s\")", values)
 
     -- done
     return deprecated_project._api_add_pkgs(interp, ...)
