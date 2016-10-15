@@ -284,7 +284,7 @@ function target:objectfiles()
 
         -- make object file
         -- full file name(not base) to avoid name-clash of object file
-        local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(sourcefile, "object"))
+        local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(path.filename(sourcefile), "object"))
 
         -- translate path
         --
