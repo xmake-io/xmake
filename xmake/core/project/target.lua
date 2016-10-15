@@ -283,7 +283,8 @@ function target:objectfiles()
         sourcefile = sourcefile:gsub(target.filename("([%w_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
         -- make object file
-        local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(path.basename(sourcefile), "object"))
+        -- full file name(not base) to avoid name-clash of object file
+        local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(sourcefile, "object"))
 
         -- translate path
         --
