@@ -74,6 +74,9 @@ function main(argv)
         -- load project
         project.load()
 
+        -- enter the project directory
+        os.cd(project.directory())
+
         -- the outputdir directory
         local outputdir = args.outputdir or config.get("buildir")
 
