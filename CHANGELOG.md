@@ -18,6 +18,7 @@
 
 * Fix `-def:xxx.def` flags failed for msvc
 * Fix ml.exe assembler script
+* Fix options linking order bug
 
 ## v2.0.4
 
@@ -178,6 +179,7 @@
 
 * 修复msvc的编译选项不支持问题：`-def:xxx.def`
 * 修复ml.exe汇编器脚本
+* 修复选项链接顺序问题
 
 ## v2.0.4
 
