@@ -168,7 +168,7 @@ function compiler:_addflags_from_target(flags, target)
     if target.options then
 
         -- add the flags for the target options
-        for _, opt in pairs(target:options()) do
+        for _, opt in ipairs(target:options()) do
 
             -- add the flags from the option
             self:_addflags_from_target(flags, opt)

@@ -75,7 +75,9 @@ function target:options()
         local opt = nil
         if config.get(name) then opt = option.load(name) end
         if nil ~= opt then
-            options[name] = opt
+
+            -- insert it and must ensure the order for linking
+            table.insert(options, opt)
         end
     end
 
