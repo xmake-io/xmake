@@ -391,6 +391,8 @@ function project._interpreter()
                                             ,   "mxflags"
                                             ,   "mxxflags"
                                             ,   "ldflags" 
+                                            ,   "arflags" 
+                                            ,   "shflags" 
                                             ,   "vectorexts"
                                             ,   "bindings"
                                             ,   "rbindings"
