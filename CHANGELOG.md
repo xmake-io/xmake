@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.0.5
+
 ### New features
 
 * Add some interpreter builtin-modules
@@ -162,6 +164,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.0.5
 
 ### 新特性
 
