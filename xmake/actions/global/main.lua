@@ -51,7 +51,9 @@ function main()
     global.check()
   
     -- merge the cached configure
-    global.load()
+    if not option.get("clean") then
+        global.load()
+    end
 
     -- save it
     global.save()

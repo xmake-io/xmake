@@ -43,7 +43,11 @@ task("global")
                     -- options
                 ,   options = 
                     {
-                        {nil, "make",       "kv", "auto",   "Set the make path."                                        }
+                        {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
+
+                    ,   {}
+
+                    ,   {nil, "make",       "kv", "auto",   "Set the make path."                                        }
                     ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
                                                         ,   "    --ccache=[y|n]"                                        }
 
