@@ -26,15 +26,40 @@ import("core.base.option")
 import("platforms.checker", {rootdir = os.programdir()})
 import("environment")
 
--- attempt to apply this visual stdio from the given the envirnoment variable
-function _apply_vs(config, envalue)
+-- attempt to apply vs environment
+function _apply_vsenv(config, vs)
 
-    -- get the vcvarsall.bat path
-    local vcvarsall = format("%s\\..\\..\\VC\\vcvarsall.bat", envalue)
+    -- version => envname
+    local version2envname =
+    {
+        ["2015"]    = "VS140COMNTOOLS"
+    ,   ["2013"]    = "VS120COMNTOOLS"
+    ,   ["2012"]    = "VS110COMNTOOLS"
+    ,   ["2010"]    = "VS100COMNTOOLS"
+    ,   ["2008"]    = "VS90COMNTOOLS"
+    ,   ["2005"]    = "VS80COMNTOOLS"
+    ,   ["2003"]    = "VS71COMNTOOLS"
+    ,   ["7.0"]     = "VS70COMNTOOLS"
+    ,   ["6.0"]     = "VS60COMNTOOLS"
+    ,   ["5.0"]     = "VS50COMNTOOLS"
+    ,   ["4.2"]     = "VS42COMNTOOLS"
+    }
+    
+    -- get the envname
+    local envname = version2envname[vs]
 
-    -- skip it if vcvarsall.bat not found
-    if not os.isfile(vcvarsall) then
-        if option.get("verbose") then
+    -- attempt to get vcvarsall.bat
+    local vcvarsall = nil
+    if envname then
+        local envalue = os.getenv(envname)
+        if envalue then
+            vcvarsall = format("%s\\..\\..\\VC\\vcvarsall.bat", envalue)
+        end
+    end
+
+    -- vcvarsall.bat not found
+    if vcvarsall == nil or not os.isfile(vcvarsall) then
+        if vcvarsall and option.get("verbose") then
             print("not found %s", vcvarsall)
         end
         return 
@@ -71,6 +96,32 @@ function _apply_vs(config, envalue)
         config.set("__vsenv_" .. k, v)
     end
 
+    -- ok
+    return true
+end
+
+-- clean temporary global configs
+function _clean_global(config)
+    
+    -- clean it for global config (need not it)
+    config.set("arch",                  nil)
+    config.set("__vsenv_path",          nil)
+    config.set("__vsenv_lib",           nil)
+    config.set("__vsenv_include",       nil)
+    config.set("__vsenv_libpath",       nil)
+    config.set("__vsenv_devenvdir",     nil)
+    config.set("__vsenv_vsinstalldir",  nil)
+    config.set("__vsenv_vcinstalldir",  nil)
+end
+
+-- attempt to check complier
+function _check_compiler(config, vs)
+
+    -- apply vs envirnoment
+    if not _apply_vsenv(config, vs) then
+        return 
+    end
+
     -- enter environment
     environment.enter("toolchains")
 
@@ -87,69 +138,19 @@ end
 -- check the visual stdio
 function _check_vs(config)
 
-    -- checked?
-    if config.get("vs") and config.get("__vsenv_path") then 
+    -- attempt to check the given vs version first
+    local vs = config.get("vs")
+    if vs and _check_compiler(config, vs) then
         return 
     end
 
-    -- envname => version
-    local envname2version =
-    {
-        VS140COMNTOOLS  = "2015"
-    ,   VS120COMNTOOLS  = "2013"
-    ,   VS110COMNTOOLS  = "2012"
-    ,   VS100COMNTOOLS  = "2010"
-    ,   VS90COMNTOOLS   = "2008"
-    ,   VS80COMNTOOLS   = "2005"
-    ,   VS71COMNTOOLS   = "2003"
-    ,   VS70COMNTOOLS   = "7.0"
-    ,   VS60COMNTOOLS   = "6.0"
-    ,   VS50COMNTOOLS   = "5.0"
-    ,   VS42COMNTOOLS   = "4.2"
-    }
-
-    -- version => envname
-    local version2envname =
-    {
-        ["2015"]    = "VS140COMNTOOLS"
-    ,   ["2013"]    = "VS120COMNTOOLS"
-    ,   ["2012"]    = "VS110COMNTOOLS"
-    ,   ["2010"]    = "VS100COMNTOOLS"
-    ,   ["2008"]    = "VS90COMNTOOLS"
-    ,   ["2005"]    = "VS80COMNTOOLS"
-    ,   ["2003"]    = "VS71COMNTOOLS"
-    ,   ["7.0"]     = "VS70COMNTOOLS"
-    ,   ["6.0"]     = "VS60COMNTOOLS"
-    ,   ["5.0"]     = "VS50COMNTOOLS"
-    ,   ["4.2"]     = "VS42COMNTOOLS"
-    }
-
-    -- attempt to check the given vs version first
-    local vs = config.get("vs")
-    if vs then
-        
-        -- get the envname
-        local envname = version2envname[vs]
-
-        -- clear vs first
-        vs = nil
-
-        -- attempt to check it
-        if envname then
-            local envalue = os.getenv(envname)
-            if envalue and _apply_vs(config, envalue) then
-                vs = version
-            end
-        end
-    end
-
     -- attempt to check them from the envirnoment variables again
+    vs = nil
     if not vs then
-        for envname, version in pairs(envname2version) do
+        for _, version in ipairs({"2015", "2013", "2012", "2010", "2008", "2005", "2003", "7.0", "6.0", "5.0", "4.2"}) do
 
-            -- attempt to get envirnoment variable and check it
-            local envalue = os.getenv(envname)
-            if envalue and _apply_vs(config, envalue) then
+            -- attempt to check it
+            if _check_compiler(config, version) then
                 vs = version
                 break
             end
@@ -163,10 +164,10 @@ function _check_vs(config)
         config.set("vs", vs)
 
         -- trace
-        print("checking for the Microsoft Visual Studio version ... %s", vs)
+        print("checking for the Microsoft Visual Studio (%s) version ... %s", config.get("arch"), vs)
     else
         -- failed
-        print("checking for the Microsoft Visual Studio version ... no")
+        print("checking for the Microsoft Visual Studio (%s) version ... no", config.get("arch"))
         print("please run:")
         print("    - xmake config --vs=xxx")
         print("or  - xmake global --vs=xxx")
@@ -176,6 +177,11 @@ end
 
 -- check the toolchains
 function _check_toolchains(config)
+
+    -- apply vs envirnoment (maybe config.arch has been updated)
+    if not _apply_vsenv(config, config.get("vs")) then
+        return 
+    end
 
     -- enter environment
     environment.enter("toolchains")
@@ -270,7 +276,9 @@ function init()
     -- init the check list of global
     _g.global = 
     {
-        _check_vs
+        { checker.check_arch, "x86" }
+    ,   _check_vs
+    ,   _clean_global
     }
 
 end

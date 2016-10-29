@@ -22,13 +22,14 @@
 
 -- imports
 import("core.project.config")
+import("core.project.global")
 
 -- enter the given environment
 function _enter(name)
 
     -- get the pathes for the vs environment
     local old = nil
-    local new = config.get("__vsenv_" .. name)
+    local new = config.get("__vsenv_" .. name) or global.get("__vsenv_" .. name)
     if new then
 
         -- get the current pathes

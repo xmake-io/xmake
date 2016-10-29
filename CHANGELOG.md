@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#41](https://github.com/waruqi/xmake/issues/41): Fix checker bug for windows 
+
 ## v2.0.5
 
 ### New features
@@ -164,6 +168,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs修复
+
+* [#41](https://github.com/waruqi/xmake/issues/41): 修复在windows下自动检测x64失败问题
 
 ## v2.0.5
 
