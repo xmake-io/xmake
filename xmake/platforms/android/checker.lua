@@ -63,11 +63,11 @@ function _check_ndk_sdkver(config)
             config.set("ndk_sdkver", ndk_sdkver)
 
             -- trace
-            print("checking for the SDK version of NDK ... android-%d", ndk_sdkver)
+            cprint("checking for the SDK version of NDK ... ${green}android-%d", ndk_sdkver)
         else
 
             -- trace
-            print("checking for the SDK version of NDK ... no")
+            cprint("checking for the SDK version of NDK ... ${red}no")
         end
     end
 end
@@ -98,6 +98,23 @@ function _check_toolchains(config)
                 config.set("toolchains", path.directory(filepath))
                 break
             end
+        end
+    end
+
+    -- get toolchains version
+    local toolchains = config.get("toolchains")
+    if toolchains then
+        local pos, _, toolchains_ver = toolchains:find("%-(%d*%.%d*)/")
+        if pos and toolchains_ver then
+
+            -- save the toolchains version
+            config.set("toolchains_ver", toolchains_ver)
+ 
+            -- trace
+            cprint("checking for the version of toolchains ... ${green}%s", toolchains_ver)
+        else
+            -- trace
+            cprint("checking for the version of toolchains ... ${red}no")
         end
     end
 
