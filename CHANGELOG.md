@@ -5,6 +5,7 @@
 ### Bugs fixed
 
 * [#41](https://github.com/waruqi/xmake/issues/41): Fix checker bug for windows 
+* Add c++ stl search directories for android
 
 ## v2.0.5
 
@@ -172,6 +173,7 @@
 ### Bugs修复
 
 * [#41](https://github.com/waruqi/xmake/issues/41): 修复在windows下自动检测x64失败问题
+* 针对android版本添加c++ stl搜索目录，解决编译c++失败问题
 
 ## v2.0.5
 
