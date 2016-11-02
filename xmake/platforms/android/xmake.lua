@@ -58,18 +58,24 @@ platform("android")
             _g.asflags      = {}
             _g.ldflags      = {"-llog"}
             _g.shflags      = {"-llog"}
+            _g.cxxflags     = {}
         else
             _g.cxflags      = { "-march=" .. arch, "-mthumb"}
             _g.asflags      = { "-march=" .. arch, "-mthumb"}
             _g.ldflags      = { "-march=" .. arch, "-llog", "-mthumb"}
             _g.shflags      = { "-march=" .. arch, "-llog", "-mthumb"}
+            _g.cxxflags     = {}
         end
 
         -- add flags for the sdk directory of ndk
         local ndk = config.get("ndk")
         local ndk_sdkver = config.get("ndk_sdkver")
         if ndk and ndk_sdkver then
+
+            -- get ndk sdk directory
             local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver)) 
+
+            -- add sysroot
             if arch:startswith("arm64") then
                 insert(_g.cxflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
                 insert(_g.asflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
@@ -80,6 +86,34 @@ platform("android")
                 insert(_g.asflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
                 insert(_g.ldflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
                 insert(_g.shflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            end
+
+            -- only for c++ stl
+            local toolchains_ver = config.get("toolchains_ver")
+            if toolchains_ver then
+
+                -- get c++ stl sdk directory
+                local cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, toolchains_ver)) 
+
+                -- the toolchains archs
+                local toolchains_archs = 
+                {
+                    ["armv5te"]     = "armeabi"
+                ,   ["armv6"]       = "armeabi"
+                ,   ["armv7-a"]     = "armeabi-v7a"
+                ,   ["armv8-a"]     = "armeabi-v8a"
+                ,   ["arm64-v8a"]   = "arm64-v8a"
+                }
+
+                -- add search directories for c++ stl
+                insert(_g.cxxflags, format("-I%s/include", cxxstl_sdkdir))
+                if toolchains_archs[arch] then
+                    insert(_g.cxxflags, format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_archs[arch]))
+                    insert(_g.ldflags, format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
+                    insert(_g.shflags, format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
+                    insert(_g.ldflags, format("-lgnustl_static"))
+                    insert(_g.shflags, format("-lgnustl_static"))
+                end
             end
         end
     end)
