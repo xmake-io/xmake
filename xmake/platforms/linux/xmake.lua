@@ -55,7 +55,7 @@ platform("linux")
         _g.formats.symbol   = {"",    ".sym"}
     
         -- cross toolchains?
-        if config.get("cross") then 
+        if config.get("cross") or config.get("toolchains") or config.get("sdk") then 
 
             -- init linkdirs and includedirs
             local sdkdir = config.get("sdk") 
