@@ -113,13 +113,13 @@ function main.done()
         return -1
     end
 
-    -- save command lines to history
-    history.save("cmdlines", option.cmdline())
-
     -- run help?
     if main._help() then
         return 0
     end
+
+    -- save command lines to history
+    history.save("cmdlines", option.cmdline())
 
     -- run task    
     local ok, errors = task.run(option.taskname() or "build")
