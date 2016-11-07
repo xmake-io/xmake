@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add `--links`, `--linkdirs` and `--includedirs` configure arguments
+
 ### Bugs fixed
 
 * [#41](https://github.com/waruqi/xmake/issues/41): Fix checker bug for windows 
@@ -170,6 +174,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
 
 ### Bugs修复
 
