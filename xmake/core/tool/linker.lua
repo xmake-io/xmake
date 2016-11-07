@@ -126,6 +126,11 @@ function linker:_addflags_from_config(flags)
 
     -- done
     table.join2(flags, config.get(self:_flagname()))
+
+    -- add the linkdirs flags 
+    for _, linkdir in ipairs(table.wrap(config.get("linkdirs"))) do
+        table.join2(flags, self:linkdir(linkdir))
+    end
 end
 
 -- add flags from the target 
@@ -137,11 +142,6 @@ function linker:_addflags_from_target(flags, target)
     -- add the linkdirs flags 
     for _, linkdir in ipairs(table.wrap(target:get("linkdirs"))) do
         table.join2(flags, self:linkdir(linkdir))
-    end
-
-    -- add the links flags 
-    for _, link in ipairs(table.wrap(target:get("links"))) do
-        table.join2(flags, self:linklib(link))
     end
 
     -- for target options? 
@@ -156,11 +156,6 @@ function linker:_addflags_from_target(flags, target)
             -- add the linkdirs flags from the option
             for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
                 table.join2(flags, self:linkdir(linkdir))
-            end
-
-            -- add the links flags from the option
-            for _, link in ipairs(table.wrap(opt:get("links"))) do
-                table.join2(flags, self:linklib(link))
             end
         end
     end
@@ -189,11 +184,6 @@ function linker:_addflags_from_platform(flags)
     for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
         table.join2(flags, self:linkdir(linkdir))
     end
-
-    -- add the links flags
-    for _, link in ipairs(table.wrap(platform.get("links"))) do
-        table.join2(flags, self:linklib(link))
-    end
 end
 
 -- add flags from the compiler 
@@ -219,6 +209,46 @@ function linker:_addflags_from_linker(flags)
 
     -- done
     table.join2(flags, self:get(self:_flagname()))
+end
+
+-- add links from the configure 
+function linker:_addlinks_from_config(flags)
+
+    -- add the links flags 
+    for _, link in ipairs(table.wrap(config.get("links"))) do
+        table.join2(flags, self:linklib(link))
+    end
+end
+
+-- add links from the target 
+function linker:_addlinks_from_target(flags, target)
+
+    -- add the links flags 
+    for _, link in ipairs(table.wrap(target:get("links"))) do
+        table.join2(flags, self:linklib(link))
+    end
+
+    -- for target options? 
+    if target.options then
+
+        -- add the flags for the target options
+        for _, opt in ipairs(target:options()) do
+
+            -- add the links flags from the option
+            for _, link in ipairs(table.wrap(opt:get("links"))) do
+                table.join2(flags, self:linklib(link))
+            end
+        end
+    end
+end
+
+-- add links from the platform 
+function linker:_addlinks_from_platform(flags)
+
+    -- add the links flags
+    for _, link in ipairs(table.wrap(platform.get("links"))) do
+        table.join2(flags, self:linklib(link))
+    end
 end
 
 -- get the current kind
@@ -332,6 +362,15 @@ function linker:linkflags(target)
 
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
+
+    -- add links from the configure 
+    self:_addlinks_from_config(flags)
+
+    -- add links from the target 
+    self:_addlinks_from_target(flags, target)
+
+    -- add flags from the platform 
+    self:_addlinks_from_platform(flags)
 
     -- remove repeat
     flags = table.unique(flags)
