@@ -147,6 +147,11 @@ task("config")
                     ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"                               }
  
                     ,   {}
+                    ,   {nil, "links",      "kv", nil,          "The Link Libraries"                                            }
+                    ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"                                   }
+                    ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"                                }
+
+                    ,   {}
                     ,   {nil, "dd",         "kv", "auto",       "The Debugger"                                                  }
 
                         -- show platform menu options

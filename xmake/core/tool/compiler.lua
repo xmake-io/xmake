@@ -113,6 +113,11 @@ function compiler:_addflags_from_config(flags)
     for _, flagname in ipairs(self:_flagnames()) do
         table.join2(flags, config.get(flagname))
     end
+
+    -- add the includedirs flags 
+    for _, includedir in ipairs(table.wrap(config.get("includedirs"))) do
+        table.join2(flags, self:includedir(includedir))
+    end
 end
 
 -- add flags from the target 
