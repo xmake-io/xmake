@@ -363,14 +363,14 @@ function linker:linkflags(target)
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
 
-    -- add links from the configure 
-    self:_addlinks_from_config(flags)
-
     -- add links from the target 
     self:_addlinks_from_target(flags, target)
 
     -- add flags from the platform 
     self:_addlinks_from_platform(flags)
+
+    -- add links from the configure 
+    self:_addlinks_from_config(flags)
 
     -- remove repeat
     flags = table.unique(flags)
