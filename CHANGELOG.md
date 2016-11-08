@@ -5,6 +5,7 @@
 ### New features
 
 * Add `--links`, `--linkdirs` and `--includedirs` configure arguments
+* Add app2ipa plugin
 
 ### Bugs fixed
 
@@ -178,6 +179,7 @@
 ### 新特性
 
 * 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
+* 添加app2ipa插件
 
 ### Bugs修复
 
