@@ -137,7 +137,7 @@ function main()
     if not os.isfile(project.file()) then
 
         -- remove config directory if exists because the current directory is not a project
-        os.rm(config.directory(), true)
+        os.rm(config.directory())
         
         -- error
         raise("xmake.lua not found!")
