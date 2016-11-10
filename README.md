@@ -13,7 +13,7 @@ If you want to known more, please refer to:
 
 * [Documents](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
 * [Github](https://github.com/waruqi/xmake)
-* [HomePage](http://xmake.io)
+* [HomePage](http://www.xmake.io)
 
 #### Features
 
@@ -78,111 +78,133 @@ If you want to known more, please refer to:
 
 Create a c++ console project:
 
-        xmake create -l c++ -t 1 console
-     or xmake create --language=c++ --template=1 console
+```bash
+    xmake create -l c++ -t 1 console
+ or xmake create --language=c++ --template=1 console
+```
 
 Project xmakefile: xmake.lua
 
-    target("console")
-        set_kind("binary")
-        add_files("src/*.c") 
+```lua
+target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
 
 Configure project:
 
-   This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
+This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
 
-       xmake f -p iphoneos -m debug
-    or xmake f --plat=macosx --arch=x86_64
-    or xmake f -p windows
-    or xmake config --plat=iphoneos --mode=debug
-    or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-    or xmake config -p linux -a i386
-    or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
-    or xmake config -p mingw --sdk=/mingwsdk
-    or xmake config --help
+```bash
+   xmake f -p iphoneos -m debug
+or xmake f --plat=macosx --arch=x86_64
+or xmake f -p windows
+or xmake config --plat=iphoneos --mode=debug
+or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
+or xmake config -p linux -a i386
+or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
+or xmake config -p mingw --sdk=/mingwsdk
+or xmake config --help
+```
 
 Compile project：
- 
-       xmake
-    or xmake -r
-    or xmake --rebuild
+
+```bash
+   xmake
+or xmake -r
+or xmake --rebuild
+```
 
 Run target：
 
-       xmake r console
-    or xmake run console
+```bash
+   xmake r console
+or xmake run console
+```
 
 Debug target：
 
-       xmake r -d console
-    or xmake run -d console
+```bash
+   xmake r -d console
+or xmake run -d console
+```
 
 Package all：
 
-       xmake p
-    or xmake package
-    or xmake package console
-    or xmake package -o /tmp
-    or xmake package --output=/tmp
+```bash
+   xmake p
+or xmake package
+or xmake package console
+or xmake package -o /tmp
+or xmake package --output=/tmp
+```
 
 Package all archs using macro:
-       
-       xmake m package 
-    or xmake m package -p iphoneos
-    or xmake m package -p macosx -f "-m debug" -o /tmp/
-    or xmake m package --help
+   
+```bash
+   xmake m package 
+or xmake m package -p iphoneos
+or xmake m package -p macosx -f "-m debug" -o /tmp/
+or xmake m package --help
+```
 
 Install targets：
 
-       xmake i
-    or xmake install
-    or xmake install console
-    or xmake install -o /tmp
-    or xmake install --output=/tmp
+```bash
+   xmake i
+or xmake install
+or xmake install console
+or xmake install -o /tmp
+or xmake install --output=/tmp
+```
 
 If you need known more detailed usage，please refer to [documents](https://github.com/waruqi/xmake/wiki/documents)
 or run:
 
-       xmake -h
-    or xmake --help
-    or xmake config --help
-    or xmake package --help
-    or xmake macro --help
-    ...
+```bash
+   xmake -h
+or xmake --help
+or xmake config --help
+or xmake package --help
+or xmake macro --help
+...
+```
 
 The simple xmake.lua file:
 
-    -- the debug mode
-    if is_mode("debug") then
-        
-        -- enable the debug symbols
-        set_symbols("debug")
+```c
+-- the debug mode
+if is_mode("debug") then
+    
+    -- enable the debug symbols
+    set_symbols("debug")
 
-        -- disable optimization
-        set_optimize("none")
-    end
+    -- disable optimization
+    set_optimize("none")
+end
 
-    -- the release mode
-    if is_mode("release") then
+-- the release mode
+if is_mode("release") then
 
-        -- set the symbols visibility: hidden
-        set_symbols("hidden")
+    -- set the symbols visibility: hidden
+    set_symbols("hidden")
 
-        -- enable fastest optimization
-        set_optimize("fastest")
+    -- enable fastest optimization
+    set_optimize("fastest")
 
-        -- strip all symbols
-        set_strip("all")
-    end
+    -- strip all symbols
+    set_strip("all")
+end
 
-    -- add target
-    target("test")
+-- add target
+target("test")
 
-        -- set kind
-        set_kind("static")
+    -- set kind
+    set_kind("static")
 
-        -- add files
-        add_files("src/*.c") 
+    -- add files
+    add_files("src/*.c") 
+```
 
 If you want to know more, please refer to:
 
@@ -223,7 +245,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 * [在线文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
 * [在线源码](https://github.com/waruqi/xmake)
-* [项目主页](http://xmake.io/cn)
+* [项目主页](http://www.xmake.io/cn)
 
 #### 支持特性
 
@@ -290,6 +312,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - 宏记录脚本插件: 记录和回放宏脚本，简化重复的命令操作（例如：批量打包。。）
 - hello插件: 插件开发demo
 - 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile, vs2002 - vs2008，后续支持：vs2010以上版本, xcode等等)
+- iOS app2ipa插件
 
 #### 支持编译语言
 
@@ -312,83 +335,103 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 - 自动包依赖管理和下载
 - 创建移植仓库，实现`一人移植，多人共享`
-- 更多的插件开发(例如：生成.deb, .rpm的安装包)
+- 更多的插件开发(例如：Xcode工程生成，生成.deb, .rpm的安装包)
 
 #### 简单例子
 
 创建一个c++ console项目：
 
-        xmake create -l c++ -t 1 console
-     or xmake create --language=c++ --template=1 console
+```bash
+    xmake create -l c++ -t 1 console
+or  xmake create --language=c++ --template=1 console
+```
 
 工程描述文件：xmake.lua
 
-    target("console")
-        set_kind("binary")
-        add_files("src/*.c") 
+```lua
+target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
 
 配置工程：
 
    这个是可选的步骤，如果只想编译当前主机平台的项目，是可以不用配置的，默认编译release版本。
 
-       xmake f -p iphoneos -m debug
-    or xmake f --plat=macosx --arch=x86_64
-    or xmake f -p windows
-    or xmake config --plat=iphoneos --mode=debug
-    or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-    or xmake config -p linux -a i386
-    or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
-    or xmake config -p mingw --sdk=/mingwsdk
-    or xmake config --help
+```bash
+   xmake f -p iphoneos -m debug
+or xmake f --plat=macosx --arch=x86_64
+or xmake f -p windows
+or xmake config --plat=iphoneos --mode=debug
+or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
+or xmake config -p linux -a i386
+or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
+or xmake config -p mingw --sdk=/mingwsdk
+or xmake config --help
+```
 
 编译工程：
      
-       xmake
-    or xmake -r
-    or xmake --rebuild
+```bash
+   xmake
+or xmake -r
+or xmake --rebuild
+```
 
 运行目标：
 
-       xmake r console
-    or xmake run console
+```bash
+   xmake r console
+or xmake run console
+```
 
 调试目标：
 
-       xmake r -d console
-    or xmake run -d console
+```bash
+   xmake r -d console
+or xmake run -d console
+```
 
 打包所有：
 
-       xmake p
-    or xmake package
-    or xmake package console
-    or xmake package -o /tmp
-    or xmake package --output=/tmp
+```bash
+   xmake p
+or xmake package
+or xmake package console
+or xmake package -o /tmp
+or xmake package --output=/tmp
+```
 
 通过宏脚本打包所有架构:
-       
-       xmake m package 
-    or xmake m package -p iphoneos
-    or xmake m package -p macosx -f "-m debug" -o /tmp/
-    or xmake m package --help
+   
+```bash
+   xmake m package 
+or xmake m package -p iphoneos
+or xmake m package -p macosx -f "-m debug" -o /tmp/
+or xmake m package --help
+```
 
 安装目标：
 
-       xmake i
-    or xmake install
-    or xmake install console
-    or xmake install -o /tmp
-    or xmake install --output=/tmp
+```bash
+   xmake i
+or xmake install
+or xmake install console
+or xmake install -o /tmp
+or xmake install --output=/tmp
+```
 
 详细使用方式和参数说明，请参考[文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
 或者运行：
 
-       xmake -h
-    or xmake --help
-    or xmake config --help
-    or xmake package --help
-    or xmake macro --help
-    ...
+```bash
+   xmake -h
+or xmake --help
+or xmake config --help
+or xmake package --help
+or xmake macro --help
+...
+```
 
 #### 一些使用xmake的项目：
 
@@ -399,37 +442,39 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 #### 简单例子
 
-    -- the debug mode
-    if is_mode("debug") then
-        
-        -- enable the debug symbols
-        set_symbols("debug")
+```c
+-- the debug mode
+if is_mode("debug") then
+    
+    -- enable the debug symbols
+    set_symbols("debug")
 
-        -- disable optimization
-        set_optimize("none")
-    end
+    -- disable optimization
+    set_optimize("none")
+end
 
-    -- the release mode
-    if is_mode("release") then
+-- the release mode
+if is_mode("release") then
 
-        -- set the symbols visibility: hidden
-        set_symbols("hidden")
+    -- set the symbols visibility: hidden
+    set_symbols("hidden")
 
-        -- enable fastest optimization
-        set_optimize("fastest")
+    -- enable fastest optimization
+    set_optimize("fastest")
 
-        -- strip all symbols
-        set_strip("all")
-    end
+    -- strip all symbols
+    set_strip("all")
+end
 
-    -- add target
-    target("test")
+-- add target
+target("test")
 
-        -- set kind
-        set_kind("static")
+    -- set kind
+    set_kind("static")
 
-        -- add files
-        add_files("src/*.c") 
+    -- add files
+    add_files("src/*.c") 
+```
 
 #### 联系方式
 
