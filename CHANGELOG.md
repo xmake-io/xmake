@@ -6,6 +6,7 @@
 
 * Add `--links`, `--linkdirs` and `--includedirs` configure arguments
 * Add app2ipa plugin
+* Add dictionary syntax style for xmake.lua
 
 ### Bugs fixed
 
@@ -180,6 +181,7 @@
 
 * 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
 * 添加app2ipa插件
+* 为xmake.lua工程描述增加dictionay语法风格
 
 ### Bugs修复
 
