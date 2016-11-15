@@ -131,17 +131,17 @@ function task._translate_menu(menu)
 
         -- add common options
         table.insert(options, 1, {'v', "verbose",   "k",  nil, "Print lots of verbose information."         })
-        table.insert(options, 1, {nil, "backtrace", "k",  nil, "Print backtrace information for debugging." })
-        table.insert(options, 2, {nil, "version",   "k",  nil, "Print the version number and exit."         })
-        table.insert(options, 3, {'h', "help",      "k",  nil, "Print this help message and exit."          })
-        table.insert(options, 4, {})
-        table.insert(options, 5, {'F', "file",      "kv", nil, "Read a given xmake.lua file."               })
-        table.insert(options, 6, {'P', "project",   "kv", nil, "Change to the given project directory."
+        table.insert(options, 2, {nil, "backtrace", "k",  nil, "Print backtrace information for debugging." })
+        table.insert(options, 3, {nil, "version",   "k",  nil, "Print the version number and exit."         })
+        table.insert(options, 4, {'h', "help",      "k",  nil, "Print this help message and exit."          })
+        table.insert(options, 5, {})
+        table.insert(options, 6, {'F', "file",      "kv", nil, "Read a given xmake.lua file."               })
+        table.insert(options, 7, {'P', "project",   "kv", nil, "Change to the given project directory."
                                                               , "Search priority:"
                                                               , "    1. The Given Command Argument"
                                                               , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                               , "    3. The Current Directory"              })
-        table.insert(options, 7, {})
+        table.insert(options, 8, {})
 
     end
 
