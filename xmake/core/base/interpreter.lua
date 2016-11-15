@@ -748,6 +748,29 @@ function interpreter:api_register_scope(...)
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
 
+        -- is dictionary mode?
+        --
+        -- .e.g 
+        -- target
+        -- {
+        --    name = "tbox"
+        --    kind = "static",
+        --    files =
+        --    {
+        --        "src/*.c",
+        --        "*.cpp"
+        --    }
+        --}
+        local scope_info = nil
+        if type(scope_name) == "table" and scope_name["name"] ~= nil then
+
+            -- get the scope info
+            scope_info = scope_name
+
+            -- get the scope name from the dictionary
+            scope_name = scope_name["name"]
+        end
+
         -- enter the given scope
         if scope_name ~= nil then
 
@@ -768,6 +791,19 @@ function interpreter:api_register_scope(...)
 
         -- update the current scope kind
         scopes._CURRENT_KIND = scope_kind
+
+        -- translate scope info 
+        if scope_info then
+            scope_info["name"] = nil
+            for name, values in pairs(scope_info) do
+                local apifunc = self:api_func("set_" .. name) or self:api_func("add_" .. name) or self:api_func("on_" .. name) or self:api_func(name)
+                if apifunc then
+                    apifunc(values)
+                else
+                    os.raise("unknown %s for %s(\"%s\")", name, scope_kind, scope_name)
+                end
+            end
+        end
     end
 
     -- register implementation
@@ -1072,14 +1108,24 @@ function interpreter:api_builtin_add_subfiles(...)
     return self:_api_builtin_add_subdirfiles(false, ...)
 end
 
--- call api
-function interpreter:api_call(apiname, ...)
+-- get api function
+function interpreter:api_func(apiname)
 
     -- check
     assert(self and self._PUBLIC and apiname)
 
     -- get api function
-    local apifunc = self._PUBLIC[apiname]
+    return self._PUBLIC[apiname]
+end
+
+-- call api
+function interpreter:api_call(apiname, ...)
+
+    -- check
+    assert(self and apiname)
+
+    -- get api function
+    local apifunc = self:api_func(apiname)
     if not apifunc then
         os.raise("call %s() failed, this api not found!", apiname)
     end
