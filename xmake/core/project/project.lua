@@ -748,8 +748,21 @@ function project.menu()
                 end
 
                 -- append it
-                if opt:get("description") then
-                    table.insert(menu, {nil, longname, "kv", default, opt:get("description")})
+                local descriptions = opt:get("description")
+                if descriptions then
+
+                    -- define menu option
+                    local menu_options = {nil, longname, "kv", default, descriptions}
+                        
+                    -- handle set_description("xx", "xx")
+                    if type(descriptions) == "table" then
+                        for i, description in ipairs(descriptions) do
+                            menu_options[4 + i] = description
+                        end
+                    end
+
+                    -- insert option into menu
+                    table.insert(menu, menu_options)
                 else
                     table.insert(menu, {nil, longname, "kv", default, nil})
                 end
