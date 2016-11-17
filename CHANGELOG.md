@@ -141,7 +141,7 @@
 * Add some project templates
 * Support swift codes
 * Add -v argument for outputing more verbose info
-* Add apple platforms��watchos, watchsimulator
+* Add apple platforms：watchos, watchsimulator
 * Add architecture x64, amd64, x86_amd64 for windows
 * Support switch static and share library
 * Add -j/--jobs argument for supporting multi-jobs 
@@ -173,175 +173,175 @@
 * Fix relative path bug
 
 
-# ������־
+# 更新日志
 
-## master (������)
+## master (开发中)
 
-### ������
+### 新特性
 
-* ����`--links`, `--linkdirs` and `--includedirs` ���ò���
-* ����app2ipa���
-* Ϊxmake.lua������������dictionay�﷨���
+* 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
+* 添加app2ipa插件
+* 为xmake.lua工程描述增加dictionay语法风格
 
-### Bugs�޸�
+### Bugs修复
 
-* [#41](https://github.com/waruqi/xmake/issues/41): �޸���windows���Զ����x64ʧ������
-* [#43](https://github.com/waruqi/xmake/issues/43): ���ⴴ������Ҫ��.xmake���̻���Ŀ¼
-* ���android�汾����c++ stl����Ŀ¼���������c++ʧ������
+* [#41](https://github.com/waruqi/xmake/issues/41): 修复在windows下自动检测x64失败问题
+* [#43](https://github.com/waruqi/xmake/issues/43): 避免创建不必要的.xmake工程缓存目录
+* 针对android版本添加c++ stl搜索目录，解决编译c++失败问题
 
 ## v2.0.5
 
-### ������
+### 新特性
 
-* Ϊ����������������һЩ�ڽ�ģ��֧��
-* ���windows x64ƽ̨��֧��ml64�����
+* 为解释器作用域增加一些内建模块支持
+* 针对windows x64平台，支持ml64汇编器
 
-### �Ľ�
+### 改进
 
-* ��ǿipairs��pairs�ӿڣ�֧�ֹ�����ģʽ���򻯽ű�����
-* Ϊvs201x�������������ļ�filter
-* �Ƴ�`core/tools`Ŀ¼�Լ�msys����������windows��ʹ��xmake�Ա���coreԴ����а�װ���Ż�xmakeԴ����̿ռ�
-* �Ƴ�`xmake/packages`��Ĭ��ģ�尲װ�������ö�����packages����ʱ��Ҫ�ֶ����ã��Ժ��������Զ����������ر���
+* 增强ipairs和pairs接口，支持过滤器模式，简化脚本代码
+* 为vs201x工程生成增加文件filter
+* 移除`core/tools`目录以及msys工具链，在windows上使用xmake自编译core源码进行安装，优化xmake源码磁盘空间
+* 移除`xmake/packages`，默认模板安装不再内置二进制packages，暂时需要手动放置，以后再做成自动包依赖下载编译
 
-### Bugs�޸�
+### Bugs修复
 
-* �޸�msvc�ı���ѡ�֧�����⣺`-def:xxx.def`
-* �޸�ml.exe������ű�
-* �޸�ѡ������˳������
+* 修复msvc的编译选项不支持问题：`-def:xxx.def`
+* 修复ml.exe汇编器脚本
+* 修复选项链接顺序问题
 
 ## v2.0.4
 
-### ������
+### 新特性
 
-* ��`xmake.lua`������ԭ��shell֧�֣����磺`add_ldflags("$(shell pkg-config --libs sqlite3)")`
-* ����windowsĿ�����Ĭ��Ĭ������pdb�����ļ�
-* ��windows�����ӵ�����֧�֣�vsjitdebugger, ollydbg, windbg ... ��
-* ����`getenv`�ӿڵ�`xmake.lua`��ȫ����������
-* ��������vstudio���̲��(֧�֣�vs2002 - vs2015)
-* Ϊoption����`set_default`�ӿ�
+* 在`xmake.lua`中添加原生shell支持，例如：`add_ldflags("$(shell pkg-config --libs sqlite3)")`
+* 编译windows目标程序，默认默认启用pdb符号文件
+* 在windows上添加调试器支持（vsjitdebugger, ollydbg, windbg ... ）
+* 添加`getenv`接口到`xmake.lua`的全局作用域中
+* 添加生成vstudio工程插件(支持：vs2002 - vs2015)
+* 为option添加`set_default`接口
 
-### �Ľ�
+### 改进
 
-* ��ǿ�ڽ������Ĵ���
-* ֧���ַ������͵�ѡ��option����
+* 增强内建变量的处理
+* 支持字符串类型的选项option设置
 
-### Bugs�޸�
+### Bugs修复
 
-* �޸���linux�¼��ld������ʧ�ܣ����ûװg++�Ļ�
-* �޸�`*.cxx`����ʧ������
+* 修复在linux下检测ld连接器失败，如果没装g++的话
+* 修复`*.cxx`编译失败问题
 
 ## v2.0.3
 
-### ������
+### 新特性
 
-* ����ͷ�ļ������Զ������������룬��߱����ٶ�
-* ���ն��н�����ɫ������ʾ
-* ���ӵ�����֧�֣�`xmake run -d program ...`
+* 增加头文件依赖自动检测和增量编译，提高编译速度
+* 在终端中进行颜色高亮提示
+* 添加调试器支持，`xmake run -d program ...`
 
-### �Ľ�
+### 改进
 
-* ��ǿ����shell��ϵ�нӿ�
-* ����luajit��v2.0.4�汾
-* �Ľ�makefile���ɲ�����Ƴ���xmake������������֧��`windows/linux/macosx`�ȴ󲿷�pcƽ̨
-* �Ż�����������ٶȣ���windows�±���������Ϊ����
+* 增强运行shell的系列接口
+* 更新luajit到v2.0.4版本
+* 改进makefile生成插件，移除对xmake的依赖，并且支持`windows/linux/macosx`等大部分pc平台
+* 优化多任务编译速度，在windows下编译提升较为明显
 
-### Bugs�޸�
+### Bugs修复
 
-* �޸���װĿ¼��������
-* �޸�`import`��Ŀ¼��������
-* �޸��ڶ�汾vsͬʱ���ڵ�����£����vs����ʧ������
+* 修复安装目录错误问题
+* 修复`import`根目录错误问题
+* 修复在多版本vs同时存在的情况下，检测vs环境失败问题
 
 ## v2.0.2
 
-### �Ľ�
+### 改进
 
-* �޸İ�װ��ж�ص�action����
-* ���¹���ģ��
-* ��ǿ�������
+* 修改安装和卸载的action处理
+* 更新工程模板
+* 增强函数检测
 
-### Bugs�޸�
+### Bugs修复
 
-* [#7](https://github.com/waruqi/xmake/issues/7): �޸���ģ�崴�����̺�target���������⣺'[targetname]'
-* [#9](https://github.com/waruqi/xmake/issues/9): �޸�clang��֧��c++11������
-* �޸�api������й¶����
-* �޸���windows�ϵ�һЩ·������
-* �޸����꺯��ʧ������
-* �޸���⹤����ʧ������
-* �޸�windows�ϱ���android�汾ʧ��
+* [#7](https://github.com/waruqi/xmake/issues/7): 修复用模板创建工程后，target名不对问题：'[targetname]'
+* [#9](https://github.com/waruqi/xmake/issues/9): 修复clang不支持c++11的问题
+* 修复api作用域泄露问题
+* 修复在windows上的一些路径问题
+* 修复检测宏函数失败问题
+* 修复检测工具链失败问题
+* 修复windows上编译android版本失败
 
 ## v2.0.1
 
-### ������
+### 新特性
 
-* ����task������ƣ��������Զ�������ű�
-* ʵ��plugin��չ���ƣ����Ժܷ�����չʵ���Զ�������Ŀǰ��ʵ�ֵ�һЩ���ò��
-* ����project�ļ��������(Ŀǰ��֧��makefile�����ɣ�������֧�֣�vs, xcode�ȹ��̵�����)
-* ����hello xmake��������demo��
-* ����doxygen�ĵ����ɲ��
-* �����Զ����ű������֧�ֶ�̬���¼����طš������ꡢ�������롢�����ȹ��ܣ�
-* ���Ӹ����������ڲ��������
-* ʵ���쳣������ƣ����ϲ�����߼�
-* ���Ӷ��option���к�󶨣�ʵ������һ���������Ϳ���ͬʱ�Զ�����ý�����Ч
-* ������ʾȫ�ֹ�������
+* 增加task任务机制，可运行自定义任务脚本
+* 实现plugin扩展机制，可以很方便扩展实现自定义插件，目前已实现的一些内置插件
+* 增加project文件导出插件(目前已支持makefile的生成，后续会支持：vs, xcode等工程的生成)
+* 增加hello xmake插件（插件demo）
+* 增加doxygen文档生成插件
+* 增加自定义宏脚本插件（支持动态宏记录、宏回放、匿名宏、批量导入、导出等功能）
+* 增加更多的类库用于插件化开发
+* 实现异常捕获机制，简化上层调用逻辑
+* 增加多个option进行宏绑定，实现配置一个参数，就可以同时对多个配置进行生效
+* 增加显示全局构建进度
 
-### �Ľ�
+### 改进
 
-* �ع�����xmake.lua�����ļ��Ľ����������ӵ�������չ
-* �����ϸ���﷨������
-* �����ϸ�������������ʵ��ɳ�����棬��xmake.lua�нű�����ɳ�л�������ʹ��xmake.lua���ӵİ�ȫ
-* ��ģ��Ŀ������򵥼��������Ϳ�����չһ���µ��Զ��幤��ģ��
-* ��ȫģ�黯platforms��tools��templates��actions���Լ�ͨ����ע����ƣ�ֻ����Զ���Ľű������ӦĿ¼���Ϳ�ʵ�ֿ�����չ
-* ������п���չ�ű�����api���д����򻯣���ʵ�ִ�����⣬ͨ��import���ƽ��е���ʹ��
-* �Ƴ���gnu make/nmake��make���ߵ�������������Ҫmakefile��ʵ���Լ���make�㷨��
-* �Ż������ٶȣ�֧�ֶ��������(֧��vs������)��ʵ�⣺��v1.0.4����x4���Ĺ������ܣ�
-* �Ż��Զ������ƣ����ӵ��ȶ���׼ȷ
-* �޸Ĳ��ֹ�������api����ǿ��չ�ԣ�����һЩ�������壨�ԵͰ汾���¼��ݣ�
-* �Ż���̬��ϲ���`add_files("*.a")`���޸�һЩbug
-* �Ż�������룬ͨ��`--sdk=xxx`����ʵ�ָ��ӷ������ܵĽ��н���������ã���mingwƽ̨�ı�������
-* �����������ÿ���, ֧��`xmake config --xxx=[y|n|yes|no|true|false]`�ȿ���ֵ
-* �ϲ�iphoneos��iphonesimulatorƽ̨���Լ�watchos��watchsimulatorƽ̨��ͨ��arch�����֣�ʹ�ô�����ӷ��㣬�ܹ�֧��һ���Դ��iphoneos������arch��һ������
+* 重构整个xmake.lua描述文件的解释器，更加的灵活可扩展
+* 更加严格的语法检测机制
+* 更加严格的作用域管理，实现沙盒引擎，对xmake.lua中脚本进行沙盒化处理，使得xmake.lua更加的安全
+* 简化模板的开发，简单几行描述就可以扩展一个新的自定义工程模板
+* 完全模块化platforms、tools、templates、actions，以及通过自注册机制，只需把自定义的脚本放入对应目录，就可实现快速扩展
+* 针对所有可扩展脚本所需api进行大量简化，并实现大量类库，通过import机制进行导入使用
+* 移除对gnu make/nmake等make工具的依赖，不再需要makefile，实现自己的make算法，
+* 优化构建速度，支持多任务编译(支持vs编译器)（实测：比v1.0.4提升x4倍的构建性能）
+* 优化自动检测机制，更加的稳定和准确
+* 修改部分工程描述api，增强扩展性，减少一些命名歧义（对低版本向下兼容）
+* 优化静态库合并：`add_files("*.a")`，修复一些bug
+* 优化交叉编译，通过`--sdk=xxx`参数实现更加方便智能的进行交叉编译配置，简化mingw平台的编译配置
+* 简化命令行配置开关, 支持`xmake config --xxx=[y|n|yes|no|true|false]`等开关值
+* 合并iphoneos和iphonesimulator平台，以及watchos和watchsimulator平台，通过arch来区分，使得打包更加方便，能够支持一次性打包iphoneos的所有arch到一个包中
 
-### Bugs�޸�
+### Bugs修复
 
-* [#3](https://github.com/waruqi/xmake/issues/3): �޸�ArchLinux ����ʧ������
-* [#4](https://github.com/waruqi/xmake/issues/4): �޸�windows�ϰ�װʧ������
-* �޸�windows�ϻ���������������
+* [#3](https://github.com/waruqi/xmake/issues/3): 修复ArchLinux 编译失败问题
+* [#4](https://github.com/waruqi/xmake/issues/4): 修复windows上安装失败问题
+* 修复windows上环境变量设置问题
 
 ## v1.0.4
 
-### ������
+### 新特性
 
-* ���Ӷ�windows�������֧��
-* Ϊxmake create����һЩ�µĹ���ģ�壬֧��tbox�汾
-* ֧��swift����
-* ���-v���������Ӵ��������Ϣ
-* ����apple����ƽ̨��watchos, watchsimulator�ı���֧��
-* ���Ӷ�windows: x64, amd64, x86_amd64�ܹ��ı���֧��
-* ʵ�ֶ�̬��;�̬��Ŀ����л�
-* ����-j/--jobs�������ֶ�ָ���Ƿ��������룬Ĭ�ϸ�Ϊ���������
+* 增加对windows汇编器的支持
+* 为xmake create增加一些新的工程模板，支持tbox版本
+* 支持swift代码
+* 针对-v参数，增加错误输出信息
+* 增加apple编译平台：watchos, watchsimulator的编译支持
+* 增加对windows: x64, amd64, x86_amd64架构的编译支持
+* 实现动态库和静态库的快速切换
+* 添加-j/--jobs参数，手动指定是否多任务编译，默认改为单任务编译
 
-### �Ľ�
+### 改进
 
-* ��ǿadd_files�ӿڣ�֧��ֱ������*.o/obj/a/lib�ļ�������֧�־�̬��ĺϲ�
-* �ü�xmake�İ�װ���̣��Ƴ�һЩԤ����Ķ����Ƴ���
+* 增强add_files接口，支持直接添加*.o/obj/a/lib文件，并且支持静态库的合并
+* 裁剪xmake的安装过程，移除一些预编译的二进制程序
 
-### Bugs�޸�
+### Bugs修复
 
-* [#1](https://github.com/waruqi/xmake/issues/4): �޸�win7�ϰ�װʧ������
-* �޸�����ǿ���������
-* �޸�һЩ��װ�ű���bug, �ĳ�����sudo���а�װ
-* �޸�linux x86_64�°�װʧ������
+* [#1](https://github.com/waruqi/xmake/issues/4): 修复win7上安装失败问题
+* 修复和增强工具链检测
+* 修复一些安装脚本的bug, 改成外置sudo进行安装
+* 修复linux x86_64下安装失败问题
 
 ## v1.0.3
 
-### ������
+### 新特性
 
-* ����set_runscript�ӿڣ�֧���Զ������нű���չ
-* ����import�ӿڣ�ʹ����xmake.lua�п��Ե���һЩ��չģ�飬���磺os��path��utils�ȵȣ�ʹ�ýű������
-* ����androidƽ̨arm64-v8a֧��
+* 添加set_runscript接口，支持自定义运行脚本扩展
+* 添加import接口，使得在xmake.lua中可以导入一些扩展模块，例如：os，path，utils等等，使得脚本更灵活
+* 添加android平台arm64-v8a支持
 
-### Bugs�޸�
+### Bugs修复
 
-* �޸�set_installscript�ӿڵ�һЩbug
-* �޸���windows x86_64�£���װʧ�ܵ�����
-* �޸����·����һЩbug
+* 修复set_installscript接口的一些bug
+* 修复在windows x86_64下，安装失败的问题
+* 修复相对路径的一些bug
