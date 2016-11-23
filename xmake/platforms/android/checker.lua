@@ -104,7 +104,7 @@ function _check_toolchains(config)
     -- get toolchains version
     local toolchains = config.get("toolchains")
     if toolchains then
-        local pos, _, toolchains_ver = toolchains:find("%-(%d*%.%d*)/")
+        local pos, _, toolchains_ver = toolchains:find("%-(%d*%.%d*)[/\\]")
         if pos and toolchains_ver then
 
             -- save the toolchains version
