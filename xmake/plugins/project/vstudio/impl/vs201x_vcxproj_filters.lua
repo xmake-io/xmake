@@ -34,6 +34,7 @@ function _make_header(filtersfile, vsinfo, target)
     ,   vs2012 = '11.0'
     ,   vs2013 = '12.0'
     ,   vs2015 = '14.0'
+    ,   vs2017 = '15.0'
     }
 
     -- make header
