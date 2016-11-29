@@ -8,6 +8,10 @@
 * Add app2ipa plugin
 * Add dictionary syntax style for xmake.lua
 
+### Changes
+
+* Support vs2017 for the project plugin
+
 ### Bugs fixed
 
 * [#41](https://github.com/waruqi/xmake/issues/41): Fix checker bug for windows 
@@ -182,6 +186,10 @@
 * 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
 * 添加app2ipa插件
 * 为xmake.lua工程描述增加dictionay语法风格
+
+### 改进
+
+* 工程生成插件支持vs2017
 
 ### Bugs修复
 
