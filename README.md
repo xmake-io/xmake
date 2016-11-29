@@ -48,7 +48,7 @@ If you want to known more, please refer to:
 - The doxygen plugin: Make doxygen document from source codes
 - The macro plugin: Record and playback commands 
 - The hello plugin: A simple plugin demo to show 'hello xmake!'
-- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2015)
+- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2017)
 
 #### Languages
 
@@ -292,7 +292,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 - 调试器支持，实现直接加载运行调试
 
-- 提供产生IDE工程文件的插件（支持vs2002 - vs2015）
+- 提供产生IDE工程文件的插件（支持vs2002 - vs2017）
 
 #### 常用Actions
 
@@ -311,7 +311,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - doxygen文档生成插件: 从指定源码目录生成doxygen文档
 - 宏记录脚本插件: 记录和回放宏脚本，简化重复的命令操作（例如：批量打包。。）
 - hello插件: 插件开发demo
-- 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile, vs2002 - vs2008，后续支持：vs2010以上版本, xcode等等)
+- 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile, vs2002 - vs2017，后续支持：xcode等等)
 - iOS app2ipa插件
 
 #### 支持编译语言
