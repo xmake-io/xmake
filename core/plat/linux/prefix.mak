@@ -62,7 +62,7 @@ endif
 # cxflags: .c/.cc/.cpp files
 CXFLAGS_RELEASE 	= -fvisibility=hidden
 CXFLAGS_DEBUG 		= -g -D__tb_debug__
-CXFLAGS 			= $(AHFLAGS) -c -Wall -Werror -Wno-error=deprecated-declarations
+CXFLAGS 			= $(AHFLAGS) -c -Wall -Werror 
 CXFLAGS-I 			= -I
 CXFLAGS-o 			= -o
 
@@ -95,7 +95,7 @@ CFLAGS_DEBUG 		=
 CFLAGS 				= \
 					-std=c99 \
 					-D_GNU_SOURCE=1 -D_REENTRANT \
-					-fno-math-errno -fno-signed-zeros -fno-tree-vectorize
+					-fno-math-errno -fno-tree-vectorize
 
 # ccflags: .cc/.cpp files
 CCFLAGS_RELEASE 	= -fno-rtti
