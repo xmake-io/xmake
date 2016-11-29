@@ -114,6 +114,7 @@ function _make_header(vcxprojfile, vsinfo, target)
     ,   vs2012 = '4'
     ,   vs2013 = '12'
     ,   vs2015 = '14'
+    ,   vs2017 = '15'
     }
 
     -- make header
@@ -150,6 +151,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     ,   vs2012 = '11'
     ,   vs2013 = '12'
     ,   vs2015 = '14'
+    ,   vs2017 = '15'
     }
 
     -- make ProjectConfigurations
