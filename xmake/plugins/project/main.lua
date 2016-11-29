@@ -33,6 +33,7 @@ import("vstudio.vs2010")
 import("vstudio.vs2012")
 import("vstudio.vs2013")
 import("vstudio.vs2015")
+import("vstudio.vs2017")
 
 -- make project
 function _make(kind)
@@ -49,6 +50,7 @@ function _make(kind)
     ,   vs2012      = vs2012.make
     ,   vs2013      = vs2013.make
     ,   vs2015      = vs2015.make
+    ,   vs2017      = vs2017.make
     }
     assert(maps[kind], "the project kind(%s) is not supported!", kind)
     
