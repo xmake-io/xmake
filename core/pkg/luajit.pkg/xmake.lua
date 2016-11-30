@@ -20,7 +20,7 @@ option("luajit")
     add_links("luajit")
 
     -- add link directories
-    add_linkdirs("lib/$(plat)/$(arch)")
+    add_linkdirs("lib/$(mode)/$(plat)/$(arch)")
 
     -- add c includes for checking
     add_cincludes("luajit/luajit.h")
