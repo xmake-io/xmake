@@ -1,4 +1,5 @@
--- add tbox package
+ 
+-- the tbox package
 option("tbox")
 
     -- show menu
@@ -20,11 +21,10 @@ option("tbox")
     add_links("tbox")
 
     -- add link directories
-    add_linkdirs("lib/$(plat)/$(arch)")
+    add_linkdirs("lib/$(mode)/$(plat)/$(arch)")
 
     -- add c includes for checking
     add_cincludes("tbox/tbox.h")
 
     -- add include directories
-    add_includedirs("inc/$(plat)/$(arch)", "inc")
-
+    add_includedirs("inc/$(plat)", "inc")

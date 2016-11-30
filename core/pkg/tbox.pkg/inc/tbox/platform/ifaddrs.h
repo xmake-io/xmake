@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        ifaddrs.h
@@ -74,7 +74,7 @@ typedef struct __tb_ifaddrs_interface_t
 }tb_ifaddrs_interface_t, *tb_ifaddrs_interface_ref_t;
 
 /// the ifaddrs type
-typedef struct{}*           tb_ifaddrs_ref_t;
+typedef __tb_typeref__(ifaddrs);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces

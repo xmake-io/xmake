@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        android.h
@@ -38,10 +38,10 @@
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_android_init(JavaVM* jvm);
+tb_bool_t           tb_android_init_env(JavaVM* jvm);
 
 /// exit the android platform 
-tb_void_t           tb_android_exit(tb_noarg_t);
+tb_void_t           tb_android_exit_env(tb_noarg_t);
 
 /*! the java machine pointer
  *

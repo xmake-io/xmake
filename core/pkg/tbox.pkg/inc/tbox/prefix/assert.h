@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        assert.h
@@ -237,7 +237,7 @@ __tb_extern_c_enter__
 #endif
 
 /// assert: noimpl
-#define tb_assert_noimpl()                                  tb_assertf(0, "noimpl")
+#define tb_assert_noimpl()                                      tb_assertf(0, "noimpl")
 
 /*! the static assert
  *
@@ -247,7 +247,13 @@ __tb_extern_c_enter__
  *
  * @endcode
  */
-#define tb_assert_static(x)                                 do { typedef int __tb_static_assert__[(x)? 1 : -1]; __tb_volatile__ __tb_static_assert__ __a; tb_used(__a); } while(0)
+#if __tb_has_feature__(c_static_assert)
+#   define tb_assert_static(x)      _Static_assert(x, "")
+#elif defined(TB_COMPILER_IS_GCC) && TB_COMPILER_VERSION_BE(4, 6)
+#   define tb_assert_static(x)      _Static_assert(x, "")
+#else
+#   define tb_assert_static(x)      do { typedef int __tb_static_assert__[(x)? 1 : -1]; __tb_volatile__ __tb_static_assert__ __a; tb_used_ptr((tb_cpointer_t)(tb_size_t)__a); } while(0)
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * declaration
@@ -260,6 +266,12 @@ __tb_extern_c_enter__
  * @param nframe    the frame count
  */
 tb_void_t           tb_backtrace_dump(tb_char_t const* prefix, tb_pointer_t* frames, tb_size_t nframe);
+
+/*! this variable have been used
+ *
+ * @param variable  the variable
+ */
+tb_void_t           tb_used_ptr(tb_cpointer_t variable);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * inlines

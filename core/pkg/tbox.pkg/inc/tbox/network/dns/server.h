@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        server.h
@@ -28,6 +28,11 @@
  * includes
  */
 #include "prefix.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -61,5 +66,10 @@ tb_size_t           tb_dns_server_get(tb_ipaddr_t addr[2]);
  * @param addr      the server address 
  */
 tb_void_t           tb_dns_server_add(tb_char_t const* addr);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        regex.h
@@ -38,7 +38,7 @@ __tb_extern_c_enter__
  */
 
 /// the regex ref type
-typedef struct{}*   tb_regex_ref_t;
+typedef __tb_typeref__(regex);
 
 /// the regex match type
 typedef struct _tb_regex_match_t

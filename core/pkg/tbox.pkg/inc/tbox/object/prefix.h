@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        prefix.h
@@ -29,8 +29,6 @@
  */
 #include "../prefix.h"
 #include "../xml/xml.h"
-#include "../stream/stream.h"
-#include "../container/container.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -79,54 +77,26 @@ typedef enum __tb_object_format_e
 typedef struct __tb_object_t
 {
     /// the object flag
-    tb_uint8_t              flag;
+    tb_uint8_t                  flag;
 
     /// the object type
-    tb_uint16_t             type;
+    tb_uint16_t                 type;
 
     /// the object reference count
-    tb_size_t               refn;
+    tb_size_t                   refn;
 
     /// the object private data
-    tb_cpointer_t           priv;
+    tb_cpointer_t               priv;
 
     /// the copy func
-    struct __tb_object_t*   (*copy)(struct __tb_object_t* object);
+    struct __tb_object_t*    (*copy)(struct __tb_object_t* object);
 
     /// the clear func
-    tb_void_t               (*clear)(struct __tb_object_t* object);
+    tb_void_t                   (*clear)(struct __tb_object_t* object);
 
     /// the exit func
-    tb_void_t               (*exit)(struct __tb_object_t* object);
+    tb_void_t                   (*exit)(struct __tb_object_t* object);
 
-}tb_object_t;
-
-/// the object ref type
-typedef tb_object_t*        tb_object_ref_t;
-
-/// the object reader type
-typedef struct __tb_object_reader_t
-{
-    /// the hooker
-    tb_hash_map_ref_t       hooker;
-
-    /// probe format
-    tb_size_t               (*probe)(tb_stream_ref_t stream);
-
-    /// read it
-    tb_object_ref_t         (*read)(tb_stream_ref_t stream);
-
-}tb_object_reader_t;
-
-/// the object writer type
-typedef struct __tb_object_writer_t
-{
-    /// the hooker
-    tb_hash_map_ref_t       hooker;
-
-    /// writ it
-    tb_long_t               (*writ)(tb_stream_ref_t stream, tb_object_ref_t object, tb_bool_t deflate);
-
-}tb_object_writer_t;
+}tb_object_t, *tb_object_ref_t;
 
 #endif

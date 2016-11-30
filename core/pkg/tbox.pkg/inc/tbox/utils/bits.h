@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        bits.h
@@ -49,6 +49,12 @@ __tb_extern_c_enter__
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+
+/* TODO
+ *
+ * check TB_UNALIGNED_ACCESS_ENABLE for compiler
+ */
+//#define TB_UNALIGNED_ACCESS_ENABLE
 
 // 1-bits
 #define tb_bits_get_u1(p)                   (((*(p)) >> 7) & 1)
@@ -180,7 +186,7 @@ __tb_extern_c_enter__
 #   endif
 #endif
 
-#ifdef TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE
+#ifdef TB_UNALIGNED_ACCESS_ENABLE
 
 #   ifdef TB_WORDS_BIGENDIAN
 // 16-bits
@@ -320,7 +326,7 @@ __tb_extern_c_enter__
 #   define tb_bits_set_u64_be(p, x)     tb_bits_set_u64_be_impl((tb_byte_t*)(p), x)
 #   define tb_bits_set_s64_be(p, x)     tb_bits_set_s64_be_impl((tb_byte_t*)(p), x)
 
-#endif /* TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE */
+#endif /* TB_UNALIGNED_ACCESS_ENABLE */
 
 #ifdef TB_WORDS_BIGENDIAN
 #   define tb_bits_get_u16_ne(p)        tb_bits_get_u16_be(p)
@@ -805,7 +811,7 @@ static __tb_inline__ tb_size_t tb_bits_cb1_u64_inline(tb_uint64_t x)
  */
 static __tb_inline__ tb_float_t tb_bits_get_float_le_inline(tb_byte_t const* p)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
     && !defined(TB_WORDS_BIGENDIAN)
     return *((tb_float_t*)p);
 #else
@@ -816,7 +822,7 @@ static __tb_inline__ tb_float_t tb_bits_get_float_le_inline(tb_byte_t const* p)
 }
 static __tb_inline__ tb_float_t tb_bits_get_float_be_inline(tb_byte_t const* p)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
     && defined(TB_WORDS_BIGENDIAN)
     return *((tb_float_t*)p);
 #else
@@ -827,7 +833,7 @@ static __tb_inline__ tb_float_t tb_bits_get_float_be_inline(tb_byte_t const* p)
 }
 static __tb_inline__ tb_void_t tb_bits_set_float_le_inline(tb_byte_t* p, tb_float_t x)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
     && !defined(TB_WORDS_BIGENDIAN)
     *((tb_float_t*)p) = x;
 #else
@@ -838,7 +844,7 @@ static __tb_inline__ tb_void_t tb_bits_set_float_le_inline(tb_byte_t* p, tb_floa
 }
 static __tb_inline__ tb_void_t tb_bits_set_float_be_inline(tb_byte_t* p, tb_float_t x)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
     && defined(TB_WORDS_BIGENDIAN)
     *((tb_float_t*)p) = x;
 #else
@@ -852,7 +858,7 @@ static __tb_inline__ tb_void_t tb_bits_set_float_be_inline(tb_byte_t* p, tb_floa
  */
 static __tb_inline__ tb_double_t tb_bits_get_double_bbe_inline(tb_byte_t const* p)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && defined(TB_FLOAT_BIGENDIAN) \
             && defined(TB_WORDS_BIGENDIAN)
     return *((tb_double_t*)p);
@@ -872,7 +878,7 @@ static __tb_inline__ tb_double_t tb_bits_get_double_bbe_inline(tb_byte_t const* 
 }
 static __tb_inline__ tb_double_t tb_bits_get_double_ble_inline(tb_byte_t const* p)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && defined(TB_FLOAT_BIGENDIAN) \
             && !defined(TB_WORDS_BIGENDIAN)
     return *((tb_double_t*)p);
@@ -893,7 +899,7 @@ static __tb_inline__ tb_double_t tb_bits_get_double_ble_inline(tb_byte_t const* 
 }
 static __tb_inline__ tb_double_t tb_bits_get_double_lbe_inline(tb_byte_t const* p)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && !defined(TB_FLOAT_BIGENDIAN) \
             && defined(TB_WORDS_BIGENDIAN)
     return *((tb_double_t*)p);
@@ -913,7 +919,7 @@ static __tb_inline__ tb_double_t tb_bits_get_double_lbe_inline(tb_byte_t const* 
 }
 static __tb_inline__ tb_double_t tb_bits_get_double_lle_inline(tb_byte_t const* p)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && !defined(TB_FLOAT_BIGENDIAN) \
             && !defined(TB_WORDS_BIGENDIAN)
     return *((tb_double_t*)p);
@@ -934,7 +940,7 @@ static __tb_inline__ tb_double_t tb_bits_get_double_lle_inline(tb_byte_t const* 
 // 7 6 5 4 3 2 1 0
 static __tb_inline__ tb_void_t tb_bits_set_double_bbe_inline(tb_byte_t* p, tb_double_t x)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && defined(TB_FLOAT_BIGENDIAN) \
             && defined(TB_WORDS_BIGENDIAN)
     *((tb_double_t*)p) = x;
@@ -956,7 +962,7 @@ static __tb_inline__ tb_void_t tb_bits_set_double_bbe_inline(tb_byte_t* p, tb_do
 // 4 5 6 7 0 1 2 3
 static __tb_inline__ tb_void_t tb_bits_set_double_ble_inline(tb_byte_t* p, tb_double_t x)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && defined(TB_FLOAT_BIGENDIAN) \
             && !defined(TB_WORDS_BIGENDIAN)
     *((tb_double_t*)p) = x;
@@ -978,7 +984,7 @@ static __tb_inline__ tb_void_t tb_bits_set_double_ble_inline(tb_byte_t* p, tb_do
 // 3 2 1 0 7 6 5 4
 static __tb_inline__ tb_void_t tb_bits_set_double_lbe_inline(tb_byte_t* p, tb_double_t x)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && !defined(TB_FLOAT_BIGENDIAN) \
             && defined(TB_WORDS_BIGENDIAN)
     *((tb_double_t*)p) = x;
@@ -1000,7 +1006,7 @@ static __tb_inline__ tb_void_t tb_bits_set_double_lbe_inline(tb_byte_t* p, tb_do
 // 0 1 2 3 4 5 6 7
 static __tb_inline__ tb_void_t tb_bits_set_double_lle_inline(tb_byte_t* p, tb_double_t x)
 {
-#if defined(TB_CONFIG_MEMORY_UNALIGNED_ACCESS_ENABLE) \
+#if defined(TB_UNALIGNED_ACCESS_ENABLE) \
         && !defined(TB_FLOAT_BIGENDIAN) \
             && !defined(TB_WORDS_BIGENDIAN)
     *((tb_double_t*)p) = x;

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        semaphore.h
@@ -40,21 +40,21 @@ __tb_extern_c_enter__
 
 /*! init semaphore
  *
- * @param init      the init semaphore value
+ * @param value     the initial semaphore value
  * 
- * @return          the semaphore handle
+ * @return          the semaphore 
  */
-tb_semaphore_ref_t  tb_semaphore_init(tb_size_t init);
+tb_semaphore_ref_t  tb_semaphore_init(tb_size_t value);
 
 /*! exit semaphore
  * 
- * @param handle    the semaphore handle
+ * @return          the semaphore 
  */
 tb_void_t           tb_semaphore_exit(tb_semaphore_ref_t semaphore);
 
 /*! post semaphore
  * 
- * @param handle    the semaphore handle
+ * @param semaphore the semaphore 
  * @param post      the post semaphore value
  *
  * @return          tb_true or tb_false
@@ -63,7 +63,7 @@ tb_bool_t           tb_semaphore_post(tb_semaphore_ref_t semaphore, tb_size_t po
 
 /*! the semaphore value
  * 
- * @param handle    the semaphore handle
+ * @param semaphore the semaphore 
  *
  * @return          >= 0: the semaphore value, -1: failed
  */
@@ -71,7 +71,7 @@ tb_long_t           tb_semaphore_value(tb_semaphore_ref_t semaphore);
 
 /*! wait semaphore
  * 
- * @param handle    the semaphore handle
+ * @param semaphore the semaphore 
  * @param timeout   the timeout
  *
  * @return          ok: 1, timeout: 0, fail: -1

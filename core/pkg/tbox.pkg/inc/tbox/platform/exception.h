@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        exception.h
@@ -31,10 +31,15 @@
 #   include "../libc/misc/signal.h"
 #   if defined(TB_CONFIG_OS_WINDOWS)
 #       include "windows/exception.h"
-#   elif defined(tb_signal)
+#   elif defined(tb_signal) 
 #       include "libc/exception.h"
 #   endif
 #endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -71,6 +76,11 @@
 #   define tb_assert_leave(x)                       
 #   define tb_assert_and_check_leave(x)                 tb_check_leave(x)
 #endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif
 

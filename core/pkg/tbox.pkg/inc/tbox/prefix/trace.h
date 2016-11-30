@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        trace.h
@@ -219,8 +219,8 @@ __tb_extern_c_enter__
 #   define tb_trace1_i
 #endif
 
-// trace info only?
-#ifdef TB_CONFIG_TRACE_INFO_ONLY
+// trace more info?
+#if !defined(__tb_debug__) && !defined(TB_CONFIG_INFO_TRACE_MORE)
 #   undef TB_TRACE_DEBUG
 #   undef TB_TRACE_MODULE_DEBUG
 #   undef tb_trace_d

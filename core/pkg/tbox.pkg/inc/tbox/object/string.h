@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        string.h
@@ -44,7 +44,7 @@ __tb_extern_c_enter__
  *
  * @return          the string object
  */
-tb_object_ref_t     tb_object_string_init_from_cstr(tb_char_t const* cstr);
+tb_object_ref_t     tb_oc_string_init_from_cstr(tb_char_t const* cstr);
 
 /*! init string from string
  *
@@ -52,7 +52,7 @@ tb_object_ref_t     tb_object_string_init_from_cstr(tb_char_t const* cstr);
  *
  * @return          the string object
  */
-tb_object_ref_t     tb_object_string_init_from_str(tb_string_ref_t str);
+tb_object_ref_t     tb_oc_string_init_from_str(tb_string_ref_t str);
 
 /*! the c-string
  *
@@ -60,7 +60,7 @@ tb_object_ref_t     tb_object_string_init_from_str(tb_string_ref_t str);
  *
  * @return          the c-string
  */
-tb_char_t const*    tb_object_string_cstr(tb_object_ref_t string);
+tb_char_t const*    tb_oc_string_cstr(tb_object_ref_t string);
 
 /*! set the c-string
  *
@@ -69,7 +69,7 @@ tb_char_t const*    tb_object_string_cstr(tb_object_ref_t string);
  *
  * @return          the string size
  */
-tb_size_t           tb_object_string_cstr_set(tb_object_ref_t string, tb_char_t const* cstr);
+tb_size_t           tb_oc_string_cstr_set(tb_object_ref_t string, tb_char_t const* cstr);
 
 /*! the string size
  *
@@ -77,7 +77,7 @@ tb_size_t           tb_object_string_cstr_set(tb_object_ref_t string, tb_char_t 
  *
  * @return          the string size
  */
-tb_size_t           tb_object_string_size(tb_object_ref_t string);
+tb_size_t           tb_oc_string_size(tb_object_ref_t string);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

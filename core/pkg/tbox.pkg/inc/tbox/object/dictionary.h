@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        dictionary.h
@@ -37,24 +37,24 @@ __tb_extern_c_enter__
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define TB_OBJECT_DICTIONARY_SIZE_MICRO                (64)
-#define TB_OBJECT_DICTIONARY_SIZE_SMALL                (256)
-#define TB_OBJECT_DICTIONARY_SIZE_LARGE                (65536)
+#define TB_OC_DICTIONARY_SIZE_MICRO                (64)
+#define TB_OC_DICTIONARY_SIZE_SMALL                (256)
+#define TB_OC_DICTIONARY_SIZE_LARGE                (65536)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
 /// the dictionary item type
-typedef struct __tb_object_dictionary_item_t
+typedef struct __tb_oc_dictionary_item_t
 {
     /// the key
-    tb_char_t const*        key;
+    tb_char_t const*    key;
 
     /// the value
-    tb_object_ref_t         val;
+    tb_object_ref_t     val;
 
-}tb_object_dictionary_item_t;
+}tb_oc_dictionary_item_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -65,20 +65,20 @@ typedef struct __tb_object_dictionary_item_t
  * @code
     // init dictionary
     // {"key1": "hello", "key2" :"world", "key3": 12345, "key4": true}
-    tb_object_ref_t dict = tb_object_dictionary_init(0, tb_false);
+    tb_object_ref_t dict = tb_oc_dictionary_init(0, tb_false);
     if (dict)
     {
         // key1 => hello
-        tb_object_dictionary_insert(dict, "key1", tb_object_string_init_from_cstr("hello"));
+        tb_oc_dictionary_insert(dict, "key1", tb_oc_string_init_from_cstr("hello"));
 
         // key2 => world
-        tb_object_dictionary_insert(dict, "key2", tb_object_string_init_from_cstr("world"));
+        tb_oc_dictionary_insert(dict, "key2", tb_oc_string_init_from_cstr("world"));
 
         // key3 => 12345
-        tb_object_dictionary_insert(dict, "key3", tb_object_number_init_from_sint32(12345));
+        tb_oc_dictionary_insert(dict, "key3", tb_oc_number_init_from_sint32(12345));
 
         // key4 => true
-        tb_object_dictionary_insert(dict, "key4", tb_object_boolean_true());
+        tb_oc_dictionary_insert(dict, "key4", tb_oc_boolean_true());
 
         // exit dictionary
         tb_object_exit(dict);
@@ -90,7 +90,7 @@ typedef struct __tb_object_dictionary_item_t
  *
  * @return              the dictionary object
  */
-tb_object_ref_t         tb_object_dictionary_init(tb_size_t size, tb_bool_t incr);
+tb_object_ref_t         tb_oc_dictionary_init(tb_size_t size, tb_bool_t incr);
 
 /*! the dictionary size
  *
@@ -98,14 +98,14 @@ tb_object_ref_t         tb_object_dictionary_init(tb_size_t size, tb_bool_t incr
  *
  * @return              the dictionary size
  */
-tb_size_t               tb_object_dictionary_size(tb_object_ref_t dictionary);
+tb_size_t               tb_oc_dictionary_size(tb_object_ref_t dictionary);
 
 /*! set the dictionary incr
  *
  * @param dictionary    the dictionary object
  * @param incr          is increase refn?
  */
-tb_void_t               tb_object_dictionary_incr(tb_object_ref_t dictionary, tb_bool_t incr);
+tb_void_t               tb_oc_dictionary_incr(tb_object_ref_t dictionary, tb_bool_t incr);
 
 /*! the dictionary iterator
  *
@@ -114,7 +114,7 @@ tb_void_t               tb_object_dictionary_incr(tb_object_ref_t dictionary, tb
  * @return              the dictionary iterator
  *
  * @code
-    tb_for_all (tb_object_dictionary_item_t*, item, tb_object_dictionary_itor(dictionary))
+    tb_for_all (tb_oc_dictionary_item_t*, item, tb_oc_dictionary_itor(dictionary))
     {
         if (item)
         {
@@ -126,7 +126,7 @@ tb_void_t               tb_object_dictionary_incr(tb_object_ref_t dictionary, tb
     }
  * @endcode
  */
-tb_iterator_ref_t       tb_object_dictionary_itor(tb_object_ref_t dictionary);
+tb_iterator_ref_t       tb_oc_dictionary_itor(tb_object_ref_t dictionary);
 
 /*! get the dictionary value
  *
@@ -135,7 +135,7 @@ tb_iterator_ref_t       tb_object_dictionary_itor(tb_object_ref_t dictionary);
  *
  * @return              the dictionary value
  */
-tb_object_ref_t         tb_object_dictionary_value(tb_object_ref_t dictionary, tb_char_t const* key);
+tb_object_ref_t         tb_oc_dictionary_value(tb_object_ref_t dictionary, tb_char_t const* key);
 
 /*! insert dictionary item
  *
@@ -143,14 +143,14 @@ tb_object_ref_t         tb_object_dictionary_value(tb_object_ref_t dictionary, t
  * @param key           the key
  * @param val           the value
  */
-tb_void_t               tb_object_dictionary_insert(tb_object_ref_t dictionary, tb_char_t const* key, tb_object_ref_t val);
+tb_void_t               tb_oc_dictionary_insert(tb_object_ref_t dictionary, tb_char_t const* key, tb_object_ref_t val);
 
 /*! remove dictionary item
  *
  * @param dictionary    the dictionary object
  * @param key           the key
  */
-tb_void_t               tb_object_dictionary_remove(tb_object_ref_t dictionary, tb_char_t const* key);
+tb_void_t               tb_oc_dictionary_remove(tb_object_ref_t dictionary, tb_char_t const* key);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

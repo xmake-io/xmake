@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        type.h
@@ -100,7 +100,7 @@ typedef __WCHAR_TYPE__              tb_wchar_t;
 #elif defined(__WCHAR_WIDTH__) && (__WCHAR_WIDTH__ == 2)
 typedef tb_int16_t                  tb_wchar_t;
 #elif defined(__WCHAR_WIDTH__) && (__WCHAR_WIDTH__ == 4)
-typedef tb_int16_t                  tb_wchar_t;
+typedef tb_int32_t                  tb_wchar_t;
 #else
 typedef tb_int32_t                  tb_wchar_t;
 #endif
@@ -161,31 +161,31 @@ typedef tb_atomic_t                 tb_spinlock_t;
 typedef tb_spinlock_t*              tb_spinlock_ref_t;
 
 /// the pool ref type
-typedef struct{}*                   tb_pool_ref_t;
+typedef __tb_typeref__(pool);
 
 /// the file ref type
-typedef struct{}*                   tb_file_ref_t;
+typedef __tb_typeref__(file);
 
 /// the socket ref type
-typedef struct{}*                   tb_socket_ref_t;
+typedef __tb_typeref__(socket);
 
 /// the event ref type
-typedef struct{}*                   tb_event_ref_t;
+typedef __tb_typeref__(event);
 
 /// the mutex ref type
-typedef struct{}*                   tb_mutex_ref_t;
+typedef __tb_typeref__(mutex);
 
 /// the thread ref type
-typedef struct{}*                   tb_thread_ref_t;
+typedef __tb_typeref__(thread);
 
 /// the semaphore ref type
-typedef struct{}*                   tb_semaphore_ref_t;
+typedef __tb_typeref__(semaphore);
 
 /// the stream ref type
-typedef struct{}*                   tb_stream_ref_t;
+typedef __tb_typeref__(stream);
 
 /// the async stream ref type
-typedef struct{}*                   tb_async_stream_ref_t;
+typedef __tb_typeref__(async_stream);
 
 /// the time type
 typedef tb_hong_t                   tb_time_t;
