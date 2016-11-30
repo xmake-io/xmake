@@ -139,7 +139,7 @@ endif
 define APPEND_PACKAGE_OPTIONS_FOR_MODULE
 $(1)_LIBS 		+= $($(2)_LIBNAMES)
 $(1)_INC_DIRS 	+= $($(2)_INCPATH)
-$(1)_LIB_DIRS 	+= $($(2)_LIBPATH) $(PKG_DIR_NATIVE)/$(2).pkg/lib/$(PLAT)/$(ARCH)
+$(1)_LIB_DIRS 	+= $($(2)_LIBPATH) $(PKG_DIR_NATIVE)/$(2).pkg/lib/release/$(PLAT)/$(ARCH)
 $(1)_CXFLAGS 	+= $($(2)_INCFLAGS)
 $(1)_MXFLAGS 	+= $($(2)_INCFLAGS)
 $(1)_LDFLAGS 	+= $($(2)_LIBFLAGS)
