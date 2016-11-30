@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        prefix.h
@@ -29,8 +29,8 @@
 #include "../prefix.h"
 #include "../libc/libc.h"
 #include "../network/url.h"
-#include "../asio/asio.h"
 #include "../memory/memory.h"
+#include "../platform/socket.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -51,8 +51,8 @@
 typedef enum __tb_stream_mode_e
 {
     TB_STREAM_MODE_NONE     = 0
-,   TB_STREAM_MODE_AIOO     = 1 ///!< for bstream
-,   TB_STREAM_MODE_AICO     = 2 ///!< for astream
+,   TB_STREAM_MODE_AIOO     = 1 ///!< for stream
+,   TB_STREAM_MODE_AICO     = 2 ///!< for async_stream
 
 }tb_stream_mode_e;
 
@@ -72,10 +72,10 @@ typedef enum __tb_stream_type_e
 /// the stream wait enum
 typedef enum __tb_stream_wait_e
 {
-    TB_STREAM_WAIT_NONE     = TB_AIOE_CODE_NONE
-,   TB_STREAM_WAIT_READ     = TB_AIOE_CODE_RECV
-,   TB_STREAM_WAIT_WRIT     = TB_AIOE_CODE_SEND
-,   TB_STREAM_WAIT_EALL     = TB_AIOE_CODE_EALL
+    TB_STREAM_WAIT_NONE     = TB_SOCKET_EVENT_NONE
+,   TB_STREAM_WAIT_READ     = TB_SOCKET_EVENT_RECV
+,   TB_STREAM_WAIT_WRIT     = TB_SOCKET_EVENT_SEND
+,   TB_STREAM_WAIT_EALL     = TB_SOCKET_EVENT_EALL
 
 }tb_stream_wait_e;
 

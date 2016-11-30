@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        libm.h
@@ -28,29 +28,5 @@
  * includes
  */
 #include "math.h"
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_enter__
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
- */
-
-/*! init libm
- *
- * @return  tb_true or tb_false
- */
-tb_bool_t   tb_libm_init(tb_noarg_t);
-
-/*! exit libm
- */
-tb_void_t   tb_libm_exit(tb_noarg_t);
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_leave__
 
 #endif

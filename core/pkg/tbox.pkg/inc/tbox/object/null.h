@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        null.h
@@ -42,7 +42,7 @@ __tb_extern_c_enter__
  *
  * @return          the null object
  */
-tb_object_ref_t     tb_object_null_init(tb_noarg_t);
+tb_object_ref_t     tb_oc_null_init(tb_noarg_t);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

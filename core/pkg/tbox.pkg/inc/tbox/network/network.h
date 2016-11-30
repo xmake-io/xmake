@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        network.h
@@ -37,28 +37,5 @@
 #include "http.h"
 #include "cookies.h"
 #include "dns/dns.h"
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_enter__
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
- */
-
-/*! init network 
- *
- * @return      tb_true or tb_false
- */
-tb_bool_t       tb_network_init(tb_noarg_t);
-
-/// exit network 
-tb_void_t       tb_network_exit(tb_noarg_t);
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * extern
- */
-__tb_extern_c_leave__
 
 #endif

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        compiler.h
@@ -31,6 +31,19 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
+
+// some help macros for making version string
+#ifndef __tb_mstring__
+#   define __tb_mstring__(x)                        #x
+#endif
+
+#ifndef __tb_mstring_ex__
+#   define __tb_mstring_ex__(x)                     __tb_mstring__(x)
+#endif
+
+#ifndef __tb_mstrcat4__
+#   define __tb_mstrcat4__(a, b, c, d)              a b c d
+#endif
 
 // intel c++
 #if defined(__INTEL_COMPILER)
@@ -127,46 +140,8 @@
 #       else
 #           define TB_COMPILER_VERSION_STRING       "gnu c/c++ > 3.4 && < 4.0"
 #       endif
-#   elif __GNUC__ == 4
-#       if __GNUC_MINOR__ == 1
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.1"
-#       elif __GNUC_MINOR__ == 2
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.2"
-#       elif __GNUC_MINOR__ == 3
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.3"
-#       elif __GNUC_MINOR__ == 4
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.4"
-#       elif __GNUC_MINOR__ == 5
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.5"
-#       elif __GNUC_MINOR__ == 6
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.6"
-#       elif __GNUC_MINOR__ == 7
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.7"
-#       elif __GNUC_MINOR__ == 8
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.8"
-#       elif __GNUC_MINOR__ == 9
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 4.9"
-#       endif
-#   elif __GNUC__ == 5
-#       if __GNUC_MINOR__ == 1
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.1"
-#       elif __GNUC_MINOR__ == 2
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.2"
-#       elif __GNUC_MINOR__ == 3
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.3"
-#       elif __GNUC_MINOR__ == 4
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.4"
-#       elif __GNUC_MINOR__ == 5
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.5"
-#       elif __GNUC_MINOR__ == 6
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.6"
-#       elif __GNUC_MINOR__ == 7
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.7"
-#       elif __GNUC_MINOR__ == 8
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.8"
-#       elif __GNUC_MINOR__ == 9
-#           define TB_COMPILER_VERSION_STRING       "gnu c/c++ 5.9"
-#       endif
+#   elif __GNUC__ >= 4 && defined(__GNUC_MINOR__)
+#       define TB_COMPILER_VERSION_STRING           __tb_mstrcat4__("gnu c/c++ ", __tb_mstring_ex__(__GNUC__), ".", __tb_mstring_ex__(__GNUC_MINOR__))
 #   else
 #       error Unknown gnu c/c++ Compiler Version
 #   endif
@@ -183,10 +158,24 @@
 #           undef TB_COMPILER_VERSION_STRING
 #           define TB_COMPILER_VERSION_STRING       __clang_version__
 #       endif
-        // ignore warning: empty struct has size 0 in C, size 1 in C++
+        // suppress warning: empty struct has size 0 in C, size 1 in C++
 #       ifdef __cplusplus
 #           pragma clang diagnostic ignored         "-Wextern-c-compat"
 #       endif
+        /* suppress warning (must be placed in the front)
+         *
+         * in old version clang:
+         *
+         * unknown warning group '-Wnullability-completeness', ignored [-Werror,-Wunknown-pragmas]
+         */
+#       pragma clang diagnostic ignored             "-Wunknown-pragmas" 
+
+        /* suppress warning
+         *
+         * signal.h
+         * pointer is missing a nullability type specifier (_Nonnull, _Nullable, or _Null_unspecified)
+         */
+#       pragma clang diagnostic ignored             "-Wnullability-completeness" 
 #   endif
 
 // watcom c/c++ 

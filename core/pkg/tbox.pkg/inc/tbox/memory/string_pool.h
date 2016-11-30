@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        string_pool.h
@@ -39,7 +39,7 @@ __tb_extern_c_enter__
  */
 
 /// the string pool ref type
-typedef struct{}*           tb_string_pool_ref_t;
+typedef __tb_typeref__(string_pool);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        bloom_filter.h
@@ -111,7 +111,7 @@ __tb_extern_c_enter__
  * c = p^(1/k)
  * s = m / n = 2k / (2c + c * c)
  */
-typedef struct{}* tb_bloom_filter_ref_t;
+typedef __tb_typeref__(bloom_filter);
 
 /// the probability of false positives
 typedef enum __tb_bloom_filter_probability_e

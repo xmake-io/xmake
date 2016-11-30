@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        dump.h
@@ -44,18 +44,6 @@ __tb_extern_c_enter__
  * @param size      the size
  */
 tb_void_t           tb_dump_data(tb_byte_t const* data, tb_size_t size);
-
-/*! dump data from url
- *
- * @param url       the url
- */
-tb_void_t           tb_dump_data_from_url(tb_char_t const* url);
-
-/*! dump data from stream
- *
- * @param stream    the stream
- */
-tb_void_t           tb_dump_data_from_stream(tb_stream_ref_t stream);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

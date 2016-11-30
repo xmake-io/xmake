@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        writer.h
@@ -40,7 +40,7 @@ __tb_extern_c_enter__
  */
 
 /// the xml writer ref type
-typedef struct{}*       tb_xml_writer_ref_t;
+typedef __tb_typeref__(xml_writer);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        url.h
@@ -96,6 +96,15 @@ typedef struct __tb_url_t
  * @return          tb_true or tb_false
  */
 tb_bool_t           tb_url_init(tb_url_ref_t url);
+
+/*! init url from c-string
+ *
+ * @param url       the url
+ * @param cstr      the url c-string
+ *
+ * @return          tb_true or tb_false
+ */
+tb_bool_t           tb_url_init_from_cstr(tb_url_ref_t url, tb_char_t const* cstr);
 
 /*! exit url
  *

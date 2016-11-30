@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        array.h
@@ -45,7 +45,7 @@ __tb_extern_c_enter__
  *
  * @return          the array object
  */
-tb_object_ref_t     tb_object_array_init(tb_size_t grow, tb_bool_t incr);
+tb_object_ref_t     tb_oc_array_init(tb_size_t grow, tb_bool_t incr);
 
 /*! the array size
  *
@@ -53,7 +53,7 @@ tb_object_ref_t     tb_object_array_init(tb_size_t grow, tb_bool_t incr);
  *
  * @return          the array size
  */
-tb_size_t           tb_object_array_size(tb_object_ref_t array);
+tb_size_t           tb_oc_array_size(tb_object_ref_t array);
 
 /*! the array item at index
  *
@@ -62,14 +62,14 @@ tb_size_t           tb_object_array_size(tb_object_ref_t array);
  *
  * @return          the array item
  */
-tb_object_ref_t     tb_object_array_item(tb_object_ref_t array, tb_size_t index);
+tb_object_ref_t     tb_oc_array_item(tb_object_ref_t array, tb_size_t index);
 
 /*! set the array incr
  *
  * @param array     the array object
  * @param incr      is increase refn?
  */
-tb_void_t           tb_object_array_incr(tb_object_ref_t array, tb_bool_t incr);
+tb_void_t           tb_oc_array_incr(tb_object_ref_t array, tb_bool_t incr);
 
 /*! the array iterator
  *
@@ -78,7 +78,7 @@ tb_void_t           tb_object_array_incr(tb_object_ref_t array, tb_bool_t incr);
  * @return          the array iterator
  *
  * @code
- * tb_for_all (tb_object_ref_t, item, tb_object_array_itor(array))
+ * tb_for_all (tb_object_ref_t, item, tb_oc_array_itor(array))
  * {
  *      if (item)
  *      {
@@ -87,21 +87,21 @@ tb_void_t           tb_object_array_incr(tb_object_ref_t array, tb_bool_t incr);
  * }
  * @endcode
  */
-tb_iterator_ref_t   tb_object_array_itor(tb_object_ref_t array);
+tb_iterator_ref_t   tb_oc_array_itor(tb_object_ref_t array);
 
 /*! remove the item from index
  *
  * @param array     the array object
  * @param index     the array index
  */
-tb_void_t           tb_object_array_remove(tb_object_ref_t array, tb_size_t index);
+tb_void_t           tb_oc_array_remove(tb_object_ref_t array, tb_size_t index);
 
 /*! append item to array
  *
  * @param array     the array object
  * @param index     the array index
  */
-tb_void_t           tb_object_array_append(tb_object_ref_t array, tb_object_ref_t item);
+tb_void_t           tb_oc_array_append(tb_object_ref_t array, tb_object_ref_t item);
 
 /*! insert item to array
  *
@@ -109,7 +109,7 @@ tb_void_t           tb_object_array_append(tb_object_ref_t array, tb_object_ref_
  * @param index     the array index
  * @param item      the array item
  */
-tb_void_t           tb_object_array_insert(tb_object_ref_t array, tb_size_t index, tb_object_ref_t item);
+tb_void_t           tb_oc_array_insert(tb_object_ref_t array, tb_size_t index, tb_object_ref_t item);
 
 /*! replace item to array
  *
@@ -117,7 +117,7 @@ tb_void_t           tb_object_array_insert(tb_object_ref_t array, tb_size_t inde
  * @param index     the array index
  * @param item      the array item
  */
-tb_void_t           tb_object_array_replace(tb_object_ref_t array, tb_size_t index, tb_object_ref_t item);
+tb_void_t           tb_oc_array_replace(tb_object_ref_t array, tb_size_t index, tb_object_ref_t item);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

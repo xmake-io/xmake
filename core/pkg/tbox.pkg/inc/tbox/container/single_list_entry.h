@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        single_list_entry.h
@@ -36,6 +36,24 @@
 
 /// the list entry
 #define tb_single_list_entry(head, entry)   ((((tb_byte_t*)(entry)) - (head)->eoff))
+
+/*! get the list entry with zero offset
+ *
+ * @code
+ *
+    // the xxxx entry type
+    typedef struct __tb_xxxx_entry_t 
+    {
+        // the list entry (be placed in header with zero offset)
+        tb_single_list_entry_t  entry;
+
+        // .. 
+
+    }tb_xxxx_entry_t;
+ *
+ * @endcode
+ */
+#define tb_single_list_entry0(entry)        (entry)
 
 /*! init the list entry 
  *
@@ -175,12 +193,11 @@ static __tb_inline__ tb_size_t                  tb_single_list_entry_size(tb_sin
 
 /*! the list next entry
  *
- * @param list                                  the list
  * @param entry                                 the entry
  *
  * @return                                      the next entry
  */
-static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_next(tb_single_list_entry_head_ref_t list, tb_single_list_entry_ref_t entry)
+static __tb_inline__ tb_single_list_entry_ref_t tb_single_list_entry_next(tb_single_list_entry_ref_t entry)
 {
     // check
     tb_assert(entry);

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        prefix.h
@@ -35,6 +35,7 @@
 #include <mswsock.h>
 #include <windows.h>
 #include <iphlpapi.h>
+#include <ws2tcpip.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * inlines

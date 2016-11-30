@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        hash.h
@@ -44,8 +44,5 @@
 #include "murmur.h"
 #include "adler32.h"
 #include "blizzard.h"
-#ifdef TB_CONFIG_API_HAVE_DEPRECATED
-#   include "deprecated/deprecated.h"
-#endif
 
 #endif

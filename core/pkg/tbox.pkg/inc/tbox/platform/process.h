@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        process.h
@@ -100,7 +100,7 @@ typedef struct __tb_process_attr_t
 }tb_process_attr_t, *tb_process_attr_ref_t;
 
 /// the process ref type
-typedef struct{}*       tb_process_ref_t;
+typedef __tb_typeref__(process);
 
 /// the process wait info type
 typedef struct __tb_process_waitinfo_t

@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        lock_profiler.h
@@ -40,7 +40,7 @@ __tb_extern_c_enter__
 
 // enable lock profiler
 #undef TB_LOCK_PROFILER_ENABLE
-#ifdef __tb_debug__
+#if defined(__tb_debug__) && !defined(TB_CONFIG_MICRO_ENABLE)
 #   define TB_LOCK_PROFILER_ENABLE
 #endif
 

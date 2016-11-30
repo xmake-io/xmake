@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        boolean.h
@@ -44,19 +44,19 @@ __tb_extern_c_enter__
  *
  * @return          the boolean object
  */
-tb_object_ref_t     tb_object_boolean_init(tb_bool_t value);
+tb_object_ref_t     tb_oc_boolean_init(tb_bool_t value);
 
 /*! the boolean value: true
  *
  * @return          the boolean object
  */
-tb_object_ref_t     tb_object_boolean_true(tb_noarg_t);
+tb_object_ref_t     tb_oc_boolean_true(tb_noarg_t);
 
 /*! the boolean value: false
  *
  * @return          the boolean object
  */
-tb_object_ref_t     tb_object_boolean_false(tb_noarg_t);
+tb_object_ref_t     tb_oc_boolean_false(tb_noarg_t);
 
 /*! the boolean value
  *
@@ -64,7 +64,7 @@ tb_object_ref_t     tb_object_boolean_false(tb_noarg_t);
  *
  * @return          tb_true or tb_false
  */
-tb_bool_t           tb_object_boolean_bool(tb_object_ref_t boolean);
+tb_bool_t           tb_oc_boolean_bool(tb_object_ref_t boolean);
 
 
 /* //////////////////////////////////////////////////////////////////////////////////////

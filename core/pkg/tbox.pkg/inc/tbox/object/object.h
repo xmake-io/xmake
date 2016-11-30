@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        object.h
@@ -36,6 +36,9 @@
 #include "number.h"
 #include "boolean.h"
 #include "dictionary.h"
+#ifdef TB_CONFIG_API_HAVE_DEPRECATED
+#   include "deprecated/deprecated.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -45,15 +48,6 @@ __tb_extern_c_enter__
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
-
-/*! init object context
- *
- * @return          tb_true or tb_false
- */
-tb_bool_t           tb_object_context_init(tb_noarg_t);
-
-/// exit object context
-tb_void_t           tb_object_context_exit(tb_noarg_t);
 
 /*! init object
  *
@@ -221,7 +215,7 @@ tb_object_ref_t     tb_object_data(tb_object_ref_t object, tb_size_t format);
  * tb_object_ref_t object = tb_object_seek(root, ".array[5].string", tb_false);
  * if (object)
  * {
- *      tb_trace_d("%s", tb_object_string_cstr(object));
+ *      tb_trace_d("%s", tb_oc_string_cstr(object));
  * }
  * <endcode>
  *

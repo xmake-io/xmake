@@ -14,7 +14,7 @@
  * along with TBox; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2015, ruki All rights reserved.
+ * Copyright (C) 2009 - 2017, ruki All rights reserved.
  *
  * @author      ruki
  * @file        timer.h
@@ -46,10 +46,10 @@ __tb_extern_c_enter__
 typedef tb_void_t   (*tb_timer_task_func_t)(tb_bool_t killed, tb_cpointer_t priv);
 
 /// the timer ref type
-typedef struct{}*   tb_timer_ref_t;
+typedef __tb_typeref__(timer);
 
 /// the timer task ref type
-typedef struct{}*   tb_timer_task_ref_t;
+typedef __tb_typeref__(timer_task);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -63,12 +63,12 @@ tb_timer_ref_t      tb_timer(tb_noarg_t);
 
 /*! init timer
  *
- * @param maxn      the timer maxn
+ * @param grow      the timer grow
  * @param ctime     using ctime?
  *
  * @return          the timer
  */
-tb_timer_ref_t      tb_timer_init(tb_size_t maxn, tb_bool_t ctime);
+tb_timer_ref_t      tb_timer_init(tb_size_t grow, tb_bool_t ctime);
 
 /*! exit timer
  *
