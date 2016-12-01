@@ -62,7 +62,7 @@ endif
 # cxflags: .c/.cc/.cpp files
 CXFLAGS_RELEASE 	= -fvisibility=hidden
 CXFLAGS_DEBUG 		= -g -D__tb_debug__
-CXFLAGS 			= $(AHFLAGS) -c -Wall -Werror 
+CXFLAGS 			= $(AHFLAGS) -c -Wall  
 CXFLAGS-I 			= -I
 CXFLAGS-o 			= -o
 
