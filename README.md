@@ -2,7 +2,7 @@
 
 [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![Build status](https://ci.appveyor.com/api/projects/status/cop0jof7vs6as34r?svg=true)](https://ci.appveyor.com/project/waruqi/xmake) [![Join the chat at https://gitter.im/waruqi/tboox](https://badges.gitter.im/waruqi/tboox.svg)](https://gitter.im/waruqi/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate)
 
-## Introduction
+## Introduction ([中文](#中文))
 
 xmake is a make-like build utility based on lua. 
 
@@ -227,6 +227,8 @@ Some projects using xmake:
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)
 * Community：[TBOOX Open Source Community](http://www.tboox.org/forum)
+
+<h1 id="中文"></h1>
 
 ## 简介
 

@@ -1,4 +1,4 @@
-# Changelog
+# Changelog ([中文](#中文))
 
 ## master (unreleased)
 
@@ -176,6 +176,7 @@
 * Fix install bug for windows x86_64
 * Fix relative path bug
 
+<h1 id="中文"></h1>
 
 # 更新日志
 
