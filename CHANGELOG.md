@@ -17,6 +17,7 @@
 * [#41](https://github.com/waruqi/xmake/issues/41): Fix checker bug for windows 
 * [#43](https://github.com/waruqi/xmake/issues/43): Avoid to generate unnecessary .xmake directory  
 * Add c++ stl search directories for android
+* Fix compile error for rhel 5.10
 
 ## v2.0.5
 
@@ -197,6 +198,7 @@
 * [#41](https://github.com/waruqi/xmake/issues/41): 修复在windows下自动检测x64失败问题
 * [#43](https://github.com/waruqi/xmake/issues/43): 避免创建不必要的.xmake工程缓存目录
 * 针对android版本添加c++ stl搜索目录，解决编译c++失败问题
+* 修复在rhel 5.10上编译失败问题
 
 ## v2.0.5
 
