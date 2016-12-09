@@ -31,6 +31,7 @@
 #include "channel.h"
 #include "semaphore.h"
 #include "scheduler.h"
+#include "stackless/stackless.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
@@ -101,7 +102,7 @@ tb_pointer_t            tb_coroutine_sleep(tb_long_t interval);
  *
  * @return              > 0: the events, 0: timeout, -1: failed
  */
-tb_long_t               tb_coroutine_wait(tb_socket_ref_t sock, tb_size_t events, tb_long_t timeout);
+tb_long_t               tb_coroutine_waitio(tb_socket_ref_t sock, tb_size_t events, tb_long_t timeout);
 
 /*! get the current coroutine
  *
