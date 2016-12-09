@@ -273,6 +273,13 @@ base_LIBPATH 	:=
 base_LIBNAMES 	:= rt m dl pthread
 endif
 
+# config luajit
+ifeq ($(PLAT),linux)
+luajit_LIBNAMES := $(shell if [ -f "/etc/redhat-release" ]; then echo "luajit_rhel"; else echo "luajit"; fi )
+else
+luajit_LIBNAMES := luajit
+endif
+
 # select package directory
 ifneq ($(PACKAGE),)
 PKG_DIR 	:= $(PACKAGE)
@@ -460,7 +467,7 @@ config : .null
 	@$(ECHO) "luajit_LIBPATH ="							>> .config.mak
 	@$(ECHO) "luajit_INCFLAGS ="						>> .config.mak
 	@$(ECHO) "luajit_LIBFLAGS ="						>> .config.mak
-	@$(ECHO) "luajit_LIBNAMES =luajit"					>> .config.mak
+	@$(ECHO) "luajit_LIBNAMES =$(luajit_LIBNAMES)" 		>> .config.mak
 	@$(ECHO) "export LUAJIT"							>> .config.mak
 	@$(ECHO) "export luajit_INCPATH"					>> .config.mak
 	@$(ECHO) "export luajit_LIBPATH"					>> .config.mak
