@@ -118,6 +118,9 @@ typedef tb_int_t (WSAAPI* tb_ws2_32___WSAFDIsSet_t)(SOCKET fd, fd_set* set);
 // the getaddrinfo func type
 typedef tb_int_t (WSAAPI* tb_ws2_32_getaddrinfo_t)(PCSTR pNodeName, PCSTR pServiceName, ADDRINFOA *pHints, PADDRINFOA *ppResult);
 
+// the freeaddrinfo func type
+typedef tb_void_t (WSAAPI* tb_ws2_32_freeaddrinfo_t)(struct addrinfo* ai);
+
 // the getnameinfo func type
 typedef tb_int_t (WSAAPI* tb_ws2_32_getnameinfo_t)(const struct sockaddr FAR *sa, socklen_t salen, tb_char_t FAR *host, DWORD hostlen, tb_char_t FAR *serv, DWORD servlen, tb_int_t flags);
 
@@ -207,6 +210,9 @@ typedef struct __tb_ws2_32_t
   
     // getaddrinfo
     tb_ws2_32_getaddrinfo_t         getaddrinfo;
+   
+    // freeaddrinfo
+    tb_ws2_32_freeaddrinfo_t        freeaddrinfo;
   
     // getnameinfo
     tb_ws2_32_getnameinfo_t         getnameinfo;

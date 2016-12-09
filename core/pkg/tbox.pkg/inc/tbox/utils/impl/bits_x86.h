@@ -53,13 +53,13 @@
 #ifdef TB_ASSEMBLER_IS_GAS
 
 // swap
-static __tb_inline__ tb_uint16_t const tb_bits_swap_u16_asm(tb_uint16_t x)
+static __tb_inline__ tb_uint16_t tb_bits_swap_u16_asm(tb_uint16_t x)
 {
     __tb_asm__ __tb_volatile__("rorw    $8, %w0" : "+r"(x));
     return x;
 }
 
-static __tb_inline__ tb_uint32_t const tb_bits_swap_u32_asm(tb_uint32_t x)
+static __tb_inline__ tb_uint32_t tb_bits_swap_u32_asm(tb_uint32_t x)
 {
 #if 1
     __tb_asm__ __tb_volatile__("bswap   %0" : "+r" (x));
@@ -76,7 +76,7 @@ static __tb_inline__ tb_uint32_t const tb_bits_swap_u32_asm(tb_uint32_t x)
     return x;
 }
 
-static __tb_inline__ tb_hize_t const tb_bits_swap_u64_asm(tb_hize_t x)
+static __tb_inline__ tb_hize_t tb_bits_swap_u64_asm(tb_hize_t x)
 {
     __tb_register__ tb_size_t esi, edi;
     __tb_asm__ __tb_volatile__

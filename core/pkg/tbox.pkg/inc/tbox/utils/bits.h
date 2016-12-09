@@ -29,8 +29,7 @@
  */
 #include "prefix.h"
 #include "../libm/libm.h"
-#if defined(TB_COMPILER_IS_GCC) \
-    && TB_COMPILER_VERSION_BE(4, 1)
+#if defined(TB_COMPILER_IS_GCC)
 #   include "impl/bits_gcc.h"
 #endif
 #if defined(TB_ARCH_x86) || defined(TB_ARCH_x64)
@@ -658,22 +657,22 @@ static __tb_inline__ tb_void_t tb_bits_set_u64_be_inline(tb_byte_t* p, tb_uint64
  */
 
 // swap
-static __tb_inline__ tb_uint16_t const tb_bits_swap_u16_inline(tb_uint16_t x)
+static __tb_inline__ tb_uint16_t tb_bits_swap_u16_inline(tb_uint16_t x)
 {
     x = (x >> 8) | (x << 8);
     return x;
 }
-static __tb_inline__ tb_uint32_t const tb_bits_swap_u24_inline(tb_uint32_t x)
+static __tb_inline__ tb_uint32_t tb_bits_swap_u24_inline(tb_uint32_t x)
 {
     return (x >> 16) | (x & 0x0000ff00) | (x << 16);
 }
-static __tb_inline__ tb_uint32_t const tb_bits_swap_u32_inline(tb_uint32_t x)
+static __tb_inline__ tb_uint32_t tb_bits_swap_u32_inline(tb_uint32_t x)
 {
     x = ((x << 8) & 0xff00ff00) | ((x >> 8) & 0x00ff00ff);
     x = (x >> 16) | (x << 16);
     return x;
 }
-static __tb_inline__ tb_hize_t const tb_bits_swap_u64_inline(tb_hize_t x)
+static __tb_inline__ tb_hize_t tb_bits_swap_u64_inline(tb_hize_t x)
 {
     union 
     {

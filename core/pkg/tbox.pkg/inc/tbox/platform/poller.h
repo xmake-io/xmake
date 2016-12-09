@@ -41,16 +41,23 @@ __tb_extern_c_enter__
 /// the poller event enum, only for sock
 typedef enum __tb_poller_event_e
 {
+    // the waited events
     TB_POLLER_EVENT_NONE        = TB_SOCKET_EVENT_NONE
 ,   TB_POLLER_EVENT_CONN        = TB_SOCKET_EVENT_CONN
 ,   TB_POLLER_EVENT_ACPT        = TB_SOCKET_EVENT_ACPT
 ,   TB_POLLER_EVENT_RECV        = TB_SOCKET_EVENT_RECV
 ,   TB_POLLER_EVENT_SEND        = TB_SOCKET_EVENT_SEND
+,   TB_POLLER_EVENT_EALL        = TB_SOCKET_EVENT_EALL
 
+    // the event flags after waiting
 ,   TB_POLLER_EVENT_CLEAR       = 0x0010 //!< edge trigger. after the event is retrieved by the user, its state is reset
 ,   TB_POLLER_EVENT_ONESHOT     = 0x0020 //!< causes the event to return only the first occurrence of the filter being triggered
 
-,   TB_POLLER_EVENT_EALL        = TB_SOCKET_EVENT_EALL
+    /*! the event flag will be marked if the connection be closed in the edge trigger (TB_POLLER_EVENT_CLEAR)
+     *
+     * be similar to epoll.EPOLLRDHUP and kqueue.EV_EOF
+     */
+,   TB_POLLER_EVENT_EOF         = 0x0100
 
 }tb_poller_event_e;
 
