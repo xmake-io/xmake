@@ -1,4 +1,4 @@
-## 一个基于Lua的轻量级跨平台自动构建工具
+# 一个基于Lua的轻量级跨平台自动构建工具
 
 [![Build Status](https://api.travis-ci.org/waruqi/xmake.svg)](https://travis-ci.org/waruqi/xmake) [![Build status](https://ci.appveyor.com/api/projects/status/cop0jof7vs6as34r?svg=true)](https://ci.appveyor.com/project/waruqi/xmake) [![Join the chat at https://gitter.im/waruqi/tboox](https://badges.gitter.im/waruqi/tboox.svg)](https://gitter.im/waruqi/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate)
 
