@@ -11,6 +11,7 @@
 ### Changes
 
 * Support vs2017 for the project plugin
+* Improve gcc error and warning tips
 
 ### Bugs fixed
 
@@ -192,6 +193,7 @@
 ### 改进
 
 * 工程生成插件支持vs2017
+* 改进gcc/clang编译器警告和错误提示
 
 ### Bugs修复
 

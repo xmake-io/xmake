@@ -108,7 +108,7 @@ function sandbox_try.try(block)
 
     -- run the finally function
     if funcs and funcs.finally then
-        funcs.finally(utils.ifelse(ok, errors, nil))
+        funcs.finally(ok, errors)
     end
 
     -- ok?

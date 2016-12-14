@@ -34,7 +34,7 @@ function _build_from_object(target, sourcefile, objectfile, percent)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${yellow}[%02d%%]:${clear} ", percent)
+    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
         cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
     else
@@ -57,7 +57,7 @@ function _build_from_static(target, sourcefile, objectfile, percent)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${yellow}[%02d%%]:${clear} ", percent)
+    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
         cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
     else
@@ -152,7 +152,7 @@ function _build(target, g, index)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${yellow}[%02d%%]:${clear} ", percent)
+    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
         cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
     else
