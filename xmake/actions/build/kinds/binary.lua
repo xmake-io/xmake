@@ -51,7 +51,7 @@ function build(target, g)
     local verbose = option.get("verbose")
 
     -- trace percent into
-    cprintf("${yellow}[%02d%%]:${clear} ", (g.targetindex + 1) * 100 / g.targetcount)
+    cprintf("${green}[%02d%%]:${clear} ", (g.targetindex + 1) * 100 / g.targetcount)
     if verbose then
         cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
     else

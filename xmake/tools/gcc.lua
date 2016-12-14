@@ -22,6 +22,7 @@
 
 -- imports
 import("core.tool.tool")
+import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 
@@ -271,7 +272,43 @@ function compile(sourcefile, objectfile, incdepfile, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(sourcefile, objectfile, flags))
+    try
+    {
+        function ()
+            local outdata, errdata = os.iorun(compcmd(sourcefile, objectfile, flags))
+            return (outdata or "") .. (errdata or "")
+        end,
+        finally
+        {
+            function (ok, errors)
+
+                -- parse warnings and errors
+                local errinfos  = nil
+                local warnings  = nil
+                for _, errline in ipairs(errors:split('\n')) do
+                    if errinfos or errline:find("%serror:") then
+                        errinfos = errinfos or {}
+                        table.insert(errinfos, errline)
+                    else
+                        warnings = warnings or {}
+                        if #warnings < 8 then
+                            table.insert(warnings, errline)
+                        end
+                    end
+                end
+
+                -- print some warnings
+                if warnings and (not ok or option.get("verbose")) then
+                    cprint("${yellow}%s", table.concat(warnings, '\n'))
+                end
+
+                -- raise errors
+                if errinfos then
+                    os.raise(table.concat(errinfos, '\n'))
+                end
+            end
+        }
+    }
 
     -- generate includes file
     if incdepfile and _g.kind ~= "as" then
