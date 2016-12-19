@@ -34,7 +34,7 @@ local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local global        = require("project/global")
 
--- load the platform module
+-- load the language module
 function _instance:_load(modulename)
 
     -- return it directly if cached
@@ -103,7 +103,7 @@ function _instance.new(name, info, rootdir)
     return instance
 end
 
--- get the platform configure
+-- get the language configure
 function _instance:get(name)
 
     -- the info
@@ -128,14 +128,18 @@ function _instance:get(name)
     end
 end
 
--- the directories of platform
-function language._directories()
+-- get the language sourcekinds
+function _instance:sourcekinds()
 
-    -- the directories
-    return  {   path.join(config.directory(), "languages")
-            ,   path.join(global.directory(), "languages")
-            ,   path.join(xmake._PROGRAM_DIR, "languages")
-            }
+    -- get it
+    return self._INFO.sourcekinds
+end
+
+-- the directory of language
+function language._directory()
+
+    -- the directory
+    return path.join(xmake._PROGRAM_DIR, "languages"))
 end
 
 -- the interpreter
@@ -163,70 +167,100 @@ function language._interpreter()
     return interp
 end
 
--- load the given platform 
-function language.load(plat)
+-- load the language from the given name
+function language.load(name)
 
-    -- get platform name
-    plat = plat or config.get("plat") or xmake._HOST
-    if not plat then
-        return nil, string.format("unknown platform!")
+    -- load all languages
+    if not name then
+        for _, name in ipairs(table.wrap(os.match(language._directory(), true))) do
+            local instance, errors = language.load(path.basename(name))
+            if not instance then
+                return nil, errors
+            end
+        end
+        return language._LANGUAGES
     end
 
     -- get it directly from cache dirst
-    language._PLATFORMS = language._PLATFORMS or {}
-    if language._PLATFORMS[plat] then
-        return language._PLATFORMS[plat]
+    language._LANGUAGES = language._LANGUAGES or {}
+    if language._LANGUAGES[name] then
+        return language._LANGUAGES[name]
     end
 
-    -- find the platform script path
-    local scriptpath = nil
-    for _, dir in ipairs(language._directories()) do
-
-        -- find this directory
-        scriptpath = path.join(path.join(dir, plat), "xmake.lua")
-        if os.isfile(scriptpath) then
-            break
-        end
+    -- find the language script path
+    local scriptpath = path.join(path.join(language._directory(), name), "xmake.lua")
+    if not os.isfile(scriptpath) then
+        return nil, string.format("the language %s not found!", name)
     end
 
     -- not exists?
     if not scriptpath or not os.isfile(scriptpath) then
-        return nil, string.format("the platform %s not found!", plat)
+        return nil, string.format("the language %s not found!", name)
     end
 
-    -- load platform
-    local results, errors = language._interpreter():load(scriptpath, "platform", true, false)
+    -- load language
+    local results, errors = language._interpreter():load(scriptpath, "language", true, false)
     if not results and os.isfile(scriptpath) then
         return nil, errors
     end
 
-    -- check the platform name
-    if not results[plat] then
-        return nil, string.format("the platform %s not found!", plat)
+    -- check the language name
+    if not results[name] then
+        return nil, string.format("the language %s not found!", name)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(plat, results[plat], language._interpreter():rootdir())
+    local instance, errors = _instance.new(name, results[name], language._interpreter():rootdir())
     if not instance then
         return nil, errors
     end
 
     -- save instance to the cache
-    language._PLATFORMS[plat] = instance
+    language._LANGUAGES[name] = instance
 
     -- ok
     return instance
-
 end
 
--- get the given platform configure
-function language.get(name)
+-- load the language from the given kind: .c, .cpp, .mm ..
+function language.load_from_kind(kind)
 
-    -- get the current platform configure
-    local instance = language.load()
-    if instance then
-        return instance:get(name)
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        return nil, errors
     end
+
+    -- make kind as lower
+    kind = kind:lower()
+
+    -- get it directly from cache dirst
+    language._LANGUAGES_OF_KIND = language._LANGUAGES_OF_KIND or {}
+    if language._LANGUAGES_OF_KIND[kind] then
+        return language._LANGUAGES_OF_KIND[kind]
+    end
+
+    -- find language instance
+    local result = nil
+    for _, instance in pairs(languages) do
+        for _, sourcekind in ipairs(table.wrap(instance:sourcekinds())) do
+            if sourcekind == kind then
+                result = instance
+                break
+            end
+        end
+    end
+
+    -- not found?
+    if not result then
+        return nil, string.format("unknown language kind: %s", kind)
+    end
+
+    -- cache this language
+    language._LANGUAGES_OF_KIND[kind] = result
+
+    -- ok
+    return result
 end
 
 -- return module

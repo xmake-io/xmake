@@ -103,6 +103,31 @@ function _instance.new(name, info, rootdir)
     return instance
 end
 
+-- get the platform configure
+function _instance:get(name)
+
+    -- the info
+    local info = self._INFO
+
+    -- load it first
+    if self._g == nil and info.load ~= nil then
+
+        -- load it
+        local ok, errors = sandbox.load(info.load)
+        if not ok then
+            os.raise(errors)
+        end
+
+        -- save _g
+        self._g = getfenv(info.load)._g
+    end
+
+    -- get it
+    if self._g ~= nil then
+        return self._g[name]
+    end
+end
+
 -- get the platform os
 function _instance:os()
 
@@ -157,31 +182,6 @@ function _instance:environment()
 
     -- load environment
     return self:_load("environment")
-end
-
--- get the platform configure
-function _instance:get(name)
-
-    -- the info
-    local info = self._INFO
-
-    -- load it first
-    if self._g == nil and info.load ~= nil then
-
-        -- load it
-        local ok, errors = sandbox.load(info.load)
-        if not ok then
-            os.raise(errors)
-        end
-
-        -- save _g
-        self._g = getfenv(info.load)._g
-    end
-
-    -- get it
-    if self._g ~= nil then
-        return self._g[name]
-    end
 end
 
 -- the directories of platform
