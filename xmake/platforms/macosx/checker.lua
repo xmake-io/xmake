@@ -24,12 +24,6 @@
 import("core.tool.tool")
 import("platforms.checker", {rootdir = os.programdir()})
 
--- check from envar
-function _check_toolchain_from_env(config, env)
-
-    checker.check_toolchain(config, "cc",   "xcrun -sdk macosx ",  "clang",     "the c compiler") 
-end
-
 -- check the toolchains
 function _check_toolchains(config)
 
@@ -38,12 +32,12 @@ function _check_toolchains(config)
     checker.check_toolchain_from_env(config, "cxx",  "CXX",  "the c++ compiler") 
     checker.check_toolchain_from_env(config, "mm",   "MM",   "the objc compiler") 
     checker.check_toolchain_from_env(config, "mxx",  "MXX",  "the objc++ compiler") 
+    checker.check_toolchain_from_env(config, "sc",   "SC",   "the swift compiler") 
     checker.check_toolchain_from_env(config, "as",   "AS",   "the assember") 
     checker.check_toolchain_from_env(config, "ld",   "LD",   "the linker") 
     checker.check_toolchain_from_env(config, "ar",   "AR",   "the static library archiver") 
     checker.check_toolchain_from_env(config, "ex",   "AR",   "the static library extractor") 
     checker.check_toolchain_from_env(config, "sh",   "SH",   "the shared library linker") 
-    checker.check_toolchain_from_env(config, "sc",   "SC",   "the swift compiler") 
     checker.check_toolchain_from_env(config, "dd",   "DD",   "the debugger") 
 
     -- check with xcrun
@@ -53,6 +47,7 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "mm",   "xcrun -sdk macosx ",  "clang",     "the objc compiler") 
     checker.check_toolchain(config, "mxx",  "xcrun -sdk macosx ",  "clang++",   "the objc++ compiler") 
     checker.check_toolchain(config, "mxx",  "xcrun -sdk macosx ",  "clang",     "the objc++ compiler") 
+    checker.check_toolchain(config, "sc",   "xcrun -sdk macosx ",  "swiftc",    "the swift compiler") 
     checker.check_toolchain(config, "as",   "xcrun -sdk macosx ",  "clang",     "the assember") 
     checker.check_toolchain(config, "ld",   "xcrun -sdk macosx ",  "clang++",   "the linker") 
     checker.check_toolchain(config, "ld",   "xcrun -sdk macosx ",  "clang",     "the linker") 
@@ -60,7 +55,6 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "ex",   "xcrun -sdk macosx ",  "ar",        "the static library extractor") 
     checker.check_toolchain(config, "sh",   "xcrun -sdk macosx ",  "clang++",   "the shared library linker") 
     checker.check_toolchain(config, "sh",   "xcrun -sdk macosx ",  "clang",     "the shared library linker") 
-    checker.check_toolchain(config, "sc",   "xcrun -sdk macosx ",  "swiftc",    "the swift compiler") 
     checker.check_toolchain(config, "dd",   "xcrun -sdk macosx ",  "lldb",      "the debugger") 
 
     -- check without xcrun
@@ -70,6 +64,8 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "mm",   "",  "clang",     "the objc compiler") 
     checker.check_toolchain(config, "mxx",  "",  "clang++",   "the objc++ compiler") 
     checker.check_toolchain(config, "mxx",  "",  "clang",     "the objc++ compiler") 
+    checker.check_toolchain(config, "go",   "",  "go",        "the golang compiler") 
+    checker.check_toolchain(config, "sc",   "",  "swiftc",    "the swift compiler") 
     checker.check_toolchain(config, "as",   "",  "clang",     "the assember") 
     checker.check_toolchain(config, "ld",   "",  "clang++",   "the linker") 
     checker.check_toolchain(config, "ld",   "",  "clang",     "the linker") 
@@ -77,7 +73,6 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "ex",   "",  "ar",        "the static library extractor") 
     checker.check_toolchain(config, "sh",   "",  "clang++",   "the shared library linker") 
     checker.check_toolchain(config, "sh",   "",  "clang",     "the shared library linker") 
-    checker.check_toolchain(config, "sc",   "",  "swiftc",    "the swift compiler") 
     checker.check_toolchain(config, "dd",   "",  "lldb",      "the debugger") 
 end
 

@@ -32,7 +32,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_core_tool_linker.linkcmd(objectfiles, targetfile, target)
  
     -- get the linker instance
-    local instance, errors = linker.load(target:get("kind"))
+    local instance, errors = linker.load(target:get("kind"), target:sourcekinds())
     if not instance then
         raise(errors)
     end
@@ -45,7 +45,7 @@ end
 function sandbox_core_tool_linker.linkflags(target)
  
     -- get the linker instance
-    local instance, errors = linker.load(target:get("kind"))
+    local instance, errors = linker.load(target:get("kind"), target:sourcekinds())
     if not instance then
         raise(errors)
     end
@@ -58,7 +58,7 @@ end
 function sandbox_core_tool_linker.link(objectfiles, targetfile, target)
  
     -- get the linker instance
-    local instance, errors = linker.load(target:get("kind"))
+    local instance, errors = linker.load(target:get("kind"), target:sourcekinds())
     if not instance then
         raise(errors)
     end

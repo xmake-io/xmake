@@ -251,6 +251,7 @@ function compiler.kind_of_file(sourcefile)
     ,   [".mm"]     = "mxx"
     ,   [".s"]      = "as"
     ,   [".asm"]    = "as"
+    ,   [".go"]     = "go"
     ,   [".swift"]  = "sc"
     }
 
@@ -301,6 +302,7 @@ function compiler.load(sourcekind)
     ,   mxx =   { "mxflags", "mxxflags" }
     ,   as =    { "asflags"             }
     ,   sc =    { "scflags"             }
+    ,   go =    { "goflags"             }
     }
     instance._FLAGNAMES = flagnames[sourcekind]
 
