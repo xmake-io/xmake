@@ -51,7 +51,16 @@ function linker:_flagname()
 end
 
 -- get the link kind of the target kind
-function linker._kind_of_target(targetkind)
+function linker._kind_of_target(targetkind, sourcekinds)
+
+    -- link the target of golang objects
+    if sourcekinds then
+        for _, sourcekind in ipairs(sourcekinds) do
+            if sourcekind == "go" then
+                return "go"
+            end
+        end
+    end
 
     -- the kinds
     local kinds = 
@@ -259,10 +268,10 @@ function linker:kind()
 end
 
 -- load the linker from the given target kind
-function linker.load(targetkind)
+function linker.load(targetkind, sourcekinds)
 
     -- get the linker kind
-    local kind = linker._kind_of_target(targetkind)
+    local kind = linker._kind_of_target(targetkind, sourcekinds)
     if not kind then
         return nil, string.format("unknown target kind: %s", targetkind)
     end
@@ -293,6 +302,7 @@ function linker.load(targetkind)
     {
         ld = "ldflags"
     ,   sh = "shflags"
+    ,   go = "goflags"
     }
     instance._FLAGNAME = flagname[kind]
 
