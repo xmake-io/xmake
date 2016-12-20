@@ -40,6 +40,7 @@ local package               = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
+local language              = require("language/language")
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -297,6 +298,8 @@ function project._interpreter()
 
     -- register api: target(), option() and task()
     interp:api_register_scope("target", "option", "task")
+
+--    table.dump(language.apis())
 
     -- register api: set_values() to target
     interp:api_register_set_values("target",    "kind"

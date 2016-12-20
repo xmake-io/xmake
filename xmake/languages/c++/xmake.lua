@@ -24,17 +24,71 @@
 language("c++")
 
     -- set source file kinds
-    set_sourcekinds(".cpp", ".cc")
+    set_sourcekinds(".c", ".cc", ".cpp")
 
     -- on load
     on_load(function ()
 
         -- init flags
-        _g.cxflags  = {}
-        _g.cxxflags = {}
-        _g.ldflags  = {}
-        _g.arflags  = {}
-        _g.shflags  = {}
+        _g.cflags       = {}
+        _g.cxflags      = {}
+        _g.cxxflags     = {}
+        _g.ldflags      = {}
+        _g.arflags      = {}
+        _g.shflags      = {}
+
+        -- init apis
+        _g.api          = {}
+        _g.api.values   = 
+        {
+            -- target.set_xxx
+            "target.set_config_h_prefix"
+            -- target.add_xxx
+        ,   "target.add_links"
+        ,   "target.add_cflags"
+        ,   "target.add_cxflags"
+        ,   "target.add_cxxflags"
+        ,   "target.add_ldflags"
+        ,   "target.add_arflags"
+        ,   "target.add_shflags"
+        ,   "target.add_defines"
+        ,   "target.add_undefines"
+        ,   "target.add_defines_h"
+        ,   "target.add_undefines_h"
+            -- option.add_xxx
+        ,   "option.add_cincludes"
+        ,   "option.add_cxxincludes"
+        ,   "option.add_cfuncs"
+        ,   "option.add_cxxfuncs"
+        ,   "option.add_ctypes"
+        ,   "option.add_cxxtypes"
+        ,   "option.add_links"
+        ,   "option.add_cflags"
+        ,   "option.add_cxflags"
+        ,   "option.add_cxxflags"
+        ,   "option.add_ldflags"
+        ,   "option.add_arflags"
+        ,   "option.add_shflags"
+        ,   "option.add_defines"
+        ,   "option.add_defines_if_ok"
+        ,   "option.add_defines_h_if_ok"
+        ,   "option.add_undefines"
+        ,   "option.add_undefines_if_ok"
+        ,   "option.add_undefines_h_if_ok"
+        }
+        _g.api.pathes   = 
+        {
+            -- target.set_xxx
+            "target.set_headerdir"
+        ,   "target.set_config_h"
+            -- target.add_xxx
+        ,   "target.add_headers"
+        ,   "target.add_linkdirs"
+        ,   "target.add_includedirs"
+            -- option.add_xxx
+        ,   "option.add_linkdirs"
+        ,   "option.add_includedirs"
+        }
 
     end)
 
