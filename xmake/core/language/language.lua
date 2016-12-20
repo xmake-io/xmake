@@ -139,7 +139,7 @@ end
 function language._directory()
 
     -- the directory
-    return path.join(xmake._PROGRAM_DIR, "languages"))
+    return path.join(xmake._PROGRAM_DIR, "languages")
 end
 
 -- the interpreter
@@ -160,6 +160,9 @@ function language._interpreter()
     -- register api: on_load()
     interp:api_register_on_script("language", "load")
 
+    -- register api: set_values() to language
+    interp:api_register_set_values("language",  "sourcekinds")
+
     -- save interpreter
     language._INTERPRETER = interp
 
@@ -172,7 +175,7 @@ function language.load(name)
 
     -- load all languages
     if not name then
-        for _, name in ipairs(table.wrap(os.match(language._directory(), true))) do
+        for _, name in ipairs(table.wrap(os.match(path.join(language._directory(), "*"), true))) do
             local instance, errors = language.load(path.basename(name))
             if not instance then
                 return nil, errors
@@ -261,6 +264,31 @@ function language.load_from_kind(kind)
 
     -- ok
     return result
+end
+
+-- load the language apis
+function language.apis()
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        return nil, errors
+    end
+    
+    -- merge apis for each language
+    local apis = {values = {}, pathes = {}}
+    for _, instance in pairs(languages) do
+        local instance_apis = instance:get("apis")
+        if instance_apis then
+            table.join2(apis.values, table.wrap(instance_apis.values))
+            table.join2(apis.pathes, table.wrap(instance_apis.pathes))
+        end
+    end
+    apis.values = table.unique(apis.values)
+    apis.pathes = table.unique(apis.pathes)
+
+    -- ok
+    return apis
 end
 
 -- return module

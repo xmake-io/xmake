@@ -30,10 +30,35 @@ language("swift")
     on_load(function ()
 
         -- init flags
-        _g.scflags  = {}
-        _g.ldflags  = {}
-        _g.arflags  = {}
-        _g.shflags  = {}
+        _g.scflags      = {}
+        _g.ldflags      = {}
+        _g.arflags      = {}
+        _g.shflags      = {}
+
+        -- init apis
+        _g.apis         = {}
+        _g.apis.values  = 
+        {
+            -- target.add_xxx
+            "target.add_links"
+        ,   "target.add_scflags"
+        ,   "target.add_ldflags"
+        ,   "target.add_arflags"
+        ,   "target.add_shflags"
+            -- option.add_xxx
+        ,   "option.add_links"
+        ,   "option.add_scflags"
+        ,   "option.add_ldflags"
+        ,   "option.add_arflags"
+        ,   "option.add_shflags"
+        }
+        _g.apis.pathes  = 
+        {
+            -- target.add_xxx
+            "target.add_linkdirs"
+            -- option.add_xxx
+        ,   "option.add_linkdirs"
+        }
 
     end)
 
