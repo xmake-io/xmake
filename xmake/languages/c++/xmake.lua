@@ -38,8 +38,8 @@ language("c++")
         _g.shflags      = {}
 
         -- init apis
-        _g.api          = {}
-        _g.api.values   = 
+        _g.apis         = {}
+        _g.apis.values  = 
         {
             -- target.set_xxx
             "target.set_config_h_prefix"
@@ -76,7 +76,7 @@ language("c++")
         ,   "option.add_undefines_if_ok"
         ,   "option.add_undefines_h_if_ok"
         }
-        _g.api.pathes   = 
+        _g.apis.pathes  = 
         {
             -- target.set_xxx
             "target.set_headerdir"

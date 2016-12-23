@@ -272,12 +272,12 @@ function language.apis()
     -- load all languages
     local languages, errors = language.load()
     if not languages then
-        return nil, errors
+        os.raise(errors)
     end
-    
+
     -- merge apis for each language
     local apis = {values = {}, pathes = {}}
-    for _, instance in pairs(languages) do
+    for name, instance in pairs(languages) do
         local instance_apis = instance:get("apis")
         if instance_apis then
             table.join2(apis.values, table.wrap(instance_apis.values))
