@@ -1088,6 +1088,73 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
 end
 
+-- define apis 
+--
+-- @code
+--  interp:api_define 
+--  {
+--      values = 
+--      {
+--          -- target.add_xxx
+--          "target.add_links"
+--      ,   "target.add_goflags"
+--      ,   "target.add_ldflags"
+--      ,   "target.add_arflags"
+--      ,   "target.add_shflags"
+--          -- option.add_xxx
+--      ,   "option.add_links"
+--      ,   "option.add_goflags"
+--      ,   "option.add_ldflags"
+--      ,   "option.add_arflags"
+--      ,   "option.add_shflags"
+--      }
+--  ,   pathes = 
+--      {
+--          -- target.add_xxx
+--          "target.add_linkdirs"
+--          -- option.add_xxx
+--      ,   "option.add_linkdirs"
+--      }
+--  }
+-- @endcode
+--
+function interpreter:api_define(apis)
+ 
+    -- register language apis
+    for apitype, apifuncs in pairs(apis) do
+        for _, apifunc in ipairs(apifuncs) do
+
+            -- get api function 
+            apifunc = apifunc:split('.')
+            local apiscope = apifunc[1]
+            local funcname = apifunc[2]
+            assert(apiscope and funcname)
+
+            -- get function prefix
+            local prefix = nil
+            for _, name in ipairs({"set", "add", "on", "before", "after"}) do
+                if funcname:startswith(name .. "_") then
+                    prefix = name
+                    break
+                end
+            end
+            assert(prefix)
+
+            -- get function name
+            funcname = funcname:sub(#prefix + 2)
+
+            -- get register
+            local register = self[string.format("api_register_%s_%s", prefix, apitype)]
+            if not register then
+                os.raise("interp:api_register_%s_%s() is unknown!", prefix, apitype)
+            end
+        
+            -- register api
+            register(self, apiscope, funcname)
+        end
+    end
+end
+
 -- the builtin api: add_subdirs()
 function interpreter:api_builtin_add_subdirs(...)
     

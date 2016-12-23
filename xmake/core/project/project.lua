@@ -299,11 +299,11 @@ function project._interpreter()
     -- register api: target(), option() and task()
     interp:api_register_scope("target", "option", "task")
 
---    table.dump(language.apis())
+    -- define apis for language
+    interp:api_define(language.apis())
 
     -- register api: set_values() to target
     interp:api_register_set_values("target",    "kind"
-                                            ,   "config_h_prefix"
                                             ,   "version"
                                             ,   "project"
                                             ,   "strip"
@@ -315,35 +315,16 @@ function project._interpreter()
 
     -- register api: add_values() to target
     interp:api_register_add_values("target",    "deps"
-                                            ,   "links"
-                                            ,   "cflags" 
-                                            ,   "cxflags" 
-                                            ,   "cxxflags" 
-                                            ,   "mflags" 
-                                            ,   "mxflags" 
-                                            ,   "mxxflags" 
-                                            ,   "ldflags" 
-                                            ,   "arflags" 
-                                            ,   "shflags" 
                                             ,   "options"
-                                            ,   "defines"
-                                            ,   "undefines"
-                                            ,   "defines_h"
-                                            ,   "undefines_h"
                                             ,   "languages"
                                             ,   "vectorexts")
 
     -- register api: set_pathes() to target
-    interp:api_register_set_pathes("target",    "headerdir" 
-                                            ,   "targetdir" 
-                                            ,   "objectdir" 
-                                            ,   "config_h")
+    interp:api_register_set_pathes("target",    "targetdir" 
+                                            ,   "objectdir")
 
     -- register api: add_pathes() to target
-    interp:api_register_add_pathes("target",    "files"
-                                            ,   "headers" 
-                                            ,   "linkdirs" 
-                                            ,   "includedirs")
+    interp:api_register_add_pathes("target",    "files")
 
  
     -- register api: on_action() to target
@@ -380,36 +361,10 @@ function project._interpreter()
                                             ,   "description")
     
     -- register api: add_values() to option
-    interp:api_register_add_values("option",    "links" 
-                                            ,   "cincludes" 
-                                            ,   "cxxincludes" 
-                                            ,   "cfuncs" 
-                                            ,   "cxxfuncs" 
-                                            ,   "ctypes" 
-                                            ,   "cxxtypes" 
-                                            ,   "cflags" 
-                                            ,   "cxflags" 
-                                            ,   "cxxflags" 
-                                            ,   "mflags"
-                                            ,   "mxflags"
-                                            ,   "mxxflags"
-                                            ,   "ldflags" 
-                                            ,   "arflags" 
-                                            ,   "shflags" 
-                                            ,   "vectorexts"
+    interp:api_register_add_values("option",    "vectorexts"
                                             ,   "bindings"
-                                            ,   "rbindings"
-                                            ,   "defines"
-                                            ,   "defines_if_ok"
-                                            ,   "defines_h_if_ok"
-                                            ,   "undefines"
-                                            ,   "undefines_if_ok"
-                                            ,   "undefines_h_if_ok")
+                                            ,   "rbindings")
 
-    -- register api: add_pathes() to option
-    interp:api_register_add_pathes("option",    "linkdirs"
-                                            ,   "includedirs")
- 
     -- register api: add_cfunc() and add_cfuncs() to target
     interp:api_register("target", "add_cfunc", project._api_add_cfunc)
     interp:api_register("target", "add_cfuncs", project._api_add_cfuncs)
