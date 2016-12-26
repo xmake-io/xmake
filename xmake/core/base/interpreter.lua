@@ -1121,14 +1121,22 @@ end
 function interpreter:api_define(apis)
  
     -- register language apis
+    local scopes = {}
     for apitype, apifuncs in pairs(apis) do
         for _, apifunc in ipairs(apifuncs) do
 
             -- get api function 
+            local apiscope = nil
+            local funcname = nil
             apifunc = apifunc:split('.')
-            local apiscope = apifunc[1]
-            local funcname = apifunc[2]
-            assert(apiscope and funcname)
+            assert(apifunc)
+            if #apifunc == 2 then
+                apiscope = apifunc[1]
+                funcname = apifunc[2]
+            else
+                funcname = apifunc[1]
+            end
+            assert(funcname)
 
             -- get function prefix
             local prefix = nil
@@ -1147,6 +1155,12 @@ function interpreter:api_define(apis)
             local register = self[string.format("api_register_%s_%s", prefix, apitype)]
             if not register then
                 os.raise("interp:api_register_%s_%s() is unknown!", prefix, apitype)
+            end
+
+            -- register scope first 
+            if apiscope ~= nil and not scopes[apiscope] then
+                self:api_register_scope(apiscope)
+                scopes[apiscope] = true
             end
         
             -- register api

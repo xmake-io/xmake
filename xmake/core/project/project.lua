@@ -296,74 +296,80 @@ function project._interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
-    -- register api: target(), option() and task()
-    interp:api_register_scope("target", "option", "task")
-
     -- define apis for language
     interp:api_define(language.apis())
 
-    -- register api: set_values() to target
-    interp:api_register_set_values("target",    "kind"
-                                            ,   "version"
-                                            ,   "project"
-                                            ,   "strip"
-                                            ,   "options"
-                                            ,   "symbols"
-                                            ,   "warnings"
-                                            ,   "optimize"
-                                            ,   "languages")
-
-    -- register api: add_values() to target
-    interp:api_register_add_values("target",    "deps"
-                                            ,   "options"
-                                            ,   "languages"
-                                            ,   "vectorexts")
-
-    -- register api: set_pathes() to target
-    interp:api_register_set_pathes("target",    "targetdir" 
-                                            ,   "objectdir")
-
-    -- register api: add_pathes() to target
-    interp:api_register_add_pathes("target",    "files")
-
- 
-    -- register api: on_action() to target
-    interp:api_register_on_script("target",     "run"
-                                            ,   "build"
-                                            ,   "clean"
-                                            ,   "package"
-                                            ,   "install"
-                                            ,   "uninstall")
-
-    -- register api: before_action() to target
-    interp:api_register_before_script("target", "run"
-                                            ,   "build"
-                                            ,   "clean"
-                                            ,   "package"
-                                            ,   "install"
-                                            ,   "uninstall")
-
-    -- register api: after_action() to target
-    interp:api_register_after_script("target",  "run"
-                                            ,   "build"
-                                            ,   "clean"
-                                            ,   "package"
-                                            ,   "install"
-                                            ,   "uninstall")
-
-    -- register api: set_values() to option
-    interp:api_register_set_values("option",    "default"
-                                            ,   "showmenu"
-                                            ,   "category"
-                                            ,   "warnings"
-                                            ,   "optimize"
-                                            ,   "languages"
-                                            ,   "description")
-    
-    -- register api: add_values() to option
-    interp:api_register_add_values("option",    "vectorexts"
-                                            ,   "bindings"
-                                            ,   "rbindings")
+    -- define apis for target, option and task
+    interp:api_define
+    {
+        values =
+        {
+            -- target.set_xxx
+            "target.set_kind"
+        ,   "target.set_version"
+        ,   "target.set_project"
+        ,   "target.set_strip"
+        ,   "target.set_options"
+        ,   "target.set_symbols"
+        ,   "target.set_warnings"
+        ,   "target.set_optimize"
+        ,   "target.set_languages"
+            -- target.add_xxx
+        ,   "target.add_deps"
+        ,   "target.add_options"
+        ,   "target.add_languages"
+        ,   "target.add_vectorexts"
+            -- option.set_xxx
+        ,   "option.set_default"
+        ,   "option.set_showmenu"
+        ,   "option.set_category"
+        ,   "option.set_warnings"
+        ,   "option.set_optimize"
+        ,   "option.set_languages"
+        ,   "option.set_description"
+            -- option.add_xxx
+        ,   "option.add_vectorexts"
+        ,   "option.add_bindings"
+        ,   "option.add_rbindings"
+            -- task.set_xxx
+        ,   "task.set_category"
+        ,   "task.set_menu"
+        }
+    ,   pathes = 
+        {
+            -- target.set_xxx
+            "target.set_targetdir"
+        ,   "target.set_objectdir"
+            -- target.add_xxx
+        ,   "target.add_files"
+        }
+    ,   script =
+        {
+            -- target.on_xxx
+            "target.on_run"
+        ,   "target.on_build"
+        ,   "target.on_clean"
+        ,   "target.on_package"
+        ,   "target.on_install"
+        ,   "target.on_uninstall"
+            -- target.before_xxx
+        ,   "target.before_run"
+        ,   "target.before_build"
+        ,   "target.before_clean"
+        ,   "target.before_package"
+        ,   "target.before_install"
+        ,   "target.before_uninstall"
+            -- target.after_xxx
+        ,   "target.after_run"
+        ,   "target.after_build"
+        ,   "target.after_clean"
+        ,   "target.after_package"
+        ,   "target.after_install"
+        ,   "target.after_uninstall"
+            -- target.on_xxx
+        ,   "task.on_run"
+        }
+    }
 
     -- register api: add_cfunc() and add_cfuncs() to target
     interp:api_register("target", "add_cfunc", project._api_add_cfunc)
@@ -375,17 +381,6 @@ function project._interpreter()
 
     -- register api: add_packages() to target
     interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
-
-    -- register api: set_category()
-    --
-    -- category: main, action, plugin, task (default)
-    interp:api_register_set_values("task", "category")
-
-    -- register api: set_menu() 
-    interp:api_register_set_values("task", "menu")
-
-    -- register api: on_run()
-    interp:api_register_on_script("task", "run")
 
     -- register api: is_xxx() to root
     interp:api_register(nil, "is_os",       project._api_is_os)

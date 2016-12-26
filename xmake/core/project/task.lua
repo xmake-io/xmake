@@ -160,20 +160,22 @@ function task._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
-    -- register api: task()
-    interp:api_register_scope("task")
-
-    -- register api: set_category()
-    --
-    -- category: main, action, plugin, task (default)
-    interp:api_register_set_values("task", "category")
-
-    -- register api: set_menu() 
-    interp:api_register_set_values("task", "menu")
-
-    -- register api: on_run()
-    interp:api_register_on_script("task", "run")
+  
+    -- define apis
+    interp:api_define
+    {
+        values =
+        {
+            -- task.set_xxx
+            "task.set_category"     -- main, action, plugin, task (default)
+        ,   "task.set_menu"
+        }
+    ,   script =
+        {
+            -- task.on_xxx
+            "task.on_run"
+        }
+    }
 
     -- set filter
     interp:filter_set(filter.new(function (variable)

@@ -206,35 +206,27 @@ function platform._interpreter()
     local interp = interpreter.new()
     assert(interp)
  
-    -- register api: platform()
-    interp:api_register_scope("platform")
-
-    -- register api: set_os()
-    interp:api_register_set_values("platform", "os")
-
-    -- register api: set_hosts() 
-    interp:api_register_set_values("platform", "hosts")
-
-    -- register api: set_archs() 
-    interp:api_register_set_values("platform", "archs")
-
-    -- register api: set_menu() 
-    interp:api_register_set_values("platform", "menu")
-
-    -- register api: set_checker()
-    interp:api_register_set_values("platform", "checker")
-
-    -- register api: set_tooldirs()
-    interp:api_register_set_values("platform", "tooldirs")
-
-    -- register api: set_environment()
-    interp:api_register_set_values("platform", "environment")
-
-    -- register api: set_installer()
-    interp:api_register_set_values("platform", "installer")
-
-    -- register api: on_load()
-    interp:api_register_on_script("platform", "load")
+    -- define apis
+    interp:api_define
+    {
+        values =
+        {
+            -- platform.set_xxx
+            "platform.set_os"
+        ,   "platform.set_hosts"
+        ,   "platform.set_archs"
+        ,   "platform.set_menu"
+        ,   "platform.set_checker"
+        ,   "platform.set_tooldirs"
+        ,   "platform.set_environment"
+        ,   "platform.set_installer"
+        }
+    ,   script =
+        {
+            -- platform.on_xxx
+            "platform.on_load"
+        }
+    }
 
     -- save interpreter
     platform._INTERPRETER = interp
