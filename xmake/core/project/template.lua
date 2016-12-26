@@ -47,17 +47,28 @@ function template._interpreter()
     local interp = interpreter.new()
     assert(interp)
 
-    -- register api: set_description() and set_projectdir()
-    interp:api_register_set_values(nil, "description", "projectdir")
-
-    -- register api: add_macrofiles()
-    interp:api_register_add_values(nil, "macrofiles")
-
-    -- register api: add_macros()
-    interp:api_register_add_keyvalues(nil, "macros")
-
-    -- register api: on_create()
-    interp:api_register_on_script(nil, "create")
+    -- define apis (only root scope)
+    interp:api_define
+    {
+        values =
+        {
+            -- set_xxx
+            "set_description"
+        ,   "set_projectdir"
+            -- add_xxx
+        ,   "add_macrofiles"
+        }
+    ,   keyvalues = 
+        {
+            -- add_xxx
+            "add_macros"
+        }
+    ,   script =
+        {
+            -- on_xxx
+            "on_create"
+        }
+    }
 
     -- save interpreter
     template._INTERPRETER = interp

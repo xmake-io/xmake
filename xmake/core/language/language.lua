@@ -154,14 +154,20 @@ function language._interpreter()
     local interp = interpreter.new()
     assert(interp)
  
-    -- register api: language()
-    interp:api_register_scope("language")
-
-    -- register api: on_load()
-    interp:api_register_on_script("language", "load")
-
-    -- register api: set_values() to language
-    interp:api_register_set_values("language",  "sourcekinds")
+    -- define apis
+    interp:api_define
+    {
+        values =
+        {
+            -- language.set_xxx
+            "language.set_sourcekinds"
+        }
+    ,   script =
+        {
+            -- language.on_xxx
+            "language.on_load"
+        }
+    }
 
     -- save interpreter
     language._INTERPRETER = interp
