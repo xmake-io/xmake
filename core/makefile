@@ -280,6 +280,11 @@ else
 luajit_LIBNAMES := luajit
 endif
 
+# config static
+ifeq ($(PLAT),linux)
+LDFLAG := $(LDFLAG) $(shell if [ -f "/etc/redhat-release" ]; then echo ""; else echo "-static"; fi )
+endif
+
 # select package directory
 ifneq ($(PACKAGE),)
 PKG_DIR 	:= $(PACKAGE)
