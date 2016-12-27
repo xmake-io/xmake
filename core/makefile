@@ -270,7 +270,7 @@ endif
 
 ifeq ($(PLAT),linux)
 base_LIBPATH 	:= 
-base_LIBNAMES 	:= rt m dl pthread
+base_LIBNAMES 	:= m dl pthread
 endif
 
 # config luajit
@@ -278,6 +278,11 @@ ifeq ($(PLAT),linux)
 luajit_LIBNAMES := $(shell if [ -f "/etc/redhat-release" ]; then echo "luajit_rhel"; else echo "luajit"; fi )
 else
 luajit_LIBNAMES := luajit
+endif
+
+# config static
+ifeq ($(PLAT),linux)
+LDFLAG := $(LDFLAG) $(shell if [ -f "/etc/redhat-release" ]; then echo ""; else echo "-static"; fi )
 endif
 
 # select package directory
