@@ -282,7 +282,7 @@ endif
 
 # config static
 ifeq ($(PLAT),linux)
-LDFLAG := $(LDFLAG) $(shell if [ -f "/etc/redhat-release" ]; then echo ""; else echo "-static"; fi )
+LDFLAG := $(LDFLAG) $(shell if [ -f "/etc/lsb-release" ] && [ `cat /etc/lsb-release | grep Ubuntu -o -m 1` == "Ubuntu" ]; then echo "-static"; else echo ""; fi )
 endif
 
 # select package directory
