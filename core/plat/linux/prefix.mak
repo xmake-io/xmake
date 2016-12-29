@@ -48,13 +48,13 @@ AHFLAGS 			:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring i386,$(ARCH)),-m32,))
 ifneq ($(AHFLAGS),)
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK 			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-CXFLAGS_CHECK 		:= $(call CC_CHECK,-ftrapv,) $(call CC_CHECK,-fsanitize=address,)
+CXFLAGS_CHECK 		:= 
 export CXFLAGS_CHECK
 endif
 
 ifeq ($(LDFLAGS_CHECK),)
 LD_CHECK 			= ${shell if $(LD) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-LDFLAGS_CHECK 		:= $(call LD_CHECK,-ftrapv,) $(call LD_CHECK,-fsanitize=address,) 
+LDFLAGS_CHECK 		:= $(call LD_CHECK,-no-pie,)
 export LDFLAGS_CHECK
 endif
 endif
@@ -62,7 +62,7 @@ endif
 # cxflags: .c/.cc/.cpp files
 CXFLAGS_RELEASE 	= -fvisibility=hidden
 CXFLAGS_DEBUG 		= -g -D__tb_debug__
-CXFLAGS 			= $(AHFLAGS) -c -Wall  
+CXFLAGS 			= $(AHFLAGS) $(CXFLAGS_CHECK) -c -Wall  
 CXFLAGS-I 			= -I
 CXFLAGS-o 			= -o
 
@@ -86,7 +86,7 @@ ifeq ($(PROF),y)
 CXFLAGS 			+= -g -pg -fno-omit-frame-pointer 
 else
 CXFLAGS_RELEASE 	+= -fomit-frame-pointer 
-CXFLAGS_DEBUG 		+= -fno-omit-frame-pointer $(CXFLAGS_CHECK)
+CXFLAGS_DEBUG 		+= -fno-omit-frame-pointer
 endif
 
 # cflags: .c files
@@ -105,7 +105,7 @@ CCFLAGS 			= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_POSI
 # ldflags
 LDFLAGS_RELEASE 	= 
 LDFLAGS_DEBUG 		= -rdynamic 
-LDFLAGS 			= $(AHFLAGS) 
+LDFLAGS 			= $(AHFLAGS) $(LDFLAGS_CHECK)
 LDFLAGS-L 			= -L
 LDFLAGS-l 			= -l
 LDFLAGS-f 			=
@@ -116,7 +116,7 @@ ifeq ($(PROF),y)
 LDFLAGS 			+= -pg 
 else
 LDFLAGS_RELEASE 	+= -s
-LDFLAGS_DEBUG 		+= $(LDFLAGS_CHECK)
+LDFLAGS_DEBUG 		+= 
 endif
 
 # asflags
