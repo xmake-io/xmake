@@ -35,11 +35,14 @@ platform("linux")
     -- set checker
     set_checker("checker")
 
-    -- set installer
-    set_installer("installer")
-
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+
+    -- on install
+    on_install("install")
+
+    -- on uninstall
+    on_uninstall("uninstall")
 
     -- on load
     on_load(function ()

@@ -59,5 +59,12 @@ function sandbox_core_platform_platform.archs(plat)
     return archs
 end
 
+-- get the current platform configure
+function sandbox_core_platform_platform.get(name, plat)
+
+    -- get the given platform configure
+    return platform.get(name, plat)
+end
+
 -- return module
 return sandbox_core_platform_platform

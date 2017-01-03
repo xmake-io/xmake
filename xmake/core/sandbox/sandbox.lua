@@ -173,10 +173,10 @@ function sandbox.new(script, filter, rootdir)
     
         -- import module as script
         local modulename = script
-        script = function ()
+        script = function (...)
        
             -- import it
-            import(modulename).main()
+            import(modulename).main(...)
         end
     end
 

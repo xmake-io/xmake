@@ -17,36 +17,27 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        installer.lua
+-- @file        uninstall.lua
 --
 
--- define module
-local sandbox_core_platform_installer = sandbox_core_platform_installer or {}
-
--- load modules
-local platform      = require("platform/platform")
-local installer     = require("platform/installer")
-local raise         = require("sandbox/modules/raise")
-
--- install target
-function sandbox_core_platform_installer.install(target)
- 
-    -- enter it
-    local ok, errors = installer.install(target)
-    if not ok then
-        raise(errors)
-    end
-end
+-- imports
+import("platforms.installer", {rootdir = os.programdir()})
 
 -- uninstall target
-function sandbox_core_platform_installer.uninstall(target)
- 
-    -- enter it
-    local ok, errors = installer.uninstall(target)
-    if not ok then
-        raise(errors)
+function main(target)
+
+    -- the scripts
+    local scripts =
+    {
+        binary = installer.uninstall_binary_on_unix
+    ,   static = installer.uninstall_library_on_unix
+    ,   shared = installer.uninstall_library_on_unix
+    }
+
+    -- call script
+    local script = scripts[target:get("kind")]
+    if script then
+        script(target)
     end
 end
 
--- return module
-return sandbox_core_platform_installer

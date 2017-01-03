@@ -27,31 +27,9 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.installer")
-
--- install target 
-function _install_target(target)
-
-    -- get kind
-    local kind = target:get("kind")
-
-    -- get script 
-    local scripts =
-    {
-        binary = installer.install
-    ,   static = installer.install
-    ,   shared = installer.install
-    }
-
-    -- check
-    assert(scripts[kind], "this target(%s) with kind(%s) can not be installd!", target:name(), kind)
-
-    -- install it
-    scripts[kind](target) 
-end
 
 -- install the given target 
-function _install(target)
+function _install_target(target)
 
     -- enter project directory
     local olddir = os.cd(project.directory())
@@ -60,7 +38,7 @@ function _install(target)
     local scripts =
     {
         target:get("install_before")
-    ,   target:get("install") or _install_target
+    ,   target:get("install") or platform.get("install")
     ,   target:get("install_after")
     }
 

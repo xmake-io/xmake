@@ -24,7 +24,7 @@
 import("platforms.installer", {rootdir = os.programdir()})
 
 -- install target
-function install(target)
+function main(target)
 
     -- the scripts
     local scripts =
@@ -41,21 +41,4 @@ function install(target)
     end
 end
 
--- uninstall target
-function uninstall(target)
-
-    -- the scripts
-    local scripts =
-    {
-        binary = installer.uninstall_binary_on_unix
-    ,   static = installer.uninstall_library_on_unix
-    ,   shared = installer.uninstall_library_on_unix
-    }
-
-    -- call script
-    local script = scripts[target:get("kind")]
-    if script then
-        script(target)
-    end
-end
 
