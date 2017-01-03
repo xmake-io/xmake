@@ -1101,12 +1101,16 @@ end
 --      ,   "target.add_ldflags"
 --      ,   "target.add_arflags"
 --      ,   "target.add_shflags"
+--
 --          -- option.add_xxx
 --      ,   "option.add_links"
 --      ,   "option.add_goflags"
 --      ,   "option.add_ldflags"
 --      ,   "option.add_arflags"
 --      ,   "option.add_shflags"
+--
+--          -- is_xxx
+--      ,   {"is_os", function (interp, ...) end}
 --      }
 --  ,   pathes = 
 --      {
@@ -1125,6 +1129,18 @@ function interpreter:api_define(apis)
     for apitype, apifuncs in pairs(apis) do
         for _, apifunc in ipairs(apifuncs) do
 
+            -- is {"apifunc", apiscipt}?
+            local apiscript = nil
+            if type(apifunc) == "table" then
+
+                -- check
+                assert(#apifunc == 2 and type(apifunc[2]) == "function")
+
+                -- get function and script
+                apiscript   = apifunc[2]
+                apifunc     = apifunc[1]
+            end
+
             -- get api function 
             local apiscope = nil
             local funcname = nil
@@ -1138,33 +1154,39 @@ function interpreter:api_define(apis)
             end
             assert(funcname)
 
-            -- get function prefix
-            local prefix = nil
-            for _, name in ipairs({"set", "add", "on", "before", "after"}) do
-                if funcname:startswith(name .. "_") then
-                    prefix = name
-                    break
+            -- register api script directly
+            if apiscript ~= nil then
+                self:api_register(apiscope, funcname, apiscript)
+            else
+
+                -- get function prefix
+                local prefix = nil
+                for _, name in ipairs({"set", "add", "on", "before", "after"}) do
+                    if funcname:startswith(name .. "_") then
+                        prefix = name
+                        break
+                    end
                 end
-            end
-            assert(prefix)
+                assert(prefix)
 
-            -- get function name
-            funcname = funcname:sub(#prefix + 2)
+                -- get function name
+                funcname = funcname:sub(#prefix + 2)
 
-            -- get register
-            local register = self[string.format("api_register_%s_%s", prefix, apitype)]
-            if not register then
-                os.raise("interp:api_register_%s_%s() is unknown!", prefix, apitype)
-            end
+                -- get register
+                local register = self[string.format("api_register_%s_%s", prefix, apitype)]
+                if not register then
+                    os.raise("interp:api_register_%s_%s() is unknown!", prefix, apitype)
+                end
 
-            -- register scope first 
-            if apiscope ~= nil and not scopes[apiscope] then
-                self:api_register_scope(apiscope)
-                scopes[apiscope] = true
+                -- register scope first 
+                if apiscope ~= nil and not scopes[apiscope] then
+                    self:api_register_scope(apiscope)
+                    scopes[apiscope] = true
+                end
+            
+                -- register api
+                register(self, apiscope, funcname)
             end
-        
-            -- register api
-            register(self, apiscope, funcname)
         end
     end
 end

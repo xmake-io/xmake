@@ -369,32 +369,28 @@ function project._interpreter()
             -- target.on_xxx
         ,   "task.on_run"
         }
+    ,   custom = 
+        {
+            -- target.add_xxx
+            {"target.add_cfunc",        project._api_add_cfunc      }
+        ,   {"target.add_cfuncs",       project._api_add_cfuncs     }
+        ,   {"target.add_cxxfunc",      project._api_add_cxxfunc    }
+        ,   {"target.add_cxxfuncs",     project._api_add_cxxfuncs   }
+            -- is_xxx
+        ,   {"is_os",                   project._api_is_os          }
+        ,   {"is_kind",                 project._api_is_kind        }
+        ,   {"is_mode",                 project._api_is_mode        }
+        ,   {"is_plat",                 project._api_is_plat        }
+        ,   {"is_arch",                 project._api_is_arch        }
+        ,   {"is_option",               project._api_is_option      }
+            -- add_xxx
+        ,   {"add_packagedirs",         project._api_add_pkgdirs    }
+        ,   {"add_plugindirs",          project._api_add_plugindirs }
+        }
     }
-
-    -- register api: add_cfunc() and add_cfuncs() to target
-    interp:api_register("target", "add_cfunc", project._api_add_cfunc)
-    interp:api_register("target", "add_cfuncs", project._api_add_cfuncs)
-
-    -- register api: add_cxxfunc() and add_cxxfuncs() to target
-    interp:api_register("target", "add_cxxfunc", project._api_add_cxxfunc)
-    interp:api_register("target", "add_cxxfuncs", project._api_add_cxxfuncs)
 
     -- register api: add_packages() to target
     interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
-
-    -- register api: is_xxx() to root
-    interp:api_register(nil, "is_os",       project._api_is_os)
-    interp:api_register(nil, "is_kind",     project._api_is_kind)
-    interp:api_register(nil, "is_mode",     project._api_is_mode)
-    interp:api_register(nil, "is_plat",     project._api_is_plat)
-    interp:api_register(nil, "is_arch",     project._api_is_arch)
-    interp:api_register(nil, "is_option",   project._api_is_option)
-
-    -- register api: add_packagedirs() to root
-    interp:api_register(nil, "add_packagedirs", project._api_add_pkgdirs)
-
-    -- register api: add_plugindirs() to root
-    interp:api_register(nil, "add_plugindirs", project._api_add_plugindirs)
 
     -- register api: deprecated
     deprecated_project.api_register(interp)
