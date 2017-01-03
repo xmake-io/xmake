@@ -109,7 +109,13 @@ function _instance:get(name)
     -- the info
     local info = self._INFO
 
-    -- load it first
+    -- get if from info first
+    local value = info[name]
+    if value ~= nil then
+        return value 
+    end
+
+    -- load _g 
     if self._g == nil and info.load ~= nil then
 
         -- load it
@@ -122,10 +128,8 @@ function _instance:get(name)
         self._g = getfenv(info.load)._g
     end
 
-    -- get it
-    if self._g ~= nil then
-        return self._g[name]
-    end
+    -- get it from _g 
+    return self._g[name]
 end
 
 -- get the platform os
@@ -170,13 +174,6 @@ function _instance:checker()
     return self:_load("checker")
 end
 
--- get the installer
-function _instance:installer()
-
-    -- load installer
-    return self:_load("installer")
-end
-
 -- get the environment
 function _instance:environment()
 
@@ -219,12 +216,13 @@ function platform._interpreter()
         ,   "platform.set_checker"
         ,   "platform.set_tooldirs"
         ,   "platform.set_environment"
-        ,   "platform.set_installer"
         }
     ,   script =
         {
             -- platform.on_xxx
             "platform.on_load"
+        ,   "platform.on_install"
+        ,   "platform.on_uninstall"
         }
     }
 
@@ -291,21 +289,11 @@ function platform.load(plat)
 
 end
 
--- get the platform os
-function platform.os(plat)
-
-    -- load the platform 
-    local instance = platform.load(plat)
-    if instance then
-        return instance:os()
-    end
-end
-
 -- get the given platform configure
-function platform.get(name)
+function platform.get(name, plat)
 
     -- get the current platform configure
-    local instance = platform.load()
+    local instance = platform.load(plat)
     if instance then
         return instance:get(name)
     end
@@ -319,16 +307,6 @@ function platform.tool(kind)
 
     -- get it
     return config.get(kind)
-end
-
--- get the platform archs
-function platform.archs(plat)
-
-    -- load the platform 
-    local instance = platform.load(plat)
-    if instance then
-        return instance:archs()
-    end
 end
 
 -- get the all platforms
@@ -362,14 +340,19 @@ function platform.plats()
     return plats
 end
 
+-- get the platform os
+function platform.os(plat)
+    return platform.get("os", plat)
+end
+
+-- get the platform archs
+function platform.archs(plat)
+    return platform.get("archs", plat)
+end
+
 -- get the tool directories
 function platform.tooldirs(plat)
-
-    -- get the tool directories for the current platform
-    local instance = platform.load(plat)
-    if instance then
-        return instance:tooldirs()
-    end
+    return platform.get("tooldirs", plat)
 end
 
 -- get the given format

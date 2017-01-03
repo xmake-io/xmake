@@ -27,31 +27,9 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.installer")
-
--- uninstall target 
-function _uninstall_target(target)
-
-    -- get kind
-    local kind = target:get("kind")
-
-    -- get script 
-    local scripts =
-    {
-        binary = installer.uninstall
-    ,   static = installer.uninstall
-    ,   shared = installer.uninstall
-    }
-
-    -- check
-    assert(scripts[kind], "this target(%s) with kind(%s) can not be uninstalld!", target:name(), kind)
-
-    -- uninstall it
-    scripts[kind](target) 
-end
 
 -- uninstall the given target 
-function _uninstall(target)
+function _uninstall_target(target)
 
     -- enter project directory
     local olddir = os.cd(project.directory())
@@ -60,7 +38,7 @@ function _uninstall(target)
     local scripts =
     {
         target:get("uninstall_before")
-    ,   target:get("uninstall") or _uninstall_target
+    ,   target:get("uninstall") or platform.get("uninstall")
     ,   target:get("uninstall_after")
     }
 

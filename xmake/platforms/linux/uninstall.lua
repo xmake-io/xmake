@@ -17,45 +17,14 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        install.lua
+-- @file        uninstall.lua
 --
 
 -- imports
-import("core.project.config")
 import("platforms.installer", {rootdir = os.programdir()})
 
--- install target
-function install(target)
-
-    -- check architecture
-    local arch = config.get("arch")
-    if arch ~= "i386" and arch ~= "x86_64" then
-        raise("cannot install target(%s) for arch(%s)!", target:name(), arch)
-    end
-
-    -- the scripts
-    local scripts =
-    {
-        binary = installer.install_binary_on_unix
-    ,   static = installer.install_library_on_unix
-    ,   shared = installer.install_library_on_unix
-    }
-
-    -- call script
-    local script = scripts[target:get("kind")]
-    if script then
-        script(target)
-    end
-end
-
 -- uninstall target
-function uninstall(target)
-
-    -- check architecture
-    local arch = config.get("arch")
-    if arch ~= "i386" and arch ~= "x86_64" then
-        raise("cannot uninstall target(%s) for arch(%s)!", target:name(), arch)
-    end
+function main(target)
 
     -- the scripts
     local scripts =
