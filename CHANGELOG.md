@@ -12,6 +12,8 @@
 
 * Support vs2017 for the project plugin
 * Improve gcc error and warning tips
+* Improve lanuage module
+* Improve print interface, support lua print and format output
 
 ### Bugs fixed
 
@@ -194,6 +196,8 @@
 
 * 工程生成插件支持vs2017
 * 改进gcc/clang编译器警告和错误提示
+* 重构代码架构，改进多语言支持，更加方便灵活的扩展语言支持
+* 改进print接口，同时支持原生lua print以及格式化打印
 
 ### Bugs修复
 

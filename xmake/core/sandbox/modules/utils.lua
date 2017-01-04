@@ -24,6 +24,8 @@
 local io        = require("base/io")
 local utils     = require("base/utils")
 local colors    = require("base/colors")
+local try       = require("sandbox/modules/try")
+local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
 local raise     = require("sandbox/modules/raise")
 
@@ -37,11 +39,35 @@ for k, v in pairs(utils) do
     end
 end
 
--- print format string and the builtin variables with newline
+-- print format string with newline
+-- print builtin-variables with $(var)
+-- print multi-variables with raw lua action
+--
 function sandbox_utils.print(format, ...)
 
-    -- done
-    io.write(vformat(format, ...) .. "\n")
+    -- print format string
+    if type(format) == "string" and format:find("%", 1, true) then
+
+        local args = {...}
+        try
+        {
+            function ()
+                -- attempt to print format string first
+                io.write(vformat(format, unpack(args)) .. "\n")
+            end,
+            catch 
+            {
+                function ()
+                    -- print multi-variables with raw lua action
+                    print(format, unpack(args))
+                end
+            }
+        }
+
+    else
+        -- print multi-variables with raw lua action
+        print(format, ...)
+    end
 end
 
 -- print format string and the builtin variables without newline
