@@ -45,55 +45,7 @@ platform("macosx")
     on_uninstall("uninstall")
 
     -- on load
-    on_load(function ()
-
-        -- imports
-        import("core.project.config")
-        
-        -- init the file formats
-        _g.formats          = {}
-        _g.formats.static   = {"lib", ".a"}
-        _g.formats.object   = {"",    ".o"}
-        _g.formats.shared   = {"lib", ".dylib"}
-        _g.formats.symbol   = {"",    ".sym"}
-
-        -- init flags for architecture
-        local arch          = config.get("arch")
-        local target_minver = config.get("target_minver")
-        _g.cxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0" }
-        _g.mxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0" }
-        _g.asflags = { "-arch " .. arch }
-        _g.ldflags = { "-arch " .. arch, "-mmacosx-version-min=" .. target_minver, "-stdlib=libc++", "-lz" }
-        _g.shflags = { "-arch " .. arch, "-mmacosx-version-min=" .. target_minver, "-stdlib=libc++", "-lz" }
-        _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) }
-
-        -- init flags for the xcode sdk directory
-        local xcode_dir     = config.get("xcode_dir")
-        local xcode_sdkver  = config.get("xcode_sdkver")
-        local xcode_sdkdir  = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
-        insert(_g.cxflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.ldflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.shflags, "-isysroot " .. xcode_sdkdir)
-        insert(_g.scflags, "-sdk " .. xcode_sdkdir)
-
-        -- init includedirs
-        --
-        -- @note 
-        -- cannot use _g.includedirs because the swift/objc compiler will compile code failed
-        insert(_g.cxflags, "-I/usr/include")
-        insert(_g.cxflags, "-I/usr/local/include")
-
-        -- init linkdirs
-        _g.linkdirs    = {"/usr/lib", "/usr/local/lib"}
-
-        -- save swift link directory for tools
-        config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx")
-
-        -- ok
-        return _g
-    end)
+    on_load("load")
 
     -- set menu
     set_menu({
