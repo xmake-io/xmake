@@ -7,6 +7,7 @@
 * Add `--links`, `--linkdirs` and `--includedirs` configure arguments
 * Add app2ipa plugin
 * Add dictionary syntax style for xmake.lua
+* Provide smart scanning and building mode without xmake.lua
 
 ### Changes
 
@@ -14,6 +15,7 @@
 * Improve gcc error and warning tips
 * Improve lanuage module
 * Improve print interface, support lua print and format output
+* Automatically scan project files and generate it for building if xmake.lua not exists
 
 ### Bugs fixed
 
@@ -191,6 +193,7 @@
 * 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
 * 添加app2ipa插件
 * 为xmake.lua工程描述增加dictionay语法风格
+* 提供智能扫描编译模式，在无任何xmake.lua等工程描述文件的情况下，也能直接快速编译
 
 ### 改进
 
@@ -198,6 +201,7 @@
 * 改进gcc/clang编译器警告和错误提示
 * 重构代码架构，改进多语言支持，更加方便灵活的扩展语言支持
 * 改进print接口，同时支持原生lua print以及格式化打印
+* 如果xmake.lua不存在，自动扫描工程代码文件，并且生成xmake.lua进行编译
 
 ### Bugs修复
 
