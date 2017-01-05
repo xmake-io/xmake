@@ -95,8 +95,23 @@ function main()
     -- enter project directory
     local olddir = os.cd(project.directory())
 
-    -- run the current target
-    _run(project.target(targetname)) 
+    -- get target
+    local target = nil
+    if targetname then
+        target = project.target(targetname)
+    else
+        -- find the first binary target
+        for _, t in pairs(project.targets()) do
+            if t:get("kind") == "binary" then
+                target = t
+                break
+            end
+        end
+    end
+    assert(target, "target(%s) not found!", targetname or "unknown")
+
+    -- run the given target
+    _run(target) 
 
     -- leave project directory
     os.cd(olddir)

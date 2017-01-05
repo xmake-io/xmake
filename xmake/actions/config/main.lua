@@ -27,6 +27,7 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
+import("scanner")
 import("configheader")
 
 -- filter option 
@@ -133,14 +134,9 @@ function main()
         return 
     end
 
-    -- check xmake.lua
+    -- scan project and generate it if xmake.lua not exists
     if not os.isfile(project.file()) then
-
-        -- remove config directory if exists because the current directory is not a project
-        os.rm(config.directory())
-        
-        -- error
-        raise("xmake.lua not found!")
+        scanner.make()
     end
 
     -- the target name
