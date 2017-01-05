@@ -17,29 +17,22 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        load.lua
+-- @file        option.lua
 --
 
--- imports
-import("api")
-                    
+-- define module
+local sandbox_core_project_option = sandbox_core_project_option or {}
 
--- load it
-function main()
+-- load modules
+local option    = require("project/option")
+local raise     = require("sandbox/modules/raise")
 
-    -- init flags
-    _g.cflags       = {}
-    _g.cxflags      = {}
-    _g.cxxflags     = {}
-    _g.ldflags      = {}
-    _g.arflags      = {}
-    _g.shflags      = {}
+-- parse checkinfo
+function sandbox_core_project_option.checkinfo(checkinfo)
 
-    -- init apis
-    _g.apis         = api.apis()
-
-    -- ok
-    return _g
+    -- parse it
+    return option.checkinfo(checkinfo)
 end
 
-
+-- return module
+return sandbox_core_project_option

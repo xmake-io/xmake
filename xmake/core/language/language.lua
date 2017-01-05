@@ -231,18 +231,19 @@ function language.apis()
         os.raise(errors)
     end
 
-
     -- merge apis for each language
-    local apis = {values = {}, pathes = {}}
+    local apis = {values = {}, pathes = {}, custom = {}}
     for name, instance in pairs(languages) do
         local instance_apis = instance:get("apis")
         if instance_apis then
             table.join2(apis.values, table.wrap(instance_apis.values))
             table.join2(apis.pathes, table.wrap(instance_apis.pathes))
+            table.join2(apis.custom, table.wrap(instance_apis.custom))
         end
     end
     apis.values = table.unique(apis.values)
     apis.pathes = table.unique(apis.pathes)
+    apis.custom = table.unique(apis.custom)
 
     -- ok
     return apis
