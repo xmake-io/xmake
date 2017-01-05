@@ -32,11 +32,11 @@ platform("windows")
     -- set archs
     set_archs("x86", "x64", "amd64", "x86_amd64")
 
-    -- set checker
-    set_checker("checker")
-
     -- set environment
     set_environment("environment")
+
+    -- on check
+    on_check("check")
 
     -- on load
     on_load(function ()

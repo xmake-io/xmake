@@ -32,11 +32,11 @@ platform("iphoneos")
     -- set archs
     set_archs("armv7", "armv7s", "arm64", "i386", "x86_64")
 
-    -- set checker
-    set_checker("checker")
-
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+
+    -- on check
+    on_check("check")
 
     -- on load
     on_load(function ()

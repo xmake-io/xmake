@@ -23,6 +23,29 @@
 -- imports
 import("core.tool.tool")
 
+-- check all for the given config kind
+function check(kind, checkers)
+
+    -- import config module
+    local config = import("core.project." .. kind)
+
+    -- check all
+    for _, checker in ipairs(checkers[kind]) do
+
+        -- has arguments?
+        local args = nil
+        if type(checker) == "table" then
+            if #checker > 1 then
+                args = checker[2]
+            end
+            checker = checker[1]
+        end
+
+        -- check it
+        checker(config, args)
+    end
+end
+
 -- check the architecture
 function check_arch(config, default)
 
