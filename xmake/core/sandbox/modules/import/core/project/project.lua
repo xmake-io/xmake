@@ -21,7 +21,7 @@
 --
 
 -- define module
-local sandbox_core_project_project = sandbox_core_project_project or {}
+local sandbox_core_project = sandbox_core_project or {}
 
 -- load modules
 local table     = require("base/table")
@@ -30,7 +30,7 @@ local project   = require("project/project")
 local raise     = require("sandbox/modules/raise")
 
 -- load project
-function sandbox_core_project_project.load()
+function sandbox_core_project.load()
 
     -- load it
     local ok, errors = project.load()
@@ -40,7 +40,7 @@ function sandbox_core_project_project.load()
 end
 
 -- check project options
-function sandbox_core_project_project.check()
+function sandbox_core_project.check()
 
     -- check it
     local ok, errors = project.check()
@@ -50,14 +50,14 @@ function sandbox_core_project_project.check()
 end
 
 -- get the given target
-function sandbox_core_project_project.target(targetname)
+function sandbox_core_project.target(targetname)
 
     -- get it
     return project.target(targetname)
 end
 
 -- get the all targets
-function sandbox_core_project_project.targets()
+function sandbox_core_project.targets()
 
     -- get targets
     local targets = project.targets()
@@ -68,28 +68,28 @@ function sandbox_core_project_project.targets()
 end
 
 -- get the project file
-function sandbox_core_project_project.file()
+function sandbox_core_project.file()
 
     -- get it
     return xmake._PROJECT_FILE
 end
 
 -- get the project directory
-function sandbox_core_project_project.directory()
+function sandbox_core_project.directory()
 
     -- get it
     return xmake._PROJECT_DIR
 end
 
 -- get the project mtimes
-function sandbox_core_project_project.mtimes()
+function sandbox_core_project.mtimes()
 
     -- get it
     return project.mtimes()
 end
 
 -- get the project version
-function sandbox_core_project_project.version()
+function sandbox_core_project.version()
   
     -- get version
     for _, target in pairs(table.wrap(project.targets())) do
@@ -101,7 +101,7 @@ function sandbox_core_project_project.version()
 end
 
 -- get the project name
-function sandbox_core_project_project.name()
+function sandbox_core_project.name()
   
     -- get version
     for _, target in pairs(table.wrap(project.targets())) do
@@ -116,4 +116,4 @@ function sandbox_core_project_project.name()
 end
 
 -- return module
-return sandbox_core_project_project
+return sandbox_core_project

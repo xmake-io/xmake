@@ -249,5 +249,32 @@ function language.apis()
     return apis
 end
 
+-- get language sourcekinds
+function language.sourcekinds()
+
+    -- attempt to get it from cache
+    if language._SOURCEKINDS then
+        return language._SOURCEKINDS
+    end
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        os.raise(errors)
+    end
+
+    -- merge apis for each language
+    local sourcekinds = {}
+    for name, instance in pairs(languages) do
+        table.join2(sourcekinds, table.wrap(instance:sourcekinds()))
+    end
+
+    -- cache it
+    language._SOURCEKINDS = table.unique(sourcekinds)
+
+    -- ok
+    return language._SOURCEKINDS
+end
+
 -- return module
 return language

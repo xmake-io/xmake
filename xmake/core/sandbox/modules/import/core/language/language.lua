@@ -17,54 +17,22 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        platform.lua
+-- @file        language.lua
 --
 
 -- define module
-local sandbox_core_platform = sandbox_core_platform or {}
+local sandbox_core_language = sandbox_core_language or {}
 
 -- load modules
-local platform  = require("platform/platform")
+local language  = require("language/language")
 local raise     = require("sandbox/modules/raise")
 
--- load the current platform
-function sandbox_core_platform.load(plat)
+-- get the sourcekinds of all languages
+function sandbox_core_language.sourcekinds()
 
-    -- load the platform configure
-    local ok, errors = platform.load(plat) 
-    if not ok then
-        raise(errors)
-    end
-end
-
--- get the all platforms
-function sandbox_core_platform.plats()
-
-    -- get it 
-    local plats = platform.plats()
-    assert(plats)
-
-    -- ok
-    return plats
-end
-
--- get the all architectures for the given platform
-function sandbox_core_platform.archs(plat)
-
-    -- get it 
-    local archs = platform.archs(plat)
-    assert(archs)
-
-    -- ok
-    return archs
-end
-
--- get the current platform configure
-function sandbox_core_platform.get(name, plat)
-
-    -- get the given platform configure
-    return platform.get(name, plat)
+    -- get all
+    return language.sourcekinds()
 end
 
 -- return module
-return sandbox_core_platform
+return sandbox_core_language
