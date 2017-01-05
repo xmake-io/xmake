@@ -24,8 +24,8 @@
 local sandbox_core_project_global = sandbox_core_project_global or {}
 
 -- load modules
+local table     = require("base/table")
 local global    = require("project/global")
-local checker   = require("platform/checker")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
@@ -80,10 +80,31 @@ end
 -- check the configure
 function sandbox_core_project_global.check()
 
-    -- check it
-    local ok, errors = checker.check("global") 
-    if not ok then
-        raise(errors)
+    -- check all platforms with the current host
+    for _, plat in ipairs(table.wrap(platform.plats())) do
+
+        -- load platform 
+        local instance, errors = platform.load(plat)
+        if not instance then
+            raise(errors)
+        end
+
+        -- belong to the current host?
+        for _, host in ipairs(table.wrap(instance:hosts())) do
+            if host == xmake._HOST then
+
+                -- get the check script
+                local check = instance:get("check")
+                if check ~= nil then
+
+                    -- check it
+                    check("global")
+                end
+
+                -- ok
+                break
+            end
+        end
     end
 end
 

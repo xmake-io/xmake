@@ -32,11 +32,11 @@ platform("watchos")
     -- set archs
     set_archs("armv7k", "i386")
 
-    -- set checker
-    set_checker("checker")
-
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+
+    -- on check
+    on_check("check")
 
     -- on load
     on_load(function ()

@@ -167,13 +167,6 @@ function _instance:tooldirs()
     return self._INFO.tooldirs
 end
 
--- get the checker
-function _instance:checker()
-
-    -- load checker
-    return self:_load("checker")
-end
-
 -- get the environment
 function _instance:environment()
 
@@ -213,7 +206,6 @@ function platform._interpreter()
         ,   "platform.set_hosts"
         ,   "platform.set_archs"
         ,   "platform.set_menu"
-        ,   "platform.set_checker"
         ,   "platform.set_tooldirs"
         ,   "platform.set_environment"
         }
@@ -221,6 +213,7 @@ function platform._interpreter()
         {
             -- platform.on_xxx
             "platform.on_load"
+        ,   "platform.on_check"
         ,   "platform.on_install"
         ,   "platform.on_uninstall"
         }

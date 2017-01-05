@@ -32,8 +32,8 @@ platform("mingw")
     -- set archs
     set_archs("i386", "x86_64")
 
-    -- set checker
-    set_checker("checker")
+    -- on check
+    on_check("check")
 
     -- on load
     on_load(function ()

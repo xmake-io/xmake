@@ -32,9 +32,6 @@ platform("linux")
     -- set archs
     set_archs("i386", "x86_64")
 
-    -- set checker
-    set_checker("checker")
-
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
 
@@ -43,6 +40,9 @@ platform("linux")
 
     -- on uninstall
     on_uninstall("uninstall")
+
+    -- on check
+    on_check("check")
 
     -- on load
     on_load(function ()

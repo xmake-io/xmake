@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        checker.lua
+-- @file        check.lua
 --
 
 -- imports
@@ -76,8 +76,8 @@ function _check_toolchains(config)
     end
 end
 
--- init it
-function init()
+-- check it
+function main(kind)
 
     -- init the check list of config
     _g.config = 
@@ -97,12 +97,7 @@ function init()
     ,   checker.check_ccache
     }
 
-end
-
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
+    -- check it
+    checker.check(kind, _g)
 end
 

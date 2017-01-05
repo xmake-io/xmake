@@ -32,11 +32,11 @@ platform("android")
     -- set archs
     set_archs("armv5te", "armv6", "armv7-a", "armv8-a", "arm64-v8a")
 
-    -- set checker
-    set_checker("checker")
-
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+
+    -- on check
+    on_check("check")
 
     -- on load
     on_load(function ()

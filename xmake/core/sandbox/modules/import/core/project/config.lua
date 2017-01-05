@@ -25,7 +25,6 @@ local sandbox_core_project_config = sandbox_core_project_config or {}
 
 -- load modules
 local config    = require("project/config")
-local checker   = require("platform/checker")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
@@ -133,12 +132,11 @@ end
 -- check the configure
 function sandbox_core_project_config.check()
 
-    -- check it
-    local ok, errors = checker.check("config")
-    if not ok then
-        raise(errors)
+    -- get the check script
+    local check = platform.get("check")
+    if check then
+        check("config")
     end
-
 end
 
 -- dump the configure
