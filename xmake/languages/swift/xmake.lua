@@ -60,6 +60,7 @@ language("swift")
         ,   "option.add_linkdirs"
         }
 
+        return _g
     end)
 
 

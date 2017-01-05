@@ -104,6 +104,9 @@ platform("iphoneos")
             -- save swift link directory for tools
             config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos")
         end
+
+        -- ok
+        return _g
     end)
 
     -- set menu

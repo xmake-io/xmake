@@ -116,6 +116,9 @@ platform("android")
                 end
             end
         end
+
+        -- ok
+        return _g
     end)
 
     -- set menu

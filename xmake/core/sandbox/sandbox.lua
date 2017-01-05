@@ -176,7 +176,7 @@ function sandbox.new(script, filter, rootdir)
         script = function (...)
        
             -- import it
-            import(modulename).main(...)
+            return import(modulename).main(...)
         end
     end
 

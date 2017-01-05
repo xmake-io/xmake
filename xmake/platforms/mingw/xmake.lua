@@ -69,5 +69,8 @@ platform("mingw")
             _g.includedirs = {path.join(sdkdir, "include")}
             _g.linkdirs    = {path.join(sdkdir, "lib")}
         end
+
+        -- ok
+        return _g
     end)
 
