@@ -41,9 +41,6 @@ platform("windows")
     -- on load
     on_load(function ()
 
-        -- imports
-        import("core.project.config")
-       
         -- init the file formats
         _g.formats          = {}
         _g.formats.static   = {"", ".lib"}

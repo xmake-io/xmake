@@ -36,41 +36,5 @@ platform("mingw")
     on_check("check")
 
     -- on load
-    on_load(function ()
-
-        -- imports
-        import("core.project.config")
-       
-        -- init the file formats
-        _g.formats          = {}
-        _g.formats.static   = {"", ".lib"}
-        _g.formats.object   = {"", ".obj"}
-        _g.formats.shared   = {"", ".dll"}
-        _g.formats.binary   = {"", ".exe"}
-        _g.formats.symbol   = {"", ".pdb"}
-    
-        -- init flags for architecture
-        local archflags = nil
-        local arch = config.get("arch")
-        if arch then
-            if arch == "x86_64" then archflags = "-m64"
-            elseif arch == "i386" then archflags = "-m32"
-            else archflags = "-arch " .. arch
-            end
-        end
-        _g.cxflags = { archflags }
-        _g.asflags = { archflags }
-        _g.ldflags = { archflags }
-        _g.shflags = { archflags }
-
-        -- init linkdirs and includedirs
-        local sdkdir = config.get("sdk") 
-        if sdkdir then
-            _g.includedirs = {path.join(sdkdir, "include")}
-            _g.linkdirs    = {path.join(sdkdir, "lib")}
-        end
-
-        -- ok
-        return _g
-    end)
+    on_load("load")
 
