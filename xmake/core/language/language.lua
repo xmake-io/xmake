@@ -116,6 +116,7 @@ function language._interpreter()
         {
             -- language.on_xxx
             "language.on_load"
+        ,   "language.on_check_main"
         }
     }
 

@@ -34,5 +34,31 @@ function sandbox_core_language.sourcekinds()
     return language.sourcekinds()
 end
 
+-- load the language from the given name
+function sandbox_core_language.load(name)
+
+    -- load it
+    local instance, errors = language.load(name)
+    if not instance then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
+-- load the language from the given kind
+function sandbox_core_language.load_from_kind(sourcekind)
+
+    -- load it
+    local instance, errors = language.load_from_kind(sourcekind)
+    if not instance then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
 -- return module
 return sandbox_core_language

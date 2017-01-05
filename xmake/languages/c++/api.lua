@@ -17,7 +17,7 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        apis.lua
+-- @file        api.lua
 --
 
 -- imports

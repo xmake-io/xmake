@@ -33,19 +33,33 @@ function make()
 
     -- scan source files for the current directory
     local sourcefiles = {}
+    local sourcefiles_main = {}
     for _, sourcekind in ipairs(language.sourcekinds()) do
+
+        -- load language instance
+        local instance = language.load_from_kind(sourcekind)
+
+        -- get check main() script
+        local check_main = instance:get("check_main")
+
+        -- scan source files
         for _, sourcefile in ipairs(os.files("*" .. sourcekind)) do
-            table.insert(sourcefiles, sourcefile)
+            if check_main and check_main(sourcefile) then
+                table.insert(sourcefiles_main, sourcefile)
+            else
+                table.insert(sourcefiles, sourcefile)
+            end
         end
     end
-    sourcefiles = table.unique(sourcefiles)
+    sourcefiles         = table.unique(sourcefiles)
+    sourcefiles_main    = table.unique(sourcefiles_main)
 
-    -- project not found
-    if #sourcefiles == 0 then
-
-        -- remove config directory if exists because the current directory is not a project
-        os.rm(config.directory())
+    -- remove config directory first
+    os.rm(config.directory())
         
+    -- project not found
+    if #sourcefiles == 0 and #sourcefiles_main == 0 then
+
         -- error
         raise("project not found!")
     end
@@ -54,25 +68,68 @@ function make()
     local file = io.open("xmake.lua", "w")
     if file then
 
-        -- save file
-        file:print("-- define target")
-        file:print("target(\"%s\")", "demo")
-        file:print("")
-        file:print("    -- set kind")
-        file:print("    set_kind(\"binary\")")
-        file:print("")
-        file:print("    -- add files")
-        for _, sourcefile in ipairs(sourcefiles) do
-            cprint("${green}[+]: ${clear}%s", sourcefile)
-            file:print("    add_files(\"%s\")", sourcefile)
+        -- get target name
+        local targetname = path.basename(os.curdir())
+
+        -- define static target
+        if #sourcefiles > 0 then
+
+            -- trace
+            cprint("target(${magenta}%s${clear}): static", targetname)
+
+            -- add target
+            file:print("-- define target")
+            file:print("target(\"%s\")", targetname)
+            file:print("")
+            file:print("    -- set kind")
+            file:print("    set_kind(\"static\")")
+            file:print("")
+            file:print("    -- add files")
+            for _, sourcefile in ipairs(sourcefiles) do
+
+                -- trace
+                cprint("    ${green}[+]: ${clear}%s", sourcefile)
+
+                -- add file
+                file:print("    add_files(\"%s\")", sourcefile)
+            end
+            file:print("")
         end
-        file:print("")
+
+        -- define binary targets
+        for _, sourcefile in ipairs(sourcefiles_main) do
+
+            -- trace
+            cprint("target(${magenta}%s${clear}): binary", path.basename(sourcefile))
+            cprint("    ${green}[+]: ${clear}%s", sourcefile)
+
+            -- add target
+            file:print("-- define target")
+            file:print("target(\"%s\")", path.basename(sourcefile))
+            file:print("")
+            file:print("    -- set kind")
+            file:print("    set_kind(\"binary\")")
+            file:print("")
+            file:print("    -- add files")
+            file:print("    add_files(\"%s\")", sourcefile)
+            file:print("")
+    
+            -- add links
+            if #sourcefiles > 0 then
+                file:print("    -- add deps")
+                file:print("    add_deps(\"%s\")", targetname)
+                file:print("")
+                file:print("    -- add links")
+                file:print("    add_links(\"%s\")", targetname)
+                file:print("    add_linkdirs(\"%$(buildir)\")")
+                file:print("")
+            end
+        end
     
         -- exit file
         file:close()
     end
 
     -- trace
-    cprint("target: ${magenta}demo")
     cprint("${bright}xmake.lua generated, scan ok!${clear}${ok_hand}")
 end
