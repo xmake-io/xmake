@@ -85,6 +85,13 @@ function _instance:sourcekinds()
     return self._INFO.sourcekinds
 end
 
+-- get the language targetkinds
+function _instance:targetkinds()
+
+    -- get it
+    return self._INFO.targetkinds
+end
+
 -- the directory of language
 function language._directory()
 
@@ -111,6 +118,7 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_sourcekinds"
+        ,   "language.set_targetkinds"
         }
     ,   script =
         {

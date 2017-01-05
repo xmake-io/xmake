@@ -26,6 +26,9 @@ language("golang")
     -- set source file kinds
     set_sourcekinds(".go")
 
+    -- set target kinds
+    set_targetkinds("binary", "static", "shared")
+
     -- on load
     on_load("load")
 
