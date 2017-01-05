@@ -17,21 +17,38 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        api.lua
 --
 
--- define language
-language("c++")
+-- get apis
+function apis()
 
-    -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp")
+    -- init apis
+    _g.values = 
+    {
+        -- target.add_xxx
+        "target.add_links"
+    ,   "target.add_goflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+    ,   "target.add_shflags"
+        -- option.add_xxx
+    ,   "option.add_links"
+    ,   "option.add_goflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+    ,   "option.add_shflags"
+    }
+    _g.pathes = 
+    {
+        -- target.add_xxx
+        "target.add_linkdirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    }
 
-    -- on load
-    on_load("load")
-
-    -- on check_main
-    on_check_main("check_main")
-
-
+    -- ok
+    return _g
+end
 
 

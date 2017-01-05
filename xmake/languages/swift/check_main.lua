@@ -17,21 +17,22 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        check_main.lua
 --
 
--- define language
-language("c++")
+-- check it
+function main(sourcefile)
 
-    -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp")
+    -- load source code
+    local sourcecode = io.read(sourcefile)
 
-    -- on load
-    on_load("load")
+    -- find func main() {
+    if sourcecode:find("func%s+main%s*%(.*%)") then
+        return true
+    end
 
-    -- on check_main
-    on_check_main("check_main")
-
-
+    -- no main function
+    return false
+end
 
 

@@ -17,21 +17,28 @@
 -- Copyright (C) 2015 - 2016, ruki All rights reserved.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        load.lua
 --
 
--- define language
-language("c++")
+-- imports
+import("api")
 
-    -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp")
+-- load it
+function main()
 
-    -- on load
-    on_load("load")
+    -- init flags
+    _g.mflags       = {}
+    _g.mxflags      = {}
+    _g.mxxflags     = {}
+    _g.ldflags      = {}
+    _g.arflags      = {}
+    _g.shflags      = {}
 
-    -- on check_main
-    on_check_main("check_main")
+    -- init apis
+    _g.apis         = api.apis()
 
-
+    -- ok
+    return _g
+end
 
 
