@@ -119,13 +119,13 @@ function _instance:get(name)
     if self._g == nil and info.load ~= nil then
 
         -- load it
-        local ok, errors = sandbox.load(info.load)
+        local ok, results = sandbox.load(info.load)
         if not ok then
-            os.raise(errors)
+            os.raise(results)
         end
 
         -- save _g
-        self._g = getfenv(info.load)._g
+        self._g = results
     end
 
     -- get it from _g 

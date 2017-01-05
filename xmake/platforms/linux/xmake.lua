@@ -68,7 +68,7 @@ platform("linux")
             end
 
             -- ok
-            return 
+            return _g
         end
 
         -- init flags for architecture
@@ -89,6 +89,9 @@ platform("linux")
         -- init linkdirs and includedirs
         _g.linkdirs    = {"/usr/lib", "/usr/local/lib"}
         _g.includedirs = {"/usr/include", "/usr/local/include"}
+
+        -- ok
+        return _g
     end)
 
 

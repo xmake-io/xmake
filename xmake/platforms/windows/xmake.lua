@@ -52,6 +52,8 @@ platform("windows")
         _g.formats.binary   = {"", ".exe"}
         _g.formats.symbol   = {"", ".pdb"}
 
+        -- ok
+        return _g
     end)
 
     -- set menu

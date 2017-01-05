@@ -90,6 +90,7 @@ language("objc++")
         ,   "option.add_includedirs"
         }
 
+        return _g
     end)
 
 
