@@ -298,7 +298,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
                 end
 
                 -- print some warnings
-                if warnings and (not ok or option.get("verbose")) then
+                if warnings and option.get("verbose") then
                     cprint("${yellow}%s", table.concat(warnings, '\n'))
                 end
 
