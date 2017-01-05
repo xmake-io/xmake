@@ -32,6 +32,7 @@ function make()
     cprint("${yellow}xmake.lua not found, scanning files ..")
 
     -- scan source files for the current directory
+    local targetkinds = {}
     local sourcefiles = {}
     local sourcefiles_main = {}
     for _, sourcekind in ipairs(language.sourcekinds()) do
@@ -43,11 +44,20 @@ function make()
         local check_main = instance:get("check_main")
 
         -- scan source files
+        local filecount = 0
         for _, sourcefile in ipairs(os.files("*" .. sourcekind)) do
             if check_main and check_main(sourcefile) then
                 table.insert(sourcefiles_main, sourcefile)
             else
                 table.insert(sourcefiles, sourcefile)
+            end
+            filecount = filecount + 1
+        end
+
+        -- add targetkinds
+        if filecount > 0 then
+            for _, targetkind in ipairs(instance:targetkinds()) do
+                targetkinds[targetkind] = true
             end
         end
     end
@@ -71,18 +81,27 @@ function make()
         -- get target name
         local targetname = path.basename(os.curdir())
 
-        -- define static target
+        -- define static/binary target
         if #sourcefiles > 0 then
 
+            -- get targetkind
+            local targetkind = nil
+            if targetkinds["static"] then
+                targetkind = "static"
+            elseif targetkinds["binary"] then
+                targetkind = "binary"
+            end
+            assert(targetkind, "unknown target kind!")
+
             -- trace
-            cprint("target(${magenta}%s${clear}): static", targetname)
+            cprint("target(${magenta}%s${clear}): %s", targetname, targetkind)
 
             -- add target
             file:print("-- define target")
             file:print("target(\"%s\")", targetname)
             file:print("")
             file:print("    -- set kind")
-            file:print("    set_kind(\"static\")")
+            file:print("    set_kind(\"%s\")", targetkind)
             file:print("")
             file:print("    -- add files")
             for _, sourcefile in ipairs(sourcefiles) do

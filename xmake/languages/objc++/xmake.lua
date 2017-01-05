@@ -26,6 +26,9 @@ language("objc++")
     -- set source file kinds
     set_sourcekinds(".m", ".mm")
 
+    -- set target kinds
+    set_targetkinds("binary", "static", "shared")
+
     -- on load
     on_load("load")
 

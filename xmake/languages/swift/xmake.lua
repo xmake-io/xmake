@@ -26,11 +26,12 @@ language("swift")
     -- set source file kinds
     set_sourcekinds(".swift")
 
+    -- set target kinds
+    set_targetkinds("binary")
+
     -- on load
     on_load("load")
 
-    -- on check_main
-    on_check_main("check_main")
 
 
 
