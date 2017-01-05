@@ -21,13 +21,15 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 
 -- scan project and generate xmake.lua automaticlly if the project codes exist
 function make()
+
+    -- trace
+    cprint("${yellow}xmake.lua not found, scanning files ..")
 
     -- scan source files for the current directory
     local sourcefiles = {}
@@ -45,7 +47,7 @@ function make()
         os.rm(config.directory())
         
         -- error
-        raise("xmake.lua not found!")
+        raise("project not found!")
     end
 
     -- generate xmake.lua
@@ -61,6 +63,7 @@ function make()
         file:print("")
         file:print("    -- add files")
         for _, sourcefile in ipairs(sourcefiles) do
+            cprint("${green}[+]: ${clear}%s", sourcefile)
             file:print("    add_files(\"%s\")", sourcefile)
         end
         file:print("")
@@ -68,4 +71,8 @@ function make()
         -- exit file
         file:close()
     end
+
+    -- trace
+    cprint("target: ${magenta}demo")
+    cprint("${bright}xmake.lua generated, scan ok!${clear}${ok_hand}")
 end
