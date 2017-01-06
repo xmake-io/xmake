@@ -27,8 +27,12 @@ function main(sourcefile)
     -- load source code
     local sourcecode = io.read(sourcefile)
 
+    -- remove comment first
+    sourcecode = sourcecode:gsub("/%*.-%*/", "")
+    sourcecode = sourcecode:gsub("//.-\n", "\n")
+
     -- find int main(int argc, char** argv) {}
-    if sourcecode:find("%s+main%s*%(.*%)") then
+    if sourcecode:find("%s+main%s*%(.-%)") then
         return true
     end
 
