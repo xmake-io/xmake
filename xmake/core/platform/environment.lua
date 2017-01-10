@@ -29,29 +29,11 @@ local environment = environment or {}
 local platform  = require("platform/platform")
 local sandbox   = require("sandbox/sandbox")
 
--- load the given environment from the given platform
-function environment.load(plat)
-
-    -- load platform
-    local instance, errors = platform.load(plat)
-    if not instance then
-        return nil, errors
-    end
-
-    -- get environment
-    return instance:environment()
-end
-
 -- enter the environment for the current platform
 function environment.enter(name)
 
-    -- load the environment module
-    local module, errors = environment.load()
-    if not module and errors then
-        return false, errors
-    end
-
     -- enter it
+    local module = platform.get("environment")
     if module then
         local ok, errors = sandbox.load(module.enter, name)
         if not ok then
@@ -66,13 +48,8 @@ end
 -- leave the environment for the current platform
 function environment.leave(name)
 
-    -- load the environment module
-    local module, errors = environment.load()
-    if not module and errors then
-        return false, errors
-    end
-
     -- leave it
+    local module = platform.get("environment")
     if module then
         local ok, errors = sandbox.load(module.leave, name)
         if not ok then

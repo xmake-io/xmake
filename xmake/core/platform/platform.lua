@@ -36,60 +36,6 @@ local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local global        = require("project/global")
 
--- load the platform module
-function _instance:_load(modulename)
-
-    -- return it directly if cached
-    local cachename = "_" .. modulename:upper()
-    if self[cachename] then
-        return self[cachename]
-    end
-
-    -- no this module?
-    if not self._INFO[modulename] then
-        return nil
-    end
-
-    -- get the script path
-    local scriptpath = path.join(self._ROOTDIR, self._INFO[modulename] .. ".lua")
-    
-    -- not exists?
-    if not scriptpath or not os.isfile(scriptpath) then
-        return nil, string.format("the %s of %s not found!", modulename, self._NAME)
-    end
-
-    -- load script
-    local script, errors = loadfile(scriptpath)
-    if script then
-
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, nil, self._ROOTDIR)
-        if not instance then
-            return nil, errors
-        end
-
-        -- import the module
-        local module, errors = instance:import()
-        if not module then
-            return nil, errors
-        end
-
-        -- init the module
-        if module.init then
-            module.init()
-        end
-    
-        -- save it to the cache
-        self[cachename] = module
-
-        -- ok?
-        return module
-    end
-
-    -- failed
-    return nil, errors
-end
-
 -- new an instance
 function _instance.new(name, info, rootdir)
 
@@ -169,13 +115,6 @@ function _instance:tooldirs()
     return self._INFO.tooldirs
 end
 
--- get the environment
-function _instance:environment()
-
-    -- load environment
-    return self:_load("environment")
-end
-
 -- the directories of platform
 function platform._directories()
 
@@ -209,7 +148,6 @@ function platform._interpreter()
         ,   "platform.set_archs"
         ,   "platform.set_menu"
         ,   "platform.set_tooldirs"
-        ,   "platform.set_environment"
         }
     ,   script =
         {
@@ -218,6 +156,11 @@ function platform._interpreter()
         ,   "platform.on_check"
         ,   "platform.on_install"
         ,   "platform.on_uninstall"
+        }
+    ,   module =
+        {
+            -- platform.set_xxx
+            "platform.set_environment"
         }
     }
 
