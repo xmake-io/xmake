@@ -170,25 +170,8 @@ function sandbox.new(script, filter, rootdir)
     -- save root directory
     self._PRIVATE._ROOTDIR = rootdir
 
-    -- this script is module name? import it first
-    if type(script) == "string" then
-    
-        -- import module as script
-        local modulename = script
-        script = function (...)
-       
-            -- import it
-            return import(modulename).main(...)
-        end
-    end
-
-    -- no script?
-    if script == nil then
-        return nil, "no script!"
-    end
-
     -- invalid script?
-    if script ~= nil and type(script) ~= "function" then
+    if type(script) ~= "function" then
         return nil, "invalid script!"
     end
 
