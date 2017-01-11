@@ -104,15 +104,17 @@ end
 -- the main function
 function main.done()
 
-    -- start profiling
---    profiler:start()
-
     -- init 
     main._init()
 
     -- init option 
     if not option.init(menu) then 
         return -1
+    end
+
+    -- start profiling
+    if option.get("profile") then
+        profiler:start()
     end
 
     -- run help?
@@ -134,7 +136,9 @@ function main.done()
     deprecated.dump()
 
     -- stop profiling
---    profiler:stop()
+    if option.get("profile") then
+        profiler:stop()
+    end
 
     -- ok
     return 0
