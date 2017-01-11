@@ -48,12 +48,6 @@ platform("watchos")
                 config = 
                 {   
                     {}   
-                ,   {nil, "mm",             "kv", nil,          "the objc compiler"                 }
-                ,   {nil, "mxx",            "kv", nil,          "the objc++ compiler"               }
-                ,   {nil, "mflags",         "kv", nil,          "the objc compiler flags"           }
-                ,   {nil, "mxflags",        "kv", nil,          "the objc/c++ compiler flags"       }
-                ,   {nil, "mxxflags",       "kv", nil,          "the objc++ compiler flags"         }
-                ,   {}
                 ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
                 ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
                 ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
