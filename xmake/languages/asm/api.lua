@@ -19,24 +19,45 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        api.lua
 --
 
--- define language
-language("c++")
+-- get apis
+function apis()
 
-    -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp", ".cxx")
+    -- init apis
+    _g.values = 
+    {
+        -- target.add_xxx
+        "target.add_links"
+    ,   "target.add_asflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+    ,   "target.add_shflags"
+    ,   "target.add_defines"
+    ,   "target.add_undefines"
+        -- option.add_xxx
+    ,   "option.add_links"
+    ,   "option.add_asflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+    ,   "option.add_shflags"
+    ,   "option.add_defines"
+    ,   "option.add_undefines"
+    }
+    _g.pathes = 
+    {
+        -- target.add_xxx
+        "target.add_headers"
+    ,   "target.add_linkdirs"
+    ,   "target.add_includedirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    ,   "option.add_includedirs"
+    }
 
-    -- set target kinds
-    set_targetkinds("binary", "static", "shared")
-
-    -- on load
-    on_load("load")
-
-    -- on check_main
-    on_check_main("check_main")
-
-
+    -- ok
+    return _g
+end
 
 
