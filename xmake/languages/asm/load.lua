@@ -19,24 +19,26 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        load.lua
 --
 
--- define language
-language("c++")
+-- imports
+import("api")
 
-    -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp", ".cxx")
+-- load it
+function main()
 
-    -- set target kinds
-    set_targetkinds("binary", "static", "shared")
+    -- init flags
+    _g.asflags      = {}
+    _g.ldflags      = {}
+    _g.arflags      = {}
+    _g.shflags      = {}
 
-    -- on load
-    on_load("load")
+    -- init apis
+    _g.apis         = api.apis()
 
-    -- on check_main
-    on_check_main("check_main")
-
-
+    -- ok
+    return _g
+end
 
 

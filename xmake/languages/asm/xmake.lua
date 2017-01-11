@@ -23,20 +23,16 @@
 --
 
 -- define language
-language("c++")
+language("asm")
 
     -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp", ".cxx")
+    set_sourcekinds(".s", ".asm")
 
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
 
     -- on load
     on_load("load")
-
-    -- on check_main
-    on_check_main("check_main")
-
 
 
 
