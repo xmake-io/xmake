@@ -198,7 +198,15 @@ function profiler:stop(mode)
 
         -- show reports
         for _, report in ipairs(self._REPORTS) do
-            utils.print("%04.3f, %5.2f%%, %7d, %s", report.totaltime, (report.totaltime / totaltime) * 100, report.callcount, report.title)
+            
+            -- calculate percent
+            local percent = (report.totaltime / totaltime) * 100
+            if percent < 1 then
+                break
+            end
+
+            -- trace
+            utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, report.title)
         end
    end
 end
