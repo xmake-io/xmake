@@ -80,6 +80,13 @@ function _instance:get(name)
     return self._g[name]
 end
 
+-- get the language menu
+function _instance:menu()
+
+    -- get it
+    return self._INFO.menu
+end
+
 -- get the language sourcekinds
 function _instance:sourcekinds()
 
@@ -119,7 +126,8 @@ function language._interpreter()
         values =
         {
             -- language.set_xxx
-            "language.set_sourcekinds"
+            "language.set_menu"
+        ,   "language.set_sourcekinds"
         ,   "language.set_targetkinds"
         }
     ,   script =

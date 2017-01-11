@@ -37,6 +37,34 @@ language("c++")
     -- on check_main
     on_check_main("check_main")
 
+    -- set menu
+    set_menu({
+                config = 
+                {   
+                    {}
+                ,   {nil, "cc",         "kv", nil,          "The C Compiler"                        }
+                ,   {nil, "cxx",        "kv", nil,          "The C++ Compiler"                      }
+                ,   {nil, "cflags",     "kv", nil,          "The C Compiler Flags"                  }
+                ,   {nil, "cxflags",    "kv", nil,          "The C/C++ compiler Flags"              }
+                ,   {nil, "cxxflags",   "kv", nil,          "The C++ Compiler Flags"                }
+
+                ,   {}
+                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
+                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
+
+                ,   {}
+                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"             }
+                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"       }
+
+                ,   {}
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }
+                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
+                }
+            })
+
+
+
 
 
 

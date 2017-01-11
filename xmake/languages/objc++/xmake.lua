@@ -37,5 +37,33 @@ language("objc++")
     -- on check_main
     on_check_main("check_main")
 
+    -- set menu
+    set_menu({
+                config = 
+                {   
+                    {}
+                ,   {nil, "mm",         "kv", nil,          "The Objc Compiler"                     }
+                ,   {nil, "mxx",        "kv", nil,          "The Objc++ Compiler"                   }
+                ,   {nil, "mflags",     "kv", nil,          "The Objc Compiler Flags"               }
+                ,   {nil, "mxflags",    "kv", nil,          "The Objc/c++ Compiler Flags"           }
+                ,   {nil, "mxxflags",   "kv", nil,          "The Objc++ Compiler Flags"             }
+
+                ,   {}
+                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
+                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
+
+                ,   {}
+                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"             }
+                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"       }
+
+                ,   {}
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }
+                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
+
+                }
+            })
+
+
 
 
