@@ -47,6 +47,7 @@ function menu.options(action)
     -- load and merge all language options
     local exist     = {}
     local results   = {}
+    local newline   = false
     for _, instance in pairs(languages) do
 
         -- get menu
@@ -57,36 +58,29 @@ function menu.options(action)
             local options = menu[action]
             if options then
 
-                -- exists options?
-                local exists = false
+                -- get the language option
                 for _, option in ipairs(options) do
+
+                    -- merge it and remove repeat 
                     local name = option[2]
-                    if name and not exist[name] then
-                        exists = true
-                        break
-                    end
-                end
-
-                -- merge it and remove repeat if exists options
-                if exists then
-
-                    -- get the language option
-                    for _, option in ipairs(options) do
-
-                        -- merge it and remove repeat 
-                        local name = option[2]
-                        if name then
-                            if not exist[name] then
-                                table.insert(results, option)
-                                exist[name] = true
-                            end
-                        else
+                    if name then
+                        if not exist[name] then
                             table.insert(results, option)
+                            exist[name] = true
+                            newline = false
                         end
+                    elseif not newline then
+                        table.insert(results, option)
+                        newline = true
                     end
                 end
             end
         end
+    end
+
+    -- remove the last empty option
+    if results[#results][2] == nil then
+        table.remove(results)
     end
 
     -- ok?
