@@ -107,8 +107,9 @@ function profiler:_profiling_return(funcinfo)
     assert(report)
 
     -- update the total time
-    if report.calltime then
+    if report.calltime and report.calltime > 0 then
 		report.totaltime = report.totaltime + (stoptime - report.calltime)
+        report.calltime = 0
 	end
 end
 
