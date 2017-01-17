@@ -76,6 +76,8 @@ If you want to known more, please refer to:
 
 #### Examples
 
+![videodemo](http://tboox.org/static/img/xmake/videodemo.gif)
+
 Create a c++ console project:
 
 ```bash
