@@ -76,7 +76,7 @@ If you want to known more, please refer to:
 
 #### Examples
 
-![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)
+[![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io)
 
 Create a c++ console project:
 
