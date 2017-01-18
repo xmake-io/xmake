@@ -113,7 +113,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 #### 简单例子
 
-![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)
+[![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io/cn)
 
 创建一个c++ console项目：
 
