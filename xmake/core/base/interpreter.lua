@@ -1072,61 +1072,49 @@ function interpreter:api_register_after_script(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "after", implementation, ...)
 end
 
--- register api for set_keyvalues
-function interpreter:api_register_set_keyvalues(scope_kind, ...)
+-- register api for set_dictionary
+function interpreter:api_register_set_dictionary(scope_kind, ...)
 
     -- check
     assert(self)
 
     -- define implementation
-    local implementation = function (self, scope, name, ...)
+    local implementation = function (self, scope, name, dict_or_key, value)
 
-        -- update keyvalues?
-        scope[name] = {}
-        table.insert(scope[name], {...})
+        -- check
+        if type(dict_or_key) == "table" then
+            scope[name] = dict_or_key
+        elseif type(dict_or_key) == "string" and value ~= nil then
+            scope[name] = {dict_or_key = value}
+        else
+            -- error
+            os.raise("set_%s(%s): invalid value type!", name, type(dict))
+        end
     end
 
     -- register implementation
     self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
--- register api for add_keyvalues
-function interpreter:api_register_add_keyvalues(scope_kind, ...)
+-- register api for add_dictionary
+function interpreter:api_register_add_dictionary(scope_kind, ...)
 
     -- check
     assert(self)
 
     -- define implementation
-    local implementation = function (self, scope, name, ...)
+    local implementation = function (self, scope, name, dict_or_key, value)
 
-        -- append keyvalues?
+        -- check
         scope[name] = scope[name] or {}
-
-        -- the values
-        local values = {...}
-        local count = #values
-
-        -- check count
-        if (count % 2) == 1 then
-            os.raise("add_%s() values must be key-value pair!", name)
+        if type(dict_or_key) == "table" then
+            table.join2(scope[name], dict_or_key)
+        elseif type(dict_or_key) == "string" and value ~= nil then
+            scope[name][dict_or_key] = value
+        else
+            -- error
+            os.raise("add_%s(%s): invalid value type!", name, type(dict))
         end
-
-        -- done
-        local i = 0
-        local keyvalues = scope[name]
-        while i + 2 <= count do
-            
-            -- the key and value
-            local key = values[i + 1]
-            local val = values[i + 2]
-
-            -- insert key and value
-            keyvalues[key] = val
-
-            -- next pair
-            i = i + 2
-        end
-
     end
 
     -- register implementation
@@ -1145,7 +1133,6 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
         -- update values?
         scope[name] = {}
         table.join2(scope[name], self:_api_translate_pathes(...))
-
     end
 
     -- register implementation

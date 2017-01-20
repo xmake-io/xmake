@@ -198,14 +198,14 @@ function linker:_addflags_from_platform(flags)
 end
 
 -- add flags from the compiler 
-function linker:_addflags_from_compiler(flags, srckinds)
+function linker:_addflags_from_compiler(flags, sourcekinds)
 
     -- done 
     local flags_of_compiler = {}
-    for _, srckind in ipairs(table.wrap(srckinds)) do
+    for _, sourcekind in ipairs(table.wrap(sourcekinds)) do
 
         -- load compiler
-        local instance, errors = compiler.load(srckind)
+        local instance, errors = compiler.load(sourcekind)
         if instance then
             table.join2(flags_of_compiler, instance:get(self:_flagname()))
         end
