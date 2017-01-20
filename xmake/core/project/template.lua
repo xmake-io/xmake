@@ -60,10 +60,12 @@ function template._interpreter()
             -- add_xxx
         ,   "add_macrofiles"
         }
-    ,   keyvalues = 
+    ,   dictionary = 
         {
+            -- set_xxx
+            "set_macros"
             -- add_xxx
-            "add_macros"
+        ,   "add_macros"
         }
     ,   script =
         {
