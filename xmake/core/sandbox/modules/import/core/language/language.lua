@@ -29,14 +29,21 @@ local sandbox_core_language = sandbox_core_language or {}
 local language  = require("language/language")
 local raise     = require("sandbox/modules/raise")
 
--- get the sourcekinds of all languages
+-- get the source extensions of all languages
+function sandbox_core_language.extensions()
+
+    -- get it
+    return language.extensions()
+end
+
+-- get the source kinds of all languages
 function sandbox_core_language.sourcekinds()
 
-    -- get all
+    -- get it
     return language.sourcekinds()
 end
 
--- load the language from the given name
+-- load the language from the given name (c++, objc++, swift, golang, asm, ...)
 function sandbox_core_language.load(name)
 
     -- load it
@@ -49,11 +56,24 @@ function sandbox_core_language.load(name)
     return instance
 end
 
--- load the language from the given kind
-function sandbox_core_language.load_from_kind(sourcekind)
+-- load the language from the given source kind: cc, cxx, mm, mxx, sc, go, as ..
+function sandbox_core_language.load_sk(sourcekind)
 
     -- load it
-    local instance, errors = language.load_from_kind(sourcekind)
+    local instance, errors = language.load_sk(sourcekind)
+    if not instance then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
+-- load the language from the given source extension: .c, .cpp, .m, .mm, .swift, .go, .s ..
+function sandbox_core_language.load_ex(extension)
+
+    -- load it
+    local instance, errors = language.load_ex(extension)
     if not instance then
         raise(errors)
     end

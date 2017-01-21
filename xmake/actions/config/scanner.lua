@@ -37,17 +37,17 @@ function make()
     local targetkinds = {}
     local sourcefiles = {}
     local sourcefiles_main = {}
-    for _, sourcekind in ipairs(language.sourcekinds()) do
+    for extension, sourcekind in pairs(language.extensions()) do
 
         -- load language instance
-        local instance = language.load_from_kind(sourcekind)
+        local instance = language.load_sk(sourcekind)
 
         -- get check main() script
         local check_main = instance:get("check_main")
 
         -- scan source files
         local filecount = 0
-        for _, sourcefile in ipairs(os.files("*" .. sourcekind)) do
+        for _, sourcefile in ipairs(os.files("*" .. extension)) do
             if check_main and check_main(sourcefile) then
                 table.insert(sourcefiles_main, sourcefile)
             else
