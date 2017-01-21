@@ -87,14 +87,44 @@ function _instance:menu()
     return self._INFO.menu
 end
 
--- get the language sourcekinds
+-- get the language name
+function _instance:name()
+
+    -- get it
+    return self._NAME
+end
+
+-- get the language source extensions
+function _instance:extensions()
+
+    -- attempt to get it from cache
+    if self._EXTENSIONS then
+        return self._EXTENSIONS
+    end
+
+    -- get extensions
+    local extensions = {}
+    for sourcekind, exts in pairs(self:sourcekinds()) do
+        for _, extension in ipairs(table.wrap(exts)) do
+            extensions[extension:lower()] = sourcekind
+        end
+    end
+
+    -- cache it
+    self._EXTENSIONS = extensions
+
+    -- get it
+    return extensions
+end
+
+-- get the language source kinds
 function _instance:sourcekinds()
 
     -- get it
     return self._INFO.sourcekinds
 end
 
--- get the language targetkinds
+-- get the language target kinds
 function _instance:targetkinds()
 
     -- get it
@@ -149,7 +179,7 @@ function language._interpreter()
     return interp
 end
 
--- load the language from the given name
+-- load the language from the given name (c++, objc++, swift, golang, asm, ...)
 function language.load(name)
 
     -- load all languages
@@ -204,8 +234,8 @@ function language.load(name)
     return instance
 end
 
--- load the language from the given kind: .c, .cpp, .mm ..
-function language.load_from_kind(kind)
+-- load the language from the given source kind: cc, cxx, mm, mxx, sc, go, as ..
+function language.load_sk(sourcekind)
 
     -- load all languages
     local languages, errors = language.load()
@@ -213,37 +243,75 @@ function language.load_from_kind(kind)
         return nil, errors
     end
 
-    -- make kind as lower
-    kind = kind:lower()
+    -- make source kind as lower
+    sourcekind = sourcekind:lower()
 
     -- get it directly from cache dirst
-    language._LANGUAGES_OF_KIND = language._LANGUAGES_OF_KIND or {}
-    if language._LANGUAGES_OF_KIND[kind] then
-        return language._LANGUAGES_OF_KIND[kind]
+    language._LANGUAGES_OF_SK = language._LANGUAGES_OF_SK or {}
+    if language._LANGUAGES_OF_SK[sourcekind] then
+        return language._LANGUAGES_OF_SK[sourcekind]
     end
 
     -- find language instance
     local result = nil
     for _, instance in pairs(languages) do
-        for _, sourcekind in ipairs(table.wrap(instance:sourcekinds())) do
-            if sourcekind == kind then
-                result = instance
-                break
-            end
+        if instance:sourcekinds()[sourcekind] ~= nil then
+            result = instance
+            break
         end
     end
 
     -- not found?
     if not result then
-        return nil, string.format("unknown language kind: %s", kind)
+        return nil, string.format("unknown language sourcekind: %s", sourcekind)
     end
 
     -- cache this language
-    language._LANGUAGES_OF_KIND[kind] = result
+    language._LANGUAGES_OF_SK[sourcekind] = result
 
     -- ok
     return result
 end
+
+-- load the language from the given source extension: .c, .cpp, .m, .mm, .swift, .go, .s ..
+function language.load_ex(extension)
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        return nil, errors
+    end
+
+    -- make source extension as lower
+    extension = extension:lower()
+
+    -- get it directly from cache dirst
+    language._LANGUAGES_OF_EX = language._LANGUAGES_OF_EX or {}
+    if language._LANGUAGES_OF_EX[extension] then
+        return language._LANGUAGES_OF_EX[extension]
+    end
+
+    -- find language instance
+    local result = nil
+    for _, instance in pairs(languages) do
+        if instance:extensions()[extension] ~= nil then
+            result = instance
+            break
+        end
+    end
+
+    -- not found?
+    if not result then
+        return nil, string.format("unknown language source extension: %s", extension)
+    end
+
+    -- cache this language
+    language._LANGUAGES_OF_EX[extension] = result
+
+    -- ok
+    return result
+end
+
 
 -- load the language apis
 function language.apis()
@@ -272,7 +340,59 @@ function language.apis()
     return apis
 end
 
--- get language sourcekinds
+-- get language source extensions
+--
+-- .e.g
+--
+-- {
+--      [".c"]      = cc
+-- ,    [".cc"]     = cxx
+-- ,    [".cpp"]    = cxx
+-- ,    [".m"]      = mm
+-- ,    [".mm"]     = mxx
+-- ,    [".swift"]  = sc
+-- ,    [".go"]     = go
+-- }
+--
+function language.extensions()
+
+    -- attempt to get it from cache
+    if language._EXTENSIONS then
+        return language._EXTENSIONS
+    end
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        os.raise(errors)
+    end
+
+    -- merge all for each language
+    local extensions = {}
+    for name, instance in pairs(languages) do
+        table.join2(extensions, instance:extensions())
+    end
+
+    -- cache it
+    language._EXTENSIONS = extensions
+
+    -- ok
+    return extensions
+end
+
+-- get language source kinds
+--
+-- .e.g
+--
+-- {
+--      cc  = ".c"
+-- ,    cxx = {".cc", ".cpp", ".cxx"}
+-- ,    mm  = ".m"
+-- ,    mxx = ".mm"
+-- ,    sc  = ".swift"
+-- ,    go  = ".go"
+-- }
+--
 function language.sourcekinds()
 
     -- attempt to get it from cache
@@ -286,17 +406,17 @@ function language.sourcekinds()
         os.raise(errors)
     end
 
-    -- merge apis for each language
+    -- merge all for each language
     local sourcekinds = {}
     for name, instance in pairs(languages) do
-        table.join2(sourcekinds, table.wrap(instance:sourcekinds()))
+        table.join2(sourcekinds, instance:sourcekinds())
     end
 
     -- cache it
-    language._SOURCEKINDS = table.unique(sourcekinds)
+    language._SOURCEKINDS = sourcekinds
 
     -- ok
-    return language._SOURCEKINDS
+    return sourcekinds
 end
 
 -- return module
