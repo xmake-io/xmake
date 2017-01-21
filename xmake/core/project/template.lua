@@ -60,17 +60,17 @@ function template._interpreter()
             -- add_xxx
         ,   "add_macrofiles"
         }
+    ,   script =
+        {
+            -- on_xxx
+            "on_create"
+        }
     ,   dictionary = 
         {
             -- set_xxx
             "set_macros"
             -- add_xxx
         ,   "add_macros"
-        }
-    ,   script =
-        {
-            -- on_xxx
-            "on_create"
         }
     }
 

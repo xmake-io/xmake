@@ -32,19 +32,19 @@ task("app2ipa")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake app2ipa [options] xxx.app"
+    set_menu {
+                -- usage
+                usage = "xmake app2ipa [options] xxx.app"
 
-                    -- description
-                ,   description = "Generate .ipa file from the given .app"
+                -- description
+            ,   description = "Generate .ipa file from the given .app"
 
-                    -- options
-                ,   options = 
-                    {
-                        {'o', "ipa",  "kv", nil,    "Set the .ipa file path."    }
-                    ,   {nil, "icon", "kv", nil,    "Set the icon file path."    }
-                    ,   {}
-                    ,   {nil, "app",  "v",  nil,    "Set the .app directory."    }
-                    }
-                }) 
+                -- options
+            ,   options = 
+                {
+                    {'o', "ipa",  "kv", nil,    "Set the .ipa file path."    }
+                ,   {nil, "icon", "kv", nil,    "Set the icon file path."    }
+                ,   {}
+                ,   {nil, "app",  "v",  nil,    "Set the .app directory."    }
+                }
+            } 

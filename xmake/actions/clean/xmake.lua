@@ -32,25 +32,25 @@ task("clean")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake clean|c [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake clean|c [options] [target]"
 
-                    -- description
-                ,   description = "Remove all binary and temporary files."
+                -- description
+            ,   description = "Remove all binary and temporary files."
 
-                    -- xmake c
-                ,   shortname = 'c'
+                -- xmake c
+            ,   shortname = 'c'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'a', "all",        "k",  nil,          "Clean all auto-generated files by xmake."                      }
-                    
-                    ,   {}
-                    ,   {nil, "target",     "v",  "all",        "Clean for the given target."                                   }      
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'a', "all",        "k",  nil,          "Clean all auto-generated files by xmake."                      }
+                
+                ,   {}
+                ,   {nil, "target",     "v",  "all",        "Clean for the given target."                                   }      
+                }
+            }
 
 
 

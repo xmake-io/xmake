@@ -26,7 +26,7 @@
 language("objc++")
 
     -- set source file kinds
-    set_sourcekinds(".m", ".mm")
+    set_sourcekinds {mm = ".m", mxx = ".mm"}
 
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
@@ -38,7 +38,7 @@ language("objc++")
     on_check_main("check_main")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}
@@ -62,7 +62,7 @@ language("objc++")
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
 
                 }
-            })
+            }
 
 
 

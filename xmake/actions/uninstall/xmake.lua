@@ -32,25 +32,25 @@ task("uninstall")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake uninstall|u [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake uninstall|u [options] [target]"
 
-                    -- description
-                ,   description = "Uninstall the project binary files."
+                -- description
+            ,   description = "Uninstall the project binary files."
 
-                    -- xmake u
-                ,   shortname = 'u'
+                -- xmake u
+            ,   shortname = 'u'
 
-                    -- options
-                ,   options = 
-                    {
-                        {nil, "installdir", "kv", nil,      "Set the install directory."    }
+                -- options
+            ,   options = 
+                {
+                    {nil, "installdir", "kv", nil,      "Set the install directory."    }
 
-                    ,   {}
-                    ,   {nil, "target",     "v",  "all",    "Uninstall the given target."   }
-                    }
-                })
+                ,   {}
+                ,   {nil, "target",     "v",  "all",    "Uninstall the given target."   }
+                }
+            }
 
 
 

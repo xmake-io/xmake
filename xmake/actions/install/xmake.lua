@@ -32,25 +32,25 @@ task("install")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake install|i [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake install|i [options] [target]"
 
-                    -- description
-                ,   description = "Package and install the project binary files."
+                -- description
+            ,   description = "Package and install the project binary files."
 
-                    -- xmake i
-                ,   shortname = 'i'
+                -- xmake i
+            ,   shortname = 'i'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'o', "installdir", "kv", nil,      "Set the install directory."    }
+                -- options
+            ,   options = 
+                {
+                    {'o', "installdir", "kv", nil,      "Set the install directory."    }
 
-                    ,   {}
-                    ,   {nil, "target",     "v",  "all",    "Install the given target."     }
-                    }
-                })
+                ,   {}
+                ,   {nil, "target",     "v",  "all",    "Install the given target."     }
+                }
+            }
 
 
 

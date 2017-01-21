@@ -32,43 +32,43 @@ task("global")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake global|g [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake global|g [options] [target]"
 
-                    -- description
-                ,   description = "Configure the global options for xmake."
+                -- description
+            ,   description = "Configure the global options for xmake."
 
-                    -- xmake g
-                ,   shortname = 'g'
+                -- xmake g
+            ,   shortname = 'g'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
+                -- options
+            ,   options = 
+                {
+                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
 
-                    ,   {}
+                ,   {}
 
-                    ,   {nil, "make",       "kv", "auto",   "Set the make path."                                        }
-                    ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
-                                                        ,   "    --ccache=[y|n]"                                        }
+                ,   {nil, "make",       "kv", "auto",   "Set the make path."                                        }
+                ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
+                                                    ,   "    --ccache=[y|n]"                                        }
 
-                    ,   {}
-                    ,   {nil, "dd",         "kv", "auto",   "The Debugger"                                              }
-                    ,   {}
+                ,   {}
+                ,   {nil, "dd",         "kv", "auto",   "The Debugger"                                              }
+                ,   {}
 
-                        -- show platform menu options
-                    ,   function () 
+                    -- show platform menu options
+                ,   function () 
 
-                            -- import platform menu
-                            import("core.platform.menu")
+                        -- import platform menu
+                        import("core.platform.menu")
 
-                            -- get global menu options
-                            return menu.options("global")
-                        end
+                        -- get global menu options
+                        return menu.options("global")
+                    end
 
-                    }
-                })
+                }
+            }
 
 
 

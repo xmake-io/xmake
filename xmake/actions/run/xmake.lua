@@ -32,26 +32,26 @@ task("run")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake run|r [options] [target] [arguments]"
+    set_menu {
+                -- usage
+                usage = "xmake run|r [options] [target] [arguments]"
 
-                    -- description
-                ,   description = "Run the project target."
+                -- description
+            ,   description = "Run the project target."
 
-                    -- xmake r
-                ,   shortname = 'r'
- 
-                    -- options
-                ,   options = 
-                    {
-                        {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
+                -- xmake r
+            ,   shortname = 'r'
 
-                    ,   {}
-                    ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      
-                    ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                          }
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
+
+                ,   {}
+                ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      
+                ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                          }
+                }
+            }
 
 
 

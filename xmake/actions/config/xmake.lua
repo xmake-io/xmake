@@ -32,125 +32,125 @@ task("config")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake config|f [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake config|f [options] [target]"
 
-                    -- description
-                ,   description = "Configure the project."
+                -- description
+            ,   description = "Configure the project."
 
-                    -- xmake f
-                ,   shortname = 'f'
+                -- xmake f
+            ,   shortname = 'f'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
+                -- options
+            ,   options = 
+                {
+                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
 
-                    ,   {}
-                    ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
+                ,   {}
+                ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
 
-                                                                -- show the description of all platforms
-                                                              , function () 
+                                                            -- show the description of all platforms
+                                                          , function () 
 
-                                                                    -- import platform 
-                                                                    import("core.platform.platform")
+                                                                -- import platform 
+                                                                import("core.platform.platform")
 
-                                                                    -- make description
-                                                                    local description = {}
-                                                                    for i, plat in ipairs(platform.plats()) do
-                                                                        description[i] = "    - " .. plat
+                                                                -- make description
+                                                                local description = {}
+                                                                for i, plat in ipairs(platform.plats()) do
+                                                                    description[i] = "    - " .. plat
+                                                                end
+
+                                                                -- get it
+                                                                return description
+                                                            end                                                            }
+                ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                               
+
+                                                            -- show the description of all architectures
+                                                          , function () 
+
+                                                                -- import platform 
+                                                                import("core.platform.platform")
+
+                                                                -- make description
+                                                                local description = {}
+                                                                for i, plat in ipairs(platform.plats()) do
+                                                                    description[i] = "    - " .. plat .. ":"
+                                                                    for _, arch in ipairs(platform.archs(plat)) do
+                                                                        description[i] = description[i] .. " " .. arch
                                                                     end
+                                                                end
 
-                                                                    -- get it
-                                                                    return description
-                                                                end                                                            }
-                    ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                               
+                                                                -- get it
+                                                                return description
+                                                            end                                                            }
+                ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
+                                                          , "    - debug"
+                                                          , "    - release"
+                                                          , "    - ... (custom)"                                           } 
+                ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
+                                                          , "    - static"
+                                                          , "    - shared"
+                                                          , "    - binary"                                                 }
+                ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                }
 
-                                                                -- show the description of all architectures
-                                                              , function () 
+                    -- show project menu options
+                ,   function () 
 
-                                                                    -- import platform 
-                                                                    import("core.platform.platform")
+                        -- import project menu 
+                        import("core.project.menu")
 
-                                                                    -- make description
-                                                                    local description = {}
-                                                                    for i, plat in ipairs(platform.plats()) do
-                                                                        description[i] = "    - " .. plat .. ":"
-                                                                        for _, arch in ipairs(platform.archs(plat)) do
-                                                                            description[i] = description[i] .. " " .. arch
-                                                                        end
-                                                                    end
+                        -- get project menu options 
+                        return menu.options() 
+                    end
 
-                                                                    -- get it
-                                                                    return description
-                                                                end                                                            }
-                    ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
-                                                              , "    - debug"
-                                                              , "    - release"
-                                                              , "    - ... (custom)"                                           } 
-                    ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
-                                                              , "    - static"
-                                                              , "    - shared"
-                                                              , "    - binary"                                                 }
-                    ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                }
+                ,   {}
+                ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                   }
 
-                        -- show project menu options
-                    ,   function () 
+                ,   {}
+                ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
+                                                          , ".e.g"
+                                                          , "    - i386-mingw32-"
+                                                          , "    - arm-linux-androideabi-"                                  }
+                ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory" 
+                                                          , ".e.g"
+                                                          , "    - sdk/bin (/arm-linux-gcc ..)"                             }
+                ,   {nil, "sdk",        "kv", nil,          "The cross sdk directory" 
+                                                          , ".e.g"
+                                                          , "    - sdk/bin (toolchains)"
+                                                          , "    - sdk/lib"
+                                                          , "    - sdk/include"                                             }
 
-                            -- import project menu 
-                            import("core.project.menu")
+                ,   {}
+                ,   {nil, "dd",         "kv", "auto",       "The Debugger"                                                  }
 
-                            -- get project menu options 
-                            return menu.options() 
-                        end
+                    -- show language menu options
+                ,   function () 
 
-                    ,   {}
-                    ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                   }
+                        -- import language menu
+                        import("core.language.menu")
 
-                    ,   {}
-                    ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
-                                                              , ".e.g"
-                                                              , "    - i386-mingw32-"
-                                                              , "    - arm-linux-androideabi-"                                  }
-                    ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory" 
-                                                              , ".e.g"
-                                                              , "    - sdk/bin (/arm-linux-gcc ..)"                             }
-                    ,   {nil, "sdk",        "kv", nil,          "The cross sdk directory" 
-                                                              , ".e.g"
-                                                              , "    - sdk/bin (toolchains)"
-                                                              , "    - sdk/lib"
-                                                              , "    - sdk/include"                                             }
+                        -- get config menu options
+                        return menu.options("config")
+                    end
 
-                    ,   {}
-                    ,   {nil, "dd",         "kv", "auto",       "The Debugger"                                                  }
+                    -- show platform menu options
+                ,   function () 
 
-                        -- show language menu options
-                    ,   function () 
+                        -- import platform menu
+                        import("core.platform.menu")
 
-                            -- import language menu
-                            import("core.language.menu")
+                        -- get config menu options
+                        return menu.options("config")
+                    end
 
-                            -- get config menu options
-                            return menu.options("config")
-                        end
+                ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
-                        -- show platform menu options
-                    ,   function () 
-
-                            -- import platform menu
-                            import("core.platform.menu")
-
-                            -- get config menu options
-                            return menu.options("config")
-                        end
-
-                    ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
-
-                    ,   {}
-                    ,   {nil, "target",     "v",  "all",        "Configure for the given target."                               }
-                    }
-                })
+                ,   {}
+                ,   {nil, "target",     "v",  "all",        "Configure for the given target."                               }
+                }
+            }
 
 
 

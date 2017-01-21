@@ -26,7 +26,7 @@
 language("c++")
 
     -- set source file kinds
-    set_sourcekinds(".c", ".cc", ".cpp", ".cxx")
+    set_sourcekinds {cc = ".c", cxx = {".cc", ".cpp", ".cxx"}}   
 
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
@@ -38,7 +38,7 @@ language("c++")
     on_check_main("check_main")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}
@@ -61,7 +61,7 @@ language("c++")
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
                 }
-            })
+            }
 
 
 

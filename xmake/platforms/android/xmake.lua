@@ -44,7 +44,7 @@ platform("android")
     on_load("load")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}
@@ -58,7 +58,7 @@ platform("android")
                 ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"             }
                 ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"       }
                 }
-            })
+            }
 
 
 

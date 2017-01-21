@@ -59,24 +59,24 @@ task("lua")
     end)
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake lua|l [options] [script] [arguments]"
+    set_menu {
+                -- usage
+                usage = "xmake lua|l [options] [script] [arguments]"
 
-                    -- description
-                ,   description = "Run the lua script."
+                -- description
+            ,   description = "Run the lua script."
 
-                    -- xmake l
-                ,   shortname = 'l'
+                -- xmake l
+            ,   shortname = 'l'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'l', "list",       "k",  nil,          "List all scripts."             }      
-                    ,   {nil, "script",     "v",  nil,          "Run the given lua script."     }      
-                    ,   {nil, "arguments",  "vs", nil,          "The script arguments."         }
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'l', "list",       "k",  nil,          "List all scripts."             }      
+                ,   {nil, "script",     "v",  nil,          "Run the given lua script."     }      
+                ,   {nil, "arguments",  "vs", nil,          "The script arguments."         }
+                }
+            }
 
 
 

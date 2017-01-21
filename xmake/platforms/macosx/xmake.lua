@@ -50,7 +50,7 @@ platform("macosx")
     on_load("load")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}   
@@ -64,7 +64,7 @@ platform("macosx")
                     {}
                 ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
                 }
-            })
+            }
 
 
 
