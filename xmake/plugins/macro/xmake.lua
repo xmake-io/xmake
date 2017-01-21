@@ -32,48 +32,48 @@ task("macro")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake macro|m [options] [name] [arguments]"
+    set_menu {
+                -- usage
+                usage = "xmake macro|m [options] [name] [arguments]"
 
-                    -- description
-                ,   description = "Run the given macro."
+                -- description
+            ,   description = "Run the given macro."
 
-                    -- xmake m
-                ,   shortname = 'm'
+                -- xmake m
+            ,   shortname = 'm'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'b', "begin",      "k",  nil,  "Start to record macro."                          
-                                                    ,   ".e.g"
-                                                    ,   "Record macro with name: test"
-                                                    ,   "    xmake macro --begin"                   
-                                                    ,   "    xmake config --plat=macosx"
-                                                    ,   "    xmake clean"
-                                                    ,   "    xmake -r"
-                                                    ,   "    xmake package"
-                                                    ,   "    xmake macro --end test"                    }
-                    ,   {'e', "end",        "k",  nil,  "Stop to record macro."                         }
-                    ,   {}
-                    ,   {nil, "show",       "k",  nil,  "Show the content of the given macro."          }
-                    ,   {'l', "list",       "k",  nil,  "List all macros."                              }
-                    ,   {'d', "delete",     "k",  nil,  "Delete the given macro."                       }
-                    ,   {'c', "clear",      "k",  nil,  "Clear the all macros."                         }
-                    ,   {}
-                    ,   {nil, "import",     "kv", nil,  "Import the given macro file or directory."                   
-                                                    ,   ".e.g"
-                                                    ,   "    xmake macro --import=/xxx/macro.lua test"
-                                                    ,   "    xmake macro --import=/xxx/macrodir"        }
-                    ,   {nil, "export",     "kv", nil,  "Export the given macro to file or directory."
-                                                    ,   ".e.g"
-                                                    ,   "    xmake macro --export=/xxx/macro.lua test"  
-                                                    ,   "    xmake macro --export=/xxx/macrodir"        }
-                    ,   {}
-                    ,   {nil, "name",       "v",  ".",  "Set the macro name."
-                                                    ,   ".e.g"
-                                                    ,   "   Run the given macro:     xmake macro test"        
-                                                    ,   "   Run the anonymous macro: xmake macro ."     }
-                    ,   {nil, "arguments",  "vs", nil,  "Set the macro arguments."                      }
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'b', "begin",      "k",  nil,  "Start to record macro."                          
+                                                ,   ".e.g"
+                                                ,   "Record macro with name: test"
+                                                ,   "    xmake macro --begin"                   
+                                                ,   "    xmake config --plat=macosx"
+                                                ,   "    xmake clean"
+                                                ,   "    xmake -r"
+                                                ,   "    xmake package"
+                                                ,   "    xmake macro --end test"                    }
+                ,   {'e', "end",        "k",  nil,  "Stop to record macro."                         }
+                ,   {}
+                ,   {nil, "show",       "k",  nil,  "Show the content of the given macro."          }
+                ,   {'l', "list",       "k",  nil,  "List all macros."                              }
+                ,   {'d', "delete",     "k",  nil,  "Delete the given macro."                       }
+                ,   {'c', "clear",      "k",  nil,  "Clear the all macros."                         }
+                ,   {}
+                ,   {nil, "import",     "kv", nil,  "Import the given macro file or directory."                   
+                                                ,   ".e.g"
+                                                ,   "    xmake macro --import=/xxx/macro.lua test"
+                                                ,   "    xmake macro --import=/xxx/macrodir"        }
+                ,   {nil, "export",     "kv", nil,  "Export the given macro to file or directory."
+                                                ,   ".e.g"
+                                                ,   "    xmake macro --export=/xxx/macro.lua test"  
+                                                ,   "    xmake macro --export=/xxx/macrodir"        }
+                ,   {}
+                ,   {nil, "name",       "v",  ".",  "Set the macro name."
+                                                ,   ".e.g"
+                                                ,   "   Run the given macro:     xmake macro test"        
+                                                ,   "   Run the anonymous macro: xmake macro ."     }
+                ,   {nil, "arguments",  "vs", nil,  "Set the macro arguments."                      }
+                }
+            }

@@ -32,25 +32,25 @@ task("package")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake package|p [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake package|p [options] [target]"
 
-                    -- description
-                ,   description = "Package target."
+                -- description
+            ,   description = "Package target."
 
-                    -- xmake p
-                ,   shortname = 'p'
+                -- xmake p
+            ,   shortname = 'p'
 
-                    -- options
-                ,   options = 
-                    {
-                        {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
-                    ,   {'a', "archs",      "kv", nil,          "Compile for the given architecture. (deprecated)"              }        
-                    ,   {}
-                    ,   {nil, "target",     "v",  "all",        "Package a given target"                                        }   
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
+                ,   {'a', "archs",      "kv", nil,          "Compile for the given architecture. (deprecated)"              }        
+                ,   {}
+                ,   {nil, "target",     "v",  "all",        "Package a given target"                                        }   
+                }
+            } 
 
 
 

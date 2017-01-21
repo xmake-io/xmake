@@ -127,7 +127,6 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_menu"
-        ,   "language.set_sourcekinds"
         ,   "language.set_targetkinds"
         }
     ,   script =
@@ -135,6 +134,11 @@ function language._interpreter()
             -- language.on_xxx
             "language.on_load"
         ,   "language.on_check_main"
+        }
+    ,   dictionary =
+        {
+            -- language.set_xxx
+            "language.set_sourcekinds"
         }
     }
 

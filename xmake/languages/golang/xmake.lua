@@ -26,7 +26,7 @@
 language("golang")
 
     -- set source file kinds
-    set_sourcekinds(".go")
+    set_sourcekinds {go = ".go"}
 
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
@@ -38,7 +38,7 @@ language("golang")
     on_check_main("check_main")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}
@@ -54,5 +54,5 @@ language("golang")
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
                 }
-            })
+            } 
 

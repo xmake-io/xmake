@@ -26,7 +26,7 @@
 language("asm")
 
     -- set source file kinds
-    set_sourcekinds(".s", ".asm")
+    set_sourcekinds {as = {".s", ".asm"}}
 
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
@@ -35,7 +35,7 @@ language("asm")
     on_load("load")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}
@@ -55,7 +55,7 @@ language("asm")
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
                 }
-            })
+            }
 
 
 

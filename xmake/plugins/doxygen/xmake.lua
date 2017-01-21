@@ -32,21 +32,21 @@ task("doxygen")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake doxygen [options] [arguments]"
+    set_menu {
+                -- usage
+                usage = "xmake doxygen [options] [arguments]"
 
-                    -- description
-                ,   description = "Generate the doxygen document."
+                -- description
+            ,   description = "Generate the doxygen document."
 
-                    -- options
-                ,   options = 
-                    {
-                        {'o', "outputdir",  "kv", nil,      "Set the output directory."         }
-                    ,   {}
-                    ,   {nil, "srcdir",     "v",  "src",    "Set the source code directory."    }
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'o', "outputdir",  "kv", nil,      "Set the output directory."         }
+                ,   {}
+                ,   {nil, "srcdir",     "v",  "src",    "Set the source code directory."    }
+                }
+            }
 
 
 

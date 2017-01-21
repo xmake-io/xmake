@@ -56,7 +56,7 @@ platform("windows")
     end)
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}   
@@ -68,6 +68,6 @@ platform("windows")
                     {}
                 ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
                 }
-            })
+            }
 
 

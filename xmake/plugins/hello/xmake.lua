@@ -37,13 +37,13 @@ task("hello")
     end)
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake hello [options]"
+    set_menu {
+                -- usage
+                usage = "xmake hello [options]"
 
-                    -- description
-                ,   description = "Hello xmake!"
+                -- description
+            ,   description = "Hello xmake!"
 
-                    -- options
-                ,   options = {}
-                }) 
+                -- options
+            ,   options = {}
+            }

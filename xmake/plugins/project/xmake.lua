@@ -32,22 +32,22 @@ task("project")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake project [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake project [options] [target]"
 
-                    -- description
-                ,   description = "Generate the project file."
+                -- description
+            ,   description = "Generate the project file."
 
-                    -- options
-                ,   options = 
-                    {
-                        {'k', "kind",      "kv", "makefile",    "Set the project kind." 
-                                                           ,    "    - makefile"
-                                                           ,    "    - vs2002, vs2003, vs2005, vs2008, vs2010, vs2012, vs2013, vs2015, vs2017" }
-                    ,   {nil, "outputdir", "v",  ".",           "Set the output directory."     }
-                    }
-                })
+                -- options
+            ,   options = 
+                {
+                    {'k', "kind",      "kv", "makefile",    "Set the project kind." 
+                                                       ,    "    - makefile"
+                                                       ,    "    - vs2002, vs2003, vs2005, vs2008, vs2010, vs2012, vs2013, vs2015, vs2017" }
+                ,   {nil, "outputdir", "v",  ".",           "Set the output directory."     }
+                }
+            }
 
 
 

@@ -32,26 +32,26 @@ task("build")
     on_run("main")
 
     -- set menu
-    set_menu({
-                    -- usage
-                    usage = "xmake [task] [options] [target]"
+    set_menu {
+                -- usage
+                usage = "xmake [task] [options] [target]"
 
-                    -- description
-                ,   description = "Build the project if no given tasks."
+                -- description
+            ,   description = "Build the project if no given tasks."
 
-                    -- options
-                ,   options = 
-                    {
-                        {'b', "build",      "k",  nil,          "Build project. This is default building mode and optional."    }
-                    ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
+                -- options
+            ,   options = 
+                {
+                    {'b', "build",      "k",  nil,          "Build project. This is default building mode and optional."    }
+                ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
-                    ,   {}
-                    ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously"          }
-                   
-                    ,   {}
-                    ,   {nil, "target",     "v",  "all",        "Build the given target."                                       } 
-                    }
-                })
+                ,   {}
+                ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously"          }
+               
+                ,   {}
+                ,   {nil, "target",     "v",  "all",        "Build the given target."                                       } 
+                }
+            }
 
 
 

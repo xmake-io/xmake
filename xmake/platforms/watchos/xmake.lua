@@ -44,7 +44,7 @@ platform("watchos")
     on_load("load")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}   
@@ -66,7 +66,7 @@ platform("watchos")
                 ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
                 ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
                 }
-            })
+            }
 
 
 

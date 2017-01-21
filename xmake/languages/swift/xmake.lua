@@ -26,7 +26,7 @@
 language("swift")
 
     -- set source file kinds
-    set_sourcekinds(".swift")
+    set_sourcekinds {sc = ".swift"}
 
     -- set target kinds
     set_targetkinds("binary")
@@ -35,7 +35,7 @@ language("swift")
     on_load("load")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}
@@ -59,7 +59,7 @@ language("swift")
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
                 }
-            })
+            } 
 
 
 

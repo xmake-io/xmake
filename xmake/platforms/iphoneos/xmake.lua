@@ -44,7 +44,7 @@ platform("iphoneos")
     on_load("load")
 
     -- set menu
-    set_menu({
+    set_menu {
                 config = 
                 {   
                     {}   
@@ -66,7 +66,7 @@ platform("iphoneos")
                 ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
                 ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
                 }
-            })
+            }
 
 
 
