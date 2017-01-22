@@ -28,6 +28,9 @@ language("swift")
     -- set source file kinds
     set_sourcekinds {sc = ".swift"}
 
+    -- set source file flags
+    set_sourceflags {sc = "scflags"}
+
     -- set target kinds
     set_targetkinds("binary")
 

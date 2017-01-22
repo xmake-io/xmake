@@ -28,6 +28,9 @@ language("golang")
     -- set source file kinds
     set_sourcekinds {go = ".go"}
 
+    -- set source file flags
+    set_sourceflags {go = "goflags"}
+
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
 

@@ -28,6 +28,9 @@ language("objc++")
     -- set source file kinds
     set_sourcekinds {mm = ".m", mxx = ".mm"}
 
+    -- set source file flags
+    set_sourceflags {mm = {"mflags", "mxflags"}, mxx = {"mxxflags", "mxflags"}}
+
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
 

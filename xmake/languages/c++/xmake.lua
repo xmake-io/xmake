@@ -28,6 +28,9 @@ language("c++")
     -- set source file kinds
     set_sourcekinds {cc = ".c", cxx = {".cc", ".cpp", ".cxx"}}   
 
+    -- set source file flags
+    set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}   
+
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
 
