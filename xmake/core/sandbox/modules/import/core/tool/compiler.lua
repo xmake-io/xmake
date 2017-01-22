@@ -27,14 +27,16 @@ local sandbox_core_tool_compiler = sandbox_core_tool_compiler or {}
 
 -- load modules
 local platform  = require("platform/platform")
+local language  = require("language/language")
 local compiler  = require("tool/compiler")
 local raise     = require("sandbox/modules/raise")
+local assert    = require("sandbox/modules/assert")
 
 -- make command for compiling source file
 function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target)
  
     -- get the compiler instance
-    local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))
+    local instance, errors = compiler.load(assert(language.sourcekind_of(sourcefile)))
     if not instance then
         raise(errors)
     end
@@ -47,7 +49,7 @@ end
 function sandbox_core_tool_compiler.compflags(sourcefile, target)
  
     -- get the compiler instance
-    local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))
+    local instance, errors = compiler.load(assert(language.sourcekind_of(sourcefile)))
     if not instance then
         raise(errors)
     end
@@ -60,7 +62,7 @@ end
 function sandbox_core_tool_compiler.compile(sourcefile, objectfile, incdepfile, target)
  
     -- get the compiler instance
-    local instance, errors = compiler.load(compiler.kind_of_file(sourcefile))
+    local instance, errors = compiler.load(assert(language.sourcekind_of(sourcefile)))
     if not instance then
         raise(errors)
     end
@@ -70,11 +72,6 @@ function sandbox_core_tool_compiler.compile(sourcefile, objectfile, incdepfile, 
     if not ok then
         raise(errors)
     end
-end
-
--- get kind of the compiling source file
-function sandbox_core_tool_compiler.kind_of_file(sourcefile)
-    return compiler.kind_of_file(sourcefile)
 end
 
 -- return module

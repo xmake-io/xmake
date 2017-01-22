@@ -35,6 +35,7 @@ local config    = require("project/config")
 local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
 local platform  = require("platform/platform")
+local language  = require("language/language")
 
 -- get the filename from the given name and kind
 function target.filename(name, kind)
@@ -425,25 +426,25 @@ function target:sourcekinds()
         return self._SOURCEKINDS
     end
 
-    -- make kinds
-    local kinds = {}
+    -- make source kinds
+    local sourcekinds = {}
     for _, sourcefile in pairs(self:sourcefiles()) do
 
-        -- get kind
-        local kind = compiler.kind_of_file(sourcefile)
-        if kind then
-            table.insert(kinds, kind)
+        -- get source kind
+        local sourcekind = language.sourcekind_of(sourcefile)
+        if sourcekind then
+            table.insert(sourcekinds, sourcekind)
         end
     end
 
     -- remove repeat
-    kinds = table.unique(kinds)
+    sourcekinds = table.unique(sourcekinds)
 
     -- cache it
-    self._SOURCEKINDS = kinds
+    self._SOURCEKINDS = sourcekinds
 
     -- ok?
-    return kinds 
+    return sourcekinds 
 end
 
 

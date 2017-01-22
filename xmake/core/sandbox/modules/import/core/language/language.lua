@@ -82,5 +82,18 @@ function sandbox_core_language.load_ex(extension)
     return instance
 end
 
+-- get source kind of the source file name
+function sandbox_core_language.sourcekind_of(sourcefile)
+
+    -- get it
+    local sourcekind, errors = language.sourcekind_of(sourcefile)
+    if not sourcekind then
+        raise(errors)
+    end
+
+    -- ok
+    return sourcekind
+end
+
 -- return module
 return sandbox_core_language

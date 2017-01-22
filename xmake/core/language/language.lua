@@ -419,5 +419,27 @@ function language.sourcekinds()
     return sourcekinds
 end
 
+-- get source kind of the source file name
+function language.sourcekind_of(sourcefile)
+
+    -- get the source file extension
+    local extension = path.extension(sourcefile)
+    if not extension then
+        return nil, string.format("%s has not extension", sourcefile)
+    end
+
+    -- get extensions
+    local extensions = language.extensions()
+
+    -- get source kind from extension
+    local sourcekind = extensions[extension:lower()]
+    if not sourcekind then
+        return nil, string.format("%s is unknown extension", extension)
+    end
+
+    -- ok
+    return sourcekind
+end
+
 -- return module
 return language

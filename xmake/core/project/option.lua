@@ -37,6 +37,7 @@ local cache     = require("project/cache")("local.option")
 local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
 local sandbox   = require("sandbox/sandbox")
+local language  = require("language/language")
 
 -- check link 
 function option:_check_link(sourcefile, objectfile, targetfile)
@@ -45,7 +46,7 @@ function option:_check_link(sourcefile, objectfile, targetfile)
     assert(sourcefile and objectfile and targetfile)
 
     -- update source kinds
-    self._SOURCEKINDS = compiler.kind_of_file(sourcefile)
+    self._SOURCEKINDS = language.sourcekind_of(sourcefile)
 
     -- load the linker instance
     local instance = linker.load("binary")
@@ -84,7 +85,7 @@ function option:_check_include(include, srcpath, objpath)
     srcfile:close()
 
     -- load the compiler instance
-    local instance = compiler.load(compiler.kind_of_file(srcpath))
+    local instance = compiler.load(language.sourcekind_of(srcpath))
     if not instance then 
         return false 
     end
@@ -106,7 +107,7 @@ function option:_check_function(checkcode, srcpath, objpath)
      end
 
     -- load the compiler instance
-    local instance = compiler.load(compiler.kind_of_file(srcpath))
+    local instance = compiler.load(language.sourcekind_of(srcpath))
     if not instance then 
         return false 
     end
@@ -154,7 +155,7 @@ function option:_check_typedef(typedef, srcpath, objpath)
     end
 
     -- load the compiler instance
-    local instance = compiler.load(compiler.kind_of_file(srcpath))
+    local instance = compiler.load(language.sourcekind_of(srcpath))
     if not instance then 
         return false 
     end
