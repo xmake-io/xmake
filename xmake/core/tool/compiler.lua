@@ -35,6 +35,7 @@ local option    = require("base/option")
 local tool      = require("tool/tool")
 local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
+local language  = require("language/language")
 local platform  = require("platform/platform")
 
 -- get the current tool
@@ -231,34 +232,6 @@ function compiler:_addflags_from_compiler(flags, kind)
             table.join2(flags, self:get(kind)[flagname])
         end
     end
-end
-
--- get the compiler kind of the source file 
-function compiler.kind_of_file(sourcefile)
-
-    -- get the source file type
-    local filetype = path.extension(sourcefile)
-    if not filetype then
-        return nil
-    end
-
-    -- the kinds
-    local kinds = 
-    {
-        [".c"]      = "cc"
-    ,   [".cc"]     = "cxx"
-    ,   [".cpp"]    = "cxx"
-    ,   [".cxx"]    = "cxx"
-    ,   [".m"]      = "mm"
-    ,   [".mm"]     = "mxx"
-    ,   [".s"]      = "as"
-    ,   [".asm"]    = "as"
-    ,   [".go"]     = "go"
-    ,   [".swift"]  = "sc"
-    }
-
-    -- get kind
-    return kinds[filetype:lower()]
 end
 
 -- get the current kind
