@@ -28,6 +28,9 @@ language("asm")
     -- set source file kinds
     set_sourcekinds {as = {".s", ".asm"}}
 
+    -- set source file flags
+    set_sourceflags {as = "asflags"}
+
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
 

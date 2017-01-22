@@ -169,6 +169,7 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_sourcekinds"
+        ,   "language.set_sourceflags"
         }
     }
 
