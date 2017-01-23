@@ -28,16 +28,8 @@ import("api")
 -- load it
 function main()
 
-    -- init flags
-    _g.mflags       = {}
-    _g.mxflags      = {}
-    _g.mxxflags     = {}
-    _g.ldflags      = {}
-    _g.arflags      = {}
-    _g.shflags      = {}
-
     -- init apis
-    _g.apis         = api.apis()
+    _g.apis = api.apis()
 
     -- ok
     return _g
