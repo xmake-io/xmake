@@ -38,18 +38,25 @@ local sandbox   = require("sandbox/sandbox")
 local language  = require("language/language")
 local platform  = require("platform/platform")
 
--- get the current tool
+-- get the tool of compiler
 function compiler:_tool()
 
     -- get it
     return self._TOOL
 end
 
--- get the current flag names
-function compiler:_flagnames()
+-- get the language of compiler
+function compiler:_language()
 
     -- get it
-    return self._FLAGNAMES
+    return self._LANGUAGE
+end
+
+-- get the source flags
+function compiler:_sourceflags()
+
+    -- get it
+    return self._SOURCEFLAGS
 end
 
 -- map gcc flag to the given compiler flag
@@ -113,8 +120,8 @@ end
 function compiler:_addflags_from_config(flags)
 
     -- done
-    for _, flagname in ipairs(self:_flagnames()) do
-        table.join2(flags, config.get(flagname))
+    for _, sourceflag in ipairs(self:_sourceflags()) do
+        table.join2(flags, config.get(sourceflag))
     end
 
     -- add the includedirs flags 
@@ -127,8 +134,8 @@ end
 function compiler:_addflags_from_target(flags, target)
 
     -- add the target flags 
-    for _, flagname in ipairs(self:_flagnames()) do
-        table.join2(flags, self:_mapflags(target:get(flagname)))
+    for _, sourceflag in ipairs(self:_sourceflags()) do
+        table.join2(flags, self:_mapflags(target:get(sourceflag)))
     end
 
     -- add the symbol flags 
@@ -198,8 +205,8 @@ end
 function compiler:_addflags_from_platform(flags)
 
     -- add flags 
-    for _, flagname in ipairs(self:_flagnames()) do
-        table.join2(flags, platform.get(flagname))
+    for _, sourceflag in ipairs(self:_sourceflags()) do
+        table.join2(flags, platform.get(sourceflag))
     end
 
     -- add the includedirs flags
@@ -222,23 +229,16 @@ end
 function compiler:_addflags_from_compiler(flags, kind)
 
     -- done
-    for _, flagname in ipairs(self:_flagnames()) do
+    for _, sourceflag in ipairs(self:_sourceflags()) do
 
         -- add compiler.xxflags
-        table.join2(flags, self:get(flagname))
+        table.join2(flags, self:get(sourceflag))
 
         -- add compiler.kind.xxflags
         if kind ~= nil and self:get(kind) ~= nil then
-            table.join2(flags, self:get(kind)[flagname])
+            table.join2(flags, self:get(kind)[sourceflag])
         end
     end
-end
-
--- get the current kind
-function compiler:kind()
-
-    -- get it
-    return self._KIND
 end
 
 -- load the compiler from the given source kind
@@ -256,35 +256,22 @@ function compiler.load(sourcekind)
     -- new instance
     local instance = table.inherit(compiler)
 
-    -- load the compiler tool from the source file type
+    -- load the compiler tool from the source kind
     local result, errors = tool.load(sourcekind)
     if not result then 
         return nil, errors
     end
-        
-    -- save tool
     instance._TOOL = result
-
-    -- save kind 
-    instance._KIND = sourcekind 
-
-    -- save flagnames
-    local flagnames =
-    {
-        cc =    { "cxflags", "cflags"   }
-    ,   cxx =   { "cxflags", "cxxflags" }
-    ,   mm =    { "mxflags", "mflags"   }
-    ,   mxx =   { "mxflags", "mxxflags" }
-    ,   as =    { "asflags"             }
-    ,   sc =    { "scflags"             }
-    ,   go =    { "goflags"             }
-    }
-    instance._FLAGNAMES = flagnames[sourcekind]
-
-    -- check
-    if not instance._FLAGNAMES then
-        return nil, string.format("unknown compiler for kind: %s", sourcekind)
+        
+    -- load the compiler language from the source kind
+    result, errors = language.load_sk(sourcekind)
+    if not result then 
+        return nil, errors
     end
+    instance._LANGUAGE = result
+
+    -- get source flags
+    instance._SOURCEFLAGS = table.wrap(result:sourceflags()[sourcekind])
 
     -- save this instance
     compiler._INSTANCES[sourcekind] = instance

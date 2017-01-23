@@ -262,13 +262,6 @@ function linker:_addlinks_from_platform(flags)
     end
 end
 
--- get the current kind
-function linker:kind()
-
-    -- get it
-    return self._KIND
-end
-
 -- load the linker from the given target kind
 function linker.load(targetkind, sourcekinds)
 
@@ -295,9 +288,6 @@ function linker.load(targetkind, sourcekinds)
         
     -- save tool
     instance._TOOL = result
-
-    -- save kind 
-    instance._KIND = kind 
 
     -- save flagname
     local flagname =

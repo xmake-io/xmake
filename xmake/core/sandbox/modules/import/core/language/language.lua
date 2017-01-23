@@ -43,6 +43,13 @@ function sandbox_core_language.sourcekinds()
     return language.sourcekinds()
 end
 
+-- get the source flags of all languages
+function sandbox_core_language.sourceflags()
+
+    -- get it
+    return language.sourceflags()
+end
+
 -- load the language from the given name (c++, objc++, swift, golang, asm, ...)
 function sandbox_core_language.load(name)
 
