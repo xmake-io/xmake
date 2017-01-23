@@ -124,6 +124,13 @@ function _instance:sourcekinds()
     return self._INFO.sourcekinds
 end
 
+-- get the language source flags
+function _instance:sourceflags()
+
+    -- get it
+    return self._INFO.sourceflags
+end
+
 -- get the language target kinds
 function _instance:targetkinds()
 
@@ -418,6 +425,42 @@ function language.sourcekinds()
 
     -- ok
     return sourcekinds
+end
+
+-- get language source flags
+--
+-- .e.g
+--
+-- {
+--      cc  = {"cflags", "cxflags"}
+-- ,    cxx = {"cxxflags", "cxflags"}
+-- ,    ...
+-- }
+--
+function language.sourceflags()
+
+    -- attempt to get it from cache
+    if language._SOURCEFLAGS then
+        return language._SOURCEFLAGS
+    end
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        os.raise(errors)
+    end
+
+    -- merge all for each language
+    local sourceflags = {}
+    for name, instance in pairs(languages) do
+        table.join2(sourceflags, instance:sourceflags())
+    end
+
+    -- cache it
+    language._SOURCEFLAGS = sourceflags
+
+    -- ok
+    return sourceflags
 end
 
 -- get source kind of the source file name

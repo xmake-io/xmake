@@ -104,18 +104,21 @@ function option:_check_function(checkcode, srcpath, objpath)
     local srcfile = io.open(srcpath, "w")
     if not srcfile then
         return false 
-     end
+    end
+
+    -- get source kind
+    local sourcekind = language.sourcekind_of(srcpath)
 
     -- load the compiler instance
-    local instance = compiler.load(language.sourcekind_of(srcpath))
+    local instance = compiler.load(sourcekind)
     if not instance then 
         return false 
     end
 
     -- make includes 
     local includes = nil
-    if instance:kind() == "cc" then includes = self:get("cincludes")
-    elseif instance:kind() == "cxx" then includes = self:get("cxxincludes") 
+    if sourcekind == "cc" then includes = self:get("cincludes")
+    elseif sourcekind == "cxx" then includes = self:get("cxxincludes") 
     end
     if includes then
         for _, include in ipairs(table.wrap(includes)) do
@@ -154,16 +157,19 @@ function option:_check_typedef(typedef, srcpath, objpath)
         return false 
     end
 
+    -- get source kind
+    local sourcekind = language.sourcekind_of(srcpath)
+
     -- load the compiler instance
-    local instance = compiler.load(language.sourcekind_of(srcpath))
+    local instance = compiler.load(sourcekind)
     if not instance then 
         return false 
     end
 
     -- make includes 
     local includes = nil
-    if instance:kind() == "cc" then includes = self:get("cincludes")
-    elseif instance:kind() == "cxx" then includes = self:get("cxxincludes") 
+    if sourcekind == "cc" then includes = self:get("cincludes")
+    elseif sourcekind == "cxx" then includes = self:get("cxxincludes") 
     end
     if includes then
         for _, include in ipairs(table.wrap(includes)) do
