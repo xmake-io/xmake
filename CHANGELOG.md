@@ -17,6 +17,7 @@
 * Improve print interface, support lua print and format output
 * Automatically scan project files and generate it for building if xmake.lua not exists
 * Modify license to Apache License 2.0
+* Remove some binary tools
 
 ### Bugs fixed
 
@@ -204,6 +205,7 @@
 * 改进print接口，同时支持原生lua print以及格式化打印
 * 如果xmake.lua不存在，自动扫描工程代码文件，并且生成xmake.lua进行编译
 * 修改license，使用更加宽松的Apache License 2.0
+* 移除一些二进制工具文件
 
 ### Bugs修复
 
