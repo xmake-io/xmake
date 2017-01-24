@@ -2,7 +2,7 @@
 set_project("xmake")
 
 -- version
-set_version("2.0.6")
+set_version("2.1.1")
 
 -- set warning all as error
 set_warnings("all", "error")
