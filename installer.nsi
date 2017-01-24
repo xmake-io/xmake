@@ -26,12 +26,12 @@ InstallDir $PROGRAMFILES\xmake
 RequestExecutionLevel admin
 
 ;--------------------------------
-;Interface Settings
+; Interface Settings
 
 !define MUI_ABORTWARNING
 
 ;--------------------------------
-;Pages
+; Pages
 
 !insertmacro MUI_PAGE_LICENSE "LICENSE.md"
 !insertmacro MUI_PAGE_COMPONENTS
@@ -42,9 +42,20 @@ RequestExecutionLevel admin
 !insertmacro MUI_UNPAGE_INSTFILES
  
 ;--------------------------------
-;Languages
+; Languages
  
 !insertmacro MUI_LANGUAGE "English"
+
+;--------------------------------
+; Version Information
+
+VIProductVersion "1.2.3.4"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: http://www.xmake.io"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2015-2017 tboox.org"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "The Make-like Build Utility based on Lua"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.1.1"
 
 ;--------------------------------
 
@@ -78,12 +89,12 @@ Section "xmake (required)" Installer
 SectionEnd
 
 ;--------------------------------
-;Descriptions
+; Descriptions
 
-;Language strings
-LangString DESC_Installer ${LANG_ENGLISH} "A make-like build utility based on Lua"
+; Language strings
+LangString DESC_Installer ${LANG_ENGLISH} "The Make-like Build Utility based on Lua"
 
-;Assign language strings to sections
+; Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${Installer} $(DESC_Installer)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
