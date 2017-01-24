@@ -70,8 +70,11 @@ Section "xmake (required)" Installer
   ; Put file there
   File /r /x ".DS_Store" "xmake\*.*"
   File "*.md"
-  File "tools\xmake.exe"
+  File "core\build\demo.exe"
   
+  ; Rename file
+  Rename "$INSTDIR\demo.exe" "$INSTDIR\xmake.exe"
+
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\NSIS_xmake "Install_Dir" "$INSTDIR"
   
