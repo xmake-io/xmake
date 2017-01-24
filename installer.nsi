@@ -49,7 +49,7 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Version Information
 
-VIProductVersion "1.2.3.4"
+VIProductVersion "2.1.1.1701"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: http://www.xmake.io"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
@@ -69,6 +69,7 @@ Section "xmake (required)" Installer
   
   ; Put file there
   File /r /x ".DS_Store" "xmake\*.*"
+  File "*.md"
   File "tools\xmake.exe"
   
   ; Write the installation path into the registry
