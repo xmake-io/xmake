@@ -5,7 +5,13 @@ platform:
   - Win64
 
 before_build:
-  - cmd: call install.bat noinput
+  - cmd: curl -fsSL https://github.com/tboox/xmake/releases/download/v2.0.5/xmake-v2.0.5.exe -o xmake-installer.exe
+  - cmd: mkdir program
+  - cmd: xmake-installer.exe /S /D=program
+  - cmd: xmake --version
+  - cmd: cp -r xmake/* program/
+  - cmd: xmake --version
+  - cmd: ls program
 
 build_script:
   - cmd: cd ./tests/console_c
