@@ -181,9 +181,9 @@ function language._interpreter()
     ,   dictionary =
         {
             -- language.set_xxx
-            "language.set_sourcekinds"
+            "language.set_namedflags"
+        ,   "language.set_sourcekinds"
         ,   "language.set_sourceflags"
-        ,   "language.set_namedflags"
         }
     }
 
