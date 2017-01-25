@@ -141,7 +141,53 @@ end
 -- get the named flags
 function _instance:namedflags()
 
-    -- TODO
+    -- attempt to get it from cache first
+    if self._NAMEDFLAGS then
+        return self._NAMEDFLAGS
+    end
+
+    -- get namedflags
+    local results = {}
+    for toolkind, namedflags in pairs(table.wrap(self._INFO.namedflags)) do
+
+        -- make tool info
+        local toolinfo = results[toolkind] or {}
+        for _, namedflag in ipairs(namedflags) do
+
+            -- split it by '.'
+            local splitinfo = namedflag:split('.')
+            assert(#splitinfo == 2)
+
+            -- get flag scope
+            local flagscope = splitinfo[1]
+            assert(flagscope)
+
+            -- get flag info
+            local flaginfo = splitinfo[2]:split(':')
+
+            -- get flag name
+            local flagname = flaginfo[1]
+            assert(flagname)
+
+            -- get check state
+            local checkstate = false
+            if #flaginfo == 2 and flaginfo[2] == "check" then
+                checkstate = true
+            end
+
+            -- insert this flag info
+            table.insert(toolinfo, {flagname, checkstate})
+        end
+
+        -- save this tool info
+        results[toolkind] = toolinfo
+    end
+
+    -- cache this results
+    self._NAMEDFLAGS = results
+
+    -- ok?
+    return results
 end
 
 -- the directory of language
