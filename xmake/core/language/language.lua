@@ -94,7 +94,7 @@ function _instance:name()
     return self._NAME
 end
 
--- get the language source extensions
+-- get the source extensions
 function _instance:extensions()
 
     -- attempt to get it from cache
@@ -117,25 +117,31 @@ function _instance:extensions()
     return extensions
 end
 
--- get the language source kinds
+-- get the source kinds
 function _instance:sourcekinds()
 
     -- get it
     return self._INFO.sourcekinds
 end
 
--- get the language source flags
+-- get the source flags
 function _instance:sourceflags()
 
     -- get it
     return self._INFO.sourceflags
 end
 
--- get the language target kinds
+-- get the target kinds
 function _instance:targetkinds()
 
     -- get it
     return self._INFO.targetkinds
+end
+
+-- get the named flags
+function _instance:namedflags()
+
+    -- TODO
 end
 
 -- the directory of language
@@ -177,6 +183,7 @@ function language._interpreter()
             -- language.set_xxx
             "language.set_sourcekinds"
         ,   "language.set_sourceflags"
+        ,   "language.set_namedflags"
         }
     }
 

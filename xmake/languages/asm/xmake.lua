@@ -37,6 +37,42 @@ language("asm")
     -- on load
     on_load("load")
 
+    -- set named flags
+    set_namedflags 
+    {
+        compiler =
+        {
+            "config.includedirs"
+        ,   "target.symbols"
+        ,   "target.warnings"
+        ,   "target.optimize:check"
+        ,   "target.vectorexts:check"
+        ,   "target.defines"
+        ,   "target.undefines"
+        ,   "platform.includedirs"
+        ,   "platform.defines"
+        ,   "platform.undefines"
+        }
+    ,   linker =
+        {
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "target.strip"
+        ,   "target.symbols"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        }
+    ,   archiver = 
+        {
+            "target.strip"
+        ,   "target.symbols"
+        }
+    }
+
     -- set menu
     set_menu {
                 config = 
