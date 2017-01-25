@@ -34,7 +34,8 @@ function _apply_vsenv(config, vs)
     -- version => envname
     local version2envname =
     {
-        ["2015"]    = "VS140COMNTOOLS"
+        ["2017"]    = "VS150COMNTOOLS"
+    ,   ["2015"]    = "VS140COMNTOOLS"
     ,   ["2013"]    = "VS120COMNTOOLS"
     ,   ["2012"]    = "VS110COMNTOOLS"
     ,   ["2010"]    = "VS100COMNTOOLS"
@@ -149,7 +150,7 @@ function _check_vs(config)
     -- attempt to check them from the envirnoment variables again
     vs = nil
     if not vs then
-        for _, version in ipairs({"2015", "2013", "2012", "2010", "2008", "2005", "2003", "7.0", "6.0", "5.0", "4.2"}) do
+        for _, version in ipairs({"2017", "2015", "2013", "2012", "2010", "2008", "2005", "2003", "7.0", "6.0", "5.0", "4.2"}) do
 
             -- attempt to check it
             if _check_compiler(config, version) then
