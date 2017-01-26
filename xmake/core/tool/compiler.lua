@@ -123,11 +123,6 @@ function compiler:_addflags_from_config(flags)
     for _, sourceflag in ipairs(self:_sourceflags()) do
         table.join2(flags, config.get(sourceflag))
     end
-
-    -- add the includedirs flags 
-    for _, includedir in ipairs(table.wrap(config.get("includedirs"))) do
-        table.join2(flags, self:includedir(includedir))
-    end
 end
 
 -- add flags from the target 
@@ -138,47 +133,6 @@ function compiler:_addflags_from_target(flags, target)
         table.join2(flags, self:_mapflags(target:get(sourceflag)))
     end
 
-    -- add the symbol flags 
-    if target.symbolfile then
-        local symbolfile = target:symbolfile()
-        for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
-            table.join2(flags, self:symbol(symbol, symbolfile))
-        end
-    end
-
-    -- add the warning flags 
-    for _, warning in ipairs(table.wrap(target:get("warnings"))) do
-        table.join2(flags, self:warning(warning))
-    end
-
-    -- add the optimize flags 
-    table.join2(flags, self:optimize(target:get("optimize") or ""))
-
-    -- add the vector extensions flags 
-    for _, vectorext in ipairs(table.wrap(target:get("vectorexts"))) do
-        table.join2(flags, self:vectorext(vectorext))
-    end
-
-    -- add the language flags 
-    for _, language in ipairs(table.wrap(target:get("languages"))) do
-        table.join2(flags, self:language(language))
-    end
-
-    -- add the includedirs flags 
-    for _, includedir in ipairs(table.wrap(target:get("includedirs"))) do
-        table.join2(flags, self:includedir(includedir))
-    end
-
-    -- add the defines flags 
-    for _, define in ipairs(table.wrap(target:get("defines"))) do
-        table.join2(flags, self:define(define))
-    end
-
-    -- append the undefines flags 
-    for _, undefine in ipairs(table.wrap(target:get("undefines"))) do
-        table.join2(flags, self:undefine(undefine))
-    end
-
     -- for target options? 
     if target.options then
 
@@ -187,16 +141,6 @@ function compiler:_addflags_from_target(flags, target)
 
             -- add the flags from the option
             self:_addflags_from_target(flags, opt)
-
-            -- append the defines flags
-            for _, define in ipairs(table.wrap(opt:get("defines_if_ok"))) do
-                table.join2(flags, self:define(define))
-            end
-
-            -- append the undefines flags 
-            for _, undefine in ipairs(table.wrap(opt:get("undefines_if_ok"))) do
-                table.join2(flags, self:undefine(undefine))
-            end
         end
     end
 end
@@ -207,21 +151,6 @@ function compiler:_addflags_from_platform(flags)
     -- add flags 
     for _, sourceflag in ipairs(self:_sourceflags()) do
         table.join2(flags, platform.get(sourceflag))
-    end
-
-    -- add the includedirs flags
-    for _, includedir in ipairs(table.wrap(platform.get("includedirs"))) do
-        table.join2(flags, self:includedir(includedir))
-    end
-
-    -- add the defines flags 
-    for _, define in ipairs(table.wrap(platform.get("defines"))) do
-        table.join2(flags, self:define(define))
-    end
-
-    -- append the undefines flags
-    for _, undefine in ipairs(table.wrap(platform.get("undefines"))) do
-        table.join2(flags, self:undefine(undefine))
     end
 end
 
@@ -237,6 +166,70 @@ function compiler:_addflags_from_compiler(flags, kind)
         -- add compiler.kind.xxflags
         if kind ~= nil and self:get(kind) ~= nil then
             table.join2(flags, self:get(kind)[sourceflag])
+        end
+    end
+end
+
+-- add flags (named) from the language 
+function compiler:_addflags_from_language(flags, target)
+
+    -- init getters
+    local getters =
+    {
+        config      =   config.get
+    ,   platform    =   platform.get
+    ,   target      =   function (name) return target:get(name) end
+    ,   option      =   function (name)
+
+                            -- only for target (exclude option)
+                            if target.options then
+                                local results = {}
+                                for _, opt in ipairs(target:options()) do
+                                    table.join2(results, table.wrap(opt:get(name)))
+                                end
+                                return results
+                            end
+                        end
+    }
+
+    -- get named flags for compiler
+    for _, flaginfo in ipairs(self:_language():namedflags()["compiler"]) do
+
+        -- get flag info
+        local flagscope     = flaginfo[1]
+        local flagname      = flaginfo[2]
+        local checkstate    = flaginfo[3]
+
+        -- get getter
+        local getter = getters[flagscope]
+        assert(getter)
+
+        -- get api name of tool 
+        --
+        -- .e.g
+        --
+        -- defines => define
+        -- defines_if_ok => define
+        -- ...
+        --
+        local apiname = flagname:split('_')[1]
+        if apiname:endswith("s") then
+            apiname = apiname:sub(1, #apiname - 1)
+        end
+
+        -- map named flag to real flag
+        local mapper = self:_tool()[apiname]
+        if mapper then
+            
+            -- add the flags 
+            for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
+            
+                -- map and check flag
+                local flag = mapper(flagvalue, target)
+                if flag and flag ~= "" and (not checkstate or self:check(flag)) then
+                    table.join2(flags, flag)
+                end
+            end
         end
     end
 end
@@ -326,6 +319,9 @@ function compiler:compflags(target)
     -- add flags from the target 
     self:_addflags_from_target(flags, target)
 
+    -- add flags (named) from language
+    self:_addflags_from_language(flags, target)
+
     -- add flags from the platform 
     self:_addflags_from_platform(flags)
 
@@ -343,78 +339,6 @@ function compiler:compflags(target)
 
     -- get it
     return flags_str, flags 
-end
-
--- make the symbol flag
-function compiler:symbol(level, symbolfile)
-
-    -- make it
-    return self:_tool().symbol(level, symbolfile)
-end
-
--- make the language flag
-function compiler:language(stdname)
-
-    -- make it
-    local flags = self:_tool().language(stdname)
-
-    -- check it
-    if self:check(flags) then
-        return flags
-    end
-
-    -- not support
-    return ""
-end
-
--- make the vector extension flag
-function compiler:vectorext(extension)
-
-    -- make it
-    local flags = self:_tool().vectorext(extension)
-
-    -- check it
-    if self:check(flags) then
-        return flags
-    end
-
-    -- not support
-    return ""
-end
-
--- make the optimize flag
-function compiler:optimize(level)
-
-    -- make it
-    return self:_tool().optimize(level)
-end
-
--- make the warning flag
-function compiler:warning(level)
-
-    -- make it
-    return self:_tool().warning(level)
-end
-
--- make the define flag
-function compiler:define(macro)
-
-    -- make it
-    return self:_tool().define(macro)
-end
-
--- make the undefine flag
-function compiler:undefine(macro)
-
-    -- make it
-    return self:_tool().undefine(macro)
-end
-
--- make the includedir flag
-function compiler:includedir(dir)
-
-    -- make it
-    return self:_tool().includedir(dir)
 end
 
 -- check the given flags 

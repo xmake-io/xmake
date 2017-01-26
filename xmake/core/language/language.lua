@@ -176,7 +176,7 @@ function _instance:namedflags()
             end
 
             -- insert this flag info
-            table.insert(toolinfo, {flagname, checkstate})
+            table.insert(toolinfo, {flagscope, flagname, checkstate})
         end
 
         -- save this tool info
