@@ -77,13 +77,13 @@ function strip(level)
 end
 
 -- make the symbol flag
-function symbol(level, symbolfile)
-
+function symbol(level, target)
+    
     -- debug? generate *.pdb file
     local flags = ""
     if level == "debug" then
-        if symbolfile then
-            flags = "-debug -pdb:" .. symbolfile
+        if target and target.symbolfile then
+            flags = "-debug -pdb:" .. target:symbolfile()
         else
             flags = "-debug"
         end
