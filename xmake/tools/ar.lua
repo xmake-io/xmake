@@ -61,7 +61,7 @@ function strip(level)
 end
 
 -- make the symbol flag
-function symbol(level, symbolfile)
+function symbol(level)
     return ""
 end
 
