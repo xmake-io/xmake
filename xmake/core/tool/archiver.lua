@@ -34,6 +34,7 @@ local string    = require("base/string")
 local option    = require("base/option")
 local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
+local language  = require("language/language")
 local platform  = require("platform/platform")
 local tool      = require("tool/tool")
 
@@ -42,6 +43,13 @@ function archiver:_tool()
 
     -- get it
     return self._TOOL
+end
+
+-- get the named flags
+function archiver:_namedflags()
+
+    -- get it
+    return self._NAMEDFLAGS
 end
 
 -- get the current flag name
@@ -69,6 +77,9 @@ function archiver:_flags(target)
 
     -- add flags from the target 
     self:_addflags_from_target(flags, target)
+
+    -- add flags (named) from language
+    self:_addflags_from_language(flags, target)
 
     -- add flags from the platform 
     self:_addflags_from_platform(flags)
@@ -158,17 +169,6 @@ function archiver:_addflags_from_target(flags, target)
 
     -- add the target flags 
     table.join2(flags, self:_mapflags(target:get(self:_flagname())))
-
-    -- add the strip flags 
-    for _, strip in ipairs(table.wrap(target:get("strip"))) do
-        table.join2(flags, self:strip(strip))
-    end
-
-    -- add the symbol flags 
-    local symbolfile = target:symbolfile()
-    for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
-        table.join2(flags, self:symbol(symbol, symbolfile))
-    end
 end
 
 -- add flags from the platform 
@@ -185,8 +185,73 @@ function archiver:_addflags_from_archiver(flags)
     table.join2(flags, self:get(self:_flagname()))
 end
 
+-- add flags (named) from the language 
+function archiver:_addflags_from_language(flags, target)
+
+    -- init getters
+    local getters =
+    {
+        config      =   config.get
+    ,   platform    =   platform.get
+    ,   target      =   function (name) return target:get(name) end
+    ,   option      =   function (name)
+
+                            -- only for target (exclude option)
+                            if target.options then
+                                local results = {}
+                                for _, opt in ipairs(target:options()) do
+                                    table.join2(results, table.wrap(opt:get(name)))
+                                end
+                                return results
+                            end
+                        end
+    }
+
+    -- get named flags for archiver
+    for _, flaginfo in ipairs(self:_namedflags()) do
+
+        -- get flag info
+        local flagscope     = flaginfo[1]
+        local flagname      = flaginfo[2]
+        local checkstate    = flaginfo[3]
+
+        -- get getter
+        local getter = getters[flagscope]
+        assert(getter)
+
+        -- get api name of tool 
+        --
+        -- .e.g
+        --
+        -- defines => define
+        -- defines_if_ok => define
+        -- ...
+        --
+        local apiname = flagname:split('_')[1]
+        if apiname:endswith("s") then
+            apiname = apiname:sub(1, #apiname - 1)
+        end
+
+        -- map named flag to real flag
+        local mapper = self:_tool()[apiname]
+        if mapper then
+            
+            -- add the flags 
+            for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
+            
+                -- map and check flag
+                local flag = mapper(flagvalue, target)
+                if flag and flag ~= "" and (not checkstate or self:check(flag)) then
+                    table.join2(flags, flag)
+                end
+            end
+        end
+    end
+end
+
+
 -- load the archiver 
-function archiver.load()
+function archiver.load(sourcekinds)
 
     -- get it directly from cache dirst
     if archiver._INSTANCE then
@@ -201,9 +266,29 @@ function archiver.load()
     if not result then 
         return nil, errors
     end
-        
-    -- save tool
     instance._TOOL = result
+ 
+    -- load the named flags of archiver 
+    local namedflags = {}
+    local namedflags_exists = {}
+    for _, sourcekind in ipairs(sourcekinds) do
+
+        -- load language 
+        result, errors = language.load_sk(sourcekind)
+        if not result then 
+            return nil, errors
+        end
+
+        -- merge named flags
+        for _, flaginfo in ipairs(table.wrap(result:namedflags()["archiver"])) do
+            local key = flaginfo[1] .. flaginfo[2]
+            if not namedflags_exists[key] then
+                table.insert(namedflags, flaginfo)
+                namedflags_exists[key] = flaginfo
+            end
+        end
+    end
+    instance._NAMEDFLAGS = namedflags
 
     -- init flag name
     instance._FLAGNAME = "arflags"
@@ -246,20 +331,6 @@ function archiver:archivecmd(objectfiles, targetfile, target)
 
     -- get it
     return self:_tool().archivecmd(table.concat(table.wrap(objectfiles), " "), targetfile, flags or "")
-end
-
--- make the strip flag
-function archiver:strip(level)
-
-    -- make it
-    return self:_tool().strip(level)
-end
-
--- make the symbol flag
-function archiver:symbol(level, symbolfile)
-
-    -- make it
-    return self:_tool().symbol(level, symbolfile)
 end
 
 -- check the given flags 

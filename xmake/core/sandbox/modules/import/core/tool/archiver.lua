@@ -34,7 +34,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_core_tool_archiver.archivecmd(objectfiles, targetfile, target)
  
     -- get the archiver instance
-    local instance, errors = archiver.load()
+    local instance, errors = archiver.load(target:sourcekinds())
     if not instance then
         raise(errors)
     end
@@ -47,7 +47,7 @@ end
 function sandbox_core_tool_archiver.archive(objectfiles, targetfile, target)
  
     -- get the archiver instance
-    local instance, errors = archiver.load()
+    local instance, errors = archiver.load(target:sourcekinds())
     if not instance then
         raise(errors)
     end
