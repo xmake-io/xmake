@@ -31,6 +31,9 @@ language("golang")
     -- set source file flags
     set_sourceflags {go = "goflags"}
 
+    -- set linker kinds (linker => source kinds)
+    set_linkerkinds {go = {"go", "cc", "cxx", "as"}}
+
     -- set target kinds
     set_targetkinds("binary", "static", "shared")
 
