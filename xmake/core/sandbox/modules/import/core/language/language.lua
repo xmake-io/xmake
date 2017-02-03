@@ -50,6 +50,13 @@ function sandbox_core_language.sourceflags()
     return language.sourceflags()
 end
 
+-- get the linker kinds of all languages
+function sandbox_core_language.linkerkinds()
+
+    -- get it
+    return language.linkerkinds()
+end
+
 -- load the language from the given name (c++, objc++, swift, golang, asm, ...)
 function sandbox_core_language.load(name)
 
@@ -100,6 +107,19 @@ function sandbox_core_language.sourcekind_of(sourcefile)
 
     -- ok
     return sourcekind
+end
+
+-- get linker kind of the source kinds
+function sandbox_core_language.linkerkind_of(sourcekinds)
+
+    -- get it
+    local linkerkind, errors = language.linkerkind_of(sourcekinds)
+    if not linkerkind then
+        raise(errors)
+    end
+
+    -- ok
+    return linkerkind
 end
 
 -- return module
