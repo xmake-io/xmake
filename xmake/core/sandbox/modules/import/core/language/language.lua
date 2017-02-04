@@ -110,10 +110,10 @@ function sandbox_core_language.sourcekind_of(sourcefile)
 end
 
 -- get linker kind of the source kinds
-function sandbox_core_language.linkerkind_of(sourcekinds)
+function sandbox_core_language.linkerkind_of(targetkind, sourcekinds)
 
     -- get it
-    local linkerkind, errors = language.linkerkind_of(sourcekinds)
+    local linkerkind, errors = language.linkerkind_of(targetkind, sourcekinds)
     if not linkerkind then
         raise(errors)
     end

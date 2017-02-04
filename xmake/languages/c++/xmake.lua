@@ -31,11 +31,8 @@ language("c++")
     -- set source file flags
     set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}   
 
-    -- set linker kinds (linker => source kinds)
-    set_linkerkinds {ld = {"cc", "cxx"}}
-
     -- set target kinds
-    set_targetkinds("binary", "static", "shared")
+    set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
 
     -- on load
     on_load("load")

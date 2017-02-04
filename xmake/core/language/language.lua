@@ -131,30 +131,11 @@ function _instance:sourceflags()
     return self._INFO.sourceflags
 end
 
--- get the linker kinds
-function _instance:linkerkinds()
-
-    -- attempt to get it from cache first
-    if self._LINKERKINDS then
-        return self._LINKERKINDS
-    end
-
-    -- merge all for each language
-    local linkerkinds = {}
-    for linkerkind, sourcekinds in pairs(table.wrap(self._INFO.linkerkinds)) do
-        for _, sourcekind in ipairs(sourcekinds) do
-            linkerkinds[sourcekind] = table.join(linkerkinds[sourcekind] or {}, linkerkind)
-        end
-    end
-
-    -- cache this results
-    self._LINKERKINDS = linkerkinds
-
-    -- ok?
-    return linkerkinds
-end
-
--- get the target kinds
+-- get the target kinds (targetkind => linkerkind)
+--
+-- .e.g
+-- {binary = "ld", static = "ar", shared = "sh"}
+--
 function _instance:targetkinds()
 
     -- get it
@@ -239,7 +220,6 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_menu"
-        ,   "language.set_targetkinds"
         }
     ,   script =
         {
@@ -253,7 +233,7 @@ function language._interpreter()
             "language.set_namedflags"
         ,   "language.set_sourcekinds"
         ,   "language.set_sourceflags"
-        ,   "language.set_linkerkinds"
+        ,   "language.set_targetkinds"
         }
     }
 
@@ -540,47 +520,6 @@ function language.sourceflags()
     return sourceflags
 end
 
--- get language linker kinds (sourcekind => linkerkinds)
---
--- .e.g
---
--- {
---      cc  = {"ld", "go"}
--- ,    mm  = {"ld"}
--- ,    go  = {"go"}
--- ,    sc  = {"ld"}
--- ,    cxx = {"ld", "go"}
--- ,    as  = {"ld", "go"}
--- }
---
-function language.linkerkinds()
-
-    -- attempt to get it from cache
-    if language._LINKERKINDS then
-        return language._LINKERKINDS
-    end
-
-    -- load all languages
-    local languages, errors = language.load()
-    if not languages then
-        os.raise(errors)
-    end
-
-    -- merge all for each language
-    local results = {}
-    for name, instance in pairs(languages) do
-        for sourcekind, linkerkinds in pairs(instance:linkerkinds()) do
-            results[sourcekind] = table.unique(table.join(results[sourcekind] or {}, linkerkinds))
-        end
-    end
-
-    -- cache it
-    language._LINKERKINDS = results
-
-    -- ok
-    return results
-end
-
 -- get source kind of the source file name
 function language.sourcekind_of(sourcefile)
 
@@ -603,29 +542,52 @@ function language.sourcekind_of(sourcefile)
     return sourcekind
 end
 
--- get linker kind of the source kinds
-function language.linkerkind_of(sourcekinds)
+-- get linker kind of the target kind and the source kinds
+function language.linkerkind_of(targetkind, sourcekinds)
 
-    -- get linkerkinds
-    local linkerkinds = language.linkerkinds()
+    -- load linkerkinds
+    local linkerkinds = language._LINKERKINDS
+    if not linkerkinds then
 
-    -- compute the scores of linker kinds
+        -- load all languages
+        local languages, errors = language.load()
+        if not languages then
+            return nil, errors
+        end
+
+        -- make linker kinds
+        linkerkinds = {}
+        for name, instance in pairs(languages) do
+            for sourcekind, _ in pairs(instance:sourcekinds()) do
+                for _targetkind, linkerkind in pairs(instance:targetkinds()) do
+                    linkerkinds[_targetkind] = linkerkinds[_targetkind] or {}
+                    linkerkinds[_targetkind][sourcekind] = linkerkind
+                end
+            end
+        end
+
+        -- cache it
+        language._LINKERKINDS = linkerkinds
+    end
+
+    -- compute the scores of the linker kinds
     local linkerscores = {}
     for _, sourcekind in ipairs(sourcekinds) do
-        for _, linkerkind in ipairs(table.wrap(linkerkinds[sourcekind])) do
+        local linkerkind = linkerkinds[targetkind][sourcekind]
+        if linkerkind then
             linkerscores[linkerkind] = (linkerscores[linkerkind] or 0) + 1
         end
     end
 
-    -- get the linker kind with max score
+    -- select the suitable linker kind
     for linkerkind, linkerscore in pairs(linkerscores) do
         if #sourcekinds == linkerscore then
             return linkerkind
         end
     end
 
-    -- ok
-    return nil, string.format("no suitable linker for '%s'", table.concat(sourcekinds, " "))
+    -- not suitable linker
+    return nil, string.format("no suitable linker for %s.{%s}", targetkind, table.concat(sourcekinds, ' '))
 end
 
 -- return module

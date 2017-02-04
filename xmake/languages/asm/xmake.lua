@@ -31,11 +31,8 @@ language("asm")
     -- set source file flags
     set_sourceflags {as = "asflags"}
 
-    -- set linker kinds (linker => source kinds)
-    set_linkerkinds {ld = {"as"}}
-
     -- set target kinds
-    set_targetkinds("binary", "static", "shared")
+    set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
 
     -- on load
     on_load("load")
