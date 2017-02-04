@@ -19,7 +19,7 @@
 * Modify license to Apache License 2.0
 * Remove some binary tools
 * Remove install.bat script and provide nsis install package
-* Rewrite documents using [docute](https://github.com/egoist/docute)
+* Rewrite [documents](http://www.xmake.io/#/home/) using [docute](https://github.com/egoist/docute)
 
 ### Bugs fixed
 
@@ -209,7 +209,7 @@
 * 修改license，使用更加宽松的Apache License 2.0
 * 移除一些二进制工具文件
 * 移除install.bat脚本，提供windows nsis安装包支持
-* 使用[docute](https://github.com/egoist/docute)重写文档，提供更加完善的文档支持
+* 使用[docute](https://github.com/egoist/docute)重写[文档](http://www.xmake.io/#/zh/)，提供更加完善的文档支持
 
 ### Bugs修复
 
