@@ -58,7 +58,7 @@ function make()
 
         -- add targetkinds
         if filecount > 0 then
-            for _, targetkind in ipairs(instance:targetkinds()) do
+            for targetkind, _ in pairs(instance:targetkinds()) do
                 targetkinds[targetkind] = true
             end
         end

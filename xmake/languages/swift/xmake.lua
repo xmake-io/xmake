@@ -31,11 +31,8 @@ language("swift")
     -- set source file flags
     set_sourceflags {sc = "scflags"}
 
-    -- set linker kinds (linker => source kinds)
-    set_linkerkinds {ld = {"sc"}}
-
     -- set target kinds
-    set_targetkinds("binary")
+    set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
 
     -- on load
     on_load("load")

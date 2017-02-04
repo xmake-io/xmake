@@ -34,103 +34,17 @@ local string    = require("base/string")
 local option    = require("base/option")
 local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
+local language  = require("language/language")
 local platform  = require("platform/platform")
 local tool      = require("tool/tool")
 local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
-
--- get the current tool
-function linker:_tool()
-
-    -- get it
-    return self._TOOL
-end
 
 -- get the current flag name
 function linker:_flagname()
 
     -- get it
     return self._FLAGNAME
-end
-
--- get the link kind of the target kind
-function linker._kind_of_target(targetkind, sourcekinds)
-
-    -- link the target of golang objects
-    if sourcekinds then
-        for _, sourcekind in ipairs(sourcekinds) do
-            if sourcekind == "go" then
-                return "go"
-            end
-        end
-    end
-
-    -- the kinds
-    local kinds = 
-    {
-        ["binary"] = "ld"
-    ,   ["shared"] = "sh"
-    }
-
-    -- get kind
-    return kinds[targetkind]
-end
-
--- map gcc flag to the given linker flag
-function linker:_mapflag(flag, mapflags)
-
-    -- attempt to map it directly
-    local flag_mapped = mapflags[flag]
-    if flag_mapped then
-        return flag_mapped
-    end
-
-    -- find and replace it using pattern
-    for k, v in pairs(mapflags) do
-        local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) return v end)
-        if flag_mapped and count ~= 0 then
-            return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
-        end
-    end
-
-    -- check it 
-    if self:check(flag) then
-        return flag
-    end
-end
-
--- map gcc flags to the given linker flags
-function linker:_mapflags(flags)
-
-    -- wrap flags first
-    flags = table.wrap(flags)
-
-    -- done
-    local results = {}
-    local mapflags = self:get("mapflags")
-    if mapflags then
-
-        -- map flags
-        for _, flag in pairs(flags) do
-            local flag_mapped = self:_mapflag(flag, mapflags)
-            if flag_mapped then
-                table.insert(results, flag_mapped)
-            end
-        end
-
-    else
-
-        -- check flags
-        for _, flag in pairs(flags) do
-            if self:check(flag) then
-                table.insert(results, flag)
-            end
-        end
-
-    end
-
-    -- ok?
-    return results
 end
 
 -- add flags from the configure 
@@ -267,27 +181,25 @@ end
 function linker.load(targetkind, sourcekinds)
 
     -- get the linker kind
-    local kind = linker._kind_of_target(targetkind, sourcekinds)
-    if not kind then
-        return nil, string.format("unknown target kind: %s", targetkind)
+    local linkerkind, errors = language.linkerkind_of(targetkind, sourcekinds)
+    if not linkerkind then
+        return nil, errors
     end
 
     -- get it directly from cache dirst
     linker._INSTANCES = linker._INSTANCES or {}
-    if linker._INSTANCES[kind] then
-        return linker._INSTANCES[kind]
+    if linker._INSTANCES[linkerkind] then
+        return linker._INSTANCES[linkerkind]
     end
 
     -- new instance
-    local instance = table.inherit(linker)
+    local instance = table.inherit(linker, builder)
 
     -- load the linker tool from the source file type
-    local result, errors = tool.load(kind)
+    local result, errors = tool.load(linkerkind)
     if not result then 
         return nil, errors
     end
-        
-    -- save tool
     instance._TOOL = result
 
     -- save flagname
@@ -297,25 +209,18 @@ function linker.load(targetkind, sourcekinds)
     ,   sh = "shflags"
     ,   go = "goflags"
     }
-    instance._FLAGNAME = flagname[kind]
+    instance._FLAGNAME = flagname[linkerkind]
 
     -- check
     if not instance._FLAGNAME then
-        return nil, string.format("unknown linker for kind: %s", kind)
+        return nil, string.format("unknown linker for kind: %s", linkerkind)
     end
 
     -- save this instance
-    linker._INSTANCES[kind] = instance
+    linker._INSTANCES[linkerkind] = instance
 
     -- ok
     return instance
-end
-
--- get properties of the tool
-function linker:get(name)
-
-    -- get it
-    return self:_tool().get(name)
 end
 
 -- link the target file
@@ -414,41 +319,6 @@ function linker:linkdir(dir)
 
     -- make it
     return self:_tool().linkdir(dir)
-end
-
--- check the given flags 
-function linker:check(flags)
-
-    -- the linker tool
-    local ltool = self:_tool()
-
-    -- no check?
-    if not ltool.check then
-        return true
-    end
-
-    -- have been checked? return it directly
-    self._CHECKED = self._CHECKED or {}
-    if self._CHECKED[flags] ~= nil then
-        return self._CHECKED[flags]
-    end
-
-    -- check it
-    local ok, errors = sandbox.load(ltool.check, flags)
-
-    -- trace
-    if option.get("verbose") then
-        utils.cprint("checking for the flags %s ... %s", flags, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok then
-            utils.cprint("${red}" .. errors or "")
-        end
-    end
-
-    -- save the checked result
-    self._CHECKED[flags] = ok
-
-    -- ok?
-    return ok
 end
 
 -- return module
