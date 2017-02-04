@@ -1,0 +1,5 @@
+---
+nav: zh
+search: zh
+---
+
