@@ -18,7 +18,13 @@ self.$config = {
         title: 'Plugins', path: '/plugins'
       },
       {
-        title: 'Api Manual', path: '/apis'
+        title: 'Manual', path: '/manual'
+      },
+      {
+        title: 'Articles', path: '/articles'
+      },
+      {
+        title: 'Blog', path: 'http://www.tboox.org'
       },
       {
         title: '中文', type: 'dropdown', items: langs, exact: true
@@ -32,7 +38,13 @@ self.$config = {
         title: '插件', path: '/zh/plugins'
       },
       {
-        title: 'Api手册', path: '/zh/apis'
+        title: '手册', path: '/zh/manual'
+      },
+      {
+        title: '文章', path: '/zh/articles'
+      },
+      {
+        title: '博客', path: 'http://www.tboox.org/cn'
       },
       {
         title: 'English', type: 'dropdown', items: langs, exact: true
