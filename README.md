@@ -11,7 +11,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 If you want to known more, please refer to:
 
-* [Documents](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
+* [Documents](http://xmake.io/#/home)
 * [Github](https://github.com/waruqi/xmake)
 * [HomePage](http://www.xmake.io)
 

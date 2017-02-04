@@ -17,7 +17,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 如果你想要了解更多，请参考：
 
-* [在线文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
+* [在线文档](http://xmake.io/#/zh/)
 * [在线源码](https://github.com/waruqi/xmake)
 * [项目主页](http://www.xmake.io/cn)
 

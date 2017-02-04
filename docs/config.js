@@ -4,7 +4,7 @@ var langs = [
 ]
 
 self.$config = {
-    landing: '/landing/_site/index.html',
+    landing: true,
     repo: 'tboox/xmake',
     twitter: 'waruqi',
     url: 'http://xmake.io',
