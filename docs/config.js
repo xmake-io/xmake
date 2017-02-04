@@ -21,9 +21,6 @@ self.$config = {
         title: 'Manual', path: '/manual'
       },
       {
-        title: 'Articles', path: '/articles'
-      },
-      {
         title: 'Blog', path: 'http://www.tboox.org'
       },
       {
@@ -39,9 +36,6 @@ self.$config = {
       },
       {
         title: '手册', path: '/zh/manual'
-      },
-      {
-        title: '文章', path: '/zh/articles'
       },
       {
         title: '博客', path: 'http://www.tboox.org/cn'
