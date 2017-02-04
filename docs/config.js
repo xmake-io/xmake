@@ -27,7 +27,7 @@ self.$config = {
         title: 'Blog', path: 'http://www.tboox.org'
       },
       {
-        title: '中文', type: 'dropdown', items: langs, exact: true
+        title: 'English', type: 'dropdown', items: langs, exact: true
       }
     ],
     'zh': [
@@ -47,7 +47,7 @@ self.$config = {
         title: '博客', path: 'http://www.tboox.org/cn'
       },
       {
-        title: 'English', type: 'dropdown', items: langs, exact: true
+        title: '中文', type: 'dropdown', items: langs, exact: true
       }
     ]
   },
