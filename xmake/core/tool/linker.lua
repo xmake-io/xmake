@@ -36,6 +36,7 @@ local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
 local tool      = require("tool/tool")
+local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
 
 -- get the current tool
