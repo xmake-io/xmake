@@ -33,17 +33,11 @@ local table     = require("base/table")
 local string    = require("base/string")
 local option    = require("base/option")
 local tool      = require("tool/tool")
+local builder   = require("tool/builder")
 local config    = require("project/config")
 local sandbox   = require("sandbox/sandbox")
 local language  = require("language/language")
 local platform  = require("platform/platform")
-
--- get the tool of compiler
-function compiler:_tool()
-
-    -- get it
-    return self._TOOL
-end
 
 -- get the language of compiler
 function compiler:_language()
@@ -57,63 +51,6 @@ function compiler:_sourceflags()
 
     -- get it
     return self._SOURCEFLAGS
-end
-
--- map gcc flag to the given compiler flag
-function compiler:_mapflag(flag, mapflags)
-
-    -- attempt to map it directly
-    local flag_mapped = mapflags[flag]
-    if flag_mapped then
-        return flag_mapped
-    end
-
-    -- find and replace it using pattern
-    for k, v in pairs(mapflags) do
-        local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) return v end)
-        if flag_mapped and count ~= 0 then
-            return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
-        end
-    end
-
-    -- check it 
-    if self:check(flag) then
-        return flag
-    end
-end
-
--- map gcc flags to the given compiler flags
-function compiler:_mapflags(flags)
-
-    -- wrap flags first
-    flags = table.wrap(flags)
-
-    -- done
-    local results = {}
-    local mapflags = self:get("mapflags")
-    if mapflags then
-
-        -- map flags
-        for _, flag in pairs(flags) do
-            local flag_mapped = self:_mapflag(flag, mapflags)
-            if flag_mapped then
-                table.insert(results, flag_mapped)
-            end
-        end
-
-    else
-
-        -- check flags
-        for _, flag in pairs(flags) do
-            if self:check(flag) then
-                table.insert(results, flag)
-            end
-        end
-
-    end
-
-    -- ok?
-    return results
 end
 
 -- add flags from the configure 
@@ -170,70 +107,6 @@ function compiler:_addflags_from_compiler(flags, kind)
     end
 end
 
--- add flags (named) from the language 
-function compiler:_addflags_from_language(flags, target)
-
-    -- init getters
-    local getters =
-    {
-        config      =   config.get
-    ,   platform    =   platform.get
-    ,   target      =   function (name) return target:get(name) end
-    ,   option      =   function (name)
-
-                            -- only for target (exclude option)
-                            if target.options then
-                                local results = {}
-                                for _, opt in ipairs(target:options()) do
-                                    table.join2(results, table.wrap(opt:get(name)))
-                                end
-                                return results
-                            end
-                        end
-    }
-
-    -- get named flags for compiler
-    for _, flaginfo in ipairs(self:_language():namedflags()["compiler"]) do
-
-        -- get flag info
-        local flagscope     = flaginfo[1]
-        local flagname      = flaginfo[2]
-        local checkstate    = flaginfo[3]
-
-        -- get getter
-        local getter = getters[flagscope]
-        assert(getter)
-
-        -- get api name of tool 
-        --
-        -- .e.g
-        --
-        -- defines => define
-        -- defines_if_ok => define
-        -- ...
-        --
-        local apiname = flagname:split('_')[1]
-        if apiname:endswith("s") then
-            apiname = apiname:sub(1, #apiname - 1)
-        end
-
-        -- map named flag to real flag
-        local mapper = self:_tool()[apiname]
-        if mapper then
-            
-            -- add the flags 
-            for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
-            
-                -- map and check flag
-                local flag = mapper(flagvalue, target)
-                if flag and flag ~= "" and (not checkstate or self:check(flag)) then
-                    table.join2(flags, flag)
-                end
-            end
-        end
-    end
-end
-
 -- load the compiler from the given source kind
 function compiler.load(sourcekind)
 
@@ -247,7 +120,7 @@ function compiler.load(sourcekind)
     end
 
     -- new instance
-    local instance = table.inherit(compiler)
+    local instance = table.inherit(compiler, builder)
 
     -- load the compiler tool from the source kind
     local result, errors = tool.load(sourcekind)
@@ -263,7 +136,10 @@ function compiler.load(sourcekind)
     end
     instance._LANGUAGE = result
 
-    -- get source flags
+    -- init named flags
+    instance._NAMEDFLAGS = result:namedflags()["compiler"]
+
+    -- init source flags
     instance._SOURCEFLAGS = table.wrap(result:sourceflags()[sourcekind])
 
     -- save this instance
@@ -271,13 +147,6 @@ function compiler.load(sourcekind)
 
     -- ok
     return instance
-end
-
--- get properties of the tool
-function compiler:get(name)
-
-    -- get it
-    return self:_tool().get(name)
 end
 
 -- compile the source file
@@ -339,41 +208,6 @@ function compiler:compflags(target)
 
     -- get it
     return flags_str, flags 
-end
-
--- check the given flags 
-function compiler:check(flags)
-
-    -- the compiler tool
-    local ctool = self:_tool()
-
-    -- no check?
-    if not ctool.check then
-        return true
-    end
-
-    -- have been checked? return it directly
-    self._CHECKED = self._CHECKED or {}
-    if self._CHECKED[flags] ~= nil then
-        return self._CHECKED[flags]
-    end
-
-    -- check it
-    local ok, errors = sandbox.load(ctool.check, flags)
-
-    -- trace
-    if option.get("verbose") then
-        utils.cprint("checking for the flags %s ... %s", flags, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok then
-            utils.cprint("${red}" .. errors or "")
-        end
-    end
-
-    -- save the checked result
-    self._CHECKED[flags] = ok
-
-    -- ok?
-    return ok
 end
 
 -- return module

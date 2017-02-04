@@ -322,16 +322,16 @@ function table.unique(array)
 end
 
 -- inherit interfaces and create a new instance
-function table.inherit(self)
-
-    -- check
-    assert(self)
+function table.inherit(...)
 
     -- init instance
+    local classes = {...}
     local instance = {}
-    for k, v in pairs(self) do
-        if type(v) == "function" then
-            instance[k] = v
+    for _, clasz in ipairs(classes) do
+        for k, v in pairs(clasz) do
+            if type(v) == "function" then
+                instance[k] = v
+            end
         end
     end
 
@@ -340,15 +340,18 @@ function table.inherit(self)
 end
 
 -- inherit interfaces from the given class
-function table.inherit2(self, clasz)
+function table.inherit2(self, ...)
 
     -- check
-    assert(self and clasz)
+    assert(self)
 
     -- init instance
-    for k, v in pairs(clasz) do
-        if type(v) == "function" and self[k] == nil then
-            self[k] = v
+    local classes = {...}
+    for _, clasz in ipairs(classes) do
+        for k, v in pairs(clasz) do
+            if type(v) == "function" and self[k] == nil then
+                self[k] = v
+            end
         end
     end
 
