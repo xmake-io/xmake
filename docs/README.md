@@ -6,231 +6,251 @@ search: english
 
 [![Build Status](https://api.travis-ci.org/tboox/xmake.svg?branch=master)](https://travis-ci.org/tboox/xmake) [![Build status](https://ci.appveyor.com/api/projects/status/ry9oa2mxrj8hk613/branch/master?svg=true)](https://ci.appveyor.com/project/waruqi/xmake/branch/master) [![Join the chat at https://gitter.im/waruqi/tboox](https://badges.gitter.im/waruqi/tboox.svg)](https://gitter.im/waruqi/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate)
 
-## Introduction ([中文](/README_zh.md))
+## Introduction 
 
 xmake is a make-like build utility based on lua. 
 
 The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
-If you want to known more, please refer to:
+## Installation
 
-* [Documents](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
-* [Github](https://github.com/waruqi/xmake)
-* [HomePage](http://www.xmake.io)
+#### Windows
 
-#### Features
+1. Download xmake installer ([Releases](https://github.com/tboox/xmake/releases))
+2. Run xmake-[version].exe
 
-- Create projects and supports many project templates
-- Support c/c++, objc/c++, swift and assembly language
-- Automatically probe the host environment and configure project 
-- Provide some built-in actions (config, build, package, clean, install, uninstall and run)
-- Provide some built-in plugins (doxygen, macro, project) 
-- Provide some built-in macros (batch packaging)
-- Describe the project file using lua script, more flexible and simple
-- Custom packages, platforms, plugins, templates, tasks, macros, options and actions
-- Do not generate makefile and build project directly
-- Support multitasking with argument: -j 
-- Check includes dependence automatically
-- Run and debug the target program
-- Generate IDE project file
-
-#### Actions
-
-- config: Configure project before building. 
-- global: Configure the global options for xmake.
-- build: Build project.
-- clean: Remove all binary and temporary files.
-- create: Create a new project using template.
-- package: Package the given target
-- install: Install the project binary files.
-- uninstall: Uninstall the project binary files.
-- run: Run the project target.
-
-#### Plugins
-
-- The doxygen plugin: Make doxygen document from source codes
-- The macro plugin: Record and playback commands 
-- The hello plugin: A simple plugin demo to show 'hello xmake!'
-- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2017)
-
-#### Languages
-
-- C/C++
-- Objc/Objc++
-- Swift
-- Assembly
-
-#### Platforms
-
-- Windows (x86, x64, amd64, x86_amd64)
-- Macosx (i386, x86_64)
-- Linux (i386, x86_64, cross-toolchains ...)
-- Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
-- iPhoneos (armv7, armv7s, arm64, i386, x86_64)
-- Watchos (armv7k, i386)
-- Mingw (i386, x86_64)
-
-#### Todolist
-
-- Manage package and dependencies
-- Download package automatically
-- Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
-- Implement more plugins(.e.g generate .deb, .rpm package)
-
-#### Examples
-
-[![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io)
-
-Create a c++ console project:
+#### MacOS
 
 ```bash
-    xmake create -l c++ -t 1 console
- or xmake create --language=c++ --template=1 console
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ sudo brew install xmake
 ```
 
-Project xmakefile: xmake.lua
+#### Linux
+
+```bash
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+$ sudo brew install xmake
+```
+
+#### Compilation
+
+```bash
+$ git clone git@github.com:waruqi/xmake.git
+$ cd ./xmake
+$ sudo ./install
+```
+
+## Quick Start
+
+![UsageDemo](http://tboox.org/static/img/xmake/usage_demo.gif)
+
+#### Create Empty Project
+
+```bash
+$ xmake create -P ./hello
+```
+
+And xmake will generate some files:
+
+```
+hello
+├── src
+│   └── main.c
+└── xmake.lua
+```
+
+It is a simple console program only for printing `hello xmake!`
+
+The content of `xmake.lua` is very simple:
 
 ```lua
-target("console")
+target("hello")
     set_kind("binary")
     add_files("src/*.c") 
 ```
 
-Configure project:
+<p class="tip">
+    If you want to known more options, please run: `xmake create --help`
+</p>
 
-This is optional, if you compile the targets only for linux, macosx and windows and the default compilation mode is release.
-
-```bash
-   xmake f -p iphoneos -m debug
-or xmake f --plat=macosx --arch=x86_64
-or xmake f -p windows
-or xmake config --plat=iphoneos --mode=debug
-or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-or xmake config -p linux -a i386
-or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
-or xmake config -p mingw --sdk=/mingwsdk
-or xmake config --help
-```
-
-Compile project：
+#### Build Project
 
 ```bash
-   xmake
-or xmake -r
-or xmake --rebuild
+$ xmake
 ```
 
-Run target：
+#### Run Program
 
 ```bash
-   xmake r console
-or xmake run console
+$ xmake run hello
 ```
 
-Debug target：
+#### Debug Program
 
 ```bash
-   xmake r -d console
-or xmake run -d console
+$ xmake run -d hello 
 ```
 
-Package all：
+It will start the debugger (.e.g lldb, gdb, windbg, vsjitdebugger, ollydbg ..) to load our program.
 
 ```bash
-   xmake p
-or xmake package
-or xmake package console
-or xmake package -o /tmp
-or xmake package --output=/tmp
+[lldb]$target create "build/hello"
+Current executable set to 'build/hello' (x86_64).
+[lldb]$b main
+Breakpoint 1: where = hello`main, address = 0x0000000100000f50
+[lldb]$r
+Process 7509 launched: '/private/tmp/hello/build/hello' (x86_64)
+Process 7509 stopped
+* thread #1: tid = 0x435a2, 0x0000000100000f50 hello`main, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+    frame #0: 0x0000000100000f50 hello`main
+hello`main:
+->  0x100000f50 <+0>:  pushq  %rbp
+    0x100000f51 <+1>:  movq   %rsp, %rbp
+    0x100000f54 <+4>:  leaq   0x2b(%rip), %rdi          ; "hello world!"
+    0x100000f5b <+11>: callq  0x100000f64               ; symbol stub for: puts
+[lldb]$
 ```
 
-Package all archs using macro:
-   
-```bash
-   xmake m package 
-or xmake m package -p iphoneos
-or xmake m package -p macosx -f "-m debug" -o /tmp/
-or xmake m package --help
-```
+<p class="tip">
+    You can also use short command option, for exmaple: `xmake r` or `xmake run`
+</p>
 
-Install targets：
+## Configuration
 
-```bash
-   xmake i
-or xmake install
-or xmake install console
-or xmake install -o /tmp
-or xmake install --output=/tmp
-```
+### Target Platforms
 
-If you need known more detailed usage，please refer to [documents](https://github.com/waruqi/xmake/wiki/documents)
-or run:
+#### Current Host
 
 ```bash
-   xmake -h
-or xmake --help
-or xmake config --help
-or xmake package --help
-or xmake macro --help
-...
+$ xmake
 ```
 
-The simple xmake.lua file:
+<p class="tip">
+    XMake will detect the current host platform automatically and build project.
+</p>
 
-```c
--- the debug mode
-if is_mode("debug") then
-    
-    -- enable the debug symbols
-    set_symbols("debug")
+#### Linux
 
-    -- disable optimization
-    set_optimize("none")
-end
-
--- the release mode
-if is_mode("release") then
-
-    -- set the symbols visibility: hidden
-    set_symbols("hidden")
-
-    -- enable fastest optimization
-    set_optimize("fastest")
-
-    -- strip all symbols
-    set_strip("all")
-end
-
--- add target
-target("test")
-
-    -- set kind
-    set_kind("static")
-
-    -- add files
-    add_files("src/*.c") 
+```bash
+$ xmake f -p linux [-a i386|x86_64]
+$ xmake
 ```
 
-If you want to know more, please refer to:
+#### Android
 
-#### Documents
+```bash
+$ xmake f -p android --ndk=~/files/android-ndk-r10e/ [-a armv5te|armv6|armv7-a|armv8-a|arm64-v8a]
+$ xmake
+```
 
-* [Documents](https://github.com/waruqi/xmake/wiki/documents)
-* [Codes](https://github.com/waruqi/xmake)
+#### iPhoneOS
 
-#### Projects
+```bash
+$ xmake f -p iphoneos [-a armv7|armv7s|arm64|i386|x86_64]
+$ xmake
+```
 
-Some projects using xmake:
+#### Windows
 
-* [tbox](https://github.com/waruqi/tbox)
-* [gbox](https://github.com/waruqi/gbox)
-* [libsvx](https://github.com/caikelun/libsvx)
-* [more](https://github.com/waruqi/xmake/wiki/xmake-projects)
+```bash
+$ xmake f -p windows [-a x86|x64]
+$ xmake
+```
 
-#### Contacts
+#### Mingw
 
-* Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
-* Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)
-* Community：[TBOOX Open Source Community](http://www.tboox.org/forum)
+```bash
+$ xmake f -p mingw --sdk=/usr/local/i386-mingw32-4.3.0/ [-a i386|x86_64]
+$ xmake
+``` 
+
+#### Apple WatchOS
+
+```bash
+$ xmake f -p watchos [-a i386|armv7k]
+$ xmake
+```
+
+#### Cross Compilation
+
+```bash
+$ xmake f -p linux --sdk=/usr/local/arm-linux-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
+$ xmake
+``` 
+
+<p class="tip">
+    You can use short or long command option, for exmaple: <br>
+    `xmake f` or `xmake config`.<br>
+    `xmake f -p linux` or `xmake config --plat=linux`.<br>
+    `xmake f -p linux -a i386` or `xmake config --plat=linux --arch=i386`.<br>
+    <br>
+    And if you want to known more options, please run: `xmake f --help`
+</p>
+
+### Global Configuration
+
+You can save to the global configuration for simplfying operation.
+
+For example:
+
+```bash
+$ xmake g --ndk=~/files/android-ndk-r10e/
+```
+
+Now, we config and build project for android again.
+
+```bash
+$ xmake f -p android
+$ xmake
+```
+
+<p class="tip">
+    You can use short or long command option, for exmaple: `xmake g` or `xmake global`.<br>
+</p>
+
+### Clean Configuration
+
+We can clean all cached configuration and re-configure projecct.
+
+```bash
+$ xmake f -c
+$ xmake
+```
+
+or 
+
+```bash
+$ xmake f -p iphoneos -c
+$ xmake
+```
+
+## FAQ
+
+#### How to get verbose command-line arguments info?
+
+Get the help info of the main command.
+
+```bash
+$ xmake [-h|--help]
+``` 
+
+Get the help info of the configuration command.
+
+```bash
+$ xmake f [-h|--help]
+``` 
+
+Get the help info of the givent action or plugin command.
+
+```bash
+$ xmake [action|plugin] [-h|--help]
+``` 
+
+For example:
+
+```bash
+$ xmake run --help
+``` 
 
