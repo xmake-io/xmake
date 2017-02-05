@@ -53,7 +53,7 @@ self.$config = {
   },
   plugins: [
     docsearch({
-      apiKey: '',
+      apiKey: 'fbba61eefc60a833d8caf1fa72bd8ef8',
       indexName: 'xmake',
       tags: ['english', 'zh']
     })
