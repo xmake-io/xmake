@@ -1266,11 +1266,19 @@ add_mflags("-g", "-O2", "-DDEBUG")
 
 同时对objc/objc++代码添加编译选项
 
+```lua
+add_mxflags("-framework CoreFoundation")
+```
+
 ##### add_mxxflags
 
 ###### 添加objc++编译选项
 
 仅对objc++代码添加编译选项
+
+```lua
+add_mxxflags("-framework CoreFoundation")
+```
 
 ##### add_scflags
 
@@ -1278,17 +1286,29 @@ add_mflags("-g", "-O2", "-DDEBUG")
 
 对swift代码添加编译选项
 
+```lua
+add_scflags("xxx")
+```
+
 ##### add_asflags
 
 ###### 添加汇编编译选项
 
 对汇编代码添加编译选项
 
+```lua
+add_asflags("xxx")
+```
+
 ##### add_goflags
 
-###### 添加ggo编译选项
+###### 添加go编译选项
 
 对golang代码添加编译选项
+
+```lua
+add_goflags("xxx")
+```
 
 ##### add_ldflags
 
@@ -1306,11 +1326,18 @@ add_ldflags("-L/xxx", "-lxxx")
 
 影响对静态库的生成
 
+```lua
+add_arflags("xxx")
+```
 ##### add_shflags
 
 ###### 添加动态库链接选项
 
 影响对动态库的生成
+
+```lua
+add_shflags("xxx")
+```
 
 ##### add_cfuncs
 ##### add_cxxfuncs
