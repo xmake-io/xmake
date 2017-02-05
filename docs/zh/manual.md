@@ -418,6 +418,9 @@ target("tbox")
 | [add_mflags](#add_mflags)             | 添加objc编译选项                     |
 | [add_mxflags](#add_mxflags)           | 添加objc/objc++编译选项              |
 | [add_mxxflags](#add_mxxflags)         | 添加objc++编译选项                   |
+| [add_scflags](#add_scflags)           | 添加swift编译选项                    |
+| [add_asflags](#add_asflags)           | 添加汇编编译选项                     |
+| [add_goflags](#add_goflags)           | 添加go编译选项                       |
 | [add_ldflags](#add_ldflags)           | 添加链接选项                         |
 | [add_arflags](#add_arflags)           | 添加静态库归档选项                   |
 | [add_shflags](#add_shflags)           | 添加动态库链接选项                   |
@@ -1221,14 +1224,94 @@ add_undefines("DEBUG")
 在`config.h`配置文件中通过`undef`禁用宏定义，`config.h`的设置，可参考[set_config_h](#set_config_h)接口。
 
 ##### add_cflags
+
+###### 添加c编译选项 
+
+仅对c代码添加编译选项
+
+```lua
+add_cflags("-g", "-O2", "-DDEBUG")
+```
+
+<p class="warning">
+所有选项值都基于gcc的定义为标准，如果其他编译器不兼容（例如：vc），xmake会自动内部将其转换成对应编译器支持的选项值。
+用户无需操心其兼容性，如果其他编译器没有对应的匹配值，那么xmake会自动忽略器设置。
+</p>
+
 ##### add_cxflags
+
+###### 添加c/c++编译选项
+
+同时对c/c++代码添加编译选项
+
 ##### add_cxxflags
+
+###### 添加c++编译选项
+
+仅对c++代码添加编译选项
+
 ##### add_mflags
+
+###### 添加objcc编译选项 
+
+仅对objc代码添加编译选项
+
+```lua
+add_mflags("-g", "-O2", "-DDEBUG")
+```
+
 ##### add_mxflags
+
+###### 添加objc/objc++编译选项
+
+同时对objc/objc++代码添加编译选项
+
 ##### add_mxxflags
+
+###### 添加objc++编译选项
+
+仅对objc++代码添加编译选项
+
+##### add_scflags
+
+###### 添加swift编译选项
+
+对swift代码添加编译选项
+
+##### add_asflags
+
+###### 添加汇编编译选项
+
+对汇编代码添加编译选项
+
+##### add_goflags
+
+###### 添加ggo编译选项
+
+对golang代码添加编译选项
+
 ##### add_ldflags
+
+###### 添加链接选项
+
+添加静态链接库选项
+
+```lua
+add_ldflags("-L/xxx", "-lxxx")
+```
+
 ##### add_arflags
+
+###### 添加静态库归档选项
+
+影响对静态库的生成
+
 ##### add_shflags
+
+###### 添加动态库链接选项
+
+影响对动态库的生成
+
 ##### add_cfuncs
 ##### add_cxxfuncs
 ##### add_options
