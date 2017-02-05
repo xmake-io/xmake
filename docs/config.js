@@ -24,6 +24,9 @@ self.$config = {
         title: 'Blog', path: 'http://www.tboox.org'
       },
       {
+        title: 'Community', path: 'http://www.tboox.org/forum'
+      },
+      {
         title: 'English', type: 'dropdown', items: langs, exact: true
       }
     ],
@@ -39,6 +42,9 @@ self.$config = {
       },
       {
         title: '博客', path: 'http://www.tboox.org/cn'
+      },
+      {
+        title: '社区', path: 'http://www.tboox.org/forum'
       },
       {
         title: '中文', type: 'dropdown', items: langs, exact: true

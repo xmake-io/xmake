@@ -15,26 +15,26 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ## Installation
 
-#### Windows
+##### Windows
 
 1. Download xmake installer ([Releases](https://github.com/tboox/xmake/releases))
 2. Run xmake-[version].exe
 
-#### MacOS
+##### MacOS
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 $ sudo brew install xmake
 ```
 
-#### Linux
+##### Linux
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
 $ sudo brew install xmake
 ```
 
-#### Compilation
+##### Compilation
 
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
@@ -119,9 +119,9 @@ hello`main:
 
 ## Configuration
 
-### Target Platforms
+#### Target Platforms
 
-#### Current Host
+##### Current Host
 
 ```bash
 $ xmake
@@ -131,49 +131,49 @@ $ xmake
     XMake will detect the current host platform automatically and build project.
 </p>
 
-#### Linux
+##### Linux
 
 ```bash
 $ xmake f -p linux [-a i386|x86_64]
 $ xmake
 ```
 
-#### Android
+##### Android
 
 ```bash
 $ xmake f -p android --ndk=~/files/android-ndk-r10e/ [-a armv5te|armv6|armv7-a|armv8-a|arm64-v8a]
 $ xmake
 ```
 
-#### iPhoneOS
+##### iPhoneOS
 
 ```bash
 $ xmake f -p iphoneos [-a armv7|armv7s|arm64|i386|x86_64]
 $ xmake
 ```
 
-#### Windows
+##### Windows
 
 ```bash
 $ xmake f -p windows [-a x86|x64]
 $ xmake
 ```
 
-#### Mingw
+##### Mingw
 
 ```bash
 $ xmake f -p mingw --sdk=/usr/local/i386-mingw32-4.3.0/ [-a i386|x86_64]
 $ xmake
 ``` 
 
-#### Apple WatchOS
+##### Apple WatchOS
 
 ```bash
 $ xmake f -p watchos [-a i386|armv7k]
 $ xmake
 ```
 
-#### Cross Compilation
+##### Cross Compilation
 
 ```bash
 $ xmake f -p linux --sdk=/usr/local/arm-linux-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
@@ -189,7 +189,7 @@ $ xmake
     And if you want to known more options, please run: `xmake f --help`
 </p>
 
-### Global Configuration
+#### Global Configuration
 
 You can save to the global configuration for simplfying operation.
 
@@ -210,7 +210,7 @@ $ xmake
     You can use short or long command option, for exmaple: `xmake g` or `xmake global`.<br>
 </p>
 
-### Clean Configuration
+#### Clean Configuration
 
 We can clean all cached configuration and re-configure projecct.
 
@@ -254,3 +254,26 @@ For example:
 $ xmake run --help
 ``` 
 
+#### How to do if xmake fails?
+
+Please attempt to clean configuration and rebuild it first.
+
+```bash
+$ xmake f -c
+$ xmake
+```
+
+If it fails again, please add `-v` or `--verbose` options to get more verbose info.
+
+For exmaple: 
+
+```hash
+$ xmake -v 
+$ xmake --verbose
+```
+
+And add `--backtrace` to get the verbose backtrace info, then you can submit these infos to [issues](https://github.com/tboox/xmake/issues).
+
+```bash
+$ xmake -v --backtrace
+```
