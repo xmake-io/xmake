@@ -22,26 +22,26 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 ## 安装
 
-#### Windows
+##### Windows
 
 1. 从 ([Releases](https://github.com/tboox/xmake/releases)) 上下载windows安装包
 2. 运行安装程序 xmake-[version].exe
 
-#### MacOS
+##### MacOS
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 $ sudo brew install xmake
 ```
 
-#### Linux
+##### Linux
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
 $ sudo brew install xmake
 ```
 
-#### 编译安装
+##### 编译安装
 
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
@@ -126,9 +126,9 @@ hello`main:
 
 ## 配置
 
-### 目标平台
+#### 目标平台
 
-#### 主机平台
+##### 主机平台
 
 ```bash
 $ xmake
@@ -138,49 +138,49 @@ $ xmake
     xmake将会自动探测当前主机平台，默认自动生成对应的目标程序。
 </p>
 
-#### Linux
+##### Linux
 
 ```bash
 $ xmake f -p linux [-a i386|x86_64]
 $ xmake
 ```
 
-#### Android
+##### Android
 
 ```bash
 $ xmake f -p android --ndk=~/files/android-ndk-r10e/ [-a armv5te|armv6|armv7-a|armv8-a|arm64-v8a]
 $ xmake
 ```
 
-#### iPhoneOS
+##### iPhoneOS
 
 ```bash
 $ xmake f -p iphoneos [-a armv7|armv7s|arm64|i386|x86_64]
 $ xmake
 ```
 
-#### Windows
+##### Windows
 
 ```bash
 $ xmake f -p windows [-a x86|x64]
 $ xmake
 ```
 
-#### Mingw
+##### Mingw
 
 ```bash
 $ xmake f -p mingw --sdk=/usr/local/i386-mingw32-4.3.0/ [-a i386|x86_64]
 $ xmake
 ``` 
 
-#### Apple WatchOS
+##### Apple WatchOS
 
 ```bash
 $ xmake f -p watchos [-a i386|armv7k]
 $ xmake
 ```
 
-#### 交叉编译
+##### 交叉编译
 
 ```bash
 $ xmake f -p linux --sdk=/usr/local/arm-linux-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
@@ -196,7 +196,7 @@ $ xmake
     如果你想要了解更多参数选项，请运行: `xmake f --help`
 </p>
 
-### 全局配置
+#### 全局配置
 
 我们也可以将一些常用配置保存到全局配置中，来简化频繁地输入：
 
@@ -219,7 +219,7 @@ $ xmake
     每个命令都有其简写，例如: `xmake g` 或者 `xmake global`.<br>
 </p>
 
-### 清除配置
+#### 清除配置
 
 有时候，配置出了问题编译不过，或者需要重新检测各种依赖库和接口，可以加上`-c`参数，清除缓存的配置，强制重新检测和配置
 
@@ -263,4 +263,26 @@ $ xmake [action|plugin] [-h|--help]
 $ xmake run --help
 ``` 
 
+#### 如果xmake运行失败了怎么办？
 
+可以先尝试清除下配置，重新构建下：
+
+```bash
+$ xmake f -c
+$ xmake
+```
+
+如果还是失败了，请加上 `-v` 或者 `--verbose` 选项重新执行xmake后，获取更加详细的输出信息
+
+例如：
+
+```hash
+$ xmake -v 
+$ xmake --verbose
+```
+
+并且可以加上 `--backtrace` 选项获取出错时的xmake的调试栈信息, 然后你可以提交这些信息到[issues](https://github.com/tboox/xmake/issues).
+
+```bash
+$ xmake -v --backtrace
+```

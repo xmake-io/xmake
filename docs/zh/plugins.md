@@ -102,9 +102,11 @@ target("demo")
     end)
 ```
 
-## 宏记录和回放
+## 内置插件
 
-#### 简介
+#### 宏记录和回放
+
+##### 简介
 
 我们可以通过这个插件，快速记录和回放我们平常频繁使用到的一些xmake操作，来简化我们日常的开发工作。
 
@@ -117,7 +119,7 @@ target("demo")
 * 支持宏脚本的删除、显示等管理功能
 * 支持自定义高级宏脚本，以及参数配置
 
-#### 记录操作
+##### 记录操作
 
 ```bash
 # 开始记录宏
@@ -145,14 +147,14 @@ $ xmake p
 xmake macro --end 
 ```
 
-#### 回放
+##### 回放
 
 ```bash
 # 回放一个匿名宏
 $ xmake macro .
 ```
 
-#### 命名宏
+##### 命名宏
 
 匿名宏的好处就是快速记录，快速回放，如果需要长久保存，就需要给宏取个名字。
 
@@ -163,7 +165,7 @@ $ xmake macro --end macroname
 $ xmake macro macroname
 ```
 
-#### 导入导出宏
+##### 导入导出宏
 
 导入指定的宏脚本或者宏目录：
 
@@ -179,7 +181,7 @@ $ xmake macro --export=/xxx/macro.lua macroname
 $ xmake macro --export=/xxx/macrodir
 ```
 
-#### 列举显示宏
+##### 列举显示宏
 
 列举所有`xmake`内置的宏脚本：
 
@@ -193,7 +195,7 @@ $ xmake macro --list
 $ xmake macro --show macroname
 ```
 
-#### 自定义宏脚本
+##### 自定义宏脚本
 
 我们也可以自己编写个宏脚本 `macro.lua` 然后导入到xmake中去。
 
@@ -230,7 +232,7 @@ $ xmake macro --import=/xxx/macro.lua [macroname]
 $ xmake macro [.|macroname]
 ```
 
-#### 内置的宏脚本
+##### 内置的宏脚本
 
 XMake 提供了一些内置的宏脚本，来简化我们的日常开发工作。
 
@@ -240,7 +242,7 @@ XMake 提供了一些内置的宏脚本，来简化我们的日常开发工作�
 $ xmake macro package -p iphoneos 
 ```
 
-#### 高级的宏脚本编写
+##### 高级的宏脚本编写
 
 以上面提到的`package`宏为例，我们看下其具体代码，里面通过`import`导入一些扩展模块，实现了复杂的脚本操作。
 
@@ -345,7 +347,7 @@ end
     如果你想要获取更多宏参数选项信息，请运行： `xmake macro --help`
 </p>
 
-## 运行自定义lua脚本
+#### 运行自定义lua脚本
 
 这个跟宏脚本类似，只是省去了导入导出操作，直接指定lua脚本来加载运行，这对于想要快速测试一些接口模块，验证自己的某些思路，都是一个不错的方式。
 
@@ -367,9 +369,9 @@ $ xmake lua /tmp/test.lua
     当然，你也可以像宏脚本那样，使用`import`接口导入扩展模块，实现复杂的功能。
 </p>
 
-## 生成IDE工程文件
+#### 生成IDE工程文件
 
-#### 简介
+##### 简介
 
 XMake跟`cmake`, `premake`等其他一些构建工具的区别在于：
 
@@ -379,19 +381,19 @@ XMake跟`cmake`, `premake`等其他一些构建工具的区别在于：
 
 这样做的一个好处是：插件更加容易扩展，维护也更加独立和方便。
 
-#### 生成Makefile
+##### 生成Makefile
 
 ```bash
 $ xmake project -k makefile
 ```
 
-#### 生成VisualStudio工程
+##### 生成VisualStudio工程
 
 ```bash
 $ xmake project -k [vs2008|vs2013|vs2015|..]
 ```
 
-## 生成doxygen文档
+#### 生成doxygen文档
 
 请先确保本机已安装`doxygen`工具，然后在工程目录下运行：
 
@@ -399,7 +401,7 @@ $ xmake project -k [vs2008|vs2013|vs2015|..]
 $ xmake doxygen
 ```
 
-## 从app生成ipa包
+#### 从app生成ipa包
 
 这仅仅是一个小插件，ios开发的同学，可能会用的到。
 

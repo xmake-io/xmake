@@ -101,15 +101,17 @@ target("demo")
     end)
 ```
 
-## Macros Recording and Playback 
+## Builtin Plugins
 
-#### Introduction
+#### Macros Recording and Playback 
+
+##### Introduction
 
 We can record and playback our xmake commands and save as macro quickly using this plugin.
 
 And we can run this macro to simplify our jobs repeatly.
 
-#### Record Commands
+##### Record Commands
 
 ```bash
 # begin to record commands
@@ -137,14 +139,14 @@ $ xmake p
 xmake macro --end 
 ```
 
-#### Playback Macro
+##### Playback Macro
 
 ```bash
 # playback the previous anonymous macro
 $ xmake macro .
 ```
 
-#### Named Macro
+##### Named Macro
 
 ```bash
 $ xmake macro --begin
@@ -153,7 +155,7 @@ $ xmake macro --end macroname
 $ xmake macro macroname
 ```
 
-#### Import and Export Macro
+##### Import and Export Macro
 
 Import the given macro file or directory.
 
@@ -169,7 +171,7 @@ $ xmake macro --export=/xxx/macro.lua macroname
 $ xmake macro --export=/xxx/macrodir
 ```
 
-#### List and Show Macro
+##### List and Show Macro
 
 List all builtin macros.
 
@@ -183,7 +185,7 @@ Show the given macro script content.
 $ xmake macro --show macroname
 ```
 
-#### Custom Macro Script
+##### Custom Macro Script
 
 Create and write a `macro.lua` script first.
 
@@ -220,7 +222,7 @@ Playback this macro script.
 $ xmake macro [.|macroname]
 ```
 
-#### Builtin Macros
+##### Builtin Macros
 
 XMake supports some builtins macros to simplify our jobs.
 
@@ -230,7 +232,7 @@ For example, we use `package` macro to package all architectures of the iphoneos
 $ xmake macro package -p iphoneos 
 ```
 
-#### Advance Macro Script
+##### Advance Macro Script
 
 Let's see the `package` macro script:
 
@@ -334,7 +336,7 @@ end
     If you want to known more options, please run: `xmake macro --help`
 </p>
 
-## Run the Custom Lua Script
+#### Run the Custom Lua Script
 
 Write a simple lua script:
 
@@ -354,21 +356,21 @@ $ xmake lua /tmp/test.lua
     You can also use `import` api to write a more advance lua script. 
 </p>
 
-## Generate IDE Project Files
+#### Generate IDE Project Files
 
-#### Generate Makefile
+##### Generate Makefile
 
 ```bash
 $ xmake project -k makefile
 ```
 
-#### Generate VisualStudio Project
+##### Generate VisualStudio Project
 
 ```bash
 $ xmake project -k [vs2008|vs2013|vs2015|..]
 ```
 
-## Generate Doxygen Document
+#### Generate Doxygen Document
 
 Please ensure that the doxygen tool has been installed first.
 
@@ -376,7 +378,7 @@ Please ensure that the doxygen tool has been installed first.
 $ xmake doxygen
 ```
 
-## Convert .app to .ipa
+#### Convert .app to .ipa
 
 ```bash
 $ xmake app2ipa --icon=/xxx.png /xxx/ios.app -o /xxx.ios.ipa
