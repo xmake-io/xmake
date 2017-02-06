@@ -34,6 +34,9 @@ language("golang")
     -- set target kinds
     set_targetkinds {binary = "go", static = "go", shared = "go"}
 
+    -- set target flags
+    set_targetflags {binary = "goflags", static = "goflags", shared = "goflags"}
+
     -- on load
     on_load("load")
 

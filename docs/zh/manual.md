@@ -1348,8 +1348,44 @@ add_shflags("xxx")
 这个接口跟[set_options](#set_options)类似，唯一的区别就是，此处是追加选项，而[set_options](#set_options)每次设置会覆盖先前的设置。
 
 ##### add_packages
+
+###### 添加包依赖
+
+在target作用域中，添加集成包依赖，例如：
+
+```lua
+target("test")
+    add_packages("zlib", "polarssl", "pcre", "mysql")
+```
+
+这样，在编译test目标时，如果这个包存在的，将会自动追加包里面的宏定义、头文件搜索路径、链接库目录，也会自动链接包中所有库。
+
+用户不再需要自己单独调用[add_links](#add_links)，[add_includedirs](#add_includedirs), [add_ldflags](#add_ldflags)等接口，来配置依赖库链接了。
+
+对于如何设置包搜索目录，可参考：[add_packagedirs](#add_packagedirs) 接口
+
 ##### add_languages
+
+###### 添加语言标准
+
+与[set_languages](#set_languages)类似，唯一区别是这个接口不会覆盖掉之前的设置，而是追加设置。
+
 ##### add_vectorexts
+
+###### 添加向量扩展指令
+
+添加扩展指令优化选项，目前支持以下几种扩展指令集：
+
+```lua
+add_vectorexts("mmx")
+add_vectorexts("neon")
+add_vectorexts("avx", "avx2")
+add_vectorexts("sse", "sse2", "sse3", "ssse3")
+```
+
+<p class="tip">
+如果当前设置的指令集编译器不支持，xmake会自动忽略掉，所以不需要用户手动去判断维护，只需要将你需要的指令集全部设置上就行了。
+</p>
 
 #### 选项定义
 
@@ -1410,3 +1446,56 @@ add_shflags("xxx")
 ##### add_macros
 ##### add_macrofiles
 
+#### 内置模块
+
+##### import
+##### inherit
+##### ifelse
+##### try-catch-finally
+##### pairs
+##### ipairs
+##### print
+##### printf
+##### cprint
+##### cprintf
+##### raise
+
+##### table
+
+###### insert
+###### join
+###### join2
+###### concat
+###### dump
+
+##### path
+
+###### join
+###### basename
+###### filename
+###### directory
+###### relative
+###### absolute
+###### is_absolute
+
+##### io
+##### os
+##### string
+##### process
+##### coroutine
+
+#### 扩展模块
+
+##### core.base.option
+##### core.tool.tool
+##### core.tool.linker
+##### core.tool.compiler
+##### core.project.config
+##### core.project.global
+##### core.project.target
+##### core.project.task
+##### core.project.cache
+##### core.project.project
+##### core.language.language
+##### core.platform.platform
+##### core.platform.environment

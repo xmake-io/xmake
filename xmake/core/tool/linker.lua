@@ -180,44 +180,33 @@ end
 -- load the linker from the given target kind
 function linker.load(targetkind, sourcekinds)
 
-    -- get the linker kind
-    local linkerkind, errors = language.linkerkind_of(targetkind, sourcekinds)
-    if not linkerkind then
+    -- get the linker info
+    local linkerinfo, errors = language.linkerinfo_of(targetkind, sourcekinds)
+    if not linkerinfo then
         return nil, errors
     end
 
     -- get it directly from cache dirst
     linker._INSTANCES = linker._INSTANCES or {}
-    if linker._INSTANCES[linkerkind] then
-        return linker._INSTANCES[linkerkind]
+    if linker._INSTANCES[linkerinfo.kind] then
+        return linker._INSTANCES[linkerinfo.kind]
     end
 
     -- new instance
     local instance = table.inherit(linker, builder)
 
     -- load the linker tool from the source file type
-    local result, errors = tool.load(linkerkind)
+    local result, errors = tool.load(linkerinfo.kind)
     if not result then 
         return nil, errors
     end
     instance._TOOL = result
 
-    -- save flagname
-    local flagname =
-    {
-        ld = "ldflags"
-    ,   sh = "shflags"
-    ,   go = "goflags"
-    }
-    instance._FLAGNAME = flagname[linkerkind]
-
-    -- check
-    if not instance._FLAGNAME then
-        return nil, string.format("unknown linker for kind: %s", linkerkind)
-    end
+    -- init flag name
+    instance._FLAGNAME = linkerinfo.flag
 
     -- save this instance
-    linker._INSTANCES[linkerkind] = instance
+    linker._INSTANCES[linkerinfo.kind] = instance
 
     -- ok
     return instance

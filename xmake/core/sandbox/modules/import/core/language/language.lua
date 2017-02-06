@@ -109,17 +109,17 @@ function sandbox_core_language.sourcekind_of(sourcefile)
     return sourcekind
 end
 
--- get linker kind of the source kinds
-function sandbox_core_language.linkerkind_of(targetkind, sourcekinds)
+-- get linker info (kind and flag) of the source kinds
+function sandbox_core_language.linkerinfo_of(targetkind, sourcekinds)
 
     -- get it
-    local linkerkind, errors = language.linkerkind_of(targetkind, sourcekinds)
-    if not linkerkind then
+    local linkerinfo, errors = language.linkerinfo_of(targetkind, sourcekinds)
+    if not linkerinfo then
         raise(errors)
     end
 
     -- ok
-    return linkerkind
+    return linkerinfo
 end
 
 -- return module
