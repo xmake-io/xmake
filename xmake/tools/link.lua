@@ -72,12 +72,12 @@ function get(name)
 end
 
 -- make the strip flag
-function strip(level)
+function nf_strip(level)
     return ""
 end
 
 -- make the symbol flag
-function symbol(level, target)
+function nf_symbol(level, target)
     
     -- debug? generate *.pdb file
     local flags = ""
@@ -93,15 +93,15 @@ function symbol(level, target)
     return flags
 end
 
--- make the linklib flag
-function linklib(lib)
+-- make the link flag
+function nf_link(lib)
 
     -- make it
     return lib .. ".lib"
 end
 
 -- make the linkdir flag
-function linkdir(dir)
+function nf_linkdir(dir)
 
     -- make it
     return "-libpath:" .. dir

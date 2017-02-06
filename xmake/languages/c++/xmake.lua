@@ -43,8 +43,8 @@ language("c++")
     -- on check_main
     on_check_main("check_main")
 
-    -- set named flags
-    set_namedflags 
+    -- set name flags
+    set_nameflags 
     {
         compiler =
         {

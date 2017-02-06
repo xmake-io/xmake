@@ -52,11 +52,6 @@ function linker:_addflags_from_config(flags)
 
     -- done
     table.join2(flags, config.get(self:_flagname()))
-
-    -- add the linkdirs flags 
-    for _, linkdir in ipairs(table.wrap(config.get("linkdirs"))) do
-        table.join2(flags, self:linkdir(linkdir))
-    end
 end
 
 -- add flags from the target 
@@ -64,11 +59,6 @@ function linker:_addflags_from_target(flags, target)
 
     -- add the target flags 
     table.join2(flags, self:_mapflags(target:get(self:_flagname())))
-
-    -- add the linkdirs flags 
-    for _, linkdir in ipairs(table.wrap(target:get("linkdirs"))) do
-        table.join2(flags, self:linkdir(linkdir))
-    end
 
     -- for target options? 
     if target.options then
@@ -78,24 +68,6 @@ function linker:_addflags_from_target(flags, target)
 
             -- add the flags from the option
             table.join2(flags, self:_mapflags(opt:get(self:_flagname())))
-            
-            -- add the linkdirs flags from the option
-            for _, linkdir in ipairs(table.wrap(opt:get("linkdirs"))) do
-                table.join2(flags, self:linkdir(linkdir))
-            end
-        end
-    end
-
-    -- add the strip flags 
-    for _, strip in ipairs(table.wrap(target:get("strip"))) do
-        table.join2(flags, self:strip(strip))
-    end
-
-    -- add the symbol flags 
-    if target.symbolfile then
-        local symbolfile = target:symbolfile()
-        for _, symbol in ipairs(table.wrap(target:get("symbols"))) do
-            table.join2(flags, self:symbol(symbol, symbolfile))
         end
     end
 end
@@ -105,11 +77,6 @@ function linker:_addflags_from_platform(flags)
 
     -- add flags 
     table.join2(flags, platform.get(self:_flagname()))
-
-    -- add the linkdirs flags 
-    for _, linkdir in ipairs(table.wrap(platform.get("linkdirs"))) do
-        table.join2(flags, self:linkdir(linkdir))
-    end
 end
 
 -- add flags from the compiler 
@@ -137,46 +104,6 @@ function linker:_addflags_from_linker(flags)
     table.join2(flags, self:get(self:_flagname()))
 end
 
--- add links from the configure 
-function linker:_addlinks_from_config(flags)
-
-    -- add the links flags 
-    for _, link in ipairs(table.wrap(config.get("links"))) do
-        table.join2(flags, self:linklib(link))
-    end
-end
-
--- add links from the target 
-function linker:_addlinks_from_target(flags, target)
-
-    -- add the links flags 
-    for _, link in ipairs(table.wrap(target:get("links"))) do
-        table.join2(flags, self:linklib(link))
-    end
-
-    -- for target options? 
-    if target.options then
-
-        -- add the flags for the target options
-        for _, opt in ipairs(target:options()) do
-
-            -- add the links flags from the option
-            for _, link in ipairs(table.wrap(opt:get("links"))) do
-                table.join2(flags, self:linklib(link))
-            end
-        end
-    end
-end
-
--- add links from the platform 
-function linker:_addlinks_from_platform(flags)
-
-    -- add the links flags
-    for _, link in ipairs(table.wrap(platform.get("links"))) do
-        table.join2(flags, self:linklib(link))
-    end
-end
-
 -- load the linker from the given target kind
 function linker.load(targetkind, sourcekinds)
 
@@ -201,6 +128,28 @@ function linker.load(targetkind, sourcekinds)
         return nil, errors
     end
     instance._TOOL = result
+ 
+    -- load the name flags of archiver 
+    local nameflags = {}
+    local nameflags_exists = {}
+    for _, sourcekind in ipairs(sourcekinds) do
+
+        -- load language 
+        result, errors = language.load_sk(sourcekind)
+        if not result then 
+            return nil, errors
+        end
+
+        -- merge name flags
+        for _, flaginfo in ipairs(table.wrap(result:nameflags()["linker"])) do
+            local key = flaginfo[1] .. flaginfo[2]
+            if not nameflags_exists[key] then
+                table.insert(nameflags, flaginfo)
+                nameflags_exists[key] = flaginfo
+            end
+        end
+    end
+    instance._NAMEFLAGS = nameflags
 
     -- init flag name
     instance._FLAGNAME = linkerinfo.flag
@@ -251,6 +200,9 @@ function linker:linkflags(target)
     -- add flags from the target 
     self:_addflags_from_target(flags, target)
 
+    -- add flags (named) from language
+    self:_addflags_from_language(flags, target)
+
     -- add flags from the platform 
     self:_addflags_from_platform(flags)
 
@@ -259,15 +211,6 @@ function linker:linkflags(target)
 
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
-
-    -- add links from the target 
-    self:_addlinks_from_target(flags, target)
-
-    -- add flags from the platform 
-    self:_addlinks_from_platform(flags)
-
-    -- add links from the configure 
-    self:_addlinks_from_config(flags)
 
     -- remove repeat
     flags = table.unique(flags)
@@ -280,34 +223,6 @@ function linker:linkflags(target)
 
     -- get it
     return flags_str, flags
-end
-
--- make the strip flag
-function linker:strip(level)
-
-    -- make it
-    return self:_tool().strip(level)
-end
-
--- make the symbol flag
-function linker:symbol(level, symbolfile)
-
-    -- make it
-    return self:_tool().symbol(level, symbolfile)
-end
-
--- make the linklib flag
-function linker:linklib(lib)
-
-    -- make it
-    return self:_tool().linklib(lib)
-end
-
--- make the linkdir flag
-function linker:linkdir(dir)
-
-    -- make it
-    return self:_tool().linkdir(dir)
 end
 
 -- return module

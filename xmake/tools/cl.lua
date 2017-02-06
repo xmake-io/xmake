@@ -89,7 +89,7 @@ function get(name)
 end
 
 -- make the symbol flag
-function symbol(level, symbolfile)
+function nf_symbol(level, target)
 
     -- check -FS flags
     if _g._FS == nil then
@@ -108,8 +108,8 @@ function symbol(level, symbolfile)
     -- debug? generate *.pdb file
     local flags = ""
     if level == "debug" then
-        if symbolfile then
-            flags = "-ZI -Fd" .. symbolfile 
+        if target and target.symbolfile then
+            flags = "-ZI -Fd" .. target:symbolfile() 
             if _g._FS then
                 flags = "-FS " .. flags
             end
@@ -123,7 +123,7 @@ function symbol(level, symbolfile)
 end
 
 -- make the warning flag
-function warning(level)
+function nf_warning(level)
 
     -- the maps
     local maps = 
@@ -140,7 +140,7 @@ function warning(level)
 end
 
 -- make the optimize flag
-function optimize(level)
+function nf_optimize(level)
 
     -- the maps
     local maps = 
@@ -158,7 +158,7 @@ function optimize(level)
 end
 
 -- make the vector extension flag
-function vectorext(extension)
+function nf_vectorext(extension)
 
     -- the maps
     local maps = 
@@ -174,7 +174,7 @@ function vectorext(extension)
 end
 
 -- make the language flag
-function language(stdname)
+function nf_language(stdname)
 
     -- the stdc maps
     local cmaps = 
@@ -197,21 +197,21 @@ function language(stdname)
 end
 
 -- make the define flag
-function define(macro)
+function nf_define(macro)
 
     -- make it
     return "-D" .. macro:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function undefine(macro)
+function nf_undefine(macro)
 
     -- make it
     return "-U" .. macro
 end
 
 -- make the includedir flag
-function includedir(dir)
+function nf_includedir(dir)
 
     -- make it
     return "-I" .. dir
