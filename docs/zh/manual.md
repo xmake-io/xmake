@@ -1453,14 +1453,74 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 例如，定义一个是否启用test的选项：
 
 ```lua
-option("enable_test")
+option("test")
     set_default(false)
     set_showmenu(true)
     add_defines("-DTEST")
 ```
 
+然后关联到指定的target中去：
+
+```lua
+target("demo")
+    add_options("test")
+```
+
+这样，一个选项就算定义好了，如果这个选项被启用，那么编译这个target的时候，就会自动加上`-DTEST`的宏定义。
+
+```lua
+# 手动启用这个选项
+$ xmake f --test=y
+$ xmake
+```
 
 ##### set_default
+
+###### 设置选项默认值
+
+在没有通过`xmake f --option=[y|n}`等命令修改选项值的时候，这个选项本身也是有个默认值的，可以通过这个接口来设置：
+
+```lua
+option("test")
+    -- 默认禁用这个选项
+    set_default(false)
+```
+
+选项的值不仅支持boolean类型，也可以是字符串类型，例如：
+
+```lua
+option("test")
+    set_default("value")
+```
+
+| 值类型  | 描述                                   | 配置                                           |
+| ------  | -------------------------------------- | -----------------------------------------------|
+| boolean | 一般用作参数开关，值范围：`true/false` | `xmake f --optionname=[y/n/yes/no/true/false]` |
+| string  | 可以是任意字符串，一般用于模式判断     | `xmake f --optionname=value`                   |
+
+如果是`boolean`值的选项，可以通过[is_option](#is_option)来进行判断，选项是否被启用。
+
+如果是`string`类型的选项，可以在内建变量中直接使用，例如：
+
+```lua
+-- 定义一个路径配置选项，默认使用临时目录
+option("rootdir")
+    set_default("$(tmpdir)")
+
+target("test")
+    -- 添加指定选项目录中的源文件
+    add_files("$(rootdir)/*.c")
+```
+
+其中，`$(rootdir)` 就是自定义的选项内建变量，通过手动配置，可以动态修改它的值：
+
+```bash
+$ xmake f --rootdir=~/projectdir/src
+$ xmake
+```
+
+给这个`rootdir`选项指定一个其他的源码目录路径，然后编译。
+
 ##### set_showmenu
 ##### set_category
 ##### set_description
