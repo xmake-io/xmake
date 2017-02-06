@@ -77,12 +77,12 @@ function get(name)
 end
 
 -- make the symbol flag
-function symbol(level, symbolfile)
+function nf_symbol(level)
 
     -- the maps
     local maps = 
     {   
-        debug       = "-g"
+        debug = "-g"
     }
 
     -- make it
@@ -90,7 +90,7 @@ function symbol(level, symbolfile)
 end
 
 -- make the warning flag
-function warning(level)
+function nf_warning(level)
 
     -- the maps
     local maps = 
@@ -107,7 +107,7 @@ function warning(level)
 end
 
 -- make the optimize flag
-function optimize(level)
+function nf_optimize(level)
 
     -- the maps
     local maps = 
@@ -125,7 +125,7 @@ function optimize(level)
 end
 
 -- make the vector extension flag
-function vectorext(extension)
+function nf_vectorext(extension)
 
     -- the maps
     local maps = 
@@ -145,8 +145,29 @@ function vectorext(extension)
 end
 
 -- make the language flag
-function language(stdname)
+function nf_language(stdname)
     return ""
+end
+
+-- make the includedir flag
+function nf_includedir(dir)
+
+    -- make it
+    return "-Xcc -I" .. dir
+end
+
+-- make the define flag
+function nf_define(macro)
+
+    -- make it
+    return "-Xcc -D" .. macro:gsub("\"", "\\\"")
+end
+
+-- make the undefine flag
+function nf_undefine(macro)
+
+    -- make it
+    return "-Xcc -U" .. macro
 end
 
 -- make the compile command
@@ -176,27 +197,6 @@ function compile(sourcefile, objectfile, incdepfile, flags)
 
     -- compile it
     os.run(compcmd(sourcefile, objectfile, flags))
-end
-
--- make the includedir flag
-function includedir(dir)
-
-    -- make it
-    return "-Xcc -I" .. dir
-end
-
--- make the define flag
-function define(macro)
-
-    -- make it
-    return "-Xcc -D" .. macro:gsub("\"", "\\\"")
-end
-
--- make the undefine flag
-function undefine(macro)
-
-    -- make it
-    return "-Xcc -U" .. macro
 end
 
 -- check the given flags 

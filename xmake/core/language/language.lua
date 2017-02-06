@@ -153,21 +153,21 @@ function _instance:targetflags()
     return self._INFO.targetflags
 end
 
--- get the named flags
-function _instance:namedflags()
+-- get the name flags
+function _instance:nameflags()
 
     -- attempt to get it from cache first
-    if self._NAMEDFLAGS then
-        return self._NAMEDFLAGS
+    if self._NAMEFLAGS then
+        return self._NAMEFLAGS
     end
 
-    -- get namedflags
+    -- get nameflags
     local results = {}
-    for toolkind, namedflags in pairs(table.wrap(self._INFO.namedflags)) do
+    for toolkind, nameflags in pairs(table.wrap(self._INFO.nameflags)) do
 
         -- make tool info
         local toolinfo = results[toolkind] or {}
-        for _, namedflag in ipairs(namedflags) do
+        for _, namedflag in ipairs(nameflags) do
 
             -- split it by '.'
             local splitinfo = namedflag:split('.')
@@ -199,7 +199,7 @@ function _instance:namedflags()
     end
 
     -- cache this results
-    self._NAMEDFLAGS = results
+    self._NAMEFLAGS = results
 
     -- ok?
     return results
@@ -241,7 +241,7 @@ function language._interpreter()
     ,   dictionary =
         {
             -- language.set_xxx
-            "language.set_namedflags"
+            "language.set_nameflags"
         ,   "language.set_sourcekinds"
         ,   "language.set_sourceflags"
         ,   "language.set_targetkinds"

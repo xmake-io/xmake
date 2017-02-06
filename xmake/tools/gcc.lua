@@ -75,7 +75,7 @@ function get(name)
 end
 
 -- make the strip flag
-function strip(level)
+function nf_strip(level)
 
     -- the maps
     local maps = 
@@ -89,7 +89,7 @@ function strip(level)
 end
 
 -- make the symbol flag
-function symbol(level)
+function nf_symbol(level)
 
     -- the maps
     local maps = 
@@ -103,7 +103,7 @@ function symbol(level)
 end
 
 -- make the warning flag
-function warning(level)
+function nf_warning(level)
 
     -- the maps
     local maps = 
@@ -120,7 +120,7 @@ function warning(level)
 end
 
 -- make the optimize flag
-function optimize(level)
+function nf_optimize(level)
 
     -- the maps
     local maps = 
@@ -138,7 +138,7 @@ function optimize(level)
 end
 
 -- make the vector extension flag
-function vectorext(extension)
+function nf_vectorext(extension)
 
     -- the maps
     local maps = 
@@ -158,7 +158,7 @@ function vectorext(extension)
 end
 
 -- make the language flag
-function language(stdname)
+function nf_language(stdname)
 
     -- the stdc maps
     local cmaps = 
@@ -197,35 +197,35 @@ function language(stdname)
 end
 
 -- make the define flag
-function define(macro)
+function nf_define(macro)
 
     -- make it
     return "-D" .. macro:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function undefine(macro)
+function nf_undefine(macro)
 
     -- make it
     return "-U" .. macro
 end
 
 -- make the includedir flag
-function includedir(dir)
+function nf_includedir(dir)
 
     -- make it
     return "-I" .. dir
 end
 
--- make the linklib flag
-function linklib(lib)
+-- make the link flag
+function nf_link(lib)
 
     -- make it
     return "-l" .. lib
 end
 
 -- make the linkdir flag
-function linkdir(dir)
+function nf_linkdir(dir)
 
     -- make it
     return "-L" .. dir

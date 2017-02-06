@@ -45,11 +45,11 @@ function builder:_tool()
     return self._TOOL
 end
 
--- get the named flags
-function builder:_namedflags()
+-- get the name flags
+function builder:_nameflags()
 
     -- get it
-    return self._NAMEDFLAGS
+    return self._NAMEFLAGS
 end
 
 -- map gcc flag to the given builder flag
@@ -131,8 +131,8 @@ function builder:_addflags_from_language(flags, target)
                         end
     }
 
-    -- get named flags for builder
-    for _, flaginfo in ipairs(self:_namedflags()) do
+    -- get name flags for builder
+    for _, flaginfo in ipairs(self:_nameflags()) do
 
         -- get flag info
         local flagscope     = flaginfo[1]
@@ -156,8 +156,8 @@ function builder:_addflags_from_language(flags, target)
             apiname = apiname:sub(1, #apiname - 1)
         end
 
-        -- map named flag to real flag
-        local mapper = self:_tool()[apiname]
+        -- map name flag to real flag
+        local mapper = self:_tool()["nf_" .. apiname]
         if mapper then
             
             -- add the flags 

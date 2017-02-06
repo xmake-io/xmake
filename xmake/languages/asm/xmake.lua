@@ -40,8 +40,8 @@ language("asm")
     -- on load
     on_load("load")
 
-    -- set named flags
-    set_namedflags 
+    -- set name flags
+    set_nameflags 
     {
         compiler =
         {

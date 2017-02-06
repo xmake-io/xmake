@@ -47,57 +47,57 @@ function get(name)
 end
 
 -- make the strip flag
-function strip(level)
+function nf_strip(level)
     return ""
 end
 
 -- make the symbol flag
-function symbol(level)
+function nf_symbol(level)
     return ""
 end
 
 -- make the warning flag
-function warning(level)
+function nf_warning(level)
     return ""
 end
 
 -- make the optimize flag
-function optimize(level)
+function nf_optimize(level)
     return ""
 end
 
 -- make the vector extension flag
-function vectorext(extension)
+function nf_vectorext(extension)
     return ""
 end
 
 -- make the language flag
-function language(stdname)
+function nf_language(stdname)
     return ""
 end
 
 -- make the define flag
-function define(macro)
+function nf_define(macro)
     return ""
 end
 
 -- make the undefine flag
-function undefine(macro)
+function nf_undefine(macro)
     return ""
 end
 
 -- make the includedir flag
-function includedir(dir)
+function nf_includedir(dir)
     return ""
 end
 
--- make the linklib flag
-function linklib(lib)
+-- make the link flag
+function nf_link(lib)
     return ""
 end
 
 -- make the linkdir flag
-function linkdir(dir)
+function nf_linkdir(dir)
     return ""
 end
 

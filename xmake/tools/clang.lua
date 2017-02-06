@@ -46,7 +46,7 @@ function init(shellname, kind)
 end
 
 -- make the strip flag
-function strip(level)
+function nf_strip(level)
 
     -- the maps
     local maps = 

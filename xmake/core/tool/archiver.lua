@@ -133,9 +133,9 @@ function archiver.load(sourcekinds)
     end
     instance._TOOL = result
  
-    -- load the named flags of archiver 
-    local namedflags = {}
-    local namedflags_exists = {}
+    -- load the name flags of archiver 
+    local nameflags = {}
+    local nameflags_exists = {}
     for _, sourcekind in ipairs(sourcekinds) do
 
         -- load language 
@@ -144,16 +144,16 @@ function archiver.load(sourcekinds)
             return nil, errors
         end
 
-        -- merge named flags
-        for _, flaginfo in ipairs(table.wrap(result:namedflags()["archiver"])) do
+        -- merge name flags
+        for _, flaginfo in ipairs(table.wrap(result:nameflags()["archiver"])) do
             local key = flaginfo[1] .. flaginfo[2]
-            if not namedflags_exists[key] then
-                table.insert(namedflags, flaginfo)
-                namedflags_exists[key] = flaginfo
+            if not nameflags_exists[key] then
+                table.insert(nameflags, flaginfo)
+                nameflags_exists[key] = flaginfo
             end
         end
     end
-    instance._NAMEDFLAGS = namedflags
+    instance._NAMEFLAGS = nameflags
 
     -- init flag name
     instance._FLAGNAME = "arflags"

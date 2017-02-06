@@ -1445,6 +1445,21 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 
 
 ##### option
+
+###### 定义选项
+
+定义和设置选项开关，可用于自定义编译配置选项、开关设置。
+
+例如，定义一个是否启用test的选项：
+
+```lua
+option("enable_test")
+    set_default(false)
+    set_showmenu(true)
+    add_defines("-DTEST")
+```
+
+
 ##### set_default
 ##### set_showmenu
 ##### set_category
