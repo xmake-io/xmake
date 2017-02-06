@@ -169,9 +169,11 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_defines"
+    ,   "option.add_defines_h"
     ,   "option.add_defines_if_ok"
     ,   "option.add_defines_h_if_ok"
     ,   "option.add_undefines"
+    ,   "option.add_undefines_h"
     ,   "option.add_undefines_if_ok"
     ,   "option.add_undefines_h_if_ok"
     }

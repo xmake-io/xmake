@@ -1389,34 +1389,72 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 
 #### 选项定义
 
+定义和设置选项开关，每个`option`对应一个选项，可用于自定义编译配置选项、开关设置。
+
+
+| 接口                                            | 描述                                         |
+| ----------------------------------------------- | -------------------------------------------- |
+| [option](#option)                               | 定义选项                                     |
+| [set_default](#set_default)                     | 设置默认值                                   |
+| [set_showmenu](#set_showmenu)                   | 设置是否启用菜单显示                         |
+| [set_category](#set_category)                   | 设置选项分类，仅用于菜单显示                 |
+| [set_description](#set_description)             | 设置菜单显示描述                             |
+| [add_bindings](#add_bindings)                   | 添加关联选项，同步启用和禁用                 |
+| [add_rbindings](#add_rbindings)                 | 添加逆向关联选项，同步启用和禁用             |
+| [add_cincludes](#add_cincludes)                 | 添加c头文件检测                              |
+| [add_cxxincludes](#add_cxxincludes)             | 添加c++头文件检测                            |
+| [add_ctypes](#add_ctypes)                       | 添加c类型检测                                |
+| [add_cxxtypes](#add_cxxtypes)                   | 添加c++类型检测                              |
+| [add_defines_if_ok](#add_defines_if_ok)         | 如果检测选项通过，则添加宏定义               |
+| [add_defines_h_if_ok](#add_defines_h_if_ok)     | 如果检测选项通过，则添加宏定义到配置头文件   |
+| [add_undefines_if_ok](#add_undefines_if_ok)     | 如果检测选项通过，则取消宏定义               |
+| [add_undefines_h_if_ok](#add_undefines_h_if_ok) | 如果检测选项通过，则在配置头文件中取消宏定义 |
+
+##### 通用接口 (target)
+
+下面的这些接口，是跟`target`目标域接口通用的，在`option()`和`target()`域范围内都能同时使用，可直接参考上面`target`中的接口描述。
+
+| 接口                                  | 描述                                 |
+| ------------------------------------- | ------------------------------------ |
+| [set_warnings](#set_warnings)         | 设置警告级别                         |
+| [set_optimize](#set_optimize)         | 设置优化级别                         |
+| [set_languages](#set_languages)       | 设置代码语言标准                     |
+| [add_links](#add_links)               | 添加链接库名                         |
+| [add_linkdirs](#add_linkdirs)         | 添加链接库搜索目录                   |
+| [add_includedirs](#add_includedirs)   | 添加头文件搜索目录                   |
+| [add_defines](#add_defines)           | 添加宏定义                           |
+| [add_undefines](#add_undefines)       | 取消宏定义                           |
+| [add_defines_h](#add_defines_h)       | 添加宏定义到头文件                   |
+| [add_undefines_h](#add_undefines_h)   | 取消宏定义到头文件                   |
+| [add_cflags](#add_cflags)             | 添加c编译选项                        |
+| [add_cxflags](#add_cxflags)           | 添加c/c++编译选项                    |
+| [add_cxxflags](#add_cxxflags)         | 添加c++编译选项                      |
+| [add_mflags](#add_mflags)             | 添加objc编译选项                     |
+| [add_mxflags](#add_mxflags)           | 添加objc/objc++编译选项              |
+| [add_mxxflags](#add_mxxflags)         | 添加objc++编译选项                   |
+| [add_scflags](#add_scflags)           | 添加swift编译选项                    |
+| [add_asflags](#add_asflags)           | 添加汇编编译选项                     |
+| [add_goflags](#add_goflags)           | 添加go编译选项                       |
+| [add_ldflags](#add_ldflags)           | 添加链接选项                         |
+| [add_arflags](#add_arflags)           | 添加静态库归档选项                   |
+| [add_shflags](#add_shflags)           | 添加动态库链接选项                   |
+| [add_cfuncs](#add_cfuncs)             | 添加c库函数检测                      |
+| [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    |
+| [add_languages](#add_languages)       | 添加语言标准                         |
+| [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     |
+
+
 ##### option
-##### set_enable
+##### set_default
 ##### set_showmenu
 ##### set_category
-##### set_warnings
-##### set_optimize
-##### set_languages
 ##### set_description
 ##### add_bindings
 ##### add_rbindings
-##### add_links
-##### add_linkdirs
-##### add_includedirs
-##### add_cincludes
-##### add_cxxincludes
-##### add_cfuncs
-##### add_cxxfuncs
 ##### add_ctypes
 ##### add_cxxtypes
-##### add_cflags
-##### add_cxflags
-##### add_cxxflags
-##### add_ldflags
-##### add_vectorexts
-##### add_defines
 ##### add_defines_if_ok
 ##### add_defines_h_if_ok
-##### add_undefines
 ##### add_undefines_if_ok
 ##### add_undefines_h_if_ok
 
