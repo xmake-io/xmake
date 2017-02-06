@@ -1506,6 +1506,7 @@ option("test")
 -- 定义一个路径配置选项，默认使用临时目录
 option("rootdir")
     set_default("$(tmpdir)")
+    set_showmenu(true)
 
 target("test")
     -- 添加指定选项目录中的源文件
@@ -1522,8 +1523,118 @@ $ xmake
 给这个`rootdir`选项指定一个其他的源码目录路径，然后编译。
 
 ##### set_showmenu
+
+###### 设置是否启用菜单显示
+
+如果设置为`true`，那么在`xmake f --help`里面就会出现这个选项，也就能通过`xmake f --optionname=xxx`进行配置，否则只能在`xmake.lua`内部使用，无法手动配置修改。
+
+```lua
+option("test")
+    set_showmenu(true)
+```
+
+设置为启用菜单后，执行`xmake f --help`可以看到，帮助菜单里面多了一项：
+
+```
+Options:
+    ...
+
+    --test=TEST
+```
+
 ##### set_category
+
+###### 设置选项分类，仅用于菜单显示
+
+这个是个可选配置，仅用于在帮助菜单中，进行分类显示选项，同一类别的选项，会在同一个分组里面显示，这样菜单看起来更加的美观。
+
+例如：
+
+```lua
+option("test1")
+    set_showmenu(true)
+    set_category("test")
+
+option("test2")
+    set_showmenu(true)
+    set_category("test")
+
+option("demo1")
+    set_showmenu(true)
+    set_category("demo")
+
+option("demo2")
+    set_showmenu(true)
+    set_category("demo")
+```
+
+这里四个选项分别归类于两个分组：`test`和`demo`，那么显示的布局类似这样：
+
+```bash
+Options:
+    ...
+
+    --test1=TEST1
+    --test2=TEST2
+ 
+    --demo1=DEMO1
+    --demo2=DEMO2
+```
+
+这个接口，仅仅是为了调整显示布局，更加美观而已，没其他用途。
+
 ##### set_description
+
+###### 设置菜单显示描述
+
+设置选项菜单显示时，右边的描述信息，用于帮助用户更加清楚的知道这个选项的用途，例如：
+
+```lua
+option("test")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Enable or disable test")
+```
+
+生成的菜单内容如下：
+
+```
+Options:
+    ...
+
+    --test=TEST                       Enable or disable test (default: false)
+```
+
+这个接口也支持多行显示，输出更加详细的描述信息，例如：
+
+```lua
+option("mode")
+    set_default("debug")
+    set_showmenu(true)
+    set_description("Set build mode"
+                    "    - debug"
+                    "    - release"
+                    "    - profile")
+```
+
+生成的菜单内容如下：
+
+```
+Options:
+    ...
+
+    --mode=MODE                       Set build mode (default: debug)
+                                          - debug
+                                          - release
+                                          - profile
+```
+
+看到这个菜单，用户就能清楚地知道，定义的这个`mode`选项的具体用处，以及如何使用了：
+
+```bash
+$ xmake f --mode=release
+```
+
 ##### add_bindings
 ##### add_rbindings
 ##### add_ctypes
