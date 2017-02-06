@@ -341,7 +341,7 @@ add_plugindirs("$(projectdir)/plugins")
 通过设置依赖包目录，可以方便的集成一些第三方的依赖库，以tbox工程为例，其包目录如下：
 
 ```
-tbox/pkg
+tbox.pkg
 - base.pkg
 - zlib.pkg
 - polarssl.pkg
