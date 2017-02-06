@@ -142,6 +142,17 @@ function _instance:targetkinds()
     return self._INFO.targetkinds
 end
 
+-- get the target flags (targetkind => linkerflag)
+--
+-- .e.g
+-- {binary = "ldflags", static = "arflags", shared = "shflags"}
+--
+function _instance:targetflags()
+
+    -- get it
+    return self._INFO.targetflags
+end
+
 -- get the named flags
 function _instance:namedflags()
 
@@ -234,6 +245,7 @@ function language._interpreter()
         ,   "language.set_sourcekinds"
         ,   "language.set_sourceflags"
         ,   "language.set_targetkinds"
+        ,   "language.set_targetflags"
         }
     }
 
@@ -542,8 +554,8 @@ function language.sourcekind_of(sourcefile)
     return sourcekind
 end
 
--- get linker kind of the target kind and the source kinds
-function language.linkerkind_of(targetkind, sourcekinds)
+-- get linker info(kind and flag) of the target kind and the source kinds
+function language.linkerinfo_of(targetkind, sourcekinds)
 
     -- load linkerkinds
     local linkerkinds = language._LINKERKINDS
@@ -559,9 +571,19 @@ function language.linkerkind_of(targetkind, sourcekinds)
         linkerkinds = {}
         for name, instance in pairs(languages) do
             for sourcekind, _ in pairs(instance:sourcekinds()) do
+                local targetflags = instance:targetflags()
                 for _targetkind, linkerkind in pairs(instance:targetkinds()) do
+                    
+                    -- make linker info
+                    local linkerinfo = {kind = linkerkind}
+                    local linkerflag = targetflags[_targetkind]
+                    if linkerflag then
+                        linkerinfo.flag = linkerflag
+                    end
+                    
+                    -- save linker info
                     linkerkinds[_targetkind] = linkerkinds[_targetkind] or {}
-                    linkerkinds[_targetkind][sourcekind] = linkerkind
+                    linkerkinds[_targetkind][sourcekind] = linkerinfo
                 end
             end
         end
@@ -573,16 +595,18 @@ function language.linkerkind_of(targetkind, sourcekinds)
     -- compute the scores of the linker kinds
     local linkerscores = {}
     for _, sourcekind in ipairs(sourcekinds) do
-        local linkerkind = linkerkinds[targetkind][sourcekind]
-        if linkerkind then
-            linkerscores[linkerkind] = (linkerscores[linkerkind] or 0) + 1
+        local linkerinfo = linkerkinds[targetkind][sourcekind]
+        if linkerinfo then
+            local key = linkerinfo.kind .. (linkerinfo.flag or "")
+            linkerscores[key] = linkerscores[key] or {score = 0, info = linkerinfo}
+            linkerscores[key].score = linkerscores[key].score + 1
         end
     end
 
     -- select the suitable linker kind
-    for linkerkind, linkerscore in pairs(linkerscores) do
-        if #sourcekinds == linkerscore then
-            return linkerkind
+    for _, linkerscore in pairs(linkerscores) do
+        if #sourcekinds == linkerscore.score then
+            return linkerscore.info
         end
     end
 

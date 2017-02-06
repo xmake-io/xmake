@@ -34,6 +34,9 @@ language("swift")
     -- set target kinds
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
 
+    -- set target flags
+    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+
     -- on load
     on_load("load")
 

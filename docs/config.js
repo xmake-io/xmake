@@ -21,7 +21,10 @@ self.$config = {
         title: 'Manual', path: '/manual'
       },
       {
-        title: 'Blog', path: 'http://www.tboox.org'
+        title: 'Articles', path: 'http://www.tboox.org/category/#xmake'
+      },
+      {
+        title: 'Feedback', path: 'https://github.com/tboox/xmake/issues'
       },
       {
         title: 'Community', path: 'http://www.tboox.org/forum'
@@ -41,7 +44,10 @@ self.$config = {
         title: '手册', path: '/zh/manual'
       },
       {
-        title: '博客', path: 'http://www.tboox.org/cn'
+        title: '文章', path: 'http://www.tboox.org/cn/category/#xmake'
+      },
+      {
+        title: '反馈', path: 'https://github.com/tboox/xmake/issues'
       },
       {
         title: '社区', path: 'http://www.tboox.org/forum'
