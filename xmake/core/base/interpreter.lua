@@ -36,6 +36,14 @@ local sandbox   = require("sandbox/sandbox")
 -- traceback
 function interpreter._traceback(errors)
 
+    -- not verbose?
+    if errors then
+        local _, pos = errors:find("[nobacktrace]: ", 1, true)
+        if pos then
+            return errors:sub(pos + 1)
+        end
+    end
+
     -- init results
     local results = ""
     if errors then
@@ -490,6 +498,7 @@ function interpreter.new()
     -- register the builtin interfaces
     instance:api_register(nil, "add_subdirs", interpreter.api_builtin_add_subdirs)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
+    instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
 
     -- load builtin module files
     local builtin_module_files = os.match(path.join(xmake._CORE_DIR, "sandbox/modules/interpreter/*.lua"))
@@ -1279,6 +1288,35 @@ function interpreter:api_builtin_add_subfiles(...)
 
     -- done
     return self:_api_builtin_add_subdirfiles(false, ...)
+end
+
+-- the builtin api: set_xmakever()
+function interpreter:api_builtin_set_xmakever(minver)
+
+    -- no version
+    if not minver then
+        os.raise("[nobacktrace]: set_xmakever(): no version!")
+    end
+
+    -- parse minimum version
+    local minvers = minver:split('.')
+    if not minvers or #minvers ~= 3 then
+        os.raise("[nobacktrace]: set_xmakever(\"%s\"): invalid version format!", minver)
+    end
+
+    -- make minimum numerical version
+    local minvers_num = minvers[1] * 100 + minvers[2] * 10 + minvers[3]
+
+    -- parse current version
+    local curvers = xmake._VERSION_SHORT:split('.')
+
+    -- make current numerical version
+    local curvers_num = curvers[1] * 100 + curvers[2] * 10 + curvers[3]
+
+    -- check version
+    if curvers_num < minvers_num then
+        os.raise("[nobacktrace]: xmake v%s < v%s, please upgrade xmake!", xmake._VERSION_SHORT, minver)
+    end
 end
 
 -- get api function
