@@ -109,6 +109,51 @@ function builder:_mapflags(flags)
     return results
 end
 
+-- get the flag kinds
+function builder:_flagkinds()
+
+    -- get it
+    return self._FLAGKINDS
+end
+
+-- add flags from the configure 
+function builder:_addflags_from_config(flags)
+
+    -- done
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, config.get(flagkind))
+    end
+end
+
+-- add flags from the target 
+function builder:_addflags_from_target(flags, target)
+
+    -- add the target flags 
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, self:_mapflags(target:get(flagkind)))
+    end
+
+    -- for target options? 
+    if target.options then
+
+        -- add the flags for the target options
+        for _, opt in ipairs(target:options()) do
+
+            -- add the flags from the option
+            self:_addflags_from_target(flags, opt)
+        end
+    end
+end
+
+-- add flags from the platform 
+function builder:_addflags_from_platform(flags)
+
+    -- add flags 
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, platform.get(flagkind))
+    end
+end
+
 -- add flags (named) from the language 
 function builder:_addflags_from_language(flags, target)
 

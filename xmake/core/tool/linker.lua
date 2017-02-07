@@ -40,56 +40,19 @@ local tool      = require("tool/tool")
 local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
 
--- get the current flag name
-function linker:_flagname()
-
-    -- get it
-    return self._FLAGNAME
-end
-
--- add flags from the configure 
-function linker:_addflags_from_config(flags)
-
-    -- done
-    table.join2(flags, config.get(self:_flagname()))
-end
-
--- add flags from the target 
-function linker:_addflags_from_target(flags, target)
-
-    -- add the target flags 
-    table.join2(flags, self:_mapflags(target:get(self:_flagname())))
-
-    -- for target options? 
-    if target.options then
-
-        -- add the flags for the target options
-        for _, opt in ipairs(target:options()) do
-
-            -- add the flags from the option
-            table.join2(flags, self:_mapflags(opt:get(self:_flagname())))
-        end
-    end
-end
-
--- add flags from the platform 
-function linker:_addflags_from_platform(flags)
-
-    -- add flags 
-    table.join2(flags, platform.get(self:_flagname()))
-end
-
 -- add flags from the compiler 
 function linker:_addflags_from_compiler(flags, sourcekinds)
 
-    -- done 
+    -- make flags 
     local flags_of_compiler = {}
     for _, sourcekind in ipairs(table.wrap(sourcekinds)) do
 
         -- load compiler
         local instance, errors = compiler.load(sourcekind)
         if instance then
-            table.join2(flags_of_compiler, instance:get(self:_flagname()))
+            for _, flagkind in ipairs(self:_flagkinds()) do
+                table.join2(flags_of_compiler, instance:get(flagkind))
+            end
         end
     end
 
@@ -100,12 +63,20 @@ end
 -- add flags from the linker 
 function linker:_addflags_from_linker(flags)
 
-    -- done
-    table.join2(flags, self:get(self:_flagname()))
+    -- add flags
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, self:get(flagkind))
+    end
 end
 
 -- load the linker from the given target kind
 function linker.load(targetkind, sourcekinds)
+
+    -- check
+    assert(sourcekinds)
+
+    -- wrap sourcekinds first
+    sourcekinds = table.wrap(sourcekinds)
 
     -- get the linker info
     local linkerinfo, errors = language.linkerinfo_of(targetkind, sourcekinds)
@@ -151,8 +122,8 @@ function linker.load(targetkind, sourcekinds)
     end
     instance._NAMEFLAGS = nameflags
 
-    -- init flag name
-    instance._FLAGNAME = linkerinfo.flag
+    -- init flag kinds
+    instance._FLAGKINDS = {linkerinfo.flag}
 
     -- save this instance
     linker._INSTANCES[linkerinfo.kind] = instance
