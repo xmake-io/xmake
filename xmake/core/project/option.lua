@@ -49,7 +49,7 @@ function option:_check_link(sourcefile, objectfile, targetfile)
     self._SOURCEKINDS = language.sourcekind_of(sourcefile)
 
     -- load the linker instance
-    local instance = linker.load("binary")
+    local instance = linker.load("binary", self._SOURCEKINDS)
     if not instance then 
         return false 
     end

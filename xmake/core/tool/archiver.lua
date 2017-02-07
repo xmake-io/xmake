@@ -39,13 +39,6 @@ local platform  = require("platform/platform")
 local tool      = require("tool/tool")
 local builder   = require("tool/builder")
 
--- get the current flag name
-function archiver:_flagname()
-
-    -- get it
-    return self._FLAGNAME
-end
-
 -- get the flags
 function archiver:_flags(target)
 
@@ -87,32 +80,13 @@ function archiver:_flags(target)
     return flags
 end
 
--- add flags from the configure 
-function archiver:_addflags_from_config(flags)
-
-    -- done
-    table.join2(flags, config.get(self:_flagname()))
-end
-
--- add flags from the target 
-function archiver:_addflags_from_target(flags, target)
-
-    -- add the target flags 
-    table.join2(flags, self:_mapflags(target:get(self:_flagname())))
-end
-
--- add flags from the platform 
-function archiver:_addflags_from_platform(flags)
-
-    -- add flags 
-    table.join2(flags, platform.get(self:_flagname()))
-end
-
 -- add flags from the archiver 
 function archiver:_addflags_from_archiver(flags)
 
-    -- done
-    table.join2(flags, self:get(self:_flagname()))
+    -- add flags
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, self:get(flagkind))
+    end
 end
 
 -- load the archiver 
@@ -155,8 +129,8 @@ function archiver.load(sourcekinds)
     end
     instance._NAMEFLAGS = nameflags
 
-    -- init flag name
-    instance._FLAGNAME = "arflags"
+    -- init flag kinds
+    instance._FLAGKINDS = {"arflags"}
 
     -- save this instance
     archiver._INSTANCE = instance

@@ -46,63 +46,18 @@ function compiler:_language()
     return self._LANGUAGE
 end
 
--- get the source flags
-function compiler:_sourceflags()
-
-    -- get it
-    return self._SOURCEFLAGS
-end
-
--- add flags from the configure 
-function compiler:_addflags_from_config(flags)
-
-    -- done
-    for _, sourceflag in ipairs(self:_sourceflags()) do
-        table.join2(flags, config.get(sourceflag))
-    end
-end
-
--- add flags from the target 
-function compiler:_addflags_from_target(flags, target)
-
-    -- add the target flags 
-    for _, sourceflag in ipairs(self:_sourceflags()) do
-        table.join2(flags, self:_mapflags(target:get(sourceflag)))
-    end
-
-    -- for target options? 
-    if target.options then
-
-        -- add the flags for the target options
-        for _, opt in ipairs(target:options()) do
-
-            -- add the flags from the option
-            self:_addflags_from_target(flags, opt)
-        end
-    end
-end
-
--- add flags from the platform 
-function compiler:_addflags_from_platform(flags)
-
-    -- add flags 
-    for _, sourceflag in ipairs(self:_sourceflags()) do
-        table.join2(flags, platform.get(sourceflag))
-    end
-end
-
 -- add flags from the compiler 
 function compiler:_addflags_from_compiler(flags, kind)
 
     -- done
-    for _, sourceflag in ipairs(self:_sourceflags()) do
+    for _, flagkind in ipairs(self:_flagkinds()) do
 
         -- add compiler.xxflags
-        table.join2(flags, self:get(sourceflag))
+        table.join2(flags, self:get(flagkind))
 
         -- add compiler.kind.xxflags
         if kind ~= nil and self:get(kind) ~= nil then
-            table.join2(flags, self:get(kind)[sourceflag])
+            table.join2(flags, self:get(kind)[flagkind])
         end
     end
 end
@@ -139,8 +94,8 @@ function compiler.load(sourcekind)
     -- init name flags
     instance._NAMEFLAGS = result:nameflags()["compiler"]
 
-    -- init source flags
-    instance._SOURCEFLAGS = table.wrap(result:sourceflags()[sourcekind])
+    -- init flag kinds
+    instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
 
     -- save this instance
     compiler._INSTANCES[sourcekind] = instance
