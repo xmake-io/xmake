@@ -28,14 +28,14 @@ search: zh
 
 条件判断的api，一般用于必须要处理特定平台的编译逻辑的场合。。通常跟lua的if语句配合使用。
 
-| 接口                      | 描述                          |
-| ------------------------- | ----------------------------- |
-| [is_os](#is_os)           | 判断当前编译架构              |
-| [is_arch](#is_arch)       | 判断当前构建的操作系统        |
-| [is_plat](#is_plat)       | 判断当前编译平台              |
-| [is_mode](#is_mode)       | 判断当前编译模式              |
-| [is_kind](#is_kind)       | 判断当前编译类型              |
-| [is_option](#is_option)   | 判断选项是否启用              |
+| 接口                      | 描述                          | 支持版本 |
+| ------------------------- | ----------------------------- | -------- |
+| [is_os](#is_os)           | 判断当前编译架构              | >= 2.0.1 |
+| [is_arch](#is_arch)       | 判断当前构建的操作系统        | >= 2.0.1 |
+| [is_plat](#is_plat)       | 判断当前编译平台              | >= 2.0.1 |
+| [is_mode](#is_mode)       | 判断当前编译模式              | >= 2.0.1 |
+| [is_kind](#is_kind)       | 判断当前编译类型              | >= 2.0.1 |
+| [is_option](#is_option)   | 判断选项是否启用              | >= 2.0.1 |
 
 ##### is_os 
 
@@ -223,15 +223,15 @@ end
 
 全局接口影响整个工程描述，被调用后，后面被包含进来的所有子`xmake.lua`都会受影响。
 
-| 接口                                  | 描述                          |
-| ------------------------------------- | ----------------------------- |
-| [set_project](#set_project)           | 设置工程名                    |
-| [set_version](#set_version)           | 设置工程版本                  |
-| [set_xmakever](#set_xmakever)         | 设置最小xmake版本             |
-| [add_subdirs](#add_subdirs)           | 添加子工程目录                |
-| [add_subfiles](#add_subfiles)         | 添加子工程文件                |
-| [add_plugindirs](#add_plugindirs)     | 添加插件目录                  |
-| [add_packagedirs](#add_packagedirs)   | 添加包目录                    |
+| 接口                                  | 描述                          | 支持版本 |
+| ------------------------------------- | ----------------------------- | -------- |
+| [set_project](#set_project)           | 设置工程名                    | >= 2.0.1 |
+| [set_version](#set_version)           | 设置工程版本                  | >= 2.0.1 |
+| [set_xmakever](#set_xmakever)         | 设置最小xmake版本             | >= 2.1.1 |
+| [add_subdirs](#add_subdirs)           | 添加子工程目录                | >= 1.0.1 |
+| [add_subfiles](#add_subfiles)         | 添加子工程文件                | >= 1.0.1 |
+| [add_plugindirs](#add_plugindirs)     | 添加插件目录                  | >= 2.0.1 | 
+| [add_packagedirs](#add_packagedirs)   | 添加包目录                    | >= 2.0.1 |
 
 ##### set_project
 
@@ -385,67 +385,67 @@ target("tbox")
 定义和设置子工程模块，每个`target`对应一个子工程，最后会生成一个目标程序，有可能是可执行程序，也有可能是库模块。
 
 
-| 接口                                  | 描述                                 |
-| ------------------------------------- | ------------------------------------ |
-| [target](#target)                     | 定义工程目标                         |
-| [set_kind](#set_kind)                 | 设置目标编译类型                     |
-| [set_strip](#set_strip)               | 设置是否strip信息                    |
-| [set_options](#set_options)           | 设置关联选项                         |
-| [set_symbols](#set_symbols)           | 设置符号信息                         |
-| [set_warnings](#set_warnings)         | 设置警告级别                         |
-| [set_optimize](#set_optimize)         | 设置优化级别                         |
-| [set_languages](#set_languages)       | 设置代码语言标准                     |
-| [set_headerdir](#set_headerdir)       | 设置头文件安装目录                   |
-| [set_targetdir](#set_targetdir)       | 设置生成目标文件目录                 |
-| [set_objectdir](#set_objectdir)       | 设置对象文件生成目录                 |
-| [on_build](#on_build)                 | 自定义编译脚本                       |
-| [on_clean](#on_clean)                 | 自定义清理脚本                       |
-| [on_package](#on_package)             | 自定义打包脚本                       |
-| [on_install](#on_install)             | 自定义安装脚本                       |
-| [on_uninstall](#on_uninstall)         | 自定义卸载脚本                       |
-| [on_run](#on_run)                     | 自定义运行脚本                       |
-| [before_build](#before_build)         | 在构建之前执行一些自定义脚本         |
-| [before_clean](#before_clean)         | 在清除之前执行一些自定义脚本         |
-| [before_package](#before_package)     | 在打包之前执行一些自定义脚本         |
-| [before_install](#before_install)     | 在安装之前执行一些自定义脚本         |
-| [before_uninstall](#before_uninstall) | 在卸载之前执行一些自定义脚本         |
-| [before_run](#before_run)             | 在运行之前执行一些自定义脚本         |
-| [after_build](#after_build)           | 在构建之后执行一些自定义脚本         |
-| [after_clean](#after_clean)           | 在清除之后执行一些自定义脚本         |
-| [after_package](#after_package)       | 在打包之后执行一些自定义脚本         |
-| [after_install](#after_install)       | 在安装之后执行一些自定义脚本         |
-| [after_uninstall](#after_uninstall)   | 在卸载之后执行一些自定义脚本         |
-| [after_run](#after_run)               | 在运行之后执行一些自定义脚本         |
-| [set_config_h](#set_config_h)         | 设置自动生成的配置头文件路径         |
-| [set_config_h_prefix](#set_config_h)  | 设置自动生成的头文件中宏定义命名前缀 |
-| [add_deps](#add_deps)                 | 添加子工程目标依赖                   |
-| [add_links](#add_links)               | 添加链接库名                         |
-| [add_files](#add_files)               | 添加源代码文件                       |
-| [add_headers](#add_headers)           | 添加安装的头文件                     |
-| [add_linkdirs](#add_linkdirs)         | 添加链接库搜索目录                   |
-| [add_includedirs](#add_includedirs)   | 添加头文件搜索目录                   |
-| [add_defines](#add_defines)           | 添加宏定义                           |
-| [add_undefines](#add_undefines)       | 取消宏定义                           |
-| [add_defines_h](#add_defines_h)       | 添加宏定义到头文件                   |
-| [add_undefines_h](#add_undefines_h)   | 取消宏定义到头文件                   |
-| [add_cflags](#add_cflags)             | 添加c编译选项                        |
-| [add_cxflags](#add_cxflags)           | 添加c/c++编译选项                    |
-| [add_cxxflags](#add_cxxflags)         | 添加c++编译选项                      |
-| [add_mflags](#add_mflags)             | 添加objc编译选项                     |
-| [add_mxflags](#add_mxflags)           | 添加objc/objc++编译选项              |
-| [add_mxxflags](#add_mxxflags)         | 添加objc++编译选项                   |
-| [add_scflags](#add_scflags)           | 添加swift编译选项                    |
-| [add_asflags](#add_asflags)           | 添加汇编编译选项                     |
-| [add_goflags](#add_goflags)           | 添加go编译选项                       |
-| [add_ldflags](#add_ldflags)           | 添加链接选项                         |
-| [add_arflags](#add_arflags)           | 添加静态库归档选项                   |
-| [add_shflags](#add_shflags)           | 添加动态库链接选项                   |
-| [add_cfuncs](#add_cfuncs)             | 添加c库函数检测                      |
-| [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    |
-| [add_packages](#add_packages)         | 添加包依赖                           |
-| [add_options](#add_options)           | 添加关联选项                         |
-| [add_languages](#add_languages)       | 添加语言标准                         |
-| [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     |
+| 接口                                  | 描述                                 | 支持版本 |
+| ------------------------------------- | ------------------------------------ | -------- |
+| [target](#target)                     | 定义工程目标                         | >= 1.0.1 |
+| [set_kind](#set_kind)                 | 设置目标编译类型                     | >= 1.0.1 |
+| [set_strip](#set_strip)               | 设置是否strip信息                    | >= 1.0.1 |
+| [set_options](#set_options)           | 设置关联选项                         | >= 1.0.1 |
+| [set_symbols](#set_symbols)           | 设置符号信息                         | >= 1.0.1 |
+| [set_warnings](#set_warnings)         | 设置警告级别                         | >= 1.0.1 |
+| [set_optimize](#set_optimize)         | 设置优化级别                         | >= 1.0.1 |
+| [set_languages](#set_languages)       | 设置代码语言标准                     | >= 1.0.1 |
+| [set_headerdir](#set_headerdir)       | 设置头文件安装目录                   | >= 1.0.1 |
+| [set_targetdir](#set_targetdir)       | 设置生成目标文件目录                 | >= 1.0.1 |
+| [set_objectdir](#set_objectdir)       | 设置对象文件生成目录                 | >= 1.0.1 |
+| [on_build](#on_build)                 | 自定义编译脚本                       | >= 2.0.1 |
+| [on_clean](#on_clean)                 | 自定义清理脚本                       | >= 2.0.1 |
+| [on_package](#on_package)             | 自定义打包脚本                       | >= 2.0.1 |
+| [on_install](#on_install)             | 自定义安装脚本                       | >= 2.0.1 |
+| [on_uninstall](#on_uninstall)         | 自定义卸载脚本                       | >= 2.0.1 |
+| [on_run](#on_run)                     | 自定义运行脚本                       | >= 2.0.1 |
+| [before_build](#before_build)         | 在构建之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_clean](#before_clean)         | 在清除之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_package](#before_package)     | 在打包之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_install](#before_install)     | 在安装之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_uninstall](#before_uninstall) | 在卸载之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_run](#before_run)             | 在运行之前执行一些自定义脚本         | >= 2.0.1 |
+| [after_build](#after_build)           | 在构建之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_clean](#after_clean)           | 在清除之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_package](#after_package)       | 在打包之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_install](#after_install)       | 在安装之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_uninstall](#after_uninstall)   | 在卸载之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_run](#after_run)               | 在运行之后执行一些自定义脚本         | >= 2.0.1 |
+| [set_config_h](#set_config_h)         | 设置自动生成的配置头文件路径         | >= 1.0.1 |
+| [set_config_h_prefix](#set_config_h)  | 设置自动生成的头文件中宏定义命名前缀 | >= 1.0.1 |
+| [add_deps](#add_deps)                 | 添加子工程目标依赖                   | >= 1.0.1 |
+| [add_links](#add_links)               | 添加链接库名                         | >= 1.0.1 |
+| [add_files](#add_files)               | 添加源代码文件                       | >= 1.0.1 |
+| [add_headers](#add_headers)           | 添加安装的头文件                     | >= 1.0.1 |
+| [add_linkdirs](#add_linkdirs)         | 添加链接库搜索目录                   | >= 1.0.1 |
+| [add_includedirs](#add_includedirs)   | 添加头文件搜索目录                   | >= 1.0.1 |
+| [add_defines](#add_defines)           | 添加宏定义                           | >= 1.0.1 |
+| [add_undefines](#add_undefines)       | 取消宏定义                           | >= 1.0.1 |
+| [add_defines_h](#add_defines_h)       | 添加宏定义到头文件                   | >= 1.0.1 |
+| [add_undefines_h](#add_undefines_h)   | 取消宏定义到头文件                   | >= 1.0.1 |
+| [add_cflags](#add_cflags)             | 添加c编译选项                        | >= 1.0.1 |
+| [add_cxflags](#add_cxflags)           | 添加c/c++编译选项                    | >= 1.0.1 |
+| [add_cxxflags](#add_cxxflags)         | 添加c++编译选项                      | >= 1.0.1 |
+| [add_mflags](#add_mflags)             | 添加objc编译选项                     | >= 1.0.1 |
+| [add_mxflags](#add_mxflags)           | 添加objc/objc++编译选项              | >= 1.0.1 |
+| [add_mxxflags](#add_mxxflags)         | 添加objc++编译选项                   | >= 1.0.1 |
+| [add_scflags](#add_scflags)           | 添加swift编译选项                    | >= 2.0.1 |
+| [add_asflags](#add_asflags)           | 添加汇编编译选项                     | >= 2.0.1 |
+| [add_goflags](#add_goflags)           | 添加go编译选项                       | >= 2.1.1 |
+| [add_ldflags](#add_ldflags)           | 添加链接选项                         | >= 1.0.1 |
+| [add_arflags](#add_arflags)           | 添加静态库归档选项                   | >= 1.0.1 |
+| [add_shflags](#add_shflags)           | 添加动态库链接选项                   | >= 1.0.1 |
+| [add_cfuncs](#add_cfuncs)             | 添加c库函数检测                      | >= 2.0.1 |
+| [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    | >= 2.0.1 |
+| [add_packages](#add_packages)         | 添加包依赖                           | >= 2.0.1 |
+| [add_options](#add_options)           | 添加关联选项                         | >= 2.0.1 |
+| [add_languages](#add_languages)       | 添加语言标准                         | >= 1.0.1 |
+| [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     | >= 1.0.1 |
 
 ##### target
 
@@ -1408,56 +1408,56 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 定义和设置选项开关，每个`option`对应一个选项，可用于自定义编译配置选项、开关设置。
 
 
-| 接口                                            | 描述                                         |
-| ----------------------------------------------- | -------------------------------------------- |
-| [option](#option)                               | 定义选项                                     |
-| [set_default](#set_default)                     | 设置默认值                                   |
-| [set_showmenu](#set_showmenu)                   | 设置是否启用菜单显示                         |
-| [set_category](#set_category)                   | 设置选项分类，仅用于菜单显示                 |
-| [set_description](#set_description)             | 设置菜单显示描述                             |
-| [add_bindings](#add_bindings)                   | 添加关联选项，同步启用和禁用                 |
-| [add_rbindings](#add_rbindings)                 | 添加逆向关联选项，同步启用和禁用             |
-| [add_cincludes](#add_cincludes)                 | 添加c头文件检测                              |
-| [add_cxxincludes](#add_cxxincludes)             | 添加c++头文件检测                            |
-| [add_ctypes](#add_ctypes)                       | 添加c类型检测                                |
-| [add_cxxtypes](#add_cxxtypes)                   | 添加c++类型检测                              |
-| [add_defines_if_ok](#add_defines_if_ok)         | 如果检测选项通过，则添加宏定义               |
-| [add_defines_h_if_ok](#add_defines_h_if_ok)     | 如果检测选项通过，则添加宏定义到配置头文件   |
-| [add_undefines_if_ok](#add_undefines_if_ok)     | 如果检测选项通过，则取消宏定义               |
-| [add_undefines_h_if_ok](#add_undefines_h_if_ok) | 如果检测选项通过，则在配置头文件中取消宏定义 |
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [option](#option)                               | 定义选项                                     | >= 2.0.1 |
+| [set_default](#set_default)                     | 设置默认值                                   | >= 2.0.1 |
+| [set_showmenu](#set_showmenu)                   | 设置是否启用菜单显示                         | >= 1.0.1 |
+| [set_category](#set_category)                   | 设置选项分类，仅用于菜单显示                 | >= 1.0.1 |
+| [set_description](#set_description)             | 设置菜单显示描述                             | >= 1.0.1 |
+| [add_bindings](#add_bindings)                   | 添加关联选项，同步启用和禁用                 | >= 2.0.1 |
+| [add_rbindings](#add_rbindings)                 | 添加逆向关联选项，同步启用和禁用             | >= 2.0.1 |
+| [add_cincludes](#add_cincludes)                 | 添加c头文件检测                              | >= 1.0.1 |
+| [add_cxxincludes](#add_cxxincludes)             | 添加c++头文件检测                            | >= 1.0.1 |
+| [add_ctypes](#add_ctypes)                       | 添加c类型检测                                | >= 1.0.1 |
+| [add_cxxtypes](#add_cxxtypes)                   | 添加c++类型检测                              | >= 1.0.1 |
+| [add_defines_if_ok](#add_defines_if_ok)         | 如果检测选项通过，则添加宏定义               | >= 1.0.1 |
+| [add_defines_h_if_ok](#add_defines_h_if_ok)     | 如果检测选项通过，则添加宏定义到配置头文件   | >= 1.0.1 |
+| [add_undefines_if_ok](#add_undefines_if_ok)     | 如果检测选项通过，则取消宏定义               | >= 1.0.1 |
+| [add_undefines_h_if_ok](#add_undefines_h_if_ok) | 如果检测选项通过，则在配置头文件中取消宏定义 | >= 1.0.1 |
 
 ##### 通用接口 (target)
 
 下面的这些接口，是跟`target`目标域接口通用的，在`option()`和`target()`域范围内都能同时使用，可直接参考上面`target`中的接口描述。
 
-| 接口                                  | 描述                                 |
-| ------------------------------------- | ------------------------------------ |
-| [set_warnings](#set_warnings)         | 设置警告级别                         |
-| [set_optimize](#set_optimize)         | 设置优化级别                         |
-| [set_languages](#set_languages)       | 设置代码语言标准                     |
-| [add_links](#add_links)               | 添加链接库名                         |
-| [add_linkdirs](#add_linkdirs)         | 添加链接库搜索目录                   |
-| [add_includedirs](#add_includedirs)   | 添加头文件搜索目录                   |
-| [add_defines](#add_defines)           | 添加宏定义                           |
-| [add_undefines](#add_undefines)       | 取消宏定义                           |
-| [add_defines_h](#add_defines_h)       | 添加宏定义到头文件                   |
-| [add_undefines_h](#add_undefines_h)   | 取消宏定义到头文件                   |
-| [add_cflags](#add_cflags)             | 添加c编译选项                        |
-| [add_cxflags](#add_cxflags)           | 添加c/c++编译选项                    |
-| [add_cxxflags](#add_cxxflags)         | 添加c++编译选项                      |
-| [add_mflags](#add_mflags)             | 添加objc编译选项                     |
-| [add_mxflags](#add_mxflags)           | 添加objc/objc++编译选项              |
-| [add_mxxflags](#add_mxxflags)         | 添加objc++编译选项                   |
-| [add_scflags](#add_scflags)           | 添加swift编译选项                    |
-| [add_asflags](#add_asflags)           | 添加汇编编译选项                     |
-| [add_goflags](#add_goflags)           | 添加go编译选项                       |
-| [add_ldflags](#add_ldflags)           | 添加链接选项                         |
-| [add_arflags](#add_arflags)           | 添加静态库归档选项                   |
-| [add_shflags](#add_shflags)           | 添加动态库链接选项                   |
-| [add_cfuncs](#add_cfuncs)             | 添加c库函数检测                      |
-| [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    |
-| [add_languages](#add_languages)       | 添加语言标准                         |
-| [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     |
+| 接口                                  | 描述                                 | 支持版本 |
+| ------------------------------------- | ------------------------------------ | -------- |
+| [set_warnings](#set_warnings)         | 设置警告级别                         | >= 1.0.1 |
+| [set_optimize](#set_optimize)         | 设置优化级别                         | >= 1.0.1 |
+| [set_languages](#set_languages)       | 设置代码语言标准                     | >= 1.0.1 |
+| [add_links](#add_links)               | 添加链接库名                         | >= 1.0.1 |
+| [add_linkdirs](#add_linkdirs)         | 添加链接库搜索目录                   | >= 1.0.1 |
+| [add_includedirs](#add_includedirs)   | 添加头文件搜索目录                   | >= 1.0.1 |
+| [add_defines](#add_defines)           | 添加宏定义                           | >= 1.0.1 |
+| [add_undefines](#add_undefines)       | 取消宏定义                           | >= 1.0.1 |
+| [add_defines_h](#add_defines_h)       | 添加宏定义到头文件                   | >= 1.0.1 |
+| [add_undefines_h](#add_undefines_h)   | 取消宏定义到头文件                   | >= 1.0.1 |
+| [add_cflags](#add_cflags)             | 添加c编译选项                        | >= 1.0.1 |
+| [add_cxflags](#add_cxflags)           | 添加c/c++编译选项                    | >= 1.0.1 |
+| [add_cxxflags](#add_cxxflags)         | 添加c++编译选项                      | >= 1.0.1 |
+| [add_mflags](#add_mflags)             | 添加objc编译选项                     | >= 2.0.1 |
+| [add_mxflags](#add_mxflags)           | 添加objc/objc++编译选项              | >= 2.0.1 |
+| [add_mxxflags](#add_mxxflags)         | 添加objc++编译选项                   | >= 2.0.1 |
+| [add_scflags](#add_scflags)           | 添加swift编译选项                    | >= 2.1.1 |
+| [add_asflags](#add_asflags)           | 添加汇编编译选项                     | >= 2.1.1 |
+| [add_goflags](#add_goflags)           | 添加go编译选项                       | >= 2.1.1 |
+| [add_ldflags](#add_ldflags)           | 添加链接选项                         | >= 2.1.1 |
+| [add_arflags](#add_arflags)           | 添加静态库归档选项                   | >= 2.1.1 |
+| [add_shflags](#add_shflags)           | 添加动态库链接选项                   | >= 2.0.1 |
+| [add_cfuncs](#add_cfuncs)             | 添加c库函数检测                      | >= 1.0.1 |
+| [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    | >= 1.0.1 |
+| [add_languages](#add_languages)       | 添加语言标准                         | >= 2.0.1 |
+| [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     | >= 2.0.1 |
 
 
 ##### option
