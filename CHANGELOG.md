@@ -6,8 +6,9 @@
 
 * Add `--links`, `--linkdirs` and `--includedirs` configure arguments
 * Add app2ipa plugin
-* Add dictionary syntax style for xmake.lua
-* Provide smart scanning and building mode without xmake.lua
+* Add dictionary syntax style for `xmake.lua`
+* Provide smart scanning and building mode without `xmake.lua`
+* Add `set_xmakever` interface for `xmake.lua`
 
 ### Changes
 
@@ -196,8 +197,9 @@
 
 * 添加`--links`, `--linkdirs` and `--includedirs` 配置参数
 * 添加app2ipa插件
-* 为xmake.lua工程描述增加dictionay语法风格
-* 提供智能扫描编译模式，在无任何xmake.lua等工程描述文件的情况下，也能直接快速编译
+* 为`xmake.lua`工程描述增加dictionay语法风格
+* 提供智能扫描编译模式，在无任何`xmake.lua`等工程描述文件的情况下，也能直接快速编译
+* 为`xmake.lua`工程描述添加`set_xmakever`接口，更加友好的处理版本兼容性问题 
 
 ### 改进
 

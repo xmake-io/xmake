@@ -227,6 +227,7 @@ end
 | ------------------------------------- | ----------------------------- |
 | [set_project](#set_project)           | 设置工程名                    |
 | [set_version](#set_version)           | 设置工程版本                  |
+| [set_xmakever](#set_xmakever)         | 设置最小xmake版本             |
 | [add_subdirs](#add_subdirs)           | 添加子工程目录                |
 | [add_subfiles](#add_subfiles)         | 添加子工程文件                |
 | [add_plugindirs](#add_plugindirs)     | 添加插件目录                  |
@@ -265,6 +266,21 @@ set_version("1.5.1")
 #define TB_CONFIG_VERSION_MINOR 5
 #define TB_CONFIG_VERSION_ALTER 1
 #define TB_CONFIG_VERSION_BUILD 201510220917
+```
+
+##### set_xmakever
+
+###### 设置最小xmake版本
+
+用于处理xmake版本兼容性问题，如果项目的`xmake.lua`，通过这个接口设置了最小xmake版本支持，那么用户环境装的xmake低于要求的版本，就会提示错误。
+
+一般情况下，建议默认对其进行设置，这样对用户比较友好，如果`xmake.lua`中用到了高版本的api接口，用户那边至少可以知道是否因为版本不对导致的构建失败。
+
+设置如下：
+
+```lua
+-- 设置最小版本为：2.1.0，低于此版本的xmake编译此工程将会提示版本错误信息
+set_xmakever("2.1.0")
 ```
 
 ##### add_subdirs
