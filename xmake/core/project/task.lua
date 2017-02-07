@@ -78,7 +78,7 @@ function task._translate_menu(menu)
                     end
                 else
                     -- errors
-                    os.raise("taskmenu: %s", results)
+                    return nil, string.format("taskmenu: %s", results)
                 end
             else
                 table.insert(options_full, opt)
@@ -120,7 +120,7 @@ function task._translate_menu(menu)
                             local ok, results = sandbox.load(description)
                             if not ok then
                                 -- errors
-                                os.raise("taskmenu: %s", results)
+                                return nil, string.format("taskmenu: %s", results)
                             end
 
                             -- ok
@@ -310,16 +310,13 @@ function task._load(filepath)
     -- load tasks
     local tasks, errors = interp:load(filepath, "task", true, true)
     if not tasks and os.isfile(filepath) then
-        -- trace
-        os.raise(errors)
+        return nil, errors
     end
 
     -- bind tasks for menu with an sandbox instance
     local ok, errors = task._bind(tasks)
     if not ok then
-        -- trace
-        os.raise(errors)
-        return 
+        return nil, errors
     end
 
     -- ok?
@@ -345,11 +342,13 @@ function task.tasks()
             for _, filepath in ipairs(files) do
 
                 -- load tasks
-                local results = task._load(filepath)
+                local results, errors = task._load(filepath)
 
                 -- save tasks
                 if results then
                     table.join2(tasks, results)
+                else
+                    return nil, errors
                 end
             end
         end
@@ -365,9 +364,7 @@ function task.tasks()
         -- bind tasks for menu with an sandbox instance
         local ok, errors = task._bind(projectasks, interp)
         if not ok then
-            -- trace
-            os.raise(errors)
-            return 
+            return nil, errors
         end
 
         -- save tasks
@@ -379,7 +376,7 @@ function task.tasks()
             end
         end
     else
-        os.raise(errors)
+        return nil, errors
     end
 
     -- save it
@@ -396,8 +393,10 @@ function task.run(name, ...)
     assert(name)
 
     -- load tasks
-    local tasks = task.tasks()
-    assert(tasks)
+    local tasks, errors = task.tasks()
+    if not tasks then
+        return false, errors
+    end
 
     -- the interpreter
     local interp = task._interpreter()
@@ -431,8 +430,10 @@ end
 function task.menu()
 
     -- load tasks
-    local tasks = task.tasks()
-    assert(tasks)
+    local tasks, errors = task.tasks()
+    if not tasks then
+        return nil, errors
+    end
 
     -- make menu
     local menu = {}

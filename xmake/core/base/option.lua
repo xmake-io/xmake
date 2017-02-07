@@ -41,11 +41,13 @@ function option._translate(menu)
     local submenus_all = {}
     for k, submenu in pairs(menu) do
         if type(submenu) == "function" then
-            local _submenus = submenu()
+            local _submenus, errors = submenu()
             if _submenus then
                 for k, m in pairs(_submenus) do
                     submenus_all[k] = m
                 end
+            else 
+                return false, errors
             end
         else
             submenus_all[k] = submenu
@@ -55,6 +57,9 @@ function option._translate(menu)
 
     -- save menu
     option._MENU = menu
+
+    -- ok
+    return true
 end
 
 -- get the task menu
@@ -181,7 +186,10 @@ function option.init(menu)
     assert(menu)
 
     -- translate menu
-    option._translate(menu)
+    local ok, errors = option._translate(menu)
+    if not ok then
+        return false, errors
+    end
 
     -- the main menu
     local main = option._taskmenu("main")
@@ -236,10 +244,7 @@ function option.init(menu)
             option.show_menu(context.taskname)
 
             -- invalid option
-            print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
-
-            -- failed
-            return false
+            return false, "invalid option: " .. arg
         end
 
         -- --key=value or -k value or -k?
@@ -283,10 +288,7 @@ function option.init(menu)
                 option.show_menu(context.taskname)
 
                 -- invalid option
-                print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
-
-                -- failed
-                return false
+                return false, "invalid option: " .. arg
             end
 
             -- -k value? continue to get the value
@@ -303,10 +305,7 @@ function option.init(menu)
                     option.show_menu(context.taskname)
 
                     -- invalid option
-                    print(colors("\n${bright red}error: ${default red}invalid option: " .. option._ifelse(idx, arg, key)))
-
-                    -- failed
-                    return false
+                    return false, "invalid option: " .. option._ifelse(idx, arg, key)
                 end
 
                 -- get value
@@ -320,10 +319,7 @@ function option.init(menu)
                 option.show_menu(context.taskname)
 
                 -- invalid option
-                print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
-            
-                -- failed
-                return false
+                return false, "invalid option: " .. arg
             end
 
             -- value is "true" or "false", translate it
@@ -371,11 +367,7 @@ function option.init(menu)
                 option.show_main()
 
                 -- invalid task
-                print(colors("\n${bright red}error: ${default red}invalid task: " .. key))
-
-                -- failed
-                return false
-                
+                return false, "invalid task: " .. key
             end
 
         -- value?
@@ -437,12 +429,8 @@ function option.init(menu)
                 option.show_menu(context.taskname)
 
                 -- invalid option
-                print(colors("\n${bright red}error: ${default red}invalid option: " .. arg))
-
-                -- failed
-                return false
+                return false, "invalid option: " .. arg
             end
-
         end
     end
 

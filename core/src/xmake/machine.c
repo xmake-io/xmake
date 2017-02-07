@@ -348,12 +348,12 @@ xm_machine_ref_t xm_machine_init()
 
         // init version string
         tb_char_t version_cstr[256] = {0};
-        tb_snprintf(version_cstr, sizeof(version_cstr), "XMake v%u.%u.%u.%llu", version->major, version->minor, version->alter, version->build);
+        tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u.%llu", version->major, version->minor, version->alter, version->build);
         lua_pushstring(impl->lua, version_cstr);
         lua_setglobal(impl->lua, "_VERSION");
 
         // init short version string
-        tb_snprintf(version_cstr, sizeof(version_cstr), "XMake v%u.%u.%u", version->major, version->minor, version->alter);
+        tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u", version->major, version->minor, version->alter);
         lua_pushstring(impl->lua, version_cstr);
         lua_setglobal(impl->lua, "_VERSION_SHORT");
 

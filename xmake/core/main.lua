@@ -39,7 +39,7 @@ local history       = require("project/history")
 local menu =
 {
     -- title
-    title = xmake._VERSION .. ", The Make-like Build Utility based on Lua"
+    title = "XMake v" .. xmake._VERSION .. ", The Make-like Build Utility based on Lua"
 
     -- copyright
 ,   copyright = "Copyright (C) 2015-2016 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
@@ -108,7 +108,9 @@ function main.done()
     main._init()
 
     -- init option 
-    if not option.init(menu) then 
+    local ok, errors = option.init(menu)  
+    if not ok then
+        utils.error(errors)
         return -1
     end
 
@@ -126,7 +128,7 @@ function main.done()
     history.save("cmdlines", option.cmdline())
 
     -- run task    
-    local ok, errors = task.run(option.taskname() or "build")
+    ok, errors = task.run(option.taskname() or "build")
     if not ok then
         utils.error(errors)
         return -1
