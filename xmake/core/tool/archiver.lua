@@ -92,51 +92,8 @@ end
 -- load the archiver 
 function archiver.load(sourcekinds)
 
-    -- get it directly from cache dirst
-    if archiver._INSTANCE then
-        return archiver._INSTANCE
-    end
-
-    -- new instance
-    local instance = table.inherit(archiver, builder)
-
-    -- load the archiver tool from the source file type
-    local result, errors = tool.load("ar")
-    if not result then 
-        return nil, errors
-    end
-    instance._TOOL = result
- 
-    -- load the name flags of archiver 
-    local nameflags = {}
-    local nameflags_exists = {}
-    for _, sourcekind in ipairs(sourcekinds) do
-
-        -- load language 
-        result, errors = language.load_sk(sourcekind)
-        if not result then 
-            return nil, errors
-        end
-
-        -- merge name flags
-        for _, flaginfo in ipairs(table.wrap(result:nameflags()["archiver"])) do
-            local key = flaginfo[1] .. flaginfo[2]
-            if not nameflags_exists[key] then
-                table.insert(nameflags, flaginfo)
-                nameflags_exists[key] = flaginfo
-            end
-        end
-    end
-    instance._NAMEFLAGS = nameflags
-
-    -- init flag kinds
-    instance._FLAGKINDS = {"arflags"}
-
-    -- save this instance
-    archiver._INSTANCE = instance
-
-    -- ok
-    return instance
+    -- load linker
+    return builder.load_linker(archiver, "archiver", "static", sourcekinds)
 end
 
 -- archive the library file
