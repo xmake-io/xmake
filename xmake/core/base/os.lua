@@ -35,6 +35,24 @@ local string    = require("base/string")
 -- save original tmpdir
 os._tmpdir = os._tmpdir or os.tmpdir
 
+-- translate argv for wildcard
+function os._translate_argv(argv)
+
+    -- match all arguments
+    local results = {}
+    for _, arg in ipairs(table.wrap(argv)) do
+        local pathes = os.match(arg)
+        if #pathes > 0 then
+            table.join2(results, pathes)
+        else
+            table.insert(results, arg)
+        end
+    end
+
+    -- ok?
+    return results
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern 
@@ -283,7 +301,7 @@ function os.runv(shellname, argv)
     local log = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(shellname, table.wrap(argv), log, log)
+    local ok = os.execv(shellname, os._translate_argv(argv), log, log)
     if ok ~= 0 then
 
         -- make errors
@@ -321,7 +339,7 @@ function os.execv(shellname, argv, outfile, errfile)
 
     -- open command
     local ok = -1
-    local proc = process.openv(shellname, table.wrap(argv), outfile, errfile)
+    local proc = process.openv(shellname, os._translate_argv(argv), outfile, errfile)
     if proc ~= nil then
 
         -- wait process
@@ -381,7 +399,7 @@ function os.iorunv(shellname, argv)
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(shellname, argv, outfile, errfile) 
+    local ok = os.execv(shellname, os._translate_argv(argv), outfile, errfile) 
 
     -- get output and error data
     local outdata = io.readall(outfile)
