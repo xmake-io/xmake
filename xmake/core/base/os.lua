@@ -28,6 +28,7 @@ local os = os or {}
 -- load modules
 local io        = require("base/io")
 local path      = require("base/path")
+local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
@@ -265,28 +266,14 @@ end
 -- run shell
 function os.run(cmd)
 
-    -- make temporary log file
-    local log = os.tmpfile()
-
-    -- execute it
-    local ok = os.exec(cmd, log, log)
-    if ok ~= 0 then
-
-        -- make errors
-        local errors = io.readall(log)
-
-        -- remove the temporary log file
-        os.rm(log)
-
-        -- failed
-        return false, errors
+    -- parse arguments
+    local argv = os.argv(cmd)
+    if not argv or #argv <= 0 then
+        return false, string.format("invalid command: %s", cmd)
     end
 
-    -- remove the temporary log file
-    os.rm(log)
-
-    -- ok
-    return true
+    -- run it
+    return os.runv(argv[1], table.slice(argv, 2))
 end
 
 -- run shell with arguments list
@@ -319,45 +306,14 @@ end
 -- execute shell 
 function os.exec(cmd, outfile, errfile)
 
-    -- open command
-    local ok = -1
-    local proc = process.open(cmd, outfile, errfile)
-    if proc ~= nil then
-
-        -- wait process
-        local waitok = -1
-        local status = -1 
-        if coroutine.running() then
-
-            -- save the current directory
-            local curdir = os.curdir()
-
-            -- wait it
-            repeat
-                -- poll it
-                waitok, status = process.wait(proc, 0)
-                if waitok == 0 then
-                    waitok, status = coroutine.yield(proc)
-                end
-            until waitok ~= 0
-
-            -- resume the current directory
-            os.cd(curdir)
-        else
-            waitok, status = process.wait(proc, -1)
-        end
-
-        -- get status
-        if waitok > 0 then
-            ok = status
-        end
-
-        -- close process
-        process.close(proc)
+    -- parse arguments
+    local argv = os.argv(cmd)
+    if not argv or #argv <= 0 then
+        return -1
     end
 
-    -- ok?
-    return ok
+    -- run it
+    return os.execv(argv[1], table.slice(argv, 2), outfile, errfile)
 end
 
 -- execute shell with arguments list
@@ -407,23 +363,14 @@ end
 -- run shell and return output and error data
 function os.iorun(cmd)
 
-    -- make temporary output and error file
-    local outfile = os.tmpfile()
-    local errfile = os.tmpfile()
+    -- parse arguments
+    local argv = os.argv(cmd)
+    if not argv or #argv <= 0 then
+        return false, string.format("invalid command: %s", cmd)
+    end
 
-    -- run command
-    local ok = os.exec(cmd, outfile, errfile) 
-
-    -- get output and error data
-    local outdata = io.readall(outfile)
-    local errdata = io.readall(errfile)
-
-    -- remove the temporary output and error file
-    os.rm(outfile)
-    os.rm(errfile)
-
-    -- ok?
-    return ok == 0, outdata, errdata
+    -- run it
+    return os.iorunv(argv[1], table.slice(argv, 2))
 end
 
 -- run shell with arguments and return output and error data

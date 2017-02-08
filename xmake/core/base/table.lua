@@ -25,6 +25,18 @@
 -- define module: table
 local table = table or {}
 
+-- clear the table
+function table.clear(self)
+
+    -- check
+    assert(self and type(self) == "table")
+
+    -- clear it
+    for k in next, self do
+        rawset(self, k, nil) 
+    end
+end
+
 -- join all objects and tables
 function table.join(...)
 
@@ -69,18 +81,6 @@ function table.join2(self, ...)
     return self
 end
 
--- clear the table
-function table.clear(self)
-
-    -- check
-    assert(self and type(self) == "table")
-
-    -- clear it
-    for k in next, self do
-        rawset(self, k, nil) 
-    end
-end
-
 -- copy the table to self
 function table.copy(copied)
 
@@ -114,6 +114,55 @@ function table.copy2(self, copied)
         self[k] = v
     end
 
+end
+
+-- inherit interfaces and create a new instance
+function table.inherit(...)
+
+    -- init instance
+    local classes = {...}
+    local instance = {}
+    for _, clasz in ipairs(classes) do
+        for k, v in pairs(clasz) do
+            if type(v) == "function" then
+                instance[k] = v
+            end
+        end
+    end
+
+    -- ok?
+    return instance
+end
+
+-- inherit interfaces from the given class
+function table.inherit2(self, ...)
+
+    -- check
+    assert(self)
+
+    -- init instance
+    local classes = {...}
+    for _, clasz in ipairs(classes) do
+        for k, v in pairs(clasz) do
+            if type(v) == "function" and self[k] == nil then
+                self[k] = v
+            end
+        end
+    end
+
+    -- ok?
+    return self
+end
+
+-- slice table array
+function table.slice(self, first, last, step)
+
+    -- slice it
+    local sliced = {}
+    for i = first or 1, last or #self, step or 1 do
+        sliced[#sliced + 1] = self[i]
+    end
+    return sliced
 end
 
 -- is array?
@@ -319,44 +368,6 @@ function table.unique(array)
 
     -- ok
     return array
-end
-
--- inherit interfaces and create a new instance
-function table.inherit(...)
-
-    -- init instance
-    local classes = {...}
-    local instance = {}
-    for _, clasz in ipairs(classes) do
-        for k, v in pairs(clasz) do
-            if type(v) == "function" then
-                instance[k] = v
-            end
-        end
-    end
-
-    -- ok?
-    return instance
-end
-
--- inherit interfaces from the given class
-function table.inherit2(self, ...)
-
-    -- check
-    assert(self)
-
-    -- init instance
-    local classes = {...}
-    for _, clasz in ipairs(classes) do
-        for k, v in pairs(clasz) do
-            if type(v) == "function" and self[k] == nil then
-                self[k] = v
-            end
-        end
-    end
-
-    -- ok?
-    return self
 end
 
 -- return module: table

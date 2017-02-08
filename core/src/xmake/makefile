@@ -14,6 +14,7 @@ xmake_CONFIG 			= y
 xmake_C_FILES 			+= \
 						xmake \
 						machine \
+						os/argv \
 						os/find \
 						os/uuid \
 						os/isdir \
