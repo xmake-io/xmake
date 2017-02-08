@@ -42,7 +42,7 @@ function _remove(filedirs)
         -- remove it if the parent directory is empty
         local parentdir = path.directory(filedir)
         while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
-            os.rm(parentdir)
+            os.tryrm(parentdir)
             parentdir = path.directory(parentdir)
         end
     end
