@@ -23,13 +23,7 @@
 --
 
 -- main
-function rmdir.main(self, ...)
-
-    -- rmdir all
-    for _, dir in ipairs(...) do
-        if os.isdir(dir) then
-            os.rmdir(dir) 
-        end
-    end
-
+function main(...)
+    os.rmdir(...)
 end
+

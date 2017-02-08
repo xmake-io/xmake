@@ -26,9 +26,8 @@
 function main(...)
 
     -- cat all
-    for _, v in ipairs(...) do
+    for _, v in ipairs(os.argw{...}) do
         if os.isfile(v) then io.cat(v) end
     end
     print("")
-
 end

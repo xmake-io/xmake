@@ -24,12 +24,6 @@
 
 -- main
 function main(...)
-
-    -- mkdir all
-    for _, dir in ipairs(...) do
-        if not os.exists(dir) then
-            os.mkdir(dir)
-        end
-    end
+    os.mkdir(...)
 end
 

@@ -24,11 +24,6 @@
 
 -- main 
 function mv.main(...)
-
-    -- mv it
-    local pathes = ...
-    if pathes and table.getn(pathes) == 2 then
-        os.mv(pathes[1], pathes[2])
-    end
+    os.mv(...)
 end
 

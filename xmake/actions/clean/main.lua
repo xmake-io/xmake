@@ -40,7 +40,7 @@ function _remove(filedirs)
         if os.exists(filedir) then
 
             -- remove it
-            os.rm(filedir, true)
+            os.rm(filedir)
 
         -- remove "*.o/obj" files?
         elseif filedir:find("%*") then
@@ -49,7 +49,7 @@ function _remove(filedirs)
             for _, file in ipairs(os.match(filedir)) do
 
                 -- remove it
-                os.rm(file, true)
+                os.rm(file)
             end
         end
     end
