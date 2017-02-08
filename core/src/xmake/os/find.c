@@ -51,8 +51,8 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     tb_char_t const* pattern = (tb_char_t const*)tuple[1].cstr;
     tb_assert_and_check_return_val(pattern, tb_false);
 
-    // find directory?
-    tb_bool_t findir = tuple[2].b;
+    // the match mode
+    tb_long_t mode = tuple[2].l;
 
     // the count
     tb_size_t* pcount = &(tuple[3].ul);
@@ -61,7 +61,8 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     tb_trace_d("path[%c]: %s", info->type == TB_FILE_TYPE_DIRECTORY? 'd' : 'f', path);
 
     // find file or directory?
-    if ((findir && info->type == TB_FILE_TYPE_DIRECTORY) || (!findir && info->type == TB_FILE_TYPE_FILE))
+    tb_size_t match = (mode == 1)? TB_FILE_TYPE_DIRECTORY : ((mode == 0)? TB_FILE_TYPE_FILE : (TB_FILE_TYPE_FILE | TB_FILE_TYPE_DIRECTORY));
+    if (info->type & match)
     {
         // done path:match(pattern)
         lua_getfield(lua, -1, "match");
@@ -158,8 +159,8 @@ tb_int_t xm_os_find(lua_State* lua)
     // is recurse?
     tb_bool_t recurse = lua_toboolean(lua, 3);
 
-    // find directory?
-    tb_bool_t findir = lua_toboolean(lua, 4);
+    // the match mode
+    tb_long_t mode = lua_tointeger(lua, 4);
 
     // init table
     lua_newtable(lua);
@@ -171,7 +172,7 @@ tb_int_t xm_os_find(lua_State* lua)
     tb_value_t tuple[4];
     tuple[0].ptr    = lua;
     tuple[1].cstr   = pattern;
-    tuple[2].b      = findir;
+    tuple[2].l      = mode;
     tuple[3].ul     = 0;
     tb_directory_walk(rootdir, recurse, tb_true, xm_os_find_walk, tuple);
 

@@ -41,7 +41,7 @@ function os._translate_argv(argv)
     -- match all arguments
     local results = {}
     for _, arg in ipairs(table.wrap(argv)) do
-        local pathes = os.match(arg)
+        local pathes = os.match(arg, 'a')
         if #pathes > 0 then
             table.join2(results, pathes)
         else
@@ -59,7 +59,10 @@ end
 --                  uses "*" to match any part of a file or directory name,
 --                  uses "**" to recurse into subdirectories.
 --
--- @param findir    true: find directory, false: find file
+-- @param mode      the match mode
+--                  - only find file:           'f' or false or nil
+--                  - only find directory:      'd' or true
+--                  - find file and directory:  'a'
 -- @return          the result array and count
 --
 -- @code
@@ -68,7 +71,7 @@ end
 -- local file = os.match("./src/test.c")
 -- @endcode
 --
-function os.match(pattern, findir)
+function os.match(pattern, mode)
 
     -- get the excludes
     local excludes = pattern:match("|.*$")
@@ -114,9 +117,35 @@ function os.match(pattern, findir)
     if rootdir == '.' then
         pattern = "." .. path.seperator() .. pattern
     end
+
+    -- translate mode
+    if type(mode) == "string" then
+        local modes = {a = -1, f = 0, d = 1}
+        mode = modes[mode]
+        assert(mode, "invalid match mode: %s", mode)
+    elseif mode then
+        mode = 1
+    else 
+        mode = 0
+    end
     
     -- find it
-    return os.find(rootdir, pattern, recurse, findir, excludes)
+    return os.find(rootdir, pattern, recurse, mode, excludes)
+end
+
+-- match directories
+function os.dirs(pattern, ...)
+    return os.match(pattern, 'd')
+end
+
+-- match files
+function os.files(pattern)
+    return os.match(pattern, 'f')
+end
+
+-- match files and directories
+function os.filedirs(pattern)
+    return os.match(pattern, 'a')
 end
 
 -- copy file or directory
