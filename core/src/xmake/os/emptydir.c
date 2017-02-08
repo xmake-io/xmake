@@ -44,7 +44,7 @@ static tb_bool_t xm_os_emptydir_walk(tb_char_t const* path, tb_file_info_t const
     tb_assert_and_check_return_val(path && info && is_emptydir, tb_false);
 
     // is emptydir?
-    if (info->type == TB_FILE_TYPE_DIRECTORY || info->type == TB_FILE_TYPE_FILE)
+    if (info->type == TB_FILE_TYPE_FILE)
     {
         // not emptydir 
         *is_emptydir = tb_false;

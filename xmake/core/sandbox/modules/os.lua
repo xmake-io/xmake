@@ -39,6 +39,7 @@ sandbox_os.argv     = os.argv
 sandbox_os.argw     = os.argw
 sandbox_os.mtime    = os.mtime
 sandbox_os.mclock   = os.mclock
+sandbox_os.emptydir = os.emptydir
 
 -- copy file or directory
 function sandbox_os.cp(...)
@@ -81,11 +82,24 @@ function sandbox_os.rm(...)
         table.insert(args, vformat(arg))
     end
 
-    -- done
+    -- remove it
     local ok, errors = os.rm(unpack(args))
     if not ok then
         os.raise(errors)
     end
+end
+
+-- try to remove files or directories
+function sandbox_os.tryrm(...)
+    
+    -- format arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        table.insert(args, vformat(arg))
+    end
+
+    -- remove it
+    os.rm(unpack(args))
 end
 
 -- change to directory
