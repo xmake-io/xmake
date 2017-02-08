@@ -52,9 +52,9 @@ task("lua")
 
         -- import script
         if os.isfile(name) then
-            import(path.basename(name), {rootdir = path.directory(name)}).main(option.get("arguments"))
+            import(path.basename(name), {rootdir = path.directory(name)}).main(unpack(option.get("arguments")))
         else
-            import("scripts." .. name).main(option.get("arguments"))
+            import("scripts." .. name).main(unpack(option.get("arguments")))
         end
     end)
 

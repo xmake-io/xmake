@@ -26,9 +26,8 @@
 function main(...)
 
     -- echo all
-    for _, v in ipairs(...) do
-        printf("%s ", v:decode())
+    for _, v in ipairs(os.argw{...}) do
+        printf("%s ", v)
     end
     print("")
-
 end

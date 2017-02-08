@@ -24,13 +24,6 @@
 
 -- main
 function main(...)
-
-    -- rm all
-    for _, file_or_dir in ipairs(...) do
-        if os.exists(file_or_dir) then
-            os.rm(file_or_dir)
-        end
-    end
-
+    os.rm(...)
 end
 

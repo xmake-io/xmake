@@ -35,6 +35,8 @@ local sandbox_os = sandbox_os or {}
 -- inherit some builtin interfaces
 sandbox_os.date     = os.date
 sandbox_os.time     = os.time
+sandbox_os.argv     = os.argv
+sandbox_os.argw     = os.argw
 sandbox_os.mtime    = os.mtime
 sandbox_os.mclock   = os.mclock
 
@@ -55,38 +57,35 @@ function sandbox_os.cp(...)
 end
 
 -- move file or directory
-function sandbox_os.mv(src, dst)
+function sandbox_os.mv(...)
     
-    -- check
-    assert(src and dst)
-
-    -- format it first
-    src = vformat(src)
-    dst = vformat(dst)
+    -- format arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        table.insert(args, vformat(arg))
+    end
 
     -- done
-    local ok, errors = os.mv(src, dst)
+    local ok, errors = os.mv(unpack(args))
     if not ok then
         os.raise(errors)
     end
-
 end
 
--- remove file or directory
-function sandbox_os.rm(file_or_dir, rm_superdir_if_empty)
+-- remove files or directories
+function sandbox_os.rm(...)
     
-    -- check
-    assert(file_or_dir)
-
-    -- format it first
-    file_or_dir = vformat(file_or_dir)
+    -- format arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        table.insert(args, vformat(arg))
+    end
 
     -- done
-    local ok, errors = os.rm(file_or_dir, rm_superdir_if_empty)
+    local ok, errors = os.rm(unpack(args))
     if not ok then
         os.raise(errors)
     end
-
 end
 
 -- change to directory
@@ -111,37 +110,35 @@ function sandbox_os.cd(dir)
     return olddir
 end
 
--- create directory
-function sandbox_os.mkdir(dir)
-    
-    -- check
-    assert(dir)
-
-    -- format it first
-    dir = vformat(dir)
+-- create directories
+function sandbox_os.mkdir(...)
+   
+    -- format arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        table.insert(args, vformat(arg))
+    end
 
     -- done
-    if not os.isdir(dir) then
-        if not os.mkdir(dir) then
-            os.raise("create directory: %s failed!", dir)
-        end
+    local ok, errors = os.mkdir(unpack(args))
+    if not ok then
+        os.raise(errors)
     end
 end
 
--- remove directory
-function sandbox_os.rmdir(dir)
+-- remove directories
+function sandbox_os.rmdir(...)
     
-    -- check
-    assert(dir)
-
-    -- format it first
-    dir = vformat(dir)
+    -- format arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        table.insert(args, vformat(arg))
+    end
 
     -- done
-    if os.isdir(dir) then
-        if not os.rmdir(dir) then
-            os.raise("remove directory: %s failed!", dir)
-        end
+    local ok, errors = os.rmdir(unpack(args))
+    if not ok then
+        os.raise(errors)
     end
 end
 

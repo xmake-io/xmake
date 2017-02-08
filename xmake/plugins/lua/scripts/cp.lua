@@ -24,8 +24,6 @@
 
 -- main
 function main(...)
-
-    -- copy it
     os.cp(...)
 end
 

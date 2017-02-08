@@ -32,26 +32,10 @@ local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
 
--- save original tmpdir
+-- save original interfaces
+os._mkdir  = os._mkdir or os.mkdir
+os._rmdir  = os._rmdir or os.rmdir
 os._tmpdir = os._tmpdir or os.tmpdir
-
--- translate arguments for wildcard
-function os._translate_args(argv)
-
-    -- match all arguments
-    local results = {}
-    for _, arg in ipairs(table.wrap(argv)) do
-        local pathes = os.match(arg, 'a')
-        if #pathes > 0 then
-            table.join2(results, pathes)
-        else
-            table.insert(results, arg)
-        end
-    end
-
-    -- ok?
-    return results
-end
 
 -- copy single file or directory 
 function os._cp(src, dst)
@@ -91,6 +75,69 @@ function os._cp(src, dst)
     
     -- ok
     return true
+end
+
+-- move single file or directory
+function os._mv(src, dst)
+    
+    -- check
+    assert(src and dst)
+
+    -- exists file or directory?
+    if os.exists(src) then
+        -- move file or directory
+        if not os.rename(src, dst) then
+            return false, string.format("cannot move %s to %s %s", src, dst, os.strerror())
+        end
+    -- not exists?
+    else
+        return false, string.format("cannot move %s to %s, not found this file %s", src, dst, os.strerror())
+    end
+    
+    -- ok
+    return true
+end
+
+-- remove single file or directory 
+function os._rm(filedir)
+    
+    -- check
+    assert(filedir)
+
+    -- is file?
+    if os.isfile(filedir) then
+        -- remove file
+        if not os.rmfile(filedir) then
+            return false, string.format("cannot remove file %s %s", filedir, os.strerror())
+        end
+    -- is directory?
+    elseif os.isdir(filedir) then
+        -- remove directory
+        if not os.rmdir(filedir) then
+            return false, string.format("cannot remove directory %s %s", filedir, os.strerror())
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- translate arguments for wildcard
+function os.argw(argv)
+
+    -- match all arguments
+    local results = {}
+    for _, arg in ipairs(table.wrap(argv)) do
+        local pathes = os.match(arg, 'a')
+        if #pathes > 0 then
+            table.join2(results, pathes)
+        else
+            table.insert(results, arg)
+        end
+    end
+
+    -- ok?
+    return results
 end
 
 -- match files or directories
@@ -198,13 +245,13 @@ function os.cp(...)
     end
 
     -- get source pathes
-    local srcpaths = table.slice(args, 1, #args - 1)
+    local srcpathes = table.slice(args, 1, #args - 1)
 
     -- get destinate path
     local dstpath = args[#args]
 
     -- copy files or directories
-    for _, srcpath in ipairs(os._translate_args(srcpaths)) do
+    for _, srcpath in ipairs(os.argw(srcpathes)) do
         local ok, errors = os._cp(srcpath, dstpath)
         if not ok then
             return false, errors
@@ -215,52 +262,46 @@ function os.cp(...)
     return true
 end
 
--- move file or directory
-function os.mv(src, dst)
-    
-    -- check
-    assert(src and dst)
-
-    -- exists file or directory?
-    if os.exists(src) then
-        -- move file or directory
-        if not os.rename(src, dst) then
-            return false, string.format("cannot move %s to %s %s", src, dst, os.strerror())
-        end
-    -- not exists?
-    else
-        return false, string.format("cannot move %s to %s, not found this file %s", src, dst, os.strerror())
+-- move files or directories
+function os.mv(...)
+   
+    -- check arguments
+    local args = {...}
+    if #args < 2 then
+        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
     end
-    
+
+    -- get source pathes
+    local srcpathes = table.slice(args, 1, #args - 1)
+
+    -- get destinate path
+    local dstpath = args[#args]
+
+    -- copy files or directories
+    for _, srcpath in ipairs(os.argw(srcpathes)) do
+        local ok, errors = os._mv(srcpath, dstpath)
+        if not ok then
+            return false, errors
+        end
+    end
+
     -- ok
     return true
 end
 
--- remove file or directory and remove it if the super directory be empty
-function os.rm(file_or_dir, rm_superdir_if_empty)
+-- remove files or directories
+function os.rm(...)
     
-    -- check
-    assert(file_or_dir)
-
-    -- is file?
-    if os.isfile(file_or_dir) then
-        -- remove file
-        if not os.rmfile(file_or_dir) then
-            return false, string.format("cannot remove file %s %s", file_or_dir, os.strerror())
-        end
-    -- is directory?
-    elseif os.isdir(file_or_dir) then
-        -- remove directory
-        if not os.rmdir(file_or_dir) then
-            return false, string.format("cannot remove directory %s %s", file_or_dir, os.strerror())
-        end
+    -- check arguments
+    local args = {...}
+    if #args < 1 then
+        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
     end
 
-    -- remove the super directory if be empty
-    if rm_superdir_if_empty then
-        local superdir = path.directory(file_or_dir)
-        if os.isdir(superdir) then
-            os.rmdir(superdir, true)
+    -- create directories
+    for _, filedir in ipairs(os.argw(args)) do
+        if not os._rm(filedir) then
+            return false, string.format("remove: %s failed!", filedir)
         end
     end
 
@@ -309,6 +350,46 @@ function os.cd(dir)
     return true
 end
 
+-- create directories
+function os.mkdir(...)
+   
+    -- check arguments
+    local args = {...}
+    if #args < 1 then
+        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    end
+
+    -- create directories
+    for _, dir in ipairs(os.argw(args)) do
+        if not os._mkdir(dir) then
+            return false, string.format("create directory: %s failed!", dir)
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- remove directories
+function os.rmdir(...)
+   
+    -- check arguments
+    local args = {...}
+    if #args < 1 then
+        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    end
+
+    -- create directories
+    for _, dir in ipairs(os.argw(args)) do
+        if not os._rmdir(dir) then
+            return false, string.format("remove directory: %s failed!", dir)
+        end
+    end
+
+    -- ok
+    return true
+end
+
 -- get the temporary directory
 function os.tmpdir()
     return path.join(os._tmpdir(), ".xmake")
@@ -341,7 +422,7 @@ function os.runv(shellname, argv)
     local log = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(shellname, os._translate_args(argv), log, log)
+    local ok = os.execv(shellname, os.argw(argv), log, log)
     if ok ~= 0 then
 
         -- make errors
@@ -379,7 +460,7 @@ function os.execv(shellname, argv, outfile, errfile)
 
     -- open command
     local ok = -1
-    local proc = process.openv(shellname, os._translate_args(argv), outfile, errfile)
+    local proc = process.openv(shellname, os.argw(argv), outfile, errfile)
     if proc ~= nil then
 
         -- wait process
@@ -439,7 +520,7 @@ function os.iorunv(shellname, argv)
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(shellname, os._translate_args(argv), outfile, errfile) 
+    local ok = os.execv(shellname, os.argw(argv), outfile, errfile) 
 
     -- get output and error data
     local outdata = io.readall(outfile)

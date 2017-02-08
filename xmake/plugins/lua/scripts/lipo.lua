@@ -33,7 +33,7 @@ import("core.tool.tool")
 function main(...)
 
     -- get arguments
-    local args = ...
+    local args = {...}
     if not args or #args ~= 1 then
         raise("invalid arguments!")
     end
