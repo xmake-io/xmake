@@ -35,22 +35,15 @@ function _remove(filedirs)
 
     -- done
     for _, filedir in ipairs(filedirs) do
+
+        -- remove it first
+        os.tryrm(filedir)
  
-        -- exists? remove it
-        if os.exists(filedir) then
-
-            -- remove it
-            os.rm(filedir)
-
-        -- remove "*.o/obj" files?
-        elseif filedir:find("%*") then
-
-            -- match all files
-            for _, file in ipairs(os.match(filedir)) do
-
-                -- remove it
-                os.rm(file)
-            end
+        -- remove it if the parent directory is empty
+        local parentdir = path.directory(filedir)
+        while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
+            os.rm(parentdir)
+            parentdir = path.directory(parentdir)
         end
     end
 end
