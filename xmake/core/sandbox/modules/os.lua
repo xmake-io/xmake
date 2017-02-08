@@ -298,7 +298,7 @@ function sandbox_os.execv(shellname, argv)
 end
 
 -- match files or directories
-function sandbox_os.match(pattern, findir, ...)
+function sandbox_os.match(pattern, mode, ...)
 
     -- check
     assert(pattern)
@@ -307,17 +307,22 @@ function sandbox_os.match(pattern, findir, ...)
     pattern = vformat(pattern, ...)
 
     -- match it
-    return os.match(pattern, findir)
-end
-
--- match files
-function sandbox_os.files(pattern, ...)
-    return sandbox_os.match(pattern, false, ...)
+    return os.match(pattern, mode)
 end
 
 -- match directories
 function sandbox_os.dirs(pattern, ...)
-    return sandbox_os.match(pattern, true, ...)
+    return sandbox_os.match(pattern, 'd', ...)
+end
+
+-- match files
+function sandbox_os.files(pattern, ...)
+    return sandbox_os.match(pattern, 'f', ...)
+end
+
+-- match files and directories
+function sandbox_os.filedirs(pattern, ...)
+    return sandbox_os.match(pattern, 'a', ...)
 end
 
 -- is directory?
