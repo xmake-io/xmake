@@ -21,6 +21,7 @@
 * Remove some binary tools
 * Remove install.bat script and provide nsis install package
 * Rewrite [documents](http://www.xmake.io/#/home/) using [docute](https://github.com/egoist/docute)
+* Improve `os.run`, `os.exec`, `os.cp`, `os.mv` and `os.rm` interfaces and support wildcard pattern
 
 ### Bugs fixed
 
@@ -212,6 +213,7 @@
 * 移除一些二进制工具文件
 * 移除install.bat脚本，提供windows nsis安装包支持
 * 使用[docute](https://github.com/egoist/docute)重写[文档](http://www.xmake.io/#/zh/)，提供更加完善的文档支持
+* 增强`os.run`, `os.exec`, `os.cp`, `os.mv` 和 `os.rm` 等接口，支持通配符模式匹配和批量文件操作
 
 ### Bugs修复
 

@@ -1415,7 +1415,7 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 | [set_showmenu](#set_showmenu)                   | 设置是否启用菜单显示                         | >= 1.0.1 |
 | [set_category](#set_category)                   | 设置选项分类，仅用于菜单显示                 | >= 1.0.1 |
 | [set_description](#set_description)             | 设置菜单显示描述                             | >= 1.0.1 |
-| [add_bindings](#add_bindings)                   | 添加关联选项，同步启用和禁用                 | >= 2.0.1 |
+| [add_bindings](#add_bindings)                   | 添加正向关联选项，同步启用和禁用             | >= 2.0.1 |
 | [add_rbindings](#add_rbindings)                 | 添加逆向关联选项，同步启用和禁用             | >= 2.0.1 |
 | [add_cincludes](#add_cincludes)                 | 添加c头文件检测                              | >= 1.0.1 |
 | [add_cxxincludes](#add_cxxincludes)             | 添加c++头文件检测                            | >= 1.0.1 |
@@ -1652,7 +1652,49 @@ $ xmake f --mode=release
 ```
 
 ##### add_bindings
+
+###### 添加正向关联选项，同步启用和禁用
+
+绑定关联选项，例如我想在命令行中配置一个`smallest`的参数：`xmake f --smallest=y`
+
+这个时候，需要同时禁用多个其他的选项开关，来禁止编译多个模块，就是这个需求，相当于一个选项 与其他 多个选项之间 是有联动效应的。
+
+而这个接口就是用来设置需要正向绑定的一些关联选项，例如：
+
+```lua
+-- 定义选项开关: --smallest=y|n
+option("smallest")
+
+    -- 添加正向绑定，如果smallest被启用，下面的所有选项开关也会同步被启用
+    add_bindings("nozip", "noxml", "nojson")
+```
+
 ##### add_rbindings
+
+###### 添加逆向关联选项，同步启用和禁用
+
+逆向绑定关联选项，被关联选项的开关状态是相反的。
+
+```lua
+-- 定义选项开关: --smallest=y|n
+option("smallest")
+
+    -- 添加反向绑定，如果smallest被启用，下面的所有模块全部禁用
+    add_rbindings("xml", "zip", "asio", "regex", "object", "thread", "network", "charset", "database")
+    add_rbindings("zlib", "mysql", "sqlite3", "openssl", "polarssl", "pcre2", "pcre", "base")
+```
+
+<p class="warning">
+需要注意的是，命令行配置是有顺序的，你可以先通过启用smallest禁用所有模块，然后添加其他选项，逐一启用。
+</p>
+
+例如：
+
+```bash
+-- 禁用所有模块，然后仅仅启用xml和zip模块
+$ xmake f --smallest=y --xml=y --zip=y
+```
+
 ##### add_ctypes
 ##### add_cxxtypes
 ##### add_defines_if_ok
