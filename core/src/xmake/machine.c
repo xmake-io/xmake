@@ -55,6 +55,7 @@ typedef struct __xm_machine_impl_t
  */
 
 // the os functions
+tb_int_t xm_os_argv(lua_State* lua);
 tb_int_t xm_os_find(lua_State* lua);
 tb_int_t xm_os_uuid(lua_State* lua);
 tb_int_t xm_os_isdir(lua_State* lua);
@@ -101,7 +102,8 @@ tb_int_t xm_process_close(lua_State* lua);
 // the os functions
 static luaL_Reg const g_os_functions[] = 
 {
-    { "find",           xm_os_find      }
+    { "argv",           xm_os_argv      }
+,   { "find",           xm_os_find      }
 ,   { "uuid",           xm_os_uuid      }
 ,   { "isdir",          xm_os_isdir     }
 ,   { "rmdir",          xm_os_rmdir     }
