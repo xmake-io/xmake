@@ -35,8 +35,8 @@ local string    = require("base/string")
 -- save original tmpdir
 os._tmpdir = os._tmpdir or os.tmpdir
 
--- translate argv for wildcard
-function os._translate_argv(argv)
+-- translate arguments for wildcard
+function os._translate_args(argv)
 
     -- match all arguments
     local results = {}
@@ -51,6 +51,46 @@ function os._translate_argv(argv)
 
     -- ok?
     return results
+end
+
+-- copy single file or directory 
+function os._cp(src, dst)
+    
+    -- check
+    assert(src and dst)
+
+    -- is file?
+    if os.isfile(src) then
+        
+        -- the destination is directory? append the filename
+        if os.isdir(dst) then
+            dst = path.join(dst, path.filename(src))
+        end
+
+        -- copy file
+        if not os.cpfile(src, dst) then
+            return false, string.format("cannot copy file %s to %s %s", src, dst, os.strerror())
+        end
+    -- is directory?
+    elseif os.isdir(src) then
+        
+        -- the destination directory exists? append the filename
+        if os.isdir(dst) then
+            dst = path.join(dst, path.filename(path.translate(src)))
+        end
+
+        -- copy directory
+        if not os.cpdir(src, dst) then
+            return false, string.format("cannot copy directory %s to %s %s", src, dst, os.strerror())
+        end
+
+    -- not exists?
+    else
+        return false, string.format("cannot copy file %s, not found this file %s", src, os.strerror())
+    end
+    
+    -- ok
+    return true
 end
 
 -- match files or directories
@@ -148,58 +188,29 @@ function os.filedirs(pattern)
     return os.match(pattern, 'a')
 end
 
--- copy file or directory
-function os.cp(src, dst)
-    
-    -- check
-    assert(src and dst)
-
-    -- is file?
-    if os.isfile(src) then
-        
-        -- the destination is directory? append the filename
-        if os.isdir(dst) then
-            dst = path.join(dst, path.filename(src))
-        end
-
-        -- copy file
-        if not os.cpfile(src, dst) then
-            return false, string.format("cannot copy file %s to %s %s", src, dst, os.strerror())
-        end
-    -- is directory?
-    elseif os.isdir(src) then
-        
-        -- the destination directory exists? append the filename
-        if os.isdir(dst) then
-            dst = path.join(dst, path.filename(path.translate(src)))
-        end
-
-        -- copy directory
-        if not os.cpdir(src, dst) then
-            return false, string.format("cannot copy directory %s to %s %s", src, dst, os.strerror())
-        end
-    -- cp dir/*?
-    elseif src:find("%*") then
-
-        -- get the root directory
-        local starpos = src:find("%*")
-
-        -- match all files
-        local files = os.match((src:gsub("%*+", "**")))
-        if files then
-            for _, file in ipairs(files) do
-                local dstfile = string.format("%s/%s", dst, file:sub(starpos))
-                if not os.cpfile(file, dstfile) then
-                    return false, string.format("cannot copy file %s to %s %s", file, dstfile, os.strerror())
-                end
-            end
-        end
-
-    -- not exists?
-    else
-        return false, string.format("cannot copy file %s, not found this file %s", src, os.strerror())
+-- copy files or directories
+function os.cp(...)
+   
+    -- check arguments
+    local args = {...}
+    if #args < 2 then
+        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
     end
-    
+
+    -- get source pathes
+    local srcpaths = table.slice(args, 1, #args - 1)
+
+    -- get destinate path
+    local dstpath = args[#args]
+
+    -- copy files or directories
+    for _, srcpath in ipairs(os._translate_args(srcpaths)) do
+        local ok, errors = os._cp(srcpath, dstpath)
+        if not ok then
+            return false, errors
+        end
+    end
+
     -- ok
     return true
 end
@@ -330,7 +341,7 @@ function os.runv(shellname, argv)
     local log = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(shellname, os._translate_argv(argv), log, log)
+    local ok = os.execv(shellname, os._translate_args(argv), log, log)
     if ok ~= 0 then
 
         -- make errors
@@ -368,7 +379,7 @@ function os.execv(shellname, argv, outfile, errfile)
 
     -- open command
     local ok = -1
-    local proc = process.openv(shellname, os._translate_argv(argv), outfile, errfile)
+    local proc = process.openv(shellname, os._translate_args(argv), outfile, errfile)
     if proc ~= nil then
 
         -- wait process
@@ -428,7 +439,7 @@ function os.iorunv(shellname, argv)
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(shellname, os._translate_argv(argv), outfile, errfile) 
+    local ok = os.execv(shellname, os._translate_args(argv), outfile, errfile) 
 
     -- get output and error data
     local outdata = io.readall(outfile)

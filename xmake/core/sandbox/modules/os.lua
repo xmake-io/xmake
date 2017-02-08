@@ -39,21 +39,19 @@ sandbox_os.mtime    = os.mtime
 sandbox_os.mclock   = os.mclock
 
 -- copy file or directory
-function sandbox_os.cp(src, dst)
+function sandbox_os.cp(...)
     
-    -- check
-    assert(src and dst)
-
-    -- format it first
-    src = vformat(src)
-    dst = vformat(dst)
+    -- format arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        table.insert(args, vformat(arg))
+    end
 
     -- done
-    local ok, errors = os.cp(src, dst)
+    local ok, errors = os.cp(unpack(args))
     if not ok then
         os.raise(errors)
     end
-
 end
 
 -- move file or directory
