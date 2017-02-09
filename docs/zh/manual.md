@@ -2050,7 +2050,7 @@ target("test")
 
 通过设置一个菜单，这个任务就可以开放给用户自己通过命令行手动调用，菜单的设置如下：
 
-```
+```lua
 task("echo")
 
     -- 设置运行脚本
@@ -2137,7 +2137,7 @@ $ xmake echo hello xmake!
 
 就行了，如果要看这个任务定义的菜单，只需要执行：`xmake echo [-h|--help]`，显示结果如下：
 
-```
+```bash
 Usage: $xmake echo [options]
 
 Echo the given info!
