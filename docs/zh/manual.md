@@ -384,6 +384,27 @@ target("tbox")
 
 定义和设置子工程模块，每个`target`对应一个子工程，最后会生成一个目标程序，有可能是可执行程序，也有可能是库模块。
 
+<p class="tip">
+target的接口，都是可以放置在target外面的全局作用域中的，如果在全局中设置，那么会影响所有子工程target。
+</p>
+
+例如：
+
+```lua
+-- 会同时影响test和test2目标
+add_defines("DEBUG")
+
+target("test")
+    add_files("*.c")
+
+target("test2")
+    add_files("*.c")
+```
+
+<p class="tip">
+`target`域是可以重复进入来实现分离设置的。
+<>
+
 
 | 接口                                  | 描述                                 | 支持版本 |
 | ------------------------------------- | ------------------------------------ | -------- |
@@ -446,6 +467,7 @@ target("tbox")
 | [add_options](#add_options)           | 添加关联选项                         | >= 2.0.1 |
 | [add_languages](#add_languages)       | 添加语言标准                         | >= 1.0.1 |
 | [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     | >= 1.0.1 |
+| [add_frameworks](#add_frameworks)     | 添加链接框架                         | >= 2.1.1 |
 
 ##### target
 
@@ -1403,9 +1425,53 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 如果当前设置的指令集编译器不支持，xmake会自动忽略掉，所以不需要用户手动去判断维护，只需要将你需要的指令集全部设置上就行了。
 </p>
 
+##### add_frameworks
+
+###### 添加链接框架
+
+目前主要用于`ios`和`macosx`平台的`objc`和`swift`程序，例如：
+
+```lua
+target("test")
+    add_frameworks("Foundation", "CoreFoundation")
+```
+
+当然也可以使用[add_mxflags](#add_mxflags)和[add_ldflags](#add_ldflags)来设置，不过比较繁琐，不建议这样设置。
+
+```lua
+target("test")
+    add_mxflags("-framework Foundation", "-framework CoreFoundation")
+    add_ldflags("-framework Foundation", "-framework CoreFoundation")
+```
+
+如果不是这两个平台，这些设置将会被忽略。
+
 #### 选项定义
 
 定义和设置选项开关，每个`option`对应一个选项，可用于自定义编译配置选项、开关设置。
+
+<p class="tip">
+除了`target`以外的所有域接口，例如`option`，`task`等的接口，默认不能放置在外面的全局作用域中的（除非部分跟target共用的接口除外）。
+如果要设置值影响所有`option`，`task`等选项，可以通过匿名全局域来设置。
+</p>
+
+例如：
+
+```lua
+-- 进入option的匿名全局域，里面的设置会同时影响test和test2选项
+option()
+    add_defines("DEBUG")
+
+option("test")
+    -- ... 
+
+option("test2")
+    -- ... 
+```
+
+<p class="tip">
+`option`域是可以重复进入来实现分离设置的。
+<>
 
 
 | 接口                                            | 描述                                         | 支持版本 |
@@ -1458,6 +1524,7 @@ add_vectorexts("sse", "sse2", "sse3", "ssse3")
 | [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    | >= 1.0.1 |
 | [add_languages](#add_languages)       | 添加语言标准                         | >= 2.0.1 |
 | [add_vectorexts](#add_vectorexts)     | 添加向量扩展指令                     | >= 2.0.1 |
+| [add_frameworks](#add_frameworks)     | 添加链接框架                         | >= 2.1.1 |
 
 
 ##### option

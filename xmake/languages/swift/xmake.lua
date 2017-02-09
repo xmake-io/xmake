@@ -46,6 +46,7 @@ language("swift")
         compiler =
         {
             "config.includedirs"
+        ,   "config.Frameworks"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
@@ -54,6 +55,7 @@ language("swift")
         ,   "target.includedirs"
         ,   "target.defines"
         ,   "target.undefines"
+        ,   "target.frameworks"
         ,   "option.symbols"
         ,   "option.warnings"
         ,   "option.optimize:check"
@@ -64,9 +66,11 @@ language("swift")
         ,   "option.undefines"
         ,   "option.defines_if_ok"
         ,   "option.undefines_if_ok"
+        ,   "option.frameworks"
         ,   "platform.includedirs"
         ,   "platform.defines"
         ,   "platform.undefines"
+        ,   "platform.frameworks"
         }
     ,   linker =
         {
@@ -79,9 +83,13 @@ language("swift")
         ,   "option.linkdirs"
         ,   "platform.linkdirs"
         ,   "config.links"
+        ,   "config.frameworks"
         ,   "target.links"
+        ,   "target.frameworks"
         ,   "option.links"
+        ,   "option.frameworks"
         ,   "platform.links"
+        ,   "platform.frameworks"
         }
     ,   archiver = 
         {
@@ -114,6 +122,7 @@ language("swift")
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
+                ,   {nil, "frameworks", "kv", nil,          "The Link Frameworks"                   }
                 }
             } 
 

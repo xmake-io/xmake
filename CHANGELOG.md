@@ -8,7 +8,9 @@
 * Add app2ipa plugin
 * Add dictionary syntax style for `xmake.lua`
 * Provide smart scanning and building mode without `xmake.lua`
-* Add `set_xmakever` interface for `xmake.lua`
+* Add `set_xmakever` api for `xmake.lua`
+* Add `add_frameworks` api for `objc` and `swift`
+* Support multi-languages extension and add `golang` language
 
 ### Changes
 
@@ -201,6 +203,8 @@
 * 为`xmake.lua`工程描述增加dictionay语法风格
 * 提供智能扫描编译模式，在无任何`xmake.lua`等工程描述文件的情况下，也能直接快速编译
 * 为`xmake.lua`工程描述添加`set_xmakever`接口，更加友好的处理版本兼容性问题 
+* 为`objc`和`swift`程序添加`add_frameworks`接口
+* 更加快速方便的多语言扩展支持，增加`golang`程序构建的支持
 
 ### 改进
 
