@@ -30,4 +30,10 @@ target("console_c")
     -- add files
     add_files("src/*.c") 
 
+    set_config_h("$(buildir)/config.h")
+    set_config_h_prefix("TEST")
+
+    add_cfunc(nil,          "POLL",  nil,       {"sys/poll.h"},     "poll")
+    add_cfunc("libc",       nil,    nil,        {"sys/select.h"},   "select")
+    add_cfunc("pthread",    nil,    "pthread",  "pthread.h",        "pthread_create")
 

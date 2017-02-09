@@ -461,6 +461,8 @@ target("test2")
 | [add_ldflags](#add_ldflags)           | 添加链接选项                         | >= 1.0.1 |
 | [add_arflags](#add_arflags)           | 添加静态库归档选项                   | >= 1.0.1 |
 | [add_shflags](#add_shflags)           | 添加动态库链接选项                   | >= 1.0.1 |
+| [add_cfunc](#add_cfunc)               | 添加单个c库函数检测                  | >= 2.0.1 |
+| [add_cxxfunc](#add_cxxfunc)           | 添加单个c++库函数检测                | >= 2.0.1 |
 | [add_cfuncs](#add_cfuncs)             | 添加c库函数检测                      | >= 2.0.1 |
 | [add_cxxfuncs](#add_cxxfuncs)         | 添加c++库函数接口                    | >= 2.0.1 |
 | [add_packages](#add_packages)         | 添加包依赖                           | >= 2.0.1 |
@@ -1377,8 +1379,141 @@ add_arflags("xxx")
 add_shflags("xxx")
 ```
 
+##### add_cfunc
+
+###### 添加单个c库函数检测
+
+与[add_cfuncs](#add_cfuncs)类似，只是仅对单个函数接口进行设置，并且仅对`target`域生效，`option`中不存在此接口。
+
+此接口的目的主要是为了在`config.h`中更加高度定制化的生成宏开关，例如：
+
+```lua
+target("demo")
+    
+    -- 设置和启用config.h
+    set_config_h("$(buildir)/config.h")
+    set_config_h_prefix("TEST")
+
+    -- 仅通过参数一设置模块名前缀
+    add_cfunc("libc",       nil,        nil,        {"sys/select.h"},   "select")
+
+    -- 通过参数三，设置同时检测链接库：libpthread.a
+    add_cfunc("pthread",    nil,        "pthread",  "pthread.h",        "pthread_create")
+
+    -- 通过参数二设置接口别名
+    add_cfunc(nil,          "PTHREAD",  nil,        "pthread.h",        "pthread_create")
+```
+
+生成的结果如下：
+
+```c
+#ifndef TEST_H
+#define TEST_H
+
+// 宏命名规则：$(prefix)前缀 _ 模块名（如果非nil）_ HAVE _ 接口名或者别名 （大写）
+#define TEST_LIBC_HAVE_SELECT 1
+#define TEST_PTHREAD_HAVE_PTHREAD_CREATE 1
+#define TEST_HAVE_PTHREAD 1
+
+#endif
+```
+
+##### add_cxxfunc
+
+###### 添加单个c++库函数检测
+
+与[add_cfunc](#add_cfunc)类似，只是检测的函数接口是c++函数。
+
 ##### add_cfuncs
+
+###### 添加c库函数检测
+
+<p class="warning">
+此接口是`target`和`option`共用的接口，但是接口行为稍有不同。
+</p>
+
+| 接口域 | 描述                                                                | 例子                                                                                                                             |
+| ------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| target | 头文件、链接库和函数接口同时指定                                    | `add_cfuncs("libc", nil, {"signal.h", "setjmp.h"}, "signal", "setjmp", "sigsetjmp{sigjmp_buf buf; sigsetjmp(buf, 0);}", "kill")` |
+| option | 仅指定函数接口，头文件依赖[add_cincludes](#add_cincludes)等独立接口 | `add_cincludes("setjmp.h")` `add_cfuncs("sigsetjmp")`                                                                            |
+
+对于`option`，这个接口的使用很简单，跟[add_cincludes](#add_cincludes)类似，例如：
+
+```lua
+option("setjmp")
+    set_default(false)
+    add_cincludes("setjmp.h")
+    add_cfuncs("sigsetjmp", "setjmp")
+    add_defines_if_ok("HAVE_SETJMP")
+
+target("test")
+    add_options("setjmp")
+```
+
+此选项检测是否存在`setjmp`的一些接口，如果检测通过那么`test`目标程序将会加上`HAVE_SETJMP`的宏定义。
+
+<p class="warning">
+需要注意的是，在`option`中使用此接口检测依赖函数，需要同时使用独立的[add_cincludes](#add_cincludes)增加头文件搜索路径，指定[add_links](#add_links)链接库（可选），否则检测不到指定函数。
+<br><br>
+并且某些头文件接口是通过宏开关分别定义的，那么检测的时候最好通过[add_defines](#add_defines)带上依赖的宏开关。
+</p>
+
+对于`target`，此接口可以同时设置：依赖的头文件、依赖的链接模块、依赖的函数接口，保证检测环境的完整性，例如：
+
+```lua
+target("test")
+
+    -- 添加libc库接口相关检测
+    -- 第一个参数：模块名，用于最后的宏定义前缀生成
+    -- 第二个参数：链接库
+    -- 第三个参数：头文件
+    -- 之后的都是函数接口列表
+    add_cfuncs("libc", nil,         {"signal.h", "setjmp.h"},           "signal", "setjmp", "sigsetjmp{sigjmp_buf buf; sigsetjmp(buf, 0);}", "kill")
+
+    -- 添加pthread库接口相关检测，同时指定需要检测`libpthread.a`链接库是否存在
+    add_cfuncs("posix", "pthread",  "pthread.h",                        "pthread_mutex_init",
+                                                                        "pthread_create", 
+                                                                        "pthread_setspecific", 
+                                                                        "pthread_getspecific",
+                                                                        "pthread_key_create",
+                                                                        "pthread_key_delete")
+```
+
+设置`test`目标，依赖这些接口，构建时会预先检测他们，并且如果通过[set_config_h](#set_config_h)接口设置的自动生成头文件：`config.h`
+
+那么，检测结果会自动加到对应的`config.h`上去，这也是`option`没有的功能，例如：
+
+```c
+#define TB_CONFIG_LIBC_HAVE_SIGNAL 1
+#define TB_CONFIG_LIBC_HAVE_SETJMP 1
+#define TB_CONFIG_LIBC_HAVE_SIGSETJMP 1
+#define TB_CONFIG_LIBC_HAVE_KILL 1
+
+#define TB_CONFIG_POSIX_HAVE_PTHREAD_MUTEX_INIT 1
+#define TB_CONFIG_POSIX_HAVE_PTHREAD_CREATE 1
+#define TB_CONFIG_POSIX_HAVE_PTHREAD_SETSPECIFIC 1
+#define TB_CONFIG_POSIX_HAVE_PTHREAD_GETSPECIFIC 1
+#define TB_CONFIG_POSIX_HAVE_PTHREAD_KEY_CREATE 1
+#define TB_CONFIG_POSIX_HAVE_PTHREAD_KEY_DELETE 1
+```
+
+由于，不同头文件中，函数的定义方式不完全相同，例如：宏函数、静态内联函数、extern函数等。
+
+要想完全检测成功，检测语法上需要一定程度的灵活性，下面是一些语法规则：
+
+| 检测语法      | 例子                                          |
+| ------------- | --------------------------------------------- |
+| 纯函数名      | sigsetjmp                                     |
+| 单行调用      | sigsetjmp((void*)0, 0)                        |
+| 函数块调用    | sigsetjmp{sigsetjmp((void*)0, 0);}            |
+| 函数块 + 变量 | sigsetjmp{int a = 0; sigsetjmp((void*)a, a);} |
+
 ##### add_cxxfuncs
+
+###### 添加c++库函数检测
+
+与[add_cfuncs](#add_cfuncs)类似，只是检测的函数接口是c++函数。
+
 ##### add_options
 
 ###### 添加关联选项
@@ -1471,7 +1606,7 @@ option("test2")
 
 <p class="tip">
 `option`域是可以重复进入来实现分离设置的。
-<>
+</p>
 
 
 | 接口                                            | 描述                                         | 支持版本 |
@@ -1762,12 +1897,103 @@ option("smallest")
 $ xmake f --smallest=y --xml=y --zip=y
 ```
 
+##### add_cincludes
+
+###### 添加c头文件检测
+
+如果c头文件检测通过，此选项将被启用，例如：
+
+```lua
+option("pthread")
+    set_default(false)
+    add_cincludes("pthread.h")
+    add_defines_if_ok("ENABLE_PTHREAD")
+
+target("test")
+    add_options("pthread")
+```
+
+此选项检测是否存在`pthread.h`的头文件，如果检测通过那么`test`目标程序将会加上`ENABLE_PTHREAD`的宏定义。
+
+##### add_cxxincludes
+
+###### 添加c++头文件检测
+
+与[add_cincludes](#add_cincludes)类似，只是检测的头文件类型是c++头文件。
+
 ##### add_ctypes
+
+###### 添加c类型检测 
+
+如果c类型检测通过，此选项将被启用，例如：
+
+```lua
+option("wchar")
+    set_default(false)
+    add_cincludes("wchar_t")
+    add_defines_if_ok("HAVE_WCHAR")
+
+target("test")
+    add_options("wchar")
+```
+
+此选项检测是否存在`wchar_t`的类型，如果检测通过那么`test`目标程序将会加上`HAVE_WCHAR`的宏定义。
+
 ##### add_cxxtypes
+
+###### 添加c++类型检测
+
+与[add_ctypes](#add_ctypes)类似，只是检测的类型是c++类型。
+
 ##### add_defines_if_ok
+
+###### 如果检测选项通过，则添加宏定义
+
+检测选项通过后才会被设置，具体使用见[add_cincludes](#add_cincludes)中的例子。
+
 ##### add_defines_h_if_ok
+
+###### 如果检测选项通过，则添加宏定义到配置头文件
+
+跟[add_defines_if_ok](#add_defines_if_ok)类似，只是检测通过后，会在`config.h`头文件中自动加上被设置的宏定义。
+
+例如：
+
+```lua
+option("pthread")
+    set_default(false)
+    add_cincludes("pthread.h")
+    add_defines_h_if_ok("ENABLE_PTHREAD")
+
+target("test")
+    add_options("pthread")
+```
+
+通过后，会在`config.h`中加上：
+
+```c
+#define ENABLE_PTHREAD 1
+```
+
+具体`config.h`如何设置，见：[set_config_h](#set_config_h)
+
 ##### add_undefines_if_ok
+
+###### 如果检测选项通过，则取消宏定义
+
+跟[add_defines_if_ok](#add_defines_if_ok)类似，只是检测通过后，取消被设置的宏定义。
+
 ##### add_undefines_h_if_ok
+
+###### 如果检测选项通过，则在配置头文件中取消宏定义
+
+跟[add_defines_h_if_ok](#add_defines_h_if_ok)类似，只是检测通过后，会在`config.h`中取消被设置的宏定义。
+
+```c
+#undef DEFINED_MACRO
+```
+
+具体`config.h`如何设置，见：[set_config_h](#set_config_h)
 
 #### 插件任务
 
