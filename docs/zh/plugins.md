@@ -46,16 +46,16 @@ task("hello")
     end)
 
     -- 设置插件的命令行选项，这里没有任何参数选项，仅仅显示插件描述
-    set_menu({
-                    -- usage
-                    usage = "xmake hello [options]"
+    set_menu {
+                -- usage
+                usage = "xmake hello [options]"
 
-                    -- description
-                ,   description = "Hello xmake!"
+                -- description
+            ,   description = "Hello xmake!"
 
-                    -- options
-                ,   options = {}
-                }) 
+                -- options
+            ,   options = {}
+            } 
 ```
 
 这个插件的文件结构如下：

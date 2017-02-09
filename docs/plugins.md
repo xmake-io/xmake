@@ -44,16 +44,16 @@ task("hello")
     end)
 
     -- set the menu options, but we put empty options now.
-    set_menu({
-                    -- usage
-                    usage = "xmake hello [options]"
+    set_menu {
+                -- usage
+                usage = "xmake hello [options]"
 
-                    -- description
-                ,   description = "Hello xmake!"
+                -- description
+            ,   description = "Hello xmake!"
 
-                    -- options
-                ,   options = {}
-                }) 
+                -- options
+            ,   options = {}
+            }
 ```
 
 The file tree of this plugin:
