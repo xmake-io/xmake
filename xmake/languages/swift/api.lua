@@ -34,12 +34,14 @@ function apis()
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
+    ,   "target.add_frameworks"
         -- option.add_xxx
     ,   "option.add_links"
     ,   "option.add_scflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     ,   "option.add_shflags"
+    ,   "option.add_frameworks"
     }
     _g.pathes = 
     {

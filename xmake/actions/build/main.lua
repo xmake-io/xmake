@@ -47,10 +47,8 @@ function main()
     -- rebuild?
     if option.get("rebuild") or cache.get("rebuild") then
         
-        table.dump(os.match("$(buildir)/**", 'a'))
         -- clean it first
         task.run("clean", {target = targetname})
-        table.dump(os.match("$(buildir)/**", 'a'))
 
         -- reset state
         cache.set("rebuild", nil)

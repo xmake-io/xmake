@@ -170,6 +170,13 @@ function nf_undefine(macro)
     return "-Xcc -U" .. macro
 end
 
+-- make the framework flag
+function nf_framework(framework)
+
+    -- make it
+    return "-framework" .. framework
+end
+
 -- make the compile command
 function compcmd(sourcefile, objectfile, flags)
 

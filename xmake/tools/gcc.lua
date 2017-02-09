@@ -231,6 +231,13 @@ function nf_linkdir(dir)
     return "-L" .. dir
 end
 
+-- make the framework flag
+function nf_framework(framework)
+
+    -- make it
+    return "-framework " .. framework
+end
+
 -- make the link command
 function linkcmd(objectfiles, targetfile, flags)
 
