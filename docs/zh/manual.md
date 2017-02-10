@@ -2319,14 +2319,125 @@ task.run("hello", {color="red"}, arg1, arg2, arg3)
 
 #### 平台扩展
 
+xmake除了内置的一些构建平台，还可以自己扩展自定义构建平台，可以将自己实现的平台放置在以下目录即可, xmake会自动检测并且加载他们：
+
+| 平台目录                    | 描述                                 |
+| --------------------------- | ------------------------------------ |
+| projectdir/.xmake/platforms | 当前工程的平台目录, 只对当前工程有效 |
+| globaldir/.xmake/platforms  | 全局配置的平台目录，当前主机全局有效 |
+| installdir/xmake/platforms  | xmake安装后内置的平台目录            |
+
+用户可根据不同需求，将自定义的平台放置在对应的目录中。
+
+<p class="warning">
+平台的扩展定义，尽量不要放到工程`xmake.lua`中去，新建一个单独的平台目录放置相关描述实现。
+</p>
+
+平台描述的目录结构：
+
+```
+platforms
+
+    - myplat1
+        - xmake.lua
+
+    - myplat2
+        - xmake.lua
+``
+
+其中`xmake.lua`为每个平台的主描述文件，相当于入口描述。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [platform](#platform)                           | 定义平台                                     | >= 2.0.1 |
+| [set_os](#platformset_os)                       | 设置平台系统                                 | >= 2.0.1 |
+| [set_menu](#platformset_menu)                   | 设置平台菜单                                 | >= 2.0.1 |
+| [set_hosts](#platformset_hosts)                 | 设置平台支持的主机环境                       | >= 2.0.1 |
+| [set_archs](#platformset_archs)                 | 设置平台支持的架构环境                       | >= 2.0.1 |
+| [set_tooldirs](#platformset_tooldirs)           | 设置平台工具的搜索目录                       | >= 2.0.1 |
+| [on_check](#platformon_check)                   | 设置平台工具的检测脚本                       | >= 2.0.1 |
+| [on_install](#platformon_install)               | 设置平台相关的工程目标安装脚本               | >= 2.0.5 |
+| [on_uninstall](#platformon_uninstall)           | 设置平台相关的工程目标卸载脚本               | >= 2.0.5 |
+
 ##### platform
+
+###### 定义平台
+
+自定义一个平台域，例如：
+
+```lua
+platform("iphoneos")
+    
+    -- 设置操作系统
+    set_os("ios")
+
+    -- 设置主机环境
+    set_hosts("macosx")
+
+    -- 设置支持的架构
+    set_archs("armv7", "armv7s", "arm64", "i386", "x86_64")
+
+    -- 设置gcc, clang等平台相关工具的搜索目录
+    set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+
+    -- 设置gcc，clang等工具的检测脚本文件
+    on_check("check")
+
+    -- 设置平台初始化加载脚本文件，如果实现不复杂的话，可以使用内嵌函数
+    on_load("load")
+
+    -- 设置平台的帮助菜单
+    set_menu {
+                config = 
+                {   
+                    {}   
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
+                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
+                ,   {}
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                }
+
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {}
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                }
+            }
+
+```
+
+<p class="warning">
+是在`platforms`目录相关平台的`xmake.lua`中编写，而不是在工程目录的`xmake.lua`中。
+</p>
+
 ##### set_os
+
+###### 设置平台系统
+
+设置目标平台的操作系统，例如：`ios`, `android`, `linux`, `windows` 等
+
+```lua
+platform("iphoneos")
+    set_os("ios")
+```
+
+这个一般用于在自定义脚本和插件开发中，[core.platform.platform](#core-platform-platform)模块中进行访问，获取当前平台的操作系统。
+
 ##### set_menu
 ##### set_hosts
 ##### set_archs
-##### set_checker
 ##### set_tooldirs
 ##### on_load
+##### on_check
+##### on_install
+##### on_uninstall
 
 #### 语言扩展
 
