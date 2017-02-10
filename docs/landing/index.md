@@ -72,4 +72,4 @@ $ xmake run -d console
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)
 * Community：[TBOOX Open Source Community](http://www.tboox.org/forum)
-* ChatRoom：[![Join the chat at https://gitter.im/waruqi/tboox](https://badges.gitter.im/waruqi/tboox.svg)](https://gitter.im/waruqi/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* ChatRoom：[![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
