@@ -30,11 +30,11 @@ function main()
 
     -- init the file formats
     _g.formats          = {}
-    _g.formats.static   = {"", ".lib"}
-    _g.formats.object   = {"", ".obj"}
-    _g.formats.shared   = {"", ".dll"}
-    _g.formats.binary   = {"", ".exe"}
-    _g.formats.symbol   = {"", ".pdb"}
+    _g.formats.static   = {"lib",   ".a"}
+    _g.formats.object   = {"",      ".o"}
+    _g.formats.shared   = {"lib",   ".so"}
+    _g.formats.binary   = {"",      ".exe"}
+    _g.formats.symbol   = {"",      ".pdb"}
 
     -- init flags for architecture
     local archflags = nil
