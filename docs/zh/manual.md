@@ -2431,7 +2431,63 @@ platform("iphoneos")
 这个一般用于在自定义脚本和插件开发中，[core.platform.platform](#core-platform-platform)模块中进行访问，获取当前平台的操作系统。
 
 ##### set_menu
+
+###### 设置平台菜单
+
+先给个设置的例子：
+
+```lua
+platform("iphoneos")
+    ...
+
+    -- 设置平台的帮助菜单
+    set_menu {
+                config = 
+                {   
+                    {}   
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
+                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
+                ,   {}
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                }
+
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {}
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                }
+            }
+```
+
+其中`config`组用来设置：`xmake f --help`中的本地工程菜单，`global`用来设置：`xmake g --help`全局平台配置中的菜单。
+
+具体设置格式可参考：[task:set_menu](#taskset_menu)。
+
 ##### set_hosts
+
+###### 设置平台支持的主机环境
+
+用来设置当前目标平台支持主机构建环境，例如`iphoneos`平台可以在`macosx`主机系统上构建，那么可以设置为：
+
+```lua
+platform("iphoneos")
+    set_hosts("macosx")
+```
+
+而`android`平台可以同时在`linux`, "macosx", `windows`主机环境中构建，那么可以设置为：
+
+```lua
+platform("android")
+    set_hosts("linux", "macosx", "windows")
+```
+
 ##### set_archs
 ##### set_tooldirs
 ##### on_load
