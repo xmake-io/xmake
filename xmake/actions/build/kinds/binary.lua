@@ -28,10 +28,10 @@ import("core.tool.linker")
 import("object")
 
 -- build binary target
-function build(target, g)
+function build(target, buildinfo)
 
-    -- build all objects
-    object.buildall(target, g)
+    -- build objects
+    object.build(target, buildinfo)
 
     -- expand object files with *.o/obj
     local objectfiles = {}
@@ -53,7 +53,7 @@ function build(target, g)
     local verbose = option.get("verbose")
 
     -- trace percent into
-    cprintf("${green}[%02d%%]:${clear} ", (g.targetindex + 1) * 100 / g.targetcount)
+    cprintf("${green}[%02d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
         cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
     else

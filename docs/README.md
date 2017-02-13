@@ -1,5 +1,5 @@
 ---
-search: english
+search: en
 ---
 
 # A make-like build utility based on Lua 

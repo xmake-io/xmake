@@ -1,5 +1,5 @@
 ---
-search: english
+search: en
 ---
 
 ## Condition 

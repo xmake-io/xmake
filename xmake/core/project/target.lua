@@ -447,6 +447,43 @@ function target:sourcekinds()
     return sourcekinds 
 end
 
+-- get source count
+function target:sourcecount()
+    return #self:sourcefiles()
+end
+
+-- get source batches
+function target:sourcebatches()
+
+    -- cached? return it directly
+    if self._SOURCEBATCHES then
+        return self._SOURCEBATCHES
+    end
+
+    -- the object and source files
+    local objectfiles = self:objectfiles()
+    local sourcefiles = self:sourcefiles()
+    local incdepfiles = self:incdepfiles()
+    assert(objectfiles and sourcefiles and incdepfiles)
+
+    -- make source batches for each source kinds
+    local sourcebatches = {}
+    for index, sourcefile in ipairs(sourcefiles) do
+
+        -- get source kind
+        local sourcekind = language.sourcekind_of(sourcefile)
+
+        -- add source and object file to this batch
+        sourcebatches[sourcekind] = sourcebatches[sourcekind] or {}
+        table.insert(sourcebatches[sourcekind], {sourcefile, objectfiles[index], incdepfiles[index]})
+    end
+
+    -- cache it
+    self._SOURCEBATCHES = sourcebatches
+
+    -- ok?
+    return sourcebatches
+end
 
 -- return module
 return target
