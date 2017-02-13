@@ -76,23 +76,18 @@ function _build_from_static(target, sourcefile, objectfile, percent)
 end
 
 -- build object
-function _build(target, g, index)
-
-    -- the object and source files
-    local objectfiles = target:objectfiles()
-    local sourcefiles = target:sourcefiles()
-    local incdepfiles = target:incdepfiles()
+function _build_object(target, buildinfo, index, sourcebatch)
 
     -- get the object and source with the given index
-    local sourcefile = sourcefiles[index]
-    local objectfile = objectfiles[index]
-    local incdepfile = incdepfiles[index]
+    local sourcefile = sourcebatch[index][1]
+    local objectfile = sourcebatch[index][2]
+    local incdepfile = sourcebatch[index][3]
 
     -- get the source file type
     local filetype = path.extension(sourcefile):lower()
 
     -- calculate percent
-    local percent = ((g.targetindex + (index - 1) / #objectfiles) * 100 / g.targetcount)
+    local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
     -- build the object for the *.o/obj source makefile
     if filetype == ".o" or filetype == ".obj" then 
@@ -170,15 +165,15 @@ function _build(target, g, index)
     compiler.compile(sourcefile, objectfile, incdepfile, target)
 end
 
--- build objects for the given target
-function buildall(target, g)
+-- build objects from the given source batch
+function _build_objects(target, buildinfo, sourcekind, sourcebatch)
 
     -- get the max job count
     local jobs = tonumber(option.get("jobs") or "4")
 
     -- make objects
     local index = 1
-    local total = #target:objectfiles()
+    local total = #sourcebatch
     local tasks = {}
     local procs = {}
     repeat
@@ -245,7 +240,7 @@ function buildall(target, g)
                             os.cd(curdir)
 
                             -- build object
-                            _build(target, g, index)
+                            _build_object(target, buildinfo, index, sourcebatch)
 
                         end)
 
@@ -266,5 +261,23 @@ function buildall(target, g)
         end
 
     until #tasks == 0
+
+    -- update object index
+    _g.sourceindex = _g.sourceindex + #sourcebatch    
+end
+
+-- build objects for the given target
+function build(target, buildinfo)
+
+    -- init source index and count
+    _g.sourceindex = 0
+    _g.sourcecount = target:sourcecount()
+
+    -- build source batches
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+
+        -- build objects
+        _build_objects(target, buildinfo, sourcekind, sourcebatch)
+    end
 end
 
