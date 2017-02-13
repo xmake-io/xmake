@@ -35,7 +35,7 @@ language("golang")
     set_targetkinds {binary = "go", static = "go", shared = "go"}
 
     -- set target flags
-    set_targetflags {binary = "goflags", static = "goflags", shared = "goflags"}
+    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
     -- on load
     on_load("load")
@@ -84,6 +84,14 @@ language("golang")
                 config = 
                 {   
                     {}
+                ,   {nil, "go",         "kv", nil,          "The Golang Compiler"                   }
+                ,   {nil, "goflags",    "kv", nil,          "The Golang Compiler Flags"             }
+
+                ,   {}
+                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
+                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+
+                ,   {}
                 ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
                 ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
 

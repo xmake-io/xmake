@@ -99,6 +99,10 @@ language("asm")
                 ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"                   }
 
                 ,   {}
+                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
+                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+
+                ,   {}
                 ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
                 ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
 

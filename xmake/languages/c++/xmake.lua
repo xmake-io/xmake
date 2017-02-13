@@ -105,6 +105,10 @@ language("c++")
                 ,   {nil, "cxxflags",   "kv", nil,          "The C++ Compiler Flags"                }
 
                 ,   {}
+                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
+                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+
+                ,   {}
                 ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
                 ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
 
