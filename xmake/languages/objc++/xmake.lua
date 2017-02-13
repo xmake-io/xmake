@@ -113,6 +113,10 @@ language("objc++")
                 ,   {nil, "mxxflags",   "kv", nil,          "The Objc++ Compiler Flags"             }
 
                 ,   {}
+                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
+                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+
+                ,   {}
                 ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
                 ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
 

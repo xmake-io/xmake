@@ -64,11 +64,6 @@ function get(name)
     return _g[name]
 end
 
--- make the symbol flag
-function nf_symbol(level)
-    return ""
-end
-
 -- make the warning flag
 function nf_warning(level)
 
@@ -84,21 +79,6 @@ function nf_warning(level)
 
     -- make it
     return maps[level] or ""
-end
-
--- make the optimize flag
-function nf_optimize(level)
-    return ""
-end
-
--- make the vector extension flag
-function nf_vectorext(extension)
-    return ""
-end
-
--- make the language flag
-function nf_language(stdname)
-    return ""
 end
 
 -- make the define flag

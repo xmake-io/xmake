@@ -71,11 +71,6 @@ function get(name)
     return _g[name]
 end
 
--- make the strip flag
-function nf_strip(level)
-    return ""
-end
-
 -- make the symbol flag
 function nf_symbol(level, target)
     

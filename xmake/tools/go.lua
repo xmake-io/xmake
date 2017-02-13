@@ -37,6 +37,8 @@ function init(shellname, kind)
     -- save the kind
     _g.kind = kind
 
+    -- init arflags
+    _g.arflags = { "grcP" }
 end
 
 -- get the property
@@ -46,59 +48,18 @@ function get(name)
     return _g[name]
 end
 
--- make the strip flag
-function nf_strip(level)
-    return ""
-end
-
--- make the symbol flag
-function nf_symbol(level)
-    return ""
-end
-
--- make the warning flag
-function nf_warning(level)
-    return ""
-end
-
--- make the optimize flag
-function nf_optimize(level)
-    return ""
-end
-
--- make the vector extension flag
-function nf_vectorext(extension)
-    return ""
-end
-
--- make the language flag
-function nf_language(stdname)
-    return ""
-end
-
--- make the define flag
-function nf_define(macro)
-    return ""
-end
-
--- make the undefine flag
-function nf_undefine(macro)
-    return ""
-end
-
 -- make the includedir flag
 function nf_includedir(dir)
-    return ""
-end
 
--- make the link flag
-function nf_link(lib)
-    return ""
+    -- make it
+    return "-I " .. dir
 end
 
 -- make the linkdir flag
 function nf_linkdir(dir)
-    return ""
+
+    -- make it
+    return "-L " .. dir
 end
 
 -- make the link command
@@ -113,6 +74,23 @@ function compcmd(sourcefile, objectfile, flags)
 
     -- make it
     return format("%s tool compile %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+end
+
+-- make the archive command
+function archivecmd(objectfiles, targetfile, flags)
+
+    -- make it
+    return format("%s tool pack %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+end
+
+-- archive the library file
+function archive(objectfiles, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(archivecmd(objectfiles, targetfile, flags))
 end
 
 -- link the target file
@@ -133,6 +111,16 @@ function compile(sourcefile, objectfile, incdepfile, flags)
 
     -- compile it
     os.run(compcmd(sourcefile, objectfile, flags))
+end
+
+-- archive the library file
+function archive(objectfiles, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(archivecmd(objectfiles, targetfile, flags))
 end
 
 -- check the given flags 

@@ -144,11 +144,6 @@ function nf_vectorext(extension)
     return maps[extension] or ""
 end
 
--- make the language flag
-function nf_language(stdname)
-    return ""
-end
-
 -- make the includedir flag
 function nf_includedir(dir)
 
