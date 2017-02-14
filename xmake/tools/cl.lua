@@ -218,14 +218,14 @@ function nf_includedir(dir)
 end
 
 -- make the complie command
-function compcmd(sourcefile, objectfile, flags)
+function _compcmd1(sourcefile, objectfile, flags)
 
     -- make it
     return format("%s -c %s -Fo%s %s", _g.shellname, flags, objectfile, sourcefile)
 end
 
 -- complie the source file
-function compile(sourcefile, objectfile, incdepfile, flags)
+function _compile1(sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -239,7 +239,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
     local outdata = try
     {
         function ()
-            return os.iorun(compcmd(sourcefile, objectfile, flags))
+            return os.iorun(_compcmd1(sourcefile, objectfile, flags))
         end,
         
         catch
@@ -283,6 +283,26 @@ function compile(sourcefile, objectfile, incdepfile, flags)
         -- update it
         io.save(incdepfile, results)
     end
+end
+
+-- make the complie command
+function compcmd(sourcefiles, objectfile, flags)
+
+    -- only support single source file now
+    assert(type(sourcefiles) == "string", "not support")
+
+    -- for only single source file
+    return _compcmd1(sourcefiles, objectfile, flags)
+end
+
+-- complie the source file
+function compile(sourcefiles, objectfile, incdepfiles, flags)
+
+    -- only support single source file now
+    assert(type(sourcefiles) == "string", "not support")
+
+    -- for only single source file
+    _compile1(sourcefiles, objectfile, incdepfiles, flags)
 end
 
 -- check the given flags 

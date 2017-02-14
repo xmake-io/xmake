@@ -69,13 +69,6 @@ function linkcmd(objectfiles, targetfile, flags)
     return format("%s tool link %s -o %s %s", _g.shellname, flags, targetfile, objectfiles)
 end
 
--- make the complie command
-function compcmd(sourcefile, objectfile, flags)
-
-    -- make it
-    return format("%s tool compile %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
-end
-
 -- make the archive command
 function archivecmd(objectfiles, targetfile, flags)
 
@@ -103,16 +96,6 @@ function link(objectfiles, targetfile, flags)
     os.run(linkcmd(objectfiles, targetfile, flags))
 end
 
--- complie the source file
-function compile(sourcefile, objectfile, incdepfile, flags)
-
-    -- ensure the object directory
-    os.mkdir(path.directory(objectfile))
-
-    -- compile it
-    os.run(compcmd(sourcefile, objectfile, flags))
-end
-
 -- archive the library file
 function archive(objectfiles, targetfile, flags)
 
@@ -121,6 +104,43 @@ function archive(objectfiles, targetfile, flags)
 
     -- link it
     os.run(archivecmd(objectfiles, targetfile, flags))
+end
+
+-- make the complie command
+function _compcmd1(sourcefile, objectfile, flags)
+
+    -- make it
+    return format("%s tool compile %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+end
+
+-- complie the source file
+function _compile1(sourcefile, objectfile, incdepfile, flags)
+
+    -- ensure the object directory
+    os.mkdir(path.directory(objectfile))
+
+    -- compile it
+    os.run(_compcmd1(sourcefile, objectfile, flags))
+end
+
+-- make the complie command
+function compcmd(sourcefiles, objectfile, flags)
+
+    -- only support single source file now
+    assert(type(sourcefiles) == "string", "not support")
+
+    -- for only single source file
+    return _compcmd1(sourcefiles, objectfile, flags)
+end
+
+-- complie the source file
+function compile(sourcefiles, objectfile, incdepfiles, flags)
+
+    -- only support single source file now
+    assert(type(sourcefiles) == "string", "not support")
+
+    -- for only single source file
+    _compile1(sourcefiles, objectfile, incdepfiles, flags)
 end
 
 -- check the given flags 

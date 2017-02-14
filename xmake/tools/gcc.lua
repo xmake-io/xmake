@@ -245,8 +245,18 @@ function linkcmd(objectfiles, targetfile, flags)
     return format("%s -o %s %s %s", _g.shellname, targetfile, objectfiles, flags)
 end
 
+-- link the target file
+function link(objectfiles, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(linkcmd(objectfiles, targetfile, flags))
+end
+
 -- make the complie command
-function compcmd(sourcefile, objectfile, flags)
+function _compcmd1(sourcefile, objectfile, flags)
 
     -- get ccache
     local ccache = nil
@@ -264,18 +274,8 @@ function compcmd(sourcefile, objectfile, flags)
     return command
 end
 
--- link the target file
-function link(objectfiles, targetfile, flags)
-
-    -- ensure the target directory
-    os.mkdir(path.directory(targetfile))
-
-    -- link it
-    os.run(linkcmd(objectfiles, targetfile, flags))
-end
-
 -- complie the source file
-function compile(sourcefile, objectfile, incdepfile, flags)
+function _compile1(sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -284,7 +284,7 @@ function compile(sourcefile, objectfile, incdepfile, flags)
     try
     {
         function ()
-            local outdata, errdata = os.iorun(compcmd(sourcefile, objectfile, flags))
+            local outdata, errdata = os.iorun(_compcmd1(sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         finally
@@ -345,6 +345,26 @@ function compile(sourcefile, objectfile, incdepfile, flags)
         -- remove the temporary file
         os.rm(tmpfile)
     end
+end
+
+-- make the complie command
+function compcmd(sourcefiles, objectfile, flags)
+
+    -- only support single source file now
+    assert(type(sourcefiles) == "string", "not support")
+
+    -- for only single source file
+    return _compcmd1(sourcefiles, objectfile, flags)
+end
+
+-- complie the source file
+function compile(sourcefiles, objectfile, incdepfiles, flags)
+
+    -- only support single source file now
+    assert(type(sourcefiles) == "string", "not support")
+
+    -- for only single source file
+    _compile1(sourcefiles, objectfile, incdepfiles, flags)
 end
 
 -- check the given flags 

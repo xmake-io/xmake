@@ -33,45 +33,61 @@ local raise     = require("sandbox/modules/raise")
 local assert    = require("sandbox/modules/assert")
 
 -- make command for compiling source file
-function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target)
+function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target, sourcekind)
+
+    -- get source kind if only one source file
+    if not sourcekind and type(sourcefiles) == "string" then
+        sourcekind = language.sourcekind_of(sourcefiles)
+    end
  
     -- get the compiler instance
-    local instance, errors = compiler.load(assert(language.sourcekind_of(sourcefile)))
+    local instance, errors = compiler.load(sourcekind)
     if not instance then
         raise(errors)
     end
 
     -- make command
-    return instance:compcmd(sourcefile, objectfile, target)
+    return instance:compcmd(sourcefiles, objectfile, target)
 end
 
--- make compiling flags for the given target
-function sandbox_core_tool_compiler.compflags(sourcefile, target)
+-- compile source files
+function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfiles, target, sourcekind)
+
+    -- get source kind if only one source file
+    if not sourcekind and type(sourcefiles) == "string" then
+        sourcekind = language.sourcekind_of(sourcefiles)
+    end
  
     -- get the compiler instance
-    local instance, errors = compiler.load(assert(language.sourcekind_of(sourcefile)))
+    local instance, errors = compiler.load(sourcekind)
+    if not instance then
+        raise(errors)
+    end
+
+    -- compile it
+    local ok, errors = instance:compile(sourcefiles, objectfile, incdepfiles, target)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- TODO modify: compflags(sourcekind, target)
+-- make compiling flags for the given target
+function sandbox_core_tool_compiler.compflags(sourcefiles, target, sourcekind)
+
+    -- get source kind if only one source file
+    if not sourcekind and type(sourcefiles) == "string" then
+        sourcekind = language.sourcekind_of(sourcefiles)
+    end
+ 
+    -- get the compiler instance
+    local instance, errors = compiler.load(sourcekind)
     if not instance then
         raise(errors)
     end
 
     -- make flags
     return instance:compflags(target)
-end
-
--- compile source file
-function sandbox_core_tool_compiler.compile(sourcefile, objectfile, incdepfile, target)
- 
-    -- get the compiler instance
-    local instance, errors = compiler.load(assert(language.sourcekind_of(sourcefile)))
-    if not instance then
-        raise(errors)
-    end
-
-    -- compile it
-    local ok, errors = instance:compile(sourcefile, objectfile, incdepfile, target)
-    if not ok then
-        raise(errors)
-    end
 end
 
 -- return module

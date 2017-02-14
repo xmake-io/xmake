@@ -104,18 +104,18 @@ function compiler.load(sourcekind)
     return instance
 end
 
--- compile the source file
-function compiler:compile(sourcefile, objectfile, incdepfile, target)
+-- compile the source files
+function compiler:compile(sourcefiles, objectfile, incdepfiles, target)
 
     -- compile it
-    return sandbox.load(self:_tool().compile, sourcefile, objectfile, incdepfile, (self:compflags(target)))
+    return sandbox.load(self:_tool().compile, sourcefiles, objectfile, incdepfiles, (self:compflags(target)))
 end
 
 -- get the compile command
-function compiler:compcmd(sourcefile, objectfile, target)
+function compiler:compcmd(sourcefiles, objectfile, target)
 
     -- get it
-    return self:_tool().compcmd(sourcefile, objectfile, (self:compflags(target)))
+    return self:_tool().compcmd(sourcefiles, objectfile, (self:compflags(target)))
 end
 
 -- get the compling flags
