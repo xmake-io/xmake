@@ -225,6 +225,16 @@ function builder:get(name)
     return self:_tool().get(name)
 end
 
+-- get feature of the tool
+function builder:feature(name)
+
+    -- get it
+    local features = self:_tool().get("features")
+    if features then
+        return features[name]
+    end
+end
+
 -- check the given flags 
 function builder:check(flags)
 

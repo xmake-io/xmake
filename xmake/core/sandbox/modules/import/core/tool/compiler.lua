@@ -32,8 +32,21 @@ local compiler  = require("tool/compiler")
 local raise     = require("sandbox/modules/raise")
 local assert    = require("sandbox/modules/assert")
 
+-- get the feature of compiler
+function sandbox_core_tool_compiler.feature(sourcekind, name)
+ 
+    -- get the compiler instance
+    local instance, errors = compiler.load(sourcekind)
+    if not instance then
+        raise(errors)
+    end
+
+    -- get feature
+    return instance:feature(name)
+end
+
 -- make command for compiling source file
-function sandbox_core_tool_compiler.compcmd(sourcefile, objectfile, target, sourcekind)
+function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, target, sourcekind)
 
     -- get source kind if only one source file
     if not sourcekind and type(sourcefiles) == "string" then
@@ -71,7 +84,6 @@ function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfiles
     end
 end
 
--- TODO modify: compflags(sourcekind, target)
 -- make compiling flags for the given target
 function sandbox_core_tool_compiler.compflags(sourcefiles, target, sourcekind)
 

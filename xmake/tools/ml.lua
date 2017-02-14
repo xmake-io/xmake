@@ -55,6 +55,11 @@ function init(shellname)
     ,   ["-fsanitize=address"]      = ""
     }
 
+    -- init features
+    _g.features = 
+    {
+        ["compile:multifiles"]      = false
+    }
 end
 
 -- get the property
@@ -123,7 +128,7 @@ end
 function compcmd(sourcefiles, objectfile, flags)
 
     -- only support single source file now
-    assert(type(sourcefiles) == "string", "not support")
+    assert(type(sourcefiles) ~= "table", "'compile:multifiles' not support!")
 
     -- for only single source file
     return _compcmd1(sourcefiles, objectfile, flags)
@@ -133,7 +138,7 @@ end
 function compile(sourcefiles, objectfile, incdepfiles, flags)
 
     -- only support single source file now
-    assert(type(sourcefiles) == "string", "not support")
+    assert(type(sourcefiles) ~= "table", "'compile:multifiles' not support!")
 
     -- for only single source file
     _compile1(sourcefiles, objectfile, incdepfiles, flags)
