@@ -79,9 +79,9 @@ end
 function _build_object(target, buildinfo, index, sourcebatch)
 
     -- get the object and source with the given index
-    local sourcefile = sourcebatch[index][1]
-    local objectfile = sourcebatch[index][2]
-    local incdepfile = sourcebatch[index][3]
+    local sourcefile = sourcebatch.sourcefiles[index]
+    local objectfile = sourcebatch.objectfiles[index]
+    local incdepfile = sourcebatch.incdepfiles[index]
 
     -- get the source file type
     local filetype = path.extension(sourcefile):lower()
@@ -161,19 +161,16 @@ function _build_object(target, buildinfo, index, sourcebatch)
         print(compiler.compcmd(sourcefile, objectfile, target))
     end
 
-    -- complie it and enable multitasking
+    -- complie it 
     compiler.compile(sourcefile, objectfile, incdepfile, target)
 end
 
--- build objects from the given source batch
-function _build_objects(target, buildinfo, sourcekind, sourcebatch)
-
-    -- get the max job count
-    local jobs = tonumber(option.get("jobs") or "4")
+-- build each objects from the given source batch
+function _build_objects_foreach(target, buildinfo, sourcekind, sourcebatch, jobs)
 
     -- make objects
     local index = 1
-    local total = #sourcebatch
+    local total = #sourcebatch.sourcefiles
     local tasks = {}
     local procs = {}
     repeat
@@ -263,7 +260,45 @@ function _build_objects(target, buildinfo, sourcekind, sourcebatch)
     until #tasks == 0
 
     -- update object index
-    _g.sourceindex = _g.sourceindex + #sourcebatch    
+    _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+end
+
+-- build multiple objects at the same time from the given source batch
+function _build_objects_multiple(target, buildinfo, sourcekind, sourcebatch, jobs)
+
+    -- is verbose?
+    local verbose = option.get("verbose")
+
+    -- get source and object files
+    local sourcefiles = sourcebatch.sourcefiles
+    local objectfiles = sourcebatch.objectfiles
+    local incdepfiles = sourcebatch.incdepfiles
+
+    -- trace percent info
+    for index, sourcefile in ipairs(sourcefiles) do
+
+        -- calculate percent
+        local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+
+        -- trace percent info
+        cprintf("${green}[%02d%%]:${clear} ", percent)
+        if verbose then
+            cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        else
+            print("%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        end
+    end
+
+    -- trace verbose info
+    if verbose then
+        print(compiler.compcmd(sourcefiles, "xxx.o", target, sourcekind))
+    end
+
+    -- complie them
+    compiler.compile(sourcefiles, "xxx.o", incdepfiles, target, sourcekind)
+
+    -- update object index
+    _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
 end
 
 -- build objects for the given target
@@ -273,11 +308,23 @@ function build(target, buildinfo)
     _g.sourceindex = 0
     _g.sourcecount = target:sourcecount()
 
+    -- get the max job count
+    local jobs = tonumber(option.get("jobs") or "4")
+
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
 
-        -- build objects
-        _build_objects(target, buildinfo, sourcekind, sourcebatch)
+        -- support to compile multiple objects at the same time?
+        if compiler.feature(sourcekind, "compile:multifiles") then
+        
+            -- build multiple objects 
+            _build_objects_multiple(target, buildinfo, sourcekind, sourcebatch, jobs)
+
+        else
+
+            -- build each objects
+            _build_objects_foreach(target, buildinfo, sourcekind, sourcebatch, jobs)
+        end
     end
 end
 

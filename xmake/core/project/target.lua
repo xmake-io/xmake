@@ -473,9 +473,18 @@ function target:sourcebatches()
         -- get source kind
         local sourcekind = language.sourcekind_of(sourcefile)
 
-        -- add source and object file to this batch
-        sourcebatches[sourcekind] = sourcebatches[sourcekind] or {}
-        table.insert(sourcebatches[sourcekind], {sourcefile, objectfiles[index], incdepfiles[index]})
+        -- make this batch
+        local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}, objectfiles = {}, incdepfiles = {}}
+        sourcebatches[sourcekind] = sourcebatch
+
+        -- add source file to this batch
+        table.insert(sourcebatch.sourcefiles, sourcefile)
+
+        -- add object file to this batch
+        table.insert(sourcebatch.objectfiles, objectfiles[index])
+
+        -- add incdep file to this batch
+        table.insert(sourcebatch.incdepfiles, incdepfiles[index])
     end
 
     -- cache it
