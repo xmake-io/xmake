@@ -49,7 +49,8 @@ build "./tests/static_library_c++"
 build "./tests/shared_library_c++" 
 
 # build for go
-build "./tests/console_go" 
+# build "./tests/console_go" 
+# build "./tests/static_library_go" 
 
 # merge object 
 build "./tests/merge_object"
