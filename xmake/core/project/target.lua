@@ -37,17 +37,17 @@ local compiler  = require("tool/compiler")
 local platform  = require("platform/platform")
 local language  = require("language/language")
 
--- get the filename from the given name and kind
-function target.filename(name, kind)
+-- get the filename from the given target name and kind
+function target.filename(targetname, targetkind, targetformat)
 
     -- check
-    assert(name and kind)
+    assert(targetname and targetkind)
 
     -- get format
-    local format = platform.format(kind) or {"", ""}
+    local format = targetformat or platform.format(targetkind) or {"", ""}
 
     -- make it
-    return format[1] .. name .. format[2]
+    return format[1] .. targetname .. format[2]
 end
 
 -- get the target info
@@ -76,7 +76,7 @@ function target:linker()
     end
 
     -- get the linker instance
-    local instance, errors = linker.load(self:get("kind"), self:sourcekinds())
+    local instance, errors = linker.load(self:targetkind(), self:sourcekinds())
     if not instance then
         os.raise(errors)
     end
@@ -148,6 +148,13 @@ function target:objectdir()
     return objectdir
 end
 
+-- get the target kind
+function target:targetkind()
+
+    -- get it
+    return self:get("kind")
+end
+
 -- get the target file 
 function target:targetfile()
 
@@ -158,8 +165,11 @@ function target:targetfile()
     local targetdir = self:get("targetdir") or config.get("buildir")
     assert(targetdir and type(targetdir) == "string")
 
-    -- the target file name
-    local filename = target.filename(self:name(), self:get("kind"))
+    -- get target kind
+    local targetkind = self:targetkind()
+
+    -- make the target file name and attempt to use the format of linker first
+    local filename = target.filename(self:name(), targetkind, self:linker():format(targetkind))
     assert(filename)
 
     -- make the target file path

@@ -86,16 +86,6 @@ function archivecmd(objectfiles, targetfile, flags)
     return format("%s tool pack %s %s %s", _g.shellname, flags, targetfile, objectfiles)
 end
 
--- archive the library file
-function archive(objectfiles, targetfile, flags)
-
-    -- ensure the target directory
-    os.mkdir(path.directory(targetfile))
-
-    -- link it
-    os.run(archivecmd(objectfiles, targetfile, flags))
-end
-
 -- link the target file
 function link(objectfiles, targetfile, flags)
 
