@@ -38,7 +38,7 @@ function init(shellname, kind)
     _g.kind = kind
 
     -- init arflags
-    _g.arflags = { "grcP" }
+    _g.arflags = { "grc" }
 
     -- init features
     _g.features = 
@@ -120,7 +120,7 @@ function compcmd(sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfiles, flags)
+function compile(sourcefiles, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))

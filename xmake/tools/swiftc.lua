@@ -217,13 +217,13 @@ function compcmd(sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfiles, flags)
+function compile(sourcefiles, objectfile, incdepfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'compile:multifiles' not support!")
 
     -- for only single source file
-    _compile1(sourcefiles, objectfile, incdepfiles, flags)
+    _compile1(sourcefiles, objectfile, incdepfile, flags)
 end
 
 -- check the given flags 

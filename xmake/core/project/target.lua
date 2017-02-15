@@ -222,7 +222,7 @@ function target:sourcefiles()
         for _, pattern in ipairs(patterns) do
             file, count = file:gsub(pattern[1], target.filename(pattern[2], pattern[3]))
             if count > 0 then
-                -- disable cache because the object and library files will be modified.
+                -- disable cache because the object and library files will be modified if them depend on previous target file
                 cache = false
             end
         end
@@ -260,55 +260,53 @@ function target:sourcefiles()
     return sourcefiles, not cache
 end
 
--- get the object files
-function target:objectfiles()
+-- get object file from source file
+function target:objectfile(sourcefile)
 
-    -- check
-    assert(self)
-
-    -- get the source files
-    local sourcefiles, modified = self:sourcefiles()
-    assert(sourcefiles)
-   
-    -- cached? return it directly
-    if self._OBJECTFILES and not modified then
-        return self._OBJECTFILES
-    end
+    -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
+    sourcefile = sourcefile:gsub(target.filename("([%w_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
     -- get the object directory
     local objectdir = self:objectdir()
     assert(objectdir and type(objectdir) == "string")
 
-    -- make object files
-    local i = 1
+    -- make object file
+    -- full file name(not base) to avoid name-clash of object file
+    local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(path.filename(sourcefile), "object"))
+
+    -- translate path
+    --
+    -- .e.g 
+    --
+    -- src/xxx.c
+    --     project/xmake.lua
+    --             build/.objs
+    --
+    -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
+    --
+    -- we need replace '..' to '__' in this case
+    --
+    objectfile = (path.translate(objectfile):gsub("%.%.", "__"))
+
+    -- ok?
+    return objectfile
+end
+
+-- get the object files
+function target:objectfiles()
+
+    -- get source batches
+    local sourcebatches, modified = self:sourcebatches()
+
+    -- cached? return it directly
+    if self._OBJECTFILES and not modified then
+        return self._OBJECTFILES
+    end
+
+    -- get object files from source batches
     local objectfiles = {}
-    for _, sourcefile in ipairs(sourcefiles) do
-
-        -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
-        sourcefile = sourcefile:gsub(target.filename("([%w_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
-
-        -- make object file
-        -- full file name(not base) to avoid name-clash of object file
-        local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(path.filename(sourcefile), "object"))
-
-        -- translate path
-        --
-        -- .e.g 
-        --
-        -- src/xxx.c
-        --     project/xmake.lua
-        --             build/.objs
-        --
-        -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
-        --
-        -- we need replace '..' to '__' in this case
-        --
-        objectfile = (path.translate(objectfile):gsub("%.%.", "__"))
-
-        -- save it
-        objectfiles[i] = objectfile
-        i = i + 1
-
+    for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
+        table.join2(objectfiles, sourcebatch.objectfiles)
     end
 
     -- cache it
@@ -320,9 +318,6 @@ end
 
 -- get the header files
 function target:headerfiles(outputdir)
-
-    -- check
-    assert(self)
 
     -- cached? return it directly
     if self._HEADERFILES and outputdir == nil then
@@ -387,31 +382,32 @@ function target:headerfiles(outputdir)
     return srcheaders, dstheaders
 end
 
+-- get incdep file from object file
+function target:incdepfile(objectfile)
+    return path.join(path.directory(objectfile), path.basename(objectfile) .. ".d")
+end
+
 -- get the dependent include files
 function target:incdepfiles()
 
-    -- the previous object files
-    local objectfiles_prev = self._OBJECTFILES
-    
-    -- the object files
-    local objectfiles = self:objectfiles()
- 
+    -- get source batches
+    local sourcebatches, modified = self:sourcebatches()
+
     -- cached? return it directly
-    local modified = objectfiles_prev ~= objectfiles
     if self._INCDEPFILES and not modified then
         return self._INCDEPFILES
     end
 
-    -- make include files
+    -- get incdep files from source batches
     local incdepfiles = {}
-    for _, objectfile in ipairs(objectfiles) do
-        table.insert(incdepfiles, path.join(path.directory(objectfile), path.basename(objectfile) .. ".d"))
+    for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
+        table.join2(incdepfiles, sourcebatch.incdepfiles)
     end
 
     -- cache it
     self._INCDEPFILES = incdepfiles
 
-    -- ok
+    -- ok?
     return incdepfiles
 end
 
@@ -455,43 +451,92 @@ end
 -- get source batches
 function target:sourcebatches()
 
+    -- get source files
+    local sourcefiles, modified = self:sourcefiles()
+
     -- cached? return it directly
-    if self._SOURCEBATCHES then
-        return self._SOURCEBATCHES
+    if self._SOURCEBATCHES and not modified then
+        return self._SOURCEBATCHES, false
     end
 
-    -- the object and source files
-    local objectfiles = self:objectfiles()
-    local sourcefiles = self:sourcefiles()
-    local incdepfiles = self:incdepfiles()
-    assert(objectfiles and sourcefiles and incdepfiles)
+    -- the extensional source kinds
+    local sourcekinds_ext = 
+    {
+        [".o"]   = "obj"
+    ,   [".obj"] = "obj"
+    ,   [".a"]   = "lib"
+    ,   [".lib"] = "lib"
+    }
 
     -- make source batches for each source kinds
     local sourcebatches = {}
-    for index, sourcefile in ipairs(sourcefiles) do
+    for _, sourcefile in ipairs(sourcefiles) do
 
         -- get source kind
         local sourcekind = language.sourcekind_of(sourcefile)
+        if not sourcekind then
+            local sourcekind_ext = sourcekinds_ext[path.extension(sourcefile):lower()]
+            if sourcekind_ext then
+                sourcekind = sourcekind_ext
+            end
+        end
+
+        -- unknown source kind
+        if not sourcekind then
+            os.raise("unknown source file: %s", sourcefile)
+        end
 
         -- make this batch
-        local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}, objectfiles = {}, incdepfiles = {}}
+        local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
         sourcebatches[sourcekind] = sourcebatch
+
+        -- add source kind to this batch
+        sourcebatch.sourcekind = sourcekind
 
         -- add source file to this batch
         table.insert(sourcebatch.sourcefiles, sourcefile)
+    end
 
-        -- add object file to this batch
-        table.insert(sourcebatch.objectfiles, objectfiles[index])
+    -- insert object files to source batches
+    for sourcekind, sourcebatch in pairs(sourcebatches) do
 
-        -- add incdep file to this batch
-        table.insert(sourcebatch.incdepfiles, incdepfiles[index])
+        -- this batch support to compile multiple objects at the same time?
+        local instance = compiler.load(sourcekind)
+        if instance and instance:feature("compile:multifiles") then
+
+            -- get the first source file
+            local sourcefile = sourcebatch.sourcefiles[1]
+
+            -- insert single object file for all source files
+            sourcebatch.objectfiles = self:objectfile(path.join(path.directory(sourcefile), "__" .. sourcekind))
+
+            -- insert single incdep file for all source files
+            sourcebatch.incdepfiles = self:incdepfile(sourcebatch.objectfiles)
+
+        else
+
+            -- insert object files for each source files
+            sourcebatch.objectfiles = {}
+            sourcebatch.incdepfiles = {}
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+
+                -- get object file from this source file
+                local objectfile = self:objectfile(sourcefile)
+
+                -- add object file to this batch
+                table.insert(sourcebatch.objectfiles, objectfile)
+
+                -- add incdep file to this batch
+                table.insert(sourcebatch.incdepfiles, self:incdepfile(objectfile))
+            end
+        end
     end
 
     -- cache it
     self._SOURCEBATCHES = sourcebatches
 
     -- ok?
-    return sourcebatches
+    return sourcebatches, modified
 end
 
 -- return module

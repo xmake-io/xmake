@@ -83,17 +83,14 @@ function _build_object(target, buildinfo, index, sourcebatch)
     local objectfile = sourcebatch.objectfiles[index]
     local incdepfile = sourcebatch.incdepfiles[index]
 
-    -- get the source file type
-    local filetype = path.extension(sourcefile):lower()
-
     -- calculate percent
     local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
     -- build the object for the *.o/obj source makefile
-    if filetype == ".o" or filetype == ".obj" then 
+    if sourcebatch.sourcekind == "obj" then 
         return _build_from_object(target, sourcefile, objectfile, percent)
     -- build the object for the *.[a|lib] source file
-    elseif filetype == ".a" or filetype == ".lib" then 
+    elseif sourcebatch.sourcekind == "lib" then 
         return _build_from_static(target, sourcefile, objectfile, percent)
     end
 
@@ -166,7 +163,7 @@ function _build_object(target, buildinfo, index, sourcebatch)
 end
 
 -- build each objects from the given source batch
-function _build_objects_foreach(target, buildinfo, sourcekind, sourcebatch, jobs)
+function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
 
     -- make objects
     local index = 1
@@ -263,8 +260,8 @@ function _build_objects_foreach(target, buildinfo, sourcekind, sourcebatch, jobs
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
 end
 
--- build multiple objects at the same time from the given source batch
-function _build_objects_multiple(target, buildinfo, sourcekind, sourcebatch, jobs)
+-- compile source files to single object at the same time
+function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
 
     -- is verbose?
     local verbose = option.get("verbose")
@@ -291,11 +288,11 @@ function _build_objects_multiple(target, buildinfo, sourcekind, sourcebatch, job
 
     -- trace verbose info
     if verbose then
-        print(compiler.compcmd(sourcefiles, "xxx.o", target, sourcekind))
+        print(compiler.compcmd(sourcefiles, objectfiles, target, sourcekind))
     end
 
     -- complie them
-    compiler.compile(sourcefiles, "xxx.o", incdepfiles, target, sourcekind)
+    compiler.compile(sourcefiles, objectfiles, incdepfiles, target, sourcekind)
 
     -- update object index
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
@@ -314,16 +311,16 @@ function build(target, buildinfo)
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
 
-        -- support to compile multiple objects at the same time?
-        if compiler.feature(sourcekind, "compile:multifiles") then
+        -- compile source files to single object at the same time?
+        if type(sourcebatch.objectfiles) == "string" then
         
-            -- build multiple objects 
-            _build_objects_multiple(target, buildinfo, sourcekind, sourcebatch, jobs)
+            -- build single object
+            _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
 
         else
 
             -- build each objects
-            _build_objects_foreach(target, buildinfo, sourcekind, sourcebatch, jobs)
+            _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
         end
     end
 end
