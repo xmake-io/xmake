@@ -24,7 +24,6 @@
 
 -- imports
 import("core.tool.tool")
-import("core.tool.linker")
 import("core.tool.compiler")
 import("core.project.config")
 import("core.project.project")
@@ -160,13 +159,10 @@ function _make_target(makefile, target)
     -- make dependence end
     makefile:print("")
 
-    -- make the command
-    local command = linker.linkcmd(target:objectfiles(), targetfile, target)
-
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
     _mkdir(makefile, path.directory(targetfile))
-    makefile:print("\t@%s > %s 2>&1", command, _logfile())
+    makefile:print("\t@%s > %s 2>&1", target:linkcmd(), _logfile())
 
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
