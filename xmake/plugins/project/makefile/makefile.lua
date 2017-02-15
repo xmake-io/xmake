@@ -25,7 +25,6 @@
 -- imports
 import("core.tool.tool")
 import("core.tool.linker")
-import("core.tool.archiver")
 import("core.tool.compiler")
 import("core.project.config")
 import("core.project.project")
@@ -162,12 +161,7 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- make the command
-    local command = nil
-    if target:get("kind") == "static" then
-        command = archiver.archivecmd(target:objectfiles(), targetfile, target)
-    else
-        command = linker.linkcmd(target:objectfiles(), targetfile, target)
-    end
+    local command = linker.linkcmd(target:objectfiles(), targetfile, target)
 
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))

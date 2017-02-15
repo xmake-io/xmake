@@ -46,7 +46,7 @@ language("objc++")
     -- set name flags
     set_nameflags 
     {
-        compiler =
+        object =
         {
             "config.includedirs"
         ,   "config.frameworks"
@@ -75,7 +75,7 @@ language("objc++")
         ,   "platform.undefines"
         ,   "platform.frameworks"
         }
-    ,   linker =
+    ,   binary =
         {
             "config.linkdirs"
         ,   "target.linkdirs"
@@ -94,7 +94,26 @@ language("objc++")
         ,   "platform.links"
         ,   "platform.frameworks"
         }
-    ,   archiver = 
+    ,   shared =
+        {
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "target.strip"
+        ,   "target.symbols"
+        ,   "option.strip"
+        ,   "option.symbols"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "config.frameworks"
+        ,   "target.links"
+        ,   "target.frameworks"
+        ,   "option.links"
+        ,   "option.frameworks"
+        ,   "platform.links"
+        ,   "platform.frameworks"
+        }
+    ,   static = 
         {
             "target.strip"
         ,   "target.symbols"

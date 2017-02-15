@@ -92,7 +92,7 @@ function compiler.load(sourcekind)
     instance._LANGUAGE = result
 
     -- init name flags
-    instance._NAMEFLAGS = result:nameflags()["compiler"]
+    instance._NAMEFLAGS = result:nameflags()["object"]
 
     -- init flag kinds
     instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])

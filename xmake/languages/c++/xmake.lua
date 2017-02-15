@@ -46,7 +46,7 @@ language("c++")
     -- set name flags
     set_nameflags 
     {
-        compiler =
+        object =
         {
             "config.includedirs"
         ,   "target.symbols"
@@ -71,7 +71,7 @@ language("c++")
         ,   "platform.defines"
         ,   "platform.undefines"
         }
-    ,   linker =
+    ,   binary =
         {
             "config.linkdirs"
         ,   "target.linkdirs"
@@ -86,7 +86,22 @@ language("c++")
         ,   "option.links"
         ,   "platform.links"
         }
-    ,   archiver = 
+    ,   shared =
+        {
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "target.strip"
+        ,   "target.symbols"
+        ,   "option.strip"
+        ,   "option.symbols"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        }
+    ,   static = 
         {
             "target.strip"
         ,   "target.symbols"

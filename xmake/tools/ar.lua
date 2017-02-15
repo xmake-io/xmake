@@ -60,21 +60,21 @@ function strip(level)
     return maps[level] or ""
 end
 
--- make the archive command
-function archivecmd(objectfiles, targetfile, flags)
+-- make the link command
+function linkcmd(objectfiles, targetfile, flags)
 
     -- make it
     return format("%s %s %s %s", _g.shellname, flags, targetfile, objectfiles)
 end
 
--- archive the library file
-function archive(objectfiles, targetfile, flags)
+-- link the library file
+function link(objectfiles, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(archivecmd(objectfiles, targetfile, flags))
+    os.run(linkcmd(objectfiles, targetfile, flags))
 end
 
 -- extract the static library to object directory
@@ -125,7 +125,7 @@ function check(flags)
     compiler.compile(sourcefile, objectfile)
 
     -- check it
-    archive(objectfile, libraryfile, arflags)
+    link(objectfile, libraryfile, arflags)
 
     -- remove files
     os.rm(objectfile)
