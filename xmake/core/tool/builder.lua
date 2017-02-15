@@ -225,13 +225,13 @@ function builder:get(name)
     return self:_tool().get(name)
 end
 
--- get the format of the given file kind 
-function builder:format(kind)
+-- get the format of the given target kind 
+function builder:format(targetkind)
 
     -- get formats
     local formats = self:get("formats")
     if formats then
-        return formats[kind]
+        return formats[targetkind]
     end
 end
 

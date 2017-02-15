@@ -293,13 +293,13 @@ function platform.tooldirs(plat)
     return platform.get("tooldirs", plat)
 end
 
--- get the given format
-function platform.format(kind)
+-- get the format of the given target kind for platform
+function platform.format(targetkind)
 
     -- get formats
     local formats = platform.get("formats")
     if formats then
-        return formats[kind]
+        return formats[targetkind]
     end
 end
 
