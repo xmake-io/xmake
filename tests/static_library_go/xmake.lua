@@ -42,9 +42,9 @@ target("test")
     -- add files
     add_files("src/*.go") 
 
-    -- add links
-    add_links("module")
-
     -- add link directory
     add_linkdirs("$(buildir)")
+
+    -- add include directory
+    add_includedirs("$(buildir)")
 

@@ -64,7 +64,7 @@ function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, target, sou
 end
 
 -- compile source files
-function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfiles, target, sourcekind)
+function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfile, target, sourcekind)
 
     -- get source kind if only one source file
     if not sourcekind and type(sourcefiles) == "string" then
@@ -78,7 +78,7 @@ function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfiles
     end
 
     -- compile it
-    local ok, errors = instance:compile(sourcefiles, objectfile, incdepfiles, target)
+    local ok, errors = instance:compile(sourcefiles, objectfile, incdepfile, target)
     if not ok then
         raise(errors)
     end

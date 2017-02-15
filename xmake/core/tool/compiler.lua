@@ -105,10 +105,10 @@ function compiler.load(sourcekind)
 end
 
 -- compile the source files
-function compiler:compile(sourcefiles, objectfile, incdepfiles, target)
+function compiler:compile(sourcefiles, objectfile, incdepfile, target)
 
     -- compile it
-    return sandbox.load(self:_tool().compile, sourcefiles, objectfile, incdepfiles, (self:compflags(target)))
+    return sandbox.load(self:_tool().compile, sourcefiles, objectfile, incdepfile, (self:compflags(target)))
 end
 
 -- get the compile command
