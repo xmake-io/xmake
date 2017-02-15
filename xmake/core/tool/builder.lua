@@ -225,11 +225,21 @@ function builder:get(name)
     return self:_tool().get(name)
 end
 
+-- get the format of the given file kind 
+function builder:format(kind)
+
+    -- get formats
+    local formats = self:get("formats")
+    if formats then
+        return formats[kind]
+    end
+end
+
 -- get feature of the tool
 function builder:feature(name)
 
     -- get it
-    local features = self:_tool().get("features")
+    local features = self:get("features")
     if features then
         return features[name]
     end
@@ -269,70 +279,6 @@ function builder:check(flags)
     -- ok?
     return ok
 end
-
--- load the linker from the given target kind
-function builder.load_linker(linker, linkername, targetkind, sourcekinds)
-
-    -- check
-    assert(sourcekinds)
-
-    -- wrap sourcekinds first
-    sourcekinds = table.wrap(sourcekinds)
-
-    -- get the linker info
-    local linkerinfo, errors = language.linkerinfo_of(targetkind, sourcekinds)
-    if not linkerinfo then
-        return nil, errors
-    end
-
-    -- get it directly from cache dirst
-    builder._INSTANCES = builder._INSTANCES or {}
-    if builder._INSTANCES[linkerinfo.kind] then
-        return builder._INSTANCES[linkerinfo.kind]
-    end
-
-    -- new instance
-    local instance = table.inherit(linker, builder)
-
-    -- load the linker tool from the source file type
-    local result, errors = tool.load(linkerinfo.kind)
-    if not result then 
-        return nil, errors
-    end
-    instance._TOOL = result
- 
-    -- load the name flags of archiver 
-    local nameflags = {}
-    local nameflags_exists = {}
-    for _, sourcekind in ipairs(sourcekinds) do
-
-        -- load language 
-        result, errors = language.load_sk(sourcekind)
-        if not result then 
-            return nil, errors
-        end
-
-        -- merge name flags
-        for _, flaginfo in ipairs(table.wrap(result:nameflags()[linkername])) do
-            local key = flaginfo[1] .. flaginfo[2]
-            if not nameflags_exists[key] then
-                table.insert(nameflags, flaginfo)
-                nameflags_exists[key] = flaginfo
-            end
-        end
-    end
-    instance._NAMEFLAGS = nameflags
-
-    -- init flag kinds
-    instance._FLAGKINDS = {linkerinfo.flag}
-
-    -- save this instance
-    builder._INSTANCES[linkerinfo.kind] = instance
-
-    -- ok
-    return instance
-end
-
 
 -- return module
 return builder

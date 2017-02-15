@@ -43,7 +43,7 @@ language("swift")
     -- set name flags
     set_nameflags 
     {
-        compiler =
+        object =
         {
             "config.includedirs"
         ,   "config.Frameworks"
@@ -72,7 +72,7 @@ language("swift")
         ,   "platform.undefines"
         ,   "platform.frameworks"
         }
-    ,   linker =
+    ,   binary =
         {
             "config.linkdirs"
         ,   "target.linkdirs"
@@ -91,7 +91,26 @@ language("swift")
         ,   "platform.links"
         ,   "platform.frameworks"
         }
-    ,   archiver = 
+    ,   shared =
+        {
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "target.strip"
+        ,   "target.symbols"
+        ,   "option.strip"
+        ,   "option.symbols"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "config.frameworks"
+        ,   "target.links"
+        ,   "target.frameworks"
+        ,   "option.links"
+        ,   "option.frameworks"
+        ,   "platform.links"
+        ,   "platform.frameworks"
+        }
+    ,   static = 
         {
             "target.strip"
         ,   "target.symbols"

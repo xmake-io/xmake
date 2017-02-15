@@ -163,10 +163,10 @@ function _instance:nameflags()
 
     -- get nameflags
     local results = {}
-    for toolkind, nameflags in pairs(table.wrap(self._INFO.nameflags)) do
+    for targetkind, nameflags in pairs(table.wrap(self._INFO.nameflags)) do
 
         -- make tool info
-        local toolinfo = results[toolkind] or {}
+        local toolinfo = results[targetkind] or {}
         for _, namedflag in ipairs(nameflags) do
 
             -- split it by '.'
@@ -195,7 +195,7 @@ function _instance:nameflags()
         end
 
         -- save this tool info
-        results[toolkind] = toolinfo
+        results[targetkind] = toolinfo
     end
 
     -- cache this results

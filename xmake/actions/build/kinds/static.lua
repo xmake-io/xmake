@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.archiver")
+import("core.tool.linker")
 import("object")
 
 -- build binary target
@@ -75,10 +75,10 @@ function build(target, buildinfo)
 
     -- trace verbose info
     if verbose then
-        print(archiver.archivecmd(objectfiles, targetfile, target))
+        print(linker.linkcmd(objectfiles, targetfile, target))
     end
 
-    -- archive it
-    archiver.archive(objectfiles, targetfile, target)
+    -- link it
+    linker.link(objectfiles, targetfile, target)
 end
 

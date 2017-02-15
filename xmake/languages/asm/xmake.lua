@@ -43,7 +43,7 @@ language("asm")
     -- set name flags
     set_nameflags 
     {
-        compiler =
+        object =
         {
             "config.includedirs"
         ,   "target.symbols"
@@ -68,7 +68,7 @@ language("asm")
         ,   "platform.defines"
         ,   "platform.undefines"
         }
-    ,   linker =
+    ,   binary =
         {
             "config.linkdirs"
         ,   "target.linkdirs"
@@ -83,7 +83,22 @@ language("asm")
         ,   "option.links"
         ,   "platform.links"
         }
-    ,   archiver = 
+    ,   shared =
+        {
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "target.strip"
+        ,   "target.symbols"
+        ,   "option.strip"
+        ,   "option.symbols"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        }
+    ,   static = 
         {
             "target.strip"
         ,   "target.symbols"

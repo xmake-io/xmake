@@ -40,6 +40,10 @@ function init(shellname, kind)
     -- init arflags
     _g.arflags = { "grc" }
 
+    -- init the file formats
+    _g.formats          = {}
+    _g.formats.static   = {"", ".a"}
+
     -- init features
     _g.features = 
     {
