@@ -24,7 +24,6 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.linker")
 import("object")
 
 -- build binary target
@@ -75,10 +74,10 @@ function build(target, buildinfo)
 
     -- trace verbose info
     if verbose then
-        print(linker.linkcmd(objectfiles, targetfile, target))
+        print(target:linkcmd(objectfiles))
     end
 
     -- link it
-    linker.link(objectfiles, targetfile, target)
+    target:link(objectfiles)
 end
 

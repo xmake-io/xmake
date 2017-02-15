@@ -67,6 +67,48 @@ function target:name()
     return self._NAME
 end
 
+-- get the target linker
+function target:linker()
+
+    -- get it from cache first
+    if self._LINKER then
+        return self._LINKER
+    end
+
+    -- get the linker instance
+    local instance, errors = linker.load(self:get("kind"), self:sourcekinds())
+    if not instance then
+        os.raise(errors)
+    end
+
+    -- cache it
+    self._LINKER = instance
+
+    -- get it
+    return instance
+end
+
+-- make linking command for this target 
+function target:linkcmd(objectfiles)
+ 
+    -- make command
+    return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), self)
+end
+
+-- make link flags for the given target
+function target:linkflags()
+ 
+    -- make flags
+    return self:linker():linkflags(self)
+end
+
+-- link target file
+function target:link(objectfiles)
+ 
+    -- link it
+    self:linker():link(objectfiles or self:objectfiles(), self:targetfile(), self)
+end
+
 -- get the options 
 function target:options()
 
