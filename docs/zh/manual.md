@@ -2509,12 +2509,28 @@ platform("android")
 
 #### 内置模块
 
+在自定义脚本、插件脚本、任务脚本、平台扩展、模板扩展等脚本代码中使用，也就是在类似下面的代码块中，可以使用这些模块接口：
+
+```lua
+on_run(function (target)
+    print("hello xmake!")
+end)
+```
+
 | 接口                                            | 描述                                         | 支持版本 |
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [import](#import)                               | 导入扩展摸块                                 | >= 2.0.1 |
 | [inherit](#inherit)                             | 导入并继承基类模块                           | >= 2.0.1 |
 | [ifelse](#ifelse)                               | 类似三元条件判断                             | >= 2.0.1 |
 | [try-catch-finally](#try-catch-finally)         | 异常捕获                                     | >= 2.0.1 |
+| [pairs](#pairs)                                 | 用于遍历字典                                 | >= 2.0.1 |
+| [ipairs](#ipairs)                               | 用于遍历数组                                 | >= 2.0.1 |
+| [print](#print)                                 | 换行打印终端日志                             | >= 2.0.1 |
+| [printf](#printf)                               | 无换行打印终端日志                           | >= 2.0.1 |
+| [cprint](#cprint)                               | 换行彩色打印终端日志                         | >= 2.0.1 |
+| [cprintf](#cprintf)                             | 无换行彩色打印终端日志                       | >= 2.0.1 |
+| [format](#format)                               | 格式化字符串                                 | >= 2.0.1 |
+| [raise](#raise)                                 | 抛出异常中断程序                             | >= 2.0.1 |
 
 
 ##### import
@@ -2530,6 +2546,7 @@ platform("android")
 ##### printf
 ##### cprint
 ##### cprintf
+##### format
 ##### raise
 
 ##### table
