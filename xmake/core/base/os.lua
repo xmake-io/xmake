@@ -531,7 +531,7 @@ function os.iorunv(shellname, argv)
     os.rm(errfile)
 
     -- ok?
-    return ok == 0, outfile, errdata
+    return ok == 0, outdata, errdata
 end
 
 -- raise an exception and abort the current script

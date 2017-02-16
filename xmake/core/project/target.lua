@@ -331,8 +331,8 @@ function target:objectfile(sourcefile)
     -- .e.g 
     --
     -- src/xxx.c
-    --     project/xmake.lua
-    --             build/.objs
+    --      project/xmake.lua
+    --          build/.objs
     --
     -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
     --
