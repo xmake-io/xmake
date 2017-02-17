@@ -51,6 +51,10 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     tb_char_t const* pattern = (tb_char_t const*)tuple[1].cstr;
     tb_assert_and_check_return_val(pattern, tb_false);
 
+    // remove ./ for path 
+    if (path[0] == '.' && (path[1] == '/' || path[1] == '\\'))
+        path = path + 2;
+
     // the match mode
     tb_long_t mode = tuple[2].l;
 
