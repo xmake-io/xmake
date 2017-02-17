@@ -55,20 +55,20 @@ function sandbox_utils.print(format, ...)
         {
             function ()
                 -- attempt to print format string first
-                io.write(vformat(format, unpack(args)) .. "\n")
+                utils._iowrite(vformat(format, unpack(args)) .. "\n")
             end,
             catch 
             {
                 function ()
                     -- print multi-variables with raw lua action
-                    print(format, unpack(args))
+                    utils._print(format, unpack(args))
                 end
             }
         }
 
     else
         -- print multi-variables with raw lua action
-        print(format, ...)
+        utils._print(format, ...)
     end
 end
 
@@ -76,21 +76,21 @@ end
 function sandbox_utils.printf(format, ...)
 
     -- done
-    io.write(vformat(format, ...))
+    utils._iowrite(vformat(format, ...))
 end
 
 -- print format string, the builtin variables and colors with newline
 function sandbox_utils.cprint(format, ...)
 
     -- done
-    io.write(colors(vformat(format, ...) .. "\n"))
+    utils._iowrite(colors(vformat(format, ...) .. "\n"))
 end
 
 -- print format string, the builtin variables and colors without newline
 function sandbox_utils.cprintf(format, ...)
 
     -- done
-    io.write(colors(vformat(format, ...)))
+    utils._iowrite(colors(vformat(format, ...)))
 end
 
 -- assert

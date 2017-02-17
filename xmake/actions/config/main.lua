@@ -246,9 +246,6 @@ function main()
 
         -- dump it
         config.dump()
-
-        -- trace
-        cprint("${bright}configure ok!")
     end
 
     -- finished 

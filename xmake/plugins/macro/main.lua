@@ -292,9 +292,6 @@ function _run(macroname)
 
     -- run macro
     macro.main(option.get("arguments") or {})
-
-    -- trace
-    cprint("${bright}run macro(%s) ok!", macroname)
 end
 
 -- main

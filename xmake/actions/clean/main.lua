@@ -164,7 +164,4 @@ function main()
 
     -- leave project directory
     os.cd(olddir)
-
-    -- trace
-    cprint("${bright}clean ok!")
 end

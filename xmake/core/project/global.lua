@@ -143,8 +143,9 @@ end
 function global.dump()
    
     -- dump
-    table.dump(global.options(), "__%w*", "configure")
-   
+    if not option.get("quiet") then
+        table.dump(global.options(), "__%w*", "configure")
+    end
 end
 
 -- return module

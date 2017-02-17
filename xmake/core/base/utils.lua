@@ -30,6 +30,24 @@ local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
 
+-- print string with newline
+function utils._print(...)
+
+    -- print it if not quiet
+    if not option.get("quiet") then
+        print(...)
+    end
+end
+
+-- print string without newline
+function utils._iowrite(...)
+
+    -- print it if not quiet
+    if not option.get("quiet") then
+        io.write(...)
+    end
+end
+
 -- print format string with newline
 function utils.print(format, ...)
 
@@ -37,7 +55,7 @@ function utils.print(format, ...)
     assert(format)
 
     -- trace
-    print(string.tryformat(format, ...))
+    utils._print(string.tryformat(format, ...))
 end
 
 -- print format string without newline
@@ -47,7 +65,7 @@ function utils.printf(format, ...)
     assert(format)
 
     -- trace
-    io.write(string.tryformat(format, ...))
+    utils._iowrite(string.tryformat(format, ...))
 end
 
 -- print format string and colors with newline
@@ -57,7 +75,7 @@ function utils.cprint(format, ...)
     assert(format)
 
     -- trace
-    print(colors(string.tryformat(format, ...)))
+    utils._print(colors(string.tryformat(format, ...)))
 end
 
 -- print format string and colors without newline
@@ -67,7 +85,7 @@ function utils.cprintf(format, ...)
     assert(format)
 
     -- trace
-    io.write(colors(string.tryformat(format, ...)))
+    utils._iowrite(colors(string.tryformat(format, ...)))
 end
 
 -- the verbose function
@@ -77,7 +95,7 @@ function utils.verbose(format, ...)
     if option.get("verbose") and format ~= nil then
         
         -- trace
-        print(string.tryformat(format, ...))
+        utils._print(string.tryformat(format, ...))
     end
 end
 
