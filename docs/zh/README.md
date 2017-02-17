@@ -263,6 +263,12 @@ $ xmake [action|plugin] [-h|--help]
 $ xmake run --help
 ``` 
 
+#### 怎样实现静默构建，不输出任何信息？
+
+```bash
+$ xmake [-q|--quiet]
+```
+
 #### 如果xmake运行失败了怎么办？
 
 可以先尝试清除下配置，重新构建下：

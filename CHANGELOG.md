@@ -24,6 +24,7 @@
 * Remove install.bat script and provide nsis install package
 * Rewrite [documents](http://www.xmake.io/#/home/) using [docute](https://github.com/egoist/docute)
 * Improve `os.run`, `os.exec`, `os.cp`, `os.mv` and `os.rm` interfaces and support wildcard pattern
+* Optimize the output info and add `-q|--quiet` option
 
 ### Bugs fixed
 
@@ -31,6 +32,7 @@
 * [#43](https://github.com/waruqi/xmake/issues/43): Avoid to generate unnecessary .xmake directory  
 * Add c++ stl search directories for android
 * Fix compile error for rhel 5.10
+* Fix `os.iorun` bug
 
 ## v2.0.5
 
@@ -162,11 +164,11 @@
 * Add apple platforms：watchos, watchsimulator
 * Add architecture x64, amd64, x86_amd64 for windows
 * Support switch static and share library
-* Add -j/--jobs argument for supporting multi-jobs 
+* Add `-j/--jobs` argument for supporting multi-jobs 
 
 ### Changes
 
-* Improve `add_files` api and support to add *.o/obj/a/lib files for merging static library and object files
+* Improve `add_files` api and support to add `*.o/obj/a/lib` files for merging static library and object files
 * Optimize installation and remove some binary files
 
 ### Bugs fixed
@@ -218,6 +220,7 @@
 * 移除install.bat脚本，提供windows nsis安装包支持
 * 使用[docute](https://github.com/egoist/docute)重写[文档](http://www.xmake.io/#/zh/)，提供更加完善的文档支持
 * 增强`os.run`, `os.exec`, `os.cp`, `os.mv` 和 `os.rm` 等接口，支持通配符模式匹配和批量文件操作
+* 精简和优化构建输出信息，添加`-q|--quiet`选项实现静默构建
 
 ### Bugs修复
 
@@ -225,6 +228,7 @@
 * [#43](https://github.com/waruqi/xmake/issues/43): 避免创建不必要的.xmake工程缓存目录
 * 针对android版本添加c++ stl搜索目录，解决编译c++失败问题
 * 修复在rhel 5.10上编译失败问题
+* 修复`os.iorun`返回数据不对问题
 
 ## v2.0.5
 
@@ -359,7 +363,7 @@
 
 ### 改进
 
-* 增强add_files接口，支持直接添加*.o/obj/a/lib文件，并且支持静态库的合并
+* 增强`add_files`接口，支持直接添加`*.o/obj/a/lib`文件，并且支持静态库的合并
 * 裁剪xmake的安装过程，移除一些预编译的二进制程序
 
 ### Bugs修复
