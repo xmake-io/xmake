@@ -61,20 +61,26 @@ function strip(level)
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetfile, flags)
+function linkcmd(objectfiles, targetkind, targetfile, flags)
+
+    -- check
+    assert(targetkind == "static")
 
     -- make it
     return format("%s %s %s %s", _g.shellname, flags, targetfile, objectfiles)
 end
 
 -- link the library file
-function link(objectfiles, targetfile, flags)
+function link(objectfiles, targetkind, targetfile, flags)
+
+    -- check
+    assert(targetkind == "static", "the target kind: %s is not support for ar", targetkind)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetfile, flags))
+    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
 end
 
 -- extract the static library to object directory
@@ -125,7 +131,7 @@ function check(flags)
     compiler.compile(sourcefile, objectfile)
 
     -- check it
-    link(objectfile, libraryfile, arflags)
+    link(objectfile, "static", libraryfile, arflags)
 
     -- remove files
     os.rm(objectfile)

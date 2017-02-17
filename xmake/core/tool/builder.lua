@@ -52,6 +52,13 @@ function builder:_nameflags()
     return self._NAMEFLAGS
 end
 
+-- get the target kind
+function builder:_targetkind()
+
+    -- get it
+    return self._TARGETKIND
+end
+
 -- map gcc flag to the given builder flag
 function builder:_mapflag(flag, mapflags)
 

@@ -122,6 +122,9 @@ function linker.load(targetkind, sourcekinds)
     end
     instance._NAMEFLAGS = nameflags
 
+    -- init target kind
+    instance._TARGETKIND = targetkind
+
     -- init flag kinds
     instance._FLAGKINDS = {linkerinfo.flag}
 
@@ -136,14 +139,14 @@ end
 function linker:link(objectfiles, targetfile, target)
 
     -- link it
-    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), targetfile, (self:linkflags(target)))
+    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
 end
 
 -- get the link command
 function linker:linkcmd(objectfiles, targetfile, target)
 
     -- get it
-    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), targetfile, (self:linkflags(target)))
+    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
 end
 
 -- get the link flags
