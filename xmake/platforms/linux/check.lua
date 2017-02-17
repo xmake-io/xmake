@@ -113,6 +113,11 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sh",   cross,  "clang",     "the shared library linker") 
     checker.check_toolchain(config, "sc",   cross,  "swiftc",    "the swift compiler") 
     checker.check_toolchain(config, "dd",   cross,  "lldb",      "the debugger") 
+
+    -- check for go tools
+    checker.check_toolchain(config, "go",   "",     "go",   "the golang compiler") 
+    checker.check_toolchain(config, "go-ar","",     "go",   "the golang archiver") 
+    checker.check_toolchain(config, "go-ld","",     "go",   "the golang linker") 
 end
 
 -- check it
