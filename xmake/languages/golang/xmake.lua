@@ -32,10 +32,10 @@ language("golang")
     set_sourceflags {go = "goflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "go", static = "go", shared = "go"}
+    set_targetkinds {binary = "go-ld", static = "go-ar"}
 
     -- set target flags
-    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+    set_targetflags {binary = "go-ldflags", static = "go-arflags"}
 
     -- on load
     on_load("load")
@@ -102,16 +102,12 @@ language("golang")
                 ,   {nil, "goflags",    "kv", nil,          "The Golang Compiler Flags"             }
 
                 ,   {}
-                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
-                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+                ,   {nil, "go-ld",      "kv", nil,          "The Linker"                            }
+                ,   {nil, "go-ldflags", "kv", nil,          "The Binary Linker Flags"               }
 
                 ,   {}
-                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
-                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
-
-                ,   {}
-                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"             }
-                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"       }
+                ,   {nil, "go-ar",      "kv", nil,          "The Static Library Linker"             }
+                ,   {nil, "go-arflags", "kv", nil,          "The Static Library Linker Flags"       }
 
                 ,   {}
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }

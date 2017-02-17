@@ -245,20 +245,20 @@ function nf_framework(framework)
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetfile, flags)
+function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
     return format("%s -o %s %s %s", _g.shellname, targetfile, objectfiles, flags)
 end
 
 -- link the target file
-function link(objectfiles, targetfile, flags)
+function link(objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetfile, flags))
+    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command

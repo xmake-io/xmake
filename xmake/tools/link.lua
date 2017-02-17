@@ -103,7 +103,7 @@ function nf_linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetfile, flags)
+function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
     local cmd = format("%s %s -out:%s %s", _g.shellname, flags, targetfile, objectfiles)
@@ -120,13 +120,13 @@ function linkcmd(objectfiles, targetfile, flags)
 end
 
 -- link the target file
-function link(objectfiles, targetfile, flags)
+function link(objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetfile, flags))
+    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
 end
 
 -- check the given flags 

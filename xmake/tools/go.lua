@@ -38,7 +38,7 @@ function init(shellname, kind)
     _g.kind = kind
 
     -- init arflags
-    _g.arflags = { "grc" }
+    _g["go-arflags"] = { "grc" }
 
     -- init the file formats
     _g.formats          = {}
@@ -73,37 +73,24 @@ function nf_linkdir(dir)
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetfile, flags)
+function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
-    return format("%s tool link %s -o %s %s", _g.shellname, flags, targetfile, objectfiles)
-end
-
--- make the archive command
-function archivecmd(objectfiles, targetfile, flags)
-
-    -- make it
-    return format("%s tool pack %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+    if targetkind == "static" then
+        return format("%s tool pack %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+    else
+        return format("%s tool link %s -o %s %s", _g.shellname, flags, targetfile, objectfiles)
+    end
 end
 
 -- link the target file
-function link(objectfiles, targetfile, flags)
+function link(objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetfile, flags))
-end
-
--- archive the library file
-function archive(objectfiles, targetfile, flags)
-
-    -- ensure the target directory
-    os.mkdir(path.directory(targetfile))
-
-    -- link it
-    os.run(archivecmd(objectfiles, targetfile, flags))
+    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command
@@ -140,4 +127,3 @@ function check(flags)
     os.rm(objectfile)
     os.rm(sourcefile)
 end
-
