@@ -200,11 +200,6 @@ function os.match(pattern, mode)
     pattern = pattern:gsub("\001", ".*")
     pattern = pattern:gsub("\002", "[^/]*")
 
-    -- patch "./" for matching ok if root directory is '.'
-    if rootdir == '.' then
-        pattern = "." .. path.seperator() .. pattern
-    end
-
     -- translate mode
     if type(mode) == "string" then
         local modes = {a = -1, f = 0, d = 1}
