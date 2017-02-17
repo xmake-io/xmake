@@ -207,8 +207,9 @@ end
 function config.dump()
    
     -- dump
-    table.dump(config.options(), "__%w*", "configure")
-   
+    if not option.get("quiet") then
+        table.dump(config.options(), "__%w*", "configure")
+    end
 end
 
 -- the configure has been changed for the given target?

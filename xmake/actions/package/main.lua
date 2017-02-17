@@ -209,7 +209,4 @@ function main()
     else
         _package_target_and_deps(project.target(targetname))
     end
-
-    -- trace
-    cprint("${bright}package ok!")
 end

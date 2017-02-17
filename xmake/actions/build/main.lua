@@ -45,7 +45,11 @@ function main()
     cache.enter("local.config")
 
     -- rebuild?
+    local rebuild = false
     if option.get("rebuild") or cache.get("rebuild") then
+
+        -- mark as rebuild
+        rebuild = true
         
         -- clean it first
         task.run("clean", {target = targetname})
@@ -88,5 +92,7 @@ function main()
     os.cd(olddir)
 
     -- trace
-    cprint("${bright}build ok!${clear}${ok_hand}")
+    if rebuild then
+        cprint("${bright}build ok!${clear}${ok_hand}")
+    end
 end
