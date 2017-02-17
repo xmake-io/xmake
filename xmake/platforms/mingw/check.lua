@@ -50,7 +50,7 @@ function _check_toolchains(config)
         end
     end
 
-    -- done
+    -- check
     checker.check_toolchain(config, "cc",   cross, "gcc",       "the c compiler") 
     checker.check_toolchain(config, "cxx",  cross, "g++",       "the c++ compiler") 
     checker.check_toolchain(config, "cxx",  cross, "gcc",       "the c++ compiler") 
@@ -62,6 +62,14 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sh",   cross, "g++",       "the shared library linker") 
     checker.check_toolchain(config, "sh",   cross, "gcc",       "the shared library linker") 
     checker.check_toolchain(config, "sc",   cross, "swiftc",    "the swift compiler") 
+
+    -- check for golang tools
+    checker.check_toolchain(config, "go",   "",  "go",          "the golang compiler") 
+    checker.check_toolchain(config, "go",   "",  "gccgo",       "the golang compiler") 
+    checker.check_toolchain(config, "go-ar","",  "go",          "the golang archiver") 
+    checker.check_toolchain(config, "go-ar","",  "gccgo",       "the golang archiver") 
+    checker.check_toolchain(config, "go-ld","",  "go",          "the golang linker") 
+    checker.check_toolchain(config, "go-ld","",  "gccgo",       "the golang linker") 
 end
 
 -- check it
