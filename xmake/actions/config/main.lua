@@ -241,12 +241,16 @@ function main()
         configheader.make()
     end
 
-    -- dump it
-    config.dump()
+    -- trace
+    if recheck or option.get("verbose") then
+
+        -- dump it
+        config.dump()
+
+        -- trace
+        cprint("${bright}configure ok!")
+    end
 
     -- finished 
     _g.finished = true
-
-    -- trace
-    cprint("${bright}configure ok!")
 end
