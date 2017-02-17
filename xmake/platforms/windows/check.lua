@@ -189,7 +189,7 @@ function _check_toolchains(config)
     -- enter environment
     environment.enter("toolchains")
 
-    -- done
+    -- check
     checker.check_toolchain(config, "cc",   "", "cl.exe",           "the c compiler") 
     checker.check_toolchain(config, "cxx",  "", "cl.exe",           "the c++ compiler") 
     checker.check_toolchain(config, "ld",   "", "link.exe",         "the linker") 
@@ -204,6 +204,14 @@ function _check_toolchains(config)
 
     -- leave environment
     environment.leave("toolchains")
+
+    -- check for golang tools
+    checker.check_toolchain(config, "go",   "",  "go",              "the golang compiler") 
+    checker.check_toolchain(config, "go",   "",  "gccgo",           "the golang compiler") 
+    checker.check_toolchain(config, "go-ar","",  "go",              "the golang archiver") 
+    checker.check_toolchain(config, "go-ar","",  "gccgo",           "the golang archiver") 
+    checker.check_toolchain(config, "go-ld","",  "go",              "the golang linker") 
+    checker.check_toolchain(config, "go-ld","",  "gccgo",           "the golang linker") 
 end
 
 -- check the debugger
