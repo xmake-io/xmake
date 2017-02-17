@@ -254,6 +254,12 @@ For example:
 $ xmake run --help
 ``` 
 
+#### How to suppress all output info?
+
+```bash
+$ xmake [-q|--quiet]
+```
+
 #### How to do if xmake fails?
 
 Please attempt to clean configuration and rebuild it first.
