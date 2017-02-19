@@ -251,9 +251,12 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
         {
             function (errors)
 
+                -- get prefix: "Note: including file:", @note maybe not english language
+                local including_file = errors:match("\n(.-: .-:)%s*.-\r*\n")
+
                 -- filter includes notes
-                if errors then
-                   errors = errors:gsub("Note: including file:%s*.-\r*\n", "")
+                if errors and including_file then
+                    errors = errors:gsub((including_file or "") .. ".-\r*\n", "") 
                 end
                 os.raise(errors)
             end
@@ -266,7 +269,7 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
         -- translate it
         local results = {}
         local uniques = {}
-        for includefile in string.gmatch(outdata, "including file:%s*(.-)\r*\n") do
+        for includefile in string.gmatch(outdata, ".-: .-:%s*(.-)\r*\n") do
 
             -- slower, only for debuging
 --            assert(os.isfile(includefile), "invalid include file: %s for %s", includefile, incdepfile)
