@@ -128,9 +128,15 @@ function os.argw(argv)
     -- match all arguments
     local results = {}
     for _, arg in ipairs(table.wrap(argv)) do
-        local pathes = os.match(arg, 'a')
-        if #pathes > 0 then
-            table.join2(results, pathes)
+        
+        -- exists wildcards?
+        if arg:find("([%+%-%^%$%*%[%]%%])") then
+            local pathes = os.match(arg, 'a')
+            if #pathes > 0 then
+                table.join2(results, pathes)
+            else
+                table.insert(results, arg)
+            end
         else
             table.insert(results, arg)
         end
@@ -182,6 +188,33 @@ function os.match(pattern, mode)
     -- translate path and remove some repeat separators
     pattern = path.translate(pattern:gsub("|.*$", ""))
 
+    -- translate mode
+    if type(mode) == "string" then
+        local modes = {a = -1, f = 0, d = 1}
+        mode = modes[mode]
+        assert(mode, "invalid match mode: %s", mode)
+    elseif mode then
+        mode = 1
+    else 
+        mode = 0
+    end
+
+    -- match the single file without wildchard?
+    if os.isfile(pattern) then
+        if mode <= 0 then
+            return {pattern}, 1
+        else
+            return {}, 0
+        end
+    -- match the single directory without wildchard?
+    elseif os.isdir(pattern) then
+        if (mode == -1 or mode == 1) then
+            return {pattern}, 1
+        else
+            return {}, 0
+        end
+    end
+
     -- get the root directory
     local rootdir = pattern
     local starpos = pattern:find("%*")
@@ -200,17 +233,6 @@ function os.match(pattern, mode)
     pattern = pattern:gsub("\001", ".*")
     pattern = pattern:gsub("\002", "[^/]*")
 
-    -- translate mode
-    if type(mode) == "string" then
-        local modes = {a = -1, f = 0, d = 1}
-        mode = modes[mode]
-        assert(mode, "invalid match mode: %s", mode)
-    elseif mode then
-        mode = 1
-    else 
-        mode = 0
-    end
-    
     -- find it
     return os.find(rootdir, pattern, recurse, mode, excludes)
 end
@@ -394,7 +416,7 @@ end
 function os.tmpfile()
 
     -- make it
-    return path.join(os.tmpdir(), os.uuid())
+    return path.join(os.tmpdir(), (os.uuid():gsub("-", "")))
 end
 
 -- run shell
@@ -417,7 +439,7 @@ function os.runv(shellname, argv)
     local log = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(shellname, os.argw(argv), log, log)
+    local ok = os.execv(shellname, argv, log, log)
     if ok ~= 0 then
 
         -- make errors
@@ -515,7 +537,7 @@ function os.iorunv(shellname, argv)
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(shellname, os.argw(argv), outfile, errfile) 
+    local ok = os.execv(shellname, argv, outfile, errfile) 
 
     -- get output and error data
     local outdata = io.readall(outfile)
