@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.linker")
 import("object")
 
 -- build binary target
@@ -78,6 +79,6 @@ function build(target, buildinfo)
     end
 
     -- link it
-    target:link(objectfiles)
+    linker.link(objectfiles, targetfile, target)
 end
 

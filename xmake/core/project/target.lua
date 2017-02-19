@@ -102,13 +102,6 @@ function target:linkflags()
     return self:linker():linkflags(self)
 end
 
--- link target file
-function target:link(objectfiles)
- 
-    -- link it
-    self:linker():link(objectfiles or self:objectfiles(), self:targetfile(), self)
-end
-
 -- get the options 
 function target:options()
 
