@@ -46,33 +46,33 @@ function _mkdir(makefile, dir)
 end
 
 -- copy file
-function _cp(makefile, srcfile, dstfile)
+function _cp(makefile, sourcefile, targetfile)
 
     -- ensure the destinate directory
-    _mkdir(makefile, path.directory(dstfile))
+    _mkdir(makefile, path.directory(targetfile))
 
     -- copy file
     if config.get("plat") == "windows" then
-        makefile:print("\t@copy /Y %s %s > /null 2>&1", srcfile, dstfile)
+        makefile:print("\t@copy /Y %s %s > /null 2>&1", sourcefile, targetfile)
     else
-        makefile:print("\t@cp %s %s", srcfile, dstfile)
+        makefile:print("\t@cp %s %s", sourcefile, targetfile)
     end
 end
 
 -- make the object for the *.[o|obj] source file
-function _make_object_for_object(makefile, target, srcfile, objfile)
+function _make_object_for_object(makefile, target, sourcefile, objectfile)
 
     -- make command
-    local cmd = format("xmake l cp %s %s", srcfile, objfile)
+    local cmd = format("xmake l cp %s %s", sourcefile, objectfile)
 
     -- make head
-    makefile:printf("%s:", objfile)
+    makefile:printf("%s:", objectfile)
 
     -- make dependence
-    makefile:print(" %s", srcfile)
+    makefile:print(" %s", sourcefile)
 
     -- make body
-    makefile:print("\t@echo inserting.$(mode) %s", srcfile)
+    makefile:print("\t@echo inserting.$(mode) %s", sourcefile)
     makefile:print("\t@%s", cmd)
 
     -- make tail
@@ -81,58 +81,82 @@ function _make_object_for_object(makefile, target, srcfile, objfile)
 end
 
 -- make the object for the *.[a|lib] source file
-function _make_object_for_static(makefile, target, srcfile, objfile)
+function _make_object_for_static(makefile, target, sourcefile, objectfile)
 
     -- not supported
-    raise("source file: %s not supported!", srcfile)
+    raise("source file: %s not supported!", sourcefile)
 end
 
 -- make the object
-function _make_object(makefile, target, srcfile, objfile)
+function _make_object(makefile, target, sourcefile, objectfile)
 
     -- get the source file type
-    local filetype = path.extension(srcfile):lower()
+    local filetype = path.extension(sourcefile):lower()
 
     -- make the object for the *.o/obj source makefile
     if filetype == ".o" or filetype == ".obj" then 
-        return _make_object_for_object(makefile, target, srcfile, objfile)
+        return _make_object_for_object(makefile, target, sourcefile, objectfile)
     -- make the object for the *.[a|lib] source file
     elseif filetype == ".a" or filetype == ".lib" then 
-        return _make_object_for_static(makefile, target, srcfile, objfile)
+        return _make_object_for_static(makefile, target, sourcefile, objectfile)
     end
 
     -- make command
-    local command = compiler.compcmd(srcfile, objfile, target)
+    local command = compiler.compcmd(sourcefile, objectfile, target)
 
     -- make head
-    makefile:printf("%s:", objfile)
+    makefile:printf("%s:", objectfile)
 
     -- make dependence
-    makefile:print(" %s", srcfile)
+    makefile:print(" %s", sourcefile)
 
     -- make body
-    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), srcfile)
-    _mkdir(makefile, path.directory(objfile))
+    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    _mkdir(makefile, path.directory(objectfile))
     makefile:print("\t@%s > %s 2>&1", command, _logfile())
 
     -- make tail
     makefile:print("")
 end
  
--- make all objects of the given target 
-function _make_objects(makefile, target, srcfiles, objfiles)
+-- make each objects
+function _make_each_objects(makefile, target, sourcekind, sourcebatch)
 
-    -- make all objects
-    local i = 1
-    for _, objfile in ipairs(objfiles) do
-
-        -- make object
-        _make_object(makefile, target, srcfiles[i], objfile)
-
-        -- next
-        i = i + 1
+    -- make them
+    for index, objectfile in ipairs(sourcebatch.objectfiles) do
+        _make_object(makefile, target, sourcebatch.sourcefiles[index], objectfile)
     end
+end
+ 
+-- make single object
+function _make_single_object(makefile, target, sourcekind, sourcebatch)
 
+    -- get source and object files
+    local sourcefiles = sourcebatch.sourcefiles
+    local objectfiles = sourcebatch.objectfiles
+    local incdepfiles = sourcebatch.incdepfiles
+
+    -- make command
+    local command = compiler.compcmd(sourcefiles, objectfiles, target, sourcekind)
+
+    -- make head
+    makefile:printf("%s:", objectfiles)
+
+    -- make dependence
+    for _, sourcefile in ipairs(sourcefiles) do
+        makefile:printf(" %s", sourcefile)
+    end
+    makefile:print("")
+
+    -- make body
+    for _, sourcefile in ipairs(sourcefiles) do
+        makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    end
+    _mkdir(makefile, path.directory(objectfiles))
+    makefile:print("\t@%s > %s 2>&1", command, _logfile())
+
+    -- make tail
+    makefile:print("")
 end
 
 -- make target
@@ -151,9 +175,9 @@ function _make_target(makefile, target)
     end
 
     -- make dependence for objects
-    local objfiles = target:objectfiles()
-    for _, objfile in ipairs(objfiles) do
-        makefile:write(" " .. objfile)
+    local objectfiles = target:objectfiles()
+    for _, objectfile in ipairs(objectfiles) do
+        makefile:write(" " .. objectfile)
     end
 
     -- make dependence end
@@ -180,8 +204,20 @@ function _make_target(makefile, target)
     -- make tail
     makefile:print("")
 
-    -- make objects for this target
-    _make_objects(makefile, target, target:sourcefiles(), objfiles) 
+    -- build source batches
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+
+        -- compile source files to single object at the same time?
+        if type(sourcebatch.objectfiles) == "string" then
+        
+            -- make single object
+            _make_single_object(makefile, target, sourcekind, sourcebatch)
+        else
+
+            -- make each objects
+            _make_each_objects(makefile, target, sourcekind, sourcebatch)
+        end
+    end
 end
 
 -- make all
