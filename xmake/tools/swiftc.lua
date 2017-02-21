@@ -72,16 +72,22 @@ end
 -- get the property
 function get(name)
 
-    -- init ldflags
-    if not _g.ldflags then
-        local swift_linkdirs = config.get("__swift_linkdirs")
-        if swift_linkdirs then
-            _g.ldflags = { "-L" .. swift_linkdirs }
-        end
-    end
-
     -- get it
     return _g[name]
+end
+
+-- make the strip flag
+function nf_strip(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-Xlinker -S"
+    ,   all         = "-Xlinker -s"
+    }
+
+    -- make it
+    return maps[level] or ""
 end
 
 -- make the symbol flag
@@ -178,6 +184,37 @@ function nf_framework(framework)
 
     -- make it
     return "-framework" .. framework
+end
+
+-- make the link flag
+function nf_link(lib)
+
+    -- make it
+    return "-l" .. lib
+end
+
+-- make the linkdir flag
+function nf_linkdir(dir)
+
+    -- make it
+    return "-L" .. dir
+end
+
+-- make the link command
+function linkcmd(objectfiles, targetkind, targetfile, flags)
+
+    -- make it
+    return format("%s -o %s %s %s", _g.shellname, targetfile, objectfiles, flags)
+end
+
+-- link the target file
+function link(objectfiles, targetkind, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the compile command
