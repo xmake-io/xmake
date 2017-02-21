@@ -74,15 +74,29 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "ex",   "",  "ar",              "the static library extractor") 
     checker.check_toolchain(config, "sh",   "",  "clang++",         "the shared library linker") 
     checker.check_toolchain(config, "sh",   "",  "clang",           "the shared library linker") 
-    checker.check_toolchain(config, "dd",   "",  "lldb",            "the debugger") 
+    checker.check_toolchain(config, "dg",   "",  "lldb",            "the debugger") 
 
     -- check for golang tools
     checker.check_toolchain(config, "go",   "",  "go",              "the golang compiler") 
     checker.check_toolchain(config, "go",   "",  "gccgo",           "the golang compiler") 
-    checker.check_toolchain(config, "go-ar","",  "go",              "the golang archiver") 
-    checker.check_toolchain(config, "go-ar","",  "gccgo",           "the golang archiver") 
+    checker.check_toolchain(config, "go-ar","",  "go",              "the golang static library archiver") 
+    checker.check_toolchain(config, "go-ar","",  "gccgo",           "the golang static library archiver") 
     checker.check_toolchain(config, "go-ld","",  "go",              "the golang linker") 
     checker.check_toolchain(config, "go-ld","",  "gccgo",           "the golang linker") 
+
+    -- check for dlang tools
+    checker.check_toolchain(config, "dd",   "",  "dmd",             "the dlang compiler") 
+    checker.check_toolchain(config, "dd",   "",  "ldc2",            "the dlang compiler") 
+    checker.check_toolchain(config, "dd",   "",  "gdc",             "the dlang compiler") 
+    checker.check_toolchain(config, "dd-ar","",  "dmd",             "the dlang static library archiver") 
+    checker.check_toolchain(config, "dd-ar","",  "ldc2",            "the dlang static library archiver") 
+    checker.check_toolchain(config, "dd-ar","",  "gdc",             "the dlang static library archiver") 
+    checker.check_toolchain(config, "dd-sh","",  "dmd",             "the dlang shared library linker") 
+    checker.check_toolchain(config, "dd-sh","",  "ldc2",            "the dlang shared library linker") 
+    checker.check_toolchain(config, "dd-sh","",  "gdc",             "the dlang shared library linker") 
+    checker.check_toolchain(config, "dd-ld","",  "dmd",             "the dlang linker") 
+    checker.check_toolchain(config, "dd-ld","",  "ldc2",            "the dlang linker") 
+    checker.check_toolchain(config, "dd-ld","",  "gdc",             "the dlang linker") 
 end
 
 -- check it

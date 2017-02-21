@@ -54,7 +54,7 @@ task("global")
                                                     ,   "    --ccache=[y|n]"                                        }
 
                 ,   {}
-                ,   {nil, "dd",         "kv", "auto",   "The Debugger"                                              }
+                ,   {nil, "dg",         "kv", "auto",   "The Debugger"                                              }
                 ,   {}
 
                     -- show platform menu options

@@ -208,8 +208,8 @@ function _check_toolchains(config)
     -- check for golang tools
     checker.check_toolchain(config, "go",   "",  "go",              "the golang compiler") 
     checker.check_toolchain(config, "go",   "",  "gccgo",           "the golang compiler") 
-    checker.check_toolchain(config, "go-ar","",  "go",              "the golang archiver") 
-    checker.check_toolchain(config, "go-ar","",  "gccgo",           "the golang archiver") 
+    checker.check_toolchain(config, "go-ar","",  "go",              "the golang static library archiver") 
+    checker.check_toolchain(config, "go-ar","",  "gccgo",           "the golang static library archiver") 
     checker.check_toolchain(config, "go-ld","",  "go",              "the golang linker") 
     checker.check_toolchain(config, "go-ld","",  "gccgo",           "the golang linker") 
 end
@@ -218,7 +218,7 @@ end
 function _check_debugger(config)
 
     -- get debugger
-    local debugger = config.get("dd")
+    local debugger = config.get("dg")
     if debugger then
         return
     end
@@ -262,7 +262,7 @@ function _check_debugger(config)
     if debugger then
 
         -- save it
-        config.set("dd", debugger)
+        config.set("dg", debugger)
 
         -- trace
         print("checking for the debugger ... %s", path.filename(debugger))

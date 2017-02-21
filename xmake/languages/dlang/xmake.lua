@@ -23,19 +23,19 @@
 --
 
 -- define language
-language("golang")
+language("dlang")
 
     -- set source file kinds
-    set_sourcekinds {go = ".go"}
+    set_sourcekinds {dd = ".d"}
 
     -- set source file flags
-    set_sourceflags {go = "goflags"}
+    set_sourceflags {dd = "dflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "go-ld", static = "go-ar"}
+    set_targetkinds {binary = "dd-ld", static = "dd-ar", shared = "dd-sh"}
 
     -- set target flags
-    set_targetflags {binary = "go-ldflags", static = "go-arflags"}
+    set_targetflags {binary = "dd-ldflags", static = "dd-arflags", shared = "dd-shflags"}
 
     -- on load
     on_load("load")
@@ -97,23 +97,28 @@ language("golang")
     set_menu {
                 config = 
                 {   
-                    {                                                                                }
-                ,   {nil, "go",         "kv", nil,          "The Golang Compiler"                    }
-                ,   {nil, "goflags",    "kv", nil,          "The Golang Compiler Flags"              }
+                    {                                                                                 }
+                ,   {nil, "dd",         "kv", nil,          "The Dlang Compiler"                      }
+                ,   {nil, "dflags",     "kv", nil,          "The Dlang Compiler Flags"                }
 
-                ,   {                                                                                }
-                ,   {nil, "go-ld",      "kv", nil,          "The Golang Linker"                      }
-                ,   {nil, "go-ldflags", "kv", nil,          "The Golang Linker Flags"                }
+                ,   {                                                                                 }
+                ,   {nil, "dd-ld",      "kv", nil,          "The Dlang Linker"                        }
+                ,   {nil, "dd-ldflags", "kv", nil,          "The Dlang Linker Flags"                  }
 
-                ,   {                                                                                }
-                ,   {nil, "go-ar",      "kv", nil,          "The Golang Static Library Linker"       }
-                ,   {nil, "go-arflags", "kv", nil,          "The Golang Static Library Linker Flags" }
+                ,   {                                                                                 }
+                ,   {nil, "dd-ar",      "kv", nil,          "The Dlang Static Library Archiver"       }
+                ,   {nil, "dd-arflags", "kv", nil,          "The Dlang Static Library Archvier Flags" }
+
+
+                ,   {                                                                                 }
+                ,   {nil, "dd-sh",      "kv", nil,          "The Dlang Shared Library Linker"         }
+                ,   {nil, "dd-shflags", "kv", nil,          "The Dlang Shared Library Linker Flags"   }
 
                 -- TODO
-                ,   {                                                                                }
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                     }
-                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"            }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"         }
-                                                                                                     }
+                ,   {                                                                                 }
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                      }
+                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"             }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"          }
+                }
             } 
 
