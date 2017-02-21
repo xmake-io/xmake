@@ -261,7 +261,7 @@ function check_toolchain(config, kind, cross, name, description, check)
         if toolpath then
             cprint("checking for %s (%s) ... ${green}%s", description, kind, path.filename(toolpath))
         else
-            cprint("checking for %s (%s) ... ${red}no", description, kind)
+            cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", description, kind, name)
         end
     end
 end
