@@ -29,13 +29,13 @@ language("dlang")
     set_sourcekinds {dc = ".d"}
 
     -- set source file flags
-    set_sourceflags {dc = "dflags"}
+    set_sourceflags {dc = "dcflags"}
 
     -- set target kinds
     set_targetkinds {binary = "dc-ld", static = "dc-ar", shared = "dc-sh"}
 
     -- set target flags
-    set_targetflags {binary = "dc-ldflags", static = "dc-arflags", shared = "dc-shflags"}
+    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
     -- on load
     on_load("load")
@@ -99,22 +99,10 @@ language("dlang")
                 {   
                     {                                                                                 }
                 ,   {nil, "dc",         "kv", nil,          "The Dlang Compiler"                      }
-                ,   {nil, "dflags",     "kv", nil,          "The Dlang Compiler Flags"                }
-
-                ,   {                                                                                 }
                 ,   {nil, "dc-ld",      "kv", nil,          "The Dlang Linker"                        }
-                ,   {nil, "dc-ldflags", "kv", nil,          "The Dlang Linker Flags"                  }
-
-                ,   {                                                                                 }
                 ,   {nil, "dc-ar",      "kv", nil,          "The Dlang Static Library Archiver"       }
-                ,   {nil, "dc-arflags", "kv", nil,          "The Dlang Static Library Archvier Flags" }
-
-
-                ,   {                                                                                 }
                 ,   {nil, "dc-sh",      "kv", nil,          "The Dlang Shared Library Linker"         }
-                ,   {nil, "dc-shflags", "kv", nil,          "The Dlang Shared Library Linker Flags"   }
 
-                -- TODO
                 ,   {                                                                                 }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                      }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"             }

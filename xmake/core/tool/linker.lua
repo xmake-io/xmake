@@ -45,13 +45,15 @@ function linker:_addflags_from_compiler(flags, sourcekinds)
 
     -- make flags 
     local flags_of_compiler = {}
+    local toolkind = self:get("kind")
     for _, sourcekind in ipairs(table.wrap(sourcekinds)) do
 
         -- load compiler
         local instance, errors = compiler.load(sourcekind)
         if instance then
             for _, flagkind in ipairs(self:_flagkinds()) do
-                table.join2(flags_of_compiler, instance:get(flagkind))
+                -- attempt to add special lanugage flags first, .e.g go-ldflags, dc-arflags
+                table.join2(flags_of_compiler, instance:get(toolkind .. 'flags') or instance:get(flagkind))
             end
         end
     end
@@ -64,8 +66,11 @@ end
 function linker:_addflags_from_linker(flags)
 
     -- add flags
+    local toolkind = self:get("kind")
     for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, self:get(flagkind))
+
+        -- attempt to add special lanugage flags first, .e.g go-ldflags, dc-arflags
+        table.join2(flags, self:get(toolkind .. 'flags') or self:get(flagkind))
     end
 end
 
