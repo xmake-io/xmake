@@ -35,7 +35,7 @@ language("golang")
     set_targetkinds {binary = "go-ld", static = "go-ar"}
 
     -- set target flags
-    set_targetflags {binary = "go-ldflags", static = "go-arflags"}
+    set_targetflags {binary = "ldflags", static = "arflags"}
 
     -- on load
     on_load("load")
@@ -99,17 +99,9 @@ language("golang")
                 {   
                     {                                                                                }
                 ,   {nil, "go",         "kv", nil,          "The Golang Compiler"                    }
-                ,   {nil, "goflags",    "kv", nil,          "The Golang Compiler Flags"              }
-
-                ,   {                                                                                }
                 ,   {nil, "go-ld",      "kv", nil,          "The Golang Linker"                      }
-                ,   {nil, "go-ldflags", "kv", nil,          "The Golang Linker Flags"                }
-
-                ,   {                                                                                }
                 ,   {nil, "go-ar",      "kv", nil,          "The Golang Static Library Linker"       }
-                ,   {nil, "go-arflags", "kv", nil,          "The Golang Static Library Linker Flags" }
 
-                -- TODO
                 ,   {                                                                                }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                     }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"            }

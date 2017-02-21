@@ -156,8 +156,10 @@ end
 function builder:_addflags_from_platform(flags)
 
     -- add flags 
+    local toolkind = self:get("kind")
     for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, platform.get(flagkind))
+        -- attempt to add special lanugage flags first, .e.g go-ldflags, dc-arflags
+        table.join2(flags, platform.get(toolkind .. 'flags') or platform.get(flagkind))
     end
 end
 

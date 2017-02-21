@@ -38,7 +38,7 @@ function init(shellname, kind)
     _g.kind = kind
 
     -- init arflags
-    _g["go-arflags"] = { "grc" }
+    _g.arflags = { "grc" }
 
     -- init the file formats
     _g.formats          = {}

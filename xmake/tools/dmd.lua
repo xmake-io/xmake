@@ -38,14 +38,14 @@ function init(shellname, kind)
     _g.kind = kind
 
     -- init arflags
-    _g["dd-arflags"] = { "-lib" }
+    _g.arflags = { "-lib" }
 
     -- init shflags
-    _g["dd-shflags"] = { "-shared", "-fPIC" }
+    _g.shflags = { "-shared", "-fPIC" }
 
-    -- init dflags for the kind: shared
-    _g.shared        = {}
-    _g.shared.dflags = {"-fPIC"}
+    -- init dcflags for the kind: shared
+    _g.shared           = {}
+    _g.shared.dcflags   = {"-fPIC"}
 
     -- init features
     _g.features = 
