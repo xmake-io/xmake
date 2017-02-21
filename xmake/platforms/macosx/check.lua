@@ -93,7 +93,7 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "dd-sh",    "",  "dmd",         "the dlang shared library linker") 
     checker.check_toolchain(config, "dd-sh",    "",  "ldc2",        "the dlang shared library linker") 
     checker.check_toolchain(config, "dd-sh",    "",  "gdc",         "the dlang shared library linker") 
-    checker.check_toolchain(config, "dd-id",    "",  "dmd",         "the dlang linker") 
+    checker.check_toolchain(config, "dd-ld",    "",  "dmd",         "the dlang linker") 
     checker.check_toolchain(config, "dd-ld",    "",  "ldc2",        "the dlang linker") 
     checker.check_toolchain(config, "dd-ld",    "",  "gdc",         "the dlang linker") 
 
