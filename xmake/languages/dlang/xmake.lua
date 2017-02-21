@@ -26,16 +26,16 @@
 language("dlang")
 
     -- set source file kinds
-    set_sourcekinds {dd = ".d"}
+    set_sourcekinds {dc = ".d"}
 
     -- set source file flags
-    set_sourceflags {dd = "dflags"}
+    set_sourceflags {dc = "dflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "dd-ld", static = "dd-ar", shared = "dd-sh"}
+    set_targetkinds {binary = "dc-ld", static = "dc-ar", shared = "dc-sh"}
 
     -- set target flags
-    set_targetflags {binary = "dd-ldflags", static = "dd-arflags", shared = "dd-shflags"}
+    set_targetflags {binary = "dc-ldflags", static = "dc-arflags", shared = "dc-shflags"}
 
     -- on load
     on_load("load")
@@ -98,21 +98,21 @@ language("dlang")
                 config = 
                 {   
                     {                                                                                 }
-                ,   {nil, "dd",         "kv", nil,          "The Dlang Compiler"                      }
+                ,   {nil, "dc",         "kv", nil,          "The Dlang Compiler"                      }
                 ,   {nil, "dflags",     "kv", nil,          "The Dlang Compiler Flags"                }
 
                 ,   {                                                                                 }
-                ,   {nil, "dd-ld",      "kv", nil,          "The Dlang Linker"                        }
-                ,   {nil, "dd-ldflags", "kv", nil,          "The Dlang Linker Flags"                  }
+                ,   {nil, "dc-ld",      "kv", nil,          "The Dlang Linker"                        }
+                ,   {nil, "dc-ldflags", "kv", nil,          "The Dlang Linker Flags"                  }
 
                 ,   {                                                                                 }
-                ,   {nil, "dd-ar",      "kv", nil,          "The Dlang Static Library Archiver"       }
-                ,   {nil, "dd-arflags", "kv", nil,          "The Dlang Static Library Archvier Flags" }
+                ,   {nil, "dc-ar",      "kv", nil,          "The Dlang Static Library Archiver"       }
+                ,   {nil, "dc-arflags", "kv", nil,          "The Dlang Static Library Archvier Flags" }
 
 
                 ,   {                                                                                 }
-                ,   {nil, "dd-sh",      "kv", nil,          "The Dlang Shared Library Linker"         }
-                ,   {nil, "dd-shflags", "kv", nil,          "The Dlang Shared Library Linker Flags"   }
+                ,   {nil, "dc-sh",      "kv", nil,          "The Dlang Shared Library Linker"         }
+                ,   {nil, "dc-shflags", "kv", nil,          "The Dlang Shared Library Linker Flags"   }
 
                 -- TODO
                 ,   {                                                                                 }
