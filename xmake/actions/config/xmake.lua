@@ -123,7 +123,7 @@ task("config")
                                                           , "    - sdk/include"                                             }
 
                 ,   {}
-                ,   {nil, "dd",         "kv", "auto",       "The Debugger"                                                  }
+                ,   {nil, "dg",         "kv", "auto",       "The Debugger"                                                  }
 
                     -- show language menu options
                 ,   function () 

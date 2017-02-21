@@ -1,11 +1,3 @@
-/*!The Qiyi Golang Backend Server
- *
- * Copyright (C) 2016, qiyi.com All rights reserved.
- *
- * @author      ruki
- * @file        main.go
- *
- */
 package main
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////

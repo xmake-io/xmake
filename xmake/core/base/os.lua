@@ -416,7 +416,7 @@ end
 function os.tmpfile()
 
     -- make it
-    return path.join(os.tmpdir(), (os.uuid():gsub("-", "")))
+    return path.join(os.tmpdir(), "_" .. (os.uuid():gsub("-", "")))
 end
 
 -- run shell
