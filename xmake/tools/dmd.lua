@@ -37,6 +37,16 @@ function init(shellname, kind)
     -- save the kind
     _g.kind = kind
 
+    -- init arflags
+    _g["dd-arflags"] = { "-lib" }
+
+    -- init shflags
+    _g["dd-shflags"] = { "-shared", "-fPIC" }
+
+    -- init dflags for the kind: shared
+    _g.shared        = {}
+    _g.shared.dflags = {"-fPIC"}
+
     -- init features
     _g.features = 
     {
@@ -55,28 +65,28 @@ end
 function nf_includedir(dir)
 
     -- make it
-    return ""
+    return "-I" .. dir
+end
+
+-- make the link flag
+function nf_link(lib)
+
+    -- make it
+    return "-L-l" .. lib
 end
 
 -- make the linkdir flag
 function nf_linkdir(dir)
 
     -- make it
-    return ""
+    return "-L-L" .. dir
 end
 
 -- make the link command
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 
-    -- kinds
-    local kinds = 
-    {
-        static = " -lib"
-    ,   shared = " -shared"
-    }
-
     -- make it
-    return format("%s%s %s -of%s %s", _g.shellname, kinds[targetkind] or "", flags, targetfile, objectfiles)
+    return format("%s %s -of%s %s", _g.shellname, flags, targetfile, objectfiles)
 end
 
 -- link the target file
