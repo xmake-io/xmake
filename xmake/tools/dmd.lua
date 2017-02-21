@@ -55,25 +55,28 @@ end
 function nf_includedir(dir)
 
     -- make it
-    return "-I " .. dir
+    return ""
 end
 
 -- make the linkdir flag
 function nf_linkdir(dir)
 
     -- make it
-    return "-L " .. dir
+    return ""
 end
 
 -- make the link command
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 
+    -- kinds
+    local kinds = 
+    {
+        static = " -lib"
+    ,   shared = " -shared"
+    }
+
     -- make it
-    if targetkind == "static" then
-        return format("%s tool pack %s %s %s", _g.shellname, flags, targetfile, objectfiles)
-    else
-        return format("%s tool link %s -o %s %s", _g.shellname, flags, targetfile, objectfiles)
-    end
+    return format("%s%s %s -of%s %s", _g.shellname, kinds[targetkind] or "", flags, targetfile, objectfiles)
 end
 
 -- link the target file
@@ -90,7 +93,7 @@ end
 function compcmd(sourcefiles, objectfile, flags)
 
     -- make it
-    return format("%s %s -of%s %s", _g.shellname, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+    return format("%s -c %s -of%s %s", _g.shellname, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
@@ -114,7 +117,7 @@ function check(flags)
     io.write(sourcefile, "void main() {\n}")
 
     -- check it
-    os.run("%s %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    os.run("%s -c %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)

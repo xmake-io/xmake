@@ -78,7 +78,6 @@ function _check_toolchains(config)
         checker.check_toolchain_from_env(config, "ex",   "AR",   "the static library extractor") 
         checker.check_toolchain_from_env(config, "sh",   "SH",   "the shared library linker") 
         checker.check_toolchain_from_env(config, "sc",   "SC",   "the swift compiler") 
-        checker.check_toolchain_from_env(config, "dg",   "DD",   "the debugger") 
     end
 
     -- check for gcc
