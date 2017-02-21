@@ -27,10 +27,13 @@ import("core.tool.tool")
 import("core.project.config")
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
     
     -- save the shell name
     _g.shellname = shellname or "swiftc"
+
+    -- init kind
+    _g.kind = kind
 
     -- init flags map
     _g.mapflags = 
