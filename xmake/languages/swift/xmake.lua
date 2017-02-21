@@ -32,7 +32,7 @@ language("swift")
     set_sourceflags {sc = "scflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
+    set_targetkinds {binary = "sc-ld", static = "ar", shared = "sc-sh"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
@@ -121,27 +121,16 @@ language("swift")
     set_menu {
                 config = 
                 {   
-                    {}
-                ,   {nil, "sc",         "kv", nil,          "The Swift Compiler"                    }
-                ,   {nil, "scflags",    "kv", nil,          "The Swift Compiler Flags"              }
+                  {                                                                            }
+                , { nil, "sc",         "kv", nil,          "The Swift Compiler"                }
+                , { nil, "sc-ld",      "kv", nil,          "The Swift Linker"                  }
+                , { nil, "sc-sh",      "kv", nil,          "The Swift Shared Library Linker"   }
 
-                ,   {}
-                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
-                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
-
-                ,   {}
-                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
-                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
-
-                ,   {}
-                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"             }
-                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"       }
-
-                ,   {}
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }
-                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
-                ,   {nil, "frameworks", "kv", nil,          "The Link Frameworks"                   }
+                , {                                                                            }
+                , { nil, "links",      "kv", nil,          "The Link Libraries"                }
+                , { nil, "linkdirs",   "kv", nil,          "The Link Search Directories"       }
+                , { nil, "includedirs","kv", nil,          "The Include Search Directories"    }
+                , { nil, "frameworks", "kv", nil,          "The Link Frameworks"               }
                 }
             } 
 

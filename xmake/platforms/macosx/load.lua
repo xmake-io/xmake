@@ -57,7 +57,8 @@ function main()
 
     -- init flags for swift (with _g.ldflags and _g.shflags)
     _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    config.set("__swift_linkdirs", xcode_dir .. "/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx")
+    _g["sc-shflags"] = {}
+    _g["sc-ldflags"] = {}
 
     -- init flags for golang
     _g["go-ldflags"] = {}
