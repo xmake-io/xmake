@@ -43,9 +43,15 @@ end
 -- check the toolchains
 function _check_toolchains(config)
 
-    -- watchos or watchsimulator?
+    -- init architecture
     local arch = config.get("arch")
-    if arch == "i386" then
+    local simulator = (arch == "i386")
+
+    -- init cross
+    local cross = ifelse(simulator, "xcrun -sdk watchsimulator ", "xcrun -sdk watchos ")
+
+    -- watchos or watchsimulator?
+    if simulator then
         checker.check_toolchain(config, "cc",   "xcrun -sdk watchsimulator ", "clang",    "the c compiler") 
         checker.check_toolchain(config, "cxx",  "xcrun -sdk watchsimulator ", "clang",    "the c++ compiler") 
         checker.check_toolchain(config, "cxx",  "xcrun -sdk watchsimulator ", "clang++",  "the c++ compiler") 
@@ -59,7 +65,6 @@ function _check_toolchains(config)
         checker.check_toolchain(config, "ex",   "xcrun -sdk watchsimulator ", "ar",       "the static library extractor") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchsimulator ", "clang++",  "the shared library linker") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchsimulator ", "clang",    "the shared library linker") 
-        checker.check_toolchain(config, "sc",   "xcrun -sdk watchsimulator ", "swiftc",   "the swift compiler") 
     else
         checker.check_toolchain(config, "cc",   "xcrun -sdk watchos ", "clang",    "the c compiler") 
         checker.check_toolchain(config, "cxx",  "xcrun -sdk watchos ", "clang",    "the c++ compiler") 
@@ -74,8 +79,15 @@ function _check_toolchains(config)
         checker.check_toolchain(config, "ex",   "xcrun -sdk watchos ", "ar",       "the static library extractor") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchos ", "clang++",  "the shared library linker") 
         checker.check_toolchain(config, "sh",   "xcrun -sdk watchos ", "clang",    "the shared library linker") 
-        checker.check_toolchain(config, "sc",   "xcrun -sdk watchos ", "swiftc",   "the swift compiler") 
     end
+
+    -- check for swift tools
+    checker.check_toolchain_from_env(config,    "sc",   "SC",   "the swift compiler") 
+    checker.check_toolchain(config,             "sc", cross,  "swiftc",    "the swift compiler") 
+    checker.check_toolchain_from_env(config,    "sc-ld",   "SC",   "the swift linker") 
+    checker.check_toolchain(config,             "sc-ld",   cross,  "swiftc",    "the swift linker") 
+    checker.check_toolchain_from_env(config,    "sc-sh",   "SC",   "the swift shared library linker") 
+    checker.check_toolchain(config,             "sc-sh",   cross,  "swiftc",    "the swift shared library linker") 
 end
 
 -- check it
