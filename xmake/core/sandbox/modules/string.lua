@@ -49,8 +49,11 @@ function sandbox_string.vformat(format, ...)
     -- ignore %$(...)
     format = format:gsub("%%%$", "__$__")
 
-    -- format string
-    local result = string.format(format, ...)
+    -- format string if exists arguments
+    local result = format
+    if #{...} > 0 then
+        result = string.format(format, ...)
+    end
     assert(result)
 
     -- get filter from the current sandbox

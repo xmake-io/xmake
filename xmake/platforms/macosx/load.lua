@@ -55,10 +55,10 @@ function main()
     -- init flags for asm (with _g.ldflags and _g.shflags)
     _g.asflags = { "-arch " .. arch, "-isysroot " .. xcode_sdkdir }
 
-    -- init flags for swift (with _g.ldflags and _g.shflags)
+    -- init flags for swift
     _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-shflags"] = {}
-    _g["sc-ldflags"] = {}
+    _g["sc-shflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+    _g["sc-ldflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
 
     -- init flags for golang
     _g["go-ldflags"] = {}
