@@ -246,8 +246,16 @@ function tool.check(shellname, dirs, check)
     -- check
     assert(shellname)
 
-    -- attempt to check it directly first
+    -- attempt to get result from cache first
+    tool._CHECKINFO = tool._CHECKINFO or {}
+    local result = tool._CHECKINFO[shellname]
+    if result then
+        return result
+    end
+
+    -- attempt to check it directly 
     if tool._check(shellname, check) then
+        tool._CHECKINFO[shellname] = shellname
         return shellname
     end
 
@@ -261,6 +269,7 @@ function tool.check(shellname, dirs, check)
             
                 -- check it
                 if tool._check(toolpath, check) then
+                    tool._CHECKINFO[shellname] = toolpath
                     return toolpath
                 end
             end
