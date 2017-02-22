@@ -31,7 +31,7 @@ function _check_toolchains(config)
 
     -- check for c/c++ tools
     checker.check_toolchain(config, "cc",       "xcrun -sdk macosx ",   "clang",        "the c compiler") 
-    checker.check_toolchain(config, "cxx",      "xcrun -sdk macosx ",   "clang",         "the c++ compiler") 
+    checker.check_toolchain(config, "cxx",      "xcrun -sdk macosx ",   "clang",        "the c++ compiler") 
     checker.check_toolchain(config, "cxx",      "xcrun -sdk macosx ",   "clang++",      "the c++ compiler") 
     checker.check_toolchain(config, "ld",       "xcrun -sdk macosx ",   "clang++",      "the linker") 
     checker.check_toolchain(config, "ld",       "xcrun -sdk macosx ",   "clang",        "the linker") 
