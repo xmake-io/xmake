@@ -50,44 +50,34 @@ function _check_toolchains(config)
     -- init cross
     local cross = ifelse(simulator, "xcrun -sdk watchsimulator ", "xcrun -sdk watchos ")
 
-    -- watchos or watchsimulator?
+    -- check for c/c++ tools
+    checker.check_toolchain(config, "cc",       cross,  "clang",        "the c compiler") 
+    checker.check_toolchain(config, "cxx",      cross,  "clang",        "the c++ compiler") 
+    checker.check_toolchain(config, "cxx",      cross,  "clang++",      "the c++ compiler") 
+    checker.check_toolchain(config, "ld",       cross,  "clang++",      "the linker") 
+    checker.check_toolchain(config, "ld",       cross,  "clang",        "the linker") 
+    checker.check_toolchain(config, "ar",       cross,  "ar",           "the static library archiver") 
+    checker.check_toolchain(config, "ex",       cross,  "ar",           "the static library extractor") 
+    checker.check_toolchain(config, "sh",       cross,  "clang++",      "the shared library linker") 
+    checker.check_toolchain(config, "sh",       cross,  "clang",        "the shared library linker") 
+    checker.check_toolchain(config, "dg",       cross,  "lldb",         "the debugger") 
+
+    -- check for objc/c++ tools
+    checker.check_toolchain(config, "mm",       cross,  "clang",        "the objc compiler") 
+    checker.check_toolchain(config, "mxx",      cross,  "clang++",      "the objc++ compiler") 
+    checker.check_toolchain(config, "mxx",      cross,  "clang",        "the objc++ compiler") 
+
+    -- check for asm tools
     if simulator then
-        checker.check_toolchain(config, "cc",   "xcrun -sdk watchsimulator ", "clang",    "the c compiler") 
-        checker.check_toolchain(config, "cxx",  "xcrun -sdk watchsimulator ", "clang",    "the c++ compiler") 
-        checker.check_toolchain(config, "cxx",  "xcrun -sdk watchsimulator ", "clang++",  "the c++ compiler") 
-        checker.check_toolchain(config, "mm",   "xcrun -sdk watchsimulator ", "clang",    "the objc compiler") 
-        checker.check_toolchain(config, "mxx",  "xcrun -sdk watchsimulator ", "clang++",  "the objc++ compiler") 
-        checker.check_toolchain(config, "mxx",  "xcrun -sdk watchsimulator ", "clang",    "the objc++ compiler") 
-        checker.check_toolchain(config, "as",   "xcrun -sdk watchsimulator ", "clang",     "the assember") 
-        checker.check_toolchain(config, "ld",   "xcrun -sdk watchsimulator ", "clang++",  "the linker") 
-        checker.check_toolchain(config, "ld",   "xcrun -sdk watchsimulator ", "clang",    "the linker") 
-        checker.check_toolchain(config, "ar",   "xcrun -sdk watchsimulator ", "ar",       "the static library archiver") 
-        checker.check_toolchain(config, "ex",   "xcrun -sdk watchsimulator ", "ar",       "the static library extractor") 
-        checker.check_toolchain(config, "sh",   "xcrun -sdk watchsimulator ", "clang++",  "the shared library linker") 
-        checker.check_toolchain(config, "sh",   "xcrun -sdk watchsimulator ", "clang",    "the shared library linker") 
+        checker.check_toolchain(config, "as",   cross,  "clang",        "the assember") 
     else
-        checker.check_toolchain(config, "cc",   "xcrun -sdk watchos ", "clang",    "the c compiler") 
-        checker.check_toolchain(config, "cxx",  "xcrun -sdk watchos ", "clang",    "the c++ compiler") 
-        checker.check_toolchain(config, "cxx",  "xcrun -sdk watchos ", "clang++",  "the c++ compiler") 
-        checker.check_toolchain(config, "mm",   "xcrun -sdk watchos ", "clang",    "the objc compiler") 
-        checker.check_toolchain(config, "mxx",  "xcrun -sdk watchos ", "clang++",  "the objc++ compiler") 
-        checker.check_toolchain(config, "mxx",  "xcrun -sdk watchos ", "clang",    "the objc++ compiler") 
-        checker.check_toolchain(config, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl xcrun -sdk watchos "), "clang", "the assember", _check_as)
-        checker.check_toolchain(config, "ld",   "xcrun -sdk watchos ", "clang++",  "the linker") 
-        checker.check_toolchain(config, "ld",   "xcrun -sdk watchos ", "clang",    "the linker") 
-        checker.check_toolchain(config, "ar",   "xcrun -sdk watchos ", "ar",       "the static library archiver") 
-        checker.check_toolchain(config, "ex",   "xcrun -sdk watchos ", "ar",       "the static library extractor") 
-        checker.check_toolchain(config, "sh",   "xcrun -sdk watchos ", "clang++",  "the shared library linker") 
-        checker.check_toolchain(config, "sh",   "xcrun -sdk watchos ", "clang",    "the shared library linker") 
+        checker.check_toolchain(config, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
     end
 
     -- check for swift tools
-    checker.check_toolchain_from_env(config,    "sc",   "SC",   "the swift compiler") 
-    checker.check_toolchain(config,             "sc", cross,  "swiftc",    "the swift compiler") 
-    checker.check_toolchain_from_env(config,    "sc-ld",   "SC",   "the swift linker") 
-    checker.check_toolchain(config,             "sc-ld",   cross,  "swiftc",    "the swift linker") 
-    checker.check_toolchain_from_env(config,    "sc-sh",   "SC",   "the swift shared library linker") 
-    checker.check_toolchain(config,             "sc-sh",   cross,  "swiftc",    "the swift shared library linker") 
+    checker.check_toolchain(config, "sc",       cross,   "swiftc",       "the swift compiler") 
+    checker.check_toolchain(config, "sc-ld",    cross,   "swiftc",       "the swift linker") 
+    checker.check_toolchain(config, "sc-sh",    cross,   "swiftc",       "the swift shared library linker") 
 end
 
 -- check it
