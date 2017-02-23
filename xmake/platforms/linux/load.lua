@@ -58,15 +58,24 @@ function main()
         else archflags = "-arch " .. arch
         end
     end
-    _g.cxflags     = { archflags }
-    _g.mxflags     = { archflags }
-    _g.asflags     = { archflags }
-    _g.ldflags     = { archflags }
-    _g.shflags     = { archflags }
 
-    -- init linkdirs and includedirs
-    _g.linkdirs    = {"/usr/lib", "/usr/local/lib"}
-    _g.includedirs = {"/usr/include", "/usr/local/include"}
+    -- init flags for c/c++
+    _g.cxflags       = { archflags, "-I/usr/local/include", "-I/usr/include" }
+    _g.ldflags       = { archflags, "-L/usr/local/lib", "-L/usr/lib" }
+    _g.shflags       = { archflags, "-L/usr/local/lib", "-L/usr/lib" }
+
+    -- init flags for objc/c++  (with _g.ldflags and _g.shflags)
+    _g.mxflags       = { archflags }
+
+    -- init flags for asm  (with _g.ldflags and _g.shflags)
+    _g.asflags       = { archflags }
+
+    -- init flags for golang
+    _g["go-ldflags"] = {}
+
+    -- init flags for dlang
+    _g["dc-shflags"] = {}
+    _g["dc-ldflags"] = {}
 
     -- ok
     return _g

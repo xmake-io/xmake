@@ -210,14 +210,16 @@ function check_toolchain(config, kind, cross, name, description, check)
     local toolpath = config.get(kind)
     if not toolpath then
 
-        -- get shell name from the env
-        local shellname = os.getenv(kind:upper())
-        if shellname and shellname:trim() ~= "" then
-            toolpath = tool.check(shellname) 
-        end
-
         -- get the cross
         cross = config.get("cross") or cross
+
+        -- get shell name from the env if not cross-compilation
+        if cross and cross:trim() == "" then
+            local shellname = os.getenv(kind:upper():split('-')[1])
+            if shellname and shellname:trim() ~= "" then
+                toolpath = tool.check(shellname) 
+            end
+        end
 
         -- check it using the custom script
         if not toolpath and check then
@@ -276,13 +278,4 @@ function check_toolchain(config, kind, cross, name, description, check)
     end
 end
 
--- check the toolchain from env
-function check_toolchain_from_env(config, kind, envname, description, check)
-
-    -- get shell name from the env
-    local shellname = os.getenv(envname)
-    if shellname and shellname:trim() ~= "" then
-        check_toolchain(config, kind, "", shellname, description, check) 
-    end
-end
 
