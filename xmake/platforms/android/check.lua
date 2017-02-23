@@ -126,7 +126,7 @@ function _check_toolchains(config)
         cross = "aarch64-linux-android-"
     end
 
-    -- done
+    -- check it for c/c++
     checker.check_toolchain(config, "cc",   cross, "gcc",  "the c compiler") 
     checker.check_toolchain(config, "cxx",  cross, "g++",  "the c++ compiler") 
     checker.check_toolchain(config, "as",   cross, "gcc",  "the assember")
