@@ -19,17 +19,40 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ldc.lua
+-- @file        api.lua
 --
 
--- inherit dmd
-inherit("dmd")
+-- get apis
+function apis()
 
--- init it
-function init(shellname, kind)
-    
-    -- init super
-    _super.init(shellname or "ldc", kind)
+    -- init apis
+    _g.values = 
+    {
+        -- target.add_xxx
+        "target.add_links"
+    ,   "target.add_rcflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+    ,   "target.add_shflags"
+        -- option.add_xxx
+    ,   "option.add_links"
+    ,   "option.add_rcflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+    ,   "option.add_shflags"
+    }
+    _g.pathes = 
+    {
+        -- target.add_xxx
+        "target.add_linkdirs"
+    ,   "target.add_includedirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    ,   "option.add_includedirs"
+    }
+
+    -- ok
+    return _g
 end
 
 
