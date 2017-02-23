@@ -19,17 +19,26 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ldc.lua
+-- @file        check_main.lua
 --
 
--- inherit dmd
-inherit("dmd")
+-- check it
+function main(sourcefile)
 
--- init it
-function init(shellname, kind)
-    
-    -- init super
-    _super.init(shellname or "ldc", kind)
+    -- load source code
+    local sourcecode = io.read(sourcefile)
+
+    -- remove comment first
+    sourcecode = sourcecode:gsub("/%*.-%*/", "")
+    sourcecode = sourcecode:gsub("//.-\n", "\n")
+
+    -- find func main() {
+    if sourcecode:find("fn%s+main%s*%(.-%)") then
+        return true
+    end
+
+    -- no main function
+    return false
 end
 
 

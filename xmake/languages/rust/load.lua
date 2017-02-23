@@ -19,17 +19,20 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ldc.lua
+-- @file        load.lua
 --
 
--- inherit dmd
-inherit("dmd")
+-- imports
+import("api")
 
--- init it
-function init(shellname, kind)
-    
-    -- init super
-    _super.init(shellname or "ldc", kind)
+-- load it
+function main()
+
+    -- init apis
+    _g.apis = api.apis()
+
+    -- ok
+    return _g
 end
 
 

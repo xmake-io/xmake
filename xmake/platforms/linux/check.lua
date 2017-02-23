@@ -118,6 +118,12 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "dc-ld",    "",      "dmd",         "the dlang linker") 
     checker.check_toolchain(config, "dc-ld",    "",      "ldc2",        "the dlang linker") 
     checker.check_toolchain(config, "dc-ld",    "",      "gdc",         "the dlang linker") 
+
+    -- check for rust tools
+    checker.check_toolchain(config, "rc",       "",      "rustc",       "the rust compiler") 
+    checker.check_toolchain(config, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
+    checker.check_toolchain(config, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
+    checker.check_toolchain(config, "rc-ld",    "",      "rustc",       "the rust linker") 
 end
 
 -- check it

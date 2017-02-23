@@ -67,6 +67,10 @@ function main()
     _g["dc-shflags"] = {}
     _g["dc-ldflags"] = {}
 
+    -- init flags for rust
+    _g["rc-shflags"] = {}
+    _g["rc-ldflags"] = {}
+
     -- ok
     return _g
 end
