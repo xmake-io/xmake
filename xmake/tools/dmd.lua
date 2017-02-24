@@ -61,6 +61,83 @@ function get(name)
     return _g[name]
 end
 
+-- make the optimize flag
+function nf_optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = ""
+    ,   fast        = "-O"
+    ,   faster      = "-O -release"
+    ,   fastest     = "-O -release -inline -boundscheck=off"
+    ,   smallest    = "-O -release -boundscheck=off"
+    ,   aggressive  = "-O -release -inline -boundscheck=off"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the strip flag
+function nf_strip(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-L-S"
+    ,   all         = "-L-s"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the symbol flag
+function nf_symbol(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-g -debug"
+    ,   hidden      = ""
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the warning flag
+function nf_warning(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-d"
+    ,   less        = "-w"
+    ,   more        = "-w -wi"
+    ,   all         = "-w -wi"
+    ,   error       = "-de"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the vector extension flag
+function nf_vectorext(extension)
+
+    -- the maps
+    local maps = 
+    {   
+        avx         = "-mcpu=avx"
+    ,   avx2        = "-mcpu=avx"
+    }
+
+    -- make it
+    return maps[extension] or ""
+end
+
 -- make the includedir flag
 function nf_includedir(dir)
 

@@ -51,6 +51,12 @@ platform("windows")
         _g.formats.binary   = {"", ".exe"}
         _g.formats.symbol   = {"", ".pdb"}
 
+        -- init flags for dlang
+        local dc_archs = { x86 = "-m32", x64 = "-m64", amd64 = "-m64", x86_amd64 = "-m64" }
+        _g.dcflags       = { dc_archs[arch] or "" }
+        _g["dc-shflags"] = { dc_archs[arch] or "" }
+        _g["dc-ldflags"] = { dc_archs[arch] or "" }
+
         -- ok
         return _g
     end)
