@@ -53,12 +53,8 @@ language("dlang")
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
-        ,   "target.defines"
-        ,   "target.undefines"
         ,   "target.includedirs"
         ,   "platform.includedirs"
-        ,   "platform.defines"
-        ,   "platform.undefines"
         }
     ,   binary =
         {

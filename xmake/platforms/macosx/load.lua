@@ -64,8 +64,10 @@ function main()
     _g["go-ldflags"] = {}
 
     -- init flags for dlang
-    _g["dc-shflags"] = {}
-    _g["dc-ldflags"] = {}
+    local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
+    _g.dcflags       = { dc_archs[arch] or "" }
+    _g["dc-shflags"] = { dc_archs[arch] or "" }
+    _g["dc-ldflags"] = { dc_archs[arch] or "" }
 
     -- init flags for rust
     _g["rc-shflags"] = {}
