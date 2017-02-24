@@ -26,7 +26,7 @@
 language("dlang")
 
     -- set source file kinds
-    set_sourcekinds {dc = ".d"}
+    set_sourcekinds {dc = ".d", cc = ".c", cxx = {".cc", ".cpp", ".cxx"}}
 
     -- set source file flags
     set_sourceflags {dc = "dcflags"}
