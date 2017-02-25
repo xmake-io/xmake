@@ -30,6 +30,7 @@ function main(sourcefile)
 
     -- remove comment first
     sourcecode = sourcecode:gsub("/%*.-%*/", "")
+    sourcecode = sourcecode:gsub("/%+.-%+/", "")
     sourcecode = sourcecode:gsub("//.-\n", "\n")
 
     -- find func main() {

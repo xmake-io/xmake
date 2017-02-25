@@ -30,12 +30,12 @@ function apis()
     {
         -- target.add_xxx
         "target.add_links"
-    ,   "target.add_goflags"
+    ,   "target.add_gcflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
         -- option.add_xxx
     ,   "option.add_links"
-    ,   "option.add_goflags"
+    ,   "option.add_gcflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     }

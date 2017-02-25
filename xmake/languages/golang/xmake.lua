@@ -29,7 +29,7 @@ language("golang")
     set_sourcekinds {go = ".go"}
 
     -- set source file flags
-    set_sourceflags {go = "goflags"}
+    set_sourceflags {go = "gcflags"}
 
     -- set target kinds
     set_targetkinds {binary = "go-ld", static = "go-ar"}
@@ -85,11 +85,6 @@ language("golang")
         ,   "target.links"
         ,   "option.links"
         ,   "platform.links"
-        }
-    ,   static = 
-        {
-            "target.strip"
-        ,   "target.symbols"
         }
     }
 
