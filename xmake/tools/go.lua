@@ -58,6 +58,52 @@ function get(name)
     return _g[name]
 end
 
+-- make the optimize flag
+function nf_optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-N"
+    ,   fast        = ""
+    ,   faster      = ""
+    ,   fastest     = ""
+    ,   smallest    = ""
+    ,   aggressive  = ""
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the symbol flag
+function nf_symbol(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-E"
+    ,   hidden      = ""
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the strip flag
+function nf_strip(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-s"
+    ,   all         = "-s"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
 -- make the includedir flag
 function nf_includedir(dir)
 
