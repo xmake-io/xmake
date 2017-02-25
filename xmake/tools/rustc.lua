@@ -57,6 +57,38 @@ function get(name)
     return _g[name]
 end
 
+-- make the optimize flag
+function nf_optimize(level)
+
+    -- the maps
+    local maps = 
+    {   
+        none        = "-C opt-level=0"
+    ,   fast        = "-C opt-level=1"
+    ,   faster      = "-C opt-level=2"
+    ,   fastest     = "-C opt-level=3"
+    ,   smallest    = "-C opt-level=s"
+    ,   aggressive  = "-C opt-level=z"
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
+-- make the symbol flag
+function nf_symbol(level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug       = "-C debug-info=2"
+    ,   hidden      = ""
+    }
+
+    -- make it
+    return maps[level] or ""
+end
+
 -- make the includedir flag
 function nf_includedir(dir)
 
