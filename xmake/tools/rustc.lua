@@ -43,10 +43,20 @@ function init(shellname, kind)
     -- init shflags
     _g.shflags = { "--crate-type=dylib" }
 
+    -- init ldflags
+    _g.ldflags = { "--crate-type=bin" }
+
+    -- init the file formats
+    _g.formats          = {}
+    _g.formats.static   = {"lib", ".rlib"}
+
     -- init features
     _g.features = 
     {
-        ["compile:multifiles"] = false
+        ["object:sources"] = false  -- compile multiple source filess to the single object
+    ,   ["binary:sources"] = true   -- build multiple source files to the binary target file
+    ,   ["static:sources"] = true   -- build multiple source files to the static target file
+    ,   ["shared:sources"] = true   -- build multiple source files to the shared target file
     }
 end
 
@@ -89,42 +99,28 @@ function nf_symbol(level)
     return maps[level] or ""
 end
 
--- make the includedir flag
-function nf_includedir(dir)
-
-    -- make it
-    return ""
-end
-
--- make the link flag
-function nf_link(lib)
-
-    -- make it
-    return ""
-end
-
 -- make the linkdir flag
 function nf_linkdir(dir)
 
     -- make it
-    return ""
+    return "-L " .. dir
 end
 
--- make the link command
-function linkcmd(objectfiles, targetkind, targetfile, flags)
+-- make the build command
+function buildcmd(sourcefiles, targetkind, targetfile, flags)
 
     -- make it
-    return format("%s %s -o %s %s", _g.shellname, flags, targetfile, objectfiles)
+    return format("%s %s -o %s %s", _g.shellname, flags, targetfile, table.concat(sourcefiles, " "))
 end
 
--- link the target file
-function link(objectfiles, targetkind, targetfile, flags)
+-- build the target file
+function build(objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
-    -- link it
-    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
+    -- build it
+    os.run(buildcmd(objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command

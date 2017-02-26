@@ -547,7 +547,7 @@ function target:sourcebatches()
 
         -- this batch support to compile multiple objects at the same time?
         local instance = compiler.load(sourcekind)
-        if instance and instance:feature("compile:multifiles") then
+        if instance and instance:feature("object:sources") then
 
             -- get the first source file
             local sourcefile = sourcebatch.sourcefiles[1]

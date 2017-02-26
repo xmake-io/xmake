@@ -48,17 +48,10 @@ language("rust")
     {
         object =
         {
-            "config.includedirs"
-        ,   "target.symbols"
+            "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
-        ,   "target.defines"
-        ,   "target.undefines"
-        ,   "target.includedirs"
-        ,   "platform.includedirs"
-        ,   "platform.defines"
-        ,   "platform.undefines"
         }
     ,   binary =
         {
@@ -68,10 +61,6 @@ language("rust")
         ,   "target.symbols"
         ,   "option.linkdirs"
         ,   "platform.linkdirs"
-        ,   "config.links"
-        ,   "target.links"
-        ,   "option.links"
-        ,   "platform.links"
         }
     ,   shared =
         {
@@ -81,10 +70,6 @@ language("rust")
         ,   "target.symbols"
         ,   "option.linkdirs"
         ,   "platform.linkdirs"
-        ,   "config.links"
-        ,   "target.links"
-        ,   "option.links"
-        ,   "platform.links"
         }
     ,   static = 
         {
@@ -104,9 +89,7 @@ language("rust")
                 ,   {nil, "rc-sh",      "kv", nil,          "The Rust Shared Library Linker"   }
 
                 ,   {                                                                          }
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"               }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"      }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"   }
                 }
             } 
 

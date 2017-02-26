@@ -47,7 +47,7 @@ function init(shellname, kind)
     -- init features
     _g.features = 
     {
-        ["compile:multifiles"] = true
+        ["object:sources"] = true
     }
 end
 
