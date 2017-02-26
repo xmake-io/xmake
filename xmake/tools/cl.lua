@@ -26,10 +26,13 @@
 import("core.project.project")
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
     
     -- save the shell name
     _g.shellname = shellname or "cl.exe"
+
+    -- save kind
+    _g.kind = kind
 
     -- init cxflags
     _g.cxflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}

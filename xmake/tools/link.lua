@@ -26,10 +26,13 @@
 import("core.project.config")
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
     
     -- save the shell name
     _g.shellname = shellname or "link.exe"
+
+    -- save the tool kind
+    _g.kind = kind
 
     -- the architecture
     local arch = config.get("arch")
