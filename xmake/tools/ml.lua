@@ -58,7 +58,7 @@ function init(shellname)
     -- init features
     _g.features = 
     {
-        ["compile:multifiles"]      = false
+        ["object:sources"]      = false
     }
 end
 
@@ -128,7 +128,7 @@ end
 function compcmd(sourcefiles, objectfile, flags)
 
     -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'compile:multifiles' not support!")
+    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
     return _compcmd1(sourcefiles, objectfile, flags)
@@ -138,7 +138,7 @@ end
 function compile(sourcefiles, objectfile, incdepfile, flags)
 
     -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'compile:multifiles' not support!")
+    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
     _compile1(sourcefiles, objectfile, incdepfile, flags)

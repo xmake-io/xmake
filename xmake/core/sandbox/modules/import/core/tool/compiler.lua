@@ -102,5 +102,45 @@ function sandbox_core_tool_compiler.compflags(sourcefiles, target, sourcekind)
     return instance:compflags(target)
 end
 
+-- make command for building source file
+function sandbox_core_tool_compiler.buildcmd(sourcefiles, targetfile, target, sourcekind)
+
+    -- get source kind if only one source file
+    if not sourcekind and type(sourcefiles) == "string" then
+        sourcekind = language.sourcekind_of(sourcefiles)
+    end
+ 
+    -- get the compiler instance
+    local instance, errors = compiler.load(sourcekind)
+    if not instance then
+        raise(errors)
+    end
+
+    -- make command
+    return instance:buildcmd(sourcefiles, target:targetkind(), targetfile, target)
+end
+
+-- build source files
+function sandbox_core_tool_compiler.build(sourcefiles, targetfile, target, sourcekind)
+
+    -- get source kind if only one source file
+    if not sourcekind and type(sourcefiles) == "string" then
+        sourcekind = language.sourcekind_of(sourcefiles)
+    end
+ 
+    -- get the compiler instance
+    local instance, errors = compiler.load(sourcekind)
+    if not instance then
+        raise(errors)
+    end
+
+    -- build it
+    local ok, errors = instance:build(sourcefiles, target:targetkind(), targetfile, target)
+    if not ok then
+        raise(errors)
+    end
+end
+
+
 -- return module
 return sandbox_core_tool_compiler

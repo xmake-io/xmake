@@ -25,10 +25,11 @@
 -- imports
 import("core.base.option")
 import("core.tool.linker")
+import("core.tool.compiler")
 import("object")
 
--- build binary target
-function build(target, buildinfo)
+-- build target from sources
+function _build_from_objects(target, buildinfo)
 
     -- build objects
     object.build(target, buildinfo)
@@ -69,3 +70,52 @@ function build(target, buildinfo)
     linker.link(objectfiles, targetfile, target)
 end
 
+-- build target from sources
+function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
+
+    -- the target file
+    local targetfile = target:targetfile()
+
+    -- is verbose?
+    local verbose = option.get("verbose")
+
+    -- trace percent into
+    cprintf("${green}[%02d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    if verbose then
+        cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
+    else
+        cprint("${magenta}linking.$(mode) %s", path.filename(targetfile))
+    end
+
+    -- trace verbose info
+    if verbose then
+        print(compiler.buildcmd(sourcebatch.sourcefiles, targetfile, target, sourcekind))
+    end
+
+    -- build it
+    compiler.build(sourcebatch.sourcefiles, targetfile, target, sourcekind)
+end
+
+-- build binary target
+function build(target, buildinfo)
+
+    -- only one source kind?
+    local kindcount = 0
+    local sourcekind = nil
+    local sourcebatch = nil
+    for kind, batch in pairs(target:sourcebatches()) do
+        sourcekind  = kind
+        sourcebatch = batch
+        kindcount   = kindcount + 1
+        if kindcount > 1 then
+            break
+        end
+    end
+
+    -- build target
+    if kindcount == 1 and sourcekind and compiler.feature(sourcekind, "binary:sources") then
+        _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
+    else
+        _build_from_objects(target, buildinfo)
+    end
+end

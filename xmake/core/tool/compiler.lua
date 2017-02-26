@@ -107,6 +107,20 @@ function compiler.load(sourcekind)
     return instance
 end
 
+-- build the source files
+function compiler:build(sourcefiles, targetkind, targetfile, target)
+
+    -- get it
+    return sandbox.load(self:_tool().build, sourcefiles, targetkind, targetfile, (self:compflags(target)) .. " " .. (target:linkflags()))
+end
+
+-- get the build command
+function compiler:buildcmd(sourcefiles, targetkind, targetfile, target)
+
+    -- get it
+    return self:_tool().buildcmd(sourcefiles, targetkind, targetfile, (self:compflags(target) .. " " .. (target:linkflags())))
+end
+
 -- compile the source files
 function compiler:compile(sourcefiles, objectfile, incdepfile, target)
 
