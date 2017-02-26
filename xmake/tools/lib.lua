@@ -29,8 +29,7 @@ function init(shellname, kind)
     _g.shellname = shellname or "lib.exe"
 
     -- save the tool kind
-    _g.kind = kind or "ar"
-
+    _g.kind = kind
 end
 
 -- get the property

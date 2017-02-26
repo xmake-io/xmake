@@ -23,10 +23,13 @@
 --
 
 -- init it
-function init(shellname)
+function init(shellname, kind)
    
     -- save name
     _g.shellname = shellname or "ml.exe"
+
+    -- save kind
+    _g.kind = kind
 
     -- init asflags
     if _g.shellname:find("64") then
