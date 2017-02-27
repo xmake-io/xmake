@@ -48,10 +48,6 @@ build "./tests/console_c++"
 build "./tests/static_library_c++" 
 build "./tests/shared_library_c++" 
 
-# build for go
-# build "./tests/console_go" 
-# build "./tests/static_library_go" 
-
 # merge object 
 build "./tests/merge_object"
 
@@ -61,8 +57,24 @@ build "./tests/merge_static_library"
 # build for macosx
 if [ $host = "macosx" ]; then
 
+    # build for objc/c++
     build "./tests/console_objc" 
     build "./tests/console_objc++" 
+
+    # build for swift
     build "./tests/console_swift" 
+
+    # build for go
+    build "./tests/console_go" 
+    build "./tests/static_library_go" 
+
+    # build for dlang
+    build "./tests/console_dlang" 
+    build "./tests/static_library_dlang" 
+
+    # build for rust
+    build "./tests/console_rust" 
+    build "./tests/static_library_rust" 
+fi
 fi
 
