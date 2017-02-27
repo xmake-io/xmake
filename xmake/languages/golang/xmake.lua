@@ -37,6 +37,9 @@ language("golang")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags"}
 
+    -- set mixing kinds
+    set_mixingkinds("gc")
+
     -- on load
     on_load("load")
 

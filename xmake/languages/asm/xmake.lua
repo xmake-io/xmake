@@ -37,6 +37,9 @@ language("asm")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set mixing kinds
+    set_mixingkinds("as")
+
     -- on load
     on_load("load")
 

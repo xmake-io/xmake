@@ -153,6 +153,17 @@ function _instance:targetflags()
     return self._INFO.targetflags
 end
 
+-- get the mixing kinds for linker
+--
+-- .e.g
+-- {"cc", "cxx"}
+--
+function _instance:mixingkinds()
+
+    -- get it
+    return self._INFO.mixingkinds
+end
+
 -- get the name flags
 function _instance:nameflags()
 
@@ -231,6 +242,7 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_menu"
+        ,   "language.set_mixingkinds"
         }
     ,   script =
         {
@@ -570,7 +582,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
         -- make linker infos
         linkerinfos = {}
         for name, instance in pairs(languages) do
-            for sourcekind, _ in pairs(instance:sourcekinds()) do
+            for _, mixingkind in ipairs(table.wrap(instance:mixingkinds())) do
                 local targetflags = instance:targetflags()
                 for _targetkind, linkerkind in pairs(instance:targetkinds()) do
                     
@@ -585,8 +597,8 @@ function language.linkerinfos_of(targetkind, sourcekinds)
                     if linkerflag then
                         linkerinfo.linkerflag = linkerflag
                     end
-                    linkerinfo.sourcekinds = linkerinfo.sourcekinds or {}
-                    linkerinfo.sourcekinds[sourcekind] = 1
+                    linkerinfo.mixingkinds = linkerinfo.mixingkinds or {}
+                    linkerinfo.mixingkinds[mixingkind] = 1
                     linkerinfo.sourcecount = (linkerinfo.sourcecount or 0) + 1
                 end
             end
@@ -603,7 +615,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
         -- match all source kinds?
         local count = 0
         for _, sourcekind in ipairs(sourcekinds) do
-            count = count + (linkerinfo.sourcekinds[sourcekind] or 0) 
+            count = count + (linkerinfo.mixingkinds[sourcekind] or 0) 
         end
         if count == #sourcekinds then
             table.insert(results, linkerinfo)
