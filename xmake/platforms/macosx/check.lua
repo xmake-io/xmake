@@ -55,12 +55,12 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "sc-sh",    "xcrun -sdk macosx ",   "swiftc",       "the swift shared library linker") 
 
     -- check for golang tools
-    checker.check_toolchain(config, "go",       "",                     "go",           "the golang compiler") 
-    checker.check_toolchain(config, "go",       "",                     "gccgo",        "the golang compiler") 
-    checker.check_toolchain(config, "go-ar",    "",                     "go",           "the golang static library archiver") 
-    checker.check_toolchain(config, "go-ar",    "",                     "gccgo",        "the golang static library archiver") 
-    checker.check_toolchain(config, "go-ld",    "",                     "go",           "the golang linker") 
-    checker.check_toolchain(config, "go-ld",    "",                     "gccgo",        "the golang linker") 
+    checker.check_toolchain(config, "gc",       "",                     "go",           "the golang compiler") 
+    checker.check_toolchain(config, "gc",       "",                     "gccgo",        "the golang compiler") 
+    checker.check_toolchain(config, "gc-ar",    "",                     "go",           "the golang static library archiver") 
+    checker.check_toolchain(config, "gc-ar",    "",                     "gccgo",        "the golang static library archiver") 
+    checker.check_toolchain(config, "gc-ld",    "",                     "go",           "the golang linker") 
+    checker.check_toolchain(config, "gc-ld",    "",                     "gccgo",        "the golang linker") 
 
     -- check for dlang tools
     checker.check_toolchain(config, "dc",       "",                     "dmd",          "the dlang compiler") 

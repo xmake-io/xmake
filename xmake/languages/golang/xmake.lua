@@ -26,13 +26,13 @@
 language("golang")
 
     -- set source file kinds
-    set_sourcekinds {go = ".go"}
+    set_sourcekinds {gc = ".go"}
 
     -- set source file flags
-    set_sourceflags {go = "gcflags"}
+    set_sourceflags {gc = "gcflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "go-ld", static = "go-ar"}
+    set_targetkinds {binary = "gc-ld", static = "gc-ar"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags"}
@@ -94,7 +94,7 @@ language("golang")
                 {   
                     {                                                                                }
                 ,   {nil, "go",         "kv", nil,          "The Golang Compiler"                    }
-                ,   {nil, "go-ld",      "kv", nil,          "The Golang Linker"                      }
+                ,   {nil, "gc-ld",      "kv", nil,          "The Golang Linker"                      }
                 ,   {nil, "go-ar",      "kv", nil,          "The Golang Static Library Linker"       }
 
                 ,   {                                                                                }
