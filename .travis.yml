@@ -9,17 +9,9 @@ branches:
     - master
     - dev
 
-addons:
-  apt:
-    packages:
-      - dmd
-      - rust
-      - go
-
 install:
   - sudo ./install
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update --verbose; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install go --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install rust --verbose; fi
 
