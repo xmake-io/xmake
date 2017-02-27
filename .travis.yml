@@ -11,6 +11,11 @@ branches:
 
 install:
   - sudo ./install
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+        brew install go
+        brew install dmd
+        brew install rust
+    fi
 
 script:
   - xmake create -P ./test 
