@@ -37,6 +37,9 @@ language("rust")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set mixing kinds
+    set_mixingkinds("rc")
+
     -- on load
     on_load("load")
 

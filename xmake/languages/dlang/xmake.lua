@@ -26,7 +26,7 @@
 language("dlang")
 
     -- set source file kinds
-    set_sourcekinds {dc = ".d", cc = ".c", cxx = {".cc", ".cpp", ".cxx"}}
+    set_sourcekinds {dc = ".d"}
 
     -- set source file flags
     set_sourceflags {dc = "dcflags"}
@@ -36,6 +36,9 @@ language("dlang")
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+
+    -- set mixing kinds
+    set_mixingkinds("dc", "cc", "cxx", "as")
 
     -- on load
     on_load("load")

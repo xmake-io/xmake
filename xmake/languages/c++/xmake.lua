@@ -37,6 +37,9 @@ language("c++")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set mixing kinds
+    set_mixingkinds("cc", "cxx", "as")
+
     -- on load
     on_load("load")
 
