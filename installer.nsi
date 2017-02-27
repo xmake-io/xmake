@@ -85,9 +85,12 @@ Section "xmake (required)" Installer
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\xmake" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
 
+  ; Remove the installation path from the $PATH environment variable first
+  ReadRegStr $R0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+  ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
+
   ; Write the installation path into the $PATH environment variable
-  ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$0;$INSTDIR"
+  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$INSTDIR"
   SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment"
   
 SectionEnd
