@@ -61,7 +61,7 @@ function main()
     _g["sc-ldflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
 
     -- init flags for golang
-    _g["go-ldflags"] = {}
+    _g["gc-ldflags"] = {}
 
     -- init flags for dlang
     local dc_archs = { i386 = "-m32", x86_64 = "-m64" }

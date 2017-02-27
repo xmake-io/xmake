@@ -52,7 +52,7 @@ function linker:_addflags_from_compiler(flags, sourcekinds)
         local instance, errors = compiler.load(sourcekind)
         if instance then
             for _, flagkind in ipairs(self:_flagkinds()) do
-                -- attempt to add special lanugage flags first, .e.g go-ldflags, dc-arflags
+                -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
                 table.join2(flags_of_compiler, instance:get(toolkind .. 'flags') or instance:get(flagkind))
             end
         end
@@ -69,7 +69,7 @@ function linker:_addflags_from_linker(flags)
     local toolkind = self:get("kind")
     for _, flagkind in ipairs(self:_flagkinds()) do
 
-        -- attempt to add special lanugage flags first, .e.g go-ldflags, dc-arflags
+        -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
         table.join2(flags, self:get(toolkind .. 'flags') or self:get(flagkind))
     end
 end

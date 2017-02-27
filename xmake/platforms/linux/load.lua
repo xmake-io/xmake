@@ -71,7 +71,7 @@ function main()
     _g.asflags       = { archflags }
 
     -- init flags for golang
-    _g["go-ldflags"] = {}
+    _g["gc-ldflags"] = {}
 
     -- init flags for dlang
     local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
