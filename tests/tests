@@ -22,17 +22,23 @@ function build()
     echo "build $1"
     cd $1
 
-    # build for macosx
-    if [ $host = "macosx" ]; then
-        
-        # package all archs for iphoneos
-        exec "xmake m package -p iphoneos" 
-    fi
-
     # build
     exec "xmake f -c"
     exec "xmake "
     exec "xmake p"
+
+    # leave project
+    cd -
+}
+
+function build_for_iphoenos() 
+{
+    # enter project
+    echo "build $1"
+    cd $1
+
+    # package all archs for iphoneos
+    exec "xmake m package -p iphoneos" 
 
     # leave project
     cd -
@@ -60,9 +66,12 @@ if [ $host = "macosx" ]; then
     # build for objc/c++
     build "./tests/console_objc" 
     build "./tests/console_objc++" 
+    build_for_iphoenos "./tests/console_objc" 
+    build_for_iphoenos "./tests/console_objc++" 
 
     # build for swift
     build "./tests/console_swift" 
+    build_for_iphoenos "./tests/console_swift" 
 
     # build for go
     build "./tests/console_go" 
