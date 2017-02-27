@@ -554,12 +554,12 @@ function language.sourcekind_of(sourcefile)
     return sourcekind
 end
 
--- get linker info(kind and flag) of the target kind and the source kinds
-function language.linkerinfo_of(targetkind, sourcekinds)
+-- get linker infos(kind and flag) of the target kind and the source kinds
+function language.linkerinfos_of(targetkind, sourcekinds)
 
-    -- load linkerkinds
-    local linkerkinds = language._LINKERKINDS
-    if not linkerkinds then
+    -- load linkerinfos
+    local linkerinfos = language._LINKERINFOS
+    if not linkerinfos then
 
         -- load all languages
         local languages, errors = language.load()
@@ -567,47 +567,52 @@ function language.linkerinfo_of(targetkind, sourcekinds)
             return nil, errors
         end
 
-        -- make linker kinds
-        linkerkinds = {}
+        -- make linker infos
+        linkerinfos = {}
         for name, instance in pairs(languages) do
             for sourcekind, _ in pairs(instance:sourcekinds()) do
                 local targetflags = instance:targetflags()
                 for _targetkind, linkerkind in pairs(instance:targetkinds()) do
                     
-                    -- make linker info
-                    local linkerinfo = {kind = linkerkind}
+                    -- init linker info
+                    linkerinfos[_targetkind] = linkerinfos[_targetkind] or {}
+                    linkerinfos[_targetkind][linkerkind] = linkerinfos[_targetkind][linkerkind] or {}
+                    local linkerinfo = linkerinfos[_targetkind][linkerkind]
+
+                    -- sve linker info
                     local linkerflag = targetflags[_targetkind]
+                    linkerinfo.linkerkind = linkerkind
                     if linkerflag then
-                        linkerinfo.flag = linkerflag
+                        linkerinfo.linkerflag = linkerflag
                     end
-                    
-                    -- save linker info
-                    linkerkinds[_targetkind] = linkerkinds[_targetkind] or {}
-                    linkerkinds[_targetkind][sourcekind] = linkerinfo
+                    linkerinfo.sourcekinds = linkerinfo.sourcekinds or {}
+                    linkerinfo.sourcekinds[sourcekind] = 1
+                    linkerinfo.sourcecount = (linkerinfo.sourcecount or 0) + 1
                 end
             end
         end
 
         -- cache it
-        language._LINKERKINDS = linkerkinds
+        language._LINKERINFOS = linkerinfos
     end
 
-    -- compute the scores of the linker kinds
-    local linkerscores = {}
-    for _, sourcekind in ipairs(sourcekinds) do
-        local linkerinfo = linkerkinds[targetkind][sourcekind]
-        if linkerinfo then
-            local key = linkerinfo.kind .. (linkerinfo.flag or "")
-            linkerscores[key] = linkerscores[key] or {score = 0, info = linkerinfo}
-            linkerscores[key].score = linkerscores[key].score + 1
+    -- find suitable linkers
+    local results = {}
+    for _, linkerinfo in pairs(linkerinfos[targetkind]) do
+
+        -- match all source kinds?
+        local count = 0
+        for _, sourcekind in ipairs(sourcekinds) do
+            count = count + (linkerinfo.sourcekinds[sourcekind] or 0) 
+        end
+        if count == #sourcekinds then
+            table.insert(results, linkerinfo)
         end
     end
-
-    -- select the suitable linker kind
-    for _, linkerscore in pairs(linkerscores) do
-        if #sourcekinds == linkerscore.score then
-            return linkerscore.info
-        end
+    if #results > 0 then
+        -- sort it by most matches
+        table.sort(results, function(a, b) return a.sourcecount > b.sourcecount end)
+        return results
     end
 
     -- not suitable linker

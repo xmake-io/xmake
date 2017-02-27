@@ -83,27 +83,38 @@ function linker.load(targetkind, sourcekinds)
     -- wrap sourcekinds first
     sourcekinds = table.wrap(sourcekinds)
 
-    -- get the linker info
-    local linkerinfo, errors = language.linkerinfo_of(targetkind, sourcekinds)
+    -- get the linker infos
+    local linkerinfos, errors = language.linkerinfos_of(targetkind, sourcekinds)
+    if not linkerinfos then
+        return nil, errors
+    end
+
+    -- select the linker
+    local linkerinfo = nil
+    local linkertool = nil
+    for _, _linkerinfo in ipairs(linkerinfos) do
+        -- load the linker tool from the linker kind
+        linkertool, errors = tool.load(_linkerinfo.linkerkind)
+        if linkertool then 
+            linkerinfo = _linkerinfo
+            break
+        end
+    end
     if not linkerinfo then
         return nil, errors
     end
 
     -- get it directly from cache dirst
     builder._INSTANCES = builder._INSTANCES or {}
-    if builder._INSTANCES[linkerinfo.kind] then
-        return builder._INSTANCES[linkerinfo.kind]
+    if builder._INSTANCES[linkerinfo.linkerkind] then
+        return builder._INSTANCES[linkerinfo.linkerkind]
     end
 
     -- new instance
     local instance = table.inherit(linker, builder)
 
-    -- load the linker tool from the source file type
-    local result, errors = tool.load(linkerinfo.kind)
-    if not result then 
-        return nil, errors
-    end
-    instance._TOOL = result
+    -- save linker tool
+    instance._TOOL = linkertool
  
     -- load the name flags of archiver 
     local nameflags = {}
@@ -131,10 +142,10 @@ function linker.load(targetkind, sourcekinds)
     instance._TARGETKIND = targetkind
 
     -- init flag kinds
-    instance._FLAGKINDS = {linkerinfo.flag}
+    instance._FLAGKINDS = {linkerinfo.linkerflag}
 
     -- save this instance
-    builder._INSTANCES[linkerinfo.kind] = instance
+    builder._INSTANCES[linkerinfo.linkerkind] = instance
 
     -- ok
     return instance
