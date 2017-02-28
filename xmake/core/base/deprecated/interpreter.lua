@@ -70,7 +70,7 @@ function deprecated_interpreter:api_register_set_scope(...)
     end
 
     -- register implementation
-    self:_api_register_xxx_scope(nil, "set", implementation, ...)
+    self:_api_register_scope_api(nil, "set", implementation, ...)
 end
 
 -- register api for add_scope()
@@ -109,7 +109,7 @@ function deprecated_interpreter:api_register_add_scope(...)
     end
 
     -- register implementation
-    self:_api_register_xxx_scope(nil, "add", implementation, ...)
+    self:_api_register_scope_api(nil, "add", implementation, ...)
 end
 
 -- register api for set_script

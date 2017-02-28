@@ -83,8 +83,39 @@ function interpreter._traceback(errors)
     return results
 end
 
--- register api: xxx_apiname()
-function interpreter:_api_register_xxx_scope(scope_kind, action, apifunc, ...)
+-- register scope end: scopename_end()
+function interpreter:_api_register_scope_end(...)
+
+    -- check
+    assert(self and self._PUBLIC and self._PRIVATE)
+
+    -- done
+    for _, apiname in ipairs({...}) do
+
+        -- check
+        assert(apiname)
+
+        -- register scope api
+        self:api_register(ni, apiname .. "_end", function (self, ...) 
+       
+            -- check
+            assert(self and self._PRIVATE and apiname)
+
+            -- the scopes
+            local scopes = self._PRIVATE._SCOPES
+            assert(scopes)
+
+            -- enter root scope
+            scopes._CURRENT = nil
+
+            -- clear scope kind
+            scopes._CURRENT_KIND = nil
+        end)
+    end
+end
+
+-- register scope api: xxx_apiname()
+function interpreter:_api_register_scope_api(scope_kind, action, apifunc, ...)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE)
@@ -114,7 +145,6 @@ function interpreter:_api_register_xxx_scope(scope_kind, action, apifunc, ...)
 
             -- call function
             return apifunc(self, scopes, apiname, ...) 
-
         end)
     end
 end
@@ -160,7 +190,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
     end
 
     -- register implementation
-    self:_api_register_xxx_scope(scope_kind, action, implementation, ...)
+    self:_api_register_scope_api(scope_kind, action, implementation, ...)
 end
 
 -- translate api pathes 
@@ -817,8 +847,11 @@ function interpreter:api_register_scope(...)
         end
     end
 
-    -- register implementation
-    self:_api_register_xxx_scope(nil, nil, implementation, ...)
+    -- register implementation to the root scope
+    self:_api_register_scope_api(nil, nil, implementation, ...)
+
+    -- register scope end
+    self:_api_register_scope_end(...)
 end
 
 -- register api for set_values
