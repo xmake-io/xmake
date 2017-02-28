@@ -11,6 +11,7 @@
 * Add `set_xmakever` api for `xmake.lua`
 * Add `add_frameworks` api for `objc` and `swift`
 * Support multi-languages extension and add `golang`, `dlang` and `rust` language
+* Add optional `target_end`, `option_end`, `task_end` apis for scope
 
 ### Changes
 
@@ -207,6 +208,7 @@
 * 为`xmake.lua`工程描述添加`set_xmakever`接口，更加友好的处理版本兼容性问题 
 * 为`objc`和`swift`程序添加`add_frameworks`接口
 * 更加快速方便的多语言扩展支持，增加`golang`, `dlang`和`rust`程序构建的支持
+* 添加`target_end`, `option_end` 和`task_end`等可选api，用于显示结束描述域，进入根域设置，提高可读性
 
 ### 改进
 
