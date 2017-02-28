@@ -33,6 +33,7 @@ local table             = require("base/table")
 local utils             = require("base/utils")
 local string            = require("base/string")
 local filter            = require("base/filter")
+local option            = require("base/option")
 local sandbox           = require("sandbox/sandbox")
 local project           = require("project/project")
 local interpreter       = require("base/interpreter")
@@ -187,6 +188,9 @@ function template.create(language, templateid, targetname)
     local interp = template._interpreter()
     assert(interp) 
 
+    -- get project directory
+    local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
+
     -- set filter
     interp:filter_set(filter.new(function (variable)
 
@@ -194,7 +198,7 @@ function template.create(language, templateid, targetname)
         local maps = 
         {
             targetname  = targetname
-        ,   projectdir  = project.directory()
+        ,   projectdir  = projectdir
         }
 
         -- map it
@@ -228,21 +232,21 @@ function template.create(language, templateid, targetname)
         return false, string.format("the template project not exists!")
     end
     
-
+    print(projectdir)
     -- ensure the project directory 
-    if not os.isdir(project.directory()) then 
-        os.mkdir(project.directory())
+    if not os.isdir(projectdir) then 
+        os.mkdir(projectdir)
     end
 
     -- copy the project files
-    local ok, errors = os.cp(path.join(module.projectdir, "*"), project.directory()) 
+    local ok, errors = os.cp(path.join(module.projectdir, "*"), projectdir) 
     if not ok then
         return false, errors
     end
 
     -- enter the project directory
-    if not os.cd(project.directory()) then
-        return false, string.format("can not enter %s!", project.directory())
+    if not os.cd(projectdir) then
+        return false, string.format("can not enter %s!", projectdir)
     end
 
     -- replace macros
