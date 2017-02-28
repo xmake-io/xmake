@@ -409,6 +409,7 @@ target("test2")
 | 接口                                        | 描述                                 | 支持版本 |
 | ------------------------------------------- | ------------------------------------ | -------- |
 | [target](#target)                           | 定义工程目标                         | >= 1.0.1 |
+| [target_end](#target_end)                   | 结束定义工程目标                     | >= 2.1.1 |
 | [set_kind](#targetset_kind)                 | 设置目标编译类型                     | >= 1.0.1 |
 | [set_strip](#targetset_strip)               | 设置是否strip信息                    | >= 1.0.1 |
 | [set_options](#targetset_options)           | 设置关联选项                         | >= 1.0.1 |
@@ -515,6 +516,39 @@ target("demo")
 target("test")
     set_kind("binary")
     add_files("src/test.c")
+```
+
+##### target_end
+
+###### 结束定义工程目标
+
+这是一个可选的api，如果不调用，那么`target("xxx")`之后的所有设置都是针对这个target进行的，除非进入其他`target`, `option`, `task`域。
+
+如果想设置完当前`target`后，显示离开`target`域，进入根域设置，那么可以通过这个api才操作，例如：
+
+```lua
+target("test")
+    set_kind("static")
+    add_files("src/*.c")
+target_end()
+
+-- 此处已在根域
+-- ...
+```
+
+如果不调用这个api的话:
+
+```lua
+target("test")
+    set_kind("static")
+    add_files("src/*.c")
+
+-- 此处还在上面target域中，之后的设置还是针对test进行的设置
+-- ...
+
+-- 这个时候才离开test，进入另外一个target域中
+target("test2")
+    ...
 ```
 
 ##### target:set_kind
@@ -1501,12 +1535,12 @@ target("test")
 
 要想完全检测成功，检测语法上需要一定程度的灵活性，下面是一些语法规则：
 
-| 检测语法      | 例子                                          |
-| ------------- | --------------------------------------------- |
-| 纯函数名      | sigsetjmp                                     |
-| 单行调用      | sigsetjmp((void*)0, 0)                        |
-| 函数块调用    | sigsetjmp{sigsetjmp((void*)0, 0);}            |
-| 函数块 + 变量 | sigsetjmp{int a = 0; sigsetjmp((void*)a, a);} |
+| 检测语法      | 例子                                            |
+| ------------- | ----------------------------------------------- |
+| 纯函数名      | `sigsetjmp`                                     |
+| 单行调用      | `sigsetjmp((void*)0, 0)`                        |
+| 函数块调用    | `sigsetjmp{sigsetjmp((void*)0, 0);}`            |
+| 函数块 + 变量 | `sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}` |
 
 ##### target:add_cxxfuncs
 
@@ -1599,25 +1633,29 @@ option()
 
 option("test")
     -- ... 
+    -- 尽量保持缩进，因为这个之后的所有设置，都是针对test选项的
 
 option("test2")
     -- ... 
 ```
 
 <p class="tip">
-`option`域是可以重复进入来实现分离设置的。
+`option`域是可以重复进入来实现分离设置的，如果要显示离开当前选项的作用域设置，可以手动调用[option_end](#option_end)接口。
 </p>
 
 
 | 接口                                                  | 描述                                         | 支持版本 |
 | ----------------------------------------------------- | -------------------------------------------- | -------- |
 | [option](#option)                                     | 定义选项                                     | >= 2.0.1 |
+| [option_end](#option_end)                             | 结束定义选项                                 | >= 2.1.1 |
 | [set_default](#optionset_default)                     | 设置默认值                                   | >= 2.0.1 |
 | [set_showmenu](#optionset_showmenu)                   | 设置是否启用菜单显示                         | >= 1.0.1 |
 | [set_category](#optionset_category)                   | 设置选项分类，仅用于菜单显示                 | >= 1.0.1 |
 | [set_description](#optionset_description)             | 设置菜单显示描述                             | >= 1.0.1 |
 | [add_bindings](#optionadd_bindings)                   | 添加正向关联选项，同步启用和禁用             | >= 2.0.1 |
 | [add_rbindings](#optionadd_rbindings)                 | 添加逆向关联选项，同步启用和禁用             | >= 2.0.1 |
+| [add_links](#optionadd_links)                         | 添加链接库检测                               | >= 1.0.1 |
+| [add_linkdirs](#optionadd_linkdirs)                   | 添加链接库检测需要的搜索目录                 | >= 1.0.1 |
 | [add_cincludes](#optionadd_cincludes)                 | 添加c头文件检测                              | >= 1.0.1 |
 | [add_cxxincludes](#optionadd_cxxincludes)             | 添加c++头文件检测                            | >= 1.0.1 |
 | [add_ctypes](#optionadd_ctypes)                       | 添加c类型检测                                | >= 1.0.1 |
@@ -1691,6 +1729,12 @@ target("demo")
 $ xmake f --test=y
 $ xmake
 ```
+
+##### option_end
+
+###### 结束定义选项
+
+这是一个可选api，显示离开选项作用域，用法和[target_end](#target_end)类似。
 
 ##### option:set_default
 
@@ -1897,6 +1941,31 @@ option("smallest")
 $ xmake f --smallest=y --xml=y --zip=y
 ```
 
+##### option:add_links
+
+###### 添加链接库检测
+
+如果指定的链接库检测通过，此选项将被启用，并且对应关联的target会自动加上此链接，例如：
+
+```lua
+option("pthread")
+    set_default(false)
+    add_links("pthread")
+    add_linkdirs("/usr/local/lib")
+
+target("test")
+    add_options("pthread")
+```
+
+如果检测通过，`test`目标编译的时候就会自动加上：`-L/usr/local/lib -lpthread` 编译选项
+
+
+##### option:add_linkdirs
+
+###### 添加链接库检测时候需要的搜索目录
+
+这个是可选的，一般系统库不需要加这个，也能检测通过，如果确实没找到，可以自己追加搜索目录，提高检测通过率。具体使用见：[add_links](#optionadd_links)
+
 ##### option:add_cincludes
 
 ###### 添加c头文件检测
@@ -2004,6 +2073,7 @@ xmake可以实现自定义任务或者插件，其两者的核心就是`task`任
 | 接口                                            | 描述                                         | 支持版本 |
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [task](#task)                                   | 定义插件或者任务                             | >= 2.0.1 |
+| [task_end](#task_end)                           | 结束定义插件或任务                           | >= 2.1.1 |
 | [set_menu](#taskset_menu)                       | 设置任务菜单                                 | >= 2.0.1 |
 | [set_category](#taskset_category)               | 设置任务类别                                 | >= 2.0.1 |
 | [on_run](#taskon_run)                           | 设置任务运行脚本                             | >= 2.0.1 |
@@ -2043,6 +2113,12 @@ target("test")
 ```
 
 在构建完`test`目标后运行`hello`任务。
+
+##### task_end
+
+###### 结束定义插件或任务
+
+这是一个可选api，显示离开选项作用域，用法和[target_end](#target_end)类似。
 
 ##### task:set_menu
 
@@ -2350,6 +2426,7 @@ platforms
 | 接口                                            | 描述                                         | 支持版本 |
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [platform](#platform)                           | 定义平台                                     | >= 2.0.1 |
+| [platform_end](#platform_end)                   | 结束定义平台                                 | >= 2.1.1 |
 | [set_os](#platformset_os)                       | 设置平台系统                                 | >= 2.0.1 |
 | [set_menu](#platformset_menu)                   | 设置平台菜单                                 | >= 2.0.1 |
 | [set_hosts](#platformset_hosts)                 | 设置平台支持的主机环境                       | >= 2.0.1 |
@@ -2416,6 +2493,12 @@ platform("iphoneos")
 <p class="warning">
 是在`platforms`目录相关平台的`xmake.lua`中编写，而不是在工程目录的`xmake.lua`中。
 </p>
+
+##### platform_end
+
+###### 结束定义平台
+
+这是一个可选api，显示离开选项作用域，用法和[target_end](#target_end)类似。
 
 ##### set_os
 
