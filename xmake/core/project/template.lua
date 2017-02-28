@@ -232,7 +232,6 @@ function template.create(language, templateid, targetname)
         return false, string.format("the template project not exists!")
     end
     
-    print(projectdir)
     -- ensure the project directory 
     if not os.isdir(projectdir) then 
         os.mkdir(projectdir)
