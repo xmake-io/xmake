@@ -30,3 +30,12 @@ target("console_c")
     -- add files
     add_files("src/*.c") 
 
+    after_build(function(target)
+        import("core.project.config")
+        os.cd("src")
+        print(config.buildir())
+        print(vformat("$(scriptdir)"))
+        print(path.absolute(vformat("$(buildir)")))
+        os.cp("main.c", "$(buildir)/aaa")
+        end)
+
