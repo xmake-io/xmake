@@ -46,13 +46,13 @@ $ sudo ./install
 
 ![UsageDemo](http://tboox.org/static/img/xmake/usage_demo.gif)
 
-#### Create Empty Project
+#### Create Project
 
 ```bash
-$ xmake create -P ./hello
+$ xmake create -l c -P ./hello
 ```
 
-And xmake will generate some files:
+And xmake will generate some files for c language project:
 
 ```
 hello
@@ -70,6 +70,16 @@ target("hello")
     set_kind("binary")
     add_files("src/*.c") 
 ```
+
+Support languages:
+
+* c/c++
+* objc/c++
+* asm
+* swift
+* dlang
+* golang
+* rust
 
 <p class="tip">
     If you want to known more options, please run: `xmake create --help`

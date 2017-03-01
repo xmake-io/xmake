@@ -54,12 +54,15 @@ $ xmake run -d console
 * Objc/Objc++
 * Swift
 * Assembly
+* Golang
+* Rust
+* Dlang
 
 ## Builtin Plugins
 
 * Macros script plugin
 * Run the custom lua script plugin
-* Generate IDE project file plugin（makefile, vs2002 - vs2015 .. ）
+* Generate IDE project file plugin（makefile, vs2002 - vs2017 .. ）
 * Generate doxygen document plugin
 * Convert .app to .ipa plugin
 
