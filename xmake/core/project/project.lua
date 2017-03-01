@@ -43,6 +43,7 @@ local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
 local language              = require("language/language")
+local sandbox_os            = require("sandbox/modules/os")
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -288,6 +289,7 @@ function project._interpreter()
             ,   prefix      = "$(prefix)"
             ,   tmpdir      = os.tmpdir()
             ,   curdir      = os.curdir()
+            ,   scriptdir   = sandbox_os.scriptdir()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
