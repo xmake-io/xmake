@@ -56,6 +56,9 @@ If you want to known more, please refer to:
 - Objc/Objc++
 - Swift
 - Assembly
+- Golang
+- Rust
+- Dlang
 
 #### Platforms
 

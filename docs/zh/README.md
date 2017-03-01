@@ -53,12 +53,12 @@ $ sudo ./install
 
 ![UsageDemo](http://tboox.org/static/img/xmake/usage_demo.gif)
 
-#### 创建空工程
+#### 创建工程
 
-创建一个名叫`hello`的控制台工程：
+创建一个名叫`hello`的`c`控制台工程：
 
 ```bash
-$ xmake create -P ./hello
+$ xmake create -l c -P ./hello
 ```
 
 执行完后，将会生成一个简单工程结构：
@@ -77,6 +77,16 @@ target("hello")
     set_kind("binary")
     add_files("src/*.c") 
 ```
+
+目前支持的语言如下：
+
+* c/c++
+* objc/c++
+* asm
+* swift
+* dlang
+* golang
+* rust
 
 <p class="tip">
     如果你想了解更多参数选项，请运行: `xmake create --help`

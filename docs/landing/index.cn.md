@@ -54,12 +54,15 @@ $ xmake run -d console
 * Objc/Objc++
 * Swift
 * Assembly
+* Golang
+* Rust
+* Dlang
 
 ## 内置插件
 
 * 宏记录脚本和回放插件
 * 加载自定义lua脚本插件
-* 生成IDE工程文件插件（makefile, vs2002 - vs2015, ...）
+* 生成IDE工程文件插件（makefile, vs2002 - vs2017, ...）
 * 生成doxygen文档插件
 * iOS app2ipa插件
 

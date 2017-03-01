@@ -458,7 +458,7 @@ target("test2")
 | [add_mxxflags](#targetadd_mxxflags)         | 添加objc++编译选项                   | >= 1.0.1 |
 | [add_scflags](#targetadd_scflags)           | 添加swift编译选项                    | >= 2.0.1 |
 | [add_asflags](#targetadd_asflags)           | 添加汇编编译选项                     | >= 2.0.1 |
-| [add_goflags](#targetadd_goflags)           | 添加go编译选项                       | >= 2.1.1 |
+| [add_gcflags](#targetadd_gcflags)           | 添加go编译选项                       | >= 2.1.1 |
 | [add_ldflags](#targetadd_ldflags)           | 添加链接选项                         | >= 1.0.1 |
 | [add_arflags](#targetadd_arflags)           | 添加静态库归档选项                   | >= 1.0.1 |
 | [add_shflags](#targetadd_shflags)           | 添加动态库链接选项                   | >= 1.0.1 |
@@ -1374,14 +1374,34 @@ add_scflags("xxx")
 add_asflags("xxx")
 ```
 
-##### target:add_goflags
+##### target:add_gcflags
 
 ###### 添加go编译选项
 
 对golang代码添加编译选项
 
 ```lua
-add_goflags("xxx")
+add_gcflags("xxx")
+```
+
+##### target:add_dcflags
+
+###### 添加dlang编译选项
+
+对dlang代码添加编译选项
+
+```lua
+add_dcflags("xxx")
+```
+
+##### target:add_rcflags
+
+###### 添加rust编译选项
+
+对rust代码添加编译选项
+
+```lua
+add_rcflags("xxx")
 ```
 
 ##### target:add_ldflags
@@ -1689,7 +1709,9 @@ option("test2")
 | [add_mxxflags](#targetadd_mxxflags)       | 添加objc++编译选项                   | >= 2.0.1 |
 | [add_scflags](#targetadd_scflags)         | 添加swift编译选项                    | >= 2.1.1 |
 | [add_asflags](#targetadd_asflags)         | 添加汇编编译选项                     | >= 2.1.1 |
-| [add_goflags](#targetadd_goflags)         | 添加go编译选项                       | >= 2.1.1 |
+| [add_gcflags](#targetadd_gcflags)         | 添加go编译选项                       | >= 2.1.1 |
+| [add_dcflags](#targetadd_dcflags)         | 添加dlang编译选项                    | >= 2.1.1 |
+| [add_rcflags](#targetadd_rcflags)         | 添加rust编译选项                     | >= 2.1.1 |
 | [add_ldflags](#targetadd_ldflags)         | 添加链接选项                         | >= 2.1.1 |
 | [add_arflags](#targetadd_arflags)         | 添加静态库归档选项                   | >= 2.1.1 |
 | [add_shflags](#targetadd_shflags)         | 添加动态库链接选项                   | >= 2.0.1 |
@@ -2392,7 +2414,6 @@ task.run("hello", {color="red"}, arg1, arg2, arg3)
 
 更加详细的`task.run`描述，见：[task.run](#task-run)
 
-
 #### 平台扩展
 
 xmake除了内置的一些构建平台，还可以自己扩展自定义构建平台，可以将自己实现的平台放置在以下目录即可, xmake会自动检测并且加载他们：
@@ -2432,6 +2453,7 @@ platforms
 | [set_hosts](#platformset_hosts)                 | 设置平台支持的主机环境                       | >= 2.0.1 |
 | [set_archs](#platformset_archs)                 | 设置平台支持的架构环境                       | >= 2.0.1 |
 | [set_tooldirs](#platformset_tooldirs)           | 设置平台工具的搜索目录                       | >= 2.0.1 |
+| [on_load](#platformon_load)                     | 设置加载平台环境配置脚本                     | >= 2.0.1 |
 | [on_check](#platformon_check)                   | 设置平台工具的检测脚本                       | >= 2.0.1 |
 | [on_install](#platformon_install)               | 设置平台相关的工程目标安装脚本               | >= 2.0.5 |
 | [on_uninstall](#platformon_uninstall)           | 设置平台相关的工程目标卸载脚本               | >= 2.0.5 |
@@ -2572,11 +2594,132 @@ platform("android")
 ```
 
 ##### set_archs
+
+###### 设置平台支持的架构环境
+
+用来设置当前目标平台支持的编译架构环境，例如`iphoneos`平台可以构建`armv7`, `armv7s`, `arm64`, `i386`, `x86_64`等架构，那么可以设置为：
+
+```lua
+platform("iphoneos")
+    set_archs("armv7", "armv7s", "arm64", "i386", "x86_64")
+```
+
+配置好架构后，执行：`xmake f -h`，就会在对应arch参数描述，自动显示设置的架构列表：
+
+```
+    -a ARCH, --arch=ARCH                   Compile for the given architecture. (default: auto)
+                                               - android: armv5te armv6 armv7-a armv8-a arm64-v8a
+                                               - iphoneos: armv7 armv7s arm64 i386 x86_64
+                                               - linux: i386 x86_64
+                                               - macosx: i386 x86_64
+                                               - mingw: i386 x86_64
+                                               - watchos: armv7k i386
+                                               - windows: x86 x64 amd64 x86_amd64
+```
+
 ##### set_tooldirs
+
+###### 设置平台工具的搜索目录
+
+xmake会自动检测当前平台支持的一些构建工具是否存在，例如编译器、链接器等，如果要提高检测通过率，可以在平台配置的时候，设置一些工具环境搜索目录，例如：
+
+```lua
+platform("linux")
+
+    -- 在linux下检测这些目录环境
+    set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+```
+
 ##### on_load
+
+###### 设置加载平台环境配置脚本
+
+一般用于在平台刚加载时，设置一些基本配置：生成目标文件命名格式、平台相关编译选项等
+
+```lua
+platform("windows")
+
+    -- on load
+    on_load(function ()
+
+        -- init the file formats
+        _g.formats          = {}
+        _g.formats.static   = {"", ".lib"}
+        _g.formats.object   = {"", ".obj"}
+        _g.formats.shared   = {"", ".dll"}
+        _g.formats.binary   = {"", ".exe"}
+        _g.formats.symbol   = {"", ".pdb"}
+
+        -- init flags for dlang
+        local dc_archs = { x86 = "-m32", x64 = "-m64", amd64 = "-m64", x86_amd64 = "-m64" }
+        _g.dcflags       = { dc_archs[arch] or "" }
+        _g["dc-shflags"] = { dc_archs[arch] or "" }
+        _g["dc-ldflags"] = { dc_archs[arch] or "" }
+
+        -- ok
+        return _g
+    end)
+```
+
+如果加载逻辑比较复杂，可以独立成单独`init.lua`文件，然后设置为：
+
+```lua
+platform("xxxx")
+    on_load("init")
+```
+
+通过这种方式，会自动加载平台脚本目录下对应的`init.lua`文件，调用`function main() end`函数入口，完成复杂加载逻辑。
+
 ##### on_check
+
+##### 设置平台工具的检测脚本
+
+由于每个平台检测的工具非常多，脚本比较复杂，一般直接独立成`check.lua`文件来实现检测逻辑，例如：
+
+```lua
+platform("xxx")
+    on_check("check")
+```
+
+具体的检测代码入口如下：
+
+```lua
+-- check it
+function main(kind)
+
+    -- init the check list of config
+    _g.config = 
+    {
+        __check_arch
+    ,   checker.check_ccache
+    ,   _check_toolchains
+    }
+
+    -- init the check list of global
+    _g.global = 
+    {
+        checker.check_ccache
+    ,   _check_ndk_sdkver
+    }
+
+    -- check it
+    checker.check(kind, _g)
+end
+```
+
+具体实现这里就不介绍了，可以参考xmake源码目录下的`platforms`平台配置代码: [check.lua](https://github.com/tboox/xmake/blob/master/xmake/platforms/macosx/check.lua)
+
 ##### on_install
+
+###### 设置目标工程在指定平台的安装脚本
+
+具体实现逻辑见xmake源码：[install.lua](https://github.com/tboox/xmake/blob/master/xmake/platforms/macosx/install.lua)
+
 ##### on_uninstall
+
+###### 设置目标工程在指定平台的卸载脚本
+
+具体实现逻辑见xmake源码：[uninstall.lua](https://github.com/tboox/xmake/blob/master/xmake/platforms/macosx/uninstall.lua)
 
 #### 语言扩展
 

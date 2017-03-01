@@ -94,6 +94,9 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 - Objc/Objc++
 - Swift
 - Assembly
+- Golang
+- Rust
+- Dlang
 
 #### 支持的构建平台
 
