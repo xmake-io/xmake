@@ -116,6 +116,26 @@ function config.options()
     return configs
 end
 
+-- get the buildir 
+function config.buildir()
+    
+    -- get it 
+    local buildir = config.get("buildir")
+    if buildir then
+
+        -- get the absolute path first
+        if not path.is_absolute(buildir) then
+            buildir = path.absolute(buildir, xmake._PROJECT_DIR)
+        end
+
+        -- adjust path for the current directory
+        buildir = path.relative(buildir, os.curdir())
+    end
+
+    -- ok?
+    return buildir
+end
+
 -- get the configure directory
 function config.directory()
 

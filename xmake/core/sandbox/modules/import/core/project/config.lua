@@ -34,7 +34,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_core_project_config.buildir()
 
     -- get it 
-    return config.get("buildir")
+    return config.buildir()
 end
 
 -- get the current platform
