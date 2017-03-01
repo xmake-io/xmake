@@ -277,6 +277,11 @@ function project._interpreter()
         -- check
         assert(variable)
 
+        -- hack buildir first
+        if variable == "buildir" then
+            return config.buildir()
+        end
+
         -- attempt to get it directly from the configure
         local result = config.get(variable)
         if not result or type(result) ~= "string" then 
