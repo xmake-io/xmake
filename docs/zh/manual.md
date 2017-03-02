@@ -2735,6 +2735,20 @@ end
 
 #### 内置变量
 
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [$(os)](#var-os)                                | 获取当前编译平台的操作系统                   | >= 2.0.1 |
+| [$(host)](#var-host)                            | 获取本机操作系统                             | >= 2.0.1 |
+| [$(tmpdir)](#var-tmpdir)                        | 获取临时目录                                 | >= 2.0.1 |
+| [$(curdir)](#var-curdir)                        | 获取当前目录                                 | >= 2.0.1 |
+| [$(buildir)](#var-buildir)                      | 获取构建输出目录                             | >= 2.0.1 |
+| [$(scriptdir)](#var-scriptdir)                  | 获取工程描述脚本目录                         | >= 2.1.1 |
+| [$(globaldir)](#var-globaldir)                  | 获取全局配置目录                             | >= 2.0.1 |
+| [$(configdir)](#var-configdir)                  | 获取本地工程配置目录                         | >= 2.0.1 |
+| [$(projectdir)](#var-projectdir)                | 获取工程根目录                               | >= 2.0.1 |
+| [$(packagedir)](#var-packagedir)                | 获取依赖包目录                               | >= 2.0.1 |
+| [$(shell)](#var-shell)                          | 执行外部shell命令                            | >= 2.0.1 |
+
 ##### var.$(os)
 ##### var.$(host)
 ##### var.$(tmpdir)
