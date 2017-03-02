@@ -102,11 +102,20 @@ function _make_object(makefile, target, sourcefile, objectfile)
     -- get shellname name
     local shellname = tool.shellname(sourcekind)
 
+    -- get complier flags
+    local compflags = compiler.compflags(sourcefile, target, sourcekind)
+
     -- make command
     local command = compiler.compcmd(sourcefile, objectfile, target)
 
+    -- replace compflags to $(XX)
+    local p, e = command:find(compflags, 1, true)
+    if p then
+        command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
+    end
+
     -- replace shellname to $(XX)
-    local p, e = command:find(shellname, 1, true)
+    p, e = command:find(shellname, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
@@ -146,11 +155,20 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     -- get shellname name
     local shellname = tool.shellname(sourcekind)
 
+    -- get complier flags
+    local compflags = compiler.compflags(sourcefiles, target, sourcekind)
+
     -- make command
     local command = compiler.compcmd(sourcefiles, objectfiles, target, sourcekind)
 
+    -- replace compflags to $(XX)
+    local p, e = command:find(compflags, 1, true)
+    if p then
+        command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
+    end
+
     -- replace shellname to $(XX)
-    local p, e = command:find(shellname, 1, true)
+    p, e = command:find(shellname, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
@@ -208,8 +226,14 @@ function _make_target(makefile, target)
     -- get command
     local command = target:linkcmd()
 
+    -- replace linkflags to $(XX)
+    local p, e = command:find(target:linkflags(), 1, true)
+    if p then
+        command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+    end
+
     -- replace shellname to $(XX)
-    local p, e = command:find(shellname, 1, true)
+    p, e = command:find(shellname, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
     end
@@ -285,9 +309,18 @@ function _make_all(makefile)
     end
     makefile:print("")
 
+    -- make variables for target flags
+    for targetname, target in pairs(project.targets()) do
+        for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+            makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, target, sourcekind))
+        end
+        makefile:print("%s_%s=%s", targetname, target:linker():get("kind"):upper(), target:linkflags())
+    end
+    makefile:print("")
+
     -- make all
     local all = ""
-    for targetname, target in pairs(project.targets()) do
+    for targetname, _ in pairs(project.targets()) do
         -- append the target name to all
         all = all .. " " .. targetname
     end
