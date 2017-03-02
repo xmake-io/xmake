@@ -2733,6 +2733,20 @@ end
 ##### add_macros
 ##### add_macrofiles
 
+#### 内置变量
+
+##### var.$(os)
+##### var.$(host)
+##### var.$(tmpdir)
+##### var.$(curdir)
+##### var.$(buildir)
+##### var.$(scriptdir)
+##### var.$(globaldir)
+##### var.$(configdir)
+##### var.$(projectdir)
+##### var.$(packagedir)
+##### var.$(shell)
+
 #### 内置模块
 
 在自定义脚本、插件脚本、任务脚本、平台扩展、模板扩展等脚本代码中使用，也就是在类似下面的代码块中，可以使用这些模块接口：
@@ -3292,6 +3306,62 @@ if (errors) raise(errors)
 
 如果在try块中抛出异常，就会在catch和finally中进行errors信息捕获，具体见：[try-catch](#try-catch-finally)
 
+##### os
+
+系统操作模块，属于内置模块，无需使用[import](#import)导入，可直接脚本域调用其接口。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [os.cp](#os-cp)                                 | 复制文件                                     | >= 2.0.1 |
+| [os.mv](#os-mv)                                 | 移动，重命名文件                             | >= 2.0.1 |
+| [os.rm](#os-rm)                                 | 删除文件或目录树                             | >= 2.0.1 |
+| [os.cd](#os-cd)                                 | 进入指定目录                                 | >= 2.0.1 |
+| [os.rmdir](#os-rmdir)                           | 删除目录树                                   | >= 2.0.1 |
+| [os.mkdir](#os-mkdir)                           | 创建指定目录                                 | >= 2.0.1 |
+| [os.isdir](#os-isdir)                           | 判断目录是否存在                             | >= 2.0.1 |
+| [os.isfile](#os-isfile)                         | 判断文件是否存在                             | >= 2.0.1 |
+| [os.exists](#os-exists)                         | 判断文件或目录是否存在                       | >= 2.0.1 |
+| [os.dirs](#os-dirs)                             | 遍历获取指定目录下的所有目录                 | >= 2.0.1 |
+| [os.files](#os-files)                           | 遍历获取指定目录下的所有文件                 | >= 2.0.1 |
+| [os.filedirs](#os-filedirs)                     | 遍历获取指定目录下的所有文件或目录           | >= 2.0.1 |
+| [os.run](#os-run)                               | 安静运行程序                                 | >= 2.0.1 |
+| [os.exec](#os-exec)                             | 回显运行程序                                 | >= 2.0.1 |
+| [os.iorun](#os-iorun)                           | 运行并获取程序输出内容                       | >= 2.0.1 |
+| [os.getenv](#os-getenv)                         | 获取环境变量                                 | >= 2.0.1 |
+| [os.setenv](#os-setenv)                         | 设置环境变量                                 | >= 2.0.1 |
+| [os.tmpdir](#os-tmpdir)                         | 获取临时目录路径                             | >= 2.0.1 |
+| [os.tmpfile](#os-tmpfile)                       | 获取临时文件路径                             | >= 2.0.1 |
+| [os.curdir](#os-curdir)                         | 获取当前目录路径                             | >= 2.0.1 |
+| [os.scriptdir](#os-scriptdir)                   | 获取脚本目录路径                             | >= 2.0.1 |
+| [os.arch](#os-arch)                             | 获取当前系统架构                             | >= 2.0.1 |
+| [os.host](#os-host)                             | 获取当前主机系统                             | >= 2.0.1 |
+
+###### os.cp
+###### os.mv
+###### os.rm
+###### os.cd
+###### os.rmdir
+###### os.mkdir
+###### os.isdir
+###### os.isfile
+###### os.exists
+###### os.dirs
+###### os.files
+###### os.filedirs
+###### os.run
+###### os.exec
+###### os.iorun
+###### os.getenv
+###### os.setenv
+###### os.tmpdir
+###### os.tmpfile
+###### os.curdir
+###### os.scriptdir
+###### os.arch
+###### os.host
+
+##### io
+
 ##### table
 
 ###### table.insert
@@ -3310,8 +3380,6 @@ if (errors) raise(errors)
 ###### path.absolute
 ###### path.is_absolute
 
-##### io
-##### os
 ##### string
 ##### process
 ##### coroutine
