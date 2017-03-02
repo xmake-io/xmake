@@ -27,6 +27,7 @@ import("core.tool.tool")
 import("core.tool.compiler")
 import("core.project.config")
 import("core.project.project")
+import("core.language.language")
 
 -- get log makefile
 function _logfile()
@@ -47,9 +48,6 @@ end
 
 -- copy file
 function _cp(makefile, sourcefile, targetfile)
-
-    -- ensure the destinate directory
-    _mkdir(makefile, path.directory(targetfile))
 
     -- copy file
     if config.get("plat") == "windows" then
@@ -90,19 +88,28 @@ end
 -- make the object
 function _make_object(makefile, target, sourcefile, objectfile)
 
-    -- get the source file type
-    local filetype = path.extension(sourcefile):lower()
+    -- get the source file kind
+    local sourcekind = language.sourcekind_of(sourcefile)
 
     -- make the object for the *.o/obj source makefile
-    if filetype == ".o" or filetype == ".obj" then 
+    if sourcekind == "obj" then 
         return _make_object_for_object(makefile, target, sourcefile, objectfile)
     -- make the object for the *.[a|lib] source file
-    elseif filetype == ".a" or filetype == ".lib" then 
+    elseif sourcekind == "lib" then 
         return _make_object_for_static(makefile, target, sourcefile, objectfile)
     end
 
+    -- get shellname name
+    local shellname = tool.shellname(sourcekind)
+
     -- make command
     local command = compiler.compcmd(sourcefile, objectfile, target)
+
+    -- replace shellname to $(XX)
+    local p, e = command:find(shellname, 1, true)
+    if p then
+        command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
+    end
 
     -- make head
     makefile:printf("%s:", objectfile)
@@ -113,7 +120,7 @@ function _make_object(makefile, target, sourcefile, objectfile)
     -- make body
     makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
     _mkdir(makefile, path.directory(objectfile))
-    makefile:print("\t@%s > %s 2>&1", command, _logfile())
+    makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 
     -- make tail
     makefile:print("")
@@ -136,8 +143,17 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     local objectfiles = sourcebatch.objectfiles
     local incdepfiles = sourcebatch.incdepfiles
 
+    -- get shellname name
+    local shellname = tool.shellname(sourcekind)
+
     -- make command
     local command = compiler.compcmd(sourcefiles, objectfiles, target, sourcekind)
+
+    -- replace shellname to $(XX)
+    local p, e = command:find(shellname, 1, true)
+    if p then
+        command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
+    end
 
     -- make head
     makefile:printf("%s:", objectfiles)
@@ -153,7 +169,7 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
         makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
     end
     _mkdir(makefile, path.directory(objectfiles))
-    makefile:print("\t@%s > %s 2>&1", command, _logfile())
+    makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 
     -- make tail
     makefile:print("")
@@ -183,13 +199,37 @@ function _make_target(makefile, target)
     -- make dependence end
     makefile:print("")
 
+    -- get linker kind
+    local linkerkind = target:linker():get("kind")
+
+    -- get shellname
+    local shellname = tool.shellname(linkerkind)
+
+    -- get command
+    local command = target:linkcmd()
+
+    -- replace shellname to $(XX)
+    local p, e = command:find(shellname, 1, true)
+    if p then
+        command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+    end
+
     -- make body
     makefile:print("\t@echo linking.$(mode) %s", path.filename(targetfile))
     _mkdir(makefile, path.directory(targetfile))
-    makefile:print("\t@%s > %s 2>&1", target:linkcmd(), _logfile())
+    makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 
-    -- make headers
+    -- make header directories
+    local dstheaderdirs = {}
     local srcheaders, dstheaders = target:headerfiles()
+    for _, dstheader in ipairs(dstheaders) do
+        dstheaderdirs[path.directory(dstheader)] = true
+    end
+    for dstheaderdir, _ in pairs(dstheaderdirs) do
+        _mkdir(makefile, dstheaderdir)
+    end
+
+    -- copy headers
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do
@@ -223,14 +263,36 @@ end
 -- make all
 function _make_all(makefile)
 
-    -- make all first
+    -- make variables for source kinds
+    for sourcekind, _ in pairs(language.sourcekinds()) do
+        local shellname = tool.shellname(sourcekind)
+        if shellname and shellname ~= "" then
+            makefile:print("%s=%s", sourcekind:upper(), shellname)
+        end
+    end
+    makefile:print("")
+
+    -- make variables for linker kinds
+    local linkerkinds = {}
+    for _, _linkerkinds in pairs(language.targetkinds()) do
+        table.join2(linkerkinds, _linkerkinds)
+    end
+    for _, linkerkind in ipairs(table.unique(linkerkinds)) do
+        local shellname = tool.shellname(linkerkind)
+        if shellname and shellname ~= "" then
+            makefile:print("%s=%s", (linkerkind:upper():gsub('%-', '_')), shellname)
+        end
+    end
+    makefile:print("")
+
+    -- make all
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    for targetname, target in pairs(project.targets()) do
         -- append the target name to all
         all = all .. " " .. targetname
     end
-    makefile:printf("all: %s\n\n", all)
-    makefile:printf(".PHONY: all %s\n\n", all)
+    makefile:print("all: %s\n", all)
+    makefile:print(".PHONY: all %s\n", all)
 
     -- make it for all targets
     for _, target in pairs(project.targets()) do
