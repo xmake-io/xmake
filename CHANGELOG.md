@@ -27,6 +27,7 @@
 * Rewrite [documents](http://www.xmake.io/#/home/) using [docute](https://github.com/egoist/docute)
 * Improve `os.run`, `os.exec`, `os.cp`, `os.mv` and `os.rm` interfaces and support wildcard pattern
 * Optimize the output info and add `-q|--quiet` option
+* Improve makefile generator, uses $(XX) variables for tools and flags
 
 ### Bugs fixed
 
@@ -225,6 +226,7 @@
 * 使用[docute](https://github.com/egoist/docute)重写[文档](http://www.xmake.io/#/zh/)，提供更加完善的文档支持
 * 增强`os.run`, `os.exec`, `os.cp`, `os.mv` 和 `os.rm` 等接口，支持通配符模式匹配和批量文件操作
 * 精简和优化构建输出信息，添加`-q|--quiet`选项实现静默构建
+* 改进`makefile`生成插件，抽取编译工具和编译选项到全局变量
 
 ### Bugs修复
 
