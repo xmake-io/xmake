@@ -36,6 +36,13 @@ function sandbox_core_language.extensions()
     return language.extensions()
 end
 
+-- get the target kinds of all languages
+function sandbox_core_language.targetkinds()
+
+    -- get it
+    return language.targetkinds()
+end
+
 -- get the source kinds of all languages
 function sandbox_core_language.sourcekinds()
 

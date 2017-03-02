@@ -25,6 +25,7 @@
 -- load modules
 local io        = require("base/io")
 local utils     = require("base/utils")
+local string    = require("base/string")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
@@ -88,6 +89,9 @@ function sandbox_io.open(filepath, mode)
     -- replace print with vformat
     file.print  = sandbox_io._print
     file.printf = sandbox_io._printf
+
+    -- add writef with format
+    file.writef = sandbox_io._writef
 
     -- ok?
     return file
@@ -185,6 +189,16 @@ function sandbox_io._printf(self, ...)
     
     -- printf it
     return self._FILE:write(vformat(...))
+end
+
+-- writef file
+function sandbox_io._writef(self, ...)
+
+    -- check
+    assert(self._FILE)
+    
+    -- printf it
+    return self._FILE:write(string.format(...))
 end
 
 -- cat the given file 

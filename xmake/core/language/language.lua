@@ -631,5 +631,47 @@ function language.linkerinfos_of(targetkind, sourcekinds)
     return nil, string.format("no suitable linker for %s.{%s}", targetkind, table.concat(sourcekinds, ' '))
 end
 
+-- get language target kinds
+--
+-- .e.g
+--
+-- {
+--      binary = {"ld", "gc-ld", "dc-ld"}
+-- ,    static = {"ar", "gc-ar", "dc-ar"}
+-- ,    shared = {"sh", "dc-sh"}
+-- }
+--
+function language.targetkinds()
+
+    -- attempt to get it from cache
+    if language._TARGETKINDS then
+        return language._TARGETKINDS
+    end
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        os.raise(errors)
+    end
+
+    -- merge all for each language
+    local targetkinds = {}
+    for name, instance in pairs(languages) do
+        for targetkind, linkerkind in pairs(instance:targetkinds()) do
+            targetkinds[targetkind] = targetkinds[targetkind] or {}
+            table.insert(targetkinds[targetkind], linkerkind)
+        end
+    end
+    for targetkind, linkerkinds in pairs(targetkinds) do
+        targetkinds[targetkind] = table.unique(linkerkinds)
+    end
+
+    -- cache it
+    language._TARGETKINDS = targetkinds
+
+    -- ok
+    return targetkinds
+end
+
 -- return module
 return language
