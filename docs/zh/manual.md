@@ -3087,48 +3087,7 @@ try
 
 上面的代码中，在try块内部认为引发了一个异常，并且抛出错误消息，在catch中进行了捕获，并且将错误消息进行输出显示。
 
-这里除了对`pcall/xpcall`进行了封装，用来捕获异常信息，还利用了lua的函数调用语法特性，在只有一个参数传递的情况下，lua可以直接传递一个table类型，并且省略`()`
-
-其实try后面的整个`{...}` 都是一个table而已，作为参数传递给了try函数，其具体实现如下：
-
-```lua
-function try(block)
-
-    -- get the try function
-    local try = block[1]
-    assert(try)
-
-    -- get catch and finally functions
-    local funcs = block[2]
-    if funcs and block[3] then
-        table.join2(funcs, block[2])
-    end
-
-    -- try to call it
-    local ok, errors = pcall(try)
-    if not ok then
-
-        -- run the catch function
-        if funcs and funcs.catch then
-            funcs.catch(errors)
-        end
-    end
-
-    -- run the finally function
-    if funcs and funcs.finally then
-        funcs.finally(ok, errors)
-    end
-
-    -- ok?
-    if ok then
-        return errors
-    end
-end
-```
-
-可以看到这里用了`pcall`来实际调用try块里面的函数，这样就算函数内部出现异常，也不会中断程序，`pcall`会返回false表示运行失败
-
-通过上面的实现，会发现里面其实还有个finally的处理，这个的作用是对于`try{}`代码块，不管是否执行成功，都会执行到finally块中
+而finally的处理，这个的作用是对于`try{}`代码块，不管是否执行成功，都会执行到finally块中
 
 也就说，其实上面的实现，完整的支持语法是：`try-catch-finally`模式，其中catch和finally都是可选的，根据自己的实际需求提供
 
@@ -3194,8 +3153,6 @@ local result = try
     end
 }
 ```
-
-可以看到，这个基于pcall的`try-catch-finally`异常捕获封装，使用上还是非常灵活的，而且其实现相当的简单
 
 在xmake的自定义脚本、插件开发中，也是完全基于此异常捕获机制
 
