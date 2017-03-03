@@ -3502,7 +3502,7 @@ if (errors) raise(errors)
 
 ###### os.cp
 
-####### 复制文件或目录
+- 复制文件或目录
 
 行为和shell中的`cp`命令类似，支持路径通配符匹配（使用的是lua模式匹配），支持多文件复制，以及内置变量支持。
 
@@ -3531,7 +3531,7 @@ os.cp("$(curdir)/test/", "$(tmpdir)/test")
 
 ###### os.mv
 
-####### 移动重命名文件或目录
+- 移动重命名文件或目录
 
 跟[os.cp](#os-cp)的使用类似，同样支持多文件移动操作和模式匹配，例如：
 
@@ -3545,7 +3545,7 @@ os.mv("$(buildir)/libtest.a", "$(buildir)/libdemo.a")
 
 ###### os.rm
 
-####### 删除文件或目录树
+- 删除文件或目录树
 
 支持递归删除目录，批量删除操作，以及模式匹配和内置变量，例如：
 
@@ -3555,7 +3555,7 @@ os.rm("$(buildir)/inc/**.h", "$(buildir)/lib/")
 
 ###### os.cd
 
-####### 进入指定目录
+- 进入指定目录
 
 这个操作用于目录切换，同样也支持内置变量，但是不支持模式匹配和多目录处理，例如：
 
@@ -3580,26 +3580,212 @@ os.cd(oldir)
 ```
 
 ###### os.rmdir
+
+- 仅删除目录
+
+如果不是目录就无法删除。
+
 ###### os.mkdir
+
+- 创建目录
+
+支持批量创建和内置变量，例如：
+
+```lua
+os.mkdir("$(tmpdir)/test", "$(buildir)/inc")
+```
+
 ###### os.isdir
+
+- 判断是否为目录
+
+如果目录不存在，则返回false
+
+```lua
+if os.isdir("src") then
+    -- ...
+end
+```
+
 ###### os.isfile
+
+- 判断是否为文件
+
+如果文件不存在，则返回false
+
+```lua
+if os.isfile("$(buildir)/libxxx.a") then
+    -- ...
+end
+```
+
 ###### os.exists
+
+- 判断文件或目录是否存在
+
+如果文件或目录不存在，则返回false
+
+```lua
+-- 判断目录存在
+if os.exists("$(buildir)") then
+    -- ...
+end
+
+-- 判断文件存在
+if os.exists("$(buildir)/libxxx.a") then
+    -- ...
+end
+```
+
 ###### os.dirs
+
+- 遍历获取指定目录下的所有目录
+
+支持[add_files](#targetadd_files)中的模式匹配，支持递归和非递归模式遍历，返回的结果是一个table数组，如果获取不到，返回空数组，例如：
+
+```lua
+-- 递归遍历获取所有子目录
+for _, dir in ipairs(os.dirs("$(buildir)/inc/**")) do
+    print(dir)
+end
+```
+
 ###### os.files
+
+- 遍历获取指定目录下的所有文件
+
+支持[add_files](#targetadd_files)中的模式匹配，支持递归和非递归模式遍历，返回的结果是一个table数组，如果获取不到，返回空数组，例如：
+
+```lua
+-- 非递归遍历获取所有子文件
+for _, filepath in ipairs(os.files("$(buildir)/inc/*.h")) do
+    print(filepath)
+end
+```
+
 ###### os.filedirs
+
+- 遍历获取指定目录下的所有文件和目录
+
+支持[add_files](#targetadd_files)中的模式匹配，支持递归和非递归模式遍历，返回的结果是一个table数组，如果获取不到，返回空数组，例如：
+
+```lua
+-- 递归遍历获取所有子文件和目录
+for _, filedir in ipairs(os.filedirs("$(buildir)/**")) do
+    print(filedir)
+end
+```
+
 ###### os.run
+
+- 安静运行原生shell命令
+
+用于执行第三方的shell命令，但不会回显输出，仅仅在出错后，高亮输出错误信息。
+
+此接口支持参数格式化、内置变量，例如：
+
+```lua
+-- 格式化参数传入
+os.run("echo hello %s!", "xmake")
+
+-- 列举构建目录文件
+os.run("ls -l $(buildir)")
+```
+
+<p class="warning">
+使用此接口执行shell命令，容易使构建跨平台性降低，对于`os.run("cp ..")`这种尽量使用`os.cp`代替。<br>
+如果必须使用此接口运行shell程序，请自行使用[config.plat](#config-plat)接口判断平台支持。
+</p>
+
+更加高级的进程运行和控制，见[process](#process)模块接口。
+
 ###### os.exec
+
+- 回显运行原生shell命令
+
+与[os.run](#os-run)接口类似，唯一的不同是，此接口执行shell程序时，是带回显输出的，一般调试的时候用的比较多
+
 ###### os.iorun
+
+- 安静运行原生shell命令并获取输出内容
+
+与[os.run](#os-run)接口类似，唯一的不同是，此接口执行shell程序后，会获取shell程序的执行结果，相当于重定向输出。
+
+可同时获取`stdout`, `stderr`中的内容，例如：
+
+```lua
+local outdata, errdata = os.iorun("echo hello xmake!")
+```
+
 ###### os.getenv
+
+- 获取系统环境变量
+
+```lua
+print(os.getenv("PATH"))
+```
+
 ###### os.setenv
+
+- 设置系统环境变量
+
+```lua
+os.setenv("HOME", "/tmp/")
+```
+
 ###### os.tmpdir
+
+- 获取临时目录
+
+跟[$(tmpdir)](#var-tmpdir)结果一致，只不过是直接获取返回一个变量，可以用后续字符串维护。
+
+```lua
+print(path.join(os.tmpdir(), "file.txt"))
+```
+
+等价于：
+
+```lua
+print("$(tmpdir)/file.txt"))
+```
+
 ###### os.tmpfile
+
+- 获取临时文件路径
+
+用于获取生成一个临时文件路径，仅仅是个路径，文件需要自己创建。
+
 ###### os.curdir
+
+- 获取当前目录路径
+
+跟[$(curdir)](#var-curdir)结果一致，只不过是直接获取返回一个变量，可以用后续字符串维护。
+
+用法参考：[os.tmpdir](#os-tmpdir)。
+
 ###### os.scriptdir
+
+- 获取当前描述脚本的路径
+
+跟[$(scriptdir)](#var-scriptdir)结果一致，只不过是直接获取返回一个变量，可以用后续字符串维护。
+
+用法参考：[os.tmpdir](#os-tmpdir)。
+
 ###### os.arch
+
+- 获取当前系统架构
+
+也就是当前主机系统的默认架构，例如我在`linux x86_64`上执行xmake进行构建，那么返回值是：`x86_64`
+
 ###### os.host
 
+- 获取当前主机的操作系统
+
+跟[$(host)](#var-host)结果一致，例如我在`linux x86_64`上执行xmake进行构建，那么返回值是：`linux`
+
 ##### io
+
+文件读写操作，有待后续完善。
 
 ##### table
 
