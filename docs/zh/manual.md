@@ -4043,17 +4043,186 @@ end
 
 ##### table
 
-路径操作模块，有待后续完善。。。
+table属于lua原生提供的模块，对于原生接口使用可以参考：[lua官方文档](http://www.lua.org/manual/5.1/manual.html#5.5)
 
-###### table.insert
+xmake中对其进行了扩展，增加了一些扩展接口：
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [table.join](#table-join)                       | 合并多个table并返回                          | >= 2.0.1 |
+| [table.join2](#table-join2)                     | 合并多个table到第一个table                   | >= 2.0.1 |
+| [table.dump](#table-dump)                       | 输出table的所有内容                          | >= 2.0.1 |
+| [table.unique](#table-unique)                   | 对table中的内容进行去重                      | >= 2.0.1 |
+| [table.slice](#table-slice)                     | 获取table的切片                              | >= 2.0.1 |
+
 ###### table.join
+
+- 合并多个table并返回
+
+可以将多个table里面的元素进行合并后，返回到一个新的table中，例如：
+
+```lua
+local newtable = table.join({1, 2, 3}, {4, 5, 6}, {7, 8, 9})
+```
+
+结果为：`{1, 2, 3, 4, 5, 6, 7, 8, 9}`
+
+并且它也支持字典的合并：
+
+```lua
+local newtable = table.join({a = "a", b = "b"}, {c = "c"}, {d = "d"})
+```
+
+结果为：`{a = "a", b = "b", c = "c", d = "d"}`
+
 ###### table.join2
-###### table.concat
+
+- 合并多个table到第一个table
+
+类似[table.join](#table.join)，唯一的区别是，合并的结果放置在第一个参数中，例如：
+
+```lua
+local t = {0, 9}
+table.join2(t, {1, 2, 3})
+```
+
+结果为：`t = {0, 9, 1, 2, 3}`
+
 ###### table.dump
 
+- 输出table的所有内容 
+
+递归格式化打印table中的所有内容，一般用于调试， 例如：
+
+```lua
+table.dump({1, 2, 3})
+```
+
+结果为：`{1, 2, 3}`
+
+###### table.unique
+
+- 对table中的内容进行去重
+
+去重table的元素，一般用于数组table，例如：
+
+```lua
+local newtable = table.unique({1, 1, 2, 3, 4, 4, 5})
+```
+
+结果为：`{1, 2, 3, 4, 5}`
+
+###### table.slice
+
+- 获取table的切片
+
+用于提取数组table的部分元素，例如：
+
+```lua
+-- 提取第4个元素后面的所有元素，结果：{4, 5, 6, 7, 8, 9}
+table.slice({1, 2, 3, 4, 5, 6, 7, 8, 9}, 4)
+
+-- 提取第4-8个元素，结果：{4, 5, 6, 7, 8}
+table.slice({1, 2, 3, 4, 5, 6, 7, 8, 9}, 4, 8)
+
+-- 提取第4-8个元素，间隔步长为2，结果：{4, 6, 8}
+table.slice({1, 2, 3, 4, 5, 6, 7, 8, 9}, 4, 8, 2)
+```
+
 ##### string
+
+字符串模块为lua原生自带的模块，具体使用见：[lua官方手册](http://www.lua.org/manual/5.1/manual.html#5.4)
+
+xmake中对其进行了扩展，增加了一些扩展接口：
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [string.startswith](#string-startswith)         | 判断字符串开头是否匹配                       | >= 1.0.1 |
+| [string.endswith](#string-endswith)             | 判断字符串结尾是否匹配                       | >= 1.0.1 |
+| [string.split](#string-split)                   | 分割字符串                                   | >= 1.0.1 |
+| [string.trim](#string-trim)                     | 去掉字符串左右空白字符                       | >= 1.0.1 |
+| [string.ltrim](#string-ltrim)                   | 去掉字符串左边空白字符                       | >= 1.0.1 |
+| [string.rtrim](#string-rtrim)                   | 去掉字符串右边空白字符                       | >= 1.0.1 |
+
+###### string.startswith
+
+- 判断字符串开头是否匹配
+
+```lua
+local s = "hello xmake"
+if s:startswith("hello") then
+    print("match")
+end
+```
+
+###### string.endswith
+
+- 判断字符串结尾是否匹配
+
+```lua
+local s = "hello xmake"
+if s:endswith("xmake") then
+    print("match")
+end
+```
+
+###### string.split
+
+- 分割字符串
+
+通过指定的分隔符进行字符串分割，分隔符可以是：字符，字符串、模式匹配字符串，例如：
+
+```lua
+local s = "hello     xmake!"
+s:split("%s+")
+```
+
+根据连续空白字符进行分割，结果为：`hello`, `xmake!`
+
+```lua
+local s = "hello,xmake:123"
+s:split("[,:]")
+```
+
+上面的代码根据`,`或者`:`字符进行分割，结果为：`hello`, `xmake`, `123`
+
+###### string.trim
+
+- 去掉字符串左右空白字符
+
+```lua
+string.trim("    hello xmake!    ")
+```
+
+结果为："hello xmake!"
+
+###### string.ltrim
+
+- 去掉字符串左边空白字符
+
+```lua
+string.ltrim("    hello xmake!    ")
+```
+
+结果为："hello xmake!    "
+
+###### string.rtrim
+
+- 去掉字符串右边空白字符
+
+```lua
+string.rtrim("    hello xmake!    ")
+```
+
+结果为："    hello xmake!"
+
 ##### process
+
+这个是xmake扩展的进程控制模块，用于更加灵活的控制进程，比起：[os.run](#os-run)系列灵活性更高，也更底层。
+
 ##### coroutine
+
+协程模块是lua原生自带的模块，具体使用见：[lua官方手册](http://www.lua.org/manual/5.1/manual.html#5.2)
 
 #### 扩展模块
 
