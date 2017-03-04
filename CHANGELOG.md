@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.1
+
 ### New features
 
 * Add `--links`, `--linkdirs` and `--includedirs` configure arguments
@@ -200,6 +202,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.1
 
 ### 新特性
 
