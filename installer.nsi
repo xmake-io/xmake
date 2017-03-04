@@ -49,7 +49,7 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Version Information
 
-VIProductVersion "2.1.1.2602"
+VIProductVersion "2.1.1.0304"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: http://www.xmake.io"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
