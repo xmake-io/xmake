@@ -4220,9 +4220,67 @@ string.rtrim("    hello xmake!    ")
 
 这个是xmake扩展的进程控制模块，用于更加灵活的控制进程，比起：[os.run](#os-run)系列灵活性更高，也更底层。
 
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [process.open](#string-open)                    | 打开进程                                     | >= 2.0.1 |
+| [process.wait](#string-wait)                    | 等待进程结束                                 | >= 2.0.1 |
+| [process.close](#string-close)                  | 关闭进程对象                                 | >= 2.0.1 |
+| [process.waitlist](#string-waitlist)            | 同时等待多个进程                             | >= 2.0.1 |
+
+###### process.open
+
+- 打开进程
+
+通过路径创建运行一个指定程序，并且返回对应的进程对象：
+
+```lua
+-- 打开进程，后面两个参数指定需要捕获的stdout, stderr文件路径
+local proc = process.open("echo hello xmake!", outfile, errfile)
+if proc then
+
+    -- 等待进程执行完成
+    --
+    -- 参数二为等待超时，-1为永久等待，0为尝试获取进程状态
+    -- 返回值waitok为等待状态：1为等待进程正常结束，0为进程还在运行中，-1位等待失败
+    -- 返回值status为，等待进程结束后，进程返回的状态码
+    local waitok, status = process.wait(proc, -1)
+
+    -- 释放进程对象
+    process.close(proc)
+end
+```
+
+###### process.wait
+
+- 等待进程结束
+
+具体使用见：[process.open](#process-open)
+
+###### process.close
+
+- 关闭进程对象
+
+具体使用见：[process.open](#process-open)
+
+###### process.waitlist
+
+- 同时等待多个进程
+
+```lua
+-- 第二个参数是等待超时，返回进程状态列表
+for _, procinfo in ipairs(process.waitlist(procs, -1)) do
+    
+    -- 每个进程的：进程对象、进程pid、进程结束状态码
+    local proc      = procinfo[1]
+    local procid    = procinfo[2]
+    local status    = procinfo[3]
+
+end
+```
+
 ##### coroutine
 
-协程模块是lua原生自带的模块，具体使用见：[lua官方手册](http://www.lua.org/manual/5.1/manual.html#5.2)
+协程模块是lua原生自带的模块，具使用见：[lua官方手册](http://www.lua.org/manual/5.1/manual.html#5.2)
 
 #### 扩展模块
 
