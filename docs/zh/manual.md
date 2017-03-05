@@ -4424,9 +4424,119 @@ print(compiler.compflags(sourcefile, target))
 ```
 
 ##### core.project.config
+
+用于获取工程编译时候的配置信息，也就是`xmake f|config --xxx=val` 传入的参数选项值。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [config.get](#config-get)                       | 获取指定配置值                               | >= 2.0.1 |
+| [config.load](#config-load)                     | 加载配置                                     | >= 2.0.1 |
+| [config.arch](#config-arch)                     | 获取当前工程的架构配置                       | >= 2.0.1 |
+| [config.plat](#config-plat)                     | 获取当前工程的平台配置                       | >= 2.0.1 |
+| [config.mode](#config-mode)                     | 获取当前工程的编译模式配置                   | >= 2.0.1 |
+| [config.buildir](#config-buildir)               | 获取当前工程的输出目录配置                   | >= 2.0.1 |
+| [config.directory](#config-directory)           | 获取当前工程的配置信息目录                   | >= 2.0.1 |
+| [config.dump](#config-dump)                     | 打印输出当前工程的所有配置信息               | >= 2.0.1 |
+
+###### config.get
+###### config.load
+###### config.arch
+###### config.plat
+###### config.mode
+###### config.buildir
+###### config.directory
+###### config.dump
+
 ##### core.project.global
+
+用于获取xmake全局的配置信息，也就是`xmake g|global --xxx=val` 传入的参数选项值。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [global.get](#global-get)                       | 获取指定配置值                               | >= 2.0.1 |
+| [global.load](#global-load)                     | 加载配置                                     | >= 2.0.1 |
+| [global.directory](#global-directory)           | 获取全局配置信息目录                         | >= 2.0.1 |
+| [global.dump](#global-dump)                     | 打印输出所有全局配置信息                     | >= 2.0.1 |
+
+###### global.get
+###### global.load
+###### global.directory
+###### global.dump
+
 ##### core.project.task
+
+用于任务操作，一般用于在自定义脚本中、插件任务中，调用运行其他task任务。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [task.run](#task-run)                           | 运行指定任务                                 | >= 2.0.1 |
+
+###### task.run
+
 ##### core.project.project
+
+用于获取当前工程的一些描述信息，也就是在`xmake.lua`工程描述文件中定义的配置信息，例如：[target](#target)、[option](#option)等。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [project.load](#project-load)                   | 加载工程配置                                 | >= 2.0.1 |
+| [project.directory](#project-directory)         | 获取工程目录                                 | >= 2.0.1 |
+| [project.target](#project-target)               | 获取指定工程目标对象                         | >= 2.0.1 |
+| [project.targets](#project-targets)             | 获取工程目标对象列表                         | >= 2.0.1 |
+| [project.name](#project-name)                   | 获取当前工程名                               | >= 2.0.1 |
+| [project.version](#project-version)             | 获取当前工程版本号                           | >= 2.0.1 |
+
+###### project.load
+###### project.directory
+###### project.target
+###### project.targets
+###### project.name
+###### project.version
+
 ##### core.language.language
+
+用于获取编译语言相关信息。
+
+| 接口                                              | 描述                                         | 支持版本 |
+| -----------------------------------------------   | -------------------------------------------- | -------- |
+| [language.extensions](#language-extensions)       | 获取所有语言的代码后缀名列表                 | >= 2.1.1 |
+| [language.targetkinds](#language-targetkinds)     | 获取所有语言的目标类型列表                   | >= 2.1.1 |
+| [language.sourcekinds](#language-sourcekinds)     | 获取所有语言的源文件类型列表                 | >= 2.1.1 |
+| [language.sourceflags](#language-sourceflags)     | 加载所有语言的源文件编译选项名列表           | >= 2.1.1 |
+| [language.linkerkinds](#language-linkerkinds)     | 加载所有语言的链接器类型列表                 | >= 2.1.1 |
+| [language.load](#language-load)                   | 加载指定语言                                 | >= 2.1.1 |
+| [language.load_sk](#language-load_sk)             | 从源文件类型加载指定语言                     | >= 2.1.1 |
+| [language.load_ex](#language-load_ex)             | 从源文件后缀名加载指定语言                   | >= 2.1.1 |
+| [language.sourcekind_of](#language-sourcekind_of) | 获取指定源文件的源文件类型                   | >= 2.1.1 |
+
+###### language.extensions
+###### language.targetkinds
+###### language.sourcekinds
+###### language.sourceflags
+###### language.linkerkinds
+###### language.load
+###### language.load_sk
+###### language.load_ex
+###### language.sourcekind_of
+
 ##### core.platform.platform
+
+平台信息相关操作
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [platform.get](#platform-get)                   | 获取指定平台相关配置信息                     | >= 2.0.1 |
+
+###### platform.get
+
 ##### core.platform.environment
+
+环境相关操作，用于进入和离开指定环境变量对应的终端环境，一般用于`path`环境的进入和离开，尤其是一些需要特定环境的构建工具，例如：msvc的工具链。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [environment.enter](#environment-enter)         | 进入指定环境                                 | >= 2.0.1 |
+| [environment.leave](#environment-leave)         | 离开指定环境                                 | >= 2.0.1 |
+
+###### environment.enter
+###### environment.leave
