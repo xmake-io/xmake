@@ -2723,7 +2723,7 @@ end
 
 #### 语言扩展
 
-##### language
+有待后续完善。。
 
 #### 工程模板
 
@@ -4222,10 +4222,10 @@ string.rtrim("    hello xmake!    ")
 
 | 接口                                            | 描述                                         | 支持版本 |
 | ----------------------------------------------- | -------------------------------------------- | -------- |
-| [process.open](#string-open)                    | 打开进程                                     | >= 2.0.1 |
-| [process.wait](#string-wait)                    | 等待进程结束                                 | >= 2.0.1 |
-| [process.close](#string-close)                  | 关闭进程对象                                 | >= 2.0.1 |
-| [process.waitlist](#string-waitlist)            | 同时等待多个进程                             | >= 2.0.1 |
+| [process.open](#process-open)                   | 打开进程                                     | >= 2.0.1 |
+| [process.wait](#process-wait)                   | 等待进程结束                                 | >= 2.0.1 |
+| [process.close](#process-close)                 | 关闭进程对象                                 | >= 2.0.1 |
+| [process.waitlist](#process-waitlist)           | 同时等待多个进程                             | >= 2.0.1 |
 
 ###### process.open
 
@@ -4284,18 +4284,148 @@ end
 
 #### 扩展模块
 
+所有扩展模块的使用，都需要通过[import](#import)接口，进行导入后才能使用。
+
 ##### core.base.option
-##### core.tool.tool
+
+一般用于获取xmake命令参数选项的值，常用于插件开发。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [option.get](#option-get)                       | 获取参数选项值                               | >= 2.0.1 |
+
+###### option.get
+
+- 获取参数选项值
+
+在插件开发中用于获取参数选项值，例如：
+
+```lua
+-- 导入选项模块
+import("core.base.option")
+
+-- 插件入口函数
+function main(...)
+    print(option.get("info"))
+end
+```
+
+上面的代码获取hello插件，执行：`xmake hello --info=xxxx` 命令时候传入的`--info=`选项的值，并显示：`xxxx`
+
+对于非main入口的task任务或插件，可以这么使用：
+
+```lua
+task("hello")
+    on_run(function ())
+        import("core.base.option")
+        print(option.get("info"))
+    end)
+```
+
 ##### core.tool.linker
+
+链接器相关操作，常用于插件开发。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [linker.link](#linker-link)                     | 执行链接                                     | >= 2.0.1 |
+| [linker.linkcmd](#linker-linkcmd)               | 获取链接命令行                               | >= 2.0.1 |
+| [linker.linkflags](#linker-linkflags)           | 获取链接选项                                 | >= 2.0.1 |
+
+###### linker.link
+
+- 执行链接
+
+针对target，链接指定对象文件列表，生成对应的目标文件，例如：
+
+```lua
+linker.link({"a.o", "b.o", "c.o"}, target:targetfile(), target)
+```
+
+其中[target](#target)，为工程目标，这里传入，主要用于获取target特定的链接选项，具体如果获取工程目标对象，见：[core.project.project](#core-project-project)
+
+当然也可以不指定target，例如：
+
+```lua
+linker.link({"a.o", "b.o", "c.o"}, "/tmp/targetfile")
+```
+
+###### linker.linkcmd
+
+- 获取链接命令行
+
+直接获取[linker.link](#linker-link)中执行的命令行字符串，相当于：
+
+```lua
+os.run(linker.linkcmd({"a.o", "b.o", "c.o"}, target:targetfile(), target))
+```
+
+###### linker.linkflags
+
+- 获取链接选项
+
+获取[linker.linkcmd](#linker-linkcmd)中的链接选项字符串部分，不带shellname和对象文件列表，例如：
+
+```lua
+print(linker.linkflags(target))
+```
+
+获取target工程目标中的链接选项：`-L/tmp -lz -ldl ..`
+
 ##### core.tool.compiler
+
+编译器相关操作，常用于插件开发。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [compiler.compile](#compiler-compile)           | 执行编译                                     | >= 2.0.1 |
+| [compiler.compcmd](#compiler-compcmd)           | 获取编译命令行                               | >= 2.0.1 |
+| [compiler.compflags](#compiler-compflags)       | 获取编译选项                                 | >= 2.0.1 |
+
+
+###### compiler.compile
+
+- 执行编译
+
+针对target，链接指定对象文件列表，生成对应的目标文件，例如：
+
+```lua
+compiler.compile("xxx.c", "xxx.o", "xxx.h.d", target)
+```
+
+其中[target](#target)，为工程目标，这里传入主要用于获取taeget的特定编译选项，具体如果获取工程目标对象，见：[core.project.project](#core-project-project)
+
+而`xxx.h.d`文件用于存储为此源文件的头文件依赖文件列表，最后这两个参数都是可选的，编译的时候可以不传他们：
+
+```lua
+compiler.compile("xxx.c", "xxx.o")
+```
+
+来单纯编译一个源文件。
+
+###### compiler.compcmd
+
+- 获取编译命令行
+
+直接获取[compiler.compile](#compiler-compile)中执行的命令行字符串，相当于：
+
+```lua
+os.run(compiler.compcmd("xxx.c", "xxx.o", incdepfile, target))
+```
+
+###### compiler.compflags
+
+- 获取编译选项
+
+获取[compiler.compcmd](#compiler-compcmd)中的编译选项字符串部分，不带shellname和文件列表，例如：
+
+```lua
+print(compiler.compflags(sourcefile, target))
+```
+
 ##### core.project.config
 ##### core.project.global
-##### core.project.target
 ##### core.project.task
-
-###### task.run
-
-##### core.project.cache
 ##### core.project.project
 ##### core.language.language
 ##### core.platform.platform
