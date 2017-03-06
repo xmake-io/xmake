@@ -323,7 +323,7 @@ function language.load(name)
     return instance
 end
 
--- load the language from the given source kind: cc, cxx, mm, mxx, sc, go, as ..
+-- load the language from the given source kind: cc, cxx, mm, mxx, sc, gc, as ..
 function language.load_sk(sourcekind)
 
     -- load all languages
@@ -440,7 +440,7 @@ end
 -- ,    [".m"]      = mm
 -- ,    [".mm"]     = mxx
 -- ,    [".swift"]  = sc
--- ,    [".go"]     = go
+-- ,    [".go"]     = gc
 -- }
 --
 function language.extensions()
@@ -479,7 +479,7 @@ end
 -- ,    mm  = ".m"
 -- ,    mxx = ".mm"
 -- ,    sc  = ".swift"
--- ,    go  = ".go"
+-- ,    gc  = ".go"
 -- }
 --
 function language.sourcekinds()

@@ -4755,7 +4755,7 @@ print(project.version())
 
 ##### core.language.language
 
-用于获取编译语言相关信息。
+用于获取编译语言相关信息，一般用于代码文件的操作。
 
 | 接口                                              | 描述                                         | 支持版本 |
 | -----------------------------------------------   | -------------------------------------------- | -------- |
@@ -4763,21 +4763,127 @@ print(project.version())
 | [language.targetkinds](#language-targetkinds)     | 获取所有语言的目标类型列表                   | >= 2.1.1 |
 | [language.sourcekinds](#language-sourcekinds)     | 获取所有语言的源文件类型列表                 | >= 2.1.1 |
 | [language.sourceflags](#language-sourceflags)     | 加载所有语言的源文件编译选项名列表           | >= 2.1.1 |
-| [language.linkerkinds](#language-linkerkinds)     | 加载所有语言的链接器类型列表                 | >= 2.1.1 |
 | [language.load](#language-load)                   | 加载指定语言                                 | >= 2.1.1 |
 | [language.load_sk](#language-load_sk)             | 从源文件类型加载指定语言                     | >= 2.1.1 |
 | [language.load_ex](#language-load_ex)             | 从源文件后缀名加载指定语言                   | >= 2.1.1 |
 | [language.sourcekind_of](#language-sourcekind_of) | 获取指定源文件的源文件类型                   | >= 2.1.1 |
 
 ###### language.extensions
+
+- 获取所有语言的代码后缀名列表
+
+获取结果如下：
+
+```lua
+{
+     [".c"]      = cc
+,    [".cc"]     = cxx
+,    [".cpp"]    = cxx
+,    [".m"]      = mm
+,    [".mm"]     = mxx
+,    [".swift"]  = sc
+,    [".go"]     = go
+}
+```
+
 ###### language.targetkinds
+
+- 获取所有语言的目标类型列表
+
+获取结果如下：
+
+```lua
+{
+     binary = {"ld", "gc-ld", "dc-ld"}
+,    static = {"ar", "gc-ar", "dc-ar"}
+,    shared = {"sh", "dc-sh"}
+}
+```
+
 ###### language.sourcekinds
+
+- 获取所有语言的源文件类型列表
+
+获取结果如下：
+
+```lua
+{
+     cc  = ".c"
+,    cxx = {".cc", ".cpp", ".cxx"}
+,    mm  = ".m"
+,    mxx = ".mm"
+,    sc  = ".swift"
+,    gc  = ".go"
+,    rc  = ".rs"
+,    dc  = ".d"
+,    as  = {".s", ".S", ".asm"}
+}
+```
+
 ###### language.sourceflags
-###### language.linkerkinds
+
+- 加载所有语言的源文件编译选项名列表
+
+获取结果如下：
+
+```lua
+{
+     cc  = {"cflags", "cxflags"}
+,    cxx = {"cxxflags", "cxflags"}
+,    ...
+}
+```
+
 ###### language.load
+
+- 加载指定语言
+
+从语言名称加载具体语言对象，例如：
+
+```lua
+local lang = language.load("c++")
+if lang then
+    print(lang:name())
+end
+```
+
 ###### language.load_sk
+
+- 从源文件类型加载指定语言
+
+从源文件类型：`cc, cxx, mm, mxx, sc, gc, as ..`加载具体语言对象，例如：
+
+```lua
+local lang = language.load_sk("cxx")
+if lang then
+    print(lang:name())
+end
+```
+
 ###### language.load_ex
+
+- 从源文件后缀名加载指定语言
+
+从源文件后缀名：`.cc, .c, .cpp, .mm, .swift, .go  ..`加载具体语言对象，例如：
+
+```lua
+local lang = language.load_sk(".cpp")
+if lang then
+    print(lang:name())
+end
+```
+
 ###### language.sourcekind_of
+
+- 获取指定源文件的源文件类型
+
+也就是从给定的一个源文件路径，获取它是属于那种源文件类型，例如：
+
+```lua
+print(language.sourcekind_of("/xxxx/test.cpp"))
+```
+
+显示结果为：`cxx`，也就是`c++`类型，具体对应列表见：[language.sourcekinds](#language-sourcekinds)
 
 ##### core.platform.platform
 
@@ -4789,6 +4895,21 @@ print(project.version())
 
 ###### platform.get
 
+- 获取指定平台相关配置信息
+
+获取平台配置`xmake.lua`中设置的信息，一般只有在写插件的时候会用到，例如：
+
+```lua
+-- 获取当前平台的所有支持架构
+print(platform.get("archs"))
+
+-- 获取指定iphoneos平台的目标文件格式信息
+local formats = platform.get("formats", "iphoneos")
+table.dump(formats)
+```
+
+具体有哪些可读的平台配置信息，可参考：[platform](#platform)
+
 ##### core.platform.environment
 
 环境相关操作，用于进入和离开指定环境变量对应的终端环境，一般用于`path`环境的进入和离开，尤其是一些需要特定环境的构建工具，例如：msvc的工具链。
@@ -4798,5 +4919,33 @@ print(project.version())
 | [environment.enter](#environment-enter)         | 进入指定环境                                 | >= 2.0.1 |
 | [environment.leave](#environment-leave)         | 离开指定环境                                 | >= 2.0.1 |
 
+目前支持的环境有：
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| toolchains                                      | 工具链执行环境                               | >= 2.0.1 |
+
 ###### environment.enter
+
+- 进入指定环境
+
+进入指定环境，例如msvc有自己的环境变量环境用于运行构建工具，例如：`cl.exe`, `link.exe`这些，这个时候想要在xmake里面运行他们，需要：
+
+```lua
+-- 进入工具链环境
+environment.enter("toolchains")
+
+-- 这个时候运行cl.exe才能正常运行，这个时候的path等环境变量都会进入msvc的环境模式
+os.run("cl.exe ..")
+
+-- 离开工具链环境
+environment.leave("toolchains")
+```
+
+因此为了通用性，默认xmake编译事都会设置这个环境，在linux下基本上内部环境不需要特殊切换，目前仅对windows下msvc进行了处理。
+
 ###### environment.leave
+
+- 离开指定环境
+
+具体使用见：[environment.enter](#environment-enter)
