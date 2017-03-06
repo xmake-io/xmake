@@ -4618,7 +4618,7 @@ target("demo")
     end)
 ```
 
-我们还可以在运行任务事，增加参数传递，例如：
+我们还可以在运行任务时，增加参数传递，例如：
 
 ```lua
 task("hello")
@@ -4665,11 +4665,93 @@ emd
 | [project.version](#project-version)             | 获取当前工程版本号                           | >= 2.0.1 |
 
 ###### project.load
+
+- 加载工程描述配置
+
+仅在插件中使用，因为这个时候还没有加载工程配置信息，在工程目标的自定义脚本中，不需要执行此操作，就可以直接访问工程配置。
+
+```lua
+-- 导入工程模块
+import("core.project.project")
+
+-- 插件入口
+function main(...)
+
+    -- 加载工程描述配置
+    project.load()
+
+    -- 访问工程描述，例如获取指定工程目标
+    local target = project.target("test")
+end
+```
+
 ###### project.directory
+
+- 获取工程目录
+
+获取当前工程目录，也就是`xmake -P xxx`中指定的目录，否则为默认当前`xmake`命令执行目录。
+
 ###### project.target
+
+- 获取指定工程目标对象
+
+获取和访问指定工程目标配置，例如：
+
+```lua
+local target = project.target("test")
+if target then
+
+    -- 获取目标文件名
+    print(target:targetfile())
+
+    -- 获取目标类型，也就是：binary, static, shared
+    print(target:targetkind())
+
+    -- 获取目标名
+    print(target:name())
+
+    -- 获取目标源文件
+    local sourcefiles = target:sourcefiles()
+
+    -- 获取目标安装头文件列表
+    local srcheaders, dstheaders = target:headerfiles()
+
+    -- 获取目标依赖
+    print(target:get("deps"))
+end
+```
+
 ###### project.targets
+
+- 获取工程目标对象列表
+
+返回当前工程的所有编译目标，例如：
+
+```lua
+for targetname, target in pairs(project.targets())
+    -- ...
+end
+```
+
 ###### project.name
+
+- 获取当前工程名
+
+也就是获取[set_project](#set_project)的工程名配置。
+
+```lua
+print(project.name())
+```
+
 ###### project.version
+
+- 获取当前工程版本号
+
+也就是获取[set_version](#set_version)的工程版本配置。
+
+```lua
+print(project.version())
+```
 
 ##### core.language.language
 
