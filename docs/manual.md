@@ -26,31 +26,28 @@ It's according to the following rules:
 
 #### Conditions 
 
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
+Conditions are generally used to handle some special compilation platforms. 
 
-条件判断的api，一般用于必须要处理特定平台的编译逻辑的场合。。通常跟lua的if语句配合使用。
-
-| 接口                      | 描述                          | 支持版本 |
-| ------------------------- | ----------------------------- | -------- |
-| [is_os](#is_os)           | 判断当前编译架构              | >= 2.0.1 |
-| [is_arch](#is_arch)       | 判断当前构建的操作系统        | >= 2.0.1 |
-| [is_plat](#is_plat)       | 判断当前编译平台              | >= 2.0.1 |
-| [is_mode](#is_mode)       | 判断当前编译模式              | >= 2.0.1 |
-| [is_kind](#is_kind)       | 判断当前编译类型              | >= 2.0.1 |
-| [is_option](#is_option)   | 判断选项是否启用              | >= 2.0.1 |
+| 接口                      | 描述                                     | 支持版本 |
+| ------------------------- | ---------------------------------------- | -------- |
+| [is_os](#is_os)           | Is the current compilation system?       | >= 2.0.1 |
+| [is_arch](#is_arch)       | Is the current compilation architecture? | >= 2.0.1 |
+| [is_plat](#is_plat)       | Is the current compilation platform?     | >= 2.0.1 |
+| [is_mode](#is_mode)       | Is the current compilation mode?         | >= 2.0.1 |
+| [is_kind](#is_kind)       | Is the current target kind?              | >= 2.0.1 |
+| [is_option](#is_option)   | Is the given options enabled?            | >= 2.0.1 |
 
 ##### is_os 
 
-###### 判断当前构建的操作系统
+###### Is the current compilation system
 
 ```lua
--- 如果当前操作系统是ios
 if is_os("ios") then
     add_files("src/xxx/*.m")
 end
 ```
 
-目前支持的操作系统有：
+Support operation systems:
 
 * windows
 * linux
@@ -60,7 +57,9 @@ end
 
 ##### is_arch
 
-###### 判断当前编译架构
+###### Is the current compilation architecture
+
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
 
 用于检测编译配置：`xmake f -a armv7`
 
@@ -89,7 +88,7 @@ end
 
 ##### is_plat
 
-###### 判断当前编译平台
+###### Is the current compilation platform
 
 用于检测编译配置：`xmake f -p iphoneos`
 
@@ -106,7 +105,7 @@ if is_plat("macosx", "iphoneos") then
 end
 ```
 
-目前支持的平台有：
+Support platforms:
 
 * windows
 * linux
@@ -119,7 +118,7 @@ end
 
 ##### is_mode
 
-###### 判断当前编译模式
+###### Is the current compilation mode
 
 用于检测编译配置：`xmake f -m debug`
 
@@ -171,7 +170,7 @@ end
 
 ##### is_kind
 
-###### 判断当前编译类型
+###### Is the current target kind
 
 判断当前是否编译的是动态库还是静态库，用于检测编译配置：`xmake f -k [static|shared]`
 
@@ -206,7 +205,7 @@ $ xmake
 
 ##### is_option
 
-###### 判断选项是否启用
+###### Is the given options enabled
 
 用于检测自定义的编译配置选型：`xmake f --xxxx=y`
 
@@ -4784,7 +4783,7 @@ print(project.version())
 ,    [".m"]      = mm
 ,    [".mm"]     = mxx
 ,    [".swift"]  = sc
-,    [".go"]     = go
+,    [".go"]     = gc
 }
 ```
 
