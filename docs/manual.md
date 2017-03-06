@@ -6,25 +6,27 @@ search: en
 
 #### Naming conventions
 
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
+The interface is named according to some of the predefined specifications, which is more convenient to understand and easy to use.
 
-接口的命名，是有按照预定义的一些规范来命名的，这样更加方便理解和易于使用，目前命名按照如下一些规则：
+It's according to the following rules:
 
-| 接口规则              | 描述                                                         |
-| --------------------- | ------------------------------------------------------------ |
-| `is_`前缀的接口       | 表示为条件判断                                               |
-| `set_`前缀的接口      | 表示为覆盖设置                                               |
-| `add_`前缀的接口      | 表示为追加设置                                               |
-| `s`后缀的接口         | 表示支持多值传入，例如：`add_files("*.c", "test.cpp")`       |
-| `on_`前缀的接口       | 表示为覆盖内置脚本                                           |
-| `before_`前缀的接口   | 表示为在内置脚本运行前，执行此脚本                           |
-| `after_`前缀的接口    | 表示为在内置脚本运行后，执行此脚本                           |
-| `scope("name")`的接口 | 表示为定义一个描述域，例如：`target("xxx")`, `option("xxx")` |
-| 描述域/描述设置       | 建议缩进表示                                                 |
+| Interfaces            | Description                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| `is_` + xxx           | Condition interfaces                                              |
+| `set_` + xxx          | Set and override the previous settings                            |
+| `add_` + xxx          | Set and append settings                                           |
+| `s` + xxx             | Support multi-parameters, .e.g：`add_files("*.c", "test.cpp")`    |
+| `on_` + xxx           | Set and override builtin script                                   |
+| `before_` + xxx       | Set and run this script before running builtin-script             |
+| `after_` + xxx        | Set and run this script after running builtin-script              |
+| `scope("name")`       | Define a description scope, .e.g `target("xxx")`, `option("xxx")` |
+| scope/settings        | Indentation with spaces                                           |
 
 ## Documentation
 
 #### Conditions 
+
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
 
 条件判断的api，一般用于必须要处理特定平台的编译逻辑的场合。。通常跟lua的if语句配合使用。
 
