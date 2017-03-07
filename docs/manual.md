@@ -166,35 +166,31 @@ end
 
 ###### Is the current target kind
 
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
-
-判断当前是否编译的是动态库还是静态库，用于检测编译配置：`xmake f -k [static|shared]`
-
-一般用于如下场景：
+You can this api to check the configuration command: `xmake f -k [static|shared]`
 
 ```lua
 target("test")
 
-    -- 通过配置设置目标的kind
+    -- set target kind from the configuration command
     set_kind("$(kind)")
     add_files("src/*c")
 
-    -- 如果当前编译的是静态库，那么添加指定文件
+    -- compile target for static?
     if is_kind("static") then
         add_files("src/xxx.c")
     end
 ```
 
-编译配置的时候，可手动切换，编译类型：
+You can switch the target kind by configuration command.
 
 ```bash
-# 编译静态库
+# compile the static library
 $ xmake f -k static
 $ xmake
 ```
 
 ```bash
-# 编译动态库
+# compile the shared library
 $ xmake f -k shared
 $ xmake
 ```
@@ -203,20 +199,19 @@ $ xmake
 
 ###### Is the given options enabled
 
-用于检测自定义的编译配置选型：`xmake f --xxxx=y`
+You can this api to check the custom option configuration command：`xmake f --xxxx=y`
 
-如果某个自动检测选项、手动设置选项被启用，那么可以通过`is_option`接口来判断，例如：
+For example, We want to enable the custom option: `xmake f --demo=y` and check it from `xmake.lua`.
 
 ```lua
--- 如果手动启用了xmake f --demo=y 选项
 if is_option("demo") then
-
-    -- 编译demo目录下的代码
     add_subdirs("src/demo")
 end
 ```
 
 #### Global Interfaces
+
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
 
 全局接口影响整个工程描述，被调用后，后面被包含进来的所有子`xmake.lua`都会受影响。
 
