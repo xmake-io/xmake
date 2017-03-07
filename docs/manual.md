@@ -59,46 +59,42 @@ Support operation systems:
 
 ###### Is the current compilation architecture
 
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
-
-用于检测编译配置：`xmake f -a armv7`
+You can this api to check the configuration command: `xmake f -a armv7`
 
 ```lua
--- 如果当前架构是x86_64或者i386
+-- if the current architecture is x86_64 or i386
 if is_arch("x86_64", "i386") then
     add_files("src/xxx/*.c")
 end
 
--- 如果当前平台是armv7, arm64, armv7s, armv7-a
+-- if the current architecture is armv7 or arm64 or armv7s or armv7-a
 if is_arch("armv7", "arm64", "armv7s", "armv7-a") then
     -- ...
 end
 ```
 
-如果像上面那样一个个去判断所有arm架构，也许会很繁琐，毕竟每个平台的架构类型很多，xmake提供了类似[add_files](#targetadd_files)中的通配符匹配模式，来更加简洁的进行判断：
+And you can also use the wildchard: `*` to check all matched architectures.
 
 ```lua
---如果当前平台是arm平台
+-- if the current architecture is arm which contains armv7, arm64, armv7s and armv7-a ...
 if is_arch("arm*") then
     -- ...
 end
 ```
 
-用`*`就可以匹配所有了。。
-
 ##### is_plat
 
 ###### Is the current compilation platform
 
-用于检测编译配置：`xmake f -p iphoneos`
+You can this api to check the configuration command: `xmake f -p iphoneos`
 
 ```lua
--- 如果当前平台是android
+-- if the current platform is android
 if is_plat("android") then
     add_files("src/xxx/*.c")
 end
 
--- 如果当前平台是macosx或者iphoneos
+-- if the current platform is macosx or iphoneos
 if is_plat("macosx", "iphoneos") then
     add_mxflags("-framework Foundation")
     add_ldflags("-framework Foundation")
@@ -114,24 +110,24 @@ Support platforms:
 * iphoneos
 * watchos
 
-当然你也可以自己扩展添加自己的平台。。。
-
 ##### is_mode
 
 ###### Is the current compilation mode
 
-用于检测编译配置：`xmake f -m debug`
+You can this api to check the configuration command: `xmake f -m debug`
 
-编译模式的类型并不是内置的，可以自由指定，一般指定：`debug`, `release`, `profile` 这些就够用了，当然你也可以在xmake.lua使用其他模式名来判断。
+The compilation mode is not builtin mode for xmake, so you can set the mode value by yourself.
+
+We often use these configuration values: `debug`, `release`, `profile`, etc.
 
 ```lua
--- 如果当前编译模式是debug
+-- if the current compilation mode is debug?
 if is_mode("debug") then
 
-    -- 添加DEBUG编译宏
+    -- add macro: DEBUG
     add_defines("DEBUG")
 
-    -- 启用调试符号
+    -- enable debug symbols
     set_symbols("debug")
 
     -- 禁用优化
@@ -139,31 +135,29 @@ if is_mode("debug") then
 
 end
 
--- 如果是release或者profile模式
+-- if the current compilation mode is release or profile?
 if is_mode("release", "profile") then
 
-    -- 如果是release模式
     if is_mode("release") then
 
-        -- 隐藏符号
+        -- mark symbols visibility as hidden
         set_symbols("hidden")
 
-        -- strip所有符号
+        -- strip all symbols
         set_strip("all")
 
-        -- 忽略帧指针
+        -- fomit frame pointer
         add_cxflags("-fomit-frame-pointer")
         add_mxflags("-fomit-frame-pointer")
 
-    -- 如果是profile模式
     else
 
-        -- 启用调试符号
+        -- enable debug symbols
         set_symbols("debug")
 
     end
 
-    -- 添加扩展指令集
+    -- add vectorexts
     add_vectorexts("sse2", "sse3", "ssse3", "mmx")
 end
 ```
@@ -171,6 +165,8 @@ end
 ##### is_kind
 
 ###### Is the current target kind
+
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
 
 判断当前是否编译的是动态库还是静态库，用于检测编译配置：`xmake f -k [static|shared]`
 
