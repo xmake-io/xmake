@@ -2,6 +2,14 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add aur package script and support to install xmake from yaourt
+
+### Changes
+
+* Support vs2017
+
 ## v2.1.1
 
 ### New features
@@ -202,6 +210,14 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加aur打包脚本，并支持用`yaourt`包管理器进行安装。
+
+### 改进
+
+* 支持vs2017编译环境
 
 ## v2.1.1
 
