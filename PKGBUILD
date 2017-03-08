@@ -10,7 +10,6 @@ url="https://github.com/tboox/xmake"
 license=('Apache')
 depends=('gcc')
 makedepends=()
-replace=('xmake')
 provides=('xmake')
 source=("$pkgname.zip::https://coding.net/u/waruqi/p/xmake/git/archive/v${pkgver}.${pkgrel}.zip")
 md5sums=('d993449030de492bf17ac6f6f967da91')
