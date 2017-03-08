@@ -29,9 +29,17 @@ $ sudo brew install xmake
 
 ##### Linux
 
+For linuxbrew:
+
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
 $ sudo brew install xmake
+```
+
+For archlinux:
+
+```bash
+$ yaourt xmake
 ```
 
 ##### Compilation

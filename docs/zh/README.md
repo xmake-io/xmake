@@ -36,9 +36,17 @@ $ sudo brew install xmake
 
 ##### Linux
 
+使用linuxbrew安装：
+
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
 $ sudo brew install xmake
+```
+
+在archlinux上安装：
+
+```bash
+$ yaourt xmake
 ```
 
 ##### 编译安装
