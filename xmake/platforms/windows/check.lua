@@ -34,8 +34,7 @@ function _apply_vsenv(config, vs)
     -- version => envname
     local version2envname =
     {
-        ["2017"]    = "VS150COMNTOOLS"
-    ,   ["2015"]    = "VS140COMNTOOLS"
+        ["2015"]    = "VS140COMNTOOLS"
     ,   ["2013"]    = "VS120COMNTOOLS"
     ,   ["2012"]    = "VS110COMNTOOLS"
     ,   ["2010"]    = "VS100COMNTOOLS"
@@ -51,7 +50,7 @@ function _apply_vsenv(config, vs)
     -- get the envname
     local envname = version2envname[vs]
 
-    -- attempt to get vcvarsall.bat
+    -- attempt to get vcvarsall.bat from environment variables
     local vcvarsall = nil
     if envname then
         local envalue = os.getenv(envname)
@@ -60,6 +59,28 @@ function _apply_vsenv(config, vs)
         end
     end
 
+    -- attempt to get vcvarsall.bat from the full pathes 
+    if vcvarsall == nil or not os.isfile(vcvarsall) then
+        vcvarsall = nil
+        for _, driver in ipairs({'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'X', 'Y', 'Z'}) do
+            for _, programdir in ipairs({"Program Files", "Program Files (x86)"}) do
+                for _, kind in ipairs({"Community", "Professional", "Enterprise"}) do
+                    local filepath = format("%s:\\%s\\Microsoft Visual Studio\\%s\\%s\\VC\\Auxiliary\\Build\\vcvarsall.bat", driver, programdir, vs, kind)
+                    if os.isfile(filepath) then
+                        vcvarsall = filepath
+                        break
+                    end
+                end
+                if vcvarsall then 
+                    break
+                end
+            end
+            if vcvarsall then 
+                break
+            end
+        end
+    end
+    
     -- vcvarsall.bat not found
     if vcvarsall == nil or not os.isfile(vcvarsall) then
         if vcvarsall and option.get("verbose") then
