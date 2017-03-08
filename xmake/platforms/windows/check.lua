@@ -63,7 +63,7 @@ function _apply_vsenv(config, vs)
     if vcvarsall == nil or not os.isfile(vcvarsall) then
         vcvarsall = nil
         for _, driver in ipairs({'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'X', 'Y', 'Z'}) do
-            for _, programdir in ipairs({"Program Files", "Program Files (x86)"}) do
+            for _, programdir in ipairs({"Program Files (x86)", "Program Files"}) do
                 for _, kind in ipairs({"Community", "Professional", "Enterprise"}) do
                     local filepath = format("%s:\\%s\\Microsoft Visual Studio\\%s\\%s\\VC\\Auxiliary\\Build\\vcvarsall.bat", driver, programdir, vs, kind)
                     if os.isfile(filepath) then
