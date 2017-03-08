@@ -4,7 +4,7 @@
 pkgname=xmake
 pkgver=2.1
 pkgrel=1
-pkgdesc=""
+pkgdesc="A make-like build utility based on Lua"
 arch=('i686' 'x86_64')
 url="https://github.com/tboox/xmake"
 license=('Apache')
