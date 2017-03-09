@@ -136,6 +136,12 @@ function _check_toolchains(config)
     checker.check_toolchain(config, "ex",   cross, "ar",   "the static library extractor") 
     checker.check_toolchain(config, "sh",   cross, "g++",  "the shared library linker") 
     checker.check_toolchain(config, "sh",   cross, "gcc",  "the shared library linker") 
+
+    -- check for rust tools
+    checker.check_toolchain(config, "rc",       "",      "rustc",       "the rust compiler") 
+    checker.check_toolchain(config, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
+    checker.check_toolchain(config, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
+    checker.check_toolchain(config, "rc-ld",    "",      "rustc",       "the rust linker") 
 end
 
 -- check it

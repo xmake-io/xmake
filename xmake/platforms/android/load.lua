@@ -101,6 +101,21 @@ function main()
         end
     end
 
+    -- init targets for rust
+    local targets = 
+    {
+        ["armv5te"]     = "arm-linux-androideabi"
+    ,   ["armv6"]       = "arm-linux-androideabi"
+    ,   ["armv7-a"]     = "arm-linux-androideabi"
+    ,   ["armv8-a"]     = "arm-linux-androideabi"
+    ,   ["arm64-v8a"]   = "aarch64-linux-android"
+    }
+
+    -- init flags for rust
+    _g.rcflags       = { "--target=" .. targets[arch] }
+    _g["rc-shflags"] = { }
+    _g["rc-ldflags"] = { }
+
     -- ok
     return _g
 end
