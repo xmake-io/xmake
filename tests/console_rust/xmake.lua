@@ -22,7 +22,7 @@ if is_mode("release") then
 end
 
 -- add target
-target("console_dlang")
+target("console_rust")
 
     -- set kind
     set_kind("binary")
