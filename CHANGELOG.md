@@ -9,6 +9,7 @@
 ### Changes
 
 * Support vs2017
+* Support compile rust for android
 
 ## v2.1.1
 
@@ -218,6 +219,7 @@
 ### 改进
 
 * 支持vs2017编译环境
+* 支持编译android版本的rust程序
 
 ## v2.1.1
 
