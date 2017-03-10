@@ -114,13 +114,13 @@ function buildcmd(sourcefiles, targetkind, targetfile, flags)
 end
 
 -- build the target file
-function build(objectfiles, targetkind, targetfile, flags)
+function build(sourcefiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- build it
-    os.run(buildcmd(objectfiles, targetkind, targetfile, flags))
+    os.run(buildcmd(sourcefiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command
