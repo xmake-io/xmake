@@ -188,6 +188,10 @@ function nf_language(stdname)
     ,   gnuxx11     = "-std=gnu++11"
     ,   cxx14       = "-std=c++14"
     ,   gnuxx14     = "-std=gnu++14"
+    ,   cxx1z       = "-std=c++1z"
+    ,   gnuxx1z     = "-std=gnu++1z"
+    ,   cxx17       = "-std=c++17"
+    ,   gnuxx17     = "-std=gnu++17"
     }
 
     -- select maps
