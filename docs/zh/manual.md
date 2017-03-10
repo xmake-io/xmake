@@ -702,6 +702,10 @@ set_optimize("fastest")
 | gnuxx11    | c++语言标准: `gnu++11` |
 | cxx14      | c++语言标准: `c++14`   |
 | gnuxx14    | c++语言标准: `gnu++14` |
+| cxx1z      | c++语言标准: `c++1z`   |
+| gnuxx1z    | c++语言标准: `gnu++1z` |
+| cxx17      | c++语言标准: `c++17`   |
+| gnuxx17    | c++语言标准: `gnu++17` |
 
 c标准和c++标准可同时进行设置，例如：
 
