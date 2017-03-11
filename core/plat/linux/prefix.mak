@@ -60,16 +60,11 @@ endif
 endif
 
 # cxflags: .c/.cc/.cpp files
-CXFLAGS_RELEASE 	= -fvisibility=hidden
+CXFLAGS_RELEASE 	= 
 CXFLAGS_DEBUG 		= -g -D__tb_debug__
 CXFLAGS 			= $(AHFLAGS) $(CXFLAGS_CHECK) -c -Wall  
 CXFLAGS-I 			= -I
 CXFLAGS-o 			= -o
-
-# sse for x64 or x86
-ifneq ($(AHFLAGS),)
-CXFLAGS 			+= -mssse3
-endif
 
 # suppress warning for ccache + clang bug
 CXFLAGS 			+= $(if $(findstring clang,$(CC)),-Qunused-arguments,)
@@ -95,7 +90,7 @@ CFLAGS_DEBUG 		=
 CFLAGS 				= \
 					-std=c99 \
 					-D_GNU_SOURCE=1 -D_REENTRANT \
-					-fno-math-errno -fno-tree-vectorize
+					-fno-math-errno 
 
 # ccflags: .cc/.cpp files
 CCFLAGS_RELEASE 	= -fno-rtti
