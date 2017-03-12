@@ -149,11 +149,11 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- the versions
     local versions = 
     {
-        vs2010 = '10'
-    ,   vs2012 = '11'
-    ,   vs2013 = '12'
-    ,   vs2015 = '14'
-    ,   vs2017 = '15'
+        vs2010 = '100'
+    ,   vs2012 = '110'
+    ,   vs2013 = '120'
+    ,   vs2015 = '140'
+    ,   vs2017 = '141'
     }
 
     -- make ProjectConfigurations
@@ -176,7 +176,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- make Configuration
     vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\" Label=\"Configuration\">")
         vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target:get("kind")]))
-        vcxprojfile:print("<PlatformToolset>v%s0</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
+        vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
         vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
     vcxprojfile:leave("</PropertyGroup>")
 
