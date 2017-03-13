@@ -257,7 +257,7 @@ set_version("1.5.1")
 set_version("1.5.1")
 ```
 
-以tbox为例，如果调用`set_config_h`设置了`config.h`，那么会自动生成如下宏：
+以tbox为例，如果调用[set_config_h](#targetset_config_h)设置了`config.h`，那么会自动生成如下宏：
 
 ```c
 // version

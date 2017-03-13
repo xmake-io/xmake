@@ -211,45 +211,45 @@ end
 
 #### Global Interfaces
 
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
+The global interface affects the whole project description scope and all sub-project files.
 
-全局接口影响整个工程描述，被调用后，后面被包含进来的所有子`xmake.lua`都会受影响。
-
-| 接口                                  | 描述                          | 支持版本 |
+| Interfaces                            | Description                   | Version  |
 | ------------------------------------- | ----------------------------- | -------- |
-| [set_project](#set_project)           | 设置工程名                    | >= 2.0.1 |
-| [set_version](#set_version)           | 设置工程版本                  | >= 2.0.1 |
-| [set_xmakever](#set_xmakever)         | 设置最小xmake版本             | >= 2.1.1 |
-| [add_subdirs](#add_subdirs)           | 添加子工程目录                | >= 1.0.1 |
-| [add_subfiles](#add_subfiles)         | 添加子工程文件                | >= 1.0.1 |
-| [add_plugindirs](#add_plugindirs)     | 添加插件目录                  | >= 2.0.1 | 
-| [add_packagedirs](#add_packagedirs)   | 添加包目录                    | >= 2.0.1 |
+| [set_project](#set_project)           | Set project name              | >= 2.0.1 |
+| [set_version](#set_version)           | Set project version           | >= 2.0.1 |
+| [set_xmakever](#set_xmakever)         | Set minimal xmake version     | >= 2.1.1 |
+| [add_subdirs](#add_subdirs)           | Add sub-project directories   | >= 1.0.1 |
+| [add_subfiles](#add_subfiles)         | Add sub-project files         | >= 1.0.1 |
+| [add_plugindirs](#add_plugindirs)     | Add plugin directories        | >= 2.0.1 |
+| [add_packagedirs](#add_packagedirs)   | Add package directories       | >= 2.0.1 |
 
 ##### set_project
 
-###### 设置工程名
+###### Set project name
 
-设置工程名，在doxygen自动文档生成插件、工程文件生成插件中会用到，一般设置在xmake.lua的最开头，当然放在其他地方也是可以的
+Set the whole project name, we can set it at the beginning of `xmake.lua`.
 
 ```lua
--- 设置工程名
+-- set project name
 set_project("tbox")
 
--- 设置工程版本
+-- set project version
 set_version("1.5.1")
 ```
 
 ##### set_version
 
-###### 设置工程版本
+###### Set project version
 
-设置项目版本，可以放在xmake.lua任何地方，一般放在最开头，例如：
+Set the whole project version, we can set it at the beginning of `xmake.lua`.
 
 ```lua
 set_version("1.5.1")
 ```
 
-以tbox为例，如果调用`set_config_h`设置了`config.h`，那么会自动生成如下宏：
+It will add project version info to this file automatically if we call [set_config_h](#targetset_config_h) to set `config.h`.`
+
+For example:
 
 ```c
 // version
@@ -261,6 +261,8 @@ set_version("1.5.1")
 ```
 
 ##### set_xmakever
+
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
 
 ###### 设置最小xmake版本
 
