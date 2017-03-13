@@ -33,7 +33,7 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Pages
 
-!insertmacro MUI_PAGE_LICENSE "LICENSE.md"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.md"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
@@ -68,9 +68,9 @@ Section "xmake (required)" Installer
   SetOutPath $INSTDIR
   
   ; Put file there
-  File /r /x ".DS_Store" "xmake\*.*"
-  File "*.md"
-  File "core\build\demo.exe"
+  File /r /x ".DS_Store" "..\xmake\*.*"
+  File "..\*.md"
+  File "..\core\build\demo.exe"
   
   ; Rename file
   Rename "$INSTDIR\demo.exe" "$INSTDIR\xmake.exe"
