@@ -11,6 +11,10 @@
 * Support vs2017
 * Support compile rust for android
 
+### Bugs fixed
+
+* Fix cannot find android sdk header files
+
 ## v2.1.1
 
 ### New features
@@ -220,6 +224,10 @@
 
 * 支持vs2017编译环境
 * 支持编译android版本的rust程序
+
+### Bugs修复
+
+* 修复编译android程序，找不到系统头文件问题
 
 ## v2.1.1
 
