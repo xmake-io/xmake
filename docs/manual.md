@@ -262,7 +262,9 @@ For example:
 
 ##### set_xmakever
 
+<p class="tip">
 Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
+</p>
 
 ###### 设置最小xmake版本
 
