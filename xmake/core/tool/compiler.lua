@@ -46,6 +46,16 @@ function compiler:_language()
     return self._LANGUAGE
 end
 
+-- add flags from the platform 
+function compiler:_addflags_from_platform(flags)
+
+    -- add flags 
+    local toolkind = self:get("kind")
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, platform.get(flagkind))
+    end
+end
+
 -- add flags from the compiler 
 function compiler:_addflags_from_compiler(flags, kind)
 
