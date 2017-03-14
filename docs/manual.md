@@ -262,7 +262,7 @@ For example:
 
 ##### set_xmakever
 
-<p class="tip">
+<p class="warning">
 Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
 </p>
 
