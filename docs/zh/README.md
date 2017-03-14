@@ -259,8 +259,8 @@ $ xmake
 | [--cflags](#-cflags)         | 设置`c`编译选项                  |
 | [--cxflags](#-cxflags)       | 设置`c/c++`编译选项              |
 | [--cxxflags](#-cxxflags)     | 设置`c++`编译选项                |
-| [--mxflags](#-mflags)        | 设置`objc/c++`编译选项           |
-| [--mxflags](#-mxflags)       | 设置`objc`编译选项               |
+| [--mflags](#-mflags)         | 设置`objc`编译选项               |
+| [--mxflags](#-mxflags)       | 设置`objc/c++`编译选项           |
 | [--mxxflags](#-mxxflags)     | 设置`objc++`编译选项             |
 | [--scflags](#-scflags)       | 设置`swift`编译选项              |
 | [--gcflags](#-gcflags)       | 设置`golang`编译选项             |
