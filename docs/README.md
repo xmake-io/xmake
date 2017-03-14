@@ -138,13 +138,13 @@ hello`main:
 ## Configuration
 
 Set compilation configuration before building project with command `xmake f|config`.
+
 And if you want to known more options, please run: `xmake f --help`。
 
 <p class="tip">
     You can use short or long command option, for exmaple: <br>
     `xmake f` or `xmake config`.<br>
-    `xmake f -p linux` or `xmake config --plat=linux`.<br>
-    `xmake f -p linux -a i386` or `xmake config --plat=linux --arch=i386`.
+    `xmake f -p linux` or `xmake config --plat=linux`.
 </p>
 
 #### Target Platforms
@@ -249,7 +249,7 @@ $ xmake
 | [--rc-ld](#-rc-ld)           | Set `rust` linker                            |
 | [--rc-sh](#-rc-sh)           | Set `rust` shared library linker             |
 | [--rc-ar](#-rc-ar)           | Set `rust` static library archiver           |
-| [--asflags](#-asflags)       | Set `asm`汇编 compiler option                |
+| [--asflags](#-asflags)       | Set `asm` assembler option                   |
 | [--cflags](#-cflags)         | Set `c` compiler option                      |
 | [--cxflags](#-cxflags)       | Set `c/c++` compiler option                  |
 | [--cxxflags](#-cxxflags)     | Set `c++` compiler option                    |

@@ -149,8 +149,7 @@ hello`main:
 <p class="tip">
     你可以使用命令行缩写来简化输入，也可以使用全名，例如: <br>
     `xmake f` 或者 `xmake config`.<br>
-    `xmake f -p linux` 或者 `xmake config --plat=linux`.<br>
-    `xmake f -p linux -a i386` 或者 `xmake config --plat=linux --arch=i386`
+    `xmake f -p linux` 或者 `xmake config --plat=linux`.
 </p>
 
 #### 目标平台
