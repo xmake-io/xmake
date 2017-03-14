@@ -144,8 +144,7 @@ hello`main:
 
 ## 配置
 
-通过`xmake f|config`配置命令，设置构建前的相关配置信息。
-
+通过`xmake f|config`配置命令，设置构建前的相关配置信息，详细参数选项，请运行: `xmake f --help`。
 
 <p class="tip">
     你可以使用命令行缩写来简化输入，也可以使用全名，例如: <br>
@@ -256,6 +255,20 @@ $ xmake
 | [--rc-ld](#-rc-ld)           | 设置`rust`链接器                 |
 | [--rc-sh](#-rc-sh)           | 设置`rust`共享库链接器           |
 | [--rc-ar](#-rc-ar)           | 设置`rust`静态库归档器           |
+| [--asflags](#-asflags)       | 设置`asm`汇编编译选项            |
+| [--cflags](#-cflags)         | 设置`c`编译选项                  |
+| [--cxflags](#-cxflags)       | 设置`c/c++`编译选项              |
+| [--cxxflags](#-cxxflags)     | 设置`c++`编译选项                |
+| [--mxflags](#-mflags)        | 设置`objc/c++`编译选项           |
+| [--mxflags](#-mxflags)       | 设置`objc`编译选项               |
+| [--mxxflags](#-mxxflags)     | 设置`objc++`编译选项             |
+| [--scflags](#-scflags)       | 设置`swift`编译选项              |
+| [--gcflags](#-gcflags)       | 设置`golang`编译选项             |
+| [--dcflags](#-dcflags)       | 设置`dlang`编译选项              |
+| [--rcflags](#-rcflags)       | 设置`rust`编译选项               |
+| [--ldflags](#-ldflags)       | 设置链接选项                     |
+| [--shflags](#-shflags)       | 设置共享库链接选项               |
+| [--arflags](#-arflags)       | 设置静态库归档选项               |
 
 <p class="tip">
 如果你想要了解更多参数选项，请运行: `xmake f --help`。
