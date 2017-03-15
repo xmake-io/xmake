@@ -92,29 +92,17 @@ end
 
 -- get the project version
 function sandbox_core_project.version()
-  
-    -- get version
-    for _, target in pairs(table.wrap(project.targets())) do
-        local version = target:get("version")
-        if version then
-            return version
-        end
-    end
+    return project.get("version")
 end
 
 -- get the project name
 function sandbox_core_project.name()
-  
-    -- get version
-    for _, target in pairs(table.wrap(project.targets())) do
-        local name = target:get("project")
-        if name then
-            return name
-        end
-    end
+    return project.get("project")
+end
 
-    -- uses the project directory name
-    return path.basename(project.directory())
+-- get the project modes
+function sandbox_core_project.modes()
+    return project.get("modes")
 end
 
 -- return module

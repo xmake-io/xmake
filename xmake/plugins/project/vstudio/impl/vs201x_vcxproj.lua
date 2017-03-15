@@ -158,10 +158,14 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- make ProjectConfigurations
     vcxprojfile:enter("<ItemGroup Label=\"ProjectConfigurations\">")
-        vcxprojfile:enter("<ProjectConfiguration Include=\"$(mode)|Win32\">")
-            vcxprojfile:print("<Configuration>$(mode)</Configuration>")
-            vcxprojfile:print("<Platform>Win32</Platform>")
-        vcxprojfile:leave("</ProjectConfiguration>")
+    for _, mode in ipairs(vsinfo.modes) do
+        for _, arch in ipairs({"x86", "x64"}) do
+            vcxprojfile:enter("<ProjectConfiguration Include=\"%s|%s\">", mode, arch)
+                vcxprojfile:print("<Configuration>%s</Configuration>", mode)
+                vcxprojfile:print("<Platform>%s</Platform>", arch)
+            vcxprojfile:leave("</ProjectConfiguration>")
+        end
+    end
     vcxprojfile:leave("</ItemGroup>")
 
     -- make Globals
@@ -174,11 +178,15 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.Default.props\" />")
 
     -- make Configuration
-    vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\" Label=\"Configuration\">")
-        vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target:get("kind")]))
-        vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
-        vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
-    vcxprojfile:leave("</PropertyGroup>")
+    for _, mode in ipairs(vsinfo.modes) do
+        for _, arch in ipairs({"x86", "x64"}) do
+            vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Configuration\">", mode, arch)
+                vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target:get("kind")]))
+                vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
+                vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
+            vcxprojfile:leave("</PropertyGroup>")
+        end
+    end
 
     -- import Microsoft.Cpp.props
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.props\" />")
@@ -188,9 +196,13 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:leave("</ImportGroup>")
 
     -- make PropertySheets
-    vcxprojfile:enter("<ImportGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\" Label=\"PropertySheets\">")
-        vcxprojfile:print("<Import Project=\"%$(UserRootDir)\\Microsoft.Cpp.%$(Platform).user.props\" Condition=\"exists(\'%$(UserRootDir)\\Microsoft.Cpp.%$(Platform).user.props\')\" Label=\"LocalAppDataPlatform\" />")
-    vcxprojfile:leave("</ImportGroup>")
+    for _, mode in ipairs(vsinfo.modes) do
+        for _, arch in ipairs({"x86", "x64"}) do
+            vcxprojfile:enter("<ImportGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"PropertySheets\">", mode, arch)
+                vcxprojfile:print("<Import Project=\"%$(UserRootDir)\\Microsoft.Cpp.%$(Platform).user.props\" Condition=\"exists(\'%$(UserRootDir)\\Microsoft.Cpp.%$(Platform).user.props\')\" Label=\"LocalAppDataPlatform\" />")
+            vcxprojfile:leave("</ImportGroup>")
+        end
+    end
 
     -- make UserMacros
     vcxprojfile:print("<PropertyGroup Label=\"UserMacros\" />")
@@ -206,10 +218,10 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 end
 
 -- make ItemDefinitionGroup
-function _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir)
+function _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir, mode, arch)
 
     -- enter ItemDefinitionGroup 
-    vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">")
+    vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", mode, arch)
     
     -- for linker?
     if target:get("kind") == "binary" then
@@ -232,7 +244,7 @@ function _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir)
             vcxprojfile:print("<SubSystem>Console</SubSystem>")
         
             -- make TargetMachine
-            vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(config.arch() == "x64", "MachineX64", "MachineX86"))
+            vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(arch == "x64", "MachineX64", "MachineX86"))
 
         vcxprojfile:leave("</Link>")
     end
@@ -247,8 +259,13 @@ function _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:leave("</ItemDefinitionGroup>")
 end
 
--- make file
-function _make_file(vcxprojfile, vsinfo, target, sourcefile, objectfile, vcxprojdir)
+-- make header file
+function _make_header_file(vcxprojfile, includefile, vcxprojdir)
+    vcxprojfile:print("<ClInclude Include=\"%s\" />", path.relative(path.absolute(includefile), vcxprojdir))
+end
+
+-- make source file
+function _make_source_file(vcxprojfile, vsinfo, target, sourcefile, objectfile, vcxprojdir, mode, arch)
 
     -- get the target key
     local key = tostring(target)
@@ -262,23 +279,19 @@ function _make_file(vcxprojfile, vsinfo, target, sourcefile, objectfile, vcxproj
 
     -- add file
     vcxprojfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
-        vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">%s %%(AdditionalOptions)</AdditionalOptions>", flags)
-        vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">%s</ObjectFileName>", path.relative(path.absolute(objectfile), vcxprojdir))
+        vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", mode, arch, flags)
+        vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", mode, arch, path.relative(path.absolute(objectfile), vcxprojdir))
 
         -- complie as c++ if exists flag: /TP
         if flags:find("[%-|/]TP") then
-            vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'$(mode)|Win32\'\">CompileAsCpp</CompileAs>")
+            vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", mode, arch)
         end
 
     vcxprojfile:leave("</ClCompile>")
 end
 
-function _make_header_file(vcxprojfile, includefile, vcxprojdir)
-    vcxprojfile:print("<ClInclude Include=\"%s\" />", path.relative(path.absolute(includefile), vcxprojdir))
-end
-
--- make source code list
-function _make_source_code_list(vcxprojfile, vsinfo, target, vcxprojdir)
+-- make source files
+function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir, mode, arch)
 
     -- enter ItemGroup
     vcxprojfile:enter("<ItemGroup>")
@@ -286,7 +299,7 @@ function _make_source_code_list(vcxprojfile, vsinfo, target, vcxprojdir)
         -- add files
         local objectfiles = target:objectfiles()
         for idx, sourcefile in ipairs(target:sourcefiles()) do
-            _make_file(vcxprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcxprojdir) 
+            _make_source_file(vcxprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcxprojdir, mode, arch) 
         end
 
     vcxprojfile:leave("</ItemGroup>")
@@ -322,11 +335,18 @@ function make(vsinfo, target)
     -- make Configurations
     _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 
-    -- make ItemDefinitionGroup
-    _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir)
+    -- make compiler and linker options for the source files
+    for _, mode in ipairs(vsinfo.modes) do
+        for _, arch in ipairs({"x86", "x64"}) do
 
-    -- make source code list
-    _make_source_code_list(vcxprojfile, vsinfo, target, vcxprojdir)
+            -- make ItemDefinitionGroup
+            _make_item_define_group(vcxprojfile, vsinfo, target, vcxprojdir, mode, arch)
+
+            -- make source files
+            _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
+
+        end
+    end
 
     -- make tailer
     _make_tailer(vcxprojfile, vsinfo, target)

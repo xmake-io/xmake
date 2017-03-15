@@ -71,7 +71,7 @@ tb_int_t xm_os_argv(lua_State* lua)
             // leave quote?
             else if ((s == 2 && ch == '\"') || (s == 1 && ch == '\'')) s = 0;
             // escape charactor?
-            else if (!escape && ch == '\\') escape = 1;
+            else if (!escape && ch == '\\' && p[1] != '\\') escape = 1;
             // is argument end with ' '?
             else if (!s && tb_isspace(ch))
             {

@@ -185,10 +185,12 @@ function project._interpreter()
     {
         values =
         {
+            -- set_xxx
+            "set_project"
+        ,   "set_version"
+        ,   "set_modes"
             -- target.set_xxx
-            "target.set_kind"
-        ,   "target.set_version"
-        ,   "target.set_project"
+        ,   "target.set_kind"
         ,   "target.set_strip"
         ,   "target.set_options"
         ,   "target.set_symbols"
@@ -369,6 +371,28 @@ function project.check()
     return true
 end
 
+-- get the project info from the given name
+function project.get(name)
+
+    -- load the global project infos
+    local infos = project._INFOS 
+    if not infos then
+
+        -- get interpreter
+        local interp = project._interpreter()
+        assert(interp) 
+
+        -- load infos
+        infos = interp:load(xmake._PROJECT_FILE, nil, true, true)
+        project._INFOS = infos
+    end
+
+    -- get it
+    if infos then
+        return infos[name]
+    end
+end
+
 -- load the project 
 function project.load()
 
@@ -382,7 +406,7 @@ function project.load()
         return false, errors
     end
 
-    -- load results
+    -- load targets
     local results, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
     if not results then
         return false, errors

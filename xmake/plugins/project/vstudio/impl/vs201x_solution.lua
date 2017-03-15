@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vs200x_solution.lua
+-- @file        vs201x_solution.lua
 --
 
 -- imports
@@ -42,7 +42,7 @@ function _make_projects(slnfile, vsinfo)
     for targetname, target in pairs(project.targets()) do
 
         -- enter project
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, os.uuid(targetname))
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, os.uuid(targetname))
 
         -- add dependences
         for _, dep in ipairs(target:get("deps")) do
@@ -64,14 +64,22 @@ function _make_global(slnfile, vsinfo)
 
     -- add solution configuration platforms
     slnfile:enter("GlobalSection(SolutionConfigurationPlatforms) = preSolution")
-    slnfile:print("$(mode)|Win32 = $(mode)|Win32")
+    for _, mode in ipairs(vsinfo.modes) do
+        for _, arch in ipairs({"x86", "x64"}) do
+            slnfile:print("%s|%s = %s|%s", mode, arch, mode, arch)
+        end
+    end
     slnfile:leave("EndGlobalSection")
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
     for targetname, _ in pairs(project.targets()) do
-        slnfile:print("{%s}.$(mode)|Win32.ActiveCfg = $(mode)|Win32", os.uuid(targetname))
-        slnfile:print("{%s}.$(mode)|Win32.Build.0 = $(mode)|Win32", os.uuid(targetname))
+        for _, mode in ipairs(vsinfo.modes) do
+            for _, arch in ipairs({"x86", "x64"}) do
+                slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", os.uuid(targetname), mode, arch, mode, arch)
+                slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", os.uuid(targetname), mode, arch, mode, arch)
+            end
+        end
     end
     slnfile:leave("EndGlobalSection")
 

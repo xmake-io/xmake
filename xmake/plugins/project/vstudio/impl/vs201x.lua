@@ -23,8 +23,10 @@
 --
 
 -- imports
+import("core.base.option")
+import("core.project.config")
 import("core.project.project")
-import("vs200x_solution")
+import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
 
@@ -37,8 +39,22 @@ function make(outputdir, vsinfo)
     -- init solution directory
     vsinfo.solution_dir = path.join(outputdir, "vs" .. vsinfo.vstudio_version)
 
+    -- init modes
+    local modes = option.get("modes")
+    if modes then
+        vsinfo.modes = {}
+        for _, mode in ipairs(modes:split(',')) do
+            table.insert(vsinfo.modes, mode:trim())
+        end
+    else
+        vsinfo.modes = project.modes()
+    end
+    if not vsinfo.modes or #vsinfo.modes == 0 then
+        vsinfo.modes = { config.mode() }
+    end
+
     -- make solution
-    vs200x_solution.make(vsinfo)
+    vs201x_solution.make(vsinfo)
 
     -- make vsprojs
     for _, target in pairs(project.targets()) do

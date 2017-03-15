@@ -900,7 +900,6 @@ function interpreter:api_register_set_values(scope_kind, ...)
         -- update values?
         scope[name] = {}
         table.join2(scope[name], ...)
-
     end
 
     -- register implementation
