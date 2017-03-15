@@ -444,6 +444,13 @@ function os.runv(shellname, argv)
 
         -- make errors
         local errors = io.readall(log)
+        if not errors or #errors == 0 then
+            if argv ~= nil then
+                errors = string.format("runv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
+            else
+                errors = string.format("runv(%s) failed(%d)!", shellname, ok)
+            end
+        end
 
         -- remove the temporary log file
         os.rm(log)
