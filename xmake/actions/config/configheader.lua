@@ -47,7 +47,7 @@ function _make_for_target(files, target)
     file:print("")
 
     -- make version
-    local version = target:get("version")
+    local version = project.version()
     if version then
         file:print("// version")
         file:print("#define %s_VERSION \"%s\"", prefix, version)
