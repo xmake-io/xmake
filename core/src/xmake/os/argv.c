@@ -58,43 +58,48 @@ tb_int_t xm_os_argv(lua_State* lua)
 
         // parse command to the arguments
         tb_int_t            i = 1;
-        tb_int_t            s = 0;
+        tb_int_t            skip = 0;
         tb_int_t            escape = 0;
+        tb_char_t           quote = 0;
         tb_char_t           ch = 0;
         tb_char_t const*    p = args;
         while ((ch = *p))
         {
-            // enter double quote?
-            if (!s && ch == '\"') s = 2;
-            // enter single quote?
-            else if (!s && ch == '\'') s = 1;
-            // leave quote?
-            else if ((s == 2 && ch == '\"') || (s == 1 && ch == '\'')) s = 0;
-            // escape charactor?
-            else if (!escape && ch == '\\' && p[1] != '\\') escape = 1;
-            // is argument end with ' '?
-            else if (!s && tb_isspace(ch))
+            // no escape now?
+            if (!escape)
             {
-                // save this argument 
-                tb_string_ltrim(&arg);
-                if (tb_string_size(&arg))
+                // enter quote?
+                if (!quote && (ch == '\"' || ch == '\'')) { quote = ch; skip = 1; }
+                // leave quote?
+                else if (ch == quote) { quote = 0; skip = 1; }
+                // escape charactor? only escape \\, \"
+                else if (ch == '\\' && (p[1] == '\\' || p[1] == '\"')) { escape = 1; skip = 1; }
+                // is argument end with ' '?
+                else if (!quote && tb_isspace(ch))
                 {
-                    // save argument
-                    lua_pushstring(lua, tb_string_cstr(&arg));
-                    lua_rawseti(lua, -2, i++);
-                }
+                    // save this argument 
+                    tb_string_ltrim(&arg);
+                    if (tb_string_size(&arg))
+                    {
+                        // save argument
+                        lua_pushstring(lua, tb_string_cstr(&arg));
+                        lua_rawseti(lua, -2, i++);
+                    }
 
-                // clear arg
-                tb_string_clear(&arg);
+                    // clear argument
+                    tb_string_clear(&arg);
+                }
             }
 
-            // save this charactor to arg if not escape charactor: '\\'
-            if (escape == 2 || (!escape && ch != '\"' && ch != '\''))
-                tb_string_chrcat(&arg, ch);
+            // save this charactor to argument
+            if (!skip) tb_string_chrcat(&arg, ch);
 
             // step and cancel escape
             if (escape == 1) escape++;
             else if (escape == 2) escape = 0;
+
+            // clear skip
+            skip = 0;
 
             // next 
             p++;
