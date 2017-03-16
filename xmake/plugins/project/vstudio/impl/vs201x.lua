@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.platform.platform")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
@@ -53,11 +54,59 @@ function make(outputdir, vsinfo)
         vsinfo.modes = { config.mode() }
     end
 
+    -- load targets
+    local targets = {}
+    for _, mode in ipairs(vsinfo.modes) do
+        for _, arch in ipairs({"x86", "x64"}) do
+            -- reload config, project and platform
+            if mode ~= config.mode() or arch ~= config.arch() then
+                
+                -- modify config
+                config.set("mode", mode)
+                config.set("arch", arch)
+
+                -- recheck configure
+                config.check()
+
+                -- recheck project options
+                project.check()
+
+                -- reload platform
+                platform.load(config.plat())
+
+                -- reload project
+                project.load()
+
+                -- ensure to enter project directory
+                os.cd(project.directory())
+
+                -- save targets
+                for targetname, target in pairs(project.targets()) do
+
+                    -- make target with the given mode and arch
+                    targets[targetname] = targets[targetname] or {}
+                    local _target = targets[targetname]
+
+                    -- init target info
+                    _target.name = targetname
+                    _target.kind = target:get("kind")
+                    _target.scriptdir = scriptdir
+                    _target.info = _target.info or {}
+                    table.insert(_target.info, { mode = mode, arch = arch, target = target })
+
+                    -- save all sourcefiles and headerfiles
+                    _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
+                    _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+                end
+            end
+        end
+    end
+
     -- make solution
     vs201x_solution.make(vsinfo)
 
-    -- make vsprojs
-    for _, target in pairs(project.targets()) do
+    -- make .vcxproj
+    for _, target in pairs(targets) do
         vs201x_vcxproj.make(vsinfo, target)
         vs201x_vcxproj_filters.make(vsinfo, target)
     end

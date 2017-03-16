@@ -27,7 +27,7 @@ import("core.tool.compiler")
 import("vsfile")
 
 -- make header
-function _make_header(filtersfile, vsinfo, target)
+function _make_header(filtersfile, vsinfo)
     
     -- the versions
     local versions = 
@@ -45,7 +45,7 @@ function _make_header(filtersfile, vsinfo, target)
 end
 
 -- make tailer
-function _make_tailer(filtersfile, vsinfo, target)
+function _make_tailer(filtersfile, vsinfo)
     filtersfile:leave("</Project>")
 end
 
@@ -53,7 +53,7 @@ end
 function _make_filter(filepath, target, vcxprojdir)
 
     -- make filter
-    local filter = path.relative(path.absolute(path.directory(filepath)), target:scriptdir() or vcxprojdir)
+    local filter = path.relative(path.absolute(path.directory(filepath)), target.scriptdir or vcxprojdir)
 
     -- is '.'? no filter
     if filter and filter == '.' then
@@ -70,7 +70,7 @@ function _make_filters(filtersfile, vsinfo, target, vcxprojdir)
     -- add filters
     filtersfile:enter("<ItemGroup>")
         local exists = {}
-        for _, filepath in pairs(table.join(target:sourcefiles(), (target:headerfiles()))) do
+        for _, filepath in pairs(table.join(target.sourcefiles, target.headerfiles)) do
             local filter = _make_filter(filepath, target, vcxprojdir)
             while filter and filter ~= '.' do
                 if not exists[filter] then
@@ -90,7 +90,7 @@ function _make_sources(filtersfile, vsinfo, target, vcxprojdir)
     
     -- and sources
     filtersfile:enter("<ItemGroup>")
-        for _, sourcefile in ipairs(target:sourcefiles()) do
+        for _, sourcefile in ipairs(target.sourcefiles) do
             local filter = _make_filter(sourcefile, target, vcxprojdir)
             if filter then
                 filtersfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
@@ -106,7 +106,7 @@ function _make_headers(filtersfile, vsinfo, target, vcxprojdir)
     
     -- and headers
     filtersfile:enter("<ItemGroup>")
-        for _, headerfile in ipairs(target:headerfiles()) do
+        for _, headerfile in ipairs(target.headerfiles) do
             local filter = _make_filter(headerfile, target, vcxprojdir)
             if filter then
                 filtersfile:enter("<ClInclude Include=\"%s\">", path.relative(path.absolute(headerfile), vcxprojdir))
@@ -121,7 +121,7 @@ end
 function make(vsinfo, target)
 
     -- the target name
-    local targetname = target:name()
+    local targetname = target.name
 
     -- the vcxproj directory
     local vcxprojdir = path.join(vsinfo.solution_dir, targetname)
@@ -133,7 +133,7 @@ function make(vsinfo, target)
     vsfile.indentchar('  ')
 
     -- make header
-    _make_header(filtersfile, vsinfo, target)
+    _make_header(filtersfile, vsinfo)
 
     -- make filters
     _make_filters(filtersfile, vsinfo, target, vcxprojdir)
@@ -145,7 +145,7 @@ function make(vsinfo, target)
     _make_headers(filtersfile, vsinfo, target, vcxprojdir)
 
     -- make tailer
-    _make_tailer(filtersfile, vsinfo, target)
+    _make_tailer(filtersfile, vsinfo)
 
     -- exit solution file
     filtersfile:close()
