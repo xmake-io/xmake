@@ -89,7 +89,7 @@ function make(outputdir, vsinfo)
                 -- init target info
                 _target.name = targetname
                 _target.kind = target:get("kind")
-                _target.scriptdir = scriptdir
+                _target.scriptdir = target:scriptdir()
                 _target.info = _target.info or {}
                 table.insert(_target.info, { mode = mode, arch = arch, target = target })
 
