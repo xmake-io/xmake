@@ -10,10 +10,12 @@
 
 * Support vs2017
 * Support compile rust for android
+* Improve vs201x project plugin and support multi-modes compilation.
 
 ### Bugs fixed
 
 * Fix cannot find android sdk header files
+* Fix checking option bug
 
 ## v2.1.1
 
@@ -224,10 +226,12 @@
 
 * 支持vs2017编译环境
 * 支持编译android版本的rust程序
+* 增强vs201x工程生成插件，支持同时多模式、架构编译
 
 ### Bugs修复
 
 * 修复编译android程序，找不到系统头文件问题
+* 修复检测选项行为不正确问题
 
 ## v2.1.1
 
