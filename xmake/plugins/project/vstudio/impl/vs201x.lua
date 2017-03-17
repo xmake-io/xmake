@@ -58,6 +58,7 @@ function make(outputdir, vsinfo)
     local targets = {}
     for _, mode in ipairs(vsinfo.modes) do
         for _, arch in ipairs({"x86", "x64"}) do
+
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then
                 
@@ -65,39 +66,36 @@ function make(outputdir, vsinfo)
                 config.set("mode", mode)
                 config.set("arch", arch)
 
-                -- recheck configure
-                config.check()
-
                 -- recheck project options
-                project.check()
+                project.check(true)
 
                 -- reload platform
                 platform.load(config.plat())
 
                 -- reload project
                 project.load()
+            end
 
-                -- ensure to enter project directory
-                os.cd(project.directory())
+            -- ensure to enter project directory
+            os.cd(project.directory())
 
-                -- save targets
-                for targetname, target in pairs(project.targets()) do
+            -- save targets
+            for targetname, target in pairs(project.targets()) do
 
-                    -- make target with the given mode and arch
-                    targets[targetname] = targets[targetname] or {}
-                    local _target = targets[targetname]
+                -- make target with the given mode and arch
+                targets[targetname] = targets[targetname] or {}
+                local _target = targets[targetname]
 
-                    -- init target info
-                    _target.name = targetname
-                    _target.kind = target:get("kind")
-                    _target.scriptdir = scriptdir
-                    _target.info = _target.info or {}
-                    table.insert(_target.info, { mode = mode, arch = arch, target = target })
+                -- init target info
+                _target.name = targetname
+                _target.kind = target:get("kind")
+                _target.scriptdir = scriptdir
+                _target.info = _target.info or {}
+                table.insert(_target.info, { mode = mode, arch = arch, target = target })
 
-                    -- save all sourcefiles and headerfiles
-                    _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
-                    _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
-                end
+                -- save all sourcefiles and headerfiles
+                _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
+                _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
             end
         end
     end

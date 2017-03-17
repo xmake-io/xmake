@@ -445,10 +445,10 @@ function option:_check_condition()
 end
 
 -- attempt to check option 
-function option:check()
+function option:check(force)
 
     -- have been checked?
-    if self._CHECKED then
+    if self._CHECKED and not force then
         return 
     end
 
@@ -456,11 +456,16 @@ function option:check()
     local name = self:name()
 
     -- need check?
-    if config.get(name) == nil then
+    if config.get(name) == nil or force then
+
+        -- get default value, TODO: enable will be deprecated
+        local default = self:get("default")
+        if default == nil then
+            default = self:get("enable")
+        end
        
         -- enable it?
-        local enable = self:get("enable")
-        if enable ~= nil and enable then
+        if default ~= nil and (type(default) ~= "boolean" or default == true) then
 
             -- enable this option
             config.set(name, true)
@@ -468,8 +473,8 @@ function option:check()
             -- save this option to configure 
             self:save()
 
-        -- check option
-        elseif enable == nil and self:_check_condition() then
+        -- check option if the default value not exists
+        elseif default == nil and self:_check_condition() then
 
             -- enable this option
             config.set(name, true)

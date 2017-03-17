@@ -42,10 +42,10 @@ function sandbox_core_project.load()
 end
 
 -- check project options
-function sandbox_core_project.check()
+function sandbox_core_project.check(force)
 
     -- check it
-    local ok, errors = project.check()
+    local ok, errors = project.check(force)
     if not ok then
         raise(errors)
     end

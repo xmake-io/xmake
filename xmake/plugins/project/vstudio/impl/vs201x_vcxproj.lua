@@ -213,8 +213,8 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     end
 end
 
--- make ItemDefinitionGroup
-function _make_item_define_group(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
+-- make link item 
+function _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
 
     -- enter ItemDefinitionGroup 
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
@@ -256,53 +256,60 @@ function _make_item_define_group(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     vcxprojfile:leave("</ItemDefinitionGroup>")
 end
 
+-- make link items
+function _make_link_items(vcxprojfile, vsinfo, target, vcxprojdir)
+    for _, targetinfo in ipairs(target.info) do
+        _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
+    end
+end
+
 -- make header file
 function _make_header_file(vcxprojfile, includefile, vcxprojdir)
     vcxprojfile:print("<ClInclude Include=\"%s\" />", path.relative(path.absolute(includefile), vcxprojdir))
 end
 
 -- make source file
-function _make_source_file(vcxprojfile, vsinfo, targetinfo, sourcefile, objectfile, vcxprojdir)
+function _make_source_file(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
 
-    -- get target
-    local target = targetinfo.target
-
-    -- get the target key
-    local key = tostring(target)
-
-    -- make flags cache
-    _g.flags = _g.flags or {}
-
-    -- make flags
-    local flags = _g.flags[key] or _make_compflags(sourcefile, target, vcxprojdir)
-    _g.flags[key] = flags
-
-    -- add file
+    -- add source file
     vcxprojfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
-        vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", targetinfo.mode, targetinfo.arch, flags)
-        vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", targetinfo.mode, targetinfo.arch, path.relative(path.absolute(objectfile), vcxprojdir))
+        for _, info in ipairs(sourceinfo) do
 
-        -- complie as c++ if exists flag: /TP
-        if flags:find("[%-|/]TP") then
-            vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", targetinfo.mode, targetinfo.arch)
+            -- add compiler flags
+            vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", info.mode, info.arch, info.flags)
+
+            -- add object file
+            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, path.relative(path.absolute(info.objectfile), vcxprojdir))
+
+            -- complie as c++ if exists flag: /TP
+            if info.flags:find("[%-|/]TP") then
+                vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", info.mode, info.arch)
+            end
         end
-
     vcxprojfile:leave("</ClCompile>")
 end
 
 -- make source files
-function _make_source_files(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
-
-    -- get target
-    local target = targetinfo.target
+function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- enter ItemGroup
     vcxprojfile:enter("<ItemGroup>")
 
-        -- add files
-        local objectfiles = target:objectfiles()
-        for idx, sourcefile in ipairs(target:sourcefiles()) do
-            _make_source_file(vcxprojfile, vsinfo, targetinfo, sourcefile, objectfiles[idx], vcxprojdir) 
+        -- make source file infos
+        local sourceinfos = {}
+        for _, targetinfo in ipairs(target.info) do
+            local objectfiles = targetinfo.target:objectfiles()
+            for idx, sourcefile in ipairs(targetinfo.target:sourcefiles()) do
+                local objectfile    = objectfiles[idx]
+                local flags         = _make_compflags(sourcefile, targetinfo.target, vcxprojdir)
+                sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
+                table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, objectfile = objectfile, flags = flags})
+            end
+        end
+
+        -- make source files
+        for sourcefile, sourceinfo in pairs(sourceinfos) do
+            _make_source_file(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir) 
         end
 
     vcxprojfile:leave("</ItemGroup>")
@@ -311,7 +318,7 @@ function _make_source_files(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     vcxprojfile:enter("<ItemGroup>")
 
         -- add headers
-        for _, includefile in ipairs(target:headerfiles()) do
+        for _, includefile in ipairs(target.headerfiles) do
             _make_header_file(vcxprojfile, includefile, vcxprojdir)
         end
     vcxprojfile:leave("</ItemGroup>")
@@ -338,15 +345,11 @@ function make(vsinfo, target)
     -- make Configurations
     _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 
-    -- make compiler and linker options for the source files
-    for _, targetinfo in ipairs(target.info) do
+    -- make link items
+    _make_link_items(vcxprojfile, vsinfo, target, vcxprojdir)
 
-        -- make ItemDefinitionGroup
-        _make_item_define_group(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
-
-        -- make source files
-        _make_source_files(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
-    end
+    -- make source files
+    _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- make tailer
     _make_tailer(vcxprojfile, vsinfo)

@@ -336,7 +336,7 @@ function project.directory()
 end
 
 -- check the project 
-function project.check()
+function project.check(force)
 
     -- enter the project directory
     local ok, errors = os.cd(project.directory())
@@ -355,7 +355,7 @@ function project.check()
 
     -- check all options
     for _, opt in pairs(options) do
-        opt:check() 
+        opt:check(force) 
     end
 
     -- leave toolchains environment
