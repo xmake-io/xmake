@@ -32,7 +32,7 @@ platform("windows")
     set_hosts("windows")
 
     -- set archs
-    set_archs("x86", "x64", "amd64", "x86_amd64")
+    set_archs("x86", "x64")
 
     -- set environment
     set_environment("environment")
@@ -52,7 +52,7 @@ platform("windows")
         _g.formats.symbol   = {"", ".pdb"}
 
         -- init flags for dlang
-        local dc_archs = { x86 = "-m32", x64 = "-m64", amd64 = "-m64", x86_amd64 = "-m64" }
+        local dc_archs = { x86 = "-m32", x64 = "-m64" }
         _g.dcflags       = { dc_archs[arch] or "" }
         _g["dc-shflags"] = { dc_archs[arch] or "" }
         _g["dc-ldflags"] = { dc_archs[arch] or "" }
