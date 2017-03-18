@@ -91,7 +91,6 @@ Section "xmake (required)" Installer
 
   ; Write the installation path into the $PATH environment variable
   WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$INSTDIR"
-  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment"
   
 SectionEnd
 
