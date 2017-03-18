@@ -146,14 +146,21 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     ,   static = "StaticLibrary"
     }
 
-    -- the versions
-    local versions = 
+    -- the toolset versions
+    local toolset_versions = 
     {
-        vs2010 = '100'
-    ,   vs2012 = '110'
-    ,   vs2013 = '120'
-    ,   vs2015 = '140'
-    ,   vs2017 = '141'
+        vs2010 = "100"
+    ,   vs2012 = "110"
+    ,   vs2013 = "120"
+    ,   vs2015 = "140"
+    ,   vs2017 = "141"
+    }
+
+    -- the sdk version
+    local sdk_versions = 
+    {
+        vs2015 = "10.0.10240.0"
+    ,   vs2017 = "10.0.14393.0"
     }
 
     -- make ProjectConfigurations
@@ -170,6 +177,9 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:enter("<PropertyGroup Label=\"Globals\">")
         vcxprojfile:print("<ProjectGuid>{%s}</ProjectGuid>", os.uuid(targetname))
         vcxprojfile:print("<RootNamespace>%s</RootNamespace>", targetname)
+        if vsinfo.vstudio_version >= "2015" then
+            vcxprojfile:print("<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>", sdk_versions["vs" .. vsinfo.vstudio_version])
+        end
     vcxprojfile:leave("</PropertyGroup>")
 
     -- import Microsoft.Cpp.Default.props
@@ -179,7 +189,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Configuration\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target.kind]))
-            vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(versions["vs" .. vsinfo.vstudio_version]))
+            vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(toolset_versions["vs" .. vsinfo.vstudio_version]))
             vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
         vcxprojfile:leave("</PropertyGroup>")
     end

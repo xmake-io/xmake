@@ -91,7 +91,7 @@ function make(outputdir, vsinfo)
                 _target.kind = target:get("kind")
                 _target.scriptdir = target:scriptdir()
                 _target.info = _target.info or {}
-                table.insert(_target.info, { mode = mode, arch = arch, target = target })
+                table.insert(_target.info, { mode = mode, arch = ifelse(arch == "x86", "Win32", "x64"), target = target })
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
