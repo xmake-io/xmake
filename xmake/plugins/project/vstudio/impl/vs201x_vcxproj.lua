@@ -29,10 +29,14 @@ import("core.project.config")
 import("vsfile")
 
 -- make compiling flags
-function _make_compflags(sourcefile, target, vcxprojdir)
+function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
     -- make the compiling flags
-    local _, compflags = compiler.compflags(sourcefile, target)
+    local _, compflags = compiler.compflags(sourcefile, targetinfo.target)
+
+    -- switch to the given mode and arch
+    config.set("mode", targetinfo.mode)
+    config.set("arch", targetinfo.arch)
 
     -- replace -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
     local flags = {}
@@ -68,10 +72,14 @@ function _make_compflags(sourcefile, target, vcxprojdir)
 end
 
 -- make linking flags
-function _make_linkflags(target, vcxprojdir)
+function _make_linkflags(targetinfo, vcxprojdir)
+
+    -- switch to the given mode and arch
+    config.set("mode", targetinfo.mode)
+    config.set("arch", targetinfo.arch)
 
     -- make the linking flags
-    local _, linkflags = linker.linkflags(target)
+    local _, linkflags = linker.linkflags(targetinfo.target)
 
     -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}
@@ -230,12 +238,11 @@ function _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
     
     -- for linker?
-    local target = targetinfo.target
-    if target:get("kind") == "binary" then
+    if targetinfo.kind == "binary" then
         vcxprojfile:enter("<Link>")
 
             -- make AdditionalOptions
-            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", _make_linkflags(target, vcxprojdir))
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", _make_linkflags(targetinfo, vcxprojdir))
 
             -- generate debug infomation?
             local debug = false
@@ -311,7 +318,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
             local objectfiles = targetinfo.target:objectfiles()
             for idx, sourcefile in ipairs(targetinfo.target:sourcefiles()) do
                 local objectfile    = objectfiles[idx]
-                local flags         = _make_compflags(sourcefile, targetinfo.target, vcxprojdir)
+                local flags         = _make_compflags(sourcefile, targetinfo, vcxprojdir)
                 sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
                 table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, objectfile = objectfile, flags = flags})
             end
