@@ -4432,6 +4432,12 @@ os.run(compiler.compcmd("xxx.c", "xxx.o", incdepfile, target))
 print(compiler.compflags(sourcefile, target))
 ```
 
+其中第一个返回值是所有编译选项的字符串，第二个返回值是所有选项的数组列表，更加便于操作，例如：
+
+```lua
+local flagstr, flags = compiler.compcmd("xxx.c", "xxx.o")
+```
+
 ##### core.project.config
 
 用于获取工程编译时候的配置信息，也就是`xmake f|config --xxx=val` 传入的参数选项值。

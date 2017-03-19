@@ -36,13 +36,13 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
     -- switch to the given mode and arch
     config.set("mode", targetinfo.mode)
-    config.set("arch", targetinfo.arch)
+    config.set("arch", ifelse(targetinfo.arch == "Win32", "x86", "x64"))
 
-    -- replace -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
+    -- translate path for -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
     local flags = {}
     for _, flag in ipairs(compflags) do
 
-        -- replace -Idir or /Idir
+        -- -Idir or /Idir
         flag = flag:gsub("[%-|/]I(.*)", function (dir)
                         dir = dir:trim()
                         if not path.is_absolute(dir) then
@@ -51,7 +51,7 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
                         return "/I" .. dir
                     end)
 
-        -- replace -Fdsymbol.pdb or /Fdsymbol.pdb
+        -- -Fdsymbol.pdb or /Fdsymbol.pdb
         flag = flag:gsub("[%-|/]Fd(.*)", function (dir)
                         dir = dir:trim()
                         if not path.is_absolute(dir) then
@@ -64,9 +64,6 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
         table.insert(flags, flag)
     end
 
-    -- concat flags
-    flags = table.concat(flags, " "):trim()
-
     -- ok?
     return flags
 end
@@ -76,7 +73,7 @@ function _make_linkflags(targetinfo, vcxprojdir)
 
     -- switch to the given mode and arch
     config.set("mode", targetinfo.mode)
-    config.set("arch", targetinfo.arch)
+    config.set("arch", ifelse(targetinfo.arch == "Win32", "x86", "x64"))
 
     -- make the linking flags
     local _, linkflags = linker.linkflags(targetinfo.target)
@@ -107,9 +104,6 @@ function _make_linkflags(targetinfo, vcxprojdir)
         table.insert(flags, flag)
     end
     
-    -- concat flags
-    flags = table.concat(flags, " "):trim()
-
     -- ok?
     return flags
 end
@@ -231,8 +225,8 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     end
 end
 
--- make link item 
-function _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
+-- make common item 
+function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
 
     -- enter ItemDefinitionGroup 
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
@@ -241,8 +235,11 @@ function _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     if targetinfo.kind == "binary" then
         vcxprojfile:enter("<Link>")
 
+            -- make linker flags
+            local flags = table.concat(_make_linkflags(targetinfo, vcxprojdir), " "):trim()
+
             -- make AdditionalOptions
-            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", _make_linkflags(targetinfo, vcxprojdir))
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
 
             -- generate debug infomation?
             local debug = false
@@ -265,18 +262,91 @@ function _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
 
     -- for compiler?
     vcxprojfile:enter("<ClCompile>")
-        vcxprojfile:print("<Optimization>Disabled</Optimization>") -- disable optimization default
-        vcxprojfile:print("<ProgramDataBaseFileName></ProgramDataBaseFileName>") -- disable pdb file default
+
+        -- get compiler flags
+        local flags = table.concat(targetinfo.commonflags, " "):trim()
+           
+        -- make AdditionalOptions
+        vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+
+        -- make Optimization
+        if flags:find("[%-|/]Od") then
+            vcxprojfile:print("<Optimization>Disabled</Optimization>") 
+        elseif flags:find("[%-|/]Os") or flags:find("[%-|/]O1") then
+            vcxprojfile:print("<Optimization>MinSpace</Optimization>") 
+        elseif flags:find("[%-|/]O2") or flags:find("[%-|/]Ot") then
+            vcxprojfile:print("<Optimization>MaxSpeed</Optimization>") 
+        elseif flags:find("[%-|/]Ox") then
+            vcxprojfile:print("<Optimization>Full</Optimization>") 
+        end
+
+        -- make ProgramDataBaseFileName (default: empty)
+        vcxprojfile:print("<ProgramDataBaseFileName></ProgramDataBaseFileName>") 
+
+        -- complie as c++ if exists flag: /TP
+        if flags:find("[%-|/]TP") then
+            vcxprojfile:print("<CompileAs>CompileAsCpp</CompileAs>")
+        end
     vcxprojfile:leave("</ClCompile>")
 
     -- leave ItemDefinitionGroup 
     vcxprojfile:leave("</ItemDefinitionGroup>")
 end
 
--- make link items
-function _make_link_items(vcxprojfile, vsinfo, target, vcxprojdir)
+-- make common items
+function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
+
+    -- for each mode and arch
     for _, targetinfo in ipairs(target.info) do
-        _make_link_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
+
+        -- make source flags
+        local flags_stats = {}
+        local files_count = 0
+        local first_flags = nil
+        targetinfo.sourceflags = {}
+        for _, sourcefile in ipairs(targetinfo.target:sourcefiles()) do
+
+            -- make compiler flags
+            local flags = _make_compflags(sourcefile, targetinfo, vcxprojdir)
+            for _, flag in ipairs(flags) do
+                flags_stats[flag] = (flags_stats[flag] or 0) + 1
+            end
+
+            -- update files count
+            files_count = files_count + 1
+
+            -- save first flags
+            if first_flags == nil then
+                first_flags = flags
+            end
+
+            -- save source flags
+            targetinfo.sourceflags[sourcefile] = flags
+        end
+
+        -- make common flags
+        targetinfo.commonflags = {}
+        for _, flag in ipairs(first_flags) do
+            if flags_stats[flag] == files_count then
+                table.insert(targetinfo.commonflags, flag)
+            end
+        end
+
+        -- remove common flags from source flags
+        local sourceflags = {}
+        for sourcefile, flags in pairs(targetinfo.sourceflags) do
+            local otherflags = {}
+            for _, flag in ipairs(flags) do
+                if flags_stats[flag] ~= files_count then
+                    table.insert(otherflags, flag)
+                end
+            end
+            sourceflags[sourcefile] = otherflags
+        end
+        targetinfo.sourceflags = sourceflags
+
+        -- make common item
+        _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     end
 end
 
@@ -288,20 +358,41 @@ end
 -- make source file
 function _make_source_file(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
 
+    -- no AdditionalOptions?
+    local additional = false
+    local objectfile = nil
+    for _, info in ipairs(sourceinfo) do
+        if table.concat(info.flags, " "):trim() ~= "" or (objectfile and info.objectfile ~= objectfile) then
+            additional = true
+            break
+        end
+        objectfile = info.objectfile
+    end
+
     -- add source file
     vcxprojfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
-        for _, info in ipairs(sourceinfo) do
+        if additional then
+            for _, info in ipairs(sourceinfo) do
 
-            -- add compiler flags
-            vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", info.mode, info.arch, info.flags)
+                -- get source flags
+                local flags = table.concat(info.flags, " "):trim()
 
-            -- add object file
-            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, path.relative(path.absolute(info.objectfile), vcxprojdir))
+                -- make AdditionalOptions 
+                if flags ~= "" then 
+                    vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", info.mode, info.arch, flags)
+                end
 
-            -- complie as c++ if exists flag: /TP
-            if info.flags:find("[%-|/]TP") then
-                vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", info.mode, info.arch)
+                -- make ObjectFileName
+                vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, path.relative(path.absolute(info.objectfile), vcxprojdir))
+
+                -- complie as c++ if exists flag: /TP
+                if flags:find("[%-|/]TP") then
+                    vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", info.mode, info.arch)
+                end
             end
+        else
+            -- make ObjectFileName
+            vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", path.relative(path.absolute(objectfile), vcxprojdir))
         end
     vcxprojfile:leave("</ClCompile>")
 end
@@ -315,12 +406,14 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make source file infos
         local sourceinfos = {}
         for _, targetinfo in ipairs(target.info) do
-            local objectfiles = targetinfo.target:objectfiles()
-            for idx, sourcefile in ipairs(targetinfo.target:sourcefiles()) do
-                local objectfile    = objectfiles[idx]
-                local flags         = _make_compflags(sourcefile, targetinfo, vcxprojdir)
-                sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
-                table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, objectfile = objectfile, flags = flags})
+            for _, sourcebatch in pairs(targetinfo.target:sourcebatches()) do
+                local objectfiles = sourcebatch.objectfiles
+                for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local objectfile    = objectfiles[idx]
+                    local flags         = targetinfo.sourceflags[sourcefile]
+                    sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
+                    table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, objectfile = objectfile, flags = flags})
+                end
             end
         end
 
@@ -362,8 +455,8 @@ function make(vsinfo, target)
     -- make Configurations
     _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 
-    -- make link items
-    _make_link_items(vcxprojfile, vsinfo, target, vcxprojdir)
+    -- make common items
+    _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- make source files
     _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)

@@ -4426,6 +4426,12 @@ compiler.compile("xxx.c", "xxx.o")
 os.run(compiler.compcmd("xxx.c", "xxx.o", incdepfile, target))
 ```
 
+其中第一个返回值是所有编译选项的字符串，第二个返回值是所有选项的数组列表，更加便于操作，例如：
+
+```lua
+local flagstr, flags = compiler.compcmd("xxx.c", "xxx.o")
+```
+
 ###### compiler.compflags
 
 - 获取编译选项

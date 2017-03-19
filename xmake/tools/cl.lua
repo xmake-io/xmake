@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.project.config")
 import("core.project.project")
 
 -- init it
@@ -196,7 +197,7 @@ function nf_language(stdname)
 
     -- select maps
     local maps = cmaps
-    if _g.kind == "cxx" or _g.kind == "mxx" then
+    if _g.kind == "cxx" or _g.kind == "mxx" or config.get("vs") >= "2015" then
         maps = {}
     end
 
