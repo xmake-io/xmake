@@ -16,6 +16,7 @@
 
 * Fix cannot find android sdk header files
 * Fix checking option bug
+* Fix code files mode to 0644
 
 ## v2.1.1
 
@@ -232,6 +233,7 @@
 
 * 修复编译android程序，找不到系统头文件问题
 * 修复检测选项行为不正确问题
+* 修复代码文件权限到0644
 
 ## v2.1.1
 
