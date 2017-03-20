@@ -23,7 +23,6 @@
 --
 
 -- imports
-import("core.project.config")
 import("core.project.project")
 
 -- init it
@@ -137,10 +136,10 @@ function nf_warning(level)
     -- the maps
     local maps = 
     {   
-        none        = "-w"
+        none        = "-W0"
     ,   less        = "-W1"
     ,   more        = "-W3"
-    ,   all         = "-W3"
+    ,   all         = "-W3" -- = "-Wall" will enable too more warnings
     ,   error       = "-WX"
     }
 
@@ -197,7 +196,7 @@ function nf_language(stdname)
 
     -- select maps
     local maps = cmaps
-    if _g.kind == "cxx" or _g.kind == "mxx" or config.get("vs") >= "2015" then
+    if _g.kind == "cxx" or _g.kind == "mxx" then
         maps = {}
     end
 

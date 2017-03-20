@@ -270,14 +270,52 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
         vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
 
         -- make Optimization
-        if flags:find("[%-|/]Od") then
-            vcxprojfile:print("<Optimization>Disabled</Optimization>") 
-        elseif flags:find("[%-|/]Os") or flags:find("[%-|/]O1") then
+        if flags:find("[%-|/]Os") or flags:find("[%-|/]O1") then
             vcxprojfile:print("<Optimization>MinSpace</Optimization>") 
         elseif flags:find("[%-|/]O2") or flags:find("[%-|/]Ot") then
             vcxprojfile:print("<Optimization>MaxSpeed</Optimization>") 
         elseif flags:find("[%-|/]Ox") then
             vcxprojfile:print("<Optimization>Full</Optimization>") 
+        else
+            vcxprojfile:print("<Optimization>Disabled</Optimization>") 
+        end
+
+        -- make WarningLevel
+        if flags:find("[%-|/]W1") then
+            vcxprojfile:print("<WarningLevel>Level1</WarningLevel>") 
+        elseif flags:find("[%-|/]W2") then
+            vcxprojfile:print("<WarningLevel>Level2</WarningLevel>") 
+        elseif flags:find("[%-|/]W3") then
+            vcxprojfile:print("<WarningLevel>Level3</WarningLevel>") 
+        elseif flags:find("[%-|/]Wall") then
+            vcxprojfile:print("<WarningLevel>EnableAllWarnings</WarningLevel>") 
+        else
+            vcxprojfile:print("<WarningLevel>TurnOffAllWarnings</WarningLevel>") 
+        end
+        if flags:find("[%-|/]WX") then
+            vcxprojfile:print("<TreatWarningAsError>true</TreatWarningAsError>") 
+        end
+
+        -- make DebugInformationFormat
+        if flags:find("[%-|/]Zi") then
+            vcxprojfile:print("<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>")
+        elseif flags:find("[%-|/]ZI") then
+            vcxprojfile:print("<DebugInformationFormat>EditAndContinue</DebugInformationFormat>")
+        elseif flags:find("[%-|/]Z7") then
+            vcxprojfile:print("<DebugInformationFormat>OldStyle</DebugInformationFormat>")
+        else
+            vcxprojfile:print("<DebugInformationFormat>None</DebugInformationFormat>")
+        end
+
+        -- make RuntimeLibrary
+        if flags:find("[%-|/]MDd") then
+            vcxprojfile:print("<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>")
+        elseif flags:find("[%-|/]MD") then
+            vcxprojfile:print("<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>")
+        elseif flags:find("[%-|/]MTd") then
+            vcxprojfile:print("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>")
+        elseif flags:find("[%-|/]MT") then
+            vcxprojfile:print("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>")
         end
 
         -- make ProgramDataBaseFileName (default: empty)
@@ -358,41 +396,25 @@ end
 -- make source file
 function _make_source_file(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
 
-    -- no AdditionalOptions?
-    local additional = false
-    local objectfile = nil
-    for _, info in ipairs(sourceinfo) do
-        if table.concat(info.flags, " "):trim() ~= "" or (objectfile and info.objectfile ~= objectfile) then
-            additional = true
-            break
-        end
-        objectfile = info.objectfile
-    end
-
     -- add source file
     vcxprojfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
-        if additional then
-            for _, info in ipairs(sourceinfo) do
+        for _, info in ipairs(sourceinfo) do
 
-                -- get source flags
-                local flags = table.concat(info.flags, " "):trim()
+            -- get source flags
+            local flags = table.concat(info.flags, " "):trim()
 
-                -- make AdditionalOptions 
-                if flags ~= "" then 
-                    vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", info.mode, info.arch, flags)
-                end
-
-                -- make ObjectFileName
-                vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, path.relative(path.absolute(info.objectfile), vcxprojdir))
-
-                -- complie as c++ if exists flag: /TP
-                if flags:find("[%-|/]TP") then
-                    vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", info.mode, info.arch)
-                end
+            -- make AdditionalOptions 
+            if flags ~= "" then 
+                vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", info.mode, info.arch, flags)
             end
-        else
+
             -- make ObjectFileName
-            vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", path.relative(path.absolute(objectfile), vcxprojdir))
+            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, path.relative(path.absolute(info.objectfile), vcxprojdir))
+
+            -- complie as c++ if exists flag: /TP
+            if flags:find("[%-|/]TP") then
+                vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", info.mode, info.arch)
+            end
         end
     vcxprojfile:leave("</ClCompile>")
 end
