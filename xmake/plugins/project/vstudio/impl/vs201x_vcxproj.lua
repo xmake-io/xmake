@@ -393,30 +393,89 @@ function _make_header_file(vcxprojfile, includefile, vcxprojdir)
     vcxprojfile:print("<ClInclude Include=\"%s\" />", path.relative(path.absolute(includefile), vcxprojdir))
 end
 
--- make source file
-function _make_source_file(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
+-- make source file for all modes
+function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
 
-    -- add source file
+    -- get object file 
+    local objectfile = nil
+    for _, info in ipairs(sourceinfo) do
+        objectfile = info.objectfile
+        break
+    end
+
+    -- enter it
     vcxprojfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
+
+        -- make ObjectFileName
+        vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", path.relative(path.absolute(objectfile), vcxprojdir))
+
+        -- make AdditionalOptions
+        local mergeflags = {}
         for _, info in ipairs(sourceinfo) do
-
-            -- get source flags
             local flags = table.concat(info.flags, " "):trim()
-
-            -- make AdditionalOptions 
             if flags ~= "" then 
-                vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", info.mode, info.arch, flags)
-            end
-
-            -- make ObjectFileName
-            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, path.relative(path.absolute(info.objectfile), vcxprojdir))
-
-            -- complie as c++ if exists flag: /TP
-            if flags:find("[%-|/]TP") then
-                vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">CompileAsCpp</CompileAs>", info.mode, info.arch)
+                mergeflags[flags] = mergeflags[flags] or {}
+                mergeflags[flags][info.mode .. '|' .. info.arch] = true
             end
         end
+        for flags, mergeinfos in pairs(mergeflags) do
+
+            -- merge mode and arch first
+            local count = 0
+            for _, mode in ipairs(vsinfo.modes) do
+                if mergeinfos[mode .. "|Win32"] and mergeinfos[mode .. "|x64"] then
+                    mergeinfos[mode .. "|Win32"] = nil
+                    mergeinfos[mode .. "|x64"]   = nil
+                    mergeinfos[mode]             = true
+                end
+                if mergeinfos[mode] then
+                    count = count + 1
+                end
+            end
+
+            -- all modes and archs exist?
+            if count == #vsinfo.modes then
+                vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+            else
+                for cond, _ in pairs(mergeinfos) do
+                    if cond:find('|', 1, true) then
+                        -- for mode | arch
+                        vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", cond, flags)
+                    else
+                        -- only for mode
+                        vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)\'==\'%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", cond, flags)
+                    end
+                end
+            end
+        end
+
+    -- leave it
     vcxprojfile:leave("</ClCompile>")
+end
+
+-- make source file for specific modes
+function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
+
+    -- add source file
+    for _, info in ipairs(sourceinfo) do
+
+        -- enter it
+        vcxprojfile:enter("<ClCompile Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">", info.mode, info.arch, path.relative(path.absolute(sourcefile), vcxprojdir))
+
+        -- make ObjectFileName
+        vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", path.relative(path.absolute(info.objectfile), vcxprojdir))
+
+        -- get source flags
+        local flags = table.concat(info.flags, " "):trim()
+
+        -- make AdditionalOptions 
+        if flags ~= "" then 
+            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+        end
+
+        -- leave it
+        vcxprojfile:leave("</ClCompile>")
+    end
 end
 
 -- make source files
@@ -441,7 +500,11 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
 
         -- make source files
         for sourcefile, sourceinfo in pairs(sourceinfos) do
-            _make_source_file(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir) 
+            if #sourceinfo == #target.info then
+                _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir) 
+            else
+                _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir) 
+            end
         end
 
     vcxprojfile:leave("</ItemGroup>")
