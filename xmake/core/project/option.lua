@@ -455,25 +455,25 @@ function option:check(force)
     -- the option name
     local name = self:name()
 
-    -- need check?
-    if config.get(name) == nil or force then
+    -- get default value, TODO: enable will be deprecated
+    local default = self:get("default")
+    if default == nil then
+        default = self:get("enable")
+    end
 
-        -- get default value, TODO: enable will be deprecated
-        local default = self:get("default")
-        if default == nil then
-            default = self:get("enable")
-        end
-       
-        -- enable it?
-        if default ~= nil and (type(default) ~= "boolean" or default == true) then
+    -- need check? (only force to check the automatical option without the default value)
+    if config.get(name) == nil or (default == nil and force) then
 
-            -- enable this option
-            config.set(name, true)
+        -- use it directly if the default value exists
+        if default ~= nil then
+
+            -- save the default value
+            config.set(name, default)
 
             -- save this option to configure 
             self:save()
 
-        -- check option if the default value not exists
+        -- check option as boolean switch automatically if the default value not exists
         elseif default == nil and self:_check_condition() then
 
             -- enable this option

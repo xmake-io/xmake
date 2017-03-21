@@ -61,6 +61,18 @@ function _write(self, ...)
     self:_write(...)
 end
 
+-- writef file
+function _writef(self, ...)
+
+    -- print indent
+    for i = 1, self._indent do
+        self:_write(_g.indentchar)
+    end
+
+    -- writef it
+    self:_writef(...)
+end
+
 -- enter and print file
 function _enter(self, ...)
 
@@ -95,9 +107,11 @@ function open(filepath, mode)
     file._print     = file.print
     file._printf    = file.printf
     file._write     = file.write
+    file._writef    = file.writef
     file.print      = _print
     file.printf     = _printf
     file.write      = _write
+    file.writef     = _writef
 
     -- add enter and leave interfaces
     file.enter  = _enter 

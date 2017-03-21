@@ -225,6 +225,89 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     end
 end
 
+-- make source options
+function _make_source_options(vcxprojfile, flags, condition)
+
+    -- exists condition?
+    condition = condition or ""
+
+    -- get flags string
+    local flagstr = table.concat(flags, " ")
+
+    -- make Optimization
+    if flagstr:find("[%-|/]Os") or flagstr:find("[%-|/]O1") then
+        vcxprojfile:print("<Optimization%s>MinSpace</Optimization>", condition) 
+    elseif flagstr:find("[%-|/]O2") or flagstr:find("[%-|/]Ot") then
+        vcxprojfile:print("<Optimization%s>MaxSpeed</Optimization>", condition) 
+    elseif flagstr:find("[%-|/]Ox") then
+        vcxprojfile:print("<Optimization%s>Full</Optimization>", condition) 
+    else
+        vcxprojfile:print("<Optimization%s>Disabled</Optimization>", condition) 
+    end
+
+    -- make WarningLevel
+    if flagstr:find("[%-|/]W1") then
+        vcxprojfile:print("<WarningLevel%s>Level1</WarningLevel>", condition) 
+    elseif flagstr:find("[%-|/]W2") then
+        vcxprojfile:print("<WarningLevel%s>Level2</WarningLevel>", condition) 
+    elseif flagstr:find("[%-|/]W3") then
+        vcxprojfile:print("<WarningLevel%s>Level3</WarningLevel>", condition) 
+    elseif flagstr:find("[%-|/]Wall") then
+        vcxprojfile:print("<WarningLevel%s>EnableAllWarnings</WarningLevel>", condition) 
+    else
+        vcxprojfile:print("<WarningLevel%s>TurnOffAllWarnings</WarningLevel>", condition) 
+    end
+    if flagstr:find("[%-|/]WX") then
+        vcxprojfile:print("<TreatWarningAsError%s>true</TreatWarningAsError>", condition) 
+    end
+
+    -- make DebugInformationFormat
+    if flagstr:find("[%-|/]Zi") then
+        vcxprojfile:print("<DebugInformationFormat%s>ProgramDatabase</DebugInformationFormat>", condition)
+    elseif flagstr:find("[%-|/]ZI") then
+        vcxprojfile:print("<DebugInformationFormat%s>EditAndContinue</DebugInformationFormat>", condition)
+    elseif flagstr:find("[%-|/]Z7") then
+        vcxprojfile:print("<DebugInformationFormat%s>OldStyle</DebugInformationFormat>", condition)
+    else
+        vcxprojfile:print("<DebugInformationFormat%s>None</DebugInformationFormat>", condition)
+    end
+
+    -- make RuntimeLibrary
+    if flagstr:find("[%-|/]MDd") then
+        vcxprojfile:print("<RuntimeLibrary%s>MultiThreadedDebugDLL</RuntimeLibrary>", condition)
+    elseif flagstr:find("[%-|/]MD") then
+        vcxprojfile:print("<RuntimeLibrary%s>MultiThreadedDLL</RuntimeLibrary>", condition)
+    elseif flagstr:find("[%-|/]MTd") then
+        vcxprojfile:print("<RuntimeLibrary%s>MultiThreadedDebug</RuntimeLibrary>", condition)
+    elseif flagstr:find("[%-|/]MT") then
+        vcxprojfile:print("<RuntimeLibrary%s>MultiThreaded</RuntimeLibrary>", condition)
+    end
+
+    -- complie as c++ if exists flag: /TP
+    if flagstr:find("[%-|/]TP") then
+        vcxprojfile:print("<CompileAs%s>CompileAsCpp</CompileAs>", condition)
+    end
+
+    -- make AdditionalOptions
+    local additional_flags = {}
+    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP"}
+    for _, flag in ipairs(flags) do
+        local excluded = false
+        for _, exclude in ipairs(excludes) do
+            if flag:find("[%-|/]" .. exclude) then
+                excluded = true
+                break
+            end
+        end
+        if not excluded then
+            table.insert(additional_flags, flag)
+        end
+    end
+    if #additional_flags > 0 then
+        vcxprojfile:print("<AdditionalOptions%s>%s %%(AdditionalOptions)</AdditionalOptions>", condition, table.concat(additional_flags, " "):trim())
+    end
+end
+
 -- make common item 
 function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
 
@@ -263,68 +346,12 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     -- for compiler?
     vcxprojfile:enter("<ClCompile>")
 
-        -- get compiler flags
-        local flags = table.concat(targetinfo.commonflags, " "):trim()
-           
-        -- make AdditionalOptions
-        vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
-
-        -- make Optimization
-        if flags:find("[%-|/]Os") or flags:find("[%-|/]O1") then
-            vcxprojfile:print("<Optimization>MinSpace</Optimization>") 
-        elseif flags:find("[%-|/]O2") or flags:find("[%-|/]Ot") then
-            vcxprojfile:print("<Optimization>MaxSpeed</Optimization>") 
-        elseif flags:find("[%-|/]Ox") then
-            vcxprojfile:print("<Optimization>Full</Optimization>") 
-        else
-            vcxprojfile:print("<Optimization>Disabled</Optimization>") 
-        end
-
-        -- make WarningLevel
-        if flags:find("[%-|/]W1") then
-            vcxprojfile:print("<WarningLevel>Level1</WarningLevel>") 
-        elseif flags:find("[%-|/]W2") then
-            vcxprojfile:print("<WarningLevel>Level2</WarningLevel>") 
-        elseif flags:find("[%-|/]W3") then
-            vcxprojfile:print("<WarningLevel>Level3</WarningLevel>") 
-        elseif flags:find("[%-|/]Wall") then
-            vcxprojfile:print("<WarningLevel>EnableAllWarnings</WarningLevel>") 
-        else
-            vcxprojfile:print("<WarningLevel>TurnOffAllWarnings</WarningLevel>") 
-        end
-        if flags:find("[%-|/]WX") then
-            vcxprojfile:print("<TreatWarningAsError>true</TreatWarningAsError>") 
-        end
-
-        -- make DebugInformationFormat
-        if flags:find("[%-|/]Zi") then
-            vcxprojfile:print("<DebugInformationFormat>ProgramDatabase</DebugInformationFormat>")
-        elseif flags:find("[%-|/]ZI") then
-            vcxprojfile:print("<DebugInformationFormat>EditAndContinue</DebugInformationFormat>")
-        elseif flags:find("[%-|/]Z7") then
-            vcxprojfile:print("<DebugInformationFormat>OldStyle</DebugInformationFormat>")
-        else
-            vcxprojfile:print("<DebugInformationFormat>None</DebugInformationFormat>")
-        end
-
-        -- make RuntimeLibrary
-        if flags:find("[%-|/]MDd") then
-            vcxprojfile:print("<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>")
-        elseif flags:find("[%-|/]MD") then
-            vcxprojfile:print("<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>")
-        elseif flags:find("[%-|/]MTd") then
-            vcxprojfile:print("<RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>")
-        elseif flags:find("[%-|/]MT") then
-            vcxprojfile:print("<RuntimeLibrary>MultiThreaded</RuntimeLibrary>")
-        end
+        -- make source options
+        _make_source_options(vcxprojfile, targetinfo.commonflags)
 
         -- make ProgramDataBaseFileName (default: empty)
         vcxprojfile:print("<ProgramDataBaseFileName></ProgramDataBaseFileName>") 
 
-        -- complie as c++ if exists flag: /TP
-        if flags:find("[%-|/]TP") then
-            vcxprojfile:print("<CompileAs>CompileAsCpp</CompileAs>")
-        end
     vcxprojfile:leave("</ClCompile>")
 
     -- leave ItemDefinitionGroup 
@@ -342,24 +369,28 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         local files_count = 0
         local first_flags = nil
         targetinfo.sourceflags = {}
-        for _, sourcefile in ipairs(targetinfo.target:sourcefiles()) do
+        for sourcekind, sourcebatch in pairs(targetinfo.target:sourcebatches()) do
+            if sourcekind == "cc" or sourcekind == "cxx" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
-            -- make compiler flags
-            local flags = _make_compflags(sourcefile, targetinfo, vcxprojdir)
-            for _, flag in ipairs(flags) do
-                flags_stats[flag] = (flags_stats[flag] or 0) + 1
+                    -- make compiler flags
+                    local flags = _make_compflags(sourcefile, targetinfo, vcxprojdir)
+                    for _, flag in ipairs(flags) do
+                        flags_stats[flag] = (flags_stats[flag] or 0) + 1
+                    end
+
+                    -- update files count
+                    files_count = files_count + 1
+
+                    -- save first flags
+                    if first_flags == nil then
+                        first_flags = flags
+                    end
+
+                    -- save source flags
+                    targetinfo.sourceflags[sourcefile] = flags
+                end
             end
-
-            -- update files count
-            files_count = files_count + 1
-
-            -- save first flags
-            if first_flags == nil then
-                first_flags = flags
-            end
-
-            -- save source flags
-            targetinfo.sourceflags[sourcefile] = flags
         end
 
         -- make common flags
@@ -487,13 +518,15 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make source file infos
         local sourceinfos = {}
         for _, targetinfo in ipairs(target.info) do
-            for _, sourcebatch in pairs(targetinfo.target:sourcebatches()) do
-                local objectfiles = sourcebatch.objectfiles
-                for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    local objectfile    = objectfiles[idx]
-                    local flags         = targetinfo.sourceflags[sourcefile]
-                    sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
-                    table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, objectfile = objectfile, flags = flags})
+            for sourcekind, sourcebatch in pairs(targetinfo.target:sourcebatches()) do
+                if sourcekind == "cc" or sourcekind == "cxx" then
+                    local objectfiles = sourcebatch.objectfiles
+                    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        local objectfile    = objectfiles[idx]
+                        local flags         = targetinfo.sourceflags[sourcefile]
+                        sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
+                        table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, objectfile = objectfile, flags = flags})
+                    end
                 end
             end
         end
