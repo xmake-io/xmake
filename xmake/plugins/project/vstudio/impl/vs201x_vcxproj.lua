@@ -315,7 +315,8 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
     
     -- for linker?
-    if targetinfo.kind == "binary" then
+    local target = targetinfo.target
+    if target:targetkind() == "binary" then
         vcxprojfile:enter("<Link>")
 
             -- make linker flags
