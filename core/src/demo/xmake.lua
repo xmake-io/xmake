@@ -7,6 +7,9 @@ target("demo")
     -- make as a binary 
     set_kind("binary")
 
+    -- set basename of target file
+    set_basename("xmake")
+
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
 

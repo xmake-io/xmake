@@ -27,9 +27,41 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
+import("core.tool.compiler")
+import("core.tool.linker")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
+
+-- make target info
+function _make_targetinfo(mode, arch, target)
+
+    -- init target info
+    local targetinfo = { mode = mode, arch = ifelse(arch == "x86", "Win32", "x64") }
+
+    -- save symbols
+    targetinfo.symbols = target:get("symbols")
+
+    -- save target kind
+    targetinfo.targetkind = target:targetkind()
+
+    -- save sourcebatches
+    targetinfo.sourcebatches = target:sourcebatches()
+
+    -- save compiler flags
+    targetinfo.compflags = {}
+    for _, sourcefile in ipairs(target:sourcefiles()) do
+        local _, compflags = compiler.compflags(sourcefile, target)
+        targetinfo.compflags[sourcefile] = compflags
+    end
+
+    -- save linker flags
+    local _, linkflags = linker.linkflags(target)
+    targetinfo.linkflags = linkflags
+
+    -- ok
+    return targetinfo
+end
 
 -- make vstudio project
 function make(outputdir, vsinfo)
@@ -91,7 +123,7 @@ function make(outputdir, vsinfo)
                 _target.kind = target:get("kind")
                 _target.scriptdir = target:scriptdir()
                 _target.info = _target.info or {}
-                table.insert(_target.info, { mode = mode, arch = ifelse(arch == "x86", "Win32", "x64"), target = target })
+                table.insert(_target.info, _make_targetinfo(mode, arch, target))
 
                 -- save all sourcefiles and headerfiles
                 _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

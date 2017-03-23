@@ -50,6 +50,21 @@ function target.filename(targetname, targetkind, targetformat)
     return format[1] .. targetname .. format[2]
 end
 
+-- new a target instance
+function target.new(name, info)
+
+    -- init a target instance
+    local instance = table.inherit(target)
+    assert(instance)
+
+    -- save name and info
+    instance._NAME = name
+    instance._INFO = info
+
+    -- ok?
+    return instance
+end
+
 -- get the target info
 function target:get(infoname)
 
@@ -65,6 +80,13 @@ function target:name()
 
     -- get it
     return self._NAME
+end
+
+-- get the base name of target file
+function target:basename()
+
+    -- get it
+    return self:get("basename")
 end
 
 -- get the target linker
@@ -105,8 +127,13 @@ end
 -- get the options 
 function target:options()
 
-    -- the options
-    local options = {}
+    -- attempt to get it from cache first
+    if self._OPTIONS then
+        return self._OPTIONS
+    end
+
+    -- load options 
+    self._OPTIONS = {}
     for _, name in ipairs(table.wrap(self:get("options"))) do
 
         -- get option if be enabled
@@ -115,12 +142,12 @@ function target:options()
         if nil ~= opt then
 
             -- insert it and must ensure the order for linking
-            table.insert(options, opt)
+            table.insert(self._OPTIONS, opt)
         end
     end
 
-    -- ok?
-    return options
+    -- get it 
+    return self._OPTIONS
 end
 
 -- get the object file directory
@@ -162,7 +189,7 @@ function target:targetfile()
     local targetkind = self:targetkind()
 
     -- make the target file name and attempt to use the format of linker first
-    local filename = target.filename(self:name(), targetkind, self:linker():format(targetkind))
+    local filename = target.filename(self:basename() or self:name(), targetkind, self:linker():format(targetkind))
     assert(filename)
 
     -- make the target file path
@@ -180,7 +207,7 @@ function target:symbolfile()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
-    local filename = target.filename(self:name(), "symbol")
+    local filename = target.filename(self:basename() or self:name(), "symbol")
     assert(filename)
 
     -- make the symbol file path

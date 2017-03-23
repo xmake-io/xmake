@@ -194,6 +194,7 @@ function project._interpreter()
         ,   "target.set_strip"
         ,   "target.set_options"
         ,   "target.set_symbols"
+        ,   "target.set_basename"
         ,   "target.set_warnings"
         ,   "target.set_optimize"
         ,   "target.set_languages"
@@ -421,17 +422,7 @@ function project.load()
     -- make targets
     local targets = {}
     for targetname, targetinfo in pairs(results) do
-        
-        -- init a target instance
-        local instance = table.inherit(target)
-        assert(instance)
-
-        -- save name and info
-        instance._NAME = targetname
-        instance._INFO = targetinfo
-
-        -- save it
-        targets[targetname] = instance
+        targets[targetname] = target.new(targetname, targetinfo)
     end
 
     -- save targets

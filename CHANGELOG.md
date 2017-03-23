@@ -5,6 +5,7 @@
 ### New features
 
 * Add aur package script and support to install xmake from yaourt
+* Add `set_basename` api for target
 
 ### Changes
 
@@ -16,7 +17,7 @@
 
 * Fix cannot find android sdk header files
 * Fix checking option bug
-* Fix code files mode to 0644
+* [#57](https://github.com/tboox/xmake/issues/57): Fix code files mode to 0644
 
 ## v2.1.1
 
@@ -222,6 +223,7 @@
 ### 新特性
 
 * 添加aur打包脚本，并支持用`yaourt`包管理器进行安装。
+* 添加`set_basename`接口，便于定制化修改生成后的目标文件名
 
 ### 改进
 
@@ -233,7 +235,7 @@
 
 * 修复编译android程序，找不到系统头文件问题
 * 修复检测选项行为不正确问题
-* 修复代码文件权限到0644
+* [#57](https://github.com/tboox/xmake/issues/57): 修复代码文件权限到0644
 
 ## v2.1.1
 

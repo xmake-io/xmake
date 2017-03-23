@@ -23,24 +23,15 @@
 --
 
 -- imports
-import("core.tool.linker")
-import("core.tool.compiler")
 import("core.project.config")
 import("vsfile")
 
 -- make compiling flags
 function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
-    -- make the compiling flags
-    local _, compflags = compiler.compflags(sourcefile, targetinfo.target)
-
-    -- switch to the given mode and arch
-    config.set("mode", targetinfo.mode)
-    config.set("arch", ifelse(targetinfo.arch == "Win32", "x86", "x64"))
-
     -- translate path for -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
     local flags = {}
-    for _, flag in ipairs(compflags) do
+    for _, flag in ipairs(targetinfo.compflags[sourcefile]) do
 
         -- -Idir or /Idir
         flag = flag:gsub("[%-|/]I(.*)", function (dir)
@@ -71,16 +62,9 @@ end
 -- make linking flags
 function _make_linkflags(targetinfo, vcxprojdir)
 
-    -- switch to the given mode and arch
-    config.set("mode", targetinfo.mode)
-    config.set("arch", ifelse(targetinfo.arch == "Win32", "x86", "x64"))
-
-    -- make the linking flags
-    local _, linkflags = linker.linkflags(targetinfo.target)
-
     -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}
-    for _, flag in ipairs(linkflags) do
+    for _, flag in ipairs(targetinfo.linkflags) do
 
         -- replace -libpath:dir or /libpath:dir
         flag = flag:gsub("[%-|/]libpath:(.*)", function (dir)
@@ -315,8 +299,7 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
     
     -- for linker?
-    local target = targetinfo.target
-    if target:targetkind() == "binary" then
+    if targetinfo.targetkind == "binary" then
         vcxprojfile:enter("<Link>")
 
             -- make linker flags
@@ -327,7 +310,7 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
 
             -- generate debug infomation?
             local debug = false
-            for _, symbol in ipairs(target:get("symbols")) do
+            for _, symbol in ipairs(targetinfo.symbols) do
                 if symbol == "debug" then
                     debug = true
                     break
@@ -370,7 +353,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         local files_count = 0
         local first_flags = nil
         targetinfo.sourceflags = {}
-        for sourcekind, sourcebatch in pairs(targetinfo.target:sourcebatches()) do
+        for sourcekind, sourcebatch in pairs(targetinfo.sourcebatches) do
             if sourcekind == "cc" or sourcekind == "cxx" then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
@@ -519,7 +502,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make source file infos
         local sourceinfos = {}
         for _, targetinfo in ipairs(target.info) do
-            for sourcekind, sourcebatch in pairs(targetinfo.target:sourcebatches()) do
+            for sourcekind, sourcebatch in pairs(targetinfo.sourcebatches) do
                 if sourcekind == "cc" or sourcekind == "cxx" then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
