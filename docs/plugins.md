@@ -370,6 +370,30 @@ $ xmake project -k makefile
 $ xmake project -k [vs2008|vs2013|vs2015|..]
 ```
 
+v2.1.2 or later, it supports multi-mode and multi-architecture generation for vs201x project.
+
+For example:
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+```
+
+It will generate four project configurations: `debug|x86`, `debug|x64`, `release|x86`, `release|x64`.
+
+Or you can set modes to `xmake.lua`:
+
+```lua
+set_modes("debug", "release")
+```
+
+Then, we run the following command:
+
+```bash
+$ xmake project -k vs2017
+```
+
+The effect is same.
+
 #### Generate Doxygen Document
 
 Please ensure that the doxygen tool has been installed first.

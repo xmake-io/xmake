@@ -215,6 +215,7 @@ The global interface affects the whole project description scope and all sub-pro
 
 | Interfaces                            | Description                   | Version  |
 | ------------------------------------- | ----------------------------- | -------- |
+| [set_modes](#set_modes)               | Set project compilation modes | >= 2.1.2 |
 | [set_project](#set_project)           | Set project name              | >= 2.0.1 |
 | [set_version](#set_version)           | Set project version           | >= 2.0.1 |
 | [set_xmakever](#set_xmakever)         | Set minimal xmake version     | >= 2.1.1 |
@@ -222,6 +223,32 @@ The global interface affects the whole project description scope and all sub-pro
 | [add_subfiles](#add_subfiles)         | Add sub-project files         | >= 1.0.1 |
 | [add_plugindirs](#add_plugindirs)     | Add plugin directories        | >= 2.0.1 |
 | [add_packagedirs](#add_packagedirs)   | Add package directories       | >= 2.0.1 |
+
+##### set_modes
+
+###### Set project compilation modes
+
+This is an optional api, just to make it easy for the plugin to get mode configuration information now.
+
+```lua
+set_modes("debug", "release")
+```
+
+If you set this configuration, you need not set them manually when generating vs201x project.
+
+```bash
+$ xmake project -k vs2017
+```
+
+Otherwise, you need to run:
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+```
+
+<p class="tip">
+If you do not set this configuration, [is_mode](#is_mode) can also be used normally.
+</p>
 
 ##### set_project
 
@@ -410,6 +437,7 @@ target("test2")
 | [set_strip](#targetset_strip)               | 设置是否strip信息                    | >= 1.0.1 |
 | [set_options](#targetset_options)           | 设置关联选项                         | >= 1.0.1 |
 | [set_symbols](#targetset_symbols)           | 设置符号信息                         | >= 1.0.1 |
+| [set_basename](#targetset_basename)         | 设置目标文件名                       | >= 2.1.2 |
 | [set_warnings](#targetset_warnings)         | 设置警告级别                         | >= 1.0.1 |
 | [set_optimize](#targetset_optimize)         | 设置优化级别                         | >= 1.0.1 |
 | [set_languages](#targetset_languages)       | 设置代码语言标准                     | >= 1.0.1 |
@@ -629,6 +657,38 @@ set_symbols("debug", "hidden")
 ```
 
 如果没有调用这个api，默认是禁用调试符号的。。
+
+##### target:set_basename
+
+###### 设置目标文件名
+
+默认情况下，生成的目标文件名基于`target("name")`中配置的值，例如：
+
+```lua
+-- 目标文件名为：libxxx.a
+target("xxx")
+    set_kind("static")
+
+-- 目标文件名为：libxxx2.so
+target("xxx2")
+    set_kind("shared")
+```
+
+默认的命名方式，基本上可以满足大部分情况下的需求，但是如果有时候想要更加定制化目标文件名
+
+例如，按编译模式和架构区分目标名，这个时候可以使用这个接口，来设置：
+
+```lua
+target("xxx")
+    set_kind("static")
+    set_basename("xxx_$(mode)_$(arch)")
+```
+
+如果这个时候，编译配置为：`xmake f -m debug -a armv7`，那么生成的文件名为：`libxxx_debug_armv7.a`
+
+如果还想进一步定制目标文件的目录名，可参考：[set_targetdir](#targetset_targetdir)。
+
+或者通过编写自定义脚本，实现更高级的逻辑，具体见：[after_build](#targetafter_build)和[os.mv](#os-mv)。
 
 ##### target:set_warnings
 

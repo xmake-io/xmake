@@ -393,6 +393,23 @@ $ xmake project -k makefile
 $ xmake project -k [vs2008|vs2013|vs2015|..]
 ```
 
+v2.1.2以上版本，增强了vs201x版本工程的生成，支持多模式+多架构生成，生成的时候只需要指定：
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+```
+
+生成后的工程文件，同时支持`debug|x86`, `debug|x64`, `release|x86`, `release|x64`四种配置模式。
+
+如果不想每次生成的时候，指定模式，可以把模式配置加到`xmake.lua`的中，例如：
+
+```lua
+-- 配置当前的工程，支持哪些编译模式
+set_modes("debug", "release")
+```
+
+具体`set_modes`的使用，可以参考对应的接口手册文档。
+
 #### 生成doxygen文档
 
 请先确保本机已安装`doxygen`工具，然后在工程目录下运行：

@@ -225,6 +225,7 @@ end
 
 | 接口                                  | 描述                          | 支持版本 |
 | ------------------------------------- | ----------------------------- | -------- |
+| [set_modes](#set_modes)               | 设置支持的编译模式            | >= 2.1.2 |
 | [set_project](#set_project)           | 设置工程名                    | >= 2.0.1 |
 | [set_version](#set_version)           | 设置工程版本                  | >= 2.0.1 |
 | [set_xmakever](#set_xmakever)         | 设置最小xmake版本             | >= 2.1.1 |
@@ -232,6 +233,30 @@ end
 | [add_subfiles](#add_subfiles)         | 添加子工程文件                | >= 1.0.1 |
 | [add_plugindirs](#add_plugindirs)     | 添加插件目录                  | >= 2.0.1 | 
 | [add_packagedirs](#add_packagedirs)   | 添加包目录                    | >= 2.0.1 |
+
+##### set_modes
+
+###### 设置支持的编译模式
+
+这个是可选接口，一般情况下不需要设置，目前仅用于对工程增加更加细致的描述信息，方便vs工程的多模式生成，以及其他xmake插件中获取模式信息。
+
+例如：
+
+```lua
+set_modes("debug", "release")
+```
+
+如果设置了这个，xmake就知道当前工程支持哪些编译模式，这样生成vs工程文件的时候，只需要：
+
+```bash
+$ xmake project -k vs2017
+```
+
+不再需要额外手动指定需要的编译模式了，此外其他一些想要获取工程信息的插件，也许也会需要这些设置信息。
+
+<p class="tip">
+当然，对于[is_mode](#is_mode)接口，`set_modes`不是必须的，就算不设置，也是可以通过`is_mode`正常判断当前的编译模式。
+</p>
 
 ##### set_project
 
@@ -414,6 +439,7 @@ target("test2")
 | [set_strip](#targetset_strip)               | 设置是否strip信息                    | >= 1.0.1 |
 | [set_options](#targetset_options)           | 设置关联选项                         | >= 1.0.1 |
 | [set_symbols](#targetset_symbols)           | 设置符号信息                         | >= 1.0.1 |
+| [set_basename](#targetset_basename)         | 设置目标文件名                       | >= 2.1.2 |
 | [set_warnings](#targetset_warnings)         | 设置警告级别                         | >= 1.0.1 |
 | [set_optimize](#targetset_optimize)         | 设置优化级别                         | >= 1.0.1 |
 | [set_languages](#targetset_languages)       | 设置代码语言标准                     | >= 1.0.1 |
@@ -633,6 +659,38 @@ set_symbols("debug", "hidden")
 ```
 
 如果没有调用这个api，默认是禁用调试符号的。。
+
+##### target:set_basename
+
+###### 设置目标文件名
+
+默认情况下，生成的目标文件名基于`target("name")`中配置的值，例如：
+
+```lua
+-- 目标文件名为：libxxx.a
+target("xxx")
+    set_kind("static")
+
+-- 目标文件名为：libxxx2.so
+target("xxx2")
+    set_kind("shared")
+```
+
+默认的命名方式，基本上可以满足大部分情况下的需求，但是如果有时候想要更加定制化目标文件名
+
+例如，按编译模式和架构区分目标名，这个时候可以使用这个接口，来设置：
+
+```lua
+target("xxx")
+    set_kind("static")
+    set_basename("xxx_$(mode)_$(arch)")
+```
+
+如果这个时候，编译配置为：`xmake f -m debug -a armv7`，那么生成的文件名为：`libxxx_debug_armv7.a`
+
+如果还想进一步定制目标文件的目录名，可参考：[set_targetdir](#targetset_targetdir)。
+
+或者通过编写自定义脚本，实现更高级的逻辑，具体见：[after_build](#targetafter_build)和[os.mv](#os-mv)。
 
 ##### target:set_warnings
 
