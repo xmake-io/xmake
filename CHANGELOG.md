@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.2
+
 ### New features
 
 * Add aur package script and support to install xmake from yaourt
@@ -219,6 +221,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.2
 
 ### 新特性
 
