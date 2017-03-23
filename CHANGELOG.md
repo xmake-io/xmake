@@ -5,7 +5,7 @@
 ### New features
 
 * Add aur package script and support to install xmake from yaourt
-* Add `set_basename` api for target
+* Add [set_basename](#http://xmake.io/#/manual?id=targetset_basename) api for target
 
 ### Changes
 
@@ -223,7 +223,7 @@
 ### 新特性
 
 * 添加aur打包脚本，并支持用`yaourt`包管理器进行安装。
-* 添加`set_basename`接口，便于定制化修改生成后的目标文件名
+* 添加[set_basename](#http://xmake.io/#/zh/manual?id=targetset_basename)接口，便于定制化修改生成后的目标文件名
 
 ### 改进
 
