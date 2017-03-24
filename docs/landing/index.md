@@ -40,7 +40,7 @@ $ xmake run -d console
 
 ## Support platforms
 
-* Windows (x86, x64, amd64, x86_amd64)
+* Windows (x86, x64)
 * Macosx (i386, x86_64)
 * Linux (i386, x86_64, cross-toolchains ...)
 * Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
@@ -68,7 +68,7 @@ $ xmake run -d console
 
 ## Examples
 
-[![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](https://github.com/tboox/xmake)
+[![usage_demo](http://tboox.org/static/img/xmake/build_demo.gif)](https://github.com/tboox/xmake)
 
 ## Contacts
 

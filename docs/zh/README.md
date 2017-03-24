@@ -59,7 +59,7 @@ $ sudo ./install
 
 ## 快速开始
 
-![UsageDemo](http://tboox.org/static/img/xmake/usage_demo.gif)
+![UsageDemo](http://tboox.org/static/img/xmake/build_demo.gif)
 
 #### 创建工程
 

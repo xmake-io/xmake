@@ -52,7 +52,7 @@ $ sudo ./install
 
 ## Quick Start
 
-![UsageDemo](http://tboox.org/static/img/xmake/usage_demo.gif)
+![UsageDemo](http://tboox.org/static/img/xmake/build_demo.gif)
 
 #### Create Project
 

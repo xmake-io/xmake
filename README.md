@@ -80,7 +80,7 @@ $ xmake run -d console
 
 ## Examples
 
-[![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io)
+[![usage_demo](http://tboox.org/static/img/xmake/build_demo.gif)](http://www.xmake.io)
 
 Create a c++ console project:
 

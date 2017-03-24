@@ -86,7 +86,7 @@ $ xmake run -d console
 
 ## 简单例子
 
-[![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io/cn)
+[![usage_demo](http://tboox.org/static/img/xmake/build_demo.gif)](http://www.xmake.io/cn)
 
 创建一个c++ console项目：
 
