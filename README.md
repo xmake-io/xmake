@@ -15,69 +15,70 @@ If you want to known more, please refer to:
 * [Github](https://github.com/waruqi/xmake)
 * [HomePage](http://www.xmake.io)
 
-#### Features
+## Simple description
 
-- Create projects and supports many project templates
-- Support c/c++, objc/c++, swift and assembly language
-- Automatically probe the host environment and configure project 
-- Provide some built-in actions (config, build, package, clean, install, uninstall and run)
-- Provide some built-in plugins (doxygen, macro, project) 
-- Provide some built-in macros (batch packaging)
-- Describe the project file using lua script, more flexible and simple
-- Custom packages, platforms, plugins, templates, tasks, macros, options and actions
-- Do not generate makefile and build project directly
-- Support multitasking with argument: -j 
-- Check includes dependence automatically
-- Run and debug the target program
-- Generate IDE project file
+```lua
+target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
 
-#### Actions
+## Build project
 
-- config: Configure project before building. 
-- global: Configure the global options for xmake.
-- build: Build project.
-- clean: Remove all binary and temporary files.
-- create: Create a new project using template.
-- package: Package the given target
-- install: Install the project binary files.
-- uninstall: Uninstall the project binary files.
-- run: Run the project target.
+```bash
+$ xmake
+```
 
-#### Plugins
+## Run target
 
-- The doxygen plugin: Make doxygen document from source codes
-- The macro plugin: Record and playback commands 
-- The hello plugin: A simple plugin demo to show 'hello xmake!'
-- The project plugin: Create the project file for IDE (.e.g makefile, vs2002 - vs2017)
+```bash
+$ xmake run console
+```
 
-#### Languages
+## Debug target
 
-- C/C++
-- Objc/Objc++
-- Swift
-- Assembly
-- Golang
-- Rust
-- Dlang
+```bash
+$ xmake run -d console
+```
 
-#### Platforms
+## Support features
 
-- Windows (x86, x64, amd64, x86_amd64)
-- Macosx (i386, x86_64)
-- Linux (i386, x86_64, cross-toolchains ...)
-- Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
-- iPhoneos (armv7, armv7s, arm64, i386, x86_64)
-- Watchos (armv7k, i386)
-- Mingw (i386, x86_64)
+* Tasks
+* Macros
+* Actions
+* Options
+* Plugins
+* Templates
 
-#### Todolist
+## Support platforms
 
-- Manage package and dependencies
-- Download package automatically
-- Create package repository for porting other third-party source codes, it's goal is that one people port it and many people shared.
-- Implement more plugins(.e.g generate .deb, .rpm package)
+* Windows (x86, x64, amd64, x86_amd64)
+* Macosx (i386, x86_64)
+* Linux (i386, x86_64, cross-toolchains ...)
+* Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
+* iPhoneOS (armv7, armv7s, arm64, i386, x86_64)
+* WatchOS (armv7k, i386)
+* Mingw (i386, x86_64)
 
-#### Examples
+## Support Languages
+
+* C/C++
+* Objc/Objc++
+* Swift
+* Assembly
+* Golang
+* Rust
+* Dlang
+
+## Builtin Plugins
+
+* Macros script plugin
+* Run the custom lua script plugin
+* Generate IDE project file plugin（makefile, vs2002 - vs2017 .. ）
+* Generate doxygen document plugin
+* Convert .app to .ipa plugin
+
+## Examples
 
 [![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io)
 
@@ -213,12 +214,12 @@ target("test")
 
 If you want to know more, please refer to:
 
-#### Documents
+## Documents
 
 * [Documents](https://github.com/waruqi/xmake/wiki/documents)
 * [Codes](https://github.com/waruqi/xmake)
 
-#### Projects
+## Projects
 
 Some projects using xmake:
 
@@ -227,7 +228,7 @@ Some projects using xmake:
 * [libsvx](https://github.com/caikelun/libsvx)
 * [more](https://github.com/waruqi/xmake/wiki/xmake-projects)
 
-#### Contacts
+## Contacts
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)

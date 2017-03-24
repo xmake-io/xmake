@@ -21,100 +21,70 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 * [在线源码](https://github.com/waruqi/xmake)
 * [项目主页](http://www.xmake.io/cn)
 
-#### 支持特性
+## 简单的工程描述
 
-- 支持windows、mac、linux、ios、android等平台，自动检测不同平台上的编译工具链（也可手动配置）
-   编译windows项目采用原生vs的工具链，不需要使用cygwin、mingw（当然这些也支持）
+```lua
+target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
 
-- 支持自定义平台编译配置，可以很方便的扩展第三方平台支持
+## 构建工程
 
-- 采用lua脚本语法描述项目，描述规则简单高效，逻辑规则可灵活修改，并且不会生成相关平台的工程文件，是工程更加简单明了
+```bash
+$ xmake
+```
 
-- 支持创建模板工程、配置项目、编译项目、运行、打包、安装和卸载等常用功能（后续还会增加：自动生成文档、调试等模块）
+## 运行目标
 
-- 支持编译c/c++/objc/swift成静态库、动态库、命令行可执行程序
+```bash
+$ xmake run console
+```
 
-- 提供丰富的工程描述api，使用简单灵活，例如添加编译文件只需（还支持过滤排除）：
+## 调试程序
 
-   `add_files("src/*.c", "src/asm/**.S", "src/*.m")`
+```bash
+$ xmake run -d console
+```
 
-- 支持头文件、接口、链接库依赖、类型的自动检测，并可自动生成配置头文件config.h
+## 支持特性
 
-- 支持自定义编译配置开关，例如如果在工程描述文件中增加了`enable_xxx`的开关，那么配置编译的时候就可以手动进行配置来启用它：
+* Tasks
+* Macros
+* Actions
+* Options
+* Plugins
+* Templates
 
-   `xmake config --enable_xxx=y`
+## 支持平台
 
-- 提供一键打包功能，不管在哪个平台上进行打包，都只需要执行一条相同的命令，非常的方便
+* Windows (x86, x64, amd64, x86_amd64)
+* Macosx (i386, x86_64)
+* Linux (i386, x86_64, cross-toolchains ...)
+* Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
+* iPhoneOS (armv7, armv7s, arm64, i386, x86_64)
+* WatchOS (armv7k, i386)
+* Mingw (i386, x86_64)
 
-- 支持全局配置，一些常用的项目配置，例如工具链、规则描述等等，都可以进行全局配置，这样就不需要每次编译不同工程，都去配置一遍
+## 支持语言
 
-- 除了可以自动检测依赖模块，也支持手动强制配置模块，还有各种编译flags。
+* C/C++
+* Objc/Objc++
+* Swift
+* Assembly
+* Golang
+* Rust
+* Dlang
 
-- 支持插件扩展、平台扩展、模板扩展、选项自定义等高级功能
+## 内置插件
 
-- 提供一些内置的常用插件（例如：自动生成doxygen文档插件，宏脚本记录和运行插件）
+* 宏记录脚本和回放插件
+* 加载自定义lua脚本插件
+* 生成IDE工程文件插件（makefile, vs2002 - vs2017, ...）
+* 生成doxygen文档插件
+* iOS app2ipa插件
 
-- 宏记录插件里面提供了一些内置的宏脚本（例如：批量打包一个平台的所有archs等），也可以在命令行中手动记录宏并回放执行
-
-- 提供强大的task任务机制
-
-- 不依赖makefile和make，实现直接编译，内置自动多任务加速编译, xmake是一个真正的构架工具，而不仅仅是一个工程文件生成器
-
-- 自动检测ccache，进行自动缓存提升构建速度
-
-- 自动检测头文件依赖，并且快速自动构建修改的文件
-
-- 调试器支持，实现直接加载运行调试
-
-- 提供产生IDE工程文件的插件（支持vs2002 - vs2017）
-
-#### 常用Actions
-
-- config: 构建之前的编译参数配置
-- global: 配置一些全局参数
-- build: 构建项目
-- clean: 清理一些二进制文件、临时文件
-- create: 使用模板创建新工程
-- package: 打包指定目标
-- install: 安装编译后的目标文件
-- uninstall: 卸载安装的所有文件
-- run: 运行可执行的项目目标
-
-#### 一些内置插件
-
-- doxygen文档生成插件: 从指定源码目录生成doxygen文档
-- 宏记录脚本插件: 记录和回放宏脚本，简化重复的命令操作（例如：批量打包。。）
-- hello插件: 插件开发demo
-- 工程文件生成插件: 创建IDE的工程文件 (目前支持：makefile, vs2002 - vs2017，后续支持：xcode等等)
-- iOS app2ipa插件
-
-#### 支持编译语言
-
-- C/C++
-- Objc/Objc++
-- Swift
-- Assembly
-- Golang
-- Rust
-- Dlang
-
-#### 支持的构建平台
-
-- Windows (x86, x64, amd64, x86_amd64)
-- Macosx (i386, x86_64)
-- Linux (i386, x86_64, cross-toolchains ...)
-- Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
-- iPhoneos (armv7, armv7s, arm64, i386, x86_64)
-- Watchos (armv7k, i386)
-- Mingw (i386, x86_64)
-
-#### 后续任务
-
-- 自动包依赖管理和下载
-- 创建移植仓库，实现`一人移植，多人共享`
-- 更多的插件开发(例如：Xcode工程生成，生成.deb, .rpm的安装包)
-
-#### 简单例子
+## 简单例子
 
 [![usage_demo](http://tboox.org/static/img/xmake/usage_demo.gif)](http://www.xmake.io/cn)
 
@@ -212,14 +182,14 @@ or xmake macro --help
 ...
 ```
 
-#### 一些使用xmake的项目：
+## 一些使用xmake的项目：
 
 * [tbox](https://github.com/waruqi/tbox)
 * [gbox](https://github.com/waruqi/gbox)
 * [libsvx](https://github.com/caikelun/libsvx)
 * [更多项目](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
 
-#### 简单例子
+## 简单例子
 
 ```c
 -- the debug mode
@@ -255,7 +225,7 @@ target("test")
     add_files("src/*.c") 
 ```
 
-#### 联系方式
+## 联系方式
 
 * 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * 主页：[TBOOX开源工程](http://www.tboox.org/cn)
