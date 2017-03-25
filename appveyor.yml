@@ -5,16 +5,16 @@ platform:
   - Win64
 
 before_build:
-  - cmd: curl -fsSL https://github.com/tboox/xmake/releases/download/v2.0.5/xmake-v2.0.5.exe -o xmake-installer.exe
-  - cmd: mkdir program
-  - cmd: xmake-installer.exe /S /D=program
+  - ps: Invoke-WebRequest "https://github.com/tboox/xmake/releases/download/v2.1.2/xmake-v2.1.2.exe" -OutFile "xmake-installer.exe"
+  - cmd: xmake-installer.exe /S /D=C:\xmake
+  - cmd: PATH=%PATH%;C:\xmake
   - cmd: xmake --version
-  - cmd: cp -r xmake/* program/
+  - ps: cp -r -force xmake\* C:\xmake
   - cmd: xmake --version
-  - cmd: ls program
+  - cmd: dir C:\xmake
 
 build_script:
-  - cmd: cd ./tests/console_c
+  - cmd: cd tests\console_c
   - cmd: if %platform%==Win32 xmake f -m debug
   - cmd: if %platform%==Win64 xmake f -m debug -a x64
   - cmd: xmake 
