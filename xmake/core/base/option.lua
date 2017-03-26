@@ -91,10 +91,9 @@ function option._context()
 
     -- the contexts
     local contexts = option._CONTEXTS
-    assert(contexts)
-
-    -- get it
-    return contexts[#contexts]
+    if contexts then
+        return contexts[#contexts]
+    end
 end
 
 -- get longname
@@ -743,10 +742,9 @@ function option.get(name)
 
     -- the options
     local options = option.options()
-    assert(options)
-
-    -- get it
-    return options[name] or option.default(name)
+    if options then
+        return options[name] or option.default(name)
+    end
 end
 
 -- set the given option for the current task
@@ -784,7 +782,10 @@ end
 function option.options()
 
     -- get it
-    return option._context().options
+    local context = option._context()
+    if context then
+        return context.options
+    end
 end
 
 -- get all default options for the current or given task

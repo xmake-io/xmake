@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+## Bugs fixed
+
+* Fix error tips for checking xmake min version
+
 ## v2.1.2
 
 ### New features
@@ -221,6 +225,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs修复
+
+* 修复版本检测的错误提示信息
 
 ## v2.1.2
 

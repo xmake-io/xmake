@@ -4,6 +4,9 @@ set_project("xmake")
 -- version
 set_version("2.1.3")
 
+-- set xmake min version
+set_xmakever("2.1.2")
+
 -- set warning all as error
 set_warnings("all", "error")
 
