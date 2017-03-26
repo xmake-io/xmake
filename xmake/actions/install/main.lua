@@ -85,11 +85,10 @@ function main()
     -- init finished states
     _g.finished = {}
 
-    task.run("config", {target = targetname})
-
-    -- install all?
     try{
         function ()
+            task.run("safe_config", {target = targetname})
+            -- install all?
             if targetname == "all" then
                 for _, target in pairs(project.targets()) do
                     _install_target_and_deps(target)
