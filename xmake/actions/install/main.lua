@@ -85,15 +85,28 @@ function main()
     -- init finished states
     _g.finished = {}
 
-    -- build it first
-    task.run("build", {target = targetname})
+    task.run("config", {target = targetname})
 
     -- install all?
-    if targetname == "all" then
-        for _, target in pairs(project.targets()) do
-            _install_target_and_deps(target)
-        end
-    else
-        _install_target_and_deps(project.target(targetname))
-    end
+    try{
+        function ()
+            if targetname == "all" then
+                for _, target in pairs(project.targets()) do
+                    _install_target_and_deps(target)
+                end
+            else
+                _install_target_and_deps(project.target(targetname))
+            end
+        end,
+        catch
+        {
+            function (errors)
+                -- print user-friendly notes
+                cprint("${bright red}error: ${default red}installation fail. may it hasn't built before or permission denied")
+                cprint("${bright yellow}note: ${default yellow}try `xmake;sudo xmake install`")
+                cprint("${bright yellow}note: ${default yellow}or `xmake&&xmake install` in cmd on Windows with Administrator permission")
+                raise(errors)
+            end
+        }
+    }
 end
