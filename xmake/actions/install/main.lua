@@ -49,7 +49,6 @@ function main()
             -- failed or not permission? request administrator permission and install it again
             function (errors)
 
-                -- TODO wrap xmake
                 -- init argv
                 local argv = {"xmake", "lua"}
                 for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
@@ -66,17 +65,22 @@ function main()
 
                 -- show tips
                 cprint("${bright red}error: ${default red}installation failed, may permission denied!")
-                cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
-                cprint("please input: y (y/n)")
 
-                -- TODO read
-                -- get answer
-                io.flush()
-                if io._read() == 'y' then
+                -- continue to install with administrator permission?
+                if os.sudo() then
 
-                    -- TODO wrap sudo
-                    -- install target with administrator permission
-                    os.runv("sudo", argv)
+                    -- show tips
+                    cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
+                    cprint("please input: y (y/n)")
+
+                    -- TODO read
+                    -- get answer
+                    io.flush()
+                    if io._read() == 'y' then
+
+                        -- install target with administrator permission
+                        os.runv(os.sudo(), argv)
+                    end
                 end
             end
         }

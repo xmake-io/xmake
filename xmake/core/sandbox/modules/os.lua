@@ -445,6 +445,11 @@ function sandbox_os.uuid(name)
     return uuid
 end
 
+-- get sudo program name for running program with administrator permission
+function sandbox_os.sudo()
+    return os.sudo()
+end
+
 -- return module
 return sandbox_os
 
