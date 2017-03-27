@@ -10,12 +10,14 @@ branches:
     - dev
 
 install:
+  - cd ..
+  - cp -r xmake xmake4build
+  - cd xmake4build
   - sudo ./install
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install rust --verbose; fi
 
 script:
-  - xmake create -P ./test 
-  - xmake -P ./test
-  - ./tests/tests
+  - cd ../xmake/core
+  - xmake -v

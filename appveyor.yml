@@ -14,10 +14,6 @@ before_build:
   - cmd: dir C:\xmake
 
 build_script:
-  - cmd: cd tests\console_c
-  - cmd: if %platform%==Win32 xmake f -m debug
-  - cmd: if %platform%==Win64 xmake f -m debug -a x64
-  - cmd: xmake 
-
-test_script:
-  - cmd: xmake --version
+  - cmd: cd core
+  - cmd: if %platform%==Win64 xmake f -a x64
+  - cmd: xmake -v
