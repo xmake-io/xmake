@@ -25,56 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.task")
-import("core.project.config")
-import("core.project.global")
-import("core.project.project")
-import("core.platform.platform")
-
--- uninstall the given target 
-function _uninstall_target(target)
-
-    -- enter project directory
-    local olddir = os.cd(project.directory())
-
-    -- the target scripts
-    local scripts =
-    {
-        target:get("uninstall_before")
-    ,   target:get("uninstall") or platform.get("uninstall")
-    ,   target:get("uninstall_after")
-    }
-
-    -- uninstall the target scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(target)
-        end
-    end
-
-    -- leave project directory
-    os.cd(olddir)
-end
-
--- uninstall the given target and deps
-function _uninstall_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return 
-    end
-
-    -- uninstall for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _uninstall_target_and_deps(project.target(depname)) 
-    end
-
-    -- uninstall target
-    _uninstall_target(target)
-
-    -- finished
-    _g.finished[target:name()] = true
-end
+import("uninstall")
 
 -- main
 function main()
@@ -82,18 +33,56 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- init finished states
-    _g.finished = {}
-
     -- config it first
     task.run("config", {target = targetname})
 
-    -- uninstall all?
-    if targetname == "all" then
-        for _, target in pairs(project.targets()) do
-            _uninstall_target_and_deps(target)
-        end
-    else
-        _uninstall_target_and_deps(project.target(targetname))
-    end
+    -- attempt to uninstall directly
+    try
+    {
+        function ()
+            -- uninstall target
+            install.uninstall(targetname)
+        end,
+
+        catch
+        {
+            -- failed or not permission? request administrator permission and uninstall it again
+            function (errors)
+
+                -- init argv
+                local argv = {"xmake", "lua"}
+                for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
+                    local value = option.get(name)
+                    if type(value) == "string" then
+                        table.insert(argv, "--" .. name .. "=" .. value)
+                    elseif value then
+                        table.insert(argv, "--" .. name)
+                    end
+                end
+                table.insert(argv, path.join(os.scriptdir(), "uninstall_admin.lua"))
+                table.insert(argv, targetname)
+                table.insert(argv, option.get("installdir"))
+
+                -- show tips
+                cprint("${bright red}error: ${default red}failed to uninstall, may permission denied!")
+
+                -- continue to install with administrator permission?
+                if os.sudo() then
+
+                    -- show tips
+                    cprint("${bright yellow}note: ${default yellow}try continue to uninstall with administrator permission again?")
+                    cprint("please input: y (y/n)")
+
+                    -- TODO fix read api 
+                    -- get answer
+                    io.flush()
+                    if io._read() == 'y' then
+
+                        -- install target with administrator permission
+                        os.runv(os.sudo(), argv)
+                    end
+                end
+            end
+        }
+    }
 end
