@@ -37,6 +37,13 @@ function sandbox_core_base_option.get(name)
     return option.get(name)
 end
 
+-- set the option value
+function sandbox_core_base_option.set(name, value)
+
+    -- set it
+    option.set(name, value)
+end
+
 -- get the default option value
 function sandbox_core_base_option.default(name)
 
@@ -102,6 +109,16 @@ function sandbox_core_base_option.parse(argv, options, ...)
 
     -- ok
     return results
+end
+
+-- save context
+function sandbox_core_base_option.save(taskname)
+    return option.save(taskname)
+end
+
+-- restore context
+function sandbox_core_base_option.restore()
+    option.restore()
 end
 
 -- return module

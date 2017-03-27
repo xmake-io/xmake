@@ -32,6 +32,10 @@ local vformat   = require("sandbox/modules/vformat")
 -- define module
 local sandbox_io = sandbox_io or {}
 
+-- inherit some builtin interfaces
+sandbox_io.flush     = io.flush
+sandbox_io._read     = io.read
+
 -- print file
 function sandbox_io._print(self, ...)
 

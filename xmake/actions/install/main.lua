@@ -25,56 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.task")
-import("core.project.config")
-import("core.project.global")
-import("core.project.project")
-import("core.platform.platform")
-
--- install the given target 
-function _install_target(target)
-
-    -- enter project directory
-    local olddir = os.cd(project.directory())
-
-    -- the target scripts
-    local scripts =
-    {
-        target:get("install_before")
-    ,   target:get("install") or platform.get("install")
-    ,   target:get("install_after")
-    }
-
-    -- install the target scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(target)
-        end
-    end
-
-    -- leave project directory
-    os.cd(olddir)
-end
-
--- install the given target and deps
-function _install_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return 
-    end
-
-    -- install for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _install_target_and_deps(project.target(depname)) 
-    end
-
-    -- install target
-    _install_target(target)
-
-    -- finished
-    _g.finished[target:name()] = true
-end
+import("install")
 
 -- main
 function main()
@@ -82,18 +33,52 @@ function main()
     -- get the target name
     local targetname = option.get("target")
 
-    -- init finished states
-    _g.finished = {}
-
     -- build it first
     task.run("build", {target = targetname})
 
-    -- install all?
-    if targetname == "all" then
-        for _, target in pairs(project.targets()) do
-            _install_target_and_deps(target)
-        end
-    else
-        _install_target_and_deps(project.target(targetname))
-    end
+    -- attempt to install directly
+    try
+    {
+        function ()
+            -- install target
+            install.install(targetname)
+        end,
+
+        catch
+        {
+            -- failed or not permission? request administrator permission and install it again
+            function (errors)
+
+                -- TODO wrap xmake
+                -- init argv
+                local argv = {"xmake", "lua"}
+                for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
+                    local value = option.get(name)
+                    if type(value) == "string" then
+                        table.insert(argv, "--" .. name .. "=" .. value)
+                    elseif value then
+                        table.insert(argv, "--" .. name)
+                    end
+                end
+                table.insert(argv, path.join(os.scriptdir(), "install_admin.lua"))
+                table.insert(argv, targetname)
+                table.insert(argv, option.get("installdir"))
+
+                -- show tips
+                cprint("${bright red}error: ${default red}installation failed, may permission denied!")
+                cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
+                cprint("please input: y (y/n)")
+
+                -- TODO read
+                -- get answer
+                io.flush()
+                if io._read() == 'y' then
+
+                    -- TODO wrap sudo
+                    -- install target with administrator permission
+                    os.runv("sudo", argv)
+                end
+            end
+        }
+    }
 end
