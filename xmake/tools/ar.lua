@@ -119,7 +119,7 @@ function check(flags)
     local libraryfile   = path.join(os.tmpdir(), "xmake.ar.a")
     local objectfile    = path.join(os.tmpdir(), "xmake.ar.o")
     local sourcefile    = path.join(os.tmpdir(), "xmake.ar.c")
-    io.write(sourcefile, "int test(void)\n{return 0;}")
+    io.writefile(sourcefile, "int test(void)\n{return 0;}")
 
     -- make flags
     local arflags = table.concat(_g.arflags, " ")

@@ -34,7 +34,8 @@ local sandbox_io = sandbox_io or {}
 
 -- inherit some builtin interfaces
 sandbox_io.flush     = io.flush
-sandbox_io._read     = io.read
+sandbox_io.read      = io.read
+sandbox_io.write     = io.write
 
 -- print file
 function sandbox_io._print(self, ...)
@@ -137,7 +138,7 @@ function sandbox_io.save(filepath, object)
 end
 
 -- read all data from file 
-function sandbox_io.read(filepath)
+function sandbox_io.readfile(filepath)
 
     -- check
     assert(filepath)
@@ -146,7 +147,7 @@ function sandbox_io.read(filepath)
     filepath = vformat(filepath)
 
     -- done
-    local result, errors = io.readall(filepath)
+    local result, errors = io.readfile(filepath)
     if not result then
         raise(errors)
     end
@@ -156,7 +157,7 @@ function sandbox_io.read(filepath)
 end
 
 -- write all data to file 
-function sandbox_io.write(filepath, data)
+function sandbox_io.writefile(filepath, data)
  
     -- check
     assert(filepath)
@@ -165,7 +166,7 @@ function sandbox_io.write(filepath, data)
     filepath = vformat(filepath)
 
     -- done
-    local ok, errors = io.writall(filepath, data)
+    local ok, errors = io.writefile(filepath, data)
     if not ok then
         raise(errors)
     end

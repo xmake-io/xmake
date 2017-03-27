@@ -200,7 +200,7 @@ function _file:load()
 end
 
 -- read all data from file 
-function io.readall(filepath)
+function io.readfile(filepath)
 
     -- open file
     local file = io.open(filepath, "r")
@@ -220,7 +220,7 @@ function io.readall(filepath)
 end
 
 -- write data to file 
-function io.writall(filepath, data)
+function io.writefile(filepath, data)
 
     -- open file
     local file = io.open(filepath, "w")
@@ -333,7 +333,7 @@ end
 function io.gsub(filepath, pattern, replace)
 
     -- read all data from file
-    local data, errors = io.readall(filepath)
+    local data, errors = io.readfile(filepath)
     if not data then return nil, 0, errors end
 
     -- replace it
@@ -347,7 +347,7 @@ function io.gsub(filepath, pattern, replace)
     -- replace ok?
     if count ~= 0 then
         -- write all data to file
-        local ok, errors = io.writall(filepath, data) 
+        local ok, errors = io.writefile(filepath, data) 
         if not ok then return nil, 0, errors end
     end
 

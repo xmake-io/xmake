@@ -40,7 +40,7 @@ function check(flags)
     local sourcefile = os.tmpfile() .. ".go"
 
     -- make stub code
-    io.write(sourcefile, "package main\nfunc main() {\n}")
+    io.writefile(sourcefile, "package main\nfunc main() {\n}")
 
     -- check it
     os.run("%s -c %s -o %s %s", _super._g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)

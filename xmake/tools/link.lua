@@ -147,9 +147,9 @@ function check(flags)
 
     -- main entry
     if flags and flags:lower():find("subsystem:windows") then
-        io.write(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
+        io.writefile(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
     else
-        io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end
 
     -- check it

@@ -73,10 +73,9 @@ function main()
                     cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
                     cprint("please input: y (y/n)")
 
-                    -- TODO fix read api 
                     -- get answer
                     io.flush()
-                    if io._read() == 'y' then
+                    if io.read() == 'y' then
 
                         -- install target with administrator permission
                         os.runv(os.sudo(), argv)

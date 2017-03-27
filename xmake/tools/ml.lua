@@ -152,7 +152,7 @@ function check(flags)
     -- make an stub source file
     local objectfile = os.tmpfile() .. ".obj"
     local sourcefile = os.tmpfile() .. ".asm"
-    io.write(sourcefile, "end")
+    io.writefile(sourcefile, "end")
 
     -- check it
     os.run("%s -c %s -Fo%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)

@@ -31,7 +31,7 @@ function _check_as(shellname)
 
     -- make an empty tmp.S
     local tmpfile = path.join(os.tmpdir(), "xmake.checker.as.S")
-    io.write(tmpfile, "")
+    io.writefile(tmpfile, "")
 
     -- check it
     os.run("%s -arch armv7 -o %s -c %s", shellname, os.nuldev(), tmpfile)

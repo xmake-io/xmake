@@ -201,7 +201,7 @@ function check(flags)
     local sourcefile = os.tmpfile() .. ".d"
 
     -- make stub code
-    io.write(sourcefile, "void main() {\n}")
+    io.writefile(sourcefile, "void main() {\n}")
 
     -- check it
     os.run("%s -c %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)

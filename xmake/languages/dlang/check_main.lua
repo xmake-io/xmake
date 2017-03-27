@@ -26,7 +26,7 @@
 function main(sourcefile)
 
     -- load source code
-    local sourcecode = io.read(sourcefile)
+    local sourcecode = io.readfile(sourcefile)
 
     -- remove comment first
     sourcecode = sourcecode:gsub("/%*.-%*/", "")

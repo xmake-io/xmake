@@ -443,7 +443,7 @@ function os.runv(shellname, argv)
     if ok ~= 0 then
 
         -- make errors
-        local errors = io.readall(log)
+        local errors = io.readfile(log)
         if not errors or #errors == 0 then
             if argv ~= nil then
                 errors = string.format("runv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
@@ -547,8 +547,8 @@ function os.iorunv(shellname, argv)
     local ok = os.execv(shellname, argv, outfile, errfile) 
 
     -- get output and error data
-    local outdata = io.readall(outfile)
-    local errdata = io.readall(errfile)
+    local outdata = io.readfile(outfile)
+    local errdata = io.readfile(errfile)
 
     -- remove the temporary output and error file
     os.rm(outfile)

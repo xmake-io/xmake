@@ -322,7 +322,7 @@ function check(flags)
     -- make an stub source file
     local objectfile = os.tmpfile() .. ".obj"
     local sourcefile = os.tmpfile() .. ".c"
-    io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+    io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it
     os.run("%s -c %s -Fo%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)

@@ -3822,8 +3822,8 @@ io操作模块，扩展了lua内置的io模块，提供更多易用的接口。
 | [io.open](#io-open)                             | 打开文件用于读写                             | >= 2.0.1 |
 | [io.load](#io-load)                             | 从指定路径文件反序列化加载所有table内容      | >= 2.0.1 |
 | [io.save](#io-save)                             | 序列化保存所有table内容到指定路径文件        | >= 2.0.1 |
-| [io.read](#io-read)                             | 从指定路径文件读取所有内容                   | >= 2.0.1 |
-| [io.write](#io-write)                           | 写入所有内容到指定路径文件                   | >= 2.0.1 |
+| [io.readfile](#io.readfile)                     | 从指定路径文件读取所有内容                   | >= 2.1.3 |
+| [io.writefile](#io.writefile)                   | 写入所有内容到指定路径文件                   | >= 2.1.3 |
 | [io.gsub](#io-gsub)                             | 全文替换指定路径文件的内容                   | >= 2.0.1 |
 | [io.tail](#io-tail)                             | 读取和显示文件的尾部内容                     | >= 2.0.1 |
 | [io.cat](#io-cat)                               | 读取和显示文件的所有内容                     | >= 2.0.1 |
@@ -3846,7 +3846,7 @@ if file then
 end
 ```
 
-或者可以使用[io.read](#io-read)更加快速地读取。
+或者可以使用[io.readfile](#io.readfile)更加快速地读取。
 
 如果要写文件，可以这么操作：
 
@@ -3908,24 +3908,24 @@ io.save("xxx.txt", {a = "a", b = "b", c = "c"})
 }
 ```
 
-###### io.read
+###### io.readfile
 
 - 从指定路径文件读取所有内容
 
 可在不打开文件的情况下，直接读取整个文件的内容，更加的方便，例如：
 
 ```lua
-local data = io.read("xxx.txt")
+local data = io.readfile("xxx.txt")
 ```
 
-###### io.write
+###### io.writefile
 
 - 写入所有内容到指定路径文件
 
 可在不打开文件的情况下，直接写入整个文件的内容，更加的方便，例如：
 
 ```lua
-io.write("xxx.txt", "all data")
+io.writefile("xxx.txt", "all data")
 ```
 
 ###### io.gsub

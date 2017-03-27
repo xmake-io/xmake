@@ -148,7 +148,7 @@ function check(flags)
     local sourcefile = os.tmpfile() .. ".rs"
 
     -- make stub code
-    io.write(sourcefile, "fn main() {\n}")
+    io.writefile(sourcefile, "fn main() {\n}")
 
     -- check it
     os.run("%s --emit obj %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)

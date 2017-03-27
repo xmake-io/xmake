@@ -80,7 +80,7 @@ function check(flags)
     local libfile = os.tmpfile() .. ".lib"
     local objfile = os.tmpfile() .. ".obj"
     local srcfile = os.tmpfile() .. ".c"
-    io.write(srcfile, "int test(void)\n{return 0;}")
+    io.writefile(srcfile, "int test(void)\n{return 0;}")
 
     -- check it
     os.run("cl -c -Fo%s %s", objfile, srcfile)

@@ -340,7 +340,7 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
 
         -- translate it
         local results = {}
-        local incdeps = io.read(tmpfile)
+        local incdeps = io.readfile(tmpfile)
         for includefile in string.gmatch(incdeps, "%s+([%w/%.%-%+_%$%.]+)") do
 
             -- save it if belong to the project
@@ -385,7 +385,7 @@ function check(flags)
     local sourcefile = os.tmpfile() .. ".c" .. ifelse(_g.kind == "cxx", "pp", "")
 
     -- make stub code
-    io.write(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+    io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it
     os.run("%s -c %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
