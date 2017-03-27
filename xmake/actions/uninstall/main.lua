@@ -42,6 +42,9 @@ function main()
         function ()
             -- uninstall target
             install.uninstall(targetname)
+
+            -- trace
+            cprint("${bright}uninstall ok!${clear}${ok_hand}")
         end,
 
         catch
@@ -79,6 +82,9 @@ function main()
 
                         -- install target with administrator permission
                         os.runv(os.sudo(), argv)
+
+                        -- trace
+                        cprint("${bright}uninstall ok!${clear}${ok_hand}")
                     end
                 end
             end

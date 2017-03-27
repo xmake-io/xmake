@@ -42,6 +42,9 @@ function main()
         function ()
             -- install target
             install.install(targetname)
+
+            -- trace
+            cprint("${bright}install ok!${clear}${ok_hand}")
         end,
 
         catch
@@ -79,6 +82,9 @@ function main()
 
                         -- install target with administrator permission
                         os.runv(os.sudo(), argv)
+
+                        -- trace
+                        cprint("${bright}install ok!${clear}${ok_hand}")
                     end
                 end
             end
