@@ -4,11 +4,6 @@ os:
   - linux
   - osx
 
-branches:
-  only:
-    - master
-    - dev
-
 install:
   - cd ..
   - cp -r xmake xmake4build
