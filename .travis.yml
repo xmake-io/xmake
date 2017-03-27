@@ -16,3 +16,8 @@ install:
 script:
   - cd ../xmake/core
   - xmake -v
+  - sudo cp -v build/xmake /usr/local/share/xmake
+  - xmake --version
+  - xmake create test_project
+  - cd test_project
+  - xmake
