@@ -5,6 +5,7 @@
 ## Bugs fixed
 
 * Fix error tips for checking xmake min version
+* [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx
 
 ## v2.1.2
 
@@ -229,6 +230,7 @@
 ### Bugs修复
 
 * 修复版本检测的错误提示信息
+* [#60](https://github.com/tboox/xmake/issues/60): 修复macosx平台的xmake自举编译
 
 ## v2.1.2
 

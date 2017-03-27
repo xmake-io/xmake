@@ -40,6 +40,11 @@ if is_plat("windows") then
     add_ldflags("-nodefaultlib:\"msvcrt.lib\"")
 end
 
+-- for macosx
+if is_plat("macosx") then
+    add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
+end
+
 -- add package directories
 add_packagedirs("pkg") 
 
