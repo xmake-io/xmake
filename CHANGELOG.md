@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#61](https://github.com/tboox/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
+
 ## Bugs fixed
 
 * Fix error tips for checking xmake min version
@@ -226,6 +230,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#61](https://github.com/tboox/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
 
 ### Bugs修复
 
