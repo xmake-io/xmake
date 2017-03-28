@@ -590,17 +590,5 @@ function os.isexec(filepath)
     return os.isfile(filepath)
 end
 
--- get sudo program name for running program with administrator permission
-function os.sudo()
-    
-    -- on windows?
-    if xmake._HOST == "windows" then
-        -- TODO
-        -- add sudo.bat 
-    else
-        return "sudo"
-    end
-end
-
 -- return module
 return os

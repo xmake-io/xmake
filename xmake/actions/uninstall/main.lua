@@ -40,8 +40,9 @@ function main()
     try
     {
         function ()
+
             -- uninstall target
-            install.uninstall(targetname)
+            uninstall.uninstall(targetname)
 
             -- trace
             cprint("${bright}uninstall ok!${clear}${ok_hand}")
@@ -52,25 +53,11 @@ function main()
             -- failed or not permission? request administrator permission and uninstall it again
             function (errors)
 
-                -- init argv
-                local argv = {"xmake", "lua"}
-                for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
-                    local value = option.get(name)
-                    if type(value) == "string" then
-                        table.insert(argv, "--" .. name .. "=" .. value)
-                    elseif value then
-                        table.insert(argv, "--" .. name)
-                    end
-                end
-                table.insert(argv, path.join(os.scriptdir(), "uninstall_admin.lua"))
-                table.insert(argv, targetname)
-                table.insert(argv, option.get("installdir"))
-
                 -- show tips
                 cprint("${bright red}error: ${default red}failed to uninstall, may permission denied!")
 
-                -- continue to install with administrator permission?
-                if os.sudo() then
+                -- continue to uninstall with administrator permission?
+                if os.feature("sudo") then
 
                     -- show tips
                     cprint("${bright yellow}note: ${default yellow}try continue to uninstall with administrator permission again?")
@@ -80,8 +67,8 @@ function main()
                     io.flush()
                     if io.read() == 'y' then
 
-                        -- install target with administrator permission
-                        os.runv(os.sudo(), argv)
+                        -- uninstall target with administrator permission
+                        os.sudol(os.runv, path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname, option.get("installdir")})
 
                         -- trace
                         cprint("${bright}uninstall ok!${clear}${ok_hand}")

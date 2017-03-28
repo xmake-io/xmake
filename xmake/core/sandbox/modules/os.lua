@@ -26,6 +26,7 @@
 local io        = require("base/io")
 local os        = require("base/os")
 local utils     = require("base/utils")
+local option    = require("base/option")
 local sandbox   = require("sandbox/sandbox")
 local vformat   = require("sandbox/modules/vformat")
 
@@ -40,6 +41,18 @@ sandbox_os.argw     = os.argw
 sandbox_os.mtime    = os.mtime
 sandbox_os.mclock   = os.mclock
 sandbox_os.emptydir = os.emptydir
+
+-- get sudo program name for running program with administrator permission
+function sandbox_os._sudoname()
+    
+    -- on windows?
+    if xmake._HOST == "windows" then
+        -- TODO
+        -- add sudo.bat 
+    else
+        return "sudo"
+    end
+end
 
 -- copy file or directory
 function sandbox_os.cp(...)
@@ -445,9 +458,63 @@ function sandbox_os.uuid(name)
     return uuid
 end
 
--- get sudo program name for running program with administrator permission
-function sandbox_os.sudo()
-    return os.sudo()
+-- get the feature of os
+function sandbox_os.feature(name)
+
+    -- has 'sudo' feature? 
+    if name == "sudo" then
+        return sandbox_os._sudoname() ~= nil
+    end
+end
+
+-- sudo run shell with administrator permission
+--
+-- .e.g
+-- os.sudo(os.run, "echo", "hello xmake!")
+--
+function sandbox_os.sudo(runner, cmd, ...)
+
+    -- check
+    assert(sandbox_os.feature("sudo"), "no sudo!")
+
+    -- run it with administrator permission
+    runner(sandbox_os._sudoname() .. " " .. cmd, ...)
+end
+
+-- sudo run shell with administrator permission and arguments list
+--
+-- .e.g
+-- os.sudov(os.runv, {"echo", "hello xmake!"})
+--
+function sandbox_os.sudov(runner, shellname, argv)
+
+    -- check
+    assert(sandbox_os.feature("sudo"), "no sudo!")
+
+    -- run it with administrator permission
+    runner(sandbox_os._sudoname(), table.join(shellname, argv))
+end
+
+-- sudo run lua script with administrator permission and arguments list
+--
+-- .e.g
+-- os.sudol(os.runv, "xxx.lua", {"arg1", "arg2"})
+--
+function sandbox_os.sudol(runner, luafile, luaargv)
+
+    -- init argv
+    local argv = {"lua"}
+    for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
+        local value = option.get(name)
+        if type(value) == "string" then
+            table.insert(argv, "--" .. name .. "=" .. value)
+        elseif value then
+            table.insert(argv, "--" .. name)
+        end
+    end
+                  
+    -- run it with administrator permission
+    sandbox_os.sudov(runner, "xmake", table.join(argv, luafile, luaargv))
 end
 
 -- return module
