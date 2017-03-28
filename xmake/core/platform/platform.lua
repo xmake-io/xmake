@@ -148,6 +148,7 @@ function platform._interpreter()
         ,   "platform.set_archs"
         ,   "platform.set_menu"
         ,   "platform.set_tooldirs"
+        ,   "platform.set_installdir"
         }
     ,   script =
         {

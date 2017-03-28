@@ -37,6 +37,9 @@ platform("linux")
     -- set tooldirs
     set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
 
+    -- set installdir
+    set_installdir("/usr/local")
+
     -- on install
     on_install("install")
 

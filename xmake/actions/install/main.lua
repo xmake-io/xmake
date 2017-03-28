@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.task")
+import("core.platform.platform")
 import("install")
 
 -- main
@@ -35,6 +36,9 @@ function main()
 
     -- build it first
     task.run("build", {target = targetname})
+
+    -- trace
+    print("installing to %s ...", option.get("installdir") or platform.get("installdir"))
 
     -- attempt to install directly
     try

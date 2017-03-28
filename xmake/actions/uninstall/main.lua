@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.task")
+import("core.platform.platform")
 import("uninstall")
 
 -- main
@@ -35,6 +36,9 @@ function main()
 
     -- config it first
     task.run("config", {target = targetname})
+
+    -- trace
+    print("uninstalling from %s ...", option.get("installdir") or platform.get("installdir"))
 
     -- attempt to uninstall directly
     try

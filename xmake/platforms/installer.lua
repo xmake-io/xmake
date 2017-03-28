@@ -24,12 +24,14 @@
 
 -- imports
 import("core.base.option")
+import("core.platform.platform")
 
 -- install binary
 function install_binary_on_unix(target)
 
     -- the install directory
-    local installdir = option.get("installdir") or "/usr/local"
+    local installdir = option.get("installdir") or platform.get("installdir")
+    assert(installdir, "unknown install directory!")
 
     -- the binary directory
     local binarydir = path.join(installdir, "bin")
@@ -45,7 +47,8 @@ end
 function install_library_on_unix(target)
 
     -- the install directory
-    local installdir = option.get("installdir") or "/usr/local"
+    local installdir = option.get("installdir") or platform.get("installdir")
+    assert(installdir, "unknown install directory!")
 
     -- the library directory
     local librarydir = path.join(installdir, "lib")
@@ -86,7 +89,8 @@ end
 function uninstall_binary_on_unix(target)
 
     -- the install directory
-    local installdir = option.get("installdir") or "/usr/local"
+    local installdir = option.get("installdir") or platform.get("installdir")
+    assert(installdir, "unknown install directory!")
 
     -- the binary directory
     local binarydir = path.join(installdir, "bin")
@@ -99,7 +103,8 @@ end
 function uninstall_library_on_unix(target)
 
     -- the install directory
-    local installdir = option.get("installdir") or "/usr/local"
+    local installdir = option.get("installdir") or platform.get("installdir")
+    assert(installdir, "unknown install directory!")
 
     -- the library directory
     local librarydir = path.join(installdir, "lib")
