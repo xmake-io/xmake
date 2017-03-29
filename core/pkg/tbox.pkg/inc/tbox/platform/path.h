@@ -111,6 +111,16 @@ tb_char_t const*        tb_path_relative(tb_char_t const* path, tb_char_t* data,
  */
 tb_char_t const*        tb_path_relative_to(tb_char_t const* root, tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
 
+/*! get the directory of path
+ *
+ * @param path          the path
+ * @param data          the path data
+ * @param maxn          the path maxn
+ *
+ * @return              the directory of path
+ */
+tb_char_t const*        tb_path_directory(tb_char_t const* path, tb_char_t* data, tb_size_t maxn);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
  */

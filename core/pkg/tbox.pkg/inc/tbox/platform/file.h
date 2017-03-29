@@ -63,9 +63,10 @@ typedef enum __tb_file_mode_t
 ,   TB_FILE_MODE_CREAT      = 8     //!< create
 ,   TB_FILE_MODE_APPEND     = 16    //!< append
 ,   TB_FILE_MODE_TRUNC      = 32    //!< truncate
-,   TB_FILE_MODE_BINARY     = 64    //!< binary
-,   TB_FILE_MODE_DIRECT     = 128   //!< direct, no cache, @note data & size must be aligned by TB_FILE_DIRECT_ASIZE
-,   TB_FILE_MODE_ASIO       = 256   //!< support for asio
+,   TB_FILE_MODE_DIRECT     = 64    //!< direct, no cache, @note data & size must be aligned by TB_FILE_DIRECT_ASIZE
+,   TB_FILE_MODE_ASIO       = 128   //!< support for asio
+
+,   TB_FILE_MODE_BINARY     = 256   //!< binary (deprecated)
 
 }tb_file_mode_t;
 

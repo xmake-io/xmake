@@ -69,7 +69,8 @@ function main()
 
                     -- get answer
                     io.flush()
-                    if io.read() == 'y' then
+                    local answer = io.read()
+                    if answer == 'y' or answer == '' then
 
                         -- uninstall target with administrator permission
                         os.sudol(os.runv, path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname, option.get("installdir")})
