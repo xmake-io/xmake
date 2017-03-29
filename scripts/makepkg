@@ -1,8 +1,22 @@
 #!/bin/bash
 
 # install fpm
+#
+# On OSX/macOS:
 # brew install gnu-tar
+#
+# On Red Hat systems (Fedora 22 or older, CentOS, etc):
+# yum install ruby-devel gcc make rpm-build
+#
+# On Fedora 23 or newer:
+# dnf install ruby-devel gcc make rpm-build
+#
+# On Debian-derived systems (Debian, Ubuntu, etc):
+# apt-get install ruby ruby-dev rubygems gcc make
+#
+# Installing FPM:
 # gem install --no-ri --no-rdoc fpm
+#
 
 # check
 if [ $# -lt 2 ]; then
