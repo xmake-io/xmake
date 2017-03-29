@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install fpm
-# apt-get install ruby ruby-dev rubygems gcc make
+# yum install ruby-devel gcc make rpm-build
 # gem install --no-ri --no-rdoc fpm
 
 # version
@@ -27,7 +27,7 @@ export XMAKE_PROGRAM_DIR=/usr/local/share/xmake
 chmod 755 /tmp/xmake.sh
 
 # make dep package using fpm
-fpm -s dir -t deb -n xmake -v $version -m "<waruqi@gmail.com>" --description="A make-like build utility based on Lua" --license=LICENSE.md \
+fpm -s dir -t rpm -n xmake -v $version -m "<waruqi@gmail.com>" --description="A make-like build utility based on Lua" --license=LICENSE.md \
         xmake=/usr/local/share/ \
         core/bin/demo.pkg/bin/linux/$arch/demo.b=/usr/local/share/xmake/xmake \
         /tmp/xmake.sh=/usr/local/bin/xmake
