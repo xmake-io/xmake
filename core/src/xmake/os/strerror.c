@@ -50,7 +50,7 @@ tb_int_t xm_os_strerror(lua_State* lua)
 
     // done os.strerror() 
 #ifdef TB_CONFIG_OS_WINDOWS
-    lua_pushstring(lua, "");
+    lua_pushstring(lua, tb_state_cstr(tb_syserror_state()));
 #else
     lua_pushstring(lua, strerror(errno));
 #endif
