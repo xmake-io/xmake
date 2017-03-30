@@ -4,18 +4,20 @@ os:
   - linux
   - osx
 
-branches:
-  only:
-    - master
-    - dev
-
 install:
-  - sudo ./install
+  - cd ..
+  - cp -r xmake xmake4build
+  - cd xmake4build
+  - make build; sudo make install
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install rust --verbose; fi
 
 script:
-  - xmake create -P ./test 
-  - xmake -P ./test
-  - ./tests/tests
+  - cd ../xmake/core
+  - xmake -v
+  - sudo cp -v build/xmake /usr/local/share/xmake
+  - xmake --version
+  - xmake create test_project
+  - cd test_project
+  - xmake
