@@ -21,11 +21,11 @@ target("demo")
     add_includedirs("$(projectdir)/src")
 
     -- add links and directory
-    add_links("xmake")
+    add_links("xmake", "luajit")
     add_linkdirs("$(buildir)")
 
     -- add packages
-    add_packages("tbox", "luajit", "base")
+    add_packages("tbox", "base")
 
     -- add the common source files
     add_files("**.c") 

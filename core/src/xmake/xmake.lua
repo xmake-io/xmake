@@ -4,6 +4,9 @@ target("xmake")
     -- make as a static library
     set_kind("static")
 
+    -- add deps
+    add_deps("luajit")
+
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
 

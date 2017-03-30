@@ -9,7 +9,7 @@ This product depends on 'LuaJIT', a Just-In-Time Compiler for Lua,
 which can be obtained at:
 
   * LICENSE:
-    * core/pkg/luajit.pkg/LICENSE.md (MIT License)
+    * core/src/luajit/COPYRIGHT (MIT License)
   * HOMEPAGE:
     * http://luajit.org/
 
