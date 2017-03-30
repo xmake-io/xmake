@@ -104,6 +104,11 @@ end
 -- check run command as root
 function main._check_root()
 
+    -- TODO not check
+    if xmake._HOST == "windows" then
+        return true
+    end
+
     -- check it
     local ok, code = os.iorun("id -u")
     if ok and code and code:trim() == '0' then
