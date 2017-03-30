@@ -88,7 +88,7 @@ endif
 CFLAGS_RELEASE 		= 
 CFLAGS_DEBUG 		= 
 CFLAGS 				= \
-					-std=c99 \
+					-std=gnu99 \
 					-D_GNU_SOURCE=1 -D_REENTRANT \
 					-fno-math-errno 
 
