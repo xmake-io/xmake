@@ -37,7 +37,9 @@ xmake_loader        :=/tmp/xmake_loader
 xmake_loader_install:=$(prefix)/bin/xmake
 
 tip:
-	@echo '$(MAKE) build; sudo $(MAKE) install'
+	@echo 'Usage: '
+	@echo '    $ make build'
+	@echo '    $ sudo make install [prefix=/usr/local]'
 
 build:
 	@echo compiling xmake-core ...
