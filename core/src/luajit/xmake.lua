@@ -1,3 +1,11 @@
+-- disable jit compiler for redhat and centos
+local jit = true
+local autogendir = "src/autogen/$(plat)/jit/$(arch)"
+if os.isfile("/etc/redhat-release") then
+    jit = false
+    autogendir = "src/autogen/$(plat)/nojit/$(arch)"
+end
+
 -- add target
 target("luajit")
 
@@ -20,15 +28,19 @@ target("luajit")
     set_headerdir("$(buildir)/luajit")
 
     -- add include directories
-    add_includedirs("src", "src/autogen/$(plat)/$(arch)")
+    add_includedirs("src", autogendir)
 
     -- add the common source files
     add_files("src/*.c|ljamalg.c|luajit.c") 
     if is_plat("windows") then
-        add_files("src/autogen/$(plat)/$(arch)/lj_vm.obj")
+        add_files(autogendir .. "/lj_vm.obj")
     else
-        add_files("src/autogen/$(plat)/$(arch)/*.s")
+        add_files(autogendir .. "/*.s")
     end
 
+    -- disable jit compiler?
+    if not jit then
+        add_defines("LUAJIT_DISABLE_JIT")
+    end
 
        
