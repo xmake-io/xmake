@@ -7,6 +7,11 @@ target("luajit")
     -- set warning all and disable error
     set_warnings("all")
 
+    -- disable c99(/TP) for windows
+    if is_plat("windows") then
+        set_languages("c89")
+    end
+
     -- set the object files directory
     set_objectdir("$(buildir)/.objs")
 
@@ -19,9 +24,11 @@ target("luajit")
 
     -- add the common source files
     add_files("src/*.c|ljamalg.c|luajit.c") 
-    if not is_plat("windows") then
+    if is_plat("windows") then
+        add_files("src/autogen/$(plat)/$(arch)/lj_vm.obj")
+    else
         add_files("src/autogen/$(plat)/$(arch)/*.s")
     end
+
+
        
-    -- disable jit compiler?
---    add_defines("LUAJIT_DISABLE_JIT")

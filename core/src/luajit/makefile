@@ -84,9 +84,6 @@ endif
 luajit_INC_DIRS 		+= \
 						src/autogen/$(PLAT)/$(ARCH)
 
-# flags
-#luajit_CXFLAGS 			+= 
-
 										
 # suffix
 include $(PRO_DIR)/suffix.mak
