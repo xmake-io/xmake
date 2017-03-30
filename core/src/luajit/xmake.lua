@@ -19,7 +19,9 @@ target("luajit")
 
     -- add the common source files
     add_files("src/*.c|ljamalg.c|luajit.c") 
-    add_files("src/autogen/$(plat)/$(arch)/*.s")
+    if not is_plat("windows") then
+        add_files("src/autogen/$(plat)/$(arch)/*.s")
+    end
        
     -- disable jit compiler?
 --    add_defines("LUAJIT_DISABLE_JIT")
