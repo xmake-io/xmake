@@ -169,7 +169,7 @@ ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
 endif
 
 # debug
-DEBUG 		:=$(if $(DEBUG),$(DEBUG),y)
+DEBUG 		:=$(if $(DEBUG),$(DEBUG),n)
 
 # debug type
 DTYPE 		:=$(if $(findstring y,$(DEBUG)),d,r)
@@ -273,11 +273,11 @@ base_LIBPATH 	:=
 base_LIBNAMES 	:= m dl pthread
 endif
 
-# config luajit
+# check jit compiler
 ifeq ($(PLAT),linux)
-luajit_LIBNAMES := $(shell if [ -f "/etc/redhat-release" ]; then echo "luajit_rhel"; else echo "luajit"; fi )
+luajit_JIT :=$(shell if [ -f "/etc/redhat-release" ]; then echo "nojit"; else echo "jit"; fi )
 else
-luajit_LIBNAMES := luajit
+luajit_JIT :=jit
 endif
 
 # select package directory
@@ -462,19 +462,6 @@ config : .null
 	@$(ECHO) "export tbox_INCFLAGS"						>> .config.mak
 	@$(ECHO) "export tbox_LIBFLAGS"						>> .config.mak
 	@$(ECHO) ""											>> .config.mak
-	@$(ECHO) "LUAJIT =y"								>> .config.mak
-	@$(ECHO) "luajit_INCPATH ="							>> .config.mak
-	@$(ECHO) "luajit_LIBPATH ="							>> .config.mak
-	@$(ECHO) "luajit_INCFLAGS ="						>> .config.mak
-	@$(ECHO) "luajit_LIBFLAGS ="						>> .config.mak
-	@$(ECHO) "luajit_LIBNAMES =$(luajit_LIBNAMES)" 		>> .config.mak
-	@$(ECHO) "export LUAJIT"							>> .config.mak
-	@$(ECHO) "export luajit_INCPATH"					>> .config.mak
-	@$(ECHO) "export luajit_LIBPATH"					>> .config.mak
-	@$(ECHO) "export luajit_LIBNAMES"					>> .config.mak
-	@$(ECHO) "export luajit_INCFLAGS"					>> .config.mak
-	@$(ECHO) "export luajit_LIBFLAGS"					>> .config.mak
-	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "BASE =y"									>> .config.mak
 	@$(ECHO) "base_INCPATH ="							>> .config.mak
 	@$(ECHO) "base_LIBPATH =$(base_LIBPATH)" 			>> .config.mak
@@ -487,6 +474,9 @@ config : .null
 	@$(ECHO) "export base_LIBNAMES"						>> .config.mak
 	@$(ECHO) "export base_INCFLAGS"						>> .config.mak
 	@$(ECHO) "export base_LIBFLAGS"						>> .config.mak
+	@$(ECHO) ""											>> .config.mak
+	@$(ECHO) "luajit_JIT =$(luajit_JIT)" 		    	>> .config.mak
+	@$(ECHO) "export luajit_JIT"						>> .config.mak
 
 # ######################################################################################
 # help

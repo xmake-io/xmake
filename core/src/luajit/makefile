@@ -75,17 +75,22 @@ luajit_C_FILES 			+= \
 						src/lj_vmmath 
 
 # asm files
-ifeq ($PLAT,windows)
+ifeq ($(PLAT),windows)
 luajit_OBJ_FILES 		+= \
-						src/autogen/$(PLAT)/$(ARCH)/lj_vm
+						src/autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
 else
 luajit_ASM_FILES 		+= \
-						src/autogen/$(PLAT)/$(ARCH)/lj_vm
+						src/autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
 endif
 						
 # includes
 luajit_INC_DIRS 		+= \
-						src/autogen/$(PLAT)/$(ARCH)
+						src/autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)
+
+# disable jit compiler
+ifeq ($(luajit_JIT),nojit)
+luajit_CXFLAGS 			+= -DLUAJIT_DISABLE_JIT
+endif
 
 										
 # suffix
