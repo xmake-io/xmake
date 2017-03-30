@@ -8,7 +8,7 @@ install:
   - cd ..
   - cp -r xmake xmake4build
   - cd xmake4build
-  - sudo ./install
+  - make build; sudo make install
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd --verbose; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install rust --verbose; fi
