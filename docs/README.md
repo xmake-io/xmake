@@ -17,7 +17,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ##### Windows
 
-1. Download xmake installer ([Releases](https://github.com/tboox/xmake/releases))
+1. Download xmake windows installer from [Releases](https://github.com/tboox/xmake/releases)
 2. Run xmake-[version].exe
 
 ##### MacOS
@@ -27,20 +27,35 @@ $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/maste
 $ sudo brew install xmake
 ```
 
+Or
+
+1. Download xmake `.pkg` install package from [Releases](https://github.com/tboox/xmake/releases) 
+2. Run it
+
 ##### Linux
 
-For linuxbrew:
+Using Linuxbrew:
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
 $ sudo brew install xmake
 ```
 
-For archlinux:
+On Archlinux:
 
 ```bash
 $ yaourt xmake
 ```
+
+On Ubuntu:
+
+1. Download xmake `.deb` install package from [Releases](https://github.com/tboox/xmake/releases) 
+2. Run `dpkg -i xmake-xxxx.deb`
+
+On Redhat/Centos:
+
+1. Download xmake `.rpm` install package from [Releases](https://github.com/tboox/xmake/releases) 
+2. Run `yum install xmake-xxx.rpm --nogpgcheck`
 
 ##### Compilation
 

@@ -5,6 +5,7 @@
 ### Changes
 
 * [#61](https://github.com/tboox/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
+* Provide `rpm`, `deb` and `osxpkg` install package
 
 ## Bugs fixed
 
@@ -234,6 +235,7 @@
 ### 改进
 
 * [#61](https://github.com/tboox/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
+* 提供`rpm`, `deb`和`osxpkg`安装包
 
 ### Bugs修复
 

@@ -24,7 +24,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 ##### Windows
 
-1. 从 ([Releases](https://github.com/tboox/xmake/releases)) 上下载windows安装包
+1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载windows安装包
 2. 运行安装程序 xmake-[version].exe
 
 ##### MacOS
@@ -33,6 +33,11 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 $ sudo brew install xmake
 ```
+
+或者：
+
+1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载pkg安装包
+2. 双击运行
 
 ##### Linux
 
@@ -48,6 +53,16 @@ $ sudo brew install xmake
 ```bash
 $ yaourt xmake
 ```
+
+在ubuntu上安装：
+
+1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载deb安装包
+2. 运行: `dpkg -i xmake-xxxx.deb`
+
+在`redhat/centos`上安装：
+
+1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载rpm安装包
+2. 运行: `yum install xmake-xxx.rpm --nogpgcheck`
 
 ##### 编译安装
 
