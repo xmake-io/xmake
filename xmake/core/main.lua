@@ -101,11 +101,33 @@ function main._init()
     assert(projectfile)
 end
 
+-- check run command as root
+function main._check_root()
+
+    -- check it
+    local ok, code = os.iorun("id -u")
+    if ok and code and code:trim() == '0' then
+        return false, [[Running xmake as root is extremely dangerous and no longer supported.
+        As xmake does not drop privileges on installation you would be giving all
+        build scripts full access to your system.]]
+    end
+
+    -- not root
+    return true
+end
+
 -- the main function
 function main.done()
 
     -- init 
     main._init()
+
+    -- check run command as root
+    local ok, errors = main._check_root()
+    if not ok then
+        utils.error(errors)
+        return -1
+    end
 
     -- init option 
     local ok, errors = option.init(menu)  

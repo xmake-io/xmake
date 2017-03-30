@@ -76,4 +76,10 @@ install:
 	@# ok
 	@echo ok!
 
-.PHONY: tip build install
+uninstall:
+	@echo uninstalling from $(prefix) ...
+	@rm $(prefix)/bin/xmake
+	@rm -rf $(prefix)/share/xmake
+	@echo ok!
+
+.PHONY: tip build install uninstall

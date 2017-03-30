@@ -6,11 +6,12 @@
 
 * [#61](https://github.com/tboox/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
 * Provide `rpm`, `deb` and `osxpkg` install package
+* [#63](https://github.com/tboox/xmake/pull/63): More safer build and install xmake
 
 ## Bugs fixed
 
 * Fix error tips for checking xmake min version
-* [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx
+* [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx and windows
 
 ## v2.1.2
 
@@ -236,11 +237,12 @@
 
 * [#61](https://github.com/tboox/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
 * 提供`rpm`, `deb`和`osxpkg`安装包
+* [#63](https://github.com/tboox/xmake/pull/63): 改进安装脚本，实现更加安全的构建和安装xmake
 
 ### Bugs修复
 
 * 修复版本检测的错误提示信息
-* [#60](https://github.com/tboox/xmake/issues/60): 修复macosx平台的xmake自举编译
+* [#60](https://github.com/tboox/xmake/issues/60): 修复macosx和windows平台的xmake自举编译
 
 ## v2.1.2
 
