@@ -29,7 +29,6 @@
  * includes
  */
 #include "../prefix.h"
-#include "luajit/luajit.h"
 
 
 #endif

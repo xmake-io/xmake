@@ -33,7 +33,6 @@
  * includes
  */
 #include "xmake.h"
-#include "luajit/luajit.h"
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include <windows.h>
 #endif

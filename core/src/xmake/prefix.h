@@ -29,6 +29,9 @@
  * includes
  */
 #include "prefix/prefix.h"
+#include "luajit.h"
+#include "lualib.h"
+#include "lauxlib.h"
 
 #endif
 

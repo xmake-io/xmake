@@ -11,8 +11,11 @@ target("luajit")
     set_objectdir("$(buildir)/.objs")
 
     -- add include directories
-    add_includedirs("src")
+    add_includedirs("src", "src/autogen/$(plat)/$(arch)")
 
     -- add the common source files
-    add_files("src/**.c") 
+    add_files("src/*.c|ljamalg.c|luajit.c") 
+    add_files("src/autogen/$(plat)/$(arch)/*.s")
        
+    -- disable jit compiler?
+--    add_defines("LUAJIT_DISABLE_JIT")
