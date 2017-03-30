@@ -7,6 +7,7 @@
 * [#61](https://github.com/tboox/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
 * Provide `rpm`, `deb` and `osxpkg` install package
 * [#63](https://github.com/tboox/xmake/pull/63): More safer build and install xmake
+* [#61](https://github.com/tboox/xmake/pull/61): Check run command as root
 
 ## Bugs fixed
 
@@ -238,6 +239,7 @@
 * [#61](https://github.com/tboox/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
 * 提供`rpm`, `deb`和`osxpkg`安装包
 * [#63](https://github.com/tboox/xmake/pull/63): 改进安装脚本，实现更加安全的构建和安装xmake
+* [#61](https://github.com/tboox/xmake/pull/61): 禁止在root权限下运行xmake命令，增强安全性
 
 ### Bugs修复
 
