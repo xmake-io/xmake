@@ -201,7 +201,7 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
 
 #ifdef TB_CONFIG_OS_WINDOWS
         // get the program directory
-        tb_size_t size = GetModuleFileName(tb_null, path, maxn);
+        tb_size_t size = (tb_size_t)GetModuleFileName(tb_null, path, (DWORD)maxn);
         tb_assert_and_check_break(size < maxn);
 
         // end

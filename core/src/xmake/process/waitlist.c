@@ -77,7 +77,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
     }
 
     // get the processes
-    tb_size_t           i = 0;
+    tb_int_t            i = 0;
     tb_process_ref_t    processes[64 + 1];
     for (i = 0; i < count; i++)
     {
@@ -93,14 +93,14 @@ tb_int_t xm_process_waitlist(lua_State* lua)
             if (!processes[i])
             {
                 // error
-                lua_pushfstring(lua, "process[%ld] is null for process.waitlist", i);
+                lua_pushfstring(lua, "process[%d] is null for process.waitlist", i);
                 lua_error(lua);
             }
         }
         else
         {
             // error
-            lua_pushfstring(lua, "invalid process[%ld] type(%s) for process.waitlist", i, luaL_typename(lua, -1));
+            lua_pushfstring(lua, "invalid process[%d] type(%s) for process.waitlist", i, luaL_typename(lua, -1));
             lua_error(lua);
         }
 

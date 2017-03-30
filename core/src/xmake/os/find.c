@@ -101,8 +101,8 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                 path += rootlen + 1;
 
                 // exclude pathes
-                tb_size_t i = 0;
-                tb_size_t count = luaL_getn(lua, 5);
+                tb_int_t i = 0;
+                tb_int_t count = luaL_getn(lua, 5);
                 for (i = 0; i < count && !excluded; i++)
                 {
                     // get exclude
@@ -133,7 +133,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
             }
 
             // save this path
-            if (!excluded) lua_rawseti(lua, -3, ++*pcount);
+            if (!excluded) lua_rawseti(lua, -3, (tb_int_t)(++*pcount));
             // pop this return value
             else lua_pop(lua, 1);
         }
