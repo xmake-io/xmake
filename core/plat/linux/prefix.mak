@@ -13,7 +13,7 @@ LIB_SUFFIX 			= .a
 DLL_PREFIX 			= lib
 DLL_SUFFIX 			= .so
 
-ASM_SUFFIX 			= .S
+ASM_SUFFIX 			= .s
 
 # prefix
 PRE_ 				:= $(if $(BIN),$(BIN)/$(PRE),)
@@ -32,7 +32,7 @@ LD 					= $(PRE_)$(LD_)
 AR 					= $(PRE_)ar
 STRIP 				= $(PRE_)strip
 RANLIB 				= $(PRE_)ranlib
-AS					= $(if $(PRE_),$(CC) -c -fPIC,yasm -f elf)
+AS					= $(CC) 
 RM 					= rm -f
 RMDIR 				= rm -rf
 CP 					= cp
@@ -117,7 +117,7 @@ endif
 # asflags
 ASFLAGS_RELEASE 	= 
 ASFLAGS_DEBUG 		= 
-ASFLAGS 			= $(AHFLAGS)
+ASFLAGS 			= -c -fPIC $(AHFLAGS)
 ASFLAGS-I 			= -I
 ASFLAGS-o 			= -o
 

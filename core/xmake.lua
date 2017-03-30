@@ -17,6 +17,9 @@ set_languages("c99", "cxx11")
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
 add_mxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
 
+-- add defines
+add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
+
 -- set the symbols visibility: hidden
 set_symbols("hidden")
 
