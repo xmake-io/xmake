@@ -75,7 +75,10 @@ luajit_C_FILES 			+= \
 						src/lj_vmmath 
 
 # asm files
-ifneq ($PLAT,windows)
+ifeq ($PLAT,windows)
+luajit_OBJ_FILES 		+= \
+						src/autogen/$(PLAT)/$(ARCH)/lj_vm
+else
 luajit_ASM_FILES 		+= \
 						src/autogen/$(PLAT)/$(ARCH)/lj_vm
 endif
