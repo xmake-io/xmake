@@ -42,11 +42,8 @@ if [ `uname` == "Darwin" ]; then
     plat=macosx
 fi
 
-# build xmake core
-cd ./core
-make f DEBUG=n
-make r
-cd -
+# build first
+make build
 
 # make xmake wrapper
 echo "#/!bin/bash
