@@ -13,7 +13,7 @@ LIB_SUFFIX 			= .a
 DLL_PREFIX 			= 
 DLL_SUFFIX 			= .dylib
 
-ASM_SUFFIX 			= .S
+ASM_SUFFIX 			= .s
 
 # cpu bits
 BITS 				:= $(if $(findstring x86_64,$(ARCH)),64,)
@@ -44,7 +44,7 @@ MM 					= $(PRE_)clang
 AR 					= $(PRE_)ar
 STRIP 				= $(PRE_)strip
 RANLIB 				= $(PRE_)ranlib
-AS					= yasm
+AS					= $(PRE_)clang
 RM 					= rm -f
 RMDIR 				= rm -rf
 CP 					= cp
@@ -143,9 +143,9 @@ LDFLAGS_DEBUG 		+= -ftrapv
 endif
 
 # asflags
-ASFLAGS_RELEASE 	= Wa,-march=native
+ASFLAGS_RELEASE 	= 
 ASFLAGS_DEBUG 		= 
-ASFLAGS 			= -m$(BITS) -f elf $(ARCH_ASFLAGS)
+ASFLAGS 			= -m$(BITS) -c -Wall
 ASFLAGS-I 			= -I
 ASFLAGS-o 			= -o
 

@@ -51,16 +51,11 @@ xmake_C_FILES 			+= \
 
 # flags
 xmake_CXFLAGS 			+= -D__tb_prefix__=\"xmake\"
+	
+# includes
+xmake_INC_DIRS 		    += \
+						../luajit/src
 
-# header files
-xmake_INC_FILES 		= \
-						xmake.h \
-						machine.h \
-						config.h \
-						prefix.h \
-						prefix/prefix.h \
-						prefix/config.h \
-						prefix/version.h 
 						
 # suffix
 include $(PRO_DIR)/suffix.mak

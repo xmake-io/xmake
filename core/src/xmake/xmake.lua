@@ -18,7 +18,7 @@ target("xmake")
     set_objectdir("$(buildir)/.objs")
 
     -- add includes directory
-    add_includedirs("$(projectdir)", "../luajit/src")
+    add_includedirs("$(projectdir)", "$(buildir)/luajit")
 
     -- add packages
     add_packages("tbox", "base")

@@ -17,7 +17,7 @@ target("demo")
     set_objectdir("$(buildir)/.objs")
 
     -- add includes directory
-    add_includedirs("$(projectdir)", "$(projectdir)/src", "../luajit/src")
+    add_includedirs("$(projectdir)", "$(projectdir)/src", "$(buildir)/luajit")
 
     -- add links and directory
     add_links("xmake", "luajit")

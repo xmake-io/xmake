@@ -10,6 +10,10 @@ target("luajit")
     -- set the object files directory
     set_objectdir("$(buildir)/.objs")
 
+    -- add headers
+    add_headers("src/(*.h)")
+    set_headerdir("$(buildir)/luajit")
+
     -- add include directories
     add_includedirs("src", "src/autogen/$(plat)/$(arch)")
 
