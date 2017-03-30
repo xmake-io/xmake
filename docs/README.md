@@ -62,7 +62,7 @@ On Redhat/Centos:
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
 $ cd ./xmake
-$ sudo ./install
+$ make build; sudo make install [prefix=/usr/local]
 ```
 
 ## Quick Start

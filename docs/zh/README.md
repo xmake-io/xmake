@@ -69,7 +69,7 @@ $ yaourt xmake
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
 $ cd ./xmake
-$ sudo ./install
+$ make build; sudo make install [prefix=/usr/local]
 ```
 
 ## 快速开始
