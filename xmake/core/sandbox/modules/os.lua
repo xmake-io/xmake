@@ -503,7 +503,7 @@ end
 function sandbox_os.sudol(runner, luafile, luaargv)
 
     -- init argv
-    local argv = {"lua"}
+    local argv = {"lua", "--root"}
     for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
         local value = option.get(name)
         if type(value) == "string" then

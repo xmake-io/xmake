@@ -487,7 +487,6 @@ function option.find(argv, name, shortname)
             -- get value
             nextvalue = true
         end
-
     end
 end
 

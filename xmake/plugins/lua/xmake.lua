@@ -73,6 +73,7 @@ task("lua")
             ,   options = 
                 {
                     {'l', "list",       "k",  nil,          "List all scripts."             }      
+                ,   {nil, "root",       "k",  nil,          "Allow to run script as root."  }      
                 ,   {nil, "script",     "v",  nil,          "Run the given lua script."     }      
                 ,   {nil, "arguments",  "vs", nil,          "The script arguments."         }
                 }

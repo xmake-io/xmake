@@ -122,18 +122,20 @@ function main.done()
     -- init 
     main._init()
 
-    -- check run command as root
-    local ok, errors = main._check_root()
-    if not ok then
-        utils.error(errors)
-        return -1
-    end
-
     -- init option 
     local ok, errors = option.init(menu)  
     if not ok then
         utils.error(errors)
         return -1
+    end
+
+    -- check run command as root
+    if not option.get("root") then
+        local ok, errors = main._check_root()
+        if not ok then
+            utils.error(errors)
+            return -1
+        end
     end
 
     -- start profiling
