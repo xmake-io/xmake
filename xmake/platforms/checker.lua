@@ -24,6 +24,7 @@
 
 -- imports
 import("core.tool.tool")
+import("core.base.option")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
@@ -95,10 +96,12 @@ function _toolchain_check(config, toolkind, toolinfo)
         end
 
         -- trace
-        if toolpath then
-            cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(toolpath))
-        else
-            cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", toolinfo.description, toolkind, name)
+        if option.get("verbose") then
+            if toolpath then
+                cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(toolpath))
+            else
+                cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", toolinfo.description, toolkind, name)
+            end
         end
     end
 
