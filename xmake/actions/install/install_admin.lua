@@ -53,7 +53,7 @@ function main(targetname, installdir)
     end
 
     -- install target
-    install.install(targetname)
+    install.install(ifelse(targetname ~= "__all", targetname, nil))
 
     -- restore the previous option context
     option.restore()

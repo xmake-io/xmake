@@ -109,17 +109,17 @@ function _stat_target_count(targetname)
     -- init targets count
     _g.targetcount = 0
 
-    -- for all?
-    if targetname == "all" then
-
-        -- make all targets
-        for _, target in pairs(project.targets()) do
-            _stat_target_count_and_deps(target)
-        end
-    else
-
-        -- make target
+    -- for the given target?
+    if targetname then
         _stat_target_count_and_deps(project.target(targetname))
+    else
+        -- for default or all targets
+        for _, target in pairs(project.targets()) do
+            local default = target:get("default")
+            if default == nil or default == true then
+                _stat_target_count_and_deps(target)
+            end
+        end
     end
 end
 
@@ -138,17 +138,17 @@ function build(targetname)
     -- init target index
     _g.targetindex = 0
 
-    -- for all?
-    if targetname == "all" then
-
-        -- make all targets
-        for _, target in pairs(project.targets()) do
-            _build_target_and_deps(target)
-        end
-    else
-
-        -- make target
+    -- build the given target?
+    if targetname then
         _build_target_and_deps(project.target(targetname))
+    else
+        -- build default or all targets
+        for _, target in pairs(project.targets()) do
+            local default = target:get("default")
+            if default == nil or default == true then
+                _build_target_and_deps(target)
+            end
+        end
     end
 
     -- leave toolchains environment

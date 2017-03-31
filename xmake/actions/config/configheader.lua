@@ -137,10 +137,9 @@ function make()
     local files = {}
 
     -- make configure for the given target name
-    if targetname and targetname ~= "all" then
+    if targetname then
         _make_for_target_with_deps(files, targetname)
     else
-
         -- make configure for all targets
         for _, target in pairs(project.targets()) do
             _make_for_target(files, target)

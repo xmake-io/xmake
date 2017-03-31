@@ -48,7 +48,7 @@ task("clean")
                     {'a', "all",        "k",  nil,          "Clean all auto-generated files by xmake."                      }
                 
                 ,   {}
-                ,   {nil, "target",     "v",  "all",        "Clean for the given target."                                   }      
+                ,   {nil, "target",     "v",  nil,          "Clean for the given target."                                   }      
                 }
             }
 

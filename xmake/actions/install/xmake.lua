@@ -37,7 +37,7 @@ task("install")
                 usage = "xmake install|i [options] [target]"
 
                 -- description
-            ,   description = "Package and install the project binary files."
+            ,   description = "Package and install the target binary files."
 
                 -- xmake i
             ,   shortname = 'i'
@@ -48,7 +48,7 @@ task("install")
                     {'o', "installdir", "kv", nil,      "Set the install directory."    }
 
                 ,   {}
-                ,   {nil, "target",     "v",  "all",    "Install the given target."     }
+                ,   {nil, "target",     "v",  nil,      "Install the given target."     }
                 }
             }
 

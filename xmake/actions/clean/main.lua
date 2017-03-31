@@ -119,18 +119,14 @@ function _clean_target_and_deps(target)
     _g.finished[target:name()] = true
 end
 
--- clean the given target 
+-- clean target 
 function _clean(targetname)
 
-    -- the target name
-    if targetname and targetname ~= "all" then
-
-        -- clean target
+    -- clean the given target
+    if targetname then
         _clean_target_and_deps(project.target(targetname)) 
-
     else
-
-        -- clean targets
+        -- clean all targets
         for _, target in pairs(project.targets()) do
             _clean_target_and_deps(target) 
         end

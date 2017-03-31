@@ -79,12 +79,16 @@ function install(targetname)
     -- init finished states
     _g.finished = {}
 
-    -- install all?
-    if targetname == "all" then
-        for _, target in pairs(project.targets()) do
-            _install_target_and_deps(target)
-        end
-    else
+    -- install the given target?
+    if targetname then
         _install_target_and_deps(project.target(targetname))
+    else
+        -- install default or all targets
+        for _, target in pairs(project.targets()) do
+            local default = target:get("default")
+            if default == nil or default == true then
+                _install_target_and_deps(target)
+            end
+        end
     end
 end

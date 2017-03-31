@@ -79,12 +79,13 @@ function uninstall(targetname)
     -- init finished states
     _g.finished = {}
 
-    -- uninstall all?
-    if targetname == "all" then
+    -- uninstall given target?
+    if targetname then
+        _uninstall_target_and_deps(project.target(targetname))
+    else
+        -- uninstall all targets
         for _, target in pairs(project.targets()) do
             _uninstall_target_and_deps(target)
         end
-    else
-        _uninstall_target_and_deps(project.target(targetname))
     end
 end

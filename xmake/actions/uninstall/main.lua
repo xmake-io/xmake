@@ -73,7 +73,7 @@ function main()
                     if answer == 'y' or answer == '' then
 
                         -- uninstall target with administrator permission
-                        os.sudol(os.runv, path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname, option.get("installdir")})
+                        os.sudol(os.runv, path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", option.get("installdir")})
 
                         -- trace
                         cprint("${bright}uninstall ok!${clear}${ok_hand}")

@@ -70,7 +70,7 @@ function main()
         function ()
 
             -- build 
-            builder.build(targetname or "all")
+            builder.build(targetname)
         
         end,
 
@@ -81,8 +81,10 @@ function main()
                 -- failed
                 if errors then
                     raise(errors)
-                else
+                elseif targetname then
                     raise("build target: %s failed!", targetname)
+                else
+                    raise("build target failed!")
                 end
             end
         }

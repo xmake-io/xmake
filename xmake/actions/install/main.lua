@@ -73,7 +73,7 @@ function main()
                     if answer == 'y' or answer == '' then
 
                         -- install target with administrator permission
-                        os.sudol(os.runv, path.join(os.scriptdir(), "install_admin.lua"), {targetname, option.get("installdir")})
+                        os.sudol(os.runv, path.join(os.scriptdir(), "install_admin.lua"), {targetname or "__all", option.get("installdir")})
 
                         -- trace
                         cprint("${bright}install ok!${clear}${ok_hand}")

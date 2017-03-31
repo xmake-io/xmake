@@ -37,7 +37,7 @@ task("build")
                 usage = "xmake [task] [options] [target]"
 
                 -- description
-            ,   description = "Build the project if no given tasks."
+            ,   description = "Build targets if no given tasks."
 
                 -- options
             ,   options = 
@@ -46,10 +46,10 @@ task("build")
                 ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
 
                 ,   {}
-                ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously"          }
+                ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously."         }
                
                 ,   {}
-                ,   {nil, "target",     "v",  "all",        "Build the given target."                                       } 
+                ,   {nil, "target",     "v",  nil,          "Build the given target."                                       } 
                 }
             }
 

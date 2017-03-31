@@ -48,7 +48,7 @@ task("uninstall")
                     {nil, "installdir", "kv", nil,      "Set the install directory."    }
 
                 ,   {}
-                ,   {nil, "target",     "v",  "all",    "Uninstall the given target."   }
+                ,   {nil, "target",     "v",  nil,      "Uninstall the given target."   }
                 }
             }
 

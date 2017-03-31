@@ -192,6 +192,7 @@ function project._interpreter()
             -- target.set_xxx
         ,   "target.set_kind"
         ,   "target.set_strip"
+        ,   "target.set_default"
         ,   "target.set_options"
         ,   "target.set_symbols"
         ,   "target.set_basename"

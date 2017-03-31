@@ -53,7 +53,7 @@ function main(targetname, installdir)
     end
 
     -- uninstall target
-    uninstall.uninstall(targetname)
+    uninstall.uninstall(ifelse(targetname ~= "__all", targetname, nil))
 
     -- restore the previous option context
     option.restore()
