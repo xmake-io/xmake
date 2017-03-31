@@ -39,7 +39,7 @@ function main()
     task.run("build", {target = targetname})
 
     -- get the target name again
-    targetname = targetname or project.default_target()
+    targetname = targetname or project.default_target() or "all"
 
     -- trace
     print("installing to %s ...", option.get("installdir") or platform.get("installdir"))
