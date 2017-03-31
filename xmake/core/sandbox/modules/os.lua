@@ -42,18 +42,6 @@ sandbox_os.mtime    = os.mtime
 sandbox_os.mclock   = os.mclock
 sandbox_os.emptydir = os.emptydir
 
--- get sudo program name for running program with administrator permission
-function sandbox_os._sudoname()
-    
-    -- on windows?
-    if xmake._HOST == "windows" then
-        -- TODO
-        -- add sudo.bat 
-    else
-        return "sudo"
-    end
-end
-
 -- copy file or directory
 function sandbox_os.cp(...)
     
@@ -463,7 +451,7 @@ function sandbox_os.feature(name)
 
     -- has 'sudo' feature? 
     if name == "sudo" then
-        return sandbox_os._sudoname() ~= nil
+        return sandbox_os.host() ~= "windows"
     end
 end
 
@@ -478,7 +466,14 @@ function sandbox_os.sudo(runner, cmd, ...)
     assert(sandbox_os.feature("sudo"), "no sudo!")
 
     -- run it with administrator permission
-    runner(sandbox_os._sudoname() .. " " .. cmd, ...)
+    if sandbox_os.host() == "windows" then
+
+        -- TODO wrap sudo.bat
+        runner(cmd, ...)
+    else
+        -- run it with administrator permission and preserve parent environment
+        runner("sudo -E " .. cmd, ...)
+    end
 end
 
 -- sudo run shell with administrator permission and arguments list
@@ -492,7 +487,14 @@ function sandbox_os.sudov(runner, shellname, argv)
     assert(sandbox_os.feature("sudo"), "no sudo!")
 
     -- run it with administrator permission
-    runner(sandbox_os._sudoname(), table.join(shellname, argv))
+    if sandbox_os.host() == "windows" then
+
+        -- TODO wrap sudo.bat
+        runner(shellname, argv)
+    else
+        -- run it with administrator permission and preserve parent environment
+        runner("sudo", table.join("-E", shellname, argv))
+    end
 end
 
 -- sudo run lua script with administrator permission and arguments list
@@ -514,7 +516,7 @@ function sandbox_os.sudol(runner, luafile, luaargv)
     end
                   
     -- run it with administrator permission
-    sandbox_os.sudov(runner, "xmake", table.join(argv, luafile, luaargv))
+    sandbox_os.sudov(runner, path.join(sandbox_os.programdir(), "xmake"), table.join(argv, luafile, luaargv))
 end
 
 -- return module
