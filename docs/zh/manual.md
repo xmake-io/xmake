@@ -437,6 +437,7 @@ target("test2")
 | [target_end](#target_end)                   | 结束定义工程目标                     | >= 2.1.1 |
 | [set_kind](#targetset_kind)                 | 设置目标编译类型                     | >= 1.0.1 |
 | [set_strip](#targetset_strip)               | 设置是否strip信息                    | >= 1.0.1 |
+| [set_default](#targetset_default)           | 设置是否为默认构建安装目标           | >= 2.1.3 |
 | [set_options](#targetset_options)           | 设置关联选项                         | >= 1.0.1 |
 | [set_symbols](#targetset_symbols)           | 设置符号信息                         | >= 1.0.1 |
 | [set_basename](#targetset_basename)         | 设置目标文件名                       | >= 2.1.2 |
@@ -615,6 +616,44 @@ target("xxxx")
 <p class="tip">
 这个api不一定非得在target之后使用，如果没有target指定，那么将会设置到全局模式。。
 </p>
+
+##### target:set_default
+
+###### 设置是否为默认构建安装目标
+
+这个接口用于设置给定工程目标是否作为默认构建，如果没有调用此接口进行设置，那么这个目标就是默认被构建的，例如：
+
+```lua
+target("test1")
+    set_default(false)
+
+target("test2")
+    set_default(true)
+
+target("test3")
+    ...
+```
+
+上述代码的三个目标，在执行`xmake`, `xmake install`, `xmake package`, `xmake run`等命令的时候，如果不指定目标名，那么：
+
+| 目标名 | 行为                             |
+| ------ | -------------------------------- |
+| test1  | 不会被默认构建、安装、打包和运行 |
+| test2  | 默认构建、安装、打包和运行       |
+| test3  | 默认构建、安装、打包和运行       |
+
+通过上面的例子，可以看到默认目标可以设置多个，运行的时候也会依次运行。
+
+<p class="tip">
+    需要注意的是，`xmake uninstall`和`xmake clean`命令不受此接口设置影响，因为用户大部分情况下都是喜欢清除和卸载所有。
+</p>
+
+如果不想使用默认的目标，那么可以手动指定需要构建安装的目标：
+
+```bash
+$ xmake [-b|--build] targetname
+$ xmake install targetname
+```
 
 ##### target:set_options
 
