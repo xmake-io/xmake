@@ -196,7 +196,7 @@ function main()
     local targetname = option.get("target")
 
     -- build it first
-    task.run("build", {target = targetname})
+    task.run("build", {target = targetname, all = option.get("all")})
 
     -- init finished states
     _g.finished = {}
@@ -208,7 +208,7 @@ function main()
         -- package default or all targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if default == nil or default == true then
+            if default == nil or default == true or option.get("all") then
                 _package_target_and_deps(target)
             end
         end

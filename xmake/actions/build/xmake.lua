@@ -42,8 +42,9 @@ task("build")
                 -- options
             ,   options = 
                 {
-                    {'b', "build",      "k",  nil,          "Build project. This is default building mode and optional."    }
-                ,   {'r', "rebuild",    "k",  nil,          "Rebuild the project."                                          }
+                    {'b', "build",      "k",  nil,          "Build target. This is default building mode and optional."     }
+                ,   {'r', "rebuild",    "k",  nil,          "Rebuild the target."                                           }
+                ,   {'a', "all",        "k",  nil,          "Build all targets."                                            }
 
                 ,   {}
                 ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously."         }

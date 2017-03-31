@@ -92,7 +92,7 @@ function main()
     local targetname = option.get("target")
 
     -- build it first
-    task.run("build", {target = targetname})
+    task.run("build", {target = targetname, all = option.get("all")})
 
     -- enter project directory
     local olddir = os.cd(project.directory())
@@ -104,7 +104,7 @@ function main()
         -- run default or all binary targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if (default == nil or default == true) and target:get("kind") == "binary" then
+            if (default == nil or default == true or option.get("all")) and target:get("kind") == "binary" then
                 _run(target)
             end
         end

@@ -35,7 +35,7 @@ function main()
     local targetname = option.get("target")
 
     -- build it first
-    task.run("build", {target = targetname})
+    task.run("build", {target = targetname, all = option.get("all")})
 
     -- trace
     print("installing to %s ...", option.get("installdir") or platform.get("installdir"))
@@ -46,7 +46,7 @@ function main()
         function ()
 
             -- install target
-            install.install(targetname)
+            install.install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
             -- trace
             cprint("${bright}install ok!${clear}${ok_hand}")
@@ -73,7 +73,7 @@ function main()
                     if answer == 'y' or answer == '' then
 
                         -- install target with administrator permission
-                        os.sudol(os.runv, path.join(os.scriptdir(), "install_admin.lua"), {targetname or "__all", option.get("installdir")})
+                        os.sudol(os.runv, path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir")})
 
                         -- trace
                         cprint("${bright}install ok!${clear}${ok_hand}")

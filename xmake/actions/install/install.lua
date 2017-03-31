@@ -80,13 +80,13 @@ function install(targetname)
     _g.finished = {}
 
     -- install the given target?
-    if targetname then
+    if targetname and not targetname:startswith("__") then
         _install_target_and_deps(project.target(targetname))
     else
         -- install default or all targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if default == nil or default == true then
+            if default == nil or default == true or targetname == "__all" then
                 _install_target_and_deps(target)
             end
         end

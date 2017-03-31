@@ -649,10 +649,16 @@ target("test3")
 如果不想使用默认的目标，那么可以手动指定需要构建安装的目标：
 
 ```bash
-$ xmake [-b|--build] targetname
+$ xmake build targetname
 $ xmake install targetname
 ```
 
+如果要强制构建安装所有目标，可以传入`[-a|--all]`参数：
+
+```bash
+$ xmake build [-a|--all]
+$ xmake install [-a|--all]
+```
 ##### target:set_options
 
 ###### 设置关联选项

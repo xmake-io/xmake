@@ -46,6 +46,7 @@ task("run")
             ,   options = 
                 {
                     {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
+                ,   {'a', "all",        "k",  nil,          "Run all targets."                                              }
 
                 ,   {}
                 ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      

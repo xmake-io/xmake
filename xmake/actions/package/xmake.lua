@@ -46,9 +46,9 @@ task("package")
             ,   options = 
                 {
                     {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
-                ,   {'a', "archs",      "kv", nil,          "Compile for the given architecture. (deprecated)"              }        
+                ,   {'a', "all",        "k",  nil,          "Package all targets."                                          }
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Package a given target"                                        }   
+                ,   {nil, "target",     "v",  nil,          "Package a given target."                                       }   
                 }
             } 
 

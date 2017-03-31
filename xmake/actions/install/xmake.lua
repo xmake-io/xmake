@@ -46,6 +46,7 @@ task("install")
             ,   options = 
                 {
                     {'o', "installdir", "kv", nil,      "Set the install directory."    }
+                ,   {'a', "all",        "k",  nil,      "Install all targets."          }
 
                 ,   {}
                 ,   {nil, "target",     "v",  nil,      "Install the given target."     }

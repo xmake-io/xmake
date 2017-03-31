@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.project")
 import("core.platform.environment")
 
@@ -116,7 +117,7 @@ function _stat_target_count(targetname)
         -- for default or all targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if default == nil or default == true then
+            if default == nil or default == true or option.get("all") then
                 _stat_target_count_and_deps(target)
             end
         end
@@ -145,7 +146,7 @@ function build(targetname)
         -- build default or all targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if default == nil or default == true then
+            if default == nil or default == true or option.get("all") then
                 _build_target_and_deps(target)
             end
         end
