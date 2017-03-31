@@ -198,6 +198,9 @@ function main()
     -- build it first
     task.run("build", {target = targetname})
 
+    -- get the target name again
+    targetname = targetname or project.default_target()
+
     -- init finished states
     _g.finished = {}
 
