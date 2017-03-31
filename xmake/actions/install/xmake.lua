@@ -48,7 +48,7 @@ task("install")
                     {'o', "installdir", "kv", nil,      "Set the install directory."    }
 
                 ,   {}
-                ,   {nil, "target",     "v",  "all",    "Install the given target."     }
+                ,   {nil, "target",     "v",  nil,      "Install the given target."     }
                 }
             }
 
