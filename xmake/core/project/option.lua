@@ -403,10 +403,10 @@ end
 function option:_check_condition()
  
     -- the files
-    local cfile         = path.join(os.tmpdir(), "__checking.c")
-    local cxxfile       = path.join(os.tmpdir(), "__checking.cpp")
-    local objectfile    = path.join(os.tmpdir(), "__checking.obj")
-    local targetfile    = path.join(os.tmpdir(), "__checking.bin")
+    local cfile         = os.tmpfile() .. ".c"
+    local cxxfile       = os.tmpfile() .. ".cpp"
+    local objectfile    = os.tmpfile() .. ".obj"
+    local targetfile    = os.tmpfile() .. ".bin"
 
     -- check links
     if not self:_check_links(cfile, objectfile, targetfile) then return false end
