@@ -8,6 +8,7 @@
 * Provide `rpm`, `deb` and `osxpkg` install package
 * [#63](https://github.com/tboox/xmake/pull/63): More safer build and install xmake
 * [#61](https://github.com/tboox/xmake/pull/61): Check run command as root
+* Improve check toolchains and implement delay checking
 
 ## Bugs fixed
 
@@ -240,6 +241,7 @@
 * 提供`rpm`, `deb`和`osxpkg`安装包
 * [#63](https://github.com/tboox/xmake/pull/63): 改进安装脚本，实现更加安全的构建和安装xmake
 * [#61](https://github.com/tboox/xmake/pull/61): 禁止在root权限下运行xmake命令，增强安全性
+* 改进工具链检测，通过延迟延迟检测提升整体检测效率
 
 ### Bugs修复
 
