@@ -19,6 +19,7 @@ build() {
 
 package() {
     cd "$srcdir/${pkgname}-${pkgver}"
+    mkdir -p "${pkgdir}/usr/share"
     cp -r "./xmake" "${pkgdir}/usr/share/"
     install -Dm755 `find ./core/bin/demo.pkg/bin/linux/ -name "demo.b"` "${pkgdir}/usr/share/xmake/xmake"
     echo "#/!bin/bash
