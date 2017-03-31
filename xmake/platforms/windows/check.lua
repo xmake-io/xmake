@@ -324,6 +324,9 @@ function main(kind, toolkind)
     -- only check the given tool?
     if toolkind then
 
+        -- import the given config
+        local config = import("core.project." .. kind)
+
         -- apply vs envirnoment (maybe config.arch has been updated)
         if not _apply_vsenv(config, config.get("vs")) then
             return 
@@ -333,7 +336,7 @@ function main(kind, toolkind)
         environment.enter("toolchains")
 
         -- check it
-        checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+        checker.toolchain_check(config, toolkind, _toolchains)
 
         -- leave environment
         environment.leave("toolchains")
