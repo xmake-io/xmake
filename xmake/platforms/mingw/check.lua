@@ -26,22 +26,27 @@
 import("core.tool.tool")
 import("platforms.checker", {rootdir = os.programdir()})
 
--- check the toolchains
-function _check_toolchains(config)
+-- get toolchains
+function _toolchains(config)
+
+    -- attempt to get it from cache first
+    if _g.TOOLCHAINS then
+        return _g.TOOLCHAINS
+    end
 
     -- get toolchains
-    local toolchains = config.get("toolchains")
-    if not toolchains then
+    local toolchainsdir = config.get("toolchains")
+    if not toolchainsdir then
         local sdkdir = config.get("sdk")
         if sdkdir then
-            toolchains = path.join(sdkdir, "bin")
+            toolchainsdir = path.join(sdkdir, "bin")
         end
     end
 
     -- get cross
     local cross = ""
-    if toolchains then
-        local ldpathes = os.match(path.join(toolchains, "*-ld"))
+    if toolchainsdir then
+        local ldpathes = os.match(path.join(toolchainsdir, "*-ld"))
         for _, ldpath in ipairs(ldpathes) do
             local ldname = path.basename(ldpath)
             if ldname then
@@ -50,28 +55,39 @@ function _check_toolchains(config)
         end
     end
 
-    -- check
-    checker.check_toolchain(config, "cc",   cross, "gcc",       "the c compiler") 
-    checker.check_toolchain(config, "cxx",  cross, "g++",       "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",  cross, "gcc",       "the c++ compiler") 
-    checker.check_toolchain(config, "as",   cross, "gcc",       "the assember")
-    checker.check_toolchain(config, "ld",   cross, "g++",       "the linker") 
-    checker.check_toolchain(config, "ld",   cross, "gcc",       "the linker") 
-    checker.check_toolchain(config, "ar",   cross, "ar",        "the static library archiver") 
-    checker.check_toolchain(config, "ex",   cross, "ar",        "the static library extractor") 
-    checker.check_toolchain(config, "sh",   cross, "g++",       "the shared library linker") 
-    checker.check_toolchain(config, "sh",   cross, "gcc",       "the shared library linker") 
+    -- make toolchains
+    local toolchains = {}
+    checker.toolchain_insert(toolchains, "cc",   cross, "gcc",       "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",  cross, "g++",       "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",  cross, "gcc",       "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "as",   cross, "gcc",       "the assember")
+    checker.toolchain_insert(toolchains, "ld",   cross, "g++",       "the linker") 
+    checker.toolchain_insert(toolchains, "ld",   cross, "gcc",       "the linker") 
+    checker.toolchain_insert(toolchains, "ar",   cross, "ar",        "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",   cross, "ar",        "the static library extractor") 
+    checker.toolchain_insert(toolchains, "sh",   cross, "g++",       "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",   cross, "gcc",       "the shared library linker") 
+
+    -- save toolchains
+    _g.TOOLCHAINS = toolchains
+
+    -- ok
+    return toolchains
 end
 
 -- check it
-function main(kind)
+function main(kind, toolkind)
+
+    -- only check the given tool?
+    if toolkind then
+        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+    end
 
     -- init the check list of config
     _g.config = 
     {
         { checker.check_arch, "i386" }
     ,   checker.check_ccache
-    ,   _check_toolchains
     }
 
     -- init the check list of global

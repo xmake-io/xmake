@@ -26,65 +26,84 @@
 import("core.tool.tool")
 import("platforms.checker", {rootdir = os.programdir()})
 
--- check the toolchains
-function _check_toolchains(config)
+-- get toolchains
+function _toolchains(config)
 
-    -- check for c/c++ tools
-    checker.check_toolchain(config, "cc",       "xcrun -sdk macosx ",   "clang",        "the c compiler") 
-    checker.check_toolchain(config, "cxx",      "xcrun -sdk macosx ",   "clang",        "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",      "xcrun -sdk macosx ",   "clang++",      "the c++ compiler") 
-    checker.check_toolchain(config, "ld",       "xcrun -sdk macosx ",   "clang++",      "the linker") 
-    checker.check_toolchain(config, "ld",       "xcrun -sdk macosx ",   "clang",        "the linker") 
-    checker.check_toolchain(config, "ar",       "xcrun -sdk macosx ",   "ar",           "the static library archiver") 
-    checker.check_toolchain(config, "ex",       "xcrun -sdk macosx ",   "ar",           "the static library extractor") 
-    checker.check_toolchain(config, "sh",       "xcrun -sdk macosx ",   "clang++",      "the shared library linker") 
-    checker.check_toolchain(config, "sh",       "xcrun -sdk macosx ",   "clang",        "the shared library linker") 
-    checker.check_toolchain(config, "dg",       "xcrun -sdk macosx ",   "lldb",         "the debugger") 
+    -- attempt to get it from cache first
+    if _g.TOOLCHAINS then
+        return _g.TOOLCHAINS
+    end
 
-    -- check for objc/c++ tools
-    checker.check_toolchain(config, "mm",       "xcrun -sdk macosx ",   "clang",        "the objc compiler") 
-    checker.check_toolchain(config, "mxx",      "xcrun -sdk macosx ",   "clang++",      "the objc++ compiler") 
-    checker.check_toolchain(config, "mxx",      "xcrun -sdk macosx ",   "clang",        "the objc++ compiler") 
+    -- init toolchains
+    local toolchains = {}
 
-    -- check for asm tools
-    checker.check_toolchain(config, "as",       "xcrun -sdk macosx ",   "clang",        "the assember") 
+    -- insert c/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "cc",       "xcrun -sdk macosx ",   "clang",        "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      "xcrun -sdk macosx ",   "clang",        "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      "xcrun -sdk macosx ",   "clang++",      "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "ld",       "xcrun -sdk macosx ",   "clang++",      "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       "xcrun -sdk macosx ",   "clang",        "the linker") 
+    checker.toolchain_insert(toolchains, "ar",       "xcrun -sdk macosx ",   "ar",           "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",       "xcrun -sdk macosx ",   "ar",           "the static library extractor") 
+    checker.toolchain_insert(toolchains, "sh",       "xcrun -sdk macosx ",   "clang++",      "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       "xcrun -sdk macosx ",   "clang",        "the shared library linker") 
+    checker.toolchain_insert(toolchains, "dg",       "xcrun -sdk macosx ",   "lldb",         "the debugger") 
 
-    -- check for swift tools
-    checker.check_toolchain(config, "sc",       "xcrun -sdk macosx ",   "swiftc",       "the swift compiler") 
-    checker.check_toolchain(config, "sc-ld",    "xcrun -sdk macosx ",   "swiftc",       "the swift linker") 
-    checker.check_toolchain(config, "sc-sh",    "xcrun -sdk macosx ",   "swiftc",       "the swift shared library linker") 
+    -- insert objc/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "mm",       "xcrun -sdk macosx ",   "clang",        "the objc compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      "xcrun -sdk macosx ",   "clang++",      "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      "xcrun -sdk macosx ",   "clang",        "the objc++ compiler") 
 
-    -- check for golang tools
-    checker.check_toolchain(config, "gc",       "",                     "go",           "the golang compiler") 
-    checker.check_toolchain(config, "gc",       "",                     "gccgo",        "the golang compiler") 
-    checker.check_toolchain(config, "gc-ar",    "",                     "go",           "the golang static library archiver") 
-    checker.check_toolchain(config, "gc-ar",    "",                     "gccgo",        "the golang static library archiver") 
-    checker.check_toolchain(config, "gc-ld",    "",                     "go",           "the golang linker") 
-    checker.check_toolchain(config, "gc-ld",    "",                     "gccgo",        "the golang linker") 
+    -- insert asm tools to toolchains
+    checker.toolchain_insert(toolchains, "as",       "xcrun -sdk macosx ",   "clang",        "the assember") 
 
-    -- check for dlang tools
-    checker.check_toolchain(config, "dc",       "",                     "dmd",          "the dlang compiler") 
-    checker.check_toolchain(config, "dc",       "",                     "ldc2",         "the dlang compiler") 
-    checker.check_toolchain(config, "dc",       "",                     "gdc",          "the dlang compiler") 
-    checker.check_toolchain(config, "dc-ar",    "",                     "dmd",          "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-ar",    "",                     "ldc2",         "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-ar",    "",                     "gdc",          "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-sh",    "",                     "dmd",          "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-sh",    "",                     "ldc2",         "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-sh",    "",                     "gdc",          "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-ld",    "",                     "dmd",          "the dlang linker") 
-    checker.check_toolchain(config, "dc-ld",    "",                     "ldc2",         "the dlang linker") 
-    checker.check_toolchain(config, "dc-ld",    "",                     "gdc",          "the dlang linker") 
+    -- insert swift tools to toolchains
+    checker.toolchain_insert(toolchains, "sc",       "xcrun -sdk macosx ",   "swiftc",       "the swift compiler") 
+    checker.toolchain_insert(toolchains, "sc-ld",    "xcrun -sdk macosx ",   "swiftc",       "the swift linker") 
+    checker.toolchain_insert(toolchains, "sc-sh",    "xcrun -sdk macosx ",   "swiftc",       "the swift shared library linker") 
 
-    -- check for rust tools
-    checker.check_toolchain(config, "rc",       "",                     "rustc",        "the rust compiler") 
-    checker.check_toolchain(config, "rc-ar",    "",                     "rustc",        "the rust static library archiver") 
-    checker.check_toolchain(config, "rc-sh",    "",                     "rustc",        "the rust shared library linker") 
-    checker.check_toolchain(config, "rc-ld",    "",                     "rustc",        "the rust linker") 
+    -- insert golang tools to toolchains
+    checker.toolchain_insert(toolchains, "gc",       "",                     "go",           "the golang compiler") 
+    checker.toolchain_insert(toolchains, "gc",       "",                     "gccgo",        "the golang compiler") 
+    checker.toolchain_insert(toolchains, "gc-ar",    "",                     "go",           "the golang static library archiver") 
+    checker.toolchain_insert(toolchains, "gc-ar",    "",                     "gccgo",        "the golang static library archiver") 
+    checker.toolchain_insert(toolchains, "gc-ld",    "",                     "go",           "the golang linker") 
+    checker.toolchain_insert(toolchains, "gc-ld",    "",                     "gccgo",        "the golang linker") 
+
+    -- insert dlang tools to toolchains
+    checker.toolchain_insert(toolchains, "dc",       "",                     "dmd",          "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc",       "",                     "ldc2",         "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc",       "",                     "gdc",          "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",                     "dmd",          "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",                     "ldc2",         "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",                     "gdc",          "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",                     "dmd",          "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",                     "ldc2",         "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",                     "gdc",          "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",                     "dmd",          "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",                     "ldc2",         "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",                     "gdc",          "the dlang linker") 
+
+    -- insert rust tools to toolchains
+    checker.toolchain_insert(toolchains, "rc",       "",                     "rustc",        "the rust compiler") 
+    checker.toolchain_insert(toolchains, "rc-ar",    "",                     "rustc",        "the rust static library archiver") 
+    checker.toolchain_insert(toolchains, "rc-sh",    "",                     "rustc",        "the rust shared library linker") 
+    checker.toolchain_insert(toolchains, "rc-ld",    "",                     "rustc",        "the rust linker") 
+
+    -- save toolchains
+    _g.TOOLCHAINS = toolchains
+
+    -- ok
+    return toolchains
 end
 
 -- check it
-function main(kind)
+function main(kind, toolkind)
+
+    -- only check the given tool?
+    if toolkind then
+        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+    end
 
     -- init the check list of config
     _g.config = 
@@ -94,7 +113,6 @@ function main(kind)
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
     ,   checker.check_ccache
-    ,   _check_toolchains
     }
 
     -- init the check list of global

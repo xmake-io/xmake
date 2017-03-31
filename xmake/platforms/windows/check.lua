@@ -199,62 +199,6 @@ function _check_vs(config)
     end
 end
 
--- check the toolchains
-function _check_toolchains(config)
-
-    -- apply vs envirnoment (maybe config.arch has been updated)
-    if not _apply_vsenv(config, config.get("vs")) then
-        return 
-    end
-
-    -- enter environment
-    environment.enter("toolchains")
-
-    -- check
-    checker.check_toolchain(config, "cc",   "", "cl.exe",           "the c compiler") 
-    checker.check_toolchain(config, "cxx",  "", "cl.exe",           "the c++ compiler") 
-    checker.check_toolchain(config, "ld",   "", "link.exe",         "the linker") 
-    checker.check_toolchain(config, "ar",   "", "link.exe -lib",    "the static library archiver") 
-    checker.check_toolchain(config, "sh",   "", "link.exe -dll",    "the shared library linker") 
-    checker.check_toolchain(config, "ex",   "", "lib.exe",          "the static library extractor") 
-    if config.get("arch"):find("64") then
-        checker.check_toolchain(config, "as",   "", "ml64.exe",     "the assember") 
-    else
-        checker.check_toolchain(config, "as",   "", "ml.exe",       "the assember") 
-    end
-
-    -- leave environment
-    environment.leave("toolchains")
-
-    -- check for golang tools
-    checker.check_toolchain(config, "gc",       "",      "go",          "the golang compiler") 
-    checker.check_toolchain(config, "gc",       "",      "gccgo",       "the golang compiler") 
-    checker.check_toolchain(config, "gc-ar",    "",      "go",          "the golang static library archiver") 
-    checker.check_toolchain(config, "gc-ar",    "",      "gccgo",       "the golang static library archiver") 
-    checker.check_toolchain(config, "gc-ld",    "",      "go",          "the golang linker") 
-    checker.check_toolchain(config, "gc-ld",    "",      "gccgo",       "the golang linker") 
-
-    -- check for dlang tools
-    checker.check_toolchain(config, "dc",       "",      "dmd",         "the dlang compiler") 
-    checker.check_toolchain(config, "dc",       "",      "ldc2",        "the dlang compiler") 
-    checker.check_toolchain(config, "dc",       "",      "gdc",         "the dlang compiler") 
-    checker.check_toolchain(config, "dc-ar",    "",      "dmd",         "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-ar",    "",      "ldc2",        "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-ar",    "",      "gdc",         "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-sh",    "",      "dmd",         "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-sh",    "",      "ldc2",        "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-sh",    "",      "gdc",         "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-ld",    "",      "dmd",         "the dlang linker") 
-    checker.check_toolchain(config, "dc-ld",    "",      "ldc2",        "the dlang linker") 
-    checker.check_toolchain(config, "dc-ld",    "",      "gdc",         "the dlang linker") 
-
-    -- check for rust tools
-    checker.check_toolchain(config, "rc",       "",      "rustc",       "the rust compiler") 
-    checker.check_toolchain(config, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
-    checker.check_toolchain(config, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
-    checker.check_toolchain(config, "rc-ld",    "",      "rustc",       "the rust linker") 
-end
-
 -- check the debugger
 function _check_debugger(config)
 
@@ -313,15 +257,91 @@ function _check_debugger(config)
     end
 end
 
+-- get toolchains
+function _toolchains(config)
+
+    -- attempt to get it from cache first
+    if _g.TOOLCHAINS then
+        return _g.TOOLCHAINS
+    end
+
+    -- apply vs envirnoment (maybe config.arch has been updated)
+    if not _apply_vsenv(config, config.get("vs")) then
+        return 
+    end
+
+    -- init toolchains
+    local toolchains = {}
+
+    -- enter environment
+    environment.enter("toolchains")
+
+    -- insert c/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "cc",   "", "cl.exe",           "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",  "", "cl.exe",           "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "ld",   "", "link.exe",         "the linker") 
+    checker.toolchain_insert(toolchains, "ar",   "", "link.exe -lib",    "the static library archiver") 
+    checker.toolchain_insert(toolchains, "sh",   "", "link.exe -dll",    "the shared library linker") 
+    checker.toolchain_insert(toolchains, "ex",   "", "lib.exe",          "the static library extractor") 
+
+    -- insert asm tools to toolchains
+    if config.get("arch"):find("64") then
+        checker.toolchain_insert(toolchains, "as",   "", "ml64.exe",     "the assember") 
+    else
+        checker.toolchain_insert(toolchains, "as",   "", "ml.exe",       "the assember") 
+    end
+
+    -- leave environment
+    environment.leave("toolchains")
+
+    -- insert golang tools to toolchains
+    checker.toolchain_insert(toolchains, "gc",       "",      "go",          "the golang compiler") 
+    checker.toolchain_insert(toolchains, "gc",       "",      "gccgo",       "the golang compiler") 
+    checker.toolchain_insert(toolchains, "gc-ar",    "",      "go",          "the golang static library archiver") 
+    checker.toolchain_insert(toolchains, "gc-ar",    "",      "gccgo",       "the golang static library archiver") 
+    checker.toolchain_insert(toolchains, "gc-ld",    "",      "go",          "the golang linker") 
+    checker.toolchain_insert(toolchains, "gc-ld",    "",      "gccgo",       "the golang linker") 
+
+    -- insert dlang tools to toolchains
+    checker.toolchain_insert(toolchains, "dc",       "",      "dmd",         "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc",       "",      "ldc2",        "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc",       "",      "gdc",         "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",      "dmd",         "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",      "ldc2",        "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",      "gdc",         "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",      "dmd",         "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",      "ldc2",        "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",      "gdc",         "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",      "dmd",         "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",      "ldc2",        "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",      "gdc",         "the dlang linker") 
+
+    -- insert rust tools to toolchains
+    checker.toolchain_insert(toolchains, "rc",       "",      "rustc",       "the rust compiler") 
+    checker.toolchain_insert(toolchains, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
+    checker.toolchain_insert(toolchains, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
+    checker.toolchain_insert(toolchains, "rc-ld",    "",      "rustc",       "the rust linker") 
+
+    -- save toolchains
+    _g.TOOLCHAINS = toolchains
+
+    -- ok
+    return toolchains
+end
+
 -- check it
-function main(kind)
+function main(kind, toolkind)
+
+    -- only check the given tool?
+    if toolkind then
+        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+    end
 
     -- init the check list of config
     _g.config = 
     {
         { checker.check_arch, "x86" }
     ,   _check_vs
-    ,   _check_toolchains
     ,   _check_debugger
     }
 

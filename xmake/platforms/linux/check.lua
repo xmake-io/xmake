@@ -41,22 +41,27 @@ function __check_arch(config)
     end
 end
 
--- check the toolchains
-function _check_toolchains(config)
+-- get toolchains
+function _toolchains(config)
 
-    -- get toolchains
-    local toolchains = config.get("toolchains")
-    if not toolchains then
+    -- attempt to get it from cache first
+    if _g.TOOLCHAINS then
+        return _g.TOOLCHAINS
+    end
+
+    -- get toolchains directory
+    local toolchainsdir = config.get("toolchains")
+    if not toolchainsdir then
         local sdkdir = config.get("sdk")
         if sdkdir then
-            toolchains = path.join(sdkdir, "bin")
+            toolchainsdir = path.join(sdkdir, "bin")
         end
     end
 
     -- get cross
     local cross = ""
-    if toolchains then
-        local ldpathes = os.match(path.join(toolchains, "*-ld"))
+    if toolchainsdir then
+        local ldpathes = os.match(path.join(toolchainsdir, "*-ld"))
         for _, ldpath in ipairs(ldpathes) do
             local ldname = path.basename(ldpath)
             if ldname then
@@ -65,76 +70,89 @@ function _check_toolchains(config)
         end
     end
 
-    -- check for c/c++ tools
-    checker.check_toolchain(config, "cc",       cross,   "gcc",         "the c compiler") 
-    checker.check_toolchain(config, "cc",       cross,   "clang",       "the c compiler") 
-    checker.check_toolchain(config, "cxx",      cross,   "gcc",         "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",      cross,   "clang",       "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",      cross,   "g++",         "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",      cross,   "clang++",     "the c++ compiler") 
-    checker.check_toolchain(config, "ld",       cross,   "g++",         "the linker") 
-    checker.check_toolchain(config, "ld",       cross,   "gcc",         "the linker") 
-    checker.check_toolchain(config, "ld",       cross,   "clang++",     "the linker") 
-    checker.check_toolchain(config, "ld",       cross,   "clang",       "the linker") 
-    checker.check_toolchain(config, "ar",       cross,   "ar",          "the static library archiver") 
-    checker.check_toolchain(config, "ex",       cross,   "ar",          "the static library extractor") 
-    checker.check_toolchain(config, "sh",       cross,   "g++",         "the shared library linker") 
-    checker.check_toolchain(config, "sh",       cross,   "gcc",         "the shared library linker") 
-    checker.check_toolchain(config, "sh",       cross,   "clang++",     "the shared library linker") 
-    checker.check_toolchain(config, "sh",       cross,   "clang",       "the shared library linker") 
-    checker.check_toolchain(config, "dg",       cross,   "gdb",         "the debugger") 
-    checker.check_toolchain(config, "dg",       cross,   "lldb",        "the debugger") 
+    -- init toolchains
+    local toolchains = {}
 
-    -- check for objc/c++ tools
-    checker.check_toolchain(config, "mm",       cross,   "clang",       "the objc compiler") 
-    checker.check_toolchain(config, "mm",       cross,   "gcc",         "the objc compiler") 
-    checker.check_toolchain(config, "mxx",      cross,   "clang++",     "the objc++ compiler") 
-    checker.check_toolchain(config, "mxx",      cross,   "clang",       "the objc++ compiler") 
-    checker.check_toolchain(config, "mxx",      cross,   "g++",         "the objc++ compiler") 
-    checker.check_toolchain(config, "mxx",      cross,   "gcc",         "the objc++ compiler") 
+    -- insert c/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "cc",       cross,   "gcc",         "the c compiler") 
+    checker.toolchain_insert(toolchains, "cc",       cross,   "clang",       "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,   "gcc",         "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,   "clang",       "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,   "g++",         "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,   "clang++",     "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "ld",       cross,   "g++",         "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       cross,   "gcc",         "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       cross,   "clang++",     "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       cross,   "clang",       "the linker") 
+    checker.toolchain_insert(toolchains, "ar",       cross,   "ar",          "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",       cross,   "ar",          "the static library extractor") 
+    checker.toolchain_insert(toolchains, "sh",       cross,   "g++",         "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       cross,   "gcc",         "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       cross,   "clang++",     "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       cross,   "clang",       "the shared library linker") 
+    checker.toolchain_insert(toolchains, "dg",       cross,   "gdb",         "the debugger") 
+    checker.toolchain_insert(toolchains, "dg",       cross,   "lldb",        "the debugger") 
 
-    -- check for asm tools
-    checker.check_toolchain(config, "as",       cross,   "clang",       "the assember") 
-    checker.check_toolchain(config, "as",       cross,   "gcc",         "the assember") 
+    -- insert objc/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "mm",       cross,   "clang",       "the objc compiler") 
+    checker.toolchain_insert(toolchains, "mm",       cross,   "gcc",         "the objc compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      cross,   "clang++",     "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      cross,   "clang",       "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      cross,   "g++",         "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      cross,   "gcc",         "the objc++ compiler") 
 
-    -- check for golang tools
-    checker.check_toolchain(config, "gc",       "",      "go",          "the golang compiler") 
-    checker.check_toolchain(config, "gc",       "",      "gccgo",       "the golang compiler") 
-    checker.check_toolchain(config, "gc-ar",    "",      "go",          "the golang static library archiver") 
-    checker.check_toolchain(config, "gc-ar",    "",      "gccgo",       "the golang static library archiver") 
-    checker.check_toolchain(config, "gc-ld",    "",      "go",          "the golang linker") 
-    checker.check_toolchain(config, "gc-ld",    "",      "gccgo",       "the golang linker") 
+    -- insert asm tools to toolchains
+    checker.toolchain_insert(toolchains, "as",       cross,   "clang",       "the assember") 
+    checker.toolchain_insert(toolchains, "as",       cross,   "gcc",         "the assember") 
 
-    -- check for dlang tools
-    checker.check_toolchain(config, "dc",       "",      "dmd",         "the dlang compiler") 
-    checker.check_toolchain(config, "dc",       "",      "ldc2",        "the dlang compiler") 
-    checker.check_toolchain(config, "dc",       "",      "gdc",         "the dlang compiler") 
-    checker.check_toolchain(config, "dc-ar",    "",      "dmd",         "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-ar",    "",      "ldc2",        "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-ar",    "",      "gdc",         "the dlang static library archiver") 
-    checker.check_toolchain(config, "dc-sh",    "",      "dmd",         "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-sh",    "",      "ldc2",        "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-sh",    "",      "gdc",         "the dlang shared library linker") 
-    checker.check_toolchain(config, "dc-ld",    "",      "dmd",         "the dlang linker") 
-    checker.check_toolchain(config, "dc-ld",    "",      "ldc2",        "the dlang linker") 
-    checker.check_toolchain(config, "dc-ld",    "",      "gdc",         "the dlang linker") 
+    -- insert golang tools to toolchains
+    checker.toolchain_insert(toolchains, "gc",       "",      "go",          "the golang compiler") 
+    checker.toolchain_insert(toolchains, "gc",       "",      "gccgo",       "the golang compiler") 
+    checker.toolchain_insert(toolchains, "gc-ar",    "",      "go",          "the golang static library archiver") 
+    checker.toolchain_insert(toolchains, "gc-ar",    "",      "gccgo",       "the golang static library archiver") 
+    checker.toolchain_insert(toolchains, "gc-ld",    "",      "go",          "the golang linker") 
+    checker.toolchain_insert(toolchains, "gc-ld",    "",      "gccgo",       "the golang linker") 
 
-    -- check for rust tools
-    checker.check_toolchain(config, "rc",       "",      "rustc",       "the rust compiler") 
-    checker.check_toolchain(config, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
-    checker.check_toolchain(config, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
-    checker.check_toolchain(config, "rc-ld",    "",      "rustc",       "the rust linker") 
+    -- insert dlang tools to toolchains
+    checker.toolchain_insert(toolchains, "dc",       "",      "dmd",         "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc",       "",      "ldc2",        "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc",       "",      "gdc",         "the dlang compiler") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",      "dmd",         "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",      "ldc2",        "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-ar",    "",      "gdc",         "the dlang static library archiver") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",      "dmd",         "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",      "ldc2",        "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-sh",    "",      "gdc",         "the dlang shared library linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",      "dmd",         "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",      "ldc2",        "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc-ld",    "",      "gdc",         "the dlang linker") 
+
+    -- insert rust tools to toolchains
+    checker.toolchain_insert(toolchains, "rc",       "",      "rustc",       "the rust compiler") 
+    checker.toolchain_insert(toolchains, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
+    checker.toolchain_insert(toolchains, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
+    checker.toolchain_insert(toolchains, "rc-ld",    "",      "rustc",       "the rust linker") 
+
+    -- save toolchains
+    _g.TOOLCHAINS = toolchains
+
+    -- ok
+    return toolchains
 end
 
 -- check it
-function main(kind)
+function main(kind, toolkind)
+
+    -- only check the given tool?
+    if toolkind then
+        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+    end
 
     -- init the check list of config
     _g.config = 
     {
         __check_arch
     ,   checker.check_ccache
-    ,   _check_toolchains
     }
 
     -- init the check list of global

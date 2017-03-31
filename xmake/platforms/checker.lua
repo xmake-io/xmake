@@ -25,6 +25,87 @@
 -- imports
 import("core.tool.tool")
 
+-- find the given tool
+function _toolchain_check(config, toolkind, toolinfo)
+
+    -- get the tool path
+    local toolpath = config.get(toolkind)
+    if not toolpath then
+
+        -- get name
+        local name = toolinfo.name
+
+        -- get cross
+        local cross = config.get("cross") or toolinfo.cross
+
+        -- get shell name from the env if not cross-compilation
+        if cross and cross:trim() == "" then
+            local shellname = os.getenv(toolkind:upper():split('-')[1])
+            if shellname and shellname:trim() ~= "" then
+                toolpath = tool.check(shellname) 
+            end
+        end
+
+        -- check it using the custom script
+        if not toolpath and toolinfo.check then
+
+            -- check it
+            try
+            {
+                function ()
+
+                    -- check it
+                    toolinfo.check(cross .. name)
+
+                    -- ok
+                    toolpath = cross .. name
+                end
+            }
+        end
+
+        -- get toolchains
+        local toolchains = config.get("toolchains")
+        if not toolchains then
+            local sdkdir = config.get("sdk")
+            if sdkdir then
+                toolchains = path.join(sdkdir, "bin")
+            end
+        end
+
+        -- attempt to check it from the given cross toolchains
+        if not toolpath and toolchains then
+            toolpath = tool.check(cross .. name, toolchains)
+        end
+
+        -- attempt to check it with cross prefix
+        if not toolpath then
+            toolpath = tool.check(cross .. name)
+        end
+
+        -- attempt to check it without cross prefix
+        if not toolpath then
+            toolpath = tool.check(name)
+        end
+
+        -- check ok?
+        if toolpath then 
+
+            -- update config
+            config.set(toolkind, toolpath) 
+        end
+
+        -- trace
+        if toolpath then
+            cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(toolpath))
+        else
+            cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", toolinfo.description, toolkind, name)
+        end
+    end
+
+    -- get tool path
+    return toolpath
+end
+
 -- check all for the given config kind
 function check(kind, checkers)
 
@@ -35,16 +116,19 @@ function check(kind, checkers)
     for _, checker in ipairs(checkers[kind]) do
 
         -- has arguments?
-        local args = nil
+        local args = {}
         if type(checker) == "table" then
-            if #checker > 1 then
-                args = checker[2]
+            for idx, arg in ipairs(checker) do
+                if idx == 1 then
+                    checker = arg
+                else
+                    table.insert(args, arg)
+                end
             end
-            checker = checker[1]
         end
 
         -- check it
-        checker(config, args)
+        checker(config, unpack(args))
     end
 end
 
@@ -203,79 +287,30 @@ function check_ccache(config)
     end
 end
 
--- check the toolchain
-function check_toolchain(config, kind, cross, name, description, check)
+-- insert toolchain
+function toolchain_insert(toolchains, toolkind, cross, name, description, check)
 
-    -- get the tool path
-    local toolpath = config.get(kind)
-    if not toolpath then
-
-        -- get the cross
-        cross = config.get("cross") or cross
-
-        -- get shell name from the env if not cross-compilation
-        if cross and cross:trim() == "" then
-            local shellname = os.getenv(kind:upper():split('-')[1])
-            if shellname and shellname:trim() ~= "" then
-                toolpath = tool.check(shellname) 
-            end
-        end
-
-        -- check it using the custom script
-        if not toolpath and check then
-
-            -- check it
-            try
-            {
-                function ()
-
-                    -- check it
-                    check(cross .. name)
-
-                    -- ok
-                    toolpath = cross .. name
-                end
-            }
-        end
-
-        -- get toolchains
-        local toolchains = config.get("toolchains")
-        if not toolchains then
-            local sdkdir = config.get("sdk")
-            if sdkdir then
-                toolchains = path.join(sdkdir, "bin")
-            end
-        end
-
-        -- attempt to check it from the given cross toolchains
-        if not toolpath and toolchains then
-            toolpath = tool.check(cross .. name, toolchains)
-        end
-
-        -- attempt to check it with cross prefix
-        if not toolpath then
-            toolpath = tool.check(cross .. name)
-        end
-
-        -- attempt to check it without cross prefix
-        if not toolpath then
-            toolpath = tool.check(name)
-        end
-
-        -- check ok?
-        if toolpath then 
-
-            -- update config
-            config.set(kind, toolpath) 
-        end
-
-        -- trace
-        if toolpath then
-            cprint("checking for %s (%s) ... ${green}%s", description, kind, path.filename(toolpath))
-        else
-            cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", description, kind, name)
-        end
-    end
+    -- insert to the given toolchain
+    toolchains[toolkind] = toolchains[toolkind] or {}
+    table.insert(toolchains[toolkind], {cross = cross, name = name, description = description, check = check})
 end
 
+-- check the toolchain 
+function toolchain_check(config, toolkind, toolchains)
+
+    -- load toolchains if be function
+    if type(toolchains) == "function" then
+        toolchains = toolchains(config)
+    end
+
+    -- check this toolchain
+    for _, toolinfo in ipairs(toolchains[toolkind]) do
+        if _toolchain_check(config, toolkind, toolinfo) then
+            break
+        end
+    end
+
+    -- save config
+    config.save()
+end
 

@@ -242,10 +242,23 @@ end
 --
 -- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
-function platform.tool(kind)
+function platform.tool(toolkind)
 
-    -- get it
-    return config.get(kind)
+    -- attempt to get it from config first
+    local toolpath = config.get(toolkind)
+    if toolpath ~= nil then
+        return toolpath
+    else
+        
+        -- check the tool path
+        local check = platform.get("check")
+        if check then
+            check("config", toolkind)
+        end
+
+        -- get it again
+        return config.get(toolkind)
+    end
 end
 
 -- get the all platforms

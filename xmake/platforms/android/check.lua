@@ -74,15 +74,15 @@ function _check_ndk_sdkver(config)
     end
 end
 
--- check the toolchains
-function _check_toolchains(config)
+-- check toolchains directory
+function _check_toolchains_dir(config)
 
-    -- get architecture
-    local arch = config.get("arch")
+    -- get toolchains directory
+    local toolchains_dir = config.get("toolchains")
+    if not toolchains_dir then
 
-    -- get toolchains
-    local toolchains = config.get("toolchains")
-    if not toolchains then
+        -- get architecture
+        local arch = config.get("arch")
 
         -- get ndk
         local ndk = config.get("ndk")
@@ -90,35 +90,56 @@ function _check_toolchains(config)
 
             -- match all toolchains
             if arch and arch:startswith("arm64") then
-                toolchains = os.match("%s/toolchains/aarch64-linux-android-**/prebuilt/*/bin/aarch64-linux-android-*", false, ndk)
+                toolchains_dir = os.match("%s/toolchains/aarch64-linux-android-**/prebuilt/*/bin/aarch64-linux-android-*", false, ndk)
             else
-                toolchains = os.match("%s/toolchains/arm-linux-androideabi-**/prebuilt/*/bin/arm-linux-androideabi-*", false, ndk)
+                toolchains_dir = os.match("%s/toolchains/arm-linux-androideabi-**/prebuilt/*/bin/arm-linux-androideabi-*", false, ndk)
             end
 
             -- save the toolchains directory
-            for _, filepath in ipairs(toolchains) do
+            for _, filepath in ipairs(toolchains_dir) do
                 config.set("toolchains", path.directory(filepath))
                 break
             end
         end
     end
+end
+
+-- check toolchains version
+function _check_toolchains_ver(config)
 
     -- get toolchains version
-    local toolchains = config.get("toolchains")
-    if toolchains then
-        local pos, _, toolchains_ver = toolchains:find("%-(%d*%.%d*)[/\\]")
-        if pos and toolchains_ver then
+    local toolchains_ver = config.get("toolchains_ver")
+    if not toolchains_ver then
 
-            -- save the toolchains version
-            config.set("toolchains_ver", toolchains_ver)
- 
-            -- trace
-            cprint("checking for the version of toolchains ... ${green}%s", toolchains_ver)
-        else
-            -- trace
-            cprint("checking for the version of toolchains ... ${red}no")
+        -- get toolchains directory
+        local toolchains_dir = config.get("toolchains")
+        if toolchains_dir then
+            local pos, _, toolchains_ver = toolchains_dir:find("%-(%d*%.%d*)[/\\]")
+            if pos and toolchains_ver then
+
+                -- save the toolchains version
+                config.set("toolchains_ver", toolchains_ver)
+     
+                -- trace
+                cprint("checking for the version of toolchains ... ${green}%s", toolchains_ver)
+            else
+                -- trace
+                cprint("checking for the version of toolchains ... ${red}no")
+            end
         end
     end
+end
+
+-- get toolchains
+function _toolchains(config)
+
+    -- attempt to get it from cache first
+    if _g.TOOLCHAINS then
+        return _g.TOOLCHAINS
+    end
+
+    -- get architecture
+    local arch = config.get("arch")
 
     -- get cross
     local cross = "arm-linux-androideabi-"
@@ -126,26 +147,40 @@ function _check_toolchains(config)
         cross = "aarch64-linux-android-"
     end
 
-    -- check it for c/c++
-    checker.check_toolchain(config, "cc",       cross,  "gcc",          "the c compiler") 
-    checker.check_toolchain(config, "cxx",      cross,  "g++",          "the c++ compiler") 
-    checker.check_toolchain(config, "as",       cross,  "gcc",          "the assember")
-    checker.check_toolchain(config, "ld",       cross,  "g++",          "the linker") 
-    checker.check_toolchain(config, "ld",       cross,  "gcc",          "the linker") 
-    checker.check_toolchain(config, "ar",       cross,  "ar",           "the static library archiver") 
-    checker.check_toolchain(config, "ex",       cross,  "ar",           "the static library extractor") 
-    checker.check_toolchain(config, "sh",       cross,  "g++",          "the shared library linker") 
-    checker.check_toolchain(config, "sh",       cross,  "gcc",          "the shared library linker") 
+    -- init toolchains
+    local toolchains = {}
 
-    -- check for rust tools
-    checker.check_toolchain(config, "rc",       "",      "rustc",       "the rust compiler") 
-    checker.check_toolchain(config, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
-    checker.check_toolchain(config, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
-    checker.check_toolchain(config, "rc-ld",    "",      "rustc",       "the rust linker") 
+    -- check c/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "cc",       cross,  "gcc",          "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,  "g++",          "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "as",       cross,  "gcc",          "the assember")
+    checker.toolchain_insert(toolchains, "ld",       cross,  "g++",          "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       cross,  "gcc",          "the linker") 
+    checker.toolchain_insert(toolchains, "ar",       cross,  "ar",           "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",       cross,  "ar",           "the static library extractor") 
+    checker.toolchain_insert(toolchains, "sh",       cross,  "g++",          "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       cross,  "gcc",          "the shared library linker") 
+
+    -- insert rust tools to toolchains
+    checker.toolchain_insert(toolchains, "rc",       "",      "rustc",       "the rust compiler") 
+    checker.toolchain_insert(toolchains, "rc-ar",    "",      "rustc",       "the rust static library archiver") 
+    checker.toolchain_insert(toolchains, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
+    checker.toolchain_insert(toolchains, "rc-ld",    "",      "rustc",       "the rust linker") 
+
+    -- save toolchains
+    _g.TOOLCHAINS = toolchains
+
+    -- ok
+    return toolchains
 end
 
 -- check it
-function main(kind)
+function main(kind, toolkind)
+
+    -- only check the given tool?
+    if toolkind then
+        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+    end
 
     -- init the check list of config
     _g.config = 
@@ -153,7 +188,10 @@ function main(kind)
         { checker.check_arch, "armv7-a" }
     ,   checker.check_ccache
     ,   _check_ndk_sdkver
-    ,   _check_toolchains
+    ,   _check_toolchains_dir
+    ,   _check_toolchains_ver
+    ,   { checker.toolchain_check, "sh", _toolchains }
+    ,   { checker.toolchain_check, "ld", _toolchains }
     }
 
     -- init the check list of global

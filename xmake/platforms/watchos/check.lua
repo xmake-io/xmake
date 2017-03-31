@@ -40,8 +40,13 @@ function _check_as(shellname)
     os.rm(tmpfile)
 end
 
--- check the toolchains
-function _check_toolchains(config)
+-- get toolchains
+function _toolchains(config)
+
+    -- attempt to get it from cache first
+    if _g.TOOLCHAINS then
+        return _g.TOOLCHAINS
+    end
 
     -- init architecture
     local arch = config.get("arch")
@@ -50,38 +55,52 @@ function _check_toolchains(config)
     -- init cross
     local cross = ifelse(simulator, "xcrun -sdk watchsimulator ", "xcrun -sdk watchos ")
 
-    -- check for c/c++ tools
-    checker.check_toolchain(config, "cc",       cross,  "clang",        "the c compiler") 
-    checker.check_toolchain(config, "cxx",      cross,  "clang",        "the c++ compiler") 
-    checker.check_toolchain(config, "cxx",      cross,  "clang++",      "the c++ compiler") 
-    checker.check_toolchain(config, "ld",       cross,  "clang++",      "the linker") 
-    checker.check_toolchain(config, "ld",       cross,  "clang",        "the linker") 
-    checker.check_toolchain(config, "ar",       cross,  "ar",           "the static library archiver") 
-    checker.check_toolchain(config, "ex",       cross,  "ar",           "the static library extractor") 
-    checker.check_toolchain(config, "sh",       cross,  "clang++",      "the shared library linker") 
-    checker.check_toolchain(config, "sh",       cross,  "clang",        "the shared library linker") 
-    checker.check_toolchain(config, "dg",       cross,  "lldb",         "the debugger") 
+    -- init toolchains
+    local toolchains = {}
 
-    -- check for objc/c++ tools
-    checker.check_toolchain(config, "mm",       cross,  "clang",        "the objc compiler") 
-    checker.check_toolchain(config, "mxx",      cross,  "clang++",      "the objc++ compiler") 
-    checker.check_toolchain(config, "mxx",      cross,  "clang",        "the objc++ compiler") 
+    -- insert c/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "cc",       cross,  "clang",        "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,  "clang",        "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      cross,  "clang++",      "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "ld",       cross,  "clang++",      "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       cross,  "clang",        "the linker") 
+    checker.toolchain_insert(toolchains, "ar",       cross,  "ar",           "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",       cross,  "ar",           "the static library extractor") 
+    checker.toolchain_insert(toolchains, "sh",       cross,  "clang++",      "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       cross,  "clang",        "the shared library linker") 
+    checker.toolchain_insert(toolchains, "dg",       cross,  "lldb",         "the debugger") 
 
-    -- check for asm tools
+    -- insert objc/c++ tools to toolchains
+    checker.toolchain_insert(toolchains, "mm",       cross,  "clang",        "the objc compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      cross,  "clang++",      "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mxx",      cross,  "clang",        "the objc++ compiler") 
+
+    -- insert swift tools to toolchains
+    checker.toolchain_insert(toolchains, "sc",       cross,   "swiftc",       "the swift compiler") 
+    checker.toolchain_insert(toolchains, "sc-ld",    cross,   "swiftc",       "the swift linker") 
+    checker.toolchain_insert(toolchains, "sc-sh",    cross,   "swiftc",       "the swift shared library linker") 
+
+    -- insert asm tools to toolchains
     if simulator then
-        checker.check_toolchain(config, "as",   cross,  "clang",        "the assember") 
+        checker.toolchain_insert(toolchains, "as",   cross,  "clang",        "the assember") 
     else
-        checker.check_toolchain(config, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
+        checker.toolchain_insert(toolchains, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
     end
 
-    -- check for swift tools
-    checker.check_toolchain(config, "sc",       cross,   "swiftc",       "the swift compiler") 
-    checker.check_toolchain(config, "sc-ld",    cross,   "swiftc",       "the swift linker") 
-    checker.check_toolchain(config, "sc-sh",    cross,   "swiftc",       "the swift shared library linker") 
+    -- save toolchains
+    _g.TOOLCHAINS = toolchains
+
+    -- ok
+    return toolchains
 end
 
 -- check it
-function main(kind)
+function main(kind, toolkind)
+
+    -- only check the given tool?
+    if toolkind then
+        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+    end
 
     -- init the check list of config
     _g.config = 
@@ -91,7 +110,6 @@ function main(kind)
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
     ,   checker.check_ccache
-    ,   _check_toolchains
     }
 
     -- init the check list of global
