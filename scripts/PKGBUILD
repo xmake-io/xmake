@@ -19,11 +19,11 @@ build() {
 
 package() {
     cd "$srcdir/${pkgname}-${pkgver}"
-    cp -vr "./xmake" "${pkgdir}/usr/share/"
-    install -Dvm755 `find ./core/bin/demo.pkg/bin/linux/ -name "demo.b"` "${pkgdir}/usr/share/xmake/xmake"
+    cp -r "./xmake" "${pkgdir}/usr/share/"
+    install -Dm755 `find ./core/bin/demo.pkg/bin/linux/ -name "demo.b"` "${pkgdir}/usr/share/xmake/xmake"
     echo "#/!bin/bash
 export XMAKE_PROGRAM_DIR=/usr/share/xmake
 /usr/share/xmake/xmake \"\$@\"
 " > ./xmake.sh
-    install "./xmake.sh" "${pkgdir}/usr/bin/xmake"
+    install -Dm755 "./xmake.sh" "${pkgdir}/usr/bin/xmake"
 }
