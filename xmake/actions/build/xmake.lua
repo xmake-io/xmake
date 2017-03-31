@@ -49,7 +49,7 @@ task("build")
                 ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously"          }
                
                 ,   {}
-                ,   {nil, "target",     "v",  "all",        "Build the given target."                                       } 
+                ,   {nil, "target",     "v",  nil,          "Build the given target."                                       }
                 }
             }
 

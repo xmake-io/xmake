@@ -70,7 +70,7 @@ function main()
         function ()
 
             -- build 
-            builder.build(targetname or "all")
+            builder.build(targetname or project.default_target() or "all")
         
         end,
 
