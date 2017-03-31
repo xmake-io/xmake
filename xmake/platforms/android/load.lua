@@ -85,7 +85,7 @@ function main()
                 ["armv5te"]     = "armeabi"
             ,   ["armv6"]       = "armeabi"
             ,   ["armv7-a"]     = "armeabi-v7a"
-            ,   ["armv8-a"]     = "armeabi-v8a"
+            ,   ["armv8-a"]     = "armeabi-v7a"
             ,   ["arm64-v8a"]   = "arm64-v8a"
             }
 
