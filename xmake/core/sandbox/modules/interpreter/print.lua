@@ -22,11 +22,36 @@
 -- @file        print.lua
 --
 
+-- load modules
+local try       = require("sandbox/modules/try")
+local catch     = require("sandbox/modules/catch")
+
 -- print format string 
 function _print(format, ...)
 
-    -- done
-    io.write(string.format(format, ...) .. "\n")
+    -- print format string
+    if type(format) == "string" and format:find("%", 1, true) then
+
+        local args = {...}
+        try
+        {
+            function ()
+                -- attempt to print format string first
+                io.write(string.format(format, unpack(args)) .. "\n")
+            end,
+            catch 
+            {
+                function ()
+                    -- print multi-variables with raw lua action
+                    print(format, unpack(args))
+                end
+            }
+        }
+
+    else
+        -- print multi-variables with raw lua action
+        print(format, ...)
+    end
 end
 
 -- load module
