@@ -105,5 +105,10 @@ function sandbox_core_project.modes()
     return project.get("modes")
 end
 
+-- get default target of the project
+function sandbox_core_project.default_target()
+    return project.get("default_target")
+end
+
 -- return module
 return sandbox_core_project

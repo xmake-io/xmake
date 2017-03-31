@@ -189,6 +189,7 @@ function project._interpreter()
             "set_project"
         ,   "set_version"
         ,   "set_modes"
+        ,   "set_default_target"
             -- target.set_xxx
         ,   "target.set_kind"
         ,   "target.set_strip"
