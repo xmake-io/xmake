@@ -181,10 +181,10 @@ function compiler:compflags(target)
     self:_addflags_from_language(flags, target)
 
     -- add flags from the platform 
-    self:_addflags_from_platform(flags, target:targetkind())
+    self:_addflags_from_platform(flags, target:get("kind"))
 
     -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:targetkind())
+    self:_addflags_from_compiler(flags, target:get("kind"))
 
     -- remove repeat
     flags = table.unique(flags)
