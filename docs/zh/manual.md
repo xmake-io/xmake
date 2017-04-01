@@ -472,6 +472,7 @@ target("test2")
 | [add_files](#targetadd_files)               | 添加源代码文件                       | >= 1.0.1 |
 | [add_headers](#targetadd_headers)           | 添加安装的头文件                     | >= 1.0.1 |
 | [add_linkdirs](#targetadd_linkdirs)         | 添加链接库搜索目录                   | >= 1.0.1 |
+| [add_rpathdirs](#targetadd_rpathdirs)       | 添加运行时候动态链接库搜索目录       | >= 2.1.3 |
 | [add_includedirs](#targetadd_includedirs)   | 添加头文件搜索目录                   | >= 1.0.1 |
 | [add_defines](#targetadd_defines)           | 添加宏定义                           | >= 1.0.1 |
 | [add_undefines](#targetadd_undefines)       | 取消宏定义                           | >= 1.0.1 |
@@ -1344,11 +1345,38 @@ target("test")
     add_linkdirs("$(buildir)/lib")
 ```
 
+此接口相当于gcc的`-Lxxx`链接选项。
+
 一般他是与[add_links](#targetadd_links)配合使用的，当然也可以直接通过[add_ldflags](#targetadd_ldflags)或者[add_shflags](#targetadd_shflags)接口来添加，也是可以的。
 
 <p class="tip">
 如果不想在工程中写死，可以通过：`xmake f --linkdirs=xxx`或者`xmake f --ldflags="-L/xxx"`的方式来设置，当然这种手动设置的目录搜索优先级更高。
 </p>
+
+##### target:add_rpathdirs
+
+###### 添加程序运行时动态库的加载搜索目录
+
+通过[add_linkdirs](#targetadd_linkdirs)设置动态库的链接搜索目录后，程序被正常链接，但是在linux平台想要正常运行编译后的程序，会报加载动态库失败。
+
+因为没找到动态库的加载目录，想要正常运行依赖动态库的程序，需要设置`LD_LIBRARY_PATH`环境变量，指定需要加载的动态库目录。
+
+但是这种方式是全局的，影响太广，更好的方式是通过`-rpath=xxx`的链接器选项，在链接程序的时候设置好需要加载的动态库搜索路径，而xmake对其进行了封装，通过`add_rpathdirs`更好的处理跨平台问题。
+
+具体使用如下：
+
+```lua
+target("test")
+    set_kind("binary")
+    add_linkdirs("$(buildir)/lib")
+    add_rpathdirs("$(buildir)/lib")
+```
+
+只需要在链接的时候，在设置下rpath目录就好了，虽然也可以通过`add_ldflags("-Wl,-rpath=xxx")`达到相同的目的，但是这个接口更加通用。
+
+内部会对不同平台进行处理，像在macOS下，是不需要`-rpath`设置的，也是可以正常加载运行程序，因此针对这个平台，xmake内部会直接忽略器设置，避免链接报错。
+
+而在为dlang程序进行动态库链接时，xmake会自动处理成`-L-rpath=xxx`来传入dlang的链接器，这样就避免了直接使用`add_ldflags`需要自己判断和处理不同平台和编译器问题。
 
 ##### target:add_includedirs
 
@@ -1784,6 +1812,7 @@ option("test2")
 | [add_rbindings](#optionadd_rbindings)                 | 添加逆向关联选项，同步启用和禁用             | >= 2.0.1 |
 | [add_links](#optionadd_links)                         | 添加链接库检测                               | >= 1.0.1 |
 | [add_linkdirs](#optionadd_linkdirs)                   | 添加链接库检测需要的搜索目录                 | >= 1.0.1 |
+| [add_rpathdirs](#optionadd_rpathdirs)                 | 添加运行时候动态链接库搜索目录               | >= 2.1.3 |
 | [add_cincludes](#optionadd_cincludes)                 | 添加c头文件检测                              | >= 1.0.1 |
 | [add_cxxincludes](#optionadd_cxxincludes)             | 添加c++头文件检测                            | >= 1.0.1 |
 | [add_ctypes](#optionadd_ctypes)                       | 添加c类型检测                                | >= 1.0.1 |
@@ -1802,8 +1831,6 @@ option("test2")
 | [set_warnings](#targetset_warnings)       | 设置警告级别                         | >= 1.0.1 |
 | [set_optimize](#targetset_optimize)       | 设置优化级别                         | >= 1.0.1 |
 | [set_languages](#targetset_languages)     | 设置代码语言标准                     | >= 1.0.1 |
-| [add_links](#targetadd_links)             | 添加链接库名                         | >= 1.0.1 |
-| [add_linkdirs](#targetadd_linkdirs)       | 添加链接库搜索目录                   | >= 1.0.1 |
 | [add_includedirs](#targetadd_includedirs) | 添加头文件搜索目录                   | >= 1.0.1 |
 | [add_defines](#targetadd_defines)         | 添加宏定义                           | >= 1.0.1 |
 | [add_undefines](#targetadd_undefines)     | 取消宏定义                           | >= 1.0.1 |
@@ -2104,6 +2131,12 @@ target("test")
 ###### 添加链接库检测时候需要的搜索目录
 
 这个是可选的，一般系统库不需要加这个，也能检测通过，如果确实没找到，可以自己追加搜索目录，提高检测通过率。具体使用见：[add_links](#optionadd_links)
+
+##### option:add_rpathdirs
+
+###### 添加程序运行时动态库的加载搜索目录
+
+在选项通过检测后，会自动添加到对应的target上去，具体使用见：[target.add_rpathdirs](#targetadd_rpathdirs)。
 
 ##### option:add_cincludes
 
