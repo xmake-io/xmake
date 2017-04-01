@@ -100,33 +100,29 @@ function main._init()
     xmake._PROJECT_FILE = projectfile
     assert(projectfile)
 
-    -- xmake.lua not found? attempt to find it from the parent directory
-    if not os.isfile(projectfile) then
-
-        -- make all parent directories
-        local dirs = {}
-        local dir = path.directory(projectfile)
-        while os.isdir(dir) do
-            table.insert(dirs, 1, dir)
-            local parentdir = path.directory(dir)
-            if parentdir ~= dir then
-                dir = parentdir
-            else 
-                break
-            end
+    -- make all parent directories
+    local dirs = {}
+    local dir = path.directory(projectfile)
+    while os.isdir(dir) do
+        table.insert(dirs, 1, dir)
+        local parentdir = path.directory(dir)
+        if parentdir ~= dir then
+            dir = parentdir
+        else 
+            break
         end
+    end
 
-        -- find the first `xmake.lua`
-        for _, dir in ipairs(dirs) do
-            local file = path.join(dir, "xmake.lua")
-            if os.isfile(file) then
+    -- find the first `xmake.lua` from it's parent directory
+    for _, dir in ipairs(dirs) do
+        local file = path.join(dir, "xmake.lua")
+        if os.isfile(file) then
 
-                -- switch to the project directory
-                xmake._PROJECT_DIR  = dir
-                xmake._PROJECT_FILE = file
-                os.cd(dir)
-                break
-            end
+            -- switch to the project directory
+            xmake._PROJECT_DIR  = dir
+            xmake._PROJECT_FILE = file
+            os.cd(dir)
+            break
         end
     end
 end
