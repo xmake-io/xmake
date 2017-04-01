@@ -106,7 +106,7 @@ function main._init()
     while os.isdir(dir) do
         table.insert(dirs, 1, dir)
         local parentdir = path.directory(dir)
-        if parentdir ~= dir then
+        if parentdir and parentdir ~= dir and parentdir ~= '.' then
             dir = parentdir
         else 
             break
