@@ -30,6 +30,13 @@ function init(shellname, kind)
     
     -- init super
     _super.init(shellname or "ldc", kind)
+
+    -- init shflags
+    _super._g.shflags = { "-shared" }
+
+    -- init cxflags for the kind: shared
+    _super._g.shared = {}
 end
+
 
 

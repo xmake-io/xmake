@@ -47,4 +47,5 @@ target("test")
 
     -- add link directory
     add_linkdirs("$(buildir)")
+    add_rpathdirs("$(buildir)")
 

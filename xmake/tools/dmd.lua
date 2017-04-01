@@ -159,6 +159,13 @@ function nf_linkdir(dir)
     return "-L-L" .. dir
 end
 
+-- make the rpathdir flag
+function nf_rpathdir(dir)
+
+    -- make it
+    return "-L-rpath=" .. dir
+end
+
 -- make the link command
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 

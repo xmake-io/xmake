@@ -241,6 +241,13 @@ function nf_linkdir(dir)
     return "-L" .. dir
 end
 
+-- make the rpathdir flag
+function nf_rpathdir(dir)
+
+    -- make it
+    return "-Wl,-rpath=" .. dir
+end
+
 -- make the framework flag
 function nf_framework(framework)
 

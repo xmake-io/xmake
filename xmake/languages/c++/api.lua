@@ -185,9 +185,11 @@ function apis()
         -- target.add_xxx
     ,   "target.add_headers"
     ,   "target.add_linkdirs"
+    ,   "target.add_rpathdirs"
     ,   "target.add_includedirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
+    ,   "option.add_rpathdirs"
     ,   "option.add_includedirs"
     }
     _g.custom = 

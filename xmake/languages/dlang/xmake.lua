@@ -63,10 +63,13 @@ language("dlang")
         {
             "config.linkdirs"
         ,   "target.linkdirs"
+        ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.linkdirs"
+        ,   "option.rpathdirs"
         ,   "platform.linkdirs"
+        ,   "platform.rpathdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
