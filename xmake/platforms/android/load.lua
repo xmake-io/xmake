@@ -51,6 +51,9 @@ function main()
         _g.cxxflags     = {}
     end
 
+    -- init cxflags and ldflags for the target kind: binary 
+    _g.binary           = { cxflags = {"-fPIE", "-pie"}, ldflags = {"-fPIE", "-pie"} }
+
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
     local ndk_sdkver = config.get("ndk_sdkver")

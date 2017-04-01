@@ -47,17 +47,24 @@ function compiler:_language()
 end
 
 -- add flags from the platform 
-function compiler:_addflags_from_platform(flags)
+function compiler:_addflags_from_platform(flags, targetkind)
 
     -- add flags 
     local toolkind = self:get("kind")
     for _, flagkind in ipairs(self:_flagkinds()) do
+
+        -- add flags for platform
         table.join2(flags, platform.get(flagkind))
+
+        -- add flags for platform and the given taget kind
+        if targetkind ~= nil and platform.get(targetkind) ~= nil then
+            table.join2(flags, platform.get(targetkind)[flagkind])
+        end
     end
 end
 
 -- add flags from the compiler 
-function compiler:_addflags_from_compiler(flags, kind)
+function compiler:_addflags_from_compiler(flags, targetkind)
 
     -- done
     for _, flagkind in ipairs(self:_flagkinds()) do
@@ -65,9 +72,9 @@ function compiler:_addflags_from_compiler(flags, kind)
         -- add compiler.xxflags
         table.join2(flags, self:get(flagkind))
 
-        -- add compiler.kind.xxflags
-        if kind ~= nil and self:get(kind) ~= nil then
-            table.join2(flags, self:get(kind)[flagkind])
+        -- add compiler.targetkind.xxflags
+        if targetkind ~= nil and self:get(targetkind) ~= nil then
+            table.join2(flags, self:get(targetkind)[flagkind])
         end
     end
 end
@@ -174,10 +181,10 @@ function compiler:compflags(target)
     self:_addflags_from_language(flags, target)
 
     -- add flags from the platform 
-    self:_addflags_from_platform(flags)
+    self:_addflags_from_platform(flags, target:targetkind())
 
     -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:get("kind"))
+    self:_addflags_from_compiler(flags, target:targetkind())
 
     -- remove repeat
     flags = table.unique(flags)

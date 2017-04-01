@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#65](https://github.com/tboox/xmake/pull/65): Add `set_default` api for target to modify default build and install behavior
+
 ### Changes
 
 * [#61](https://github.com/tboox/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
@@ -14,6 +18,8 @@
 
 * Fix error tips for checking xmake min version
 * [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx and windows
+* [#64](https://github.com/tboox/xmake/issues/64): Fix compile android `armv8-a` error
+* [#50](https://github.com/tboox/xmake/issues/50): Fix only position independent executables issue for android program
 
 ## v2.1.2
 
@@ -235,6 +241,10 @@
 
 ## master (开发中)
 
+### 新特性
+
+* [#65](https://github.com/tboox/xmake/pull/65): 为target添加`set_default`接口用于修改默认的构建所有targets行为
+
 ### 改进
 
 * [#61](https://github.com/tboox/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
@@ -247,6 +257,8 @@
 
 * 修复版本检测的错误提示信息
 * [#60](https://github.com/tboox/xmake/issues/60): 修复macosx和windows平台的xmake自举编译
+* [#64](https://github.com/tboox/xmake/issues/64): 修复构建android `armv8-a`架构失败问题
+* [#50](https://github.com/tboox/xmake/issues/50): 修复构建android可执行程序，无法运行问题
 
 ## v2.1.2
 

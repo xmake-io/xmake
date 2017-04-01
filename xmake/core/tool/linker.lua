@@ -41,18 +41,23 @@ local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
 
 -- add flags from the platform 
-function linker:_addflags_from_platform(flags)
+function linker:_addflags_from_platform(flags, targetkind)
 
     -- add flags 
     local toolkind = self:get("kind")
     for _, flagkind in ipairs(self:_flagkinds()) do
+
         -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
         table.join2(flags, platform.get(toolkind .. 'flags') or platform.get(flagkind))
+
+        -- attempt to add special lanugage flags first for target kind, .e.g gc-ldflags, dc-arflags
+        local targetflags = platform.get(targetkind) or {}
+        table.join2(flags, targetflags[toolkind .. 'flags'] or targetflags[flagkind])
     end
 end
 
 -- add flags from the compiler 
-function linker:_addflags_from_compiler(flags, sourcekinds)
+function linker:_addflags_from_compiler(flags, targetkind, sourcekinds)
 
     -- make flags 
     local flags_of_compiler = {}
@@ -63,8 +68,13 @@ function linker:_addflags_from_compiler(flags, sourcekinds)
         local instance, errors = compiler.load(sourcekind)
         if instance then
             for _, flagkind in ipairs(self:_flagkinds()) do
+
                 -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
                 table.join2(flags_of_compiler, instance:get(toolkind .. 'flags') or instance:get(flagkind))
+
+                -- attempt to add special lanugage flags first for target kind, .e.g gc-ldflags, dc-arflags
+                local targetflags = instance:get(targetkind) or {}
+                table.join2(flags_of_compiler, targetflags[toolkind .. 'flags'] or targetflags[flagkind])
             end
         end
     end
@@ -205,10 +215,10 @@ function linker:linkflags(target)
     self:_addflags_from_language(flags, target)
 
     -- add flags from the platform 
-    self:_addflags_from_platform(flags)
+    self:_addflags_from_platform(flags, target:targetkind())
 
     -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:sourcekinds())
+    self:_addflags_from_compiler(flags, target:targetkind(), target:sourcekinds())
 
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
