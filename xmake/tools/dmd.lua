@@ -176,7 +176,7 @@ function nf_rpathdir(dir)
 
     -- ok?
     if _g._RPATH then
-        return flags
+        return flag
     end
 end
 
