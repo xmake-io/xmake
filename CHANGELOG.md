@@ -6,6 +6,7 @@
 
 * [#65](https://github.com/tboox/xmake/pull/65): Add `set_default` api for target to modify default build and install behavior
 * Allows to run `xmake` command in project subdirectories, it will find the project root directory automatically
+* Add `add_rpathdirs` for target and option
 
 ### Changes
 
@@ -247,6 +248,7 @@
 
 * [#65](https://github.com/tboox/xmake/pull/65): 为target添加`set_default`接口用于修改默认的构建所有targets行为
 * 允许在工程子目录执行`xmake`命令进行构建，xmake会自动检测所在的工程根目录
+* 添加`add_rpathdirs` api到target和option，支持动态库的自动加载运行
 
 ### 改进
 
