@@ -162,8 +162,22 @@ end
 -- make the rpathdir flag
 function nf_rpathdir(dir)
 
-    -- make it
-    return "-L-rpath=" .. dir
+    -- check this flag
+    local flag = "-L-rpath=" .. dir
+    if _g._RPATH == nil then
+        _g._RPATH = try
+        {
+            function ()
+                check(flag)
+                return true
+            end
+        }
+    end
+
+    -- ok?
+    if _g._RPATH then
+        return flags
+    end
 end
 
 -- make the link command
@@ -204,16 +218,16 @@ end
 function check(flags)
 
     -- make an stub source file
-    local objectfile = os.tmpfile() .. ".o"
+    local binaryfile = os.tmpfile() .. ".b"
     local sourcefile = os.tmpfile() .. ".d"
 
     -- make stub code
     io.writefile(sourcefile, "void main() {\n}")
 
-    -- check it
-    os.run("%s -c %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    -- check it, need check compflags and linkflags
+    os.run("%s %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
 
     -- remove files
-    os.rm(objectfile)
+    os.rm(binaryfile)
     os.rm(sourcefile)
 end
