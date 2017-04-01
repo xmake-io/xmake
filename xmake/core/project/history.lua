@@ -31,7 +31,22 @@ local io                = require("base/io")
 local table             = require("base/table")
 local utils             = require("base/utils")
 local string            = require("base/string")
-local cache             = require("project/cache")("local.history")
+local cache             = require("project/cache")
+
+-- get cache
+function history._cache()
+
+    -- get it from cache first if exists
+    if history._CACHE then
+        return history._CACHE
+    end
+
+    -- init cache
+    history._CACHE = cache("local.history")
+
+    -- ok
+    return history._CACHE
+end
 
 -- save history
 function history.save(key, value)
@@ -51,15 +66,15 @@ function history.save(key, value)
     table.insert(values, value)
 
     -- save history
-    cache:set(key, values)
-    cache:flush()
+    history._cache():set(key, values)
+    history._cache():flush()
 end
 
 -- load history 
 function history.load(key)
 
     -- load it
-    return cache:get(key)
+    return history._cache():get(key)
 end
 
 -- return module: history

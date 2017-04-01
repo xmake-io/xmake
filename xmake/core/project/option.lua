@@ -33,11 +33,26 @@ local table     = require("base/table")
 local utils     = require("base/utils")
 local option_   = require("base/option")
 local config    = require("project/config")
-local cache     = require("project/cache")("local.option")
+local cache     = require("project/cache")
 local linker    = require("tool/linker")
 local compiler  = require("tool/compiler")
 local sandbox   = require("sandbox/sandbox")
 local language  = require("language/language")
+
+-- get cache
+function option._cache()
+
+    -- get it from cache first if exists
+    if option._CACHE then
+        return option._CACHE
+    end
+
+    -- init cache
+    option._CACHE = cache("local.option")
+
+    -- ok
+    return option._CACHE
+end
 
 -- check link 
 function option:_check_link(sourcefile, objectfile, targetfile)
@@ -512,15 +527,15 @@ end
 function option:save()
 
     -- save it
-    cache:set(self:name(), self._INFO)
-    cache:flush()
+    option._cache():set(self:name(), self._INFO)
+    option._cache():flush()
 end
 
 -- clear the option info for cache
 function option:clear()
 
     -- clear it
-    cache:set(self:name(), nil)
+    option._cache():set(self:name(), nil)
 end
 
 -- get the option name
@@ -537,7 +552,7 @@ function option.load(name)
     assert(name)
 
     -- get info
-    local info = cache:get(name)
+    local info = option._cache():get(name)
     if info == nil then
         return 
     end
