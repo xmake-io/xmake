@@ -34,6 +34,7 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_os = sandbox_os or {}
 
 -- inherit some builtin interfaces
+sandbox_os.exit     = os.exit
 sandbox_os.date     = os.date
 sandbox_os.time     = os.time
 sandbox_os.argv     = os.argv

@@ -138,6 +138,28 @@ function main()
 
     -- scan project and generate it if xmake.lua not exists
     if not os.isfile(project.file()) then
+
+        -- need some tips?
+        local autogen = true
+        if not option.get("quiet") then
+
+            -- show tips
+            cprint("${bright yellow}note: ${default yellow}xmake.lua not found, try generating it?")
+            cprint("please input: n (y/n)")
+
+            -- get answer
+            io.flush()
+            if io.read() ~= 'y' then
+                autogen = false
+            end
+        end
+
+        -- do not generate it
+        if not autogen then
+            os.exit() 
+        end
+
+        -- scan and generate it automatically
         scanner.make()
     end
 

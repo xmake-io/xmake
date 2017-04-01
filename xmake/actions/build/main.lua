@@ -70,8 +70,7 @@ function main()
         function ()
 
             -- build 
-            builder.build(targetname)
-        
+            builder.build(targetname) 
         end,
 
         catch 
