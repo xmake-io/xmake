@@ -176,14 +176,14 @@ end
 function sandbox_io.print(filepath, ...)
 
     -- print it
-    sandbox_io.write(filepath, vformat(...) .. "\n")
+    sandbox_io.writefile(filepath, vformat(...) .. "\n")
 end
 
 -- print data to file
 function sandbox_io.printf(filepath, ...)
 
     -- print it
-    sandbox_io.write(filepath, vformat(...))
+    sandbox_io.writefile(filepath, vformat(...))
 end
 
 -- printf file
