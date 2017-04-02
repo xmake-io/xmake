@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.3
+
 ### New features
 
 * [#65](https://github.com/tboox/xmake/pull/65): Add `set_default` api for target to modify default build and install behavior
@@ -228,13 +230,13 @@
 
 ### New features
 
-* Add set_runscript api and support custom action
+* Add `set_runscript` api and support custom action
 * Add import api and support import modules in xmake.lua, .e.g os, path, utils ...
 * Add new architecture: arm64-v8a for android
 
 ### Bugs fixed
 
-* Fix api bug for set_installscript
+* Fix api bug for `set_installscript`
 * Fix install bug for windows x86_64
 * Fix relative path bug
 
@@ -243,6 +245,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.3
 
 ### 新特性
 
