@@ -1424,7 +1424,7 @@ add_undefines("DEBUG")
 
 添加宏定义到`config.h`配置文件，`config.h`的设置，可参考[set_config_h](#targetset_config_h)接口。
 
-##### add_undefines_h
+##### target:add_undefines_h
 
 ###### 取消宏定义到头文件
 
