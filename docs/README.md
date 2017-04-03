@@ -24,7 +24,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-$ sudo brew install xmake
+$ brew install xmake
 ```
 
 Or
@@ -38,7 +38,7 @@ Using Linuxbrew:
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-$ sudo brew install xmake
+$ brew install xmake
 ```
 
 On Archlinux:

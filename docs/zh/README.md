@@ -31,7 +31,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-$ sudo brew install xmake
+$ brew install xmake
 ```
 
 或者：
@@ -45,7 +45,7 @@ $ sudo brew install xmake
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-$ sudo brew install xmake
+$ brew install xmake
 ```
 
 在archlinux上安装：
