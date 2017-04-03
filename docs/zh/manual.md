@@ -344,10 +344,7 @@ end
 
 ```bash
 # 仅仅编译tbox库模块
-$ xmake tbox
-
-# 仅仅重新编译demo模块
-$ xmake -r demo
+$ xmake build tbox
 ```
 
 需要注意的是，每个子`xmake.lua`中所有的路径设置都是相对于当前这个子`xmake.lua`所在的目录的，都是相对路径，这样方便维护

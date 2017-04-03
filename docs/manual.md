@@ -289,72 +289,58 @@ For example:
 
 ##### set_xmakever
 
-<p class="warning">
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
-</p>
+###### Set minimal xmake version
 
-###### 设置最小xmake版本
-
-用于处理xmake版本兼容性问题，如果项目的`xmake.lua`，通过这个接口设置了最小xmake版本支持，那么用户环境装的xmake低于要求的版本，就会提示错误。
-
-一般情况下，建议默认对其进行设置，这样对用户比较友好，如果`xmake.lua`中用到了高版本的api接口，用户那边至少可以知道是否因为版本不对导致的构建失败。
-
-设置如下：
+If the current xmake version less than the required version, it will prompt an error.
 
 ```lua
--- 设置最小版本为：2.1.0，低于此版本的xmake编译此工程将会提示版本错误信息
+-- the current xmake version must be larger than 2.1.0
 set_xmakever("2.1.0")
 ```
 
 ##### add_subdirs
 
-###### 添加子工程目录
+###### Add sub-project directories
 
-每个子工程对应一个`xmake.lua`的工程描述文件。
+This interface will add an sub-project directories to the current `xmake.lua`, it will load the `xmake.lua` file of the sub-directories.
 
-虽然一个`xmake.lua`也可以描述多个子工程模块，但是如果工程越来越大，越来越复杂，适当的模块化是很有必要的。。
-
-这就需要`add_subdirs`了，将每个子模块放到不同目录中，并为其建立一个新的`xmake.lua`独立去维护它，例如：
+For example, we have a following project directory tree:
 
 ```
 ./tbox
 ├── src
 │   ├── demo
-│   │   └── xmake.lua (用来描述测试模块)
+│   │   └── xmake.lua
 │   └── tbox
-│       └── xmake.lua（用来描述libtbox库模块）
-└── xmake.lua（用该描述通用配置信息，以及对子模块的维护）
+│       └── xmake.lua
+└── xmake.lua
 ````
 
-在`tbox/xmake.lua`中通过`add_subdirs`将拥有`xmale.lua`的子模块的目录，添加进来，就可以了，例如：
+We can add sub-project `tbox` and `demo` directories to the root `xmake.lua`.
 
 ```lua
--- 添加libtbox库模块目录
 add_subdirs("src/tbox") 
-
--- 如果xmake f --demo=y，启用了demo模块，那么包含demo目录
 if is_option("demo") then 
     add_subdirs("src/demo") 
 end
 ```
 
-默认情况下，xmake会去编译在所有xmake.lua中描述的所有target目标，如果只想编译指定目标，可以执行：
+By default, xmake will compile all the targets, if you only want to compile the specified target, you can do:
 
 ```bash
-# 仅仅编译tbox库模块
-$ xmake tbox
-
-# 仅仅重新编译demo模块
-$ xmake -r demo
+# only build `tbox` target
+$ xmake build tbox
 ```
-
-需要注意的是，每个子`xmake.lua`中所有的路径设置都是相对于当前这个子`xmake.lua`所在的目录的，都是相对路径，这样方便维护
 
 ##### add_subfiles
 
-###### 添加子工程文件
+###### Add sub-project files
 
-`add_subfiles`的作用与[add_subdirs](#add_subdirs)类似，唯一的区别就是：这个接口直接指定`xmake.lua`文件所在的路径，而不是目录，例如：
+`add_subfiles` is simular to [add_subdirs](#add_subdirs).
+
+The only difference is that this interface specifies the path where the 'xmake.lua' file directly, rather than a directory.
+
+for example:
 
 ```lua
 add_subfiles("src/tbox/xmake.lua")
@@ -362,20 +348,22 @@ add_subfiles("src/tbox/xmake.lua")
 
 ##### add_plugindirs
 
-###### 添加插件目录
+###### Add plugin directories
 
-xmake内置的插件都是放在`xmake/plugins`目录下，但是对于用户自定义的一些特定工程的插件，如果不想放置在xmake安装目录下，那么可以在`xmake.lua`中进行配置指定的其他插件路径。
+The builtin plugins are placed in the 'xmake/plugins' directory, but for some user-defined plugins for a specific project, you can configure additional plugin directory is specified in the 'xmake.lua`.
 
 ```lua
--- 将当前工程下的plugins目录设置为自定义插件目录
 add_plugindirs("$(projectdir)/plugins")
 ```
+xmake will load all plugins in the given directory.
 
-这样，xmake在编译此工程的时候，也就加载这些插件。
+<p class="warning">
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
+</p>
 
 ##### add_packagedirs
 
-###### 添加包目录
+###### Add package directories
 
 通过设置依赖包目录，可以方便的集成一些第三方的依赖库，以tbox工程为例，其包目录如下：
 
