@@ -154,6 +154,7 @@ function apis()
     ,   "target.add_undefines"
     ,   "target.add_defines_h"
     ,   "target.add_undefines_h"
+    ,   "target.add_frameworks"
         -- option.add_xxx
     ,   "option.add_cincludes"
     ,   "option.add_cxxincludes"
@@ -176,6 +177,7 @@ function apis()
     ,   "option.add_undefines_h"
     ,   "option.add_undefines_if_ok"
     ,   "option.add_undefines_h_if_ok"
+    ,   "option.add_frameworks"
     }
     _g.pathes = 
     {

@@ -52,6 +52,7 @@ language("c++")
         object =
         {
             "config.includedirs"
+        ,   "config.frameworks"
         ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
@@ -60,6 +61,7 @@ language("c++")
         ,   "target.includedirs"
         ,   "target.defines"
         ,   "target.undefines"
+        ,   "target.frameworks"
         ,   "option.symbols"
         ,   "option.warnings"
         ,   "option.optimize:check"
@@ -70,9 +72,11 @@ language("c++")
         ,   "option.undefines"
         ,   "option.defines_if_ok"
         ,   "option.undefines_if_ok"
+        ,   "option.frameworks"
         ,   "platform.includedirs"
         ,   "platform.defines"
         ,   "platform.undefines"
+        ,   "platform.frameworks"
         }
     ,   binary =
         {
@@ -88,9 +92,13 @@ language("c++")
         ,   "platform.linkdirs"
         ,   "platform.rpathdirs"
         ,   "config.links"
+        ,   "config.frameworks"
         ,   "target.links"
+        ,   "target.frameworks"
         ,   "option.links"
+        ,   "option.frameworks"
         ,   "platform.links"
+        ,   "platform.frameworks"
         }
     ,   shared =
         {
@@ -103,9 +111,13 @@ language("c++")
         ,   "option.linkdirs"
         ,   "platform.linkdirs"
         ,   "config.links"
+        ,   "config.frameworks"
         ,   "target.links"
+        ,   "target.frameworks"
         ,   "option.links"
+        ,   "option.frameworks"
         ,   "platform.links"
+        ,   "platform.frameworks"
         }
     ,   static = 
         {
