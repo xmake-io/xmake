@@ -78,8 +78,8 @@ install:
 
 uninstall:
 	@echo uninstalling from $(prefix) ...
-	@rm $(prefix)/bin/xmake
-	@rm -rf $(prefix)/share/xmake
+	@if [ -f $(prefix)/bin/xmake ]; then rm $(prefix)/bin/xmake; fi
+	@if [ -d $(prefix)/share/xmake ]; then rm -rf $(prefix)/share/xmake; fi
 	@echo ok!
 
 .PHONY: tip build install uninstall

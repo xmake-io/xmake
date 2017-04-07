@@ -2,11 +2,15 @@
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
+
+# prefix
+prefix=$(CURDIR)/debian/xmake/usr
+
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	# Add here commands to configure the package.
 	touch configure-stamp
+
 build: build-stamp
 build-stamp: configure-stamp
 	dh_testdir
@@ -16,7 +20,6 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
-	rm -rf ./debian/xmake
 	dh_clean
 
 install: build
@@ -24,8 +27,20 @@ install: build
 	dh_testroot
 	dh_clean -k
 	dh_installdirs
-	#install here
-	make install prefix=$(CURDIR)/debian/xmake
+	mkdir -p $(prefix)/bin
+	mkdir -p $(prefix)/share
+	cp -r $(CURDIR)/xmake $(prefix)/share
+	cp $(CURDIR)/core/src/demo/demo.b $(prefix)/share/xmake/xmake 
+	echo '#!/bin/bash' > $(prefix)/bin/xmake
+	echo 'export XMAKE_PROGRAM_DIR=/usr/share/xmake' >> $(prefix)/bin/xmake
+	echo '/usr/share/xmake/xmake "$$@"' >> $(prefix)/bin/xmake
+	chmod 755 $(prefix)/bin/xmake
+
+distclean: clean
+
+uninstall:
+	if [ -f /usr/bin/xmake ]; then rm /usr/bin/xmake; fi
+	if [ -d /usr/share/xmake ]; then rm -rf /usr/share/xmake; fi
 
 binary-indep: build install
 # We have nothing to do by default.
@@ -47,4 +62,4 @@ binary-arch: build install
 	dh_md5sums
 	dh_builddeb
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure
+.PHONY: build clean binary-indep binary-arch binary install uninstall configure

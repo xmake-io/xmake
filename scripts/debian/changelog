@@ -1,3 +1,69 @@
+xmake (2.1.3-13) yakkety; urgency=medium
+
+  * add uninstall
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-12) yakkety; urgency=medium
+
+  * fix bin dir
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-11) yakkety; urgency=medium
+
+  * modify install path
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-10) yakkety; urgency=medium
+
+  * modify install script
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-9) yakkety; urgency=medium
+
+  * remove test xmake
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-8) yakkety; urgency=medium
+
+  * fix binary dir for install debian
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-7) yakkety; urgency=medium
+
+  * modify install dir
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-6) yakkety; urgency=medium
+
+  * remove sudo for install
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-5) yakkety; urgency=medium
+
+  * modify permission problem
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-4) yakkety; urgency=medium
+
+  * modify package ppa script
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
+xmake (2.1.3-3) yakkety; urgency=medium
+
+  * modify ppa install path
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
 xmake (2.1.3-2) yakkety; urgency=medium
 
   * modify debian script
