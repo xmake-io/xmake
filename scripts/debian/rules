@@ -25,7 +25,8 @@ install: build
 	dh_clean -k
 	dh_installdirs
 	#install here
-	make install prefix=./debian/xmake
+	make install prefix=$(CURDIR)/debian/xmake
+
 binary-indep: build install
 # We have nothing to do by default.
 # # Build architecture-dependent files here.

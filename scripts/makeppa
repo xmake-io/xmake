@@ -2,7 +2,7 @@
 
 # check
 if [ $# -lt 1 ]; then
-    echo "Usage: ./scripts/makeppa [version]"
+    echo "Usage: ./scripts/makeppa [version] [patch]"
     exit
 fi
 
@@ -14,6 +14,12 @@ fi
 
 # version
 version=$1
+
+# patch number
+patch="$2"
+if [ -z $patch ]; then
+    patch=1
+fi
 
 # tarball
 tarball=$workdir/xmake-$version.tar.gz
@@ -50,13 +56,14 @@ debuild -S -k8A0FFB63
 
 # check package
 echo "checking package .."
-lintian ../xmake_$version-1.dsc
+lintian ../xmake_$version-$patch.dsc
 
 # upload package
+source=xmake_$version-"$patch"_source
 while true; do
     read -p "Do you wish to upload this package? (y/n)" yn
     case $yn in
-        [Yy]* ) if [ -f ../xmake_$version-1_source.ppa.upload ]; then rm ../xmake_$version-1_source.ppa.upload; fi ; dput ppa:tboox/xmake ../xmake_$version-1_source.changes; break;;
+        [Yy]* ) if [ -f ../$source.ppa.upload ]; then rm ../$source.ppa.upload; fi ; dput ppa:tboox/xmake ../$source.changes; break;;
         [Nn]* ) exit;;
         * ) echo "Please answer y or n.";;
     esac
