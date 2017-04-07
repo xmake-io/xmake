@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# check
+if [ $# -lt 1 ]; then
+    echo "Usage: ./scripts/makeppa [version]"
+    exit
+fi
+
+# workdir
+workdir=./xmake-ppa
+if [ ! -d $workdir ]; then
+    mkdir $workdir
+fi
+
+# version
+version=$1
+
+# tarball
+tarball=$workdir/xmake-$version.tar.gz
+if [ ! -f $tarball ]; then
+    wget https://github.com/tboox/xmake/archive/v$version.tar.gz -O $workdir/xmake-$version.tar.gz
+fi
+
+# extract tarball
+cd $workdir
+if [ ! -d xmake-$version ]; then
+    tar -xvf xmake-$version.tar.gz
+fi
+
+# enter project directory
+cd xmake-$version
+
+# make template
+echo "making template .."
+if [ -d debian ]; then
+    rm -rf debian
+fi
+dh_make -e waruqi@gmail.com -c apache -y -s -f ../xmake-$version.tar.gz
+
+# copy debian
+echo "instaling debian .."
+if [ -d debian ]; then
+    rm -rf debian
+fi
+cp -r ../../scripts/debian .
+
+# build package
+echo "building package .."
+debuild -S -k8A0FFB63
+
+# check package
+echo "checking package .."
+lintian ../xmake_$version-1.dsc
+
+# upload package
+while true; do
+    read -p "Do you wish to upload this package? (y/n)" yn
+    case $yn in
+        [Yy]* ) dput ppa:waruqi/xmake ../xmake_$version-1_source.changes; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer y or n.";;
+    esac
+done
+
+# remove workdir
+cd ../..
+while true; do
+    read -p "Do you wish to remove working directory? (y/n)" yn
+    case $yn in
+        [Yy]* ) rm -rf xmake-ppa; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer y or n.";;
+    esac
+done
+
+

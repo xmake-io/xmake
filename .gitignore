@@ -34,4 +34,5 @@ core/pre
 core/tool/msys
 core/xmake.config.h
 core/.config.mak
+xmake-ppa
 !xmake/actions/build
