@@ -56,6 +56,28 @@ $ yaourt xmake
 
 在ubuntu上安装：
 
+```bash
+$ sudo add-apt-repository ppa:tboox/xmake
+$ sudo apt-get update
+$ sudo apt-get install xmake
+```
+
+或者手动添加包源：
+
+```
+deb http://ppa.launchpad.net/tboox/xmake/ubuntu yakkety main 
+deb-src http://ppa.launchpad.net/tboox/xmake/ubuntu yakkety main 
+```
+
+然后执行：
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get install xmake
+```
+
+或者下载deb包来安装：
+
 1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载deb安装包
 2. 运行: `dpkg -i xmake-xxxx.deb`
 

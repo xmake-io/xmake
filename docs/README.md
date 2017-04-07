@@ -49,6 +49,28 @@ $ yaourt xmake
 
 On Ubuntu:
 
+```bash
+$ sudo add-apt-repository ppa:tboox/xmake
+$ sudo apt-get update
+$ sudo apt-get install xmake
+```
+
+Or add xmake package source manually:
+
+```
+deb http://ppa.launchpad.net/tboox/xmake/ubuntu yakkety main 
+deb-src http://ppa.launchpad.net/tboox/xmake/ubuntu yakkety main 
+```
+
+Then we run:
+
+```bash
+$ sudo apt-get update
+$ sudo apt-get install xmake
+```
+
+Or download deb package to install it:
+
 1. Download xmake `.deb` install package from [Releases](https://github.com/tboox/xmake/releases) 
 2. Run `dpkg -i xmake-xxxx.deb`
 
