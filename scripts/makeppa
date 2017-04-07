@@ -56,7 +56,7 @@ lintian ../xmake_$version-1.dsc
 while true; do
     read -p "Do you wish to upload this package? (y/n)" yn
     case $yn in
-        [Yy]* ) dput ppa:waruqi/xmake ../xmake_$version-1_source.changes; break;;
+        [Yy]* ) if [ -f ../xmake_$version-1_source.ppa.upload ]; then rm ../xmake_$version-1_source.ppa.upload; fi ; dput ppa:waruqi/xmake ../xmake_$version-1_source.changes; break;;
         [Nn]* ) exit;;
         * ) echo "Please answer y or n.";;
     esac

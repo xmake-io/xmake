@@ -32,7 +32,7 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs
+	dh_installchangelogs $(CURDIR)/CHANGELOG.md
 	dh_installdocs
 	dh_installexamples
 	dh_installman
