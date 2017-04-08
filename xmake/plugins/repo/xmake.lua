@@ -37,21 +37,21 @@ task("repo")
     -- set menu
     set_menu {
                 -- usage
-                usage = "xmake repo [options]"
+                usage = "xmake repo [options] [name] [url]"
 
                 -- description
-            ,   description = "Manage the package repository."
+            ,   description = "Manage package repositories."
 
                 -- options
             ,   options = 
                 {
-                    {'i', "install",    "k", nil,        "Install packages."                                 }      
-                ,   {'r', "uninstall",  "k",  nil,       "Uninstall packages."                               }      
-                ,   {'u', "update",     "k",  nil,       "Update packages."                                  }      
-                ,   {'l', "list",       "k",  nil,       "List all installed packages."                      }      
-                ,   {'i', "info",       "k",  nil,       "Show the given package info."                      }      
-                ,   {'s', "search",     "k",  nil,       "Search the given packages from remote repository." }      
-                ,   {}
-                ,   {nil, "packages",   "vs", nil,       "The packages."                                     }
+                    {'a', "add",    "k",  nil,       "Add the given remote repository url."        }
+                ,   {'s', "set",    "k",  nil,       "Set the given remote repository url."        }
+                ,   {'r', "remove", "k",  nil,       "Remove the given remote repository url."     }
+                ,   {'l', "list",   "k",  nil,       "List all added repositories."                }
+                ,   {'g', "global", "k",  nil,       "Save repository to global. (default: local)" }
+                ,   {                                                                              }
+                ,   {nil, "name",   "v", nil,        "The repository name."                        }
+                ,   {nil, "url",    "v", nil,        "The repository url"                          }
                 }
             } 
