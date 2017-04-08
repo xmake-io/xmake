@@ -31,7 +31,7 @@ ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
 endif
 
 xmake_dir_install   :=$(prefix)/share/xmake
-xmake_core          :=./core/bin/demo.pkg/bin/$(PLAT)/$(ARCH)/demo.b
+xmake_core          :=./core/src/demo/demo.b
 xmake_core_install  :=$(xmake_dir_install)/xmake
 xmake_loader        :=/tmp/xmake_loader
 xmake_loader_install:=$(prefix)/bin/xmake
@@ -53,7 +53,6 @@ install:
 	@echo plat: $(PLAT)
 	@echo arch: $(ARCH)
 	@# create the xmake install directory
-	@$(MAKE) -C core --no-print-directory i
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@if [ ! -d $(xmake_dir_install) ]; then mkdir -p $(xmake_dir_install); fi
 	@# install the xmake core file
