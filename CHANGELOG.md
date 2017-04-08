@@ -2,6 +2,14 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Modify option menu color.
+
+### Bugs fixed
+
+* [#67](https://github.com/tboox/xmake/issues/67): Fix `sudo make install` permission problem
+
 ## v2.1.3
 
 ### New features
@@ -19,7 +27,7 @@
 * Improve check toolchains and implement delay checking
 * Add user tips when scanning and generating `xmake.lua` automatically
 
-## Bugs fixed
+### Bugs fixed
 
 * Fix error tips for checking xmake min version
 * [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx and windows
@@ -245,6 +253,14 @@
 # 更新日志
 
 ## master (开发中)
+
+### Changes
+
+* 修改菜单选项颜色
+
+### Bugs fixed
+
+* [#67](https://github.com/tboox/xmake/issues/67): 修复 `sudo make install` 命令权限问题
 
 ## v2.1.3
 
