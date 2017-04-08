@@ -1044,7 +1044,7 @@ function option.show_options(options)
         end
 
         -- append color
-        option_info = "${blue}" .. option_info .. "${clear}"
+        option_info = "${green}" .. option_info .. "${clear}"
 
         -- append the option description
         local description = opt[5]
