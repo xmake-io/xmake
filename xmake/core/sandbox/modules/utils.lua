@@ -41,6 +41,23 @@ for k, v in pairs(utils) do
     end
 end
 
+-- print each arguments
+function sandbox_utils._print(...)
+
+    -- format each arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        if type(arg) == "string" then
+            table.insert(args, vformat(arg))
+        else
+            table.insert(args, arg)
+        end
+    end
+
+    -- print multi-variables with raw lua action
+    utils._print(unpack(args))
+end
+
 -- print format string with newline
 -- print builtin-variables with $(var)
 -- print multi-variables with raw lua action
@@ -61,14 +78,14 @@ function sandbox_utils.print(format, ...)
             {
                 function ()
                     -- print multi-variables with raw lua action
-                    utils._print(format, unpack(args))
+                    sandbox_utils._print(format, unpack(args))
                 end
             }
         }
 
     else
         -- print multi-variables with raw lua action
-        utils._print(format, ...)
+        sandbox_utils._print(format, ...)
     end
 end
 
