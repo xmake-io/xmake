@@ -12,7 +12,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 If you want to known more, please refer to:
 
 * [Documents](http://xmake.io/#/home)
-* [Github](https://github.com/waruqi/xmake)
+* [Github](https://github.com/tboox/xmake)
 * [HomePage](http://www.xmake.io)
 
 ## Simple description
