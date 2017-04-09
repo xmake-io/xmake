@@ -29,6 +29,11 @@ import("core.platform.platform")
 -- install binary
 function install_binary_on_unix(target)
 
+    -- check kind
+    if not target:targetkind() then
+        return 
+    end
+
     -- the install directory
     local installdir = option.get("installdir") or platform.get("installdir")
     assert(installdir, "unknown install directory!")
@@ -45,6 +50,11 @@ end
 
 -- install library
 function install_library_on_unix(target)
+
+    -- check kind
+    if not target:targetkind() then
+        return 
+    end
 
     -- the install directory
     local installdir = option.get("installdir") or platform.get("installdir")
@@ -88,6 +98,11 @@ end
 -- uninstall binary
 function uninstall_binary_on_unix(target)
 
+    -- check kind
+    if not target:targetkind() then
+        return 
+    end
+
     -- the install directory
     local installdir = option.get("installdir") or platform.get("installdir")
     assert(installdir, "unknown install directory!")
@@ -101,6 +116,11 @@ end
 
 -- uninstall library
 function uninstall_library_on_unix(target)
+
+    -- check kind
+    if not target:targetkind() then
+        return 
+    end
 
     -- the install directory
     local installdir = option.get("installdir") or platform.get("installdir")
