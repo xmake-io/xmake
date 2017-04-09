@@ -26,28 +26,90 @@
 local repository = repository or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
+local utils     = require("base/utils")
+local string    = require("base/string")
+local cache     = require("project/cache")
+
+-- get cache
+function repository._cache(global)
+
+    -- get position
+    local position = utils.ifelse(global, "global", "local")
+
+    -- get it from cache first if exists
+    if repository._CACHE and repository._CACHE[position] then
+        return repository._CACHE[position]
+    end
+
+    -- init cache
+    repository._CACHE = repository._CACHE or {}
+    repository._CACHE[position] = cache(position .. ".repository")
+
+    -- ok
+    return repository._CACHE[position]
+end
 
 -- get repository url from the given name
 function repository.get(name, global)
+
+    -- get it
+    local repositories = repository.repositories(global)
+    if repositories then
+        return repositories[name]
+    end
 end
 
 -- add repository url to the given name
 function repository.add(name, url, global)
-end
 
--- set repository url to the given name
-function repository.set(name, url, global)
+    -- get repositories
+    local repositories = repository.repositories(global) or {}
+
+    -- set it
+    repositories[name] = url
+
+    -- save repositories
+    repository._cache(global):set("repositories", repositories)
+
+    -- flush it
+    return repository._cache(global):flush()
 end
 
 -- remove repository from gobal or local directory
 function repository.remove(name, global)
+
+    -- get repositories
+    local repositories = repository.repositories(global) or {} 
+    if not repositories[name] then
+        return false, string.format("repository(%s): not found!", name)
+    end
+
+    -- remove it
+    repositories[name] = nil
+
+    -- save repositories
+    repository._cache(global):set("repositories", repositories)
+
+    -- flush it
+    return repository._cache(global):flush()
 end
+
+-- clear all repositories
+function repository.clear(global)
+
+    -- clear repositories
+    repository._cache(global):set("repositories", {})
+
+    -- flush it
+    return repository._cache(global):flush()
+end
+
 
 -- get all repositories from global or local directory
 function repository.repositories(global)
+
+    -- get repositories
+    return repository._cache(global):get("repositories")
 end
 
 -- return module

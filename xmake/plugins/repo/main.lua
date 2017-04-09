@@ -29,58 +29,45 @@ import("core.package.repository")
 -- add repository url
 function _add(name, url, global)
 
-    -- get previous url
-    local prevurl = repository.get(name, global)
-    if not prevurl then
-
-        -- add it
-        repository.add(name, url, global)
-
-        -- trace
-        cprint("${bright}add repository(%s): %s ok!", name, url)
-    else
-        -- error
-        raise("repository(%s): already exists, please run `xmake repo set` to override it!", name)
-    end
-end
-
--- set repository url
-function _set(name, url, global)
-
-    -- set it
-    repository.set(name, url, global)
+    -- add it
+    repository.add(name, url, global)
 
     -- trace
-    cprint("${bright}set repository(%s): %s ok!", name, url)
+    cprint("${bright}add %s repository(%s): %s ok!", ifelse(global, "global", "local"), name, url)
 end
 
 -- remove repository url
 function _remove(name, global)
 
-    -- get url
-    local url = repository.get(name, global)
-    if url then
+    -- remove it
+    repository.remove(name, global)
 
-        -- remove it
-        repository.remove(name, global)
+    -- trace
+    cprint("${bright}remove %s repository(%s): %s ok!", ifelse(global, "global", "local"), name, url)
+end
 
-        -- trace
-        cprint("${bright}remove repository(%s): %s ok!", name, url)
-    else
-        -- error
-        raise("repository(%s): not found!", name)
-    end
+-- clear all repositories
+function _clear(global)
+
+    -- clear all
+    repository.clear(global)
+
+    -- trace
+    cprint("${bright}clear %s repositories: ok!", ifelse(global, "global", "local"))
 end
 
 -- list all repositories
-function _list(name, global)
+function _list(global)
+
+    -- trace
+    print("%s repositories:", ifelse(global, "global", "local"))
 
     -- list all
     local count = 0
-    for _, repo in ipairs(repository.repositories(global)) do
+    for name, url in pairs(repository.repositories(global)) do
 
         -- trace
-        print("    %s %s", repo.name, repo.url)
+        print("    %s %s", name, url)
 
         -- update count
         count = count + 1
@@ -98,15 +85,15 @@ function main()
 
         _add(option.get("name"), option.get("url"), option.get("global"))
 
-    -- set repository url
-    elseif option.get("set") then
-
-        _set(option.get("name"), option.get("url"), option.get("global"))
-
     -- remove repository url
     elseif option.get("remove") then
 
         _remove(option.get("name"), option.get("global"))
+
+    -- clear all repositories
+    elseif option.get("clear") then
+
+        _clear(option.get("global"))
 
     -- list all repositories
     elseif option.get("list") then

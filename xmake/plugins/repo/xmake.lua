@@ -43,10 +43,10 @@ task("repo")
             ,   options = 
                 {
                     {'a', "add",    "k",  nil,       "Add the given remote repository url."        }
-                ,   {'s', "set",    "k",  nil,       "Set the given remote repository url."        }
                 ,   {'r', "remove", "k",  nil,       "Remove the given remote repository url."     }
                 ,   {'l', "list",   "k",  nil,       "List all added repositories."                }
                 ,   {'g', "global", "k",  nil,       "Save repository to global. (default: local)" }
+                ,   {'c', "clear",  "k",  nil,       "Clear all added repositories."               }
                 ,   {                                                                              }
                 ,   {nil, "name",   "v", nil,        "The repository name."                        }
                 ,   {nil, "url",    "v", nil,        "The repository url"                          }

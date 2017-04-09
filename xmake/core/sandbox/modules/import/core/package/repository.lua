@@ -46,21 +46,21 @@ function sandbox_core_package_repository.add(name, url, global)
     end
 end
 
--- set repository url to the given name
-function sandbox_core_package_repository.set(name, url, global)
-
-    -- set it
-    local ok, errors = repository.set(name, url, global)
-    if not ok then
-        raise(errors)
-    end
-end
-
 -- remove repository from gobal or local directory
 function sandbox_core_package_repository.remove(name, global)
 
     -- remove it
     local ok, errors = repository.remove(name, global)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- clear all repositories from global or local directory
+function sandbox_core_package_repository.clear(global)
+
+    -- clear all repositories
+    local ok, errors = repository.clear(global)
     if not ok then
         raise(errors)
     end
