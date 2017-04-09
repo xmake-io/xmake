@@ -31,8 +31,10 @@ import("core.platform.environment")
 function _on_build_target(target)
 
     -- the target kind
-    local kind = target:get("kind") 
-    assert(kind, "target(%s).kind not found!", target:name())
+    local kind = target:targetkind()
+    if not kind then
+        return 
+    end
 
     -- build target
     import("kinds." .. kind).build(target, _g)
