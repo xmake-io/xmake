@@ -24,17 +24,52 @@
 
 -- imports
 import("core.base.option")
+import("core.package.repository")
 
 -- add repository url
 function _add(name, url, global)
+
+    -- get previous url
+    local prevurl = repository.get(name, global)
+    if not prevurl then
+
+        -- add it
+        repository.add(name, url, global)
+
+        -- trace
+        cprint("${bright}add repository(%s): %s ok!", name, url)
+    else
+        -- error
+        raise("repository(%s): already exists, please run `xmake repo set` to override it!", name)
+    end
 end
 
 -- set repository url
 function _set(name, url, global)
+
+    -- set it
+    repository.set(name, url, global)
+
+    -- trace
+    cprint("${bright}set repository(%s): %s ok!", name, url)
 end
 
 -- remove repository url
 function _remove(name, global)
+
+    -- get url
+    local url = repository.get(name, global)
+    if url then
+
+        -- remove it
+        repository.remove(name, global)
+
+        -- trace
+        cprint("${bright}remove repository(%s): %s ok!", name, url)
+    else
+        -- error
+        raise("repository(%s): not found!", name)
+    end
 end
 
 -- list all repositories
