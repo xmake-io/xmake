@@ -111,6 +111,13 @@ function sandbox_core_base_option.parse(argv, options, ...)
     return results
 end
 
+-- show help menu
+function sandbox_core_base_option.show_help()
+
+    -- print menu
+    option.show_menu(option.taskname())
+end
+
 -- save context
 function sandbox_core_base_option.save(taskname)
     return option.save(taskname)

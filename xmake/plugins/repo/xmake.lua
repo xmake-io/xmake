@@ -29,10 +29,7 @@ task("repo")
     set_category("plugin")
 
     -- on run
-    on_run(function ()
-
-        -- TODO
-    end)
+    on_run("main")
 
     -- set menu
     set_menu {
