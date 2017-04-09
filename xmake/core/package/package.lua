@@ -19,17 +19,21 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        repository.lua
+-- @file        package.lua
 --
 
 -- define module
-local repository      = repository or {}
+local package   = package or {}
 
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
 
+-- TODO merge and remove project.package module
+-- add package("") api to repository
+-- ...
+--
 
 -- return module
-return repository
+return package

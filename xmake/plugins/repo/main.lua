@@ -74,6 +74,20 @@ end
 
 -- list all repositories
 function _list(name, global)
+
+    -- list all
+    local count = 0
+    for _, repo in ipairs(repository.repositories(global)) do
+
+        -- trace
+        print("    %s %s", repo.name, repo.url)
+
+        -- update count
+        count = count + 1
+    end
+
+    -- trace
+    print("%d repositories were found!", count)
 end
 
 -- main

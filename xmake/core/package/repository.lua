@@ -19,21 +19,36 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        package.lua
+-- @file        repository.lua
 --
 
 -- define module
-local package   = package or {}
+local repository = repository or {}
 
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
 
--- TODO merge and remove project.package module
--- add package("") api to repository
--- ...
---
+-- get repository url from the given name
+function repository.get(name, global)
+end
+
+-- add repository url to the given name
+function repository.add(name, url, global)
+end
+
+-- set repository url to the given name
+function repository.set(name, url, global)
+end
+
+-- remove repository from gobal or local directory
+function repository.remove(name, global)
+end
+
+-- get all repositories from global or local directory
+function repository.repositories(global)
+end
 
 -- return module
-return package
+return repository
