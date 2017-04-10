@@ -189,6 +189,8 @@ function project._interpreter()
             "set_project"
         ,   "set_version"
         ,   "set_modes"
+            -- add_xxx
+        ,   "add_repositories"
             -- target.set_xxx
         ,   "target.set_kind"
         ,   "target.set_strip"

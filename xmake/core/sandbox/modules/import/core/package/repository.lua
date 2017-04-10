@@ -26,6 +26,7 @@
 local sandbox_core_package_repository = sandbox_core_package_repository or {}
 
 -- load modules
+local project       = require("project/project")
 local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
 
@@ -69,8 +70,21 @@ end
 -- get all repositories from global or local directory
 function sandbox_core_package_repository.repositories(global)
 
-    -- get the repository list
-    return repository.repositories(global)
+    -- load repositories from repository cache 
+    local repositories = repository.repositories(global) or {}
+
+    -- load repositories from project file
+    if not global then
+        for _, repo in ipairs(table.wrap(project.get("repositories"))) do
+            local repoinfo = repo:split(' ')
+            if #repoinfo == 2 then
+                repositories[repoinfo[1]] = repoinfo[2]
+            end
+        end
+    end
+
+    -- get the repositories
+    return repositories
 end
 
 -- return module

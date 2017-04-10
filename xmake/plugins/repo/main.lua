@@ -24,6 +24,9 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
+import("core.project.project")
+import("core.platform.platform")
 import("core.package.repository")
 
 -- add repository url
@@ -77,8 +80,29 @@ function _list(global)
     print("%d repositories were found!", count)
 end
 
+-- load project
+function _load_project()
+
+    -- enter project directory
+    os.cd(project.directory())
+
+    -- load config
+    config.load()
+
+    -- load platform
+    platform.load(config.plat())
+
+    -- load project
+    project.load()
+end
+
 -- main
 function main()
+
+    -- load project if operate local repositories
+    if not option.get("global") then
+        _load_project()
+    end
 
     -- add repository url 
     if option.get("add") then
