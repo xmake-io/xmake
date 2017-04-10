@@ -105,9 +105,9 @@ function sandbox_core_project.modes()
     return project.get("modes")
 end
 
--- get the project repositories
-function sandbox_core_project.repositories()
-    return project.get("repositories")
+-- get the project requires
+function sandbox_core_project.requires()
+    return project.get("requires")
 end
 
 -- return module

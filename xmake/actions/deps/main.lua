@@ -27,7 +27,31 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
+import("core.package.package")
 import("core.package.repository")
+
+-- Install and update outdated package dependencies
+--
+-- the default repositories:
+--     xmake-repo https://github.com/tboox/xmake-repo.git
+--
+-- add other repositories:
+--     xmake repo --add other-repo https://github.com/other/other-repo.git
+-- or
+--     add_repositories("other-repo https://github.com/other/other-repo.git")
+--
+-- add requires:
+--
+--     add_requires("tboox.tbox >=1.5.1", "zlib >=1.2.11")
+--     add_requires("zlib master")
+--     add_requires("xmake-repo/tboox.tbox >=1.5.1")
+--     add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1")
+--
+-- add package dependencies:
+--
+--     target("test")
+--         add_packages("tboox.tbox", "zlib")
+--
 
 -- load project
 function _load_project()
@@ -50,6 +74,10 @@ function _install(global)
     -- TODO
     for _, repo in ipairs(repository.repositories()) do
         print(repo.name, repo.url)
+    end
+
+    for _, required in ipairs(project.requires()) do
+        print(required)
     end
 end
 

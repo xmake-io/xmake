@@ -190,6 +190,7 @@ function project._interpreter()
         ,   "set_version"
         ,   "set_modes"
             -- add_xxx
+        ,   "add_requires"
         ,   "add_repositories"
             -- target.set_xxx
         ,   "target.set_kind"
