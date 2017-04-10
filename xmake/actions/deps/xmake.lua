@@ -29,10 +29,7 @@ task("deps")
     set_category("action")
 
     -- on run
-    on_run(function ()
-
-        -- TODO
-    end)
+    on_run("main")
 
     -- set menu
     set_menu {
@@ -48,15 +45,14 @@ task("deps")
                 -- options
             ,   options = 
                 {
-                    {'i', "install",    "k",  nil,       "Install package dependencies."                             }
-                ,   {'u', "update",     "k",  nil,       "Update outdated package dependencies."                     }
-                ,   {'l', "list",       "k",  nil,       "List all package dependencies."                            }
-                ,   {nil, "outdated",   "k",  nil,       "show all outdated package dependencies."                   }
-                ,   {                                                                                                }
-                ,   {nil, "info",       "k",  nil,       "Show the given package info."                              }
-                ,   {'g', "global",     "k",  nil,       "Install to the global package directory. (default: local)" }
-                ,   {'s', "search",     "k",  nil,       "Search for the given packages from the remote repository." }
-                ,   {                                                                                                }
-                ,   {nil, "packages",   "vs", nil,       "The packages."                                             }
+                    {'i', "install",    "k",  nil,       "Install and update outdated package dependencies."                           }
+                ,   {'c', "clear",      "k",  nil,       "Clear all installed package caches."                                         }
+                ,   {'l', "list",       "k",  nil,       "List all package dependencies."                                              }
+                ,   {                                                                                                                  }
+                ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                }
+                ,   {'g', "global",     "k",  nil,       "Install or clear packages in the global package directory. (default: local)" }
+                ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                            }
+                ,   {                                                                                                                  }
+                ,   {nil, "packages",   "vs", nil,       "The packages."                                                               }
                 }
             } 
