@@ -67,10 +67,10 @@ function _list(global)
 
     -- list all
     local count = 0
-    for name, url in pairs(repository.repositories(global)) do
+    for _, repo in pairs(repository.repositories(global)) do
 
         -- trace
-        print("    %s %s", name, url)
+        print("    %s %s", repo.name, repo.url)
 
         -- update count
         count = count + 1
