@@ -203,7 +203,7 @@ end
 function _check_debugger(config)
 
     -- get debugger
-    local debugger = config.get("dg")
+    local debugger = config.get("debugger")
     if debugger then
         return
     end
@@ -247,7 +247,7 @@ function _check_debugger(config)
     if debugger then
 
         -- save it
-        config.set("dg", debugger)
+        config.set("debugger", debugger)
 
         -- trace
         print("checking for the debugger ... %s", path.filename(debugger))

@@ -90,8 +90,6 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "sh",       cross,   "gcc",         "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       cross,   "clang++",     "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       cross,   "clang",       "the shared library linker") 
-    checker.toolchain_insert(toolchains, "dg",       cross,   "gdb",         "the debugger") 
-    checker.toolchain_insert(toolchains, "dg",       cross,   "lldb",        "the debugger") 
 
     -- insert objc/c++ tools to toolchains
     checker.toolchain_insert(toolchains, "mm",       cross,   "clang",       "the objc compiler") 
@@ -133,14 +131,13 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
     checker.toolchain_insert(toolchains, "rc-ld",    "",      "rustc",       "the rust linker") 
 
-    -- insert ccache tools to toolchains
-    checker.toolchain_insert(toolchains, "ccache",   "",      "ccache",      "the ccache") 
-
     -- insert other tools to toolchains
-    checker.toolchain_insert(toolchains, "ccache",   "",      "ccache",      "the compiler cache") 
-    checker.toolchain_insert(toolchains, "vn",       "",      "git",         "the version control utility") 
-    checker.toolchain_insert(toolchains, "dw",       "",      "curl",        "the url download utility") 
-    checker.toolchain_insert(toolchains, "dw",       "",      "wget",        "the url download utility") 
+    checker.toolchain_insert(toolchains, "debugger",    cross,   "gdb",         "the debugger") 
+    checker.toolchain_insert(toolchains, "debugger",    cross,   "lldb",        "the debugger") 
+    checker.toolchain_insert(toolchains, "ccache",      "",      "ccache",      "the compiler cache") 
+    checker.toolchain_insert(toolchains, "git",         "",      "git",         "the git version control utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",      "curl",        "the url download utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",      "wget",        "the url download utility") 
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains

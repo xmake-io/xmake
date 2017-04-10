@@ -68,14 +68,11 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "sh",      cross, "g++",       "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",      cross, "gcc",       "the shared library linker") 
 
-    -- insert ccache tools to toolchains
-    checker.toolchain_insert(toolchains, "ccache",  "",    "ccache",    "the ccache") 
-
     -- insert other tools to toolchains
-    checker.toolchain_insert(toolchains, "ccache",  "",    "ccache",    "the compiler cache") 
-    checker.toolchain_insert(toolchains, "vn",      "",    "git",       "the version control utility") 
-    checker.toolchain_insert(toolchains, "dw",      "",    "curl",      "the url download utility") 
-    checker.toolchain_insert(toolchains, "dw",      "",    "wget",      "the url download utility") 
+    checker.toolchain_insert(toolchains, "ccache",      "",    "ccache",    "the compiler cache") 
+    checker.toolchain_insert(toolchains, "git",         "",    "git",       "the git version control utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",    "curl",      "the url download utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",    "wget",      "the url download utility") 
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains

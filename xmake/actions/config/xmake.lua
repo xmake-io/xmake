@@ -107,9 +107,9 @@ task("config")
 
                 ,   {}
                 ,   {nil, "ccache",     "kv", "auto",       "The compiler cache."                                           }
-                ,   {nil, "dg",         "kv", "auto",       "The debugger"                                                  }
-                ,   {nil, "vn",         "kv", "auto",       "The version control utility."                                  }
-                ,   {nil, "dw",         "kv", "auto",       "The url download utility."                                     }
+                ,   {nil, "git",        "kv", "auto",       "The git version control utility."                              }
+                ,   {nil, "debugger",   "kv", "auto",       "The debugger"                                                  }
+                ,   {nil, "downloader", "kv", "auto",       "The url download utility."                                     }
 
                 ,   {}
                 ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   

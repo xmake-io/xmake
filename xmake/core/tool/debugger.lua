@@ -55,7 +55,7 @@ function debugger.load()
     local instance = table.inherit(debugger)
 
     -- load the debugger tool 
-    local result, errors = tool.load("dg")
+    local result, errors = tool.load("debugger")
     if not result then 
         return nil, errors
     end

@@ -59,39 +59,39 @@ function _toolchains(config)
     local toolchains = {}
 
     -- insert c/c++ tools to toolchains
-    checker.toolchain_insert(toolchains, "cc",       cross,  "clang",        "the c compiler") 
-    checker.toolchain_insert(toolchains, "cxx",      cross,  "clang",        "the c++ compiler") 
-    checker.toolchain_insert(toolchains, "cxx",      cross,  "clang++",      "the c++ compiler") 
-    checker.toolchain_insert(toolchains, "ld",       cross,  "clang++",      "the linker") 
-    checker.toolchain_insert(toolchains, "ld",       cross,  "clang",        "the linker") 
-    checker.toolchain_insert(toolchains, "ar",       cross,  "ar",           "the static library archiver") 
-    checker.toolchain_insert(toolchains, "ex",       cross,  "ar",           "the static library extractor") 
-    checker.toolchain_insert(toolchains, "sh",       cross,  "clang++",      "the shared library linker") 
-    checker.toolchain_insert(toolchains, "sh",       cross,  "clang",        "the shared library linker") 
-    checker.toolchain_insert(toolchains, "dg",       cross,  "lldb",         "the debugger") 
+    checker.toolchain_insert(toolchains, "cc",          cross,  "clang",        "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",         cross,  "clang",        "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "cxx",         cross,  "clang++",      "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "ld",          cross,  "clang++",      "the linker") 
+    checker.toolchain_insert(toolchains, "ld",          cross,  "clang",        "the linker") 
+    checker.toolchain_insert(toolchains, "ar",          cross,  "ar",           "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",          cross,  "ar",           "the static library extractor") 
+    checker.toolchain_insert(toolchains, "sh",          cross,  "clang++",      "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",          cross,  "clang",        "the shared library linker") 
 
     -- insert objc/c++ tools to toolchains
-    checker.toolchain_insert(toolchains, "mm",       cross,  "clang",        "the objc compiler") 
-    checker.toolchain_insert(toolchains, "mxx",      cross,  "clang++",      "the objc++ compiler") 
-    checker.toolchain_insert(toolchains, "mxx",      cross,  "clang",        "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mm",          cross,  "clang",        "the objc compiler") 
+    checker.toolchain_insert(toolchains, "mxx",         cross,  "clang++",      "the objc++ compiler") 
+    checker.toolchain_insert(toolchains, "mxx",         cross,  "clang",        "the objc++ compiler") 
 
     -- insert swift tools to toolchains
-    checker.toolchain_insert(toolchains, "sc",       cross,   "swiftc",       "the swift compiler") 
-    checker.toolchain_insert(toolchains, "sc-ld",    cross,   "swiftc",       "the swift linker") 
-    checker.toolchain_insert(toolchains, "sc-sh",    cross,   "swiftc",       "the swift shared library linker") 
+    checker.toolchain_insert(toolchains, "sc",          cross,  "swiftc",       "the swift compiler") 
+    checker.toolchain_insert(toolchains, "sc-ld",       cross,  "swiftc",       "the swift linker") 
+    checker.toolchain_insert(toolchains, "sc-sh",       cross,  "swiftc",       "the swift shared library linker") 
 
     -- insert asm tools to toolchains
     if simulator then
-        checker.toolchain_insert(toolchains, "as",   cross,  "clang",        "the assember") 
+        checker.toolchain_insert(toolchains, "as",      cross,  "clang",        "the assember") 
     else
-        checker.toolchain_insert(toolchains, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
+        checker.toolchain_insert(toolchains, "as",      path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
     end
 
     -- insert other tools to toolchains
-    checker.toolchain_insert(toolchains, "ccache",   "",     "ccache",       "the compiler cache") 
-    checker.toolchain_insert(toolchains, "vn",       "",     "git",          "the version control utility") 
-    checker.toolchain_insert(toolchains, "dw",       "",     "curl",         "the url download utility") 
-    checker.toolchain_insert(toolchains, "dw",       "",     "wget",         "the url download utility") 
+    checker.toolchain_insert(toolchains, "debugger",    cross,  "lldb",         "the debugger") 
+    checker.toolchain_insert(toolchains, "ccache",      "",     "ccache",       "the compiler cache") 
+    checker.toolchain_insert(toolchains, "git",         "",     "git",          "the git version control utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",     "curl",         "the url download utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",     "wget",         "the url download utility") 
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains

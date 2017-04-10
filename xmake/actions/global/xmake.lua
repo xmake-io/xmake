@@ -45,17 +45,13 @@ task("global")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
-
-                ,   {}
-
-                ,   {nil, "make",       "kv", "auto",   "Set the make path."                                        }
-                ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
-                                                    ,   "    --ccache=[y|n]"                                        }
-
-                ,   {}
-                ,   {nil, "dg",         "kv", "auto",   "The Debugger"                                              }
-                ,   {}
+                    {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again." }
+                ,   {                                                                                             }
+                ,   {nil, "ccache",     "kv", "auto",       "The compiler cache."                                 }
+                ,   {nil, "git",        "kv", "auto",       "The git version control utility."                    }
+                ,   {nil, "debugger",   "kv", "auto",       "The debugger"                                        }
+                ,   {nil, "downloader", "kv", "auto",       "The url download utility."                           }
+                ,   {                                                                                             }
 
                     -- show platform menu options
                 ,   function () 
