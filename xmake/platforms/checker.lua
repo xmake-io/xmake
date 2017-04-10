@@ -29,9 +29,15 @@ import("core.base.option")
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
 
+    -- init key
+    local key = tostring(toolinfo)
+
+    -- init cache
+    _g._TOOLCHAIN_CHECKED = _g._TOOLCHAIN_CHECKED or {}
+
     -- get the tool path
     local toolpath = config.get(toolkind)
-    if not toolpath then
+    if not toolpath and not _g._TOOLCHAIN_CHECKED[key] then
 
         -- get name
         local name = toolinfo.name
@@ -103,6 +109,9 @@ function _toolchain_check(config, toolkind, toolinfo)
                 cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", toolinfo.description, toolkind, name)
             end
         end
+
+        -- checked
+        _g._TOOLCHAIN_CHECKED[key] = true
     end
 
     -- get tool path
