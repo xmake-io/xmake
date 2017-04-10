@@ -289,13 +289,8 @@ end
 -- make the complie command
 function _compcmd1(sourcefile, objectfile, flags)
 
-    -- get ccache
-    local ccache = nil
-    if config.get("ccache") then
-        ccache = tool.shellname("ccache")
-    end
-
     -- make it
+    local ccache = tool.shellname("ccache")
     local command = format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
     if ccache then
         command = ccache:append(command, " ")

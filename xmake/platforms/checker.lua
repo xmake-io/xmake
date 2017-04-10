@@ -264,32 +264,6 @@ function check_target_minver(config)
     end
 end
 
--- check the ccache
-function check_ccache(config)
-
-    -- get the ccache
-    local ccache = config.get("ccache")
-    if ccache == nil or (type(ccache) == "boolean" and ccache) then
-
-        -- check the ccache path
-        local ccache_path = tool.check("ccache")
-
-        -- check ok? update it
-        if ccache_path then
-            config.set("ccache", ccache_path)
-        else
-            config.set("ccache", false)
-        end
-
-        -- trace
-        if ccache_path then
-            cprint("checking for the ccache ... ${green}%s", ccache_path)
-        else
-            cprint("checking for the ccache ... ${red}no")
-        end
-    end
-end
-
 -- insert toolchain
 function toolchain_insert(toolchains, toolkind, cross, name, description, check)
 

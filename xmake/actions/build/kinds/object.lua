@@ -148,9 +148,9 @@ function _build_object(target, buildinfo, index, sourcebatch)
     -- trace percent info
     cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        cprint("${dim}%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     else
-        print("%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        print("%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
@@ -280,9 +280,9 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
         -- trace percent info
         cprintf("${green}[%02d%%]:${clear} ", percent)
         if verbose then
-            cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+            cprint("${dim}%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
         else
-            print("%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+            print("%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
         end
     end
 

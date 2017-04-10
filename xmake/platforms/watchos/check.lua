@@ -87,6 +87,9 @@ function _toolchains(config)
         checker.toolchain_insert(toolchains, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
     end
 
+    -- insert ccache tools to toolchains
+    checker.toolchain_insert(toolchains, "ccache",   "",     "ccache",       "the ccache") 
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
@@ -109,14 +112,12 @@ function main(kind, toolkind)
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
-    ,   checker.check_ccache
     }
 
     -- init the check list of global
     _g.global = 
     {
         checker.check_xcode
-    ,   checker.check_ccache
     }
 
     -- check it

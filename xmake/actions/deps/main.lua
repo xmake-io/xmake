@@ -125,7 +125,7 @@ function main()
     -- show the given package info
     elseif option.get("info") then
 
-        _search(option.get("packages"))
+        _info(option.get("packages"))
 
     -- list all package dependencies
     elseif option.get("list") then

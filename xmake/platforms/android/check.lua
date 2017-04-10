@@ -167,6 +167,9 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-sh",    "",      "rustc",       "the rust shared library linker") 
     checker.toolchain_insert(toolchains, "rc-ld",    "",      "rustc",       "the rust linker") 
 
+    -- insert ccache tools to toolchains
+    checker.toolchain_insert(toolchains, "ccache",   "",      "ccache",      "the ccache") 
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
@@ -186,7 +189,6 @@ function main(kind, toolkind)
     _g.config = 
     {
         { checker.check_arch, "armv7-a" }
-    ,   checker.check_ccache
     ,   _check_ndk_sdkver
     ,   _check_toolchains_dir
     ,   _check_toolchains_ver
@@ -197,8 +199,7 @@ function main(kind, toolkind)
     -- init the check list of global
     _g.global = 
     {
-        checker.check_ccache
-    ,   _check_ndk_sdkver
+        _check_ndk_sdkver
     }
 
     -- check it

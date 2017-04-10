@@ -90,6 +90,9 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-sh",    "",                     "rustc",        "the rust shared library linker") 
     checker.toolchain_insert(toolchains, "rc-ld",    "",                     "rustc",        "the rust linker") 
 
+    -- insert ccache tools to toolchains
+    checker.toolchain_insert(toolchains, "ccache",   "",                     "ccache",       "the ccache") 
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
@@ -112,14 +115,12 @@ function main(kind, toolkind)
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
-    ,   checker.check_ccache
     }
 
     -- init the check list of global
     _g.global = 
     {
         checker.check_xcode
-    ,   checker.check_ccache
     }
 
     -- check it

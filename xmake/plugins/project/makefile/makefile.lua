@@ -127,7 +127,7 @@ function _make_object(makefile, target, sourcefile, objectfile)
     makefile:print(" %s", sourcefile)
 
     -- make body
-    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     _mkdir(makefile, path.directory(objectfile))
     makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 
@@ -184,7 +184,7 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
 
     -- make body
     for _, sourcefile in ipairs(sourcefiles) do
-        makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     end
     _mkdir(makefile, path.directory(objectfiles))
     makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
