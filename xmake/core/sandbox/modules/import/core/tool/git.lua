@@ -22,56 +22,35 @@
 -- @file        git.lua
 --
 
--- init it
-function init(shellname)
+-- define module
+local sandbox_core_tool_git = sandbox_core_tool_git or {}
 
-    -- save name
-    _g.shellname = shellname or "git"
-end
-
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
+-- load modules
+local platform  = require("platform/platform")
+local git       = require("tool/git")
+local raise     = require("sandbox/modules/raise")
 
 -- clone url
-function clone(url, args)
-
-    -- init argv
-    local argv = {"clone", url}
-
-    -- set branch
-    if args.branch then
-        table.insert(argv, "-b")
-        table.insert(argv, args.branch)
+--
+-- .e.g
+-- 
+-- git.clone("git@github.com:tboox/xmake.git")
+-- git.clone("git@github.com:tboox/xmake.git", {verbose = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+--
+function sandbox_core_tool_git.clone(url, args)
+ 
+    -- get the git instance
+    local instance, errors = git.load()
+    if not instance then
+        raise(errors)
     end
 
-    -- set depth
-    if args.depth then
-        table.insert(argv, "--depth")
-        table.insert(argv, ifelse(type(args.depth) == "number", tostring(args.depth), args.depth))
+    -- extract it
+    local ok, errors = instance:clone(url, args)
+    if not ok then
+        raise(errors)
     end
-
-    -- set outputdir
-    if args.outputdir then
-        table.insert(argv, args.outputdir)
-    end
-
-    -- verbose?
-    local runner = os.runv
-    if args.verbose then
-        runner = os.execv
-    end
-
-    -- clone it
-    runner(_g.shellname, argv)
 end
 
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s --help", _g.shellname)
-end
+-- return module
+return sandbox_core_tool_git

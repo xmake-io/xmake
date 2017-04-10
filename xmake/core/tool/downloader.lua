@@ -19,59 +19,58 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        git.lua
+-- @file        downloader.lua
 --
 
--- init it
-function init(shellname)
+-- define module
+local downloader = downloader or {}
 
-    -- save name
-    _g.shellname = shellname or "git"
-end
+-- load modules
+local table     = require("base/table")
+local string    = require("base/string")
+local tool      = require("tool/tool")
 
--- get the property
-function get(name)
+-- get the current tool
+function downloader:_tool()
 
     -- get it
-    return _g[name]
+    return self._TOOL
 end
 
--- clone url
-function clone(url, args)
+-- load the downloader 
+function downloader.load()
 
-    -- init argv
-    local argv = {"clone", url}
-
-    -- set branch
-    if args.branch then
-        table.insert(argv, "-b")
-        table.insert(argv, args.branch)
+    -- get it directly from cache dirst
+    if downloader._INSTANCE then
+        return downloader._INSTANCE
     end
 
-    -- set depth
-    if args.depth then
-        table.insert(argv, "--depth")
-        table.insert(argv, ifelse(type(args.depth) == "number", tostring(args.depth), args.depth))
-    end
+    -- new instance
+    local instance = table.inherit(downloader)
 
-    -- set outputdir
-    if args.outputdir then
-        table.insert(argv, args.outputdir)
+    -- load the downloader tool 
+    local result, errors = tool.load("downloader")
+    if not result then 
+        return nil, errors
     end
+        
+    -- save tool
+    instance._TOOL = result
 
-    -- verbose?
-    local runner = os.runv
-    if args.verbose then
-        runner = os.execv
-    end
+    -- save this instance
+    downloader._INSTANCE = instance
 
-    -- clone it
-    runner(_g.shellname, argv)
+    -- ok
+    return instance
 end
 
--- check the given flags 
-function check(flags)
+-- get properties of the tool
+function downloader:get(name)
 
-    -- check it
-    os.run("%s --help", _g.shellname)
+    -- get it
+    return self:_tool().get(name)
 end
+
+
+-- return module
+return downloader
