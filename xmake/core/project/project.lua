@@ -38,7 +38,6 @@ local target                = require("project/target")
 local config                = require("project/config")
 local global                = require("project/global")
 local option                = require("project/option")
-local package               = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
@@ -132,7 +131,7 @@ function project._api_is_option(interp, ...)
 end
 
 -- load all packages from the given directories
-function project._api_add_pkgdirs(interp, ...)
+function project._api_add_packagedirs(interp, ...)
 
     -- get all directories
     local pkgdirs = {}
@@ -267,11 +266,12 @@ function project._interpreter()
         ,   {"is_arch",                 project._api_is_arch        }
         ,   {"is_option",               project._api_is_option      }
             -- add_xxx
-        ,   {"add_packagedirs",         project._api_add_pkgdirs    }
+        ,   {"add_packagedirs",         project._api_add_packagedirs}
         ,   {"add_plugindirs",          project._api_add_plugindirs }
         }
     }
 
+    -- TODO 
     -- register api: add_packages() to target
     interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
 
@@ -305,7 +305,6 @@ function project._interpreter()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
-            ,   packagedir  = package.directory()
             }
 
             -- map it

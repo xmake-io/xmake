@@ -70,7 +70,7 @@ function _load_project()
 end
 
 -- install and update all outdated package dependencies
-function _install(global)
+function _install(is_global)
     -- TODO
     for _, repo in ipairs(repository.repositories()) do
         print(repo.name, repo.url)
@@ -82,7 +82,7 @@ function _install(global)
 end
 
 -- clear all installed packages cache
-function _clear(global)
+function _clear(is_global)
     -- TODO
 end
 

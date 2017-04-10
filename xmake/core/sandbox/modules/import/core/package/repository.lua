@@ -31,53 +31,53 @@ local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
 
 -- get repository url from the given name
-function sandbox_core_package_repository.get(name, global)
+function sandbox_core_package_repository.get(name, is_global)
 
     -- get it
-    return repository.get(name, global)
+    return repository.get(name, is_global)
 end
 
 -- add repository url to the given name
-function sandbox_core_package_repository.add(name, url, global)
+function sandbox_core_package_repository.add(name, url, is_global)
 
     -- add it
-    local ok, errors = repository.add(name, url, global)
+    local ok, errors = repository.add(name, url, is_global)
     if not ok then
         raise(errors)
     end
 end
 
 -- remove repository from gobal or local directory
-function sandbox_core_package_repository.remove(name, global)
+function sandbox_core_package_repository.remove(name, is_global)
 
     -- remove it
-    local ok, errors = repository.remove(name, global)
+    local ok, errors = repository.remove(name, is_global)
     if not ok then
         raise(errors)
     end
 end
 
 -- clear all repositories from global or local directory
-function sandbox_core_package_repository.clear(global)
+function sandbox_core_package_repository.clear(is_global)
 
     -- clear all repositories
-    local ok, errors = repository.clear(global)
+    local ok, errors = repository.clear(is_global)
     if not ok then
         raise(errors)
     end
 end
 
 -- get all repositories from global or local directory
-function sandbox_core_package_repository.repositories(global)
+function sandbox_core_package_repository.repositories(is_global)
 
     -- load repositories from repository cache 
     local repositories = {}
-    for name, url in ipairs(table.wrap(repository.repositories(global))) do
+    for name, url in ipairs(table.wrap(repository.repositories(is_global))) do
         table.insert(repositories, {name = name, url = url})
     end
 
     -- load repositories from project file
-    if not global then
+    if not is_global then
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
             local repoinfo = repo:split(' ')
             if #repoinfo == 2 then

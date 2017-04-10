@@ -30,44 +30,44 @@ import("core.platform.platform")
 import("core.package.repository")
 
 -- add repository url
-function _add(name, url, global)
+function _add(name, url, is_global)
 
     -- add it
-    repository.add(name, url, global)
+    repository.add(name, url, is_global)
 
     -- trace
-    cprint("${bright}add %s repository(%s): %s ok!", ifelse(global, "global", "local"), name, url)
+    cprint("${bright}add %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
 end
 
 -- remove repository url
-function _remove(name, global)
+function _remove(name, is_global)
 
     -- remove it
-    repository.remove(name, global)
+    repository.remove(name, is_global)
 
     -- trace
-    cprint("${bright}remove %s repository(%s): %s ok!", ifelse(global, "global", "local"), name, url)
+    cprint("${bright}remove %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
 end
 
 -- clear all repositories
-function _clear(global)
+function _clear(is_global)
 
     -- clear all
-    repository.clear(global)
+    repository.clear(is_global)
 
     -- trace
-    cprint("${bright}clear %s repositories: ok!", ifelse(global, "global", "local"))
+    cprint("${bright}clear %s repositories: ok!", ifelse(is_global, "global", "local"))
 end
 
 -- list all repositories
-function _list(global)
+function _list(is_global)
 
     -- trace
-    print("%s repositories:", ifelse(global, "global", "local"))
+    print("%s repositories:", ifelse(is_global, "global", "local"))
 
     -- list all
     local count = 0
-    for _, repo in pairs(repository.repositories(global)) do
+    for _, repo in pairs(repository.repositories(is_global)) do
 
         -- trace
         print("    %s %s", repo.name, repo.url)

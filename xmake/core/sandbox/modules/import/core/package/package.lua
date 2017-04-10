@@ -30,8 +30,8 @@ local package    = require("package/package")
 local raise      = require("sandbox/modules/raise")
 
 -- get package directory
-function sandbox_core_package_package.directory()
-    -- TODO
+function sandbox_core_package_package.directory(is_global)
+    return package.directory(is_global)
 end
 
 

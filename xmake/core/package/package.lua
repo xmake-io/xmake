@@ -29,11 +29,19 @@ local package   = package or {}
 local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
+local config    = require("project/config")
+local global    = require("project/global")
 
--- TODO merge and remove project.package module
--- add package("") api to repository
--- ...
---
+-- get the local or global package directory
+function package.directory(is_global)
+
+    -- get directory
+    if is_global then
+        return path.join(global.directory(), "packages")
+    else
+        return path.join(config.directory(), "packages")
+    end
+end
 
 -- return module
 return package
