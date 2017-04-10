@@ -54,6 +54,11 @@ function clone(url, args)
         table.insert(argv, ifelse(type(args.depth) == "number", tostring(args.depth), args.depth))
     end
 
+    -- set tags
+    if args.tags then
+        table.insert(argv, "--tags")
+    end
+
     -- set outputdir
     if args.outputdir then
         table.insert(argv, args.outputdir)
@@ -67,6 +72,44 @@ function clone(url, args)
 
     -- clone it
     runner(_g.shellname, argv)
+end
+
+-- pull remote commits
+function pull(args)
+
+    -- init argv
+    local argv = {"pull"}
+
+    -- set remote
+    table.insert(argv, args.remote or "origin")
+
+    -- set branch
+    table.insert(argv, args.branch or "master")
+
+    -- set tags
+    if args.tags then
+        table.insert(argv, "--tags")
+    end
+
+    -- enter repository directory
+    local oldir = nil
+    if args.repodir then
+        oldir = os.cd(args.repodir)
+    end
+
+    -- verbose?
+    local runner = os.runv
+    if args.verbose then
+        runner = os.execv
+    end
+
+    -- clone it
+    runner(_g.shellname, argv)
+
+    -- leave repository directory
+    if oldir then
+        os.cd(oldir)
+    end
 end
 
 -- check the given flags 

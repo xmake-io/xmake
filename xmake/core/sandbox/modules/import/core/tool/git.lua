@@ -45,8 +45,30 @@ function sandbox_core_tool_git.clone(url, args)
         raise(errors)
     end
 
-    -- extract it
+    -- clone it
     local ok, errors = instance:clone(url, args)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- pull remote commits
+--
+-- .e.g
+-- 
+-- git.pull()
+-- git.pull({verbose = true, remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
+--
+function sandbox_core_tool_git.pull(args)
+
+    -- get the git instance
+    local instance, errors = git.load()
+    if not instance then
+        raise(errors)
+    end
+
+    -- pull it
+    local ok, errors = instance:pull(args)
     if not ok then
         raise(errors)
     end

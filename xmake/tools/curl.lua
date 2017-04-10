@@ -36,6 +36,35 @@ function get(name)
     return _g[name]
 end
 
+-- download url
+function download(url, outputfile, args)
+
+    -- check 
+    assert(outputfile)
+
+    -- init argv
+    local argv = {url}
+
+    -- ensure output directory
+    local outputdir = path.directory(outputfile)
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- set outputfile
+    table.insert(argv, "-o")
+    table.insert(argv, outputfile)
+
+    -- verbose?
+    local runner = os.runv
+    if args.verbose then
+        runner = os.execv
+    end
+
+    -- clone it
+    runner(_g.shellname, argv)
+end
+
 -- check the given flags 
 function check(flags)
 

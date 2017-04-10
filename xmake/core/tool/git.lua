@@ -77,12 +77,25 @@ end
 -- .e.g
 -- 
 -- git.load():clone("git@github.com:tboox/xmake.git")
--- git.load():clone("git@github.com:tboox/xmake.git", {verbose = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+-- git.load():clone("git@github.com:tboox/xmake.git", {verbose = true, tags = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
 --
 function git:clone(url, args)
 
     -- clone it
     return sandbox.load(self:_tool().clone, url, args)
+end
+
+-- pull remote commits
+--
+-- .e.g
+-- 
+-- git.load():pull()
+-- git.load():pull({verbose = true, remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
+--
+function git:pull(args)
+
+    -- pull it
+    return sandbox.load(self:_tool().pull, args)
 end
 
 -- return module

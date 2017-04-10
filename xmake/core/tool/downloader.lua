@@ -29,6 +29,7 @@ local downloader = downloader or {}
 local table     = require("base/table")
 local string    = require("base/string")
 local tool      = require("tool/tool")
+local sandbox   = require("sandbox/sandbox")
 
 -- get the current tool
 function downloader:_tool()
@@ -71,6 +72,18 @@ function downloader:get(name)
     return self:_tool().get(name)
 end
 
+-- download url
+--
+-- .e.g
+--
+-- downloader.load():download(url, outputfile)
+-- downloader.load():download(url, outputfile, {verbose = true})
+--
+function downloader:download(url, outputfile, args)
+
+    -- download it
+    return sandbox.load(self:_tool().download, url, outputfile, args)
+end
 
 -- return module
 return downloader

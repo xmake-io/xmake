@@ -19,55 +19,38 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        wget.lua
+-- @file        downloader.lua
 --
 
--- init it
-function init(shellname)
+-- define module
+local sandbox_core_tool_downloader = sandbox_core_tool_downloader or {}
 
-    -- save name
-    _g.shellname = shellname or "wget"
-end
-
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
+-- load modules
+local platform      = require("platform/platform")
+local downloader    = require("tool/downloader")
+local raise         = require("sandbox/modules/raise")
 
 -- download url
-function download(url, outputfile, args)
-
-    -- check 
-    assert(outputfile)
-
-    -- init argv
-    local argv = {url}
-
-    -- ensure output directory
-    local outputdir = path.directory(outputfile)
-    if not os.isdir(outputdir) then
-        os.mkdir(outputdir)
+--
+-- .e.g
+-- 
+-- downloader.download(url, outputfile)
+-- downloader.download(url, outputfile, {verbose = true})
+--
+function sandbox_core_tool_downloader.download(url, outputfile, args)
+ 
+    -- get the downloader instance
+    local instance, errors = downloader.load()
+    if not instance then
+        raise(errors)
     end
 
-    -- set outputfile
-    table.insert(argv, "-O")
-    table.insert(argv, outputfile)
-
-    -- verbose?
-    local runner = os.runv
-    if args.verbose then
-        runner = os.execv
+    -- download it
+    local ok, errors = instance:download(url, outputfile, args)
+    if not ok then
+        raise(errors)
     end
-
-    -- clone it
-    runner(_g.shellname, argv)
 end
 
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s --help", _g.shellname)
-end
+-- return module
+return sandbox_core_tool_downloader
