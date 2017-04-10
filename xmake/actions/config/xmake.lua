@@ -106,7 +106,10 @@ task("config")
                     end
 
                 ,   {}
-                ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                   }
+                ,   {nil, "ccache",     "kv", "auto",       "The compiler cache."                                           }
+                ,   {nil, "dg",         "kv", "auto",       "The debugger"                                                  }
+                ,   {nil, "vn",         "kv", "auto",       "The version control utility."                                  }
+                ,   {nil, "dw",         "kv", "auto",       "The url download utility."                                     }
 
                 ,   {}
                 ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
@@ -121,9 +124,6 @@ task("config")
                                                           , "    - sdk/bin (toolchains)"
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
-
-                ,   {}
-                ,   {nil, "dg",         "kv", "auto",       "The Debugger"                                                  }
 
                     -- show language menu options
                 ,   function () 

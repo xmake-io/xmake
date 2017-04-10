@@ -136,6 +136,12 @@ function _toolchains(config)
     -- insert ccache tools to toolchains
     checker.toolchain_insert(toolchains, "ccache",   "",      "ccache",      "the ccache") 
 
+    -- insert other tools to toolchains
+    checker.toolchain_insert(toolchains, "ccache",   "",      "ccache",      "the compiler cache") 
+    checker.toolchain_insert(toolchains, "vn",       "",      "git",         "the version control utility") 
+    checker.toolchain_insert(toolchains, "dw",       "",      "curl",        "the url download utility") 
+    checker.toolchain_insert(toolchains, "dw",       "",      "wget",        "the url download utility") 
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
