@@ -52,7 +52,7 @@ function pull(position)
     for _, repo in ipairs(repositories()) do
 
         -- the repository directory
-        local repodir = path.join(repository.directory(position), repo.name)
+        local repodir = path.join(repository.directory(repo.global), repo.name)
         if os.isdir(repodir) then
 
             -- trace
@@ -71,7 +71,7 @@ function pull(position)
 end
 
 -- get package directory from repositories
-function packagedir(packagename)
+function packagedir(packagename, reponame)
 
     -- get it from cache it
     local packagedirs = _g._PACKAGEDIRS or {}
@@ -79,15 +79,26 @@ function packagedir(packagename)
         return packagedirs[packagename]
     end
 
-    -- find the package directory
+    -- find the package directory from the given repository 
     local foundir = nil
-    for _, repo in ipairs(repositories()) do
+    if reponame then
+        for _, repodir in ipairs(table.join(repository.directory(false), repository.directory(true))) do
+            local dir = path.join(repodir, reponame, "packages", (packagename:gsub('%.', path.seperator())))
+            if os.isdir(dir) then
+                foundir = dir 
+                break
+            end
+        end
+    else
+        -- find the package directory from all repositories
+        for _, repo in ipairs(repositories()) do
 
-        -- the package directory
-        local dir = path.join(repository.directory(position), repo.name, "packages", (packagename:gsub('%.', path.seperator())))
-        if os.isdir(dir) then
-            foundir = dir 
-            break
+            -- the package directory
+            local dir = path.join(repository.directory(repo.global), repo.name, "packages", (packagename:gsub('%.', path.seperator())))
+            if os.isdir(dir) then
+                foundir = dir 
+                break
+            end
         end
     end
 
@@ -101,6 +112,6 @@ function packagedir(packagename)
     _g._PACKAGEDIRS = packagedirs
 
     -- ok
-    return dir
+    return foundir
 end
 

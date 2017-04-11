@@ -92,19 +92,39 @@ function _load_requires()
     return requires
 end
 
+-- load package info from repositories
+function _load_packageinfo_from_repo(packagename, requireinfo)
+
+    -- get package directory from repositories
+    local packagedir = repository.packagedir(packagename, requireinfo.reponame)
+
+    -- TODO
+    print(packagedir)
+
+    return {}
+end
+
+-- create a new package info from the given package url
+function _create_packageinfo_from_url(pacakgename, requireinfo)
+    -- TODO
+    return {}
+end
+
 -- load all required packages
 function load_packages()
 
     -- load requires
-    for name, info in pairs(_load_requires()) do
+    for packagename, requireinfo in pairs(_load_requires()) do
 
-        -- get package directory from repositories
-        local packagedir = repository.packagedir(name)
-
-        -- TODO process reponame and package url
-        if info.packageurl then
+        -- load package info
+        local packageinfo = nil
+        if requireinfo.packageurl then
+            -- create a new package from the given package url
+            packageinfo = _create_packageinfo_from_url(packagename, requireinfo)
+        else
+            -- load package info from repositories
+            packageinfo = _load_packageinfo_from_repo(packagename, requireinfo)
         end
-        print(packagedir)
     end
 
     -- ok

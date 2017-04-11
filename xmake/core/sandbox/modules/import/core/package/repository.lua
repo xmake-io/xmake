@@ -78,7 +78,7 @@ function sandbox_core_package_repository.repositories(is_global)
     -- load repositories from repository cache 
     local repositories = {}
     for name, url in ipairs(table.wrap(repository.repositories(is_global))) do
-        table.insert(repositories, {name = name, url = url})
+        table.insert(repositories, {name = name, url = url, global = is_global})
     end
 
     -- load repositories from project file
@@ -86,7 +86,7 @@ function sandbox_core_package_repository.repositories(is_global)
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
             local repoinfo = repo:split(' ')
             if #repoinfo == 2 then
-                table.insert(repositories, {name = repoinfo[1], url = repoinfo[2]})
+                table.insert(repositories, {name = repoinfo[1], url = repoinfo[2], global = is_global})
             else
                 raise("invalid repository: %s", repo)
             end
