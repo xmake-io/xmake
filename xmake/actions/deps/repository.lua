@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        main.lua
+-- @file        repository.lua
 --
 
 -- imports
@@ -27,14 +27,32 @@ import("core.tool.git")
 import("core.base.option")
 import("core.package.repository")
 
+-- get all repositories
+function repositories()
+
+    -- get it from cache it
+    if _g._REPOSITORIES then
+        return _g._REPOSITORIES
+    end
+
+    -- get all repositories (local first)
+    local repos = table.join(repository.repositories(false), repository.repositories(true))
+
+    -- save repositories
+    _g._REPOSITORIES = repos
+
+    -- ok
+    return repos
+end
+
 -- pull repositories
-function pull(is_global)
+function pull(position)
 
     -- pull all repositories 
-    for _, repo in ipairs(repository.repositories(is_global)) do
+    for _, repo in ipairs(repositories()) do
 
         -- the repository directory
-        local repodir = path.join(repository.directory(is_global), repo.name)
+        local repodir = path.join(repository.directory(position), repo.name)
         if os.isdir(repodir) then
 
             -- trace
@@ -50,5 +68,39 @@ function pull(is_global)
             git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
         end
     end
+end
+
+-- get package directory from repositories
+function packagedir(packagename)
+
+    -- get it from cache it
+    local packagedirs = _g._PACKAGEDIRS or {}
+    if packagedirs[packagename] then
+        return packagedirs[packagename]
+    end
+
+    -- find the package directory
+    local dir = nil
+    for _, repo in ipairs(repositories()) do
+
+        -- TODO
+        -- the package directory
+        dir = path.join(repository.directory(position), repo.name, (packagename:gsub('%.', path.seperator())))
+        if os.isdir(dir) then
+            break
+        end
+    end
+
+    -- check
+    assert(dir, "package(%s) not found in repositories!", packagename)
+
+    -- save package directory
+    packagedirs[packagename] = dir
+
+    -- update cache
+    _g._PACKAGEDIRS = packagedirs
+
+    -- ok
+    return dir
 end
 
