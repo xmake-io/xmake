@@ -80,22 +80,22 @@ function packagedir(packagename)
     end
 
     -- find the package directory
-    local dir = nil
+    local foundir = nil
     for _, repo in ipairs(repositories()) do
 
-        -- TODO
         -- the package directory
-        dir = path.join(repository.directory(position), repo.name, (packagename:gsub('%.', path.seperator())))
+        local dir = path.join(repository.directory(position), repo.name, "packages", (packagename:gsub('%.', path.seperator())))
         if os.isdir(dir) then
+            foundir = dir 
             break
         end
     end
 
     -- check
-    assert(dir, "package(%s) not found in repositories!", packagename)
+    assert(foundir, "package(%s) not found in repositories!", packagename)
 
     -- save package directory
-    packagedirs[packagename] = dir
+    packagedirs[packagename] = foundir
 
     -- update cache
     _g._PACKAGEDIRS = packagedirs

@@ -100,6 +100,11 @@ function load_packages()
 
         -- get package directory from repositories
         local packagedir = repository.packagedir(name)
+
+        -- TODO process reponame and package url
+        if info.packageurl then
+        end
+        print(packagedir)
     end
 
     -- ok
