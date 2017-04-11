@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.tool.git")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
@@ -32,8 +33,17 @@ import("core.package.repository")
 -- add repository url
 function _add(name, url, is_global)
 
-    -- add it
+    -- add url
     repository.add(name, url, is_global)
+
+    -- remove previous repository if exists
+    local repodir = path.join(repository.directory(is_global), name)
+    if os.isdir(repodir) then
+        os.rmdir(repodir)
+    end
+
+    -- clone repository
+    git.clone(url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
 
     -- trace
     cprint("${bright}add %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
@@ -42,8 +52,14 @@ end
 -- remove repository url
 function _remove(name, is_global)
 
-    -- remove it
+    -- remove url
     repository.remove(name, is_global)
+
+    -- remove repository
+    local repodir = path.join(repository.directory(is_global), name)
+    if os.isdir(repodir) then
+        os.rmdir(repodir)
+    end
 
     -- trace
     cprint("${bright}remove %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
@@ -52,8 +68,14 @@ end
 -- clear all repositories
 function _clear(is_global)
 
-    -- clear all
+    -- clear all urls
     repository.clear(is_global)
+
+    -- remove all repositories
+    local repodir = repository.directory(is_global)
+    if os.isdir(repodir) then
+        os.rmdir(repodir)
+    end
 
     -- trace
     cprint("${bright}clear %s repositories: ok!", ifelse(is_global, "global", "local"))

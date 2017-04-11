@@ -56,9 +56,9 @@ function repository.directory(is_global)
 
     -- get directory
     if is_global then
-        return path.join(global.directory(), "packages")
+        return path.join(global.directory(), "repositories")
     else
-        return path.join(config.directory(), "packages")
+        return path.join(config.directory(), "repositories")
     end
 end
 

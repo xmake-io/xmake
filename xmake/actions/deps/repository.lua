@@ -35,7 +35,7 @@ function pull(is_global)
 
         -- the repository directory
         local repodir = path.join(repository.directory(is_global), repo.name)
-        if (os.isdir(repodir)) then
+        if os.isdir(repodir) then
 
             -- trace
             vprint("pulling repository(%s): %s in %s ..", repo.name, repo.url, repodir)
