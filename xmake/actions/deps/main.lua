@@ -30,7 +30,6 @@ import("core.platform.platform")
 import("core.package.package")
 import("repository")
 
--- Install and update outdated package dependencies
 --
 -- the default repositories:
 --     xmake-repo https://github.com/tboox/xmake-repo.git
@@ -44,7 +43,7 @@ import("repository")
 --
 --     add_requires("tboox.tbox >=1.5.1", "zlib >=1.2.11")
 --     add_requires("zlib master")
---     add_requires("xmake-repo/tboox.tbox >=1.5.1")
+--     add_requires("xmake-repo@tboox.tbox >=1.5.1")
 --     add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1")
 --
 -- add package dependencies:
@@ -52,6 +51,50 @@ import("repository")
 --     target("test")
 --         add_packages("tboox.tbox", "zlib")
 --
+
+--
+-- parse require string
+--
+-- add_requires("tboox.tbox >=1.5.1", "zlib >=1.2.11")
+-- add_requires("zlib master")
+-- add_requires("xmake-repo@tboox.tbox >=1.5.1")
+-- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1")
+--
+function _parse_require(require_str)
+
+    -- split package and version info
+    local splitinfo = require_str:split(' ')
+    assert(splitinfo and #splitinfo == 2, "invalid require(\"%s\")", require_str)
+
+    -- get package info
+    local packageinfo = splitinfo[1]
+
+    -- get version info
+    local versioninfo = splitinfo[2]
+
+    -- get repository name, package name and package url
+    local reponame    = nil
+    local packageurl  = nil
+    local packagename = nil
+    splitinfo = packageinfo:split('@')
+    if splitinfo and #splitinfo == 2 then
+
+        -- is package url?
+        if splitinfo[1]:find('[/\\]') then
+            packageurl = splitinfo[1]
+        else
+            reponame = splitinfo[1]
+        end
+
+        -- get package name
+        packagename = splitinfo[2]
+    else 
+        packagename = packageinfo
+    end
+
+    -- ok
+    return {reponame = reponame, packagename = packagename, packageurl = packageurl, versioninfo = versioninfo}
+end
 
 -- load project
 function _load_project()
@@ -72,13 +115,18 @@ end
 -- install and update all outdated package dependencies
 function _install(is_global)
 
+    -- TODO need optimization
     -- pull all local and global repositories first
     repository.pull(false)
     repository.pull(true)
 
-    for _, required in ipairs(project.requires()) do
-        print(required)
+    -- parse requires
+    local requires = {}
+    for _, require_str in ipairs(project.requires()) do
+        table.insert(requires, _parse_require(require_str))
     end
+
+    table.dump(requires)
 end
 
 -- clear all installed packages cache
