@@ -28,7 +28,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.package.package")
-import("core.package.repository")
+import("repository")
 
 -- Install and update outdated package dependencies
 --
@@ -71,10 +71,10 @@ end
 
 -- install and update all outdated package dependencies
 function _install(is_global)
-    -- TODO
-    for _, repo in ipairs(repository.repositories()) do
-        print(repo.name, repo.url)
-    end
+
+    -- pull all local and global repositories first
+    repository.pull(false)
+    repository.pull(true)
 
     for _, required in ipairs(project.requires()) do
         print(required)

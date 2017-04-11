@@ -30,6 +30,11 @@ local project       = require("project/project")
 local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
 
+-- get repository directory
+function sandbox_core_package_repository.directory(is_global)
+    return repository.directory(is_global)
+end
+
 -- get repository url from the given name
 function sandbox_core_package_repository.get(name, is_global)
 
@@ -82,8 +87,8 @@ function sandbox_core_package_repository.repositories(is_global)
             local repoinfo = repo:split(' ')
             if #repoinfo == 2 then
                 table.insert(repositories, {name = repoinfo[1], url = repoinfo[2]})
-            elseif #repoinfo == 1 then
-                table.insert(repositories, {url = repoinfo[1]})
+            else
+                raise("invalid repository: %s", repo)
             end
         end
     end

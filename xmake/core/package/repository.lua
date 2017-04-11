@@ -29,6 +29,8 @@ local repository = repository or {}
 local utils     = require("base/utils")
 local string    = require("base/string")
 local cache     = require("project/cache")
+local config    = require("project/config")
+local global    = require("project/global")
 
 -- get cache
 function repository._cache(is_global)
@@ -49,6 +51,17 @@ function repository._cache(is_global)
     return repository._CACHE[position]
 end
 
+-- get the local or global package directory
+function repository.directory(is_global)
+
+    -- get directory
+    if is_global then
+        return path.join(global.directory(), "packages")
+    else
+        return path.join(config.directory(), "packages")
+    end
+end
+
 -- get repository url from the given name
 function repository.get(name, is_global)
 
@@ -61,6 +74,11 @@ end
 
 -- add repository url to the given name
 function repository.add(name, url, is_global)
+
+    -- no name?
+    if not name then
+        return false, string.format("please set name to repository: %s", url)
+    end
 
     -- get repositories
     local repositories = repository.repositories(is_global) or {}

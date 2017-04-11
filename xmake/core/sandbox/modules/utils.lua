@@ -26,6 +26,7 @@
 local io        = require("base/io")
 local utils     = require("base/utils")
 local colors    = require("base/colors")
+local option    = require("base/option")
 local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
@@ -91,6 +92,20 @@ function sandbox_utils.cprintf(format, ...)
 
     -- done
     utils._iowrite(colors(vformat(format, ...)))
+end
+
+-- print() if enable verbose
+function sandbox_utils.vprint(format, ...)
+    if option.get("verbose") then
+        sandbox_utils.print(format, ...)
+    end
+end
+
+-- vprintf() if enable verbose
+function sandbox_utils.vprintf(format, ...)
+    if option.get("verbose") then
+        sandbox_utils.printf(format, ...)
+    end
 end
 
 -- assert
