@@ -7,7 +7,7 @@ platform:
   - Win64
 
 before_build:
-  - ps: Invoke-WebRequest "https://github.com/tboox/xmake/releases/download/v2.1.2/xmake-v2.1.2.exe" -OutFile "xmake-installer.exe"
+  - ps: Invoke-WebRequest "https://github.com/tboox/xmake/releases/download/v2.1.3/xmake-v2.1.3.exe" -OutFile "xmake-installer.exe"
   - cmd: xmake-installer.exe /S /D=C:\xmake
   - cmd: PATH=%PATH%;C:\xmake
   - cmd: xmake --version
