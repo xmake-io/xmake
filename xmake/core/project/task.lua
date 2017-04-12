@@ -165,20 +165,7 @@ function task._interpreter()
     assert(interp)
   
     -- define apis
-    interp:api_define
-    {
-        values =
-        {
-            -- task.set_xxx
-            "task.set_category"     -- main, action, plugin, task (default)
-        ,   "task.set_menu"
-        }
-    ,   script =
-        {
-            -- task.on_xxx
-            "task.on_run"
-        }
-    }
+    interp:api_define(task.apis())
 
     -- set filter
     interp:filter_set(filter.new(function (variable)
@@ -320,6 +307,25 @@ function task._load(filepath)
 
     -- ok?
     return tasks
+end
+ 
+-- get task apis
+function task.apis()
+
+    return 
+    {
+        values =
+        {
+            -- task.set_xxx
+            "task.set_category"     -- main, action, plugin, task (default)
+        ,   "task.set_menu"
+        }
+    ,   script =
+        {
+            -- task.on_xxx
+            "task.on_run"
+        }
+    }
 end
 
 -- get all tasks

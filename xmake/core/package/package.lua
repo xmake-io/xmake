@@ -35,6 +35,7 @@ local sandbox     = require("sandbox/sandbox")
 local interpreter = require("base/interpreter")
 local config      = require("project/config")
 local global      = require("project/global")
+local project     = require("project/project")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -100,7 +101,19 @@ function package._interpreter()
     assert(interp)
  
     -- define apis
-    interp:api_define
+    interp:api_define(package.apis())
+    
+    -- save interpreter
+    package._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- get package apis
+function package.apis()
+
+    return 
     {
         values =
         {
@@ -120,12 +133,6 @@ function package._interpreter()
         ,   "package.on_test"
         }
     }
-
-    -- save interpreter
-    package._INTERPRETER = interp
-
-    -- ok?
-    return interp
 end
 
 -- get the local or global package directory
@@ -154,8 +161,8 @@ function package.load(packagename, packagedir, packagefile)
         return nil, string.format("the package %s not found!", packagename)
     end
 
-    -- load package
-    local results, errors = package._interpreter():load(scriptpath, "package", true, true)
+    -- load package and disable filter, we will process filter after a while
+    local results, errors = package._interpreter():load(scriptpath, "package", true, false)
     if not results and os.isfile(scriptpath) then
         return nil, errors
     end
@@ -177,6 +184,42 @@ function package.load(packagename, packagedir, packagefile)
     -- ok
     return instance
 end
-    
+     
+-- load the package from the project file
+function package.load_pj(packagename)
+
+    -- get it directly from cache first
+    package._PACKAGES = package._PACKAGES or {}
+    if package._PACKAGES[packagename] then
+        return package._PACKAGES[packagename]
+    end
+
+    -- load packages (with cache)
+    local packages, errors = project.packages()
+    if not packages then
+        return nil, errors
+    end
+
+    -- get interpreter
+    local interp = errors or package._interpreter()
+
+    -- not found?
+    if not packages[packagename] then
+        return
+    end
+
+    -- new an instance
+    local instance, errors = _instance.new(name, packages[packagename], interp:rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- save instance to the cache
+    package._PACKAGES[packagename] = instance
+
+    -- ok
+    return instance
+end
+
 -- return module
 return package

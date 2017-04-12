@@ -34,12 +34,25 @@ function sandbox_core_package_package.directory(is_global)
     return package.directory(is_global)
 end
 
--- load the package from the package directory or package description file
+-- load the package from repositories
 function sandbox_core_package_package.load(packagename, packagedir, packagefile)
 
     -- load package instance
     local instance, errors = package.load(packagename, packagedir, packagefile) 
     if not instance then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
+-- load the package from the project file 
+function sandbox_core_package_package.load_pj(packagename)
+
+    -- load package instance 
+    local instance, errors = package.load_pj(packagename) 
+    if errors then
         raise(errors)
     end
 

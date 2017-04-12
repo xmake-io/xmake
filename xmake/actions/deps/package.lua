@@ -92,19 +92,26 @@ function _load_requires()
     return requires
 end
 
+-- load package instance from project
+function _load_package_from_proj(packagename, requireinfo)
+
+    -- TODO process requireinfo.version
+
+    -- load it
+    return package.load_pj(packagename)
+end
+
 -- load package instance from repositories
 function _load_package_from_repo(packagename, requireinfo)
 
     -- TODO process requireinfo.version
-    -- get package directory from repositories
-    local packagedir = repository.packagedir(packagename, requireinfo.reponame)
 
-    -- load package instance
-    return package.load(packagename, packagedir)
+    -- load it
+    return package.load(packagename, repository.packagedir(packagename, requireinfo.reponame))
 end
 
--- create a new package instance from the given package url
-function _create_package_from_url(pacakgename, requireinfo)
+-- load package instance from the given package url
+function _load_package_from_url(pacakgename, requireinfo)
     -- TODO
     return {}
 end
@@ -119,11 +126,15 @@ function load_packages()
         -- load package instance
         local instance = nil
         if requireinfo.packageurl then
-            -- create a new package from the given package url
-            instance = _create_package_from_url(packagename, requireinfo)
+            -- load package from the given package url
+            instance = _load_package_from_url(packagename, requireinfo)
         else
-            -- load package info from repositories
-            instance = _load_package_from_repo(packagename, requireinfo)
+            -- load package from project first
+            instance = _load_package_from_proj(packagename, requireinfo)
+            if not instance then
+                -- load package from repositories
+                instance = _load_package_from_repo(packagename, requireinfo)
+            end
         end
 
         -- save this package instance

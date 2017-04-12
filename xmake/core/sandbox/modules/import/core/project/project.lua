@@ -29,6 +29,8 @@ local sandbox_core_project = sandbox_core_project or {}
 local table     = require("base/table")
 local config    = require("project/config")
 local project   = require("project/project")
+local task      = require("project/task")
+local package   = require("package/package")
 local raise     = require("sandbox/modules/raise")
 
 -- load project

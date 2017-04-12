@@ -34,6 +34,8 @@ local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
 local task          = require("project/task")
 local history       = require("project/history")
+local project       = require("project/project")
+local package       = require("package/package")
 
 -- init the option menu
 local menu =
@@ -125,6 +127,10 @@ function main._init()
             break
         end
     end
+
+    -- define task and package apis first before loading project's xmake.lua - calling option.init()
+    project.define_apis(task.apis())
+    project.define_apis(package.apis())
 end
 
 -- check run command as root

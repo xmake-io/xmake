@@ -179,7 +179,7 @@ function project._interpreter()
     -- define apis for language
     interp:api_define(language.apis())
 
-    -- define apis for target, option and task
+    -- define apis for target, option
     interp:api_define
     {
         values =
@@ -218,9 +218,6 @@ function project._interpreter()
         ,   "option.add_vectorexts"
         ,   "option.add_bindings"
         ,   "option.add_rbindings"
-            -- task.set_xxx
-        ,   "task.set_category"
-        ,   "task.set_menu"
         }
     ,   pathes = 
         {
@@ -253,8 +250,6 @@ function project._interpreter()
         ,   "target.after_package"
         ,   "target.after_install"
         ,   "target.after_uninstall"
-            -- task.on_xxx
-        ,   "task.on_run"
         }
     ,   custom = 
         {
@@ -270,6 +265,11 @@ function project._interpreter()
         ,   {"add_plugindirs",          project._api_add_plugindirs }
         }
     }
+
+    -- define registered apis
+    for _, apis in ipairs(project._APIS or {}) do
+        interp:api_define(apis)
+    end
 
     -- TODO 
     -- register api: add_packages() to target
@@ -330,6 +330,16 @@ function project._interpreter()
 
     -- ok?
     return interp
+end
+
+-- define apis
+function project.define_apis(apis)
+
+    -- init apis
+    project._APIS = project._APIS or {}
+
+    -- define these apis
+    table.insert(project._APIS, apis)
 end
 
 -- get the project directory
@@ -509,6 +519,40 @@ function project.tasks()
     if not results then
         return nil, errors
     end
+
+    -- ok?
+    return results, interp
+end
+
+-- get packages
+function project.packages()
+
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- get it from cache first
+    if project._PACKAGES then
+        return project._PACKAGES, interp
+    end
+
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- the project file is not found?
+    if not os.isfile(xmake._PROJECT_FILE) then
+        return {}, nil
+    end
+
+    -- load the tasks from the the project file and disable filter, we will process filter after a while
+    local results, errors = interp:load(xmake._PROJECT_FILE, "package", true, false)
+    if not results then
+        return nil, errors
+    end
+
+    -- save results to cache
+    project._PACKAGES = results
 
     -- ok?
     return results, interp
