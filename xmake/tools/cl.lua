@@ -42,8 +42,10 @@ function init(shellname, kind)
     {
         -- optimize
         ["-O0"]                     = "-Od"
-    ,   ["-O3"]                     = "-Ot"
-    ,   ["-Ofast"]                  = "-Ox"
+    ,   ["-O1"]                     = ""
+    ,   ["-Os"]                     = "-O1"
+    ,   ["-O3"]                     = "-Ox"
+    ,   ["-Ofast"]                  = "-Ox -fp:fast"
     ,   ["-fomit-frame-pointer"]    = "-Oy"
 
         -- symbols
@@ -154,11 +156,11 @@ function nf_optimize(level)
     local maps = 
     {   
         none        = "-Od"
-    ,   fast        = "-O1"
-    ,   faster      = "-O2"
-    ,   fastest     = "-Ot"
-    ,   smallest    = "-Os"
-    ,   aggressive  = "-Ox"
+    ,   fast        = ""
+    ,   faster      = "-Ox"
+    ,   fastest     = "-Ox -fp:fast"
+    ,   smallest    = "-O1"
+    ,   aggressive  = "-Ox -fp:fast"
     }
 
     -- make it
