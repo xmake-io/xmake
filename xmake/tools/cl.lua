@@ -42,8 +42,10 @@ function init(shellname, kind)
     {
         -- optimize
         ["-O0"]                     = "-Od"
-    ,   ["-O3"]                     = "-Ot"
-    ,   ["-Ofast"]                  = "-Ox"
+    ,   ["-O1"]                     = ""
+    ,   ["-Os"]                     = "-O1"
+    ,   ["-O3"]                     = "-Ox"
+    ,   ["-Ofast"]                  = "-Ox -fp:fast"
     ,   ["-fomit-frame-pointer"]    = "-Oy"
 
         -- symbols
