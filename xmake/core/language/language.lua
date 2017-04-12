@@ -282,7 +282,7 @@ function language.load(name)
         return language._LANGUAGES
     end
 
-    -- get it directly from cache dirst
+    -- get it directly from cache first
     language._LANGUAGES = language._LANGUAGES or {}
     if language._LANGUAGES[name] then
         return language._LANGUAGES[name]
@@ -335,7 +335,7 @@ function language.load_sk(sourcekind)
     -- make source kind as lower
     sourcekind = sourcekind:lower()
 
-    -- get it directly from cache dirst
+    -- get it directly from cache first
     language._LANGUAGES_OF_SK = language._LANGUAGES_OF_SK or {}
     if language._LANGUAGES_OF_SK[sourcekind] then
         return language._LANGUAGES_OF_SK[sourcekind]
@@ -374,7 +374,7 @@ function language.load_ex(extension)
     -- make source extension as lower
     extension = extension:lower()
 
-    -- get it directly from cache dirst
+    -- get it directly from cache first
     language._LANGUAGES_OF_EX = language._LANGUAGES_OF_EX or {}
     if language._LANGUAGES_OF_EX[extension] then
         return language._LANGUAGES_OF_EX[extension]

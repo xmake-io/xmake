@@ -92,20 +92,19 @@ function _load_requires()
     return requires
 end
 
--- load package info from repositories
-function _load_packageinfo_from_repo(packagename, requireinfo)
+-- load package instance from repositories
+function _load_package_from_repo(packagename, requireinfo)
 
+    -- TODO process requireinfo.version
     -- get package directory from repositories
     local packagedir = repository.packagedir(packagename, requireinfo.reponame)
 
-    -- TODO
-    print(packagedir)
-
-    return {}
+    -- load package instance
+    return package.load(packagename, packagedir)
 end
 
--- create a new package info from the given package url
-function _create_packageinfo_from_url(pacakgename, requireinfo)
+-- create a new package instance from the given package url
+function _create_package_from_url(pacakgename, requireinfo)
     -- TODO
     return {}
 end
@@ -113,21 +112,27 @@ end
 -- load all required packages
 function load_packages()
 
-    -- load requires
+    -- load packages
+    local packages = {}
     for packagename, requireinfo in pairs(_load_requires()) do
 
-        -- load package info
-        local packageinfo = nil
+        -- load package instance
+        local instance = nil
         if requireinfo.packageurl then
             -- create a new package from the given package url
-            packageinfo = _create_packageinfo_from_url(packagename, requireinfo)
+            instance = _create_package_from_url(packagename, requireinfo)
         else
             -- load package info from repositories
-            packageinfo = _load_packageinfo_from_repo(packagename, requireinfo)
+            instance = _load_package_from_repo(packagename, requireinfo)
         end
+
+        -- save this package instance
+        table.insert(packages, instance)
     end
 
+    table.dump(packages)
+
     -- ok
-    return {}
+    return packages
 end
 

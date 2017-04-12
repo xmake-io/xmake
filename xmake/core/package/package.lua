@@ -13,7 +13,7 @@
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
+-- See the License for the specific package governing permissions and
 -- limitations under the License.
 -- 
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
@@ -24,13 +24,109 @@
 
 -- define module
 local package   = package or {}
+local _instance = _instance or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
-local config    = require("project/config")
-local global    = require("project/global")
+local os          = require("base/os")
+local path        = require("base/path")
+local utils       = require("base/utils")
+local table       = require("base/table")
+local sandbox     = require("sandbox/sandbox")
+local interpreter = require("base/interpreter")
+local config      = require("project/config")
+local global      = require("project/global")
+
+-- new an instance
+function _instance.new(name, info, rootdir)
+
+    -- new an instance
+    local instance = table.inherit(_instance)
+
+    -- init instance
+    instance._NAME      = name
+    instance._INFO      = info
+    instance._ROOTDIR   = rootdir
+
+    -- ok
+    return instance
+end
+
+-- get the package configure
+function _instance:get(name)
+
+    -- the info
+    local info = self._INFO
+
+    -- get if from info first
+    local value = info[name]
+    if value ~= nil then
+        return value 
+    end
+
+    -- load _g 
+    if self._g == nil and info.load ~= nil then
+
+        -- load it
+        local ok, results = sandbox.load(info.load)
+        if not ok then
+            os.raise(results)
+        end
+
+        -- save _g
+        self._g = results
+    end
+
+    -- get it from _g 
+    return self._g[name]
+end
+
+-- get the package name
+function _instance:name()
+
+    -- get it
+    return self._NAME
+end
+
+-- the interpreter
+function package._interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if package._INTERPRETER then
+        return package._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+ 
+    -- define apis
+    interp:api_define
+    {
+        values =
+        {
+            -- package.set_xxx
+            "package.set_url"
+        ,   "package.set_git"
+        ,   "package.set_mirror"
+        ,   "package.set_versions"
+        ,   "package.set_homepage"
+        ,   "package.set_description"
+        }
+    ,   script =
+        {
+            -- package.on_xxx
+            "package.on_build"
+        ,   "package.on_install"
+        ,   "package.on_test"
+        }
+    }
+
+    -- save interpreter
+    package._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
 
 -- get the local or global package directory
 function package.directory(is_global)
@@ -43,5 +139,44 @@ function package.directory(is_global)
     end
 end
 
+-- load the package from the package directory or package description file
+function package.load(packagename, packagedir, packagefile)
+
+    -- get it directly from cache first
+    package._PACKAGES = package._PACKAGES or {}
+    if package._PACKAGES[packagename] then
+        return package._PACKAGES[packagename]
+    end
+
+    -- find the package script path
+    local scriptpath = utils.ifelse(packagefile, packagefile, path.join(packagedir, "xmake.lua"))
+    if not os.isfile(scriptpath) then
+        return nil, string.format("the package %s not found!", packagename)
+    end
+
+    -- load package
+    local results, errors = package._interpreter():load(scriptpath, "package", true, true)
+    if not results and os.isfile(scriptpath) then
+        return nil, errors
+    end
+
+    -- check the package name
+    if not results[packagename] then
+        return nil, string.format("the package %s not found!", name)
+    end
+
+    -- new an instance
+    local instance, errors = _instance.new(name, results[packagename], package._interpreter():rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- save instance to the cache
+    package._PACKAGES[packagename] = instance
+
+    -- ok
+    return instance
+end
+    
 -- return module
 return package
