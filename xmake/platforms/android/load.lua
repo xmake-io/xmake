@@ -51,8 +51,8 @@ function main()
         _g.cxxflags     = {}
     end
 
-    -- init cxflags and ldflags for the target kind: binary 
-    _g.binary           = { cxflags = {"-fPIE", "-pie"}, ldflags = {"-fPIE", "-pie"} }
+    -- init cxflags for the target kind: binary 
+    _g.binary           = { cxflags = {"-fPIE", "-pie"} }
 
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
@@ -74,6 +74,10 @@ function main()
             insert(_g.ldflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
             insert(_g.shflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
         end
+
+        -- add "-fPIE -pie" to ldflags
+        insert(_g.ldflags, "-fPIE")
+        insert(_g.ldflags, "-pie")
 
         -- only for c++ stl
         local toolchains_ver = config.get("toolchains_ver")

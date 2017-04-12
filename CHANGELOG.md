@@ -9,6 +9,7 @@
 ### Bugs fixed
 
 * [#67](https://github.com/tboox/xmake/issues/67): Fix `sudo make install` permission problem
+* [#70](https://github.com/tboox/xmake/issues/70): Fix check android compiler error
 
 ## v2.1.3
 
@@ -261,6 +262,7 @@
 ### Bugs fixed
 
 * [#67](https://github.com/tboox/xmake/issues/67): 修复 `sudo make install` 命令权限问题
+* [#70](https://github.com/tboox/xmake/issues/70): 修复检测android编译器错误
 
 ## v2.1.3
 
