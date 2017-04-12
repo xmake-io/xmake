@@ -28,6 +28,7 @@ local _instance = _instance or {}
 
 -- load modules
 local os          = require("base/os")
+local io          = require("base/io")
 local path        = require("base/path")
 local utils       = require("base/utils")
 local table       = require("base/table")
@@ -145,48 +146,37 @@ function package.directory(is_global)
         return path.join(config.directory(), "packages")
     end
 end
+  
+-- load the package from the package url
+function package.load_from_url(packagename, packageurl)
 
--- load the package from the package directory or package description file
-function package.load(packagename, packagedir, packagefile)
+    -- make a temporary package file
+    local packagefile = os.tmpfile() .. ".lua"
 
-    -- get it directly from cache first
-    package._PACKAGES = package._PACKAGES or {}
-    if package._PACKAGES[packagename] then
-        return package._PACKAGES[packagename]
+    -- make package description
+    local packagedata = string.format([[
+    package("%s")
+        set_url("%s")
+    ]], packagename, packageurl)
+
+    -- write a temporary package description to file
+    local ok, errors = io.writefile(packagefile, packagedata)
+    if not ok then
+        return errors
     end
 
-    -- find the package script path
-    local scriptpath = utils.ifelse(packagefile, packagefile, path.join(packagedir, "xmake.lua"))
-    if not os.isfile(scriptpath) then
-        return nil, string.format("the package %s not found!", packagename)
-    end
+    -- load package instance
+    local instance, errors = package.load_from_repository(packagename, nil, packagefile)
 
-    -- load package and disable filter, we will process filter after a while
-    local results, errors = package._interpreter():load(scriptpath, "package", true, false)
-    if not results and os.isfile(scriptpath) then
-        return nil, errors
-    end
+    -- remove the package file
+    os.rm(packagefile)
 
-    -- check the package name
-    if not results[packagename] then
-        return nil, string.format("the package %s not found!", name)
-    end
-
-    -- new an instance
-    local instance, errors = _instance.new(name, results[packagename], package._interpreter():rootdir())
-    if not instance then
-        return nil, errors
-    end
-
-    -- save instance to the cache
-    package._PACKAGES[packagename] = instance
-
-    -- ok
-    return instance
+    -- ok?
+    return instance, errors
 end
-     
+
 -- load the package from the project file
-function package.load_pj(packagename)
+function package.load_from_project(packagename)
 
     -- get it directly from cache first
     package._PACKAGES = package._PACKAGES or {}
@@ -209,7 +199,7 @@ function package.load_pj(packagename)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(name, packages[packagename], interp:rootdir())
+    local instance, errors = _instance.new(packagename, packages[packagename], interp:rootdir())
     if not instance then
         return nil, errors
     end
@@ -221,5 +211,47 @@ function package.load_pj(packagename)
     return instance
 end
 
+-- load the package from the package directory or package description file
+function package.load_from_repository(packagename, packagedir, packagefile)
+
+    -- get it directly from cache first
+    package._PACKAGES = package._PACKAGES or {}
+    if package._PACKAGES[packagename] then
+        return package._PACKAGES[packagename]
+    end
+
+    -- find the package script path
+    local scriptpath = packagefile
+    if not packagefile and packagedir then
+        scriptpath = path.join(packagedir, "xmake.lua")
+    end
+    if not scriptpath or not os.isfile(scriptpath) then
+        return nil, string.format("the package %s not found!", packagename)
+    end
+
+    -- load package and disable filter, we will process filter after a while
+    local results, errors = package._interpreter():load(scriptpath, "package", true, false)
+    if not results and os.isfile(scriptpath) then
+        return nil, errors
+    end
+
+    -- check the package name
+    if not results[packagename] then
+        return nil, string.format("the package %s not found!", name)
+    end
+
+    -- new an instance
+    local instance, errors = _instance.new(packagename, results[packagename], package._interpreter():rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- save instance to the cache
+    package._PACKAGES[packagename] = instance
+
+    -- ok
+    return instance
+end
+     
 -- return module
 return package

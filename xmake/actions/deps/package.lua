@@ -92,28 +92,31 @@ function _load_requires()
     return requires
 end
 
--- load package instance from project
-function _load_package_from_proj(packagename, requireinfo)
+-- load package instance from the given package url
+function _load_package_from_url(packagename, requireinfo)
 
     -- TODO process requireinfo.version
 
     -- load it
-    return package.load_pj(packagename)
+    return package.load_from_url(packagename, requireinfo.packageurl)
+end
+
+-- load package instance from project
+function _load_package_from_project(packagename, requireinfo)
+
+    -- TODO process requireinfo.version
+
+    -- load it
+    return package.load_from_project(packagename)
 end
 
 -- load package instance from repositories
-function _load_package_from_repo(packagename, requireinfo)
+function _load_package_from_repository(packagename, requireinfo)
 
     -- TODO process requireinfo.version
 
     -- load it
-    return package.load(packagename, repository.packagedir(packagename, requireinfo.reponame))
-end
-
--- load package instance from the given package url
-function _load_package_from_url(pacakgename, requireinfo)
-    -- TODO
-    return {}
+    return package.load_from_repository(packagename, repository.packagedir(packagename, requireinfo.reponame))
 end
 
 -- load all required packages
@@ -130,10 +133,10 @@ function load_packages()
             instance = _load_package_from_url(packagename, requireinfo)
         else
             -- load package from project first
-            instance = _load_package_from_proj(packagename, requireinfo)
+            instance = _load_package_from_project(packagename, requireinfo)
             if not instance then
                 -- load package from repositories
-                instance = _load_package_from_repo(packagename, requireinfo)
+                instance = _load_package_from_repository(packagename, requireinfo)
             end
         end
 

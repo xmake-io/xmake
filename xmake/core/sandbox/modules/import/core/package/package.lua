@@ -34,11 +34,24 @@ function sandbox_core_package_package.directory(is_global)
     return package.directory(is_global)
 end
 
+-- load the package from the project file 
+function sandbox_core_package_package.load_from_project(packagename)
+
+    -- load package instance 
+    local instance, errors = package.load_from_project(packagename) 
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
 -- load the package from repositories
-function sandbox_core_package_package.load(packagename, packagedir, packagefile)
+function sandbox_core_package_package.load_from_repository(packagename, packagedir, packagefile)
 
     -- load package instance
-    local instance, errors = package.load(packagename, packagedir, packagefile) 
+    local instance, errors = package.load_from_repository(packagename, packagedir, packagefile) 
     if not instance then
         raise(errors)
     end
@@ -47,12 +60,12 @@ function sandbox_core_package_package.load(packagename, packagedir, packagefile)
     return instance
 end
 
--- load the package from the project file 
-function sandbox_core_package_package.load_pj(packagename)
+-- load the package from the package url 
+function sandbox_core_package_package.load_from_url(packagename, packageurl)
 
     -- load package instance 
-    local instance, errors = package.load_pj(packagename) 
-    if errors then
+    local instance, errors = package.load_from_url(packagename, packageurl) 
+    if not instance then
         raise(errors)
     end
 
