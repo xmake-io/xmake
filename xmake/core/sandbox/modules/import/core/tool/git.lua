@@ -74,5 +74,29 @@ function sandbox_core_tool_git.pull(args)
     end
 end
 
+-- get tags from url
+--
+-- .e.g
+-- 
+-- local tags = git.tags("git@github.com:tboox/xmake.git")
+--
+function sandbox_core_tool_git.tags(url)
+
+    -- get the git instance
+    local instance, errors = git.load()
+    if not instance then
+        raise(errors)
+    end
+
+    -- get it
+    local tags, errors = instance:tags(url)
+    if not tags then
+        raise(errors)
+    end
+
+    -- ok
+    return tags
+end
+
 -- return module
 return sandbox_core_tool_git

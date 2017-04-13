@@ -112,6 +112,35 @@ function pull(args)
     end
 end
 
+-- get tags from url
+function tags(url)
+
+    -- get tags
+    local data = os.iorun("%s ls-remote --tags %s", _g.shellname, url)
+
+    -- get commmits and tags
+    local tags = {}
+    for _, line in ipairs(data:split('\n')) do
+
+        -- parse commit and tag
+        local taginfo = line:split('%s+')
+
+        -- get commit 
+        local commit = taginfo[1]
+
+        -- get tag
+        local tag = taginfo[2]
+
+        -- save this tag
+        if tag and tag:startswith("refs/tags/") and commit and #commit == 40 then
+            table.insert(tags, tag:sub(11))
+        end
+    end
+
+    -- ok
+    return tags
+end
+
 -- check the given flags 
 function check(flags)
 

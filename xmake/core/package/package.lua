@@ -162,7 +162,20 @@ function package.directory(is_global)
 end
   
 -- load the package from the package url
-function package.load_from_url(packagename, packageurl)
+function package.load_from_url(packagename, packageurl, tags)
+
+    -- check
+    if #tags == 0 then
+        return nil, string.format("cannot get tags from %s", packageurl)
+    end
+
+    -- filter tags
+    -- TODO
+
+    -- limit tags
+    if #tags > 128 then
+        tags = table.slice(tags, #tags - 128) 
+    end
 
     -- make a temporary package file
     local packagefile = os.tmpfile() .. ".lua"
@@ -171,12 +184,14 @@ function package.load_from_url(packagename, packageurl)
     local packagedata = string.format([[
     package("%s")
         set_url("%s")
-    ]], packagename, packageurl)
+        set_versions("%s")
+    ]], packagename, packageurl, table.concat(tags, "\", \""))
 
+    print(packagedata)
     -- write a temporary package description to file
     local ok, errors = io.writefile(packagefile, packagedata)
     if not ok then
-        return errors
+        return nil, errors
     end
 
     -- load package instance

@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.tool.git")
 import("core.project.project")
 import("core.package.package")
 import("repository")
@@ -106,7 +107,7 @@ end
 function _load_package_from_url(packagename, packageurl)
 
     -- load it
-    return package.load_from_url(packagename, packageurl)
+    return package.load_from_url(packagename, packageurl, git.tags(packageurl))
 end
 
 -- load package instance from project
@@ -157,8 +158,6 @@ function load_packages()
         -- save this package instance
         table.insert(packages, instance)
     end
-
-    table.dump(packages)
 
     -- ok
     return packages

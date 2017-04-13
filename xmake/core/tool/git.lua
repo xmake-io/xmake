@@ -98,5 +98,23 @@ function git:pull(args)
     return sandbox.load(self:_tool().pull, args)
 end
 
+-- get tags from url
+--
+-- .e.g
+-- 
+-- local tags = git.load():tags("git@github.com:tboox/xmake.git")
+--
+function git:tags(url)
+
+    -- get it
+    local ok, tags_or_errors = sandbox.load(self:_tool().tags, url)
+    if not ok then
+        return nil, tags_or_errors
+    end
+
+    -- ok
+    return tags_or_errors
+end
+
 -- return module
 return git
