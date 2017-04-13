@@ -58,18 +58,21 @@ function _parse_require(require_str)
     local reponame    = nil
     local packageurl  = nil
     local packagename = nil
-    splitinfo = packageinfo:split('@')
-    if splitinfo and #splitinfo == 2 then
-
-        -- is package url?
-        if splitinfo[1]:find('[/\\]') then
-            packageurl = splitinfo[1]
-        else
-            reponame = splitinfo[1]
-        end
+    local pos = packageinfo:find_last('@', true)
+    if pos then
 
         -- get package name
-        packagename = splitinfo[2]
+        packagename = packageinfo:sub(pos + 1)
+
+        -- get reponame or packageurl
+        local repo_or_pkgurl = packageinfo:sub(1, pos - 1)
+
+        -- is package url?
+        if repo_or_pkgurl:find('[/\\]') then
+            packageurl = repo_or_pkgurl
+        else
+            reponame = repo_or_pkgurl
+        end
     else 
         packagename = packageinfo
     end
