@@ -102,14 +102,15 @@ function packagedir(packagename, reponame)
         end
     end
 
-    -- check
-    assert(foundir, "package(%s) not found in repositories!", packagename)
+    -- found?
+    if foundir then
 
-    -- save package directory
-    packagedirs[packagename] = foundir
+        -- save package directory
+        packagedirs[packagename] = foundir
 
-    -- update cache
-    _g._PACKAGEDIRS = packagedirs
+        -- update cache
+        _g._PACKAGEDIRS = packagedirs
+    end
 
     -- ok
     return foundir

@@ -89,6 +89,20 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the require info
+function _instance:requireinfo()
+
+    -- get it
+    return self._REQUIREINFO
+end
+
+-- set the require info
+function _instance:requireinfo_set(requireinfo)
+
+    -- set it
+    self._REQUIREINFO = requireinfo
+end
+
 -- the interpreter
 function package._interpreter()
 
@@ -120,8 +134,8 @@ function package.apis()
         {
             -- package.set_xxx
             "package.set_url"
-        ,   "package.set_git"
         ,   "package.set_mirror"
+        ,   "package.set_sha256s"
         ,   "package.set_versions"
         ,   "package.set_homepage"
         ,   "package.set_description"
