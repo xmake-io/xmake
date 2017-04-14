@@ -156,19 +156,24 @@ end
 -- select package version
 function _select_package_version(package, require_ver)
 
+    -- get package url    
+    local url = package:get("url")
+    assert(url, "package(%s): url not found!", package:name())
+
+    -- is git url?
+    local is_giturl = git.checkurl(url)
+
     -- get versions
     local versions = package:get("versions") 
-    if not versions then
 
-        -- attempt to get versions from the git tags if this package only exists url
-        local url = package:get("url")
-        if url and git.checkurl(url) then
-            versions = git.tags(url)
-        end
+    -- attempt to get tags and branches from the git url
+    local refs = nil
+    if is_giturl then
+        refs = git.refs(url) 
     end
 
     -- check
-    assert(versions and #versions > 0, "cannot get version list from package(%s)!", package:name())
+    assert(versions or refs, "cannot get versions or refs from package(%s)!", package:name())
 
     -- TODO
     -- select version

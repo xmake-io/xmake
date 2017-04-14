@@ -74,6 +74,36 @@ function sandbox_core_tool_git.pull(args)
     end
 end
 
+-- get all refs from url, contains tags and branches
+--
+-- .e.g
+-- 
+-- local refs = git.refs("git@github.com:tboox/xmake.git")
+--
+-- refs = 
+-- {
+--     tags = {},
+--     branches = {}
+-- }
+--
+function sandbox_core_tool_git.refs(url)
+
+    -- get the git instance
+    local instance, errors = git.load()
+    if not instance then
+        raise(errors)
+    end
+
+    -- get it
+    local refs, errors = instance:refs(url)
+    if not refs then
+        raise(errors)
+    end
+
+    -- ok
+    return refs
+end
+
 -- get tags from url
 --
 -- .e.g
@@ -96,6 +126,30 @@ function sandbox_core_tool_git.tags(url)
 
     -- ok
     return tags
+end
+
+-- get branches from url
+--
+-- .e.g
+-- 
+-- local branches = git.branches("git@github.com:tboox/xmake.git")
+--
+function sandbox_core_tool_git.branches(url)
+
+    -- get the git instance
+    local instance, errors = git.load()
+    if not instance then
+        raise(errors)
+    end
+
+    -- get it
+    local branches, errors = instance:branches(url)
+    if not branches then
+        raise(errors)
+    end
+
+    -- ok
+    return branches
 end
 
 -- check git url?

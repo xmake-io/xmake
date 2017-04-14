@@ -112,33 +112,42 @@ function pull(args)
     end
 end
 
--- get tags from url
-function tags(url)
+-- ls remote from url
+--
+-- .e.g
+--
+-- ls_remote("tags", url)
+-- ls_remote("heads", url)
+-- ls_remote("refs")
+function ls_remote(reftype, url)
 
     -- get tags
-    local data = os.iorun("%s ls-remote --tags %s", _g.shellname, url)
+    local data = os.iorun("%s ls-remote --%s %s", _g.shellname, reftype, url or "")
 
     -- get commmits and tags
-    local tags = {}
+    local refs = {}
     for _, line in ipairs(data:split('\n')) do
 
-        -- parse commit and tag
-        local taginfo = line:split('%s+')
+        -- parse commit and ref
+        local refinfo = line:split('%s+')
 
         -- get commit 
-        local commit = taginfo[1]
+        local commit = refinfo[1]
 
-        -- get tag
-        local tag = taginfo[2]
+        -- get ref
+        local ref = refinfo[2]
 
-        -- save this tag
-        if tag and tag:startswith("refs/tags/") and commit and #commit == 40 then
-            table.insert(tags, tag:sub(11))
+        -- save this ref
+        local prefix = ifelse(reftype == "refs", "refs/", "refs/" .. reftype .. "/")
+        if ref and ref:startswith(prefix) and commit and #commit == 40 then
+            table.insert(refs, ref:sub(#prefix + 1))
         end
     end
 
+    table.dump(refs)
+
     -- ok
-    return tags
+    return refs
 end
 
 -- check the given flags 

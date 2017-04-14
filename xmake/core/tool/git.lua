@@ -43,7 +43,7 @@ end
 function git.checkurl(url)
 
     -- check it
-    return url:endswith(".git") or os.isdir(url + ".git")
+    return url:endswith(".git") or os.isdir(url .. ".git")
 end
 
 -- load the git 
@@ -107,21 +107,53 @@ function git:pull(args)
 end
 
 -- get tags from url
---
--- .e.g
--- 
--- local tags = git.load():tags("git@github.com:tboox/xmake.git")
---
 function git:tags(url)
 
     -- get it
-    local ok, tags_or_errors = sandbox.load(self:_tool().tags, url)
+    local ok, tags_or_errors = sandbox.load(self:_tool().ls_remote, "tags", url)
     if not ok then
         return nil, tags_or_errors
     end
 
     -- ok
     return tags_or_errors
+end
+
+-- get branchs from url
+function git:branches(url)
+
+    -- get it
+    local ok, branches_or_errors = sandbox.load(self:_tool().ls_remote, "heads", url)
+    if not ok then
+        return nil, branches_or_errors
+    end
+
+    -- ok
+    return branches_or_errors
+end
+
+-- get all refs from url, contains tags and branchs 
+function git:refs(url)
+
+    -- get it
+    local ok, refs_or_errors = sandbox.load(self:_tool().ls_remote, "refs", url)
+    if not ok then
+        return nil, refs_or_errors
+    end
+
+    -- get tags and branches
+    local tags = {}
+    local branches = {}
+    for _, ref in ipairs(refs_or_errors) do
+        if ref:startswith("tags/") then
+            table.insert(tags, ref:sub(6))
+        elseif ref:startswith("heads/") then
+            table.insert(tags, ref:sub(7))
+        end
+    end
+
+    -- ok
+    return {tags = tags, branches = branches}
 end
 
 -- return module
