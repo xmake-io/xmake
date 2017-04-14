@@ -40,20 +40,29 @@ import("repository")
 function _parse_require(require_str)
 
     -- split package and version info
-    local splitinfo = require_str:split(' ')
+    local splitinfo = require_str:split('%s+')
     assert(splitinfo and #splitinfo > 0, "require(\"%s\"): invalid!", require_str)
 
     -- get package info
     local packageinfo = splitinfo[1]
 
-    -- get version 
-    local version = splitinfo[2] or "master"
-
-    -- get mode
-    local mode = splitinfo[3]
-    if mode then
-        assert(mode == "optional", "require(\"%s\"): invalid mode!", require_str)
+    -- get mode at last position
+    local mode = nil
+    if #splitinfo > 1 then
+        -- only optional now. may be more in future
+        local value = splitinfo[#splitinfo]
+        if value == "optional" then
+            mode = "optional"
+            table.remove(splitinfo)
+        end
     end
+
+    -- get version 
+    local version = nil
+    if #splitinfo > 1 then
+        version = table.concat(table.slice(splitinfo, 2), " ")
+    end
+    assert(version, "require(\"%s\"): unknown version!", require_str)
 
     -- get repository name, package name and package url
     local reponame    = nil
