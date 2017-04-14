@@ -64,22 +64,6 @@ function _instance:get(name)
     if value ~= nil then
         return value 
     end
-
-    -- load _g 
-    if self._g == nil and info.load ~= nil then
-
-        -- load it
-        local ok, results = sandbox.load(info.load)
-        if not ok then
-            os.raise(results)
-        end
-
-        -- save _g
-        self._g = results
-    end
-
-    -- get it from _g 
-    return self._g[name]
 end
 
 -- get the package name
@@ -87,20 +71,6 @@ function _instance:name()
 
     -- get it
     return self._NAME
-end
-
--- get the require info
-function _instance:requireinfo()
-
-    -- get it
-    return self._REQUIREINFO
-end
-
--- set the require info
-function _instance:requireinfo_set(requireinfo)
-
-    -- set it
-    self._REQUIREINFO = requireinfo
 end
 
 -- the interpreter
@@ -162,20 +132,7 @@ function package.directory(is_global)
 end
   
 -- load the package from the package url
-function package.load_from_url(packagename, packageurl, tags)
-
-    -- check
-    if #tags == 0 then
-        return nil, string.format("cannot get tags from %s", packageurl)
-    end
-
-    -- filter tags
-    -- TODO
-
-    -- limit tags
-    if #tags > 128 then
-        tags = table.slice(tags, #tags - 128) 
-    end
+function package.load_from_url(packagename, packageurl)
 
     -- make a temporary package file
     local packagefile = os.tmpfile() .. ".lua"
@@ -184,10 +141,8 @@ function package.load_from_url(packagename, packageurl, tags)
     local packagedata = string.format([[
     package("%s")
         set_url("%s")
-        set_versions("%s")
-    ]], packagename, packageurl, table.concat(tags, "\", \""))
+    ]], packagename, packageurl)
 
-    print(packagedata)
     -- write a temporary package description to file
     local ok, errors = io.writefile(packagefile, packagedata)
     if not ok then

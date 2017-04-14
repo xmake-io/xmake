@@ -61,10 +61,10 @@ function sandbox_core_package_package.load_from_repository(packagename, packaged
 end
 
 -- load the package from the package url 
-function sandbox_core_package_package.load_from_url(packagename, packageurl, tags)
+function sandbox_core_package_package.load_from_url(packagename, packageurl)
 
     -- load package instance 
-    local instance, errors = package.load_from_url(packagename, packageurl, tags) 
+    local instance, errors = package.load_from_url(packagename, packageurl) 
     if not instance then
         raise(errors)
     end

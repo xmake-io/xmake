@@ -98,5 +98,12 @@ function sandbox_core_tool_git.tags(url)
     return tags
 end
 
+-- check git url?
+function sandbox_core_tool_git.checkurl(url)
+
+    -- check it
+    return git.checkurl(url)
+end
+
 -- return module
 return sandbox_core_tool_git

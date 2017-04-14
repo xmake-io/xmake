@@ -107,7 +107,7 @@ end
 function _load_package_from_url(packagename, packageurl)
 
     -- load it
-    return package.load_from_url(packagename, packageurl, git.tags(packageurl))
+    return package.load_from_url(packagename, packageurl)
 end
 
 -- load package instance from project
@@ -126,6 +126,31 @@ function _load_package_from_repository(packagename, reponame)
         -- load it
         return package.load_from_repository(packagename, packagedir)
     end
+end
+
+-- select package version
+function _select_package_version(package, require_ver)
+
+    -- get versions
+    local versions = package:get("versions") 
+    if not versions then
+
+        -- attempt to get versions from the git tags if this package only exists url
+        local url = package:get("url")
+        if url and git.checkurl(url) then
+            versions = git.tags(url)
+        end
+    end
+
+    -- check
+    assert(versions and #versions > 0, "cannot get version list from package(%s)!", package:name())
+
+    -- TODO
+    -- select version
+    local version = nil
+
+    -- ok
+    return version
 end
 
 -- load all required packages
@@ -152,8 +177,8 @@ function load_packages()
         -- check
         assert(instance, "package(%s) not found!", packagename)
 
-        -- bind require info
-        instance:requireinfo_set(requireinfo)
+        -- select package version
+        local version = _select_package_version(instance, requireinfo.version)
 
         -- save this package instance
         table.insert(packages, instance)

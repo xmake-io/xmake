@@ -26,6 +26,7 @@
 local git = git or {}
 
 -- load modules
+local os        = require("base/os")
 local table     = require("base/table")
 local string    = require("base/string")
 local tool      = require("tool/tool")
@@ -36,6 +37,13 @@ function git:_tool()
 
     -- get it
     return self._TOOL
+end
+
+-- check git url?
+function git.checkurl(url)
+
+    -- check it
+    return url:endswith(".git") or os.isdir(url + ".git")
 end
 
 -- load the git 
