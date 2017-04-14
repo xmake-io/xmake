@@ -48,6 +48,20 @@ end
 function semver.satisfies(version, range, loose)
 end
 
+-- TODO
+--
+-- semver.gt('1.2.3', '9.8.7') => false
+--
+function semver.gt(v1, v2, loose)
+end
+
+-- TODO
+--
+-- semver.lt('1.2.3', '9.8.7') => true
+--
+function semver.lt(v1, v2, loose)
+end
+
 -- select required version from versions, tags and branches
 --
 -- .e.g
@@ -65,7 +79,7 @@ end
 --
 function semver.select(required_ver, versions, tags, branches)
 
-    -- TODO
+    -- TODO only select the first one now.
     if versions and versions[1] then
         return {version = versions[1], source = "versions"}
     elseif tags and tags[1] then
@@ -74,6 +88,7 @@ function semver.select(required_ver, versions, tags, branches)
         return {version = branches[1], source = "branches"}
     end
 
+    -- not found
     return nil, string.format("cannot select version %s", required_ver)
 end
 
