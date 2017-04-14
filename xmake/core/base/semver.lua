@@ -25,6 +25,29 @@
 -- define module: semver
 local semver = semver or {}
 
+-- A semantic versioner
+--
+-- A "version" is described by the v2.0.0 specification found at http://semver.org/.
+--
+-- More refernces:
+-- - https://github.com/npm/node-semver 
+-- - https://github.com/kikito/semver.lua
+-- - https://getcomposer.org/doc/articles/versions.md
+
+-- TODO
+--
+-- semver.valid('1.2.3') => '1.2.3'
+-- semver.valid('a.b.c') => nil
+function semver.valid(version)
+end
+
+-- TODO
+--
+-- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
+--
+function semver.satisfies(version, range, loose)
+end
+
 -- select required version from versions, tags and branches
 --
 -- .e.g
