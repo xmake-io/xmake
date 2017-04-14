@@ -34,16 +34,24 @@ local semver = semver or {}
 -- verinfo = 
 -- {
 --     version = "1.5.1"
---     kind = "string"    
+--     source = "versions"    
 -- }
 --
 -- @version     the selected version number
--- @kind        the version kind, .e.g string, tag, branch
+-- @source      the version source, .e.g versions, tags, branchs
 --
 function semver.select(required_ver, versions, tags, branches)
 
     -- TODO
-    return nil, "not implementation"
+    if versions and versions[1] then
+        return {version = versions[1], source = "versions"}
+    elseif tags and tags[1] then
+        return {version = tags[1], source = "tags"}
+    elseif branches and branches[1] then
+        return {version = branches[1], source = "branches"}
+    end
+
+    return nil, string.format("cannot select version %s", required_ver)
 end
 
 -- return module: semver

@@ -206,7 +206,7 @@ function load_packages()
         assert(instance, "package(%s) not found!", packagename)
 
         -- select package version
-        local version, kind = _select_package_version(instance, requireinfo.version)
+        local version, source = _select_package_version(instance, requireinfo.version)
 
         -- save this package instance
         table.insert(packages, instance)

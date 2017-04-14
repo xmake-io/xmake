@@ -34,21 +34,21 @@ local raise  = require("sandbox/modules/raise")
 --
 -- .e.g
 --
--- local version, kind = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"master", "dev"})
+-- local version, source = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"master", "dev"})
 --
 -- @version     the selected version number
--- @kind        the version kind, .e.g string, tag, branch
+-- @source      the version source, .e.g versions, tags, branchs
 --
 function sandbox_core_base_semver.select(required_ver, versions, tags, branches)
 
     -- select version
     local verinfo, errors = semver.select(required_ver, versions, tags, branches)
-    if not results then
+    if not verinfo then
         raise(errors)
     end
 
     -- ok
-    return verinfo.version, version.kind
+    return verinfo.version, verinfo.source
 end
 
 -- return module
