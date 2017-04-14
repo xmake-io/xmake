@@ -35,7 +35,7 @@ import("repository")
 -- add_requires("zlib master")
 -- add_requires("xmake-repo@tboox.tbox >=1.5.1")
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1")
--- add_requires("tboox.tbox >=1.5.1 optional")
+-- add_requires("tboox.tbox >=1.5.1 <1.6.0 optional")
 --
 function _parse_require(require_str)
 
@@ -47,18 +47,34 @@ function _parse_require(require_str)
     local packageinfo = splitinfo[1]
 
     -- get mode at last position
-    local mode = nil
+    --
+    -- .e.g
+    --
+    -- must
+    -- optional
+    --
+    local mode = "must"
     if #splitinfo > 1 then
-        -- only optional now. may be more in future
-        local value = splitinfo[#splitinfo]
-        if value == "optional" then
-            mode = "optional"
+
+        -- get mode
+        local modes = {must = true, optional = true}
+        local value = splitinfo[#splitinfo]:lower()
+        if modes[value] then
+            mode = value
             table.remove(splitinfo)
         end
     end
 
-    -- get version 
-    local version = nil
+    -- get version
+    --
+    -- .e.g 
+    -- 
+    -- >=1.5.1 <1.6.0  
+    -- master || >1.4
+    -- ~1.2.3
+    -- ^1.1
+    --
+    local version = "master"
     if #splitinfo > 1 then
         version = table.concat(table.slice(splitinfo, 2), " ")
     end
