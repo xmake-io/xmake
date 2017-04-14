@@ -36,7 +36,11 @@ function _test_semver_select()
     print("semver.select: ok!")
 end
 
--- main entry
+--
+-- run tests:
+--
+-- $ xmake l ./tests/modules/semver.lua
+--
 function main()
 
     -- test select version
