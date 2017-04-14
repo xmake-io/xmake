@@ -144,8 +144,6 @@ function ls_remote(reftype, url)
         end
     end
 
-    table.dump(refs)
-
     -- ok
     return refs
 end

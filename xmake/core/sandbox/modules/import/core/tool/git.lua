@@ -74,17 +74,11 @@ function sandbox_core_tool_git.pull(args)
     end
 end
 
--- get all refs from url, contains tags and branches
+-- get all tags and branches from url
 --
 -- .e.g
 -- 
--- local refs = git.refs("git@github.com:tboox/xmake.git")
---
--- refs = 
--- {
---     tags = {},
---     branches = {}
--- }
+-- local tags, branches = git.refs("git@github.com:tboox/xmake.git")
 --
 function sandbox_core_tool_git.refs(url)
 
@@ -101,7 +95,7 @@ function sandbox_core_tool_git.refs(url)
     end
 
     -- ok
-    return refs
+    return refs.tags, refs.branches
 end
 
 -- get tags from url

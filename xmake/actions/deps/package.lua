@@ -24,6 +24,7 @@
 
 -- imports
 import("core.tool.git")
+import("core.base.semver")
 import("core.project.project")
 import("core.package.package")
 import("repository")
@@ -154,7 +155,7 @@ function _load_package_from_repository(packagename, reponame)
 end
 
 -- select package version
-function _select_package_version(package, require_ver)
+function _select_package_version(package, required_ver)
 
     -- get package url    
     local url = package:get("url")
@@ -167,20 +168,17 @@ function _select_package_version(package, require_ver)
     local versions = package:get("versions") 
 
     -- attempt to get tags and branches from the git url
-    local refs = nil
+    local tags = nil
+    local branches = nil
     if is_giturl then
-        refs = git.refs(url) 
+        tags, branches = git.refs(url) 
     end
 
     -- check
-    assert(versions or refs, "cannot get versions or refs from package(%s)!", package:name())
+    assert(versions or tags or branches, "cannot get versions or refs from package(%s)!", package:name())
 
-    -- TODO
-    -- select version
-    local version = nil
-
-    -- ok
-    return version
+    -- select required version
+    return semver.select(required_ver, versions, tags, branches)
 end
 
 -- load all required packages
@@ -208,7 +206,7 @@ function load_packages()
         assert(instance, "package(%s) not found!", packagename)
 
         -- select package version
-        local version = _select_package_version(instance, requireinfo.version)
+        local version, kind = _select_package_version(instance, requireinfo.version)
 
         -- save this package instance
         table.insert(packages, instance)
