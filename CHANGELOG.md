@@ -5,6 +5,8 @@
 ### Changes
 
 * Modify option menu color.
+* [#71](https://github.com/tboox/xmake/issues/71): Improve to map optimization flags for cl.exe
+* [#73](https://github.com/tboox/xmake/issues/73): Attempt to get executable path as xmake's program directory
 
 ### Bugs fixed
 
@@ -258,6 +260,8 @@
 ### Changes
 
 * 修改菜单选项颜色
+* [#71](https://github.com/tboox/xmake/issues/71): 针对widows编译器改进优化选项映射
+* [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
 
 ### Bugs fixed
 
