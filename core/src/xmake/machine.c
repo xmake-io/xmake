@@ -33,8 +33,10 @@
  * includes
  */
 #include "xmake.h"
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
+#elif defined(TB_CONFIG_OS_MACOSX)
+#   include <mach-o/dyld.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -199,7 +201,7 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
             break;
         }
 
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS)
         // get the program directory
         tb_size_t size = (tb_size_t)GetModuleFileName(tb_null, path, (DWORD)maxn);
         tb_assert_and_check_break(size < maxn);
@@ -219,6 +221,36 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
 
         // ok
         ok = tb_true;
+#elif defined(TB_CONFIG_OS_MACOSX)
+        /*
+         * _NSGetExecutablePath() copies the path of the main executable into the buffer. The bufsize parameter
+         * should initially be the size of the buffer.  The function returns 0 if the path was successfully copied,
+         * and *bufsize is left unchanged. It returns -1 if the buffer is not large enough, and *bufsize is set 
+         * to the size required. 
+         * 
+         * Note that _NSGetExecutablePath will return "a path" to the executable not a "real path" to the executable. 
+         * That is the path may be a symbolic link and not the real file. With deep directories the total bufsize 
+         * needed could be more than MAXPATHLEN.
+         */
+        tb_uint32_t size = (tb_uint32_t)maxn;
+        if (!_NSGetExecutablePath(path, &size))
+        {
+            // get path size
+            size = tb_strlen(path);
+
+            // get the directory
+            while (size-- > 0)
+            {
+                if (path[size] == '/') 
+                {
+                    path[size] = '\0';
+                    break;
+                }
+            }
+
+            // ok
+            ok = tb_true;
+        }
 #endif
 
     } while (0);
