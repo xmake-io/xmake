@@ -71,12 +71,8 @@ end
 -- install and update all outdated package dependencies
 function _install(is_global)
 
-    -- TODO need optimization
-    -- pull all local and global repositories first
-    repository.pull()
-
-    -- load all required packages
-    local packages = package.load_packages()
+    -- install packages
+    package.install_packages(is_global)
 end
 
 -- clear all installed packages cache
@@ -96,7 +92,12 @@ end
 
 -- list all package dependencies
 function _list()
-    -- TODO
+
+    -- list all requires
+    print("Tha package dependencies:")
+    for packagename, requireinfo in pairs(package.load_requires()) do
+        print("    %s %s", packagename, requireinfo.version)
+    end
 end
 
 -- main

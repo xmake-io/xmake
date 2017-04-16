@@ -111,24 +111,6 @@ function _parse_require(require_str)
     return packagename, {reponame = reponame, packageurl = packageurl, version = version, mode = mode}
 end
 
--- load requires
-function _load_requires()
-
-    -- parse requires
-    local requires = {}
-    for _, require_str in ipairs(project.requires()) do
-
-        -- parse require info
-        local packagename, packageinfo = _parse_require(require_str)
-
-        -- save this required package
-        requires[packagename] = packageinfo
-    end
-
-    -- ok
-    return requires
-end
-
 -- load package instance from the given package url
 function _load_package_from_url(packagename, packageurl)
 
@@ -181,12 +163,30 @@ function _select_package_version(package, required_ver)
     return semver.select(required_ver, versions, tags, branches)
 end
 
+-- load requires
+function load_requires()
+
+    -- parse requires
+    local requires = {}
+    for _, require_str in ipairs(project.requires()) do
+
+        -- parse require info
+        local packagename, packageinfo = _parse_require(require_str)
+
+        -- save this required package
+        requires[packagename] = packageinfo
+    end
+
+    -- ok
+    return requires
+end
+
 -- load all required packages
 function load_packages()
 
     -- load packages
     local packages = {}
-    for packagename, requireinfo in pairs(_load_requires()) do
+    for packagename, requireinfo in pairs(load_requires()) do
 
         -- load package instance
         local instance = nil
@@ -207,6 +207,7 @@ function load_packages()
 
         -- select package version
         local version, source = _select_package_version(instance, requireinfo.version)
+        -- TODO mode
 
         -- save this package instance
         table.insert(packages, instance)
@@ -214,5 +215,17 @@ function load_packages()
 
     -- ok
     return packages
+end
+
+-- install packages
+function install_packages(is_global)
+
+    -- TODO need optimization
+    -- pull all local and global repositories first
+    repository.pull()
+
+    -- load all required packages
+    local packages = package.load_packages()
+    -- TODO
 end
 
