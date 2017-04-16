@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#68](https://github.com/tboox/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
+
 ### Changes
 
 * Modify option menu color.
@@ -257,13 +261,17 @@
 
 ## master (开发中)
 
-### Changes
+### 新特性
+
+* [#68](https://github.com/tboox/xmake/issues/68): 天剑`$(programdir)`和`$(xmake)`内建变量
+
+### 改进
 
 * 修改菜单选项颜色
 * [#71](https://github.com/tboox/xmake/issues/71): 针对widows编译器改进优化选项映射
 * [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
 
-### Bugs fixed
+### Bugs修复
 
 * [#67](https://github.com/tboox/xmake/issues/67): 修复 `sudo make install` 命令权限问题
 * [#70](https://github.com/tboox/xmake/issues/70): 修复检测android编译器错误
