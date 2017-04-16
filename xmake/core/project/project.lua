@@ -305,6 +305,8 @@ function project._interpreter()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
+            ,   programdir  = xmake._PROGRAM_DIR
+            ,   xmake       = path.join(xmake._PROGRAM_DIR, "xmake")
             }
 
             -- map it
