@@ -28,6 +28,7 @@ import("core.base.semver")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("repository")
+import("action")
 
 --
 -- parse require string
@@ -193,38 +194,6 @@ function _load_package(packagename, requireinfo)
     return instance
 end
 
--- on build the given package
-function _on_build_package(package)
-    print("build %s", package:name())
-end
-
--- on install the given package
-function _on_install_package(package)
-    print("install %s", package:name())
-end
-
--- install the given package
-function _install_package(package, is_global)
-
-    -- TODO is_global
-    --
-
-    -- the package scripts
-    local scripts =
-    {
-        package:get("build")    or _on_build_package
-    ,   package:get("install")  or _on_install_package
-    }
-
-    -- run the package scripts
-    for i = 1, 2 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(package)
-        end
-    end
-end
-
 -- select package version
 function _select_package_version(package, required_ver)
 
@@ -300,7 +269,8 @@ function install_packages(is_global)
 
     -- install all required packages from repositories
     for _, package in ipairs(load_packages(project.requires())) do
-        _install_package(package, is_global)
+        -- install package
+        action.install.main(package, is_global)
     end
 end
 
