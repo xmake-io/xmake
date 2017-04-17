@@ -90,8 +90,8 @@ function _apply_vsenv(config, vs)
     end
 
     -- make the genvcvars.bat 
-    local genvcvars_bat = path.join(os.tmpdir(), "xmake.genvcvars.bat")
-    local genvcvars_dat = path.join(os.tmpdir(), "xmake.genvcvars.dat")
+    local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
+    local genvcvars_dat = os.tmpfile() .. "_genvcvars.dat"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
     file:print("call \"%s\" %s > nul", vcvarsall, config.get("arch"))

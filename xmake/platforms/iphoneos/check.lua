@@ -30,7 +30,7 @@ import("platforms.checker", {rootdir = os.programdir()})
 function _check_as(shellname)
 
     -- make an empty tmp.S
-    local tmpfile = path.join(os.tmpdir(), "xmake.checker.as.S")
+    local tmpfile = os.tmpfile() .. ".S"
     io.writefile(tmpfile, "")
 
     -- check it

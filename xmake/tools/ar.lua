@@ -116,9 +116,9 @@ end
 function check(flags)
 
     -- make an stub source file
-    local libraryfile   = path.join(os.tmpdir(), "xmake.ar.a")
-    local objectfile    = path.join(os.tmpdir(), "xmake.ar.o")
-    local sourcefile    = path.join(os.tmpdir(), "xmake.ar.c")
+    local libraryfile   = os.tmpfile() .. ".a"
+    local objectfile    = os.tmpfile() .. ".o"
+    local sourcefile    = os.tmpfile() .. ".c"
     io.writefile(sourcefile, "int test(void)\n{return 0;}")
 
     -- make flags
