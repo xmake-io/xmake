@@ -11,6 +11,7 @@
 * Modify option menu color.
 * [#71](https://github.com/tboox/xmake/issues/71): Improve to map optimization flags for cl.exe
 * [#73](https://github.com/tboox/xmake/issues/73): Attempt to get executable path as xmake's program directory
+* Improve the scope of `xmake.lua` in `add_subdirs` and use independent sub-scope to avoid dirty scope
 
 ### Bugs fixed
 
@@ -270,6 +271,7 @@
 * 修改菜单选项颜色
 * [#71](https://github.com/tboox/xmake/issues/71): 针对widows编译器改进优化选项映射
 * [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
+* 在`add_subdirs`中的子`xmake.lua`中，使用独立子作用域，避免作用域污染导致的干扰问题
 
 ### Bugs修复
 

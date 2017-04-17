@@ -83,6 +83,39 @@ function interpreter._traceback(errors)
     return results
 end
 
+-- merge the current root values to the previous scope
+function interpreter._merge_root_scope(root, root_prev, override)
+
+    -- merge it
+    root_prev = root_prev or {}
+    for scope_kind_and_name, _ in pairs(root or {}) do
+        
+        -- is scope_kind.scope_name?
+        scope_kind_and_name = scope_kind_and_name:split('%.')
+        if #scope_kind_and_name == 2 then
+            local scope_kind = scope_kind_and_name[1] 
+            local scope_name = scope_kind_and_name[2]
+            local scope_values = root_prev[scope_kind .. "." .. scope_name] or {}
+            local scope_root = root[scope_kind] or {}
+            for name, values in pairs(scope_root) do
+                if not name:startswith("__") then
+                    if scope_root["__override_" .. name] then
+                        if override or scope_values[name] == nil then
+                            scope_values[name] = values
+                        end
+                    else
+                        scope_values[name] = table.join(values, scope_values[name] or {})
+                    end
+                end
+            end
+            root_prev[scope_kind .. "." .. scope_name] = scope_values
+        end
+    end
+
+    -- ok?
+    return root_prev
+end
+
 -- register scope end: scopename_end()
 function interpreter:_api_register_scope_end(...)
 
@@ -180,8 +213,8 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         local scope = scopes._CURRENT or root
         assert(scope)
 
-        -- enter subscope and set values? override it
-        if scopes._CURRENT and apiname and action == "set" then
+        -- set values? mark as "override"
+        if apiname and action == "set" then
             scope["__override_" .. apiname] = true
         end
 
@@ -273,11 +306,17 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- bind public scope
                 setfenv(script, self._PUBLIC)
 
+                -- save the previous root scope
+                local root_prev = scopes._ROOT
+
                 -- save the previous scope
                 local scope_prev = scopes._CURRENT
 
                 -- save the previous scope kind
                 local scope_kind_prev = scopes._CURRENT_KIND
+
+                -- clear the current root scope 
+                scopes._ROOT = nil
 
                 -- clear the current scope, force to enter root scope
                 scopes._CURRENT = nil
@@ -302,6 +341,11 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
 
                 -- restore the previous scope
                 scopes._CURRENT = scope_prev
+
+                -- restore the previous root scope and merge current root scope
+                -- it will override the previous values if the current values are override mode 
+                -- so we priority use the values in subdirs scope
+                scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, root_prev, true)
 
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
@@ -459,8 +503,9 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             return {}
         end
 
-        -- the root scope
-        local scope_root = scopes._ROOT[scope_kind]
+        -- merge root scope first and do not override the root values if be override mode 
+        -- so we priority use the values in subdirs scope
+        scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, scopes._ROOT, false)
 
         -- merge results
         for scope_name, scope in pairs(scope_for_kind) do
@@ -473,19 +518,12 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
                 end
             end
 
-            -- merge root values
+            -- merge root values with the given scope name
+            local scope_root = scopes._ROOT[scope_kind .. "." .. scope_name]
             if scope_root then
                 for name, values in pairs(scope_root) do
-
-                    -- merge values?
                     if not scope["__override_" .. name] then
-
-                        -- merge or add it
-                        if scope_values[name] ~= nil then
-                            scope_values[name] = table.join(values, scope_values[name])
-                        else
-                            scope_values[name] = values
-                        end
+                        scope_values[name] = table.join(values, scope_values[name] or {})
                     end
                 end
             end
@@ -832,6 +870,12 @@ function interpreter:api_register_scope(...)
 
         -- update the current scope kind
         scopes._CURRENT_KIND = scope_kind
+
+        -- init scope_kind.scope_name for the current root scope
+        scopes._ROOT = scopes._ROOT or {}
+        if scope_name ~= nil then
+            scopes._ROOT[scope_kind .. "." .. scope_name] = {}
+        end
 
         -- translate scope info 
         if scope_info then
