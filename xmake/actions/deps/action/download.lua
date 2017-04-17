@@ -1,4 +1,4 @@
---!The Make-like Build Utility based on Lua
+--!The Make-like download Utility based on Lua
 --
 -- Licensed to the Apache Software Foundation (ASF) under one
 -- or more contributor license agreements.  See the NOTICE file
@@ -19,48 +19,11 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        install.lua
+-- @file        download.lua
 --
 
--- imports
-import("build")
-import("clean")
-import("download")
-
--- on install the given package
-function _on_install_package(package)
-    print("install %s", package:name())
-end
-
--- install the given package
+-- download the given package
 function main(package, is_global)
-
-    -- TODO is_global
-    --
-
-    -- download package first
-    download.main(package, is_global)
-
-    -- build package 
-    build.main(package, is_global)
-
-    -- the package scripts
-    local scripts =
-    {
-        package:get("install_before") 
-    ,   package:get("install")  or _on_install_package
-    ,   package:get("install_after") 
-    }
-
-    -- run the package scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(package)
-        end
-    end
-
-    -- clean package last
-    clean.main(package, is_global)
+    print("download %s", package:name())
 end
 
