@@ -95,7 +95,7 @@ function _list()
 
     -- list all requires
     print("Tha package dependencies:")
-    for packagename, requireinfo in pairs(package.load_requires()) do
+    for packagename, requireinfo in pairs(package.load_requires(project.requires())) do
         print("    %s %s", packagename, requireinfo.version)
     end
 end

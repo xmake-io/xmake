@@ -73,6 +73,20 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the version info 
+function _instance:versioninfo()
+
+    -- get it
+    return self._VERSIONINFO
+end
+
+-- set the version info 
+function _instance:versioninfo_set(versioninfo)
+
+    -- set it
+    self._VERSIONINFO = versioninfo
+end
+
 -- the interpreter
 function package._interpreter()
 
@@ -109,6 +123,8 @@ function package.apis()
         ,   "package.set_versions"
         ,   "package.set_homepage"
         ,   "package.set_description"
+            -- package.add_xxx
+        ,   "package.add_requires"
         }
     ,   script =
         {
