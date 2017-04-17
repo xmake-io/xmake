@@ -73,11 +73,22 @@ function _instance:name()
     return self._NAME
 end
 
--- get the version info 
-function _instance:versioninfo()
+-- get the version  
+function _instance:version()
 
     -- get it
-    return self._VERSIONINFO
+    if self._VERSIONINFO then
+        return self._VERSIONINFO.version
+    end
+end
+
+-- is optional package?
+function _instance:optional()
+
+    -- optional?
+    if self._VERSIONINFO then
+        return self._VERSIONINFO.mode == "optional"
+    end
 end
 
 -- set the version info 

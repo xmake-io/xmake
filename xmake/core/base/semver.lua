@@ -39,13 +39,7 @@ local semver = semver or {}
 -- semver.valid('1.2.3') => '1.2.3'
 -- semver.valid('a.b.c') => nil
 function semver.valid(version)
-end
-
--- TODO
---
--- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
---
-function semver.satisfies(version, range, loose)
+    return true
 end
 
 -- TODO
@@ -53,6 +47,7 @@ end
 -- semver.gt('1.2.3', '9.8.7') => false
 --
 function semver.gt(v1, v2, loose)
+    return true
 end
 
 -- TODO
@@ -60,6 +55,15 @@ end
 -- semver.lt('1.2.3', '9.8.7') => true
 --
 function semver.lt(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
+--
+function semver.satisfies(version, range, loose)
+    return true
 end
 
 -- select required version from versions, tags and branches
@@ -77,7 +81,7 @@ end
 -- @version     the selected version number
 -- @source      the version source, .e.g versions, tags, branchs
 --
-function semver.select(required_ver, versions, tags, branches)
+function semver.select(range, versions, tags, branches)
 
     -- TODO only select the first one now.
     if versions and versions[1] then
@@ -89,7 +93,7 @@ function semver.select(required_ver, versions, tags, branches)
     end
 
     -- not found
-    return nil, string.format("cannot select version %s", required_ver)
+    return nil, string.format("cannot select version %s", range)
 end
 
 -- return module: semver

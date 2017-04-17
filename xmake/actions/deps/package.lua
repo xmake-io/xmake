@@ -156,15 +156,22 @@ end
 -- load required packages
 function _load_package(packagename, requireinfo)
 
-    -- TODO satisfy required version? conflict
     -- attempt to get it from cache first
     local packages = _g._PACKAGES or {}
-    if packages[packagename] then
-        return packages[packagename]
+    local instance = packages[packagename]
+    if instance then
+
+        -- satisfy required version? 
+        if not semver.satisfies(instance:version(), requireinfo.version) then
+            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, instance:version(), requireinfo.version)
+        end
+
+        -- ok
+        return instance
     end
 
     -- load package instance
-    local instance = nil
+    instance = nil
     if requireinfo.packageurl then
         -- load package from the given package url
         instance = _load_package_from_url(packagename, requireinfo.packageurl)
@@ -229,10 +236,10 @@ function load_requires(requires)
     for _, require_str in ipairs(requires) do
 
         -- parse require info
-        local packagename, packageinfo = _parse_require(require_str)
+        local packagename, requireinfo = _parse_require(require_str)
 
         -- save this required package
-        requireinfos[packagename] = packageinfo
+        requireinfos[packagename] = requireinfo
     end
 
     -- ok

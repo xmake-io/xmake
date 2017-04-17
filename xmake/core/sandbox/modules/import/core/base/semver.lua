@@ -30,6 +30,14 @@ local table  = require("base/table")
 local semver = require("base/semver")
 local raise  = require("sandbox/modules/raise")
 
+-- this version satisfies in the given version range
+--
+-- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
+--
+function sandbox_core_base_semver.satisfies(version, range, loose)
+    return true
+end
+
 -- select required version from versions, tags and branches
 --
 -- .e.g
@@ -39,10 +47,10 @@ local raise  = require("sandbox/modules/raise")
 -- @version     the selected version number
 -- @source      the version source, .e.g versions, tags, branchs
 --
-function sandbox_core_base_semver.select(required_ver, versions, tags, branches)
+function sandbox_core_base_semver.select(range, versions, tags, branches)
 
     -- select version
-    local verinfo, errors = semver.select(required_ver, versions, tags, branches)
+    local verinfo, errors = semver.select(range, versions, tags, branches)
     if not verinfo then
         raise(errors)
     end
