@@ -35,14 +35,14 @@ end
 -- install the given package
 function main(package, is_global)
 
-    -- TODO is_global
+    -- TODO is_global for install
     --
 
     -- download package first
-    download.main(package, is_global)
+    download.main(package)
 
     -- build package 
-    build.main(package, is_global)
+    build.main(package)
 
     -- the package scripts
     local scripts =
@@ -61,6 +61,6 @@ function main(package, is_global)
     end
 
     -- clean package last
-    clean.main(package, is_global)
+    clean.main(package)
 end
 

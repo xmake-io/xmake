@@ -23,7 +23,11 @@
 --
 
 -- download the given package
-function main(package, is_global)
+function main(package)
+
+    -- get source files directory
+    local sourcedir = path.join(os.tmpdir(), "packages", self:name(), "source")
+
     print("download %s", package:name())
 end
 

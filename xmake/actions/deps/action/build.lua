@@ -28,10 +28,7 @@ function _on_build_package(package)
 end
 
 -- build the given package
-function main(package, is_global)
-
-    -- TODO is_global
-    --
+function main(package)
 
     -- the package scripts
     local scripts =
