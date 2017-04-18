@@ -85,7 +85,7 @@ end
 -- .e.g
 -- 
 -- git.load():clone("git@github.com:tboox/xmake.git")
--- git.load():clone("git@github.com:tboox/xmake.git", {verbose = true, tags = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+-- git.load():clone("git@github.com:tboox/xmake.git", {verbose = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
 --
 function git:clone(url, args)
 
@@ -148,12 +148,25 @@ function git:refs(url)
         if ref:startswith("tags/") then
             table.insert(tags, ref:sub(6))
         elseif ref:startswith("heads/") then
-            table.insert(tags, ref:sub(7))
+            table.insert(branches, ref:sub(7))
         end
     end
 
     -- ok
     return {tags = tags, branches = branches}
+end
+
+-- checkout to given branch, tag or commit
+--
+-- .e.g
+--
+-- git.load():checkout("master", {verbose = true, repodir = "/tmp/xmake"})
+-- git.load():checkout("v1.0.1", {verbose = true, repodir = "/tmp/xmake"})
+--
+function git:checkout(commit, args)
+
+    -- checkout it
+    return sandbox.load(self:_tool().checkout, commit, args)
 end
 
 -- return module

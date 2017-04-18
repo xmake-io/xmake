@@ -74,6 +74,28 @@ function sandbox_core_tool_git.pull(args)
     end
 end
 
+-- checkout to given branch, tag or commit
+--
+-- .e.g
+--
+-- git.checkout("master", {verbose = true, repodir = "/tmp/xmake"})
+-- git.checkout("v1.0.1", {verbose = true, repodir = "/tmp/xmake"})
+--
+function sandbox_core_tool_git.checkout(commit, args)
+
+    -- get the git instance
+    local instance, errors = git.load()
+    if not instance then
+        raise(errors)
+    end
+
+    -- checkout it
+    local ok, errors = instance:checkout(commit, args)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- get all tags and branches from url
 --
 -- .e.g

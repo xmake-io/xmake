@@ -43,7 +43,7 @@ function download(url, outputfile, args)
     assert(outputfile)
 
     -- init argv
-    local argv = {url}
+    local argv = {"-fsSL", url}
 
     -- ensure output directory
     local outputdir = path.directory(outputfile)

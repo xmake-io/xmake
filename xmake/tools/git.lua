@@ -54,11 +54,6 @@ function clone(url, args)
         table.insert(argv, ifelse(type(args.depth) == "number", tostring(args.depth), args.depth))
     end
 
-    -- set tags
-    if args.tags then
-        table.insert(argv, "--tags")
-    end
-
     -- set outputdir
     if args.outputdir then
         table.insert(argv, args.outputdir)
@@ -146,6 +141,33 @@ function ls_remote(reftype, url)
 
     -- ok
     return refs
+end
+
+-- checkout to given branch, tag or commit
+function checkout(commit, args)
+
+    -- init argv
+    local argv = {"checkout", commit}
+
+    -- enter repository directory
+    local oldir = nil
+    if args.repodir then
+        oldir = os.cd(args.repodir)
+    end
+
+    -- verbose?
+    local runner = os.runv
+    if args.verbose then
+        runner = os.execv
+    end
+
+    -- clone it
+    runner(_g.shellname, argv)
+
+    -- leave repository directory
+    if oldir then
+        os.cd(oldir)
+    end
 end
 
 -- check the given flags 

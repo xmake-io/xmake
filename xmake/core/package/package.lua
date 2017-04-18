@@ -32,11 +32,13 @@ local io          = require("base/io")
 local path        = require("base/path")
 local utils       = require("base/utils")
 local table       = require("base/table")
+local filter      = require("base/filter")
 local sandbox     = require("sandbox/sandbox")
 local interpreter = require("base/interpreter")
 local config      = require("project/config")
 local global      = require("project/global")
 local project     = require("project/project")
+local platform    = require("platform/platform")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -48,6 +50,27 @@ function _instance.new(name, info, rootdir)
     instance._NAME      = name
     instance._INFO      = info
     instance._ROOTDIR   = rootdir
+
+    -- init filter
+    instance._FILTER = filter.new(function (variable)
+
+        -- check
+        assert(variable)
+
+        -- init maps
+        local maps = 
+        {
+            os          = platform.os()
+        ,   host        = xmake._HOST
+        ,   tmpdir      = os.tmpdir()
+        ,   curdir      = os.curdir()
+        ,   xmake       = path.join(xmake._PROGRAM_DIR, "xmake")
+        ,   version     = instance:version()
+        }
+
+        -- map it
+        return maps[variable]
+    end)
 
     -- ok
     return instance
@@ -73,6 +96,13 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the package filter 
+function _instance:filter()
+
+    -- get it
+    return self._FILTER
+end
+
 -- get the version  
 function _instance:version()
 
@@ -88,6 +118,15 @@ function _instance:optional()
     -- optional?
     if self._VERSIONINFO then
         return self._VERSIONINFO.mode == "optional"
+    end
+end
+
+-- the verson from tags, branches or versions?
+function _instance:verfrom()
+
+    -- optional?
+    if self._VERSIONINFO then
+        return self._VERSIONINFO.source
     end
 end
 

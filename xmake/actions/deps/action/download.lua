@@ -22,12 +22,64 @@
 -- @file        download.lua
 --
 
+-- imports
+import("core.base.option")
+import("core.tool.git")
+import("core.tool.downloader")
+
+-- checkout codes from git
+function _checkout(package, url)
+
+    -- TODO
+    -- cache checkouted files
+        
+    -- from branches?
+    if package:verfrom() == "branches" then
+
+        -- only shadow clone this branch 
+        git.clone(url, {verbose = option.get("verbose"), depth = 1, branch = package:version(), outputdir = "source"})
+
+    -- from tags or versions?
+    else
+
+        -- clone whole history and tags
+        git.clone(url, {verbose = option.get("verbose"), outputdir = "source"})
+
+        -- attempt to checkout the given version
+        git.checkout(package:version(), {verbose = option.get("verbose"), repodir = "source"})
+    end
+end
+
+-- download codes from ftp/http/https
+function _download(package, url)
+
+    -- TODO
+    -- cache downloaded file
+        
+    -- get package file
+    local packagefile = path.filename(url)
+
+    -- download package file
+    downloader.download(url, packagefile, {verbose = option.get("verbose")})
+
+    -- extract package file
+    -- TODO
+end
+
 -- download the given package
 function main(package)
 
-    -- get source files directory
-    local sourcedir = path.join(os.tmpdir(), "packages", self:name(), "source")
+    -- get url
+    local url = package:filter():handle(package:get("url"))
 
-    print("download %s", package:name())
+    -- trace
+    print("downloading %s-%s: %s ..", package:name(), package:version(), url)
+
+    -- download package using git?
+    if git.checkurl(url) then
+        _checkout(package, url)
+    else
+        _download(package, url)
+    end
 end
 

@@ -38,6 +38,15 @@ function main(package, is_global)
     -- TODO is_global for install
     --
 
+    -- get working directory of this package
+    local workdir = path.join(os.tmpdir(), "packages", package:name())
+
+    -- ensure the working directory first
+    os.mkdir(workdir)
+
+    -- enter the working directory
+    local oldir = os.cd(workdir)
+
     -- download package first
     download.main(package)
 
@@ -62,5 +71,8 @@ function main(package, is_global)
 
     -- clean package last
     clean.main(package)
+
+    -- leave working directory
+    os.cd(oldir)
 end
 
