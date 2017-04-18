@@ -36,10 +36,55 @@ local semver = semver or {}
 
 -- TODO
 --
+-- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
+-- semver.parse('a.b.c') => nil
+function semver.parse(version, loose)
+    return nil
+end
+
+-- TODO
+--
 -- semver.valid('1.2.3') => '1.2.3'
 -- semver.valid('a.b.c') => nil
-function semver.valid(version)
+--
+function semver.valid(version, loose)
     return true
+end
+
+-- TODO
+--
+function semver.clean(version, loose)
+    return nil
+end
+
+-- TODO
+--
+function semver.inc(version, release, loose, identifier)
+    return nil
+end
+
+-- TODO
+--
+function semver.diff(v1, v2)
+    return nil
+end
+
+-- TODO
+--
+function semver.compare(v1, v2)
+    return nil
+end
+
+-- TODO
+--
+function semver.sort(list, loose)
+    return nil
+end
+
+-- TODO
+--
+function semver.rsort(list, loose)
+    return nil
 end
 
 -- TODO
@@ -60,6 +105,44 @@ end
 
 -- TODO
 --
+-- semver.gte('1.2.3', '9.8.7') => false
+--
+function semver.gte(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.lte('1.2.3', '9.8.7') => true
+--
+function semver.lte(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.eq('1.2.3', '9.8.7') => false
+--
+function semver.eq(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.neq('1.2.3', '9.8.7') => true
+--
+function semver.neq(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+function semver.cmp(v1, op, v2, loose)
+    return true
+end
+
+-- TODO
+--
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
 --
 function semver.satisfies(version, range, loose)
@@ -72,10 +155,10 @@ end
 --
 -- local verinfo, errors = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"master", "dev"})
 --
--- verinfo = 
+-- verinfo =
 -- {
 --     version = "1.5.1"
---     source = "versions"    
+--     source = "versions"
 -- }
 --
 -- @version     the selected version number
@@ -95,6 +178,30 @@ function semver.select(range, versions, tags, branches)
     -- not found
     return nil, string.format("cannot select version %s", range)
 end
+
+function semver:__tostring()
+    return ""
+end
+
+function semver:__eq(other)
+    return false
+end
+
+function semver:__lt(other)
+    return false
+end
+
+function semver:__pow(other)
+    return false
+end
+
+local function new(version, loose)
+    local s = {}
+    setmetatable(s, semver)
+    return s
+end
+
+setmetatable(semver, { __call = function(_, ...) return new(...) end })
 
 -- return module: semver
 return semver
