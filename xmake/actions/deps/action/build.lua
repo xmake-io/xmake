@@ -24,7 +24,6 @@
 
 -- on build the given package
 function _on_build_package(package)
-    print("build %s", package:name())
 end
 
 -- build the given package

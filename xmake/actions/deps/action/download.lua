@@ -33,6 +33,9 @@ function _checkout(package, url)
     -- TODO
     -- cache checkouted files
         
+    -- trace
+    cprint("${bright}cloning %s %s ..", url, package:version())
+
     -- from branches?
     if package:verfrom() == "branches" then
 
@@ -55,7 +58,10 @@ function _download(package, url)
 
     -- TODO
     -- cache downloaded file
-        
+
+    -- trace
+    cprint("${bright}downloading %s ..", url)
+
     -- get package file
     local packagefile = path.filename(url)
 
@@ -69,17 +75,47 @@ end
 -- download the given package
 function main(package)
 
-    -- get url
-    local url = package:filter():handle(package:get("url"))
+    -- download package from url or mirror
+    for _, source in ipairs({"url", "mirror"}) do
 
-    -- trace
-    print("downloading %s-%s: %s ..", package:name(), package:version(), url)
+        -- get url
+        local url = package:get(source)
+        if url then
 
-    -- download package using git?
-    if git.checkurl(url) then
-        _checkout(package, url)
-    else
-        _download(package, url)
+            -- filter url
+            url = package:filter():handle(url)
+
+            -- download url
+            try
+            {
+                function ()
+
+                    -- download package 
+                    if git.checkurl(url) then
+                        _checkout(package, url)
+                    else
+                        _download(package, url)
+                    end
+                end,
+                catch 
+                {
+                    function (errors)
+
+                        -- verbose?
+                        if option.get("verbose") and errors then
+                            cprint("${bright red}error: ${default red}%s", errors)
+                        end
+
+                        -- trace
+                        if source == "mirror" or not package:get("mirror") then
+                            raise("download %s-%s failed!", package:name(), package:version())
+                        else
+                            cprint("${bright red}error: ${default red}download %s-%s failed!", package:name(), package:version())
+                        end
+                    end
+                }
+            }
+        end
     end
 end
 

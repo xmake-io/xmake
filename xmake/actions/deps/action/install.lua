@@ -29,7 +29,6 @@ import("download")
 
 -- on install the given package
 function _on_install_package(package)
-    print("install %s", package:name())
 end
 
 -- install the given package

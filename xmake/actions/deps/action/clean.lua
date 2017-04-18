@@ -24,7 +24,6 @@
 
 -- on clean the given package
 function _on_clean_package(package)
-    print("clean %s", package:name())
 end
 
 -- clean the given package
