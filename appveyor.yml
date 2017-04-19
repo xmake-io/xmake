@@ -22,4 +22,4 @@ before_build:
 build_script:
   - cmd: cd core
   - cmd: if %platform%==Win64 xmake f -a x64
-  - cmd: xmake -v
+  - cmd: xmake -r -v
