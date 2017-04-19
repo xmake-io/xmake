@@ -34,6 +34,9 @@ local semver = semver or {}
 -- - https://github.com/kikito/semver.lua
 -- - https://getcomposer.org/doc/articles/versions.md
 
+local MAX_LENGTH = 256
+local MAX_SAFE_INTEGER = 9007199254740991
+
 -- TODO
 --
 -- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
@@ -199,11 +202,20 @@ function semver:__pow(other)
 end
 
 local function parse_version(s, loose)
+    local major, minor, patch, next
+
     if loose then
-        return s:match'^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$'
+        major, minor, patch, next = s:match'^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$'
+        if not major then
+            -- TODO: raise, handle error
+            print('Invalid version: ' .. s)
+            do return end
+        end
     else
-        local next = s:match'^v?(.*)$'
-        local major, n = next:match'^(0)(.-)$'
+        local n
+
+        next = s:match'^v?(.*)$'
+        major, n = next:match'^(0)(.-)$'
         if not major or major:len() == 0 then
             major, n = next:match'^([1-9]%d*)(.-)$'
         end
@@ -214,7 +226,7 @@ local function parse_version(s, loose)
             do return end
         end
 
-        local minor, n = next:match'^%.(0)(.-)$'
+        minor, n = next:match'^%.(0)(.-)$'
         if not minor or minor:len() == 0 then
             minor, n = next:match'^%.([1-9]%d*)(.-)$'
         end
@@ -225,7 +237,7 @@ local function parse_version(s, loose)
             do return end
         end
 
-        local patch, n = next:match'^%.(0)(.-)$'
+        patch, n = next:match'^%.(0)(.-)$'
         if not patch or patch:len() == 0 then
             patch, n = next:match'^%.([1-9]%d*)(.-)$'
         end
@@ -235,9 +247,9 @@ local function parse_version(s, loose)
             print('Invalid full patch: ' .. s)
             do return end
         end
-
-        return major, minor, patch, next
     end
+
+    return tonumber(major), tonumber(minor), tonumber(patch), next
 end
 
 local function parse_prerelease(s, loose)
@@ -294,9 +306,9 @@ local function new(version, loose)
     end
 
     version = version:trim()
-    if version:len() > 256 then
+    if version:len() > MAX_LENGTH then
         -- TODO: raise, handle error
-        print('version is longer than 256 characters')
+        print('version is longer than '..MAX_LENGTH..' characters')
         do return end
     end
 
@@ -326,6 +338,22 @@ local function new(version, loose)
         s.build, next = parse_build(next)
     end
 
+    if s.major > MAX_SAFE_INTEGER or s.major < 0 then
+        -- TODO: raise, handle error
+        print('Invalid major version')
+        do return end
+    end
+    if s.minor > MAX_SAFE_INTEGER or s.minor < 0 then
+        -- TODO: raise, handle error
+        print('Invalid minor version')
+        do return end
+    end
+    if s.patch > MAX_SAFE_INTEGER or s.patch < 0 then
+        -- TODO: raise, handle error
+        print('Invalid patch version')
+        do return end
+    end
+
     return s
 end
 
@@ -338,6 +366,9 @@ function isa(entity, super)
 end
 
 setmetatable(semver, { __call = function(_, ...) return new(...) end })
+
+print(semver('v1.5.1'))
+print(semver('v1.5.1', true))
 
 -- return module: semver
 return semver
