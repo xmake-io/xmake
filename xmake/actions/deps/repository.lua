@@ -51,6 +51,9 @@ function pull(position)
     -- pull all repositories 
     for _, repo in ipairs(repositories()) do
 
+        -- trace
+        print("updating repository ..")
+
         -- the repository directory
         local repodir = path.join(repository.directory(repo.global), repo.name)
         if os.isdir(repodir) then

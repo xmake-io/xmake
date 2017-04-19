@@ -56,7 +56,7 @@ function sandbox_utils.print(format, ...)
         {
             function ()
                 -- attempt to print format string first
-                utils._iowrite(vformat(format, unpack(args)) .. "\n")
+                utils._print(vformat(format, unpack(args)))
             end,
             catch 
             {
@@ -84,7 +84,7 @@ end
 function sandbox_utils.cprint(format, ...)
 
     -- done
-    utils._iowrite(colors(vformat(format, ...) .. "\n"))
+    utils._print(colors(vformat(format, ...)))
 end
 
 -- print format string, the builtin variables and colors without newline
