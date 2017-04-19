@@ -59,7 +59,7 @@ function pull(position)
         if os.isdir(repodir) then
 
             -- trace
-            vprint("pulling repository(%s): %s in %s ..", repo.name, repo.url, repodir)
+            vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
 
             -- pull it
             git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})

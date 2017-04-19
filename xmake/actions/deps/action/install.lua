@@ -24,7 +24,6 @@
 
 -- imports
 import("build")
-import("clean")
 import("download")
 
 -- on install the given package
@@ -67,9 +66,6 @@ function main(package, is_global)
             script(package)
         end
     end
-
-    -- clean package last
-    clean.main(package)
 
     -- leave working directory
     os.cd(oldir)

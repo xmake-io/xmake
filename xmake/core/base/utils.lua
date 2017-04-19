@@ -45,6 +45,7 @@ function utils._iowrite(...)
     -- print it if not quiet
     if not option.get("quiet") then
         io.write(...)
+        io.flush()
     end
 end
 

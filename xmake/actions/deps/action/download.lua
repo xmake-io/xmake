@@ -30,11 +30,14 @@ import("core.tool.downloader")
 -- checkout codes from git
 function _checkout(package, url)
 
-    -- TODO
-    -- cache checkouted files
-        
     -- trace
-    cprint("${bright}cloning %s %s ..", url, package:version())
+    cprintf("${yellow}  => ${clear}cloning %s %s .. ", url, package:version())
+    if option.get("verbose") then
+        print("")
+    end
+
+    -- attempt to remove source directory first
+    os.tryrm("source")
 
     -- from branches?
     if package:verfrom() == "branches" then
@@ -51,31 +54,44 @@ function _checkout(package, url)
         -- attempt to checkout the given version
         git.checkout(package:version(), {verbose = option.get("verbose"), repodir = "source"})
     end
+
+    -- trace
+    cprint("${green}ok")
 end
 
 -- download codes from ftp/http/https
 function _download(package, url)
 
-    -- TODO
-    -- cache downloaded file
-
     -- trace
-    cprint("${bright}downloading %s ..", url)
+    cprintf("${yellow}  => ${clear}downloading %s .. ", url)
+    if option.get("verbose") then
+        print("")
+    end
 
     -- get package file
     local packagefile = path.filename(url)
 
-    -- download package file
-    downloader.download(url, packagefile, {verbose = option.get("verbose")})
-
-    -- check hash
+    -- the package file have been downloaded?
     local sha256 = package:sha256()
-    if sha256 and sha256 ~= hash.sha256(packagefile) then
-        raise("unmatched checksum!")
+    if option.get("force") or not os.isfile(packagefile) or (sha256 and sha256 ~= hash.sha256(packagefile)) then
+
+        -- attempt to remove package file first
+        os.tryrm(packagefile)
+
+        -- download package file
+        downloader.download(url, packagefile, {verbose = option.get("verbose")})
+
+        -- check hash
+        if sha256 and sha256 ~= hash.sha256(packagefile) then
+            raise("unmatched checksum!")
+        end
     end
 
     -- extract package file
     -- TODO
+    
+    -- trace
+    cprint("${green}ok")
 end
 
 -- download the given package
@@ -112,12 +128,15 @@ function main(package)
                             cprint("${bright red}error: ${clear}%s", errors)
                         end
 
+                        --[[
                         -- trace
                         if source == "mirror" or not package:get("mirror") then
                             raise("download %s-%s failed!", package:name(), package:version())
-                        else
-                            cprint("${bright red}error: ${clear}download %s-%s failed!", package:name(), package:version())
                         end
+                        ]]
+                    
+                        -- trace
+                        cprint("${red}failed")
                     end
                 }
             }

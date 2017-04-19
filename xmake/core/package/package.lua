@@ -206,19 +206,16 @@ function package.apis()
             -- package.on_xxx
             "package.on_build"
         ,   "package.on_install"
-        ,   "package.on_clean"
         ,   "package.on_test"
 
             -- package.before_xxx
         ,   "package.before_build"
         ,   "package.before_install"
-        ,   "package.before_clean"
         ,   "package.before_test"
 
             -- package.before_xxx
         ,   "package.after_build"
         ,   "package.after_install"
-        ,   "package.after_clean"
         ,   "package.after_test"
         }
     }

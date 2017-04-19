@@ -47,6 +47,7 @@ task("deps")
                 {
                     {'i', "install",    "k",  nil,       "Install and update outdated package dependencies."                           }
                 ,   {'c', "clear",      "k",  nil,       "Clear all installed package caches."                                         }
+                ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                                }
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies."                                              }
                 ,   {                                                                                                                  }
                 ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                }
