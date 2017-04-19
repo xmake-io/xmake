@@ -184,7 +184,8 @@ end
 
 function semver:__tostring()
     local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
-    if self.prerelease then table.insert(buffer, "-" .. self.prerelease) end
+    local a = table.concat(self.prerelease, ".")
+    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
     if self.build then table.insert(buffer, "+" .. self.build) end
     return table.concat(buffer)
 end
@@ -257,17 +258,29 @@ local function parse_prerelease(s, loose)
     if not prerelease or prerelease:len() == 0 then
         if loose then
             prerelease, next = s:match'^(%d+)(.-)$'
+            if prerelease and prerelease:len() > 0 then
+                local n = tonumber(prerelease)
+                if n >= 0 and n < MAX_SAFE_INTEGER then
+                    prerelease = n
+                end
+            end
         else
             prerelease, next = s:match'^(0)(.-)$'
             if not prerelease or prerelease:len() == 0 then
                 prerelease, next = s:match'^([1-9]%d*)(.-)$'
+            end
+            if prerelease and prerelease:len() > 0 then
+                local n = tonumber(prerelease)
+                if n >= 0 and n < MAX_SAFE_INTEGER then
+                    prerelease = n
+                end
             end
         end
     end
     if next and next:sub(1, 1) == '.' then
         local p
         p, next = parse_prerelease(next:sub(2), loose)
-        if not p or p:len() == 0 then
+        if not p or (type(p) == 'string' and p:len() == 0) then
             -- TODO: raise, handle error
             print('Invalid prerelease: ' .. s)
             do return end
@@ -354,11 +367,24 @@ local function new(version, loose)
         do return end
     end
 
+    if s.prerelease then
+        s.prerelease = s.prerelease:split(".")
+    else
+        s.prerelease = {}
+    end
+
     return s
 end
 
 function string:trim()
     return self:match'^()%s*$' and '' or self:match'^%s*(.*%S)'
+end
+
+function string:split(sep)
+    local sep, fields = sep or ":", {}
+    local pattern = string.format("([^%s]+)", sep)
+    self:gsub(pattern, function(c) fields[#fields+1] = c end)
+    return fields
 end
 
 function isa(entity, super)
