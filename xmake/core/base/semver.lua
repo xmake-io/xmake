@@ -180,7 +180,10 @@ function semver.select(range, versions, tags, branches)
 end
 
 function semver:__tostring()
-    return ""
+    local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
+    if self.prerelease then table.insert(buffer, "-" .. self.prerelease) end
+    if self.build then table.insert(buffer, "+" .. self.build) end
+    return table.concat(buffer)
 end
 
 function semver:__eq(other)
@@ -195,10 +198,143 @@ function semver:__pow(other)
     return false
 end
 
+local function parse_version(s, loose)
+    if loose then
+        return s:match'^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$'
+    else
+        local next = s:match'^v?(.*)$'
+        local major, n = next:match'^(0)(.-)$'
+        if not major or major:len() == 0 then
+            major, n = next:match'^([1-9]%d*)(.-)$'
+        end
+        next = n
+        if not next or next:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid full major: ' .. s)
+            do return end
+        end
+
+        local minor, n = next:match'^%.(0)(.-)$'
+        if not minor or minor:len() == 0 then
+            minor, n = next:match'^%.([1-9]%d*)(.-)$'
+        end
+        next = n
+        if not next or next:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid full minor: ' .. s)
+            do return end
+        end
+
+        local patch, n = next:match'^%.(0)(.-)$'
+        if not patch or patch:len() == 0 then
+            patch, n = next:match'^%.([1-9]%d*)(.-)$'
+        end
+        next = n
+        if not patch or patch:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid full patch: ' .. s)
+            do return end
+        end
+
+        return major, minor, patch, next
+    end
+end
+
+local function parse_prerelease(s, loose)
+    local prerelease, next = s:match'^(%d*[%a-][%a%d-]*)(.-)$'
+    if not prerelease or prerelease:len() == 0 then
+        if loose then
+            prerelease, next = s:match'^(%d+)(.-)$'
+        else
+            prerelease, next = s:match'^(0)(.-)$'
+            if not prerelease or prerelease:len() == 0 then
+                prerelease, next = s:match'^([1-9]%d*)(.-)$'
+            end
+        end
+    end
+    if next and next:sub(1, 1) == '.' then
+        local p
+        p, next = parse_prerelease(next:sub(2), loose)
+        if not p or p:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid prerelease: ' .. s)
+            do return end
+        end
+        prerelease = prerelease .. '.' .. p
+    end
+    return prerelease, next
+end
+
+local function parse_build(s)
+    local build, next = s:match'^([%d%a-]+)(.-)$'
+    if next and next:len() > 0 and next:sub(1, 1) == '.' then
+        local b
+        b, next = parse_build(next:sub(2), loose)
+        if not b or b:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid build: ' .. s)
+            do return end
+        end
+        build = build .. '.' .. b
+    end
+    return build, next
+end
+
 local function new(version, loose)
-    local s = {}
-    setmetatable(s, semver)
+    if isa(version, semver) then
+        if version.loose == loose then
+            return version
+        else
+           version = version.version
+        end
+    elseif type(version) ~= 'string' then
+        -- TODO: raise, handle error
+        print('Invalid Version: ' .. version)
+        do return end
+    end
+
+    version = version:trim()
+    if version:len() > 256 then
+        -- TODO: raise, handle error
+        print('version is longer than 256 characters')
+        do return end
+    end
+
+    local s = setmetatable({
+        __index = semver
+        ,   loose = loose
+        ,   raw = version
+        ,   prerelease = nil
+        ,   build = nil
+    }, semver)
+
+    local next
+    s.major, s.minor, s.patch, next = parse_version(version, loose)
+    if next and next:len() > 0 then
+        if next:sub(1, 1) == '-' then
+            next = next:sub(2)
+        end
+        s.prerelease, next = parse_prerelease(next, loose)
+    end
+    if next and next:len() > 0 then
+        if next:sub(1, 1) ~= '+' then
+            -- TODO: raise, handle error
+            print('expected build, got ' .. next)
+            do return end
+        end
+        next = next:sub(2)
+        s.build, next = parse_build(next)
+    end
+
     return s
+end
+
+function string:trim()
+    return self:match'^()%s*$' and '' or self:match'^%s*(.*%S)'
+end
+
+function isa(entity, super)
+    return tostring(getmetatable(entity)) == tostring(getmetatable(super))
 end
 
 setmetatable(semver, { __call = function(_, ...) return new(...) end })
