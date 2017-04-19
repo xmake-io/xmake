@@ -186,7 +186,8 @@ function semver:__tostring()
     local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
     local a = table.concat(self.prerelease, ".")
     if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
-    if self.build then table.insert(buffer, "+" .. self.build) end
+    a = table.concat(self.build, ".")
+    if a and a:len() > 0 then table.insert(buffer, "+" .. a) end
     return table.concat(buffer)
 end
 
@@ -371,6 +372,12 @@ local function new(version, loose)
         s.prerelease = s.prerelease:split(".")
     else
         s.prerelease = {}
+    end
+
+    if s.build then
+        s.build = s.build:split(".")
+    else
+        s.build = {}
     end
 
     return s
