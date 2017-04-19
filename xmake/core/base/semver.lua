@@ -401,8 +401,5 @@ end
 
 setmetatable(semver, { __call = function(_, ...) return new(...) end })
 
-print(semver'1.5.1-beta')
-print(semver'1.5.1-beta+qsd54')
-
 -- return module: semver
 return semver
