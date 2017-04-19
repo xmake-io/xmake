@@ -60,7 +60,6 @@ typedef struct __xm_machine_impl_t
 // the os functions
 tb_int_t xm_os_argv(lua_State* lua);
 tb_int_t xm_os_find(lua_State* lua);
-tb_int_t xm_os_uuid(lua_State* lua);
 tb_int_t xm_os_isdir(lua_State* lua);
 tb_int_t xm_os_rmdir(lua_State* lua);
 tb_int_t xm_os_mkdir(lua_State* lua);
@@ -86,6 +85,10 @@ tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
 
+// the hash functions
+tb_int_t xm_hash_uuid(lua_State* lua);
+tb_int_t xm_hash_sha256(lua_State* lua);
+
 // the string functions
 tb_int_t xm_string_strcmp(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
@@ -107,7 +110,6 @@ static luaL_Reg const g_os_functions[] =
 {
     { "argv",           xm_os_argv      }
 ,   { "find",           xm_os_find      }
-,   { "uuid",           xm_os_uuid      }
 ,   { "isdir",          xm_os_isdir     }
 ,   { "rmdir",          xm_os_rmdir     }
 ,   { "mkdir",          xm_os_mkdir     }
@@ -137,6 +139,14 @@ static luaL_Reg const g_path_functions[] =
 ,   { "translate",      xm_path_translate   }
 ,   { "is_absolute",    xm_path_is_absolute }
 ,   { tb_null,          tb_null             }
+};
+
+// the hash functions
+static luaL_Reg const g_hash_functions[] = 
+{
+    { "uuid",           xm_hash_uuid   }
+,   { "sha256",         xm_hash_sha256 }
+,   { tb_null,          tb_null        }
 };
 
 // the string functions
@@ -355,6 +365,9 @@ xm_machine_ref_t xm_machine_init()
 
         // bind path functions
         luaL_register(impl->lua, "path", g_path_functions);
+
+        // bind hash functions
+        luaL_register(impl->lua, "hash", g_hash_functions);
 
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);

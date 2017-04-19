@@ -19,40 +19,41 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        os.lua
+-- @file        hash.lua
 --
 
 -- load modules
-local os        = require("base/os")
-local string    = require("base/string")
+local raise = require("sandbox/modules/raise")
 
 -- define module
-local sandbox_os = sandbox_os or {}
+local sandbox_hash = sandbox_hash or {}
 
--- export some readonly interfaces
-sandbox_os.date     = os.date
-sandbox_os.time     = os.time
-sandbox_os.mtime    = os.mtime
-sandbox_os.mclock   = os.mclock
-sandbox_os.getenv   = os.getenv
-sandbox_os.dirs     = os.dirs
-sandbox_os.host     = os.host
-sandbox_os.arch     = os.arch
-sandbox_os.isfile   = os.isfile
-sandbox_os.exists   = os.exists
-sandbox_os.curdir   = os.curdir
-sandbox_os.tmpdir   = os.tmpdir
+-- make a new uuid
+function sandbox_hash.uuid(name)
 
--- match files
-function sandbox_os.files(pattern, ...)
-    return os.match(string.format(pattern, ...))
+    -- make it
+    local uuid = hash.uuid(name)
+    if not uuid then
+        raise("cannot make uuid %s", name)
+    end
+
+    -- ok?
+    return uuid
 end
 
--- match directories
-function sandbox_os.dirs(pattern, ...)
-    return os.match(string.format(pattern, ...), true)
+-- make sha256 from the given file
+function sandbox_hash.sha256(file)
+
+    -- make it
+    local sha256 = hash.sha256(file)
+    if not sha256 then
+        raise("cannot make sha256 for %s", file)
+    end
+
+    -- ok?
+    return sha256
 end
 
 -- return module
-return sandbox_os
+return sandbox_hash
 

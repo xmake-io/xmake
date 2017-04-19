@@ -16,7 +16,6 @@ xmake_C_FILES 			+= \
 						machine \
 						os/argv \
 						os/find \
-						os/uuid \
 						os/isdir \
 						os/rmdir \
 						os/mkdir \
@@ -39,6 +38,8 @@ xmake_C_FILES 			+= \
 						path/absolute \
 						path/translate \
 						path/is_absolute \
+						hash/uuid \
+						hash/sha256 \
 						string/strcmp \
 						string/endswith \
 						string/startswith \

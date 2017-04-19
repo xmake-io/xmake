@@ -436,17 +436,6 @@ function sandbox_os.setenv(name, values)
     os.setenv(name, values)
 end
 
--- make a new uuid
-function sandbox_os.uuid(name)
-
-    -- make it
-    local uuid = os.uuid(name)
-    assert(uuid)
-
-    -- ok?
-    return uuid
-end
-
 -- get the feature of os
 function sandbox_os.feature(name)
 

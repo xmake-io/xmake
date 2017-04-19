@@ -19,36 +19,18 @@
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        uuid.c
+ * @file        prefix.h
  *
  */
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME                "uuid"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#ifndef XM_HASH_PREFIX_H
+#define XM_HASH_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
+#include "../prefix.h"
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
- */
-tb_int_t xm_os_uuid(lua_State* lua)
-{
-    // check
-    tb_assert_and_check_return_val(lua, 0);
 
-    // get the name  
-    tb_char_t const* name = luaL_optstring(lua, 1, tb_null);
+#endif
 
-    // make uuid
-    tb_char_t uuid[37];
-	lua_pushstring(lua, tb_uuid_make_cstr(uuid, name));
 
-    // ok
-    return 1;
-}
