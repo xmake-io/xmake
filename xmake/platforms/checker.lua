@@ -192,9 +192,9 @@ function check_xcode(config)
         else
             -- failed
             cprint("checking for the Xcode application directory ... ${red}no")
-            cprint("${bright red}please run:")
-            cprint("${red}    - xmake config --xcode_dir=xxx")
-            cprint("${red}or  - xmake global --xcode_dir=xxx")
+            cprint("${bright}please run:")
+            cprint("    - xmake config --xcode_dir=xxx")
+            cprint("or  - xmake global --xcode_dir=xxx")
             raise()
         end
     end
@@ -240,9 +240,9 @@ function check_xcode_sdkver(config)
         else
             -- failed
             cprint("checking for the Xcode SDK version for %s ... ${red}no", plat)
-            cprint("${bright red}please run:")
-            cprint("${red}    - xmake config --xcode_sdkver=xxx")
-            cprint("${red}or  - xmake global --xcode_sdkver=xxx")
+            cprint("${bright}please run:")
+            cprint("    - xmake config --xcode_sdkver=xxx")
+            cprint("or  - xmake global --xcode_sdkver=xxx")
             raise()
         end
     end

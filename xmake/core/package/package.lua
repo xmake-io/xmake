@@ -103,6 +103,31 @@ function _instance:filter()
     return self._FILTER
 end
 
+-- get sha256
+function _instance:sha256()
+
+    -- get it from cache first
+    if self._SHA256 then
+        return self._SHA256
+    end
+
+    -- find sha256
+    local version  = self:version()
+    local sha256s  = table.wrap(self:get("sha256s"))
+    local versions = table.wrap(self:get("versions"))
+    if version then
+        for idx, ver in ipairs(versions) do
+            if ver == version then
+                self._SHA256 = sha256s[idx]
+                break
+            end
+        end
+    end
+
+    -- get it
+    return self._SHA256
+end
+
 -- get the version  
 function _instance:version()
 

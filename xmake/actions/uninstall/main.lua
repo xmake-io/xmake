@@ -58,7 +58,7 @@ function main()
             function (errors)
 
                 -- show tips
-                cprint("${bright red}error: ${default red}failed to uninstall, may permission denied!")
+                cprint("${bright red}error: ${clear}failed to uninstall, may permission denied!")
 
                 -- continue to uninstall with administrator permission?
                 if os.feature("sudo") then

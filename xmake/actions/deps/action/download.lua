@@ -68,6 +68,12 @@ function _download(package, url)
     -- download package file
     downloader.download(url, packagefile, {verbose = option.get("verbose")})
 
+    -- check hash
+    local sha256 = package:sha256()
+    if sha256 and sha256 ~= hash.sha256(packagefile) then
+        raise("unmatched checksum!")
+    end
+
     -- extract package file
     -- TODO
 end
@@ -103,14 +109,14 @@ function main(package)
 
                         -- verbose?
                         if option.get("verbose") and errors then
-                            cprint("${bright red}error: ${default red}%s", errors)
+                            cprint("${bright red}error: ${clear}%s", errors)
                         end
 
                         -- trace
                         if source == "mirror" or not package:get("mirror") then
                             raise("download %s-%s failed!", package:name(), package:version())
                         else
-                            cprint("${bright red}error: ${default red}download %s-%s failed!", package:name(), package:version())
+                            cprint("${bright red}error: ${clear}download %s-%s failed!", package:name(), package:version())
                         end
                     end
                 }
