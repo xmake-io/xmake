@@ -183,12 +183,7 @@ function semver.select(range, versions, tags, branches)
 end
 
 function semver:__tostring()
-    local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
-    local a = table.concat(self.prerelease, ".")
-    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
-    a = table.concat(self.build, ".")
-    if a and a:len() > 0 then table.insert(buffer, "+" .. a) end
-    return table.concat(buffer)
+    return self.version
 end
 
 function semver:__eq(other)
@@ -380,6 +375,12 @@ local function new(version, loose)
         s.build = {}
     end
 
+    local buffer = { ("%d.%d.%d"):format(s.major, s.minor, s.patch) }
+    local a = table.concat(s.prerelease, ".")
+    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
+    a = table.concat(s.build, ".")
+    s.version = table.concat(buffer)
+
     return s
 end
 
@@ -399,6 +400,9 @@ function isa(entity, super)
 end
 
 setmetatable(semver, { __call = function(_, ...) return new(...) end })
+
+print(semver'1.5.1-beta')
+print(semver'1.5.1-beta+qsd54')
 
 -- return module: semver
 return semver
