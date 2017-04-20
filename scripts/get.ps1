@@ -7,5 +7,5 @@ Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$
 Start-Process -FilePath "$pid-xmake-installer.exe" -ArgumentList '/S /D=C:\xmake' -Wait
 Remove-Item "$pid-xmake-installer.exe"
 $env:Path+=";C:\xmake"
-[Environment]::SetEnvironmentVariable("Path",$env:Path,[System.EnvironmentVariableTarget]::User)
+[Environment]::SetEnvironmentVariable("Path",[Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::User)+";C:\xmake",[System.EnvironmentVariableTarget]::User)
 xmake --version
