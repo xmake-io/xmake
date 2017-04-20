@@ -15,12 +15,18 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ## Installation
 
-##### Windows
+#### Windows
 
 1. Download xmake windows installer from [Releases](https://github.com/tboox/xmake/releases)
 2. Run xmake-[version].exe
 
-##### MacOS
+Or install master version in powershell:
+
+```bash
+$ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
+```
+
+#### MacOS
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -32,7 +38,17 @@ Or
 1. Download xmake `.pkg` install package from [Releases](https://github.com/tboox/xmake/releases) 
 2. Run it
 
-##### Linux
+Or install master version:
+
+```bash
+# use homebrew
+$ brew install xmake --HEAD
+
+# or download install directly
+$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
+#### Linux
 
 Using Linuxbrew:
 
@@ -79,7 +95,17 @@ On Redhat/Centos:
 1. Download xmake `.rpm` install package from [Releases](https://github.com/tboox/xmake/releases) 
 2. Run `yum install xmake-xxx.rpm --nogpgcheck`
 
-##### Compilation
+Or install master version:
+
+```bash
+# use linuebrew
+$ brew install xmake --HEAD
+
+# or download install directly
+$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
+#### Compilation
 
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
