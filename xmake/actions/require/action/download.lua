@@ -152,15 +152,13 @@ function main(package)
                             cprint("${bright red}error: ${clear}%s", errors)
                         end
 
-                        --[[
-                        -- trace
-                        if source == "mirror" or not package:get("mirror") then
-                            raise("download %s-%s failed!", package:name(), package:version())
-                        end
-                        ]]
-                    
                         -- trace
                         cprint("${red}failed")
+
+                        -- failed?
+                        if source == "mirror" or not package:get("mirror") then
+                            raise("download failed!")
+                        end
                     end
                 }
             }
