@@ -25,6 +25,9 @@
 -- define module: semver
 local semver = semver or {}
 
+-- load modules
+local string = require("base/string")
+
 -- A semantic versioner
 --
 -- A "version" is described by the v2.0.0 specification found at http://semver.org/.
@@ -202,7 +205,7 @@ local function parse_version(s, loose)
     local major, minor, patch, next
 
     if loose then
-        major, minor, patch, next = s:match'^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$'
+        major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
         if not major then
             -- TODO: raise, handle error
             print('Invalid version: ' .. s)
@@ -211,10 +214,10 @@ local function parse_version(s, loose)
     else
         local n
 
-        next = s:match'^v?(.*)$'
-        major, n = next:match'^(0)(.-)$'
+        next = s:match('^v?(.*)$')
+        major, n = next:match('^(0)(.-)$')
         if not major or major:len() == 0 then
-            major, n = next:match'^([1-9]%d*)(.-)$'
+            major, n = next:match('^([1-9]%d*)(.-)$')
         end
         next = n
         if not next or next:len() == 0 then
@@ -223,9 +226,9 @@ local function parse_version(s, loose)
             do return end
         end
 
-        minor, n = next:match'^%.(0)(.-)$'
+        minor, n = next:match('^%.(0)(.-)$')
         if not minor or minor:len() == 0 then
-            minor, n = next:match'^%.([1-9]%d*)(.-)$'
+            minor, n = next:match('^%.([1-9]%d*)(.-)$')
         end
         next = n
         if not next or next:len() == 0 then
@@ -234,9 +237,9 @@ local function parse_version(s, loose)
             do return end
         end
 
-        patch, n = next:match'^%.(0)(.-)$'
+        patch, n = next:match('^%.(0)(.-)$')
         if not patch or patch:len() == 0 then
-            patch, n = next:match'^%.([1-9]%d*)(.-)$'
+            patch, n = next:match('^%.([1-9]%d*)(.-)$')
         end
         next = n
         if not patch or patch:len() == 0 then
@@ -250,10 +253,10 @@ local function parse_version(s, loose)
 end
 
 local function parse_prerelease(s, loose)
-    local prerelease, next = s:match'^(%d*[%a-][%a%d-]*)(.-)$'
+    local prerelease, next = s:match('^(%d*[%a-][%a%d-]*)(.-)$')
     if not prerelease or prerelease:len() == 0 then
         if loose then
-            prerelease, next = s:match'^(%d+)(.-)$'
+            prerelease, next = s:match('^(%d+)(.-)$')
             if prerelease and prerelease:len() > 0 then
                 local n = tonumber(prerelease)
                 if n >= 0 and n < MAX_SAFE_INTEGER then
@@ -261,9 +264,9 @@ local function parse_prerelease(s, loose)
                 end
             end
         else
-            prerelease, next = s:match'^(0)(.-)$'
+            prerelease, next = s:match('^(0)(.-)$')
             if not prerelease or prerelease:len() == 0 then
-                prerelease, next = s:match'^([1-9]%d*)(.-)$'
+                prerelease, next = s:match('^([1-9]%d*)(.-)$')
             end
             if prerelease and prerelease:len() > 0 then
                 local n = tonumber(prerelease)
@@ -287,7 +290,7 @@ local function parse_prerelease(s, loose)
 end
 
 local function parse_build(s)
-    local build, next = s:match'^([%d%a-]+)(.-)$'
+    local build, next = s:match('^([%d%a-]+)(.-)$')
     if next and next:len() > 0 and next:sub(1, 1) == '.' then
         local b
         b, next = parse_build(next:sub(2), loose)
@@ -382,17 +385,6 @@ local function new(version, loose)
     s.version = table.concat(buffer)
 
     return s
-end
-
-function string:trim()
-    return self:match'^()%s*$' and '' or self:match'^%s*(.*%S)'
-end
-
-function string:split(sep)
-    local sep, fields = sep or ":", {}
-    local pattern = string.format("([^%s]+)", sep)
-    self:gsub(pattern, function(c) fields[#fields+1] = c end)
-    return fields
 end
 
 function isa(entity, super)
