@@ -3,8 +3,8 @@
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
 $ver='v2.1.3'
-Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$ver.exe" -OutFile "$pid-xmake-installer.exe"
-Start-Process -FilePath "$pid-xmake-installer.exe" -ArgumentList '/S /D=C:\xmake' -Wait
+Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$ver.exe" -OutFile "$pid-xmake-installer.exe" -ErrorAction Stop
+Start-Process -FilePath "$pid-xmake-installer.exe" -ArgumentList '/S /D=C:\xmake' -Wait -ErrorAction Stop
 Remove-Item "$pid-xmake-installer.exe"
 $env:Path+=";C:\xmake"
 [Environment]::SetEnvironmentVariable("Path",[Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::User)+";C:\xmake",[System.EnvironmentVariableTarget]::User)
