@@ -37,7 +37,7 @@ task("require")
                 usage = "xmake require [options] [packages]"
 
                 -- description
-            ,   description = "Install package dependencies."
+            ,   description = "Install required packages."
 
                 -- xmake q
             ,   shortname = 'q'
