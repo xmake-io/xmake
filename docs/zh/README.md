@@ -22,12 +22,18 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 ## 安装
 
-##### Windows
+#### Windows
 
 1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载windows安装包
 2. 运行安装程序 xmake-[version].exe
 
-##### MacOS
+或者在powershell中安装master版本:
+
+```bash
+$ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
+```
+
+#### MacOS
 
 ```bash
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -39,7 +45,17 @@ $ brew install xmake
 1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载pkg安装包
 2. 双击运行
 
-##### Linux
+或者安装master版本:
+
+```bash
+# 使用homebrew安装master版本
+$ brew install xmake --HEAD
+
+# 或者直接调用shell下载安装
+$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
+#### Linux
 
 使用linuxbrew安装：
 
@@ -86,7 +102,17 @@ $ sudo apt-get install xmake
 1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载rpm安装包
 2. 运行: `yum install xmake-xxx.rpm --nogpgcheck`
 
-##### 编译安装
+或者安装master版本:
+
+```bash
+# 使用linuxbrew安装master版本
+$ brew install xmake --HEAD
+
+# 或者直接调用shell下载安装
+$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
+#### 编译安装
 
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
