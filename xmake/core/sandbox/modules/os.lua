@@ -40,6 +40,7 @@ sandbox_os.time     = os.time
 sandbox_os.argv     = os.argv
 sandbox_os.argw     = os.argw
 sandbox_os.mtime    = os.mtime
+sandbox_os.sleep    = os.sleep
 sandbox_os.mclock   = os.mclock
 sandbox_os.emptydir = os.emptydir
 

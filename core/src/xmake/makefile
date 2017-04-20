@@ -22,6 +22,7 @@ xmake_C_FILES 			+= \
 						os/cpdir \
 						os/chdir \
 						os/mtime \
+						os/sleep \
 						os/mclock \
 						os/curdir \
 						os/tmpdir \

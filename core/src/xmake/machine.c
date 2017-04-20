@@ -66,6 +66,7 @@ tb_int_t xm_os_mkdir(lua_State* lua);
 tb_int_t xm_os_cpdir(lua_State* lua);
 tb_int_t xm_os_chdir(lua_State* lua);
 tb_int_t xm_os_mtime(lua_State* lua);
+tb_int_t xm_os_sleep(lua_State* lua);
 tb_int_t xm_os_mclock(lua_State* lua);
 tb_int_t xm_os_curdir(lua_State* lua);
 tb_int_t xm_os_tmpdir(lua_State* lua);
@@ -116,6 +117,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "cpdir",          xm_os_cpdir     }
 ,   { "chdir",          xm_os_chdir     }
 ,   { "mtime",          xm_os_mtime     }
+,   { "sleep",          xm_os_sleep     }
 ,   { "mclock",         xm_os_mclock    }
 ,   { "curdir",         xm_os_curdir    }
 ,   { "tmpdir",         xm_os_tmpdir    }

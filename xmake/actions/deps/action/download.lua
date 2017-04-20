@@ -39,20 +39,31 @@ function _checkout(package, url)
     -- attempt to remove source directory first
     os.tryrm("source")
 
-    -- from branches?
-    if package:verfrom() == "branches" then
+    -- create a clone task
+    local task = function ()
 
-        -- only shadow clone this branch 
-        git.clone(url, {verbose = option.get("verbose"), depth = 1, branch = package:version(), outputdir = "source"})
+        -- from branches?
+        if package:verfrom() == "branches" then
 
-    -- from tags or versions?
+            -- only shadow clone this branch 
+            git.clone(url, {verbose = option.get("verbose"), depth = 1, branch = package:version(), outputdir = "source"})
+
+        -- from tags or versions?
+        else
+
+            -- clone whole history and tags
+            git.clone(url, {verbose = option.get("verbose"), outputdir = "source"})
+
+            -- attempt to checkout the given version
+            git.checkout(package:version(), {verbose = option.get("verbose"), repodir = "source"})
+        end
+    end
+
+    -- download package file
+    if option.get("verbose") then
+        task()
     else
-
-        -- clone whole history and tags
-        git.clone(url, {verbose = option.get("verbose"), outputdir = "source"})
-
-        -- attempt to checkout the given version
-        git.checkout(package:version(), {verbose = option.get("verbose"), repodir = "source"})
+        process.asyncrun(task)
     end
 
     -- trace
@@ -78,8 +89,17 @@ function _download(package, url)
         -- attempt to remove package file first
         os.tryrm(packagefile)
 
+        -- create a download task
+        local task = function ()
+            downloader.download(url, packagefile, {verbose = option.get("verbose")})
+        end
+
         -- download package file
-        downloader.download(url, packagefile, {verbose = option.get("verbose")})
+        if option.get("verbose") then
+            task()
+        else
+            process.asyncrun(task)
+        end
 
         -- check hash
         if sha256 and sha256 ~= hash.sha256(packagefile) then
