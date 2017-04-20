@@ -59,7 +59,7 @@ function unarchiver.load(kind)
         gzip        = {"tar", "gzip"}
     ,   zip         = {"tar", "unzip"}
     ,   bzip2       = {"tar"}
-    ,   7zip        = {"p7zip"}
+    ,   ["7zip"]    = {"7z"}
     ,   rar         = {}
     ,   tar         = {"tar"}
     ,   xz          = {"tar"}
@@ -97,7 +97,7 @@ end
 function unarchiver.kind_of_file(file)
 
     -- get extension
-    local extension = path.filename(file)
+    local extension = path.extension(file)
 
     -- init kinds
     local kinds = 
@@ -107,7 +107,7 @@ function unarchiver.kind_of_file(file)
     ,   [".bz2"]  = "bzip2"
     ,   [".7z"]   = "7zip"
     ,   [".rar"]  = "rar"
-    .   [".tar"]  = "tar"
+    ,   [".tar"]  = "tar"
     ,   [".xz"]   = "xz"
     ,   [".lzma"] = "lzma"
     }
@@ -120,7 +120,7 @@ end
 function unarchiver:extract(archivefile, outputdir)
 
     -- extract it
-    return sandbox.load(self:_tool().extract, archivefile, outputdir)
+    return sandbox.load(self:_tool().extract, path.translate(archivefile), path.translate(outputdir))
 end
 
 -- return module

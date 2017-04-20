@@ -73,19 +73,12 @@ function git.load()
     return instance
 end
 
--- get properties of the tool
-function git:get(name)
-
-    -- get it
-    return self:_tool().get(name)
-end
-
 -- clone url
 --
 -- .e.g
 -- 
 -- git.load():clone("git@github.com:tboox/xmake.git")
--- git.load():clone("git@github.com:tboox/xmake.git", {verbose = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+-- git.load():clone("git@github.com:tboox/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake"})
 --
 function git:clone(url, args)
 
@@ -98,7 +91,7 @@ end
 -- .e.g
 -- 
 -- git.load():pull()
--- git.load():pull({verbose = true, remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
+-- git.load():pull({remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
 --
 function git:pull(args)
 
@@ -160,8 +153,8 @@ end
 --
 -- .e.g
 --
--- git.load():checkout("master", {verbose = true, repodir = "/tmp/xmake"})
--- git.load():checkout("v1.0.1", {verbose = true, repodir = "/tmp/xmake"})
+-- git.load():checkout("master", {repodir = "/tmp/xmake"})
+-- git.load():checkout("v1.0.1", {repodir = "/tmp/xmake"})
 --
 function git:checkout(commit, args)
 

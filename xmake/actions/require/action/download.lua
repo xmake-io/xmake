@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.tool.git")
+import("core.tool.unarchiver")
 import("core.tool.downloader")
 
 -- checkout codes from git
@@ -46,16 +47,16 @@ function _checkout(package, url)
         if package:verfrom() == "branches" then
 
             -- only shadow clone this branch 
-            git.clone(url, {verbose = option.get("verbose"), depth = 1, branch = package:version(), outputdir = "source"})
+            git.clone(url, {depth = 1, branch = package:version(), outputdir = "source"})
 
         -- from tags or versions?
         else
 
             -- clone whole history and tags
-            git.clone(url, {verbose = option.get("verbose"), outputdir = "source"})
+            git.clone(url, {outputdir = "source"})
 
             -- attempt to checkout the given version
-            git.checkout(package:version(), {verbose = option.get("verbose"), repodir = "source"})
+            git.checkout(package:version(), {repodir = "source"})
         end
     end
 
@@ -91,7 +92,7 @@ function _download(package, url)
 
         -- create a download task
         local task = function ()
-            downloader.download(url, packagefile, {verbose = option.get("verbose")})
+            downloader.download(url, packagefile)
         end
 
         -- download package file
@@ -107,8 +108,11 @@ function _download(package, url)
         end
     end
 
+    -- attempt to remove source directory first
+    os.tryrm("source")
+
     -- extract package file
-    -- TODO
+    unarchiver.extract(packagefile, "source")
     
     -- trace
     cprint("${green}ok")

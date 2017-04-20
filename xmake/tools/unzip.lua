@@ -22,11 +22,42 @@
 -- @file        unzip.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- init it
 function init(shellname)
 
     -- save name
     _g.shellname = shellname or "unzip"
+end
+
+-- extract the archived file
+function extract(archivefile, outputdir)
+
+    -- check 
+    assert(archivefile)
+
+    -- init argv
+    local argv = {ifelse(option.get("verbose"), "-j", "-jq"), archivefile}
+
+    -- ensure output directory
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- set outputdir
+    table.insert(argv, "-d")
+    table.insert(argv, outputdir)
+
+    -- verbose?
+    local runner = os.runv
+    if option.get("verbose") then
+        runner = os.execv
+    end
+
+    -- clone it
+    runner(_g.shellname, argv)
 end
 
 -- check the given flags 

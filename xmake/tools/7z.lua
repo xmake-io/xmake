@@ -19,37 +19,19 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        downloader.lua
+-- @file        7z.lua
 --
 
--- define module
-local sandbox_core_tool_downloader = sandbox_core_tool_downloader or {}
+-- init it
+function init(shellname)
 
--- load modules
-local platform      = require("platform/platform")
-local downloader    = require("tool/downloader")
-local raise         = require("sandbox/modules/raise")
-
--- download url
---
--- .e.g
--- 
--- downloader.download(url, outputfile)
---
-function sandbox_core_tool_downloader.download(url, outputfile)
- 
-    -- get the downloader instance
-    local instance, errors = downloader.load()
-    if not instance then
-        raise(errors)
-    end
-
-    -- download it
-    local ok, errors = instance:download(url, outputfile)
-    if not ok then
-        raise(errors)
-    end
+    -- save name
+    _g.shellname = shellname or "7z"
 end
 
--- return module
-return sandbox_core_tool_downloader
+-- check the given flags 
+function check(flags)
+
+    -- check it
+    os.run("%s --help", _g.shellname)
+end

@@ -22,11 +22,43 @@
 -- @file        tar.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- init it
 function init(shellname)
 
     -- save name
     _g.shellname = shellname or "tar"
+end
+
+-- extract the archived file
+function extract(archivefile, outputdir)
+
+    -- check 
+    assert(archivefile)
+
+    -- init argv
+    local argv = {ifelse(option.get("verbose"), "-xvf", "-xf"), archivefile}
+
+    -- ensure output directory
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- set outputdir
+    table.insert(argv, "-C")
+    table.insert(argv, outputdir)
+    table.insert(argv, "--strip-components=1")
+
+    -- verbose?
+    local runner = os.runv
+    if option.get("verbose") then
+        runner = os.execv
+    end
+
+    -- clone it
+    runner(_g.shellname, argv)
 end
 
 -- check the given flags 

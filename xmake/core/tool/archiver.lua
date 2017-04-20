@@ -60,7 +60,7 @@ function archiver.load(kind)
         gzip        = {"tar", "gzip"}
     ,   zip         = {"tar", "zip"}
     ,   bzip2       = {"tar"}
-    ,   7zip        = {"p7zip"}
+    ,   ["7zip"]    = {"7z"}
     ,   rar         = {}
     ,   tar         = {"tar"}
     ,   xz          = {"tar"}
@@ -98,7 +98,7 @@ end
 function archiver:archive(filedir, outputfile)
 
     -- archive it
-    return sandbox.load(self:_tool().archive, filedir, outputfile)
+    return sandbox.load(self:_tool().archive, path.translate(filedir), path.translate(outputfile))
 end
 
 -- return module
