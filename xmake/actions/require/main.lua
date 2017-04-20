@@ -69,10 +69,10 @@ function _load_project()
 end
 
 -- install and update all outdated package dependencies
-function _install(is_global)
+function _install(requires, is_global)
 
     -- install packages
-    package.install_packages(is_global)
+    package.install_packages(requires, is_global)
 end
 
 -- clear all installed packages cache
@@ -109,7 +109,7 @@ function main()
     -- install and update all outdated package dependencies
     if option.get("install") then
 
-        _install(option.get("global"))
+        _install(option.get("requires"), option.get("global"))
 
     -- clear all installed packages cache
     elseif option.get("clear") then
@@ -133,7 +133,7 @@ function main()
 
     -- install and update all outdated package dependencies by default if no arguments
     else
-        _install(option.get("global"))
+        _install(option.get("requires"), option.get("global"))
     end
 end
 

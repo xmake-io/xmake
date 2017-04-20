@@ -268,14 +268,14 @@ function load_packages(requires)
 end
 
 -- install packages
-function install_packages(is_global)
+function install_packages(requires, is_global)
 
     -- TODO need optimization
     -- pull all repositories first
     repository.pull()
 
     -- install all required packages from repositories
-    for _, package in ipairs(load_packages(project.requires())) do
+    for _, package in ipairs(load_packages(requires or project.requires())) do
         -- install package
         action.install.main(package, is_global)
     end
