@@ -75,9 +75,14 @@ end
 -- get all repositories from global or local directory
 function sandbox_core_package_repository.repositories(is_global)
 
-    -- load repositories from repository cache 
+    -- add default global xmake repository
     local repositories = {}
-    for name, url in ipairs(table.wrap(repository.repositories(is_global))) do
+    if is_global then
+        table.insert(repositories, {name = "xmake-repo", url = "git@github.com:tboox/xmake-repo.git", global = true})
+    end
+
+    -- load repositories from repository cache 
+    for name, url in pairs(table.wrap(repository.repositories(is_global))) do
         table.insert(repositories, {name = name, url = url, global = is_global})
     end
 
@@ -91,11 +96,6 @@ function sandbox_core_package_repository.repositories(is_global)
                 raise("invalid repository: %s", repo)
             end
         end
-    end
-
-    -- add default global xmake repository
-    if is_global then
-        table.insert(repositories, {name = "xmake-repo", url = "git@github.com:tboox/xmake-repo.git", global = true})
     end
 
     -- get the repositories

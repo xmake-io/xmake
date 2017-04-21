@@ -1,6 +1,6 @@
 -- define package
 package("mbedtls")
-    set_url("git@github.com:ARMmbed/mbedtls.git")
+    set_urls("git@github.com:ARMmbed/mbedtls.git")
     add_requires("git@github.com:glennrp/libpng.git@libpng >=1.6.28")
     on_build(function (package)
     end)
@@ -11,7 +11,8 @@ package_end()
 -- requires
 add_requires("zlib >=1.2.11")
 add_requires("mbedtls master optional")
-add_requires("xmake-repo@tboox.tbox >=1.5.1 <1.6.1 optional")
+--add_requires("xmake-repo@tboox.tbox >=1.5.1 <1.6.1 optional")
+add_requires("tboox.tbox >=1.5.1 <1.6.1 optional")
 
 -- the debug mode
 if is_mode("debug") then

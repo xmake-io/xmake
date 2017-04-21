@@ -192,8 +192,7 @@ function package.apis()
         values =
         {
             -- package.set_xxx
-            "package.set_url"
-        ,   "package.set_mirror"
+            "package.set_urls"
         ,   "package.set_sha256s"
         ,   "package.set_versions"
         ,   "package.set_homepage"
