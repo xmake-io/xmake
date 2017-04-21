@@ -122,47 +122,43 @@ end
 function main(package)
 
     -- download package from url or mirror
-    for _, source in ipairs({"url", "mirror"}) do
+    local urls = package:urls()
+    for idx, url in ipairs(urls) do
 
-        -- get url
-        local url = package:get(source)
-        if url then
+        -- filter url
+        url = package:filter():handle(url)
 
-            -- filter url
-            url = package:filter():handle(url)
+        -- download url
+        try
+        {
+            function ()
 
-            -- download url
-            try
+                -- download package 
+                if git.checkurl(url) then
+                    _checkout(package, url)
+                else
+                    _download(package, url)
+                end
+            end,
+            catch 
             {
-                function ()
+                function (errors)
 
-                    -- download package 
-                    if git.checkurl(url) then
-                        _checkout(package, url)
-                    else
-                        _download(package, url)
+                    -- verbose?
+                    if option.get("verbose") and errors then
+                        cprint("${bright red}error: ${clear}%s", errors)
                     end
-                end,
-                catch 
-                {
-                    function (errors)
 
-                        -- verbose?
-                        if option.get("verbose") and errors then
-                            cprint("${bright red}error: ${clear}%s", errors)
-                        end
+                    -- trace
+                    cprint("${red}failed")
 
-                        -- trace
-                        cprint("${red}failed")
-
-                        -- failed?
-                        if source == "mirror" or not package:get("mirror") then
-                            raise("download failed!")
-                        end
+                    -- failed? break it
+                    if idx == #urls then
+                        raise("download failed!")
                     end
-                }
+                end
             }
-        end
+        }
     end
 end
 

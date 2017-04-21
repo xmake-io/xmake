@@ -204,12 +204,9 @@ end
 -- select package version
 function _select_package_version(package, required_ver)
 
-    -- get package url    
-    local url = package:get("url")
-    assert(url, "package(%s): url not found!", package:name())
-
-    -- is git url?
-    local is_giturl = git.checkurl(url)
+    -- get package urls  
+    local urls = package:urls()
+    assert(urls, "package(%s): url not found!", package:name())
 
     -- get versions
     local versions = package:get("versions") 
@@ -217,8 +214,11 @@ function _select_package_version(package, required_ver)
     -- attempt to get tags and branches from the git url
     local tags = nil
     local branches = nil
-    if is_giturl then
-        tags, branches = git.refs(url) 
+    for _, url in ipairs(urls) do
+        if git.checkurl(url) then
+            tags, branches = git.refs(url) 
+            break
+        end
     end
 
     -- check

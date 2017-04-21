@@ -103,6 +103,13 @@ function _instance:filter()
     return self._FILTER
 end
 
+-- get urls
+function _instance:urls()
+    
+    -- TODO: sort it by net speed
+    return self:get("urls")
+end
+
 -- get sha256
 function _instance:sha256()
 
@@ -240,7 +247,7 @@ function package.load_from_url(packagename, packageurl)
     -- make package description
     local packagedata = string.format([[
     package("%s")
-        set_url("%s")
+        set_urls("%s")
     ]], packagename, packageurl)
 
     -- write a temporary package description to file
