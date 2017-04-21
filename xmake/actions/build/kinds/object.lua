@@ -36,11 +36,10 @@ function _build_from_object(target, sourcefile, objectfile, percent)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", percent, sourcefile)
     else
-        cprint("${magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", percent, sourcefile)
     end
 
     -- trace verbose info
@@ -59,11 +58,10 @@ function _build_from_static(target, sourcefile, objectfile, percent)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", percent, sourcefile)
     else
-        cprint("${magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", percent, sourcefile)
     end
 
     -- trace verbose info
@@ -146,11 +144,10 @@ function _build_object(target, buildinfo, index, sourcebatch)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim}%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", percent, ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     else
-        print("%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
