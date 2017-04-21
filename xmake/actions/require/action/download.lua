@@ -129,7 +129,7 @@ function main(package)
         url = package:filter():handle(url)
 
         -- download url
-        try
+        local ok = try
         {
             function ()
 
@@ -139,6 +139,9 @@ function main(package)
                 else
                     _download(package, url)
                 end
+
+                -- ok
+                return true
             end,
             catch 
             {
@@ -159,6 +162,9 @@ function main(package)
                 end
             }
         }
+
+        -- ok? break it
+        if ok then break end
     end
 end
 
