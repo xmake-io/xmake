@@ -3,6 +3,7 @@
 # xmake getter
 # usage: bash <(curl -s <my location>) [branch]
 
+brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
 if [ 0 -ne $(id -u) ]
 then
     sudoprefix=sudo
