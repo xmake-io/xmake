@@ -33,7 +33,7 @@ test_tools || { install_tools && test_tools; } ||
 {
     rv=$?
     echo 'Dependencies Installation Fail'
-    exit $rv
+    if [ $rv -ne 0 ];then exit $rv;else exit 1;fi
 }
 branch=
 if [ x != x$1 ];then branch="-b $1";fi
