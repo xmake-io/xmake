@@ -8,9 +8,14 @@ package("mbedtls")
     end)
 package_end()
 
+-- group packages
+package("zlib-mbedtls")
+    add_requires("zlib >=1.2.11")
+    add_requires("mbedtls master optional")
+package_end()
+
 -- requires
-add_requires("zlib >=1.2.11")
-add_requires("mbedtls master optional")
+add_requires("zlib-mbedtls")
 add_requires("xmake-repo@tboox.tbox >=1.5.1 <1.6.1 optional")
 
 -- the debug mode

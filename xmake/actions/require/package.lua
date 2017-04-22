@@ -187,11 +187,15 @@ function _load_package(packagename, requireinfo)
     -- check
     assert(instance, "package(%s) not found!", packagename)
 
-    -- select package version
-    local version, source = _select_package_version(instance, requireinfo.version)
+    -- exists urls? otherwise be phony package (only as package group)
+    if instance:urls() then
 
-    -- save version info to package
-    instance:versioninfo_set({version = version, source = source, mode = mode})
+        -- select package version
+        local version, source = _select_package_version(instance, requireinfo.version)
+
+        -- save version info to package
+        instance:versioninfo_set({version = version, source = source, mode = mode})
+    end
 
     -- save this package instance to cache
     packages[packagename] = instance
