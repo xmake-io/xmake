@@ -12,8 +12,12 @@ Function myExit($code){
     }
 }
 
+Function writeErrorTip($msg){
+    Write-Host $msg -BackgroundColor Red -ForegroundColor White
+}
+
 if($PSVersionTable.PSVersion.Major -lt 5){
-    Write-Host 'Sorry but PowerShell v5+ is required'
+    writeErrorTip 'Sorry but PowerShell v5+ is required'
     throw 'PowerShell''s version too low'
 }
 $temppath=($env:TMP,$env:TEMP,'.' -ne $null)[0]
@@ -22,8 +26,8 @@ try{
     Write-Output "$pid"|Out-File -FilePath "$outfile"
     Remove-Item "$outfile"
 }catch{
-    Write-Host 'Cannot write to temp path'
-    Write-Host 'Please set environment var "TMP" to another path'
+    writeErrorTip 'Cannot write to temp path'
+    writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
 $ver='v2.1.3'
@@ -31,8 +35,8 @@ Write-Host 'Start downloading... Hope amazon S3 is not broken again'
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$ver.exe" -OutFile "$outfile"
 }catch{
-    Write-Host 'Download failed!'
-    Write-Host 'Check your network or... the news of S3 break'
+    writeErrorTip 'Download failed!'
+    writeErrorTip 'Check your network or... the news of S3 break'
     myExit 1
 }
 Write-Host 'Start installation... Hope your antivirus doesn''t trouble'
@@ -42,8 +46,8 @@ try{
     Start-Process -FilePath "$outfile" -ArgumentList "/S /D=$installdir" -Wait
 }catch{
     Remove-Item "$outfile"
-    Write-Host 'Install failed!'
-    Write-Host 'Close your antivirus then try again'
+    writeErrorTip 'Install failed!'
+    writeErrorTip 'Close your antivirus then try again'
     myExit 1
 }
 Remove-Item "$outfile"
@@ -53,8 +57,8 @@ $env:Path+=";$installdir"
 try{
     xmake --version
 }catch{
-    Write-Host 'Everything is showing installation has finished'
-    Write-Host 'But xmake could not run... Why?'
+    writeErrorTip 'Everything is showing installation has finished'
+    writeErrorTip 'But xmake could not run... Why?'
     myExit 1
 }
 $branch='master'
@@ -63,8 +67,8 @@ $outfile=$temppath+"\$pid-xmake-repo.zip"
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/archive/$branch.zip" -OutFile "$outfile"
 }catch{
-    Write-Host 'Pull Failed!'
-    Write-Host 'xmake is now available but may not be newest'
+    writeErrorTip 'Pull Failed!'
+    writeErrorTip 'xmake is now available but may not be newest'
     myExit
 }
 Write-Host 'Expanding archive...'
@@ -82,8 +86,8 @@ try{
     Copy-Item * "$installdir" -Recurse -Force
     xmake --version
 }catch{
-    Write-Host 'Update Failed!'
-    Write-Host 'xmake is now available but may not be newest'
+    writeErrorTip 'Update Failed!'
+    writeErrorTip 'xmake is now available but may not be newest'
 }finally{
     Set-Location "$oldpwd" -ErrorAction SilentlyContinue
     Remove-Item "$outfile" -ErrorAction SilentlyContinue
