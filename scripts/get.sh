@@ -48,7 +48,10 @@ do
     then
         cwd=$(pwd)
         mkdir -p "$st"
-        cd "$st"/..
+        cd "$st"
+        echo $$ > $$xmake_getter_test 2>/dev/null || continue
+        rm $$xmake_getter_test 2>/dev/null || continue
+        cd ..
         mkdir -p share 2>/dev/null || continue
         prefix=$(pwd)
         cd "$cwd"
