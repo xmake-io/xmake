@@ -36,7 +36,13 @@ Remove-Item "$outfile"
 Write-Host 'Adding to PATH... almost done'
 $env:Path+=";$installdir"
 [Environment]::SetEnvironmentVariable("Path",[Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::User)+";$installdir",[System.EnvironmentVariableTarget]::User)    # this step is optional because installer writes path to regedit
-xmake --version
+try{
+    xmake --version
+}catch{
+    Write-Host 'Everything is showing installation has finished'
+    Write-Host 'But xmake could not run... Why?'
+    Exit 1
+}
 $branch='master'
 Write-Host "Pulling xmake from branch $branch"
 $outfile=$temppath+"\$pid-xmake-repo.zip"
@@ -49,15 +55,23 @@ try{
 }
 Write-Host 'Expanding archive...'
 New-Item -Path "$temppath" -Name "$pid-xmake-repo" -ItemType "directory" -Force
-$repodir=$temppath+"\$pid-xmake-repo"
-Expand-Archive "$outfile" "$repodir" -Force
-Write-Host 'Self-building...'
 $oldpwd=$pwd
-Set-Location ($repodir+"\xmake-$branch\core")
-xmake
-Write-Host 'Copying new files...'
-Copy-Item 'build\xmake.exe' "$installdir" -Force
-Set-Location '..\xmake'
-Copy-Item * "$installdir" -Recurse -Force
-Set-Location "$oldpwd"
-xmake --version
+$repodir=$temppath+"\$pid-xmake-repo"
+try{
+    Expand-Archive "$outfile" "$repodir" -Force
+    Write-Host 'Self-building...'
+    Set-Location ($repodir+"\xmake-$branch\core")
+    xmake
+    Write-Host 'Copying new files...'
+    Copy-Item 'build\xmake.exe' "$installdir" -Force
+    Set-Location '..\xmake'
+    Copy-Item * "$installdir" -Recurse -Force
+    xmake --version
+}catch{
+    Write-Host 'Update Failed!'
+    Write-Host 'xmake is now available but may not be newest'
+}finally{
+    Set-Location "$oldpwd" -ErrorAction SilentlyContinue
+    Remove-Item "$outfile" -ErrorAction SilentlyContinue
+    Remove-Item "$repodir" -Recurse -Force -ErrorAction SilentlyContinue
+}
