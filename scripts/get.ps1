@@ -12,6 +12,10 @@ Function myExit($code){
     }
 }
 
+if($PSVersionTable.PSVersion.Major -lt 5){
+    Write-Host 'Sorry but PowerShell v5+ is required'
+    throw 'PowerShell''s version too low'
+}
 $temppath=($env:TMP,$env:TEMP,'.' -ne $null)[0]
 $outfile=$temppath+"\$pid-xmake-installer.exe"
 try{
