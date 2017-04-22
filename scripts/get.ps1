@@ -16,6 +16,20 @@ Function writeErrorTip($msg){
     Write-Host $msg -BackgroundColor Red -ForegroundColor White
 }
 
+Function writeLogoLine($msg){
+    Write-Host $msg -BackgroundColor White -ForegroundColor DarkBlue
+}
+
+writeLogoLine '                  _               '
+writeLogoLine '                 | | _            '
+writeLogoLine '__  ___    ______| |/ /___        '
+writeLogoLine '\ \/ | \  / / _  | / / __ \       '
+writeLogoLine ' \  /|  \/ / / | |  |   __/       '
+writeLogoLine ' /  \| \__/\ \_| \ \ \ \__.       '
+writeLogoLine '/_/\_|_|  |_\___\_\|\_\__/  getter'
+writeLogoLine '                                  '
+writeLogoLine ''
+
 if($PSVersionTable.PSVersion.Major -lt 5){
     writeErrorTip 'Sorry but PowerShell v5+ is required'
     throw 'PowerShell''s version too low'
