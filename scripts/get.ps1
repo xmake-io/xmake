@@ -2,6 +2,8 @@
 # usage: (in powershell)
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
+& {
+
 $temppath=($env:TMP,$env:TEMP,'.' -ne $null)[0]
 $outfile=$temppath+"\$pid-xmake-installer.exe"
 try{
@@ -74,4 +76,6 @@ try{
     Set-Location "$oldpwd" -ErrorAction SilentlyContinue
     Remove-Item "$outfile" -ErrorAction SilentlyContinue
     Remove-Item "$repodir" -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 }
