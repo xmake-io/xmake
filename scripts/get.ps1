@@ -4,6 +4,14 @@
 
 & {
 
+Function myExit($code){
+    if($code -is [int] -and $code -ne 0){
+        throw $Error[0]
+    }else{
+        break
+    }
+}
+
 $temppath=($env:TMP,$env:TEMP,'.' -ne $null)[0]
 $outfile=$temppath+"\$pid-xmake-installer.exe"
 try{
@@ -12,7 +20,7 @@ try{
 }catch{
     Write-Host 'Cannot write to temp path'
     Write-Host 'Please set environment var "TMP" to another path'
-    Exit 1
+    myExit 1
 }
 $ver='v2.1.3'
 Write-Host 'Start downloading... Hope amazon S3 is not broken again'
@@ -21,7 +29,7 @@ try{
 }catch{
     Write-Host 'Download failed!'
     Write-Host 'Check your network or... the news of S3 break'
-    Exit 1
+    myExit 1
 }
 Write-Host 'Start installation... Hope your antivirus doesn''t trouble'
 $installdir=$HOME+'\xmake'
@@ -32,7 +40,7 @@ try{
     Remove-Item "$outfile"
     Write-Host 'Install failed!'
     Write-Host 'Close your antivirus then try again'
-    Exit 1
+    myExit 1
 }
 Remove-Item "$outfile"
 Write-Host 'Adding to PATH... almost done'
@@ -43,7 +51,7 @@ try{
 }catch{
     Write-Host 'Everything is showing installation has finished'
     Write-Host 'But xmake could not run... Why?'
-    Exit 1
+    myExit 1
 }
 $branch='master'
 Write-Host "Pulling xmake from branch $branch"
@@ -53,7 +61,7 @@ try{
 }catch{
     Write-Host 'Pull Failed!'
     Write-Host 'xmake is now available but may not be newest'
-    Exit
+    myExit
 }
 Write-Host 'Expanding archive...'
 New-Item -Path "$temppath" -Name "$pid-xmake-repo" -ItemType "directory" -Force
