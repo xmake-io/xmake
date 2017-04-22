@@ -2,7 +2,8 @@
 # usage: (in powershell)
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
-$outfile=($env:TMP,$env:TEMP,'.' -ne $null)[0]+"\$pid-xmake-installer.exe"
+$temppath=($env:TMP,$env:TEMP,'.' -ne $null)[0]
+$outfile=$temppath+"\$pid-xmake-installer.exe"
 try{
     Write-Output "$pid"|Out-File -FilePath "$outfile"
     Remove-Item "$outfile"
@@ -35,4 +36,28 @@ Remove-Item "$outfile"
 Write-Host 'Adding to PATH... almost done'
 $env:Path+=";$installdir"
 [Environment]::SetEnvironmentVariable("Path",[Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::User)+";$installdir",[System.EnvironmentVariableTarget]::User)    # this step is optional because installer writes path to regedit
+xmake --version
+$branch='master'
+Write-Host "Pulling xmake from branch $branch"
+$outfile=$temppath+"\$pid-xmake-repo.zip"
+try{
+    Invoke-Webrequest "https://github.com/tboox/xmake/archive/$branch.zip" -OutFile "$outfile"
+}catch{
+    Write-Host 'Pull Failed!'
+    Write-Host 'xmake is now available but may not be newest'
+    Exit
+}
+Write-Host 'Expanding archive...'
+New-Item -Path "$temppath" -Name "$pid-xmake-repo" -ItemType "directory" -Force
+$repodir=$temppath+"\$pid-xmake-repo"
+Expand-Archive "$outfile" "$repodir" -Force
+Write-Host 'Self-building...'
+$oldpwd=$pwd
+Set-Location ($repodir+"\xmake-$branch\core")
+xmake
+Write-Host 'Copying new files...'
+Copy-Item 'build\xmake.exe' "$installdir" -Force
+Set-Location '..\xmake'
+Copy-Item * "$installdir" -Recurse -Force
+Set-Location "$oldpwd"
 xmake --version
