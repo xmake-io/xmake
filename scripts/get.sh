@@ -20,6 +20,16 @@ then
 else
     sudoprefix=
 fi
+my_exit(){
+    rv=$?
+    if [ "x$1" != x ];then echo "$1";fi
+    rm -rf /tmp/$$xmake_getter 2>/dev/null
+    if [ "x$2" != x ]
+    then
+        if [ $rv -eq 0 ];then rv=$2;fi
+    fi
+    exit $rv
+}
 test_tools()
 {
     {
@@ -39,16 +49,11 @@ install_tools()
     { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
     { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm git base-devel; }
 }
-test_tools || { install_tools && test_tools; } ||
-{
-    rv=$?
-    echo 'Dependencies Installation Fail'
-    if [ $rv -ne 0 ];then exit $rv;else exit 1;fi
-}
+test_tools || { install_tools && test_tools; } || my_exit 'Dependencies Installation Fail' 1
 branch=
-if [ x != x$1 ];then branch="-b $1";fi
-git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || exit $?
-make -C /tmp/$$xmake_getter --no-print-directory build || exit $?
+if [ x != "x$1" ];then branch="-b $1";fi
+git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
+make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
 IFS=':'
 patharr=($PATH)
 prefix=
@@ -68,11 +73,10 @@ do
         break
     fi
 done
-if [ x$prefix != x ]
+if [ "x$prefix" != x ]
 then
-    make -C /tmp/$$xmake_getter --no-print-directory install prefix="$prefix"|| exit $?
+    make -C /tmp/$$xmake_getter --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
-    $sudoprefix make -C /tmp/$$xmake_getter --no-print-directory install || exit $?
+    $sudoprefix make -C /tmp/$$xmake_getter --no-print-directory install || my_exit 'Install Fail'
 fi
-rm -rf /tmp/$$xmake_getter
 xmake --version
