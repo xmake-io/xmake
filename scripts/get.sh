@@ -4,14 +4,16 @@
 # usage: bash <(curl -s <my location>) [branch]
 
 # print a LOGO!
-echo '                  _'
-echo '                 | | _'
-echo '__  ___    ______| |/ /___'
-echo '\ \/ | \  / / _  | / / __ \'
-echo ' \  /|  \/ / / | |  |   __/'
-echo ' /  \| \__/\ \_| \ \ \ \__.'
+echo -ne '\x1b[07m'
+echo '                  _               '
+echo '                 | | _            '
+echo '__  ___    ______| |/ /___        '
+echo '\ \/ | \  / / _  | / / __ \       '
+echo ' \  /|  \/ / / | |  |   __/       '
+echo ' /  \| \__/\ \_| \ \ \ \__.       '
 echo '/_/\_|_|  |_\___\_\|\_\__/  getter'
-echo -e '\n'
+echo '                                  '
+echo -e '\x1b[0m'
 
 brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
 if [ 0 -ne $(id -u) ]
@@ -22,7 +24,12 @@ else
 fi
 my_exit(){
     rv=$?
-    if [ "x$1" != x ];then echo "$1";fi
+    if [ "x$1" != x ]
+    then
+        echo -ne '\x1b[41;37m'
+        echo "$1"
+        echo -ne '\x1b[0m'
+    fi
     rm -rf /tmp/$$xmake_getter 2>/dev/null
     if [ "x$2" != x ]
     then
