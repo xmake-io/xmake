@@ -44,7 +44,7 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-$ver='v2.1.3'
+if($ver -eq $null){ $ver='v2.1.3' }
 Write-Host 'Start downloading... Hope amazon S3 is not broken again'
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$ver.exe" -OutFile "$outfile"
@@ -75,7 +75,7 @@ try{
     writeErrorTip 'But xmake could not run... Why?'
     myExit 1
 }
-$branch='master'
+if($branch -eq $null){ $branch='master' }
 Write-Host "Pulling xmake from branch $branch"
 $outfile=$temppath+"\$pid-xmake-repo.zip"
 try{
