@@ -101,12 +101,9 @@ end
 -- get all options
 function config.options()
 
-    -- check
-    assert(config._CONFIGS)
-         
     -- remove values with "auto" and private item
     local configs = {}
-    for name, value in pairs(config._CONFIGS) do
+    for name, value in pairs(config._CONFIGS or {}) do
         if not name:find("^_%u+") and (type(value) ~= "string" or value ~= "auto") then
             configs[name] = value
         end

@@ -311,6 +311,20 @@ function _toolchains(config)
         checker.toolchain_insert(toolchains, "as",   "",    "ml.exe",           "the assember") 
     end
 
+    -- TODO
+    -- insert archiver and unarchiver tools to toolchains
+    checker.toolchain_insert(toolchains, "tar",         "",   "tar",            "the common file [un]archiverr") 
+    checker.toolchain_insert(toolchains, "gzip",        "",   "gzip",           "the gzip file [un]archiver") 
+    checker.toolchain_insert(toolchains, "7z",          "",   "7z",             "the 7z file [un]archiver") 
+    checker.toolchain_insert(toolchains, "zip",         "",   "zip",            "the zip file archiver") 
+    checker.toolchain_insert(toolchains, "unzip",       "",   "unzip",          "the zip file unarchiver") 
+
+    -- insert other tools to toolchains
+    checker.toolchain_insert(toolchains, "git",         "",   "git",            "the version control utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",   "curl",           "the url download utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",   "wget",           "the url download utility") 
+    checker.toolchain_insert(toolchains, "ping",        "",   "ping",           "the ping utility") 
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
