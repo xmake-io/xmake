@@ -58,7 +58,11 @@ install_tools()
 }
 test_tools || { install_tools && test_tools; } || my_exit 'Dependencies Installation Fail' 1
 branch=
-if [ x != "x$1" ];then branch="-b $1";fi
+if [ x != "x$1" ]
+then
+    branch="-b $1"
+    echo "Branch: $1"
+fi
 git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
 make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
 IFS=':'
