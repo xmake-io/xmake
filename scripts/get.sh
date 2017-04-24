@@ -63,7 +63,12 @@ then
     branch="-b $1"
     echo "Branch: $1"
 fi
-git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
+if [ 'x-b __local__' != "x$branch" ]
+then
+    git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
+else
+    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo $PWD)" /tmp/$$xmake_getter || my_exit 'Clone Fail'
+fi
 make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
 IFS=':'
 patharr=($PATH)
