@@ -79,7 +79,7 @@ end
 function _clear()
 
     -- clear all caches
-    packages.clear_caches()
+    package.clear_caches()
 end
 
 -- search for the given packages from repositories

@@ -240,7 +240,7 @@ end
 
 -- clear caches
 function clear_caches()
-    os.tryrmdir(cache_directory())
+    os.tryrm(cache_directory())
 end
 
 -- load requires
