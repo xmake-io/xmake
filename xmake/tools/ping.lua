@@ -33,7 +33,12 @@ end
 function send(host)
 
     -- ping it
-    local data = os.iorun("%s -c 1 %s", _g.shellname, host)
+    local data = nil
+    if os.host() == "windows" then
+        data = os.iorun("%s -n 1 %s", _g.shellname, host)
+    else
+        data = os.iorun("%s -c 1 %s", _g.shellname, host)
+    end
 
     -- find time
     local time = data:match("time=(.-)ms", 1, true)
@@ -49,5 +54,9 @@ end
 function check(flags)
 
     -- check it
-    os.run("%s -c 1 127.0.0.1", _g.shellname)
+    if os.host() == "windows" then
+        os.run("%s -n 1 127.0.0.1", _g.shellname)
+    else
+        os.run("%s -c 1 127.0.0.1", _g.shellname)
+    end
 end

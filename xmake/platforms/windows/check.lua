@@ -305,7 +305,8 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-ld",    "",    "rustc",            "the rust linker") 
 
     -- insert asm tools to toolchains
-    if config.get("arch"):find("64") then
+    local arch = config.get("arch")
+    if arch and arch:find("64") then
         checker.toolchain_insert(toolchains, "as",   "",    "ml64.exe",         "the assember") 
     else
         checker.toolchain_insert(toolchains, "as",   "",    "ml.exe",           "the assember") 
@@ -342,18 +343,20 @@ function main(kind, toolkind)
         local config = import("core.project." .. kind)
 
         -- apply vs envirnoment (maybe config.arch has been updated)
-        if not _apply_vsenv(config, config.get("vs")) then
-            return 
-        end
+        local vsenv = _apply_vsenv(config, config.get("vs"))
 
         -- enter environment
-        environment.enter("toolchains")
+        if vsenv then
+            environment.enter("toolchains")
+        end
 
         -- check it
         checker.toolchain_check(config, toolkind, _toolchains)
 
         -- leave environment
-        environment.leave("toolchains")
+        if vsenv then
+            environment.leave("toolchains")
+        end
 
         -- end
         return 
