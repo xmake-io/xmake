@@ -31,6 +31,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local process   = require("base/process")
 local sandbox   = require("sandbox/sandbox")
 local platform  = require("platform/platform")
 local tool      = require("tool/tool")
@@ -57,7 +58,7 @@ function ping.load(kind)
     local result, errors = tool.load("ping")
     if not result then 
         return nil, errors
-    end        
+    end 
 
     -- save tool
     instance._TOOL = result
@@ -77,14 +78,22 @@ end
 --
 function ping:send(...)
 
-    -- send ping to hosts
+    -- run tasks
     local hosts = {...}
     local results = {}
-    for _, host in ipairs(hosts) do
-        local ok, time_or_errors = sandbox.load(self:_tool().send, host)
-        if ok then
-            results[host] = time_or_errors
+    local ok, errors = process.runjobs(function (index)
+        local host = hosts[index]
+        if host then
+            local ok, time_or_errors = sandbox.load(self:_tool().send, host)
+            if ok then
+                results[host] = time_or_errors
+            end
         end
+    end, #hosts)
+
+    -- failed?
+    if not ok then
+        return nil, errors
     end
 
     -- ok

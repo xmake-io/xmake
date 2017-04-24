@@ -22,34 +22,43 @@
 -- @file        coroutine.lua
 --
 
--- define module
-local sandbox_coroutine = sandbox_coroutine or {}
+-- define module: coroutine
+local coroutine = coroutine or {}
 
 -- load modules
+local utils     = require("base/utils")
 local option    = require("base/option")
-local coroutine = require("base/coroutine")
-local raise     = require("sandbox/modules/raise")
+local string    = require("base/string")
 
--- inherit some builtin interfaces
-sandbox_coroutine.create    = coroutine.create
-sandbox_coroutine.wrap      = coroutine.wrap
-sandbox_coroutine.yield     = coroutine.yield
-sandbox_coroutine.status    = coroutine.status
-sandbox_coroutine.running   = coroutine.running
+-- save original interfaces
+coroutine._resume  = coroutine._resume or coroutine.resume
 
 -- resume coroutine
-function sandbox_coroutine.resume(co, ...)
+function coroutine.resume(co, ...)
 
     -- resume it
-    local ok, results_or_errors = coroutine.resume(co, ...)
+    local ok, results = coroutine._resume(co, ...)
     if not ok then
-        raise(results_or_errors)
+
+        -- get errors
+        local errors = results
+        if option.get("backtrace") then
+            errors = debug.traceback(co, results)
+        elseif type(results) == "string" then
+            -- remove the prefix info
+            local _, pos = results:find(":%d+: ")
+            if pos then
+                errors = results:sub(pos + 1)
+            end
+        end
+
+        -- failed
+        return false, errors
     end
 
     -- ok
-    return results_or_errors
+    return true, results
 end
 
--- load module
-return sandbox_coroutine
-
+-- return module: coroutine
+return coroutine

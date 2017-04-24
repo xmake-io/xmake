@@ -45,7 +45,13 @@ function sandbox_core_tool_ping.send(...)
     end
 
     -- send ping to hosts
-    return instance:send(...)
+    local results, errors = instance:send(...)
+    if not results then
+        raise(errors)
+    end
+
+    -- ok
+    return results
 end
 
 -- return module

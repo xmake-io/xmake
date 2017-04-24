@@ -23,7 +23,7 @@
 --
 
 -- load modules
-local utils     = require("base/utils")
+local process   = require("base/process")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
@@ -131,31 +131,21 @@ end
 -- async run task and echo waiting info
 function sandbox_process.asyncrun(task, waitchars)
 
-    -- create a coroutine task
-    task = coroutine.create(task)
-
-    -- trace
-    local waitindex = 0
-    local waitchars = waitchars or {'\\', '|', '/', '-'}
-    utils.printf(waitchars[waitindex + 1])
-
-    -- start and wait this task
-    coroutine.resume(task)
-    while coroutine.status(task) ~= "dead" do
-
-        -- trace
-        waitindex = ((waitindex + 1) % #waitchars)
-        utils.printf("\b" .. waitchars[waitindex + 1])
-
-        -- wait some time
-        os.sleep(300)
-        
-        -- continue to poll this task
-        coroutine.resume(task, 0)
+    -- async run it
+    local ok, errors = process.asyncrun(task, waitchars)
+    if not ok then
+        raise(errors)
     end
+end
 
-    -- remove wait charactor
-    utils.printf("\b")
+-- run jobs with processes
+function sandbox_process.runjobs(jobfunc, total, comax)
+
+    -- run them
+    local ok, errors = process.runjobs(jobfunc, total, comax)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- return module

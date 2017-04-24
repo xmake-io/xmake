@@ -220,6 +220,9 @@ function table._dump(self, exclude, level)
     -- dump function 
     elseif type(self) == "function" then  
         io.write("<function>")  
+    -- dump thread 
+    elseif type(self) == "thread" then  
+        io.write("<thread>")  
     -- dump table
     elseif type(self) == "table" then  
 
