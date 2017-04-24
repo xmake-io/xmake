@@ -44,6 +44,11 @@ function process.asyncrun(task, waitchars)
     -- start and wait this task
     local ok, errors = coroutine.resume(task)
     if not ok then
+
+        -- remove wait charactor
+        utils.printf("\b")
+
+        -- failed
         return false, errors
     end
 
@@ -60,6 +65,11 @@ function process.asyncrun(task, waitchars)
         -- continue to poll this task
         local ok, errors = coroutine.resume(task, 0)
         if not ok then
+
+            -- remove wait charactor
+            utils.printf("\b")
+
+            -- failed
             return false, errors
         end
     end
@@ -72,7 +82,7 @@ function process.asyncrun(task, waitchars)
 end
 
 -- run jobs with processes
-function process.runjobs(jobfunc, total, comax)
+function process.runjobs(jobfunc, total, comax, timeout)
 
     -- init max coroutine count
     comax = comax or total
@@ -89,7 +99,7 @@ function process.runjobs(jobfunc, total, comax)
         if procs_count > 0 then
 
             -- wait them
-            local count, procinfos = process.waitlist(procs, utils.ifelse(procs_count < comax, 0, -1))
+            local count, procinfos = process.waitlist(procs, utils.ifelse(procs_count < comax and index <= total, 0, -1))
             if count < 0 then
                 return false, string.format("wait processes(%d) failed(%d)", #procs, count)
             end
