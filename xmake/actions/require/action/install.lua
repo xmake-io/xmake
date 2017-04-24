@@ -31,13 +31,10 @@ function _on_install_package(package)
 end
 
 -- install the given package
-function main(package, is_global)
-
-    -- TODO is_global for install
-    --
+function main(package, cachedir)
 
     -- get working directory of this package
-    local workdir = path.join(os.tmpdir(), "packages", package:name())
+    local workdir = path.join(cachedir, package:name())
 
     -- ensure the working directory first
     os.mkdir(workdir)

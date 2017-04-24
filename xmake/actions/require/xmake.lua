@@ -51,7 +51,6 @@ task("require")
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies."                                                            }
                 ,   {                                                                                                                                }
                 ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                              }
-                ,   {'g', "global",     "k",  nil,       "Install or clear packages in the global package directory. (default: local)"               }
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                                          }
                 ,   {                                                                                                                                }
                 ,   {nil, "requires",   "vs", nil,       "The package requires.",

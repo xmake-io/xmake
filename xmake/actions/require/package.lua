@@ -25,6 +25,7 @@
 -- imports
 import("core.tool.git")
 import("core.base.semver")
+import("core.project.global")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("repository")
@@ -232,6 +233,16 @@ function _select_package_version(package, required_ver)
     return semver.select(required_ver, versions, tags, branches)
 end
 
+-- the cache directory
+function cache_directory()
+    return path.join(global.directory(), "cache", "packages")
+end
+
+-- clear caches
+function clear_caches()
+    os.tryrmdir(cache_directory())
+end
+
 -- load requires
 function load_requires(requires)
 
@@ -272,7 +283,7 @@ function load_packages(requires)
 end
 
 -- install packages
-function install_packages(requires, is_global)
+function install_packages(requires)
 
     -- TODO need optimization
     -- pull all repositories first
@@ -280,8 +291,9 @@ function install_packages(requires, is_global)
 
     -- install all required packages from repositories
     for _, package in ipairs(load_packages(requires or project.requires())) do
+
         -- install package
-        action.install.main(package, is_global)
+        action.install.main(package, cache_directory())
     end
 end
 
