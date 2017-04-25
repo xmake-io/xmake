@@ -91,23 +91,22 @@ end
 
 -- get the package name
 function _instance:name()
-
-    -- get it
     return self._NAME
 end
 
 -- get the package filter 
 function _instance:filter()
-
-    -- get it
     return self._FILTER
 end
 
 -- get urls
 function _instance:urls()
-    
-    -- TODO: sort it by net speed
-    return self:get("urls")
+    return self._URLS or self:get("urls")
+end
+
+-- get urls
+function _instance:urls_set(urls)
+    self._URLS = urls
 end
 
 -- get sha256
@@ -148,13 +147,11 @@ end
 function _instance:optional()
 
     -- optional?
-    if self._VERSIONINFO then
-        return self._VERSIONINFO.mode == "optional"
-    end
+    return self._REQUIREINFO.mode == "optional"
 end
 
 -- the verson from tags, branches or versions?
-function _instance:verfrom()
+function _instance:versionfrom()
 
     -- optional?
     if self._VERSIONINFO then
@@ -164,9 +161,17 @@ end
 
 -- set the version info 
 function _instance:versioninfo_set(versioninfo)
-
-    -- set it
     self._VERSIONINFO = versioninfo
+end
+
+-- get the require info 
+function _instance:requireinfo()
+    return self._REQUIREINFO 
+end
+
+-- set the require info 
+function _instance:requireinfo_set(requireinfo)
+    self._REQUIREINFO = requireinfo
 end
 
 -- the interpreter

@@ -44,7 +44,7 @@ function _checkout(package, url)
     local task = function ()
 
         -- from branches?
-        if package:verfrom() == "branches" then
+        if package:versionfrom() == "branches" then
 
             -- only shadow clone this branch 
             git.clone(url, {depth = 1, branch = package:version(), outputdir = "source"})

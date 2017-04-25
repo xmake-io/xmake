@@ -28,8 +28,9 @@ import("core.base.semver")
 import("core.project.global")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
-import("repository")
 import("action")
+import("fasturl")
+import("repository")
 
 --
 -- parse require string
@@ -188,15 +189,8 @@ function _load_package(packagename, requireinfo)
     -- check
     assert(instance, "package(%s) not found!", packagename)
 
-    -- exists urls? otherwise be phony package (only as package group)
-    if instance:urls() then
-
-        -- select package version
-        local version, source = _select_package_version(instance, requireinfo.version)
-
-        -- save version info to package
-        instance:versioninfo_set({version = version, source = source, mode = mode})
-    end
+    -- save require info to package
+    instance:requireinfo_set(requireinfo)
 
     -- save this package instance to cache
     packages[packagename] = instance
@@ -276,6 +270,28 @@ function load_packages(requires)
 
         -- save this package instance
         table.insert(packages, package)
+    end
+
+    -- add all urls to fasturl and prepare to sort them together
+    for _, package in ipairs(packages) do
+        fasturl.add(package:urls())
+    end
+
+    -- sort and update urls
+    for _, package in ipairs(packages) do
+
+        -- sort package urls
+        package:urls_set(fasturl.sort(package:urls()))
+
+        -- exists urls? otherwise be phony package (only as package group)
+        if package:urls() then
+
+            -- select package version
+            local version, source = _select_package_version(package, package:requireinfo().version)
+
+            -- save version info to package
+            package:versioninfo_set({version = version, source = source})
+        end
     end
 
     -- ok
