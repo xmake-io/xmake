@@ -29,7 +29,7 @@ import("core.tool.unarchiver")
 import("core.tool.downloader")
 
 -- checkout codes from git
-function _checkout(package, url)
+function _checkout(package, url, sourcedir)
 
     -- trace
     cprintf("${yellow}  => ${clear}cloning %s %s .. ", url, package:version())
@@ -38,7 +38,7 @@ function _checkout(package, url)
     end
 
     -- attempt to remove source directory first
-    os.tryrm("source")
+    os.tryrm(sourcedir)
 
     -- create a clone task
     local task = function ()
@@ -47,16 +47,16 @@ function _checkout(package, url)
         if package:versionfrom() == "branches" then
 
             -- only shadow clone this branch 
-            git.clone(url, {depth = 1, branch = package:version(), outputdir = "source"})
+            git.clone(url, {depth = 1, branch = package:version(), outputdir = sourcedir})
 
         -- from tags or versions?
         else
 
             -- clone whole history and tags
-            git.clone(url, {outputdir = "source"})
+            git.clone(url, {outputdir = sourcedir})
 
             -- attempt to checkout the given version
-            git.checkout(package:version(), {repodir = "source"})
+            git.checkout(package:version(), {repodir = sourcedir})
         end
     end
 
@@ -72,7 +72,7 @@ function _checkout(package, url)
 end
 
 -- download codes from ftp/http/https
-function _download(package, url)
+function _download(package, url, sourcedir)
 
     -- trace
     cprintf("${yellow}  => ${clear}downloading %s .. ", url)
@@ -109,10 +109,10 @@ function _download(package, url)
     end
 
     -- attempt to remove source directory first
-    os.tryrm("source")
+    os.tryrm(sourcedir)
 
     -- extract package file
-    unarchiver.extract(packagefile, "source")
+    unarchiver.extract(packagefile, sourcedir)
     
     -- trace
     cprint("${green}ok")
@@ -133,12 +133,24 @@ function main(package)
         {
             function ()
 
+                -- init source files directory
+                local sourcedir = "source"
+                local sourcedir_tmp = sourcedir .. ".tmp"
+
+                -- has been finished?
+                if os.isdir(sourcedir) then
+                    return true 
+                end
+
                 -- download package 
                 if git.checkurl(url) then
-                    _checkout(package, url)
+                    _checkout(package, url, sourcedir_tmp)
                 else
-                    _download(package, url)
+                    _download(package, url, sourcedir_tmp)
                 end
+
+                -- rename source directory
+                os.mv(sourcedir_tmp, sourcedir)
 
                 -- ok
                 return true
