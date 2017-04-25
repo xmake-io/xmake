@@ -203,17 +203,13 @@ end
 -- select package version
 function _select_package_version(package, required_ver)
 
-    -- get package urls  
-    local urls = package:urls()
-    assert(urls, "package(%s): url not found!", package:name())
-
     -- get versions
     local versions = package:get("versions") 
 
     -- attempt to get tags and branches from the git url
     local tags = nil
     local branches = nil
-    for _, url in ipairs(urls) do
+    for _, url in ipairs(package:urls()) do
         if git.checkurl(url) then
             tags, branches = git.refs(url) 
             break
@@ -284,7 +280,7 @@ function load_packages(requires)
         package:urls_set(fasturl.sort(package:urls()))
 
         -- exists urls? otherwise be phony package (only as package group)
-        if package:urls() then
+        if #package:urls() > 0 then
 
             -- select package version
             local version, source = _select_package_version(package, package:requireinfo().version)

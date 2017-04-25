@@ -109,11 +109,6 @@ function filter:handle(value)
         -- handler it
         local result = handler(variable)
 
-        -- invalid builtin variable?
-        if result == nil then
-            os.raise("invalid variable: $(%s)", variable)
-        end
- 
         -- handle mode
         if mode then
             if mode == "upper" then

@@ -101,7 +101,7 @@ end
 
 -- get urls
 function _instance:urls()
-    return self._URLS or self:get("urls")
+    return self._URLS or table.wrap(self:get("urls"))
 end
 
 -- get urls
