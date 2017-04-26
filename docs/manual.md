@@ -28,18 +28,19 @@ It's according to the following rules:
 
 Conditions are generally used to handle some special compilation platforms. 
 
-| 接口                      | 描述                                     | 支持版本 |
-| ------------------------- | ---------------------------------------- | -------- |
-| [is_os](#is_os)           | Is the current compilation system?       | >= 2.0.1 |
-| [is_arch](#is_arch)       | Is the current compilation architecture? | >= 2.0.1 |
-| [is_plat](#is_plat)       | Is the current compilation platform?     | >= 2.0.1 |
-| [is_mode](#is_mode)       | Is the current compilation mode?         | >= 2.0.1 |
-| [is_kind](#is_kind)       | Is the current target kind?              | >= 2.0.1 |
-| [is_option](#is_option)   | Is the given options enabled?            | >= 2.0.1 |
+| 接口                      | 描述                                      | 支持版本 |
+| ------------------------- | ----------------------------------------  | -------- |
+| [is_os](#is_os)           | Is the current compilation target system? | >= 2.0.1 |
+| [is_arch](#is_arch)       | Is the current compilation architecture?  | >= 2.0.1 |
+| [is_plat](#is_plat)       | Is the current compilation platform?      | >= 2.0.1 |
+| [is_host](#is_host)       | Is the current compilation host system?   | >= 2.1.4 |
+| [is_mode](#is_mode)       | Is the current compilation mode?          | >= 2.0.1 |
+| [is_kind](#is_kind)       | Is the current target kind?               | >= 2.0.1 |
+| [is_option](#is_option)   | Is the given options enabled?             | >= 2.0.1 |
 
 ##### is_os 
 
-###### Is the current compilation system
+###### Is the current compilation target system
 
 ```lua
 if is_os("ios") then
@@ -109,6 +110,30 @@ Support platforms:
 * android
 * iphoneos
 * watchos
+
+##### is_host
+
+###### Is the current compilation host system
+
+Some compilation platforms can be built on multiple different operating systems, for example: android ndk (on linux, macOS and windows).
+
+So, we can use this api to determine the current host operating system.
+
+```lua
+if is_host("windows") then
+    add_includes("C:\\includes")
+else
+    add_includes("/usr/includess")
+end
+```
+
+Support hosts:
+
+* windows
+* linux
+* macosx
+
+We can also get it from [$(host)](#var-host) or [os.host](#os-host).
 
 ##### is_mode
 

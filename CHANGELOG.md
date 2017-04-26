@@ -5,6 +5,7 @@
 ### New features
 
 * [#68](https://github.com/tboox/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
+* add `is_host` api to get current host operating system
 
 ### Changes
 
@@ -18,6 +19,7 @@
 * [#67](https://github.com/tboox/xmake/issues/67): Fix `sudo make install` permission problem
 * [#70](https://github.com/tboox/xmake/issues/70): Fix check android compiler error
 * Fix temporary file path conflict
+* Fix `os.host` and `os.arch` interfaces
 
 ## v2.1.3
 
@@ -266,6 +268,7 @@
 ### 新特性
 
 * [#68](https://github.com/tboox/xmake/issues/68): 天剑`$(programdir)`和`$(xmake)`内建变量
+* 添加`is_host`接口去判断当前的主机环境
 
 ### 改进
 
@@ -279,6 +282,7 @@
 * [#67](https://github.com/tboox/xmake/issues/67): 修复 `sudo make install` 命令权限问题
 * [#70](https://github.com/tboox/xmake/issues/70): 修复检测android编译器错误
 * 修复临时文件路径冲突问题
+* 修复`os.host`, `os.arch`等接口
 
 ## v2.1.3
 

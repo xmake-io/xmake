@@ -119,6 +119,21 @@ function project._api_is_kind(interp, ...)
     end
 end
 
+-- the current host is belong to the given hosts?
+function project._api_is_host(interp, ...)
+
+    -- get the current host
+    local host = xmake._HOST
+    if not host then return false end
+
+    -- exists this host? and escape '-'
+    for _, h in ipairs(table.join(...)) do
+        if h and type(h) == "string" and host:find(h:gsub("%-", "%%-")) then
+            return true
+        end
+    end
+end
+
 -- enable options?
 function project._api_is_option(interp, ...)
 
@@ -256,6 +271,7 @@ function project._interpreter()
             -- is_xxx
             {"is_os",                   project._api_is_os          }
         ,   {"is_kind",                 project._api_is_kind        }
+        ,   {"is_host",                 project._api_is_host        }
         ,   {"is_mode",                 project._api_is_mode        }
         ,   {"is_plat",                 project._api_is_plat        }
         ,   {"is_arch",                 project._api_is_arch        }

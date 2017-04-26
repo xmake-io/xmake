@@ -35,9 +35,7 @@ sandbox_os.time     = os.time
 sandbox_os.mtime    = os.mtime
 sandbox_os.mclock   = os.mclock
 sandbox_os.getenv   = os.getenv
-sandbox_os.dirs     = os.dirs
-sandbox_os.host     = os.host
-sandbox_os.arch     = os.arch
+sandbox_os.isdir    = os.isdir
 sandbox_os.isfile   = os.isfile
 sandbox_os.exists   = os.exists
 sandbox_os.curdir   = os.curdir
@@ -45,12 +43,27 @@ sandbox_os.tmpdir   = os.tmpdir
 
 -- match files
 function sandbox_os.files(pattern, ...)
-    return os.match(string.format(pattern, ...))
+    return os.files(string.format(pattern, ...))
 end
 
 -- match directories
 function sandbox_os.dirs(pattern, ...)
-    return os.match(string.format(pattern, ...), true)
+    return os.dirs(string.format(pattern, ...))
+end
+
+-- match file and directories
+function sandbox_os.filedirs(pattern, ...)
+    return os.filedirs(string.format(pattern, ...))
+end
+
+-- get the system host
+function sandbox_os.host()
+    return xmake._HOST
+end
+
+-- get the system architecture
+function sandbox_os.arch()
+    return xmake._ARCH
 end
 
 -- return module
