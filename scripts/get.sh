@@ -4,16 +4,12 @@
 # usage: bash <(curl -s <my location>) [branch]
 
 # print a LOGO!
-echo -ne '\x1b[07m'
-echo '                  _               '
-echo '                 | | _            '
-echo '__  ___    ______| |/ /___        '
-echo '\ \/ | \  / / _  | / / __ \       '
-echo ' \  /|  \/ / / | |  |   __/       '
-echo ' /  \| \__/\ \_| \ \ \ \__.       '
-echo '/_/\_|_|  |_\___\_\|\_\__/  getter'
-echo '                                  '
-echo -e '\x1b[0m'
+echo '                         _                      '
+echo '    __  ___ __  __  __ _| | ______              '
+echo '    \ \/ / |  \/  |/ _  | |/ / __ \             '
+echo '     >  <  | \__/ | /_| |   <  ___/             '
+echo '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
+echo '                                                '
 
 brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
 if [ 0 -ne $(id -u) ]

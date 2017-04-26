@@ -20,15 +20,13 @@ Function writeLogoLine($msg){
     Write-Host $msg -BackgroundColor White -ForegroundColor DarkBlue
 }
 
-writeLogoLine '                  _               '
-writeLogoLine '                 | | _            '
-writeLogoLine '__  ___    ______| |/ /___        '
-writeLogoLine '\ \/ | \  / / _  | / / __ \       '
-writeLogoLine ' \  /|  \/ / / | |  |   __/       '
-writeLogoLine ' /  \| \__/\ \_| \ \ \ \__.       '
-writeLogoLine '/_/\_|_|  |_\___\_\|\_\__/  getter'
-writeLogoLine '                                  '
-writeLogoLine ''
+writeLogoLine '                         _                      '
+writeLogoLine '    __  ___ __  __  __ _| | ______              '
+writeLogoLine '    \ \/ / |  \/  |/ _  | |/ / __ \             '
+writeLogoLine '     >  <  | \__/ | /_| |   <  ___/             '
+writeLogoLine '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
+writeLogoLine '                                                '
+writeLogoLine '                                                '
 
 if($PSVersionTable.PSVersion.Major -lt 5){
     writeErrorTip 'Sorry but PowerShell v5+ is required'

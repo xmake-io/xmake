@@ -52,7 +52,7 @@ $ brew install xmake
 $ brew install xmake --HEAD
 
 # 或者直接调用shell下载安装
-$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
 #### Linux
@@ -109,7 +109,7 @@ $ sudo apt-get install xmake
 $ brew install xmake --HEAD
 
 # 或者直接调用shell下载安装
-$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
 #### 编译安装

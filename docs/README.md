@@ -45,7 +45,7 @@ Or install master version:
 $ brew install xmake --HEAD
 
 # or download install directly
-$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
 #### Linux
@@ -102,7 +102,7 @@ Or install master version:
 $ brew install xmake --HEAD
 
 # or download install directly
-$ bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
 #### Compilation
