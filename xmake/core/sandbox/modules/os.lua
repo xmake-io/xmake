@@ -397,22 +397,16 @@ end
 
 -- get the system host
 function sandbox_os.host()
-
-    -- get it
     return xmake._HOST
 end
 
 -- get the system architecture
 function sandbox_os.arch()
-
-    -- get it
     return xmake._ARCH
 end
 
 -- get the system null device
 function sandbox_os.nuldev()
-
-    -- get it
     return xmake._NULDEV
 end
 
