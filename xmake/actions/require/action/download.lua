@@ -138,7 +138,7 @@ function main(package)
                 local sourcedir_tmp = sourcedir .. ".tmp"
 
                 -- has been finished?
-                if os.isdir(sourcedir) then
+                if os.isdir(sourcedir) and not option.get("force") then
                     return true 
                 end
 
