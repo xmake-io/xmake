@@ -37,7 +37,7 @@ task("require")
                 usage = "xmake require [options] [packages]"
 
                 -- description
-            ,   description = "Install required packages."
+            ,   description = "Install and update required packages."
 
                 -- xmake q
             ,   shortname = 'q'
@@ -45,8 +45,7 @@ task("require")
                 -- options
             ,   options = 
                 {
-                    {'i', "install",    "k",  nil,       "Install and update outdated package dependencies. (default argument)"                      }
-                ,   {'c', "clear",      "k",  nil,       "Clear all installed package caches."                                                       }
+                    {'c', "clear",      "k",  nil,       "Clear all installed package caches."                                                       }
                 ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                                              }
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies."                                                            }
                 ,   {                                                                                                                                }

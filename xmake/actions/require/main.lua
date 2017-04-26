@@ -108,13 +108,8 @@ function main()
     -- load project first
     _load_project()
 
-    -- install and update all outdated package dependencies
-    if option.get("install") then
-
-        _install(option.get("requires"))
-
     -- clear all installed packages cache
-    elseif option.get("clear") then
+    if option.get("clear") then
 
         _clear(option.get("global"))
 
