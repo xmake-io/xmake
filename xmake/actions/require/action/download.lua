@@ -149,6 +149,9 @@ function main(package)
                     _download(package, url, sourcedir_tmp)
                 end
 
+                -- remove the previous source directory
+                os.tryrm(sourcedir)
+
                 -- rename source directory
                 os.mv(sourcedir_tmp, sourcedir)
 
