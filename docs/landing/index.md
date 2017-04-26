@@ -3,6 +3,12 @@ layout: default
 title: {{ site.name }}
 ---
 
+## Installation
+
+```bash
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
 ## Simple description
 
 ```lua
