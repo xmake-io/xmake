@@ -29,6 +29,9 @@ end
 -- build the given package
 function main(package)
 
+    -- enter source codes directory
+    local oldir = os.cd("source")
+
     -- the package scripts
     local scripts =
     {
@@ -44,5 +47,8 @@ function main(package)
             script(package)
         end
     end
+
+    -- leave source codes directory
+    os.cd(oldir)
 end
 
