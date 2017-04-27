@@ -88,14 +88,8 @@ function pull(args)
         oldir = os.cd(args.repodir)
     end
 
-    -- verbose?
-    local runner = os.runv
-    if option.get("verbose") then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 
     -- leave repository directory
     if oldir then
@@ -151,14 +145,8 @@ function checkout(commit, args)
         oldir = os.cd(args.repodir)
     end
 
-    -- verbose?
-    local runner = os.runv
-    if option.get("verbose") then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 
     -- leave repository directory
     if oldir then

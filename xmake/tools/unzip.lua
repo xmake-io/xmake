@@ -50,14 +50,8 @@ function extract(archivefile, outputdir)
     table.insert(argv, "-d")
     table.insert(argv, outputdir)
 
-    -- verbose?
-    local runner = os.runv
-    if option.get("verbose") then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 end
 
 -- check the given flags 

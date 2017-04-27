@@ -24,12 +24,22 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 
 -- build for xmake file
 function _build_for_xmakefile(package)
 
+    -- TODO debug/release
+
+    -- configure it first
+    if config.plat() and config.arch() then
+        os.vrun("$(xmake) f -p %s -a %s -c", config.plat(), config.arch())
+    else
+        os.vrun("$(xmake) f -c")
+    end
+
     -- build it
-    ifelse(option.get("verbose"), os.exec, os.run)("$(xmake) -r")
+    os.vrun("$(xmake) -r")
 end
 
 -- build for makefile
@@ -39,7 +49,7 @@ function _build_for_makefile(package)
 --    print("build for makefile")
 
     -- build it
---    ifelse(option.get("verbose"), os.exec, os.run)("$(xmake) -r")
+--    os.vrun("$(xmake) -r")
 end
 
 -- build for configure
@@ -49,7 +59,7 @@ function _build_for_configure(package)
 --    print("build for configure")
 
     -- build it
---    ifelse(option.get("verbose"), os.exec, os.run)("$(xmake) -r")
+--    os.vrun("$(xmake) -r")
 end
 
 -- build for cmakelist
@@ -59,7 +69,7 @@ function _build_for_cmakelists(package)
 --    print("build for cmakelists")
 
     -- build it
---    ifelse(option.get("verbose"), os.exec, os.run)("$(xmake) -r")
+--    os.vrun("$(xmake) -r")
 end
 
 -- on build the given package

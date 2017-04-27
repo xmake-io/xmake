@@ -51,14 +51,8 @@ function extract(archivefile, outputdir)
     table.insert(argv, outputdir)
     table.insert(argv, "--strip-components=1")
 
-    -- verbose?
-    local runner = os.runv
-    if option.get("verbose") then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 end
 
 -- check the given flags 

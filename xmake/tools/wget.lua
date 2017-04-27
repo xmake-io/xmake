@@ -51,14 +51,8 @@ function download(url, outputfile, args)
     table.insert(argv, "-O")
     table.insert(argv, outputfile)
 
-    -- verbose?
-    local runner = os.runv
-    if option.get("verbose") then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 end
 
 -- check the given flags 
