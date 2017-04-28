@@ -44,10 +44,10 @@ end
 function _build_for_makefile(package)
 
     -- TODO
-    print("build for makefile")
+--    print("build for makefile")
 
     -- build it
-    os.vrun("$(make)")
+--    os.vrun("$(make)")
 end
 
 -- build for configure
@@ -57,7 +57,7 @@ function _build_for_configure(package)
 --    print("build for configure")
 
     -- build it
---    os.vrun("$(xmake) -r")
+    os.raise()
 end
 
 -- build for cmakelist
@@ -67,7 +67,7 @@ function _build_for_cmakelists(package)
 --    print("build for cmakelists")
 
     -- build it
---    os.vrun("$(xmake) -r")
+    os.raise()
 end
 
 -- on build the given package
@@ -80,7 +80,7 @@ function _on_build_package(package)
         {"xmake.lua",       _build_for_xmakefile    }
     ,   {"CMakeLists.txt",  _build_for_cmakelists   }
     ,   {"configure",       _build_for_configure    }
-    ,   {"[m|M]akefile",    _build_for_makefile     }
+    ,   {"[mM]akefile",    _build_for_makefile     }
     }
 
     -- attempt to build it
