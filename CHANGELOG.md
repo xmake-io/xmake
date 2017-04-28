@@ -20,6 +20,7 @@
 * [#70](https://github.com/tboox/xmake/issues/70): Fix check android compiler error
 * Fix temporary file path conflict
 * Fix `os.host` and `os.arch` interfaces
+* Fix interpreter bug for loading root api
 
 ## v2.1.3
 
@@ -283,6 +284,7 @@
 * [#70](https://github.com/tboox/xmake/issues/70): 修复检测android编译器错误
 * 修复临时文件路径冲突问题
 * 修复`os.host`, `os.arch`等接口
+* 修复根域api加载干扰其他子作用域问题
 
 ## v2.1.3
 
