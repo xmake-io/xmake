@@ -129,7 +129,7 @@ function interpreter:_api_register_scope_end(...)
         assert(apiname)
 
         -- register scope api
-        self:api_register(ni, apiname .. "_end", function (self, ...) 
+        self:api_register(nil, apiname .. "_end", function (self, ...) 
        
             -- check
             assert(self and self._PRIVATE and apiname)
@@ -214,7 +214,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         assert(scope)
 
         -- set values? mark as "override"
-        if apiname and action == "set" then
+        if apiname and action ~= "add" then
             scope["__override_" .. apiname] = true
         end
 
@@ -370,7 +370,7 @@ function interpreter:_api_within_scope(scope_kind, apiname)
     local scopes = priv._SCOPES
     assert(scopes)
 
-    -- done
+    -- get scope api
     if scope_kind and priv._APIS then
 
         -- get api function
@@ -556,11 +556,20 @@ function interpreter.new()
     setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
 
                                             -- get the scope kind
-                                            local priv = instance._PRIVATE
-                                            local scope_kind = priv._SCOPES._CURRENT_KIND or priv._ROOTSCOPE
+                                            local priv          = instance._PRIVATE
+                                            local current_kind  = priv._SCOPES._CURRENT_KIND
+                                            local scope_kind    = current_kind or priv._ROOTSCOPE
 
                                             -- get the api function from the given scope
-                                            return instance:_api_within_scope(scope_kind, key)
+                                            local apifunc = instance:_api_within_scope(scope_kind, key)
+
+                                            -- get the api function from the root scope
+                                            if not apifunc and priv._ROOTAPIS then
+                                                apifunc = priv._ROOTAPIS[key]
+                                            end
+
+                                            -- ok?
+                                            return apifunc
                                     end}) 
 
     -- register the builtin interfaces
@@ -724,11 +733,6 @@ end
 --
 -- result:
 --
--- _PUBLIC 
--- {
---      apiroot = function () end
--- }
---
 -- _PRIVATE
 -- {
 --      _APIS
@@ -738,6 +742,11 @@ end
 --              apiname = function () end
 --          }
 --      }
+--      
+--      _ROOTAPIS
+--      {
+--          apiroot = function () end
+--      }         
 -- }
 --
 function interpreter:api_register(scope_kind, name, func)
@@ -760,8 +769,13 @@ function interpreter:api_register(scope_kind, name, func)
         -- register api
         scope[name] = function (...) return func(self, ...) end
     else
+
+        -- get root apis
+        self._PRIVATE._ROOTAPIS = self._PRIVATE._ROOTAPIS or {}
+        local apis = self._PRIVATE._ROOTAPIS
+
         -- register api to the root scope
-        self._PUBLIC[name] = function (...) return func(self, ...) end
+        apis[name] = function (...) return func(self, ...) end
     end
 end
 
@@ -849,6 +863,7 @@ function interpreter:api_register_scope(...)
             -- get the scope name from the dictionary
             scope_name = scope_name["name"]
         end
+
 
         -- enter the given scope
         if scope_name ~= nil then
