@@ -29,11 +29,9 @@ import("core.project.config")
 -- build for xmake file
 function _build_for_xmakefile(package)
 
-    -- TODO debug/release
-
     -- configure it first
     if config.plat() and config.arch() then
-        os.vrun("$(xmake) f -p %s -a %s -c", config.plat(), config.arch())
+        os.vrun("$(xmake) f -p $(plat) -a $(arch) -c")
     else
         os.vrun("$(xmake) f -c")
     end
@@ -46,10 +44,10 @@ end
 function _build_for_makefile(package)
 
     -- TODO
---    print("build for makefile")
+    print("build for makefile")
 
     -- build it
---    os.vrun("$(xmake) -r")
+    os.vrun("$(make)")
 end
 
 -- build for configure

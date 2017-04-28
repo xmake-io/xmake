@@ -286,6 +286,8 @@ function package.load_from_project(packagename)
         return nil, errors
     end
 
+    table.dump(packages)
+
     -- get interpreter
     local interp = errors or package._interpreter()
 
