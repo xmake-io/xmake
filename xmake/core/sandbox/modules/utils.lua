@@ -100,7 +100,7 @@ end
 function sandbox_utils.cprint(format, ...)
 
     -- done
-    utils._iowrite(colors(vformat(format, ...) .. "\n"))
+    utils._iowrite(colors(vformat(format, ...)) .. "\n")
 end
 
 -- print format string, the builtin variables and colors without newline
