@@ -33,37 +33,45 @@
  * includes
  */
 #include "prefix.h"
-#ifdef TB_CONFIG_OS_LINUX
-#include <sys/ioctl.h>
-#include <errno.h>  // for errno
-#include <unistd.h> // for STDOUT_FILENO
+#ifndef TB_CONFIG_OS_WINDOWS
+#   include <sys/ioctl.h>
+#   include <errno.h>  // for errno
+#   include <unistd.h> // for STDOUT_FILENO
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+
+// get console window size 
 tb_int_t xm_os_getwinsize(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // def w&h
-    unsigned short w=80, h=40;
+    // init default window size
+    unsigned short w = -1, h = -1;
 
     // get winsize
-#   ifdef TB_CONFIG_OS_LINUX
-    struct winsize size;
-    if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &size)==0){
-        w=size.ws_col;
-        h=size.ws_row;
-    }else if(errno == ENOTTY)
-        w=h=-1; // set to INF if stdout is not a tty
-                //
-                // if stdout is a file there is no
-                // need to consider winsize limit
-#   endif
+#ifndef TB_CONFIG_OS_WINDOWS
+    struct winsize size = {0};
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0)
+    {
+        w = size.ws_col;
+        h = size.ws_row;
+    }
+#else
+    // we will not consider winsize limit if cannot get it
+#endif
 
-    // done os.getwinsize()
+    /* local winsize = os.getwinsize()
+     *
+     * return
+     * {
+     *      width = -1 or ..
+     * ,    height = -1 or ..
+     * }
+     */
     lua_newtable(lua);
     lua_pushstring(lua, "width");
     lua_pushinteger(lua, w);

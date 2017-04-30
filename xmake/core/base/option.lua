@@ -131,6 +131,51 @@ function option._bindings(name)
     end
 end
 
+-- get line length
+function option._get_linelen(st)
+    local poss = st:reverse():find("\n")
+    if not poss then return (#st) end
+    local start_pos, _ = poss
+    return start_pos - 1
+end
+
+-- get last space
+function option._get_lastspace(st)
+    local poss = st:reverse():find("[%s-]")
+    if not poss then return (#st) end
+    local start_pos, _ = poss
+    return (#st) - start_pos + 1
+end
+
+-- append spaces in width
+function option._inwidth_append(dst, st, padding, width, remain_width)
+    
+    if padding >= width then
+        return dst .. st
+    end
+
+    local white_padding = string.rep(" ", padding)
+    if remain_width == nil then 
+        -- TODO because of colored string, it's wrong sometimes
+        remain_width = width - option._get_linelen(dst) 
+    end
+
+    if remain_width <= 0 then
+        return option._inwidth_append(dst .. "\n" .. white_padding, st, padding, width, width - padding)
+    end
+    
+    if (#st) <= remain_width then
+        return dst .. st
+    end
+    
+    local lastspace = option._get_lastspace(st:sub(1, remain_width))
+    if lastspace + 1 > (#st) then
+        return dst .. st
+    else
+        return option._inwidth_append(dst .. st:sub(1, lastspace) .. "\n" .. white_padding, st:sub(lastspace + 1):ltrim(), padding, width, width - padding)
+    end
+end
+
 -- save context
 function option.save(taskname)
 
@@ -874,38 +919,6 @@ function option.show_menu(task)
     end
 end  
 
-function get_linelen(st)
-    local poss = string.find(string.reverse(st), "\n")
-    if not poss then return (#st) end
-    local start_pos, _ = poss
-    return start_pos - 1
-end
-function inwidth_append(dst, st, padding, width, remain_width)
-    function get_lastspace(st)
-        local poss = string.find(string.reverse(st), "[%s-]")
-        if not poss then return (#st) end
-        local start_pos, _ = poss
-        return (#st) - start_pos + 1
-    end
-    if padding >= width then
-        return dst .. st
-    end
-    local white_padding = string.rep(" ", padding)
-    if remain_width == nil then remain_width = width - get_linelen(dst) end    -- because of colored string, it's wrong sometimes
-    if remain_width <= 0 then
-        return inwidth_append(dst .. "\n" .. white_padding, st, padding, width, width - padding)
-    end
-    if (#st) <= remain_width then
-        return dst .. st
-    end
-    local lastspace = get_lastspace(string.sub(st, 1, remain_width))
-    if lastspace + 1 > (#st) then
-        return dst .. st
-    else
-        return inwidth_append(dst .. string.sub(st, 1, lastspace) .. "\n" .. white_padding, string.ltrim(string.sub(st, lastspace + 1)), padding, width, width - padding)
-    end
-end
-
 -- show the main menu
 function option.show_main()
 
@@ -1012,7 +1025,7 @@ function option.show_main()
 
                 -- append the task description
                 if taskinfo.description then
-                    taskline = inwidth_append(taskline, taskinfo.description, padding + 1 - 18, console_width, console_width - padding - 1 + 18)
+                    taskline = option._inwidth_append(taskline, taskinfo.description, padding + 1 - 18, console_width, console_width - padding - 1 + 18)
                 end
 
                 -- print task line
@@ -1087,19 +1100,19 @@ function option.show_options(options)
         -- append the option description
         local description = opt[5]
         if description then
-            option_info = inwidth_append(option_info, description, padding + 1, console_width, console_width - padding - 1)
+            option_info = option._inwidth_append(option_info, description, padding + 1, console_width, console_width - padding - 1)
         end
 
         -- append the default value
         local default = opt[4]
         if default then
-            option_info = inwidth_append(option_info, " (default: ", padding + 1, console_width)
-            local origin_width = get_linelen(option_info)
-            option_info = option_info .. "${bright}"
-            option_info = inwidth_append(option_info, tostring(default), padding + 1, console_width, console_width - origin_width)
-            origin_width = option._ifelse(origin_width + (#(tostring(default))) > console_width, get_linelen(option_info), origin_width + (#(tostring(default))))
-            option_info = option_info .. "${clear}"
-            option_info = inwidth_append(option_info, ")", padding + 1, console_width, console_width - origin_width)
+            option_info  = option._inwidth_append(option_info, " (default: ", padding + 1, console_width)
+            local origin_width = option._get_linelen(option_info)
+            option_info  = option_info .. "${bright}"
+            option_info  = option._inwidth_append(option_info, tostring(default), padding + 1, console_width, console_width - origin_width)
+            origin_width = option._ifelse(origin_width + (#(tostring(default))) > console_width, option._get_linelen(option_info), origin_width + (#(tostring(default))))
+            option_info  = option_info .. "${clear}"
+            option_info  = option._inwidth_append(option_info, ")", padding + 1, console_width, console_width - origin_width)
         end
 
         -- print option info
@@ -1127,7 +1140,7 @@ function option.show_options(options)
                 end
 
                 -- print this description
-                print(inwidth_append(spaces, description, padding + 1, console_width))
+                print(option._inwidth_append(spaces, description, padding + 1, console_width))
 
             -- the description is table?
             elseif type(description) == "table" then
@@ -1142,7 +1155,7 @@ function option.show_options(options)
                     end
 
                     -- print this description
-                    print(inwidth_append(spaces, v, padding + 1, console_width))
+                    print(option._inwidth_append(spaces, v, padding + 1, console_width))
                 end
             end
         end
