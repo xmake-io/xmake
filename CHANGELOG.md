@@ -13,6 +13,7 @@
 * [#71](https://github.com/tboox/xmake/issues/71): Improve to map optimization flags for cl.exe
 * [#73](https://github.com/tboox/xmake/issues/73): Attempt to get executable path as xmake's program directory
 * Improve the scope of `xmake.lua` in `add_subdirs` and use independent sub-scope to avoid dirty scope
+* [#78](https://github.com/tboox/xmake/pull/78): Get terminal size in runtime and soft-wrap the help printing
 
 ### Bugs fixed
 
@@ -21,6 +22,7 @@
 * Fix temporary file path conflict
 * Fix `os.host` and `os.arch` interfaces
 * Fix interpreter bug for loading root api
+* [#77](https://github.com/tboox/xmake/pull/77): fix `cprint` no color reset eol
 
 ## v2.1.3
 
@@ -277,6 +279,7 @@
 * [#71](https://github.com/tboox/xmake/issues/71): 针对widows编译器改进优化选项映射
 * [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
 * 在`add_subdirs`中的子`xmake.lua`中，使用独立子作用域，避免作用域污染导致的干扰问题
+* [#78](https://github.com/tboox/xmake/pull/78): 美化非全屏终端窗口下的`xmake --help`输出
 
 ### Bugs修复
 
@@ -285,6 +288,7 @@
 * 修复临时文件路径冲突问题
 * 修复`os.host`, `os.arch`等接口
 * 修复根域api加载干扰其他子作用域问题
+* [#77](https://github.com/tboox/xmake/pull/77): 修复`cprint`色彩打印中断问题
 
 ## v2.1.3
 
