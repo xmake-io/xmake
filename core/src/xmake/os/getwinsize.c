@@ -35,8 +35,8 @@
 #include "prefix.h"
 #ifdef TB_CONFIG_OS_LINUX
 #include <sys/ioctl.h>
-#include <termios.h>
-#include <unistd.h>
+#include <errno.h>  // for errno
+#include <unistd.h> // for STDOUT_FILENO
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -53,9 +53,14 @@ tb_int_t xm_os_getwinsize(lua_State* lua)
     // get winsize
 #   ifdef TB_CONFIG_OS_LINUX
     struct winsize size;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
-    w=size.ws_col;
-    h=size.ws_row;
+    if(ioctl(STDOUT_FILENO, TIOCGWINSZ, &size)==0){
+        w=size.ws_col;
+        h=size.ws_row;
+    }else if(errno == ENOTTY)
+        w=h=-1; // set to INF if stdout is not a tty
+                //
+                // if stdout is a file there is no
+                // need to consider winsize limit
 #   endif
 
     // done os.getwinsize()
