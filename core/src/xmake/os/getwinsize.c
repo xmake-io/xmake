@@ -33,7 +33,9 @@
  * includes
  */
 #include "prefix.h"
-#ifndef TB_CONFIG_OS_WINDOWS
+#ifdef TB_CONFIG_OS_WINDOWS
+#   include <windows.h>
+#else
 #   include <sys/ioctl.h>
 #   include <errno.h>  // for errno
 #   include <unistd.h> // for STDOUT_FILENO
@@ -49,19 +51,24 @@ tb_int_t xm_os_getwinsize(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // init default window size
-    unsigned short w = -1, h = -1;
+    // init default window size (we will not consider winsize limit if cannot get it)
+    tb_int_t w = -1, h = -1;
 
     // get winsize
-#ifndef TB_CONFIG_OS_WINDOWS
-    struct winsize size = {0};
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0)
+#ifdef TB_CONFIG_OS_WINDOWS
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
     {
-        w = size.ws_col;
-        h = size.ws_row;
+        w = (tb_int_t)csbi.dwSize.X;
+        h = (tb_int_t)csbi.dwSize.Y;
     }
 #else
-    // we will not consider winsize limit if cannot get it
+    struct winsize size;
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == 0)
+    {
+        w = (tb_int_t)size.ws_col;
+        h = (tb_int_t)size.ws_row;
+    }
 #endif
 
     /* local winsize = os.getwinsize()
