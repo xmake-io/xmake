@@ -19,28 +19,28 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        envirnoment.lua
+-- @file        environment.lua
 --
 
 -- imports
-import("core.platform.envirnoment")
+import("core.platform.environment")
 
--- enter envirnoment
+-- enter environment
 function enter()
 
     -- set search pathes of toolchains 
-    envirnoment.enter("toolchains")
+    environment.enter("toolchains")
 
     -- TODO set toolchains for CC, LD, ..
 
     -- TODO set flags of toolchains
 end
 
--- leave envirnoment
+-- leave environment
 function leave()
 
     -- restore search pathes of toolchains
-    envirnoment.leave("toolchains")
+    environment.leave("toolchains")
 
     -- TODO restore toolchains for CC, LD
     
