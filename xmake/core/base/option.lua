@@ -1046,16 +1046,51 @@ function option.show_options(options)
         -- append color
         option_info = "${green}" .. option_info .. "${clear}"
 
+        function inwidth_append(dst, st, padding, width, remain_width)
+            function get_linelen(st)
+                local poss = string.find(string.reverse(st), "\n")
+                if not poss then return (#st) end
+                local start_pos, _ = poss
+                return start_pos - 1
+            end
+            function get_lastspace(st)
+                local poss = string.find(string.reverse(st), "[%s-]")
+                if not poss then return (#st) end
+                local start_pos, _ = poss
+                return (#st) - start_pos + 1
+            end
+            if padding >= width then
+                return dst .. st
+            end
+            local white_padding = string.rep(" ", padding)
+            if remain_width == nil then remain_width = width - get_linelen(dst) end    -- because of colored string, it's wrong sometimes
+            if remain_width <= 0 then
+                return inwidth_append(dst .. "\n" .. white_padding, st, padding, width, width - padding)
+            end
+            if (#st) <= remain_width then
+                return dst .. st
+            end
+            local lastspace = get_lastspace(string.sub(st, 1, remain_width))
+            if lastspace + 1 > (#st) then
+                return dst .. st
+            else
+                return inwidth_append(dst .. string.sub(st, 1, lastspace) .. "\n" .. white_padding, string.ltrim(string.sub(st, lastspace + 1)), padding, width, width - padding)
+            end
+        end
+
+        -- get width of console
+        local console_width = os.getwinsize()["width"]
+
         -- append the option description
         local description = opt[5]
         if description then
-            option_info = option_info .. description
+            option_info = inwidth_append(option_info, description, padding + 1, console_width, console_width - padding - 1)
         end
 
         -- append the default value
         local default = opt[4]
         if default then
-            option_info = option_info .. " (default: ${bright}" .. tostring(default) .. "${clear})"
+            option_info = inwidth_append(option_info, " (default: ${bright}" .. tostring(default) .. "${clear})", padding + 1, console_width)    -- wrong, but looks ok
         end
 
         -- print option info
@@ -1083,7 +1118,7 @@ function option.show_options(options)
                 end
 
                 -- print this description
-                print(spaces .. description)
+                print(inwidth_append(spaces, description, padding + 1, console_width))
 
             -- the description is table?
             elseif type(description) == "table" then
@@ -1098,7 +1133,7 @@ function option.show_options(options)
                     end
 
                     -- print this description
-                    print(spaces .. v)
+                    print(inwidth_append(spaces, v, padding + 1, console_width))
                 end
             end
         end
