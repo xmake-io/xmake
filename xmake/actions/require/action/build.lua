@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import(".envirnoment")
 
 -- build for xmake file
 function _build_for_xmakefile(package)
@@ -149,12 +150,20 @@ function main(package)
 
             -- run the package scripts
             local buildtask = function () 
+
+                -- enter envirnoment
+                envirnoment.enter()
+
+                -- build it
                 for i = 1, 3 do
                     local script = scripts[i]
                     if script ~= nil then
                         script(package)
                     end
                 end
+
+                -- leave envirnoment
+                envirnoment.leave()
             end
 
             -- download package file
