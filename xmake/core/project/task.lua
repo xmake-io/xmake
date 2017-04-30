@@ -142,9 +142,9 @@ function task._translate_menu(menu)
         table.insert(options, 8, {'F', "file",      "kv", nil, "Read a given xmake.lua file."               })
         table.insert(options, 9, {'P', "project",   "kv", nil, "Change to the given project directory."
                                                               , "Search priority:"
-                                                              , "  1. The Given Command Argument"
-                                                              , "  2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "  3. The Current Directory"              })
+                                                              , "    1. The Given Command Argument"
+                                                              , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                                              , "    3. The Current Directory"              })
         table.insert(options, 10, {})
 
     end
