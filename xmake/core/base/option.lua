@@ -1046,13 +1046,13 @@ function option.show_options(options)
         -- append color
         option_info = "${green}" .. option_info .. "${clear}"
 
+        function get_linelen(st)
+            local poss = string.find(string.reverse(st), "\n")
+            if not poss then return (#st) end
+            local start_pos, _ = poss
+            return start_pos - 1
+        end
         function inwidth_append(dst, st, padding, width, remain_width)
-            function get_linelen(st)
-                local poss = string.find(string.reverse(st), "\n")
-                if not poss then return (#st) end
-                local start_pos, _ = poss
-                return start_pos - 1
-            end
             function get_lastspace(st)
                 local poss = string.find(string.reverse(st), "[%s-]")
                 if not poss then return (#st) end
@@ -1090,7 +1090,13 @@ function option.show_options(options)
         -- append the default value
         local default = opt[4]
         if default then
-            option_info = inwidth_append(option_info, " (default: ${bright}" .. tostring(default) .. "${clear})", padding + 1, console_width)    -- wrong, but looks ok
+            option_info = inwidth_append(option_info, " (default: ", padding + 1, console_width)
+            local origin_width = get_linelen(option_info)
+            option_info = option_info .. "${bright}"
+            option_info = inwidth_append(option_info, tostring(default), padding + 1, console_width, console_width - origin_width)
+            origin_width = option._ifelse(origin_width + (#(tostring(default))) > console_width, get_linelen(option_info), origin_width + (#(tostring(default))))
+            option_info = option_info .. "${clear}"
+            option_info = inwidth_append(option_info, ")", padding + 1, console_width, console_width - origin_width)
         end
 
         -- print option info
