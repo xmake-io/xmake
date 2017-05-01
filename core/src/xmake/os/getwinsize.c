@@ -52,7 +52,7 @@ tb_int_t xm_os_getwinsize(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // init default window size (we will not consider winsize limit if cannot get it)
-    tb_int_t w = -1, h = -1;
+    tb_int_t w = TB_MAXS16, h = TB_MAXS16;
 
     // get winsize
 #ifdef TB_CONFIG_OS_WINDOWS
