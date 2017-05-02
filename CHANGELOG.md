@@ -6,6 +6,7 @@
 
 * [#68](https://github.com/tboox/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
 * add `is_host` api to get current host operating system
+* [#79](https://github.com/tboox/xmake/issues/79): Improve `xmake lua` to run interactive commands, read-eval-print (REPL)
 
 ### Changes
 
@@ -270,8 +271,9 @@
 
 ### 新特性
 
-* [#68](https://github.com/tboox/xmake/issues/68): 天剑`$(programdir)`和`$(xmake)`内建变量
+* [#68](https://github.com/tboox/xmake/issues/68): 增加`$(programdir)`和`$(xmake)`内建变量
 * 添加`is_host`接口去判断当前的主机环境
+* [#79](https://github.com/tboox/xmake/issues/79): 增强`xmake lua`，支持交互式解释执行
 
 ### 改进
 
