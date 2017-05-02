@@ -49,7 +49,8 @@ xmake_C_FILES 			+= \
 						process/openv \
 						process/wait \
 						process/waitlist \
-						process/close 
+						process/close \
+						sandbox/interactive
 						
 
 # flags
