@@ -99,6 +99,9 @@ tb_int_t xm_process_wait(lua_State* lua);
 tb_int_t xm_process_waitlist(lua_State* lua);
 tb_int_t xm_process_close(lua_State* lua);
 
+// the sandbox functions
+tb_int_t xm_sandbox_interactive(lua_State* lua);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -159,6 +162,13 @@ static luaL_Reg const g_process_functions[] =
 ,   { "waitlist",       xm_process_waitlist }
 ,   { "close",          xm_process_close    }
 ,   { tb_null,          tb_null             }
+};
+
+// the sandbox functions
+static luaL_Reg const g_sandbox_functions[] = 
+{
+    { "interactive",    xm_sandbox_interactive }
+,   { tb_null,          tb_null                }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -363,6 +373,9 @@ xm_machine_ref_t xm_machine_init()
 
         // bind process functions
         luaL_register(impl->lua, "process", g_process_functions);
+
+        // bind sandbox functions
+        luaL_register(impl->lua, "sandbox", g_sandbox_functions);
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
