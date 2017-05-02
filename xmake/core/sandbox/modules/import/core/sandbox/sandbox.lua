@@ -31,6 +31,23 @@ local raise     = require("sandbox/modules/raise")
 
 -- enter interactive mode
 function sandbox_core_sandbox.interactive()
+
+    -- get the current sandbox instance
+    local instance = sandbox.instance()
+    if not instance then
+        raise("cannot get sandbox instance!")
+    end
+
+    -- fork a new sandbox 
+    instance, errors = instance:fork()
+    if not instance then
+        raise(errors)
+    end
+
+    -- bind sandbox environment
+    setfenv(0, instance._PUBLIC)
+
+    -- enter interactive mode with this new sandbox
     sandbox.interactive() 
 end
 
