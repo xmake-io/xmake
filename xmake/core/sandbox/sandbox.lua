@@ -195,11 +195,6 @@ end
 -- fork a new sandbox from the given sandbox
 function sandbox:fork(script, rootdir)
 
-    -- no script?
-    if script == nil then
-        return nil, "no script!"
-    end
-
     -- invalid script?
     if script ~= nil and type(script) ~= "function" then
         return nil, "invalid script!"
@@ -218,10 +213,10 @@ function sandbox:fork(script, rootdir)
     instance._PRIVATE._ROOTDIR = rootdir or self:rootdir()
 
     -- bind public scope
-    setfenv(script, instance._PUBLIC)
-
-    -- save script
-    instance._PRIVATE._SCRIPT = script
+    if script then
+        setfenv(script, instance._PUBLIC)
+        instance._PRIVATE._SCRIPT = script
+    end
 
     -- ok?
     return instance

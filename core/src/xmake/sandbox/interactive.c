@@ -204,7 +204,7 @@ static tb_int_t loadline(lua_State *lua)
         // add a new line
         lua_pushliteral(lua, "\n");
 
-        //  cannot try to add lines?
+        // cannot try to add lines?
         lua_insert(lua, -2); 
 
         // join them
