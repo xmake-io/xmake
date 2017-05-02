@@ -45,10 +45,10 @@ function sandbox_core_sandbox.interactive()
     end
 
     -- bind sandbox environment
-    setfenv(0, instance._PUBLIC)
+--    setfenv(0, instance._PUBLIC)
 
     -- enter interactive mode with this new sandbox
-    sandbox.interactive() 
+    sandbox.interactive(instance._PUBLIC) 
 end
 
 -- return module

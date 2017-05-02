@@ -56,7 +56,7 @@
  */
 
 // report results
-static tb_void_t report(lua_State *lua, tb_int_t status)
+static tb_void_t report(lua_State *lua)
 {
     if (!lua_isnil(lua, -1)) 
     {
@@ -94,20 +94,27 @@ static tb_int_t traceback(lua_State *lua)
 // execute codes 
 static tb_int_t docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
 {
-    // get function index
-    tb_int_t base = lua_gettop(lua) - narg;
+    /* get error function index
+     * 
+     * stack: arg1(sandbox_scope) scriptfunc(top) -> ... 
+     */
+    tb_int_t errfunc = lua_gettop(lua) - narg;
 
     // push traceback function
     lua_pushcfunction(lua, traceback);
 
     // put it under chunk and args
-    lua_insert(lua, base); 
+    lua_insert(lua, errfunc); 
 
-    // execute it
-    tb_int_t status = lua_pcall(lua, narg, (clear? 0 : LUA_MULTRET), base);
+    /* execute it
+     *
+     * stack: errfunc arg1 scriptfunc -> ... 
+     * after: errfunc arg1 [results] -> ... 
+     */
+    tb_int_t status = lua_pcall(lua, narg, (clear? 0 : LUA_MULTRET), errfunc);
 
     // remove traceback function
-    lua_remove(lua, base); 
+    lua_remove(lua, errfunc); 
 
     // force a complete garbage collection in case of errors 
     if (status != 0) lua_gc(lua, LUA_GCCOLLECT, 0);
@@ -119,17 +126,9 @@ static tb_int_t docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
 // print prompt
 static tb_void_t write_prompt(lua_State *lua, tb_int_t firstline)
 {
-    // get prompt characters
-    lua_getfield(lua, LUA_GLOBALSINDEX, firstline ? "_PROMPT" : "_PROMPT2");
-    tb_char_t const* p = lua_tostring(lua, -1);
-    if (!p) p = firstline? LUA_PROMPT : LUA_PROMPT2;
-
     // print prompt
-    tb_printf(p);
+    tb_printf(firstline? LUA_PROMPT : LUA_PROMPT2);
     tb_print_sync();
-
-    // remove global
-    lua_pop(lua, 1);
 }
 
 // this line is incomplete?
@@ -180,10 +179,12 @@ static tb_int_t pushline(lua_State *lua, tb_int_t firstline)
 }
 
 // load code line
-static tb_int_t loadline(lua_State *lua)
+static tb_int_t loadline(lua_State *lua, tb_int_t top)
 {
+    // clear stack 
+    lua_settop(lua, top);
+
     // get input line first
-    lua_settop(lua, 0);
     if (!pushline(lua, 1)) // no input?
         return -1;
 
@@ -191,8 +192,12 @@ static tb_int_t loadline(lua_State *lua)
     tb_int_t status;
     while (1)
     { 
-        // repeat until gets a complete line
-        status = luaL_loadbuffer(lua, lua_tostring(lua, 1), lua_strlen(lua, 1), "=stdin");
+        /* repeat until gets a complete line
+         *
+         * stack: arg1(sandbox_scope) scriptbuffer(top) -> ... 
+         * after: arg1(sandbox_scope) scriptbuffer scriptfunc(top) -> ... 
+         */
+        status = luaL_loadbuffer(lua, lua_tostring(lua, -1), lua_strlen(lua, -1), "=stdin");
 
         // cannot try to add lines?
         if (!incomplete(lua, status)) break;
@@ -201,18 +206,25 @@ static tb_int_t loadline(lua_State *lua)
         if (!pushline(lua, 0)) 
             return -1;
 
-        // add a new line
+        /* add a new line
+         *
+         * stack: arg1 scriptbuffer scriptfunc scriptbuffer "\n"(top) -> ... 
+         */
         lua_pushliteral(lua, "\n");
 
-        // cannot try to add lines?
+        // between the two lines
         lua_insert(lua, -2); 
 
-        // join them
+        /* join them
+         *          
+         * stack: arg1 scriptbuffer scriptfunc scriptbuffer scriptbuffer "\n"(top) -> ... 
+         * after: arg1 scriptbuffer scriptfunc scriptbuffer+"\n"(top) -> ... 
+         */
         lua_concat(lua, 3);
     }
 
-    // remove line
-    lua_remove(lua, 1); 
+    // remove redundant scriptbuffer
+    lua_remove(lua, -2); 
     return status;
 }
 
@@ -226,27 +238,56 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    /* get init stack top
+     *
+     * stack: arg1(sandbox_scope)
+     */
+    tb_int_t top = lua_gettop(lua);
+
     // enter interactive 
     tb_int_t status;
-    while ((status = loadline(lua)) != -1) 
+    while ((status = loadline(lua, top)) != -1) 
     {
         // execute codes
-        if (status == 0) status = docall(lua, 0, 0);
-
-        // report results
-        report(lua, status);
-        if (status == 0 && lua_gettop(lua) > 0) 
+        if (status == 0)
         {
-            // print errors
+            /* bind sandbox
+             *
+             * stack: arg1(top) scriptfunc arg1(sandbox_scope) -> ... 
+             */
+            lua_pushvalue(lua, 1);
+            lua_setfenv(lua, -2);
+
+            /* run script
+             *
+             * stack: arg1(top) scriptfunc -> ... 
+             */
+            status = docall(lua, 0, 0);
+        }
+
+        // report errors
+        if (status) report(lua);
+
+        // print any results
+        if (status == 0 && lua_gettop(lua) > top) 
+        {
+            // get results count 
+            tb_int_t count = lua_gettop(lua) - top;
+
+            /* print errors
+             *
+             * stack: arg1(sandbox_scope) [results] -> ... 
+             * after: arg1(sandbox_scope) print [results] -> ... 
+             */
             lua_getglobal(lua, "print");
-            lua_insert(lua, 1);
-            if (lua_pcall(lua, lua_gettop(lua)-1, 0, 0) != 0)
+            lua_insert(lua, -(count + 1));
+            if (lua_pcall(lua, count, 0, 0) != 0)
                 tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("print") " (%s)", lua_tostring(lua, -1)));
         }
     }
 
-    // clear stack
-    lua_settop(lua, 0);
+    // clear stack 
+    lua_settop(lua, top);
     tb_printl("");
     tb_print_sync();
 
