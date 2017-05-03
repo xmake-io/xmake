@@ -78,7 +78,7 @@ function sandbox_core_package_repository.repositories(is_global)
     -- add default global xmake repository
     local repositories = {}
     if is_global then
-        table.insert(repositories, {name = "xmake-repo", url = "git@github.com:tboox/xmake-repo.git", global = true})
+        table.insert(repositories, {name = "xmake-repo", url = "https://github.com/tboox/xmake-repo.git", global = true})
     end
 
     -- load repositories from repository cache 
