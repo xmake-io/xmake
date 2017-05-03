@@ -40,6 +40,10 @@
  * includes
  */
 #include "prefix.h"
+#ifndef TB_CONFIG_OS_WINDOWS
+#   include <readline/readline.h>
+#   include <readline/history.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -123,14 +127,6 @@ static tb_int_t docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
     return status;
 }
 
-// print prompt
-static tb_void_t write_prompt(lua_State *lua, tb_int_t firstline)
-{
-    // print prompt
-    tb_printf(firstline? LUA_PROMPT : LUA_PROMPT2);
-    tb_print_sync();
-}
-
 // this line is incomplete?
 static tb_int_t incomplete(lua_State *lua, tb_int_t status)
 {
@@ -152,13 +148,39 @@ static tb_int_t incomplete(lua_State *lua, tb_int_t status)
 // get input line
 static tb_int_t pushline(lua_State *lua, tb_int_t firstline)
 {
+#ifndef TB_CONFIG_OS_WINDOWS
+    // get line
+    tb_char_t buffer[1024];
+    tb_char_t const* line = readline(firstline? LUA_PROMPT : LUA_PROMPT2);
+    if (line)
+    {
+        // add line to history
+        add_history(line);
+
+        // copy line to buffer
+        tb_size_t size = tb_strlcpy(buffer, line, sizeof(buffer));
+
+        // free line
+        tb_free(line);
+
+        // truncated?
+        if (size >= sizeof(buffer))
+        {
+            tb_printl("too long input!");
+            return 0;
+        }
+#else
+        
     // print prompt
-    write_prompt(lua, firstline);
+    tb_printf(firstline? LUA_PROMPT : LUA_PROMPT2);
+    tb_print_sync();
 
     // get input buffer
     tb_char_t buffer[1024];
     if (fgets(buffer, sizeof(buffer), stdin)) 
     {
+
+#endif
         // split line '\0'
         tb_size_t n = tb_strlen(buffer);
         if (n < sizeof(buffer) && buffer[n - 1] == '\n')
