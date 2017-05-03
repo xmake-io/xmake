@@ -23,6 +23,11 @@ target("demo")
     add_links("xmake", "luajit")
     add_linkdirs("$(buildir)")
 
+    -- link readline
+    if not is_plat("windows") then
+        add_links("readline")
+    end
+
     -- add packages
     add_packages("tbox", "base")
 
