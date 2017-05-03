@@ -160,8 +160,8 @@ static tb_int_t pushline(lua_State *lua, tb_int_t firstline)
     if (fgets(buffer, sizeof(buffer), stdin)) 
     {
         // split line '\0'
-        tb_int_t n = tb_strlen(buffer);
-        if (n > 0 && buffer[n - 1] == '\n')
+        tb_size_t n = tb_strlen(buffer);
+        if (n < sizeof(buffer) && buffer[n - 1] == '\n')
             buffer[n - 1] = '\0';
 
         // eval expression? .e.g = 1 + 2 * ..
