@@ -51,5 +51,24 @@ function sandbox_core_sandbox.interactive()
     sandbox.interactive(instance._PUBLIC) 
 end
 
+-- register filter handler
+function sandbox_core_sandbox.filter_register(script, name, handler)
+
+    -- get the sandbox instance
+    local instance = sandbox.instance(script)
+    if not instance then
+        raise("sandbox instance not found when register %s!", name)
+    end
+
+    -- get filter
+    local filter = instance:filter()
+    if not filter then
+        raise("filter not found when register %s!", name)
+    end
+
+    -- register handler
+    filter:register(name, handler)
+end
+
 -- return module
 return sandbox_core_sandbox

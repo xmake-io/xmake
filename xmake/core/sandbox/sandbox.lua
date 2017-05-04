@@ -165,7 +165,7 @@ function sandbox.new(script, filter, rootdir)
     assert(self and self._PUBLIC and self._PRIVATE)
 
     -- save filter
-    self._PRIVATE._FILTER = filter
+    self._PRIVATE._FILTER = filter or require("base/filter"):new()
 
     -- save root directory
     self._PRIVATE._ROOTDIR = rootdir
@@ -207,7 +207,7 @@ function sandbox:fork(script, rootdir)
     assert(instance and instance._PUBLIC and instance._PRIVATE)
 
     -- inherit the filter
-    instance._PRIVATE._FILTER = self:filter()
+    instance._PRIVATE._FILTER = self:filter() or require("base/filter"):new()
 
     -- inherit the root directory
     instance._PRIVATE._ROOTDIR = rootdir or self:rootdir()
@@ -288,7 +288,7 @@ function sandbox:rootdir()
 end
 
 -- get current instance in the sandbox modules
-function sandbox.instance()
+function sandbox.instance(script)
 
     -- find self instance for the current sandbox
     local instance = nil
@@ -296,7 +296,7 @@ function sandbox.instance()
     while level < 16 do
 
         -- get scope
-        local scope = getfenv(level)
+        local scope = getfenv(utils.ifelse(script, script, level))
         if scope then
 
             -- enable to read _SANDBOX

@@ -32,13 +32,13 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- new filter instance
-function filter.new(handler)
+function filter.new()
 
     -- init an filter instance
     local self = table.inherit(filter)
 
-    -- save handler
-    self._HANDLER = handler
+    -- init handler
+    self._HANDLERS = {}
 
     -- ok
     return self
@@ -73,6 +73,13 @@ function filter.shell(cmd)
     return outdata or ""
 end
 
+-- register handler
+function filter:register(name, handler)
+
+    -- set handler
+    self._HANDLERS[name] = handler
+end
+
 -- filter the builtin variables: "hello $(variable)" for string
 --
 -- .e.g  
@@ -84,43 +91,50 @@ function filter:handle(value)
     -- check
     assert(type(value) == "string")
 
-    -- return it directly if no handler
-    local handler = self._HANDLER
-    if handler == nil then
-        return value
+    -- filter value for all handlers
+    local count = 0
+    for name, handler in pairs(self._HANDLERS) do
+
+        -- filter the builtin variables
+        value, count = value:gsub("%$%((.-)%)", function (variable) 
+
+            -- check
+            assert(variable)
+
+            -- is shell?
+            if variable:startswith("shell ") then
+                return filter.shell(variable:sub(7, -1))
+            end
+
+            -- parse variable:mode
+            local varmode   = variable:split(':')
+            local mode      = varmode[2]
+            variable        = varmode[1]
+           
+            -- handler it
+            local result = handler(variable)
+
+            -- handle mode
+            if mode then
+                if mode == "upper" then
+                    result = result:upper()
+                elseif mode == "lower" then
+                    result = result:lower()
+                end
+            end
+
+            -- ok?
+            return result
+        end)
+
+        -- end?
+        if count == 0 then
+            break
+        end
     end
 
-    -- filter the builtin variables
-    return (value:gsub("%$%((.-)%)", function (variable) 
-
-        -- check
-        assert(variable)
-
-        -- is shell?
-        if variable:startswith("shell ") then
-            return filter.shell(variable:sub(7, -1))
-        end
-
-        -- parse variable:mode
-        local varmode   = variable:split(':')
-        local mode      = varmode[2]
-        variable        = varmode[1]
-       
-        -- handler it
-        local result = handler(variable)
-
-        -- handle mode
-        if mode then
-            if mode == "upper" then
-                result = result:upper()
-            elseif mode == "lower" then
-                result = result:lower()
-            end
-        end
-
-        -- ok?
-        return result
-    end))
+    -- return old value
+    return value
 end
 
 -- return module: filter

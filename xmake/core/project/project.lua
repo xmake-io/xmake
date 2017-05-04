@@ -295,7 +295,7 @@ function project._interpreter()
     deprecated_project.api_register(interp)
 
     -- set filter
-    interp:filter_set(filter.new(function (variable)
+    interp:filter():register("project", function (variable)
 
         -- check
         assert(variable)
@@ -341,7 +341,7 @@ function project._interpreter()
 
         -- ok?
         return result
-    end))
+    end)
 
     -- save interpreter
     project._INTERPRETER = interp

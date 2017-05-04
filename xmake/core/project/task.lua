@@ -168,7 +168,7 @@ function task._interpreter()
     interp:api_define(task.apis())
 
     -- set filter
-    interp:filter_set(filter.new(function (variable)
+    interp:filter():register("task", function (variable)
 
         -- check
         assert(variable)
@@ -197,7 +197,7 @@ function task._interpreter()
 
         -- ok?
         return result
-    end))
+    end)
 
     -- save interpreter
     task._INTERPRETER = interp

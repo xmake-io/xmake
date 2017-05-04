@@ -24,7 +24,9 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.tool")
 import("core.project.config")
+import("core.sandbox.sandbox")
 import(".environment")
 
 -- build for xmake file
@@ -44,31 +46,28 @@ end
 -- build for makefile
 function _build_for_makefile(package)
 
-    -- TODO
---    print("build for makefile")
-
     -- build it
---    os.vrun("$(make)")
+    os.vrun("$(make)")
 end
 
 -- build for configure
 function _build_for_configure(package)
 
-    -- TODO
---    print("build for configure")
+    -- configure it first
+    os.vrun("./configure")
 
     -- build it
-    os.raise()
+    _build_for_makefile(package)
 end
 
 -- build for cmakelist
 function _build_for_cmakelists(package)
 
-    -- TODO
---    print("build for cmakelists")
+    -- make makefile first
+    os.vrun("cmake .")
 
     -- build it
-    os.raise()
+    _build_for_makefile(package)
 end
 
 -- on build the given package
@@ -81,7 +80,7 @@ function _on_build_package(package)
         {"xmake.lua",       _build_for_xmakefile    }
     ,   {"CMakeLists.txt",  _build_for_cmakelists   }
     ,   {"configure",       _build_for_configure    }
-    ,   {"[mM]akefile",    _build_for_makefile     }
+    ,   {"[mM]akefile",     _build_for_makefile     }
     }
 
     -- attempt to build it
@@ -116,6 +115,29 @@ function _on_build_package(package)
 
     -- failed
     raise("attempt to build package %s failed!", package:name())
+end
+
+-- run script
+function _run_script(script, package)
+
+    -- register filter handler before building
+    sandbox.filter_register(script, "package.build", function (var) 
+        
+        -- attempt to get shellname from tool 
+        local shellname = tool.shellname(var)
+        if shellname then
+            result = shellname
+        end
+
+        -- ok
+        return shellname
+    end)
+
+    -- run it
+    script(package)
+
+    -- cancel filter handler before building
+    sandbox.filter_register(script, "package.build", nil)
 end
 
 -- build the given package
@@ -158,7 +180,7 @@ function main(package)
                 for i = 1, 3 do
                     local script = scripts[i]
                     if script ~= nil then
-                        script(package)
+                        _run_script(script, package)
                     end
                 end
 

@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.task")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -55,17 +56,11 @@ import("repository")
 -- load project
 function _load_project()
 
+    -- config it first
+    task.run("config")
+
     -- enter project directory
     os.cd(project.directory())
-
-    -- load config
-    config.load()
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- load project
-    project.load()
 end
 
 -- install and update all outdated package dependencies

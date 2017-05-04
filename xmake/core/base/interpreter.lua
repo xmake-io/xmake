@@ -547,7 +547,8 @@ function interpreter.new()
     -- init an interpreter instance
     local instance = {  _PUBLIC = {}
                     ,   _PRIVATE = {    _SCOPES = {}
-                                    ,   _MTIMES = {}}}
+                                    ,   _MTIMES = {}
+                                    ,   _FILTER = require("base/filter").new()}}
 
     -- inherit the interfaces of interpreter
     table.inherit2(instance, interpreter)
@@ -671,16 +672,6 @@ function interpreter:filter()
 
     -- get it
     return self._PRIVATE._FILTER
-end
-
--- set filter
-function interpreter:filter_set(filter)
-
-    -- check
-    assert(self and self._PRIVATE)
-
-    -- set it
-    self._PRIVATE._FILTER = filter
 end
 
 -- get root directory
