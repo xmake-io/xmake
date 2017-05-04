@@ -60,7 +60,7 @@
  */
 
 // report results
-static tb_void_t report(lua_State *lua)
+static tb_void_t xm_sandbox_report(lua_State *lua)
 {
     if (!lua_isnil(lua, -1)) 
     {
@@ -78,7 +78,7 @@ static tb_void_t report(lua_State *lua)
 }
 
 // the traceback function
-static tb_int_t traceback(lua_State *lua)
+static tb_int_t xm_sandbox_traceback(lua_State *lua)
 {
     if (!lua_isstring(lua, 1)) 
     {
@@ -96,7 +96,7 @@ static tb_int_t traceback(lua_State *lua)
 }
 
 // execute codes 
-static tb_int_t docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
+static tb_int_t xm_sandbox_docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
 {
     /* get error function index
      * 
@@ -105,7 +105,7 @@ static tb_int_t docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
     tb_int_t errfunc = lua_gettop(lua) - narg;
 
     // push traceback function
-    lua_pushcfunction(lua, traceback);
+    lua_pushcfunction(lua, xm_sandbox_traceback);
 
     // put it under chunk and args
     lua_insert(lua, errfunc); 
@@ -128,7 +128,7 @@ static tb_int_t docall(lua_State *lua, tb_int_t narg, tb_int_t clear)
 }
 
 // this line is incomplete?
-static tb_int_t incomplete(lua_State *lua, tb_int_t status)
+static tb_int_t xm_sandbox_incomplete(lua_State *lua, tb_int_t status)
 {
     // syntax error?
     if (status == LUA_ERRSYNTAX) 
@@ -144,53 +144,59 @@ static tb_int_t incomplete(lua_State *lua, tb_int_t status)
     }
     return 0;
 }
-
-// get input line
-static tb_int_t pushline(lua_State *lua, tb_int_t firstline)
+// read line
+static tb_size_t xm_sandbox_readline(tb_char_t* data, tb_size_t maxn, tb_char_t const* prompt)
 {
 #ifndef TB_CONFIG_OS_WINDOWS
     // get line
-    tb_char_t buffer[1024];
-    tb_char_t const* line = readline(firstline? LUA_PROMPT : LUA_PROMPT2);
+    tb_char_t const* line = readline(prompt);
     if (line)
     {
         // add line to history
         add_history(line);
 
-        // copy line to buffer
-        tb_size_t size = tb_strlcpy(buffer, line, sizeof(buffer));
+        // copy line to data
+        tb_size_t size = tb_strlcpy(data, line, maxn);
 
         // free line
         tb_free(line);
 
         // truncated?
-        if (size >= sizeof(buffer))
-        {
-            tb_printl("too long input!");
+        if (size >= maxn)
             return 0;
-        }
+
+        // ok
+        return size;
+    }
 #else
         
     // print prompt
-    tb_printf(firstline? LUA_PROMPT : LUA_PROMPT2);
+    tb_printf(prompt);
     tb_print_sync();
 
     // get input buffer
-    tb_char_t buffer[1024];
-    if (fgets(buffer, sizeof(buffer), stdin)) 
-    {
-
+    if (fgets(data, (tb_int_t)maxn, stdin)) 
+        return tb_strlen(data);
 #endif
-        // split line '\0'
-        tb_size_t n = tb_strlen(buffer);
-        if (n < sizeof(buffer) && buffer[n - 1] == '\n')
-            buffer[n - 1] = '\0';
+    
+    // no more input
+    return 0;
+}
 
-        // eval expression? .e.g = 1 + 2 * ..
-        if (firstline && buffer[0] == '=')
-            lua_pushfstring(lua, "return %s", buffer + 1);
-        else
-            lua_pushstring(lua, buffer);
+// read and push input line
+static tb_int_t xm_sandbox_pushline(lua_State *lua)
+{
+    // read line
+    tb_char_t data[1024];
+    tb_size_t size = xm_sandbox_readline(data, sizeof(data), LUA_PROMPT2);
+    if (size)
+    {
+        // split line '\0'
+        if (data[size - 1] == '\n')
+            data[size - 1] = '\0';
+
+        // push line
+        lua_pushstring(lua, data);
 
         // ok
         return 1;
@@ -201,17 +207,39 @@ static tb_int_t pushline(lua_State *lua, tb_int_t firstline)
 }
 
 // load code line
-static tb_int_t loadline(lua_State *lua, tb_int_t top)
+static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top)
 {
     // clear stack 
     lua_settop(lua, top);
 
-    // get input line first
-    if (!pushline(lua, 1)) // no input?
-        return -1;
+    // read first line
+    tb_int_t  status;
+    tb_char_t data[1024];
+    tb_size_t size = xm_sandbox_readline(data + 7, sizeof(data) - 7, LUA_PROMPT);
+    if (size)
+    {
+        // split line '\0'
+        if (data[size - 1] == '\n')
+            data[--size] = '\0';
+
+        // patch "return "
+        tb_memcpy(data, "return ", 7);
+        
+        // attempt to load "return ..."
+        status = luaL_loadbuffer(lua, data, size + 7, "=stdin");
+
+        // ok?
+        if (status != LUA_ERRSYNTAX) return status;
+        
+        // pop error msg
+        lua_pop(lua, 1);
+
+        // push line to load it again
+        lua_pushstring(lua, data + 7);
+    }
+    else return -1;
 
     // load input line
-    tb_int_t status;
     while (1)
     { 
         /* repeat until gets a complete line
@@ -221,11 +249,11 @@ static tb_int_t loadline(lua_State *lua, tb_int_t top)
          */
         status = luaL_loadbuffer(lua, lua_tostring(lua, -1), lua_strlen(lua, -1), "=stdin");
 
-        // cannot try to add lines?
-        if (!incomplete(lua, status)) break;
+        // complete??
+        if (!xm_sandbox_incomplete(lua, status)) break;
 
         // get more input
-        if (!pushline(lua, 0)) 
+        if (!xm_sandbox_pushline(lua)) 
             return -1;
 
         /* add a new line
@@ -268,7 +296,7 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
 
     // enter interactive 
     tb_int_t status;
-    while ((status = loadline(lua, top)) != -1) 
+    while ((status = xm_sandbox_loadline(lua, top)) != -1) 
     {
         // execute codes
         if (status == 0)
@@ -284,11 +312,11 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
              *
              * stack: arg1(top) scriptfunc -> ... 
              */
-            status = docall(lua, 0, 0);
+            status = xm_sandbox_docall(lua, 0, 0);
         }
 
         // report errors
-        if (status) report(lua);
+        if (status) xm_sandbox_report(lua);
 
         // print any results
         if (status == 0 && lua_gettop(lua) > top) 
