@@ -40,10 +40,6 @@
  * includes
  */
 #include "prefix.h"
-#ifndef TB_CONFIG_OS_WINDOWS
-#   include <readline/readline.h>
-#   include <readline/history.h>
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -54,6 +50,14 @@
 
 // continuation prompt
 #define LUA_PROMPT2     ">> "
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * declaration
+ */
+#ifndef TB_CONFIG_OS_WINDOWS
+extern char* readline   (const char*);
+extern void  add_history(const char*);
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
