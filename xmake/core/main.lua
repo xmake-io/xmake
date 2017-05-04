@@ -180,7 +180,9 @@ function main.done()
     end
 
     -- save command lines to history
-    history.save("cmdlines", option.cmdline())
+    if os.isfile(xmake._PROJECT_FILE) then
+        history.save("cmdlines", option.cmdline())
+    end
 
     -- run task    
     ok, errors = task.run(option.taskname() or "build")

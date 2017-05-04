@@ -15,6 +15,7 @@
 * [#73](https://github.com/tboox/xmake/issues/73): Attempt to get executable path as xmake's program directory
 * Improve the scope of `xmake.lua` in `add_subdirs` and use independent sub-scope to avoid dirty scope
 * [#78](https://github.com/tboox/xmake/pull/78): Get terminal size in runtime and soft-wrap the help printing
+* Avoid generate `.xmake` directory if be not in project
 
 ### Bugs fixed
 
@@ -282,6 +283,7 @@
 * [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
 * 在`add_subdirs`中的子`xmake.lua`中，使用独立子作用域，避免作用域污染导致的干扰问题
 * [#78](https://github.com/tboox/xmake/pull/78): 美化非全屏终端窗口下的`xmake --help`输出
+* 避免产生不必要的`.xmake`目录，如果不在工程中的时候
 
 ### Bugs修复
 
