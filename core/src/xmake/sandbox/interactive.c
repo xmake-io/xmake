@@ -253,12 +253,20 @@ static tb_int_t xm_sandbox_loadline(lua_State *lua, tb_int_t top)
          */
         status = luaL_loadbuffer(lua, lua_tostring(lua, -1), lua_strlen(lua, -1), "=stdin");
 
-        // complete??
+        // complete?
         if (!xm_sandbox_incomplete(lua, status)) break;
 
         // get more input
         if (!xm_sandbox_pushline(lua)) 
             return -1;
+
+        // cancel multi-line input?
+        if (!tb_strcmp(lua_tostring(lua, -1), "q"))
+        {
+            lua_pop(lua, 2);
+            lua_pushstring(lua, "return ");
+            continue ;
+        }
 
         /* add a new line
          *
