@@ -36,6 +36,23 @@ function _test_semver_select()
     print("semver.select: ok!")
 end
 
+-- select version
+function _check_semver( major, minor, patch, prerelease, build)
+
+    local str = minor .. "." .. patch .. "." .. build
+    if (prerelease) then
+        str = str .. "-" .. prerelease
+    end
+    local strnbuild = str
+    if (build) then
+        strnbuild = strnbuild .. "+" .. build
+    end
+
+    -- create it
+    local version = semver(major, minor .. "." .. patch .. "." .. build .. "-" .. prerelease .. "." .. build)
+    print(version)
+end
+
 --
 -- run tests:
 --
@@ -43,6 +60,9 @@ end
 --
 function main()
 
+    -- test semver
+    _check_semver(1, 2, 3, "beta", "77")
+
     -- test select version
-    _test_semver_select()
+    -- _test_semver_select()
 end

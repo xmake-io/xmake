@@ -25,6 +25,9 @@
 -- define module: semver
 local semver = semver or {}
 
+-- load modules
+local string = require("base/string")
+
 -- A semantic versioner
 --
 -- A "version" is described by the v2.0.0 specification found at http://semver.org/.
@@ -34,12 +37,60 @@ local semver = semver or {}
 -- - https://github.com/kikito/semver.lua
 -- - https://getcomposer.org/doc/articles/versions.md
 
+local MAX_LENGTH = 256
+local MAX_SAFE_INTEGER = 9007199254740991
+
+-- TODO
+--
+-- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
+-- semver.parse('a.b.c') => nil
+function semver.parse(version, loose)
+    return nil
+end
+
 -- TODO
 --
 -- semver.valid('1.2.3') => '1.2.3'
 -- semver.valid('a.b.c') => nil
-function semver.valid(version)
+--
+function semver.valid(version, loose)
     return true
+end
+
+-- TODO
+--
+function semver.clean(version, loose)
+    return nil
+end
+
+-- TODO
+--
+function semver.inc(version, release, loose, identifier)
+    return nil
+end
+
+-- TODO
+--
+function semver.diff(v1, v2)
+    return nil
+end
+
+-- TODO
+--
+function semver.compare(v1, v2)
+    return nil
+end
+
+-- TODO
+--
+function semver.sort(list, loose)
+    return nil
+end
+
+-- TODO
+--
+function semver.rsort(list, loose)
+    return nil
 end
 
 -- TODO
@@ -60,6 +111,44 @@ end
 
 -- TODO
 --
+-- semver.gte('1.2.3', '9.8.7') => false
+--
+function semver.gte(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.lte('1.2.3', '9.8.7') => true
+--
+function semver.lte(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.eq('1.2.3', '9.8.7') => false
+--
+function semver.eq(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+-- semver.neq('1.2.3', '9.8.7') => true
+--
+function semver.neq(v1, v2, loose)
+    return true
+end
+
+-- TODO
+--
+function semver.cmp(v1, op, v2, loose)
+    return true
+end
+
+-- TODO
+--
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
 --
 function semver.satisfies(version, range, loose)
@@ -72,10 +161,10 @@ end
 --
 -- local verinfo, errors = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"master", "dev"})
 --
--- verinfo = 
+-- verinfo =
 -- {
 --     version = "1.5.1"
---     source = "versions"    
+--     source = "versions"
 -- }
 --
 -- @version     the selected version number
@@ -95,6 +184,213 @@ function semver.select(range, versions, tags, branches)
     -- not found
     return nil, string.format("cannot select version %s", range)
 end
+
+function semver:__tostring()
+    return self.version
+end
+
+function semver:__eq(other)
+    return false
+end
+
+function semver:__lt(other)
+    return false
+end
+
+function semver:__pow(other)
+    return false
+end
+
+local function parse_version(s, loose)
+    local major, minor, patch, next
+
+    if loose then
+        major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
+        if not major then
+            -- TODO: raise, handle error
+            print('Invalid version: ' .. s)
+            do return end
+        end
+    else
+        local n
+
+        next = s:match('^v?(.*)$')
+        major, n = next:match('^(0)(.-)$')
+        if not major or major:len() == 0 then
+            major, n = next:match('^([1-9]%d*)(.-)$')
+        end
+        next = n
+        if not next or next:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid full major: ' .. s)
+            do return end
+        end
+
+        minor, n = next:match('^%.(0)(.-)$')
+        if not minor or minor:len() == 0 then
+            minor, n = next:match('^%.([1-9]%d*)(.-)$')
+        end
+        next = n
+        if not next or next:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid full minor: ' .. s)
+            do return end
+        end
+
+        patch, n = next:match('^%.(0)(.-)$')
+        if not patch or patch:len() == 0 then
+            patch, n = next:match('^%.([1-9]%d*)(.-)$')
+        end
+        next = n
+        if not patch or patch:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid full patch: ' .. s)
+            do return end
+        end
+    end
+
+    return tonumber(major), tonumber(minor), tonumber(patch), next
+end
+
+local function parse_prerelease(s, loose)
+    local prerelease, next = s:match('^(%d*[%a-][%a%d-]*)(.-)$')
+    if not prerelease or prerelease:len() == 0 then
+        if loose then
+            prerelease, next = s:match('^(%d+)(.-)$')
+            if prerelease and prerelease:len() > 0 then
+                local n = tonumber(prerelease)
+                if n >= 0 and n < MAX_SAFE_INTEGER then
+                    prerelease = n
+                end
+            end
+        else
+            prerelease, next = s:match('^(0)(.-)$')
+            if not prerelease or prerelease:len() == 0 then
+                prerelease, next = s:match('^([1-9]%d*)(.-)$')
+            end
+            if prerelease and prerelease:len() > 0 then
+                local n = tonumber(prerelease)
+                if n >= 0 and n < MAX_SAFE_INTEGER then
+                    prerelease = n
+                end
+            end
+        end
+    end
+    if next and next:sub(1, 1) == '.' then
+        local p
+        p, next = parse_prerelease(next:sub(2), loose)
+        if not p or (type(p) == 'string' and p:len() == 0) then
+            -- TODO: raise, handle error
+            print('Invalid prerelease: ' .. s)
+            do return end
+        end
+        prerelease = prerelease .. '.' .. p
+    end
+    return prerelease, next
+end
+
+local function parse_build(s)
+    local build, next = s:match('^([%d%a-]+)(.-)$')
+    if next and next:len() > 0 and next:sub(1, 1) == '.' then
+        local b
+        b, next = parse_build(next:sub(2), loose)
+        if not b or b:len() == 0 then
+            -- TODO: raise, handle error
+            print('Invalid build: ' .. s)
+            do return end
+        end
+        build = build .. '.' .. b
+    end
+    return build, next
+end
+
+local function new(version, loose)
+    if isa(version, semver) then
+        if version.loose == loose then
+            return version
+        else
+           version = version.version
+        end
+    elseif type(version) ~= 'string' then
+        -- TODO: raise, handle error
+        print('Invalid Version: ' .. version)
+        do return end
+    end
+
+    version = version:trim()
+    if version:len() > MAX_LENGTH then
+        -- TODO: raise, handle error
+        print('version is longer than '..MAX_LENGTH..' characters')
+        do return end
+    end
+
+    local s = setmetatable({
+        __index = semver
+        ,   loose = loose
+        ,   raw = version
+        ,   prerelease = nil
+        ,   build = nil
+    }, semver)
+
+    local next
+    s.major, s.minor, s.patch, next = parse_version(version, loose)
+    if next and next:len() > 0 then
+        if next:sub(1, 1) == '-' then
+            next = next:sub(2)
+        end
+        s.prerelease, next = parse_prerelease(next, loose)
+    end
+    if next and next:len() > 0 then
+        if next:sub(1, 1) ~= '+' then
+            -- TODO: raise, handle error
+            print('expected build, got ' .. next)
+            do return end
+        end
+        next = next:sub(2)
+        s.build, next = parse_build(next)
+    end
+
+    if s.major > MAX_SAFE_INTEGER or s.major < 0 then
+        -- TODO: raise, handle error
+        print('Invalid major version')
+        do return end
+    end
+    if s.minor > MAX_SAFE_INTEGER or s.minor < 0 then
+        -- TODO: raise, handle error
+        print('Invalid minor version')
+        do return end
+    end
+    if s.patch > MAX_SAFE_INTEGER or s.patch < 0 then
+        -- TODO: raise, handle error
+        print('Invalid patch version')
+        do return end
+    end
+
+    if s.prerelease then
+        s.prerelease = s.prerelease:split(".")
+    else
+        s.prerelease = {}
+    end
+
+    if s.build then
+        s.build = s.build:split(".")
+    else
+        s.build = {}
+    end
+
+    local buffer = { ("%d.%d.%d"):format(s.major, s.minor, s.patch) }
+    local a = table.concat(s.prerelease, ".")
+    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
+    s.version = table.concat(buffer)
+
+    return s
+end
+
+function isa(entity, super)
+    return tostring(getmetatable(entity)) == tostring(getmetatable(super))
+end
+
+setmetatable(semver, { __call = function(_, ...) return new(...) end })
 
 -- return module: semver
 return semver
