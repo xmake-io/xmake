@@ -381,7 +381,6 @@ local function new(version, loose)
     local buffer = { ("%d.%d.%d"):format(s.major, s.minor, s.patch) }
     local a = table.concat(s.prerelease, ".")
     if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
-    a = table.concat(s.build, ".")
     s.version = table.concat(buffer)
 
     return s
