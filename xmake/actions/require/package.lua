@@ -31,6 +31,7 @@ import("core.package.package", {alias = "core_package"})
 import("action")
 import("fasturl")
 import("repository")
+import("environment")
 
 --
 -- parse require string
@@ -296,6 +297,9 @@ end
 
 -- install packages
 function install_packages(requires)
+
+    -- load environment first
+    environment.load()
 
     -- TODO need optimization
     -- pull all repositories first

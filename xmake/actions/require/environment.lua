@@ -25,6 +25,46 @@
 -- imports
 import("core.platform.environment")
 
+-- load linux environment
+function _load_linux()
+end
+
+-- load macosx environment
+function _load_macosx()
+end
+
+-- load windows environment
+function _load_windows()
+
+    -- TODO: download and install git, tar, unzip toolchains 
+    --
+    -- @note curl has been placed in the xmake installation package
+    --
+end
+
+-- laod host environment
+--
+-- ensure that we can find some basic tools: git, tar/unzip, make/nmake/cmake, msbuild ...
+--
+-- If these tools not exist, we will install it first.
+--
+function load()
+
+    -- init loaders
+    local loaders = 
+    {
+        linux   = _load_linux
+    ,   macosx  = _load_macosx
+    ,   windows = _load_windows
+    }
+
+    -- load host environment
+    local loader = loaders[os.host()]
+    if loader then
+        loader()
+    end
+end
+
 -- enter environment
 function enter()
 
