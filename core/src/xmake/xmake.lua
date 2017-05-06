@@ -26,3 +26,6 @@ target("xmake")
     -- add the common source files
     add_files("**.c") 
        
+    -- add cfunc
+    add_cfunc("API", "readline", nil, {"readline/readline.h"}, "readline")
+

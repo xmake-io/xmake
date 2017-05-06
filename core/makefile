@@ -260,7 +260,7 @@ endif
 # config base
 ifeq ($(PLAT),macosx)
 base_LIBPATH 	:= /usr/local/lib
-base_LIBNAMES 	:= m dl pthread
+base_LIBNAMES 	:= readline m dl pthread
 endif
 
 ifeq ($(PLAT),windows)
@@ -269,8 +269,8 @@ base_LIBNAMES 	:= ws2_32
 endif
 
 ifeq ($(PLAT),linux)
-base_LIBPATH 	:= 
-base_LIBNAMES 	:= m dl pthread
+base_LIBPATH 	:= $(shell find "/usr" -name libreadline.a | grep ".*/" -o)
+base_LIBNAMES 	:= $(shell find "/usr" -name libreadline.a | grep readline -o) m dl pthread
 endif
 
 # check jit compiler

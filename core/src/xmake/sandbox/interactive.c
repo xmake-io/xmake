@@ -54,7 +54,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * declaration
  */
-#ifndef TB_CONFIG_OS_WINDOWS
+#ifdef XM_CONFIG_API_HAVE_READLINE
 extern char* readline   (const char*);
 extern void  add_history(const char*);
 #endif
@@ -151,7 +151,7 @@ static tb_int_t xm_sandbox_incomplete(lua_State *lua, tb_int_t status)
 // read line
 static tb_size_t xm_sandbox_readline(tb_char_t* data, tb_size_t maxn, tb_char_t const* prompt)
 {
-#ifndef TB_CONFIG_OS_WINDOWS
+#ifdef XM_CONFIG_API_HAVE_READLINE
     // get line
     tb_char_t const* line = readline(prompt);
     if (line)
