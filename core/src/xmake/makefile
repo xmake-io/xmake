@@ -53,6 +53,7 @@ xmake_C_FILES 			+= \
 
 # flags
 xmake_CXFLAGS 			+= -D__tb_prefix__=\"xmake\"
+xmake_CXFLAGS 			+= $(if $(findstring readline,$(base_LIBNAMES)),-DXM_CONFIG_API_HAVE_READLINE,)
 	
 # includes
 xmake_INC_DIRS 		    += \
