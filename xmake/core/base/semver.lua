@@ -40,10 +40,11 @@ local string = require("base/string")
 local MAX_LENGTH = 256
 local MAX_SAFE_INTEGER = 9007199254740991
 
--- TODO
+-- semver.parse
 --
 -- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
 -- semver.parse('a.b.c') => nil
+--
 function semver.parse(version)
     if isa(version, semver) then
         return version
@@ -65,7 +66,7 @@ function semver.parse(version)
     return version
 end
 
--- TODO
+-- semver.valid
 --
 -- semver.valid('1.2.3') => '1.2.3'
 -- semver.valid('a.b.c') => nil
@@ -78,7 +79,7 @@ function semver.valid(version)
     return nil
 end
 
--- TODO
+-- semver.compare
 --
 function semver.compare(v1, v2)
     local errors
@@ -93,9 +94,7 @@ function semver.compare(v1, v2)
     return v1:compare(v2)
 end
 
--- TODO
---
--- semver.gt('1.2.3', '9.8.7') => false
+-- semver.gt
 --
 function semver.gt(v1, v2)
     local errors
@@ -110,7 +109,7 @@ function semver.gt(v1, v2)
     return v1 > v2
 end
 
--- TODO
+-- semver.lt
 --
 -- semver.lt('1.2.3', '9.8.7') => true
 --
@@ -127,7 +126,7 @@ function semver.lt(v1, v2)
     return v1 < v2
 end
 
--- TODO
+-- semver.gte
 --
 -- semver.gte('1.2.3', '9.8.7') => false
 --
@@ -144,7 +143,7 @@ function semver.gte(v1, v2, loose)
     return v1 >= v2
 end
 
--- TODO
+-- semver.lte
 --
 -- semver.lte('1.2.3', '9.8.7') => true
 --
@@ -161,7 +160,7 @@ function semver.lte(v1, v2, loose)
     return v1 <= v2
 end
 
--- TODO
+-- semver.eq
 --
 -- semver.eq('1.2.3', '9.8.7') => false
 --
@@ -178,7 +177,7 @@ function semver.eq(v1, v2, loose)
     return v1 == v2
 end
 
--- TODO
+-- semver.neq
 --
 -- semver.neq('1.2.3', '9.8.7') => true
 --
@@ -195,7 +194,7 @@ function semver.neq(v1, v2, loose)
     return v1 ~= v2
 end
 
--- TODO
+-- semver.cmp
 --
 function semver.cmp(v1, op, v2, loose)
     local errors
