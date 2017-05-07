@@ -3,6 +3,7 @@
 # xmake getter
 # usage: bash <(curl -s <my location>) [branch] [commit/__install_only__]
 
+set -o pipefail
 # print a LOGO!
 echo '                         _                      '
 echo '    __  ___ __  __  __ _| | ______              '
