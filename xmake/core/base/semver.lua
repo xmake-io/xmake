@@ -130,7 +130,7 @@ end
 --
 -- semver.gte('1.2.3', '9.8.7') => false
 --
-function semver.gte(v1, v2, loose)
+function semver.gte(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -147,7 +147,7 @@ end
 --
 -- semver.lte('1.2.3', '9.8.7') => true
 --
-function semver.lte(v1, v2, loose)
+function semver.lte(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -164,7 +164,7 @@ end
 --
 -- semver.eq('1.2.3', '9.8.7') => false
 --
-function semver.eq(v1, v2, loose)
+function semver.eq(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -181,7 +181,7 @@ end
 --
 -- semver.neq('1.2.3', '9.8.7') => true
 --
-function semver.neq(v1, v2, loose)
+function semver.neq(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -196,7 +196,7 @@ end
 
 -- semver.cmp
 --
-function semver.cmp(v1, op, v2, loose)
+function semver.cmp(v1, op, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -205,15 +205,13 @@ function semver.cmp(v1, op, v2, loose)
     if errors then
         return nil, errors
     end
-
-    return v1 ^ v2
 end
 
 -- TODO
 --
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
 --
-function semver.satisfies(version, range, loose)
+function semver.satisfies(version, range)
     return true
 end
 
