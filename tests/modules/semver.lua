@@ -92,6 +92,25 @@ function _test_semver()
     print("semver: ok!")
 end
 
+-- compare version
+function _check_semver_compare(v1, v2, result)
+
+    local comparison = semver.compare(v1, v2)
+    if comparison ~= result then
+        raise("\"%s\" ^ \"%s\" != %s got %s", v1 or "", v2 or "", result, comparison)
+    end
+end
+
+-- test compare version
+function _test_semver_compare()
+
+    _check_semver_compare("1.2.3", "1.2.2", 1)
+    _check_semver_compare("1.2.3", "1.2.3", 0)
+    _check_semver_compare("1.2.2", "1.2.3", -1)
+
+    print("semver.compare: ok!")
+end
+
 --
 -- run tests:
 --
@@ -101,6 +120,9 @@ function main()
 
     -- test semver
     _test_semver()
+
+    -- test semver compare
+    _test_semver_compare()
 
     -- test select version
     _test_semver_select()
