@@ -36,7 +36,7 @@ xmake_C_FILES 			+= \
 						os/emptydir \
 						os/strerror \
 						os/getwinsize \
-                        os/features \
+						os/features \
 						path/relative \
 						path/absolute \
 						path/translate \
