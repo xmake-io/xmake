@@ -197,14 +197,25 @@ end
 -- semver.cmp
 --
 function semver.cmp(v1, op, v2)
-    local errors
+    local result, errors
 
-    if not isa(v1, semver) then
-        v1, errors = semver(v1)
+    if op == "" or op == "=" or op == "==" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == ">" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == "<" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == ">=" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == "<=" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == "!=" then
+        result, errors = semver.eq(v1, v2)
+    else
+        errors = string.format("invalid operator: %s", op)
     end
-    if errors then
-        return nil, errors
-    end
+
+    return result, errors
 end
 
 -- TODO
