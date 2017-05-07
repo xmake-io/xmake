@@ -356,16 +356,12 @@ local function new(version)
     if isa(version, semver) then
         version = version.version
     elseif type(version) ~= 'string' then
-        -- TODO: raise, handle error
-        print('Invalid Version: ' .. version)
-        do return end
+        return nil, "invalid build" .. version
     end
 
     version = version:trim()
     if version:len() > MAX_LENGTH then
-        -- TODO: raise, handle error
-        print('version is longer than '..MAX_LENGTH..' characters')
-        do return end
+        return nil, string.format("version is longer than %d characters", MAX_LENGTH)
     end
 
     local s = setmetatable({
@@ -391,9 +387,7 @@ local function new(version)
     end
     if next and next:len() > 0 then
         if next:sub(1, 1) ~= '+' then
-            -- TODO: raise, handle error
-            print('expected build, got ' .. next)
-            do return end
+            return nil, string.format("expected build, got %s", next)
         end
         next = next:sub(2)
         s.build, next, errors = parse_build(next)
@@ -403,19 +397,13 @@ local function new(version)
     end
 
     if s.major > MAX_SAFE_INTEGER or s.major < 0 then
-        -- TODO: raise, handle error
-        print('Invalid major version')
-        do return end
+        return nil, string.format("invalid major version %d", s.major)
     end
     if s.minor > MAX_SAFE_INTEGER or s.minor < 0 then
-        -- TODO: raise, handle error
-        print('Invalid minor version')
-        do return end
+        return nil, string.format("invalid minor version %d", s.minor)
     end
     if s.patch > MAX_SAFE_INTEGER or s.patch < 0 then
-        -- TODO: raise, handle error
-        print('Invalid patch version')
-        do return end
+        return nil, string.format("invalid patch version %d", s.patch)
     end
 
     if s.prerelease then
@@ -430,10 +418,7 @@ local function new(version)
         s.build = {}
     end
 
-    local buffer = { ("%d.%d.%d"):format(s.major, s.minor, s.patch) }
-    local a = table.concat(s.prerelease, ".")
-    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
-    s.version = table.concat(buffer)
+    s:format()
 
     return s
 end
