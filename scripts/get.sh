@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # xmake getter
-# usage: bash <(curl -s <my location>) [branch] [commit]
+# usage: bash <(curl -s <my location>) [branch] [commit/__install_only__]
 
 # print a LOGO!
 echo '                         _                      '
@@ -71,7 +71,10 @@ then
 else
     cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo "$PWD")" /tmp/$$xmake_getter || my_exit 'Clone Fail'
 fi
-make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
+if [ 'x__install_only__' != "x$2" ]
+then
+    make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
+fi
 IFS=':'
 patharr=($PATH)
 prefix=
