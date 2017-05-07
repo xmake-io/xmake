@@ -44,8 +44,25 @@ local MAX_SAFE_INTEGER = 9007199254740991
 --
 -- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
 -- semver.parse('a.b.c') => nil
-function semver.parse(version, loose)
-    return nil
+function semver.parse(version)
+    if isa(version, semver) then
+        return version
+    end
+
+    if type(version) ~= 'string' then
+        return nil
+    end
+
+    if version:len() > MAX_LENGTH then
+        return nil
+    end
+
+    local version, errors = semver(version)
+    if errors then
+        return null
+    end
+
+    return version
 end
 
 -- TODO
