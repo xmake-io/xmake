@@ -47,10 +47,10 @@ test_tools()
 }
 install_tools()
 {
-    { apt-get --version >/dev/null 2>&1 && $sudoprefix apt-get install -y git build-essential; } ||
-    { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
-    { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
-    { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm git base-devel; }
+    { apt-get --version >/dev/null 2>&1 && $sudoprefix apt-get install -y git build-essential libreadline-dev; } ||
+    { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git libreadline-dev && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
+    { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git libreadline-dev && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
+    { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm git base-devel libreadline-dev; }
 }
 test_tools || { install_tools && test_tools; } || my_exit 'Dependencies Installation Fail' 1
 branch=
