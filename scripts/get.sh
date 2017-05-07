@@ -68,7 +68,7 @@ then
     then
         cd /tmp/$$xmake_getter || my_exit 'Chdir Error'
         git checkout -qf "$2"
-        cd -
+        cd - || my_exit 'Chdir Error'
     fi
 else
     cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo "$PWD")" /tmp/$$xmake_getter || my_exit 'Clone Fail'
