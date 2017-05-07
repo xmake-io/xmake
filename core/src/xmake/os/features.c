@@ -44,9 +44,9 @@ tb_int_t xm_os_features(lua_State* lua)
     // features
     const char* features_table[] = {
 #       ifdef XM_CONFIG_API_HAVE_READLINE
-            "readline"
+            "readline",
 #       endif
-        ,   tb_null
+            tb_null
     };
 
     // new array
