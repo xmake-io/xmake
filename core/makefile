@@ -269,8 +269,8 @@ base_LIBNAMES 	:= ws2_32
 endif
 
 ifeq ($(PLAT),linux)
-base_LIBPATH 	:= $(shell find "/usr" -name libreadline.so | grep ".*/" -o)
-base_LIBNAMES 	:= $(shell find "/usr" -name libreadline.so | grep readline -o) m dl pthread
+base_LIBPATH 	:=
+base_LIBNAMES 	:= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) m dl pthread
 endif
 
 # check jit compiler
