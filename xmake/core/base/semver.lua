@@ -71,7 +71,7 @@ end
 -- semver.valid('a.b.c') => nil
 --
 function semver.valid(version)
-    local v = semver(v)
+    local v = semver(version)
     if v then
         return v.version
     end
