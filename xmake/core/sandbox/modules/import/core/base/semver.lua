@@ -59,7 +59,14 @@ function sandbox_core_base_semver.select(range, versions, tags, branches)
     return verinfo.version, verinfo.source
 end
 
-setmetatable(sandbox_core_base_semver, { __call = function(_, ...) return semver(...) end })
+setmetatable(sandbox_core_base_semver, { __call = function(_, ...)
+    local version, errors = semver(...)
+    if errors then
+        raise(errors)
+    end
+
+    return version
+end })
 
 -- return module
 return sandbox_core_base_semver

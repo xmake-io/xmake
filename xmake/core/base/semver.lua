@@ -298,9 +298,7 @@ local function parse_version(s)
 
     major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
     if not major then
-        -- TODO: raise, handle error
-        print('Invalid version: ' .. s)
-        do return end
+        return nil, nil, nil, nil, string.format("invalid version %s", s)
     end
 
     return tonumber(major), tonumber(minor), tonumber(patch), next
@@ -321,9 +319,7 @@ local function parse_prerelease(s)
         local p
         p, next = parse_prerelease(next:sub(2))
         if not p or (type(p) == 'string' and p:len() == 0) then
-            -- TODO: raise, handle error
-            print('Invalid prerelease: ' .. s)
-            do return end
+            return nil, nil, string.format("invalid prerelease %s", s)
         end
         prerelease = prerelease .. '.' .. p
     end
@@ -336,9 +332,7 @@ local function parse_build(s)
         local b
         b, next = parse_build(next:sub(2))
         if not b or b:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid build: ' .. s)
-            do return end
+            return nil, nil, string.format("invalid build %s", s)
         end
         build = build .. '.' .. b
     end
@@ -368,13 +362,19 @@ local function new(version)
         ,   build = nil
     }, semver)
 
-    local next
-    s.major, s.minor, s.patch, next = parse_version(version)
+    local next, errors
+    s.major, s.minor, s.patch, next, errors = parse_version(version)
+    if errors then
+        return nil, errors
+    end
     if next and next:len() > 0 then
         if next:sub(1, 1) == '-' then
             next = next:sub(2)
         end
-        s.prerelease, next = parse_prerelease(next)
+        s.prerelease, next, errors = parse_prerelease(next)
+        if errors then
+            return nil, errors
+        end
     end
     if next and next:len() > 0 then
         if next:sub(1, 1) ~= '+' then
@@ -383,7 +383,10 @@ local function new(version)
             do return end
         end
         next = next:sub(2)
-        s.build, next = parse_build(next)
+        s.build, next, errors = parse_build(next)
+        if errors then
+            return nil, errors
+        end
     end
 
     if s.major > MAX_SAFE_INTEGER or s.major < 0 then
