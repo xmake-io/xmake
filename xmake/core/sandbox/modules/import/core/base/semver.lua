@@ -30,6 +30,15 @@ local table  = require("base/table")
 local semver = require("base/semver")
 local raise  = require("sandbox/modules/raise")
 
+-- parse a version string into a props table containing all semver infos
+--
+-- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
+-- semver.parse('a.b.c') => nil
+--
+function sandbox_core_base_semver.parse(version)
+    return semver.parse(version)
+end
+
 -- this version satisfies in the given version range
 --
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
