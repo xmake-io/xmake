@@ -83,6 +83,8 @@ end
 -- test version
 function _test_semver()
 
+    _check_semver("1.2.3", 1, 2, 3)
+    _check_semver("1.2.3-beta", 1, 2, 3, {"beta"})
     _check_semver("1.2.3-beta+77", 1, 2, 3, {"beta"}, {"77"})
     _check_semver("v1.2.3-alpha.1+77", 1, 2, 3, {"alpha", "1"}, {"77"})
     _check_semver("v3.2.1-alpha.1+77.foo", 3, 2, 1, {"alpha", "1"}, {"77", "foo"})
