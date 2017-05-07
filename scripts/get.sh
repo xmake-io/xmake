@@ -35,13 +35,14 @@ my_exit(){
 }
 test_tools()
 {
+    prog='#include<readline/readline.h>\nint main(){readline(0);return 0;}'
     {
         git --version &&
         make --version &&
         {
-            cc --version ||
-            gcc --version ||
-            clang --version
+            echo -e "$prog" | cc -xc - -o /dev/null -lreadline ||
+            echo -e "$prog" | gcc -xc - -o /dev/null -lreadline ||
+            echo -e "$prog" | clang -xc - -o /dev/null -lreadline
         }
     } >/dev/null 2>&1
 }
