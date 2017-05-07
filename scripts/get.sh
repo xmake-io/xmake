@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # xmake getter
-# usage: bash <(curl -s <my location>) [branch]
+# usage: bash <(curl -s <my location>) [branch] [commit]
 
 # print a LOGO!
 echo '                         _                      '
@@ -62,6 +62,12 @@ fi
 if [ 'x-b __local__' != "x$branch" ]
 then
     git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    if [ x != "x$2" ]
+    then
+        cd /tmp/$$xmake_getter || my_exit 'Chdir Error'
+        git checkout -qf "$2"
+        cd -
+    fi
 else
     cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo "$PWD")" /tmp/$$xmake_getter || my_exit 'Clone Fail'
 fi
