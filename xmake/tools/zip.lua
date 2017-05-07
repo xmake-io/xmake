@@ -19,31 +19,19 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clean.lua
+-- @file        zip.lua
 --
 
--- on clean the given package
-function _on_clean_package(package)
-    print("clean %s", package:name())
+-- init it
+function init(shellname)
+
+    -- save name
+    _g.shellname = shellname or "zip"
 end
 
--- clean the given package
-function main(package)
+-- check the given flags 
+function check(flags)
 
-    -- the package scripts
-    local scripts =
-    {
-        package:get("clean_before") 
-    ,   package:get("clean")  or _on_clean_package
-    ,   package:get("clean_after") 
-    }
-
-    -- run the package scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(package)
-        end
-    end
+    -- check it
+    os.run("%s --help", _g.shellname)
 end
-

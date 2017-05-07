@@ -19,31 +19,44 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        build.lua
+-- @file        ping.lua
 --
 
--- on build the given package
-function _on_build_package(package)
-    print("build %s", package:name())
+-- init it
+function init(shellname)
+
+    -- save name
+    _g.shellname = shellname or "ping"
 end
 
--- build the given package
-function main(package)
+-- send ping to host
+function send(host)
 
-    -- the package scripts
-    local scripts =
-    {
-        package:get("build_before") 
-    ,   package:get("build")  or _on_build_package
-    ,   package:get("build_after") 
-    }
+    -- ping it
+    local data = nil
+    if os.host() == "windows" then
+        data = os.iorun("%s -n 1 %s", _g.shellname, host)
+    else
+        data = os.iorun("%s -c 1 %s", _g.shellname, host)
+    end
 
-    -- run the package scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(package)
-        end
+    -- find time
+    local time = data:match("time=(.-)ms", 1, true)
+    if time then
+        return tonumber(time:trim())
+    end
+
+    -- failed
+    return -1
+end
+
+-- check the given flags 
+function check(flags)
+
+    -- check it
+    if os.host() == "windows" then
+        os.run("%s -n 1 127.0.0.1", _g.shellname)
+    else
+        os.run("%s -c 1 127.0.0.1", _g.shellname)
     end
 end
-

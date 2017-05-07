@@ -35,7 +35,7 @@ local raise     = require("sandbox/modules/raise")
 -- .e.g
 -- 
 -- git.clone("git@github.com:tboox/xmake.git")
--- git.clone("git@github.com:tboox/xmake.git", {verbose = true, depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+-- git.clone("git@github.com:tboox/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake"})
 --
 function sandbox_core_tool_git.clone(url, args)
  
@@ -57,7 +57,7 @@ end
 -- .e.g
 -- 
 -- git.pull()
--- git.pull({verbose = true, remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
+-- git.pull({remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
 --
 function sandbox_core_tool_git.pull(args)
 
@@ -78,8 +78,8 @@ end
 --
 -- .e.g
 --
--- git.checkout("master", {verbose = true, repodir = "/tmp/xmake"})
--- git.checkout("v1.0.1", {verbose = true, repodir = "/tmp/xmake"})
+-- git.checkout("master", {repodir = "/tmp/xmake"})
+-- git.checkout("v1.0.1", {repodir = "/tmp/xmake"})
 --
 function sandbox_core_tool_git.checkout(commit, args)
 

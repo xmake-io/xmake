@@ -51,6 +51,11 @@ end
 -- on clean target 
 function _on_clean_target(target)
 
+    -- no target kind?
+    if not target:targetkind() then
+        return 
+    end
+
     -- remove the target file 
     _remove(target:targetfile()) 
 

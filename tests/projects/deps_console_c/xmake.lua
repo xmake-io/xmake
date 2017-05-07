@@ -1,16 +1,17 @@
 -- define package
 package("mbedtls")
-    set_url("git@github.com:ARMmbed/mbedtls.git")
-    add_requires("git@github.com:glennrp/libpng.git@libpng >=1.6.28")
-    on_build(function (package)
-    end)
-    on_install(function (package)
-    end)
+    set_urls("https://github.com/ARMmbed/mbedtls.git")
+    add_requires("https://github.com/glennrp/libpng.git@libpng >=1.6.28")
+package_end()
+
+-- group packages
+package("zlib-mbedtls")
+    add_requires("zlib >=1.2.11")
+    add_requires("mbedtls master optional")
 package_end()
 
 -- requires
-add_requires("zlib >=1.2.11")
-add_requires("mbedtls master optional")
+add_requires("zlib-mbedtls")
 add_requires("xmake-repo@tboox.tbox >=1.5.1 <1.6.1 optional")
 
 -- the debug mode

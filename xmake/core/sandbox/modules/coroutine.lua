@@ -27,6 +27,7 @@ local sandbox_coroutine = sandbox_coroutine or {}
 
 -- load modules
 local option    = require("base/option")
+local coroutine = require("base/coroutine")
 local raise     = require("sandbox/modules/raise")
 
 -- inherit some builtin interfaces
@@ -40,27 +41,13 @@ sandbox_coroutine.running   = coroutine.running
 function sandbox_coroutine.resume(co, ...)
 
     -- resume it
-    local ok, results = coroutine.resume(co, ...)
+    local ok, results_or_errors = coroutine.resume(co, ...)
     if not ok then
-
-        -- get errors
-        local errors = results
-        if option.get("backtrace") then
-            errors = debug.traceback(co, results)
-        elseif type(results) == "string" then
-            -- remove the prefix info
-            local _, pos = results:find(":%d+: ")
-            if pos then
-                errors = results:sub(pos + 1)
-            end
-        end
-
-        -- raise it
-        raise(errors)
+        raise(results_or_errors)
     end
 
     -- ok
-    return results
+    return results_or_errors
 end
 
 -- load module

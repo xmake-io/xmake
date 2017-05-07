@@ -168,7 +168,7 @@ function nf_rpathdir(dir)
         _g._RPATH = try
         {
             function ()
-                check(flag)
+                check(flag, true)
                 return true
             end
         }
@@ -215,19 +215,25 @@ function compile(sourcefiles, objectfile, incdepfile, flags)
 end
 
 -- check the given flags 
-function check(flags)
+function check(flags, trylink)
 
     -- make an stub source file
     local binaryfile = os.tmpfile() .. ".b"
+    local objectfile = os.tmpfile() .. ".o"
     local sourcefile = os.tmpfile() .. ".d"
 
     -- make stub code
     io.writefile(sourcefile, "void main() {\n}")
 
     -- check it, need check compflags and linkflags
-    os.run("%s %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+    if trylink then
+        os.run("%s %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+    else
+        os.run("%s -c %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+    end
 
     -- remove files
-    os.rm(binaryfile)
-    os.rm(sourcefile)
+    os.tryrm(binaryfile)
+    os.tryrm(objectfile)
+    os.tryrm(sourcefile)
 end

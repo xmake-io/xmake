@@ -42,6 +42,23 @@ for k, v in pairs(utils) do
     end
 end
 
+-- print each arguments
+function sandbox_utils._print(...)
+
+    -- format each arguments
+    local args = {}
+    for _, arg in ipairs({...}) do
+        if type(arg) == "string" then
+            table.insert(args, vformat(arg))
+        else
+            table.insert(args, arg)
+        end
+    end
+
+    -- print multi-variables with raw lua action
+    utils._print(unpack(args))
+end
+
 -- print format string with newline
 -- print builtin-variables with $(var)
 -- print multi-variables with raw lua action
@@ -56,20 +73,20 @@ function sandbox_utils.print(format, ...)
         {
             function ()
                 -- attempt to print format string first
-                utils._iowrite(vformat(format, unpack(args)) .. "\n")
+                utils._print(vformat(format, unpack(args)))
             end,
             catch 
             {
                 function ()
                     -- print multi-variables with raw lua action
-                    utils._print(format, unpack(args))
+                    sandbox_utils._print(format, unpack(args))
                 end
             }
         }
 
     else
         -- print multi-variables with raw lua action
-        utils._print(format, ...)
+        sandbox_utils._print(format, ...)
     end
 end
 
@@ -84,7 +101,7 @@ end
 function sandbox_utils.cprint(format, ...)
 
     -- done
-    utils._iowrite(colors(vformat(format, ...) .. "\n"))
+    utils._print(colors(vformat(format, ...)))
 end
 
 -- print format string, the builtin variables and colors without newline
@@ -123,7 +140,6 @@ function sandbox_utils.assert(value, format, ...)
     -- return it 
     return value
 end
-
 
 -- return module
 return sandbox_utils

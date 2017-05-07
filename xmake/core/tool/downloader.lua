@@ -65,24 +65,16 @@ function downloader.load()
     return instance
 end
 
--- get properties of the tool
-function downloader:get(name)
-
-    -- get it
-    return self:_tool().get(name)
-end
-
 -- download url
 --
 -- .e.g
 --
 -- downloader.load():download(url, outputfile)
--- downloader.load():download(url, outputfile, {verbose = true})
 --
-function downloader:download(url, outputfile, args)
+function downloader:download(url, outputfile)
 
     -- download it
-    return sandbox.load(self:_tool().download, url, outputfile, args)
+    return sandbox.load(self:_tool().download, url, path.translate(outputfile))
 end
 
 -- return module

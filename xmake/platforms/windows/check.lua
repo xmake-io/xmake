@@ -90,8 +90,8 @@ function _apply_vsenv(config, vs)
     end
 
     -- make the genvcvars.bat 
-    local genvcvars_bat = path.join(os.tmpdir(), "xmake.genvcvars.bat")
-    local genvcvars_dat = path.join(os.tmpdir(), "xmake.genvcvars.dat")
+    local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
+    local genvcvars_dat = os.tmpfile() .. "_genvcvars.dat"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
     file:print("call \"%s\" %s > nul", vcvarsall, config.get("arch"))
@@ -305,11 +305,27 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-ld",    "",    "rustc",            "the rust linker") 
 
     -- insert asm tools to toolchains
-    if config.get("arch"):find("64") then
+    local arch = config.get("arch")
+    if arch and arch:find("64") then
         checker.toolchain_insert(toolchains, "as",   "",    "ml64.exe",         "the assember") 
     else
         checker.toolchain_insert(toolchains, "as",   "",    "ml.exe",           "the assember") 
     end
+
+    -- TODO
+    -- insert archiver and unarchiver tools to toolchains
+    checker.toolchain_insert(toolchains, "tar",         "",   "tar",            "the common file [un]archiverr") 
+    checker.toolchain_insert(toolchains, "gzip",        "",   "gzip",           "the gzip file [un]archiver") 
+    checker.toolchain_insert(toolchains, "7z",          "",   "7z",             "the 7z file [un]archiver") 
+    checker.toolchain_insert(toolchains, "zip",         "",   "zip",            "the zip file archiver") 
+    checker.toolchain_insert(toolchains, "unzip",       "",   "unzip",          "the zip file unarchiver") 
+
+    -- insert other tools to toolchains
+    checker.toolchain_insert(toolchains, "make",        "",   "nmake",          "the make utility") 
+    checker.toolchain_insert(toolchains, "git",         "",   "git",            "the version control utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",   "curl",           "the url download utility") 
+    checker.toolchain_insert(toolchains, "downloader",  "",   "wget",           "the url download utility") 
+    checker.toolchain_insert(toolchains, "ping",        "",   "ping",           "the ping utility") 
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains
@@ -328,18 +344,20 @@ function main(kind, toolkind)
         local config = import("core.project." .. kind)
 
         -- apply vs envirnoment (maybe config.arch has been updated)
-        if not _apply_vsenv(config, config.get("vs")) then
-            return 
-        end
+        local vsenv = _apply_vsenv(config, config.get("vs"))
 
         -- enter environment
-        environment.enter("toolchains")
+        if vsenv then
+            environment.enter("toolchains")
+        end
 
         -- check it
         checker.toolchain_check(config, toolkind, _toolchains)
 
         -- leave environment
-        environment.leave("toolchains")
+        if vsenv then
+            environment.leave("toolchains")
+        end
 
         -- end
         return 

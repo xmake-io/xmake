@@ -2,6 +2,30 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#68](https://github.com/tboox/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
+* add `is_host` api to get current host operating system
+* [#79](https://github.com/tboox/xmake/issues/79): Improve `xmake lua` to run interactive commands, read-eval-print (REPL)
+
+### Changes
+
+* Modify option menu color.
+* [#71](https://github.com/tboox/xmake/issues/71): Improve to map optimization flags for cl.exe
+* [#73](https://github.com/tboox/xmake/issues/73): Attempt to get executable path as xmake's program directory
+* Improve the scope of `xmake.lua` in `add_subdirs` and use independent sub-scope to avoid dirty scope
+* [#78](https://github.com/tboox/xmake/pull/78): Get terminal size in runtime and soft-wrap the help printing
+* Avoid generate `.xmake` directory if be not in project
+
+### Bugs fixed
+
+* [#67](https://github.com/tboox/xmake/issues/67): Fix `sudo make install` permission problem
+* [#70](https://github.com/tboox/xmake/issues/70): Fix check android compiler error
+* Fix temporary file path conflict
+* Fix `os.host` and `os.arch` interfaces
+* Fix interpreter bug for loading root api
+* [#77](https://github.com/tboox/xmake/pull/77): fix `cprint` no color reset eol
+
 ## v2.1.3
 
 ### New features
@@ -19,7 +43,7 @@
 * Improve check toolchains and implement delay checking
 * Add user tips when scanning and generating `xmake.lua` automatically
 
-## Bugs fixed
+### Bugs fixed
 
 * Fix error tips for checking xmake min version
 * [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx and windows
@@ -245,6 +269,30 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#68](https://github.com/tboox/xmake/issues/68): 增加`$(programdir)`和`$(xmake)`内建变量
+* 添加`is_host`接口去判断当前的主机环境
+* [#79](https://github.com/tboox/xmake/issues/79): 增强`xmake lua`，支持交互式解释执行
+
+### 改进
+
+* 修改菜单选项颜色
+* [#71](https://github.com/tboox/xmake/issues/71): 针对widows编译器改进优化选项映射
+* [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
+* 在`add_subdirs`中的子`xmake.lua`中，使用独立子作用域，避免作用域污染导致的干扰问题
+* [#78](https://github.com/tboox/xmake/pull/78): 美化非全屏终端窗口下的`xmake --help`输出
+* 避免产生不必要的`.xmake`目录，如果不在工程中的时候
+
+### Bugs修复
+
+* [#67](https://github.com/tboox/xmake/issues/67): 修复 `sudo make install` 命令权限问题
+* [#70](https://github.com/tboox/xmake/issues/70): 修复检测android编译器错误
+* 修复临时文件路径冲突问题
+* 修复`os.host`, `os.arch`等接口
+* 修复根域api加载干扰其他子作用域问题
+* [#77](https://github.com/tboox/xmake/pull/77): 修复`cprint`色彩打印中断问题
 
 ## v2.1.3
 

@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.task")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -55,29 +56,25 @@ import("repository")
 -- load project
 function _load_project()
 
+    -- config it first
+    task.run("config")
+
     -- enter project directory
     os.cd(project.directory())
-
-    -- load config
-    config.load()
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- load project
-    project.load()
 end
 
 -- install and update all outdated package dependencies
-function _install(is_global)
+function _install(requires)
 
     -- install packages
-    package.install_packages(is_global)
+    package.install_packages(requires)
 end
 
--- clear all installed packages cache
-function _clear(is_global)
-    -- TODO
+-- clear all installed package caches
+function _clear()
+
+    -- clear all caches
+    package.clear_caches()
 end
 
 -- search for the given packages from repositories
@@ -106,13 +103,8 @@ function main()
     -- load project first
     _load_project()
 
-    -- install and update all outdated package dependencies
-    if option.get("install") then
-
-        _install(option.get("global"))
-
     -- clear all installed packages cache
-    elseif option.get("clear") then
+    if option.get("clear") then
 
         _clear(option.get("global"))
 
@@ -133,7 +125,7 @@ function main()
 
     -- install and update all outdated package dependencies by default if no arguments
     else
-        _install(option.get("global"))
+        _install(option.get("requires"))
     end
 end
 

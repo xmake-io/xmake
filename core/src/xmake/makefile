@@ -16,13 +16,13 @@ xmake_C_FILES 			+= \
 						machine \
 						os/argv \
 						os/find \
-						os/uuid \
 						os/isdir \
 						os/rmdir \
 						os/mkdir \
 						os/cpdir \
 						os/chdir \
 						os/mtime \
+						os/sleep \
 						os/mclock \
 						os/curdir \
 						os/tmpdir \
@@ -35,10 +35,13 @@ xmake_C_FILES 			+= \
 						os/getenv \
 						os/emptydir \
 						os/strerror \
+						os/getwinsize \
 						path/relative \
 						path/absolute \
 						path/translate \
 						path/is_absolute \
+						hash/uuid \
+						hash/sha256 \
 						string/strcmp \
 						string/endswith \
 						string/startswith \
@@ -46,7 +49,8 @@ xmake_C_FILES 			+= \
 						process/openv \
 						process/wait \
 						process/waitlist \
-						process/close 
+						process/close \
+						sandbox/interactive
 						
 
 # flags

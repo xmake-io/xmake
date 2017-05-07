@@ -36,11 +36,10 @@ function _build_from_object(target, sourcefile, objectfile, percent)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", percent, sourcefile)
     else
-        cprint("${magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", percent, sourcefile)
     end
 
     -- trace verbose info
@@ -59,11 +58,10 @@ function _build_from_static(target, sourcefile, objectfile, percent)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", percent, sourcefile)
     else
-        cprint("${magenta}inserting.$(mode) %s", sourcefile)
+        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", percent, sourcefile)
     end
 
     -- trace verbose info
@@ -146,11 +144,10 @@ function _build_object(target, buildinfo, index, sourcebatch)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim}%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", percent, ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     else
-        print("%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
@@ -165,96 +162,17 @@ end
 -- build each objects from the given source batch
 function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
 
-    -- make objects
-    local index = 1
-    local total = #sourcebatch.sourcefiles
-    local tasks = {}
-    local procs = {}
-    repeat
+    -- run build jobs for each source file 
+    local curdir = os.curdir()
+    process.runjobs(function (index)
 
-        -- wait processes
-        local tasks_finished = {}
-        local procs_count = #procs
-        if procs_count > 0 then
+        -- force to set the current directory first because the other jobs maybe changed it
+        os.cd(curdir)
 
-            -- wait them
-            local procinfos = process.waitlist(procs, ifelse(procs_count < jobs, 0, -1))
-            for _, procinfo in ipairs(procinfos) do
-                
-                -- the process info
-                local proc      = procinfo[1]
-                local procid    = procinfo[2]
-                local status    = procinfo[3]
+        -- build object
+        _build_object(target, buildinfo, index, sourcebatch)
 
-                -- check
-                assert(procs[procid] == proc)
-
-                -- resume this task
-                local job_task = tasks[procid]
-                local job_proc = coroutine.resume(job_task, 1, status)
-
-                -- the other process is pending for this task?
-                if coroutine.status(job_task) ~= "dead" then
-
-                    -- check
-                    assert(job_proc)
-
-                    -- update the pending process
-                    procs[procid] = job_proc
-
-                -- this task has been finised?
-                else
-
-                    -- mark this task as finised
-                    tasks_finished[procid] = true
-                end
-            end
-        end
-
-        -- update the pending tasks and procs
-        local tasks_pending = {}
-        local procs_pending = {}
-        for taskid, job_task in ipairs(tasks) do
-            if not tasks_finished[taskid] then
-                table.insert(tasks_pending, job_task)
-                table.insert(procs_pending, procs[taskid])
-            end
-        end
-        tasks = tasks_pending
-        procs = procs_pending
-
-        -- produce tasks
-        local curdir = os.curdir()
-        while #tasks < jobs and index <= total do
-
-            -- new task
-            local job_task = coroutine.create(function (index)
-
-                            -- force to set the current directory first because the other jobs maybe changed it
-                            os.cd(curdir)
-
-                            -- build object
-                            _build_object(target, buildinfo, index, sourcebatch)
-
-                        end)
-
-            -- resume it first
-            local job_proc = coroutine.resume(job_task, index)
-            if coroutine.status(job_task) ~= "dead" then
-
-                -- check
-                assert(job_proc)
-
-                -- put task and proc to the pendings tasks
-                table.insert(tasks, job_task)
-                table.insert(procs, job_proc)
-            end
-
-            -- next index
-            index = index + 1
-        end
-
-    until #tasks == 0
+    end, #sourcebatch.sourcefiles, jobs)
 
     -- update object index
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles

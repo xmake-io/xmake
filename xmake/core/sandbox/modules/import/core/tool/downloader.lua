@@ -35,9 +35,8 @@ local raise         = require("sandbox/modules/raise")
 -- .e.g
 -- 
 -- downloader.download(url, outputfile)
--- downloader.download(url, outputfile, {verbose = true})
 --
-function sandbox_core_tool_downloader.download(url, outputfile, args)
+function sandbox_core_tool_downloader.download(url, outputfile)
  
     -- get the downloader instance
     local instance, errors = downloader.load()
@@ -46,7 +45,7 @@ function sandbox_core_tool_downloader.download(url, outputfile, args)
     end
 
     -- download it
-    local ok, errors = instance:download(url, outputfile, args)
+    local ok, errors = instance:download(url, outputfile)
     if not ok then
         raise(errors)
     end

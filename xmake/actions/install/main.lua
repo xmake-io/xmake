@@ -58,7 +58,7 @@ function main()
             function (errors)
 
                 -- show tips
-                cprint("${bright red}error: ${default red}installation failed, may permission denied!")
+                cprint("${bright red}error: ${clear}installation failed, may permission denied!")
 
                 -- continue to install with administrator permission?
                 if os.feature("sudo") then

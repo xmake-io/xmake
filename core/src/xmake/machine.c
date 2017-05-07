@@ -33,8 +33,12 @@
  * includes
  */
 #include "xmake.h"
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
+#elif defined(TB_CONFIG_OS_MACOSX)
+#   include <mach-o/dyld.h>
+#elif defined(TB_CONFIG_OS_LINUX)
+#   include <unistd.h>
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -56,13 +60,13 @@ typedef struct __xm_machine_impl_t
 // the os functions
 tb_int_t xm_os_argv(lua_State* lua);
 tb_int_t xm_os_find(lua_State* lua);
-tb_int_t xm_os_uuid(lua_State* lua);
 tb_int_t xm_os_isdir(lua_State* lua);
 tb_int_t xm_os_rmdir(lua_State* lua);
 tb_int_t xm_os_mkdir(lua_State* lua);
 tb_int_t xm_os_cpdir(lua_State* lua);
 tb_int_t xm_os_chdir(lua_State* lua);
 tb_int_t xm_os_mtime(lua_State* lua);
+tb_int_t xm_os_sleep(lua_State* lua);
 tb_int_t xm_os_mclock(lua_State* lua);
 tb_int_t xm_os_curdir(lua_State* lua);
 tb_int_t xm_os_tmpdir(lua_State* lua);
@@ -75,12 +79,17 @@ tb_int_t xm_os_setenv(lua_State* lua);
 tb_int_t xm_os_getenv(lua_State* lua);
 tb_int_t xm_os_emptydir(lua_State* lua);
 tb_int_t xm_os_strerror(lua_State* lua);
+tb_int_t xm_os_getwinsize(lua_State* lua);
 
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
+
+// the hash functions
+tb_int_t xm_hash_uuid(lua_State* lua);
+tb_int_t xm_hash_sha256(lua_State* lua);
 
 // the string functions
 tb_int_t xm_string_strcmp(lua_State* lua);
@@ -94,6 +103,9 @@ tb_int_t xm_process_wait(lua_State* lua);
 tb_int_t xm_process_waitlist(lua_State* lua);
 tb_int_t xm_process_close(lua_State* lua);
 
+// the sandbox functions
+tb_int_t xm_sandbox_interactive(lua_State* lua);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -103,13 +115,13 @@ static luaL_Reg const g_os_functions[] =
 {
     { "argv",           xm_os_argv      }
 ,   { "find",           xm_os_find      }
-,   { "uuid",           xm_os_uuid      }
 ,   { "isdir",          xm_os_isdir     }
 ,   { "rmdir",          xm_os_rmdir     }
 ,   { "mkdir",          xm_os_mkdir     }
 ,   { "cpdir",          xm_os_cpdir     }
 ,   { "chdir",          xm_os_chdir     }
 ,   { "mtime",          xm_os_mtime     }
+,   { "sleep",          xm_os_sleep     }
 ,   { "mclock",         xm_os_mclock    }
 ,   { "curdir",         xm_os_curdir    }
 ,   { "tmpdir",         xm_os_tmpdir    }
@@ -122,6 +134,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "getenv",         xm_os_getenv    }
 ,   { "emptydir",       xm_os_emptydir  }
 ,   { "strerror",       xm_os_strerror  }
+,   { "getwinsize",     xm_os_getwinsize}
 ,   { tb_null,          tb_null         }
 };
 
@@ -133,6 +146,14 @@ static luaL_Reg const g_path_functions[] =
 ,   { "translate",      xm_path_translate   }
 ,   { "is_absolute",    xm_path_is_absolute }
 ,   { tb_null,          tb_null             }
+};
+
+// the hash functions
+static luaL_Reg const g_hash_functions[] = 
+{
+    { "uuid",           xm_hash_uuid   }
+,   { "sha256",         xm_hash_sha256 }
+,   { tb_null,          tb_null        }
 };
 
 // the string functions
@@ -153,6 +174,13 @@ static luaL_Reg const g_process_functions[] =
 ,   { "waitlist",       xm_process_waitlist }
 ,   { "close",          xm_process_close    }
 ,   { tb_null,          tb_null             }
+};
+
+// the sandbox functions
+static luaL_Reg const g_sandbox_functions[] = 
+{
+    { "interactive",    xm_sandbox_interactive }
+,   { tb_null,          tb_null                }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -199,8 +227,8 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
             break;
         }
 
-#ifdef TB_CONFIG_OS_WINDOWS
-        // get the program directory
+#if defined(TB_CONFIG_OS_WINDOWS)
+        // get the executale file path as program directory
         tb_size_t size = (tb_size_t)GetModuleFileName(tb_null, path, (DWORD)maxn);
         tb_assert_and_check_break(size < maxn);
 
@@ -219,6 +247,57 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
 
         // ok
         ok = tb_true;
+#elif defined(TB_CONFIG_OS_MACOSX)
+        /*
+         * _NSGetExecutablePath() copies the path of the main executable into the buffer. The bufsize parameter
+         * should initially be the size of the buffer.  The function returns 0 if the path was successfully copied,
+         * and *bufsize is left unchanged. It returns -1 if the buffer is not large enough, and *bufsize is set 
+         * to the size required. 
+         * 
+         * Note that _NSGetExecutablePath will return "a path" to the executable not a "real path" to the executable. 
+         * That is the path may be a symbolic link and not the real file. With deep directories the total bufsize 
+         * needed could be more than MAXPATHLEN.
+         */
+        tb_uint32_t size = (tb_uint32_t)maxn;
+        if (!_NSGetExecutablePath(path, &size))
+        {
+            // get path size
+            size = tb_strlen(path);
+
+            // get the directory
+            while (size-- > 0)
+            {
+                if (path[size] == '/') 
+                {
+                    path[size] = '\0';
+                    break;
+                }
+            }
+
+            // ok
+            ok = tb_true;
+        }
+#elif defined(TB_CONFIG_OS_LINUX)
+        // get the executale file path as program directory
+        ssize_t size = readlink("/proc/self/exe", path, (size_t)maxn);
+        if (size > 0 && size < maxn)
+        {
+            // end
+            path[size] = '\0';
+
+            // get the directory
+            while (size-- > 0)
+            {
+                if (path[size] == '/') 
+                {
+                    path[size] = '\0';
+                    break;
+                }
+            }
+
+            // ok
+            ok = tb_true;
+        }
 #endif
 
     } while (0);
@@ -301,11 +380,17 @@ xm_machine_ref_t xm_machine_init()
         // bind path functions
         luaL_register(impl->lua, "path", g_path_functions);
 
+        // bind hash functions
+        luaL_register(impl->lua, "hash", g_hash_functions);
+
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
 
         // bind process functions
         luaL_register(impl->lua, "process", g_process_functions);
+
+        // bind sandbox functions
+        luaL_register(impl->lua, "sandbox", g_sandbox_functions);
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)

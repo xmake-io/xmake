@@ -117,6 +117,9 @@ function _package_target(target)
 
     -- get kind
     local kind = target:get("kind")
+    if not kind then
+        return 
+    end
 
     -- get script 
     local scripts =

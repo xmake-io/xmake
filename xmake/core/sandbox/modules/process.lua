@@ -23,6 +23,7 @@
 --
 
 -- load modules
+local process   = require("base/process")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
@@ -125,6 +126,26 @@ function sandbox_process.waitlist(processes, timeout)
 
     -- timeout or finished
     return infos
+end
+
+-- async run task and echo waiting info
+function sandbox_process.asyncrun(task, waitchars)
+
+    -- async run it
+    local ok, errors = process.asyncrun(task, waitchars)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- run jobs with processes
+function sandbox_process.runjobs(jobfunc, total, comax)
+
+    -- run them
+    local ok, errors = process.runjobs(jobfunc, total, comax)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- return module

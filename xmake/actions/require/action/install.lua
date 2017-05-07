@@ -24,22 +24,17 @@
 
 -- imports
 import("build")
-import("clean")
 import("download")
 
 -- on install the given package
 function _on_install_package(package)
-    print("install %s", package:name())
 end
 
 -- install the given package
-function main(package, is_global)
-
-    -- TODO is_global for install
-    --
+function main(package, cachedir)
 
     -- get working directory of this package
-    local workdir = path.join(os.tmpdir(), "packages", package:name())
+    local workdir = path.join(cachedir, package:name() .. "-" .. (package:version() or "group"))
 
     -- ensure the working directory first
     os.mkdir(workdir)
@@ -68,9 +63,6 @@ function main(package, is_global)
             script(package)
         end
     end
-
-    -- clean package last
-    clean.main(package)
 
     -- leave working directory
     os.cd(oldir)

@@ -45,6 +45,7 @@ function utils._iowrite(...)
     -- print it if not quiet
     if not option.get("quiet") then
         io.write(...)
+        io.flush()
     end
 end
 
@@ -106,7 +107,7 @@ function utils.verror(format, ...)
     if option.get("verbose") and format ~= nil then
         
         -- trace
-        utils.cprint("${bright red}error: ${default red}" .. string.tryformat(format, ...))
+        utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
     end
 end
 
@@ -115,7 +116,7 @@ function utils.error(format, ...)
 
     -- trace
     if format ~= nil then
-        utils.cprint("${bright red}error: ${default red}" .. string.tryformat(format, ...))
+        utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
     end
 end
 

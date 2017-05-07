@@ -67,11 +67,11 @@ function _build_from_objects(target, buildinfo)
     local verbose = option.get("verbose")
 
     -- trace percent info
-    cprintf("${green}[%02d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    local percent = (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount
     if verbose then
-        cprint("${dim magenta}archiving.$(mode) %s", path.filename(targetfile))
+        cprint("${green}[%02d%%]: ${dim magenta}archiving.$(mode) %s", percent, path.filename(targetfile))
     else
-        cprint("${magenta}archiving.$(mode) %s", path.filename(targetfile))
+        cprint("${green}[%02d%%]: ${magenta}archiving.$(mode) %s", percent, path.filename(targetfile))
     end
 
     -- trace verbose info

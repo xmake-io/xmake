@@ -25,10 +25,13 @@
 -- imports
 import("core.tool.git")
 import("core.base.semver")
+import("core.project.global")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
-import("repository")
 import("action")
+import("fasturl")
+import("repository")
+import("environment")
 
 --
 -- parse require string
@@ -187,11 +190,8 @@ function _load_package(packagename, requireinfo)
     -- check
     assert(instance, "package(%s) not found!", packagename)
 
-    -- select package version
-    local version, source = _select_package_version(instance, requireinfo.version)
-
-    -- save version info to package
-    instance:versioninfo_set({version = version, source = source, mode = mode})
+    -- save require info to package
+    instance:requireinfo_set(requireinfo)
 
     -- save this package instance to cache
     packages[packagename] = instance
@@ -204,21 +204,17 @@ end
 -- select package version
 function _select_package_version(package, required_ver)
 
-    -- get package url    
-    local url = package:get("url")
-    assert(url, "package(%s): url not found!", package:name())
-
-    -- is git url?
-    local is_giturl = git.checkurl(url)
-
     -- get versions
     local versions = package:get("versions") 
 
     -- attempt to get tags and branches from the git url
     local tags = nil
     local branches = nil
-    if is_giturl then
-        tags, branches = git.refs(url) 
+    for _, url in ipairs(package:urls()) do
+        if git.checkurl(url) then
+            tags, branches = git.refs(url) 
+            break
+        end
     end
 
     -- check
@@ -226,6 +222,16 @@ function _select_package_version(package, required_ver)
 
     -- select required version
     return semver.select(required_ver, versions, tags, branches)
+end
+
+-- the cache directory
+function cache_directory()
+    return path.join(global.directory(), "cache", "packages")
+end
+
+-- clear caches
+function clear_caches()
+    os.tryrm(cache_directory())
 end
 
 -- load requires
@@ -263,21 +269,47 @@ function load_packages(requires)
         table.insert(packages, package)
     end
 
+    -- add all urls to fasturl and prepare to sort them together
+    for _, package in ipairs(packages) do
+        fasturl.add(package:urls())
+    end
+
+    -- sort and update urls
+    for _, package in ipairs(packages) do
+
+        -- sort package urls
+        package:urls_set(fasturl.sort(package:urls()))
+
+        -- exists urls? otherwise be phony package (only as package group)
+        if #package:urls() > 0 then
+
+            -- select package version
+            local version, source = _select_package_version(package, package:requireinfo().version)
+
+            -- save version info to package
+            package:versioninfo_set({version = version, source = source})
+        end
+    end
+
     -- ok
     return packages
 end
 
 -- install packages
-function install_packages(is_global)
+function install_packages(requires)
+
+    -- load environment first
+    environment.load()
 
     -- TODO need optimization
     -- pull all repositories first
     repository.pull()
 
     -- install all required packages from repositories
-    for _, package in ipairs(load_packages(project.requires())) do
+    for _, package in ipairs(load_packages(requires or project.requires())) do
+
         -- install package
-        action.install.main(package, is_global)
+        action.install.main(package, cache_directory())
     end
 end
 

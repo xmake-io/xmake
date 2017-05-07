@@ -83,6 +83,39 @@ function interpreter._traceback(errors)
     return results
 end
 
+-- merge the current root values to the previous scope
+function interpreter._merge_root_scope(root, root_prev, override)
+
+    -- merge it
+    root_prev = root_prev or {}
+    for scope_kind_and_name, _ in pairs(root or {}) do
+        
+        -- is scope_kind.scope_name?
+        scope_kind_and_name = scope_kind_and_name:split('%.')
+        if #scope_kind_and_name == 2 then
+            local scope_kind = scope_kind_and_name[1] 
+            local scope_name = scope_kind_and_name[2]
+            local scope_values = root_prev[scope_kind .. "." .. scope_name] or {}
+            local scope_root = root[scope_kind] or {}
+            for name, values in pairs(scope_root) do
+                if not name:startswith("__") then
+                    if scope_root["__override_" .. name] then
+                        if override or scope_values[name] == nil then
+                            scope_values[name] = values
+                        end
+                    else
+                        scope_values[name] = table.join(values, scope_values[name] or {})
+                    end
+                end
+            end
+            root_prev[scope_kind .. "." .. scope_name] = scope_values
+        end
+    end
+
+    -- ok?
+    return root_prev
+end
+
 -- register scope end: scopename_end()
 function interpreter:_api_register_scope_end(...)
 
@@ -96,7 +129,7 @@ function interpreter:_api_register_scope_end(...)
         assert(apiname)
 
         -- register scope api
-        self:api_register(ni, apiname .. "_end", function (self, ...) 
+        self:api_register(nil, apiname .. "_end", function (self, ...) 
        
             -- check
             assert(self and self._PRIVATE and apiname)
@@ -180,8 +213,8 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         local scope = scopes._CURRENT or root
         assert(scope)
 
-        -- enter subscope and set values? override it
-        if scopes._CURRENT and apiname and action == "set" then
+        -- set values? mark as "override"
+        if apiname and action ~= "add" then
             scope["__override_" .. apiname] = true
         end
 
@@ -273,11 +306,17 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- bind public scope
                 setfenv(script, self._PUBLIC)
 
+                -- save the previous root scope
+                local root_prev = scopes._ROOT
+
                 -- save the previous scope
                 local scope_prev = scopes._CURRENT
 
                 -- save the previous scope kind
                 local scope_kind_prev = scopes._CURRENT_KIND
+
+                -- clear the current root scope 
+                scopes._ROOT = nil
 
                 -- clear the current scope, force to enter root scope
                 scopes._CURRENT = nil
@@ -303,6 +342,11 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- restore the previous scope
                 scopes._CURRENT = scope_prev
 
+                -- restore the previous root scope and merge current root scope
+                -- it will override the previous values if the current values are override mode 
+                -- so we priority use the values in subdirs scope
+                scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, root_prev, true)
+
                 -- get mtime of the file
                 self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
             else
@@ -326,7 +370,7 @@ function interpreter:_api_within_scope(scope_kind, apiname)
     local scopes = priv._SCOPES
     assert(scopes)
 
-    -- done
+    -- get scope api
     if scope_kind and priv._APIS then
 
         -- get api function
@@ -459,8 +503,9 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             return {}
         end
 
-        -- the root scope
-        local scope_root = scopes._ROOT[scope_kind]
+        -- merge root scope first and do not override the root values if be override mode 
+        -- so we priority use the values in subdirs scope
+        scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, scopes._ROOT, false)
 
         -- merge results
         for scope_name, scope in pairs(scope_for_kind) do
@@ -473,19 +518,12 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
                 end
             end
 
-            -- merge root values
+            -- merge root values with the given scope name
+            local scope_root = scopes._ROOT[scope_kind .. "." .. scope_name]
             if scope_root then
                 for name, values in pairs(scope_root) do
-
-                    -- merge values?
                     if not scope["__override_" .. name] then
-
-                        -- merge or add it
-                        if scope_values[name] ~= nil then
-                            scope_values[name] = table.join(values, scope_values[name])
-                        else
-                            scope_values[name] = values
-                        end
+                        scope_values[name] = table.join(values, scope_values[name] or {})
                     end
                 end
             end
@@ -509,7 +547,8 @@ function interpreter.new()
     -- init an interpreter instance
     local instance = {  _PUBLIC = {}
                     ,   _PRIVATE = {    _SCOPES = {}
-                                    ,   _MTIMES = {}}}
+                                    ,   _MTIMES = {}
+                                    ,   _FILTER = require("base/filter").new()}}
 
     -- inherit the interfaces of interpreter
     table.inherit2(instance, interpreter)
@@ -518,11 +557,20 @@ function interpreter.new()
     setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
 
                                             -- get the scope kind
-                                            local priv = instance._PRIVATE
-                                            local scope_kind = priv._SCOPES._CURRENT_KIND or priv._ROOTSCOPE
+                                            local priv          = instance._PRIVATE
+                                            local current_kind  = priv._SCOPES._CURRENT_KIND
+                                            local scope_kind    = current_kind or priv._ROOTSCOPE
 
                                             -- get the api function from the given scope
-                                            return instance:_api_within_scope(scope_kind, key)
+                                            local apifunc = instance:_api_within_scope(scope_kind, key)
+
+                                            -- get the api function from the root scope
+                                            if not apifunc and priv._ROOTAPIS then
+                                                apifunc = priv._ROOTAPIS[key]
+                                            end
+
+                                            -- ok?
+                                            return apifunc
                                     end}) 
 
     -- register the builtin interfaces
@@ -626,16 +674,6 @@ function interpreter:filter()
     return self._PRIVATE._FILTER
 end
 
--- set filter
-function interpreter:filter_set(filter)
-
-    -- check
-    assert(self and self._PRIVATE)
-
-    -- set it
-    self._PRIVATE._FILTER = filter
-end
-
 -- get root directory
 function interpreter:rootdir()
 
@@ -686,11 +724,6 @@ end
 --
 -- result:
 --
--- _PUBLIC 
--- {
---      apiroot = function () end
--- }
---
 -- _PRIVATE
 -- {
 --      _APIS
@@ -700,6 +733,11 @@ end
 --              apiname = function () end
 --          }
 --      }
+--      
+--      _ROOTAPIS
+--      {
+--          apiroot = function () end
+--      }         
 -- }
 --
 function interpreter:api_register(scope_kind, name, func)
@@ -722,8 +760,13 @@ function interpreter:api_register(scope_kind, name, func)
         -- register api
         scope[name] = function (...) return func(self, ...) end
     else
+
+        -- get root apis
+        self._PRIVATE._ROOTAPIS = self._PRIVATE._ROOTAPIS or {}
+        local apis = self._PRIVATE._ROOTAPIS
+
         -- register api to the root scope
-        self._PUBLIC[name] = function (...) return func(self, ...) end
+        apis[name] = function (...) return func(self, ...) end
     end
 end
 
@@ -812,6 +855,7 @@ function interpreter:api_register_scope(...)
             scope_name = scope_name["name"]
         end
 
+
         -- enter the given scope
         if scope_name ~= nil then
 
@@ -832,6 +876,12 @@ function interpreter:api_register_scope(...)
 
         -- update the current scope kind
         scopes._CURRENT_KIND = scope_kind
+
+        -- init scope_kind.scope_name for the current root scope
+        scopes._ROOT = scopes._ROOT or {}
+        if scope_name ~= nil then
+            scopes._ROOT[scope_kind .. "." .. scope_name] = {}
+        end
 
         -- translate scope info 
         if scope_info then

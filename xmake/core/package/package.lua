@@ -91,16 +91,47 @@ end
 
 -- get the package name
 function _instance:name()
-
-    -- get it
     return self._NAME
 end
 
 -- get the package filter 
 function _instance:filter()
+    return self._FILTER
+end
+
+-- get urls
+function _instance:urls()
+    return self._URLS or table.wrap(self:get("urls"))
+end
+
+-- get urls
+function _instance:urls_set(urls)
+    self._URLS = urls
+end
+
+-- get sha256
+function _instance:sha256()
+
+    -- get it from cache first
+    if self._SHA256 then
+        return self._SHA256
+    end
+
+    -- find sha256
+    local version  = self:version()
+    local sha256s  = table.wrap(self:get("sha256s"))
+    local versions = table.wrap(self:get("versions"))
+    if version then
+        for idx, ver in ipairs(versions) do
+            if ver == version then
+                self._SHA256 = sha256s[idx]
+                break
+            end
+        end
+    end
 
     -- get it
-    return self._FILTER
+    return self._SHA256
 end
 
 -- get the version  
@@ -116,13 +147,11 @@ end
 function _instance:optional()
 
     -- optional?
-    if self._VERSIONINFO then
-        return self._VERSIONINFO.mode == "optional"
-    end
+    return self._REQUIREINFO.mode == "optional"
 end
 
 -- the verson from tags, branches or versions?
-function _instance:verfrom()
+function _instance:versionfrom()
 
     -- optional?
     if self._VERSIONINFO then
@@ -132,9 +161,17 @@ end
 
 -- set the version info 
 function _instance:versioninfo_set(versioninfo)
-
-    -- set it
     self._VERSIONINFO = versioninfo
+end
+
+-- get the require info 
+function _instance:requireinfo()
+    return self._REQUIREINFO 
+end
+
+-- set the require info 
+function _instance:requireinfo_set(requireinfo)
+    self._REQUIREINFO = requireinfo
 end
 
 -- the interpreter
@@ -167,8 +204,7 @@ function package.apis()
         values =
         {
             -- package.set_xxx
-            "package.set_url"
-        ,   "package.set_mirror"
+            "package.set_urls"
         ,   "package.set_sha256s"
         ,   "package.set_versions"
         ,   "package.set_homepage"
@@ -181,19 +217,16 @@ function package.apis()
             -- package.on_xxx
             "package.on_build"
         ,   "package.on_install"
-        ,   "package.on_clean"
         ,   "package.on_test"
 
             -- package.before_xxx
         ,   "package.before_build"
         ,   "package.before_install"
-        ,   "package.before_clean"
         ,   "package.before_test"
 
             -- package.before_xxx
         ,   "package.after_build"
         ,   "package.after_install"
-        ,   "package.after_clean"
         ,   "package.after_test"
         }
     }
@@ -219,7 +252,7 @@ function package.load_from_url(packagename, packageurl)
     -- make package description
     local packagedata = string.format([[
     package("%s")
-        set_url("%s")
+        set_urls("%s")
     ]], packagename, packageurl)
 
     -- write a temporary package description to file

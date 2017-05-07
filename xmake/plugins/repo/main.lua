@@ -84,18 +84,25 @@ end
 -- list all repositories
 function _list(is_global)
 
-    -- trace
-    print("%s repositories:", ifelse(is_global, "global", "local"))
-
-    -- list all
+    -- list all repositories
     local count = 0
-    for _, repo in pairs(repository.repositories(is_global)) do
+    for _, position in ipairs({"local", "global"}) do
 
         -- trace
-        print("    %s %s", repo.name, repo.url)
+        print("%s repositories:", position)
 
-        -- update count
-        count = count + 1
+        -- list all
+        for _, repo in pairs(repository.repositories(position == "global")) do
+
+            -- trace
+            print("    %s %s", repo.name, repo.url)
+
+            -- update count
+            count = count + 1
+        end
+
+        -- trace
+        print("")
     end
 
     -- trace

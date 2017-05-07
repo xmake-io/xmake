@@ -33,6 +33,7 @@ task("lua")
            
         -- imports
         import("core.base.option")
+        import("core.sandbox.sandbox")
 
         -- list all scripts?
         if option.get("list") then
@@ -46,15 +47,17 @@ task("lua")
 
         -- get script name
         local name = option.get("script")
-        if not name then
-            raise("no script!")
-        end
+        if name then
 
-        -- import script
-        if os.isfile(name) then
-            import(path.basename(name), {rootdir = path.directory(name)}).main(unpack(option.get("arguments") or {}))
+            -- import and run script
+            if os.isfile(name) then
+                import(path.basename(name), {rootdir = path.directory(name)}).main(unpack(option.get("arguments") or {}))
+            else
+                import("scripts." .. name).main(unpack(option.get("arguments") or {}))
+            end
         else
-            import("scripts." .. name).main(unpack(option.get("arguments") or {}))
+            -- enter interactive mode
+            sandbox.interactive()
         end
     end)
 

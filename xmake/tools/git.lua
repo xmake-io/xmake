@@ -22,18 +22,14 @@
 -- @file        git.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- init it
 function init(shellname)
 
     -- save name
     _g.shellname = shellname or "git"
-end
-
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
 end
 
 -- clone url
@@ -56,12 +52,12 @@ function clone(url, args)
 
     -- set outputdir
     if args.outputdir then
-        table.insert(argv, args.outputdir)
+        table.insert(argv, path.translate(args.outputdir))
     end
 
     -- verbose?
     local runner = os.runv
-    if args.verbose then
+    if option.get("verbose") then
         runner = os.execv
     end
 
@@ -92,14 +88,8 @@ function pull(args)
         oldir = os.cd(args.repodir)
     end
 
-    -- verbose?
-    local runner = os.runv
-    if args.verbose then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 
     -- leave repository directory
     if oldir then
@@ -155,14 +145,8 @@ function checkout(commit, args)
         oldir = os.cd(args.repodir)
     end
 
-    -- verbose?
-    local runner = os.runv
-    if args.verbose then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 
     -- leave repository directory
     if oldir then

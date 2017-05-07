@@ -30,16 +30,17 @@ search: zh
 
 | 接口                      | 描述                          | 支持版本 |
 | ------------------------- | ----------------------------- | -------- |
-| [is_os](#is_os)           | 判断当前构建的操作系统        | >= 2.0.1 |
+| [is_os](#is_os)           | 判断当前构建目标的操作系统    | >= 2.0.1 |
 | [is_arch](#is_arch)       | 判断当前编译架构              | >= 2.0.1 |
 | [is_plat](#is_plat)       | 判断当前编译平台              | >= 2.0.1 |
+| [is_host](#is_host)       | 判断当前主机环境操作系统      | >= 2.1.4 |
 | [is_mode](#is_mode)       | 判断当前编译模式              | >= 2.0.1 |
 | [is_kind](#is_kind)       | 判断当前编译类型              | >= 2.0.1 |
 | [is_option](#is_option)   | 判断选项是否启用              | >= 2.0.1 |
 
 ##### is_os 
 
-###### 判断当前构建的操作系统
+###### 判断当前构建目标的操作系统
 
 ```lua
 -- 如果当前操作系统是ios
@@ -114,6 +115,31 @@ end
 * watchos
 
 当然你也可以自己扩展添加自己的平台。。。
+
+##### is_host
+
+###### 判断当前主机环境的操作系统
+
+有些编译平台是可以在多个不同的操作系统进行构建的，例如：android的ndk就支持linux,macOS还有windows环境。
+
+这个时候就可以通过这个接口，区分当前是在哪个系统环境下进行的构建。
+
+```lua
+-- 如果当前主机环境是windows
+if is_host("windows") then
+    add_includes("C:\\includes")
+else
+    add_includes("/usr/includess")
+end
+```
+
+目前支持的主机环境有：
+
+* windows
+* linux
+* macosx
+
+你也可以通过[$(host)](#var-host)内置变量或者[os.host](#os-host)接口，来进行获取
 
 ##### is_mode
 

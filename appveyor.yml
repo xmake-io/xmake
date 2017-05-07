@@ -11,6 +11,10 @@ before_build:
   - cmd: xmake-installer.exe /S /D=C:\xmake
   - cmd: PATH=%PATH%;C:\xmake
   - cmd: xmake --version
+  - cmd: cd core
+  - cmd: xmake -v
+  - ps: cp -force build\xmake.exe C:\xmake\xmake.exe
+  - cmd: cd ..
   - ps: cp -r -force xmake\* C:\xmake
   - cmd: xmake --version
   - cmd: dir C:\xmake
@@ -18,4 +22,4 @@ before_build:
 build_script:
   - cmd: cd core
   - cmd: if %platform%==Win64 xmake f -a x64
-  - cmd: xmake -v
+  - cmd: xmake -r -v

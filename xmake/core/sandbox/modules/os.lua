@@ -40,6 +40,7 @@ sandbox_os.time     = os.time
 sandbox_os.argv     = os.argv
 sandbox_os.argw     = os.argw
 sandbox_os.mtime    = os.mtime
+sandbox_os.sleep    = os.sleep
 sandbox_os.mclock   = os.mclock
 sandbox_os.emptydir = os.emptydir
 
@@ -220,7 +221,7 @@ function sandbox_os.scriptdir()
     return rootdir
 end
 
--- run shell
+-- quietly run shell
 function sandbox_os.run(cmd, ...)
 
     -- make command
@@ -233,7 +234,7 @@ function sandbox_os.run(cmd, ...)
     end
 end
 
--- run shell with arguments list
+-- quietly run shell with arguments list
 function sandbox_os.runv(shellname, argv)
 
     -- make shellname
@@ -244,6 +245,30 @@ function sandbox_os.runv(shellname, argv)
     if not ok then
         os.raise(errors)
     end
+end
+
+-- quietly run shell and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vrun(cmd, ...)
+
+    -- echo command
+    if option.get("verbose") then
+        print(vformat(cmd, ...))
+    end
+
+    -- run it
+    utils.ifelse(option.get("verbose"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
+end
+
+-- quietly run shell with arguments list and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vrunv(shellname, argv)
+
+    -- echo command
+    if option.get("verbose") then
+        print(vformat(shellname), table.concat(argv, " "))
+    end
+
+    -- run it
+    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(shellname, argv)  
 end
 
 -- run shell and return output and error data
@@ -397,22 +422,16 @@ end
 
 -- get the system host
 function sandbox_os.host()
-
-    -- get it
     return xmake._HOST
 end
 
 -- get the system architecture
 function sandbox_os.arch()
-
-    -- get it
     return xmake._ARCH
 end
 
 -- get the system null device
 function sandbox_os.nuldev()
-
-    -- get it
     return xmake._NULDEV
 end
 
@@ -434,17 +453,6 @@ function sandbox_os.setenv(name, values)
 
     -- set it
     os.setenv(name, values)
-end
-
--- make a new uuid
-function sandbox_os.uuid(name)
-
-    -- make it
-    local uuid = os.uuid(name)
-    assert(uuid)
-
-    -- ok?
-    return uuid
 end
 
 -- get the feature of os

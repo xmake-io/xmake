@@ -3,6 +3,12 @@ layout: default.cn
 title: {{ site.name }}
 ---
 
+## 安装
+
+```bash
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
 ## 简单的工程描述
 
 ```lua

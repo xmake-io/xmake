@@ -22,18 +22,14 @@
 -- @file        curl.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- init it
 function init(shellname)
 
     -- save name
     _g.shellname = shellname or "curl"
-end
-
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
 end
 
 -- download url
@@ -43,7 +39,17 @@ function download(url, outputfile, args)
     assert(outputfile)
 
     -- init argv
-    local argv = {"-fsSL", url}
+    local argv = {}
+
+    -- set basic arguments
+    if option.get("verbose") then
+        table.insert(argv, "-SL")
+    else
+        table.insert(argv, "-fsSL")
+    end
+
+    -- set url
+    table.insert(argv, url)
 
     -- ensure output directory
     local outputdir = path.directory(outputfile)
@@ -55,14 +61,8 @@ function download(url, outputfile, args)
     table.insert(argv, "-o")
     table.insert(argv, outputfile)
 
-    -- verbose?
-    local runner = os.runv
-    if args.verbose then
-        runner = os.execv
-    end
-
     -- clone it
-    runner(_g.shellname, argv)
+    os.vrunv(_g.shellname, argv)
 end
 
 -- check the given flags 
