@@ -81,8 +81,13 @@ end
 -- TODO
 --
 function semver.compare(v1, v2)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1:compare(v2)
@@ -93,8 +98,13 @@ end
 -- semver.gt('1.2.3', '9.8.7') => false
 --
 function semver.gt(v1, v2)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1 > v2
@@ -105,8 +115,13 @@ end
 -- semver.lt('1.2.3', '9.8.7') => true
 --
 function semver.lt(v1, v2)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1 < v2
@@ -117,8 +132,13 @@ end
 -- semver.gte('1.2.3', '9.8.7') => false
 --
 function semver.gte(v1, v2, loose)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1 >= v2
@@ -129,8 +149,13 @@ end
 -- semver.lte('1.2.3', '9.8.7') => true
 --
 function semver.lte(v1, v2, loose)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1 <= v2
@@ -141,8 +166,13 @@ end
 -- semver.eq('1.2.3', '9.8.7') => false
 --
 function semver.eq(v1, v2, loose)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1 == v2
@@ -153,8 +183,13 @@ end
 -- semver.neq('1.2.3', '9.8.7') => true
 --
 function semver.neq(v1, v2, loose)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1 ~= v2
@@ -163,8 +198,13 @@ end
 -- TODO
 --
 function semver.cmp(v1, op, v2, loose)
+    local errors
+
     if not isa(v1, semver) then
-        v1 = semver(v1)
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return 0, errors
     end
 
     return v1:compare(v2)
