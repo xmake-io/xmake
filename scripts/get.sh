@@ -48,7 +48,7 @@ test_tools()
 install_tools()
 {
     { apt-get --version >/dev/null 2>&1 && $sudoprefix apt-get install -y git build-essential libreadline-dev; } ||
-    { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
+    { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git readline-devel && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
     { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
     { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm git base-devel; }
 }
