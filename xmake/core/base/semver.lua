@@ -70,60 +70,46 @@ end
 -- semver.valid('1.2.3') => '1.2.3'
 -- semver.valid('a.b.c') => nil
 --
-function semver.valid(version, loose)
-    return true
-end
-
--- TODO
---
-function semver.clean(version, loose)
-    return nil
-end
-
--- TODO
---
-function semver.inc(version, release, loose, identifier)
-    return nil
-end
-
--- TODO
---
-function semver.diff(v1, v2)
+function semver.valid(version)
+    local v = semver(v)
+    if v then
+        return v.version
+    end
     return nil
 end
 
 -- TODO
 --
 function semver.compare(v1, v2)
-    return nil
-end
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
 
--- TODO
---
-function semver.sort(list, loose)
-    return nil
-end
-
--- TODO
---
-function semver.rsort(list, loose)
-    return nil
+    return v1:compare(v2)
 end
 
 -- TODO
 --
 -- semver.gt('1.2.3', '9.8.7') => false
 --
-function semver.gt(v1, v2, loose)
-    return true
+function semver.gt(v1, v2)
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1 > v2
 end
 
 -- TODO
 --
 -- semver.lt('1.2.3', '9.8.7') => true
 --
-function semver.lt(v1, v2, loose)
-    return true
+function semver.lt(v1, v2)
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1 < v2
 end
 
 -- TODO
@@ -131,7 +117,11 @@ end
 -- semver.gte('1.2.3', '9.8.7') => false
 --
 function semver.gte(v1, v2, loose)
-    return true
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1 >= v2
 end
 
 -- TODO
@@ -139,7 +129,11 @@ end
 -- semver.lte('1.2.3', '9.8.7') => true
 --
 function semver.lte(v1, v2, loose)
-    return true
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1 <= v2
 end
 
 -- TODO
@@ -147,7 +141,11 @@ end
 -- semver.eq('1.2.3', '9.8.7') => false
 --
 function semver.eq(v1, v2, loose)
-    return true
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1 == v2
 end
 
 -- TODO
@@ -155,13 +153,21 @@ end
 -- semver.neq('1.2.3', '9.8.7') => true
 --
 function semver.neq(v1, v2, loose)
-    return true
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1 ~= v2
 end
 
 -- TODO
 --
 function semver.cmp(v1, op, v2, loose)
-    return true
+    if not isa(v1, semver) then
+        v1 = semver(v1)
+    end
+
+    return v1:compare(v2)
 end
 
 -- TODO
@@ -200,6 +206,13 @@ function semver.select(range, versions, tags, branches)
 
     -- not found
     return nil, string.format("cannot select version %s", range)
+end
+
+function semver:format()
+    local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
+    local a = table.concat(self.prerelease, ".")
+    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
+    self.version = table.concat(buffer)
 end
 
 function semver:__tostring()
@@ -258,15 +271,15 @@ function semver:compare_pre(other)
 
     if self.prerelease:len() and not other.prerelease:len() then
         return -1
-    elseif not this.prerelease:len() and other.prerelease:len() then
+    elseif not self.prerelease:len() and other.prerelease:len() then
         return 1
-    elseif not this.prerelease:len() and not other.prerelease:len() then
+    elseif not self.prerelease:len() and not other.prerelease:len() then
         return 0
     end
 
     local i = 0
     repeat
-        local a = this.prerelease[i];
+        local a = self.prerelease[i];
         local b = other.prerelease[i];
         if not a and not b then
             return 0
