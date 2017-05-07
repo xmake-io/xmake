@@ -189,16 +189,91 @@ function semver:__tostring()
     return self.version
 end
 
+local function compare_ids(a, b)
+    local anum, bnum;
+
+    if a and tostring(a):match('^%d+$') then
+        anum = tonumber(a)
+    end
+    if b and tostring(b):match('^%d+$') then
+        anum = tonumber(b)
+    end
+
+    if anum and not bnum then
+        return -1
+    elseif bnum and not anum then
+        return 1
+    elseif a < b then
+        return -1
+    elseif a > b then
+        return 1
+    else
+        return 0
+    end
+end
+
+local function rcompare_ids(a, b)
+    return compare_ids(b, a)
+end
+
+function semver:compare(other)
+    if not isa(other, semver) then
+        other = semver(other)
+    end
+
+    return self:compare_main(other) or self:compare_pre(other)
+end
+
+function semver:compare_main(other)
+    if not isa(other, semver) then
+        other = semver(other)
+    end
+
+    return compare_ids(self.major, other.major) or
+        compare_ids(self.minor, other.minor) or
+        compare_ids(self.patch, other.patch)
+end
+
+function semver:compare_pre(other)
+    if not isa(other, semver) then
+        other = semver(other)
+    end
+
+    if self.prerelease:len() and not other.prerelease:len() then
+        return -1
+    elseif not this.prerelease:len() and other.prerelease:len() then
+        return 1
+    elseif not this.prerelease:len() and not other.prerelease:len() then
+        return 0
+    end
+
+    local i = 0
+    repeat
+        local a = this.prerelease[i];
+        local b = other.prerelease[i];
+        if not a and not b then
+            return 0
+        elseif not b then
+            return 1
+        elseif not a then
+            return -1
+        elseif a ~= b then
+            return compare_ids(a, b);
+        end
+        i = i + 1
+    until i
+end
+
 function semver:__eq(other)
-    return false
+    return self:compare(other) == 0
 end
 
 function semver:__lt(other)
-    return false
+    return self:compare(other) < 0
 end
 
 function semver:__pow(other)
-    return false
+    return self:compare(other)
 end
 
 local function parse_version(s)
