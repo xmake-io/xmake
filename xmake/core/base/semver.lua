@@ -201,84 +201,33 @@ function semver:__pow(other)
     return false
 end
 
-local function parse_version(s, loose)
+local function parse_version(s)
     local major, minor, patch, next
 
-    if loose then
-        major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
-        if not major then
-            -- TODO: raise, handle error
-            print('Invalid version: ' .. s)
-            do return end
-        end
-    else
-        local n
-
-        next = s:match('^v?(.*)$')
-        major, n = next:match('^(0)(.-)$')
-        if not major or major:len() == 0 then
-            major, n = next:match('^([1-9]%d*)(.-)$')
-        end
-        next = n
-        if not next or next:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid full major: ' .. s)
-            do return end
-        end
-
-        minor, n = next:match('^%.(0)(.-)$')
-        if not minor or minor:len() == 0 then
-            minor, n = next:match('^%.([1-9]%d*)(.-)$')
-        end
-        next = n
-        if not next or next:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid full minor: ' .. s)
-            do return end
-        end
-
-        patch, n = next:match('^%.(0)(.-)$')
-        if not patch or patch:len() == 0 then
-            patch, n = next:match('^%.([1-9]%d*)(.-)$')
-        end
-        next = n
-        if not patch or patch:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid full patch: ' .. s)
-            do return end
-        end
+    major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
+    if not major then
+        -- TODO: raise, handle error
+        print('Invalid version: ' .. s)
+        do return end
     end
 
     return tonumber(major), tonumber(minor), tonumber(patch), next
 end
 
-local function parse_prerelease(s, loose)
+local function parse_prerelease(s)
     local prerelease, next = s:match('^(%d*[%a-][%a%d-]*)(.-)$')
     if not prerelease or prerelease:len() == 0 then
-        if loose then
-            prerelease, next = s:match('^(%d+)(.-)$')
-            if prerelease and prerelease:len() > 0 then
-                local n = tonumber(prerelease)
-                if n >= 0 and n < MAX_SAFE_INTEGER then
-                    prerelease = n
-                end
-            end
-        else
-            prerelease, next = s:match('^(0)(.-)$')
-            if not prerelease or prerelease:len() == 0 then
-                prerelease, next = s:match('^([1-9]%d*)(.-)$')
-            end
-            if prerelease and prerelease:len() > 0 then
-                local n = tonumber(prerelease)
-                if n >= 0 and n < MAX_SAFE_INTEGER then
-                    prerelease = n
-                end
+        prerelease, next = s:match('^(%d+)(.-)$')
+        if prerelease and prerelease:len() > 0 then
+            local n = tonumber(prerelease)
+            if n >= 0 and n < MAX_SAFE_INTEGER then
+                prerelease = n
             end
         end
     end
     if next and next:sub(1, 1) == '.' then
         local p
-        p, next = parse_prerelease(next:sub(2), loose)
+        p, next = parse_prerelease(next:sub(2))
         if not p or (type(p) == 'string' and p:len() == 0) then
             -- TODO: raise, handle error
             print('Invalid prerelease: ' .. s)
@@ -293,7 +242,7 @@ local function parse_build(s)
     local build, next = s:match('^([%d%a-]+)(.-)$')
     if next and next:len() > 0 and next:sub(1, 1) == '.' then
         local b
-        b, next = parse_build(next:sub(2), loose)
+        b, next = parse_build(next:sub(2))
         if not b or b:len() == 0 then
             -- TODO: raise, handle error
             print('Invalid build: ' .. s)
@@ -304,13 +253,9 @@ local function parse_build(s)
     return build, next
 end
 
-local function new(version, loose)
+local function new(version)
     if isa(version, semver) then
-        if version.loose == loose then
-            return version
-        else
-           version = version.version
-        end
+        version = version.version
     elseif type(version) ~= 'string' then
         -- TODO: raise, handle error
         print('Invalid Version: ' .. version)
@@ -326,19 +271,18 @@ local function new(version, loose)
 
     local s = setmetatable({
         __index = semver
-        ,   loose = loose
         ,   raw = version
         ,   prerelease = nil
         ,   build = nil
     }, semver)
 
     local next
-    s.major, s.minor, s.patch, next = parse_version(version, loose)
+    s.major, s.minor, s.patch, next = parse_version(version)
     if next and next:len() > 0 then
         if next:sub(1, 1) == '-' then
             next = next:sub(2)
         end
-        s.prerelease, next = parse_prerelease(next, loose)
+        s.prerelease, next = parse_prerelease(next)
     end
     if next and next:len() > 0 then
         if next:sub(1, 1) ~= '+' then
