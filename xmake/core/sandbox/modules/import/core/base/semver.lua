@@ -39,6 +39,113 @@ function sandbox_core_base_semver.parse(version)
     return semver.parse(version)
 end
 
+-- valid a verion string and return return it, nil otherwise
+--
+-- semver.valid('1.2.3') => '1.2.3'
+-- semver.valid('a.b.c') => nil
+--
+function sandbox_core_base_semver.valid(version)
+    return semver.valid(version)
+end
+
+-- compare two versions, raise on parser errors
+--
+function sandbox_core_base_semver.compare(v1, v2)
+
+    -- compare version
+    local result, errors = semver.compare(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
+-- compare gt two versions, raise on parser errors
+--
+function sandbox_core_base_semver.gt(v1, v2)
+
+    -- compare version
+    local result, errors = semver.gt(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
+-- compare gt two versions, raise on parser errors
+--
+function sandbox_core_base_semver.lt(v1, v2)
+
+    -- compare version
+    local result, errors = semver.lt(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
+-- compare gte two versions, raise on parser errors
+--
+function sandbox_core_base_semver.gte(v1, v2)
+
+    -- compare version
+    local result, errors = semver.gte(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
+-- compare gte two versions, raise on parser errors
+--
+function sandbox_core_base_semver.lte(v1, v2)
+
+    -- compare version
+    local result, errors = semver.lte(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
+-- compare eq two versions, raise on parser errors
+--
+function sandbox_core_base_semver.eq(v1, v2)
+
+    -- compare version
+    local result, errors = semver.eq(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
+-- compare neq two versions, raise on parser errors
+--
+function sandbox_core_base_semver.neq(v1, v2)
+
+    -- compare version
+    local result, errors = semver.neq(v1, v2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
 -- this version satisfies in the given version range
 --
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
