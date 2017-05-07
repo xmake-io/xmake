@@ -12,7 +12,7 @@ echo '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
 echo '                                                '
 
 brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
-if [ 0 -ne $(id -u) ]
+if [ 0 -ne "$(id -u)" ]
 then
     sudoprefix=sudo
 else
@@ -31,7 +31,7 @@ my_exit(){
     then
         if [ $rv -eq 0 ];then rv=$2;fi
     fi
-    exit $rv
+    exit "$rv"
 }
 test_tools()
 {
@@ -63,25 +63,25 @@ if [ 'x-b __local__' != "x$branch" ]
 then
     git clone --depth=1 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
 else
-    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo $PWD)" /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo "$PWD")" /tmp/$$xmake_getter || my_exit 'Clone Fail'
 fi
 make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
 IFS=':'
 patharr=($PATH)
 prefix=
-for st in ${patharr[@]}
+for st in "${patharr[@]}"
 do
     if [[ "$st" = "$HOME"* ]]
     then
-        cwd=$(pwd)
+        cwd=$PWD
         mkdir -p "$st"
-        cd "$st"
+        cd "$st" || continue
         echo $$ > $$xmake_getter_test 2>/dev/null || continue
         rm $$xmake_getter_test 2>/dev/null || continue
-        cd ..
+        cd .. || continue
         mkdir -p share 2>/dev/null || continue
         prefix=$(pwd)
-        cd "$cwd"
+        cd "$cwd" || my_exit 'Chdir Error'
         break
     fi
 done
