@@ -80,6 +80,7 @@ tb_int_t xm_os_getenv(lua_State* lua);
 tb_int_t xm_os_emptydir(lua_State* lua);
 tb_int_t xm_os_strerror(lua_State* lua);
 tb_int_t xm_os_getwinsize(lua_State* lua);
+tb_int_t xm_os_features(lua_State* lua);
 
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
@@ -131,6 +132,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "emptydir",       xm_os_emptydir  }
 ,   { "strerror",       xm_os_strerror  }
 ,   { "getwinsize",     xm_os_getwinsize}
+,   { "features",       xm_os_features  }
 ,   { tb_null,          tb_null         }
 };
 
