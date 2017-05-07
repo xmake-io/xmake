@@ -23,7 +23,11 @@
 --
 
 -- imports
+import("core.base.option")
+import("core.tool.unarchiver")
+import("core.tool.downloader")
 import("core.platform.environment")
+import("fasturl")
 
 -- load linux environment
 function _load_linux()
@@ -33,18 +37,107 @@ end
 function _load_macosx()
 end
 
--- load windows environment
+-- load windows environment (xmake/winenv/cmd)
+--
+-- @note curl and tar has been placed in the xmake installation package 
+--
 function _load_windows()
 
-    -- TODO: download and install git, tar, unzip toolchains 
-    --
-    -- @note curl has been placed in the xmake installation package
-    --
+    -- init winenv directory
+    local winenv_dir = path.translate("~/.xmake/winenv")
+    local winenv_cmd_dir = path.join(winenv_dir, "cmd")
+
+    -- add $programdir/winenv/cmd and ~/.xmake/winenv/cmd to $path
+    os.setenv("PATH", (os.getenv("PATH") or "") .. "; " .. path.join(os.programdir(), "winenv", "cmd"))
+    if os.isdir(winenv_cmd_dir) then
+        os.setenv("PATH", (os.getenv("PATH") or "") .. "; " .. winenv_cmd_dir)
+    end
+
+    -- check git 
+    if os.isfile(path.join(winenv_cmd_dir, "git.exe")) then
+        return
+    end
+
+    -- trace
+    cprintf("installing winenv .. ")
+    if option.get("verbose") then
+        print("")
+    end
+
+    -- init winenv.zip file path
+    local winenv_zip = os.tmpfile() .. ".zip"
+
+    -- init winenv.zip urls
+    local winenv_arch = ifelse(os.arch() == "x64", "win64", "win32")
+    local winenv_urls = 
+    {
+        format("https://github.com/tboox/xmake-%senv/archive/master.zip", winenv_arch)
+    ,   format("https://git.oschina.net/tboox/xmake-%senv/repository/archive/master", winenv_arch)
+    }
+    fasturl.add(winenv_urls)
+
+    -- download winenv.zip file
+    for _, winenv_url in ipairs(fasturl.sort(winenv_urls)) do
+        local ok = try
+        {
+            function ()
+
+                -- attempt to remove winenv.zip file first
+                os.tryrm(winenv_zip)
+
+                -- create a download task
+                local task = function ()
+                    downloader.download(winenv_url, winenv_zip)
+                end
+
+                -- download winenv.zip
+                if option.get("verbose") then
+                    task()
+                else
+                    process.asyncrun(task)
+                end
+
+                -- ok
+                return true
+            end,
+
+            catch
+            {
+                function (errors)
+
+                    -- verbose?
+                    if option.get("verbose") then
+                        cprint("${bright red}error: ${clear}%s", errors)
+                    end
+                end
+            }
+        }
+
+        -- ok?
+        if ok then 
+
+            -- attempt to remove winenv directory first
+            os.tryrm(winenv_dir)
+
+            -- extract winenv.zip file
+            unarchiver.extract(winenv_zip, winenv_dir)
+            
+            -- trace
+            cprint("${green}ok")
+
+            -- ok
+            return 
+        end 
+    end
+
+    -- failed
+    cprint("${red}failed")
+    raise()
 end
 
 -- laod host environment
 --
--- ensure that we can find some basic tools: git, tar/unzip, make/nmake/cmake, msbuild ...
+-- ensure that we can find some basic tools: git, make/nmake/cmake, msbuild ...
 --
 -- If these tools not exist, we will install it first.
 --
