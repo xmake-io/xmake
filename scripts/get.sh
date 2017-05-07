@@ -36,7 +36,7 @@ my_exit(){
 }
 test_tools()
 {
-    prog='#include<readline/readline.h>\nint main(){readline(0);return 0;}'
+    prog='#include<stdio.h>\n#include<readline/readline.h>\nint main(){readline(0);return 0;}'
     {
         git --version &&
         make --version &&
