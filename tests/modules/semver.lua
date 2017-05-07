@@ -37,20 +37,59 @@ function _test_semver_select()
 end
 
 -- select version
-function _check_semver( major, minor, patch, prerelease, build)
-
-    local str = minor .. "." .. patch .. "." .. build
-    if (prerelease) then
-        str = str .. "-" .. prerelease
-    end
-    local strnbuild = str
-    if (build) then
-        strnbuild = strnbuild .. "+" .. build
-    end
+function _check_semver(version_str, major, minor, patch, prerelease, build)
 
     -- create it
-    local version = semver(major, minor .. "." .. patch .. "." .. build .. "-" .. prerelease .. "." .. build)
-    print(version)
+    local version = semver(version_str)
+
+    if version.major ~= major then
+        raise("major: \"%s\" != \"%s\"", version.major or "", major or "")
+    end
+
+    if version.minor ~= minor then
+        raise("minor: \"%s\" != \"%s\"", version.minor or "", minor or "")
+    end
+
+    if version.patch ~= patch then
+        raise("patch: \"%s\" != \"%s\"", version.patch or "", patch or "")
+    end
+
+    if table.concat(version.prerelease or {}, ".") ~= table.concat(prerelease or {}, ".") then
+        raise("prerelease: \"%s\" != \"%s\""
+            , table.concat(version.prerelease or {}, ".") or ""
+            , table.concat(prerelease or {}, ".") or "")
+    end
+
+    if table.concat(version.build or {}, ".") ~= table.concat(build or {}, ".") then
+        raise("build: \"%s\" != \"%s\""
+            , table.concat(version.build or {}, ".") or ""
+            , table.concat(build or {}, ".") or "")
+    end
+
+    local expected_str = major.."."..minor.."."..patch
+    if prerelease then
+        expected_str = expected_str.."-"..table.concat(prerelease or {}, ".")
+    end
+
+    if version.version ~= expected_str then
+        raise("version: \"%s\" != \"%s\"", version.version or "", expected_str or "")
+    end
+
+    if tostring(version) ~= expected_str then
+        raise("str: \"%s\" != \"%s\"", tostring(version) or "", expected_str or "")
+    end
+end
+
+-- test version
+function _test_semver()
+
+    _check_semver("1.2.3", 1, 2, 3)
+    _check_semver("1.2.3-beta", 1, 2, 3, {"beta"})
+    _check_semver("1.2.3-beta+77", 1, 2, 3, {"beta"}, {"77"})
+    _check_semver("v1.2.3-alpha.1+77", 1, 2, 3, {"alpha", "1"}, {"77"})
+    _check_semver("v3.2.1-alpha.1+77.foo", 3, 2, 1, {"alpha", "1"}, {"77", "foo"})
+
+    print("semver: ok!")
 end
 
 --
@@ -61,8 +100,8 @@ end
 function main()
 
     -- test semver
-    _check_semver(1, 2, 3, "beta", "77")
+    _test_semver()
 
     -- test select version
-    -- _test_semver_select()
+    _test_semver_select()
 end

@@ -40,111 +40,173 @@ local string = require("base/string")
 local MAX_LENGTH = 256
 local MAX_SAFE_INTEGER = 9007199254740991
 
--- TODO
+-- semver.parse
 --
 -- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
 -- semver.parse('a.b.c') => nil
-function semver.parse(version, loose)
-    return nil
+--
+function semver.parse(version)
+    if isa(version, semver) then
+        return version
+    end
+
+    if type(version) ~= 'string' then
+        return nil
+    end
+
+    if version:len() > MAX_LENGTH then
+        return nil
+    end
+
+    local version, errors = semver(version)
+    if errors then
+        return null
+    end
+
+    return version
 end
 
--- TODO
+-- semver.valid
 --
 -- semver.valid('1.2.3') => '1.2.3'
 -- semver.valid('a.b.c') => nil
 --
-function semver.valid(version, loose)
-    return true
-end
-
--- TODO
---
-function semver.clean(version, loose)
+function semver.valid(version)
+    local v = semver(version)
+    if v then
+        return v.version
+    end
     return nil
 end
 
--- TODO
---
-function semver.inc(version, release, loose, identifier)
-    return nil
-end
-
--- TODO
---
-function semver.diff(v1, v2)
-    return nil
-end
-
--- TODO
+-- semver.compare
 --
 function semver.compare(v1, v2)
-    return nil
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1:compare(v2)
 end
 
--- TODO
+-- semver.gt
 --
-function semver.sort(list, loose)
-    return nil
+function semver.gt(v1, v2)
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1 > v2
 end
 
--- TODO
---
-function semver.rsort(list, loose)
-    return nil
-end
-
--- TODO
---
--- semver.gt('1.2.3', '9.8.7') => false
---
-function semver.gt(v1, v2, loose)
-    return true
-end
-
--- TODO
+-- semver.lt
 --
 -- semver.lt('1.2.3', '9.8.7') => true
 --
-function semver.lt(v1, v2, loose)
-    return true
+function semver.lt(v1, v2)
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1 < v2
 end
 
--- TODO
+-- semver.gte
 --
 -- semver.gte('1.2.3', '9.8.7') => false
 --
 function semver.gte(v1, v2, loose)
-    return true
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1 >= v2
 end
 
--- TODO
+-- semver.lte
 --
 -- semver.lte('1.2.3', '9.8.7') => true
 --
 function semver.lte(v1, v2, loose)
-    return true
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1 <= v2
 end
 
--- TODO
+-- semver.eq
 --
 -- semver.eq('1.2.3', '9.8.7') => false
 --
 function semver.eq(v1, v2, loose)
-    return true
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1 == v2
 end
 
--- TODO
+-- semver.neq
 --
 -- semver.neq('1.2.3', '9.8.7') => true
 --
 function semver.neq(v1, v2, loose)
-    return true
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1 ~= v2
 end
 
--- TODO
+-- semver.cmp
 --
 function semver.cmp(v1, op, v2, loose)
-    return true
+    local errors
+
+    if not isa(v1, semver) then
+        v1, errors = semver(v1)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return v1:compare(v2)
 end
 
 -- TODO
@@ -185,104 +247,146 @@ function semver.select(range, versions, tags, branches)
     return nil, string.format("cannot select version %s", range)
 end
 
+function semver:format()
+    local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
+    local a = table.concat(self.prerelease, ".")
+    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
+    self.version = table.concat(buffer)
+end
+
 function semver:__tostring()
     return self.version
 end
 
+local function compare_ids(a, b)
+    local anum, bnum;
+
+    if a and tostring(a):match('^%d+$') then
+        anum = tonumber(a)
+    end
+    if b and tostring(b):match('^%d+$') then
+        anum = tonumber(b)
+    end
+
+    if anum and not bnum then
+        return -1
+    elseif bnum and not anum then
+        return 1
+    elseif a < b then
+        return -1
+    elseif a > b then
+        return 1
+    else
+        return 0
+    end
+end
+
+local function rcompare_ids(a, b)
+    return compare_ids(b, a)
+end
+
+function semver:compare(other)
+    local errors
+
+    if not isa(other, semver) then
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return self:compare_main(other) or self:compare_pre(other)
+end
+
+function semver:compare_main(other)
+    local errors
+
+    if not isa(other, semver) then
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    return compare_ids(self.major, other.major) or
+        compare_ids(self.minor, other.minor) or
+        compare_ids(self.patch, other.patch)
+end
+
+function semver:compare_pre(other)
+    local errors
+
+    if not isa(other, semver) then
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    if self.prerelease:len() and not other.prerelease:len() then
+        return -1
+    elseif not self.prerelease:len() and other.prerelease:len() then
+        return 1
+    elseif not self.prerelease:len() and not other.prerelease:len() then
+        return 0
+    end
+
+    local i = 0
+    repeat
+        local a = self.prerelease[i];
+        local b = other.prerelease[i];
+        if not a and not b then
+            return 0
+        elseif not b then
+            return 1
+        elseif not a then
+            return -1
+        elseif a ~= b then
+            return compare_ids(a, b);
+        end
+        i = i + 1
+    until i
+end
+
 function semver:__eq(other)
-    return false
+    return self:compare(other) == 0
 end
 
 function semver:__lt(other)
-    return false
+    return self:compare(other) < 0
 end
 
 function semver:__pow(other)
-    return false
+    return self:compare(other)
 end
 
-local function parse_version(s, loose)
+local function parse_version(s)
     local major, minor, patch, next
 
-    if loose then
-        major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
-        if not major then
-            -- TODO: raise, handle error
-            print('Invalid version: ' .. s)
-            do return end
-        end
-    else
-        local n
-
-        next = s:match('^v?(.*)$')
-        major, n = next:match('^(0)(.-)$')
-        if not major or major:len() == 0 then
-            major, n = next:match('^([1-9]%d*)(.-)$')
-        end
-        next = n
-        if not next or next:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid full major: ' .. s)
-            do return end
-        end
-
-        minor, n = next:match('^%.(0)(.-)$')
-        if not minor or minor:len() == 0 then
-            minor, n = next:match('^%.([1-9]%d*)(.-)$')
-        end
-        next = n
-        if not next or next:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid full minor: ' .. s)
-            do return end
-        end
-
-        patch, n = next:match('^%.(0)(.-)$')
-        if not patch or patch:len() == 0 then
-            patch, n = next:match('^%.([1-9]%d*)(.-)$')
-        end
-        next = n
-        if not patch or patch:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid full patch: ' .. s)
-            do return end
-        end
+    major, minor, patch, next = s:match('^[v=%s]*(%d+)%.(%d+)%.(%d+)(.-)$')
+    if not major then
+        return nil, nil, nil, nil, string.format("invalid version %s", s)
     end
 
     return tonumber(major), tonumber(minor), tonumber(patch), next
 end
 
-local function parse_prerelease(s, loose)
+local function parse_prerelease(s)
     local prerelease, next = s:match('^(%d*[%a-][%a%d-]*)(.-)$')
     if not prerelease or prerelease:len() == 0 then
-        if loose then
-            prerelease, next = s:match('^(%d+)(.-)$')
-            if prerelease and prerelease:len() > 0 then
-                local n = tonumber(prerelease)
-                if n >= 0 and n < MAX_SAFE_INTEGER then
-                    prerelease = n
-                end
-            end
-        else
-            prerelease, next = s:match('^(0)(.-)$')
-            if not prerelease or prerelease:len() == 0 then
-                prerelease, next = s:match('^([1-9]%d*)(.-)$')
-            end
-            if prerelease and prerelease:len() > 0 then
-                local n = tonumber(prerelease)
-                if n >= 0 and n < MAX_SAFE_INTEGER then
-                    prerelease = n
-                end
+        prerelease, next = s:match('^(%d+)(.-)$')
+        if prerelease and prerelease:len() > 0 then
+            local n = tonumber(prerelease)
+            if n >= 0 and n < MAX_SAFE_INTEGER then
+                prerelease = n
             end
         end
     end
     if next and next:sub(1, 1) == '.' then
         local p
-        p, next = parse_prerelease(next:sub(2), loose)
+        p, next = parse_prerelease(next:sub(2))
         if not p or (type(p) == 'string' and p:len() == 0) then
-            -- TODO: raise, handle error
-            print('Invalid prerelease: ' .. s)
-            do return end
+            return nil, nil, string.format("invalid prerelease %s", s)
         end
         prerelease = prerelease .. '.' .. p
     end
@@ -293,77 +397,67 @@ local function parse_build(s)
     local build, next = s:match('^([%d%a-]+)(.-)$')
     if next and next:len() > 0 and next:sub(1, 1) == '.' then
         local b
-        b, next = parse_build(next:sub(2), loose)
+        b, next = parse_build(next:sub(2))
         if not b or b:len() == 0 then
-            -- TODO: raise, handle error
-            print('Invalid build: ' .. s)
-            do return end
+            return nil, nil, string.format("invalid build %s", s)
         end
         build = build .. '.' .. b
     end
     return build, next
 end
 
-local function new(version, loose)
+local function new(version)
     if isa(version, semver) then
-        if version.loose == loose then
-            return version
-        else
-           version = version.version
-        end
+        version = version.version
     elseif type(version) ~= 'string' then
-        -- TODO: raise, handle error
-        print('Invalid Version: ' .. version)
-        do return end
+        return nil, "invalid build" .. version
     end
 
     version = version:trim()
     if version:len() > MAX_LENGTH then
-        -- TODO: raise, handle error
-        print('version is longer than '..MAX_LENGTH..' characters')
-        do return end
+        return nil, string.format("version is longer than %d characters", MAX_LENGTH)
     end
 
     local s = setmetatable({
         __index = semver
-        ,   loose = loose
         ,   raw = version
         ,   prerelease = nil
         ,   build = nil
     }, semver)
 
-    local next
-    s.major, s.minor, s.patch, next = parse_version(version, loose)
+    local next, errors
+    s.major, s.minor, s.patch, next, errors = parse_version(version)
+    if errors then
+        return nil, errors
+    end
     if next and next:len() > 0 then
         if next:sub(1, 1) == '-' then
             next = next:sub(2)
         end
-        s.prerelease, next = parse_prerelease(next, loose)
+        s.prerelease, next, errors = parse_prerelease(next)
+        if errors then
+            return nil, errors
+        end
     end
     if next and next:len() > 0 then
         if next:sub(1, 1) ~= '+' then
-            -- TODO: raise, handle error
-            print('expected build, got ' .. next)
-            do return end
+            return nil, string.format("expected build, got %s", next)
         end
         next = next:sub(2)
-        s.build, next = parse_build(next)
+        s.build, next, errors = parse_build(next)
+        if errors then
+            return nil, errors
+        end
     end
 
     if s.major > MAX_SAFE_INTEGER or s.major < 0 then
-        -- TODO: raise, handle error
-        print('Invalid major version')
-        do return end
+        return nil, string.format("invalid major version %d", s.major)
     end
     if s.minor > MAX_SAFE_INTEGER or s.minor < 0 then
-        -- TODO: raise, handle error
-        print('Invalid minor version')
-        do return end
+        return nil, string.format("invalid minor version %d", s.minor)
     end
     if s.patch > MAX_SAFE_INTEGER or s.patch < 0 then
-        -- TODO: raise, handle error
-        print('Invalid patch version')
-        do return end
+        return nil, string.format("invalid patch version %d", s.patch)
     end
 
     if s.prerelease then
@@ -378,10 +472,7 @@ local function new(version, loose)
         s.build = {}
     end
 
-    local buffer = { ("%d.%d.%d"):format(s.major, s.minor, s.patch) }
-    local a = table.concat(s.prerelease, ".")
-    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
-    s.version = table.concat(buffer)
+    s:format()
 
     return s
 end
