@@ -91,7 +91,7 @@ function semver.compare(v1, v2)
         return nil, errors
     end
 
-    return v1:compare(v2)
+    return v1 ^ v2
 end
 
 -- semver.gt
@@ -130,7 +130,7 @@ end
 --
 -- semver.gte('1.2.3', '9.8.7') => false
 --
-function semver.gte(v1, v2, loose)
+function semver.gte(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -147,7 +147,7 @@ end
 --
 -- semver.lte('1.2.3', '9.8.7') => true
 --
-function semver.lte(v1, v2, loose)
+function semver.lte(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -164,7 +164,7 @@ end
 --
 -- semver.eq('1.2.3', '9.8.7') => false
 --
-function semver.eq(v1, v2, loose)
+function semver.eq(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -181,7 +181,7 @@ end
 --
 -- semver.neq('1.2.3', '9.8.7') => true
 --
-function semver.neq(v1, v2, loose)
+function semver.neq(v1, v2)
     local errors
 
     if not isa(v1, semver) then
@@ -196,24 +196,33 @@ end
 
 -- semver.cmp
 --
-function semver.cmp(v1, op, v2, loose)
-    local errors
+function semver.cmp(v1, op, v2)
+    local result, errors
 
-    if not isa(v1, semver) then
-        v1, errors = semver(v1)
-    end
-    if errors then
-        return nil, errors
+    if op == "" or op == "=" or op == "==" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == ">" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == "<" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == ">=" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == "<=" then
+        result, errors = semver.eq(v1, v2)
+    elseif op == "!=" then
+        result, errors = semver.eq(v1, v2)
+    else
+        errors = string.format("invalid operator: %s", op)
     end
 
-    return v1:compare(v2)
+    return result, errors
 end
 
 -- TODO
 --
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
 --
-function semver.satisfies(version, range, loose)
+function semver.satisfies(version, range)
     return true
 end
 
@@ -247,17 +256,6 @@ function semver.select(range, versions, tags, branches)
     return nil, string.format("cannot select version %s", range)
 end
 
-function semver:format()
-    local buffer = { ("%d.%d.%d"):format(self.major, self.minor, self.patch) }
-    local a = table.concat(self.prerelease, ".")
-    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
-    self.version = table.concat(buffer)
-end
-
-function semver:__tostring()
-    return self.version
-end
-
 local function compare_ids(a, b)
     local anum, bnum;
 
@@ -265,7 +263,7 @@ local function compare_ids(a, b)
         anum = tonumber(a)
     end
     if b and tostring(b):match('^%d+$') then
-        anum = tonumber(b)
+        bnum = tonumber(b)
     end
 
     if anum and not bnum then
@@ -281,83 +279,30 @@ local function compare_ids(a, b)
     end
 end
 
-local function rcompare_ids(a, b)
-    return compare_ids(b, a)
+local function compare_main(v1, v2)
+    local cmp = compare_ids(v1.major, v2.major)
+    if cmp == 0 then
+        cmp = compare_ids(v1.minor, v2.minor)
+        if cmp == 0 then
+            cmp = compare_ids(v1.patch, v2.patch)
+        end
+    end
+    return cmp
 end
 
-function semver:compare(other)
-    local errors
+local function compare_pre(v1, v2)
 
-    if not isa(other, semver) then
-        other, errors = semver(other)
-    end
-    if errors then
-        return nil, errors
-    end
-
-    return self:compare_main(other) or self:compare_pre(other)
-end
-
-function semver:compare_main(other)
-    local errors
-
-    if not isa(other, semver) then
-        other, errors = semver(other)
-    end
-    if errors then
-        return nil, errors
-    end
-
-    return compare_ids(self.major, other.major) or
-        compare_ids(self.minor, other.minor) or
-        compare_ids(self.patch, other.patch)
-end
-
-function semver:compare_pre(other)
-    local errors
-
-    if not isa(other, semver) then
-        other, errors = semver(other)
-    end
-    if errors then
-        return nil, errors
-    end
-
-    if self.prerelease:len() and not other.prerelease:len() then
+    if table.getn(v1.prerelease) and not table.getn(v2.prerelease) then
         return -1
-    elseif not self.prerelease:len() and other.prerelease:len() then
+    elseif not table.getn(v1.prerelease) and table.getn(v2.prerelease) then
         return 1
-    elseif not self.prerelease:len() and not other.prerelease:len() then
+    elseif not table.getn(v1.prerelease) and not table.getn(v2.prerelease) then
         return 0
     end
 
-    local i = 0
-    repeat
-        local a = self.prerelease[i];
-        local b = other.prerelease[i];
-        if not a and not b then
-            return 0
-        elseif not b then
-            return 1
-        elseif not a then
-            return -1
-        elseif a ~= b then
-            return compare_ids(a, b);
-        end
-        i = i + 1
-    until i
-end
+    -- TODO: prereleases comparison
 
-function semver:__eq(other)
-    return self:compare(other) == 0
-end
-
-function semver:__lt(other)
-    return self:compare(other) < 0
-end
-
-function semver:__pow(other)
-    return self:compare(other)
+    return 0
 end
 
 local function parse_version(s)
@@ -472,9 +417,42 @@ local function new(version)
         s.build = {}
     end
 
-    s:format()
+    local buffer = { ("%d.%d.%d"):format(s.major, s.minor, s.patch) }
+    local a = table.concat(s.prerelease, ".")
+    if a and a:len() > 0 then table.insert(buffer, "-" .. a) end
+    s.version = table.concat(buffer)
 
     return s
+end
+
+function semver:__tostring()
+    return self.version
+end
+
+function semver:__eq(other)
+    return self ^ other == 0
+end
+
+function semver:__lt(other)
+    return self ^ other < 0
+end
+
+function semver:__pow(other)
+    local errors
+
+    if not isa(other, semver) then
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
+    end
+
+    local cmp = compare_main(self, other)
+    if cmp == 0 then
+        cmp = compare_pre(self, other)
+    end
+
+    return cmp
 end
 
 function isa(entity, super)
