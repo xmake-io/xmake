@@ -87,7 +87,7 @@ function semver.compare(v1, v2)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1:compare(v2)
@@ -104,7 +104,7 @@ function semver.gt(v1, v2)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1 > v2
@@ -121,7 +121,7 @@ function semver.lt(v1, v2)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1 < v2
@@ -138,7 +138,7 @@ function semver.gte(v1, v2, loose)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1 >= v2
@@ -155,7 +155,7 @@ function semver.lte(v1, v2, loose)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1 <= v2
@@ -172,7 +172,7 @@ function semver.eq(v1, v2, loose)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1 == v2
@@ -189,7 +189,7 @@ function semver.neq(v1, v2, loose)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1 ~= v2
@@ -204,7 +204,7 @@ function semver.cmp(v1, op, v2, loose)
         v1, errors = semver(v1)
     end
     if errors then
-        return 0, errors
+        return nil, errors
     end
 
     return v1:compare(v2)
@@ -287,16 +287,26 @@ local function rcompare_ids(a, b)
 end
 
 function semver:compare(other)
+    local errors
+
     if not isa(other, semver) then
-        other = semver(other)
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
     end
 
     return self:compare_main(other) or self:compare_pre(other)
 end
 
 function semver:compare_main(other)
+    local errors
+
     if not isa(other, semver) then
-        other = semver(other)
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
     end
 
     return compare_ids(self.major, other.major) or
@@ -305,8 +315,13 @@ function semver:compare_main(other)
 end
 
 function semver:compare_pre(other)
+    local errors
+
     if not isa(other, semver) then
-        other = semver(other)
+        other, errors = semver(other)
+    end
+    if errors then
+        return nil, errors
     end
 
     if self.prerelease:len() and not other.prerelease:len() then
