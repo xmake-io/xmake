@@ -44,6 +44,9 @@ function sandbox_core_base_fasturl.sort(urls)
     if not urls then
         raise(errors)
     end
+
+    -- ok
+    return urls
 end
 
 -- return module
