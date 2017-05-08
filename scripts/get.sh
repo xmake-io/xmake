@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # xmake getter
-# usage: bash <(curl -s <my location>) [branch] [commit/__install_only__]
+# usage: bash <(curl -s <my location>) [[mirror:]branch] [commit/__install_only__]
 
 set -o pipefail
 # print a LOGO!
@@ -55,15 +55,26 @@ install_tools()
     { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel; }
 }
 test_tools || { install_tools && test_tools; } || my_exit 'Dependencies Installation Fail' 1
-branch=
+branch=master
+mirror=tboox
+IFS=':'
 if [ x != "x$1" ]
 then
-    branch="-b $1"
-    echo "Branch: $1"
+    brancharr=($1)
+    if [ ${#brancharr[@]} -eq 1 ]
+    then
+        branch=${brancharr[0]}
+    fi
+    if [ ${#brancharr[@]} -eq 2 ]
+    then
+        branch=${brancharr[1]}
+        mirror=${brancharr[0]}
+    fi
+    echo "Branch: $branch"
 fi
-if [ 'x-b __local__' != "x$branch" ]
+if [ 'x__local__' != "x$branch" ]
 then
-    git clone --depth=50 $branch https://github.com/tboox/xmake.git /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" /tmp/$$xmake_getter || my_exit 'Clone Fail'
     if [ x != "x$2" ]
     then
         cd /tmp/$$xmake_getter || my_exit 'Chdir Error'
@@ -77,8 +88,8 @@ if [ 'x__install_only__' != "x$2" ]
 then
     make -C /tmp/$$xmake_getter --no-print-directory build || my_exit 'Build Fail'
 fi
-IFS=':'
-patharr=($PATH)
+PATHclone=$PATH
+patharr=($PATHclone)
 prefix=
 for st in "${patharr[@]}"
 do
