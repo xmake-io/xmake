@@ -26,6 +26,7 @@
 local sandbox_core_package_repository = sandbox_core_package_repository or {}
 
 -- load modules
+local fasturl       = require("base/fasturl")
 local project       = require("project/project")
 local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
@@ -75,10 +76,22 @@ end
 -- get all repositories from global or local directory
 function sandbox_core_package_repository.repositories(is_global)
 
-    -- add default global xmake repository
+    -- add main global xmake repository
     local repositories = {}
     if is_global then
-        table.insert(repositories, {name = "xmake-repo", url = "https://github.com/tboox/xmake-repo.git", global = true})
+
+        -- sort main urls
+        local mainurls = {"https://github.com/tboox/xmake-repo.git", "https://git.oschina.net/tboox/xmake-repo.git"}
+        fasturl.add(mainurls)
+        mainurls, errors = fasturl.sort(mainurls)
+        if not mainurls then
+            raise(errors)
+        end
+
+        -- add main urls
+        for _, mainurl in ipairs(mainurls) do
+            table.insert(repositories, {name = "xmake-repo", url = mainurl, global = true})
+        end
     end
 
     -- load repositories from repository cache 

@@ -22,70 +22,86 @@
 -- @file        fasturl.lua
 --
 
--- imports
-import("core.tool.ping")
+-- define module
+local fasturl = fasturl or {}
+
+-- load modules
+local table     = require("base/table")
+local ping      = require("tool/ping")
 
 -- parse host from url
-function _parse_host(url)
+function fasturl._parse_host(url)
 
     -- init host cache
-    _g._URLHOSTS = _g._URLHOSTS or {}
+    fasturl._URLHOSTS = fasturl._URLHOSTS or {}
 
     -- http[s]://xxx.com/.. or git@git.xxx.com:xxx/xxx.git
-    local host = _g._URLHOSTS[url] or url:match("://(.-)/") or url:match("@(.-):")
+    local host = fasturl._URLHOSTS[url] or url:match("://(.-)/") or url:match("@(.-):")
 
     -- save to cache
-    _g._URLHOSTS[url] = host
+    fasturl._URLHOSTS[url] = host
 
     -- ok
     return host
 end
 
 -- add urls
-function add(urls)
+function fasturl.add(urls)
 
     -- get current ping info
-    local pinginfo = _g._PINGINFO or {}
+    local pinginfo = fasturl._PINGINFO or {}
 
     -- add ping hosts
-    _g._PINGHOSTS = _g._PINGHOSTS or {}
+    fasturl._PINGHOSTS = fasturl._PINGHOSTS or {}
     for _, url in ipairs(urls) do
 
         -- parse host
-        local host = _parse_host(url)
+        local host = fasturl._parse_host(url)
 
         -- this host has not been tested?
         if host and not pinginfo[host] then
-            table.insert(_g._PINGHOSTS, host)
+            table.insert(fasturl._PINGHOSTS, host)
         end
     end
 end
 
 -- sort urls
-function sort(urls)
+function fasturl.sort(urls)
 
     -- ping hosts
-    local pinghosts = table.unique(_g._PINGHOSTS or {})
+    local pinghosts = table.unique(fasturl._PINGHOSTS or {})
     if pinghosts and #pinghosts > 0 then
+ 
+        -- get the ping instance
+        local instance, errors = ping.load()
+        if not instance then
+            return nil, errors
+        end
 
         -- ping them and test speed
-        local pinginfo = ping.send(unpack(pinghosts))
+        local pinginfo, errors = instance:send(unpack(pinghosts))
+        if not pinginfo then
+            return nil, errors
+        end
         
         -- merge to ping info
-        _g._PINGINFO = table.join(_g._PINGINFO or {}, pinginfo) 
+        fasturl._PINGINFO = table.join(fasturl._PINGINFO or {}, pinginfo) 
     end
 
     -- sort urls by the ping info
-    local pinginfo = _g._PINGINFO or {}
+    local pinginfo = fasturl._PINGINFO or {}
     table.sort(urls, function(a, b) 
-        a = pinginfo[_parse_host(a) or ""] or 65536
-        b = pinginfo[_parse_host(b) or ""] or 65536
+        a = pinginfo[fasturl._parse_host(a) or ""] or 65536
+        b = pinginfo[fasturl._parse_host(b) or ""] or 65536
         return a < b 
     end)
 
     -- clear hosts
-    _g._PINGHOSTS = {}
+    fasturl._PINGHOSTS = {}
 
     -- ok
     return urls
 end
+
+-- return module
+return fasturl

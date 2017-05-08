@@ -24,10 +24,10 @@
 
 -- imports
 import("core.base.option")
+import("core.base.fasturl")
 import("core.tool.unarchiver")
 import("core.tool.downloader")
 import("core.platform.environment")
-import("fasturl")
 
 -- load linux environment
 function _load_linux()
@@ -69,7 +69,7 @@ function _load_windows()
     local winenv_urls = 
     {
         format("https://github.com/tboox/xmake-%senv/archive/master.zip", winenv_arch)
-    ,   format("https://git.oschina.net/tboox/xmake-%senv/repository/archive/master", winenv_arch)
+    ,   format("https://coding.net/u/waruqi/p/xmake-%senv/git/archive/master", winenv_arch)
     }
     fasturl.add(winenv_urls)
 
