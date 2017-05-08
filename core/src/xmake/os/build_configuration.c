@@ -19,14 +19,14 @@
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
  * @author      TitanSnow
- * @file        features.c
+ * @file        build_configuration.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "features"
+#define TB_TRACE_MODULE_NAME                "build_configuration"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -38,8 +38,8 @@
  * implementation
  */
 
-// get features
-tb_int_t xm_os_features(lua_State* lua)
+// get build_configuration
+tb_int_t xm_os_build_configuration(lua_State* lua)
 {
     // features
     const char* features_table[] = {
@@ -49,7 +49,11 @@ tb_int_t xm_os_features(lua_State* lua)
             tb_null
     };
 
-    // new array
+    // configuration table
+    lua_newtable(lua);
+    lua_pushstring(lua, "features");
+
+    // array for features
     lua_newtable(lua);
 
     // insert
@@ -58,6 +62,9 @@ tb_int_t xm_os_features(lua_State* lua)
         lua_pushstring(lua, *p);
         lua_rawseti(lua, -2, p - features_table + 1);
     }
+
+    // set back to table
+    lua_settable(lua, -3);
 
     // ok
     return 1;
