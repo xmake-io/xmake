@@ -48,10 +48,7 @@ function _load_windows()
     local winenv_cmd_dir = path.join(winenv_dir, "cmd")
 
     -- add $programdir/winenv/cmd and ~/.xmake/winenv/cmd to $path
-    os.setenv("PATH", (os.getenv("PATH") or "") .. "; " .. path.join(os.programdir(), "winenv", "cmd"))
-    if os.isdir(winenv_cmd_dir) then
-        os.setenv("PATH", (os.getenv("PATH") or "") .. "; " .. winenv_cmd_dir)
-    end
+    os.setenv("PATH", (os.getenv("PATH") or "") .. ";" .. path.join(os.programdir(), "winenv", "cmd") .. ";" .. winenv_cmd_dir)
 
     -- check git 
     if os.isfile(path.join(winenv_cmd_dir, "git.exe")) then

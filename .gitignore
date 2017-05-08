@@ -34,5 +34,6 @@ core/pre
 core/tool/msys
 core/xmake.config.h
 core/.config.mak
+winenv
 xmake-ppa
 !xmake/actions/build
