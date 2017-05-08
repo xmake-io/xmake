@@ -409,7 +409,13 @@ end
 
 -- get the temporary directory
 function os.tmpdir()
-    return path.join(os._tmpdir(), ".xmake")
+
+    -- generate and get a temporary directory
+    local tmpdir = path.join(os._tmpdir(), ".xmake")
+    if not os.isdir(tmpdir) then
+        os.mkdir(tmpdir)
+    end
+    return tmpdir
 end
 
 -- generate the temporary file path
