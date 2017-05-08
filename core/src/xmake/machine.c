@@ -132,7 +132,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "emptydir",       xm_os_emptydir  }
 ,   { "strerror",       xm_os_strerror  }
 ,   { "getwinsize",     xm_os_getwinsize}
-,   { "versioninfo",   xm_os_versioninfo}
+,   { "versioninfo",    xm_os_versioninfo}
 ,   { tb_null,          tb_null         }
 };
 

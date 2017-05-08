@@ -35,10 +35,10 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * private implementation
  */
 
-static void xm_os_insert_set(lua_State* lua, const char** p)
+static tb_void_t xm_os_insert_set(lua_State* lua, tb_char_t const** p)
 {
     for (; *p; ++p)
     {
@@ -48,15 +48,20 @@ static void xm_os_insert_set(lua_State* lua, const char** p)
     }
 }
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * implementation
+ */
+
 // get versioninfo
 tb_int_t xm_os_versioninfo(lua_State* lua)
 {
     // features
-    const char* features_table[] = {
-#       ifdef XM_CONFIG_API_HAVE_READLINE
-            "readline",
-#       endif
-            tb_null
+    static tb_char_t const* features_table[] = 
+    {
+#ifdef XM_CONFIG_API_HAVE_READLINE
+        "readline",
+#endif
+        tb_null
     };
 
     // configuration table
@@ -177,14 +182,15 @@ tb_int_t xm_os_versioninfo(lua_State* lua)
     lua_settable(lua, -3);
 
     // mode table
-    const char* mode_table[] = {
-#       ifdef __xm_small__
-            "small",
-#       endif
-#       ifdef __xm_debug__
-            "debug",
-#       endif
-            tb_null
+    static tb_char_t const* mode_table[] = 
+    {
+#ifdef __xm_small__
+        "small",
+#endif
+#ifdef __xm_debug__
+        "debug",
+#endif
+        tb_null
     };
 
     // table for mode
@@ -198,17 +204,18 @@ tb_int_t xm_os_versioninfo(lua_State* lua)
     lua_settable(lua, -3);
 
     // packages table
-    const char* packages_table[] = {
-#       ifdef XM_CONFIG_PACKAGE_HAVE_TBOX
-            "tbox",
-#       endif
-#       ifdef XM_CONFIG_PACKAGE_HAVE_LUAJIT
-            "luajit",
-#       endif
-#       ifdef XM_CONFIG_PACKAGE_HAVE_BASE
-            "base",
-#       endif
-            tb_null
+    tb_char_t const* packages_table[] = 
+    {
+#ifdef XM_CONFIG_PACKAGE_HAVE_TBOX
+        "tbox",
+#endif
+#ifdef XM_CONFIG_PACKAGE_HAVE_LUAJIT
+        "luajit",
+#endif
+#ifdef XM_CONFIG_PACKAGE_HAVE_BASE
+        "base",
+#endif
+        tb_null
     };
 
     // table for packages
