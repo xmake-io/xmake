@@ -44,17 +44,6 @@ local menu =
     -- copyright
 ,   copyright = "Copyright (C) 2015-2016 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
 
-    -- features
-,   features = (function()
-                    local str = ""
-                    for _, val in ipairs(os.features()) do
-                        str = str .. val .. ", "
-                    end
-                    if #str ~= 0 then
-                        return "Enable: " .. str:sub(1, #str - 2)
-                    end
-                end)()
-
     -- the tasks: xmake [task]
 ,   task.menu
 
@@ -83,11 +72,6 @@ function main._help()
         -- print copyright
         if menu.copyright then
             utils.cprint(menu.copyright)
-        end
-
-        -- print features
-        if menu.features then
-            utils.print(menu.features)
         end
 
         -- ok
