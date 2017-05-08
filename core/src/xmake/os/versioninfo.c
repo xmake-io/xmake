@@ -19,14 +19,14 @@
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
  * @author      TitanSnow
- * @file        build_configuration.c
+ * @file        versioninfo.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "build_configuration"
+#define TB_TRACE_MODULE_NAME                "versioninfo"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -38,8 +38,8 @@
  * implementation
  */
 
-// get build_configuration
-tb_int_t xm_os_build_configuration(lua_State* lua)
+// get versioninfo
+tb_int_t xm_os_versioninfo(lua_State* lua)
 {
     // features
     const char* features_table[] = {

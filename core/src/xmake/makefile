@@ -36,7 +36,7 @@ xmake_C_FILES 			+= \
 						os/emptydir \
 						os/strerror \
 						os/getwinsize \
-						os/build_configuration \
+						os/versioninfo \
 						path/relative \
 						path/absolute \
 						path/translate \
