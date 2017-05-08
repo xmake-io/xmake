@@ -514,6 +514,11 @@ function sandbox_os.sudol(runner, luafile, luaargv)
     sandbox_os.sudov(runner, path.join(sandbox_os.programdir(), "xmake"), table.join(argv, luafile, luaargv))
 end
 
+-- get build_configuration
+function sandbox_os.build_configuration()
+    return os.build_configuration()
+end
+
 -- return module
 return sandbox_os
 
