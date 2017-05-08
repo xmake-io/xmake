@@ -38,6 +38,16 @@
  * implementation
  */
 
+static void xm_os_insert_set(lua_State* lua, const char** p)
+{
+    for (; *p; ++p)
+    {
+        lua_pushstring(lua, *p);
+        lua_pushboolean(lua, tb_true);
+        lua_settable(lua, -3);
+    }
+}
+
 // get versioninfo
 tb_int_t xm_os_versioninfo(lua_State* lua)
 {
@@ -53,15 +63,160 @@ tb_int_t xm_os_versioninfo(lua_State* lua)
     lua_newtable(lua);
     lua_pushstring(lua, "features");
 
-    // array for features
+    // table for features
     lua_newtable(lua);
 
     // insert
-    for (const char** p = features_table; *p; ++p)
-    {
-        lua_pushstring(lua, *p);
-        lua_rawseti(lua, -2, p - features_table + 1);
-    }
+    xm_os_insert_set(lua, features_table);
+
+    // set back to table
+    lua_settable(lua, -3);
+
+    // table for version
+    lua_pushstring(lua, "version");
+    lua_newtable(lua);
+    // major
+    lua_pushstring(lua, "major");
+    lua_pushinteger(lua, XM_VERSION_MAJOR);
+    lua_settable(lua, -3);
+    // minor
+    lua_pushstring(lua, "minor");
+    lua_pushinteger(lua, XM_VERSION_MINOR);
+    lua_settable(lua, -3);
+    // alter
+    lua_pushstring(lua, "alter");
+    lua_pushinteger(lua, XM_VERSION_ALTER);
+    lua_settable(lua, -3);
+    // build
+    lua_pushstring(lua, "build");
+    lua_pushnumber(lua, XM_VERSION_BUILD);
+    lua_settable(lua, -3);
+    // build string
+    lua_pushstring(lua, "build_string");
+    lua_pushstring(lua, XM_VERSION_BUILD_STRING);
+    lua_settable(lua, -3);
+    // version string
+    lua_pushstring(lua, "version_string");
+    lua_pushstring(lua, XM_VERSION_STRING);
+    lua_settable(lua, -3);
+    // short version string
+    lua_pushstring(lua, "short_version_string");
+    lua_pushstring(lua, XM_VERSION_SHORT_STRING);
+    lua_settable(lua, -3);
+
+    // table for tbox version
+    lua_pushstring(lua, "tbox");
+    lua_newtable(lua);
+    // major
+    lua_pushstring(lua, "major");
+    lua_pushinteger(lua, TB_VERSION_MAJOR);
+    lua_settable(lua, -3);
+    // minor
+    lua_pushstring(lua, "minor");
+    lua_pushinteger(lua, TB_VERSION_MINOR);
+    lua_settable(lua, -3);
+    // alter
+    lua_pushstring(lua, "alter");
+    lua_pushinteger(lua, TB_VERSION_ALTER);
+    lua_settable(lua, -3);
+    // build
+    lua_pushstring(lua, "build");
+    lua_pushnumber(lua, TB_VERSION_BUILD);
+    lua_settable(lua, -3);
+    // build string
+    lua_pushstring(lua, "build_string");
+    lua_pushstring(lua, TB_VERSION_BUILD_STRING);
+    lua_settable(lua, -3);
+    // version string
+    lua_pushstring(lua, "version_string");
+    lua_pushstring(lua, TB_VERSION_STRING);
+    lua_settable(lua, -3);
+    // short version string
+    lua_pushstring(lua, "short_version_string");
+    lua_pushstring(lua, TB_VERSION_SHORT_STRING);
+    lua_settable(lua, -3);
+
+    // set back to table
+    lua_settable(lua, -3);
+
+    // table for lua version
+    lua_pushstring(lua, "lua");
+    lua_newtable(lua);
+
+    // version
+    lua_pushstring(lua, "version");
+    lua_pushstring(lua, LUA_RELEASE);
+    lua_settable(lua, -3);
+
+    // version num
+    lua_pushstring(lua, "version_num");
+    lua_pushinteger(lua, LUA_VERSION_NUM);
+    lua_settable(lua, -3);
+
+    // set back to table
+    lua_settable(lua, -3);
+
+    // table for luajit version
+    lua_pushstring(lua, "luajit");
+    lua_newtable(lua);
+
+    // version
+    lua_pushstring(lua, "version");
+    lua_pushstring(lua, LUAJIT_VERSION);
+    lua_settable(lua, -3);
+
+    // version num
+    lua_pushstring(lua, "version_num");
+    lua_pushinteger(lua, LUAJIT_VERSION_NUM);
+    lua_settable(lua, -3);
+
+    // set back to table
+    lua_settable(lua, -3);
+
+    // set back to table
+    lua_settable(lua, -3);
+
+    // mode table
+    const char* mode_table[] = {
+#       ifdef __xm_small__
+            "small",
+#       endif
+#       ifdef __xm_debug__
+            "debug",
+#       endif
+            tb_null
+    };
+
+    // table for mode
+    lua_pushstring(lua, "modes");
+    lua_newtable(lua);
+
+    // insert
+    xm_os_insert_set(lua, mode_table);
+
+    // set back to table
+    lua_settable(lua, -3);
+
+    // packages table
+    const char* packages_table[] = {
+#       ifdef XM_CONFIG_PACKAGE_HAVE_TBOX
+            "tbox",
+#       endif
+#       ifdef XM_CONFIG_PACKAGE_HAVE_LUAJIT
+            "luajit",
+#       endif
+#       ifdef XM_CONFIG_PACKAGE_HAVE_BASE
+            "base",
+#       endif
+            tb_null
+    };
+
+    // table for packages
+    lua_pushstring(lua, "packages");
+    lua_newtable(lua);
+
+    // insert
+    xm_os_insert_set(lua, packages_table);
 
     // set back to table
     lua_settable(lua, -3);
