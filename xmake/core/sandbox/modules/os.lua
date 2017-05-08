@@ -528,6 +528,11 @@ function sandbox_os.sudol(runner, luafile, luaargv)
     sandbox_os.sudov(runner, path.join(sandbox_os.programdir(), "xmake"), table.join(argv, luafile, luaargv))
 end
 
+-- get versioninfo
+function sandbox_os.versioninfo()
+    return os.versioninfo()
+end
+
 -- return module
 return sandbox_os
 

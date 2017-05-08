@@ -40,6 +40,11 @@
  * includes
  */
 #include "prefix.h"
+#ifdef XM_CONFIG_API_HAVE_READLINE
+#   include <stdio.h>   // on some OS (like centos) required
+#   include <readline/readline.h>
+#   include <readline/history.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -50,14 +55,6 @@
 
 // continuation prompt
 #define LUA_PROMPT2     ">> "
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * declaration
- */
-#ifdef XM_CONFIG_API_HAVE_READLINE
-extern char* readline   (const char*);
-extern void  add_history(const char*);
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
