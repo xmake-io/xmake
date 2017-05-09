@@ -51,13 +51,13 @@ function _enter_windows()
 
     -- init winenv directory
     local winenv_dir = path.translate("~/.xmake/winenv")
-    local winenv_cmd_dir = path.join(winenv_dir, "cmd")
 
-    -- add $programdir, $programdir/winenv/cmd and ~/.xmake/winenv/cmd to $path
-    os.setenv("PATH", (os.getenv("PATH") or "") .. ";" .. os.programdir() .. ";" .. path.join(os.programdir(), "winenv", "cmd") .. ";" .. winenv_cmd_dir)
+    -- add $programdir, $programdir/winenv/cmd to $path
+    os.setenv("PATH", (os.getenv("PATH") or "") .. ";" .. os.programdir() .. ";" .. path.join(os.programdir(), "winenv", "bin"))
 
-    -- check git 
-    if os.isfile(path.join(winenv_cmd_dir, "git.exe")) then
+    -- load winenv 
+    if os.isfile(path.join(winenv_dir, "winenv.lua")) then
+        import("winenv", {rootdir = winenv_dir}).main(winenv_dir)
         return
     end
 
@@ -135,7 +135,10 @@ function _enter_windows()
 
             -- extract winenv.zip file
             unarchiver.extract(winenv_zip, winenv_dir)
-            
+                    
+            -- load winenv 
+            import("winenv", {rootdir = winenv_dir}).main(winenv_dir)
+
             -- trace
             cprint("${green}ok")
 
