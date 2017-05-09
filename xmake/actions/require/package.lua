@@ -298,8 +298,8 @@ end
 -- install packages
 function install_packages(requires)
 
-    -- load environment first
-    environment.load()
+    -- enter environment 
+    environment.enter()
 
     -- TODO need optimization
     -- pull all repositories first
@@ -311,5 +311,8 @@ function install_packages(requires)
         -- install package
         action.install.main(package, cache_directory())
     end
+
+    -- leave environment
+    environment.leave()
 end
 

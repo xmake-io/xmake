@@ -33,24 +33,21 @@ import(".environment")
 function _build_for_xmakefile(package)
 
     -- configure it first
-    --
-    -- $(xmake) maybe contains spaces, .e.g C:\Program Files\xmake\xmake
-    --
     if config.plat() and config.arch() then
-        os.vrun("\"$(xmake)\" f -p $(plat) -a $(arch) -c")
+        os.vrun("xmake f -p $(plat) -a $(arch) -c")
     else
-        os.vrun("\"$(xmake)\" f -c")
+        os.vrun("xmake f -c")
     end
 
     -- build it
-    os.vrun("\"$(xmake)\" -r")
+    os.vrun("xmake -r")
 end
 
 -- build for makefile
 function _build_for_makefile(package)
 
     -- build it
-    os.vrun("$(make)")
+    os.vrun("make")
 end
 
 -- build for configure
@@ -126,7 +123,10 @@ function _run_script(script, package)
     -- register filter handler before building
     sandbox.filter_register(script, "package.build", function (var) 
         
-        -- attempt to get shellname from tool 
+        -- attempt to get shellname from tool
+        --
+        -- .e.g $(cc) $(ld) $(ar) ..
+        --
         local shellname = tool.shellname(var)
         if shellname then
             result = shellname

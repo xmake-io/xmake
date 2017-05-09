@@ -76,8 +76,6 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "unzip",       "",    "unzip",     "the zip file unarchiver") 
 
     -- insert other tools to toolchains
-    checker.toolchain_insert(toolchains, "make",        "",    "make",      "the make utility") 
-    checker.toolchain_insert(toolchains, "make",        "",    "nmake",     "the make utility") 
     checker.toolchain_insert(toolchains, "ccache",      "",    "ccache",    "the compiler cache") 
     checker.toolchain_insert(toolchains, "git",         "",    "git",       "the git version control utility") 
     checker.toolchain_insert(toolchains, "downloader",  "",    "curl",      "the url download utility") 

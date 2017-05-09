@@ -29,26 +29,32 @@ import("core.tool.unarchiver")
 import("core.tool.downloader")
 import("core.platform.environment")
 
--- load linux environment
-function _load_linux()
+-- enter linux environment
+function _enter_linux()
+
+    -- add $programdir to $path for running xmake
+    os.setenv("PATH", (os.getenv("PATH") or "") .. ":" .. os.programdir())
 end
 
--- load macosx environment
-function _load_macosx()
+-- enter macosx environment
+function _enter_macosx()
+
+    -- add $programdir to $path for running xmake
+    os.setenv("PATH", (os.getenv("PATH") or "") .. ":" .. os.programdir())
 end
 
--- load windows environment (xmake/winenv/cmd)
+-- enter windows environment (xmake/winenv/cmd)
 --
 -- @note curl and tar has been placed in the xmake installation package 
 --
-function _load_windows()
+function _enter_windows()
 
     -- init winenv directory
     local winenv_dir = path.translate("~/.xmake/winenv")
     local winenv_cmd_dir = path.join(winenv_dir, "cmd")
 
-    -- add $programdir/winenv/cmd and ~/.xmake/winenv/cmd to $path
-    os.setenv("PATH", (os.getenv("PATH") or "") .. ";" .. path.join(os.programdir(), "winenv", "cmd") .. ";" .. winenv_cmd_dir)
+    -- add $programdir, $programdir/winenv/cmd and ~/.xmake/winenv/cmd to $path
+    os.setenv("PATH", (os.getenv("PATH") or "") .. ";" .. os.programdir() .. ";" .. path.join(os.programdir(), "winenv", "cmd") .. ";" .. winenv_cmd_dir)
 
     -- check git 
     if os.isfile(path.join(winenv_cmd_dir, "git.exe")) then
@@ -143,31 +149,44 @@ function _load_windows()
     raise()
 end
 
--- laod host environment
---
--- ensure that we can find some basic tools: git, make/nmake/cmake, msbuild ...
---
--- If these tools not exist, we will install it first.
---
-function load()
+-- enter host environment
+function _enter_host()
+
+    -- save old $path environment
+    _g._PATH_ENV = os.getenv("PATH")
 
     -- init loaders
     local loaders = 
     {
-        linux   = _load_linux
-    ,   macosx  = _load_macosx
-    ,   windows = _load_windows
+        linux   = _enter_linux
+    ,   macosx  = _enter_macosx
+    ,   windows = _enter_windows
     }
 
-    -- load host environment
+    -- enter host environment
     local loader = loaders[os.host()]
     if loader then
         loader()
     end
 end
 
+-- leave host environment
+function _leave_host()
+
+    -- restore old $path environment
+    os.setenv("PATH", _g._PATH_ENV)
+end
+
 -- enter environment
+--
+-- ensure that we can find some basic tools: git, make/nmake/cmake, msbuild ...
+--
+-- If these tools not exist, we will install it first.
+--
 function enter()
+
+    -- enter host environment
+    _enter_host()
 
     -- set search pathes of toolchains 
     environment.enter("toolchains")
@@ -186,4 +205,8 @@ function leave()
     -- TODO restore toolchains for CC, LD
     
     -- TODO set flags of toolchains
+
+
+    -- leave host environment
+    _leave_host()
 end
