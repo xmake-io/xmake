@@ -33,14 +33,17 @@ import(".environment")
 function _build_for_xmakefile(package)
 
     -- configure it first
+    --
+    -- $(xmake) maybe contains spaces, .e.g C:\Program Files\xmake\xmake
+    --
     if config.plat() and config.arch() then
-        os.vrun("$(xmake) f -p $(plat) -a $(arch) -c")
+        os.vrun("\"$(xmake)\" f -p $(plat) -a $(arch) -c")
     else
-        os.vrun("$(xmake) f -c")
+        os.vrun("\"$(xmake)\" f -c")
     end
 
     -- build it
-    os.vrun("$(xmake) -r")
+    os.vrun("\"$(xmake)\" -r")
 end
 
 -- build for makefile

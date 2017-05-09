@@ -49,9 +49,11 @@ function extract(archivefile, outputdir)
     -- set outputdir
     table.insert(argv, "-C")
     table.insert(argv, outputdir)
+
+    -- select the first root directory and strip it (may be discard some root files)
     table.insert(argv, "--strip-components=1")
 
-    -- clone it
+    -- extract it
     os.vrunv(_g.shellname, argv)
 end
 

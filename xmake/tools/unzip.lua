@@ -39,19 +39,44 @@ function extract(archivefile, outputdir)
     assert(archivefile)
 
     -- init argv
-    local argv = {ifelse(option.get("verbose"), "-j", "-jq"), archivefile}
+    local argv = {}
+    if option.get("verbose") then
+        table.insert(argv, "-q")
+    end
+    table.insert(argv, archivefile)
 
     -- ensure output directory
     if not os.isdir(outputdir) then
         os.mkdir(outputdir)
     end
 
-    -- set outputdir
-    table.insert(argv, "-d")
-    table.insert(argv, outputdir)
+    -- init temporary directory
+    local tmpdir = path.join(os.tmpdir(), hash.uuid())
+    os.tryrm(tmpdir)
+    os.mkdir(tmpdir)
 
-    -- clone it
+    -- extract to tmpdir first
+    table.insert(argv, "-d")
+    table.insert(argv, tmpdir)
+
+    -- unzip it
     os.vrunv(_g.shellname, argv)
+
+    -- select the first root directory and strip it (may be discard some root files)
+    for _, dir in ipairs(os.dirs(path.join(tmpdir, "*"))) do
+        if path.filename(dir) ~= "__MACOSX" then
+            for _, filedir in ipairs(os.filedirs(path.join(dir, "*"))) do
+                local p, e = filedir:find(dir, 1, true)
+                if p and e then
+                    os.mv(filedir, path.join(outputdir, filedir:sub(e + 1)))
+                end
+            end
+            break
+        end
+    end
+
+    -- remove tmpdir
+    os.tryrm(tmpdir)
 end
 
 -- check the given flags 

@@ -85,6 +85,12 @@ function os._mv(src, dst)
 
     -- exists file or directory?
     if os.exists(src) then
+ 
+        -- the destination directory exists? append the filename
+        if os.isdir(dst) then
+            dst = path.join(dst, path.filename(path.translate(src)))
+        end
+
         -- move file or directory
         if not os.rename(src, dst) then
             return false, string.format("cannot move %s to %s %s", src, dst, os.strerror())

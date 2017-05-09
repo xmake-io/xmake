@@ -62,7 +62,8 @@ function _load_windows()
     end
 
     -- init winenv.zip file path
-    local winenv_zip = os.tmpfile() .. ".zip"
+    local winenv_zip        = os.tmpfile() .. ".zip"
+    local winenv_zip_tmp    = winenv_zip .. ".tmp"
 
     -- init winenv.zip urls
     local winenv_arch = ifelse(os.arch() == "x64", "win64", "win32")
@@ -79,19 +80,29 @@ function _load_windows()
         {
             function ()
 
-                -- attempt to remove winenv.zip file first
-                os.tryrm(winenv_zip)
+                -- no cached winenv.zip file?
+                if not os.isfile(winenv_zip) or option.get("force") then
 
-                -- create a download task
-                local task = function ()
-                    downloader.download(winenv_url, winenv_zip)
-                end
+                    -- attempt to remove winenv.zip.tmp file first
+                    os.tryrm(winenv_zip_tmp)
 
-                -- download winenv.zip
-                if option.get("verbose") then
-                    task()
-                else
-                    process.asyncrun(task)
+                    -- create a download task
+                    local task = function ()
+                        downloader.download(winenv_url, winenv_zip_tmp)
+                    end
+
+                    -- download winenv.zip
+                    if option.get("verbose") then
+                        task()
+                    else
+                        process.asyncrun(task)
+                    end
+
+                    -- attempt to remove previous winenv.zip first
+                    os.tryrm(winenv_zip)
+
+                    -- rename winenv.zip.tmp to winenv.zip
+                    os.mv(winenv_zip_tmp, winenv_zip)
                 end
 
                 -- ok
