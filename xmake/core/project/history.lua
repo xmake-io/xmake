@@ -33,29 +33,46 @@ local utils             = require("base/utils")
 local string            = require("base/string")
 local cache             = require("project/cache")
 
--- get cache
-function history._cache()
+-- the cache instance
+--
+-- @param scopename     local.xxxx
+--                      global.xxxx
+--
+function history._instance(scopename)
 
-    -- get it from cache first if exists
-    if history._CACHE then
-        return history._CACHE
+    -- check
+    assert(scopename)
+
+    -- init instances
+    history._INSTANCES = history._INSTANCES or {}
+    local instances = history._INSTANCES
+
+    -- this instance has been initialized?
+    if instances[scopename] then
+        return instances[scopename]
     end
 
+    -- init instance
+    local instance = table.inherit(history)
+
     -- init cache
-    history._CACHE = cache("local.history")
+    instance._CACHE = cache(scopename)
+
+    -- save instance
+    instances[scopename] = instance
 
     -- ok
-    return history._CACHE
+    return instance
 end
 
 -- save history
-function history.save(key, value)
+function history:save(key, value)
 
     -- check
     assert(key and value ~= nil)
 
     -- load history values first
-    local values = history.load(key) or {}
+    local values = self:load(key) or {}
 
     -- remove the oldest value if be full
     if #values > 64 then
@@ -66,16 +83,16 @@ function history.save(key, value)
     table.insert(values, value)
 
     -- save history
-    history._cache():set(key, values)
-    history._cache():flush()
+    self._CACHE:set(key, values)
+    self._CACHE:flush()
 end
 
 -- load history 
-function history.load(key)
+function history:load(key)
 
     -- load it
-    return history._cache():get(key)
+    return self._CACHE:get(key)
 end
 
 -- return module: history
-return history
+return history._instance

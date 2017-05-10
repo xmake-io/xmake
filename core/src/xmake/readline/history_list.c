@@ -34,11 +34,10 @@
  */
 #include "prefix.h"
 
-#ifdef XM_CONFIG_API_HAVE_READLINE
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+#ifdef XM_CONFIG_API_HAVE_READLINE
 
 // history_list wrapper
 tb_int_t xm_readline_history_list(lua_State* lua)
