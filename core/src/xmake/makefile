@@ -50,7 +50,8 @@ xmake_C_FILES 			+= \
 						process/waitlist \
 						process/close \
 						sandbox/interactive \
-						readline/readline
+						readline/readline \
+						readline/get_history_state
 						
 
 # flags

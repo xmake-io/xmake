@@ -31,6 +31,7 @@ end
 
 -- inherit some builtin interfaces
 sandbox_readline.readline = readline.readline
+sandbox_readline.get_history_state = readline.get_history_state
 
 -- return module
 return sandbox_readline
