@@ -338,6 +338,8 @@ end
 
 #### Run the Custom Lua Script
 
+##### Run the given script
+
 Write a simple lua script:
 
 ```lua
@@ -355,6 +357,68 @@ $ xmake lua /tmp/test.lua
 <p class="tip">
     You can also use `import` api to write a more advance lua script. 
 </p>
+
+##### Run the builtin script
+
+You can run `xmake lua -l` to list all builtin script name, for example:
+
+```bash
+$ xmake lua -l
+scripts:
+    cat
+    cp
+    echo
+    versioninfo
+    ...
+```
+
+And run them:
+
+```bash
+$ xmake lua cat ~/file.txt
+$ xmake lua echo "hello xmake"
+$ xmake lua cp /tmp/file /tmp/file2
+$ xmake lua versioninfo
+```
+
+##### Run interactive commands (REPL) 
+
+Enter interactive mode:
+
+```bash
+$ xmake lua
+> 1 + 2
+3
+
+> a = 1
+> a
+1
+
+> for _, v in pairs({1, 2, 3}) do
+>> print(v)
+>> end
+1
+2
+3
+```
+
+And we can `import` modules:
+
+```bash
+> task = import("core.project.task")
+> task.run("hello")
+hello xmake!
+```
+
+If you want to cancel multiline input, please input character `q`, for example:
+
+```bash
+> for _, v in ipairs({1, 2}) do
+>> print(v)
+>> q             <--  cancel multiline and clear previous input
+> 1 + 2
+3
+```
 
 #### Generate IDE Project Files
 
