@@ -8,5 +8,5 @@ script:
   - scripts/get.sh __local__
   - xmake lua versioninfo
   - xmake -P core
-  - $(cat $(which xmake)|grep XMAKE_PROGRAM_DIR)
+  - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo
