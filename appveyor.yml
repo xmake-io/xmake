@@ -10,5 +10,5 @@ build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
   - cmd: xmake lua versioninfo
   - cmd: xmake -P core
-  - cmd: XMAKE_PROGRAM_DIR=%cd%\xmake
+  - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
   - cmd: core\build\xmake lua versioninfo
