@@ -351,6 +351,8 @@ end
 
 这个跟宏脚本类似，只是省去了导入导出操作，直接指定lua脚本来加载运行，这对于想要快速测试一些接口模块，验证自己的某些思路，都是一个不错的方式。
 
+##### 运行指定的脚本文件
+
 我们先写个简单的lua脚本：
 
 ```lua
@@ -368,6 +370,76 @@ $ xmake lua /tmp/test.lua
 <p class="tip">
     当然，你也可以像宏脚本那样，使用`import`接口导入扩展模块，实现复杂的功能。
 </p>
+
+##### 运行内置的脚本命令
+
+你可以运行 `xmake lua -l` 来列举所有内置的脚本名，例如：
+
+```bash
+$ xmake lua -l
+scripts:
+    cat
+    cp
+    echo
+    versioninfo
+    ...
+```
+
+并且运行它们：
+
+```bash
+$ xmake lua cat ~/file.txt
+$ xmake lua echo "hello xmake"
+$ xmake lua cp /tmp/file /tmp/file2
+$ xmake lua versioninfo
+```
+
+##### 运行交互命令 (REPL)
+
+有时候在交互模式下，运行命令更加的方便测试和验证一些模块和api，也更加的灵活，不需要再去额外写一个脚本文件来加载。
+
+我们先看下，如何进入交互模式：
+
+```bash
+# 不带任何参数执行，就可以进入
+$ xmake lua
+>
+
+# 进行表达式计算
+> 1 + 2
+3
+
+# 赋值和打印变量值
+> a = 1
+> a
+1
+
+# 多行输入和执行
+> for _, v in pairs({1, 2, 3}) do
+>> print(v)
+>> end
+1
+2
+3
+```
+
+我们也能够通过 `import` 来导入扩展模块：
+
+```bash
+> task = import("core.project.task")
+> task.run("hello")
+hello xmake!
+```
+
+如果要中途取消多行输入，只需要输入字符：`q` 就行了
+
+```bash
+> for _, v in ipairs({1, 2}) do
+>> print(v)
+>> q             <--  取消多行输入，清空先前的输入数据
+> 1 + 2
+3
+```
 
 #### 生成IDE工程文件
 
