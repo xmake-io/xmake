@@ -78,7 +78,7 @@ task("lua")
 
             if enable_readline then
                 -- save to history
-                local entries = readline.get_history_state().entries
+                local entries = readline.history_list()
                 if #entries > #replhistory then
                     for i = #replhistory+1, #entries do
                         history.save("replhistory", entries[i].line)

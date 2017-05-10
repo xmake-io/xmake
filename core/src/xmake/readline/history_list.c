@@ -19,14 +19,14 @@
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
  * @author      TitanSnow
- * @file        get_history_state.c
+ * @file        history_list.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "get_history_state"
+#define TB_TRACE_MODULE_NAME                "history_list"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -40,35 +40,16 @@
  * implementation
  */
 
-// get_history_state wrapper
-tb_int_t xm_readline_get_history_state(lua_State* lua)
+// history_list wrapper
+tb_int_t xm_readline_history_list(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // HISTORY_STATE table
+    // history list
     lua_newtable(lua);
-    HISTORY_STATE *hs = history_get_history_state();
-    // field offset
-    lua_pushstring(lua, "offset");
-    lua_pushinteger(lua, hs -> offset);
-    lua_settable(lua, -3);
-    // field length
-    lua_pushstring(lua, "length");
-    lua_pushinteger(lua, hs -> length);
-    lua_settable(lua, -3);
-    // field size
-    lua_pushstring(lua, "size");
-    lua_pushinteger(lua, hs -> size);
-    lua_settable(lua, -3);
-    // field flags
-    lua_pushstring(lua, "flags");
-    lua_pushinteger(lua, hs -> flags);
-    lua_settable(lua, -3);
-    // field entries
-    lua_pushstring(lua, "entries");
-    lua_newtable(lua);
-    for (HIST_ENTRY **p = hs -> entries; *p; ++p)
+    tb_int_t i = 1;
+    for (HIST_ENTRY **p = history_list(); *p; ++p, ++i)
     {
         lua_newtable(lua);
         // field line
@@ -81,9 +62,8 @@ tb_int_t xm_readline_get_history_state(lua_State* lua)
         lua_settable(lua, -3);
 
         // set back
-        lua_rawseti(lua, -2, p - hs -> entries + 1);
+        lua_rawseti(lua, -2, i);
     }
-    lua_settable(lua, -3);
 
     // ok
     return 1;

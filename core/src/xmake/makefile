@@ -51,7 +51,7 @@ xmake_C_FILES 			+= \
 						process/close \
 						sandbox/interactive \
 						readline/readline \
-						readline/get_history_state \
+						readline/history_list \
 						readline/add_history \
 						readline/clear_history
 						
