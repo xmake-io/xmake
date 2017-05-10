@@ -2,7 +2,7 @@
 set_project("xmake")
 
 -- version
-set_version("2.1.4")
+set_version("2.1.5")
 
 -- set xmake min version
 set_xmakever("2.1.2")
