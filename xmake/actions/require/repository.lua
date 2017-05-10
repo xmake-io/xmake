@@ -49,36 +49,53 @@ end
 function pull(position)
 
     -- trace
-    print("updating repository ..")
+    printf("updating repositories .. ")
+    if option.get("verbose") then
+        print("")
+    end
 
-    -- pull all repositories 
-    local pulled = {}
-    for _, repo in ipairs(repositories()) do
+    -- create a pull task
+    local task = function ()
 
-        -- the repository directory
-        local repodir = path.join(repository.directory(repo.global), repo.name)
+        -- pull all repositories 
+        local pulled = {}
+        for _, repo in ipairs(repositories()) do
 
-        -- remove repeat and only pull the first repository
-        if not pulled[repodir] then
-            if os.isdir(repodir) then
+            -- the repository directory
+            local repodir = path.join(repository.directory(repo.global), repo.name)
 
-                -- trace
-                vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+            -- remove repeat and only pull the first repository
+            if not pulled[repodir] then
+                if os.isdir(repodir) then
 
-                -- pull it
-                git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
-            else
-                -- trace
-                vprint("cloning repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+                    -- trace
+                    vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
 
-                -- clone it
-                git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+                    -- pull it
+                    git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                else
+                    -- trace
+                    vprint("cloning repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+
+                    -- clone it
+                    git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+                end
+
+                -- pull this repository ok
+                pulled[repodir] = true
             end
-
-            -- pull this repository ok
-            pulled[repodir] = true
         end
     end
+ 
+    -- pull repositories
+    if option.get("verbose") then
+        task()
+    else
+        process.asyncrun(task)
+    end
+
+    -- trace
+    cprint("${green}ok")
 end
 
 -- get package directory from repositories

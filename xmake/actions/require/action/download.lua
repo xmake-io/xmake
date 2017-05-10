@@ -37,8 +37,8 @@ function _checkout(package, url, sourcedir)
         print("")
     end
 
-    -- attempt to remove source directory first
-    os.tryrm(sourcedir)
+    -- remove source directory first
+    os.rm(sourcedir)
 
     -- create a clone task
     local task = function ()
@@ -88,7 +88,7 @@ function _download(package, url, sourcedir)
     if option.get("force") or not os.isfile(packagefile) or (sha256 and sha256 ~= hash.sha256(packagefile)) then
 
         -- attempt to remove package file first
-        os.tryrm(packagefile)
+        os.rm(packagefile)
 
         -- create a download task
         local task = function ()
@@ -108,8 +108,8 @@ function _download(package, url, sourcedir)
         end
     end
 
-    -- attempt to remove source directory first
-    os.tryrm(sourcedir)
+    -- remove source directory first
+    os.rm(sourcedir)
 
     -- extract package file
     unarchiver.extract(packagefile, sourcedir)

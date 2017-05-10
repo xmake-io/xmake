@@ -89,8 +89,8 @@ function _enter_windows()
                 -- no cached winenv.zip file?
                 if not os.isfile(winenv_zip) or option.get("force") then
 
-                    -- attempt to remove winenv.zip.tmp file first
-                    os.tryrm(winenv_zip_tmp)
+                    -- remove winenv.zip.tmp file first
+                    os.rm(winenv_zip_tmp)
 
                     -- create a download task
                     local task = function ()
@@ -130,8 +130,8 @@ function _enter_windows()
         -- ok?
         if ok then 
 
-            -- attempt to remove winenv directory first
-            os.tryrm(winenv_dir)
+            -- remove winenv directory first
+            os.rm(winenv_dir)
 
             -- extract winenv.zip file
             unarchiver.extract(winenv_zip, winenv_dir)
