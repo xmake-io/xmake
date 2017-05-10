@@ -105,7 +105,7 @@ function _enter_windows()
                     end
 
                     -- attempt to remove previous winenv.zip first
-                    os.tryrm(winenv_zip)
+                    os.rm(winenv_zip)
 
                     -- rename winenv.zip.tmp to winenv.zip
                     os.mv(winenv_zip_tmp, winenv_zip)

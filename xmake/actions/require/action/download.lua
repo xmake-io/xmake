@@ -118,6 +118,10 @@ function _download(package, url, sourcedir)
     cprint("${green}ok")
 end
 
+-- filter url
+function _filter_url(package, url)
+end
+
 -- download the given package
 function main(package)
 
@@ -150,7 +154,7 @@ function main(package)
                 end
 
                 -- remove the previous source directory
-                os.tryrm(sourcedir)
+                os.rm(sourcedir)
 
                 -- rename source directory
                 os.mv(sourcedir_tmp, sourcedir)

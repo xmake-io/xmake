@@ -50,22 +50,15 @@ function _instance.new(name, info, rootdir)
     instance._NAME      = name
     instance._INFO      = info
     instance._ROOTDIR   = rootdir
+    instance._FILTER    = filter.new()
 
-    -- init filter
-    instance._FILTER = filter.new(function (variable)
-
-        -- check
-        assert(variable)
+    -- register filter handler
+    instance._FILTER:register("package", function (variable)
 
         -- init maps
         local maps = 
         {
-            os          = platform.os()
-        ,   host        = xmake._HOST
-        ,   tmpdir      = os.tmpdir()
-        ,   curdir      = os.curdir()
-        ,   xmake       = path.join(xmake._PROGRAM_DIR, "xmake")
-        ,   version     = instance:version()
+            version = instance:version()
         }
 
         -- map it
