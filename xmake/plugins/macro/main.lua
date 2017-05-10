@@ -201,12 +201,18 @@ end
 -- begin to record macro
 function _begin()
 
+    -- enter local history    
+    history.enter("local.history")
+
     -- patch begin tag to the history: cmdlines
     history.save("cmdlines", "__macro_begin__")
 end
 
 -- end to record macro
 function _end(macroname)
+
+    -- enter local history    
+    history.enter("local.history")
 
     -- load the history: cmdlines
     local cmdlines = history.load("cmdlines")

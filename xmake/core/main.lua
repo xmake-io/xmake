@@ -181,7 +181,7 @@ function main.done()
 
     -- save command lines to history
     if os.isfile(xmake._PROJECT_FILE) then
-        history.save("cmdlines", option.cmdline())
+        history("local.history"):save("cmdlines", option.cmdline())
     end
 
     -- run task    

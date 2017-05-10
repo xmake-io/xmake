@@ -33,19 +33,33 @@ local option    = require("base/option")
 local string    = require("base/string")
 local history   = require("project/history")
 local raise     = require("sandbox/modules/raise")
+local instance  = nil
+
+-- enter the history scope
+function sandbox_core_project_history.enter(scopename)
+
+    -- get the history instance
+    instance = history(scopename)
+end
 
 -- load the history data 
 function sandbox_core_project_history.load(key)
 
+    -- check
+    assert(instance)
+
     -- load it
-    return history.load(key)
+    return instance:load(key)
 end
 
 -- save the history data
 function sandbox_core_project_history.save(key, value)
 
+    -- check
+    assert(instance)
+
     -- save it
-    history.save(key, value)
+    instance:save(key, value)
 end
 
 -- return module
