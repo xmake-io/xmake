@@ -1,23 +1,12 @@
-sudo: required
+sudo: false
 language: C
 os:
   - linux
   - osx
 
-install:
-  - cd ..
-  - cp -r xmake xmake4build
-  - cd xmake4build
-  - make build; sudo make install
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update --verbose; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd --verbose; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install rust --verbose; fi
-
 script:
-  - cd ../xmake/core
-  - xmake -v
-  - sudo cp -v build/xmake /usr/local/share/xmake
-  - xmake --version
-  - xmake create test_project
-  - cd test_project
-  - xmake
+  - scripts/get.sh __local__
+  - xmake lua versioninfo
+  - xmake -P core
+  - $(cat $(which xmake)|grep XMAKE_PROGRAM_DIR)
+  - core/build/xmake lua versioninfo
