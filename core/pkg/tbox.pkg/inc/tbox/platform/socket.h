@@ -44,9 +44,31 @@ __tb_extern_c_enter__
 /// the socket type enum
 typedef enum __tb_socket_type_e
 {
-    TB_SOCKET_TYPE_NUL                  = 0
-,   TB_SOCKET_TYPE_TCP                  = 1
-,   TB_SOCKET_TYPE_UDP                  = 2
+    TB_SOCKET_TYPE_NONE                 = 0
+
+    // socket types
+,   TB_SOCKET_TYPE_SOCK_STREAM          = 1 << 8
+,   TB_SOCKET_TYPE_SOCK_DGRAM           = 2 << 8
+,   TB_SOCKET_TYPE_SOCK_RAW             = 3 << 8
+
+    // socket ip protocol
+,   TB_SOCKET_TYPE_IPPROTO_TCP          = 1
+,   TB_SOCKET_TYPE_IPPROTO_UDP          = 2
+,   TB_SOCKET_TYPE_IPPROTO_ICMP         = 3
+
+    // socket for tcp 
+,   TB_SOCKET_TYPE_TCP                  = TB_SOCKET_TYPE_SOCK_STREAM | TB_SOCKET_TYPE_IPPROTO_TCP
+
+    // socket for udp
+,   TB_SOCKET_TYPE_UDP                  = TB_SOCKET_TYPE_SOCK_DGRAM  | TB_SOCKET_TYPE_IPPROTO_UDP
+
+#ifdef TB_CONFIG_OS_MACOSX
+    // socket for icmp, only need user permission on macOS
+,   TB_SOCKET_TYPE_ICMP                 = TB_SOCKET_TYPE_SOCK_DGRAM  | TB_SOCKET_TYPE_IPPROTO_ICMP
+#else
+    // socket for icmp, need root permission on linux/macOS
+,   TB_SOCKET_TYPE_ICMP                 = TB_SOCKET_TYPE_SOCK_RAW    | TB_SOCKET_TYPE_IPPROTO_ICMP
+#endif
 
 }tb_socket_type_e;
 
