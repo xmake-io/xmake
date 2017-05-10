@@ -34,6 +34,8 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_os = sandbox_os or {}
 
 -- inherit some builtin interfaces
+sandbox_os.host     = os.host
+sandbox_os.arch     = os.arch
 sandbox_os.exit     = os.exit
 sandbox_os.date     = os.date
 sandbox_os.time     = os.time
@@ -42,6 +44,7 @@ sandbox_os.argw     = os.argw
 sandbox_os.mtime    = os.mtime
 sandbox_os.sleep    = os.sleep
 sandbox_os.mclock   = os.mclock
+sandbox_os.nuldev   = os.nuldev
 sandbox_os.emptydir = os.emptydir
 
 -- copy file or directory
@@ -420,22 +423,7 @@ function sandbox_os.raise(msg, ...)
     os.raise(msg, ...)
 end
 
--- get the system host
-function sandbox_os.host()
-    return xmake._HOST
-end
-
--- get the system architecture
-function sandbox_os.arch()
-    return xmake._ARCH
-end
-
--- get the system null device
-function sandbox_os.nuldev()
-    return xmake._NULDEV
-end
-
--- get the envirnoment variables
+-- get values of the envirnoment variable 
 function sandbox_os.getenv(name)
 
     -- check
@@ -445,14 +433,24 @@ function sandbox_os.getenv(name)
     return os.getenv(name)
 end
 
--- set the envirnoment variables
-function sandbox_os.setenv(name, values)
+-- set values to the envirnoment variable
+function sandbox_os.setenv(name, ...)
 
     -- check
     assert(name)
 
     -- set it
-    os.setenv(name, values)
+    os.setenv(name, ...)
+end
+
+-- add values to the envirnoment variable
+function sandbox_os.addenv(name, ...)
+
+    -- check
+    assert(name)
+
+    -- add it
+    os.addenv(name, ...)
 end
 
 -- get the feature of os
@@ -460,7 +458,7 @@ function sandbox_os.feature(name)
 
     -- has 'sudo' feature? 
     if name == "sudo" then
-        return sandbox_os.host() ~= "windows"
+        return os.host() ~= "windows"
     end
 end
 

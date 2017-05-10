@@ -33,14 +33,14 @@ import("core.platform.environment")
 function _enter_linux()
 
     -- add $programdir to $path for running xmake
-    os.setenv("PATH", (os.getenv("PATH") or "") .. ":" .. os.programdir())
+    os.addenv("PATH", os.programdir())
 end
 
 -- enter macosx environment
 function _enter_macosx()
 
     -- add $programdir to $path for running xmake
-    os.setenv("PATH", (os.getenv("PATH") or "") .. ":" .. os.programdir())
+    os.addenv("PATH", os.programdir())
 end
 
 -- enter windows environment (xmake/winenv/cmd)
@@ -53,7 +53,7 @@ function _enter_windows()
     local winenv_dir = path.translate("~/.xmake/winenv")
 
     -- add $programdir, $programdir/winenv/cmd to $path
-    os.setenv("PATH", (os.getenv("PATH") or "") .. ";" .. os.programdir() .. ";" .. path.join(os.programdir(), "winenv", "bin"))
+    os.addenv("PATH", os.programdir(), path.join(os.programdir(), "winenv", "bin"))
 
     -- load winenv 
     if os.isfile(path.join(winenv_dir, "winenv.lua")) then
