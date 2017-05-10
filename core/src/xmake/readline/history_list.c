@@ -56,10 +56,6 @@ tb_int_t xm_readline_history_list(lua_State* lua)
         lua_pushstring(lua, "line");
         lua_pushstring(lua, (*p) -> line);
         lua_settable(lua, -3);
-        // field timestamp
-        lua_pushstring(lua, "timestamp");
-        lua_pushstring(lua, (*p) -> timestamp);
-        lua_settable(lua, -3);
 
         // set back
         lua_rawseti(lua, -2, i);
