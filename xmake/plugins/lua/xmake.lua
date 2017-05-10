@@ -34,11 +34,8 @@ task("lua")
         -- imports
         import("core.base.option")
         import("core.sandbox.sandbox")
-        local enable_readline = os.versioninfo().features.readline
-        if enable_readline then
-            import("core.project.history")
-            import("lib.readline")
-        end
+        import("core.project.history")
+        import("lib.readline")
 
         -- list all scripts?
         if option.get("list") then
@@ -61,33 +58,28 @@ task("lua")
                 import("scripts." .. name).main(unpack(option.get("arguments") or {}))
             end
         else
-            local replhistory
-            if enable_readline then
-                -- clear history
-                readline.clear_history()
+            -- clear history
+            readline.clear_history()
 
-                -- load history
-                replhistory = history.load("replhistory") or {}
-                for _, ln in ipairs(replhistory) do
-                    readline.add_history(ln)
-                end
+            -- load history
+            local replhistory = history.load("replhistory") or {}
+            for _, ln in ipairs(replhistory) do
+                readline.add_history(ln)
             end
 
             -- enter interactive mode
             sandbox.interactive()
 
-            if enable_readline then
-                -- save to history
-                local entries = readline.history_list()
-                if #entries > #replhistory then
-                    for i = #replhistory+1, #entries do
-                        history.save("replhistory", entries[i].line)
-                    end
+            -- save to history
+            local entries = readline.get_history_state().entries
+            if #entries > #replhistory then
+                for i = #replhistory+1, #entries do
+                    history.save("replhistory", entries[i].line)
                 end
-
-                -- clear history
-                readline.clear_history()
             end
+
+            -- clear history
+            readline.clear_history()
         end
     end)
 
