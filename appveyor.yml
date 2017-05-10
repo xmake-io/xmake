@@ -1,4 +1,4 @@
-os: 
+os:
   - Visual Studio 2015
   - Visual Studio 2017
 
@@ -6,20 +6,10 @@ platform:
   - Win32
   - Win64
 
-before_build:
-  - ps: Invoke-WebRequest "https://github.com/tboox/xmake/releases/download/v2.1.3/xmake-v2.1.3.exe" -OutFile "xmake-installer.exe"
-  - cmd: xmake-installer.exe /S /D=C:\xmake
-  - cmd: PATH=%PATH%;C:\xmake
-  - cmd: xmake --version
-  - cmd: cd core
-  - cmd: xmake -v
-  - ps: cp -force build\xmake.exe C:\xmake\xmake.exe
-  - cmd: cd ..
-  - ps: cp -r -force xmake\* C:\xmake
-  - cmd: xmake --version
-  - cmd: dir C:\xmake
-
 build_script:
-  - cmd: cd core
-  - cmd: if %platform%==Win64 xmake f -a x64
-  - cmd: xmake -r -v
+  - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
+  - cmd: xmake lua versioninfo
+  - cmd: if %platform%==Win64 xmake f -a x64 -P core
+  - cmd: xmake -P core
+  - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
+  - cmd: core\build\xmake lua versioninfo

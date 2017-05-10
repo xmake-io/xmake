@@ -51,7 +51,11 @@ xmake_C_FILES 			+= \
 						process/wait \
 						process/waitlist \
 						process/close \
-						sandbox/interactive
+						sandbox/interactive \
+						readline/readline \
+						readline/history_list \
+						readline/add_history \
+						readline/clear_history
 						
 
 # flags

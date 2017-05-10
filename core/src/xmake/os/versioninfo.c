@@ -228,6 +228,45 @@ tb_int_t xm_os_versioninfo(lua_State* lua)
     // set back to table
     lua_settable(lua, -3);
 
+    lua_pushstring(lua, "host");
+    // init host
+#if defined(TB_CONFIG_OS_WINDOWS)
+    lua_pushstring(lua, "windows");
+#elif defined(TB_CONFIG_OS_MACOSX)
+    lua_pushstring(lua, "macosx");
+#elif defined(TB_CONFIG_OS_LINUX)
+    lua_pushstring(lua, "linux");
+#elif defined(TB_CONFIG_OS_IOS)
+    lua_pushstring(lua, "ios");
+#elif defined(TB_CONFIG_OS_ANDROID)
+    lua_pushstring(lua, "android");
+#elif defined(TB_CONFIG_OS_LIKE_UNIX)
+    lua_pushstring(lua, "unix");
+#else
+    lua_pushstring(lua, "unknown");
+#endif
+    lua_settable(lua, -3);
+
+    lua_pushstring(lua, "arch");
+    // init architecture
+#if defined(TB_ARCH_x86) || defined(TB_CONFIG_OS_WINDOWS)
+    lua_pushstring(lua, "i386");
+#elif defined(TB_ARCH_x64)
+    lua_pushstring(lua, "x86_64");
+#else
+    lua_pushstring(lua, TB_ARCH_STRING);
+#endif
+    lua_settable(lua, -3);
+
+    lua_pushstring(lua, "nuldev");
+    // init redirect to null
+#if defined(TB_CONFIG_OS_WINDOWS)
+    lua_pushstring(lua, "nul");
+#else
+    lua_pushstring(lua, "/dev/null");
+#endif
+    lua_settable(lua, -3);
+
     // ok
     return 1;
 }

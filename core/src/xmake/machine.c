@@ -107,6 +107,14 @@ tb_int_t xm_process_close(lua_State* lua);
 // the sandbox functions
 tb_int_t xm_sandbox_interactive(lua_State* lua);
 
+#ifdef XM_CONFIG_API_HAVE_READLINE
+// the readline functions
+tb_int_t xm_readline_readline(lua_State* lua);
+tb_int_t xm_readline_history_list(lua_State* lua);
+tb_int_t xm_readline_add_history(lua_State* lua);
+tb_int_t xm_readline_clear_history(lua_State* lua);
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -184,6 +192,18 @@ static luaL_Reg const g_sandbox_functions[] =
     { "interactive",    xm_sandbox_interactive }
 ,   { tb_null,          tb_null                }
 };
+
+#ifdef XM_CONFIG_API_HAVE_READLINE
+// the readline functions
+static luaL_Reg const g_readline_functions[] =
+{
+    { "readline",       xm_readline_readline     }
+,   { "history_list",   xm_readline_history_list }
+,   { "add_history",    xm_readline_add_history  }
+,   { "clear_history",  xm_readline_clear_history}
+,   { tb_null,          tb_null                  }
+};
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -393,6 +413,11 @@ xm_machine_ref_t xm_machine_init()
 
         // bind sandbox functions
         luaL_register(impl->lua, "sandbox", g_sandbox_functions);
+
+#ifdef XM_CONFIG_API_HAVE_READLINE
+        // bind readline functions
+        luaL_register(impl->lua, "readline", g_readline_functions);
+#endif
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)

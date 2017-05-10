@@ -28,6 +28,7 @@ local sandbox_core_sandbox = sandbox_core_sandbox or {}
 -- load modules
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
+local history   = require("project/history")
 
 -- enter interactive mode
 function sandbox_core_sandbox.interactive()
@@ -47,8 +48,34 @@ function sandbox_core_sandbox.interactive()
     -- bind sandbox environment
 --    setfenv(0, instance._PUBLIC)
 
+    local enable_readline = os.versioninfo().features.readline
+    local replhistory
+    if enable_readline then
+        -- clear history
+        readline.clear_history()
+
+        -- load history
+        replhistory = history.load("replhistory") or {}
+        for _, ln in ipairs(replhistory) do
+            readline.add_history(ln)
+        end
+    end
+
     -- enter interactive mode with this new sandbox
     sandbox.interactive(instance._PUBLIC) 
+
+    if enable_readline then
+        -- save to history
+        local entries = readline.history_list()
+        if #entries > #replhistory then
+            for i = #replhistory+1, #entries do
+                history.save("replhistory", entries[i].line)
+            end
+        end
+
+        -- clear history
+        readline.clear_history()
+    end
 end
 
 -- register filter handler
