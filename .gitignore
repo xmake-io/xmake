@@ -22,6 +22,8 @@
 .svn
 .DS_Store
 .xmake
+*.deb
+*.zip
 cscope.*
 gmon.out
 other
