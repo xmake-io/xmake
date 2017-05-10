@@ -58,6 +58,9 @@ tb_int_t xm_readline_readline(lua_State* lua)
     else
         lua_pushnil(lua);
 
+    // free it
+    tb_free((void*)line);
+
     // ok
     return 1;
 }
