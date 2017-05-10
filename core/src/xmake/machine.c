@@ -107,6 +107,7 @@ tb_int_t xm_sandbox_interactive(lua_State* lua);
 // the readline functions
 tb_int_t xm_readline_readline(lua_State* lua);
 tb_int_t xm_readline_get_history_state(lua_State* lua);
+tb_int_t xm_readline_add_history(lua_State* lua);
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +186,7 @@ static luaL_Reg const g_readline_functions[] =
 {
     { "readline",          xm_readline_readline          }
 ,   { "get_history_state", xm_readline_get_history_state }
+,   { "add_history",       xm_readline_add_history       }
 ,   { tb_null,             tb_null                       }
 };
 #endif
