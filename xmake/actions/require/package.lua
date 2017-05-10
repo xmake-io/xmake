@@ -201,6 +201,35 @@ function _load_package(packagename, requireinfo)
     return instance
 end
 
+-- load all required packages
+function _load_packages(requires)
+
+    -- no requires?
+    if not requires or #requires == 0 then
+        return {}
+    end
+
+    -- load packages
+    local packages = {}
+    for packagename, requireinfo in pairs(load_requires(requires)) do
+
+        -- load package instance
+        local package = _load_package(packagename, requireinfo)
+
+        -- load required packages and save them first of this package
+        requires = package:get("requires")
+        if requires then
+            table.join2(packages, _load_packages(requires))
+        end
+
+        -- save this package instance
+        table.insert(packages, package)
+    end
+
+    -- ok?
+    return packages
+end
+
 -- select package version
 function _select_package_version(package, required_ver)
 
@@ -255,19 +284,8 @@ end
 -- load all required packages
 function load_packages(requires)
 
-    -- load packages
-    local packages = {}
-    for packagename, requireinfo in pairs(load_requires(requires)) do
-
-        -- load package instance
-        local package = _load_package(packagename, requireinfo)
-
-        -- load required packages and save them first of this package
-        table.join2(packages, load_packages(package:get("requires") or {}))
-
-        -- save this package instance
-        table.insert(packages, package)
-    end
+    -- laod all required packages recursively
+    local packages = _load_packages(requires)
 
     -- add all urls to fasturl and prepare to sort them together
     for _, package in ipairs(packages) do
