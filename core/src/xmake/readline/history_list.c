@@ -48,6 +48,19 @@ tb_int_t xm_readline_history_list(lua_State* lua)
 
     // history list
     lua_newtable(lua);
+#ifdef TB_CONFIG_OS_MACOSX
+    for (tb_int_t i = 1; i <= history_length; ++i)
+    {
+        lua_newtable(lua);
+        // field line
+        lua_pushstring(lua, "line");
+        lua_pushstring(lua, history_get(i) -> line);
+        lua_settable(lua, -3);
+
+        // set back
+        lua_rawseti(lua, -2, i);
+    }
+#else
     tb_int_t i = 1;
     for (HIST_ENTRY **p = history_list(); *p; ++p, ++i)
     {
@@ -60,6 +73,7 @@ tb_int_t xm_readline_history_list(lua_State* lua)
         // set back
         lua_rawseti(lua, -2, i);
     }
+#endif
 
     // ok
     return 1;
