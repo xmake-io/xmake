@@ -52,14 +52,16 @@ tb_int_t xm_readline_readline(lua_State* lua)
         prompt = luaL_checkstring(lua, 1);
 
     // call readline
-    tb_char_t const* line = readline(prompt);
+    tb_char_t* line = readline(prompt);
     if (line)
+    {
+        // return line
         lua_pushstring(lua, line);
-    else
-        lua_pushnil(lua);
 
-    // free it
-    tb_free((void*)line);
+        // free it
+        tb_free(line);
+    }
+    else lua_pushnil(lua);
 
     // ok
     return 1;
