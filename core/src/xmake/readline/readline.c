@@ -23,8 +23,6 @@
  *
  */
 
-#ifdef XM_CONFIG_API_HAVE_READLINE
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
@@ -35,6 +33,8 @@
  * includes
  */
 #include "prefix.h"
+
+#ifdef XM_CONFIG_API_HAVE_READLINE
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -48,7 +48,7 @@ tb_int_t xm_readline_readline(lua_State* lua)
 
     // get the prompt
     tb_char_t const* prompt = tb_null;
-    if (luaL_typename(lua, 1) != "nil")
+    if (tb_strcmp("nil", luaL_typename(lua, 1)) != 0)
         prompt = luaL_checkstring(lua, 1);
 
     // call readline
