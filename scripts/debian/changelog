@@ -1,3 +1,9 @@
+xmake (2.1.4-1) yakkety; urgency=medium
+
+  * update 2.1.4
+
+ -- ruki <waruqi@gmail.com>  Thu, 06 Apr 2017 21:22:12 +0800
+
 xmake (2.1.3-13) yakkety; urgency=medium
 
   * add uninstall
