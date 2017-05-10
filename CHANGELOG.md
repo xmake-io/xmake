@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.4
+
 ### New features
 
 * [#68](https://github.com/tboox/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
@@ -269,6 +271,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.4
 
 ### 新特性
 
