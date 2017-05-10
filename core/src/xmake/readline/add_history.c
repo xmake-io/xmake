@@ -34,11 +34,10 @@
  */
 #include "prefix.h"
 
-#ifdef XM_CONFIG_API_HAVE_READLINE
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+#ifdef XM_CONFIG_API_HAVE_READLINE
 
 // add_history wrapper
 tb_int_t xm_readline_add_history(lua_State* lua)
@@ -53,11 +52,7 @@ tb_int_t xm_readline_add_history(lua_State* lua)
     // call add_history
     add_history(history);
 
-    // pushnil
-    lua_pushnil(lua);
-
     // ok
-    return 1;
+    return 0;
 }
-
 #endif

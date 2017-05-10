@@ -34,11 +34,10 @@
  */
 #include "prefix.h"
 
-#ifdef XM_CONFIG_API_HAVE_READLINE
-
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+#ifdef XM_CONFIG_API_HAVE_READLINE
 
 // clear_history wrapper
 tb_int_t xm_readline_clear_history(lua_State* lua)
@@ -46,14 +45,13 @@ tb_int_t xm_readline_clear_history(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // call clear_history
+    // call clear_history (will crash on macOS)
+#ifndef TB_CONFIG_OS_MACOSX
     clear_history();
-
-    // pushnil
-    lua_pushnil(lua);
+#endif
 
     // ok
-    return 1;
+    return 0;
 }
 
 #endif

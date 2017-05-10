@@ -45,12 +45,11 @@ function sandbox_core_sandbox.interactive()
         raise(errors)
     end
 
-    -- bind sandbox environment
---    setfenv(0, instance._PUBLIC)
-
+    -- load repl history
+    local replhistory = nil
     local enable_readline = os.versioninfo().features.readline
-    local replhistory
     if enable_readline then
+
         -- clear history
         readline.clear_history()
 
@@ -64,11 +63,13 @@ function sandbox_core_sandbox.interactive()
     -- enter interactive mode with this new sandbox
     sandbox.interactive(instance._PUBLIC) 
 
+    -- save repl history if readline is enabled
     if enable_readline then
+
         -- save to history
         local entries = readline.history_list()
         if #entries > #replhistory then
-            for i = #replhistory+1, #entries do
+            for i = #replhistory + 1, #entries do
                 history.save("replhistory", entries[i].line)
             end
         end
