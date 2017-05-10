@@ -34,8 +34,6 @@ task("lua")
         -- imports
         import("core.base.option")
         import("core.sandbox.sandbox")
-        import("core.project.history")
-        import("lib.readline")
 
         -- list all scripts?
         if option.get("list") then
@@ -58,28 +56,8 @@ task("lua")
                 import("scripts." .. name).main(unpack(option.get("arguments") or {}))
             end
         else
-            -- clear history
-            readline.clear_history()
-
-            -- load history
-            local replhistory = history.load("replhistory") or {}
-            for _, ln in ipairs(replhistory) do
-                readline.add_history(ln)
-            end
-
             -- enter interactive mode
             sandbox.interactive()
-
-            -- save to history
-            local entries = readline.get_history_state().entries
-            if #entries > #replhistory then
-                for i = #replhistory+1, #entries do
-                    history.save("replhistory", entries[i].line)
-                end
-            end
-
-            -- clear history
-            readline.clear_history()
         end
     end)
 
