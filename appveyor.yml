@@ -9,6 +9,7 @@ platform:
 build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
   - cmd: xmake lua versioninfo
+  - cmd: if %platform%==Win64 xmake f -a x64 -P core
   - cmd: xmake -P core
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
   - cmd: core\build\xmake lua versioninfo
