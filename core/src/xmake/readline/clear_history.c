@@ -45,12 +45,12 @@ tb_int_t xm_readline_clear_history(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+#ifdef TB_CONFIG_OS_MACOSX
     // call clear_history (will crash on macOS)
-#ifndef TB_CONFIG_OS_MACOSX
-    clear_history();
-#else
     for (tb_int_t i = history_length - 1; i >= 0; --i)
         remove_history(i);
+#else
+    clear_history();
 #endif
 
     // ok
