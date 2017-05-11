@@ -33,9 +33,10 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- save original interfaces
-os._mkdir  = os._mkdir or os.mkdir
-os._rmdir  = os._rmdir or os.rmdir
-os._tmpdir = os._tmpdir or os.tmpdir
+os._mkdir       = os._mkdir or os.mkdir
+os._rmdir       = os._rmdir or os.rmdir
+os._tmpdir      = os._tmpdir or os.tmpdir
+os._versioninfo = os._versioninfo or os.versioninfo
 
 -- copy single file or directory 
 function os._cp(src, dst)
@@ -594,6 +595,14 @@ function os.isexec(filepath)
 
     -- file exists?
     return os.isfile(filepath)
+end
+
+-- get version info
+function os.versioninfo()
+
+    -- cache it
+    os._VERSIONINFO = os._VERSIONINFO or os._versioninfo()
+    return os._VERSIONINFO
 end
 
 -- return module
