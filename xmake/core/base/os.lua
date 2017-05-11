@@ -33,10 +33,11 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- save original interfaces
-os._mkdir  = os._mkdir or os.mkdir
-os._rmdir  = os._rmdir or os.rmdir
-os._tmpdir = os._tmpdir or os.tmpdir
-os._setenv = os._setenv or os.setenv
+os._mkdir       = os._mkdir or os.mkdir
+os._rmdir       = os._rmdir or os.rmdir
+os._tmpdir      = os._tmpdir or os.tmpdir
+os._setenv      = os._setenv or os.setenv
+os._versioninfo = os._versioninfo or os.versioninfo
 
 -- copy single file or directory 
 function os._cp(src, dst)
@@ -636,6 +637,15 @@ function os.addenv(name, ...)
     
     -- append values
     return os.setenv(name, table.concat({...}, seperator) .. seperator ..  (os.getenv(name) or ""))
+
+end
+
+-- get version info
+function os.versioninfo()
+
+    -- cache it
+    os._VERSIONINFO = os._VERSIONINFO or os._versioninfo()
+    return os._VERSIONINFO
 end
 
 -- return module
