@@ -194,6 +194,12 @@ function apis()
     ,   "option.add_rpathdirs"
     ,   "option.add_includedirs"
     }
+    _g.dictionary =
+    {
+        -- option.add_xxx
+        "option.add_csnippet"
+    ,   "option.add_cxxsnippet"
+    }
     _g.custom = 
     {
         -- target.add_xxx
