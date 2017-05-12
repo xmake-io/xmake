@@ -31,41 +31,23 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.tool.debugger")
 
--- run binary target
-function _run_binary(target)
-
-    -- debugging?
-    if option.get("debug") then
-
-        -- debug it
-        debugger.run(target:targetfile(), option.get("arguments"))
-    else
-
-        -- run it
-        os.execv(target:targetfile(), option.get("arguments"))
-    end
-end
-
 -- run target 
 function _run_target(target)
 
     -- get kind
-    local kind = target:get("kind")
-    if not kind then
-        return 
+    if target:targetkind() == "binary" then
+
+        -- debugging?
+        if option.get("debug") then
+
+            -- debug it
+            debugger.run(target:targetfile(), option.get("arguments"))
+        else
+
+            -- run it
+            os.execv(target:targetfile(), option.get("arguments"))
+        end
     end
-
-    -- get script 
-    local scripts =
-    {
-        binary = _run_binary
-    }
-
-    -- check
-    assert(scripts[kind], "this target(%s) with kind(%s) can not be executed!", target:name(), kind)
-
-    -- run it
-    scripts[kind](target) 
 end
 
 -- run the given target 
@@ -88,6 +70,15 @@ function _run(target)
     end
 end
 
+-- run the all dependent targets
+function _run_deps(target)
+
+    -- run target deps
+    for _, dep in ipairs(target:deps()) do
+        _run(dep)
+    end
+end
+
 -- main
 function main()
 
@@ -102,12 +93,14 @@ function main()
 
     -- run the given target?
     if targetname then
+        _run_deps(project.target(targetname))
         _run(project.target(targetname))
     else
         -- run default or all binary targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
             if (default == nil or default == true or option.get("all")) and target:get("kind") == "binary" then
+                _run_deps(target)
                 _run(target)
             end
         end
