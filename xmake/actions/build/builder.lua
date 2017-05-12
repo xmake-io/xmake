@@ -30,14 +30,10 @@ import("core.platform.environment")
 -- on build the given target
 function _on_build_target(target)
 
-    -- the target kind
-    local kind = target:targetkind()
-    if not kind then
-        return 
-    end
-
     -- build target
-    import("kinds." .. kind).build(target, _g)
+    if not target:isphony() then
+        import("kinds." .. target:targetkind()).build(target, _g)
+    end
 end
 
 -- build the given target 

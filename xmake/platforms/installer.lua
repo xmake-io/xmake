@@ -29,8 +29,8 @@ import("core.platform.platform")
 -- install binary
 function install_binary_on_unix(target)
 
-    -- check kind
-    if not target:targetkind() then
+    -- is phony target?
+    if target:isphony() then
         return 
     end
 
@@ -51,8 +51,8 @@ end
 -- install library
 function install_library_on_unix(target)
 
-    -- check kind
-    if not target:targetkind() then
+    -- is phony target?
+    if target:isphony() then
         return 
     end
 
@@ -98,8 +98,8 @@ end
 -- uninstall binary
 function uninstall_binary_on_unix(target)
 
-    -- check kind
-    if not target:targetkind() then
+    -- is phony target?
+    if target:isphony() then
         return 
     end
 
@@ -117,8 +117,8 @@ end
 -- uninstall library
 function uninstall_library_on_unix(target)
 
-    -- check kind
-    if not target:targetkind() then
+    -- is phony target?
+    if target:isphony() then
         return 
     end
 

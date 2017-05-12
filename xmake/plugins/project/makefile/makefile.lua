@@ -193,8 +193,24 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     makefile:print("")
 end
 
+-- make phony
+function _make_phony(makefile, target)
+
+    -- make dependence for the dependent targets
+    makefile:printf("%s:", target:name())
+    for _, dep in ipairs(target:get("deps")) do
+        makefile:write(" " .. dep)
+    end
+    makefile:print("")
+end
+
 -- make target
 function _make_target(makefile, target)
+
+    -- is phony target?
+    if target:isphony() then
+        return _make_phony(makefile, target)
+    end
 
     -- make head
     local targetfile = target:targetfile()
@@ -203,8 +219,6 @@ function _make_target(makefile, target)
 
     -- make dependence for the dependent targets
     for _, dep in ipairs(target:get("deps")) do
-        
-        -- add dependence
         makefile:write(" " .. project.target(dep):targetfile())
     end
 
@@ -311,18 +325,21 @@ function _make_all(makefile)
 
     -- make variables for target flags
     for targetname, target in pairs(project.targets()) do
-        for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-            makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, target, sourcekind))
+        if not target:isphony() then
+            for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+                makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, target, sourcekind))
+            end
+            makefile:print("%s_%s=%s", targetname, target:linker():get("kind"):upper(), target:linkflags())
         end
-        makefile:print("%s_%s=%s", targetname, target:linker():get("kind"):upper(), target:linkflags())
     end
     makefile:print("")
 
     -- make all
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
-        -- append the target name to all
-        all = all .. " " .. targetname
+    for targetname, target in pairs(project.targets()) do
+        if target:get("default") then
+            all = all .. " " .. targetname
+        end
     end
     makefile:print("all: %s\n", all)
     makefile:print(".PHONY: all %s\n", all)
@@ -332,11 +349,7 @@ function _make_all(makefile)
 
         -- make target
         _make_target(makefile, target)
-
-        -- append the target name to all
-        all = all .. " " .. target:name()
     end
-   
 end
 
 -- make

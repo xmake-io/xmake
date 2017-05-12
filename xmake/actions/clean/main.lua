@@ -51,8 +51,8 @@ end
 -- on clean target 
 function _on_clean_target(target)
 
-    -- no target kind?
-    if not target:targetkind() then
+    -- is phony target?
+    if target:isphony() then
         return 
     end
 

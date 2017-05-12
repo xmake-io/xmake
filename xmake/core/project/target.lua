@@ -129,6 +129,16 @@ function target:deps()
     return self._DEPS
 end
 
+-- is phony target?
+function target:isphony()
+    
+    -- get target kind
+    local targetkind = self:targetkind()
+
+    -- is phony?
+    return not targetkind or targetkind == "phony"
+end
+
 -- get the options 
 function target:options()
 
