@@ -40,19 +40,21 @@ function _make_projects(slnfile, vsinfo)
 
     -- make all targets
     for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
 
-        -- enter project
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid(targetname))
+            -- enter project
+            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid(targetname))
 
-        -- add dependences
-        for _, dep in ipairs(target:get("deps")) do
-            slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-            slnfile:print("{%s} = {%s}", hash.uuid(dep), hash.uuid(dep))
-            slnfile:leave("EndProjectSection")
+            -- add dependences
+            for _, dep in ipairs(target:get("deps")) do
+                slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
+                slnfile:print("{%s} = {%s}", hash.uuid(dep), hash.uuid(dep))
+                slnfile:leave("EndProjectSection")
+            end
+
+            -- leave project
+            slnfile:leave("EndProject")
         end
-
-        -- leave project
-        slnfile:leave("EndProject")
     end
 end
 
@@ -73,11 +75,13 @@ function _make_global(slnfile, vsinfo)
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
-    for targetname, _ in pairs(project.targets()) do
-        for _, mode in ipairs(vsinfo.modes) do
-            for _, arch in ipairs({"x86", "x64"}) do
-                slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
-                slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            for _, mode in ipairs(vsinfo.modes) do
+                for _, arch in ipairs({"x86", "x64"}) do
+                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
+                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
+                end
             end
         end
     end
