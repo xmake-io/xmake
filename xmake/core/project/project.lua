@@ -356,7 +356,7 @@ function project._load_target_deps(target, targets)
     for _, dep in ipairs(table.wrap(target:get("deps"))) do
         local deptarget = targets[dep]
         if deptarget then
-            table.join2(deptargets, project._load_target_deps(deptarget))
+            table.join2(deptargets, project._load_target_deps(deptarget, targets))
             table.insert(deptargets, deptarget)
         end
     end
