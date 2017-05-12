@@ -40,19 +40,21 @@ function _make_projects(slnfile, vsinfo)
 
     -- make all targets
     for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then 
 
-        -- enter project
-        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, os.uuid(targetname))
+            -- enter project
+            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, os.uuid(targetname))
 
-        -- add dependences
-        for _, dep in ipairs(target:get("deps")) do
-            slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-            slnfile:print("{%s} = {%s}", os.uuid(dep), os.uuid(dep))
-            slnfile:leave("EndProjectSection")
+            -- add dependences
+            for _, dep in ipairs(target:get("deps")) do
+                slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
+                slnfile:print("{%s} = {%s}", os.uuid(dep), os.uuid(dep))
+                slnfile:leave("EndProjectSection")
+            end
+
+            -- leave project
+            slnfile:leave("EndProject")
         end
-
-        -- leave project
-        slnfile:leave("EndProject")
     end
 end
 
@@ -69,9 +71,11 @@ function _make_global(slnfile, vsinfo)
 
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
-    for targetname, _ in pairs(project.targets()) do
-        slnfile:print("{%s}.$(mode)|Win32.ActiveCfg = $(mode)|Win32", os.uuid(targetname))
-        slnfile:print("{%s}.$(mode)|Win32.Build.0 = $(mode)|Win32", os.uuid(targetname))
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            slnfile:print("{%s}.$(mode)|Win32.ActiveCfg = $(mode)|Win32", os.uuid(targetname))
+            slnfile:print("{%s}.$(mode)|Win32.Build.0 = $(mode)|Win32", os.uuid(targetname))
+        end
     end
     slnfile:leave("EndGlobalSection")
 

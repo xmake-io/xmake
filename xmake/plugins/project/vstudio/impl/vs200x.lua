@@ -41,7 +41,9 @@ function make(outputdir, vsinfo)
 
     -- make vsprojs
     for _, target in pairs(project.targets()) do
-        vs200x_vcproj.make(vsinfo, target)
+        if not target:isphony() then
+            vs200x_vcproj.make(vsinfo, target)
+        end
     end
 
     -- leave project directory
