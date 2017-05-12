@@ -156,25 +156,26 @@ end
 function builder:_addflags_from_targetdeps(results, target, flagname)
 
     -- for all target deps
+    local targetkind = target:targetkind()
     for _, dep in ipairs(target:deps()) do
 
         -- is static or shared target library? link it
-        local targetkind = dep:targetkind()
-        if targetkind == "static" or targetkind == "shared" then
-            if flagname == "links" then
+        local depkind = dep:targetkind()
+        if depkind == "static" or depkind == "shared" then
+            if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent link
-                local link, ok = path.filename(dep:targetfile()):gsub(target.filename("([%w_]+)", targetkind):gsub("%.", "%%.") .. "$", "%1")
+                local link, ok = path.filename(dep:targetfile()):gsub(target.filename("([%w_]+)", depkind):gsub("%.", "%%.") .. "$", "%1")
                 if link and ok > 0 then
                     table.insert(results, link)
                 end
 
-            elseif flagname == "linkdirs" then
+            elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent linkdirs
                 table.insert(results, path.directory(dep:targetfile()))
 
-            elseif flagname == "rpathdirs" then
+            elseif flagname == "rpathdirs" and targetkind == "binary" then
 
                 -- add dependent rpathdirs (need absolute path)
                 table.insert(results, path.directory(path.absolute(dep:targetfile(), xmake._PROJECT_DIR)))
