@@ -3,7 +3,7 @@ include $(PRO_DIR)/prefix.mak
 
 # projects
 SUB_PROS 				+= demo
-DEP_PROS 				+= luajit xmake
+DEP_PROS 				+= sv luajit xmake
 
 # suffix
 include $(PRO_DIR)/suffix.mak

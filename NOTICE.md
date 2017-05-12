@@ -21,4 +21,12 @@ which can be obtained at:
   * HOMEPAGE:
     * http://www.tboox.org/
 
+This product depends on 'libsv', public domain c semver,
+which can be obtained at:
+
+  * LICENSE:
+    * core/src/sv/LICENSE (unlicense)
+  * HOMEPAGE:
+    * https://github.com/uael/sv
+
 

@@ -5,7 +5,7 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    add_deps("luajit")
+    add_deps("sv", "luajit")
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
@@ -18,7 +18,7 @@ target("xmake")
     set_objectdir("$(buildir)/.objs")
 
     -- add includes directory
-    add_includedirs("$(projectdir)", "$(buildir)/luajit")
+    add_includedirs("$(projectdir)", "$(buildir)/luajit", "$(buildir)/include")
 
     -- add packages
     add_packages("tbox", "base")

@@ -20,7 +20,7 @@ target("demo")
     add_includedirs("$(projectdir)", "$(projectdir)/src", "$(buildir)/luajit")
 
     -- add links and directory
-    add_links("xmake", "luajit")
+    add_links("xmake", "luajit", "sv")
     add_linkdirs("$(buildir)")
 
     -- link readline

@@ -52,4 +52,4 @@ end
 add_packagedirs("pkg") 
 
 -- add projects
-add_subdirs("src/luajit", "src/xmake", "src/demo") 
+add_subdirs("src/sv","src/luajit", "src/xmake", "src/demo") 
