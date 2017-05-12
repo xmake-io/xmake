@@ -124,6 +124,11 @@ function target:linkflags()
     return self:linker():linkflags(self)
 end
 
+-- get target deps
+function target:deps()
+    return self._DEPS
+end
+
 -- get the options 
 function target:options()
 
@@ -217,6 +222,11 @@ end
 -- get the script directory of xmake.lua
 function target:scriptdir()
     return self:get("__scriptdir")
+end
+
+-- get header directory
+function target:headerdir()
+    return self:get("headerdir") or config.get("buildir")
 end
 
 -- get the config header files
@@ -401,7 +411,7 @@ function target:headerfiles(outputdir)
     if not headers then return end
 
     -- get the headerdir
-    local headerdir = outputdir or self:get("headerdir") or config.get("buildir")
+    local headerdir = outputdir or self:headerdir()
     assert(headerdir)
 
     -- get the source pathes and destinate pathes

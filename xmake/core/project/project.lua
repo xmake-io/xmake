@@ -348,6 +348,23 @@ function project._interpreter()
     return interp
 end
 
+-- load target deps
+function project._load_target_deps(target, targets)
+
+    -- get dep targets
+    local deptargets = {}
+    for _, dep in ipairs(table.wrap(target:get("deps"))) do
+        local deptarget = targets[dep]
+        if deptarget then
+            table.join2(deptargets, project._load_target_deps(deptarget))
+            table.insert(deptargets, deptarget)
+        end
+    end
+
+    -- ok?
+    return table.unique(deptargets)
+end
+
 -- get the project directory
 function project.directory()
 
@@ -444,6 +461,11 @@ function project.load()
         targets[targetname] = target.new(targetname, targetinfo)
     end
 
+    -- load and attach target deps
+    for _, target in pairs(targets) do
+        target._DEPS = project._load_target_deps(target, targets)
+    end
+
     -- save targets
     project._TARGETS = targets
 
@@ -455,7 +477,7 @@ end
 function project.target(targetname)
 
     -- check
-    assert(targetname and targetname ~= "all")
+    assert(targetname)
 
     -- the targets
     local targets = project.targets()

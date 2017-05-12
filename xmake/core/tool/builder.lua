@@ -152,6 +152,50 @@ function builder:_addflags_from_target(flags, target)
     end
 end
 
+-- add flags from target deps
+function builder:_addflags_from_targetdeps(results, target, flagname)
+
+    -- for all target deps
+    for _, dep in ipairs(target:deps()) do
+
+        -- is static or shared target library? link it
+        local targetkind = dep:targetkind()
+        if targetkind == "static" or targetkind == "shared" then
+            if flagname == "links" then
+
+                -- add dependent link
+                local link, ok = path.filename(dep:targetfile()):gsub(target.filename("([%w_]+)", targetkind):gsub("%.", "%%.") .. "$", "%1")
+                if link and ok > 0 then
+                    table.insert(results, link)
+                end
+
+            elseif flagname == "linkdirs" then
+
+                -- add dependent linkdirs
+                table.insert(results, path.directory(dep:targetfile()))
+
+            elseif flagname == "rpathdirs" then
+
+                -- add dependent rpathdirs (need absolute path)
+                table.insert(results, path.directory(path.absolute(dep:targetfile(), xmake._PROJECT_DIR)))
+
+            elseif flagname == "includedirs" then
+
+                -- add dependent headerdir
+                if dep:get("headers") and os.isdir(dep:headerdir()) then
+                    table.insert(results, dep:headerdir())
+                end
+                
+                -- add dependent configheader directory
+                local configheader = dep:configheader()
+                if configheader and os.isfile(configheader) then
+                    table.insert(results, path.directory(configheader))
+                end
+            end
+        end
+    end
+end
+
 -- add flags (named) from the language 
 function builder:_addflags_from_language(flags, target)
 
@@ -160,7 +204,19 @@ function builder:_addflags_from_language(flags, target)
     {
         config      =   config.get
     ,   platform    =   platform.get
-    ,   target      =   function (name) return target:get(name) end
+    ,   target      =   function (name) 
+
+                            -- get flagvalues of target with given flagname
+                            local results = table.wrap(target:get(name))
+
+                            -- link? add includes and links of all dependent targets
+                            if name == "links" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
+                                self:_addflags_from_targetdeps(results, target, name)
+                            end
+
+                            -- ok?
+                            return results
+                        end
     ,   option      =   function (name)
 
                             -- only for target (exclude option)

@@ -484,6 +484,12 @@ function option:get(infoname)
     return self._INFO[infoname]
 end
 
+-- get option deps
+function option:deps()
+    -- TODO in the future
+    return {}
+end
+
 -- save the option info to the cache
 function option:save()
 
