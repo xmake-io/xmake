@@ -6,6 +6,10 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
 
+### Changes
+
+* [#87](https://github.com/tboox/xmake/issues/87): Add includes and links from target deps automatically 
+
 ## v2.1.4
 
 ### New features
@@ -279,6 +283,10 @@
 ### 新特性
 
 * [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
+
+### 改进
+
+* [#87](https://github.com/tboox/xmake/issues/87): 为依赖库目标自动添加：`includes` 和 `links`
 
 ## v2.1.4
 
