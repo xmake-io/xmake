@@ -156,11 +156,11 @@ end
 function builder:_addflags_from_targetdeps(results, target, flagname)
 
     -- for all target deps
-    local targetkind = target:targetkind()
     for _, dep in ipairs(target:deps()) do
 
         -- is static or shared target library? link it
-        local depkind = dep:targetkind()
+        local depkind = dep:get("kind")
+        local targetkind = target:get("kind")
         if depkind == "static" or depkind == "shared" then
             if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
 
