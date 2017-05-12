@@ -33,6 +33,20 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
+void sv_ctor(sv_t *self) {
+#ifndef _MSC_VER
+  *self = (sv_t) {0};
+#else
+  self->len = 0;
+  self->raw = NULL;
+  self->major = 0;
+  self->minor = 0;
+  self->patch = 0;
+  sv_id_ctor(&self->prerelease);
+  sv_id_ctor(&self->build);
+#endif
+}
+
 void sv_dtor(sv_t *self) {
   sv_id_dtor(&self->prerelease);
   sv_id_dtor(&self->build);
@@ -40,7 +54,7 @@ void sv_dtor(sv_t *self) {
 
 char sv_read(sv_t *self, const char *str, size_t len, size_t *offset) {
   if (*offset < len) {
-    *self = (sv_t) {0};
+    sv_ctor(self);
     self->raw = str + *offset;
     if (str[*offset] == 'v') {
       ++*offset;
@@ -85,20 +99,20 @@ int sv_write(const sv_t self, char *buffer, size_t len) {
   if (self.prerelease.len && self.build.len) {
     return snprintf(buffer, len, "%d.%d.%d-%.*s+%.*s",
       self.major, self.minor, self.patch,
-                    sv_id_write(self.prerelease, prerelease, 256), prerelease,
-                    sv_id_write(self.build, build, 256), build
+      sv_id_write(self.prerelease, prerelease, 256), prerelease,
+      sv_id_write(self.build, build, 256), build
     );
   }
   if (self.prerelease.len) {
     return snprintf(buffer, len, "%d.%d.%d-%.*s",
       self.major, self.minor, self.patch,
-                    sv_id_write(self.prerelease, prerelease, 256), prerelease
+      sv_id_write(self.prerelease, prerelease, 256), prerelease
     );
   }
   if (self.build.len) {
     return snprintf(buffer, len, "%d.%d.%d+%.*s",
       self.major, self.minor, self.patch,
-                    sv_id_write(self.build, build, 256), build
+      sv_id_write(self.build, build, 256), build
     );
   }
   return snprintf(buffer, len, "%d.%d.%d", self.major, self.minor, self.patch);

@@ -34,6 +34,15 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
+static void sv_range_init(sv_range_t *self) {
+#ifndef _MSC_VER
+  *self = (sv_range_t) {0};
+#else
+  self->next = NULL;
+  sv_comp_ctor(&self->comp);
+#endif
+}
+
 void sv_range_dtor(sv_range_t *self) {
   if (self && self->next) {
     sv_range_dtor(self->next);
@@ -43,16 +52,16 @@ void sv_range_dtor(sv_range_t *self) {
 }
 
 char sv_range_read(sv_range_t *self, const char *str, size_t len, size_t *offset) {
-  *self = (sv_range_t) {0};
+  sv_range_init(self);
   if (sv_comp_read(&self->comp, str, len, offset)) {
     return 1;
   }
   while (*offset < len && str[*offset] == ' ') ++*offset;
   if (*offset < len && str[*offset] == '|'
-      && *offset + 1 < len && str[*offset + 1] == '|') {
+    && *offset + 1 < len && str[*offset + 1] == '|') {
     *offset += 2;
     while (*offset < len && str[*offset] == ' ') ++*offset;
-    self->next = calloc(1, sizeof(sv_range_t));
+    self->next = (sv_range_t *) malloc(sizeof(sv_range_t));
     return sv_range_read(self->next, str, len, offset);
   }
   return 0;
@@ -67,8 +76,8 @@ int sv_range_write(const sv_range_t self, char *buffer, size_t len) {
 
   if (self.next) {
     return snprintf(buffer, len, "%.*s || %.*s",
-                    sv_comp_write(self.comp, comp, 1024), comp,
-                    sv_range_write(*self.next, next, 1024), next
+      sv_comp_write(self.comp, comp, 1024), comp,
+      sv_range_write(*self.next, next, 1024), next
     );
   }
   return snprintf(buffer, len, "%.*s", sv_comp_write(self.comp, comp, 1024), comp);

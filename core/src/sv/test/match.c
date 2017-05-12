@@ -28,7 +28,6 @@
 #include <semver.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 #define STRNSIZE(s) (s), sizeof(s)-1
 

@@ -49,13 +49,14 @@ char sv_num_read(int *self, const char *str, size_t len, size_t *offset);
 char sv_num_comp(const int self, const int other);
 
 struct sv_id {
-  struct sv_id *next;
-  size_t len;
-  const char *raw;
   char numeric;
   int num;
+  size_t len;
+  const char *raw;
+  struct sv_id *next;
 };
 
+void sv_id_ctor(sv_id_t *self);
 void sv_id_dtor(sv_id_t *self);
 char sv_id_read(sv_id_t *self, const char *str, size_t len, size_t *offset);
 int  sv_id_write(const sv_id_t self, char *buffer, size_t len);
@@ -68,6 +69,7 @@ struct sv {
   const char *raw;
 };
 
+void sv_ctor(sv_t *self);
 void sv_dtor(sv_t *self);
 char sv_read(sv_t *self, const char *str, size_t len, size_t *offset);
 int  sv_write(const sv_t self, char *buffer, size_t len);
@@ -79,6 +81,7 @@ struct sv_comp {
   sv_t version;
 };
 
+void sv_comp_ctor(sv_comp_t *self);
 void sv_comp_dtor(sv_comp_t *self);
 char sv_comp_read(sv_comp_t *self, const char *str, size_t len, size_t *offset);
 int  sv_comp_write(const sv_comp_t self, char *buffer, size_t len);
@@ -89,6 +92,7 @@ struct sv_range {
   sv_comp_t comp;
 };
 
+void sv_range_ctor(sv_range_t *self);
 void sv_range_dtor(sv_range_t *self);
 char sv_range_read(sv_range_t *self, const char *str, size_t len, size_t *offset);
 int  sv_range_write(const sv_range_t self, char *buffer, size_t len);

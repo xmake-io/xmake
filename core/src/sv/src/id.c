@@ -35,6 +35,18 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
+void sv_id_ctor(sv_id_t *self) {
+#ifndef _MSC_VER
+  *self = (sv_id_t) {1};
+#else
+  self->next = NULL;
+  self->len = 0;
+  self->raw = NULL;
+  self->num = 0;
+  self->numeric = 1;
+#endif
+}
+
 void sv_id_dtor(sv_id_t *self) {
   if (self && self->next) {
     sv_id_dtor(self->next);
@@ -47,7 +59,7 @@ char sv_id_read(sv_id_t *self, const char *str, size_t len, size_t *offset) {
   size_t i = 0;
   char is_zero = 0;
 
-  *self = (sv_id_t) {.numeric = 1};
+  sv_id_ctor(self);
   while (*offset < len) {
     if (isalnum(str[*offset]) || str[*offset] == '-') {
       if (!isdigit(str[*offset])) {
@@ -74,7 +86,7 @@ char sv_id_read(sv_id_t *self, const char *str, size_t len, size_t *offset) {
     self->num = (int) strtol(self->raw, NULL, 0);
   }
   if (str[*offset] == '.') {
-    self->next = malloc(sizeof(sv_id_t));
+    self->next = (sv_id_t *) malloc(sizeof(sv_id_t));
     ++*offset;
     return sv_id_read(self->next, str, len, offset);
   }

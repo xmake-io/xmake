@@ -42,7 +42,9 @@ char sv_num_read(int *self, const char *str, size_t len, size_t *offset) {
     return 1;
   }
   switch (str[*offset]) {
-    case 'x': case 'X': case '*':
+    case 'x':
+    case 'X':
+    case '*':
       *self = SV_NUM_X;
       ++*offset;
       break;
