@@ -165,10 +165,7 @@ function builder:_addflags_from_targetdeps(results, target, flagname)
             if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent link
-                local link, ok = path.filename(dep:targetfile()):gsub(target.filename("([%w_]+)", depkind):gsub("%.", "%%.") .. "$", "%1")
-                if link and ok > 0 then
-                    table.insert(results, link)
-                end
+                table.insert(results, dep:name())
 
             elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
 
