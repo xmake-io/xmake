@@ -337,7 +337,8 @@ function _make_all(makefile)
     -- make all
     local all = ""
     for targetname, target in pairs(project.targets()) do
-        if target:get("default") then
+        local default = target:get("default")
+        if default == nil or default == true then
             all = all .. " " .. targetname
         end
     end
