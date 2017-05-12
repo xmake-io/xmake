@@ -115,11 +115,13 @@ end
 -- package target 
 function _package_target(target)
 
-    -- get kind
-    local kind = target:get("kind")
-    if not kind then
+    -- is phony target?
+    if target:isphony() then
         return 
     end
+
+    -- get kind
+    local kind = target:targetkind()
 
     -- get script 
     local scripts =
