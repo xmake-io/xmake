@@ -15,47 +15,38 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 
 ## Installation
 
-#### Windows
+#### Master
 
-1. Download xmake windows installer from [Releases](https://github.com/tboox/xmake/releases)
-2. Run xmake-[version].exe
+##### via curl
 
-Or install master version in powershell:
+```bash
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
+##### via wget
+
+```bash
+$ bash <(wget https://github.com/tboox/xmake/raw/master/scripts/get.sh -O -)
+```
+
+##### via powershell
 
 ```bash
 $ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
 
+#### Windows
+
+1. Download xmake windows installer from [Releases](https://github.com/tboox/xmake/releases)
+2. Run xmake-[version].exe
+
 #### MacOS
 
 ```bash
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 $ brew install xmake
-```
-
-Or
-
-1. Download xmake `.pkg` install package from [Releases](https://github.com/tboox/xmake/releases) 
-2. Run it
-
-Or install master version:
-
-```bash
-# use homebrew
-$ brew install xmake --HEAD
-
-# or download install directly
-$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
 #### Linux
-
-Using Linuxbrew:
-
-```bash
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-$ brew install xmake
-```
 
 On Archlinux:
 
@@ -89,21 +80,6 @@ Or download deb package to install it:
 
 1. Download xmake `.deb` install package from [Releases](https://github.com/tboox/xmake/releases) 
 2. Run `dpkg -i xmake-xxxx.deb`
-
-On Redhat/Centos:
-
-1. Download xmake `.rpm` install package from [Releases](https://github.com/tboox/xmake/releases) 
-2. Run `yum install xmake-xxx.rpm --nogpgcheck`
-
-Or install master version:
-
-```bash
-# use linuebrew
-$ brew install xmake --HEAD
-
-# or download install directly
-$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
-```
 
 #### Compilation
 
