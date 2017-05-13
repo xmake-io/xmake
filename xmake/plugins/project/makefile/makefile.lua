@@ -349,15 +349,20 @@ function _make_all(makefile)
     makefile:print("")
 
     -- make all
-    local all = ""
+    local default = ""
     for targetname, target in pairs(project.targets()) do
-        local default = target:get("default")
-        if default == nil or default == true then
-            all = all .. " " .. targetname
+        local isdefault = target:get("default")
+        if isdefault == nil or isdefault == true then
+            default = default .. " " .. targetname
         end
     end
+    makefile:print("default: %s\n", default)
+    local all = ""
+    for targetname, _ in pairs(project.targets()) do
+        all = all .. " " .. targetname
+    end
     makefile:print("all: %s\n", all)
-    makefile:print(".PHONY: all %s\n", all)
+    makefile:print(".PHONY: default all %s\n", all)
 
     -- make it for all targets
     for _, target in pairs(project.targets()) do
