@@ -32,7 +32,7 @@ $ bash <(wget https://github.com/tboox/xmake/raw/master/scripts/get.sh -O -)
 ##### via powershell
 
 ```bash
-$ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
+$ Invoke-Expression (Invoke-Webrequest 'https://github.com/tboox/xmake/raw/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
 
 ## Simple description
