@@ -20,7 +20,7 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 ##### via curl
 
 ```bash
-$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+$ bash <(curl -fsSL https://github.com/tboox/xmake/raw/master/scripts/get.sh)
 ```
 
 ##### via wget
