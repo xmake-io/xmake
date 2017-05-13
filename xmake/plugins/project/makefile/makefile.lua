@@ -120,6 +120,12 @@ function _make_object(makefile, target, sourcefile, objectfile)
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
 
+    -- replace ccache to $(CCACHE)
+    p, e = command:find("ccache", 1, true)
+    if p then
+        command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
+    end
+
     -- make head
     makefile:printf("%s:", objectfile)
 
@@ -171,6 +177,12 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     p, e = command:find(shellname, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
+    end
+
+    -- replace ccache to $(CCACHE)
+    p, e = command:find("ccache", 1, true)
+    if p then
+        command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
     end
 
     -- make head
@@ -301,6 +313,8 @@ end
 -- make all
 function _make_all(makefile)
 
+    -- make variables for ccache
+    makefile:print("CCACHE=ccache")
     -- make variables for source kinds
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local shellname = tool.shellname(sourcekind)
@@ -335,15 +349,20 @@ function _make_all(makefile)
     makefile:print("")
 
     -- make all
-    local all = ""
+    local default = ""
     for targetname, target in pairs(project.targets()) do
-        local default = target:get("default")
-        if default == nil or default == true then
-            all = all .. " " .. targetname
+        local isdefault = target:get("default")
+        if isdefault == nil or isdefault == true then
+            default = default .. " " .. targetname
         end
     end
+    makefile:print("default: %s\n", default)
+    local all = ""
+    for targetname, _ in pairs(project.targets()) do
+        all = all .. " " .. targetname
+    end
     makefile:print("all: %s\n", all)
-    makefile:print(".PHONY: all %s\n", all)
+    makefile:print(".PHONY: default all %s\n", all)
 
     -- make it for all targets
     for _, target in pairs(project.targets()) do
