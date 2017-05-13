@@ -22,16 +22,30 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 ## 安装
 
-#### Windows
+#### Master版本
 
-1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载windows安装包
-2. 运行安装程序 xmake-[version].exe
+##### 使用curl
 
-或者在powershell中安装master版本:
+```bash
+$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+```
+
+##### 使用wget
+
+```bash
+$ bash <(wget https://github.com/tboox/xmake/raw/master/scripts/get.sh -O -)
+```
+
+##### 使用powershell
 
 ```bash
 $ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
+
+#### Windows
+
+1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载windows安装包
+2. 运行安装程序 xmake-[version].exe
 
 #### MacOS
 
@@ -56,13 +70,6 @@ $ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts
 ```
 
 #### Linux
-
-使用linuxbrew安装：
-
-```bash
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-$ brew install xmake
-```
 
 在archlinux上安装：
 
@@ -101,16 +108,6 @@ $ sudo apt-get install xmake
 
 1. 从 [Releases](https://github.com/tboox/xmake/releases) 上下载rpm安装包
 2. 运行: `yum install xmake-xxx.rpm --nogpgcheck`
-
-或者安装master版本:
-
-```bash
-# 使用linuxbrew安装master版本
-$ brew install xmake --HEAD
-
-# 或者直接调用shell下载安装
-$ bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
-```
 
 #### 编译安装
 
