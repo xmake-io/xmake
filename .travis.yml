@@ -20,6 +20,7 @@ install:
 script:
   - scripts/get.sh __local__
   - xmake lua versioninfo
+  - xmake f -m coverage -P core
   - xmake -P core
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo

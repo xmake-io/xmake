@@ -48,6 +48,12 @@ if is_plat("macosx") then
     add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
 end
 
+-- for mode coverage
+if is_mode("coverage") then
+    add_cxflags("-coverage")
+    add_ldflags("-coverage")
+end
+
 -- add package directories
 add_packagedirs("pkg") 
 
