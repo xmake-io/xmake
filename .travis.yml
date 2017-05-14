@@ -14,6 +14,9 @@ before_install:
   - source .travis/setenv_lua.sh
   - luarocks install luacov
 
+install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust; fi
+
 script:
   - scripts/get.sh __local__
   - xmake lua versioninfo
