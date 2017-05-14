@@ -4,9 +4,26 @@ os:
   - linux
   - osx
 
+env:
+  global:
+    - LUAROCKS=2.2.2
+    - LUA=lua5.1
+
+before_install:
+  - source .travis/setenv_lua.sh
+  - luarocks install luacov
+
 script:
   - scripts/get.sh __local__
   - xmake lua versioninfo
   - xmake -P core
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo
+  - echo 'require("luacov")' > tmp
+  - cat xmake/core/_xmake_main.lua >> tmp
+  - mv tmp xmake/core/_xmake_main.lua
+  - cp core/build/xmake ~/bin
+  - tests/tests
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
