@@ -10,6 +10,7 @@ env:
     - LUA=lua5.1
 
 before_install:
+  - rm install
   - source .travis/setenv_lua.sh
   - luarocks install luacov
 
