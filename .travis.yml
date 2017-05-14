@@ -27,4 +27,5 @@ script:
   - tests/tests
 
 after_success:
+  - luacov
   - bash <(curl -s https://codecov.io/bash)
