@@ -33,7 +33,7 @@ function build_for_iphoenos()
     echo "build $1"
 
     # package all archs for iphoneos
-    exec "xmake m package -p iphoneos -P $1"
+    exec "xmake m -P $1 package -p iphoneos"
 }
 
 # build for c
