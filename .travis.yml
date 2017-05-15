@@ -1,12 +1,9 @@
-sudo: required
+sudo: false
 language: C
-os:
-  - linux
-  - osx
 
 matrix:
   include:
-    # coverage build
+    - os: osx
     - os: linux
       dist: trusty
       compiler: gcc-5
