@@ -50,8 +50,8 @@ end
 
 -- for mode coverage
 if is_mode("coverage") then
-    add_cxflags("-coverage")
-    add_ldflags("-coverage")
+    add_cxflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
+    add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
 -- add package directories
