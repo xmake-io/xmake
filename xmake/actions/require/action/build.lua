@@ -180,9 +180,6 @@ function main(package)
             -- run the package scripts
             local buildtask = function () 
 
-                -- enter environment
-                environment.enter()
-
                 -- build it
                 for i = 1, 3 do
                     local script = scripts[i]
@@ -190,9 +187,6 @@ function main(package)
                         _run_script(script, package)
                     end
                 end
-
-                -- leave environment
-                environment.leave()
             end
 
             -- download package file

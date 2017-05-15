@@ -56,8 +56,8 @@ function _enter_windows()
     os.addenv("PATH", os.programdir(), path.join(os.programdir(), "winenv", "bin"))
 
     -- load winenv 
-    if os.isfile(path.join(winenv_dir, "winenv.lua")) then
-        import("winenv", {rootdir = winenv_dir}).main(winenv_dir)
+    for _, script_dir in ipairs(os.files(path.join(winenv_dir, "**", "winenv.lua")), path.directory) do
+        import("winenv", {rootdir = script_dir}).main(script_dir)
         return
     end
 
@@ -135,13 +135,12 @@ function _enter_windows()
 
             -- extract winenv.zip file
             unarchiver.extract(winenv_zip, winenv_dir)
-            for _, dir in ipairs(os.dirs(path.join(winenv_dir, "*"))) do
-                winenv_dir = dir
-                break
-            end
 
             -- load winenv 
-            import("winenv", {rootdir = winenv_dir}).main(winenv_dir)
+            for _, script_dir in ipairs(os.files(path.join(winenv_dir, "**", "winenv.lua")), path.directory) do
+                import("winenv", {rootdir = script_dir}).main(script_dir)
+                break
+            end
 
             -- trace
             cprint("${green}ok")
