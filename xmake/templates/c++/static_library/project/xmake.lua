@@ -42,9 +42,4 @@ target("[targetname]_demo")
     -- add files
     add_files("src/test.cpp") 
 
-    -- add links
-    add_links("[targetname]")
-
-    -- add link directory
-    add_linkdirs("$(buildir)")
 
