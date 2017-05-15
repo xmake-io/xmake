@@ -18,30 +18,22 @@ function exec()
 
 function build() 
 {
-    # enter project
+    # echo project name
     echo "build $1"
-    cd $1
 
     # build
-    exec "xmake f -c"
-    exec "xmake "
-    exec "xmake p"
-
-    # leave project
-    cd -
+    exec "xmake f -c -P $1"
+    exec "xmake -P $1"
+    exec "xmake p -P $1"
 }
 
 function build_for_iphoenos() 
 {
-    # enter project
+    # echo project name
     echo "build $1"
-    cd $1
 
     # package all archs for iphoneos
-    exec "xmake m package -p iphoneos" 
-
-    # leave project
-    cd -
+    exec "xmake m -P $1 package -p iphoneos"
 }
 
 # build for c
