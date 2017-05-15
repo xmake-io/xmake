@@ -4,6 +4,13 @@ os:
   - linux
   - osx
 
+matrix:
+  include:
+    # coverage build
+    - os: linux
+      dist: trusty
+      compiler: gcc-5
+
 env:
   global:
     - LUAROCKS=2.2.2
@@ -16,7 +23,6 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get autoremove -yq gcc g++; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt-get update -q; sudo apt-get install -yq gcc-6 g++-6; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 99 --slave /usr/bin/gcov gcov /usr/bin/gcov-6 --slave /usr/bin/g++ g++ /usr/bin/g++-6; gcc --version; g++ --version; gcov --version; fi
 
 script:
   - scripts/get.sh __local__
@@ -33,4 +39,4 @@ script:
 
 after_success:
   - luacov
-  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash) -xgcov-5
