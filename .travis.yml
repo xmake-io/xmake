@@ -16,7 +16,7 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt-get update -q; sudo apt-get install -yq gcc-6; sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-6 99; gcov --version; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt-get update -q; sudo apt-get install -yq gcc-6; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 99 --slave /usr/bin/gcov gcov /usr/bin/gcov-6; gcc --version; gcov --version; fi
 
 script:
   - scripts/get.sh __local__
