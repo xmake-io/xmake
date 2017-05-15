@@ -1,12 +1,36 @@
-sudo: false
+sudo: required
 language: C
 os:
   - linux
   - osx
 
+env:
+  global:
+    - LUAROCKS=2.2.2
+    - LUA=lua5.1
+
+before_install:
+  - rm install
+  - source .travis/setenv_lua.sh
+  - luarocks install luacov
+
+install:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get autoremove -yq gcc g++; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt-get update -q; sudo apt-get install -yq gcc-6 g++-6; sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 99 --slave /usr/bin/gcov gcov /usr/bin/gcov-6 --slave /usr/bin/g++ g++ /usr/bin/g++-6; gcc --version; g++ --version; gcov --version; fi
+
 script:
   - scripts/get.sh __local__
   - xmake lua versioninfo
+  - xmake f -m coverage -P core
   - xmake -P core
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo
+  - echo 'require("luacov")' > tmp
+  - cat xmake/core/_xmake_main.lua >> tmp
+  - mv tmp xmake/core/_xmake_main.lua
+  - cp core/build/xmake $(which xmake) || sudo cp core/build/xmake $(which xmake)
+  - tests/tests
+
+after_success:
+  - luacov
+  - bash <(curl -s https://codecov.io/bash)
