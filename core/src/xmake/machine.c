@@ -115,6 +115,9 @@ tb_int_t xm_readline_add_history(lua_State* lua);
 tb_int_t xm_readline_clear_history(lua_State* lua);
 #endif
 
+// the semver functions
+tb_int_t xm_semver_parse(lua_State* lua);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -204,6 +207,13 @@ static luaL_Reg const g_readline_functions[] =
 ,   { tb_null,          tb_null                  }
 };
 #endif
+
+// the semver functions
+static luaL_Reg const g_semver_functions[] =
+{
+    { "parse",          xm_semver_parse }
+,   { tb_null,          tb_null         }
+};
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -418,6 +428,9 @@ xm_machine_ref_t xm_machine_init()
         // bind readline functions
         luaL_register(impl->lua, "readline", g_readline_functions);
 #endif
+
+        // bind semver functions
+        luaL_register(impl->lua, "semver", g_semver_functions);
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
