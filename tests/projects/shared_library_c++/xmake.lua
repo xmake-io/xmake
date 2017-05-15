@@ -42,10 +42,4 @@ target("test")
     -- add files
     add_files("src/test.cpp") 
 
-    -- add links
-    add_links("shared_library_c++")
-
-    -- add link directory
-    add_linkdirs("$(buildir)")
-    add_rpathdirs("$(buildir)")
 
