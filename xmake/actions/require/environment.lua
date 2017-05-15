@@ -135,7 +135,11 @@ function _enter_windows()
 
             -- extract winenv.zip file
             unarchiver.extract(winenv_zip, winenv_dir)
-                    
+            for _, dir in ipairs(os.dirs(path.join(winenv_dir, "*"))) do
+                winenv_dir = dir
+                break
+            end
+
             -- load winenv 
             import("winenv", {rootdir = winenv_dir}).main(winenv_dir)
 

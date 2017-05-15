@@ -40,6 +40,9 @@ function _checkout(package, url, sourcedir)
     -- remove source directory first
     os.rm(sourcedir)
 
+    -- init package directory
+    sourcedir = path.join(sourcedir, package:name() .. '-' .. package:version())
+
     -- create a clone task
     local task = function ()
 
@@ -116,10 +119,6 @@ function _download(package, url, sourcedir)
     
     -- trace
     cprint("${green}ok")
-end
-
--- filter url
-function _filter_url(package, url)
 end
 
 -- download the given package

@@ -157,8 +157,12 @@ function main(package)
         print("")
     end
 
-    -- enter source codes directory
-    local oldir = os.cd("source")
+    -- enter source files directory
+    local oldir = nil
+    for _, srcdir in ipairs(os.dirs("source/*")) do
+        oldir = os.cd(srcdir)
+        break
+    end
 
     -- build it
     try
