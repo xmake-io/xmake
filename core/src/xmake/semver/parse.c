@@ -41,7 +41,7 @@
 // parse wrapper
 tb_int_t xm_semver_parse(lua_State* lua)
 {
-    sv_t semver = {0};
+    semver_t semver = {0};
     size_t offset = 0;
 
     // check
@@ -51,7 +51,7 @@ tb_int_t xm_semver_parse(lua_State* lua)
     tb_char_t const* str = luaL_checkstring(lua, 1);
     tb_check_return_val(str, 0);
 
-    if (sv_read(&semver, str, tb_strlen(str), &offset)) {
+    if (semver_read(&semver, str, tb_strlen(str), &offset)) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "Unable to parse semver ‘%s’", str);
 

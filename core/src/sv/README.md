@@ -1,10 +1,10 @@
 # libsv
-public domain c semver
+libsv - Public domain semantic versioning in c
 
 [![Build Status](https://travis-ci.org/uael/sv.svg?branch=master)](https://travis-ci.org/uael/sv)
 [![Build status](https://ci.appveyor.com/api/projects/status/7li44f9agk0u4dxc?svg=true)](https://ci.appveyor.com/project/uael/sv)
 
-## Install
+## Install
 
 [Install xmake build system (A make-like build utility based on Lua)](http://xmake.io)
 
@@ -14,12 +14,34 @@ $ xmake check
 $ xmake install
 ```
 
+## API
+
+```c
+...
+semver_t semver = {0};
+semver_range_t range = {0};
+
+semver_read(&semver, "v1.2.3-alpha.1", sizeof("v1.2.3-alpha.1")-1);
+assert(1 == semver.major);
+assert(2 == semver.minor);
+assert(3 == semver.patch);
+assert(0 == memcmp("alpha", semver.prerelease.raw, sizeof("alpha")-1));
+assert(0 == memcmp("1", semver.prerelease.next->raw, sizeof("1")-1));
+
+semver_range_read(&range, "1.2.1 || >=1.2.3 <1.2.5", sizeof("1.2.1 || >=1.2.3 <1.2.5")-1);
+assert(1 == semver_rmatch(semver, range));
+
+semver_dtor(&semver);
+semver_range_dtor(&range);
+...
+```
+
 ## Versions
 
 A "version" is described by the `v2.0.0` specification found at
 <http://semver.org/>.
 
-A leading `"="` or `"v"` character is stripped off and ignored.
+A leading `"v"` character is stripped off and ignored.
 
 ## Ranges
 
