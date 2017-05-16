@@ -1084,7 +1084,7 @@ function interpreter:api_register_on_script(scope_kind, ...)
             script = function (...)
            
                 -- import it
-                return import(modulename).main(...)
+                return import(modulename)(...)
             end
         end
 
@@ -1119,7 +1119,7 @@ function interpreter:api_register_before_script(scope_kind, ...)
             script = function (...)
            
                 -- import it
-                return import(modulename).main(...)
+                return import(modulename)(...)
             end
         end
 
@@ -1154,7 +1154,7 @@ function interpreter:api_register_after_script(scope_kind, ...)
             script = function (...)
            
                 -- import it
-                return import(modulename).main(...)
+                return import(modulename)(...)
             end
         end
 
