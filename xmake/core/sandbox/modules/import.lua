@@ -31,6 +31,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
+local global    = require("project/global")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
@@ -130,16 +131,11 @@ function sandbox_import._find(dir, name)
     -- load the single module?
     local module = nil
     if os.isfile(path.join(dir, name .. ".lua")) then
-
-        -- ok
         return true
 
     -- load modules
     elseif os.isdir(path.join(dir, name)) then
-
-        -- ok
         return true
-
     end
 
     -- not found
@@ -295,15 +291,31 @@ function sandbox_import.import(name, args)
     local rootdir = args.rootdir or instance:rootdir()
     assert(rootdir)
 
+    -- the sandbox modules directory
+    local modules_sandbox_dir = path.join(xmake._CORE_DIR, "sandbox/modules/import")
+
+    -- the extension modules directory
+    local modules_extension_dir = path.join(xmake._PROGRAM_DIR, "modules")
+
+    -- the global modules directory for users
+    local modules_global_dir = path.join(global.directory(), "modules")
+
+    -- init module directories
+    local modules_directories = 
+    {
+        rootdir                                                 -- load module from the given root directory first 
+    ,   path.join(global.directory(), "modules")                -- load module from the user global modules directory
+    ,   path.join(xmake._PROGRAM_DIR, "modules")                -- load module from the extension modules directory
+    ,   path.join(xmake._CORE_DIR, "sandbox/modules/import")    -- load module from the sandbox core modules directory
+    }
+
     -- load module
     local module = nil
     local errors = nil
-    if sandbox_import._find(rootdir, name) then
-        -- load module from the sandbox root directory 
-        module, errors = sandbox_import._load(rootdir, name, instance)
-    else
-        -- load module from the sandbox core directory
-        module, errors = sandbox_import._load(path.join(xmake._CORE_DIR, "sandbox/modules/import"), name)
+    for idx, moduledir in ipairs(modules_directories) do
+        if sandbox_import._find(moduledir, name) then
+            module, errors = sandbox_import._load(moduledir, name, utils.ifelse(idx < #modules_directories, instance, nil)) -- last modules need not fork sandbox
+        end
     end
 
     -- check
@@ -344,6 +356,11 @@ function sandbox_import.import(name, args)
 
         end
 
+    end
+
+    -- bind main entry 
+    if module.main then
+        setmetatable(module, { __call = function (_, ...) return module.main(...) end})
     end
 
     -- import this module into the parent scope
