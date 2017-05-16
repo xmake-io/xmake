@@ -27,7 +27,6 @@ local sandbox_core_base_semver = sandbox_core_base_semver or {}
 
 -- load modules
 local table  = require("base/table")
-local semver = require("base/semver")
 local raise  = require("sandbox/modules/raise")
 
 -- parse a version string into a props table containing all semver infos
