@@ -23,17 +23,11 @@
 --
 
 -- imports
-import("lib.detect.find_file")
+import("lib.detect.find_program")
 
 -- find ccache 
---
--- @param ...   detected dirs, files, regs
---
--- @return      {shellname = ... , fullpath = ...} or nil
---
-function main(...)
-
-    -- TODO
-    print("ccache")
-    find_file()
+function main()
+    return find_program("ccache", { "/usr/bin",
+                                    "/usr/local/bin"}
+                                , function (program) os.run("%s -h", program) end)
 end
