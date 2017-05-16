@@ -19,14 +19,14 @@
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
  * @author      uael
- * @file        parse.c
+ * @file        semver.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "parse"
+#define TB_TRACE_MODULE_NAME                "semver"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -38,28 +38,48 @@
  * implementation
  */
 
-// parse wrapper
-tb_int_t xm_semver_parse(lua_State* lua)
+void lua_pushsemver(lua_State *lua, const sv_t semver)
 {
-    sv_t semver = {0};
-    size_t offset = 0;
+  sv_id_t *id;
+  tb_uchar_t i = 0;
 
-    // check
-    tb_assert_and_check_return_val(lua, 0);
+  lua_createtable(lua, 0, 5);
 
-    // get the version string
-    tb_char_t const* str = luaL_checkstring(lua, 1);
-    tb_check_return_val(str, 0);
+  lua_pushinteger(lua, semver.major);
+  lua_setfield(lua, -2, "major");
 
-    if (sv_read(&semver, str, tb_strlen(str), &offset)) {
-        lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver ‘%s’", str);
+  lua_pushinteger(lua, semver.minor);
+  lua_setfield(lua, -2, "minor");
 
-        return 2;
+  lua_pushinteger(lua, semver.patch);
+  lua_setfield(lua, -2, "patch");
+
+  lua_pushstring(lua, "prerelease");
+  lua_newtable(lua);
+  id = &semver.prerelease;
+  while (id && id->len) {
+    if (id->numeric) {
+      lua_pushinteger(lua, id->num);
+    } else {
+      lua_pushlstring(lua, id->raw, id->len);
     }
+    id = id->next;
+    lua_rawseti(lua, -2, ++i);
+  }
+  lua_settable(lua, -3);
 
-    lua_pushsemver(lua, semver);
-
-    // ok
-    return 1;
+  i = 0;
+  lua_pushstring(lua, "build");
+  lua_newtable(lua);
+  id = &semver.build;
+  while (id && id->len) {
+    if (id->numeric) {
+      lua_pushinteger(lua, id->num);
+    } else {
+      lua_pushlstring(lua, id->raw, id->len);
+    }
+    id = id->next;
+    lua_rawseti(lua, -2, ++i);
+  }
+  lua_settable(lua, -3);
 }

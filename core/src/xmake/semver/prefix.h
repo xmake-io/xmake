@@ -32,4 +32,6 @@
 
 #include "semver.h"
 
+void lua_pushsemver(lua_State *lua, const sv_t semver);
+
 #endif
