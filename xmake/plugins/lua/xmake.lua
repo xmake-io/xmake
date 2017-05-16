@@ -45,8 +45,17 @@ task("lua")
             return 
         end
 
+        -- run command?
+        local cmd = option.get("command")
+        local name = nil
+        if cmd then
+            local tmpfile = os.tmpfile() .. ".lua"
+            io.writefile(tmpfile, "function main()\n" .. cmd .. "\nend")
+            name = tmpfile
+        end
+
         -- get script name
-        local name = option.get("script")
+        name = name or option.get("script")
         if name then
 
             -- import and run script
@@ -84,8 +93,10 @@ task("lua")
                 -- options
             ,   options = 
                 {
+
                     {'l', "list",       "k",  nil,          "List all scripts."                              }
                 ,   {nil, "root",       "k",  nil,          "Allow to run script as root."                   }
+                ,   {'c', "command",    "kv", nil,          "Run command"                                    }
                 ,   {nil, "script",     "v",  nil,          "Run the given lua script name, file or module and enter interactive mode if no given script.",
                                                             ".e.g",
                                                             "    - xmake lua (enter interactive mode)",
