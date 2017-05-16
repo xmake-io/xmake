@@ -19,21 +19,21 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_ccache.lua
+-- @file        find_library.lua
 --
 
--- imports
-import("lib.detect.find_file")
+-- define module
+local sandbox_lib_detect_find_library = sandbox_lib_detect_find_library or {}
 
--- find ccache 
---
--- @param ...   detected dirs, files, regs
---
--- @return      {shellname = ... , fullpath = ...} or nil
---
-function main(...)
+-- load modules
+local raise = require("sandbox/modules/raise")
 
+-- find file
+function sandbox_lib_detect_find_library.main(...)
+ 
     -- TODO
-    print("ccache")
-    find_file()
+    print("find file")
 end
+
+-- return module
+return sandbox_lib_detect_find_library
