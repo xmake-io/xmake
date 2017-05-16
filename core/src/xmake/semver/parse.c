@@ -42,7 +42,7 @@
 tb_int_t xm_semver_parse(lua_State* lua)
 {
     sv_t semver = {0};
-    tb_size_t offset = 0;
+    size_t offset = 0;
 
     // check
     tb_assert_and_check_return_val(lua, 0);
