@@ -33,39 +33,39 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
-void sv_ctor(sv_t *self) {
+void semver_ctor(semver_t *self) {
 #ifndef _MSC_VER
-  *self = (sv_t) {0};
+  *self = (semver_t) {0};
 #else
   self->len = 0;
   self->raw = NULL;
   self->major = 0;
   self->minor = 0;
   self->patch = 0;
-  sv_id_ctor(&self->prerelease);
-  sv_id_ctor(&self->build);
+  semver_id_ctor(&self->prerelease);
+  semver_id_ctor(&self->build);
 #endif
 }
 
-void sv_dtor(sv_t *self) {
-  sv_id_dtor(&self->prerelease);
-  sv_id_dtor(&self->build);
+void semver_dtor(semver_t *self) {
+  semver_id_dtor(&self->prerelease);
+  semver_id_dtor(&self->build);
 }
 
-char sv_read(sv_t *self, const char *str, size_t len, size_t *offset) {
+char semver_read(semver_t *self, const char *str, size_t len, size_t *offset) {
   if (*offset < len) {
-    sv_ctor(self);
+    semver_ctor(self);
     self->raw = str + *offset;
     if (str[*offset] == 'v') {
       ++*offset;
     }
-    if (sv_num_read(&self->major, str, len, offset) || self->major == SV_NUM_X
+    if (semver_num_read(&self->major, str, len, offset) || self->major == SEMVER_NUM_X
       || *offset >= len || str[*offset] != '.'
-      || sv_num_read(&self->minor, str, len, (++*offset, offset)) || self->minor == SV_NUM_X
+      || semver_num_read(&self->minor, str, len, (++*offset, offset)) || self->minor == SEMVER_NUM_X
       || *offset >= len || str[*offset] != '.'
-      || sv_num_read(&self->patch, str, len, (++*offset, offset)) || self->patch == SV_NUM_X
-      || (str[*offset] == '-' && sv_id_read(&self->prerelease, str, len, (++*offset, offset)))
-      || (str[*offset] == '+' && sv_id_read(&self->build, str, len, (++*offset, offset)))) {
+      || semver_num_read(&self->patch, str, len, (++*offset, offset)) || self->patch == SEMVER_NUM_X
+      || (str[*offset] == '-' && semver_id_read(&self->prerelease, str, len, (++*offset, offset)))
+      || (str[*offset] == '+' && semver_id_read(&self->build, str, len, (++*offset, offset)))) {
       self->len = str + *offset - self->raw;
       return 1;
     }
@@ -75,44 +75,44 @@ char sv_read(sv_t *self, const char *str, size_t len, size_t *offset) {
   return 1;
 }
 
-char sv_comp(const sv_t self, const sv_t other) {
+char semver_comp(const semver_t self, const semver_t other) {
   char result;
 
-  if ((result = sv_num_comp(self.major, other.major)) != 0) {
+  if ((result = semver_num_comp(self.major, other.major)) != 0) {
     return result;
   }
-  if ((result = sv_num_comp(self.minor, other.minor)) != 0) {
+  if ((result = semver_num_comp(self.minor, other.minor)) != 0) {
     return result;
   }
-  if ((result = sv_num_comp(self.patch, other.patch)) != 0) {
+  if ((result = semver_num_comp(self.patch, other.patch)) != 0) {
     return result;
   }
-  if ((result = sv_id_comp(self.prerelease, other.prerelease)) != 0) {
+  if ((result = semver_id_comp(self.prerelease, other.prerelease)) != 0) {
     return result;
   }
-  return sv_id_comp(self.build, other.build);
+  return semver_id_comp(self.build, other.build);
 }
 
-int sv_write(const sv_t self, char *buffer, size_t len) {
+int semver_write(const semver_t self, char *buffer, size_t len) {
   char prerelease[256], build[256];
 
   if (self.prerelease.len && self.build.len) {
     return snprintf(buffer, len, "%d.%d.%d-%.*s+%.*s",
       self.major, self.minor, self.patch,
-      sv_id_write(self.prerelease, prerelease, 256), prerelease,
-      sv_id_write(self.build, build, 256), build
+      semver_id_write(self.prerelease, prerelease, 256), prerelease,
+      semver_id_write(self.build, build, 256), build
     );
   }
   if (self.prerelease.len) {
     return snprintf(buffer, len, "%d.%d.%d-%.*s",
       self.major, self.minor, self.patch,
-      sv_id_write(self.prerelease, prerelease, 256), prerelease
+      semver_id_write(self.prerelease, prerelease, 256), prerelease
     );
   }
   if (self.build.len) {
     return snprintf(buffer, len, "%d.%d.%d+%.*s",
       self.major, self.minor, self.patch,
-      sv_id_write(self.build, build, 256), build
+      semver_id_write(self.build, build, 256), build
     );
   }
   return snprintf(buffer, len, "%d.%d.%d", self.major, self.minor, self.patch);

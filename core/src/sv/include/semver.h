@@ -30,72 +30,72 @@
 
 #include <stddef.h>
 
-#define SV_NUM_X -1
+#define SEMVER_NUM_X -1
 
-typedef struct sv sv_t;
-typedef struct sv_id sv_id_t;
-typedef struct sv_comp sv_comp_t;
-typedef struct sv_range sv_range_t;
+typedef struct semver semver_t;
+typedef struct semver_id semver_id_t;
+typedef struct semver_comp semver_comp_t;
+typedef struct semver_range semver_range_t;
 
-enum sv_op {
-  SV_OP_EQ = 0,
-  SV_OP_LT,
-  SV_OP_LE,
-  SV_OP_GT,
-  SV_OP_GE,
+enum semver_op {
+  SEMVER_OP_EQ = 0,
+  SEMVER_OP_LT,
+  SEMVER_OP_LE,
+  SEMVER_OP_GT,
+  SEMVER_OP_GE,
 };
 
-char sv_num_read(int *self, const char *str, size_t len, size_t *offset);
-char sv_num_comp(const int self, const int other);
+char semver_num_read(int *self, const char *str, size_t len, size_t *offset);
+char semver_num_comp(const int self, const int other);
 
-struct sv_id {
+struct semver_id {
   char numeric;
   int num;
   size_t len;
   const char *raw;
-  struct sv_id *next;
+  struct semver_id *next;
 };
 
-void sv_id_ctor(sv_id_t *self);
-void sv_id_dtor(sv_id_t *self);
-char sv_id_read(sv_id_t *self, const char *str, size_t len, size_t *offset);
-int  sv_id_write(const sv_id_t self, char *buffer, size_t len);
-char sv_id_comp(const sv_id_t self, const sv_id_t other);
+void semver_id_ctor(semver_id_t *self);
+void semver_id_dtor(semver_id_t *self);
+char semver_id_read(semver_id_t *self, const char *str, size_t len, size_t *offset);
+int  semver_id_write(const semver_id_t self, char *buffer, size_t len);
+char semver_id_comp(const semver_id_t self, const semver_id_t other);
 
-struct sv {
+struct semver {
   int major, minor, patch;
-  sv_id_t prerelease, build;
+  semver_id_t prerelease, build;
   size_t len;
   const char *raw;
 };
 
-void sv_ctor(sv_t *self);
-void sv_dtor(sv_t *self);
-char sv_read(sv_t *self, const char *str, size_t len, size_t *offset);
-int  sv_write(const sv_t self, char *buffer, size_t len);
-char sv_comp(const sv_t self, const sv_t other);
+void semver_ctor(semver_t *self);
+void semver_dtor(semver_t *self);
+char semver_read(semver_t *self, const char *str, size_t len, size_t *offset);
+int  semver_write(const semver_t self, char *buffer, size_t len);
+char semver_comp(const semver_t self, const semver_t other);
 
-struct sv_comp {
-  struct sv_comp *next;
-  enum sv_op op;
-  sv_t version;
+struct semver_comp {
+  struct semver_comp *next;
+  enum semver_op op;
+  semver_t version;
 };
 
-void sv_comp_ctor(sv_comp_t *self);
-void sv_comp_dtor(sv_comp_t *self);
-char sv_comp_read(sv_comp_t *self, const char *str, size_t len, size_t *offset);
-int  sv_comp_write(const sv_comp_t self, char *buffer, size_t len);
-char sv_match(const sv_t self, const sv_comp_t comp);
+void semver_comp_ctor(semver_comp_t *self);
+void semver_comp_dtor(semver_comp_t *self);
+char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *offset);
+int  semver_comp_write(const semver_comp_t self, char *buffer, size_t len);
+char semver_match(const semver_t self, const semver_comp_t comp);
 
-struct sv_range {
-  struct sv_range *next;
-  sv_comp_t comp;
+struct semver_range {
+  struct semver_range *next;
+  semver_comp_t comp;
 };
 
-void sv_range_ctor(sv_range_t *self);
-void sv_range_dtor(sv_range_t *self);
-char sv_range_read(sv_range_t *self, const char *str, size_t len, size_t *offset);
-int  sv_range_write(const sv_range_t self, char *buffer, size_t len);
-char sv_rmatch(const sv_t self, const sv_range_t range);
+void semver_range_ctor(semver_range_t *self);
+void semver_range_dtor(semver_range_t *self);
+char semver_range_read(semver_range_t *self, const char *str, size_t len, size_t *offset);
+int  semver_range_write(const semver_range_t self, char *buffer, size_t len);
+char semver_rmatch(const semver_t self, const semver_range_t range);
 
 #endif /* SEMVER_H__ */

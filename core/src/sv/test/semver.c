@@ -34,28 +34,28 @@
 
 int test_semver(const char *expected, const char *str, size_t len) {
   size_t offset = 0;
-  int slen;
+  unsigned slen;
   char buffer[1024];
-  sv_t semver = {0};
+  semver_t semver = {0};
 
   printf("test: `%.*s`", (int) len, str);
-  if (sv_read(&semver, str, len, &offset)) {
+  if (semver_read(&semver, str, len, &offset)) {
     puts(" \tcouldn't parse");
     return 1;
   }
-  slen = sv_write(semver, buffer, 1024);
+  slen = (unsigned) semver_write(semver, buffer, 1024);
   printf(" \t=> \t`%.*s`", slen, buffer);
-  if (memcmp(expected, buffer, (size_t) slen)) {
+  if (memcmp(expected, buffer, (size_t) slen > len ? slen : len) != 0) {
     printf(" != `%s`\n", expected);
-    sv_dtor(&semver);
+    semver_dtor(&semver);
     return 1;
   }
   printf(" == `%s`\n", expected);
-  sv_dtor(&semver);
+  semver_dtor(&semver);
   return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
   if (test_semver("1.2.3", STRNSIZE("1.2.3"))) {
     return EXIT_FAILURE;
   }
