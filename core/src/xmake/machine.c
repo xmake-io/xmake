@@ -118,6 +118,7 @@ tb_int_t xm_readline_clear_history(lua_State* lua);
 // the semver functions
 tb_int_t xm_semver_parse(lua_State* lua);
 tb_int_t xm_semver_satisfies(lua_State* lua);
+tb_int_t xm_semver_select(lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
@@ -214,6 +215,7 @@ static luaL_Reg const g_semver_functions[] =
 {
     { "parse",          xm_semver_parse     }
 ,   { "satisfies",      xm_semver_satisfies }
+,   { "select",         xm_semver_select    }
 ,   { tb_null,          tb_null             }
 };
 
