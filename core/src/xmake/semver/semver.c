@@ -40,7 +40,7 @@
 
 void lua_pushsemver(lua_State *lua, const sv_t semver)
 {
-  sv_id_t *id;
+  sv_id_t const *id;
   tb_uchar_t i = 0;
 
   lua_createtable(lua, 0, 5);
