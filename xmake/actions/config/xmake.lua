@@ -106,7 +106,7 @@ task("config")
                     end
 
                 ,   {}
-                ,   {nil, "ccache",     "kv", "auto",       "The compiler cache."                                           }
+                ,   {nil, "ccache",     "kv", true,         "Enable or disable the c/c++ compiler cache."                   }
                 ,   {nil, "git",        "kv", "auto",       "The git version control utility."                              }
                 ,   {nil, "debugger",   "kv", "auto",       "The debugger"                                                  }
                 ,   {nil, "downloader", "kv", "auto",       "The url download utility."                                     }

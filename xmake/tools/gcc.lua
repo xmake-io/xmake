@@ -27,6 +27,7 @@ import("core.tool.tool")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("lib.detect.find_ccache")
 
 -- init it
 function init(shellname, kind)
@@ -289,8 +290,13 @@ end
 -- make the complie command
 function _compcmd1(sourcefile, objectfile, flags)
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = find_ccache()
+    end
+
     -- make it
-    local ccache = tool.shellname("ccache")
     local command = format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
     if ccache then
         command = ccache:append(command, " ")

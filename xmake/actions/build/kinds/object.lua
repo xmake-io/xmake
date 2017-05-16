@@ -28,6 +28,7 @@ import("core.tool.tool")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.config")
+import("lib.detect.find_ccache")
 
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
@@ -143,11 +144,17 @@ function _build_object(target, buildinfo, index, sourcebatch)
     -- is verbose?
     local verbose = option.get("verbose")
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = find_ccache()
+    end
+
     -- trace percent info
     if verbose then
-        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", percent, ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
     else
-        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
@@ -189,6 +196,12 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
     local objectfiles = sourcebatch.objectfiles
     local incdepfiles = sourcebatch.incdepfiles
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = find_ccache()
+    end
+
     -- trace percent info
     for index, sourcefile in ipairs(sourcefiles) do
 
@@ -196,11 +209,10 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
         local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
         -- trace percent info
-        cprintf("${green}[%02d%%]:${clear} ", percent)
         if verbose then
-            cprint("${dim}%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+            cprint("${green}[%02d%%]:${clear} ${dim}%scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
         else
-            print("%scompiling.$(mode) %s", ifelse(tool.shellname("ccache"), "ccache ", ""), sourcefile)
+            print("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
         end
     end
 
