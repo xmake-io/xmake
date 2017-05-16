@@ -35,7 +35,15 @@ local raise  = require("sandbox/modules/raise")
 -- semver.parse('a.b.c') => nil
 --
 function sandbox_core_base_semver.parse(version)
-    return semver.parse(version)
+
+     -- compare version
+    local result, errors = semver.parse(version)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
 end
 
 -- valid a verion string and return return it, nil otherwise
