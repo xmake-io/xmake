@@ -35,7 +35,7 @@ task("lua")
         import("core.base.option")
         import("core.sandbox.sandbox")
 
-        -- list all scripts?
+        -- list all lua scripts?
         if option.get("list") then
             print("scripts:")
             local files = os.match(path.join(os.scriptdir(), "scripts/*.lua"))
@@ -51,9 +51,18 @@ task("lua")
 
             -- import and run script
             if os.isfile(name) then
-                import(path.basename(name), {rootdir = path.directory(name)}).main(unpack(option.get("arguments") or {}))
+
+                -- run the given lua script file (xmake lua /tmp/script.lua)
+                import(path.basename(name), {rootdir = path.directory(name)})(unpack(option.get("arguments") or {}))
+
+            elseif os.isfile(path.join(os.scriptdir(), "scripts", name .. ".lua")) then
+
+                -- run builtin lua script (xmake lua echo "hello xmake")
+                import("scripts." .. name)(unpack(option.get("arguments") or {}))
             else
-                import("scripts." .. name).main(unpack(option.get("arguments") or {}))
+
+                -- run modules (xmake lua core.xxx.xxx)
+                import(name)(unpack(option.get("arguments") or {}))
             end
         else
             -- enter interactive mode
@@ -75,10 +84,15 @@ task("lua")
                 -- options
             ,   options = 
                 {
-                    {'l', "list",       "k",  nil,          "List all scripts."             }      
-                ,   {nil, "root",       "k",  nil,          "Allow to run script as root."  }      
-                ,   {nil, "script",     "v",  nil,          "Run the given lua script."     }      
-                ,   {nil, "arguments",  "vs", nil,          "The script arguments."         }
+                    {'l', "list",       "k",  nil,          "List all scripts."                              }
+                ,   {nil, "root",       "k",  nil,          "Allow to run script as root."                   }
+                ,   {nil, "script",     "v",  nil,          "Run the given lua script name, file or module and enter interactive mode if no given script.",
+                                                            ".e.g",
+                                                            "    - xmake lua (enter interactive mode)",
+                                                            "    - xmake lua /tmp/script.lua",
+                                                            "    - xmake lua echo 'hello xmake'",
+                                                            "    - xmake lua core.xxx.xxx"                   }
+                ,   {nil, "arguments",  "vs", nil,          "The script arguments."                          }
                 }
             }
 
