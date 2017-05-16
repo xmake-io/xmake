@@ -112,14 +112,12 @@ function main(kind, toolkind)
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     ,   checker.check_target_minver
-    ,   checker.check_ccache
     }
 
     -- init the check list of global
     _g.global = 
     {
         checker.check_xcode
-    ,   checker.check_ccache
     }
 
     -- check it

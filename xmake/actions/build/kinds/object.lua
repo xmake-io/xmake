@@ -28,6 +28,7 @@ import("core.tool.tool")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.config")
+import("lib.detect.find_ccache")
 
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
@@ -145,12 +146,18 @@ function _build_object(target, buildinfo, index, sourcebatch)
     -- is verbose?
     local verbose = option.get("verbose")
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = find_ccache()
+    end
+
     -- trace percent info
     cprintf("${green}[%02d%%]:${clear} ", percent)
     if verbose then
-        cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        cprint("${dim}%scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
     else
-        print("%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        print("%scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
@@ -271,6 +278,12 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
     local objectfiles = sourcebatch.objectfiles
     local incdepfiles = sourcebatch.incdepfiles
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = find_ccache()
+    end
+
     -- trace percent info
     for index, sourcefile in ipairs(sourcefiles) do
 
@@ -280,9 +293,9 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
         -- trace percent info
         cprintf("${green}[%02d%%]:${clear} ", percent)
         if verbose then
-            cprint("${dim}%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+            cprint("${dim}%scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
         else
-            print("%scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+            print("%scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
         end
     end
 

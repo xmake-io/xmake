@@ -25,6 +25,7 @@
 -- imports
 import("core.tool.tool")
 import("core.project.config")
+import("lib.detect.find_ccache")
 
 -- init it
 function init(shellname, kind)
@@ -223,7 +224,7 @@ function _compcmd1(sourcefile, objectfile, flags)
     -- get ccache
     local ccache = nil
     if config.get("ccache") then
-        ccache = tool.shellname("ccache")
+        ccache = find_ccache()
     end
 
     -- make it

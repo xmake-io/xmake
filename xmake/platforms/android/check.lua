@@ -186,7 +186,6 @@ function main(kind, toolkind)
     _g.config = 
     {
         { checker.check_arch, "armv7-a" }
-    ,   checker.check_ccache
     ,   _check_ndk_sdkver
     ,   _check_toolchains_dir
     ,   _check_toolchains_ver
@@ -197,8 +196,7 @@ function main(kind, toolkind)
     -- init the check list of global
     _g.global = 
     {
-        checker.check_ccache
-    ,   _check_ndk_sdkver
+        _check_ndk_sdkver
     }
 
     -- check it

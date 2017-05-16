@@ -152,14 +152,12 @@ function main(kind, toolkind)
     _g.config = 
     {
         __check_arch
-    ,   checker.check_ccache
     }
 
     -- init the check list of global
     _g.global = 
     {
-        checker.check_ccache
-    ,   _check_ndk_sdkver
+        _check_ndk_sdkver
     }
 
     -- check it

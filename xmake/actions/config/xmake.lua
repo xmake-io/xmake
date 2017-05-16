@@ -106,7 +106,7 @@ task("config")
                     end
 
                 ,   {}
-                ,   {nil, "ccache",     "kv", "auto",       "Enable or disable the c/c++ compiler cache."                   }
+                ,   {nil, "ccache",     "kv", true,         "Enable or disable the c/c++ compiler cache."                   }
 
                 ,   {}
                 ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   

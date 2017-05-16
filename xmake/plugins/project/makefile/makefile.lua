@@ -121,9 +121,11 @@ function _make_object(makefile, target, sourcefile, objectfile)
     end
 
     -- replace ccache to $(CCACHE)
+    local ccache = false
     p, e = command:find("ccache", 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
+        ccache = true
     end
 
     -- make head
@@ -133,7 +135,7 @@ function _make_object(makefile, target, sourcefile, objectfile)
     makefile:print(" %s", sourcefile)
 
     -- make body
-    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
     _mkdir(makefile, path.directory(objectfile))
     makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 
@@ -180,9 +182,11 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     end
 
     -- replace ccache to $(CCACHE)
+    local ccache = false
     p, e = command:find("ccache", 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
+        ccache = true
     end
 
     -- make head
@@ -196,7 +200,7 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
 
     -- make body
     for _, sourcefile in ipairs(sourcefiles) do
-        makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(config.get("ccache"), "ccache ", ""), sourcefile)
+        makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
     end
     _mkdir(makefile, path.directory(objectfiles))
     makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
@@ -315,6 +319,7 @@ function _make_all(makefile)
 
     -- make variables for ccache
     makefile:print("CCACHE=ccache")
+
     -- make variables for source kinds
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local shellname = tool.shellname(sourcekind)

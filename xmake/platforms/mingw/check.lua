@@ -87,14 +87,10 @@ function main(kind, toolkind)
     _g.config = 
     {
         { checker.check_arch, "i386" }
-    ,   checker.check_ccache
     }
 
     -- init the check list of global
-    _g.global = 
-    {
-        checker.check_ccache
-    }
+    _g.global = {}
 
     -- check it
     checker.check(kind, _g)

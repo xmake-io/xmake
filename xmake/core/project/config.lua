@@ -146,6 +146,7 @@ end
 -- load the project configure
 function config.load(targetname)
 
+    -- load configure
     local results, errors = config._load(targetname)
     if not results then
         utils.error(errors)
