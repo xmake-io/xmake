@@ -60,7 +60,7 @@ tb_int_t xm_semver_select(lua_State* lua)
     for (i = lua_objlen(lua, 4); i > 0; --i) {
         size_t source_len = 0;
 
-        lua_pushnumber(lua, i);
+        lua_pushnumber(lua, (lua_Number) i);
         lua_gettable(lua, 4);
 
         offset = 0;
@@ -90,7 +90,7 @@ tb_int_t xm_semver_select(lua_State* lua)
 
     luaL_checktype(lua, 3, LUA_TTABLE);
     for (i = lua_objlen(lua, 3); i > 0; --i) {
-        lua_pushnumber(lua, i);
+        lua_pushnumber(lua, (lua_Number) i);
         lua_gettable(lua, 3);
 
         offset = 0;
@@ -119,7 +119,7 @@ tb_int_t xm_semver_select(lua_State* lua)
 
     luaL_checktype(lua, 2, LUA_TTABLE);
     for (i = lua_objlen(lua, 2); i > 0; --i) {
-        lua_pushnumber(lua, i);
+        lua_pushnumber(lua, (lua_Number) i);
         lua_gettable(lua, 2);
 
         offset = 0;
