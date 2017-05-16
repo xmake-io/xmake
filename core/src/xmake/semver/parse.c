@@ -42,9 +42,33 @@
 tb_int_t xm_semver_parse(lua_State* lua)
 {
     sv_t semver = {0};
-    size_t offset = 0;
+    tb_size_t offset = 0;
 
-    sv_read(&semver, "1.2.3", sizeof("1.2.3")-1, &offset);
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
+    // get the version string
+    tb_char_t const* str = luaL_checkstring(lua, 1);
+    tb_check_return_val(str, 0);
+
+    if (sv_read(&semver, str, tb_strlen(str), &offset)) {
+      lua_pushnil(lua);
+      lua_pushfstring(lua, "Unable to parse semver ‘%s’", str);
+
+      return 1;
+    }
+
+    lua_createtable(lua, 0, 3);
+
+    lua_pushinteger(lua, semver.major);
+    lua_setfield(lua, -2, "major");
+
+    lua_pushinteger(lua, semver.minor);
+    lua_setfield(lua, -2, "minor");
+
+    lua_pushinteger(lua, semver.patch);
+    lua_setfield(lua, -2, "patch");
+
     // ok
     return 1;
 }
