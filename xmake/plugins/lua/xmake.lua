@@ -69,7 +69,12 @@ task("lua")
             else
 
                 -- run modules (xmake lua core.xxx.xxx)
-                import(script)(unpack(option.get("arguments") or {}))
+                local result = import(script)(unpack(option.get("arguments") or {}))
+                if type(result) == "table" then
+                    table.dump(table)
+                elseif result ~= nil then
+                    print(result)
+                end
             end
         else
             -- enter interactive mode
