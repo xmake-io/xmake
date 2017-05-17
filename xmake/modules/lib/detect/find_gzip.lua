@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_git.lua
+-- @file        find_gzip.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find git 
+-- find gzip 
 --
 -- @param argv  the arguments, .e.g {version = true}
 --
@@ -34,20 +34,23 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local git = find_git()
--- local git, version = find_git({version = true})
+-- local gzip = find_gzip()
+-- local gzip, version = find_gzip({version = true})
 -- 
 -- @endcode
 --
 function main(argv)
     
     -- find program
-    local program = find_program("git", { "/usr/bin", "/usr/local/bin"})
+    local program = find_program("gzip", { "/usr/bin", "/usr/local/bin"})
 
     -- find program version
     local version = nil
     if program and argv and argv.version then
-        version = find_programver(program)
+        version = find_programver(program, function()
+                local outdata, errdata = os.iorunv(program, {"--version"}) 
+                return (outdata or "") .. (errdata or "")
+            end)
     end
 
     -- ok?
