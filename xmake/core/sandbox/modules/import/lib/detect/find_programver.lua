@@ -59,8 +59,8 @@ function sandbox_lib_detect_find_programver.main(program, command, parse)
     -- attempt to get result from cache first
     local cacheinfo = detectcache:get("find_programver") or {}
     local result = cacheinfo[program]
-    if result then
-        return result
+    if result ~= nil then
+        return utils.ifelse(result, result, nil)
     end
 
     -- attempt to get version output info
@@ -80,11 +80,11 @@ function sandbox_lib_detect_find_programver.main(program, command, parse)
     end
 
     -- cache result
-    if result then
-        cacheinfo[program] = result
-        detectcache:set("find_program", cacheinfo)
-        detectcache:flush()
-    end
+    cacheinfo[program] = utils.ifelse(result, result, false)
+
+    -- save cache info
+    detectcache:set("find_program", cacheinfo)
+    detectcache:flush()
 
     -- ok?
     return result
