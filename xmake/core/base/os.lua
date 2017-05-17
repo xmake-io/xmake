@@ -596,7 +596,7 @@ function os.isexec(filepath)
     -- check permission
 
     -- is *.exe for windows?
-    if xmake._HOST == "windows" and not filepath:find("%.exe") then
+    if os.host() == "windows" and not filepath:find("%.exe") then
         filepath = filepath .. ".exe"
     end
 
