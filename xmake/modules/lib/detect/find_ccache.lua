@@ -24,10 +24,32 @@
 
 -- imports
 import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
 -- find ccache 
-function main()
-    return find_program("ccache", { "/usr/bin",
-                                    "/usr/local/bin"}
-                                , function (program) os.run("%s -h", program) end)
+--
+-- @param argv  the arguments, .e.g {version = true}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local ccache = find_ccache()
+-- local ccache, version = find_ccache({version = true})
+-- 
+-- @endcode
+--
+function main(argv)
+    
+    -- find program
+    local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"})
+
+    -- find program version
+    local version = nil
+    if argv and argv.version then
+        version = find_programver(program)
+    end
+
+    -- ok?
+    return program, version
 end

@@ -41,11 +41,19 @@ function sandbox_lib_detect_find_program._check(program, check)
 
     -- no check script? attempt to run it directly
     if not check then
-        return 0 == os.exec(shellname, xmake._NULDEV, xmake._NULDEV)
+        return 0 == os.execv(program, {"--version"}, xmake._NULDEV, xmake._NULDEV)
     end
 
     -- check it
-    local ok, errors = sandbox.load(check, program) 
+    local ok = false
+    local errors = nil
+    if type(check) == "string" then
+        ok, errors = os.runv(program, {check})
+    else
+        ok, errors = sandbox.load(check, program) 
+    end
+
+    -- check failed? print verbose error info
     if not ok then
         utils.verror(errors)
     end
@@ -86,13 +94,22 @@ end
 --
 -- @param name  the program name
 -- @param dirs  the program directories
--- @param check the check script 
+-- @param check the check script or command 
 --
 -- @return      the program name or path
 --
+-- @code
+--
+-- local program = find_program("ccache")
+-- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"})
+-- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
+-- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
+--
+-- @endcode
+--
 function sandbox_lib_detect_find_program.main(name, dirs, check)
 
-    -- TODO get version info, which name
+    -- TODO which name
     
     -- get detect cache 
     local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
@@ -110,6 +127,8 @@ function sandbox_lib_detect_find_program.main(name, dirs, check)
     -- cache result
     if result then
         cacheinfo[name] = result
+        detectcache:set("find_program", cacheinfo)
+        detectcache:flush()
     end
 
     -- trace
@@ -120,10 +139,6 @@ function sandbox_lib_detect_find_program.main(name, dirs, check)
             utils.cprint("checking for the %s ... ${red}no", name)
         end
     end
-
-    -- save cache info
-    detectcache:set("find_program", cacheinfo)
-    detectcache:flush()
 
     -- ok?
     return result
