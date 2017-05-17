@@ -327,7 +327,7 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
                 local errinfos  = nil
                 local warnings  = nil
                 for _, errline in ipairs(errors:split('\n')) do
-                    if errinfos or errline:find("%serror:") then
+                    if errinfos or errline:find("%serror:") or errline:find("错误") then
                         errinfos = errinfos or {}
                         table.insert(errinfos, errline)
                     else
