@@ -42,5 +42,4 @@ script:
 
 after_success:
   - luacov
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash <(curl -s https://codecov.io/bash); fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash <(curl -s https://codecov.io/bash) -xgcov-5; fi
+  - bash <(curl -s https://codecov.io/bash)
