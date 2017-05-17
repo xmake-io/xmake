@@ -39,17 +39,19 @@ local raise     = require("sandbox/modules/raise")
 -- find program version
 --
 -- @param program   the program
+-- @param command   the version command, default: --version
 -- @param parse     the version parse script or lua match pattern 
 --
 -- @return          the version string
 --
 -- @code
 -- local version = find_programver("ccache")
--- local version = find_programver("ccache", "(%d+%.?%d*%.?%d*.-)%s")
--- local version = find_programver("ccache", function (output) return output:match("(%d+%.?%d*%.?%d*.-)%s") end)
+-- local version = find_programver("ccache", "-v")
+-- local version = find_programver("ccache", "--version", "(%d+%.?%d*%.?%d*.-)%s")
+-- local version = find_programver("ccache", "--version", function (output) return output:match("(%d+%.?%d*%.?%d*.-)%s") end)
 -- @endcode
 --
-function sandbox_lib_detect_find_programver.main(program, parse)
+function sandbox_lib_detect_find_programver.main(program, command, parse)
 
     -- get detect cache 
     local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
@@ -62,7 +64,7 @@ function sandbox_lib_detect_find_programver.main(program, parse)
     end
 
     -- attempt to get version output info
-    local ok, outdata = os.iorunv(program, {"--version"})
+    local ok, outdata = os.iorunv(program, {command or "--version"})
 
     -- find version info
     if ok and outdata and #outdata > 0 then
