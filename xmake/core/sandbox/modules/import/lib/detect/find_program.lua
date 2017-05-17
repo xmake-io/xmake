@@ -92,7 +92,7 @@ end
 --
 function sandbox_lib_detect_find_program.main(name, dirs, check)
 
-    -- TODO get version info
+    -- TODO get version info, which name
     
     -- get detect cache 
     local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
