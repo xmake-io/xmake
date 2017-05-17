@@ -29,6 +29,7 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
+import("lib.detect.clear_cache")
 import("scanner")
 import("configheader")
 
@@ -221,6 +222,9 @@ function main()
 
         -- rebuild it
         cache.set("rebuild", true)
+
+        -- clear detect cache
+        clear_cache()
     end
 
     -- merge the cached configure
