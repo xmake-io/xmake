@@ -46,7 +46,7 @@ function main(argv)
 
     -- find program version
     local version = nil
-    if argv and argv.version then
+    if program and argv and argv.version then
         version = find_programver(program, "-v")
     end
 

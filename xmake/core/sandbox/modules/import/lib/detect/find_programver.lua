@@ -39,7 +39,7 @@ local raise     = require("sandbox/modules/raise")
 -- find program version
 --
 -- @param program   the program
--- @param command   the version command, default: --version
+-- @param command   the version command string or script, default: --version
 -- @param parse     the version parse script or lua match pattern 
 --
 -- @return          the version string
@@ -49,6 +49,7 @@ local raise     = require("sandbox/modules/raise")
 -- local version = find_programver("ccache", "-v")
 -- local version = find_programver("ccache", "--version", "(%d+%.?%d*%.?%d*.-)%s")
 -- local version = find_programver("ccache", "--version", function (output) return output:match("(%d+%.?%d*%.?%d*.-)%s") end)
+-- local version = find_programver("ccache", function () return os.iorun("ccache --version") end)
 -- @endcode
 --
 function sandbox_lib_detect_find_programver.main(program, command, parse)
@@ -64,7 +65,16 @@ function sandbox_lib_detect_find_programver.main(program, command, parse)
     end
 
     -- attempt to get version output info
-    local ok, outdata = os.iorunv(program, {command or "--version"})
+    local ok = false
+    local outdata = nil
+    if type(command) == "function" then
+        ok, outdata = sandbox.load(command)
+        if not ok then
+            utils.verror(outdata)
+        end
+    else
+        ok, outdata = os.iorunv(program, {command or "--version"})
+    end
 
     -- find version info
     if ok and outdata and #outdata > 0 then
