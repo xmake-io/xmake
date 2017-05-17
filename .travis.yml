@@ -21,7 +21,7 @@ env:
 
 before_install:
   - rm install
-  - source .travis/setenv_lua.sh
+  - source scripts/.travis/setenv_lua.sh
   - luarocks install luacov
 
 install:
@@ -42,4 +42,5 @@ script:
 
 after_success:
   - luacov
-  - bash <(curl -s https://codecov.io/bash) -xgcov-5
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash <(curl -s https://codecov.io/bash); fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash <(curl -s https://codecov.io/bash) -xgcov-5; fi

@@ -10,7 +10,7 @@ set -eufo pipefail
 
 LUAJIT_BASE="LuaJIT-2.0.4"
 
-source .travis/platform.sh
+source scripts/.travis/platform.sh
 
 LUA_HOME_DIR=$TRAVIS_BUILD_DIR/install/lua
 
