@@ -128,19 +128,19 @@ function sandbox_lib_detect_find_program.main(name, dirs, check)
     -- attempt to get result from cache first
     local cacheinfo = detectcache:get("find_program") or {}
     local result = cacheinfo[name]
-    if result then
-        return result
+    if result ~= nil then
+        return utils.ifelse(result, result, nil)
     end
 
     -- find executable program
     result = sandbox_lib_detect_find_program._find(name, dirs, check) 
 
     -- cache result
-    if result then
-        cacheinfo[name] = result
-        detectcache:set("find_program", cacheinfo)
-        detectcache:flush()
-    end
+    cacheinfo[name] = utils.ifelse(result, result, false)
+
+    -- save cache info
+    detectcache:set("find_program", cacheinfo)
+    detectcache:flush()
 
     -- trace
     if option.get("verbose") then
