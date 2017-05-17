@@ -5,10 +5,14 @@
 ### New features
 
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
+* [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
+* Add `find_program`, `find_file` and `find_library` module interfaces.
 
 ### Changes
 
 * [#87](https://github.com/tboox/xmake/issues/87): Add includes and links from target deps automatically 
+* Improve `import` to load user extension and global modules
+* [#93](https://github.com/tboox/xmake/pull/93): Improve `xmake lua` to run a single line command
 
 ## v2.1.4
 
@@ -283,10 +287,14 @@
 ### 新特性
 
 * [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
+* [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
+* 添加`find_program`, `find_file` 和 `find_library` 等模块接口
 
 ### 改进
 
 * [#87](https://github.com/tboox/xmake/issues/87): 为依赖库目标自动添加：`includes` 和 `links`
+* 改进`import`接口，去加载用户扩展模块
+* [#93](https://github.com/tboox/xmake/pull/93): 改进 `xmake lua`，支持运行单行命令和模块
 
 ## v2.1.4
 
