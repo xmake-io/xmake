@@ -589,12 +589,27 @@ function os.isexec(filepath)
     -- check permission
 
     -- is *.exe for windows?
-    if xmake._HOST == "windows" and not filepath:find("%.exe") then
+    if os.host() == "windows" and not filepath:find("%.exe") then
         filepath = filepath .. ".exe"
     end
 
     -- file exists?
     return os.isfile(filepath)
+end
+
+-- get the system host
+function os.host()
+    return xmake._HOST
+end
+
+-- get the system architecture
+function os.arch()
+    return xmake._ARCH
+end
+
+-- get the system null device
+function os.nuldev()
+    return xmake._NULDEV
 end
 
 -- get version info

@@ -80,8 +80,21 @@ function sandbox_lib_detect_find_program._find(name, dirs, check)
             -- the program path
             local program_path = path.join(dir, name)
             if os.isexec(program_path) then
-            
                 -- check it
+                if sandbox_lib_detect_find_program._check(program_path, check) then
+                    return program_path
+                end
+            end
+        end
+    end
+
+    -- attempt to check it use `which program` command
+    if os.host() ~= "windows" then
+        local ok, program_path = os.iorunv("which", {name})
+        if ok and program_path then
+            -- check it
+            program_path = program_path:trim()
+            if os.isexec(program_path) then
                 if sandbox_lib_detect_find_program._check(program_path, check) then
                     return program_path
                 end
