@@ -12,7 +12,11 @@ echo '     >  <  | \__/ | /_| |   <  ___/             '
 echo '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
 echo '                                                '
 
-brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
+if [ 'x__local__' != "x$1" ]
+then
+    brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
+fi
+
 if [ 0 -ne "$(id -u)" ]
 then
     sudoprefix=sudo
