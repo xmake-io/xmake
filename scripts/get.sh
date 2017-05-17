@@ -87,10 +87,11 @@ fi
 if [ 'x__install_only__' != "x$2" ]
 then
     make -C /tmp/$$xmake_getter --no-print-directory build 
-    if [ $? -ne 0 ]
+    rv=$?
+    if [ $rv -ne 0 ]
     then
         make -C /tmp/$$xmake_getter/core --no-print-directory error
-        my_exit 'Build Fail'
+        my_exit 'Build Fail' $rv
     fi
 fi
 PATHclone=$PATH
