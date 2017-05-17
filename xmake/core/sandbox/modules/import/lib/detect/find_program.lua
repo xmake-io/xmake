@@ -31,11 +31,10 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option    = require("base/option")
+local cache     = require("project/cache")
+local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
-
--- the cache info
-local cacheinfo = cacheinfo or {}
 
 -- check program
 function sandbox_lib_detect_find_program._check(program, check)
@@ -92,8 +91,14 @@ end
 -- @return      the program name or path
 --
 function sandbox_lib_detect_find_program.main(name, dirs, check)
+
+    -- TODO get version info
+    
+    -- get detect cache 
+    local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
  
     -- attempt to get result from cache first
+    local cacheinfo = detectcache:get("find_program") or {}
     local result = cacheinfo[name]
     if result then
         return result
@@ -115,6 +120,10 @@ function sandbox_lib_detect_find_program.main(name, dirs, check)
             utils.cprint("checking for the %s ... ${red}no", name)
         end
     end
+
+    -- save cache info
+    detectcache:set("find_program", cacheinfo)
+    detectcache:flush()
 
     -- ok?
     return result
