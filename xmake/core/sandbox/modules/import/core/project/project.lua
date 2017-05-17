@@ -73,14 +73,14 @@ end
 function sandbox_core_project.file()
 
     -- get it
-    return xmake._PROJECT_FILE
+    return project.file()
 end
 
 -- get the project directory
 function sandbox_core_project.directory()
 
     -- get it
-    return xmake._PROJECT_DIR
+    return project.directory()
 end
 
 -- get the project mtimes

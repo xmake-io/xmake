@@ -365,6 +365,13 @@ function project._load_target_deps(target, targets)
     return table.unique(deptargets)
 end
 
+-- get the project file
+function project.file()
+
+    -- get it
+    return xmake._PROJECT_FILE
+end
+
 -- get the project directory
 function project.directory()
 
@@ -420,7 +427,7 @@ function project.get(name)
         assert(interp) 
 
         -- load infos
-        infos = interp:load(xmake._PROJECT_FILE, nil, true, true)
+        infos = interp:load(project.file(), nil, true, true)
         project._INFOS = infos
     end
 
@@ -444,7 +451,7 @@ function project.load()
     end
 
     -- load targets
-    local results, errors = interp:load(xmake._PROJECT_FILE, "target", true, true)
+    local results, errors = interp:load(project.file(), "target", true, true)
     if not results then
         return false, errors
     end
@@ -505,7 +512,7 @@ function project.options(enable_filter)
     assert(interp) 
 
     -- load the options from the the project file
-    local results, errors = interp:load(xmake._PROJECT_FILE, "option", true, enable_filter)
+    local results, errors = interp:load(project.file(), "option", true, enable_filter)
     if not results then
         return nil, errors
     end
@@ -538,12 +545,12 @@ function project.tasks()
     assert(interp) 
 
     -- the project file is not found?
-    if not os.isfile(xmake._PROJECT_FILE) then
+    if not os.isfile(project.file()) then
         return {}, nil
     end
 
     -- load the tasks from the the project file
-    local results, errors = interp:load(xmake._PROJECT_FILE, "task", true, true)
+    local results, errors = interp:load(project.file(), "task", true, true)
     if not results then
         return nil, errors
     end
@@ -569,7 +576,7 @@ function project.menu()
     -- attempt to load options from the project file
     local options = nil
     local errors = nil
-    if os.isfile(xmake._PROJECT_FILE) then
+    if os.isfile(project.file()) then
         options, errors = project.options(false)
     end
 

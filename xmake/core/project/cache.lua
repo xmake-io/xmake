@@ -56,6 +56,13 @@ function cache._instance(scopename)
     -- init instance
     local instance = table.inherit(cache)
 
+    -- memory cache?
+    if scopename:startswith("memory.") then
+        instance._CACHEDATA = instance._CACHEDATA or {__version = xmake._VERSION_SHORT}
+        instances[scopename] = instance
+        return instance
+    end
+
     -- check scopename
     if not scopename:find("local%.") and not scopename:find("global%.") then
         os.raise("invalid cache scope: %s", scopename)
@@ -109,6 +116,11 @@ function cache:flush()
 
     -- flush the version 
     self._CACHEDATA.__version = xmake._VERSION_SHORT
+
+    -- memory cache? ignore it directly
+    if not self._CACHEPATH then
+        return true
+    end
 
     -- save to file
     return io.save(self._CACHEPATH, self._CACHEDATA) 
