@@ -36,6 +36,18 @@ function build_for_iphoenos()
     exec "xmake m -P $1 package -p iphoneos"
 }
 
+function lua()
+{
+    # echo lua file
+    echo "lua $1"
+
+    # exec lua script
+    exec "xmake l $1"
+}
+
+# lua test scripts
+lua "./tests/modules/semver.lua"
+
 # build for c
 build "./tests/projects/console_c" 
 build "./tests/projects/static_library_c" 
