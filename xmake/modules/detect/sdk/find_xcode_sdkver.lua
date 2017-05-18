@@ -26,18 +26,18 @@
 import("core.project.config")
 import("detect.sdk.find_xcode_dir")
 
--- find xcode sdk version for the given platform 
+-- find xcode sdk versions for the given platform 
 --
 -- @param argv  the arguments 
 --              .e.g {xcode_dir = "", plat = "[iphoneos|watchos]", arch = "[armv7|armv7s|arm64|i386|x86_64]"}
 --
--- @return      the xcode directory
+-- @return      the xcode sdk version array
 --
 -- @code 
 --
--- local xcode_sdkver = find_xcode_sdkver()
--- local xcode_sdkver = find_xcode_sdkver({xcode_dir = ""})
--- local xcode_sdkver = find_xcode_sdkver({xcode_dir = "", plat = "iphoneos", arch = "arm64"})
+-- local xcode_sdkvers = find_xcode_sdkver()
+-- local xcode_sdkvers = find_xcode_sdkver({xcode_dir = ""})
+-- local xcode_sdkvers = find_xcode_sdkver({xcode_dir = "", plat = "iphoneos", arch = "arm64"})
 -- 
 -- @endcode
 --
@@ -47,14 +47,15 @@ function main(argv)
     argv = argv or {}
 
     -- get xcode directory
+    local xcode_sdkvers = {}
     local xcode_dir = argv.xcode_dir or find_xcode_dir() 
     if not os.isdir(xcode_dir) then
-        return 
+        return xcode_sdkvers
     end
 
     -- get plat and arch
-    local plat = argv.plat or config.get("plat")
-    local arch = argv.arch or config.get("arch")
+    local plat = argv.plat or config.get("plat") or "macosx"
+    local arch = argv.arch or config.get("arch") or "x86_64"
 
     -- select xcode sdkdir
     local xcode_sdkdir = nil
@@ -77,10 +78,13 @@ function main(argv)
     -- attempt to match the directory
     if xcode_sdkdir then
         for _, dir in ipairs(os.dirs(path.join(xcode_dir, xcode_sdkdir))) do
-            xcode_sdkver = dir:match("%d+%.%d+")
+            local xcode_sdkver = dir:match("%d+%.%d+")
             if xcode_sdkver then 
-                return xcode_sdkver
+                table.insert(xcode_sdkvers, xcode_sdkver)
             end
         end
     end
+
+    -- ok?    
+    return xcode_sdkvers
 end

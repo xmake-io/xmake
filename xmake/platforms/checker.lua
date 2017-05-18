@@ -25,6 +25,8 @@
 -- imports
 import("core.tool.tool")
 import("core.base.option")
+import("detect.sdk.find_xcode_dir")
+import("detect.sdk.find_xcode_sdkver")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
@@ -160,28 +162,14 @@ function check_arch(config, default)
 end
 
 -- check the xcode application directory
-function check_xcode(config)
+function check_xcode_dir(config)
 
     -- get the xcode directory
     local xcode_dir = config.get("xcode_dir")
     if not xcode_dir then
 
-        -- attempt to get the default directory 
-        if not xcode_dir then
-            if os.isdir("/Applications/Xcode.app") then
-                xcode_dir = "/Applications/Xcode.app"
-            end
-        end
-
-        -- attempt to match the other directories
-        if not xcode_dir then
-            local dirs = os.match("/Applications/Xcode*.app", true)
-            if dirs and #dirs ~= 0 then
-                xcode_dir = dirs[1]
-            end
-        end
-
         -- check ok? update it
+        xcode_dir = find_xcode_dir()
         if xcode_dir then
 
             -- save it
@@ -206,30 +194,12 @@ function check_xcode_sdkver(config)
     -- get plat
     local plat = config.get("plat")
 
-    -- the xcode sdk directories
-    local xcode_sdkdirs =
-    {
-        macosx          = "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.sdk"
-    ,   iphoneos        = "/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS*.sdk"
-    ,   iphonesimulator = "/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.sdk"
-    ,   watchos         = "/Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS*.sdk"
-    ,   watchsimulator  = "/Contents/Developer/Platforms/WatchSimulator.platform/Developer/SDKs/WatchSimulator*.sdk"
-    }
-
     -- get the xcode sdk version
-    local xcode_sdkver = config.get("xcode_sdkver")
+    local xcode_sdkver  = config.get("xcode_sdkver")
     if not xcode_sdkver then
 
-        -- attempt to match the directory
-        if not xcode_sdkver then
-            local dirs = os.match(config.get("xcode_dir") .. xcode_sdkdirs[plat], true)
-            for _, dir in ipairs(dirs) do
-                xcode_sdkver = string.match(dir, "%d+%.%d+")
-                if xcode_sdkver then break end
-            end
-        end
-
         -- check ok? update it
+        xcode_sdkver = find_xcode_sdkver({xcode_dir = config.get("xcode_dir"), plat = config.get("plat"), arch = config.get("arch")})[1]
         if xcode_sdkver then
             
             -- save it
@@ -246,30 +216,11 @@ function check_xcode_sdkver(config)
             raise()
         end
     end
-end
 
--- check the target minimal version
-function check_target_minver(config)
-
-    -- get the target minimal version
+    -- get target minver
     local target_minver = config.get("target_minver")
     if not target_minver then
-
-        -- the default versions
-        local versions =
-        {
-            macosx          = "10.9"
-        ,   iphoneos        = "7.0"
-        ,   iphonesimulator = "7.0"
-        ,   watchos         = "2.1"
-        ,   watchsimulator  = "2.1"
-        }
-
-        -- init the default target minimal version
-        config.set("target_minver", config.get("xcode_sdkver") or versions[config.get("plat")])
-
-        -- trace
-        cprint("checking for the target minimal version ... ${green}%s", config.get("target_minver"))
+        config.set("target_minver", xcode_sdkver)
     end
 end
 

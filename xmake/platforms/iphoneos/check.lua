@@ -120,15 +120,14 @@ function main(kind, toolkind)
     _g.config = 
     {
         { checker.check_arch, "armv7" }
-    ,   checker.check_xcode
+    ,   checker.check_xcode_dir
     ,   checker.check_xcode_sdkver
-    ,   checker.check_target_minver
     }
 
     -- init the check list of global
     _g.global = 
     {
-        checker.check_xcode
+        checker.check_xcode_dir
     }
 
     -- check it
