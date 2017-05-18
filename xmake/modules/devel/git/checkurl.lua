@@ -19,46 +19,17 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        refs.lua
+-- @file        checkurl.lua
 --
 
--- imports
-import("core.base.option")
-import("ls_remote")
-
--- get all refs from url, contains tags and branchs 
+-- check git url 
 --
--- @param url       the remote url, optional
+-- @param url   is git url?
 --
--- @return          the tags, branches
---
--- @code
---
--- import("devel.git")
--- 
--- local tags, branches = git.refs(url)
---
--- @endcode
+-- @return      true or false
 --
 function main(url)
 
-    -- get refs
-    local refs = ls_remote("refs", url)
-    if not refs or #refs == 0 then
-        return {}, {}
-    end
-
-    -- get tags and branches
-    local tags = {}
-    local branches = {}
-    for _, ref in ipairs(refs) do
-        if ref:startswith("tags/") then
-            table.insert(tags, ref:sub(6))
-        elseif ref:startswith("heads/") then
-            table.insert(branches, ref:sub(7))
-        end
-    end
-
-    -- ok
-    return tags, branches
+    -- check it
+    return url:endswith(".git") or os.isdir(url .. ".git")
 end

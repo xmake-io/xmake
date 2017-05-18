@@ -96,7 +96,6 @@ function _toolchains(config)
     -- insert other tools to toolchains
     checker.toolchain_insert(toolchains, "debugger",    cross,  "lldb",         "the debugger") 
     checker.toolchain_insert(toolchains, "ccache",      "",     "ccache",       "the compiler cache") 
-    checker.toolchain_insert(toolchains, "git",         "",     "git",          "the git version control utility") 
     checker.toolchain_insert(toolchains, "ping",        "",     "ping",         "the ping utility") 
 
     -- save toolchains

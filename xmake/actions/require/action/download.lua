@@ -24,9 +24,9 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.git")
 import("core.tool.unarchiver")
 import("net.http")
+import("devel.git")
 
 -- checkout codes from git
 function _checkout(package, url, sourcedir)

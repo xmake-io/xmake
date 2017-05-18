@@ -23,12 +23,12 @@
 --
 
 -- imports
-import("core.tool.git")
 import("core.base.semver")
 import("core.base.fasturl")
 import("core.project.global")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
+import("devel.git")
 import("action")
 import("repository")
 import("environment")

@@ -23,12 +23,12 @@
 --
 
 -- imports
-import("core.tool.git")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.package.repository")
+import("devel.git")
 
 -- add repository url
 function _add(name, url, is_global)

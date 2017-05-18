@@ -48,9 +48,7 @@ task("global")
                     {'c', "clean",      "k", nil,           "Clean the cached configure and configure all again." }
                 ,   {                                                                                             }
                 ,   {nil, "ccache",     "kv", "auto",       "The compiler cache."                                 }
-                ,   {nil, "git",        "kv", "auto",       "The git version control utility."                    }
                 ,   {nil, "debugger",   "kv", "auto",       "The debugger"                                        }
-                ,   {nil, "downloader", "kv", "auto",       "The url download utility."                           }
                 ,   {                                                                                             }
 
                     -- show platform menu options
