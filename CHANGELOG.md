@@ -13,6 +13,11 @@
 * [#87](https://github.com/tboox/xmake/issues/87): Add includes and links from target deps automatically 
 * Improve `import` to load user extension and global modules
 * [#93](https://github.com/tboox/xmake/pull/93): Improve `xmake lua` to run a single line command
+* Improve to print gcc error and warning info
+
+### Bugs fixed
+
+* Fix `try-catch-finally`
 
 ## v2.1.4
 
@@ -295,6 +300,11 @@
 * [#87](https://github.com/tboox/xmake/issues/87): 为依赖库目标自动添加：`includes` 和 `links`
 * 改进`import`接口，去加载用户扩展模块
 * [#93](https://github.com/tboox/xmake/pull/93): 改进 `xmake lua`，支持运行单行命令和模块
+* 改进编译错误提示信息输出
+
+### Bugs修复
+
+* 修复`try-catch-finally`
 
 ## v2.1.4
 

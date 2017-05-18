@@ -93,10 +93,7 @@ function sandbox_try.try(block)
     assert(try)
 
     -- get catch and finally functions
-    local funcs = block[2]
-    if funcs and block[3] then
-        table.join2(funcs, block[2])
-    end
+    local funcs = table.join(block[2] or {}, block[3] or {})
 
     -- try to call it
     local ok, errors = xpcall(try, sandbox_try._traceback)

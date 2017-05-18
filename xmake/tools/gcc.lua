@@ -319,33 +319,21 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
             local outdata, errdata = os.iorun(_compcmd1(sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
+        catch
+        {
+            function (errors)
+
+                -- compiling errors
+                os.raise(errors)
+            end
+        },
         finally
         {
-            function (ok, errors)
-
-                -- parse warnings and errors
-                local errinfos  = nil
-                local warnings  = nil
-                for _, errline in ipairs(errors:split('\n')) do
-                    if errinfos or errline:find("%serror:") or errline:find("错误") then
-                        errinfos = errinfos or {}
-                        table.insert(errinfos, errline)
-                    else
-                        warnings = warnings or {}
-                        if #warnings < 8 then
-                            table.insert(warnings, errline)
-                        end
-                    end
-                end
+            function (ok, warnings)
 
                 -- print some warnings
-                if warnings and option.get("verbose") then
-                    cprint("${yellow}%s", table.concat(warnings, '\n'))
-                end
-
-                -- raise errors
-                if errinfos then
-                    os.raise(table.concat(errinfos, '\n'))
+                if warnings and #warnings > 0 and option.get("verbose") then
+                    cprint("${yellow}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end
         }
