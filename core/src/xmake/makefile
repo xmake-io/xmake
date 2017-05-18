@@ -68,7 +68,8 @@ xmake_CXFLAGS 			+= $(if $(findstring readline,$(base_LIBNAMES)),-DXM_CONFIG_API
 	
 # includes
 xmake_INC_DIRS 		    += \
-						../luajit/src
+						../luajit/src \
+                        ../sv/include
 
 						
 # suffix
