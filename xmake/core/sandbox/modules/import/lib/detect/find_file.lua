@@ -26,13 +26,42 @@
 local sandbox_lib_detect_find_file = sandbox_lib_detect_find_file or {}
 
 -- load modules
-local raise = require("sandbox/modules/raise")
+local os        = require("base/os")
+local path      = require("base/path")
+local raise     = require("sandbox/modules/raise")
 
 -- find file
-function sandbox_lib_detect_find_file.main(...)
- 
-    -- TODO
-    print("find file")
+--
+-- @param name  the file name
+-- @param dirs  the file directories
+--
+-- @return      the file path
+--
+-- @code
+--
+-- local file = find_file("ccache", { "/usr/bin", "/usr/local/bin"})
+-- local file = find_file("test.h", { "/usr/include", "/usr/local/include/**"})
+--
+-- @endcode
+--
+function sandbox_lib_detect_find_file.main(name, dirs)
+
+    -- find file
+    local result = nil
+    for _, dir in ipairs(dirs) do
+
+        -- TODO
+        -- dir is registry path?
+
+        -- file exists?
+        for _, file in ipairs(os.files(path.join(dir, name))) do
+            result = file
+            break
+        end
+    end
+
+    -- ok?
+    return result
 end
 
 -- return module

@@ -28,7 +28,7 @@ import("core.tool.tool")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.config")
-import("lib.detect.find_ccache")
+import("detect.tool.find_ccache")
 
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
