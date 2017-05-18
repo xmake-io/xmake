@@ -7,6 +7,7 @@
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
 * [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
 * Add `find_program`, `find_file` and `find_library` module interfaces.
+* Add `net.*` and `devel.*` extension modules
 
 ### Changes
 
@@ -294,6 +295,7 @@
 * [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
 * [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
 * 添加`find_program`, `find_file` 和 `find_library` 等模块接口
+* 添加`net.*`和`devel.*`扩展模块
 
 ### 改进
 

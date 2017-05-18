@@ -250,6 +250,30 @@ function sandbox_os.runv(shellname, argv)
     end
 end
 
+-- quietly run shell and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vrun(cmd, ...)
+
+    -- echo command
+    if option.get("verbose") then
+        print(vformat(cmd, ...))
+    end
+
+    -- run it
+    utils.ifelse(option.get("verbose"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
+end
+
+-- quietly run shell with arguments list and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vrunv(shellname, argv)
+
+    -- echo command
+    if option.get("verbose") then
+        print(vformat(shellname), table.concat(argv, " "))
+    end
+
+    -- run it
+    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(shellname, argv)  
+end
+
 -- run shell and return output and error data
 function sandbox_os.iorun(cmd, ...)
 

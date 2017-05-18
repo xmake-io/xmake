@@ -159,6 +159,11 @@ function sandbox_import._load(dir, name, instance)
                     return nil, errors
                 end
 
+                -- bind main entry 
+                if result.main then
+                    setmetatable(result, { __call = function (_, ...) return result.main(...) end})
+                end
+
                 -- get the module path
                 local modulepath = path.relative(modulefile, moduleroot)
                 if not modulepath then
