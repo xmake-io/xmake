@@ -191,9 +191,6 @@ end
 -- check the xcode sdk version
 function check_xcode_sdkver(config)
 
-    -- get plat
-    local plat = config.get("plat")
-
     -- get the xcode sdk version
     local xcode_sdkver  = config.get("xcode_sdkver")
     if not xcode_sdkver then
