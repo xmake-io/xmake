@@ -52,6 +52,10 @@ xmake_C_FILES 			+= \
 						process/waitlist \
 						process/close \
 						sandbox/interactive \
+						semver/parse \
+						semver/satisfies \
+						semver/select \
+						semver/semver \
 						readline/readline \
 						readline/history_list \
 						readline/add_history \
