@@ -26,8 +26,8 @@
 import("core.base.option")
 import("core.base.fasturl")
 import("core.tool.unarchiver")
-import("core.tool.downloader")
 import("core.platform.environment")
+import("net.http.download")
 
 -- enter linux environment
 function _enter_linux()
@@ -94,7 +94,7 @@ function _enter_windows()
 
                     -- create a download task
                     local task = function ()
-                        downloader.download(winenv_url, winenv_zip_tmp)
+                        http.download(winenv_url, winenv_zip_tmp)
                     end
 
                     -- download winenv.zip

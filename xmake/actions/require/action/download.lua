@@ -26,7 +26,7 @@
 import("core.base.option")
 import("core.tool.git")
 import("core.tool.unarchiver")
-import("core.tool.downloader")
+import("net.http")
 
 -- checkout codes from git
 function _checkout(package, url, sourcedir)
@@ -95,7 +95,7 @@ function _download(package, url, sourcedir)
 
         -- create a download task
         local task = function ()
-            downloader.download(url, packagefile)
+            http.download(url, packagefile)
         end
 
         -- download package file

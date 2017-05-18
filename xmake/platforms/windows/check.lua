@@ -322,8 +322,6 @@ function _toolchains(config)
 
     -- insert other tools to toolchains
     checker.toolchain_insert(toolchains, "git",         "",   "git",            "the version control utility") 
-    checker.toolchain_insert(toolchains, "downloader",  "",   "curl",           "the url download utility") 
-    checker.toolchain_insert(toolchains, "downloader",  "",   "wget",           "the url download utility") 
     checker.toolchain_insert(toolchains, "ping",        "",   "ping",           "the ping utility") 
 
     -- save toolchains
