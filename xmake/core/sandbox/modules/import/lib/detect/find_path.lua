@@ -26,13 +26,42 @@
 local sandbox_lib_detect_find_path = sandbox_lib_detect_find_path or {}
 
 -- load modules
-local raise = require("sandbox/modules/raise")
+local os        = require("base/os")
+local path      = require("base/path")
+local raise     = require("sandbox/modules/raise")
 
--- find file
-function sandbox_lib_detect_find_path.main(...)
- 
-    -- TODO
-    print("find path")
+-- find path
+--
+-- @param name  the path name
+-- @param dirs  the path directories
+--
+-- @return      the path
+--
+-- @code
+--
+-- local p = find_path("include/test.h", { "/usr", "/usr/local"})
+-- local p = find_path("include/*.h", { "/usr", "/usr/local/**"})
+--
+-- @endcode
+--
+function sandbox_lib_detect_find_path.main(name, dirs)
+
+    -- find file
+    local result = nil
+    for _, dir in ipairs(dirs) do
+
+        -- TODO
+        -- dir is registry path?
+
+        -- path exists?
+        for _, p in ipairs(os.filedirs(path.join(dir, name))) do
+            result = p
+            break
+        end
+    end
+
+    -- ok?
+    return result
 end
 
 -- return module
