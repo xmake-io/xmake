@@ -28,7 +28,7 @@ import("detect.sdk.find_xcode_dir")
 
 -- find xcode sdk versions for the given platform 
 --
--- @param argv  the arguments 
+-- @param opt   the argument options 
 --              .e.g {xcode_dir = "", plat = "[iphoneos|watchos]", arch = "[armv7|armv7s|arm64|i386|x86_64]"}
 --
 -- @return      the xcode sdk version array
@@ -41,21 +41,21 @@ import("detect.sdk.find_xcode_dir")
 -- 
 -- @endcode
 --
-function main(argv)
+function main(opt)
 
     -- init arguments
-    argv = argv or {}
+    opt = opt or {}
 
     -- get xcode directory
     local xcode_sdkvers = {}
-    local xcode_dir = argv.xcode_dir or find_xcode_dir() 
+    local xcode_dir = opt.xcode_dir or find_xcode_dir() 
     if not os.isdir(xcode_dir) then
         return xcode_sdkvers
     end
 
     -- get plat and arch
-    local plat = argv.plat or config.get("plat") or "macosx"
-    local arch = argv.arch or config.get("arch") or "x86_64"
+    local plat = opt.plat or config.get("plat") or "macosx"
+    local arch = opt.arch or config.get("arch") or "x86_64"
 
     -- select xcode sdkdir
     local xcode_sdkdir = nil

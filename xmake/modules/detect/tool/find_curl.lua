@@ -28,7 +28,7 @@ import("lib.detect.find_programver")
 
 -- find curl 
 --
--- @param argv  the arguments, .e.g {version = true}
+-- @param opt   the argument options, .e.g {version = true}
 --
 -- @return      program, version
 --
@@ -39,14 +39,14 @@ import("lib.detect.find_programver")
 -- 
 -- @endcode
 --
-function main(argv)
+function main(opt)
     
     -- find program
     local program = find_program("curl", { "/usr/bin", "/usr/local/bin"})
 
     -- find program version
     local version = nil
-    if argv and argv.version then
+    if opt and opt.version then
         version = find_programver(program)
     end
 

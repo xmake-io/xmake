@@ -28,7 +28,7 @@ import("lib.detect.find_programver")
 
 -- find wget 
 --
--- @param argv  the arguments, .e.g {version = true}
+-- @param opt   the argument options, .e.g {version = true}
 --
 -- @return      program, version
 --
@@ -39,14 +39,14 @@ import("lib.detect.find_programver")
 -- 
 -- @endcode
 --
-function main(argv)
+function main(opt)
     
     -- find program
     local program = find_program("wget", { "/usr/bin", "/usr/local/bin"})
 
     -- find program version
     local version = nil
-    if program and argv and argv.version then
+    if program and opt and opt.version then
         version = find_programver(program)
     end
 
