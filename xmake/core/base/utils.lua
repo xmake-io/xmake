@@ -29,13 +29,29 @@ local utils = utils or {}
 local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
+local table  = require("base/table")
 
 -- print string with newline
 function utils._print(...)
 
     -- print it if not quiet
     if not option.get("quiet") then
-        print(...)
+        local values = {...}
+        for i, v in ipairs(values) do
+            -- dump basic type
+            if type(v) == "string" or type(v) == "boolean" or type(v) == "number" then
+                io.write(tostring(v))
+            -- dump table
+            elseif type(v) == "table" then  
+                table.dump(v)
+            else
+                io.write("<" .. tostring(v) .. ">")
+            end
+            if i ~= #values then
+                io.write(" ")
+            end
+        end
+        io.write('\n')
     end
 end
 

@@ -208,18 +208,9 @@ end
 -- dump it with the level
 function table._dump(self, exclude, level)
  
-    -- dump string
-    if type(self) == "string" then  
-        io.write(string.format("%q", self))  
-    -- dump boolean
-    elseif type(self) == "boolean" then  
+    -- dump basic type
+    if type(self) == "string" or type(self) == "boolean" or type(self) == "number" then  
         io.write(tostring(self))  
-    -- dump number 
-    elseif type(self) == "number" then  
-        io.write(self)  
-    -- dump function 
-    elseif type(self) == "function" then  
-        io.write("<function>")  
     -- dump table
     elseif type(self) == "table" then  
 
@@ -254,9 +245,7 @@ function table._dump(self, exclude, level)
                 end
 
                 -- dump value
-                if not table._dump(v, exclude, level + 1) then 
-                    return false
-                end
+                table._dump(v, exclude, level + 1)  
 
                 -- dump newline
                 io.write("\n")
@@ -269,17 +258,9 @@ function table._dump(self, exclude, level)
             io.write("    ")
         end
         io.write("}\n")  
-    -- dump userdata
-    elseif type(self) == "userdata" then  
-        io.write("<userdata>")  
-    else  
-        -- error
-        print(string.format("error: invalid object type: %s", type(self)))
-        return false
-    end  
-
-    -- ok
-    return true
+    else
+        io.write("<" .. tostring(v) .. ">")
+    end
 end
 
 -- dump it
