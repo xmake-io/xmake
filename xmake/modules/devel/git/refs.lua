@@ -19,64 +19,46 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ls_remote.lua
+-- @file        refs.lua
 --
 
 -- imports
 import("core.base.option")
-import("detect.tool.find_git")
+import("ls_remote")
 
--- ls_remote to given branch, tag or commit
+-- get all refs from url, contains tags and branchs 
 --
--- @param reftype   the reference type, "tags", "heads" and "refs"
 -- @param url       the remote url, optional
 --
--- @return          the tags, heads or refs
+-- @return          the refs
 --
 -- @code
 --
 -- import("devel.git")
 -- 
--- local tags   = git.ls_remote("tags", url)
--- local heads  = git.ls_remote("heads", url)
--- local refs   = git.ls_remote("refs")
+-- local refs = git.refs(url)
 --
 -- @endcode
 --
-function main(reftype, url)
+function main(url)
 
-    -- find git
-    local program = find_git()
-    if not program then
+    -- get refs
+    local refs = ls_remote("refs", url)
+    if not refs or #refs == 0 then
         return {}
     end
 
-    -- init reference type
-    reftype = reftype or "refs"
-
-    -- get refs
-    local data = os.iorunv(program, {"ls-remote", "--" .. reftype, url or "."})
-
-    -- get commmits and tags
-    local refs = {}
-    for _, line in ipairs(data:split('\n')) do
-
-        -- parse commit and ref
-        local refinfo = line:split('%s+')
-
-        -- get commit 
-        local commit = refinfo[1]
-
-        -- get ref
-        local ref = refinfo[2]
-
-        -- save this ref
-        local prefix = ifelse(reftype == "refs", "refs/", "refs/" .. reftype .. "/")
-        if ref and ref:startswith(prefix) and commit and #commit == 40 then
-            table.insert(refs, ref:sub(#prefix + 1))
+    -- get tags and branches
+    local tags = {}
+    local branches = {}
+    for _, ref in ipairs(refs) do
+        if ref:startswith("tags/") then
+            table.insert(tags, ref:sub(6))
+        elseif ref:startswith("heads/") then
+            table.insert(branches, ref:sub(7))
         end
     end
 
     -- ok
-    return refs
+    return {tags = tags, branches = branches}
 end
