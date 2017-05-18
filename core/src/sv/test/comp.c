@@ -34,28 +34,28 @@
 
 int test_semver(const char *expected, const char *str, size_t len) {
   size_t offset = 0;
-  int slen;
+  unsigned slen;
   char buffer[1024];
-  sv_comp_t comp = {0};
+  semver_comp_t comp = {0};
 
   printf("test: `%.*s`", (int) len, str);
-  if (sv_comp_read(&comp, str, len, &offset)) {
+  if (semver_comp_read(&comp, str, len, &offset)) {
     puts(" \tcouldn't parse");
     return 1;
   }
-  slen = sv_comp_write(comp, buffer, 1024);
+  slen = (unsigned) semver_comp_write(comp, buffer, 1024);
   printf(" \t=> \t`%.*s`", slen, buffer);
-  if (memcmp(expected, buffer, (size_t) slen)) {
+  if (memcmp(expected, buffer, (size_t) slen > len ? slen : len) != 0) {
     printf(" != `%s`\n", expected);
-    sv_comp_dtor(&comp);
+    semver_comp_dtor(&comp);
     return 1;
   }
   printf(" == `%s`\n", expected);
-  sv_comp_dtor(&comp);
+  semver_comp_dtor(&comp);
   return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
   puts("x-range:");
   if (test_semver(">=0.0.0", STRNSIZE("*"))) {
     return EXIT_FAILURE;
