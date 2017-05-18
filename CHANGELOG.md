@@ -15,6 +15,7 @@
 * Improve `import` to load user extension and global modules
 * [#93](https://github.com/tboox/xmake/pull/93): Improve `xmake lua` to run a single line command
 * Improve to print gcc error and warning info
+* Improve `print` interface to dump table
 
 ### Bugs fixed
 
@@ -303,6 +304,7 @@
 * 改进`import`接口，去加载用户扩展模块
 * [#93](https://github.com/tboox/xmake/pull/93): 改进 `xmake lua`，支持运行单行命令和模块
 * 改进编译错误提示信息输出
+* 改进`print`接口去更好些显示table数据
 
 ### Bugs修复
 

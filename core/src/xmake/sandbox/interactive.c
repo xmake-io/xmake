@@ -338,7 +338,7 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
              * stack: arg1(sandbox_scope) [results] -> ... 
              * after: arg1(sandbox_scope) print [results] -> ... 
              */
-            lua_getglobal(lua, "print");
+            lua_getfield(lua, 1, "print"); // load print() from sandbox_scope
             lua_insert(lua, -(count + 1));
             if (lua_pcall(lua, count, 0, 0) != 0)
                 tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("print") " (%s)", lua_tostring(lua, -1)));
