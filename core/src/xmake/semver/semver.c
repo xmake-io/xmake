@@ -43,7 +43,10 @@ void lua_pushsemver(lua_State *lua, const semver_t semver)
     semver_id_t const *id;
     tb_uchar_t i = 0;
 
-    lua_createtable(lua, 0, 5);
+    lua_createtable(lua, 0, 6);
+
+    lua_pushlstring(lua, semver.raw, semver.len);
+    lua_setfield(lua, -2, "version");
 
     lua_pushinteger(lua, semver.major);
     lua_setfield(lua, -2, "major");
