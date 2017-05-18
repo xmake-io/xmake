@@ -35,9 +35,9 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
-void sv_id_ctor(sv_id_t *self) {
+void semver_id_ctor(semver_id_t *self) {
 #ifndef _MSC_VER
-  *self = (sv_id_t) {1};
+  *self = (semver_id_t) {1};
 #else
   self->next = NULL;
   self->len = 0;
@@ -47,19 +47,19 @@ void sv_id_ctor(sv_id_t *self) {
 #endif
 }
 
-void sv_id_dtor(sv_id_t *self) {
+void semver_id_dtor(semver_id_t *self) {
   if (self && self->next) {
-    sv_id_dtor(self->next);
+    semver_id_dtor(self->next);
     free(self->next);
     self->next = NULL;
   }
 }
 
-char sv_id_read(sv_id_t *self, const char *str, size_t len, size_t *offset) {
+char semver_id_read(semver_id_t *self, const char *str, size_t len, size_t *offset) {
   size_t i = 0;
   char is_zero = 0;
 
-  sv_id_ctor(self);
+  semver_id_ctor(self);
   while (*offset < len) {
     if (isalnum(str[*offset]) || str[*offset] == '-') {
       if (!isdigit(str[*offset])) {
@@ -86,14 +86,14 @@ char sv_id_read(sv_id_t *self, const char *str, size_t len, size_t *offset) {
     self->num = (int) strtol(self->raw, NULL, 0);
   }
   if (str[*offset] == '.') {
-    self->next = (sv_id_t *) malloc(sizeof(sv_id_t));
+    self->next = (semver_id_t *) malloc(sizeof(semver_id_t));
     ++*offset;
-    return sv_id_read(self->next, str, len, offset);
+    return semver_id_read(self->next, str, len, offset);
   }
   return 0;
 }
 
-char sv_id_comp(const sv_id_t self, const sv_id_t other) {
+char semver_id_comp(const semver_id_t self, const semver_id_t other) {
   char s;
 
   if (!self.len && other.len) {
@@ -126,14 +126,14 @@ char sv_id_comp(const sv_id_t self, const sv_id_t other) {
     return 0;
   }
 
-  return sv_id_comp(*self.next, *other.next);
+  return semver_id_comp(*self.next, *other.next);
 }
 
-int sv_id_write(const sv_id_t self, char *buffer, size_t len) {
+int semver_id_write(const semver_id_t self, char *buffer, size_t len) {
   char next[1024];
 
   if (self.next) {
-    return snprintf(buffer, len, "%.*s.%.*s", (int) self.len, self.raw, sv_id_write(*self.next, next, 1024), next);
+    return snprintf(buffer, len, "%.*s.%.*s", (int) self.len, self.raw, semver_id_write(*self.next, next, 1024), next);
   }
   return snprintf(buffer, len, "%.*s", (int) self.len, self.raw);
 }

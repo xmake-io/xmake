@@ -34,26 +34,26 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
-static void sv_range_init(sv_range_t *self) {
+static void semver_range_init(semver_range_t *self) {
 #ifndef _MSC_VER
-  *self = (sv_range_t) {0};
+  *self = (semver_range_t) {0};
 #else
   self->next = NULL;
-  sv_comp_ctor(&self->comp);
+  semver_comp_ctor(&self->comp);
 #endif
 }
 
-void sv_range_dtor(sv_range_t *self) {
+void semver_range_dtor(semver_range_t *self) {
   if (self && self->next) {
-    sv_range_dtor(self->next);
+    semver_range_dtor(self->next);
     free(self->next);
     self->next = NULL;
   }
 }
 
-char sv_range_read(sv_range_t *self, const char *str, size_t len, size_t *offset) {
-  sv_range_init(self);
-  if (sv_comp_read(&self->comp, str, len, offset)) {
+char semver_range_read(semver_range_t *self, const char *str, size_t len, size_t *offset) {
+  semver_range_init(self);
+  if (semver_comp_read(&self->comp, str, len, offset)) {
     return 1;
   }
   while (*offset < len && str[*offset] == ' ') ++*offset;
@@ -61,24 +61,24 @@ char sv_range_read(sv_range_t *self, const char *str, size_t len, size_t *offset
     && *offset + 1 < len && str[*offset + 1] == '|') {
     *offset += 2;
     while (*offset < len && str[*offset] == ' ') ++*offset;
-    self->next = (sv_range_t *) malloc(sizeof(sv_range_t));
-    return sv_range_read(self->next, str, len, offset);
+    self->next = (semver_range_t *) malloc(sizeof(semver_range_t));
+    return semver_range_read(self->next, str, len, offset);
   }
   return 0;
 }
 
-char sv_rmatch(const sv_t self, const sv_range_t range) {
-  return (char) (sv_match(self, range.comp) ? 1 : range.next ? sv_rmatch(self, *range.next) : 0);
+char semver_rmatch(const semver_t self, const semver_range_t range) {
+  return (char) (semver_match(self, range.comp) ? 1 : range.next ? semver_rmatch(self, *range.next) : 0);
 }
 
-int sv_range_write(const sv_range_t self, char *buffer, size_t len) {
+int semver_range_write(const semver_range_t self, char *buffer, size_t len) {
   char comp[1024], next[1024];
 
   if (self.next) {
     return snprintf(buffer, len, "%.*s || %.*s",
-      sv_comp_write(self.comp, comp, 1024), comp,
-      sv_range_write(*self.next, next, 1024), next
+      semver_comp_write(self.comp, comp, 1024), comp,
+      semver_range_write(*self.next, next, 1024), next
     );
   }
-  return snprintf(buffer, len, "%.*s", sv_comp_write(self.comp, comp, 1024), comp);
+  return snprintf(buffer, len, "%.*s", semver_comp_write(self.comp, comp, 1024), comp);
 }

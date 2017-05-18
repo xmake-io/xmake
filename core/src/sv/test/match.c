@@ -31,37 +31,37 @@
 
 #define STRNSIZE(s) (s), sizeof(s)-1
 
-int test_match(char expected, const char *sv_str, size_t sv_len, const char *comp_str, size_t comp_len) {
+int test_match(char expected, const char *semver_str, size_t semver_len, const char *comp_str, size_t comp_len) {
   size_t offset = 0;
   char result;
-  sv_t semver = {0};
-  sv_comp_t comp = {0};
+  semver_t semver = {0};
+  semver_comp_t comp = {0};
 
-  printf("test: `%.*s` ^ `%.*s`", (int) sv_len, sv_str, (int) comp_len, comp_str);
-  if (sv_read(&semver, sv_str, sv_len, &offset)) {
+  printf("test: `%.*s` ^ `%.*s`", (int) semver_len, semver_str, (int) comp_len, comp_str);
+  if (semver_read(&semver, semver_str, semver_len, &offset)) {
     puts(" \tcouldn't parse semver");
     return 1;
   }
   offset = 0;
-  if (sv_comp_read(&comp, comp_str, comp_len, &offset)) {
+  if (semver_comp_read(&comp, comp_str, comp_len, &offset)) {
     puts(" \tcouldn't parse comp");
     return 1;
   }
-  result = sv_match(semver, comp);
+  result = semver_match(semver, comp);
   printf(" \t=> %d\t", result);
   if (result != expected) {
     printf(" != `%d`\n", expected);
-    sv_dtor(&semver);
-    sv_comp_dtor(&comp);
+    semver_dtor(&semver);
+    semver_comp_dtor(&comp);
     return 1;
   }
   printf(" == `%d`\n", expected);
-  sv_dtor(&semver);
-  sv_comp_dtor(&comp);
+  semver_dtor(&semver);
+  semver_comp_dtor(&comp);
   return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main(void) {
   if (test_match(1, STRNSIZE("v1.2.3"), STRNSIZE("1.2.3"))) {
     return EXIT_FAILURE;
   }

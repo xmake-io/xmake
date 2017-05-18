@@ -34,7 +34,7 @@
 # define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
 #endif
 
-char sv_num_read(int *self, const char *str, size_t len, size_t *offset) {
+char semver_num_read(int *self, const char *str, size_t len, size_t *offset) {
   char *endptr;
 
   *self = 0;
@@ -45,7 +45,7 @@ char sv_num_read(int *self, const char *str, size_t len, size_t *offset) {
     case 'x':
     case 'X':
     case '*':
-      *self = SV_NUM_X;
+      *self = SEMVER_NUM_X;
       ++*offset;
       break;
     default:
@@ -60,8 +60,8 @@ char sv_num_read(int *self, const char *str, size_t len, size_t *offset) {
   return 0;
 }
 
-char sv_num_comp(const int self, const int other) {
-  if (self == SV_NUM_X || other == SV_NUM_X) {
+char semver_num_comp(const int self, const int other) {
+  if (self == SEMVER_NUM_X || other == SEMVER_NUM_X) {
     return 0;
   }
   if (self > other) {

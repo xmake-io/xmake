@@ -27,7 +27,6 @@ local sandbox_core_base_semver = sandbox_core_base_semver or {}
 
 -- load modules
 local table  = require("base/table")
-local semver = require("base/semver")
 local raise  = require("sandbox/modules/raise")
 
 -- parse a version string into a props table containing all semver infos
@@ -36,7 +35,15 @@ local raise  = require("sandbox/modules/raise")
 -- semver.parse('a.b.c') => nil
 --
 function sandbox_core_base_semver.parse(version)
-    return semver.parse(version)
+
+     -- compare version
+    local result, errors = semver.parse(version)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
 end
 
 -- valid a verion string and return return it, nil otherwise
@@ -150,8 +157,15 @@ end
 --
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
 --
-function sandbox_core_base_semver.satisfies(version, range, loose)
-    return true
+function sandbox_core_base_semver.satisfies(version, range)
+    -- satisfies version
+    local result, errors = semver.satisfies(version, range)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
 end
 
 -- select required version from versions, tags and branches
