@@ -1,0 +1,4 @@
+{
+    "tasks":["generic","iphoneos"],
+    "platform":"darwin"
+}

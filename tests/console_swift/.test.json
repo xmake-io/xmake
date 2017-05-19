@@ -1,4 +1,1 @@
-{
-    "tasks":["generic","iphoneos"],
-    "platform":"darwin"
-}
+../.darwiniphone.json

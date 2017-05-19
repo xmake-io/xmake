@@ -1,4 +1,1 @@
-{
-    "tasks":["generic"],
-    "platform":"darwin"
-}
+../.darwinonly.json
