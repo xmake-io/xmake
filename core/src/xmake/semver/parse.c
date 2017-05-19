@@ -53,7 +53,7 @@ tb_int_t xm_semver_parse(lua_State* lua)
 
     if (semver_read(&semver, str, tb_strlen(str), &offset)) {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver ‘%s’", str);
+        lua_pushfstring(lua, "Unable to parse semver '%s'", str);
 
         return 2;
     }

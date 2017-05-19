@@ -25,7 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.platform.environment")
-import("net.http.download")
+import("net.http")
 import("net.fasturl")
 import("utils.archive")
 
