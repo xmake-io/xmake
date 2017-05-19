@@ -28,6 +28,7 @@ local sandbox_lib_detect_find_file = sandbox_lib_detect_find_file or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local table     = require("base/table")
 local raise     = require("sandbox/modules/raise")
 
 -- find file
@@ -48,7 +49,7 @@ function sandbox_lib_detect_find_file.main(name, dirs)
 
     -- find file
     local result = nil
-    for _, dir in ipairs(dirs) do
+    for _, dir in ipairs(table.wrap(dirs)) do
 
         -- TODO
         -- dir is registry path?
