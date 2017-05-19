@@ -82,7 +82,7 @@ end
 --
 -- run tests:
 --
--- $ xmake l ./tests/modules/semver.lua
+-- $ make test name=semver
 --
 function main()
 
