@@ -1,15 +1,19 @@
-import sh
 import os
 import sys
 import json
+import pty
+from subprocess import CalledProcessError
 class Test:
     def __init__(self):
         self.__task_dict={}
         self.__point_dict={}
 
-    def __xmake(self,args):
-        print(["xmake"]+args)
-        print(sh.xmake(*args))
+    def __run(self,args):
+        print(args)
+        returncode=pty.spawn(args)
+        if returncode!=0:
+            raise CalledProcessError(returncode,args)
+        print()
 
     def add_task(self,name,steps):
         self.__task_dict[name]=steps
@@ -23,7 +27,7 @@ class Test:
     def run_task_on_point(self,taskname,pointname):
         print("run task `"+taskname+"` on testpoint `"+pointname+"`")
         for step in self.get_steps_task_on_point(taskname,pointname):
-            self.__xmake(step)
+            self.__run(step)
 
     def run_point(self,pointname):
         for task in self.__point_dict[pointname]["tasks"]:

@@ -1,16 +1,16 @@
 {
     "generic":{
         "steps":[
-            ["f","-c","-P",null,"-v","--backtrace"],
-            ["-P",null,"-v","--backtrace"],
-            ["p","-P",null,"-v","--backtrace"]
+            ["xmake","f","-c","-P",null,"-v","--backtrace"],
+            ["xmake","-P",null,"-v","--backtrace"],
+            ["xmake","p","-P",null,"-v","--backtrace"]
         ]
     },
 
     "iphoneos":{
         "platform":"darwin",
         "steps":[
-            ["m","-P",null,"package","-p","iphoneos"]
+            ["xmake","m","-P",null,"package","-p","iphoneos"]
         ]
     }
 }

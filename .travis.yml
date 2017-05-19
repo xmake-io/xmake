@@ -13,7 +13,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-5
-            - python3-pip
+            - python3
 
 env:
   global:
@@ -27,7 +27,6 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust python3; fi
-  - pip3 install -r tests/requirements.txt
 
 script:
   - scripts/get.sh __local__
