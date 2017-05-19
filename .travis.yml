@@ -13,6 +13,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-5
+            - python3
 
 env:
   global:
@@ -25,7 +26,7 @@ before_install:
   - luarocks install luacov
 
 install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust python3; fi
 
 script:
   - scripts/get.sh __local__
@@ -38,8 +39,9 @@ script:
   - cat xmake/core/_xmake_main.lua >> tmp
   - mv tmp xmake/core/_xmake_main.lua
   - cp core/build/xmake $(which xmake) || sudo cp core/build/xmake $(which xmake)
-  - tests/tests
+  - python3 -c '__import__("os").chdir("tests");__import__("tptester").auto_test()'
 
 after_success:
+  - mv tests/luacov.stats.out .
   - luacov
   - bash <(curl -s https://codecov.io/bash)

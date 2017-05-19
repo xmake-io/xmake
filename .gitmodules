@@ -1,0 +1,3 @@
+[submodule "tptester"]
+	path = tests/tptester
+	url = https://github.com/TitanSnow/tptester.git
