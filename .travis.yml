@@ -39,7 +39,7 @@ script:
   - cat xmake/core/_xmake_main.lua >> tmp
   - mv tmp xmake/core/_xmake_main.lua
   - cp core/build/xmake $(which xmake) || sudo cp core/build/xmake $(which xmake)
-  - sh -c 'cd tests; python3 test.py'
+  - python3 -c '__import__("os").chdir("tests");__import__("tptester").auto_test()'
 
 after_success:
   - mv tests/luacov.stats.out .
