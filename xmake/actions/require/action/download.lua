@@ -24,9 +24,9 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.unarchiver")
 import("net.http")
 import("devel.git")
+import("utils.archive")
 
 -- checkout codes from git
 function _checkout(package, url, sourcedir)
@@ -115,7 +115,7 @@ function _download(package, url, sourcedir)
     os.rm(sourcedir)
 
     -- extract package file
-    unarchiver.extract(packagefile, sourcedir)
+    archive.extract(packagefile, sourcedir)
     
     -- trace
     cprint("${green}ok")
