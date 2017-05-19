@@ -194,10 +194,10 @@ function check_xcode_sdkver(config)
             config.set("xcode_sdkver", xcode_sdkver)
 
             -- trace
-            cprint("checking for the Xcode SDK version for %s ... ${green}%s", plat, xcode_sdkver)
+            cprint("checking for the Xcode SDK version for %s ... ${green}%s", config.get("plat"), xcode_sdkver)
         else
             -- failed
-            cprint("checking for the Xcode SDK version for %s ... ${red}no", plat)
+            cprint("checking for the Xcode SDK version for %s ... ${red}no", config.get("plat"))
             cprint("${bright red}please run:")
             cprint("${red}    - xmake config --xcode_sdkver=xxx")
             cprint("${red}or  - xmake global --xcode_sdkver=xxx")

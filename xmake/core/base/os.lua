@@ -411,8 +411,18 @@ end
 -- get the temporary directory
 function os.tmpdir()
 
-    -- generate and get a temporary directory
-    local tmpdir = path.join(os._tmpdir(), ".xmake")
+    -- attempt get user name
+    os._USER = os._USER or os.getenv("USER")
+
+    -- get a temporary directory for each user
+    local tmpdir = os._tmpdir()
+    if os._USER and #os._USER > 0 then
+        tmpdir = path.join(tmpdir, ".xmake_" .. os._USER)
+    else
+        tmpdir = path.join(tmpdir, ".xmake")
+    end
+
+    -- ensure this directory exist
     if not os.isdir(tmpdir) then
         os.mkdir(tmpdir)
     end
