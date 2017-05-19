@@ -45,20 +45,25 @@ function main(...)
     process.runjobs(function (index)
         local host = hosts[index]
         if host then
+            try
+            {
+                function ()
 
-            -- ping it
-            local data = nil
-            if os.host() == "windows" then
-                data = os.iorun("%s -n 1 %s", ping, host)
-            else
-                data = os.iorun("%s -c 1 %s", ping, host)
-            end
+                    -- ping it
+                    local data = nil
+                    if os.host() == "windows" then
+                        data = os.iorun("%s -n 1 %s", ping, host)
+                    else
+                        data = os.iorun("%s -c 1 %s", ping, host)
+                    end
 
-            -- find time
-            local time = data:match("time=(.-)ms", 1, true)
-            if time then
-                results[host] = tonumber(time:trim())
-            end
+                    -- find time
+                    local time = data:match("time=(.-)ms", 1, true)
+                    if time then
+                        results[host] = tonumber(time:trim())
+                    end
+                end
+            }
         end
     end, #hosts)
 
