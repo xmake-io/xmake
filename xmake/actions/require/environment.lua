@@ -24,10 +24,10 @@
 
 -- imports
 import("core.base.option")
-import("core.base.fasturl")
 import("core.tool.unarchiver")
 import("core.platform.environment")
 import("net.http.download")
+import("net.fasturl")
 
 -- enter linux environment
 function _enter_linux()

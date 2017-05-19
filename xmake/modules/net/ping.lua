@@ -19,35 +19,50 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        fasturl.lua
+-- @file        ping.lua
 --
 
--- define module
-local sandbox_core_base_fasturl = sandbox_core_base_fasturl or {}
+-- imports
+import("detect.tool.find_ping")
 
--- load modules
-local fasturl   = require("base/fasturl")
-local raise     = require("sandbox/modules/raise")
+-- send ping to hosts
+--
+-- @param ...   the hosts
+--
+-- @return      the time or -1
+--
+function main(...)
 
--- add urls
-function sandbox_core_base_fasturl.add(urls)
-
-    -- add urls
-    fasturl.add(urls)
-end
-
--- sort urls
-function sandbox_core_base_fasturl.sort(urls)
-
-    -- sort urls
-    local urls, errors = fasturl.sort(urls)
-    if not urls then
-        raise(errors)
+    -- find ping
+    local ping = find_ping()
+    if not ping then
+        return {}
     end
 
-    -- ok
-    return urls
+    -- run tasks
+    local hosts = {...}
+    local results = {}
+    process.runjobs(function (index)
+        local host = hosts[index]
+        if host then
+
+            -- ping it
+            local data = nil
+            if os.host() == "windows" then
+                data = os.iorun("%s -n 1 %s", ping, host)
+            else
+                data = os.iorun("%s -c 1 %s", ping, host)
+            end
+
+            -- find time
+            local time = data:match("time=(.-)ms", 1, true)
+            if time then
+                results[host] = tonumber(time:trim())
+            end
+        end
+    end, #hosts)
+
+    -- ok?
+    return results
 end
 
--- return module
-return sandbox_core_base_fasturl

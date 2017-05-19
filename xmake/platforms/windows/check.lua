@@ -320,9 +320,6 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "zip",         "",   "zip",            "the zip file archiver") 
     checker.toolchain_insert(toolchains, "unzip",       "",   "unzip",          "the zip file unarchiver") 
 
-    -- insert other tools to toolchains
-    checker.toolchain_insert(toolchains, "ping",        "",   "ping",           "the ping utility") 
-
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
