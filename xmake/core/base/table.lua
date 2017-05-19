@@ -259,7 +259,7 @@ function table._dump(self, exclude, level)
         end
         io.write("}\n")  
     else
-        io.write("<" .. tostring(v) .. ">")
+        io.write("<" .. tostring(self) .. ">")
     end
 end
 

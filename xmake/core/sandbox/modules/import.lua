@@ -51,6 +51,32 @@ function sandbox_import._modulename(name)
     return name
 end
 
+-- get module path from name
+function sandbox_import._modulepath(name)
+
+    -- translate module path
+    --
+    -- "package.module" => "package/module"
+    -- "..package.module" => "../../package/module"
+    --
+    local startdots = true
+    local modulepath = name:gsub(".", function(c)
+        if c == '.' then
+            if startdots then
+                return ".." .. path.seperator()
+            else
+                return path.seperator()
+            end
+        else
+            startdots = false
+            return c
+        end
+    end)
+
+    -- return module path
+    return modulepath
+end
+
 -- load module from file
 function sandbox_import._loadfile(filepath, instance)
 
@@ -98,8 +124,8 @@ function sandbox_import._find(dir, name)
     -- check
     assert(dir and name)
 
-    -- replace "package.module" => "package/module"
-    name = (name:gsub("%.", "/"))
+    -- get module path
+    name = sandbox_import._modulepath(name)
     assert(name)
 
     -- load the single module?
@@ -123,8 +149,8 @@ function sandbox_import._load(dir, name, instance)
     -- check
     assert(dir and name)
 
-    -- replace "package.module" => "package/module"
-    name = (name:gsub("%.", "/"))
+    -- get module path
+    name = sandbox_import._modulepath(name)
     assert(name)
 
     -- load the single module?
@@ -232,6 +258,9 @@ end
 --
 -- import("core.platform", {inherit = true})
 -- => inherit the all interfaces of core.platform to the current scope
+--
+-- local test = import("test", {rootdir = "/tmp/xxx", anonymous = true})
+-- test()
 --
 -- @note the polymiorphism is not supported for import.inherit mode now.
 --
@@ -343,7 +372,9 @@ function sandbox_import.import(name, args)
     end
 
     -- import this module into the parent scope
-    scope_parent[imported_name] = module
+    if not args.anonymous then
+        scope_parent[imported_name] = module
+    end
 
     -- return it
     return module

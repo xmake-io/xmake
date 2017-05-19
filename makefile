@@ -81,4 +81,8 @@ uninstall:
 	@if [ -d $(prefix)/share/xmake ]; then rm -rf $(prefix)/share/xmake; fi
 	@echo ok!
 
+test:
+	@xmake lua tests/test.lua $(name)
+	@echo ok!
+
 .PHONY: tip build install uninstall
