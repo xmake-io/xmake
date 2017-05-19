@@ -1,18 +1,23 @@
 {
     "generic":{
         "steps":[
-            ["xmake","-P",null,"-v","--backtrace"],
+            ["xmake","m","-P",null,"-b","buildtest"],
+            ["xmake","-P",null],
+            ["xmake","p","-P",null],
+            ["xmake","c","-P",null],
+            ["xmake","f","-m","release","-P",null],
             ["xmake","-r","-a","-P",null,"-v","--backtrace"],
-            ["xmake","p","-P",null,"-v","--backtrace"],
-            ["xmake","c","-P",null,"-v","--backtrace"],
-            ["xmake","f","--cc=gcc","--cxx=g++","-P",null,"-v","--backtrace"],
-            ["xmake","-P",null,"-v","--backtrace"],
-            ["xmake","-r","-a","-P",null,"-v","--backtrace"],
-            ["xmake","c","-P",null,"-v","--backtrace"],
-            ["xmake","f","--cc=clang","--cxx=clang++","-P",null,"-v","--backtrace"],
-            ["xmake","-P",null,"-v","--backtrace"],
-            ["xmake","-r","-a","-P",null,"-v","--backtrace"],
-            ["xmake","c","-P",null,"-v","--backtrace"]
+            ["xmake","f","--mode=debug","-P",null,"--verbose","--backtrace"],
+            ["xmake","--rebuild","--all","-P",null,"--verbose","--backtrace"],
+            ["xmake","p","-P",null,"--verbose","--backtrace"],
+            ["xmake","c","-P",null,"--verbose","--backtrace"],
+            ["xmake","m","-P",null,"-e","buildtest"],
+            ["xmake","m","-P",null,"-l"],
+            ["xmake","f","--cc=gcc","--cxx=g++","-P",null],
+            ["xmake","m","-P",null,"buildtest"],
+            ["xmake","f","--cc=clang","--cxx=clang++","--ld=clang++","-P",null,"--verbose","--backtrace"],
+            ["xmake","m","-P",null,"buildtest"],
+            ["xmake","m","-P",null,"-d","buildtest"]
         ]
     },
 
