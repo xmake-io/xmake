@@ -1,9 +1,18 @@
 {
     "generic":{
         "steps":[
-            ["xmake","f","-c","-P",null,"-v","--backtrace"],
             ["xmake","-P",null,"-v","--backtrace"],
-            ["xmake","p","-P",null,"-v","--backtrace"]
+            ["xmake","-r","-a","-P",null,"-v","--backtrace"],
+            ["xmake","p","-P",null,"-v","--backtrace"],
+            ["xmake","c","-P",null,"-v","--backtrace"],
+            ["xmake","f","--cc=gcc","--cxx=g++","-P",null,"-v","--backtrace"],
+            ["xmake","-P",null,"-v","--backtrace"],
+            ["xmake","-r","-a","-P",null,"-v","--backtrace"],
+            ["xmake","c","-P",null,"-v","--backtrace"],
+            ["xmake","f","--cc=clang","--cxx=clang++","-P",null,"-v","--backtrace"],
+            ["xmake","-P",null,"-v","--backtrace"],
+            ["xmake","-r","-a","-P",null,"-v","--backtrace"],
+            ["xmake","c","-P",null,"-v","--backtrace"]
         ]
     },
 
