@@ -60,16 +60,16 @@ task("lua")
             if os.isfile(script) then
 
                 -- run the given lua script file (xmake lua /tmp/script.lua)
-                import(path.basename(script), {rootdir = path.directory(script)})(unpack(option.get("arguments") or {}))
+                import(path.basename(script), {rootdir = path.directory(script), anonymous = true})(unpack(option.get("arguments") or {}))
 
             elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
 
                 -- run builtin lua script (xmake lua echo "hello xmake")
-                import("scripts." .. script)(unpack(option.get("arguments") or {}))
+                import("scripts." .. script, {anonymous = true})(unpack(option.get("arguments") or {}))
             else
 
                 -- run modules (xmake lua core.xxx.xxx)
-                print(import(script)(unpack(option.get("arguments") or {})))
+                print(import(script, {anonymous = true})(unpack(option.get("arguments") or {})))
             end
         else
             -- enter interactive mode

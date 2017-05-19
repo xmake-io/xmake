@@ -259,6 +259,9 @@ end
 -- import("core.platform", {inherit = true})
 -- => inherit the all interfaces of core.platform to the current scope
 --
+-- local test = import("test", {rootdir = "/tmp/xxx", anonymous = true})
+-- test()
+--
 -- @note the polymiorphism is not supported for import.inherit mode now.
 --
 function sandbox_import.import(name, args)
@@ -369,7 +372,9 @@ function sandbox_import.import(name, args)
     end
 
     -- import this module into the parent scope
-    scope_parent[imported_name] = module
+    if not args.anonymous then
+        scope_parent[imported_name] = module
+    end
 
     -- return it
     return module

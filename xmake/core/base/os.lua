@@ -223,6 +223,11 @@ function os.match(pattern, mode)
         end
     end
 
+    -- remove "./" or '.\\' prefix
+    if pattern:sub(1, 2):find('%.[/\\]') then
+        pattern = pattern:sub(3)
+    end
+
     -- get the root directory
     local rootdir = pattern
     local starpos = pattern:find("%*")
