@@ -39,3 +39,4 @@ build_script:
 
 on_success:
   - cmd: luacov
+  - ps: Write-Output (Invoke-Webrequest https://codecov.io/bash -UseBasicParsing).Content | C:\cygwin\bin\bash
