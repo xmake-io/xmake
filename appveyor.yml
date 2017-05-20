@@ -40,4 +40,4 @@ build_script:
 on_success:
   - luacov
   - pip install codecov
-  - codecov
+  - codecov --file luacov.report.out
