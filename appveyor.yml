@@ -29,6 +29,10 @@ build_script:
   - cmd: core\build\xmake lua versioninfo
   - ps: Write-Output "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})".replace('\','/') | Out-File tmp
   - ps: Write-Output (Get-Content xmake\core\_xmake_main.lua | Out-String) | Out-File tmp -Append
+  - ps: Invoke-Webrequest 'https://svwh.dl.sourceforge.net/project/dos2unix/dos2unix/7.3.4/dos2unix-7.3.4-win32.zip' -OutFile dos2unix.zip
+  - ps: Expand-Archive dos2unix.zip
+  - cmd: dos2unix\bin\dos2unix tmp
+  - ps: Remove-Item -Recurse dos2unix,dos2unix.zip
   - ps: Move-Item -Force tmp xmake\core\_xmake_main.lua
   - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
   - cmd: xmake lua tests\test.lua
