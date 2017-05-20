@@ -10,6 +10,7 @@ platform:
 install:
   - ps: Invoke-Webrequest 'http://luarocks.github.io/luarocks/releases/luarocks-2.4.2-win32.zip' -OutFile luarocks.zip
   - ps: Expand-Archive luarocks.zip
+  - ps: Copy-Item -Recurse luarocks\luarocks-2.4.2-win32\win32\lua5.1 C:\lua
   - cmd: cd luarocks\luarocks-2.4.2-win32
   - cmd: install.bat
   - cmd: cd ..\..
