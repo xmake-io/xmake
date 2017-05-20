@@ -23,6 +23,22 @@ try to follow these guidelines when you do so.
 * Ensure your edited codes with four spaces instead of TAB.
 * Please commit code to `dev` branch and we will merge into `master` branch in feature
 
+### Some suggestion on developing
+
+#### Speed up build
+
+* Use `ccache`.
+* Pre-build by `make build -j`. Then if you do no modification on files in dir `core`, just use `scripts/get.sh __local__ __install_only__` to quickly install.
+* Use a real xmake executable file with environment variable `XMAKE_PROGRAM_DIR` set to dir `xmake` in repo path so that no installation is needed.
+
+#### Understand API layouts
+
+* Action scripts, plugin scripts and user's `xmake.lua` run in sandbox. Sandbox API is in `xmake/core/sandbox`.
+* Util scripts run in base lua environment. Base API is in `xmake/core/base`
+* Native API includes lua API and xmake ext API written in C in `core/src/xmake`
+
+For example, to copy a directory in sandbox, calling link is: `sandbox_os.cp()` -> `os.cp()` -> `xm_os_cpdir()` -> `tb_directory_copy()`
+
 # 贡献代码
 
 如果你发现一些问题，或者想新增或者改进某些新特性，或者想贡献一个新的模块
