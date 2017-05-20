@@ -12,9 +12,10 @@ install:
   - ps: Expand-Archive luarocks.zip
   - ps: Copy-Item -Recurse luarocks\luarocks-2.4.2-win32\win32\lua5.1 C:\lua
   - cmd: cd luarocks\luarocks-2.4.2-win32
-  - cmd: install.bat
+  - cmd: install.bat /Q
   - cmd: cd ..\..
   - ps: Remove-Item luarocks -Recurse -Force
+  - ps: Remove-Item luarocks.zip
   - cmd: luarocks install luacov
 
 build_script:
