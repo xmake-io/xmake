@@ -1,3 +1,4 @@
+version: v2.1.5.{build}
 os:
   - Visual Studio 2015
   - Visual Studio 2017
@@ -5,6 +6,15 @@ os:
 platform:
   - Win32
   - Win64
+
+install:
+  - ps: Invoke-Webrequest 'http://luarocks.github.io/luarocks/releases/luarocks-2.4.2-win32.zip' -OutFile luarocks.zip
+  - ps: Expand-Archive luarocks.zip
+  - cmd: cd luarocks\luarocks-2.4.2-win32
+  - cmd: install.bat
+  - cmd: cd ..\..
+  - ps: Remove-Item luarocks -Recurse -Force
+  - cmd: luarocks install luacov
 
 build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
