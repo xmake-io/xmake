@@ -13,11 +13,12 @@ install:
   - ps: Copy-Item -Recurse luarocks\luarocks-2.4.2-win32\win32\lua5.1 C:\lua
   - cmd: cd luarocks\luarocks-2.4.2-win32
   - cmd: install.bat /Q
-  - cmd: set PATH=%PATH%;C:\Program Files (x86)\LuaRocks
+  - cmd: set PATH=%PATH%;C:\Program Files (x86)\LuaRocks;C:\lua\bin
   - cmd: cd ..\..
   - ps: Remove-Item luarocks -Recurse -Force
   - ps: Remove-Item luarocks.zip
   - cmd: luarocks install luacov
+  - ps: Copy-Item -Recurse C:\lua\share\lua\5.1 $HOME\xmake\lua
 
 build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
@@ -26,3 +27,11 @@ build_script:
   - cmd: xmake -P core
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
   - cmd: core\build\xmake lua versioninfo
+  - ps: Write-Output "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})".replace('\','/') | Out-File tmp
+  - ps: Write-Output (Get-Content xmake\core\_xmake_main.lua | Out-String) | Out-File tmp -Append
+  - ps: Move-Item -Force tmp xmake\core\_xmake_main.lua
+  - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
+  - cmd: xmake lua tests\test.lua
+
+on_success:
+  - cmd: luacov
