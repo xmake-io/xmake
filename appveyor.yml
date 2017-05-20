@@ -38,5 +38,6 @@ build_script:
   - cmd: xmake lua tests\test.lua
 
 on_success:
-  - cmd: luacov
-  - ps: Write-Output (Invoke-Webrequest https://codecov.io/bash -UseBasicParsing).Content | C:\cygwin\bin\bash
+  - luacov
+  - pip install codecov
+  - codecov
