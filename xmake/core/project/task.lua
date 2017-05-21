@@ -131,20 +131,21 @@ function task._translate_menu(menu)
         end
 
         -- add common options
-        table.insert(options, 1, {'q', "quiet",     "k",  nil, "Quiet operation."                           })
-        table.insert(options, 2, {'v', "verbose",   "k",  nil, "Print lots of verbose information."         })
-        table.insert(options, 3, {nil, "backtrace", "k",  nil, "Print backtrace information for debugging." })
-        table.insert(options, 4, {nil, "profile",   "k",  nil, "Print performance data for debugging."      })
-        table.insert(options, 5, {nil, "version",   "k",  nil, "Print the version number and exit."         })
-        table.insert(options, 6, {'h', "help",      "k",  nil, "Print this help message and exit."          })
-        table.insert(options, 7, {})
-        table.insert(options, 8, {'F', "file",      "kv", nil, "Read a given xmake.lua file."               })
-        table.insert(options, 9, {'P', "project",   "kv", nil, "Change to the given project directory."
+        table.insert(options, 1,  {'q', "quiet",     "k",  nil, "Quiet operation."                           })
+        table.insert(options, 2,  {'v', "verbose",   "k",  nil, "Print lots of verbose information."         })
+        table.insert(options, 3,  {nil, "root",      "k",  nil, "Allow to run xmake as root."                })
+        table.insert(options, 4,  {nil, "backtrace", "k",  nil, "Print backtrace information for debugging." })
+        table.insert(options, 5,  {nil, "profile",   "k",  nil, "Print performance data for debugging."      })
+        table.insert(options, 6,  {nil, "version",   "k",  nil, "Print the version number and exit."         })
+        table.insert(options, 7,  {'h', "help",      "k",  nil, "Print this help message and exit."          })
+        table.insert(options, 8,  {})
+        table.insert(options, 9,  {'F', "file",      "kv", nil, "Read a given xmake.lua file."               })
+        table.insert(options, 10, {'P', "project",   "kv", nil, "Change to the given project directory."
                                                               , "Search priority:"
                                                               , "    1. The Given Command Argument"
                                                               , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"              })
-        table.insert(options, 10, {})
+                                                              , "    3. The Current Directory"               })
+        table.insert(options, 11, {})
 
     end
 
