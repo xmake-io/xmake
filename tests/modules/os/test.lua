@@ -1,4 +1,6 @@
 function main()
+    -- get mclock
+    local tm = os.mclock()
     -- test cpdir
     os.mkdir("test1")
     assert(os.exists("test1"))
@@ -28,4 +30,9 @@ function main()
     assert(os.exists("test2/test1/test1"))
     os.rmdir("test2")
     assert(not os.exists("test2"))
+    -- test setenv
+    os.setenv("__AWD","DWA")
+    assert(os.getenv("__AWD")=="DWA")
+    -- assert mclock
+    assert(os.mclock()>=tm)
 end
