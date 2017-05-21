@@ -127,26 +127,6 @@ function main._init()
     end
 end
 
--- check run command as root
-function main._check_root()
-
-    -- TODO not check
-    if xmake._HOST == "windows" then
-        return true
-    end
-
-    -- check it
-    local ok, code = os.iorun("id -u")
-    if ok and code and code:trim() == '0' then
-        return false, [[Running xmake as root is extremely dangerous and no longer supported.
-        As xmake does not drop privileges on installation you would be giving all
-        build scripts full access to your system.]]
-    end
-
-    -- not root
-    return true
-end
-
 -- the main function
 function main.done()
 
@@ -162,9 +142,12 @@ function main.done()
 
     -- check run command as root
     if not option.get("root") then
-        local ok, errors = main._check_root()
-        if not ok then
-            utils.error(errors)
+        if os.isroot() then
+            utils.error([[Running xmake as root is extremely dangerous and no longer supported.
+As xmake does not drop privileges on installation you would be giving all
+build scripts full access to your system. 
+Or you can add `--root` option to allow run as root temporarily.
+            ]])
             return -1
         end
     end

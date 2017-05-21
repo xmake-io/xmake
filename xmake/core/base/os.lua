@@ -630,7 +630,38 @@ end
 
 -- get the system null device
 function os.nuldev()
-    return xmake._NULDEV
+    if os.isroot() then
+        return os.tmpfile()
+    else
+        return xmake._NULDEV
+    end
+end
+
+-- check run command as root
+function os.isroot()
+
+    -- get it from cache
+    if os._ISROOT ~= nil then
+        return os._ISROOT
+    end
+
+    -- check it
+    if os.host() == "windows" then
+        -- TODO
+    else
+        local ok, code = os.iorun("id -u")
+        if ok and code and code:trim() == '0' then
+            os._ISROOT = true
+        end
+    end
+
+    -- not root?
+    if os._ISROOT == nil then
+        os._ISROOT = false
+    end
+
+    -- root?
+    return os._ISROOT
 end
 
 -- get version info
