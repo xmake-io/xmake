@@ -1,0 +1,11 @@
+function main()
+    os.mkdir("test1")
+    assert(os.exists("test1"))
+    os.cp("test1","test2")
+    assert(os.exists("test2"))
+    os.rmdir("test1")
+    assert(not os.exists("test1"))
+    io.writefile("test2/awd","awd")
+    os.rmdir("test2")
+    assert(not os.exists("test2"))
+end
