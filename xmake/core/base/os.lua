@@ -649,8 +649,7 @@ function os.isroot()
     if os.host() == "windows" then
         -- TODO
     else
-        local ok, code = os.iorun("id -u")
-        if ok and code and code:trim() == '0' then
+        if os.uid().euid == 0 then
             os._ISROOT = true
         end
     end
