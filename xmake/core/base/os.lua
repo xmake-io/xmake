@@ -422,13 +422,10 @@ end
 -- get the temporary directory
 function os.tmpdir()
 
-    -- attempt get user name
-    os._USER = os._USER or os.getenv("USER")
-
     -- get a temporary directory for each user
     local tmpdir = os._tmpdir()
-    if os._USER and #os._USER > 0 then
-        tmpdir = path.join(tmpdir, ".xmake_" .. os._USER)
+    if os.uid then
+        tmpdir = path.join(tmpdir, ".xmake_" .. os.uid().euid)
     else
         tmpdir = path.join(tmpdir, ".xmake")
     end
