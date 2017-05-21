@@ -36,7 +36,7 @@ build_script:
   - ps: Remove-Item -Recurse dos2unix,dos2unix.zip
   - ps: Move-Item -Force tmp xmake\core\_xmake_main.lua
   - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
-  - cmd: xmake lua tests\test.lua
+  - cmd: xmake lua --backtrace tests\test.lua
 
 on_success:
   - luacov
