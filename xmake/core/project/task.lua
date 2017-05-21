@@ -182,7 +182,7 @@ function task._interpreter()
             local maps = 
             {
                 host        = xmake._HOST
-            ,   nuldev      = xmake._NULDEV
+            ,   nuldev      = os.nuldev()
             ,   tmpdir      = os.tmpdir()
             ,   curdir      = os.curdir()
             ,   globaldir   = global.directory()
