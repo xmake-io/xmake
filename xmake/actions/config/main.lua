@@ -39,6 +39,7 @@ function _option_filter(name)
     {
         target      = true
     ,   file        = true
+    ,   root        = true
     ,   quiet       = true
     ,   profile     = true
     ,   project     = true
