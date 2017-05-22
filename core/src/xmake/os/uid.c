@@ -41,13 +41,13 @@
  * implementation
  */
 
-// get uid & euid
+// get & set uid
 tb_int_t xm_os_uid(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_int_t uidset = -1, euidset = -1;
+    tb_int_t ruidset = -1, euidset = -1;
 
     tb_int_t argc = lua_gettop(lua);
 
@@ -55,8 +55,8 @@ tb_int_t xm_os_uid(lua_State* lua)
     {
         if (lua_istable(lua, 1))
         {
-            // os.uid({["uid"] = uid, ["euid"] = euid})
-            lua_getfield(lua, 1, "uid");
+            // os.uid({["ruid"] = ruid, ["euid"] = euid})
+            lua_getfield(lua, 1, "ruid");
             lua_getfield(lua, 1, "euid");
             if (!lua_isnil(lua, -1))
             {
@@ -73,17 +73,17 @@ tb_int_t xm_os_uid(lua_State* lua)
             {
                 if (!lua_isnumber(lua, -1))
                 {
-                    lua_pushfstring(lua, "invalid field type(%s) in `uid` for os.uid", luaL_typename(lua, -1));
+                    lua_pushfstring(lua, "invalid field type(%s) in `ruid` for os.uid", luaL_typename(lua, -1));
                     lua_error(lua);
                     return 0;
                 }
-                uidset = (tb_int_t)lua_tonumber(lua, -1);
+                ruidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
         } else if (lua_isnumber(lua, 1))
         {
-            // os.uid(euid)
-            euidset = (tb_int_t)lua_tonumber(lua, 1);
+            // os.uid(uid)
+            ruidset = euidset = (tb_int_t)lua_tonumber(lua, 1);
         } else
         {
             lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 1));
@@ -92,7 +92,7 @@ tb_int_t xm_os_uid(lua_State* lua)
         }
     } else if (argc == 2)
     {
-        // os.uid(uid, euid)
+        // os.uid(ruid, euid)
         if (!lua_isnil(lua, 1))
         {
             if (!lua_isnumber(lua, 1))
@@ -101,7 +101,7 @@ tb_int_t xm_os_uid(lua_State* lua)
                 lua_error(lua);
                 return 0;
             }
-            uidset = (tb_int_t)lua_tonumber(lua, 1);
+            ruidset = (tb_int_t)lua_tonumber(lua, 1);
         }
         if (!lua_isnil(lua, 2))
         {
@@ -123,25 +123,16 @@ tb_int_t xm_os_uid(lua_State* lua)
     // store return value
     lua_newtable(lua);
 
-    // set uid & euid
-    if (uidset != -1)
-    {
-        lua_pushstring(lua, "setuid_errno");
-        lua_pushinteger(lua, setuid(uidset) != 0 ? errno : 0);
-        lua_settable(lua, -3);
-    }
-    if (euidset != -1)
-    {
-        lua_pushstring(lua, "seteuid_errno");
-        lua_pushinteger(lua, seteuid(euidset) != 0 ? errno : 0);
-        lua_settable(lua, -3);
-    }
+    // set ruid & euid
+    lua_pushstring(lua, "errno");
+    lua_pushinteger(lua, setreuid(ruidset, euidset) != 0 ? errno : 0);
+    lua_settable(lua, -3);
 
     // get uid & euid
     uid_t uid = getuid(), euid = geteuid();
 
     // push
-    lua_pushstring(lua, "uid");
+    lua_pushstring(lua, "ruid");
     lua_pushinteger(lua, uid);
     lua_settable(lua, -3);
     lua_pushstring(lua, "euid");

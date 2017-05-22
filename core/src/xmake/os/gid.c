@@ -41,13 +41,13 @@
  * implementation
  */
 
-// get gid & egid
+// get & set gid
 tb_int_t xm_os_gid(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_int_t gidset = -1, egidset = -1;
+    tb_int_t rgidset = -1, egidset = -1;
 
     tb_int_t argc = lua_gettop(lua);
 
@@ -55,8 +55,8 @@ tb_int_t xm_os_gid(lua_State* lua)
     {
         if (lua_istable(lua, 1))
         {
-            // os.gid({["gid"] = gid, ["egid"] = egid})
-            lua_getfield(lua, 1, "gid");
+            // os.gid({["rgid"] = rgid, ["egid"] = egid})
+            lua_getfield(lua, 1, "rgid");
             lua_getfield(lua, 1, "egid");
             if (!lua_isnil(lua, -1))
             {
@@ -73,17 +73,17 @@ tb_int_t xm_os_gid(lua_State* lua)
             {
                 if (!lua_isnumber(lua, -1))
                 {
-                    lua_pushfstring(lua, "invalid field type(%s) in `gid` for os.gid", luaL_typename(lua, -1));
+                    lua_pushfstring(lua, "invalid field type(%s) in `rgid` for os.gid", luaL_typename(lua, -1));
                     lua_error(lua);
                     return 0;
                 }
-                gidset = (tb_int_t)lua_tonumber(lua, -1);
+                rgidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
         } else if (lua_isnumber(lua, 1))
         {
-            // os.gid(egid)
-            egidset = (tb_int_t)lua_tonumber(lua, 1);
+            // os.gid(gid)
+            rgidset = egidset = (tb_int_t)lua_tonumber(lua, 1);
         } else
         {
             lua_pushfstring(lua, "invalid argument type(%s) for os.gid", luaL_typename(lua, 1));
@@ -92,7 +92,7 @@ tb_int_t xm_os_gid(lua_State* lua)
         }
     } else if (argc == 2)
     {
-        // os.gid(gid, egid)
+        // os.gid(rgid, egid)
         if (!lua_isnil(lua, 1))
         {
             if (!lua_isnumber(lua, 1))
@@ -101,7 +101,7 @@ tb_int_t xm_os_gid(lua_State* lua)
                 lua_error(lua);
                 return 0;
             }
-            gidset = (tb_int_t)lua_tonumber(lua, 1);
+            rgidset = (tb_int_t)lua_tonumber(lua, 1);
         }
         if (!lua_isnil(lua, 2))
         {
@@ -123,25 +123,16 @@ tb_int_t xm_os_gid(lua_State* lua)
     // store return value
     lua_newtable(lua);
 
-    // set gid & egid
-    if (gidset != -1)
-    {
-        lua_pushstring(lua, "setgid_errno");
-        lua_pushinteger(lua, setgid(gidset) != 0 ? errno : 0);
-        lua_settable(lua, -3);
-    }
-    if (egidset != -1)
-    {
-        lua_pushstring(lua, "setegid_errno");
-        lua_pushinteger(lua, setegid(egidset) != 0 ? errno : 0);
-        lua_settable(lua, -3);
-    }
+    // set rgid & egid
+    lua_pushstring(lua, "errno");
+    lua_pushinteger(lua, setregid(rgidset, egidset) != 0 ? errno : 0);
+    lua_settable(lua, -3);
 
     // get gid & egid
     gid_t gid = getgid(), egid = getegid();
 
     // push
-    lua_pushstring(lua, "gid");
+    lua_pushstring(lua, "rgid");
     lua_pushinteger(lua, gid);
     lua_settable(lua, -3);
     lua_pushstring(lua, "egid");
