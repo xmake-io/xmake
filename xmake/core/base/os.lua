@@ -422,13 +422,10 @@ end
 -- get the temporary directory
 function os.tmpdir()
 
-    -- attempt get user name
-    os._USER = os._USER or os.getenv("USER")
-
     -- get a temporary directory for each user
     local tmpdir = os._tmpdir()
-    if os._USER and #os._USER > 0 then
-        tmpdir = path.join(tmpdir, ".xmake_" .. os._USER)
+    if os.uid then
+        tmpdir = path.join(tmpdir, ".xmake_" .. os.uid().euid)
     else
         tmpdir = path.join(tmpdir, ".xmake")
     end
@@ -630,11 +627,7 @@ end
 
 -- get the system null device
 function os.nuldev()
-    if os.isroot() then
-        return os.tmpfile()
-    else
-        return xmake._NULDEV
-    end
+    return xmake._NULDEV
 end
 
 -- check run command as root
@@ -649,8 +642,7 @@ function os.isroot()
     if os.host() == "windows" then
         -- TODO
     else
-        local ok, code = os.iorun("id -u")
-        if ok and code and code:trim() == '0' then
+        if os.uid().euid == 0 then
             os._ISROOT = true
         end
     end
