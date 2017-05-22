@@ -653,11 +653,7 @@ end
 
 -- check run command as root
 function os.isroot()
-
-    -- get it from cache
-    if os._ISROOT ~= nil then
-        return os._ISROOT
-    end
+    os._ISROOT = nil
 
     -- check it
     if os.uid().euid == 0 then
