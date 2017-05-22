@@ -33,6 +33,7 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- save original interfaces
+os._uid         = os._uid or os.uid
 os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
@@ -423,12 +424,7 @@ end
 function os.tmpdir()
 
     -- get a temporary directory for each user
-    local tmpdir = os._tmpdir()
-    if os.uid then
-        tmpdir = path.join(tmpdir, ".xmake_" .. os.uid().euid)
-    else
-        tmpdir = path.join(tmpdir, ".xmake")
-    end
+    local tmpdir = path.join(os._tmpdir(), ".xmake" .. (os.uid().euid or ""))
 
     -- ensure this directory exist
     if not os.isdir(tmpdir) then
@@ -630,6 +626,24 @@ function os.nuldev()
     return xmake._NULDEV
 end
 
+-- get uid
+function os.uid()
+
+    -- get it from cache first
+    if os._UID then
+        return os._UID
+    end
+
+    -- get uid
+    os._UID = {}
+    if os._uid then
+        os._UID = os._uid() or {}
+    end
+
+    -- ok?
+    return os._UID
+end
+
 -- check run command as root
 function os.isroot()
 
@@ -639,12 +653,8 @@ function os.isroot()
     end
 
     -- check it
-    if os.host() == "windows" then
-        -- TODO
-    else
-        if os.uid().euid == 0 then
-            os._ISROOT = true
-        end
+    if os.uid().euid == 0 then
+        os._ISROOT = true
     end
 
     -- not root?
