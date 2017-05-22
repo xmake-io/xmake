@@ -39,6 +39,7 @@ xmake_C_FILES 			+= \
 						os/versioninfo \
 						os/uid \
 						os/gid \
+						os/getown \
 						path/relative \
 						path/absolute \
 						path/translate \
