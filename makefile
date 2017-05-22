@@ -82,7 +82,7 @@ uninstall:
 	@echo ok!
 
 test:
-	@xmake lua tests/test.lua $(name)
+	@xmake lua --backtrace tests/test.lua $(name)
 	@echo ok!
 
 .PHONY: tip build install uninstall

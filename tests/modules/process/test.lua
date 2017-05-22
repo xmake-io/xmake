@@ -49,13 +49,4 @@ function main()
         end
     }
     assert(ok == nil)
-
-    ok = try
-    {
-        function ()
-            process.open("thismustnotbeaprogramname")
-            return true
-        end
-    }
-    assert(ok == nil)
 end
