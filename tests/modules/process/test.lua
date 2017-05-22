@@ -1,51 +1,61 @@
 function main()
+
     -- single process test
     local inftimeout=999
     local stdout=os.tmpfile()
     local stderr=os.tmpfile()
     for i = 1, 2 do
-        local pro=process.open("echo -n awd",stdout,stderr)
-        process.wait(pro,inftimeout)
+        local pro = process.open("echo -n awd", stdout, stderr)
+        process.wait(pro, inftimeout)
         process.close(pro)
-        assert(io.readfile(stdout)=="awd")
+        assert(io.readfile(stdout) == "awd")
     end
+
     -- hack test
-    local hacked = false
-    try{
+    local ok = try
+    {
         function ()
-            process.wait("awd",inftimeout)
-            hacked = true
+            process.wait("awd", inftimeout)
+            return true
         end
     }
-    assert(not hacked)
-    hacked = (process.close("awd") ~= nil)
-    assert(not hacked)
-    try{
+    assert(ok == nil)
+
+    assert(process.close("awd") == nil)
+
+    ok = try
+    {
         function ()
-            process.waitlist("awd",inftimeout)
-            hacked = true
+            process.waitlist("awd", inftimeout)
+            return true
         end
     }
-    assert(not hacked)
-    try{
+    assert(ok == nil)
+
+    ok = try
+    {
         function ()
-            process.waitlist({},inftimeout)
-            hacked = true
+            process.waitlist({}, inftimeout)
+            return true
         end
     }
-    assert(not hacked)
-    try{
+    assert(ok == nil)
+
+    ok = try
+    {
         function ()
-            process.waitlist({"awd"},inftimeout)
-            hacked = true
+            process.waitlist({"awd"}, inftimeout)
+            return true
         end
     }
-    assert(not hacked)
-    try{
+    assert(ok == nil)
+
+    ok = try
+    {
         function ()
             process.open("thismustnotbeaprogramname")
-            hacked = true
+            return true
         end
     }
-    assert(not hacked)
+    assert(ok == nil)
 end
