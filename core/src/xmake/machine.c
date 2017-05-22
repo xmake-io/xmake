@@ -83,6 +83,7 @@ tb_int_t xm_os_getwinsize(lua_State* lua);
 tb_int_t xm_os_versioninfo(lua_State* lua);
 #ifndef TB_CONFIG_OS_WINDOWS
 tb_int_t xm_os_uid(lua_State* lua);
+tb_int_t xm_os_gid(lua_State* lua);
 #endif
 
 // the path functions
@@ -146,6 +147,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "versioninfo",    xm_os_versioninfo}
 #ifndef TB_CONFIG_OS_WINDOWS
 ,   { "uid",            xm_os_uid       }
+,   { "gid",            xm_os_gid       }
 #endif
 ,   { tb_null,          tb_null         }
 };

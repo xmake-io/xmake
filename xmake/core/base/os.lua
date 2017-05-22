@@ -34,6 +34,7 @@ local string    = require("base/string")
 
 -- save original interfaces
 os._uid         = os._uid or os.uid
+os._gid         = os._gid or os.gid
 os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
@@ -636,6 +637,18 @@ function os.uid(...)
 
     -- ok?
     return os._UID
+end
+
+-- get gid
+function os.gid(...)
+    -- get gid
+    os._GID = {}
+    if os._gid then
+        os._GID = os._gid(...) or {}
+    end
+
+    -- ok?
+    return os._GID
 end
 
 -- check run command as root
