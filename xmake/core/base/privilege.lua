@@ -48,12 +48,12 @@ function privilege.store()
     end
 
     -- set gid
-    if os.gid(owner.gid).setegid_errno ~= 0 then
+    if os.gid(owner.gid).errno ~= 0 then
         return false
     end
 
     -- set uid
-    if os.uid(owner.uid).seteuid_errno ~= 0 then
+    if os.uid({["ruid"] = owner.uid}).errno ~= 0 or os.uid({["euid"] = owner.uid}).errno ~= 0 then
         return false
     end
 
@@ -76,12 +76,12 @@ function privilege.get()
     end
 
     -- set uid
-    if os.uid(0).seteuid_errno ~= 0 then
+    if os.uid({["euid"] = 0}).errno ~= 0 or os.uid({["ruid"] = 0}).errno ~= 0 then
         return false
     end
 
     -- set gid
-    if os.gid(0).setegid_errno ~= 0 then
+    if os.gid(0).errno ~= 0 then
         return false
     end
 
