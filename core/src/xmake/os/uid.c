@@ -15,74 +15,51 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
- * @author      ruki
- * @file        open.c
+ * @author      TitanSnow
+ * @file        uid.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "process.open"
+#define TB_TRACE_MODULE_NAME                "uid"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+#ifndef TB_CONFIG_OS_WINDOWS
+#   include <unistd.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-// p = process.open(command, outfile, errfile) 
-tb_int_t xm_process_open(lua_State* lua)
+// get uid & euid
+tb_int_t xm_os_uid(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the command
-    size_t              command_size = 0;
-    tb_char_t const*    command = luaL_checklstring(lua, 1, &command_size);
-    tb_char_t const*    outfile = lua_tostring(lua, 2);
-    tb_char_t const*    errfile = lua_tostring(lua, 3);
-    tb_check_return_val(command, 0);
+    // get uid & euid
+    uid_t uid = getuid(), euid = geteuid();
 
-    // init attributes
-    tb_process_attr_t attr = {0};
-
-    // redirect stdout?
-    if (outfile)
-    {
-        // redirect stdout to file
-        attr.outfile = outfile;
-        attr.outmode = TB_FILE_MODE_WO | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-
-        // remove the outfile first
-        // if (tb_file_info(outfile, tb_null))
-        //     tb_file_remove(outfile);
-    }
-
-    // redirect stderr?
-    if (errfile)
-    {
-        // redirect stderr to file
-        attr.errfile = errfile;
-        attr.errmode = TB_FILE_MODE_WO | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-
-        // remove the errfile first
-        // if (tb_file_info(errfile, tb_null))
-        //     tb_file_remove(errfile);
-    }
-
-    // init process
-    tb_process_ref_t process = tb_process_init_cmd(command, &attr);
-    if (process) lua_pushlightuserdata(lua, process);
-    else lua_pushnil(lua);
+    // push
+    lua_newtable(lua);
+    lua_pushstring(lua, "uid");
+    lua_pushinteger(lua, uid);
+    lua_settable(lua, -3);
+    lua_pushstring(lua, "euid");
+    lua_pushinteger(lua, euid);
+    lua_settable(lua, -3);
 
     // ok
     return 1;
 }
+
+#endif

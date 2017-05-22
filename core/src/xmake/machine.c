@@ -81,6 +81,9 @@ tb_int_t xm_os_emptydir(lua_State* lua);
 tb_int_t xm_os_strerror(lua_State* lua);
 tb_int_t xm_os_getwinsize(lua_State* lua);
 tb_int_t xm_os_versioninfo(lua_State* lua);
+#ifndef TB_CONFIG_OS_WINDOWS
+tb_int_t xm_os_uid(lua_State* lua);
+#endif
 
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
@@ -150,6 +153,9 @@ static luaL_Reg const g_os_functions[] =
 ,   { "strerror",       xm_os_strerror  }
 ,   { "getwinsize",     xm_os_getwinsize}
 ,   { "versioninfo",    xm_os_versioninfo}
+#ifndef TB_CONFIG_OS_WINDOWS
+,   { "uid",            xm_os_uid       }
+#endif
 ,   { tb_null,          tb_null         }
 };
 

@@ -37,6 +37,7 @@ xmake_C_FILES 			+= \
 						os/strerror \
 						os/getwinsize \
 						os/versioninfo \
+						os/uid \
 						path/relative \
 						path/absolute \
 						path/translate \
