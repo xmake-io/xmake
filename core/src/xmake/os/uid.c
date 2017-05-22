@@ -123,10 +123,13 @@ tb_int_t xm_os_uid(lua_State* lua)
     // store return value
     lua_newtable(lua);
 
-    // set ruid & euid
-    lua_pushstring(lua, "errno");
-    lua_pushinteger(lua, setreuid(ruidset, euidset) != 0 ? errno : 0);
-    lua_settable(lua, -3);
+    if (ruidset != -1 || euidset != -1)
+    {
+        // set ruid & euid
+        lua_pushstring(lua, "errno");
+        lua_pushinteger(lua, setreuid(ruidset, euidset) != 0 ? errno : 0);
+        lua_settable(lua, -3);
+    }
 
     // get uid & euid
     uid_t uid = getuid(), euid = geteuid();

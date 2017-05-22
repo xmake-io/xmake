@@ -123,10 +123,13 @@ tb_int_t xm_os_gid(lua_State* lua)
     // store return value
     lua_newtable(lua);
 
-    // set rgid & egid
-    lua_pushstring(lua, "errno");
-    lua_pushinteger(lua, setregid(rgidset, egidset) != 0 ? errno : 0);
-    lua_settable(lua, -3);
+    if (rgidset != -1 || egidset != -1)
+    {
+        // set rgid & egid
+        lua_pushstring(lua, "errno");
+        lua_pushinteger(lua, setregid(rgidset, egidset) != 0 ? errno : 0);
+        lua_settable(lua, -3);
+    }
 
     // get gid & egid
     gid_t gid = getgid(), egid = getegid();
