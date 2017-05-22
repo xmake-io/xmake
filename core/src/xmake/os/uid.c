@@ -35,6 +35,7 @@
 #include "prefix.h"
 #ifndef TB_CONFIG_OS_WINDOWS
 #   include <unistd.h>
+#   include <errno.h>
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -46,11 +47,100 @@ tb_int_t xm_os_uid(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    tb_int_t uidset = -1, euidset = -1;
+
+    tb_int_t argc = lua_gettop(lua);
+
+    if (argc == 1)
+    {
+        if (lua_istable(lua, 1))
+        {
+            // os.uid({["uid"] = uid, ["euid"] = euid})
+            lua_getfield(lua, 1, "uid");
+            lua_getfield(lua, 1, "euid");
+            if (!lua_isnil(lua, -1))
+            {
+                if (!lua_isnumber(lua, -1))
+                {
+                    lua_pushfstring(lua, "invalid field type(%s) in `euid` for os.uid", luaL_typename(lua, -1));
+                    lua_error(lua);
+                    return 0;
+                }
+                euidset = (tb_int_t)lua_tonumber(lua, -1);
+            }
+            lua_pop(lua, 1);
+            if (!lua_isnil(lua, -1))
+            {
+                if (!lua_isnumber(lua, -1))
+                {
+                    lua_pushfstring(lua, "invalid field type(%s) in `uid` for os.uid", luaL_typename(lua, -1));
+                    lua_error(lua);
+                    return 0;
+                }
+                uidset = (tb_int_t)lua_tonumber(lua, -1);
+            }
+            lua_pop(lua, 1);
+        } else if (lua_isnumber(lua, 1))
+        {
+            // os.uid(euid)
+            euidset = (tb_int_t)lua_tonumber(lua, 1);
+        } else
+        {
+            lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 1));
+            lua_error(lua);
+            return 0;
+        }
+    } else if (argc == 2)
+    {
+        // os.uid(uid, euid)
+        if (!lua_isnil(lua, 1))
+        {
+            if (!lua_isnumber(lua, 1))
+            {
+                lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 1));
+                lua_error(lua);
+                return 0;
+            }
+            uidset = (tb_int_t)lua_tonumber(lua, 1);
+        }
+        if (!lua_isnil(lua, 2))
+        {
+            if (!lua_isnumber(lua, 2))
+            {
+                lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 2));
+                lua_error(lua);
+                return 0;
+            }
+            euidset = (tb_int_t)lua_tonumber(lua, 2);
+        }
+    } else if (argc != 0)
+    {
+        lua_pushstring(lua, "invalid argument count for os.uid");
+        lua_error(lua);
+        return 0;
+    }
+
+    // store return value
+    lua_newtable(lua);
+
+    // set uid & euid
+    if (uidset != -1)
+    {
+        lua_pushstring(lua, "setuid_errno");
+        lua_pushinteger(lua, setuid(uidset) != 0 ? errno : 0);
+        lua_settable(lua, -3);
+    }
+    if (euidset != -1)
+    {
+        lua_pushstring(lua, "seteuid_errno");
+        lua_pushinteger(lua, seteuid(euidset) != 0 ? errno : 0);
+        lua_settable(lua, -3);
+    }
+
     // get uid & euid
     uid_t uid = getuid(), euid = geteuid();
 
     // push
-    lua_newtable(lua);
     lua_pushstring(lua, "uid");
     lua_pushinteger(lua, uid);
     lua_settable(lua, -3);

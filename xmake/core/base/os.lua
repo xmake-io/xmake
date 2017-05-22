@@ -627,17 +627,11 @@ function os.nuldev()
 end
 
 -- get uid
-function os.uid()
-
-    -- get it from cache first
-    if os._UID then
-        return os._UID
-    end
-
+function os.uid(...)
     -- get uid
     os._UID = {}
     if os._uid then
-        os._UID = os._uid() or {}
+        os._UID = os._uid(...) or {}
     end
 
     -- ok?
