@@ -77,7 +77,12 @@ function nf_optimize(level)
 end
 
 -- make the symbol flag
-function nf_symbol(level)
+function nf_symbol(level, target, mapkind)
+
+    -- only for compiler
+    if mapkind ~= "object" then
+        return ""
+    end
 
     -- the maps
     local maps = 
