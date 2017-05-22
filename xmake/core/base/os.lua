@@ -627,11 +627,7 @@ end
 
 -- get the system null device
 function os.nuldev()
-    if os.isroot() then
-        return os.tmpfile()
-    else
-        return xmake._NULDEV
-    end
+    return xmake._NULDEV
 end
 
 -- check run command as root
