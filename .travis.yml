@@ -38,6 +38,7 @@ script:
   - cat xmake/core/_xmake_main.lua >> tmp
   - mv tmp xmake/core/_xmake_main.lua
   - cp core/build/xmake $(which xmake) || sudo cp core/build/xmake $(which xmake)
+  - xmake lua versioninfo
   - xmake lua --backtrace tests/test.lua
 
 after_success:
