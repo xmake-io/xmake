@@ -271,7 +271,7 @@ http://creativecommons.org/licenses/publicdomain
 #### libsv license
 
 ===============================================================================
-libsv -- public domain c semver. https://github.com/uael/sv
+libsv -- Public domain semantic versioning in c. https://github.com/uael/sv
 
 This is free and unencumbered software released into the public domain.
 
