@@ -320,7 +320,7 @@ function project._interpreter()
             ,   projectdir  = project.directory()
             ,   packagedir  = package.directory()
             ,   programdir  = xmake._PROGRAM_DIR
-            ,   xmake       = path.join(xmake._PROGRAM_DIR, "xmake")
+            ,   xmake       = xmake._EXECUTABLE_PATH or path.join(xmake._PROGRAM_DIR, "xmake")
             }
 
             -- map it
