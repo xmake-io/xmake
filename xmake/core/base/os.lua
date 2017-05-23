@@ -38,6 +38,7 @@ os._gid         = os._gid or os.gid
 os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
+os._setenv      = os._setenv or os.setenv
 os._versioninfo = os._versioninfo or os.versioninfo
 
 -- copy single file or directory 
@@ -656,6 +657,27 @@ function os.isroot()
 
     -- check it
     return os.uid().euid == 0
+end
+
+-- set values to environment variable 
+function os.setenv(name, ...)
+
+    -- get separator
+    local seperator = utils.ifelse(os.host() == "windows", ';', ':')
+    
+    -- append values
+    return os._setenv(name, table.concat({...}, seperator))
+end
+
+-- add values to environment variable 
+function os.addenv(name, ...)
+
+    -- get separator
+    local seperator = utils.ifelse(os.host() == "windows", ';', ':')
+    
+    -- append values
+    return os.setenv(name, table.concat({...}, seperator) .. seperator ..  (os.getenv(name) or ""))
+
 end
 
 -- get version info

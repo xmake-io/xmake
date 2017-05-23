@@ -423,7 +423,7 @@ function sandbox_os.raise(msg, ...)
     os.raise(msg, ...)
 end
 
--- get the envirnoment variables
+-- get values of the envirnoment variable 
 function sandbox_os.getenv(name)
 
     -- check
@@ -433,14 +433,24 @@ function sandbox_os.getenv(name)
     return os.getenv(name)
 end
 
--- set the envirnoment variables
-function sandbox_os.setenv(name, values)
+-- set values to the envirnoment variable
+function sandbox_os.setenv(name, ...)
 
     -- check
     assert(name)
 
     -- set it
-    os.setenv(name, values)
+    os.setenv(name, ...)
+end
+
+-- add values to the envirnoment variable
+function sandbox_os.addenv(name, ...)
+
+    -- check
+    assert(name)
+
+    -- add it
+    os.addenv(name, ...)
 end
 
 -- make a new uuid
