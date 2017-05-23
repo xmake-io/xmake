@@ -68,7 +68,7 @@
 # define __bool_true_false_are_defined	1
 #else
 # ifdef __cplusplus
-#  include <cstdbool>
+//#  include <cstdbool>
 # else
 #  include <stdbool.h>
 # endif
