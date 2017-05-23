@@ -91,7 +91,7 @@ function nf_symbol(level)
     -- the maps
     local maps = 
     {   
-        debug       = "-C debug-info=2"
+        debug       = "-C debuginfo=2"
     ,   hidden      = ""
     }
 

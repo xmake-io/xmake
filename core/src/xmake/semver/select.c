@@ -83,7 +83,7 @@ tb_int_t xm_semver_select(lua_State* lua)
 
     if (semver_range_read(&range, range_str, range_len, &offset)) {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver range ‘%s’", range_str);
+        lua_pushfstring(lua, "Unable to parse semver range '%s'", range_str);
 
         return 2;
     }
@@ -99,7 +99,7 @@ tb_int_t xm_semver_select(lua_State* lua)
 
         if (semver_read(&semver, source_str, tb_strlen(source_str), &offset)) {
             lua_pushnil(lua);
-            lua_pushfstring(lua, "Unable to parse semver ‘%s’", source_str);
+            lua_pushfstring(lua, "Unable to parse semver '%s'", source_str);
 
             return 2;
         }
@@ -128,7 +128,7 @@ tb_int_t xm_semver_select(lua_State* lua)
 
         if (semver_read(&semver, source_str, tb_strlen(source_str), &offset)) {
             lua_pushnil(lua);
-            lua_pushfstring(lua, "Unable to parse semver ‘%s’", source_str);
+            lua_pushfstring(lua, "Unable to parse semver '%s'", source_str);
 
             return 2;
         }
@@ -147,7 +147,7 @@ tb_int_t xm_semver_select(lua_State* lua)
     }
 
     lua_pushnil(lua);
-    lua_pushfstring(lua, "Unable to select version for range ‘%s’", range_str);
+    lua_pushfstring(lua, "Unable to select version for range '%s'", range_str);
 
     return 2;
 }

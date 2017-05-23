@@ -152,7 +152,7 @@ function main(package)
     end
 
     -- trace
-    cprintf("${yellow}  => ${clear}building %s-%s .. ", package:name(), package:version())
+    cprintf("${yellow}  => ${clear}building %s-%s .. ", package:name(), package:version_str())
     if option.get("verbose") then
         print("")
     end

@@ -1041,9 +1041,9 @@ target("test")
 
 ```lua
 target("test")
-    before_build(function (target))
+    before_build(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:before_clean
@@ -1054,9 +1054,9 @@ target("test")
 
 ```lua
 target("test")
-    before_clean(function (target))
+    before_clean(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:before_package
@@ -1067,9 +1067,9 @@ target("test")
 
 ```lua
 target("test")
-    before_package(function (target))
+    before_package(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:before_install
@@ -1080,9 +1080,9 @@ target("test")
 
 ```lua
 target("test")
-    before_install(function (target))
+    before_install(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:before_uninstall
@@ -1093,9 +1093,9 @@ target("test")
 
 ```lua
 target("test")
-    before_uninstall(function (target))
+    before_uninstall(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:before_run
@@ -1106,9 +1106,9 @@ target("test")
 
 ```lua
 target("test")
-    before_run(function (target))
+    before_run(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:after_build
@@ -1121,9 +1121,9 @@ target("test")
 
 ```lua
 target("test")
-    after_build(function (target))
+    after_build(function (target)
         os.run("ldid -S %s", target:targetfile())
-    end
+    end)
 ```
 
 ##### target:after_clean
@@ -1136,9 +1136,9 @@ target("test")
 
 ```lua
 target("test")
-    after_clean(function (target))
+    after_clean(function (target)
         os.rm("$(buildir)/otherfiles")
-    end
+    end)
 ```
 
 ##### target:after_package
@@ -1149,9 +1149,9 @@ target("test")
 
 ```lua
 target("test")
-    after_package(function (target))
+    after_package(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:after_install
@@ -1162,9 +1162,9 @@ target("test")
 
 ```lua
 target("test")
-    after_install(function (target))
+    after_install(function (target)
         print("")
-    end
+    end)
 ```
 ##### target:after_uninstall
 
@@ -1174,9 +1174,9 @@ target("test")
 
 ```lua
 target("test")
-    after_uninstall(function (target))
+    after_uninstall(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:after_run
@@ -1187,9 +1187,9 @@ target("test")
 
 ```lua
 target("test")
-    after_run(function (target))
+    after_run(function (target)
         print("")
-    end
+    end)
 ```
 
 ##### target:set_config_h

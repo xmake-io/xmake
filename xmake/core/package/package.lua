@@ -58,7 +58,7 @@ function _instance.new(name, info, rootdir)
         -- init maps
         local maps = 
         {
-            version = instance:version()
+            version = instance:version_str()
         }
 
         -- map it
@@ -127,15 +127,6 @@ function _instance:sha256()
     return self._SHA256
 end
 
--- get the version  
-function _instance:version()
-
-    -- get it
-    if self._VERSIONINFO then
-        return self._VERSIONINFO.version
-    end
-end
-
 -- is optional package?
 function _instance:optional()
 
@@ -143,18 +134,39 @@ function _instance:optional()
     return self._REQUIREINFO.mode == "optional"
 end
 
--- the verson from tags, branches or versions?
-function _instance:versionfrom()
+-- get the version  
+function _instance:version()
 
-    -- optional?
-    if self._VERSIONINFO then
-        return self._VERSIONINFO.source
-    end
+    -- get it
+    return self._VERSION or {}
 end
 
--- set the version info 
-function _instance:versioninfo_set(versioninfo)
-    self._VERSIONINFO = versioninfo
+-- get the version string 
+function _instance:version_str()
+
+    -- get it
+    return self._VERSION.version
+end
+
+-- the verson from tags, branches or versions?
+function _instance:version_from(source)
+
+    -- from source?
+    return self:version().source == source
+end
+
+-- set the version
+function _instance:version_set(version, source)
+
+    -- init package version
+    if type(version) == "string" then
+        version = {version = version, source = source}
+    else
+        version.source = source
+    end
+
+    -- save version
+    self._VERSION = version
 end
 
 -- get the require info 

@@ -35,7 +35,18 @@ import("configheader")
 
 -- filter option 
 function _option_filter(name)
-    return name and name ~= "target" and name ~= "file" and name ~= "project" and name ~= "verbose"
+    local options = 
+    {
+        target      = true
+    ,   file        = true
+    ,   root        = true
+    ,   quiet       = true
+    ,   profile     = true
+    ,   project     = true
+    ,   verbose     = true
+    ,   backtrace   = true
+    }
+    return not options[name]
 end
 
 -- host changed?

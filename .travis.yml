@@ -34,11 +34,12 @@ script:
   - xmake -P core
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo
-  - echo 'require("luacov")' > tmp
+  - echo "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})" > tmp
   - cat xmake/core/_xmake_main.lua >> tmp
   - mv tmp xmake/core/_xmake_main.lua
   - cp core/build/xmake $(which xmake) || sudo cp core/build/xmake $(which xmake)
-  - tests/tests
+  - xmake lua versioninfo
+  - xmake lua --backtrace tests/test.lua
 
 after_success:
   - luacov

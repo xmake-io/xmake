@@ -16,6 +16,8 @@
 * [#93](https://github.com/tboox/xmake/pull/93): Improve `xmake lua` to run a single line command
 * Improve to print gcc error and warning info
 * Improve `print` interface to dump table
+* [#111](https://github.com/tboox/xmake/issues/111): Add `--root` common option to allow run xmake command as root
+* [#113](https://github.com/tboox/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
 
 ### Bugs fixed
 
@@ -305,6 +307,8 @@
 * [#93](https://github.com/tboox/xmake/pull/93): 改进 `xmake lua`，支持运行单行命令和模块
 * 改进编译错误提示信息输出
 * 改进`print`接口去更好些显示table数据
+* [#111](https://github.com/tboox/xmake/issues/111): 添加`--root`通用选项去临时支持作为root运行
+* [#113](https://github.com/tboox/xmake/pull/113): 改进权限管理，现在作为root运行也是非常安全的
 
 ### Bugs修复
 

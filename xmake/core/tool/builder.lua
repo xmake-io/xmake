@@ -261,7 +261,7 @@ function builder:_addflags_from_language(flags, target)
             for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
             
                 -- map and check flag
-                local flag = mapper(flagvalue, target)
+                local flag = mapper(flagvalue, target, self:_targetkind())
                 if flag and flag ~= "" and (not checkstate or self:check(flag)) then
                     table.join2(flags, flag)
                 end

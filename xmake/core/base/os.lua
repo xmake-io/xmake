@@ -33,6 +33,8 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- save original interfaces
+os._uid         = os._uid or os.uid
+os._gid         = os._gid or os.gid
 os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
@@ -221,6 +223,11 @@ function os.match(pattern, mode)
         else
             return {}, 0
         end
+    end
+
+    -- remove "./" or '.\\' prefix
+    if pattern:sub(1, 2):find('%.[/\\]') then
+        pattern = pattern:sub(3)
     end
 
     -- get the root directory
@@ -418,8 +425,10 @@ end
 -- get the temporary directory
 function os.tmpdir()
 
-    -- generate and get a temporary directory
-    local tmpdir = path.join(os._tmpdir(), ".xmake")
+    -- get a temporary directory for each user
+    local tmpdir = path.join(os._tmpdir(), ".xmake" .. (os.uid().euid or ""))
+
+    -- ensure this directory exist
     if not os.isdir(tmpdir) then
         os.mkdir(tmpdir)
     end
@@ -617,6 +626,37 @@ end
 -- get the system null device
 function os.nuldev()
     return xmake._NULDEV
+end
+
+-- get uid
+function os.uid(...)
+    -- get uid
+    os._UID = {}
+    if os._uid then
+        os._UID = os._uid(...) or {}
+    end
+
+    -- ok?
+    return os._UID
+end
+
+-- get gid
+function os.gid(...)
+    -- get gid
+    os._GID = {}
+    if os._gid then
+        os._GID = os._gid(...) or {}
+    end
+
+    -- ok?
+    return os._GID
+end
+
+-- check the current command is running as root
+function os.isroot()
+
+    -- check it
+    return os.uid().euid == 0
 end
 
 -- set values to environment variable 

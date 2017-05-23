@@ -24,10 +24,10 @@
 
 -- imports
 import("core.base.option")
-import("core.base.fasturl")
-import("core.tool.unarchiver")
-import("core.tool.downloader")
 import("core.platform.environment")
+import("net.http")
+import("net.fasturl")
+import("utils.archive")
 
 -- enter linux environment
 function _enter_linux()
@@ -94,7 +94,7 @@ function _enter_windows()
 
                     -- create a download task
                     local task = function ()
-                        downloader.download(winenv_url, winenv_zip_tmp)
+                        http.download(winenv_url, winenv_zip_tmp)
                     end
 
                     -- download winenv.zip
@@ -134,7 +134,7 @@ function _enter_windows()
             os.rm(winenv_dir)
 
             -- extract winenv.zip file
-            unarchiver.extract(winenv_zip, winenv_dir)
+            archive.extract(winenv_zip, winenv_dir)
 
             -- load winenv 
             for _, script_dir in ipairs(os.files(path.join(winenv_dir, "**", "winenv.lua")), path.directory) do

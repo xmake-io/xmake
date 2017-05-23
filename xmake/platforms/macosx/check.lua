@@ -89,20 +89,8 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-sh",       "",                     "rustc",        "the rust shared library linker") 
     checker.toolchain_insert(toolchains, "rc-ld",       "",                     "rustc",        "the rust linker") 
 
-    -- insert archiver and unarchiver tools to toolchains
-    checker.toolchain_insert(toolchains, "tar",         "",                     "tar",          "the common file [un]archiverr") 
-    checker.toolchain_insert(toolchains, "gzip",        "",                     "gzip",         "the gzip file [un]archiver") 
-    checker.toolchain_insert(toolchains, "7z",          "",                     "7z",           "the 7z file [un]archiver") 
-    checker.toolchain_insert(toolchains, "zip",         "",                     "zip",          "the zip file archiver") 
-    checker.toolchain_insert(toolchains, "unzip",       "",                     "unzip",        "the zip file unarchiver") 
-
     -- insert other tools to toolchains
     checker.toolchain_insert(toolchains, "debugger",    "xcrun -sdk macosx ",   "lldb",         "the debugger") 
-    checker.toolchain_insert(toolchains, "ccache",      "",                     "ccache",       "the compiler cache") 
-    checker.toolchain_insert(toolchains, "git",         "",                     "git",          "the git version control utility") 
-    checker.toolchain_insert(toolchains, "downloader",  "",                     "curl",         "the url download utility") 
-    checker.toolchain_insert(toolchains, "downloader",  "",                     "wget",         "the url download utility") 
-    checker.toolchain_insert(toolchains, "ping",        "",                     "ping",         "the ping utility") 
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains

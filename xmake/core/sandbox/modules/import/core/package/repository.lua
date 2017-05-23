@@ -26,10 +26,10 @@
 local sandbox_core_package_repository = sandbox_core_package_repository or {}
 
 -- load modules
-local fasturl       = require("base/fasturl")
 local project       = require("project/project")
 local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
+local import        = require("sandbox/modules/import")
 
 -- get repository directory
 function sandbox_core_package_repository.directory(is_global)
@@ -80,13 +80,13 @@ function sandbox_core_package_repository.repositories(is_global)
     local repositories = {}
     if is_global then
 
+        -- import fasturl
+        import("net.fasturl")
+
         -- sort main urls
         local mainurls = {"https://github.com/tboox/xmake-repo.git", "https://git.oschina.net/tboox/xmake-repo.git"}
         fasturl.add(mainurls)
-        mainurls, errors = fasturl.sort(mainurls)
-        if not mainurls then
-            raise(errors)
-        end
+        mainurls = fasturl.sort(mainurls)
 
         -- add main urls
         for _, mainurl in ipairs(mainurls) do

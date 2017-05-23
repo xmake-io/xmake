@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.task")
 import("core.platform.platform")
+import("core.base.privilege")
 import("uninstall")
 
 -- main
@@ -56,6 +57,30 @@ function main()
         {
             -- failed or not permission? request administrator permission and uninstall it again
             function (errors)
+
+                -- try get privilege
+                if privilege.get() then
+                    local ok = try
+                    {
+                        function ()
+
+                            -- uninstall target
+                            uninstall.uninstall(targetname)
+
+                            -- trace
+                            cprint("${bright}uninstall ok!${clear}${ok_hand}")
+
+                            -- ok
+                            return true
+                        end
+                    }
+
+                    -- release privilege
+                    privilege.store()
+
+                    -- ok?
+                    if ok then return end
+                end
 
                 -- show tips
                 cprint("${bright red}error: ${clear}failed to uninstall, may permission denied!")

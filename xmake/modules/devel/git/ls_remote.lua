@@ -31,13 +31,15 @@ import("detect.tool.find_git")
 -- @param reftype   the reference type, "tags", "heads" and "refs"
 -- @param url       the remote url, optional
 --
+-- @return          the tags, heads or refs
+--
 -- @code
 --
 -- import("devel.git")
 -- 
--- git.ls_remote("tags", url)
--- git.ls_remote("heads", url)
--- git.ls_remote("refs")
+-- local tags   = git.ls_remote("tags", url)
+-- local heads  = git.ls_remote("heads", url)
+-- local refs   = git.ls_remote("refs")
 --
 -- @endcode
 --

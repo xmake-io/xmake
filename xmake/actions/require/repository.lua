@@ -23,9 +23,9 @@
 --
 
 -- imports
-import("core.tool.git")
 import("core.base.option")
 import("core.package.repository")
+import("devel.git")
 
 -- get all repositories
 function repositories()

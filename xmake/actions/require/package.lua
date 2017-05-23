@@ -23,12 +23,12 @@
 --
 
 -- imports
-import("core.tool.git")
 import("core.base.semver")
-import("core.base.fasturl")
 import("core.project.global")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
+import("devel.git")
+import("net.fasturl")
 import("action")
 import("repository")
 import("environment")
@@ -237,17 +237,14 @@ function _select_package_version(package, required_ver)
     local versions = package:get("versions") 
 
     -- attempt to get tags and branches from the git url
-    local tags = nil
-    local branches = nil
+    local tags = {}
+    local branches = {}
     for _, url in ipairs(package:urls()) do
         if git.checkurl(url) then
             tags, branches = git.refs(url) 
             break
         end
     end
-
-    -- check
-    assert(versions or tags or branches, "cannot get versions or refs from package(%s)!", package:name())
 
     -- select required version
     return semver.select(required_ver, versions, tags, branches)
@@ -304,8 +301,8 @@ function load_packages(requires)
             -- select package version
             local version, source = _select_package_version(package, package:requireinfo().version)
 
-            -- save version info to package
-            package:versioninfo_set({version = version, source = source})
+            -- save version to package
+            package:version_set(version, source)
         end
     end
 

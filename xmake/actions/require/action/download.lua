@@ -24,15 +24,15 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.git")
-import("core.tool.unarchiver")
-import("core.tool.downloader")
+import("net.http")
+import("devel.git")
+import("utils.archive")
 
 -- checkout codes from git
 function _checkout(package, url, sourcedir)
 
     -- trace
-    cprintf("${yellow}  => ${clear}cloning %s %s .. ", url, package:version())
+    cprintf("${yellow}  => ${clear}cloning %s %s .. ", url, package:version_str())
     if option.get("verbose") then
         print("")
     end
@@ -41,16 +41,16 @@ function _checkout(package, url, sourcedir)
     os.rm(sourcedir)
 
     -- init package directory
-    sourcedir = path.join(sourcedir, package:name() .. '-' .. package:version())
+    sourcedir = path.join(sourcedir, package:name() .. '-' .. package:version_str())
 
     -- create a clone task
     local task = function ()
 
         -- from branches?
-        if package:versionfrom() == "branches" then
+        if package:version_from("branches") then
 
             -- only shadow clone this branch 
-            git.clone(url, {depth = 1, branch = package:version(), outputdir = sourcedir})
+            git.clone(url, {depth = 1, branch = package:version_str(), outputdir = sourcedir})
 
         -- from tags or versions?
         else
@@ -59,7 +59,7 @@ function _checkout(package, url, sourcedir)
             git.clone(url, {outputdir = sourcedir})
 
             -- attempt to checkout the given version
-            git.checkout(package:version(), {repodir = sourcedir})
+            git.checkout(package:version_str(), {repodir = sourcedir})
         end
     end
 
@@ -95,7 +95,7 @@ function _download(package, url, sourcedir)
 
         -- create a download task
         local task = function ()
-            downloader.download(url, packagefile)
+            http.download(url, packagefile)
         end
 
         -- download package file
@@ -115,7 +115,7 @@ function _download(package, url, sourcedir)
     os.rm(sourcedir)
 
     -- extract package file
-    unarchiver.extract(packagefile, sourcedir)
+    archive.extract(packagefile, sourcedir)
     
     -- trace
     cprint("${green}ok")

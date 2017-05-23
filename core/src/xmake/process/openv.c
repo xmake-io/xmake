@@ -101,11 +101,11 @@ tb_int_t xm_process_openv(lua_State* lua)
     {
         // redirect stdout to file
         attr.outfile = outfile;
-        attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_APPEND;
+        attr.outmode = TB_FILE_MODE_WO | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
 
         // remove the outfile first
-        if (tb_file_info(outfile, tb_null))
-            tb_file_remove(outfile);
+        // if (tb_file_info(outfile, tb_null))
+        //     tb_file_remove(outfile);
     }
 
     // redirect stderr?
@@ -113,11 +113,11 @@ tb_int_t xm_process_openv(lua_State* lua)
     {
         // redirect stderr to file
         attr.errfile = errfile;
-        attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_APPEND;
+        attr.errmode = TB_FILE_MODE_WO | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
 
         // remove the errfile first
-        if (tb_file_info(errfile, tb_null))
-            tb_file_remove(errfile);
+        // if (tb_file_info(errfile, tb_null))
+        //     tb_file_remove(errfile);
     }
 
     // init process

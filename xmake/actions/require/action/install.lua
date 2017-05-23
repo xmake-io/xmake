@@ -34,7 +34,7 @@ end
 function main(package, cachedir)
 
     -- get working directory of this package
-    local workdir = path.join(cachedir, package:name() .. "-" .. (package:version() or "group"))
+    local workdir = path.join(cachedir, package:name() .. "-" .. (package:version_str() or "group"))
 
     -- ensure the working directory first
     os.mkdir(workdir)
