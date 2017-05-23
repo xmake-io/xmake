@@ -652,22 +652,11 @@ function os.gid(...)
     return os._GID
 end
 
--- check run command as root
+-- check the current command is running as root
 function os.isroot()
-    os._ISROOT = nil
 
     -- check it
-    if os.uid().euid == 0 then
-        os._ISROOT = true
-    end
-
-    -- not root?
-    if os._ISROOT == nil then
-        os._ISROOT = false
-    end
-
-    -- root?
-    return os._ISROOT
+    return os.uid().euid == 0
 end
 
 -- set values to environment variable 

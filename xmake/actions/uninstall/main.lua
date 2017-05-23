@@ -63,6 +63,7 @@ function main()
                     local ok = try
                     {
                         function ()
+
                             -- uninstall target
                             uninstall.uninstall(targetname)
 
@@ -77,6 +78,7 @@ function main()
                     -- release privilege
                     privilege.store()
 
+                    -- ok?
                     if ok then return end
                 end
 

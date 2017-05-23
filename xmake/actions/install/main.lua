@@ -63,6 +63,7 @@ function main()
                     local ok = try
                     {
                         function ()
+
                             -- install target
                             install.install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
@@ -77,6 +78,7 @@ function main()
                     -- release privilege
                     privilege.store()
 
+                    -- ok?
                     if ok then return end
                 end
 
