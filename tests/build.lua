@@ -22,14 +22,14 @@ function main(argv)
     os.exec("xmake f --cc=gcc --cxx=g++")
     os.exec("xmake m buildtest")
     if os.host() ~= "windows" then
-        os.exec("sudo xmake install")
-        os.exec("sudo xmake uninstall")
+        os.exec("sudo \"$(xmake)\" install")
+        os.exec("sudo \"$(xmake)\" uninstall")
     end
     os.exec("xmake f --cc=clang --cxx=clang++ --ld=clang++ --verbose --backtrace")
     os.exec("xmake m buildtest")
     if os.host() ~= "windows" then
-        os.exec("sudo xmake install --all -v --backtrace")
-        os.exec("sudo xmake uninstall -v --backtrace")
+        os.exec("sudo \"$(xmake)\" install --all -v --backtrace")
+        os.exec("sudo \"$(xmake)\" uninstall -v --backtrace")
     end
     os.exec("xmake m -d buildtest")
 
