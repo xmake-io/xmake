@@ -55,7 +55,30 @@ int test_read(const char *expected, const char *str, size_t len) {
   return 0;
 }
 
+int test_try_read(const char *expected, const char *str, size_t len) {
+  unsigned slen;
+  char buffer[1024];
+  semver_t semver = {0};
+
+  printf("test: `%.*s`", (int) len, str);
+  if (semver_tryn(&semver, str, len)) {
+    puts(" \tcouldn't parse");
+    return 1;
+  }
+  slen = (unsigned) semver_write(semver, buffer, 1024);
+  printf(" \t=> \t`%.*s`", slen, buffer);
+  if (memcmp(expected, buffer, (size_t) slen > len ? slen : len) != 0) {
+    printf(" != `%s`\n", expected);
+    semver_dtor(&semver);
+    return 1;
+  }
+  printf(" == `%s`\n", expected);
+  semver_dtor(&semver);
+  return 0;
+}
+
 int main(void) {
+  puts("normal:");
   if (test_read("0.2.3", STRNSIZE("0.2.3"))) {
     return EXIT_FAILURE;
   }
@@ -117,6 +140,95 @@ int main(void) {
                              "dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascet"
                              "ur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, s"))
       == 0) {
+    return EXIT_FAILURE;
+  }
+
+  puts("try:");
+  if (test_try_read("0.2.3", STRNSIZE("0.2.3"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3", STRNSIZE("1.2.3"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-alpha", STRNSIZE("v1.2.3-alpha"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-alpha.2", STRNSIZE("1.2.3-alpha.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3+77", STRNSIZE("v1.2.3+77"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3+0", STRNSIZE("v1.2.3+0"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3+77.2", STRNSIZE("1.2.3+77.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-alpha.2+77", STRNSIZE("v1.2.3-alpha.2+77"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-alpha.2+77.2", STRNSIZE("1.2.3-alpha.2+77.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-al-pha.2+77", STRNSIZE("v1.2.3-al-pha.2+77"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-al-pha.2+77.2", STRNSIZE("1.2.3-al-pha.2+77.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("vv1.2.3")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("v1.2")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("v1.2.x")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("v1.2.3-")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("v1.2.3+")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("v1.2.3+01")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("v0.01.3")) == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("", STRNSIZE("Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget "
+                               "dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascet"
+                               "ur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, s"))
+      == 0) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("0.2.0", STRNSIZE("0.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.0.0", STRNSIZE("v1"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.0-alpha", STRNSIZE("v1.2alpha"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-alpha.2", STRNSIZE("1.2.3alpha.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.0.0+77", STRNSIZE("v1+77"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.0+0", STRNSIZE("v1.2+0"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.0.0+77.2", STRNSIZE("v1+77.2"))) {
+    return EXIT_FAILURE;
+  }
+  if (test_try_read("1.2.3-alpha.2+77", STRNSIZE("v1.2.3alpha.2+77"))) {
     return EXIT_FAILURE;
   }
 

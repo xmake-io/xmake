@@ -38,5 +38,6 @@
 
 void semver_ctor(semver_t *self);
 char semver_read(semver_t *self, const char *str, size_t len, size_t *offset);
+char semver_try_read(semver_t *self, const char *str, size_t len, size_t *offset);
 
 #endif /* SV_VERSION_H__ */

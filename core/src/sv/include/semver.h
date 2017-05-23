@@ -125,6 +125,7 @@ struct semver {
 };
 
 SV_API char semvern(semver_t *self, const char *str, size_t len);
+SV_API char semver_tryn(semver_t *self, const char *str, size_t len);
 SV_API void semver_dtor(semver_t *self);
 SV_API int  semver_pwrite(const semver_t *self, char *buffer, size_t len);
 SV_API size_t semver_fwrite (const semver_t *self, FILE * stream);

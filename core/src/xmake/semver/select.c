@@ -91,7 +91,7 @@ tb_int_t xm_semver_select(lua_State* lua)
         source_len = tb_strlen(source_str);
 
         if ((source_len == range_len && tb_memcmp(source_str, range_str, source_len) == 0)
-            || (is_range && semvern(&semver, source_str, source_len) == 0 && semver_range_match(semver, range))) {
+            || (is_range && semver_tryn(&semver, source_str, source_len) == 0 && semver_range_match(semver, range))) {
             lua_createtable(lua, 0, 2);
 
             lua_pushsemver(lua, semver);
@@ -114,7 +114,7 @@ tb_int_t xm_semver_select(lua_State* lua)
         source_len = tb_strlen(source_str);
 
         if ((source_len == range_len && tb_memcmp(source_str, range_str, source_len) == 0)
-            || (is_range && semvern(&semver, source_str, source_len) == 0 && semver_range_match(semver, range))) {
+            || (is_range && semver_tryn(&semver, source_str, source_len) == 0 && semver_range_match(semver, range))) {
             lua_createtable(lua, 0, 2);
 
             lua_pushsemver(lua, semver);

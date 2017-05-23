@@ -64,6 +64,19 @@ char semvern(semver_t *self, const char *str, size_t len) {
   return 0;
 }
 
+char semver_tryn(semver_t *self, const char *str, size_t len) {
+  size_t offset = 0;
+
+  if (len > SV_MAX_LEN) {
+    return 1;
+  }
+  if (semver_try_read(self, str, len, &offset) || offset < len) {
+    semver_dtor(self);
+    return 1;
+  }
+  return 0;
+}
+
 char semver_read(semver_t *self, const char *str, size_t len, size_t *offset) {
   if (*offset < len) {
     semver_ctor(self);
@@ -81,6 +94,40 @@ char semver_read(semver_t *self, const char *str, size_t len, size_t *offset) {
       self->len = str + *offset - self->raw;
       return 1;
     }
+    self->len = str + *offset - self->raw;
+    return 0;
+  }
+  return 1;
+}
+
+char semver_try_read(semver_t *self, const char *str, size_t len, size_t *offset) {
+  if (*offset < len) {
+    semver_ctor(self);
+    self->raw = str + *offset;
+    if (str[*offset] == 'v') {
+      ++*offset;
+    }
+    if (semver_num_read(&self->major, str, len, offset) || self->major == SEMVER_NUM_X) {
+      fail:
+      self->len = str + *offset - self->raw;
+      return 1;
+    }
+    if (*offset < len && str[*offset] == '.'
+        && (semver_num_read(&self->minor, str, len, (++*offset, offset)) || self->minor == SEMVER_NUM_X)) {
+      goto fail;
+    }
+    if (*offset < len && str[*offset] == '.'
+        && (semver_num_read(&self->patch, str, len, (++*offset, offset)) || self->patch == SEMVER_NUM_X)) {
+      goto fail;
+    }
+    if (*offset < len && str[*offset] == '-') {
+      ++*offset;
+    }
+    semver_id_read(&self->prerelease, str, len, offset);
+    if (*offset < len && str[*offset] == '+') {
+      ++*offset;
+    }
+    semver_id_read(&self->build, str, len, offset);
     self->len = str + *offset - self->raw;
     return 0;
   }
