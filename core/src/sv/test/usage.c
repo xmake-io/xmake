@@ -25,51 +25,22 @@
  * For more information, please refer to <http://unlicense.org>
  */
 
-#include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <assert.h>
 
-#include "num.h"
+#include "semver.h"
 
-char semver_num_read(int *self, const char *str, size_t len, size_t *offset) {
-  char *endptr;
+int main(void) {
+  semver_t semver = {0};
 
-  *self = 0;
-  if (*offset >= len) {
-    return 1;
-  }
-  switch (str[*offset]) {
-    case 'x':
-    case 'X':
-    case '*':
-      *self = SEMVER_NUM_X;
-      ++*offset;
-      break;
-    case '0':
-      ++*offset;
-      if (*offset < len && isdigit(str[*offset])) {
-        return 1;
-      }
-      *self = 0;
-      break;
-    default:
-      if (isdigit(str[*offset])) {
-        *self = (int) strtol(str + *offset, &endptr, 0);
-        *offset += endptr - str - *offset;
-      } else {
-        return 1;
-      }
-      break;
-  }
-  return 0;
-}
+  semver(&semver, "v1.2.3-alpha.1");
 
-char semver_num_cmp(int self, int other) {
-  if (self > other) {
-    return 1;
-  }
-  if (self < other) {
-    return -1;
-  }
-  return 0;
+  assert(1 == semver.major);
+  assert(2 == semver.minor);
+  assert(3 == semver.patch);
+  assert(0 == memcmp("alpha", semver.prerelease.raw, sizeof("alpha")-1));
+  assert(0 == memcmp("1", semver.prerelease.next->raw, sizeof("1")-1));
+  assert(true == semver_rmatch(semver, "1.2.1 || >=1.2.3-alpha <1.2.5"));
+
+  semver_dtor(&semver);
 }

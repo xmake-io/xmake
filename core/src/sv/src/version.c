@@ -26,12 +26,11 @@
  */
 
 #include <string.h>
-#include <semver.h>
 #include <stdio.h>
 
-#ifdef _MSC_VER
-# define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
-#endif
+#include "version.h"
+#include "num.h"
+#include "id.h"
 
 void semver_ctor(semver_t *self) {
 #ifndef _MSC_VER
@@ -50,6 +49,19 @@ void semver_ctor(semver_t *self) {
 void semver_dtor(semver_t *self) {
   semver_id_dtor(&self->prerelease);
   semver_id_dtor(&self->build);
+}
+
+char semvern(semver_t *self, const char *str, size_t len) {
+  size_t offset = 0;
+
+  if (len > SV_MAX_LEN) {
+    return 1;
+  }
+  if (semver_read(self, str, len, &offset) || offset < len) {
+    semver_dtor(self);
+    return 1;
+  }
+  return 0;
 }
 
 char semver_read(semver_t *self, const char *str, size_t len, size_t *offset) {
@@ -75,45 +87,42 @@ char semver_read(semver_t *self, const char *str, size_t len, size_t *offset) {
   return 1;
 }
 
-char semver_comp(const semver_t self, const semver_t other) {
+char semver_pcmp(const semver_t *self, const semver_t *other) {
   char result;
 
-  if ((result = semver_num_comp(self.major, other.major)) != 0) {
+  if ((result = semver_num_cmp(self->major, other->major)) != 0) {
     return result;
   }
-  if ((result = semver_num_comp(self.minor, other.minor)) != 0) {
+  if ((result = semver_num_cmp(self->minor, other->minor)) != 0) {
     return result;
   }
-  if ((result = semver_num_comp(self.patch, other.patch)) != 0) {
+  if ((result = semver_num_cmp(self->patch, other->patch)) != 0) {
     return result;
   }
-  if ((result = semver_id_comp(self.prerelease, other.prerelease)) != 0) {
-    return result;
-  }
-  return semver_id_comp(self.build, other.build);
+  return semver_id_comp(self->prerelease, other->prerelease);
 }
 
-int semver_write(const semver_t self, char *buffer, size_t len) {
-  char prerelease[256], build[256];
+int semver_pwrite(const semver_t *self, char *buffer, size_t len) {
+  char prerelease[SV_MAX_LEN], build[SV_MAX_LEN];
 
-  if (self.prerelease.len && self.build.len) {
+  if (self->prerelease.len && self->build.len) {
     return snprintf(buffer, len, "%d.%d.%d-%.*s+%.*s",
-      self.major, self.minor, self.patch,
-      semver_id_write(self.prerelease, prerelease, 256), prerelease,
-      semver_id_write(self.build, build, 256), build
+      self->major, self->minor, self->patch,
+      semver_id_write(self->prerelease, prerelease, SV_MAX_LEN), prerelease,
+      semver_id_write(self->build, build, SV_MAX_LEN), build
     );
   }
-  if (self.prerelease.len) {
+  if (self->prerelease.len) {
     return snprintf(buffer, len, "%d.%d.%d-%.*s",
-      self.major, self.minor, self.patch,
-      semver_id_write(self.prerelease, prerelease, 256), prerelease
+      self->major, self->minor, self->patch,
+      semver_id_write(self->prerelease, prerelease, SV_MAX_LEN), prerelease
     );
   }
-  if (self.build.len) {
+  if (self->build.len) {
     return snprintf(buffer, len, "%d.%d.%d+%.*s",
-      self.major, self.minor, self.patch,
-      semver_id_write(self.build, build, 256), build
+      self->major, self->minor, self->patch,
+      semver_id_write(self->build, build, SV_MAX_LEN), build
     );
   }
-  return snprintf(buffer, len, "%d.%d.%d", self.major, self.minor, self.patch);
+  return snprintf(buffer, len, "%d.%d.%d", self->major, self->minor, self->patch);
 }

@@ -25,51 +25,18 @@
  * For more information, please refer to <http://unlicense.org>
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#ifndef SV_VERSION_H__
+# define SV_VERSION_H__
 
-#include "num.h"
+#include "semver.h"
 
-char semver_num_read(int *self, const char *str, size_t len, size_t *offset) {
-  char *endptr;
+#ifdef _MSC_VER
+# define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
+#endif
 
-  *self = 0;
-  if (*offset >= len) {
-    return 1;
-  }
-  switch (str[*offset]) {
-    case 'x':
-    case 'X':
-    case '*':
-      *self = SEMVER_NUM_X;
-      ++*offset;
-      break;
-    case '0':
-      ++*offset;
-      if (*offset < len && isdigit(str[*offset])) {
-        return 1;
-      }
-      *self = 0;
-      break;
-    default:
-      if (isdigit(str[*offset])) {
-        *self = (int) strtol(str + *offset, &endptr, 0);
-        *offset += endptr - str - *offset;
-      } else {
-        return 1;
-      }
-      break;
-  }
-  return 0;
-}
+#define SV_MAX_LEN (256)
 
-char semver_num_cmp(int self, int other) {
-  if (self > other) {
-    return 1;
-  }
-  if (self < other) {
-    return -1;
-  }
-  return 0;
-}
+void semver_ctor(semver_t *self);
+char semver_read(semver_t *self, const char *str, size_t len, size_t *offset);
+
+#endif /* SV_VERSION_H__ */

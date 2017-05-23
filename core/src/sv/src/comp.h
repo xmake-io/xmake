@@ -25,51 +25,14 @@
  * For more information, please refer to <http://unlicense.org>
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#ifndef SV_COMP_H__
+# define SV_COMP_H__
 
-#include "num.h"
+#include "version.h"
 
-char semver_num_read(int *self, const char *str, size_t len, size_t *offset) {
-  char *endptr;
+#define SV_COMP_MAX_LEN (512)
 
-  *self = 0;
-  if (*offset >= len) {
-    return 1;
-  }
-  switch (str[*offset]) {
-    case 'x':
-    case 'X':
-    case '*':
-      *self = SEMVER_NUM_X;
-      ++*offset;
-      break;
-    case '0':
-      ++*offset;
-      if (*offset < len && isdigit(str[*offset])) {
-        return 1;
-      }
-      *self = 0;
-      break;
-    default:
-      if (isdigit(str[*offset])) {
-        *self = (int) strtol(str + *offset, &endptr, 0);
-        *offset += endptr - str - *offset;
-      } else {
-        return 1;
-      }
-      break;
-  }
-  return 0;
-}
+void semver_comp_ctor(semver_comp_t *self);
+char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *offset);
 
-char semver_num_cmp(int self, int other) {
-  if (self > other) {
-    return 1;
-  }
-  if (self < other) {
-    return -1;
-  }
-  return 0;
-}
+#endif /* SV_COMP_H__ */

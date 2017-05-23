@@ -43,7 +43,7 @@ tb_int_t xm_semver_select(lua_State* lua)
 {
     semver_t semver = {0};
     semver_range_t range = {0};
-    size_t offset = 0, i, range_len = 0;
+    size_t i, range_len = 0;
     tb_char_t const* source_str;
 
     lua_settop(lua, 4);
@@ -63,7 +63,6 @@ tb_int_t xm_semver_select(lua_State* lua)
         lua_pushinteger(lua, i);
         lua_gettable(lua, 4);
 
-        offset = 0;
         source_str = luaL_checkstring(lua, -1);
         tb_check_return_val(source_str, 0);
         source_len = tb_strlen(source_str);
@@ -81,7 +80,7 @@ tb_int_t xm_semver_select(lua_State* lua)
         }
     }
 
-    if (semver_range_read(&range, range_str, range_len, &offset)) {
+    if (semver_rangen(&range, range_str, range_len)) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "Unable to parse semver range '%s'", range_str);
 
@@ -93,18 +92,17 @@ tb_int_t xm_semver_select(lua_State* lua)
         lua_pushinteger(lua, i);
         lua_gettable(lua, 3);
 
-        offset = 0;
         source_str = luaL_checkstring(lua, -1);
         tb_check_return_val(source_str, 0);
 
-        if (semver_read(&semver, source_str, tb_strlen(source_str), &offset)) {
+        if (semvern(&semver, source_str, tb_strlen(source_str))) {
             lua_pushnil(lua);
             lua_pushfstring(lua, "Unable to parse semver '%s'", source_str);
 
             return 2;
         }
 
-        if (semver_rmatch(semver, range)) {
+        if (semver_range_match(semver, range)) {
             lua_createtable(lua, 0, 2);
 
             lua_pushsemver(lua, semver);
@@ -122,18 +120,17 @@ tb_int_t xm_semver_select(lua_State* lua)
         lua_pushinteger(lua, i);
         lua_gettable(lua, 2);
 
-        offset = 0;
         source_str = luaL_checkstring(lua, -1);
         tb_check_return_val(source_str, 0);
 
-        if (semver_read(&semver, source_str, tb_strlen(source_str), &offset)) {
+        if (semvern(&semver, source_str, tb_strlen(source_str))) {
             lua_pushnil(lua);
             lua_pushfstring(lua, "Unable to parse semver '%s'", source_str);
 
             return 2;
         }
 
-        if (semver_rmatch(semver, range)) {
+        if (semver_range_match(semver, range)) {
             lua_createtable(lua, 0, 2);
 
             lua_pushsemver(lua, semver);

@@ -27,12 +27,12 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <semver.h>
 #include <stdio.h>
 
-#ifdef _MSC_VER
-# define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
-#endif
+#include "comp.h"
+#include "num.h"
+#include "id.h"
+#include "utils.h"
 
 static void semver_xrevert(semver_t *semver) {
   if (semver->major == SEMVER_NUM_X) {
@@ -53,7 +53,10 @@ static semver_comp_t *semver_xconvert(semver_comp_t *self) {
   if (self->version.minor == SEMVER_NUM_X) {
     semver_xrevert(&self->version);
     self->op = SEMVER_OP_GE;
-    self->next = (semver_comp_t *) malloc(sizeof(semver_comp_t));
+    self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+    if (self->next == NULL) {
+      return NULL;
+    }
     semver_comp_ctor(self->next);
     self->next->op = SEMVER_OP_LT;
     self->next->version = self->version;
@@ -63,7 +66,10 @@ static semver_comp_t *semver_xconvert(semver_comp_t *self) {
   if (self->version.patch == SEMVER_NUM_X) {
     semver_xrevert(&self->version);
     self->op = SEMVER_OP_GE;
-    self->next = (semver_comp_t *) malloc(sizeof(semver_comp_t));
+    self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+    if (self->next == NULL) {
+      return NULL;
+    }
     semver_comp_ctor(self->next);
     self->next->op = SEMVER_OP_LT;
     self->next->version = self->version;
@@ -114,7 +120,10 @@ static char parse_hiphen(semver_comp_t *self, const char *str, size_t len, size_
   }
   self->op = SEMVER_OP_GE;
   semver_xrevert(&self->version);
-  self->next = (semver_comp_t *) malloc(sizeof(semver_comp_t));
+  self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+  if (self->next == NULL) {
+    return 1;
+  }
   semver_comp_ctor(self->next);
   self->next->op = SEMVER_OP_LT;
   if (partial.minor == SEMVER_NUM_X) {
@@ -148,7 +157,10 @@ static char parse_tidle(semver_comp_t *self, const char *str, size_t len, size_t
   } else {
     ++partial.patch;
   }
-  self->next = (semver_comp_t *) malloc(sizeof(semver_comp_t));
+  self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+  if (self->next == NULL) {
+    return 1;
+  }
   semver_comp_ctor(self->next);
   self->next->op = SEMVER_OP_LT;
   self->next->version = partial;
@@ -171,7 +183,10 @@ static char parse_caret(semver_comp_t *self, const char *str, size_t len, size_t
     ++partial.major;
     partial.minor = partial.patch = 0;
   }
-  self->next = (semver_comp_t *) malloc(sizeof(semver_comp_t));
+  self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+  if (self->next == NULL) {
+    return 1;
+  }
   semver_comp_ctor(self->next);
   self->next->op = SEMVER_OP_LT;
   self->next->version = partial;
@@ -194,6 +209,19 @@ void semver_comp_dtor(semver_comp_t *self) {
     free(self->next);
     self->next = NULL;
   }
+}
+
+char semver_compn(semver_comp_t *self, const char *str, size_t len) {
+  size_t offset = 0;
+
+  if (len > SV_COMP_MAX_LEN) {
+    return 1;
+  }
+  if (semver_comp_read(self, str, len, &offset) || offset < len) {
+    semver_comp_dtor(self);
+    return 1;
+  }
+  return 0;
 }
 
 char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *offset) {
@@ -266,13 +294,19 @@ char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *
     self = self->next;
   } else {
     self = semver_xconvert(self);
+    if (self == NULL) {
+      return 1;
+    }
   }
   next:
   if (*offset < len && str[*offset] == ' '
     && *offset < len + 1 && str[*offset + 1] != ' ' && str[*offset + 1] != '|') {
     ++*offset;
     if (*offset < len) {
-      self->next = (semver_comp_t *) malloc(sizeof(semver_comp_t));
+      self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+      if (self->next == NULL) {
+        return 1;
+      }
       return semver_comp_read(self->next, str, len, offset);
     }
     return 1;
@@ -280,55 +314,68 @@ char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *
   return 0;
 }
 
-char semver_match(const semver_t self, const semver_comp_t comp) {
-  switch (semver_comp(self, comp.version)) {
-    case -1:
-      if (comp.op != SEMVER_OP_LT && comp.op != SEMVER_OP_LE) {
-        return 0;
-      }
-      break;
-    case 0:
-      if (comp.op != SEMVER_OP_EQ && comp.op != SEMVER_OP_LE && comp.op != SEMVER_OP_GE) {
-        return 0;
-      }
-      break;
-    case 1:
-      if (comp.op != SEMVER_OP_GT && comp.op != SEMVER_OP_GE) {
-        return 0;
-      }
-      break;
-    default:
-      return 0;
-  }
-  if (comp.next) {
-    return semver_match(self, *comp.next);
+char semver_and(semver_comp_t *left, const char *str, size_t len) {
+  semver_comp_t *comp, *tail;
+
+  if (len > 0) {
+    comp = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
+    if (NULL == comp) {
+      return 1;
+    }
+    if (semver_compn(comp, str, len)) {
+      sv_free(comp);
+      return 1;
+    }
+    if (NULL == left->next) {
+      left->next = comp;
+    } else {
+      tail = left->next;
+      while (tail->next) tail = tail->next;
+      tail->next = comp;
+    }
+    return 0;
   }
   return 1;
 }
 
-int semver_comp_write(const semver_comp_t self, char *buffer, size_t len) {
-  char *op = "";
-  char semver[256], next[1024];
+bool semver_comp_pmatch(const semver_t *self, const semver_comp_t *comp) {
+  char result = semver_pcmp(self, &comp->version);
 
-  switch (self.op) {
-    case SEMVER_OP_EQ:
-      break;
-    case SEMVER_OP_LT:
-      op = "<";
-      break;
-    case SEMVER_OP_LE:
-      op = "<=";
-      break;
-    case SEMVER_OP_GT:
-      op = ">";
-      break;
-    case SEMVER_OP_GE:
-      op = ">=";
-      break;
+  if (result < 0 && comp->op != SEMVER_OP_LT && comp->op != SEMVER_OP_LE) {
+    return false;
   }
-  semver_write(self.version, semver, 256);
-  if (self.next) {
-    return snprintf(buffer, len, "%s%s %.*s", op, semver, semver_comp_write(*self.next, next, 1024), next);
+  if (result > 0 && comp->op != SEMVER_OP_GT && comp->op != SEMVER_OP_GE) {
+    return false;
   }
-  return snprintf(buffer, len, "%s%s", op, semver);
+  if (result == 0 && comp->op != SEMVER_OP_EQ && comp->op != SEMVER_OP_LE && comp->op != SEMVER_OP_GE) {
+    return false;
+  }
+  if (comp->next) {
+    return semver_comp_pmatch(self, comp->next);
+  }
+  return true;
+}
+
+bool semver_comp_matchn(const semver_t *self, const char *comp_str, size_t comp_len) {
+  semver_comp_t comp;
+  bool result;
+
+  if (semver_compn(&comp, comp_str, comp_len)) {
+    return false;
+  }
+  result = semver_comp_pmatch(self, &comp);
+  semver_comp_dtor(&comp);
+  return result;
+}
+
+int semver_comp_pwrite(const semver_comp_t *self, char *buffer, size_t len) {
+  char semver[SV_COMP_MAX_LEN], next[SV_COMP_MAX_LEN];
+
+  semver_write(self->version, semver, SV_COMP_MAX_LEN);
+  if (self->next) {
+    return snprintf(buffer, len, "%s%s %.*s",
+      semver_op_string(self->op), semver, semver_comp_pwrite(self->next, next, SV_COMP_MAX_LEN), next
+    );
+  }
+  return snprintf(buffer, len, "%s%s", semver_op_string(self->op), semver);
 }

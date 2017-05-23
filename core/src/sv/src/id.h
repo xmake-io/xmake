@@ -25,51 +25,18 @@
  * For more information, please refer to <http://unlicense.org>
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
+#ifndef SV_ID_H__
+# define SV_ID_H__
 
-#include "num.h"
+#include "version.h"
 
-char semver_num_read(int *self, const char *str, size_t len, size_t *offset) {
-  char *endptr;
+void semver_id_ctor(semver_id_t *self);
+void semver_id_dtor(semver_id_t *self);
+char semver_id_read(semver_id_t *self, const char *str, size_t len, size_t *offset);
+int  semver_id_pwrite(const semver_id_t *self, char *buffer, size_t len);
+char semver_id_pcmp(const semver_id_t *self, const semver_id_t *other);
 
-  *self = 0;
-  if (*offset >= len) {
-    return 1;
-  }
-  switch (str[*offset]) {
-    case 'x':
-    case 'X':
-    case '*':
-      *self = SEMVER_NUM_X;
-      ++*offset;
-      break;
-    case '0':
-      ++*offset;
-      if (*offset < len && isdigit(str[*offset])) {
-        return 1;
-      }
-      *self = 0;
-      break;
-    default:
-      if (isdigit(str[*offset])) {
-        *self = (int) strtol(str + *offset, &endptr, 0);
-        *offset += endptr - str - *offset;
-      } else {
-        return 1;
-      }
-      break;
-  }
-  return 0;
-}
+#define semver_id_write(self, buffer, len) semver_id_pwrite(&(self), buffer, len)
+#define semver_id_comp(self, other) semver_id_pcmp(&(self), &(other))
 
-char semver_num_cmp(int self, int other) {
-  if (self > other) {
-    return 1;
-  }
-  if (self < other) {
-    return -1;
-  }
-  return 0;
-}
+#endif /* SV_ID_H__ */

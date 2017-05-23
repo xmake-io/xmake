@@ -43,7 +43,6 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
 {
     semver_t semver = {0};
     semver_range_t range = {0};
-    size_t offset = 0;
 
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -55,22 +54,21 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
     tb_check_return_val(str, 0);
     tb_check_return_val(range_str, 0);
 
-    if (semver_read(&semver, str, tb_strlen(str), &offset)) {
+    if (semvern(&semver, str, tb_strlen(str))) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "Unable to parse semver '%s'", str);
 
         return 2;
     }
 
-    offset = 0;
-    if (semver_range_read(&range, range_str, tb_strlen(range_str), &offset)) {
+    if (semver_rangen(&range, range_str, tb_strlen(range_str))) {
         lua_pushnil(lua);
         lua_pushfstring(lua, "Unable to parse semver range '%s'", range_str);
 
         return 2;
     }
 
-    lua_pushboolean(lua, semver_rmatch(semver, range));
+    lua_pushboolean(lua, semver_range_match(semver, range));
 
     // ok
     return 1;

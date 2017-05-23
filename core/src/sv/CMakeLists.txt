@@ -1,5 +1,12 @@
-cmake_minimum_required(VERSION 2.8.7 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0.2 FATAL_ERROR)
 project(sv)
+
+option(SHARED "Build as shared library" OFF)
+option(COVERAGE "Turn on COVERAGE support" ON)
+
+if (COVERAGE)
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} --coverage")
+endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.1")
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -31,7 +38,56 @@ file(GLOB sv_HEADERS ${sv_HEADERS} ${sv_INCLUDE_DIR}/*.h)
 file(GLOB sv_SOURCES ${sv_SOURCES} ${sv_SOURCE_DIR}/*.c)
 
 include_directories(${sv_INCLUDE_DIR})
-add_library(${PROJECT_NAME} STATIC ${sv_SOURCES} ${sv_HEADERS})
+if(SHARED)
+    if(MSVC)
+        set(CMAKE_FLAGS
+            CMAKE_CXX_FLAGS
+            CMAKE_CXX_FLAGS_DEBUG
+            CMAKE_CXX_FLAGS_RELEASE
+            CMAKE_C_FLAGS
+            CMAKE_C_FLAGS_DEBUG
+            CMAKE_C_FLAGS_RELEASE
+        )
+        foreach(CMAKE_FLAG ${CMAKE_FLAGS})
+            string(REPLACE "/MD" "/MT" ${CMAKE_FLAG} "${${CMAKE_FLAG}}")
+            string(REPLACE "/MDd" "/MTd" ${CMAKE_FLAG} "${${CMAKE_FLAG}}")
+        endforeach()
+    endif()
+
+    add_library(${PROJECT_NAME} SHARED ${sv_SOURCES} ${sv_HEADERS})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC BUILD_DYNAMIC_LINK=1)
+else()
+    add_library(${PROJECT_NAME} STATIC ${sv_SOURCES} ${sv_HEADERS})
+endif()
+target_compile_definitions(${PROJECT_NAME} PUBLIC SEMVER_COMPILE=1)
 
 enable_testing()
 add_subdirectory(${sv_TEST_DIR})
+
+if(WIN32)
+    set(CPACK_GENERATOR "WIX")
+    set(CPACK_SOURCE_GENERATOR "ZIP")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(CPACK_GENERATOR "PackageMake")
+else()
+    set(CPACK_GENERATOR "DEB;RPM")
+    set(CPACK_SOURCE_GENERATOR "TGZ")
+endif()
+
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Lucas Abel")
+
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_VERSION_MAJOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/UNLICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_SOURCE_DIR}/README.md")
+
+set(CPACK_SOURCE_IGNORE_FILES "${CMAKE_SOURCE_DIR}/build/;${CMAKE_SOURCE_DIR}/.git/")
+
+set(CPACK_SYSTEM_NAME "")
+
+include(CPack)

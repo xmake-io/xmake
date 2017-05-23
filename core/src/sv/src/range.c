@@ -27,14 +27,12 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <semver.h>
 #include <stdio.h>
 
-#ifdef _MSC_VER
-# define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
-#endif
+#include "range.h"
+#include "comp.h"
 
-static void semver_range_init(semver_range_t *self) {
+void semver_range_ctor(semver_range_t *self) {
 #ifndef _MSC_VER
   *self = (semver_range_t) {0};
 #else
@@ -46,13 +44,26 @@ static void semver_range_init(semver_range_t *self) {
 void semver_range_dtor(semver_range_t *self) {
   if (self && self->next) {
     semver_range_dtor(self->next);
-    free(self->next);
+    sv_free(self->next);
     self->next = NULL;
   }
 }
 
+char semver_rangen(semver_range_t *self, const char *str, size_t len) {
+  size_t offset = 0;
+
+  if (len > SV_RANGE_MAX_LEN) {
+    return 1;
+  }
+  if (semver_range_read(self, str, len, &offset) || offset < len) {
+    semver_range_dtor(self);
+    return 1;
+  }
+  return 0;
+}
+
 char semver_range_read(semver_range_t *self, const char *str, size_t len, size_t *offset) {
-  semver_range_init(self);
+  semver_range_ctor(self);
   if (semver_comp_read(&self->comp, str, len, offset)) {
     return 1;
   }
@@ -61,24 +72,63 @@ char semver_range_read(semver_range_t *self, const char *str, size_t len, size_t
     && *offset + 1 < len && str[*offset + 1] == '|') {
     *offset += 2;
     while (*offset < len && str[*offset] == ' ') ++*offset;
-    self->next = (semver_range_t *) malloc(sizeof(semver_range_t));
+    self->next = (semver_range_t *) sv_malloc(sizeof(semver_range_t));
+    if (self->next == NULL) {
+      return 1;
+    }
     return semver_range_read(self->next, str, len, offset);
   }
   return 0;
 }
 
-char semver_rmatch(const semver_t self, const semver_range_t range) {
-  return (char) (semver_match(self, range.comp) ? 1 : range.next ? semver_rmatch(self, *range.next) : 0);
+char semver_or(semver_range_t *left, const char *str, size_t len) {
+  semver_range_t *range, *tail;
+
+  if (len > 0) {
+    range = (semver_range_t *) sv_malloc(sizeof(semver_range_t));
+    if (NULL == range) {
+      return 1;
+    }
+    if (semver_rangen(range, str, len)) {
+      sv_free(range);
+      return 1;
+    }
+    if (NULL == left->next) {
+      left->next = range;
+    } else {
+      tail = left->next;
+      while (tail->next) tail = tail->next;
+      tail->next = range;
+    }
+    return 0;
+  }
+  return 1;
 }
 
-int semver_range_write(const semver_range_t self, char *buffer, size_t len) {
-  char comp[1024], next[1024];
+bool semver_range_pmatch(const semver_t *self, const semver_range_t *range) {
+  return semver_comp_pmatch(self, &range->comp) ? true : range->next ? semver_range_pmatch(self, range->next) : false;
+}
 
-  if (self.next) {
+bool semver_range_matchn(const semver_t *self, const char *range_str, size_t range_len) {
+  semver_range_t range;
+  bool result;
+
+  if (semver_rangen(&range, range_str, range_len)) {
+    return false;
+  }
+  result = semver_range_pmatch(self, &range);
+  semver_range_dtor(&range);
+  return result;
+}
+
+int semver_range_pwrite(const semver_range_t *self, char *buffer, size_t len) {
+  char comp[SV_RANGE_MAX_LEN], next[SV_RANGE_MAX_LEN];
+
+  if (self->next) {
     return snprintf(buffer, len, "%.*s || %.*s",
-      semver_comp_write(self.comp, comp, 1024), comp,
-      semver_range_write(*self.next, next, 1024), next
+      semver_comp_write(self->comp, comp, SV_RANGE_MAX_LEN), comp,
+      semver_range_pwrite(self->next, next, SV_RANGE_MAX_LEN), next
     );
   }
-  return snprintf(buffer, len, "%.*s", semver_comp_write(self.comp, comp, 1024), comp);
+  return snprintf(buffer, len, "%.*s", semver_comp_write(self->comp, comp, SV_RANGE_MAX_LEN), comp);
 }
