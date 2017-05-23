@@ -32,6 +32,7 @@ local utils         = require("base/utils")
 local option        = require("base/option")
 local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
+local privilege     = require("base/privilege")
 local task          = require("project/task")
 local history       = require("project/history")
 local project       = require("project/project")
@@ -170,12 +171,14 @@ function main.done()
     -- check run command as root
     if not option.get("root") then
         if os.isroot() then
-            utils.error([[Running xmake as root is extremely dangerous and no longer supported.
+            if not privilege.store() or os.isroot() then
+                utils.error([[Running xmake as root is extremely dangerous and no longer supported.
 As xmake does not drop privileges on installation you would be giving all
 build scripts full access to your system. 
 Or you can add `--root` option to allow run as root temporarily.
-            ]])
-            return -1
+                ]])
+                return -1
+            end
         end
     end
 

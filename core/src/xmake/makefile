@@ -38,6 +38,8 @@ xmake_C_FILES 			+= \
 						os/getwinsize \
 						os/versioninfo \
 						os/uid \
+						os/gid \
+						os/getown \
 						path/relative \
 						path/absolute \
 						path/translate \
