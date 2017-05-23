@@ -16,7 +16,8 @@ sv_C_FILES 				+= \
 						src/id \
 						src/num \
 						src/range \
-						src/semver 
+						src/utils \
+						src/version
 
 # includes
 sv_INC_DIRS  			+= include

@@ -1,0 +1,30 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+
+bindir=@bindir@
+datarootdir=@datarootdir@
+datadir=@datadir@
+docdir=${prefix}/doc
+includedir=@includedir@
+infodir=@infodir@
+htmldir=${docdir}
+libdir=@libdir@
+libexecdir=@libexecdir@
+localstatedir=@localstatedir@
+mandir=@mandir@
+sbindir=@sbindir@
+sharedstatedir=@sharedstatedir@
+sysconfdir=@sysconfdir@
+
+## ------------------------------------------------------------
+
+Name: @PACKAGE_NAME@
+Description: semantic versioning for the C language
+Version: @LIBSV_PKG_CONFIG_VERSION@
+Libs: -L${libdir} -lsv
+Cflags: -I${includedir}
+
+### end of file
+# Local Variables:
+# mode: script
+# End:

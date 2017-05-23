@@ -28,29 +28,26 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <semver.h>
 #include <stdio.h>
 
-#ifdef _MSC_VER
-# define snprintf(s, maxlen, fmt, ...) _snprintf_s(s, _TRUNCATE, maxlen, fmt, __VA_ARGS__)
-#endif
+#include "id.h"
 
 void semver_id_ctor(semver_id_t *self) {
 #ifndef _MSC_VER
-  *self = (semver_id_t) {1};
+  *self = (semver_id_t) {true};
 #else
   self->next = NULL;
   self->len = 0;
   self->raw = NULL;
   self->num = 0;
-  self->numeric = 1;
+  self->numeric = true;
 #endif
 }
 
 void semver_id_dtor(semver_id_t *self) {
   if (self && self->next) {
     semver_id_dtor(self->next);
-    free(self->next);
+    sv_free(self->next);
     self->next = NULL;
   }
 }
@@ -64,7 +61,7 @@ char semver_id_read(semver_id_t *self, const char *str, size_t len, size_t *offs
     if (isalnum(str[*offset]) || str[*offset] == '-') {
       if (!isdigit(str[*offset])) {
         is_zero = 0;
-        self->numeric = 0;
+        self->numeric = false;
       } else {
         if (i == 0) {
           is_zero = str[*offset] == '0';
@@ -86,54 +83,60 @@ char semver_id_read(semver_id_t *self, const char *str, size_t len, size_t *offs
     self->num = (int) strtol(self->raw, NULL, 0);
   }
   if (str[*offset] == '.') {
-    self->next = (semver_id_t *) malloc(sizeof(semver_id_t));
+    self->next = (semver_id_t *) sv_malloc(sizeof(semver_id_t));
+    if (self->next == NULL) {
+      return 1;
+    }
     ++*offset;
     return semver_id_read(self->next, str, len, offset);
   }
   return 0;
 }
 
-char semver_id_comp(const semver_id_t self, const semver_id_t other) {
+char semver_id_pcmp(const semver_id_t *self, const semver_id_t *other) {
   char s;
 
-  if (!self.len && other.len) {
-    return 1;
-  } else if (self.len && !other.len) {
+  if (self->len && !other->len) {
     return -1;
-  } else if (!self.len) {
+  }
+  if (!self->len && other->len) {
+    return 1;
+  }
+  if (!self->len) {
     return 0;
   }
 
-  if (self.num && other.num) {
-    if (self.num > other.num) {
+  if (self->numeric && other->numeric) {
+    if (self->num > other->num) {
       return 1;
-    } else if (self.num < other.num) {
+    }
+    if (self->num < other->num) {
       return -1;
     }
-  }
-
-  s = (char) memcmp(self.raw, other.raw, self.len > other.len ? self.len : other.len);
-
-  if (s != 0) {
+  } else if ((s = (char) memcmp(self->raw, other->raw, self->len > other->len ? self->len : other->len)) != 0) {
     return s;
   }
 
-  if (!self.next && other.next) {
-    return 1;
-  } else if (self.next && !other.next) {
+  if (!self->next && other->next) {
     return -1;
-  } else if (!self.next) {
+  }
+  if (self->next && !other->next) {
+    return 1;
+  }
+  if (!self->next) {
     return 0;
   }
 
-  return semver_id_comp(*self.next, *other.next);
+  return semver_id_pcmp(self->next, other->next);
 }
 
-int semver_id_write(const semver_id_t self, char *buffer, size_t len) {
-  char next[1024];
+int semver_id_pwrite(const semver_id_t *self, char *buffer, size_t len) {
+  char next[SV_MAX_LEN];
 
-  if (self.next) {
-    return snprintf(buffer, len, "%.*s.%.*s", (int) self.len, self.raw, semver_id_write(*self.next, next, 1024), next);
+  if (self->next) {
+    return snprintf(buffer, len, "%.*s.%.*s",
+      (int) self->len, self->raw, semver_id_pwrite(self->next, next, SV_MAX_LEN), next
+    );
   }
-  return snprintf(buffer, len, "%.*s", (int) self.len, self.raw);
+  return snprintf(buffer, len, "%.*s", (int) self->len, self->raw);
 }

@@ -3,8 +3,35 @@ libsv - Public domain semantic versioning in c
 
 [![Build Status](https://travis-ci.org/uael/sv.svg?branch=master)](https://travis-ci.org/uael/sv)
 [![Build status](https://ci.appveyor.com/api/projects/status/7li44f9agk0u4dxc?svg=true)](https://ci.appveyor.com/project/uael/sv)
+[![codecov](https://codecov.io/gh/uael/sv/branch/master/graph/badge.svg)](https://codecov.io/gh/uael/sv)
+
+# Topics
+- [Introduction](#introduction)
+- [License](#license)
+- [Install](#install)
+  - [xmake](#xmake)
+  - [cmake](#cmake)
+  - [autotools](#autotools)
+- [Usage](#usage)
+- [Credits](#credits)
+- [Bugs, vulnerabilities and contributions](#bugs-vulnerabilities-and-contributions)
+- [Resources](#resources)
+- [Badges and static analysis](#badges-and-static-analysis)
+  - [Travis CI](#travis-ci)
+  - [Clang's Static Analyzer](#clangs-static-analyzer)
+
+## Introduction
+
+This is free and unencumbered software released into the public domain.
+This  package  installs  a  C  language  library  implementing  semantic versioning for the C language.
+
+## License
+
+See the [UNLICENSE](https://github.com/uael/sv/blob/master/UNLICENSE) file.
 
 ## Install
+
+### xmake
 
 [Install xmake build system (A make-like build utility based on Lua)](http://xmake.io)
 
@@ -14,36 +41,93 @@ $ xmake check
 $ xmake install
 ```
 
-## API
+### cmake
+
+```bash
+$ mkdir build && cd build
+$ cmake ..
+$ make
+$ make test
+$ make install
+```
+
+### autotools
+
+To install from a proper release tarball, do this:
+```bash
+$ cd libsv-3.1
+$ mkdir build
+$ cd build
+$ ../configure
+$ make
+$ make check
+$ make install
+```
+to inspect the available configuration options:
+```bash
+$ ../configure --help
+```
+The Makefile is designed to allow parallel builds, so we can do:
+```bash
+$ make -j4 all && make -j4 check
+```
+which,  on  a  4-core  CPU,   should  speed  up  building  and  checking significantly.
+The  Makefile supports  the  DESTDIR environment  variable to  install files in a temporary location, example: to see what will happen:
+```bash
+$ make -n install DESTDIR=/tmp/libsv
+```
+to really do it:
+```bash
+$ make install DESTDIR=/tmp/libsv
+```
+After the installation it is  possible to verify the installed library against the test suite with:
+```bash
+$ make installcheck
+```
+From  a repository  checkout or  snapshot  (the ones  from the  Github site): we  must install the  GNU Autotools (GNU Automake,  GNU Autoconf, GNU Libtool),  then we must first  run the script "autogen.sh"  from the top source directory, to generate the needed files:
+```bash
+$ cd libsv
+$ sh autogen.sh
+```
+notice  that  "autogen.sh"  will   run  the  programs  "autoreconf"  and "libtoolize"; the  latter is  selected through the  environment variable "LIBTOOLIZE",  whose  value  can  be  customised;  for  example  to  run "glibtoolize" rather than "libtoolize" we do:
+```bash
+$ LIBTOOLIZE=glibtoolize sh autogen.sh
+```
+After this the  procedure is the same  as the one for  building from a proper release tarball, but we have to enable maintainer mode:
+```bash
+$ ../configure --enable-maintainer-mode [options]
+$ make
+$ make check
+$ make install
+```
+
+## Usage
 
 ```c
 ...
 semver_t semver = {0};
-semver_range_t range = {0};
 
-semver_read(&semver, "v1.2.3-alpha.1", sizeof("v1.2.3-alpha.1")-1);
+semver(&semver, "v1.2.3-alpha.1");
+
 assert(1 == semver.major);
 assert(2 == semver.minor);
 assert(3 == semver.patch);
 assert(0 == memcmp("alpha", semver.prerelease.raw, sizeof("alpha")-1));
 assert(0 == memcmp("1", semver.prerelease.next->raw, sizeof("1")-1));
-
-semver_range_read(&range, "1.2.1 || >=1.2.3 <1.2.5", sizeof("1.2.1 || >=1.2.3 <1.2.5")-1);
-assert(1 == semver_rmatch(semver, range));
+assert(true == semver_rmatch(semver, "1.2.1 || >=1.2.3-alpha <1.2.5"));
 
 semver_dtor(&semver);
-semver_range_dtor(&range);
 ...
 ```
 
-## Versions
+### Versions
 
 A "version" is described by the `v2.0.0` specification found at
 <http://semver.org/>.
 
 A leading `"v"` character is stripped off and ignored.
 
-## Ranges
+### Ranges
 
 A `version range` is a set of `comparators` which specify versions
 that satisfy the range.
@@ -77,7 +161,7 @@ or `1.1.0`.
 The range `1.2.7 || >=1.2.9 <2.0.0` would match the versions `1.2.7`,
 `1.2.9`, and `1.4.6`, but not the versions `1.2.8` or `2.0.0`.
 
-### Prerelease Tags
+#### Prerelease Tags
 
 If a version has a prerelease tag (for example, `1.2.3-alpha.3`) then
 it will only be allowed to satisfy comparator sets if at least one
@@ -105,7 +189,7 @@ the user is indicating that they are aware of the risk.  However, it
 is still not appropriate to assume that they have opted into taking a
 similar risk on the *next* set of prerelease versions.
 
-### Advanced Range Syntax
+#### Advanced Range Syntax
 
 Advanced range syntax desugars to primitive comparators in
 deterministic ways.
@@ -113,7 +197,7 @@ deterministic ways.
 Advanced ranges may be combined in the same way as primitive
 comparators using white space or `||`.
 
-#### Hyphen Ranges `X.Y.Z - A.B.C`
+##### Hyphen Ranges `X.Y.Z - A.B.C`
 
 Specifies an inclusive set.
 
@@ -132,7 +216,7 @@ provided tuple parts.
 * `1.2.3 - 2.3` := `>=1.2.3 <2.4.0`
 * `1.2.3 - 2` := `>=1.2.3 <3.0.0`
 
-#### X-Ranges `1.2.x` `1.X` `1.2.*` `*`
+##### X-Ranges `1.2.x` `1.X` `1.2.*` `*`
 
 Any of `X`, `x`, or `*` may be used to "stand in" for one of the
 numeric values in the `[major, minor, patch]` tuple.
@@ -148,7 +232,7 @@ character is in fact optional.
 * `1` := `1.x.x` := `>=1.0.0 <2.0.0`
 * `1.2` := `1.2.x` := `>=1.2.0 <1.3.0`
 
-#### Tilde Ranges `~1.2.3` `~1.2` `~1`
+##### Tilde Ranges `~1.2.3` `~1.2` `~1`
 
 Allows patch-level changes if a minor version is specified on the
 comparator.  Allows minor-level changes if not.
@@ -207,3 +291,39 @@ zero.
 
 * `^1.x` := `>=1.0.0 <2.0.0`
 * `^0.x` := `>=0.0.0 <1.0.0`
+
+## Credits
+
+The stuff was written by Lucas Abel <https://github.com/uael> and contributors
+- Marco Maggi <https://github.com/marcomaggi>
+
+## Bugs, vulnerabilities and contributions
+
+Bug  and vulnerability  reports are  appreciated, all  the vulnerability reports  are  public; register  them  using  the  Issue Tracker  at  the project's Github  site.  For  contributions and  patches please  use the Pull Requests feature at the project's Github site.
+
+Reports about the original code must be registered at:
+<https://github.com/uael/sv/issues>
+
+## Resources
+
+Development of the original projects takes place at:
+<https://github.com/uael/sv/>
+
+the GNU Project software can be found here:
+<https://www.gnu.org/>
+
+## Badges and static analysis
+
+### Travis CI
+
+Travis CI is  a hosted, distributed continuous  integration service used to build and test software projects  hosted at GitHub.  We can find this project's dashboards at:
+<https://travis-ci.org/uael/sv>
+
+Usage of this service is configured through the file ".travis.yml".
+
+### Clang's Static Analyzer
+
+The Clang Static Analyzer is a source code analysis tool that finds bugs in C, C++, and Objective-C programs.  It is distributed along with Clang and we can find it at:
+<http://clang-analyzer.llvm.org/>
+
+Usage of this service is implemented with make rules; see the relevant section in the file "Makefile.am".

@@ -36,6 +36,28 @@ function _test_semver_select()
     print("semver.select: ok!")
 end
 
+-- select version
+function _check_semver_satisfies(expected, version, range)
+
+    -- select it
+    local result = semver.satisfies(version, range)
+    if expected ~= result then
+        print("semver.satisfies(\"%s\", \"%s\")"
+            , version
+            , range)
+        raise("\"%s\" != \"%s\"", expected, result)
+    end
+end
+
+-- test satisfies version
+function _test_semver_satisfies()
+
+    _check_semver_satisfies(true, "1.5.1", ">=1.5.0 <1.6.0")
+    _check_semver_satisfies(true, "1.5.1", "^1.5.0")
+
+    print("semver.satisfies: ok!")
+end
+
 -- parse version
 function _check_semver_parse(version_str, major, minor, patch, prerelease, build)
 
@@ -88,6 +110,9 @@ function main()
 
     -- test semver
     _test_semver_parse()
+
+    -- test semver satisfies
+    _test_semver_satisfies()
 
     -- test select version
     _test_semver_select()
