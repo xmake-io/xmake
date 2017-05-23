@@ -155,6 +155,11 @@ Or you can add `--root` option to allow run as root temporarily.
         end
     end
 
+    -- add xmake to path
+    if xmake._EXECUTABLE_PATH then
+        os.addenv("PATH", path.directory(xmake._EXECUTABLE_PATH))
+    end
+
     -- start profiling
     if option.get("profile") then
         profiler:start()
