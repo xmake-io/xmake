@@ -145,7 +145,7 @@ end
 function _instance:version_str()
 
     -- get it
-    return self._VERSION.version
+    return self:version().raw or self:version().version
 end
 
 -- the verson from tags, branches or versions?
