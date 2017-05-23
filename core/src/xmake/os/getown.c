@@ -36,10 +36,14 @@
 #ifndef TB_CONFIG_OS_WINDOWS
 #   include <unistd.h>
 #   include <sys/stat.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+
+#ifndef TB_CONFIG_OS_WINDOWS
+
 // get owner by a given path
 tb_int_t xm_os_getown(lua_State* lua)
 {
@@ -52,7 +56,7 @@ tb_int_t xm_os_getown(lua_State* lua)
 
     // get stat
     struct stat sts;
-    if(stat(pathname, &sts) != 0)
+    if (stat(pathname, &sts) != 0)
         return 0;
 
     // push

@@ -36,10 +36,12 @@
 #ifndef TB_CONFIG_OS_WINDOWS
 #   include <unistd.h>
 #   include <errno.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+#ifndef TB_CONFIG_OS_WINDOWS
 
 // get & set uid
 tb_int_t xm_os_uid(lua_State* lua)
@@ -47,10 +49,9 @@ tb_int_t xm_os_uid(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_int_t ruidset = -1, euidset = -1;
-
+    tb_int_t ruidset = -1;
+    tb_int_t euidset = -1;
     tb_int_t argc = lua_gettop(lua);
-
     if (argc == 1)
     {
         if (lua_istable(lua, 1))
@@ -80,17 +81,20 @@ tb_int_t xm_os_uid(lua_State* lua)
                 ruidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
-        } else if (lua_isnumber(lua, 1))
+        } 
+        else if (lua_isnumber(lua, 1))
         {
             // os.uid(uid)
             ruidset = euidset = (tb_int_t)lua_tonumber(lua, 1);
-        } else
+        }
+        else
         {
             lua_pushfstring(lua, "invalid argument type(%s) for os.uid", luaL_typename(lua, 1));
             lua_error(lua);
             return 0;
         }
-    } else if (argc == 2)
+    }
+    else if (argc == 2)
     {
         // os.uid(ruid, euid)
         if (!lua_isnil(lua, 1))
@@ -113,7 +117,8 @@ tb_int_t xm_os_uid(lua_State* lua)
             }
             euidset = (tb_int_t)lua_tonumber(lua, 2);
         }
-    } else if (argc != 0)
+    } 
+    else if (argc != 0)
     {
         lua_pushstring(lua, "invalid argument count for os.uid");
         lua_error(lua);
@@ -132,7 +137,8 @@ tb_int_t xm_os_uid(lua_State* lua)
     }
 
     // get uid & euid
-    uid_t uid = getuid(), euid = geteuid();
+    uid_t uid  = getuid();
+    uid_t euid = geteuid();
 
     // push
     lua_pushstring(lua, "ruid");

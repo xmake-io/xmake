@@ -36,10 +36,12 @@
 #ifndef TB_CONFIG_OS_WINDOWS
 #   include <unistd.h>
 #   include <errno.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+#ifndef TB_CONFIG_OS_WINDOWS
 
 // get & set gid
 tb_int_t xm_os_gid(lua_State* lua)
@@ -47,10 +49,9 @@ tb_int_t xm_os_gid(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    tb_int_t rgidset = -1, egidset = -1;
-
+    tb_int_t rgidset = -1;
+    tb_int_t egidset = -1;
     tb_int_t argc = lua_gettop(lua);
-
     if (argc == 1)
     {
         if (lua_istable(lua, 1))
@@ -80,17 +81,20 @@ tb_int_t xm_os_gid(lua_State* lua)
                 rgidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
-        } else if (lua_isnumber(lua, 1))
+        } 
+        else if (lua_isnumber(lua, 1))
         {
             // os.gid(gid)
             rgidset = egidset = (tb_int_t)lua_tonumber(lua, 1);
-        } else
+        } 
+        else
         {
             lua_pushfstring(lua, "invalid argument type(%s) for os.gid", luaL_typename(lua, 1));
             lua_error(lua);
             return 0;
         }
-    } else if (argc == 2)
+    } 
+    else if (argc == 2)
     {
         // os.gid(rgid, egid)
         if (!lua_isnil(lua, 1))
@@ -113,7 +117,8 @@ tb_int_t xm_os_gid(lua_State* lua)
             }
             egidset = (tb_int_t)lua_tonumber(lua, 2);
         }
-    } else if (argc != 0)
+    } 
+    else if (argc != 0)
     {
         lua_pushstring(lua, "invalid argument count for os.gid");
         lua_error(lua);
@@ -132,7 +137,8 @@ tb_int_t xm_os_gid(lua_State* lua)
     }
 
     // get gid & egid
-    gid_t gid = getgid(), egid = getegid();
+    gid_t gid  = getgid();
+    gid_t egid = getegid();
 
     // push
     lua_pushstring(lua, "rgid");

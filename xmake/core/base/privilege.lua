@@ -30,6 +30,7 @@ local os = require("base/os")
 
 -- store privilege
 function privilege.store()
+
     -- check if root
     if not os.isroot() then
         return false
@@ -40,8 +41,9 @@ function privilege.store()
     assert(projectdir)
     local owner = os.getown(projectdir)
     if not owner then
+
         -- fallback to current dir
-        owner = os.getown(".")
+        owner = os.getown(os.curdir())
         if not owner then
             return false
         end
@@ -53,7 +55,7 @@ function privilege.store()
     end
 
     -- set uid
-    if os.uid({["ruid"] = owner.uid}).errno ~= 0 or os.uid({["euid"] = owner.uid}).errno ~= 0 then
+    if os.uid({ruid = owner.uid}).errno ~= 0 or os.uid({euid = owner.uid}).errno ~= 0 then
         return false
     end
 
@@ -70,13 +72,14 @@ function privilege.has()
 end
 
 function privilege.get()
+
     -- has?
     if privilege._HAS_PRIVILEGE ~= true then
         return false
     end
 
     -- set uid
-    if os.uid({["euid"] = 0}).errno ~= 0 or os.uid({["ruid"] = 0}).errno ~= 0 then
+    if os.uid({euid = 0}).errno ~= 0 or os.uid({ruid = 0}).errno ~= 0 then
         return false
     end
 
