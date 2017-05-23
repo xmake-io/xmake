@@ -61,16 +61,14 @@
 # endif
 #endif
 
-#if !defined(__cplusplus) && defined(_MSC_VER) && _MSC_VER < 1900
-# define bool	unsigned char
-# define true	1
-# define false	0
-# define __bool_true_false_are_defined	1
-#else
-# ifdef __cplusplus
-#  include <cstdbool>
+#ifndef __cplusplus
+# if defined(_MSC_VER) && _MSC_VER < 1900
+#   define bool	unsigned char
+#   define true	1
+#   define false	0
+#   define __bool_true_false_are_defined	1
 # else
-#  include <stdbool.h>
+#   include <stdbool.h>
 # endif
 #endif
 
