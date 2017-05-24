@@ -58,6 +58,7 @@ tb_int_t xm_semver_parse(lua_State* lua)
     }
 
     lua_pushsemver(lua, semver);
+    semver_dtor(&semver);
 
     // ok
     return 1;
