@@ -85,6 +85,11 @@ function _on_build_package(package)
 
     -- attempt to build it
     for _, buildscript in pairs(buildscripts) do
+
+        -- save the current directory 
+        local oldir = os.curdir()
+
+        -- try building 
         local ok = try
         {
             function ()
@@ -108,6 +113,9 @@ function _on_build_package(package)
                 end
             }
         }
+
+        -- restore directory
+        os.cd(oldir)
 
         -- ok?
         if ok then return end

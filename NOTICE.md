@@ -21,7 +21,7 @@ which can be obtained at:
   * HOMEPAGE:
     * http://www.tboox.org/
 
-This product depends on 'libsv', public domain c semver,
+This product depends on 'libsv', Public domain semantic versioning in c,
 which can be obtained at:
 
   * LICENSE:
