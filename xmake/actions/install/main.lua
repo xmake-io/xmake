@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.project.task")
 import("core.platform.platform")
 import("core.base.privilege")
+import("privilege.sudo")
 import("install")
 
 -- main
@@ -47,7 +48,7 @@ function main()
         function ()
 
             -- install target
-            install.install(targetname or ifelse(option.get("all"), "__all", "__def"))
+            install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
             -- trace
             cprint("${bright}install ok!${clear}${ok_hand}")
@@ -65,7 +66,7 @@ function main()
                         function ()
 
                             -- install target
-                            install.install(targetname or ifelse(option.get("all"), "__all", "__def"))
+                            install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
                             -- trace
                             cprint("${bright}install ok!${clear}${ok_hand}")
@@ -86,7 +87,7 @@ function main()
                 cprint("${bright red}error: ${default red}installation failed, may permission denied!")
 
                 -- continue to install with administrator permission?
-                if os.feature("sudo") then
+                if sudo.has() then
 
                     -- show tips
                     cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
@@ -98,7 +99,7 @@ function main()
                     if answer == 'y' or answer == '' then
 
                         -- install target with administrator permission
-                        os.sudol(os.runv, path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir")})
+                        sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir")})
 
                         -- trace
                         cprint("${bright}install ok!${clear}${ok_hand}")

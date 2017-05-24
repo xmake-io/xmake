@@ -19,42 +19,37 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        uninstall_admin.lua
+-- @file        find_sudo.lua
 --
 
 -- imports
-import("core.base.option")
-import("core.project.config")
-import("core.project.project")
-import("core.platform.platform")
-import("uninstall")
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- uninstall
-function main(targetname, installdir)
+-- find sudo 
+--
+-- @param opt   the argument options, .e.g {version = true}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local sudo = find_sudo()
+-- local sudo, version = find_sudo({version = true})
+-- 
+-- @endcode
+--
+function main(opt)
+    
+    -- find program
+    local program = find_program("sudo", { "/usr/bin", "/usr/local/bin"})
 
-    -- enter project directory
-    os.cd(project.directory())
-
-    -- load config
-    config.load()
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- laod project
-    project.load()
-
-    -- save the current option and push a new option context
-    option.save()
-
-    -- pass installdir to option
-    if installdir then
-        option.set("installdir", installdir)
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
     end
 
-    -- uninstall target
-    uninstall(ifelse(targetname ~= "__all", targetname, nil))
-
-    -- restore the previous option context
-    option.restore()
+    -- ok?
+    return program, version
 end

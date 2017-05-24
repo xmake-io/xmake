@@ -74,7 +74,7 @@ function _install_target_and_deps(target)
 end
 
 -- install targets
-function install(targetname)
+function main(targetname)
 
     -- init finished states
     _g.finished = {}
