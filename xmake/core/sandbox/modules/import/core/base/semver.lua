@@ -73,7 +73,7 @@ end
 function sandbox_core_base_semver.select(range, versions, tags, branches)
 
     -- select version
-    local verinfo, errors = semver.select(range, versions, tags, branches)
+    local verinfo, errors = semver.select(range, versions or {}, tags or {}, branches or {})
     if not verinfo then
         raise(errors)
     end
