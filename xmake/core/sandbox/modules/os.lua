@@ -34,18 +34,20 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_os = sandbox_os or {}
 
 -- inherit some builtin interfaces
-sandbox_os.host     = os.host
-sandbox_os.arch     = os.arch
-sandbox_os.exit     = os.exit
-sandbox_os.date     = os.date
-sandbox_os.time     = os.time
-sandbox_os.argv     = os.argv
-sandbox_os.argw     = os.argw
-sandbox_os.mtime    = os.mtime
-sandbox_os.sleep    = os.sleep
-sandbox_os.mclock   = os.mclock
-sandbox_os.nuldev   = os.nuldev
-sandbox_os.emptydir = os.emptydir
+sandbox_os.host         = os.host
+sandbox_os.arch         = os.arch
+sandbox_os.exit         = os.exit
+sandbox_os.date         = os.date
+sandbox_os.time         = os.time
+sandbox_os.argv         = os.argv
+sandbox_os.argw         = os.argw
+sandbox_os.mtime        = os.mtime
+sandbox_os.sleep        = os.sleep
+sandbox_os.mclock       = os.mclock
+sandbox_os.nuldev       = os.nuldev
+sandbox_os.emptydir     = os.emptydir
+sandbox_os.programdir   = os.programdir
+sandbox_os.programfile  = os.programfile
 
 -- copy file or directory
 function sandbox_os.cp(...)
@@ -200,13 +202,6 @@ function sandbox_os.toolsdir()
    
     -- get it
     return xmake._TOOLS_DIR
-end
-
--- get the program directory
-function sandbox_os.programdir()
-   
-    -- get it
-    return xmake._PROGRAM_DIR
 end
 
 -- get the script directory

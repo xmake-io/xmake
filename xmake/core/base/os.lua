@@ -680,6 +680,20 @@ function os.addenv(name, ...)
 
 end
 
+-- get the program directory
+function os.programdir()
+   
+    -- get it
+    return xmake._PROGRAM_DIR
+end
+
+-- get the program file
+function os.programfile()
+   
+    -- get it
+    return xmake._PROGRAM_FILE
+end
+
 -- get version info
 function os.versioninfo()
 

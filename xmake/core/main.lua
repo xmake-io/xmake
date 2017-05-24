@@ -126,6 +126,14 @@ function main._init()
             break
         end
     end
+
+    -- add the directory of the program file (xmake) to $PATH environment
+    local programfile = os.programfile()
+    if programfile and os.isfile(programfile) then
+        os.addenv("PATH", path.directory(programfile))
+    else
+        os.addenv("PATH", os.programdir())
+    end
 end
 
 -- the main function
