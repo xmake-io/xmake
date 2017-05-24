@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_xcode_sdkver.lua
+-- @file        find_xcode_sdkvers.lua
 --
 
 -- imports
@@ -35,9 +35,9 @@ import("detect.sdk.find_xcode_dir")
 --
 -- @code 
 --
--- local xcode_sdkvers = find_xcode_sdkver()
--- local xcode_sdkvers = find_xcode_sdkver({xcode_dir = ""})
--- local xcode_sdkvers = find_xcode_sdkver({xcode_dir = "", plat = "iphoneos", arch = "arm64"})
+-- local xcode_sdkvers = find_xcode_sdkvers()
+-- local xcode_sdkvers = find_xcode_sdkvers({xcode_dir = ""})
+-- local xcode_sdkvers = find_xcode_sdkvers({xcode_dir = "", plat = "iphoneos", arch = "arm64"})
 -- 
 -- @endcode
 --
