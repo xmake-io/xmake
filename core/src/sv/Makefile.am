@@ -36,6 +36,7 @@ libsv_la_SOURCES = \
 	src/id.c       \
 	src/num.c      \
 	src/range.c    \
+	src/semvers.c  \
 	src/version.c  \
 	src/utils.c
 
@@ -47,6 +48,7 @@ check_PROGRAMS = \
 	test/comp    \
 	test/match   \
 	test/range   \
+	test/semvers \
 	test/utils   \
 	test/usage
 
@@ -66,6 +68,9 @@ test_match_LDADD      = $(libsv_test_ldadd)
 
 test_range_CPPFLAGS   = $(libsv_test_cppflags)
 test_range_LDADD      = $(libsv_test_ldadd)
+
+test_semvers_CPPFLAGS = $(libsv_test_cppflags)
+test_semvers_LDADD    = $(libsv_test_ldadd)
 
 test_utils_CPPFLAGS   = $(libsv_test_cppflags)
 test_utils_LDADD      = $(libsv_test_ldadd)

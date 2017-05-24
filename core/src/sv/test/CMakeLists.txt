@@ -21,3 +21,7 @@ add_test(utils utils)
 add_executable(usage usage.c)
 target_link_libraries(usage ${PROJECT_NAME})
 add_test(usage usage)
+
+add_executable(semvers semvers.c)
+target_link_libraries(semvers ${PROJECT_NAME})
+add_test(semvers semvers)

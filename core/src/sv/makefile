@@ -16,6 +16,7 @@ sv_C_FILES 				+= \
 						src/id \
 						src/num \
 						src/range \
+						src/semvers \
 						src/utils \
 						src/version
 
