@@ -48,6 +48,7 @@ sandbox_os.nuldev       = os.nuldev
 sandbox_os.emptydir     = os.emptydir
 sandbox_os.programdir   = os.programdir
 sandbox_os.programfile  = os.programfile
+sandbox_os.versioninfo  = os.versioninfo
 
 -- copy file or directory
 function sandbox_os.cp(...)
@@ -457,11 +458,6 @@ function sandbox_os.uuid(name)
 
     -- ok?
     return uuid
-end
-
--- get versioninfo
-function sandbox_os.versioninfo()
-    return os.versioninfo()
 end
 
 -- return module
