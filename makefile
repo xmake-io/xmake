@@ -68,8 +68,6 @@ install:
 	@if [ ! -d $(prefix)/bin ]; then mkdir -p $(prefix)/bin; fi
 	@mv $(xmake_loader) $(xmake_loader_install)
 	@chmod 777 $(xmake_loader_install)
-	@# tip
-	@$(if $(findstring $(prefix)/bin,$(PATH)),,echo 'please export PATH=$$PATH:$(prefix)/bin')
 	@# remove xmake.out
 	@if [ -f '/tmp/xmake.out' ]; then rm /tmp/xmake.out; fi
 	@# ok
