@@ -15,7 +15,6 @@ set_languages("c99", "cxx11")
 
 -- disable some compiler errors
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
-add_mxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
 
 -- add defines
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
@@ -28,7 +27,6 @@ set_strip("all")
 
 -- fomit the frame pointer
 add_cxflags("-fomit-frame-pointer")
-add_mxflags("-fomit-frame-pointer")
 
 -- for the windows platform (msvc)
 if is_plat("windows") then 
