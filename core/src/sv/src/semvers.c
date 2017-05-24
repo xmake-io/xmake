@@ -81,3 +81,28 @@ static int semvers_rqsort_fn(const void *a, const void *b) {
 void semvers_prsort(semvers_t *self) {
   qsort((char *) self->data, self->length, sizeof(semver_t), semvers_rqsort_fn);
 }
+
+void semvers_pdtor(semvers_t *self) {
+  if (self->data) {
+    uint32_t i;
+
+    for (i = 0; i < self->length; ++i) {
+      semver_dtor(self->data + i);
+    }
+    sv_free(self->data);
+    self->data = NULL;
+  }
+  self->length = self->capacity = 0;
+}
+
+void semvers_pclear(semvers_t *self) {
+  if (self->data) {
+    uint32_t i;
+
+    for (i = 0; i < self->length; ++i) {
+      semver_dtor(self->data + i);
+    }
+    memset((char *) self->data, 0, self->length * sizeof(semver_t));
+  }
+  self->length = 0;
+}

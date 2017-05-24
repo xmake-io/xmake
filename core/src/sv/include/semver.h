@@ -167,9 +167,14 @@ SV_API uint32_t semvers_pgrowth(semvers_t *self, int32_t nmin);
 SV_API semver_t semvers_perase(semvers_t *self, uint32_t i);
 SV_API void semvers_psort(semvers_t *self);
 SV_API void semvers_prsort(semvers_t *self);
+SV_API void semvers_pdtor(semvers_t *self);
+SV_API void semvers_pclear(semvers_t *self);
 
 #define semvers_dtor(s) \
-  (((s).length=(s).capacity=0),((s).data?sv_free((s).data):(void)0),(s).data=NULL)
+  semvers_pdtor(&(s))
+
+#define semvers_clear(s) \
+  semvers_pclear(&(s))
 
 #define semvers_growth(s, n) \
   semvers_pgrowth(&(s),n)

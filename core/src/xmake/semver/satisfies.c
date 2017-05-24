@@ -62,6 +62,7 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
     }
 
     if (semver_rangen(&range, range_str, tb_strlen(range_str))) {
+        semver_dtor(&semver);
         lua_pushnil(lua);
         lua_pushfstring(lua, "Unable to parse semver range '%s'", range_str);
 
@@ -69,6 +70,8 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
     }
 
     lua_pushboolean(lua, semver_range_match(semver, range));
+    semver_dtor(&semver);
+    semver_range_dtor(&range);
 
     // ok
     return 1;
