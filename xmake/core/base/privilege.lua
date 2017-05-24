@@ -36,16 +36,26 @@ function privilege.store()
         return false
     end
 
-    -- find projectdir's owner
-    local projectdir = xmake._PROJECT_DIR
-    assert(projectdir)
-    local owner = os.getown(projectdir)
-    if not owner then
-
-        -- fallback to current dir
-        owner = os.getown(os.curdir())
+    local owner = {}
+    -- sudo will set SUDO_UID & SUDO_GID
+    -- so that can easily get original uid & gid
+    local sudo_uid = os.getenv("SUDO_UID")
+    local sudo_gid = os.getenv("SUDO_GID")
+    if sudo_uid and sudo_gid then
+        owner.uid = sudo_uid
+        owner.gid = sudo_gid
+    else
+        -- find projectdir's owner
+        local projectdir = xmake._PROJECT_DIR
+        assert(projectdir)
+        owner = os.getown(projectdir)
         if not owner then
-            return false
+
+            -- fallback to current dir
+            owner = os.getown(os.curdir())
+            if not owner then
+                return false
+            end
         end
     end
 
