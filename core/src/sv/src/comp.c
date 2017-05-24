@@ -369,10 +369,11 @@ bool semver_comp_matchn(const semver_t *self, const char *comp_str, size_t comp_
 }
 
 int semver_comp_pwrite(const semver_comp_t *self, char *buffer, size_t len) {
-  char semver[SV_COMP_MAX_LEN], next[SV_COMP_MAX_LEN];
+  char semver[SV_COMP_MAX_LEN];
 
   semver_write(self->version, semver, SV_COMP_MAX_LEN);
   if (self->next) {
+    char next[SV_COMP_MAX_LEN];
     return snprintf(buffer, len, "%s%s %.*s",
       semver_op_string(self->op), semver, semver_comp_pwrite(self->next, next, SV_COMP_MAX_LEN), next
     );

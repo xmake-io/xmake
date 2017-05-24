@@ -18,6 +18,9 @@ target("range_test")
 target("match_test")
     add_files("match.c")
 
+target("semvers_test")
+    add_files("semvers.c")
+
 target("utils_test")
     add_files("utils.c")
 
@@ -31,6 +34,7 @@ task("check")
         task.run("run", {target = "comp_test"})
         task.run("run", {target = "range_test"})
         task.run("run", {target = "match_test"})
+        task.run("run", {target = "semvers_test"})
         task.run("run", {target = "utils_test"})
         task.run("run", {target = "usage_test"})
     end)
