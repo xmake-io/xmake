@@ -37,8 +37,9 @@ function _sudo(runner, cmd, ...)
     local program = find_sudo()
     assert(program, "sudo not found!")
 
+    -- FIXME: deal with spaces in `os.getenv("PATH")`
     -- run it with administrator permission and preserve parent environment
-    runner(program .. " PATH=" .. os.getenv("PATH") .. " " .. cmd, ...)
+    runner(program .. " env PATH=" .. os.getenv("PATH") .. " " .. cmd, ...)
 end
 
 -- sudo run shell with administrator permission and arguments list
@@ -53,7 +54,7 @@ function _sudov(runner, shellname, argv)
     assert(program, "sudo not found!")
 
     -- run it with administrator permission and preserve parent environment
-    runner(program, table.join("PATH=" .. os.getenv("PATH"), shellname, argv))
+    runner(program, table.join("env", "PATH=" .. os.getenv("PATH"), shellname, argv))
 end
 
 -- sudo run lua script with administrator permission and arguments list
