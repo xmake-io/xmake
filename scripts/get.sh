@@ -131,10 +131,10 @@ shell_profile(){
     elif [[ "$SHELL" = */ksh ]]; then echo ~/.kshrc
     else echo ~/.bash_profile; fi
 }
-xmake --version >/dev/null 2>&1 && xmake --version || {
-    echo "export PATH=$prefix/bin:\$PATH" >> $(shell_profile)
+if xmake --version >/dev/null 2>&1; then xmake --version; else
+    echo "export PATH=$prefix/bin:\$PATH" >> "$(shell_profile)"
     export PATH=$prefix/bin:$PATH
     xmake --version
     echo "Reload shell profile by running the following command now!"
     echo -e "\x1b[1msource '$(shell_profile)'\x1b[0m"
-}
+fi
