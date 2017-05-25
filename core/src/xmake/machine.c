@@ -238,48 +238,17 @@ static tb_size_t xm_machine_get_program_file(xm_machine_impl_t* impl, tb_char_t*
     tb_bool_t ok = tb_false;
     do
     {
-        // get it from the environment variable first
-        tb_char_t data[TB_PATH_MAXN] = {0};
-        if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn))
-        {
-            // ok
-            ok = tb_true;
-            // not break // even XMAKE_PROGRAM_DIR is set, exact path is needed
-        }
-
 #if defined(TB_CONFIG_OS_WINDOWS)
         // get the executale file path as program directory
-        tb_size_t size = (tb_size_t)GetModuleFileName(tb_null, data, (DWORD)maxn);
+        tb_size_t size = (tb_size_t)GetModuleFileName(tb_null, path, (DWORD)maxn);
         tb_assert_and_check_break(size < maxn);
 
         // end
-        data[size] = '\0';
+        path[size] = '\0';
 
-        // trace
-        tb_trace_d("programfile: %s", data);
+        // ok
+        ok = tb_true;
 
-        // set _EXECUTABLE_PATH
-        lua_pushstring(impl -> lua, data);
-        lua_setglobal(impl -> lua, "_EXECUTABLE_PATH");
-
-        if (!ok)
-        {
-            // get the directory
-            while (size-- > 0)
-            {
-                if (data[size] == '\\')
-                {
-                    data[size] = '\0';
-                    break;
-                }
-            }
-
-            // copy to path
-            tb_strcpy(path, data);
-
-            // ok
-            ok = tb_true;
-        }
 #elif defined(TB_CONFIG_OS_MACOSX)
         /*
          * _NSGetExecutablePath() copies the path of the main executable into the buffer. The bufsize parameter
@@ -291,73 +260,75 @@ static tb_size_t xm_machine_get_program_file(xm_machine_impl_t* impl, tb_char_t*
          * That is the path may be a symbolic link and not the real file. With deep directories the total bufsize 
          * needed could be more than MAXPATHLEN.
          */
-        tb_uint32_t size = (tb_uint32_t)maxn;
-        if (!_NSGetExecutablePath(data, &size))
-        {
-            // trace
-            tb_trace_d("programfile: %s", data);
-
-            // set _EXECUTABLE_PATH
-            lua_pushstring(impl -> lua, data);
-            lua_setglobal(impl -> lua, "_EXECUTABLE_PATH");
-
-            if (!ok)
-            {
-                // get path size
-                size = tb_strlen(data);
-
-                // get the directory
-                while (size-- > 0)
-                {
-                    if (data[size] == '/')
-                    {
-                        data[size] = '\0';
-                        break;
-                    }
-                }
-
-                // copy to path
-                tb_strcpy(path, data);
-
-                // ok
-                ok = tb_true;
-            }
-        }
+        tb_uint32_t bufsize = (tb_uint32_t)maxn;
+        if (!_NSGetExecutablePath(path, &bufsize))
+            ok = tb_true;
 #elif defined(TB_CONFIG_OS_LINUX)
         // get the executale file path as program directory
-        ssize_t size = readlink("/proc/self/exe", data, (size_t)maxn);
+        ssize_t size = readlink("/proc/self/exe", path, (size_t)maxn);
         if (size > 0 && size < maxn)
         {
             // end
-            data[size] = '\0';
+            path[size] = '\0';
 
-            // trace
-            tb_trace_d("programfile: %s", data);
+            // ok
+            ok = tb_true;
+        }
+#endif
 
-            // set _EXECUTABLE_PATH
-            lua_pushstring(impl -> lua, data);
-            lua_setglobal(impl -> lua, "_EXECUTABLE_PATH");
+    } while (0);
 
-            if (!ok)
+    // ok?
+    if (ok)
+    {
+        // trace
+        tb_trace_d("programfile: %s", path);
+
+        // save the directory to the global variable: _PROGRAM_FILE
+        lua_pushstring(impl->lua, path);
+        lua_setglobal(impl->lua, "_PROGRAM_FILE");
+    }
+
+    // ok?
+    return ok;
+}
+static tb_bool_t xm_machine_get_program_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn, tb_char_t const* programfile)
+{
+    // check
+    tb_assert_and_check_return_val(impl && path && maxn, tb_false);
+
+    // done
+    tb_bool_t ok = tb_false;
+    do
+    {
+        // get it from the environment variable first
+        tb_char_t data[TB_PATH_MAXN] = {0};
+        if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn))
+        {
+            // ok
+            ok = tb_true;
+            break;
+        }
+
+        // get it from program file path
+        if (programfile)
+        {
+            tb_size_t size = tb_strlcpy(data, programfile, sizeof(data));
+            if (size < sizeof(data))
             {
                 // get the directory
                 while (size-- > 0)
                 {
-                    if (data[size] == '/')
+                    if (data[size] == '\\' || data[size] == '/')
                     {
                         data[size] = '\0';
+                        tb_strlcpy(path, data, maxn);
+                        ok = tb_true;
                         break;
                     }
                 }
-
-                // copy to path
-                tb_strcpy(path, data);
-
-                // ok
-                ok = tb_true;
             }
         }
-#endif
 
     } while (0);
 
@@ -549,8 +520,11 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     tb_char_t path[TB_PATH_MAXN] = {0};
     if (!xm_machine_get_project_directory(impl, path, sizeof(path))) return -1;
 
-    // get the program file & directory
+    // get the program file
     if (!xm_machine_get_program_file(impl, path, sizeof(path))) return -1;
+
+    // get the program directory
+    if (!xm_machine_get_program_directory(impl, path, sizeof(path), path)) return -1;
 
     // append the main script path
     tb_strcat(path, "/core/_xmake_main.lua");

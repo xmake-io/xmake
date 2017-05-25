@@ -31,13 +31,12 @@ xmake._NULDEV           = _NULDEV
 xmake._VERSION          = _VERSION
 xmake._VERSION_SHORT    = _VERSION_SHORT
 xmake._PROGRAM_DIR      = _PROGRAM_DIR
-xmake._PROGRAM_FILE     = _EXECUTABLE_PATH
+xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._CORE_DIR         = _PROGRAM_DIR .. "/core"
 xmake._TOOLS_DIR        = _PROGRAM_DIR .. "/tools"
 xmake._TEMPLATES_DIR    = _PROGRAM_DIR .. "/templates"
 xmake._PROJECT_FILE     = "xmake.lua"
-xmake._EXECUTABLE_PATH  = _EXECUTABLE_PATH
 
 -- init package path
 package.path = xmake._CORE_DIR .. "/?.lua;" .. package.path
