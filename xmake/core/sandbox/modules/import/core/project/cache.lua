@@ -22,7 +22,7 @@
 -- @file        cache.lua
 --
 
--- define module
+-- define module, @note cannot be cached, a new instance in each sandbox module
 local sandbox_core_project_cache = {}
 
 -- load modules
