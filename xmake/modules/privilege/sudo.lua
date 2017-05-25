@@ -37,8 +37,19 @@ function _sudo(runner, cmd, ...)
     local program = find_sudo()
     assert(program, "sudo not found!")
 
-    -- run it with administrator permission and preserve parent environment
-    runner(program .. " PATH=\"" .. os.getenv("PATH") .. "\" " .. cmd, ...)
+    -- get current path environment
+    local pathenv = os.getenv("PATH") 
+    if pathenv and #pathenv > 0 then
+
+        -- handle double quote
+        pathenv = pathenv:gsub("\"", "\\\"")
+
+        -- run it with administrator permission and preserve parent environment
+        runner(program .. " PATH=\"" .. pathenv .. "\" " .. cmd, ...)
+    else
+        -- run it with administrator permission
+        runner(program .. " " .. cmd, ...)
+    end
 end
 
 -- sudo run shell with administrator permission and arguments list
