@@ -42,3 +42,9 @@ on_success:
   - luacov
   - pip install codecov
   - codecov --file luacov.report.out
+
+after_build:
+  - ps: Copy-Item core\build\xmake.exe .
+
+artifacts:
+  - path: xmake.exe
