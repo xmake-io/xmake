@@ -96,7 +96,7 @@ function interpreter._merge_root_scope(root, root_prev, override)
             local scope_kind = scope_kind_and_name[1] 
             local scope_name = scope_kind_and_name[2]
             local scope_values = root_prev[scope_kind .. "." .. scope_name] or {}
-            local scope_root = root[scope_kind] or {}
+            local scope_root = root[scope_kind .. "." .. scope_name] or {}
             for name, values in pairs(scope_root) do
                 if not name:startswith("__") then
                     if scope_root["__override_" .. name] then
@@ -114,6 +114,36 @@ function interpreter._merge_root_scope(root, root_prev, override)
 
     -- ok?
     return root_prev
+end
+
+-- fetch the root values to the child values in root scope
+-- and we will only use the child values if be override mode 
+function interpreter._fetch_root_scope(root)
+
+    -- fetch it
+    for scope_kind_and_name, _ in pairs(root or {}) do
+        
+        -- is scope_kind.scope_name?
+        scope_kind_and_name = scope_kind_and_name:split('%.')
+        if #scope_kind_and_name == 2 then
+            local scope_kind = scope_kind_and_name[1] 
+            local scope_name = scope_kind_and_name[2]
+            local scope_values = root[scope_kind .. "." .. scope_name] or {}
+            local scope_root = root[scope_kind] or {}
+            for name, values in pairs(scope_root) do
+                if not name:startswith("__") then
+                    if scope_root["__override_" .. name] then
+                        if scope_values[name] == nil then
+                            scope_values[name] = values
+                        end
+                    else
+                        scope_values[name] = table.join(values, scope_values[name] or {})
+                    end
+                end
+            end
+            root[scope_kind .. "." .. scope_name] = scope_values
+        end
+    end
 end
 
 -- register scope end: scopename_end()
@@ -342,6 +372,9 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
                 -- restore the previous scope
                 scopes._CURRENT = scope_prev
 
+                -- fetch the root values in root scopes first
+                interpreter._fetch_root_scope(scopes._ROOT)
+
                 -- restore the previous root scope and merge current root scope
                 -- it will override the previous values if the current values are override mode 
                 -- so we priority use the values in subdirs scope
@@ -503,9 +536,8 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             return {}
         end
 
-        -- merge root scope first and do not override the root values if be override mode 
-        -- so we priority use the values in subdirs scope
-        scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, scopes._ROOT, false)
+        -- fetch the root values in root scope first 
+        interpreter._fetch_root_scope(scopes._ROOT)
 
         -- merge results
         for scope_name, scope in pairs(scope_for_kind) do
@@ -547,7 +579,8 @@ function interpreter.new()
     -- init an interpreter instance
     local instance = {  _PUBLIC = {}
                     ,   _PRIVATE = {    _SCOPES = {}
-                                    ,   _MTIMES = {}}}
+                                    ,   _MTIMES = {}
+                                    ,   _FILTER = require("base/filter").new()}}
 
     -- inherit the interfaces of interpreter
     table.inherit2(instance, interpreter)
@@ -671,16 +704,6 @@ function interpreter:filter()
 
     -- get it
     return self._PRIVATE._FILTER
-end
-
--- set filter
-function interpreter:filter_set(filter)
-
-    -- check
-    assert(self and self._PRIVATE)
-
-    -- set it
-    self._PRIVATE._FILTER = filter
 end
 
 -- get root directory

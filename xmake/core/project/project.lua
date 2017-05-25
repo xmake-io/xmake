@@ -31,7 +31,6 @@ local io                    = require("base/io")
 local path                  = require("base/path")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
-local filter                = require("base/filter")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
@@ -292,7 +291,7 @@ function project._interpreter()
     deprecated_project.api_register(interp)
 
     -- set filter
-    interp:filter_set(filter.new(function (variable)
+    interp:filter():register("project", function (variable)
 
         -- check
         assert(variable)
@@ -338,7 +337,7 @@ function project._interpreter()
 
         -- ok?
         return result
-    end))
+    end)
 
     -- save interpreter
     project._INTERPRETER = interp

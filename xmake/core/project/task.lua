@@ -29,7 +29,6 @@ local task = task or {}
 local os            = require("base/os")
 local table         = require("base/table")
 local utils         = require("base/utils")
-local filter        = require("base/filter")
 local string        = require("base/string")
 local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
@@ -183,7 +182,7 @@ function task._interpreter()
     }
 
     -- set filter
-    interp:filter_set(filter.new(function (variable)
+    interp:filter():register("task", function (variable)
 
         -- check
         assert(variable)
@@ -212,7 +211,7 @@ function task._interpreter()
 
         -- ok?
         return result
-    end))
+    end)
 
     -- save interpreter
     task._INTERPRETER = interp

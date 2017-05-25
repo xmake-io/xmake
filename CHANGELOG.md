@@ -22,6 +22,7 @@
 ### Bugs fixed
 
 * Fix `try-catch-finally`
+* Fix interpreter bug when parsing multi-level subdirs
 
 ## v2.1.4
 
@@ -313,6 +314,7 @@
 ### Bugs修复
 
 * 修复`try-catch-finally`
+* 修复解释器bug，解决当加载多级子目录时，根域属性设置不对
 
 ## v2.1.4
 
