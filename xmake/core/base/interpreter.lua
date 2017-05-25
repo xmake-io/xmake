@@ -256,6 +256,46 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
     self:_api_register_scope_api(scope_kind, action, implementation, ...)
 end
 
+-- register api for xxx_script
+function interpreter:_api_register_xxx_script(scope_kind, action, ...)
+
+    -- define implementation
+    local implementation = function (self, scope, name, arg1, arg2)
+
+        -- on_xxx(mode, script)?
+        if arg1 and arg2 then
+
+            -- get mode
+            local mode = arg1
+            assert(type(mode) == "string")
+
+            -- get script
+            local script, errors = self:_script(arg2)
+            if not script then
+                os.raise("%s_%s(%s, %s): %s", action, name, tostring(arg1), tostring(arg2), errors)
+            end
+
+            -- save mode and script
+            scope[name] = {mode = mode, script = script}
+
+        -- on_xxx(script)?
+        elseif arg1 then
+
+            -- get script
+            local script, errors = self:_script(arg1)
+            if not script then
+                os.raise("%s_%s(%s): %s", action, name, tostring(arg1), errors)
+            end
+
+            -- save script
+            scope[name] = script
+        end
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, action, implementation, ...)
+end
+
 -- translate api pathes 
 function interpreter:_api_translate_pathes(...)
 
@@ -571,6 +611,31 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
     -- ok?
     return results
+end
+
+-- load script
+function interpreter:_script(script)
+
+    -- this script is module name? import it first
+    if type(script) == "string" then
+    
+        -- import module as script
+        local modulename = script
+        script = function (...)
+       
+            -- import it
+            return import(modulename, {anonymous = true})(...)
+        end
+    end
+
+    -- make sandbox instance with the given script
+    local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- get sandbox script
+    return instance:script()
 end
 
 -- new an interpreter instance
@@ -1093,106 +1158,22 @@ end
 -- register api for on_script
 function interpreter:api_register_on_script(scope_kind, ...)
 
-    -- check
-    assert(self)
-
-    -- define implementation
-    local implementation = function (self, scope, name, script)
-
-        -- this script is module name? import it first
-        if type(script) == "string" then
-        
-            -- import module as script
-            local modulename = script
-            script = function (...)
-           
-                -- import it
-                return import(modulename)(...)
-            end
-        end
-
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
-        if not instance then
-            os.raise("on_%s(): %s", name, errors)
-        end
-
-        -- update script?
-        scope[name] = instance:script()
-    end
-
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "on", implementation, ...)
+    self:_api_register_xxx_script(scope_kind, "on", ...)
 end
 
 -- register api for before_script
 function interpreter:api_register_before_script(scope_kind, ...)
 
-    -- check
-    assert(self)
-
-    -- define implementation
-    local implementation = function (self, scope, name, script)
-
-        -- this script is module name? import it first
-        if type(script) == "string" then
-        
-            -- import module as script
-            local modulename = script
-            script = function (...)
-           
-                -- import it
-                return import(modulename)(...)
-            end
-        end
-
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
-        if not instance then
-            os.raise("before_%s(): %s", name, errors)
-        end
-
-        -- update script?
-        scope[name .. "_before"] = instance:script()
-    end
-
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "before", implementation, ...)
+    self:_api_register_xxx_script(scope_kind, "before", ...)
 end
 
 -- register api for after_script
 function interpreter:api_register_after_script(scope_kind, ...)
 
-    -- check
-    assert(self)
-
-    -- define implementation
-    local implementation = function (self, scope, name, script)
-
-        -- this script is module name? import it first
-        if type(script) == "string" then
-        
-            -- import module as script
-            local modulename = script
-            script = function (...)
-           
-                -- import it
-                return import(modulename)(...)
-            end
-        end
-
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, self:filter(), self:scriptdir())
-        if not instance then
-            os.raise("after_%s(): %s", name, errors)
-        end
-
-        -- update script?
-        scope[name .. "_after"] = instance:script()
-    end
-
     -- register implementation
-    self:_api_register_xxx_values(scope_kind, "after", implementation, ...)
+    self:_api_register_xxx_script(scope_kind, "after", ...)
 end
 
 -- register api for set_dictionary
