@@ -15,14 +15,9 @@ matrix:
             - gcc-5
             - luarocks
 
-env:
-  global:
-    - LUAROCKS=2.2.2
-    - LUA=lua5.1
-
 install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust lua; fi
-  - sudo luarocks install luacov
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust lua51; fi
+  - sudo luarocks install luacov || sudo luarocks-5.1 install luacov
 
 script:
   - scripts/get.sh __local__
