@@ -135,5 +135,6 @@ xmake --version >/dev/null 2>&1 && xmake --version || {
     echo "export PATH=$prefix/bin:\$PATH" >> $(shell_profile)
     export PATH=$prefix/bin:$PATH
     xmake --version
-    echo -e "Reload shell profile by running \x1b[1msource '$(shell_profile)'\x1b[0m now!"
+    echo "Reload shell profile by running the following command now!"
+    echo -e "\x1b[1msource '$(shell_profile)'\x1b[0m"
 }

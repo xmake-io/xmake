@@ -116,7 +116,7 @@ $ sudo apt-get install xmake
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
 $ cd ./xmake
-$ make build; sudo make install [prefix=/usr/local]
+$ ./scripts/get.sh __local__
 ```
 
 ## 快速开始

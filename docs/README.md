@@ -88,7 +88,7 @@ Or download deb package to install it:
 ```bash
 $ git clone git@github.com:waruqi/xmake.git
 $ cd ./xmake
-$ make build; sudo make install [prefix=/usr/local]
+$ ./scripts/get.sh __local__
 ```
 
 ## Quick Start
