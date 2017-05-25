@@ -24,14 +24,14 @@ function main(argv)
     os.exec("xmake f --cc=gcc --cxx=g++")
     os.exec("xmake m buildtest")
     if sudo.has() then
---        sudo.exec("xmake install")
---        sudo.exec("xmake uninstall")
+        sudo.exec("xmake install")
+        sudo.exec("xmake uninstall")
     end
     os.exec("xmake f --cc=clang --cxx=clang++ --ld=clang++ --verbose --backtrace")
     os.exec("xmake m buildtest")
     if sudo.has() then
---        sudo.exec("xmake install --all -v --backtrace")
---        sudo.exec("xmake uninstall -v --backtrace")
+        sudo.exec("xmake install --all -v --backtrace")
+        sudo.exec("xmake uninstall -v --backtrace")
     end
     os.exec("xmake m -d buildtest")
 

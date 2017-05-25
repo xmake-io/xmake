@@ -47,9 +47,7 @@ tb_int_t xm_readline_readline(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get the prompt
-    tb_char_t const* prompt = tb_null;
-    if (tb_strcmp("nil", luaL_typename(lua, 1)) != 0)
-        prompt = luaL_checkstring(lua, 1);
+    tb_char_t const* prompt = luaL_optstring(lua, 1, tb_null);
 
     // call readline
     tb_char_t* line = readline(prompt);

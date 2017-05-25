@@ -319,7 +319,7 @@ static tb_bool_t xm_machine_get_program_directory(xm_machine_impl_t* impl, tb_ch
                 // get the directory
                 while (size-- > 0)
                 {
-                    if (data[size] == '\\' || data[size] == '/') 
+                    if (data[size] == '\\' || data[size] == '/')
                     {
                         data[size] = '\0';
                         tb_strlcpy(path, data, maxn);

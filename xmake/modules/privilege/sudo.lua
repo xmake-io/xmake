@@ -45,7 +45,7 @@ function _sudo(runner, cmd, ...)
         pathenv = pathenv:gsub("\"", "\\\"")
 
         -- run it with administrator permission and preserve parent environment
-        runner(program .. " PATH=\"" .. pathenv .. "\" " .. cmd, ...)
+        runner(program .. " env PATH=\"" .. pathenv .. "\" " .. cmd, ...)
     else
         -- run it with administrator permission
         runner(program .. " " .. cmd, ...)
@@ -64,7 +64,7 @@ function _sudov(runner, shellname, argv)
     assert(program, "sudo not found!")
 
     -- run it with administrator permission and preserve parent environment
-    runner(program, table.join("PATH=" .. os.getenv("PATH"), shellname, argv))
+    runner(program, table.join("env", "PATH=" .. os.getenv("PATH"), shellname, argv))
 end
 
 -- sudo run lua script with administrator permission and arguments list

@@ -13,22 +13,15 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-5
-
-env:
-  global:
-    - LUAROCKS=2.2.2
-    - LUA=lua5.1
-
-before_install:
-  - rm install
-  - source scripts/.travis/setenv_lua.sh
-  - luarocks install luacov
+            - luarocks
 
 install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust lua51; fi
+  - sudo luarocks install luacov || sudo luarocks-5.1 install luacov
 
 script:
   - scripts/get.sh __local__
+  - source ~/.bash_profile
   - xmake lua versioninfo
   - xmake f -m coverage -P core
   - xmake -P core
@@ -36,8 +29,9 @@ script:
   - core/build/xmake lua versioninfo
   - echo "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})" > tmp
   - cat xmake/core/_xmake_main.lua >> tmp
-  - mv tmp xmake/core/_xmake_main.lua
-  - cp core/build/xmake $(which xmake) || sudo cp core/build/xmake $(which xmake)
+  - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
+  - mv tmp "$XMAKE_PROGRAM_DIR/core/_xmake_main.lua"
+  - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
   - xmake lua versioninfo
   - xmake lua --backtrace tests/test.lua
 

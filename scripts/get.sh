@@ -98,29 +98,42 @@ then
         my_exit 'Build Fail' $rv
     fi
 fi
-PATHclone=$PATH
-patharr=($PATHclone)
-prefix=
-for st in "${patharr[@]}"
-do
-    if [[ "$st" = "$HOME"* ]]
-    then
-        cwd=$PWD
-        mkdir -p "$st"
-        cd "$st" || continue
-        echo $$ > $$xmake_getter_test 2>/dev/null || continue
-        rm $$xmake_getter_test 2>/dev/null || continue
-        cd .. || continue
-        mkdir -p share 2>/dev/null || continue
-        prefix=$(pwd)
-        cd "$cwd" || my_exit 'Chdir Error'
-        break
-    fi
-done
+# PATHclone=$PATH
+# patharr=($PATHclone)
+if [ "$prefix" = "" ]
+then
+    prefix=~/.local
+fi
+# for st in "${patharr[@]}"
+# do
+#     if [[ "$st" = "$HOME"* ]]
+#     then
+#         cwd=$PWD
+#         mkdir -p "$st"
+#         cd "$st" || continue
+#         echo $$ > $$xmake_getter_test 2>/dev/null || continue
+#         rm $$xmake_getter_test 2>/dev/null || continue
+#         cd .. || continue
+#         mkdir -p share 2>/dev/null || continue
+#         prefix=$(pwd)
+#         cd "$cwd" || my_exit 'Chdir Error'
+#         break
+#     fi
+# done
 if [ "x$prefix" != x ]
 then
     make -C /tmp/$$xmake_getter --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
     $sudoprefix make -C /tmp/$$xmake_getter --no-print-directory install || my_exit 'Install Fail'
 fi
-xmake --version
+shell_profile(){
+    if   [[ "$SHELL" = */zsh ]]; then echo ~/.zshrc
+    elif [[ "$SHELL" = */ksh ]]; then echo ~/.kshrc
+    else echo ~/.bash_profile; fi
+}
+xmake --version >/dev/null 2>&1 && xmake --version || {
+    echo "export PATH=$prefix/bin:\$PATH" >> $(shell_profile)
+    export PATH=$prefix/bin:$PATH
+    xmake --version
+    echo -e "Reload shell profile by running \x1b[1msource '$(shell_profile)'\x1b[0m now!"
+}
