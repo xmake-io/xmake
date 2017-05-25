@@ -75,8 +75,8 @@ install:
 
 uninstall:
 	@echo uninstalling from $(prefix) ...
-	@if [ -f $(prefix)/bin/xmake ]; then rm $(prefix)/bin/xmake; fi
-	@if [ -d $(prefix)/share/xmake ]; then rm -rf $(prefix)/share/xmake; fi
+	@if [ -f $(xmake_loader_install) ]; then rm $(xmake_loader_install); fi
+	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@echo ok!
 
 test:
