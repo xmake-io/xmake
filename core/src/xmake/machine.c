@@ -206,7 +206,7 @@ static luaL_Reg const g_readline_functions[] =
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_t argc, tb_char_t** argv)
+static tb_bool_t xm_machine_save_arguments(xm_machine_impl_t* impl, tb_int_t argc, tb_char_t** argv)
 {
     // check
     tb_assert_and_check_return_val(impl && impl->lua && argc >= 1 && argv, tb_false);
@@ -229,7 +229,7 @@ static tb_bool_t xm_machine_main_save_arguments(xm_machine_impl_t* impl, tb_int_
     // ok
     return tb_true;
 }
-static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
+static tb_size_t xm_machine_get_program_file(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(impl && path && maxn, tb_false);
@@ -254,6 +254,9 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
 
         // end
         data[size] = '\0';
+
+        // trace
+        tb_trace_d("programfile: %s", data);
 
         // set _EXECUTABLE_PATH
         lua_pushstring(impl -> lua, data);
@@ -291,6 +294,9 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
         tb_uint32_t size = (tb_uint32_t)maxn;
         if (!_NSGetExecutablePath(data, &size))
         {
+            // trace
+            tb_trace_d("programfile: %s", data);
+
             // set _EXECUTABLE_PATH
             lua_pushstring(impl -> lua, data);
             lua_setglobal(impl -> lua, "_EXECUTABLE_PATH");
@@ -325,6 +331,9 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
             // end
             data[size] = '\0';
 
+            // trace
+            tb_trace_d("programfile: %s", data);
+
             // set _EXECUTABLE_PATH
             lua_pushstring(impl -> lua, data);
             lua_setglobal(impl -> lua, "_EXECUTABLE_PATH");
@@ -356,7 +365,7 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
     if (ok)
     {
         // trace
-        tb_trace_d("program: %s", path);
+        tb_trace_d("programdir: %s", path);
 
         // save the directory to the global variable: _PROGRAM_DIR
         lua_pushstring(impl->lua, path);
@@ -366,7 +375,7 @@ static tb_bool_t xm_machine_main_get_program_directory(xm_machine_impl_t* impl, 
     // ok?
     return ok;
 }
-static tb_bool_t xm_machine_main_get_project_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
+static tb_bool_t xm_machine_get_project_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
 {
     // check
     tb_assert_and_check_return_val(impl && path && maxn, tb_false);
@@ -534,14 +543,14 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     tb_assert_and_check_return_val(impl && impl->lua, -1);
 
     // save main arguments to the global variable: _ARGV
-    if (!xm_machine_main_save_arguments(impl, argc, argv)) return -1;
+    if (!xm_machine_save_arguments(impl, argc, argv)) return -1;
 
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = {0};
-    if (!xm_machine_main_get_project_directory(impl, path, sizeof(path))) return -1;
+    if (!xm_machine_get_project_directory(impl, path, sizeof(path))) return -1;
 
-    // get the program directory
-    if (!xm_machine_main_get_program_directory(impl, path, sizeof(path))) return -1;
+    // get the program file & directory
+    if (!xm_machine_get_program_file(impl, path, sizeof(path))) return -1;
 
     // append the main script path
     tb_strcat(path, "/core/_xmake_main.lua");

@@ -74,7 +74,7 @@ function _uninstall_target_and_deps(target)
 end
 
 -- uninstall
-function uninstall(targetname)
+function main(targetname)
 
     -- init finished states
     _g.finished = {}

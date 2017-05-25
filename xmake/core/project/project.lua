@@ -319,8 +319,7 @@ function project._interpreter()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
             ,   packagedir  = package.directory()
-            ,   programdir  = xmake._PROGRAM_DIR
-            ,   xmake       = xmake._EXECUTABLE_PATH or path.join(xmake._PROGRAM_DIR, "xmake")
+            ,   programdir  = os.programdir()
             }
 
             -- map it

@@ -26,7 +26,7 @@
 import("core.tool.tool")
 import("core.base.option")
 import("detect.sdk.find_xcode_dir")
-import("detect.sdk.find_xcode_sdkver")
+import("detect.sdk.find_xcode_sdkvers")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
@@ -187,7 +187,7 @@ function check_xcode_sdkver(config)
     if not xcode_sdkver then
 
         -- check ok? update it
-        xcode_sdkver = find_xcode_sdkver({xcode_dir = config.get("xcode_dir"), plat = config.get("plat"), arch = config.get("arch")})[1]
+        xcode_sdkver = find_xcode_sdkvers({xcode_dir = config.get("xcode_dir"), plat = config.get("plat"), arch = config.get("arch")})[1]
         if xcode_sdkver then
             
             -- save it

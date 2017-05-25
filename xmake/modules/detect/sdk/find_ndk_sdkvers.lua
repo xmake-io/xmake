@@ -19,42 +19,44 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        uninstall_admin.lua
+-- @file        find_ndk_sdkvers.lua
 --
 
--- imports
-import("core.base.option")
-import("core.project.config")
-import("core.project.project")
-import("core.platform.platform")
-import("uninstall")
+-- find ndk sdk versions 
+--
+-- @param ndk_dir   the ndk directory
+--
+-- @return          the ndk sdk version array
+--
+-- @code 
+--
+-- local ndk_sdkvers = find_ndk_sdkvers("/xxx/android-ndk-r10e")
+-- 
+-- @endcode
+--
+function main(ndk_dir)
 
--- uninstall
-function main(targetname, installdir)
-
-    -- enter project directory
-    os.cd(project.directory())
-
-    -- load config
-    config.load()
-
-    -- load platform
-    platform.load(config.plat())
-
-    -- laod project
-    project.load()
-
-    -- save the current option and push a new option context
-    option.save()
-
-    -- pass installdir to option
-    if installdir then
-        option.set("installdir", installdir)
+    -- get ndk directory
+    if not ndk_dir or not os.isdir(ndk_dir) then
+        return {}
     end
 
-    -- uninstall target
-    uninstall(ifelse(targetname ~= "__all", targetname, nil))
+    -- find all sdk directories
+    local ndk_sdkvers = {}
+    for _, sdkdir in ipairs(os.dirs(path.join(ndk_dir, "platforms/android-*"))) do
 
-    -- restore the previous option context
-    option.restore()
+        -- get version
+        local filename = path.filename(sdkdir)
+        local version, count = filename:gsub("android%-", "")
+        if count > 0 then
+
+            -- get the max version
+            if tonumber(version) > 0 then
+                table.insert(ndk_sdkvers, version) 
+            end
+        end
+    end
+
+    -- ok?    
+    return ndk_sdkvers
 end

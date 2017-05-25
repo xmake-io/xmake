@@ -53,7 +53,7 @@ function main(targetname, installdir)
     end
 
     -- install target
-    install.install(targetname)
+    install(targetname)
 
     -- restore the previous option context
     option.restore()

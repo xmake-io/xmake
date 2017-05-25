@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.project.task")
 import("core.platform.platform")
 import("core.base.privilege")
+import("privilege.sudo")
 import("uninstall")
 
 -- main
@@ -47,7 +48,7 @@ function main()
         function ()
 
             -- uninstall target
-            uninstall.uninstall(targetname)
+            uninstall(targetname)
 
             -- trace
             cprint("${bright}uninstall ok!${clear}${ok_hand}")
@@ -65,7 +66,7 @@ function main()
                         function ()
 
                             -- uninstall target
-                            uninstall.uninstall(targetname)
+                            uninstall(targetname)
 
                             -- trace
                             cprint("${bright}uninstall ok!${clear}${ok_hand}")
@@ -86,7 +87,7 @@ function main()
                 cprint("${bright red}error: ${default red}failed to uninstall, may permission denied!")
 
                 -- continue to uninstall with administrator permission?
-                if os.feature("sudo") then
+                if sudo.has() then
 
                     -- show tips
                     cprint("${bright yellow}note: ${default yellow}try continue to uninstall with administrator permission again?")
@@ -98,7 +99,7 @@ function main()
                     if answer == 'y' or answer == '' then
 
                         -- uninstall target with administrator permission
-                        os.sudol(os.runv, path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", option.get("installdir")})
+                        sudo.runl(path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", option.get("installdir")})
 
                         -- trace
                         cprint("${bright}uninstall ok!${clear}${ok_hand}")

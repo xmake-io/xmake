@@ -34,18 +34,20 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_os = sandbox_os or {}
 
 -- inherit some builtin interfaces
-sandbox_os.host     = os.host
-sandbox_os.arch     = os.arch
-sandbox_os.exit     = os.exit
-sandbox_os.date     = os.date
-sandbox_os.time     = os.time
-sandbox_os.argv     = os.argv
-sandbox_os.argw     = os.argw
-sandbox_os.mtime    = os.mtime
-sandbox_os.sleep    = os.sleep
-sandbox_os.mclock   = os.mclock
-sandbox_os.nuldev   = os.nuldev
-sandbox_os.emptydir = os.emptydir
+sandbox_os.host         = os.host
+sandbox_os.arch         = os.arch
+sandbox_os.exit         = os.exit
+sandbox_os.date         = os.date
+sandbox_os.time         = os.time
+sandbox_os.argv         = os.argv
+sandbox_os.argw         = os.argw
+sandbox_os.mtime        = os.mtime
+sandbox_os.sleep        = os.sleep
+sandbox_os.mclock       = os.mclock
+sandbox_os.nuldev       = os.nuldev
+sandbox_os.emptydir     = os.emptydir
+sandbox_os.programdir   = os.programdir
+sandbox_os.programfile  = os.programfile
 
 -- copy file or directory
 function sandbox_os.cp(...)
@@ -200,13 +202,6 @@ function sandbox_os.toolsdir()
    
     -- get it
     return xmake._TOOLS_DIR
-end
-
--- get the program directory
-function sandbox_os.programdir()
-   
-    -- get it
-    return xmake._PROGRAM_DIR
 end
 
 -- get the script directory
@@ -462,79 +457,6 @@ function sandbox_os.uuid(name)
 
     -- ok?
     return uuid
-end
-
--- get the feature of os
-function sandbox_os.feature(name)
-
-    -- has 'sudo' feature? 
-    if name == "sudo" then
-        return sandbox_os.host() ~= "windows"
-    end
-end
-
--- sudo run shell with administrator permission
---
--- .e.g
--- os.sudo(os.run, "echo", "hello xmake!")
---
-function sandbox_os.sudo(runner, cmd, ...)
-
-    -- check
-    assert(sandbox_os.feature("sudo"), "no sudo!")
-
-    -- run it with administrator permission
-    if sandbox_os.host() == "windows" then
-
-        -- TODO wrap sudo.bat
-        runner(cmd, ...)
-    else
-        -- run it with administrator permission and preserve parent environment
-        runner("sudo -E " .. cmd, ...)
-    end
-end
-
--- sudo run shell with administrator permission and arguments list
---
--- .e.g
--- os.sudov(os.runv, {"echo", "hello xmake!"})
---
-function sandbox_os.sudov(runner, shellname, argv)
-
-    -- check
-    assert(sandbox_os.feature("sudo"), "no sudo!")
-
-    -- run it with administrator permission
-    if sandbox_os.host() == "windows" then
-
-        -- TODO wrap sudo.bat
-        runner(shellname, argv)
-    else
-        -- run it with administrator permission and preserve parent environment
-        runner("sudo", table.join("-E", shellname, argv))
-    end
-end
-
--- sudo run lua script with administrator permission and arguments list
---
--- .e.g
--- os.sudol(os.runv, "xxx.lua", {"arg1", "arg2"})
---
-function sandbox_os.sudol(runner, luafile, luaargv)
-
-    -- init argv
-    local argv = {"lua", "--root"}
-    for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet"}) do
-        local value = option.get(name)
-        if type(value) == "string" then
-            table.insert(argv, "--" .. name .. "=" .. value)
-        elseif value then
-            table.insert(argv, "--" .. name)
-        end
-    end
-                  
-    -- run it with administrator permission
-    sandbox_os.sudov(runner, path.join(sandbox_os.programdir(), "xmake"), table.join(argv, luafile, luaargv))
 end
 
 -- get versioninfo

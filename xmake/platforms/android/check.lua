@@ -23,8 +23,9 @@
 --
 
 -- imports
-import("core.tool.tool")
-import("platforms.checker", {rootdir = os.programdir()})
+import(".checker")
+import("detect.sdk.find_ndk_sdkvers")
+import("detect.sdk.find_ndk_toolchains")
 
 -- check the sdk version for ndk
 function _check_ndk_sdkver(config)
@@ -33,30 +34,19 @@ function _check_ndk_sdkver(config)
     local ndk_sdkver = config.get("ndk_sdkver")
     if not ndk_sdkver then 
 
-        -- get the ndk
-        local ndk = config.get("ndk")
-        if ndk then
+        -- find the max version
+        local sdkver_max = 0
+        for _, sdkver in ipairs(find_ndk_sdkvers(config.get("ndk"))) do
 
-            -- match all sdk directories
-            local version_maxn = 0
-            for _, sdkdir in ipairs(os.match(ndk .. "/platforms/android-*", true)) do
-
-                -- get version
-                local filename = path.filename(sdkdir)
-                local version, count = filename:gsub("android%-", "")
-                if count > 0 then
-
-                    -- get the max version
-                    version = tonumber(version)
-                    if version > version_maxn then
-                        version_maxn = version 
-                    end
-                end
+            -- get the max version
+            sdkver = tonumber(sdkver)
+            if sdkver > sdkver_max then
+                sdkver_max = sdkver
             end
-
-            -- save the version
-            if version_maxn > 0 then ndk_sdkver = version_maxn end
         end
+
+        -- save the version
+        if sdkver_max > 0 then ndk_sdkver = sdkver_max end
 
         -- probe ok? update it
         if ndk_sdkver ~= nil and ndk_sdkver > 0 then 
@@ -74,58 +64,36 @@ function _check_ndk_sdkver(config)
     end
 end
 
--- check toolchains directory
-function _check_toolchains_dir(config)
+-- check toolchains 
+function _check_toolchains(config)
 
     -- get toolchains directory
-    local toolchains_dir = config.get("toolchains")
-    if not toolchains_dir then
+    local toolchains = config.get("toolchains")
+    if not toolchains then
 
-        -- get architecture
-        local arch = config.get("arch")
-
-        -- get ndk
-        local ndk = config.get("ndk")
-        if ndk then
-
-            -- match all toolchains
-            if arch and arch:startswith("arm64") then
-                toolchains_dir = os.match("%s/toolchains/aarch64-linux-android-**/prebuilt/*/bin/aarch64-linux-android-*", false, ndk)
-            else
-                toolchains_dir = os.match("%s/toolchains/arm-linux-androideabi-**/prebuilt/*/bin/arm-linux-androideabi-*", false, ndk)
-            end
-
-            -- save the toolchains directory
-            for _, filepath in ipairs(toolchains_dir) do
-                config.set("toolchains", path.directory(filepath))
-                break
-            end
+        -- find first toolchains 
+        for _, toolchains in ipairs(find_ndk_toolchains(config.get("ndk"), config.get("arch"))) do
+            config.set("toolchains", toolchains.bin)
+            config.set("cross", toolchains.cross)
+            break
         end
     end
-end
-
--- check toolchains version
-function _check_toolchains_ver(config)
+    toolchains = config.get("toolchains")
 
     -- get toolchains version
     local toolchains_ver = config.get("toolchains_ver")
-    if not toolchains_ver then
+    if not toolchains_ver and toolchains then
+        local toolchains_ver = toolchains:match("%-(%d*%.%d*)[/\\]")
+        if toolchains_ver then
 
-        -- get toolchains directory
-        local toolchains_dir = config.get("toolchains")
-        if toolchains_dir then
-            local pos, _, toolchains_ver = toolchains_dir:find("%-(%d*%.%d*)[/\\]")
-            if pos and toolchains_ver then
-
-                -- save the toolchains version
-                config.set("toolchains_ver", toolchains_ver)
-     
-                -- trace
-                cprint("checking for the version of toolchains ... ${green}%s", toolchains_ver)
-            else
-                -- trace
-                cprint("checking for the version of toolchains ... ${red}no")
-            end
+            -- save the toolchains version
+            config.set("toolchains_ver", toolchains_ver)
+ 
+            -- trace
+            cprint("checking for the version of toolchains ... ${green}%s", toolchains_ver)
+        else
+            -- trace
+            cprint("checking for the version of toolchains ... ${red}no")
         end
     end
 end
@@ -142,10 +110,7 @@ function _toolchains(config)
     local arch = config.get("arch")
 
     -- get cross
-    local cross = "arm-linux-androideabi-"
-    if arch and arch:startswith("arm64") then
-        cross = "aarch64-linux-android-"
-    end
+    local cross = config.get("cross") 
 
     -- init toolchains
     local toolchains = {}
@@ -187,8 +152,7 @@ function main(kind, toolkind)
     {
         { checker.check_arch, "armv7-a" }
     ,   _check_ndk_sdkver
-    ,   _check_toolchains_dir
-    ,   _check_toolchains_ver
+    ,   _check_toolchains
     ,   { checker.toolchain_check, "sh", _toolchains }
     ,   { checker.toolchain_check, "ld", _toolchains }
     }

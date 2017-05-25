@@ -23,8 +23,7 @@
 --
 
 -- imports
-import("core.tool.tool")
-import("platforms.checker", {rootdir = os.programdir()})
+import(".checker")
 
 -- get toolchains
 function _toolchains(config)
