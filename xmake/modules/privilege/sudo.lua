@@ -38,7 +38,7 @@ function _sudo(runner, cmd, ...)
     assert(program, "sudo not found!")
 
     -- run it with administrator permission and preserve parent environment
-    runner(program .. " PATH=" .. os.getenv("PATH") .. " " .. cmd, ...)
+    runner(program .. " PATH=\"" .. os.getenv("PATH") .. "\" " .. cmd, ...)
 end
 
 -- sudo run shell with administrator permission and arguments list
@@ -90,7 +90,7 @@ end
 
 -- sudo run shell with arguments list
 function runv(shellname, argv)
-    return _sudo(os.run, shellname, argv)
+    return _sudov(os.run, shellname, argv)
 end
 
 -- sudo quietly run shell and echo verbose info if [-v|--verbose] option is enabled
@@ -100,7 +100,7 @@ end
 
 -- sudo quietly run shell with arguments list and echo verbose info if [-v|--verbose] option is enabled
 function vrunv(shellname, argv)
-    return _sudo(os.vrunv, shellname, argv)
+    return _sudov(os.vrunv, shellname, argv)
 end
 
 -- sudo run shell and return output and error data
@@ -110,7 +110,7 @@ end
 
 -- sudo run shell and return output and error data
 function iorunv(shellname, argv)
-    return _sudo(os.iorunv, shellname, argv)
+    return _sudov(os.iorunv, shellname, argv)
 end
 
 -- sudo execute shell 
@@ -120,7 +120,7 @@ end
 
 -- sudo execute shell with arguments list
 function execv(shellname, argv)
-    return _sudo(os.execv, shellname, argv)
+    return _sudov(os.execv, shellname, argv)
 end
 
 -- sudo run lua script
