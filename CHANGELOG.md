@@ -23,6 +23,7 @@
 
 * Fix `try-catch-finally`
 * Fix interpreter bug when parsing multi-level subdirs
+* [#115](https://github.com/tboox/xmake/pull/115): Fix the path problem of the install script `get.sh`
 
 ## v2.1.4
 
@@ -315,6 +316,7 @@
 
 * 修复`try-catch-finally`
 * 修复解释器bug，解决当加载多级子目录时，根域属性设置不对
+* [#115](https://github.com/tboox/xmake/pull/115): 修复安装脚本`get.sh`的路径问题
 
 ## v2.1.4
 
