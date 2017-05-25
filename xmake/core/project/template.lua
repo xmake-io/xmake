@@ -32,7 +32,6 @@ local path              = require("base/path")
 local table             = require("base/table")
 local utils             = require("base/utils")
 local string            = require("base/string")
-local filter            = require("base/filter")
 local option            = require("base/option")
 local sandbox           = require("sandbox/sandbox")
 local project           = require("project/project")
@@ -192,7 +191,7 @@ function template.create(language, templateid, targetname)
     local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
 
     -- set filter
-    interp:filter_set(filter.new(function (variable)
+    interp:filter():register("template", function (variable)
 
         -- init maps
         local maps = 
@@ -210,7 +209,7 @@ function template.create(language, templateid, targetname)
         -- ok?
         return variable
 
-    end))
+    end)
 
     -- load all templates for the given language
     local templates = template.templates(language)
