@@ -43,17 +43,35 @@ local menu =
     title = "XMake v" .. xmake._VERSION .. ", The Make-like Build Utility based on Lua"
 
     -- copyright
-,   copyright = "Copyright (C) 2015-2016 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
+,   copyright = "Copyright (C) 2015-2017 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
 
     -- the tasks: xmake [task]
 ,   task.menu
 
 }
 
--- done help
-function main._help()
 
-    -- done help
+-- show logo
+function main._show_logo()
+
+    -- define logo
+    local logo = [[
+                         _        
+    __  ___ __  __  __ _| | ______ 
+    \ \/ / |  \/  |/ _  | |/ / __ \
+     >  <  | \__/ | /_| |   <  ___/
+    /_/\_\_|_|  |_|\__ \|_|\_\____| 
+                         by ruki, ${underline}tboox.org${clear}
+                                      ]]
+
+    -- show logo
+    utils.cprint(logo)
+end
+
+-- show help and version info
+function main._show_help()
+
+    -- show help
     if option.get("help") then
     
         -- print menu
@@ -62,18 +80,21 @@ function main._help()
         -- ok
         return true
 
-    -- done version
+    -- show version
     elseif option.get("version") then
 
-        -- print title
+        -- show title
         if menu.title then
             utils.cprint(menu.title)
         end
 
-        -- print copyright
+        -- show copyright
         if menu.copyright then
             utils.cprint(menu.copyright)
         end
+
+        -- show logo
+        main._show_logo()
 
         -- ok
         return true
@@ -168,8 +189,8 @@ Or you can add `--root` option to allow run as root temporarily.
         profiler:start()
     end
 
-    -- run help?
-    if main._help() then
+    -- show help?
+    if main._show_help() then
         return 0
     end
 
