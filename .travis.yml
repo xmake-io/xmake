@@ -21,6 +21,7 @@ install:
 
 script:
   - scripts/get.sh __local__
+  - source ~/.bash_profile
   - xmake lua versioninfo
   - xmake f -m coverage -P core
   - xmake -P core
