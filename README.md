@@ -253,6 +253,6 @@ Some projects using xmake:
 ## Contacts
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
-* Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)
-* Community：[TBOOX Open Source Community](http://www.tboox.org/forum)
+* Homepage：[tboox.org](http://www.tboox.org)
+* Community：[Google Group](https://groups.google.com/forum/#!forum/xmake)
 
