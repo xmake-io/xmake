@@ -250,8 +250,8 @@ target("test")
 ## 联系方式
 
 * 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
-* 主页：[TBOOX开源工程](http://www.tboox.org/cn)
-* 社区：[TBOOX开源社区](http://www.tboox.org/forum)
+* 主页：[tboox.org](http://www.tboox.org/cn)
+* 社区：[Google Group](https://groups.google.com/forum/#!forum/xmake)
 * QQ群：343118190
 * 微信公众号：tboox-os
 

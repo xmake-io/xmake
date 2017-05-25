@@ -93,6 +93,6 @@ $ xmake run -d console
 ## Contacts
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
-* Homepage：[TBOOX Open Source Project](http://www.tboox.org/cn)
-* Community：[TBOOX Open Source Community](http://www.tboox.org/forum)
+* Homepage：[tboox.org](http://www.tboox.org)
+* Community：[Google Group](https://groups.google.com/forum/#!forum/xmake)
 * ChatRoom：[![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
