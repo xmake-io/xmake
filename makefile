@@ -61,7 +61,7 @@ install:
 	@# install the xmake directory
 	@cp -r xmake/* $(xmake_dir_install)
 	@# make the xmake loader
-ifneq ($(PLAT),linux)
+ifeq (,$(filter $(PLAT),linux macosx))
 	@echo '#!/bin/bash' > $(xmake_loader)
 	@echo 'export XMAKE_PROGRAM_DIR=$(xmake_dir_install)' >> $(xmake_loader)
 	@echo '$(xmake_core_install) $(verbose) "$$@"' >> $(xmake_loader)
