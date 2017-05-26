@@ -4,6 +4,38 @@
 # usage: bash <(curl -s <my location>) [[mirror:]branch] [commit/__install_only__]
 
 set -o pipefail
+
+if [ 0 -ne "$(id -u)" ]
+then
+    sudoprefix=sudo
+else
+    sudoprefix=
+fi
+
+remote_get_content(){
+    if curl --version >/dev/null 2>&1
+    then
+        curl -fsSL "$1"
+    elif wget --version >/dev/null 2>&1
+    then
+        wget -q "$1" -O -
+    fi
+}
+
+if [ "$1" = "__uninstall__" ]
+then
+    # uninstall
+    makefile=$(remote_get_content https://github.com/tboox/xmake/raw/master/makefile)
+    while which xmake >/dev/null 2>&1
+    do
+        pre=$(which xmake | sed 's/\/bin\/xmake$//')
+        # don't care if make exists -- if there's no make, how xmake built and installed?
+        echo "$makefile" | make -f - uninstall prefix="$pre" 2>/dev/null || echo "$makefile" | $sudoprefix make -f - uninstall prefix="$pre" || exit $?
+    done
+    exit
+fi
+
+# below is installation
 # print a LOGO!
 echo '                         _                      '
 echo '    __  ___ __  __  __ _| | ______              '
@@ -17,12 +49,6 @@ then
     brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
 fi
 
-if [ 0 -ne "$(id -u)" ]
-then
-    sudoprefix=sudo
-else
-    sudoprefix=
-fi
 my_exit(){
     rv=$?
     if [ "x$1" != x ]
