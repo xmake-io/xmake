@@ -36,7 +36,9 @@ Function Get-AppVeyorArtifacts{
         $job = 0
     }
     ForEach($_ in $obj.builds){
-        $jobId = $_.jobs[$job].jobId
+        $version = $_.version
+        $build = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$Account/$Project/build/$version" -Headers $headers
+        $jobId = $build.build.jobs[$job].jobId
         $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
         $artifactFileName = $artifacts[0].fileName
         if($artifactFileName -eq "xmake.exe"){
