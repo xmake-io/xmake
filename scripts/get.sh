@@ -78,7 +78,7 @@ then
 fi
 if [ 'x__local__' != "x$branch" ]
 then
-    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" /tmp/$$xmake_getter || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     if [ x != "x$2" ]
     then
         cd /tmp/$$xmake_getter || my_exit 'Chdir Error'
@@ -86,7 +86,7 @@ then
         cd - || my_exit 'Chdir Error'
     fi
 else
-    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo "$PWD")" /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || echo thisshouldnotbeafilename)" /tmp/$$xmake_getter || my_exit "$(echo -e 'Clone Fail\nLocal repo might be not found')"
 fi
 if [ 'x__install_only__' != "x$2" ]
 then
