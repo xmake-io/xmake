@@ -73,7 +73,7 @@ try{
     if($branch -eq $null){ $branch='master' }
     Invoke-Webrequest "https://github.com/tboox/xmake/archive/$branch.zip" -OutFile "$installdir\temp.zip"
     Expand-Archive "$installdir\temp.zip" "$installdir\temp" -Force
-    Move-Item "$installdir\temp\xmake-$branch\xmake\*" $installdir -Recurse
+    Move-Item "$installdir\temp\xmake-$branch\xmake\*" $installdir
     Remove-Item "$installdir\temp","$installdir\temp.zip" -Recurse -Force
     $env:Path+=";$installdir"
     [Environment]::SetEnvironmentVariable("Path",[Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::User)+";$installdir",[System.EnvironmentVariableTarget]::User)    # this step is optional because installer writes path to regedit
