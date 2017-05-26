@@ -89,9 +89,9 @@ function _clean_target(target)
     -- the target scripts
     local scripts =
     {
-        target:get("clean_before")
-    ,   target:get("clean") or _on_clean_target
-    ,   target:get("clean_after")
+        target:script("clean_before")
+    ,   target:script("clean", _on_clean_target)
+    ,   target:script("clean_after")
     }
 
     -- run the target scripts

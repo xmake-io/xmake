@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("core.project.project")
 import("core.platform.environment")
 
@@ -42,9 +43,9 @@ function _build_target(target)
     -- the target scripts
     local scripts =
     {
-        target:get("build_before")
-    ,   target:get("build") or _on_build_target
-    ,   target:get("build_after")
+        target:script("build_before")
+    ,   target:script("build", _on_build_target)
+    ,   target:script("build_after")
     }
 
     -- run the target scripts

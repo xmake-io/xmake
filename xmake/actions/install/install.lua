@@ -36,9 +36,9 @@ function _install_target(target)
     -- the target scripts
     local scripts =
     {
-        target:get("install_before")
-    ,   target:get("install") or platform.get("install")
-    ,   target:get("install_after")
+        target:script("install_before")
+    ,   target:script("install", platform.get("install"))
+    ,   target:script("install_after")
     }
 
     -- install the target scripts

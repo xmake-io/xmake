@@ -36,9 +36,9 @@ function _uninstall_target(target)
     -- the target scripts
     local scripts =
     {
-        target:get("uninstall_before")
-    ,   target:get("uninstall") or platform.get("uninstall")
-    ,   target:get("uninstall_after")
+        target:script("uninstall_before")
+    ,   target:script("uninstall", platform.get("uninstall"))
+    ,   target:script("uninstall_after")
     }
 
     -- uninstall the target scripts

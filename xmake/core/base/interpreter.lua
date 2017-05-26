@@ -262,12 +262,17 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
     -- define implementation
     local implementation = function (self, scope, name, arg1, arg2)
 
-        -- on_xxx(mode, script)?
+        -- patch action to name
+        if action ~= "on" then
+            name = name .. "_" .. action
+        end
+
+        -- on_xxx(pattern, script)?
         if arg1 and arg2 then
 
-            -- get mode
-            local mode = arg1
-            assert(type(mode) == "string")
+            -- get pattern
+            local pattern = arg1
+            assert(type(pattern) == "string")
 
             -- get script
             local script, errors = self:_script(arg2)
@@ -275,8 +280,15 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
                 os.raise("%s_%s(%s, %s): %s", action, name, tostring(arg1), tostring(arg2), errors)
             end
 
-            -- save mode and script
-            scope[name] = {mode = mode, script = script}
+            -- save script
+            local scripts = scope[name] or {}
+            if type(scripts) == "table" then
+                scripts[pattern] = script
+            elseif type(scripts) == "function" then
+                scripts = {__generic__ = scripts}
+                scripts[pattern] = script
+            end
+            scope[name] = scripts
 
         -- on_xxx(script)?
         elseif arg1 then
@@ -288,7 +300,13 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
             end
 
             -- save script
-            scope[name] = script
+            local scripts = scope[name]
+            if type(scripts) == "table" then
+                scripts["__generic__"] = script
+            else
+                scripts = script
+            end
+            scope[name] = scripts
         end
     end
 

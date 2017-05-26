@@ -58,31 +58,30 @@ end
 function _need_check()
 
     -- clean?
-    if option.get("clean") then
-        return true
-    end
+    local changed = option.get("clean")
 
     -- the configure has been changed? reconfig it
-    if config.changed() then
-        return true
+    if not changed and config.changed() then
+        changed = true
     end
 
     -- get the current mtimes 
     local mtimes = project.mtimes()
 
     -- get the previous mtimes 
-    local changed = false
-    local mtimes_prev = cache.get("mtimes")
-    if mtimes_prev then 
+    if not changed then
+        local mtimes_prev = cache.get("mtimes")
+        if mtimes_prev then 
 
-        -- check for all project files
-        for file, mtime in pairs(mtimes) do
+            -- check for all project files
+            for file, mtime in pairs(mtimes) do
 
-            -- modified? reconfig and rebuild it
-            local mtime_prev = mtimes_prev[file]
-            if not mtime_prev or mtime > mtime_prev then
-                changed = true
-                break
+                -- modified? reconfig and rebuild it
+                local mtime_prev = mtimes_prev[file]
+                if not mtime_prev or mtime > mtime_prev then
+                    changed = true
+                    break
+                end
             end
         end
     end

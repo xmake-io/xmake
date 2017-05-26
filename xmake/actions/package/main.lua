@@ -113,7 +113,7 @@ option("[targetname]")
 end
 
 -- package target 
-function _package_target(target)
+function _on_package_target(target)
 
     -- is phony target?
     if target:isphony() then
@@ -147,9 +147,9 @@ function _package(target)
     -- the target scripts
     local scripts =
     {
-        target:get("package_before")
-    ,   target:get("package") or _package_target
-    ,   target:get("package_after")
+        target:script("package_before")
+    ,   target:script("package", _on_package_target)
+    ,   target:script("package_after")
     }
 
     -- package the target scripts

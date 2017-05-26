@@ -631,5 +631,30 @@ function target:sourcebatches()
     return sourcebatches, modified
 end
 
+-- get xxx_script
+function target:script(name, generic)
+
+    -- get script
+    local script = self:get(name)
+    if type(script) == "function" then
+        return script
+    elseif type(script) == "table" then
+
+        -- match script for special plat and arch
+        local pattern = (config.get("plat") or "") .. '|' .. (config.get("arch") or "")
+        for _pattern, _script in pairs(script) do
+            if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') then
+                return _script
+            end
+        end
+
+        -- get generic script
+        return script["__generic__"] or generic
+    end
+
+    -- only generic script
+    return generic
+end
+
 -- return module
 return target
