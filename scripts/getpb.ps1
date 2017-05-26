@@ -35,7 +35,7 @@ Function Get-AppVeyorArtifacts{
     }else{
         $job = 0
     }
-    Write-Output $obj.builds | ForEach-Object {
+    ForEach($_ in $obj.builds){
         $jobId = $_.jobs[$job].jobId
         $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
         $artifactFileName = $artifacts[0].fileName
