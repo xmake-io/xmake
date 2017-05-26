@@ -259,7 +259,7 @@ function template.create(language, templateid, targetname)
     if module.create then
         local ok, errors = sandbox.load(module.create)
         if not ok then
-            utils.errors(errors)
+            utils.error(errors)
             return false
         end
     end
