@@ -95,7 +95,7 @@ then
     if [ $rv -ne 0 ]
     then
         make -C /tmp/$$xmake_getter/core --no-print-directory error
-        my_exit 'Build Fail' $rv
+        my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
     fi
 fi
 # PATHclone=$PATH
