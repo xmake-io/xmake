@@ -5,7 +5,7 @@ target("test")
         assert(vformat("$(arch)") == "arm64")
     end)
 
-    before_build("macosx|.*", function (target)
+    before_build("macosx", function (target)
         assert(vformat("$(plat)") == "macosx")
     end)
 
@@ -21,6 +21,6 @@ target("test")
         print("after_build")
     end)
 
-    after_build("linux|.*", function (target)
+    after_build("linux|*", function (target)
         assert(vformat("$(plat)") == "linux")
     end)

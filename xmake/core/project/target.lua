@@ -641,9 +641,10 @@ function target:script(name, generic)
     elseif type(script) == "table" then
 
         -- match script for special plat and arch
-        local pattern = (config.get("plat") or "") .. '|' .. (config.get("arch") or "")
+        local plat = (config.get("plat") or "")
+        local pattern = plat .. '|' .. (config.get("arch") or "")
         for _pattern, _script in pairs(script) do
-            if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') then
+            if not _pattern:startswith("__") and (plat == _pattern or pattern:find('^' .. _pattern .. '$')) then
                 return _script
             end
         end

@@ -18,7 +18,7 @@
 * Improve `print` interface to dump table
 * [#111](https://github.com/tboox/xmake/issues/111): Add `--root` common option to allow run xmake command as root
 * [#113](https://github.com/tboox/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
-* Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("macosx|.*", function (target) end)`
+* Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
 
 ### Bugs fixed
 
@@ -312,7 +312,7 @@
 * 改进`print`接口去更好些显示table数据
 * [#111](https://github.com/tboox/xmake/issues/111): 添加`--root`通用选项去临时支持作为root运行
 * [#113](https://github.com/tboox/xmake/pull/113): 改进权限管理，现在作为root运行也是非常安全的
-* 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("macosx|.*", function (target) end)`
+* 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("iphoneos|arm*", function (target) end)`
 
 ### Bugs修复
 

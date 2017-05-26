@@ -280,6 +280,11 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
                 os.raise("%s_%s(%s, %s): %s", action, name, tostring(arg1), tostring(arg2), errors)
             end
 
+            -- convert pattern to a lua pattern ('*' => '.*')
+            pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+            pattern = pattern:gsub("%*", "\001")
+            pattern = pattern:gsub("\001", ".*")
+
             -- save script
             local scripts = scope[name] or {}
             if type(scripts) == "table" then
