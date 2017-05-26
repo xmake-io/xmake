@@ -249,7 +249,7 @@ tb_int_t xm_os_versioninfo(lua_State* lua)
 
     lua_pushstring(lua, "arch");
     // init architecture
-#if defined(TB_ARCH_x86) || defined(TB_CONFIG_OS_WINDOWS)
+#if defined(TB_ARCH_x86)
     lua_pushstring(lua, "i386");
 #elif defined(TB_ARCH_x64)
     lua_pushstring(lua, "x86_64");
