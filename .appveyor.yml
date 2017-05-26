@@ -42,3 +42,10 @@ on_success:
   - luacov
   - pip install codecov
   - codecov --file luacov.report.out
+  - ps: Invoke-Expression (Get-Content scripts\getpb.ps1 | Out-String)
+
+after_build:
+  - ps: Copy-Item core\build\xmake.exe .
+
+artifacts:
+  - path: xmake.exe

@@ -4,6 +4,38 @@
 # usage: bash <(curl -s <my location>) [[mirror:]branch] [commit/__install_only__]
 
 set -o pipefail
+
+if [ 0 -ne "$(id -u)" ]
+then
+    sudoprefix=sudo
+else
+    sudoprefix=
+fi
+
+remote_get_content(){
+    if curl --version >/dev/null 2>&1
+    then
+        curl -fsSL "$1"
+    elif wget --version >/dev/null 2>&1
+    then
+        wget -q "$1" -O -
+    fi
+}
+
+if [ "$1" = "__uninstall__" ]
+then
+    # uninstall
+    makefile=$(remote_get_content https://github.com/tboox/xmake/raw/master/makefile)
+    while which xmake >/dev/null 2>&1
+    do
+        pre=$(which xmake | sed 's/\/bin\/xmake$//')
+        # don't care if make exists -- if there's no make, how xmake built and installed?
+        echo "$makefile" | make -f - uninstall prefix="$pre" 2>/dev/null || echo "$makefile" | $sudoprefix make -f - uninstall prefix="$pre" || exit $?
+    done
+    exit
+fi
+
+# below is installation
 # print a LOGO!
 echo '                         _                      '
 echo '    __  ___ __  __  __ _| | ______              '
@@ -17,12 +49,6 @@ then
     brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
 fi
 
-if [ 0 -ne "$(id -u)" ]
-then
-    sudoprefix=sudo
-else
-    sudoprefix=
-fi
 my_exit(){
     rv=$?
     if [ "x$1" != x ]
@@ -53,12 +79,12 @@ test_tools()
 }
 install_tools()
 {
-    { apt-get --version >/dev/null 2>&1 && $sudoprefix apt-get install -y git build-essential libreadline-dev; } ||
-    { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git readline-devel && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
-    { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git readline-devel && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
-    { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel; }
+    { apt-get --version >/dev/null 2>&1 && $sudoprefix apt-get install -y git build-essential libreadline-dev ccache; } ||
+    { yum --version >/dev/null 2>&1 && $sudoprefix yum install -y git readline-devel ccache && $sudoprefix yum groupinstall -y 'Development Tools'; } ||
+    { zypper --version >/dev/null 2>&1 && $sudoprefix zypper --non-interactive install git readline-devel ccache && $sudoprefix zypper --non-interactive install -t pattern devel_C_C++; } ||
+    { pacman -V >/dev/null 2>&1 && $sudoprefix pacman -S --noconfirm --needed git base-devel ccache; }
 }
-test_tools || { install_tools && test_tools; } || my_exit 'Dependencies Installation Fail' 1
+test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\nPlease install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
 branch=master
 mirror=tboox
 IFS=':'
@@ -78,7 +104,7 @@ then
 fi
 if [ 'x__local__' != "x$branch" ]
 then
-    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" /tmp/$$xmake_getter || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     if [ x != "x$2" ]
     then
         cd /tmp/$$xmake_getter || my_exit 'Chdir Error'
@@ -86,7 +112,7 @@ then
         cd - || my_exit 'Chdir Error'
     fi
 else
-    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || hg root 2>/dev/null || echo "$PWD")" /tmp/$$xmake_getter || my_exit 'Clone Fail'
+    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || echo thisshouldnotbeafilename)" /tmp/$$xmake_getter || my_exit "$(echo -e 'Clone Fail\nLocal repo might be not found')"
 fi
 if [ 'x__install_only__' != "x$2" ]
 then
@@ -95,7 +121,7 @@ then
     if [ $rv -ne 0 ]
     then
         make -C /tmp/$$xmake_getter/core --no-print-directory error
-        my_exit 'Build Fail' $rv
+        my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
     fi
 fi
 # PATHclone=$PATH
@@ -131,10 +157,10 @@ shell_profile(){
     elif [[ "$SHELL" = */ksh ]]; then echo ~/.kshrc
     else echo ~/.bash_profile; fi
 }
-xmake --version >/dev/null 2>&1 && xmake --version || {
-    echo "export PATH=$prefix/bin:\$PATH" >> $(shell_profile)
+if xmake --version >/dev/null 2>&1; then xmake --version; else
+    echo "export PATH=$prefix/bin:\$PATH" >> "$(shell_profile)"
     export PATH=$prefix/bin:$PATH
     xmake --version
     echo "Reload shell profile by running the following command now!"
     echo -e "\x1b[1msource '$(shell_profile)'\x1b[0m"
-}
+fi
