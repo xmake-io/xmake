@@ -28,19 +28,24 @@ Function Get-AppVeyorArtifacts{
     $headers = @{
         'Content-type' = 'application/json'
     }
-    $obj = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$Account/$Project" -Headers $headers
-    $jobId = $null
+    $obj = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$Account/$Project/history?recordsNumber=13" -Headers $headers
+    $job = $null
     if([environment]::Is64BitOperatingSystem){
-        $jobId = 1
+        $job = 1
     }else{
-        $jobId = 0
+        $job = 0
     }
-    $jobId = $obj.build.jobs[$jobId].jobId
-    $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
-    $artifactFileName = $artifacts[0].fileName
-    if($artifactFileName -ne "xmake.exe"){throw "artifact not found"}
-    $localArtifactPath = "$DownloadDirectory\$artifactFileName"
-    Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" -OutFile $localArtifactPath
+    Write-Output $obj.builds | ForEach-Object {
+        $jobId = $_.jobs[$job].jobId
+        $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
+        $artifactFileName = $artifacts[0].fileName
+        if($artifactFileName -eq "xmake.exe"){
+            $localArtifactPath = "$DownloadDirectory\$artifactFileName"
+            Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" -OutFile $localArtifactPath
+            return
+        }
+    }
+    throw 'artifact not found'
 }
 
 writeLogoLine '                         _                      '
