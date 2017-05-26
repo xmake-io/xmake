@@ -38,6 +38,7 @@ Function Get-AppVeyorArtifacts{
     $jobId = $obj.build.jobs[$jobId].jobId
     $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
     $artifactFileName = $artifacts[0].fileName
+    if($artifactFileName -ne "xmake.exe"){throw "artifact not found"}
     $localArtifactPath = "$DownloadDirectory\$artifactFileName"
     Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" -OutFile $localArtifactPath
 }
