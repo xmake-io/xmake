@@ -90,8 +90,6 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "sh",       cross,   "gcc",         "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       cross,   "clang++",     "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       cross,   "clang",       "the shared library linker") 
-    checker.toolchain_insert(toolchains, "dg",       cross,   "gdb",         "the debugger") 
-    checker.toolchain_insert(toolchains, "dg",       cross,   "lldb",        "the debugger") 
 
     -- insert objc/c++ tools to toolchains
     checker.toolchain_insert(toolchains, "mm",       cross,   "clang",       "the objc compiler") 

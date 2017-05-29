@@ -19,35 +19,41 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ollydbg.lua
+-- @file        find_gdb.lua
 --
 
--- init it
-function init(shellname)
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
-    -- save name
-    _g.shellname = shellname or "ollydbg"
+-- find gdb 
+--
+-- @param opt   the argument options, .e.g {version = true, program="/usr/bin/gdb"}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local gdb = find_gdb()
+-- local gdb, version = find_gdb({version = true})
+-- local gdb, version = find_gdb({version = true, program = "/usr/bin/gdb"})
+-- 
+-- @endcode
+--
+function main(opt)
 
-end
+    -- init options
+    opt = opt or {}
+    
+    -- find program
+    local program = find_program(opt.program or "gdb", { "/usr/bin", "/usr/local/bin"})
 
--- get the property
-function get(name)
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
+    end
 
-    -- get it
-    return _g[name]
-end
-
--- run the debugged program with arguments
-function run(shellname, argv)
-
-    -- patch arguments
-    argv = argv or {}
-    table.insert(argv, 1, shellname)
-
-    -- run it
-    os.execv(_g.shellname, argv)
-end
-
--- check the given flags 
-function check(flags)
+    -- ok?
+    return program, version
 end

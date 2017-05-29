@@ -29,10 +29,10 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.tool.debugger")
+import("devel.debugger")
 
 -- run target 
-function _run_target(target)
+function _on_run_target(target)
 
     -- get kind
     if target:targetkind() == "binary" then
@@ -56,9 +56,9 @@ function _run(target)
     -- the target scripts
     local scripts =
     {
-        target:get("run_before")
-    ,   target:get("run") or _run_target
-    ,   target:get("run_after")
+        target:script("run_before")
+    ,   target:script("run") or _on_run_target
+    ,   target:script("run_after")
     }
 
     -- run the target scripts

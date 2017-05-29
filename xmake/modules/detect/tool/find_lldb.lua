@@ -19,35 +19,41 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vsjitdebugger.lua
+-- @file        find_lldb.lua
 --
 
--- init it
-function init(shellname)
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
-    -- save name
-    _g.shellname = shellname or "vsjitdebugger"
+-- find lldb 
+--
+-- @param opt   the argument options, .e.g {version = true, program="/usr/bin/lldb"}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local lldb = find_lldb()
+-- local lldb, version = find_lldb({version = true})
+-- local lldb, version = find_lldb({version = true, program = "/usr/bin/lldb"})
+-- 
+-- @endcode
+--
+function main(opt)
 
-end
+    -- init options
+    opt = opt or {}
+    
+    -- find program
+    local program = find_program(opt.program or "lldb", { "/usr/bin", "/usr/local/bin"})
 
--- get the property
-function get(name)
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
+    end
 
-    -- get it
-    return _g[name]
-end
-
--- run the debugged program with arguments
-function run(shellname, argv)
-
-    -- patch arguments
-    argv = argv or {}
-    table.insert(argv, 1, shellname)
-
-    -- run it
-    os.execv(_g.shellname, argv)
-end
-
--- check the given flags 
-function check(flags)
+    -- ok?
+    return program, version
 end

@@ -19,44 +19,43 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        lldb.lua
+-- @file        find_windbg.lua
 --
 
--- init it
-function init(shellname)
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
-    -- save name
-    _g.shellname = shellname or "lldb"
+-- find windbg 
+--
+-- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\windbg.exe"}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local windbg = find_windbg()
+-- local windbg, version = find_windbg({version = true})
+-- local windbg, version = find_windbg({version = true, program = "c:\xxx\windbg.exe"})
+-- 
+-- @endcode
+--
+function main(opt)
 
-end
+    -- not on windows?
+    if os.host() ~= "windows" then
+        return 
+    end
+    
+    -- find program, TODO from winreg
+    local program = find_program(opt.program or "windbg", {})
 
--- get the property
-function get(name)
-
-    -- get it
-    return _g[name]
-end
-
--- run the debugged program with arguments
-function run(shellname, argv)
-
-    -- attempt to split shellname, .e.g xcrun -sdk macosx lldb 
-    local shellnames = _g.shellname:split("%s")
-
-    -- patch arguments
-    argv = argv or {}
-    table.insert(argv, 1, shellname)
-    for i = #shellnames, 2, -1 do
-        table.insert(argv, 1, shellnames[i])
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
     end
 
-    -- run it
-    os.execv(shellnames[1], argv)
-end
-
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s %s -h", _g.shellname, ifelse(flags, flags, ""))
+    -- ok?
+    return program, version
 end

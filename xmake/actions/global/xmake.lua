@@ -45,7 +45,7 @@ task("global")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
+                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."     }
 
                 ,   {}
 
@@ -54,7 +54,7 @@ task("global")
                                                     ,   "    --ccache=[y|n]"                                        }
 
                 ,   {}
-                ,   {nil, "dg",         "kv", "auto",   "The Debugger"                                              }
+                ,   {nil, "debugger",   "kv", "auto",   "The Debugger"                                              }
                 ,   {}
 
                     -- show platform menu options

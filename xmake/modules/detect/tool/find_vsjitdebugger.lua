@@ -19,32 +19,43 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        debugger.lua
+-- @file        find_vsjitdebugger.lua
 --
 
--- define module
-local sandbox_core_tool_debugger = sandbox_core_tool_debugger or {}
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- load modules
-local platform  = require("platform/platform")
-local debugger  = require("tool/debugger")
-local raise     = require("sandbox/modules/raise")
+-- find vsjitdebugger 
+--
+-- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\vsjitdebugger.exe"}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local vsjitdebugger = find_vsjitdebugger()
+-- local vsjitdebugger, version = find_vsjitdebugger({version = true})
+-- local vsjitdebugger, version = find_vsjitdebugger({version = true, program = "c:\xxx\vsjitdebugger.exe"})
+-- 
+-- @endcode
+--
+function main(opt)
 
--- run the debugged program with arguments
-function sandbox_core_tool_debugger.run(shellname, argv)
- 
-    -- get the debugger instance
-    local instance, errors = debugger.load()
-    if not instance then
-        raise(errors)
+    -- not on windows?
+    if os.host() ~= "windows" then
+        return 
+    end
+    
+    -- find program, TODO from winreg
+    local program = find_program(opt.program or "vsjitdebugger", {})
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
     end
 
-    -- extract it
-    local ok, errors = instance:run(shellname, argv)
-    if not ok then
-        raise(errors)
-    end
+    -- ok?
+    return program, version
 end
-
--- return module
-return sandbox_core_tool_debugger

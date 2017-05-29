@@ -46,7 +46,6 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "ex",       "xcrun -sdk macosx ",   "ar",           "the static library extractor") 
     checker.toolchain_insert(toolchains, "sh",       "xcrun -sdk macosx ",   "clang++",      "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       "xcrun -sdk macosx ",   "clang",        "the shared library linker") 
-    checker.toolchain_insert(toolchains, "dg",       "xcrun -sdk macosx ",   "lldb",         "the debugger") 
 
     -- insert objc/c++ tools to toolchains
     checker.toolchain_insert(toolchains, "mm",       "xcrun -sdk macosx ",   "clang",        "the objc compiler") 
