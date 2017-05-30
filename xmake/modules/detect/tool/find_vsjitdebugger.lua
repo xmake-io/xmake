@@ -46,16 +46,12 @@ function main(opt)
     if os.host() ~= "windows" then
         return 
     end
+
+    -- init options
+    opt = opt or {}
     
-    -- find program, TODO from winreg
-    local program = find_program(opt.program or "vsjitdebugger", {})
-
-    -- find program version
-    local version = nil
-    if program and opt and opt.version then
-        version = find_programver(program)
-    end
-
-    -- ok?
-    return program, version
+    -- find program
+    return find_program(opt.program or "vsjitdebugger", {"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]"
+                                                         "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]"}
+                                                      , function (program) if not os.isfile(program) then raise() end end)
 end

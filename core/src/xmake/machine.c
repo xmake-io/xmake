@@ -93,6 +93,11 @@ tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
 
+// the winreg functions
+#ifdef TB_CONFIG_OS_WINDOWS
+tb_int_t xm_winreg_query(lua_State* lua);
+#endif
+
 // the string functions
 tb_int_t xm_string_strcmp(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
@@ -172,6 +177,15 @@ static luaL_Reg const g_string_functions[] =
 ,   { "startswith",     xm_string_startswith    }
 ,   { tb_null,          tb_null                 }
 };
+
+#ifdef TB_CONFIG_OS_WINDOWS
+// the winreg functions
+static luaL_Reg const g_winreg_functions[] = 
+{
+    { "query",          xm_winreg_query         }
+,   { tb_null,          tb_null                 }
+};
+#endif
 
 // the process functions
 static luaL_Reg const g_process_functions[] = 
@@ -418,6 +432,11 @@ xm_machine_ref_t xm_machine_init()
 
         // bind sandbox functions
         luaL_register(impl->lua, "sandbox", g_sandbox_functions);
+
+        // bind winreg functions 
+#ifdef TB_CONFIG_OS_WINDOWS
+        luaL_register(impl->lua, "winreg", g_winreg_functions);
+#endif
 
 #ifdef XM_CONFIG_API_HAVE_READLINE
         // bind readline functions

@@ -63,7 +63,7 @@ function sandbox_lib_detect_find_program._check(program, check)
 end
 
 -- find program
-function sandbox_lib_detect_find_program._find(name, dirs, check)
+function sandbox_lib_detect_find_program._find(name, pathes, check)
 
     -- attempt to check it directly in current environment 
     if sandbox_lib_detect_find_program._check(name, check) then
@@ -72,14 +72,36 @@ function sandbox_lib_detect_find_program._find(name, dirs, check)
 
     -- attempt to check it from the given directories
     if not path.is_absolute(name) then
-        for _, dir in ipairs(table.wrap(dirs)) do
+        for _, _path in ipairs(table.wrap(pathes)) do
 
-            -- TODO
-            -- dir is registry path?
+            -- handle winreg value .e.g [HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name]\\dir\\file
+            _path = _path:gsub("%[(.*)%]", function (regpath)
+
+                -- get registry value
+                local value, errors = winreg.query(regpath)
+                if not value then
+                    raise(errors)
+                end
+
+                -- file path not exists? attempt to parse path from `"path" xxx`
+                if not os.exists(value) then
+                    value = value:match("\"(.-)\"")
+                end
+
+                -- ok
+                return value
+            end)
+
+            -- get program path
+            local program_path = nil
+            if os.isfile(_path) then
+                program_path = _path
+            elseif os.isdir(_path) then
+                program_path = path.join(_path, name)
+            end
 
             -- the program path
-            local program_path = path.join(dir, name)
-            if os.isexec(program_path) then
+            if program_path and os.isexec(program_path) then
                 -- check it
                 if sandbox_lib_detect_find_program._check(program_path, check) then
                     return program_path
@@ -105,11 +127,11 @@ end
 
 -- find program
 --
--- @param name  the program name
--- @param dirs  the program directories
--- @param check the check script or command 
+-- @param name      the program name
+-- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes)
+-- @param check     the check script or command 
 --
--- @return      the program name or path
+-- @return          the program name or path
 --
 -- @code
 --
@@ -120,7 +142,7 @@ end
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_program.main(name, dirs, check)
+function sandbox_lib_detect_find_program.main(name, pathes, check)
 
     -- get detect cache 
     local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
@@ -133,7 +155,7 @@ function sandbox_lib_detect_find_program.main(name, dirs, check)
     end
 
     -- find executable program
-    result = sandbox_lib_detect_find_program._find(name, dirs, check) 
+    result = sandbox_lib_detect_find_program._find(name, pathes, check) 
 
     -- cache result
     cacheinfo[name] = utils.ifelse(result, result, false)

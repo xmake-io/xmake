@@ -47,15 +47,11 @@ function main(opt)
         return 
     end
     
-    -- find program, TODO from winreg
-    local program = find_program(opt.program or "windbg", {})
-
-    -- find program version
-    local version = nil
-    if program and opt and opt.version then
-        version = find_programver(program)
-    end
-
-    -- ok?
-    return program, version
+    -- init options
+    opt = opt or {}
+    
+    -- find program
+    return find_program(opt.program or "windbg", {"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]"
+                                                  "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]"}
+                                               , function (program) if not os.isfile(program) then raise() end end)
 end
