@@ -139,10 +139,10 @@ function sandbox_process.asyncrun(task, waitchars)
 end
 
 -- run jobs with processes
-function sandbox_process.runjobs(jobfunc, total, comax)
+function sandbox_process.runjobs(jobfunc, total, comax, timeout, timer)
 
     -- run them
-    local ok, errors = process.runjobs(jobfunc, total, comax)
+    local ok, errors = process.runjobs(jobfunc, total, comax, timeout, timer)
     if not ok then
         raise(errors)
     end

@@ -82,15 +82,20 @@ function process.asyncrun(task, waitchars)
 end
 
 -- run jobs with processes
-function process.runjobs(jobfunc, total, comax, timeout)
+function process.runjobs(jobfunc, total, comax, timeout, timer)
 
     -- init max coroutine count
     comax = comax or total
 
+    -- init timeout
+    timeout = timeout or -1
+
     -- make objects
-    local index = 1
-    local tasks = {}
-    local procs = {}
+    local index   = 1
+    local tasks   = {}
+    local procs   = {}
+    local indices = {}
+    local time    = os.mclock()
     repeat
 
         -- wait processes
@@ -99,9 +104,15 @@ function process.runjobs(jobfunc, total, comax, timeout)
         if procs_count > 0 then
 
             -- wait them
-            local count, procinfos = process.waitlist(procs, utils.ifelse(procs_count < comax and index <= total, 0, -1))
+            local count, procinfos = process.waitlist(procs, utils.ifelse(procs_count < comax and index <= total, 0, timeout))
             if count < 0 then
                 return false, string.format("wait processes(%d) failed(%d)", #procs, count)
+            end
+
+            -- timer is triggered? call timer
+            if timer and os.mclock() - time > timeout then
+                timer(indices)
+                time = os.mclock()
             end
 
             -- wait ok
@@ -141,16 +152,19 @@ function process.runjobs(jobfunc, total, comax, timeout)
         end
 
         -- update the pending tasks and procs
-        local tasks_pending = {}
-        local procs_pending = {}
+        local tasks_pending     = {}
+        local procs_pending     = {}
+        local indices_pending   = {}
         for taskid, job_task in ipairs(tasks) do
             if not tasks_finished[taskid] then
-                table.insert(tasks_pending, job_task)
-                table.insert(procs_pending, procs[taskid])
+                table.insert(tasks_pending,     job_task)
+                table.insert(procs_pending,     procs[taskid])
+                table.insert(indices_pending,   indices[taskid])
             end
         end
-        tasks = tasks_pending
-        procs = procs_pending
+        tasks   = tasks_pending
+        procs   = procs_pending
+        indices = indices_pending
 
         -- produce tasks
         while #tasks < comax and index <= total do
@@ -173,6 +187,7 @@ function process.runjobs(jobfunc, total, comax, timeout)
                 -- put task and proc to the pendings tasks
                 table.insert(tasks, job_task)
                 table.insert(procs, job_proc_or_errors)
+                table.insert(indices, index)
             end
 
             -- next index
