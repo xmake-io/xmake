@@ -151,7 +151,7 @@ tb_int_t xm_winreg_query(lua_State* lua)
             }
 
             // make value buffer
-            value = (tb_char_t*)tb_malloc0(valuesize);
+            value = (tb_char_t*)tb_malloc0(valuesize + 1);
             tb_assert_and_check_break(value);
 
             // get value result
@@ -183,7 +183,7 @@ tb_int_t xm_winreg_query(lua_State* lua)
             }
 
             // make value buffer
-            value = (tb_char_t*)tb_malloc0(valuesize);
+            value = (tb_char_t*)tb_malloc0(valuesize + 1);
             tb_assert_and_check_break(value);
 
             // get value result

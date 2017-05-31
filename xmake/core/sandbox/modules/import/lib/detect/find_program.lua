@@ -80,11 +80,11 @@ function sandbox_lib_detect_find_program._find(name, pathes, check)
                 -- get registry value
                 local value, errors = winreg.query(regpath)
                 if not value then
-                    raise(errors)
+                    utils.verror(errors)
                 end
 
                 -- file path not exists? attempt to parse path from `"path" xxx`
-                if not os.exists(value) then
+                if value and not os.exists(value) then
                     value = value:match("\"(.-)\"")
                 end
 
