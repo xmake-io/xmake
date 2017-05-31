@@ -28,15 +28,16 @@ local sandbox_lib_detect_find_file = sandbox_lib_detect_find_file or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local utils     = require("base/utils")
 local table     = require("base/table")
 local raise     = require("sandbox/modules/raise")
 
 -- find file
 --
--- @param name  the file name
--- @param dirs  the file directories
+-- @param name      the file name
+-- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes)
 --
--- @return      the file path
+-- @return          the file path
 --
 -- @code
 --
@@ -45,19 +46,44 @@ local raise     = require("sandbox/modules/raise")
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_file.main(name, dirs)
+function sandbox_lib_detect_find_file.main(name, pathes)
 
     -- find file
     local result = nil
-    for _, dir in ipairs(table.wrap(dirs)) do
+    for _, _path in ipairs(table.wrap(pathes)) do
 
-        -- TODO
-        -- dir is registry path?
+        -- handle winreg value .e.g [HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name]\\dir\\file
+        _path = _path:gsub("%[(.*)%]", function (regpath)
+
+            -- get registry value
+            local value, errors = winreg.query(regpath)
+            if not value then
+                utils.verror(errors)
+            end
+
+            -- file path not exists? attempt to parse path from `"path" xxx`
+            if value and not os.exists(value) then
+                value = value:match("\"(.-)\"")
+            end
+
+            -- ok
+            return value
+        end)
+
+        -- get file path
+        local filepath = nil
+        if os.isfile(_path) then
+            filepath = _path
+        elseif os.isdir(_path) then
+            filepath = path.join(_path, name)
+        end
 
         -- file exists?
-        for _, file in ipairs(os.files(path.join(dir, name))) do
-            result = file
-            break
+        if filepath then
+            for _, file in ipairs(os.files(filepath)) do
+                result = file
+                break
+            end
         end
     end
 

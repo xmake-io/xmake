@@ -33,10 +33,10 @@ local raise     = require("sandbox/modules/raise")
 
 -- find path
 --
--- @param name  the path name
--- @param dirs  the path directories
+-- @param name      the path name
+-- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes)
 --
--- @return      the path
+-- @return          the path
 --
 -- @code
 --
@@ -45,19 +45,44 @@ local raise     = require("sandbox/modules/raise")
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_path.main(name, dirs)
+function sandbox_lib_detect_find_path.main(name, pathes)
 
     -- find file
     local result = nil
-    for _, dir in ipairs(table.wrap(dirs)) do
+    for _, _path in ipairs(table.wrap(pathes)) do
 
-        -- TODO
-        -- dir is registry path?
+        -- handle winreg value .e.g [HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name]\\dir\\file
+        _path = _path:gsub("%[(.*)%]", function (regpath)
+
+            -- get registry value
+            local value, errors = winreg.query(regpath)
+            if not value then
+                utils.verror(errors)
+            end
+
+            -- file path not exists? attempt to parse path from `"path" xxx`
+            if value and not os.exists(value) then
+                value = value:match("\"(.-)\"")
+            end
+
+            -- ok
+            return value
+        end)
+
+        -- get file path
+        local filepath = nil
+        if os.isfile(_path) then
+            filepath = _path
+        elseif os.isdir(_path) then
+            filepath = path.join(_path, name)
+        end
 
         -- path exists?
-        for _, p in ipairs(os.filedirs(path.join(dir, name))) do
-            result = p
-            break
+        if filepath then
+            for _, p in ipairs(os.filedirs(filepath)) do
+                result = p
+                break
+            end
         end
     end
 
