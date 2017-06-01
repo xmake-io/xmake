@@ -121,6 +121,7 @@ function _toolchains(config)
     -- insert c/c++ tools to toolchains
     checker.toolchain_insert(toolchains, "cc",      "",     "cl.exe",           "the c compiler") 
     checker.toolchain_insert(toolchains, "cxx",     "",     "cl.exe",           "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "mrc",     "",     "rc.exe",           "the resource compiler") 
     checker.toolchain_insert(toolchains, "ld",      "",     "link.exe",         "the linker") 
     checker.toolchain_insert(toolchains, "ar",      "",     "link.exe -lib",    "the static library archiver") 
     checker.toolchain_insert(toolchains, "sh",      "",     "link.exe -dll",    "the shared library linker") 

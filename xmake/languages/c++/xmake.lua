@@ -38,7 +38,7 @@ language("c++")
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
     -- set mixing kinds
-    set_mixingkinds("cc", "cxx", "as")
+    set_mixingkinds("cc", "cxx", "as", "mrc")
 
     -- on load
     on_load("load")

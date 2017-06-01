@@ -585,7 +585,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
         for name, instance in pairs(languages) do
             for _, mixingkind in ipairs(table.wrap(instance:mixingkinds())) do
                 local targetflags = instance:targetflags()
-                for _targetkind, linkerkind in pairs(instance:targetkinds()) do
+                for _targetkind, linkerkind in pairs(table.wrap(instance:targetkinds())) do
                     
                     -- init linker info
                     linkerinfos[_targetkind] = linkerinfos[_targetkind] or {}
