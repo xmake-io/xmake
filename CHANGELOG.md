@@ -8,6 +8,7 @@
 * [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
 * Add `find_program`, `find_file` and `find_library` module interfaces.
 * Add `net.*` and `devel.*` extension modules
+* Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 
 ### Changes
 
@@ -19,6 +20,8 @@
 * [#111](https://github.com/tboox/xmake/issues/111): Add `--root` common option to allow run xmake command as root
 * [#113](https://github.com/tboox/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
 * Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
+* improve builtin-variables to support to get the value envirnoment and registry
+* Improve to detect vstudio sdk envirnoment
 
 ### Bugs fixed
 
@@ -302,6 +305,7 @@
 * [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
 * 添加`find_program`, `find_file` 和 `find_library` 等模块接口
 * 添加`net.*`和`devel.*`扩展模块
+* 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 
 ### 改进
 
@@ -313,6 +317,8 @@
 * [#111](https://github.com/tboox/xmake/issues/111): 添加`--root`通用选项去临时支持作为root运行
 * [#113](https://github.com/tboox/xmake/pull/113): 改进权限管理，现在作为root运行也是非常安全的
 * 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("iphoneos|arm*", function (target) end)`
+* 改进内置变量，支持环境变量和注册表数据的获取
+* 改进vstudio环境的探测
 
 ### Bugs修复
 
