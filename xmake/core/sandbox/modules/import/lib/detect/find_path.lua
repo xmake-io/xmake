@@ -43,6 +43,8 @@ local vformat   = require("sandbox/modules/vformat")
 --
 -- local p = find_path("include/test.h", { "/usr", "/usr/local"})
 -- local p = find_path("include/*.h", { "/usr", "/usr/local/**"})
+-- local p = find_path("lib/xxx", { "$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name)"})
+-- local p = find_path("lib/xxx", { "$(env PATH)", function () return val("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name"):match("\"(.-)\"") end})
 --
 -- @endcode
 --
@@ -53,7 +55,16 @@ function sandbox_lib_detect_find_path.main(name, pathes)
     for _, _path in ipairs(table.wrap(pathes)) do
 
         -- format path for builtin variables
-        _path = vformat(_path)
+        if type(_path) == "function" then
+            local ok, results = sandbox.load(_path) 
+            if ok then
+                _path = results or ""
+            else 
+                raise(results)
+            end
+        else
+            _path = vformat(_path)
+        end
 
         -- get file path
         local filepath = nil

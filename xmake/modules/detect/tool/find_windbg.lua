@@ -51,7 +51,10 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    return find_program(opt.program or "windbg", {"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]", 
-                                                  "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]"}
-                                               , function (program) if not os.isfile(program) then raise() end end)
+    return find_program(opt.program or "windbg", {function () 
+                                                    for _, reg in ipairs({"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"}) do
+                                                        return (val("reg " .. reg) or ""):match("\"(.-)\"")
+                                                    end
+                                                 end}
+                                              , function (program) if not os.isfile(program) then raise() end end)
 end

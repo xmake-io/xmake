@@ -87,7 +87,7 @@ function filter.reg(path)
     end
 
     -- query registry value
-    return (winreg.query(regpath)) 
+    return (winreg.query(path)) 
 end
 
 -- register handler
@@ -110,7 +110,7 @@ function filter:get(variable, handler)
     elseif variable:startswith("env ") then
         return filter.env(variable:sub(5))
     elseif variable:startswith("reg ") then
-        return filter:reg(variable:sub(5))
+        return filter.reg(variable:sub(5))
     end
 
     -- parse variable:mode

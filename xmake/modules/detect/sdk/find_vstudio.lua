@@ -49,6 +49,22 @@ function main()
     ,   ["4.2"]  = "4.2"
     }
 
+    -- init vsenvs
+    local vsenvs = 
+    {
+        ["14.0"] = "VS140COMNTOOLS"
+    ,   ["12.0"] = "VS120COMNTOOLS"
+    ,   ["11.0"] = "VS110COMNTOOLS"
+    ,   ["10.0"] = "VS100COMNTOOLS"
+    ,   ["9.0"]  = "VS90COMNTOOLS"
+    ,   ["8.0"]  = "VS80COMNTOOLS"
+    ,   ["7.1"]  = "VS71COMNTOOLS"
+    ,   ["7.0"]  = "VS70COMNTOOLS"
+    ,   ["6.0"]  = "VS60COMNTOOLS"
+    ,   ["5.0"]  = "VS50COMNTOOLS"
+    ,   ["4.2"]  = "VS42COMNTOOLS"
+    }
+    
     -- find vs2017 -> vs4.2
     local results = {}
     for _, version in ipairs({"15.0", "14.0", "12.0", "11.0", "10.0", "9.0", "8.0", "7.1", "7.0", "6.0", "5.0", "4.2"}) do
@@ -57,7 +73,8 @@ function main()
         local vcvarsall = find_file("vcvarsall.bat", {format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
                                                       format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
                                                       format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
-                                                      format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version)})
+                                                      format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
+                                                      format("$(env %s)\\..\\..\\VC", vsenvs[version] or "")})
 
         -- found?
         if vcvarsall then

@@ -76,7 +76,16 @@ function sandbox_lib_detect_find_program._find(name, pathes, check)
         for _, _path in ipairs(table.wrap(pathes)) do
 
             -- format path for builtin variables
-            _path = vformat(_path)
+            if type(_path) == "function" then
+                local ok, results = sandbox.load(_path) 
+                if ok then
+                    _path = results or ""
+                else 
+                    raise(results)
+                end
+            else
+                _path = vformat(_path)
+            end
 
             -- get program path
             local program_path = nil
@@ -125,6 +134,8 @@ end
 -- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"})
 -- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
 -- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
+-- local program = find_program("ccache", { "$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
+-- local program = find_program("ccache", { "$(env PATH)", function () return val("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"):match("\"(.-)\"") end})
 --
 -- @endcode
 --
