@@ -323,16 +323,6 @@ function project._interpreter()
 
             -- map it
             result = maps[variable]
-
-            -- deprecated for "$(OS)"
-            if result == nil and variable == "OS" then
-
-                -- get os:upper()
-                result = platform.os():upper()
-
-                -- deprecated
-                deprecated.add("$(\"OS\")", "$(\"os:upper\")")
-            end
         end
 
         -- ok?
