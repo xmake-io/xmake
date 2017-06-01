@@ -30,6 +30,7 @@ local os        = require("base/os")
 local path      = require("base/path")
 local table     = require("base/table")
 local raise     = require("sandbox/modules/raise")
+local vformat   = require("sandbox/modules/vformat")
 
 -- find path
 --
@@ -51,23 +52,8 @@ function sandbox_lib_detect_find_path.main(name, pathes)
     local result = nil
     for _, _path in ipairs(table.wrap(pathes)) do
 
-        -- handle winreg value .e.g [HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name]\\dir\\file
-        _path = _path:gsub("%[(.*)%]", function (regpath)
-
-            -- get registry value
-            local value, errors = winreg.query(regpath)
-            if not value then
-                utils.verror(errors)
-            end
-
-            -- file path not exists? attempt to parse path from `"path" xxx`
-            if value and not os.exists(value) then
-                value = value:match("\"(.-)\"")
-            end
-
-            -- ok
-            return value
-        end)
+        -- format path for builtin variables
+        _path = vformat(_path)
 
         -- get file path
         local filepath = nil

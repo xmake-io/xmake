@@ -51,7 +51,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    return find_program(opt.program or "vsjitdebugger", {"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]", 
-                                                         "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger]"}
+    return find_program(opt.program or "vsjitdebugger", {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)", 
+                                                         "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}
                                                       , function (program) if not os.isfile(program) then raise() end end)
 end

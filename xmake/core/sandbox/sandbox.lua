@@ -293,7 +293,7 @@ function sandbox.instance()
     -- find self instance for the current sandbox
     local instance = nil
     local level = 2
-    while level < 16 do
+    while level < 32 do
 
         -- get scope
         local scope = getfenv(level)
