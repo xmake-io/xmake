@@ -29,9 +29,18 @@ import("core.project.global")
 -- enter the given environment
 function _enter(name)
 
+    -- get vcvarsall
+    local vcvarsall = config.get("__vcvarsall") or global.get("__vcvarsall")
+    if not vcvarsall then
+        return 
+    end
+
+    -- get vs environment for the current arch
+    local vsenv = vcvarsall[config.get("arch") or ""] or {}
+
     -- get the pathes for the vs environment
     local old = nil
-    local new = config.get("__vsenv_" .. name) or global.get("__vsenv_" .. name)
+    local new = vsenv[name]
     if new then
 
         -- get the current pathes
@@ -45,7 +54,7 @@ function _enter(name)
     end
 
     -- return the previous environment
-    return old;
+    return old
 end
 
 -- leave the given environment
@@ -64,7 +73,6 @@ function _enter_toolchains()
     _g.libs      = _enter("lib")
     _g.includes  = _enter("include")
     _g.libpathes = _enter("libpath")
-
 end
 
 -- leave the toolchains environment (vs)
@@ -74,7 +82,6 @@ function _leave_toolchains()
     _leave("lib",       _g.libs)
     _leave("include",   _g.includes)
     _leave("libpath",   _g.libpathes)
-
 end
 
 -- enter the toolchains environment (vs)

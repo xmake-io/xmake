@@ -98,7 +98,7 @@ function filter:register(name, handler)
 end
 
 -- get variable value
-function filter:get(variable, handler)
+function filter:get(variable)
 
     -- check
     assert(variable)
@@ -120,20 +120,16 @@ function filter:get(variable, handler)
    
     -- handler it
     local result = nil
-    if handler then
+    for name, handler in pairs(self._HANDLERS) do
         result = handler(variable)
-    else
-        for name, handler in pairs(self._HANDLERS) do
-            result = handler(variable)
-            if result then
-                break
-            end
+        if result then
+            break
         end
     end
 
     -- TODO need improve
     -- handle mode
-    if mode then
+    if mode and result then
         if mode == "upper" then
             result = result:upper()
         elseif mode == "lower" then
@@ -159,23 +155,10 @@ function filter:handle(value)
     -- check
     assert(type(value) == "string")
 
-    -- filter value for all handlers
-    local count = 0
-    for name, handler in pairs(self._HANDLERS) do
-
-        -- filter the builtin variables
-        value, count = value:gsub("%$%((.-)%)", function (variable) 
-            return self:get(variable, handler) or ""
-        end)
-
-        -- end?
-        if count == 0 then
-            break
-        end
-    end
-
-    -- return old value
-    return value
+    -- filter the builtin variables
+    return (value:gsub("%$%((.-)%)", function (variable) 
+        return self:get(variable) or ""
+    end))
 end
 
 -- return module: filter

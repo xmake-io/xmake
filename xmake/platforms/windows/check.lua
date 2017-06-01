@@ -27,101 +27,54 @@ import("core.tool.tool")
 import("core.base.option")
 import("platforms.checker", {rootdir = os.programdir()})
 import("environment")
+import("detect.sdk.find_vstudio")
 
--- attempt to apply vs environment
-function _apply_vsenv(config, vs)
+-- attempt to check vs environment
+function _check_vsenv(config)
 
-    -- version => envname
-    local version2envname =
-    {
-        ["2015"]    = "VS140COMNTOOLS"
-    ,   ["2013"]    = "VS120COMNTOOLS"
-    ,   ["2012"]    = "VS110COMNTOOLS"
-    ,   ["2010"]    = "VS100COMNTOOLS"
-    ,   ["2008"]    = "VS90COMNTOOLS"
-    ,   ["2005"]    = "VS80COMNTOOLS"
-    ,   ["2003"]    = "VS71COMNTOOLS"
-    ,   ["7.0"]     = "VS70COMNTOOLS"
-    ,   ["6.0"]     = "VS60COMNTOOLS"
-    ,   ["5.0"]     = "VS50COMNTOOLS"
-    ,   ["4.2"]     = "VS42COMNTOOLS"
-    }
-    
-    -- get the envname
-    local envname = version2envname[vs]
-
-    -- attempt to get vcvarsall.bat from environment variables
-    local vcvarsall = nil
-    if envname then
-        local envalue = os.getenv(envname)
-        if envalue then
-            vcvarsall = format("%s\\..\\..\\VC\\vcvarsall.bat", envalue)
-        end
+    -- have been checked?
+    local vs = config.get("vs")
+    if vs and config.get("__vcvarsall") then
+        return vs
     end
 
-    -- attempt to get vcvarsall.bat from the full pathes 
-    if vcvarsall == nil or not os.isfile(vcvarsall) then
-        vcvarsall = nil
-        for _, driver in ipairs({'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'X', 'Y', 'Z'}) do
-            for _, programdir in ipairs({"Program Files (x86)", "Program Files"}) do
-                for _, kind in ipairs({"Community", "Professional", "Enterprise"}) do
-                    local filepath = format("%s:\\%s\\Microsoft Visual Studio\\%s\\%s\\VC\\Auxiliary\\Build\\vcvarsall.bat", driver, programdir, vs, kind)
-                    if os.isfile(filepath) then
-                        vcvarsall = filepath
-                        break
-                    end
-                end
-                if vcvarsall then 
-                    break
-                end
-            end
-            if vcvarsall then 
-                break
+    -- find vstudio
+    local vstudio = find_vstudio()
+    if vstudio then
+
+        -- make order vsver
+        local vsvers = {}
+        for vsver, _ in pairs(vstudio) do
+            if not vs or vs ~= vsver then
+                table.insert(vsvers, vsver)
             end
         end
-    end
-    
-    -- vcvarsall.bat not found
-    if vcvarsall == nil or not os.isfile(vcvarsall) then
-        if vcvarsall and option.get("verbose") then
-            print("not found %s", vcvarsall)
+        table.sort(vsvers, function (a, b) return a > b end)
+        if vs then
+            table.insert(vsvers, 1, vs)
         end
-        return 
+
+        -- get vcvarsall
+        for _, vsver in ipairs(vsvers) do
+            local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
+            local vsenv = vcvarsall[config.get("arch") or ""]
+            if vsenv and vsenv.path and vsenv.include and vsenv.lib then
+
+                -- save vsenv
+                config.set("__vcvarsall", vcvarsall)
+
+                -- check compiler
+                environment.enter("toolchains")
+                local toolpath = tool.check("cl.exe")
+                environment.leave("toolchains")
+
+                -- ok?
+                if toolpath then
+                    return vsver
+                end
+            end
+        end
     end
-
-    -- make the genvcvars.bat 
-    local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
-    local genvcvars_dat = os.tmpfile() .. "_genvcvars.dat"
-    local file = io.open(genvcvars_bat, "w")
-    file:print("@echo off")
-    file:print("call \"%s\" %s > nul", vcvarsall, config.get("arch"))
-    file:print("echo { > %s", genvcvars_dat)
-    file:print("echo     path = \"%%path%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   lib = \"%%lib%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   libpath = \"%%libpath%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   include = \"%%include%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   devenvdir = \"%%devenvdir%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   vsinstalldir = \"%%vsinstalldir%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   vcinstalldir = \"%%vcinstalldir%%\" >> %s", genvcvars_dat)
-    file:print("echo } >> %s", genvcvars_dat)
-    file:close()
-
-    -- run genvcvars.bat
-    os.run(genvcvars_bat)
-
-    -- replace "\" => "\\"
-    io.gsub(genvcvars_dat, "\\", "\\\\")
-
-    -- load all envirnoment variables
-    local variables = io.load(genvcvars_dat)
-
-    -- save the variables
-    for k, v in pairs(variables) do
-        config.set("__vsenv_" .. k, v)
-    end
-
-    -- ok
-    return true
 end
 
 -- clean temporary global configs
@@ -129,59 +82,14 @@ function _clean_global(config)
     
     -- clean it for global config (need not it)
     config.set("arch",                  nil)
-    config.set("__vsenv_path",          nil)
-    config.set("__vsenv_lib",           nil)
-    config.set("__vsenv_include",       nil)
-    config.set("__vsenv_libpath",       nil)
-    config.set("__vsenv_devenvdir",     nil)
-    config.set("__vsenv_vsinstalldir",  nil)
-    config.set("__vsenv_vcinstalldir",  nil)
-end
-
--- attempt to check complier
-function _check_compiler(config, vs)
-
-    -- apply vs envirnoment
-    if not _apply_vsenv(config, vs) then
-        return 
-    end
-
-    -- enter environment
-    environment.enter("toolchains")
-
-    -- done
-    local toolpath = tool.check("cl.exe")
-
-    -- leave environment
-    environment.leave("toolchains")
-
-    -- ok?
-    return toolpath 
+    config.set("__vcvarsall",           nil)
 end
 
 -- check the visual stdio
 function _check_vs(config)
 
     -- attempt to check the given vs version first
-    local vs = config.get("vs")
-    if vs and _check_compiler(config, vs) then
-        return 
-    end
-
-    -- attempt to check them from the envirnoment variables again
-    vs = nil
-    if not vs then
-        for _, version in ipairs({"2017", "2015", "2013", "2012", "2010", "2008", "2005", "2003", "7.0", "6.0", "5.0", "4.2"}) do
-
-            -- attempt to check it
-            if _check_compiler(config, version) then
-                vs = version
-                break
-            end
-        end
-    end
-
-    -- check ok? update it
+    local vs = _check_vsenv(config)
     if vs then
 
         -- save it
@@ -268,11 +176,6 @@ function main(kind, toolkind)
 
         -- import the given config
         local config = import("core.project." .. kind)
-
-        -- apply vs envirnoment (maybe config.arch has been updated)
-        if not _apply_vsenv(config, config.get("vs")) then
-            return 
-        end
 
         -- enter environment
         environment.enter("toolchains")

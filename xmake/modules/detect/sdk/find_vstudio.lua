@@ -25,10 +25,53 @@
 -- imports
 import("lib.detect.find_file")
 
+-- load vcvarsall environment variables
+function _load_vcvarsall(vcvarsall, arch)
+
+    -- make the genvcvars.bat 
+    local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
+    local genvcvars_dat = os.tmpfile() .. "_genvcvars.dat"
+    local file = io.open(genvcvars_bat, "w")
+    file:print("@echo off")
+    file:print("call \"%s\" %s > nul", vcvarsall, arch)
+    file:print("echo { > %s", genvcvars_dat)
+    file:print("echo     path = \"%%path%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   lib = \"%%lib%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   libpath = \"%%libpath%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   include = \"%%include%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   devenvdir = \"%%devenvdir%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   vsinstalldir = \"%%vsinstalldir%%\" >> %s", genvcvars_dat)
+    file:print("echo ,   vcinstalldir = \"%%vcinstalldir%%\" >> %s", genvcvars_dat)
+    file:print("echo } >> %s", genvcvars_dat)
+    file:close()
+
+    -- run genvcvars.bat
+    os.run(genvcvars_bat)
+
+    -- replace "\" => "\\"
+    io.gsub(genvcvars_dat, "\\", "\\\\")
+
+    -- load all envirnoment variables
+    local variables = io.load(genvcvars_dat)
+    if not variables then
+        return 
+    end
+
+    -- remove some empty entries
+    for _, name in ipairs({"path", "lib", "libpath", "include", "devenvdir", "vsinstalldir", "vcinstalldir"}) do
+        if variables[name] and #variables[name]:trim() == 0 then
+            variables[name] = nil
+        end
+    end
+
+    -- ok
+    return variables
+end
+
 -- find vstudio environment
 --
--- @return      { 2008 = {version = "9.0", vcvarsall = "C:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat"}
---              , 2017 = {version = "15.0", vcvarsall = "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat"}}
+-- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
+--              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
 --
 function main()
 
@@ -78,7 +121,13 @@ function main()
 
         -- found?
         if vcvarsall then
-            results[vsvers[version]] = {version = version, vcvarsall = vcvarsall}
+
+            -- load vcvarsall
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86")
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64")
+
+            -- save results
+            results[vsvers[version]] = {version = version, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
         end
     end
 

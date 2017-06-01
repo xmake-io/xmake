@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        get.lua
+-- @file        val.lua
 --
 
 -- load modules
@@ -29,12 +29,12 @@ local sandbox = require("sandbox/sandbox")
 --
 -- .e.g
 --
--- get("host")
--- get("env PATH")
--- get("shell echo hello xmake!")
--- get("reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name")
+-- local value = val("host")
+-- local value = val("env PATH")
+-- local value = val("shell echo hello xmake!")
+-- local value = val("reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name")
 --
-function get(name)
+function val(name)
 
     -- get the current sandbox instance
     local instance = sandbox.instance()
@@ -43,10 +43,13 @@ function get(name)
     -- get filter from the current sandbox
     local filter = instance:filter()
     if filter then
-        return filter:get(name)
+        return filter:get(name) or ""
     end
+
+    -- no this variable
+    return ""
 end
 
 -- return module
-return get
+return val
 
