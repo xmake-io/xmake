@@ -74,16 +74,14 @@ function sandbox_lib_detect_find_file.main(name, pathes)
         local filepath = nil
         if os.isfile(_path) then
             filepath = _path
-        elseif os.isdir(_path) then
+        else
             filepath = path.join(_path, name)
         end
 
         -- file exists?
-        if filepath then
-            for _, file in ipairs(os.files(filepath)) do
-                result = file
-                break
-            end
+        for _, file in ipairs(os.files(filepath)) do
+            result = file
+            break
         end
     end
 
