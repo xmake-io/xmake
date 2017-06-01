@@ -22,19 +22,19 @@ If you want to known more, please refer to:
 ##### via curl
 
 ```bash
-$ bash <(curl -fsSL https://github.com/tboox/xmake/raw/master/scripts/get.sh)
+$ bash <(curl -fsSL http://xmake.io/get.sh)
 ```
 
 ##### via wget
 
 ```bash
-$ bash <(wget https://github.com/tboox/xmake/raw/master/scripts/get.sh -O -)
+$ bash <(wget http://xmake.io/get.sh -O -)
 ```
 
 ##### via powershell
 
 ```bash
-$ Invoke-Expression (Invoke-Webrequest 'https://github.com/tboox/xmake/raw/master/scripts/get.ps1' -UseBasicParsing).Content
+$ Invoke-Expression (Invoke-Webrequest 'http://xmake.io/get.ps1' -UseBasicParsing).Content
 ```
 
 ## Simple description

@@ -28,19 +28,19 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 #### 使用curl
 
 ```bash
-$ bash <(curl -fsSL https://github.com/tboox/xmake/raw/master/scripts/get.sh)
+$ bash <(curl -fsSL http://xmake.io/get.sh)
 ```
 
 #### 使用wget
 
 ```bash
-$ bash <(wget https://github.com/tboox/xmake/raw/master/scripts/get.sh -O -)
+$ bash <(wget http://xmake.io/get.sh -O -)
 ```
 
 #### 使用powershell
 
 ```bash
-$ Invoke-Expression (Invoke-Webrequest 'https://github.com/tboox/xmake/raw/master/scripts/get.ps1' -UseBasicParsing).Content
+$ Invoke-Expression (Invoke-Webrequest 'http://xmake.io/get.ps1' -UseBasicParsing).Content
 ```
 
 ## 简单的工程描述
