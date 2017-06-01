@@ -70,7 +70,24 @@ function filter.shell(cmd)
     end
 
     -- return the shell result
-    return outdata or ""
+    return outdata 
+end
+
+-- filter the environment variables
+function filter.env(name)
+    return os.getenv(name) 
+end
+
+-- filter the winreg path
+function filter.reg(path)
+
+    -- must be windows
+    if os.host() ~= "windows" then
+        return 
+    end
+
+    -- query registry value
+    return (winreg.query(regpath)) 
 end
 
 -- register handler
@@ -80,11 +97,62 @@ function filter:register(name, handler)
     self._HANDLERS[name] = handler
 end
 
+-- get variable value
+function filter:get(variable, handler)
+
+    -- check
+    assert(variable)
+
+    -- is shell?
+    if variable:startswith("shell ") then
+        return filter.shell(variable:sub(7))
+    -- is environment variable?
+    elseif variable:startswith("env ") then
+        return filter.env(variable:sub(5))
+    elseif variable:startswith("reg ") then
+        return filter:reg(variable:sub(5))
+    end
+
+    -- parse variable:mode
+    local varmode   = variable:split(':')
+    local mode      = varmode[2]
+    variable        = varmode[1]
+   
+    -- handler it
+    local result = nil
+    if handler then
+        result = handler(variable)
+    else
+        for name, handler in pairs(self._HANDLERS) do
+            result = handler(variable)
+            if result then
+                break
+            end
+        end
+    end
+
+    -- TODO need improve
+    -- handle mode
+    if mode then
+        if mode == "upper" then
+            result = result:upper()
+        elseif mode == "lower" then
+            result = result:lower()
+        end
+    end
+
+    -- ok?
+    return result
+end
+
 -- filter the builtin variables: "hello $(variable)" for string
 --
 -- .e.g  
 --
 -- print("$(host)")
+-- print("$(env PATH)")
+-- print("$(shell echo hello xmake!)")
+-- print("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name)")
 --
 function filter:handle(value)
 
@@ -97,34 +165,7 @@ function filter:handle(value)
 
         -- filter the builtin variables
         value, count = value:gsub("%$%((.-)%)", function (variable) 
-
-            -- check
-            assert(variable)
-
-            -- is shell?
-            if variable:startswith("shell ") then
-                return filter.shell(variable:sub(7, -1))
-            end
-
-            -- parse variable:mode
-            local varmode   = variable:split(':')
-            local mode      = varmode[2]
-            variable        = varmode[1]
-           
-            -- handler it
-            local result = handler(variable)
-
-            -- handle mode
-            if mode then
-                if mode == "upper" then
-                    result = result:upper()
-                elseif mode == "lower" then
-                    result = result:lower()
-                end
-            end
-
-            -- ok?
-            return result
+            return self:get(variable, handler) or ""
         end)
 
         -- end?
