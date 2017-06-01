@@ -36,6 +36,7 @@ local global        = require("project/global")
 local config        = require("project/config")
 local project       = require("project/project")
 local package       = require("project/package")
+local sandbox_os    = require("sandbox/modules/os")
 
 -- the directories of tasks
 function task._directories()
@@ -194,10 +195,10 @@ function task._interpreter()
             -- init maps
             local maps = 
             {
-                host        = xmake._HOST
-            ,   nuldev      = os.nuldev()
-            ,   tmpdir      = os.tmpdir()
-            ,   curdir      = os.curdir()
+                host        = os.host()
+            ,   tmpdir      = function () return os.tmpdir() end
+            ,   curdir      = function () return os.curdir() end
+            ,   scriptdir   = function () return sandbox_os.scriptdir() end
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = xmake._PROJECT_DIR
@@ -207,6 +208,9 @@ function task._interpreter()
 
             -- map it
             result = maps[variable]
+            if type(result) == "function" then
+                result = result()
+            end
         end 
 
         -- ok?
