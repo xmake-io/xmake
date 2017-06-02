@@ -8,7 +8,7 @@ self.$config = {
     repo: 'tboox/xmake',
     twitter: 'waruqi',
     url: 'http://xmake.io',
-    'edit-link': 'https://github.com/tboox/xmake/blob/master/docs',
+    'edit-link': 'https://github.com/tboox/xmake/blob/dev/docs',
     nav: {
     default: [
       {
