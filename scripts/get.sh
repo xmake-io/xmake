@@ -124,43 +124,32 @@ then
         my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
     fi
 fi
-# PATHclone=$PATH
-# patharr=($PATHclone)
+
 if [ "$prefix" = "" ]
 then
     prefix=~/.local
 fi
-# for st in "${patharr[@]}"
-# do
-#     if [[ "$st" = "$HOME"* ]]
-#     then
-#         cwd=$PWD
-#         mkdir -p "$st"
-#         cd "$st" || continue
-#         echo $$ > $$xmake_getter_test 2>/dev/null || continue
-#         rm $$xmake_getter_test 2>/dev/null || continue
-#         cd .. || continue
-#         mkdir -p share 2>/dev/null || continue
-#         prefix=$(pwd)
-#         cd "$cwd" || my_exit 'Chdir Error'
-#         break
-#     fi
-# done
+
 if [ "x$prefix" != x ]
 then
     make -C /tmp/$$xmake_getter --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
     $sudoprefix make -C /tmp/$$xmake_getter --no-print-directory install || my_exit 'Install Fail'
 fi
-shell_profile(){
-    if   [[ "$SHELL" = */zsh ]]; then echo ~/.zshrc
-    elif [[ "$SHELL" = */ksh ]]; then echo ~/.kshrc
-    else echo ~/.bash_profile; fi
+install_profile(){
+    profile="[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile"
+    if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
+    echo "export PATH=$prefix/bin:\$PATH" > ~/.xmake/profile
+    if   [[ "$SHELL" = */zsh ]]; then echo $profile >> ~/.zshrc
+    elif [[ "$SHELL" = */ksh ]]; then echo $profile >> ~/.kshrc
+    elif [[ "$SHELL" = */bash ]]; then echo $profile >> ~/.bashrc
+    fi
+    echo $profile >> ~/.bash_profile 
 }
 if xmake --version >/dev/null 2>&1; then xmake --version; else
-    echo "export PATH=$prefix/bin:\$PATH" >> "$(shell_profile)"
     export PATH=$prefix/bin:$PATH
     xmake --version
+    install_profile
     echo "Reload shell profile by running the following command now!"
-    echo -e "\x1b[1msource '$(shell_profile)'\x1b[0m"
+    echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
 fi
