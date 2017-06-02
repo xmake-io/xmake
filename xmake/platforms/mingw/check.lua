@@ -23,8 +23,8 @@
 --
 
 -- imports
-import("core.tool.tool")
-import("platforms.checker", {rootdir = os.programdir()})
+import("detect.sdk.find_cross_toolchains")
+import(".checker")
 
 -- get toolchains
 function _toolchains(config)
@@ -34,24 +34,20 @@ function _toolchains(config)
         return _g.TOOLCHAINS
     end
 
-    -- get toolchains
-    local toolchainsdir = config.get("toolchains")
-    if not toolchainsdir then
-        local sdkdir = config.get("sdk")
-        if sdkdir then
-            toolchainsdir = path.join(sdkdir, "bin")
-        end
+    -- init arch
+    local arch = config.get("arch")
+    if not arch or arch == "i386" then
+        arch = "i686"
     end
 
-    -- get cross
+    -- find cross toolchains
     local cross = ""
-    if toolchainsdir then
-        local ldpathes = os.match(path.join(toolchainsdir, "*-ld"))
-        for _, ldpath in ipairs(ldpathes) do
-            local ldname = path.basename(ldpath)
-            if ldname then
-                cross = ldname:sub(1, -3)
-            end
+    for _, toolchain in ipairs(find_cross_toolchains(config.get("sdk") or config.get("toolchains"), {bin = config.get("toolchains"), cross = config.get("cross")})) do
+        if toolchain.bin and toolchain.cross and toolchain.cross:find(arch) then
+            config.set("cross", toolchain.cross)
+            config.set("toolchains", toolchain.bin)
+            cross = toolchain.cross
+            break
         end
     end
 

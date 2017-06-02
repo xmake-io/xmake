@@ -23,8 +23,7 @@
 --
 
 -- imports
-import("core.tool.tool")
-import("platforms.checker", {rootdir = os.programdir()})
+import(".checker")
 
 -- check the as
 function _check_as(shellname)
