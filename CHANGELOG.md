@@ -9,6 +9,7 @@
 * Add `find_program`, `find_file` and `find_library` module interfaces.
 * Add `net.*` and `devel.*` extension modules
 * Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
+* Support to compile the microsoft resource file (.rc)
 
 ### Changes
 
@@ -306,6 +307,7 @@
 * 添加`find_program`, `find_file` 和 `find_library` 等模块接口
 * 添加`net.*`和`devel.*`扩展模块
 * 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
+* 增加对微软.rc资源文件的编译支持，当在windows上编译时，可以增加资源文件了
 
 ### 改进
 
