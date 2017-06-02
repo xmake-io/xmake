@@ -22,7 +22,7 @@
 * [#113](https://github.com/tboox/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
 * Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
 * improve builtin-variables to support to get the value envirnoment and registry
-* Improve to detect vstudio sdk envirnoment
+* Improve to detect vstudio sdk and cross toolchains envirnoment
 
 ### Bugs fixed
 
@@ -320,7 +320,7 @@
 * [#113](https://github.com/tboox/xmake/pull/113): 改进权限管理，现在作为root运行也是非常安全的
 * 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("iphoneos|arm*", function (target) end)`
 * 改进内置变量，支持环境变量和注册表数据的获取
-* 改进vstudio环境的探测
+* 改进vstudio环境和交叉工具链的探测
 
 ### Bugs修复
 
