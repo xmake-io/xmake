@@ -33,4 +33,9 @@ target("demo")
 
     -- add the common source files
     add_files("**.c") 
+
+    -- add the resource files 
+    if is_plat("windows") then
+        add_files("*.rc")
+    end
        

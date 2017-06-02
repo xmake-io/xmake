@@ -31,6 +31,10 @@ RequestExecutionLevel admin
 !define MUI_ABORTWARNING
 
 ;--------------------------------
+; Icon
+!define MUI_ICON "..\docs\favicon.ico"
+ 
+;--------------------------------
 ; Pages
 
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE.md"
@@ -40,7 +44,7 @@ RequestExecutionLevel admin
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
- 
+
 ;--------------------------------
 ; Languages
  
