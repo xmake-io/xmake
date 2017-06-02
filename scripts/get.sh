@@ -12,6 +12,8 @@ else
     sudoprefix=
 fi
 
+tmpdir=/tmp/.xmake_getter$$
+
 remote_get_content(){
     if curl --version >/dev/null 2>&1
     then
@@ -57,7 +59,7 @@ my_exit(){
         echo "$1"
         echo -ne '\x1b[0m'
     fi
-    rm -rf /tmp/$$xmake_getter 2>/dev/null
+    rm -rf $tmpdir 2>/dev/null
     if [ "x$2" != x ]
     then
         if [ $rv -eq 0 ];then rv=$2;fi
@@ -104,23 +106,23 @@ then
 fi
 if [ 'x__local__' != "x$branch" ]
 then
-    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" /tmp/$$xmake_getter || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" $tmpdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     if [ x != "x$2" ]
     then
-        cd /tmp/$$xmake_getter || my_exit 'Chdir Error'
+        cd $tmpdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
     fi
 else
-    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || echo thisshouldnotbeafilename)" /tmp/$$xmake_getter || my_exit "$(echo -e 'Clone Fail\nLocal repo might be not found')"
+    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || echo thisshouldnotbeafilename)" $tmpdir || my_exit "$(echo -e 'Clone Fail\nLocal repo might be not found')"
 fi
 if [ 'x__install_only__' != "x$2" ]
 then
-    make -C /tmp/$$xmake_getter --no-print-directory build 
+    make -C $tmpdir --no-print-directory build 
     rv=$?
     if [ $rv -ne 0 ]
     then
-        make -C /tmp/$$xmake_getter/core --no-print-directory error
+        make -C $tmpdir/core --no-print-directory error
         my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
     fi
 fi
@@ -132,9 +134,9 @@ fi
 
 if [ "x$prefix" != x ]
 then
-    make -C /tmp/$$xmake_getter --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
+    make -C $tmpdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
-    $sudoprefix make -C /tmp/$$xmake_getter --no-print-directory install || my_exit 'Install Fail'
+    $sudoprefix make -C $tmpdir --no-print-directory install || my_exit 'Install Fail'
 fi
 write_profile()
 {
