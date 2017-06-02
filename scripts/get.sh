@@ -136,20 +136,24 @@ then
 else
     $sudoprefix make -C /tmp/$$xmake_getter --no-print-directory install || my_exit 'Install Fail'
 fi
-install_profile(){
-    profile="[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile"
+write_profile()
+{
+    grep -sq ".xmake/profile" $1 || echo "[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile" >> $1
+}
+install_profile()
+{
     if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
     echo "export PATH=$prefix/bin:\$PATH" > ~/.xmake/profile
-    if   [[ "$SHELL" = */zsh ]]; then echo $profile >> ~/.zshrc
-    elif [[ "$SHELL" = */ksh ]]; then echo $profile >> ~/.kshrc
-    elif [[ "$SHELL" = */bash ]]; then echo $profile >> ~/.bashrc
+    if   [[ "$SHELL" = */zsh ]]; then write_profile ~/.zshrc
+    elif [[ "$SHELL" = */ksh ]]; then write_profile ~/.kshrc
+    elif [[ "$SHELL" = */bash ]]; then write_profile ~/.bashrc
     fi
-    echo $profile >> ~/.bash_profile 
+    write_profile ~/.bash_profile 
 }
+install_profile
 if xmake --version >/dev/null 2>&1; then xmake --version; else
-    export PATH=$prefix/bin:$PATH
+    source ~/.xmake/profile
     xmake --version
-    install_profile
     echo "Reload shell profile by running the following command now!"
     echo -e "\x1b[1msource ~/.xmake/profile\x1b[0m"
 fi
