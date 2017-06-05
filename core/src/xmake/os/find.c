@@ -97,8 +97,9 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                 tb_assert(!tb_strcmp(path, rootdir));
                 tb_assert(rootlen + 1 <= tb_strlen(path));
 
-                // skip the rootdir 
-                path += rootlen + 1;
+                // skip the rootdir if not "."
+                if (tb_strcmp(rootdir, "."))
+                    path += rootlen + 1;
 
                 // exclude pathes
                 tb_int_t i = 0;

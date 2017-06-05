@@ -26,7 +26,7 @@
 local sandbox_core_project_target = sandbox_core_project_target or {}
 
 -- load modules
-local project   = require("project/project")
+local target    = require("project/target")
 local raise     = require("sandbox/modules/raise")
 
 -- get the filename from the given name and kind
