@@ -34,8 +34,10 @@ local target            = require("project/target")
 local config            = require("project/config")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
-local find_file         = import("lib.detect.find_file", {anonymous = true})
-local find_pkg_config   = import("detect.tool.find_pkg_config", {anonymous = true})
+
+-- import sandbox modules
+import("lib.detect.find_file")
+import("detect.tool.find_pkg_config")
 
 -- get link name from the file name
 function sandbox_lib_detect_find_library._link(filename)

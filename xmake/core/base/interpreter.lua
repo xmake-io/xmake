@@ -647,7 +647,8 @@ function interpreter:_script(script)
         script = function (...)
        
             -- import it
-            return import(modulename, {anonymous = true})(...)
+            _g._module = _g._module or import(modulename, {anonymous = true})
+            return _g._module(...)
         end
     end
 
