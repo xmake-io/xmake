@@ -151,6 +151,11 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
         return utils.ifelse(result, result, nil)
     end
 
+    -- add default search pathes 
+    if os.host() ~= "windows" then
+        pathes = table.join(table.wrap(pathes), "/usr/local/lib", "/usr/lib")
+    end
+
     -- find executable program
     result = sandbox_lib_detect_find_program._find(name, pathes, check) 
 

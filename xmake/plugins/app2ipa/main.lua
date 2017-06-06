@@ -24,15 +24,13 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.tool")
+import("detect.tool.find_zip")
 
 -- main
 function main()
 
-    -- check the zip
-    local zip = tool.check("zip", nil, function (shellname)
-                        os.run("%s -v", shellname)
-                    end)
+    -- find zip
+    local zip = find_zip()
     assert(zip, "zip not found!")
 
     -- get the .app file path

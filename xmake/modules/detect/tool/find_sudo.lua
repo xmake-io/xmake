@@ -42,7 +42,7 @@ import("lib.detect.find_programver")
 function main(opt)
     
     -- find program
-    local program = find_program("sudo", { "/usr/bin", "/usr/local/bin"}, "-h")
+    local program = find_program("sudo", {}, "-h")
 
     -- find program version
     local version = nil

@@ -79,6 +79,11 @@ function sandbox_lib_detect_find_path.main(name, pathes)
             result = p
             break
         end
+
+        -- found?
+        if result then
+            break
+        end
     end
 
     -- ok?

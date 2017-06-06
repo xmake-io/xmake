@@ -19,38 +19,37 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        load.lua
+-- @file        find_pkg_config.lua
 --
 
 -- imports
-import("core.project.config")
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- load it
-function main()
+-- find pkg_config 
+--
+-- @param opt   the argument options, .e.g {version = true}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local pkg_config = find_pkg_config()
+-- local pkg_config, version = find_pkg_config({version = true})
+-- 
+-- @endcode
+--
+function main(opt)
+    
+    -- find program
+    local program = find_program("pkg-config")
 
-    -- init flags for architecture
-    local archflags = nil
-    local arch = config.get("arch")
-    if arch then
-        if arch == "x86_64" then archflags = "-m64"
-        elseif arch == "i386" then archflags = "-m32"
-        else archflags = "-arch " .. arch
-        end
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
     end
-    _g.cxflags = { archflags }
-    _g.asflags = { archflags }
-    _g.ldflags = { archflags }
-    _g.shflags = { archflags }
 
-    -- init linkdirs and includedirs
-    local sdkdir = config.get("sdk") 
-    if sdkdir then
-        _g.includedirs = {path.join(sdkdir, "include")}
-        _g.linkdirs    = {path.join(sdkdir, "lib")}
-    end
-
-    -- ok
-    return _g
+    -- ok?
+    return program, version
 end
-
-

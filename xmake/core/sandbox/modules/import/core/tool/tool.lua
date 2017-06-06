@@ -42,7 +42,7 @@ end
 function sandbox_core_tool.check(shellname, dirs, check)
 
     -- check it
-    return tool.check(shellname, dirs or platform.tooldirs(), check)
+    return tool.check(shellname, dirs, check)
 end
 
 -- return module

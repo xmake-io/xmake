@@ -42,7 +42,7 @@ import("lib.detect.find_programver")
 function main(opt)
     
     -- find program
-    local program = find_program("7z", { "/usr/bin", "/usr/local/bin"}, "--help")
+    local program = find_program("7z", {}, "--help")
 
     -- find program version
     local version = nil

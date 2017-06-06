@@ -42,7 +42,7 @@ import("lib.detect.find_programver")
 function main(opt)
     
     -- find program
-    local program = find_program("tar", { "/usr/bin", "/usr/local/bin"})
+    local program = find_program("tar")
 
     -- find program version
     local version = nil

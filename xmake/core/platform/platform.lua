@@ -108,13 +108,6 @@ function _instance:archs()
     return self._INFO.archs
 end
 
--- get the platform tooldirs
-function _instance:tooldirs()
-
-    -- get it
-    return self._INFO.tooldirs
-end
-
 -- the directories of platform
 function platform._directories()
 
@@ -147,7 +140,6 @@ function platform._interpreter()
         ,   "platform.set_hosts"
         ,   "platform.set_archs"
         ,   "platform.set_menu"
-        ,   "platform.set_tooldirs"
         ,   "platform.set_installdir"
         }
     ,   script =
@@ -162,6 +154,11 @@ function platform._interpreter()
         {
             -- platform.set_xxx
             "platform.set_environment"
+        }
+    ,   dictionary =
+        {
+            -- platform.set_xxx
+            "platform.set_formats"
         }
     }
 
@@ -300,11 +297,6 @@ end
 -- get the platform archs
 function platform.archs(plat)
     return platform.get("archs", plat)
-end
-
--- get the tool directories
-function platform.tooldirs(plat)
-    return platform.get("tooldirs", plat)
 end
 
 -- get the format of the given target kind for platform

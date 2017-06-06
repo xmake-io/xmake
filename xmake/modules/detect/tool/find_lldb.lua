@@ -46,7 +46,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "lldb", { "/usr/bin", "/usr/local/bin"})
+    local program = find_program(opt.program or "lldb")
 
     -- find program version
     local version = nil

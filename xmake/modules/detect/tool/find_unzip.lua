@@ -42,7 +42,7 @@ import("lib.detect.find_programver")
 function main(opt)
     
     -- find program
-    local program = find_program("unzip", { "/usr/bin", "/usr/local/bin"}, "-v")
+    local program = find_program("unzip", {}, "-v")
 
     -- find program version
     local version = nil

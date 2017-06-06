@@ -34,8 +34,8 @@ platform("watchos")
     -- set archs
     set_archs("armv7k", "i386")
 
-    -- set tooldirs
-    set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+    -- set formats
+    set_formats {static = {"lib", ".a"}, object = {"", ".o"}, shared = {"lib", ".dylib"}, symbol = {"", ".sym"}}
 
     -- on check
     on_check("check")

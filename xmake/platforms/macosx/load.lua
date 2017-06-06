@@ -28,13 +28,6 @@ import("core.project.config")
 -- load it
 function main()
 
-    -- init the file formats
-    _g.formats          = {}
-    _g.formats.static   = {"lib", ".a"}
-    _g.formats.object   = {"",    ".o"}
-    _g.formats.shared   = {"lib", ".dylib"}
-    _g.formats.symbol   = {"",    ".sym"}
-
     -- init flags for architecture
     local arch          = config.get("arch")
     local target_minver = config.get("target_minver")

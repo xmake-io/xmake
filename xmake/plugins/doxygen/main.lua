@@ -24,17 +24,15 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.tool")
 import("core.project.config")
 import("core.project.project")
+import("detect.tool.find_doxygen")
 
 -- main
 function main()
 
-    -- check the doxygen
-    local doxygen = tool.check("doxygen", nil, function (shellname)
-                        os.run("%s -v", shellname)
-                    end)
+    -- find doxygen
+    local doxygen = find_doxygen()
     assert(doxygen, "doxygen not found!")
 
     -- generate doxyfile first

@@ -42,7 +42,7 @@ import("lib.detect.find_programver")
 function main(opt)
     
     -- find program
-    local program = find_program("curl", { "/usr/bin", "/usr/local/bin"})
+    local program = find_program("curl")
 
     -- find program version
     local version = nil

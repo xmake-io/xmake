@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("core.tool.tool")
+import("detect.tool.find_lipo")
 
 -- main
 --
@@ -39,10 +39,8 @@ function main(...)
     end
     args = args[1]
 
-    -- check the lipo
-    local lipo = tool.check("xcrun lipo", nil, function (shellname)
-                        os.run("xcrun -find lipo")
-                    end)
+    -- find the lipo
+    local lipo = find_lipo()
     assert(lipo, "lipo not found!")
 
     -- run it

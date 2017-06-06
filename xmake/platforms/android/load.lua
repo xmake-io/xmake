@@ -28,13 +28,6 @@ import("core.project.config")
 -- load it
 function main()
 
-    -- init the file formats
-    _g.formats          = {}
-    _g.formats.static   = {"lib", ".a"}
-    _g.formats.object   = {"",    ".o"}
-    _g.formats.shared   = {"lib", ".so"}
-    _g.formats.symbol   = {"",    ".sym"}
-
     -- init flags
     local arch = config.get("arch")
     if arch:startswith("arm64") then

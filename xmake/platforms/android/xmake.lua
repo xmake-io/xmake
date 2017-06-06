@@ -34,8 +34,8 @@ platform("android")
     -- set archs
     set_archs("armv5te", "armv6", "armv7-a", "armv8-a", "arm64-v8a")
 
-    -- set tooldirs
-    set_tooldirs("/usr/bin", "/usr/local/bin", "/opt/bin", "/opt/local/bin")
+    -- set formats
+    set_formats {static = {"lib", ".a"}, object = {"", ".o"}, shared = {"lib", ".so"}, symbol = {"", ".sym"}}
 
     -- on check
     on_check("check")
