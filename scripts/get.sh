@@ -114,7 +114,7 @@ then
         cd - || my_exit 'Chdir Error'
     fi
 else
-    cp -r "$(git rev-parse --show-toplevel 2>/dev/null || echo thisshouldnotbeafilename)" $tmpdir || my_exit "$(echo -e 'Clone Fail\nLocal repo might be not found')"
+    tmpdir=`pwd`
 fi
 if [ 'x__install_only__' != "x$2" ]
 then
