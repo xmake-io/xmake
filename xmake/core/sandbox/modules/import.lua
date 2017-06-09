@@ -260,7 +260,7 @@ end
 -- => inherit the all interfaces of core.platform to the current scope
 --
 -- local test = import("test", {rootdir = "/tmp/xxx", anonymous = true})
--- test()
+-- => only return imported module and do not cache it
 --
 -- @note the polymiorphism is not supported for import.inherit mode now.
 --
@@ -303,7 +303,7 @@ function sandbox_import.import(name, args)
     local modules_sandbox_dir = path.join(xmake._CORE_DIR, "sandbox/modules/import")
 
     -- the extension modules directory
-    local modules_extension_dir = path.join(xmake._PROGRAM_DIR, "modules")
+    local modules_extension_dir = path.join(os.programdir(), "modules")
 
     -- the global modules directory for users
     local modules_global_dir = path.join(global.directory(), "modules")
