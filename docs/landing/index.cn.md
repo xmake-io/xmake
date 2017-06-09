@@ -94,7 +94,7 @@ $ xmake run -d console
 
 * 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * 主页：[tboox.org](http://www.tboox.org/cn)
-* 社区：[Google Group](https://groups.google.com/forum/#!forum/xmake)
+* 社区：[TBOOX开源社区](https://github.com/tboox/community/issues)
 * 聊天：[![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * QQ群：343118190
 * 微信公众号：tboox-os

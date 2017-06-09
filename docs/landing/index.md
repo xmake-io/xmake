@@ -94,5 +94,5 @@ $ xmake run -d console
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * Homepage：[tboox.org](http://www.tboox.org)
-* Community：[Google Group](https://groups.google.com/forum/#!forum/xmake)
+* Community：[tboox@community](https://github.com/tboox/community/issues)
 * ChatRoom：[![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
