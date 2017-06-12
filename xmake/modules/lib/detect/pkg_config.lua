@@ -29,7 +29,7 @@ import("detect.tool.find_pkg_config")
 -- get package info
 --
 -- @param name  the package name
--- @param opt   the argument options, {version = true}
+-- @param opt   the argument options, {version = true, configdirs = {"/xxxx/pkgconfig/"}}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
 --
@@ -45,6 +45,13 @@ function info(name, opt)
     local pkg_config = find_pkg_config()
     if not pkg_config then
         return 
+    end
+
+    -- add PKG_CONFIG_PATH
+    local configdirs = nil
+    if opt and opt.configdirs then
+        configdirs = os.getenv("PKG_CONFIG_PATH")
+        os.addenv("PKG_CONFIG_PATH", unpack(table.wrap(opt.configdirs)))
     end
 
     -- get libs and cflags
@@ -90,6 +97,11 @@ function info(name, opt)
             result = result or {}
             result.version = version
         end
+    end
+
+    -- restore PKG_CONFIG_PATH
+    if configdirs then
+        os.setenv("PKG_CONFIG_PATH", configdirs)
     end
 
     -- ok?
