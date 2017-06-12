@@ -35,6 +35,9 @@ local cache             = require("project/cache")
 local project           = require("project/project")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
+local find_file         = import("lib.detect.find_file")
+local find_library      = import("lib.detect.find_library")
+local pkg_config        = import("lib.detect.pkg_config")
 
 -- find package from repositories
 function sandbox_lib_detect_find_package._find_from_repositories(name, opt)
@@ -56,7 +59,44 @@ end
 
 -- find package from system
 function sandbox_lib_detect_find_package._find_from_system(name, opt)
-    -- TODO
+
+    -- init links and pathes
+    local links  = opt.links or {}
+    local pathes = opt.pathes or {}
+
+    -- attempt to add search pathes from pkg-config
+    local pkginfo = pkg_config.find(name, {version = true})
+    if not pkginfo and not name:startswith("lib") then
+        pkginfo = pkg_config.find("lib" .. name, {version = true})
+    end
+    if pkginfo then
+        table.join2(links, pkginfo.links)
+        table.join2(pathes, pkginfo.linkdirs)
+        table.join2(pathes, pkginfo.includedirs)
+    end
+
+    -- find library 
+    local result = nil
+    for _, link in ipairs(links) do
+        local libinfo = find_library(link, pathes)
+        if libinfo then
+            result          = result or {}
+            result.links    = table.join(result.links or {}, libinfo.link)
+            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+        end
+    end
+    if result and result.linkdirs then
+        result.linkdirs = table.unique(result.linkdirs)
+    end
+
+    -- save version and includedirs if exists
+    if pkginfo and result then
+        result.version = pkginfo.version
+        result.includedirs = table.join(result.includedirs or {}, pkginfo.includedirs)
+    end
+
+    -- ok
+    return result
 end
 
 -- find package
@@ -70,7 +110,8 @@ function sandbox_lib_detect_find_package._find(name, opt)
     ,   sandbox_lib_detect_find_package._find_from_system
     }
 
-    -- find it
+    -- find it, TODO match version
+    opt = opt or {}
     for _, find in ipairs(findscripts) do
         local package = find(name, opt)
         if package then
@@ -82,7 +123,7 @@ end
 -- find package 
 --
 -- @param name      the package name
--- @param opt       the package options. e.g. {version = ">1.0.1", pathes = {"/usr/lib"}}
+-- @param opt       the package options. e.g. {version = ">1.0.1", pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}, version = "1.0.2"}
 --
@@ -91,6 +132,7 @@ end
 -- local package = find_package("openssl")
 -- local package = find_package("openssl", {version = ">1.0.1"})
 -- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, version = ">1.0.1"})
+-- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, links = {"ssl", "crypto"}, includes = {"ssl.h"}})
 -- 
 -- @endcode
 --

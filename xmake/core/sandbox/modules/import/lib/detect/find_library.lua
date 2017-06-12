@@ -34,10 +34,8 @@ local target            = require("project/target")
 local config            = require("project/config")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
-
--- import sandbox modules
-import("lib.detect.find_file")
-import("detect.tool.find_pkg_config")
+local find_file         = import("lib.detect.find_file")
+local pkg_config        = import("lib.detect.pkg_config")
 
 -- get link name from the file name
 function sandbox_lib_detect_find_library._link(filename)
@@ -84,24 +82,13 @@ function sandbox_lib_detect_find_library.main(names, paths, kinds)
     local arch = config.get("arch") or os.arch()
 
     -- attempt to add search pathes from pkg-config
-    local pkg_config = find_pkg_config()
-    if pkg_config then
-        for _, name in ipairs(table.wrap(names)) do
-
-            -- attempt to get -L/xxx/dir
-            local ok, libs_only_L = os.iorunv(pkg_config, {"--libs-only-L", name})
-            if not ok and not name:startswith("lib") then 
-                ok, libs_only_L = os.iorunv(pkg_config, {"--libs-only-L", "lib" .. name})
-            end
-
-            -- add linkdir to pathes
-            if libs_only_L then
-                local linkdir = (libs_only_L:match("%-L(.+)") or ""):trim()
-                if os.isdir(linkdir) then
-                    table.insert(pathes, linkdir)
-                    break
-                end
-            end
+    for _, name in ipairs(table.wrap(names)) do
+        local pkginfo = pkg_config.find(name)
+        if not pkginfo and not name:startswith("lib") then
+            pkginfo = pkg_config.find("lib" .. name)
+        end
+        if pkginfo and pkginfo.linkdirs then
+            table.join2(pathes, pkginfo.linkdirs)
         end
     end
 
