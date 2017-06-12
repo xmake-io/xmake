@@ -23,9 +23,10 @@
 --
 
 -- imports
+import("lib.detect.find_library")
 import("detect.tool.find_pkg_config")
 
--- find package  
+-- get package info
 --
 -- @param name  the package name
 -- @param opt   the argument options, {version = true}
@@ -34,11 +35,11 @@ import("detect.tool.find_pkg_config")
 --
 -- @code 
 --
--- local pkginfo = pkg_config.find("openssl")
+-- local pkginfo = pkg_config.info("openssl")
 -- 
 -- @endcode
 --
-function find(name, opt)
+function info(name, opt)
     
     -- attempt to add search pathes from pkg-config
     local pkg_config = find_pkg_config()
@@ -80,7 +81,7 @@ function find(name, opt)
         end
     end
 
-    -- find version
+    -- get version
     if opt and opt.version then
 
         -- get version
@@ -89,6 +90,49 @@ function find(name, opt)
             result = result or {}
             result.version = version
         end
+    end
+
+    -- ok?
+    return result
+end
+
+-- find package 
+--
+-- @param name  the package name
+-- @param opt   the argument options, {version = true}
+--
+-- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
+--
+-- @code 
+--
+-- local pkginfo = pkg_config.find("openssl")
+-- 
+-- @endcode
+--
+function find(name, opt)
+
+    -- get package info
+    local pkginfo = info(name, opt)
+    if not pkginfo then
+        return 
+    end
+    
+    -- find library 
+    local result = nil
+    for _, link in ipairs(table.wrap(pkginfo.links)) do
+        local libinfo = find_library(link, pkginfo.linkdirs)
+        if libinfo then
+            result          = result or {}
+            result.links    = table.join(result.links or {}, libinfo.link)
+            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+        end
+    end
+
+    -- found?
+    if result and result.links then
+        result.version      = pkginfo.version
+        result.linkdirs     = table.unique(result.linkdirs)
+        result.includedirs  = table.join(result.includedirs or {}, pkginfo.includedirs)
     end
 
     -- ok?

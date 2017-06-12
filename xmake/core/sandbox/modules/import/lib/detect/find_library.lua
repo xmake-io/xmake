@@ -31,11 +31,9 @@ local path              = require("base/path")
 local utils             = require("base/utils")
 local table             = require("base/table")
 local target            = require("project/target")
-local config            = require("project/config")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
 local find_file         = import("lib.detect.find_file")
-local pkg_config        = import("lib.detect.pkg_config")
 
 -- get link name from the file name
 function sandbox_lib_detect_find_library._link(filename)
@@ -67,36 +65,13 @@ end
 -- 
 -- @endcode
 --
-function sandbox_lib_detect_find_library.main(names, paths, kinds)
+function sandbox_lib_detect_find_library.main(names, pathes, kinds)
 
     -- init pathes
     pathes = table.wrap(pathes)
 
     -- init kinds
     kinds = kinds or {"static", "shared"}
-
-    -- get current platform
-    local plat = config.get("plat") or os.host()
-
-    -- get current architecture
-    local arch = config.get("arch") or os.arch()
-
-    -- attempt to add search pathes from pkg-config
-    for _, name in ipairs(table.wrap(names)) do
-        local pkginfo = pkg_config.find(name)
-        if not pkginfo and not name:startswith("lib") then
-            pkginfo = pkg_config.find("lib" .. name)
-        end
-        if pkginfo and pkginfo.linkdirs then
-            table.join2(pathes, pkginfo.linkdirs)
-        end
-    end
-
-    -- add default search pathes on pc host
-    if plat == "macosx" or (plat == "linux" and arch == os.arch()) then
-        table.insert(pathes, "/usr/local/lib")
-        table.insert(pathes, "/usr/lib")
-    end
 
     -- find library file from the given pathes
     for _, name in ipairs(table.wrap(names)) do

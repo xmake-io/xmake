@@ -32,6 +32,7 @@ local utils             = require("base/utils")
 local table             = require("base/table")
 local option            = require("base/option")
 local cache             = require("project/cache")
+local config            = require("project/config")
 local project           = require("project/project")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
@@ -57,27 +58,41 @@ function sandbox_lib_detect_find_package._find_from_modules(name, opt)
     end
 end
 
--- find package from system
-function sandbox_lib_detect_find_package._find_from_system(name, opt)
+-- find package from pkg-config
+function sandbox_lib_detect_find_package._find_from_pkg_config(name, opt)
+    return pkg_config.find(name, {version = true})
+end
 
-    -- init links and pathes
-    local links  = opt.links or {}
-    local pathes = opt.pathes or {}
+-- find package from system directories
+function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
-    -- attempt to add search pathes from pkg-config
-    local pkginfo = pkg_config.find(name, {version = true})
-    if not pkginfo and not name:startswith("lib") then
-        pkginfo = pkg_config.find("lib" .. name, {version = true})
+    -- get current platform
+    local plat = config.get("plat") or os.host()
+
+    -- get current architecture
+    local arch = config.get("arch") or os.arch()
+
+    -- add default search pathes on pc host
+    local pathes = {}
+    if plat == "macosx" or (plat == "linux" and arch == os.arch()) then
+        table.insert(pathes, "/usr/local/lib")
+        table.insert(pathes, "/usr/lib")
+        table.insert(pathes, "/opt/local/lib")
+        table.insert(pathes, "/opt/lib")
     end
-    if pkginfo then
-        table.join2(links, pkginfo.links)
-        table.join2(pathes, pkginfo.linkdirs)
-        table.join2(pathes, pkginfo.includedirs)
+
+    -- attempt to get links from pkg-config
+    local links = opt.links
+    if not links then
+        local pkginfo = pkg_config.info(name)
+        if pkginfo then
+            links = pkginfo.links
+        end
     end
 
     -- find library 
     local result = nil
-    for _, link in ipairs(links) do
+    for _, link in ipairs(table.wrap(links)) do
         local libinfo = find_library(link, pathes)
         if libinfo then
             result          = result or {}
@@ -85,14 +100,10 @@ function sandbox_lib_detect_find_package._find_from_system(name, opt)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
         end
     end
-    if result and result.linkdirs then
-        result.linkdirs = table.unique(result.linkdirs)
-    end
 
-    -- save version and includedirs if exists
-    if pkginfo and result then
-        result.version = pkginfo.version
-        result.includedirs = table.join(result.includedirs or {}, pkginfo.includedirs)
+    -- found?
+    if result and result.links then
+        result.linkdirs = table.unique(result.linkdirs)
     end
 
     -- ok
@@ -107,7 +118,8 @@ function sandbox_lib_detect_find_package._find(name, opt)
     {
         sandbox_lib_detect_find_package._find_from_repositories
     ,   sandbox_lib_detect_find_package._find_from_modules
-    ,   sandbox_lib_detect_find_package._find_from_system
+    ,   sandbox_lib_detect_find_package._find_from_pkg_config
+    ,   sandbox_lib_detect_find_package._find_from_systemdirs
     }
 
     -- find it, TODO match version
@@ -155,7 +167,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     cacheinfo[name] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set("find_program", cacheinfo)
+    detectcache:set("find_package", cacheinfo)
     detectcache:flush()
 
     -- trace
