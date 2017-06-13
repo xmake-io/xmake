@@ -36,7 +36,8 @@ local vformat   = require("sandbox/modules/vformat")
 -- find file
 --
 -- @param name      the file name
--- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes)
+-- @param pathes    the search pathes (.e.g dirs, pathes, winreg pathes)
+-- @param opt       the options, .e.g {suffixes = {"/aa", "/bb"}}
 --
 -- @return          the file path
 --
@@ -49,11 +50,29 @@ local vformat   = require("sandbox/modules/vformat")
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_file.main(name, pathes)
+function sandbox_lib_detect_find_file.main(name, pathes, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- init pathes
+    pathes = table.wrap(pathes)
+    
+    -- append suffixes to pathes
+    local suffixes = table.wrap(opt.suffixes)
+    if #suffixes > 0 then
+        local pathes_new = {}
+        for _, parent in ipairs(pathes) do
+            for _, suffix in ipairs(suffixes) do
+                table.insert(pathes_new, path.join(parent, suffix))
+            end
+        end
+        pathes = pathes_new
+    end
 
     -- find file
     local result = nil
-    for _, _path in ipairs(table.wrap(pathes)) do
+    for _, _path in ipairs(pathes) do
 
         -- format path for builtin variables
         if type(_path) == "function" then

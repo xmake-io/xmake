@@ -53,30 +53,30 @@ end
 -- find library 
 --
 -- @param names     the library names
--- @param pathes    the library pathes
--- @param kinds     the library kinds, .e.g {"static", "shared"}
+-- @param pathes    the search pathes
+-- @param opt       the options, .e.g {kind = "static/shared", suffixes = {"/aa", "/bb"}}
 --
 -- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a"}
 --
 -- @code 
 --
--- local library = find_library("crypto")
 -- local library = find_library({"crypto", "cryp*"}, {"/usr/lib", "/usr/local/lib"})
+-- local library = find_library(crypto, {"/usr/lib", "/usr/local/lib"}, {kind = "static"})
 -- 
 -- @endcode
 --
-function sandbox_lib_detect_find_library.main(names, pathes, kinds)
+function sandbox_lib_detect_find_library.main(names, pathes, opt)
 
-    -- init pathes
-    pathes = table.wrap(pathes)
+    -- init options
+    opt = opt or {}
 
     -- init kinds
-    kinds = kinds or {"static", "shared"}
+    kinds = opt.kind or {"static", "shared"}
 
     -- find library file from the given pathes
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
-            local filepath = find_file(target.filename(name, kind), pathes)
+            local filepath = find_file(target.filename(name, kind), pathes, opt)
             if filepath then
                 local filename = path.filename(filepath)
                 return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = sandbox_lib_detect_find_library._link(filename)}

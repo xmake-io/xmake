@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("lib.detect.find_file")
+import("lib.detect.find_path")
 import("lib.detect.find_library")
 
 -- find openssl 
@@ -33,5 +33,42 @@ import("lib.detect.find_library")
 -- @return      see the return value of find_package()
 --
 function main(opt)
-    -- TODO
+
+    -- for windows platform
+    --
+    -- http://www.slproweb.com/products/Win32OpenSSL.html
+    --
+    if opt.plat == "windows" then
+
+        -- init bits
+        local bits = ifelse(opt.arch == "x64", "64", "32")
+
+        -- init search pathes
+        local pathes = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL (" .. bits .. "-bit)_is1;Inno Setup: App Path)",
+                        "$(env PROGRAMFILES)/OpenSSL",
+                        "$(env PROGRAMFILES)/OpenSSL-Win" .. bits,
+                        "C:/OpenSSL",
+                        "C:/OpenSSL-Win" .. bits}
+
+        -- find library
+        local result = {links = {}, linkdirs = {}, includedirs = {}}
+        for _, name in ipairs({"libssl", "libcrypto"}) do
+            local linkinfo = find_library(name, pathes, {suffixes = "lib"})
+            if linkinfo then
+                table.insert(result.links, linkinfo.link)
+                table.insert(result.linkdirs, linkinfo.linkdir)
+            end
+        end
+
+        -- not found?
+        if #result.links ~= 2 then
+            return 
+        end
+
+        -- find include
+        table.insert(result.includedirs, find_path("openssl/ssl.h", pathes, {suffixes = "include"}))
+
+        -- ok
+        return result
+    end
 end

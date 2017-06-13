@@ -106,11 +106,6 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
         end
     end
 
-    -- found?
-    if result and result.links then
-        result.linkdirs = table.unique(result.linkdirs)
-    end
-
     -- ok
     return result
 end
@@ -133,12 +128,22 @@ function sandbox_lib_detect_find_package._find(name, opt)
     end
 
     -- find it
+    local result = nil
     for _, find in ipairs(findscripts) do
-        local package = find(name, opt)
-        if package then
-            return package
+        result = find(name, opt)
+        if result then
+            break
         end
     end
+
+    -- remove repeat
+    if result then
+        result.linkdirs    = table.unique(result.linkdirs)
+        result.includedirs = table.unique(result.includedirs)
+    end
+
+    -- ok?
+    return result
 end
 
 -- find package 
