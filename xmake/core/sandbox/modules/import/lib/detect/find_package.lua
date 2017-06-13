@@ -126,11 +126,6 @@ function sandbox_lib_detect_find_package._find(name, opt)
     ,   sandbox_lib_detect_find_package._find_from_modules
     }
 
-    -- init options
-    opt = opt or {}
-    opt.plat = opt.plat or config.get("plat") or os.host()
-    opt.arch = opt.arch or config.get("arch") or os.arch()
-
     -- find package from the current host platform
     if opt.plat == os.host() and opt.arch == os.arch() then
         table.insert(findscripts, sandbox_lib_detect_find_package._find_from_pkg_config)
@@ -168,8 +163,16 @@ function sandbox_lib_detect_find_package.main(name, opt)
     -- get detect cache 
     local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
  
+    -- init options
+    opt = opt or {}
+    opt.plat = opt.plat or config.get("plat") or os.host()
+    opt.arch = opt.arch or config.get("arch") or os.arch()
+
+    -- init cache key
+    local key = "find_package_" .. opt.plat .. "_" .. opt.arch
+
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get("find_package") or {}
+    local cacheinfo = detectcache:get(key) or {}
     local result = cacheinfo[name]
     if result ~= nil then
         return utils.ifelse(result, result, nil)
@@ -182,7 +185,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     cacheinfo[name] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set("find_package", cacheinfo)
+    detectcache:set(key, cacheinfo)
     detectcache:flush()
 
     -- trace
