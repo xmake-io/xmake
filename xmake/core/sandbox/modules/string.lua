@@ -46,12 +46,14 @@ function sandbox_string.vformat(format, ...)
     local instance = sandbox.instance()
     assert(instance)
 
-    -- ignore %$(...)
-    format = format:gsub("%%%$", "__$__")
-
     -- format string if exists arguments
     local result = format
     if #{...} > 0 then
+
+        -- escape "%$", "%(", "%)" to '$', '(', ')'
+        format = format:gsub("%%([%$%(%)])", "%%%%%1")
+
+        -- try to format it
         result = string.format(format, ...)
     end
     assert(result)
@@ -61,9 +63,6 @@ function sandbox_string.vformat(format, ...)
     if filter then
         result = filter:handle(result)
     end
-
-    -- escape to $(...)
-    result = result:gsub("__%$__", "$")
 
     -- ok?
     return result

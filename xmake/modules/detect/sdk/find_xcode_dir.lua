@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("lib.detect.find_path")
+import("lib.detect.find_directory")
 
 -- find xcode directory 
 --
@@ -36,5 +36,5 @@ import("lib.detect.find_path")
 -- @endcode
 --
 function main()
-    return find_path("Xcode.app", {"/Applications"}) or find_path("Xcode*.app", {"/Applications"})
+    return find_directory("Xcode.app", {"/Applications"}) or find_directory("Xcode*.app", {"/Applications"})
 end
