@@ -6,7 +6,7 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
 * [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
-* Add `find_program`, `find_file` and `find_library` module interfaces.
+* Add `find_program`, `find_file`, `find_library` and `find_package` module interfaces.
 * Add `net.*` and `devel.*` extension modules
 * Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * Support to compile the microsoft resource file (.rc)
@@ -304,7 +304,7 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
 * [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
-* 添加`find_program`, `find_file` 和 `find_library` 等模块接口
+* 添加`find_program`, `find_file`, `find_library`和`find_package` 等模块接口
 * 添加`net.*`和`devel.*`扩展模块
 * 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * 增加对微软.rc资源文件的编译支持，当在windows上编译时，可以增加资源文件了

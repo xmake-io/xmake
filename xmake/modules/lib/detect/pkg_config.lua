@@ -118,7 +118,7 @@ function info(name, opt)
         local version = try { function() return os.iorunv(pkg_config, {"--modversion", name}) end }
         if version then
             result = result or {}
-            result.version = version
+            result.version = version:trim()
         end
     end
 
@@ -137,9 +137,9 @@ end
 -- find package 
 --
 -- @param name  the package name
--- @param opt   the argument options, {version = true}
+-- @param opt   the argument options, {plat = "", arch = "", version = "1.0.1"}
 --
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
+-- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}}
 --
 -- @code 
 --
@@ -152,6 +152,12 @@ function find(name, opt)
     -- get package info
     local pkginfo = info(name, opt)
     if not pkginfo then
+        return 
+    end
+
+    -- match version?
+    opt = opt or {}
+    if opt.version and pkginfo.version ~= opt.version then
         return 
     end
     
@@ -168,7 +174,6 @@ function find(name, opt)
 
     -- found?
     if result and result.links then
-        result.version      = pkginfo.version
         result.linkdirs     = table.unique(result.linkdirs)
         result.includedirs  = table.join(result.includedirs or {}, pkginfo.includedirs)
     end

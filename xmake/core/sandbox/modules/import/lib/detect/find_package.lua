@@ -66,21 +66,20 @@ end
 
 -- find package from pkg-config
 function sandbox_lib_detect_find_package._find_from_pkg_config(name, opt)
-    return pkg_config.find(name, {version = true})
+    return pkg_config.find(name, opt)
 end
 
 -- find package from system directories
 function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
-    -- get current platform
-    local plat = config.get("plat") or os.host()
-
-    -- get current architecture
-    local arch = config.get("arch") or os.arch()
+    -- cannot get the version of package
+    if opt.version then
+        return 
+    end
 
     -- add default search pathes on pc host
     local pathes = {}
-    if plat == "macosx" or (plat == "linux" and arch == os.arch()) then
+    if (opt.plat == "linux" or opt.plat == "macosx") then
         table.insert(pathes, "/usr/local/lib")
         table.insert(pathes, "/usr/lib")
         table.insert(pathes, "/opt/local/lib")
@@ -125,12 +124,20 @@ function sandbox_lib_detect_find_package._find(name, opt)
         sandbox_lib_detect_find_package._find_from_project_packagedirs
     ,   sandbox_lib_detect_find_package._find_from_repositories
     ,   sandbox_lib_detect_find_package._find_from_modules
-    ,   sandbox_lib_detect_find_package._find_from_pkg_config
-    ,   sandbox_lib_detect_find_package._find_from_systemdirs
     }
 
-    -- find it, TODO match version
+    -- init options
     opt = opt or {}
+    opt.plat = opt.plat or config.get("plat") or os.host()
+    opt.arch = opt.arch or config.get("arch") or os.arch()
+
+    -- find package from the current host platform
+    if opt.plat == os.host() and opt.arch == os.arch() then
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_pkg_config)
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_systemdirs)
+    end
+
+    -- find it
     for _, find in ipairs(findscripts) do
         local package = find(name, opt)
         if package then
@@ -142,15 +149,16 @@ end
 -- find package 
 --
 -- @param name      the package name
--- @param opt       the package options. e.g. {version = ">1.0.1", pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}}
+-- @param opt       the package options. e.g. {plat = "iphoneos", arch = "arm64", version = "1.0.1", pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}}
 --
--- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}, version = "1.0.2"}
+-- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
 -- @code 
 --
 -- local package = find_package("openssl")
--- local package = find_package("openssl", {version = ">1.0.1"})
--- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, version = ">1.0.1"})
+-- local package = find_package("openssl", {version = "1.0.1"})
+-- local package = find_package("openssl", {plat = "iphoneos"})
+-- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, version = "1.0.1"})
 -- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, links = {"ssl", "crypto"}, includes = {"ssl.h"}})
 -- 
 -- @endcode
