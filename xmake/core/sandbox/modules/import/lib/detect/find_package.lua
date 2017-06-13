@@ -39,7 +39,12 @@ local import            = require("sandbox/modules/import")
 local find_file         = import("lib.detect.find_file")
 local find_library      = import("lib.detect.find_library")
 local pkg_config        = import("lib.detect.pkg_config")
-local find_brew         = import("detect.tool.find_brew")
+
+-- find package from project package directories
+function sandbox_lib_detect_find_package._find_from_project_packagedirs(name, opt)
+
+    -- TODO
+end
 
 -- find package from repositories
 function sandbox_lib_detect_find_package._find_from_repositories(name, opt)
@@ -61,23 +66,7 @@ end
 
 -- find package from pkg-config
 function sandbox_lib_detect_find_package._find_from_pkg_config(name, opt)
-
-    -- get pkg-config path from brew
-    local brew = find_brew()
-    local configdirs = nil
-    if brew then
-        local ok, prefix = os.iorunv(brew, {"--prefix", name})
-        if ok and prefix then
-            prefix = path.join(prefix:trim(), "lib", "pkgconfig")
-            if os.isdir(prefix) then
-                configdirs = prefix
-            end
-        end
-    end
-
-
-    -- find package
-    return pkg_config.find(name, {version = true, configdirs = configdirs})
+    return pkg_config.find(name, {version = true})
 end
 
 -- find package from system directories
@@ -133,7 +122,8 @@ function sandbox_lib_detect_find_package._find(name, opt)
     -- init find scripts
     local findscripts = 
     {
-        sandbox_lib_detect_find_package._find_from_repositories
+        sandbox_lib_detect_find_package._find_from_project_packagedirs
+    ,   sandbox_lib_detect_find_package._find_from_repositories
     ,   sandbox_lib_detect_find_package._find_from_modules
     ,   sandbox_lib_detect_find_package._find_from_pkg_config
     ,   sandbox_lib_detect_find_package._find_from_systemdirs

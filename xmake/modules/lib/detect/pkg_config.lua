@@ -24,6 +24,7 @@
 
 -- imports
 import("lib.detect.find_library")
+import("detect.tool.find_brew")
 import("detect.tool.find_pkg_config")
 
 -- get package info
@@ -47,15 +48,37 @@ function info(name, opt)
         return 
     end
 
+    -- init options and cache
+    opt      = opt or {}
+    _g._INFO = _g._INFO or {}
+
+    -- get it from cache first
+    local result = _g._INFO[name]
+    if result then
+        return result
+    end
+
+    -- get pkg-config path from brew
+    local brew = find_brew()
+    local configdirs = opt.configdirs or {}
+    if brew then
+        local prefix = try { function () return os.iorunv(brew, {"--prefix", name}) end }
+        if prefix then
+            prefix = path.join(prefix:trim(), "lib", "pkgconfig")
+            if os.isdir(prefix) then
+                table.insert(configdirs, prefix)
+            end
+        end
+    end
+
     -- add PKG_CONFIG_PATH
-    local configdirs = nil
-    if opt and opt.configdirs then
-        configdirs = os.getenv("PKG_CONFIG_PATH")
-        os.addenv("PKG_CONFIG_PATH", unpack(table.wrap(opt.configdirs)))
+    local configdirs_old = nil
+    if #configdirs > 0 then
+        configdirs_old = os.getenv("PKG_CONFIG_PATH")
+        os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
     -- get libs and cflags
-    local result = nil
     local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
     if flags then
 
@@ -89,7 +112,7 @@ function info(name, opt)
     end
 
     -- get version
-    if opt and opt.version then
+    if opt.version then
 
         -- get version
         local version = try { function() return os.iorunv(pkg_config, {"--modversion", name}) end }
@@ -100,9 +123,12 @@ function info(name, opt)
     end
 
     -- restore PKG_CONFIG_PATH
-    if configdirs then
-        os.setenv("PKG_CONFIG_PATH", configdirs)
+    if configdirs_old then
+        os.setenv("PKG_CONFIG_PATH", configdirs_old)
     end
+
+    -- save result to cache
+    _g._INFO[name] = result
 
     -- ok?
     return result
