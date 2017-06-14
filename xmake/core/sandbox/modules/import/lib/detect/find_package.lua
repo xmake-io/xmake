@@ -79,17 +79,22 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
     -- add default search pathes on pc host
     local pathes = {}
-    if (opt.plat == "linux" or opt.plat == "macosx") then
+    if opt.plat == "linux" or opt.plat == "macosx" then
         table.insert(pathes, "/usr/local/lib")
         table.insert(pathes, "/usr/lib")
         table.insert(pathes, "/opt/local/lib")
         table.insert(pathes, "/opt/lib")
+        if opt.plat == "linux" and opt.arch == "x86_64" then
+            table.insert(pathes, "/usr/local/lib/x86_64-linux-gnu")
+            table.insert(pathes, "/usr/lib/x86_64-linux-gnu")
+        end
     end
 
     -- attempt to get links from pkg-config
+    local pkginfo = nil
     local links = opt.links
     if not links then
-        local pkginfo = pkg_config.info(name)
+        pkginfo = pkg_config.info(name)
         if pkginfo then
             links = pkginfo.links
         end
@@ -104,6 +109,11 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
             result.links    = table.join(result.links or {}, libinfo.link)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
         end
+    end
+
+    -- not found? only add links
+    if not result and pkginfo and pkginfo.links then
+        result = {links = pkginfo.links}
     end
 
     -- ok
