@@ -29,6 +29,9 @@ import("lib.detect.find_programver")
 -- find tool from modules
 function _find_from_modules(name, opt)
 
+    -- replace "+" to "x"
+    name = name:gsub("%+", "x")
+
     -- "detect.tool.find_xxx" exists?
     if os.isfile(path.join(os.programdir(), "modules", "detect", "tool", "find_" .. name .. ".lua")) then
         local find_tool = import("detect.tool.find_" .. name)

@@ -93,7 +93,7 @@ function sandbox_lib_detect_find_programver.main(program, command, parse)
     cacheinfo[program] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set("find_program", cacheinfo)
+    detectcache:set("find_programver", cacheinfo)
     detectcache:flush()
 
     -- ok?
