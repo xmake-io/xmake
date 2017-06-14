@@ -123,7 +123,7 @@ end
 -- find program
 --
 -- @param name      the program name
--- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes)
+-- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes, script pathes)
 -- @param check     the check script or command 
 --
 -- @return          the program name or path
@@ -131,11 +131,11 @@ end
 -- @code
 --
 -- local program = find_program("ccache")
--- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"})
--- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
--- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
--- local program = find_program("ccache", { "$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
--- local program = find_program("ccache", { "$(env PATH)", function () return val("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"):match("\"(.-)\"") end})
+-- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"})
+-- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
+-- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
+-- local program = find_program("ccache", {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
+-- local program = find_program("ccache", {"$(env PATH)", function () return "/usr/local/bin" end})
 --
 -- @endcode
 --
