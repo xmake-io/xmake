@@ -26,7 +26,7 @@
 import("core.base.option")
 import("detect.tool.find_sudo")
 
--- sudo run shell with administrator permission
+-- sudo run command with administrator permission
 --
 -- .e.g
 -- _sudo(os.run, "echo", "hello xmake!")
@@ -34,8 +34,8 @@ import("detect.tool.find_sudo")
 function _sudo(runner, cmd, ...)
 
     -- find sudo
-    local program = find_sudo()
-    assert(program, "sudo not found!")
+    local sudo = find_sudo()
+    assert(sudo, "sudo not found!")
 
     -- get current path environment
     local pathenv = os.getenv("PATH") 
@@ -45,26 +45,26 @@ function _sudo(runner, cmd, ...)
         pathenv = pathenv:gsub("\"", "\\\"")
 
         -- run it with administrator permission and preserve parent environment
-        runner(program .. " env PATH=\"" .. pathenv .. "\" " .. cmd, ...)
+        runner(sudo .. " env PATH=\"" .. pathenv .. "\" " .. cmd, ...)
     else
         -- run it with administrator permission
-        runner(program .. " " .. cmd, ...)
+        runner(sudo .. " " .. cmd, ...)
     end
 end
 
--- sudo run shell with administrator permission and arguments list
+-- sudo run command with administrator permission and arguments list
 --
 -- .e.g
 -- _sudov(os.runv, {"echo", "hello xmake!"})
 --
-function _sudov(runner, shellname, argv)
+function _sudov(runner, program, argv)
 
     -- find sudo
-    local program = find_sudo()
-    assert(program, "sudo not found!")
+    local sudo = find_sudo()
+    assert(sudo, "sudo not found!")
 
     -- run it with administrator permission and preserve parent environment
-    runner(program, table.join("env", "PATH=" .. os.getenv("PATH"), shellname, argv))
+    runner(sudo, table.join("env", "PATH=" .. os.getenv("PATH"), program, argv))
 end
 
 -- sudo run lua script with administrator permission and arguments list
@@ -94,44 +94,44 @@ function has()
     return find_sudo() ~= nil
 end
 
--- sudo run shell
+-- sudo run command
 function run(cmd, ...)
     return _sudo(os.run, cmd, ...)
 end
 
--- sudo run shell with arguments list
-function runv(shellname, argv)
-    return _sudov(os.run, shellname, argv)
+-- sudo run command with arguments list
+function runv(program, argv)
+    return _sudov(os.run, program, argv)
 end
 
--- sudo quietly run shell and echo verbose info if [-v|--verbose] option is enabled
+-- sudo quietly run command and echo verbose info if [-v|--verbose] option is enabled
 function vrun(cmd, ...)
     return _sudo(os.vrun, cmd, ...)
 end
 
--- sudo quietly run shell with arguments list and echo verbose info if [-v|--verbose] option is enabled
-function vrunv(shellname, argv)
-    return _sudov(os.vrunv, shellname, argv)
+-- sudo quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
+function vrunv(program, argv)
+    return _sudov(os.vrunv, program, argv)
 end
 
--- sudo run shell and return output and error data
+-- sudo run command and return output and error data
 function iorun(cmd, ...)
     return _sudo(os.iorun, cmd, ...)
 end
 
--- sudo run shell and return output and error data
-function iorunv(shellname, argv)
-    return _sudov(os.iorunv, shellname, argv)
+-- sudo run command and return output and error data
+function iorunv(program, argv)
+    return _sudov(os.iorunv, program, argv)
 end
 
--- sudo execute shell 
+-- sudo execute command 
 function exec(cmd, ...)
     return _sudo(os.exec, cmd, ...)
 end
 
--- sudo execute shell with arguments list
-function execv(shellname, argv)
-    return _sudov(os.execv, shellname, argv)
+-- sudo execute command with arguments list
+function execv(program, argv)
+    return _sudov(os.execv, program, argv)
 end
 
 -- sudo run lua script

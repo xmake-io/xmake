@@ -442,7 +442,7 @@ function os.tmpfile()
     return path.join(os.tmpdir(), "_" .. (os.uuid():gsub("-", "")))
 end
 
--- run shell
+-- run command
 function os.run(cmd)
 
     -- parse arguments
@@ -455,23 +455,23 @@ function os.run(cmd)
     return os.runv(argv[1], table.slice(argv, 2))
 end
 
--- run shell with arguments list
-function os.runv(shellname, argv)
+-- run command with arguments list
+function os.runv(program, argv)
 
     -- make temporary log file
     local log = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(shellname, argv, log, log)
+    local ok = os.execv(program, argv, log, log)
     if ok ~= 0 then
 
         -- make errors
         local errors = io.readfile(log)
         if not errors or #errors == 0 then
             if argv ~= nil then
-                errors = string.format("runv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
+                errors = string.format("runv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
             else
-                errors = string.format("runv(%s) failed(%d)!", shellname, ok)
+                errors = string.format("runv(%s) failed(%d)!", program, ok)
             end
         end
 
@@ -489,7 +489,7 @@ function os.runv(shellname, argv)
     return true
 end
 
--- execute shell 
+-- execute command 
 function os.exec(cmd, outfile, errfile)
 
     -- parse arguments
@@ -502,12 +502,31 @@ function os.exec(cmd, outfile, errfile)
     return os.execv(argv[1], table.slice(argv, 2), outfile, errfile)
 end
 
--- execute shell with arguments list
-function os.execv(shellname, argv, outfile, errfile)
+-- execute command with arguments list
+--
+-- program:     "clang", "xcrun -sdk macosx clang", "~/dir/test\ xxx/clang"
+-- filename:    "clang", "xcrun"", "~/dir/test\ xxx/clang"
+--
+function os.execv(program, argv, outfile, errfile)
+
+    -- init arguments
+    local args = os.argw(argv)
+
+    -- is not executable program file?
+    local filename = program
+    if not os.isexec(program) then
+
+        -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
+        local splitinfo = program:split("%s")
+        filename = splitinfo[1]
+        if #splitinfo > 1 then
+            args = table.join(table.slice(splitinfo, 2), args)
+        end
+    end
 
     -- open command
     local ok = -1
-    local proc = process.openv(shellname, os.argw(argv), outfile, errfile)
+    local proc = process.openv(filename, args, outfile, errfile)
     if proc ~= nil then
 
         -- wait process
@@ -546,7 +565,7 @@ function os.execv(shellname, argv, outfile, errfile)
     return ok
 end
 
--- run shell and return output and error data
+-- run command and return output and error data
 function os.iorun(cmd)
 
     -- parse arguments
@@ -559,15 +578,15 @@ function os.iorun(cmd)
     return os.iorunv(argv[1], table.slice(argv, 2))
 end
 
--- run shell with arguments and return output and error data
-function os.iorunv(shellname, argv)
+-- run command with arguments and return output and error data
+function os.iorunv(program, argv)
 
     -- make temporary output and error file
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(shellname, argv, outfile, errfile) 
+    local ok = os.execv(program, argv, outfile, errfile) 
 
     -- get output and error data
     local outdata = io.readfile(outfile)
@@ -595,7 +614,7 @@ function os.raise(msg, ...)
     end
 end
 
--- is executable program?
+-- is executable program file?
 function os.isexec(filepath)
 
     -- check

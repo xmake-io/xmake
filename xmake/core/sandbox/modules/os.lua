@@ -246,7 +246,7 @@ function sandbox_os.scriptdir()
     return rootdir
 end
 
--- quietly run shell
+-- quietly run command
 function sandbox_os.run(cmd, ...)
 
     -- make command
@@ -259,20 +259,20 @@ function sandbox_os.run(cmd, ...)
     end
 end
 
--- quietly run shell with arguments list
-function sandbox_os.runv(shellname, argv)
+-- quietly run command with arguments list
+function sandbox_os.runv(program, argv)
 
-    -- make shellname
-    shellname = vformat(shellname)
+    -- make program
+    program = vformat(program)
 
     -- run it
-    local ok, errors = os.runv(shellname, argv)
+    local ok, errors = os.runv(program, argv)
     if not ok then
         os.raise(errors)
     end
 end
 
--- quietly run shell and echo verbose info if [-v|--verbose] option is enabled
+-- quietly run command and echo verbose info if [-v|--verbose] option is enabled
 function sandbox_os.vrun(cmd, ...)
 
     -- echo command
@@ -284,19 +284,19 @@ function sandbox_os.vrun(cmd, ...)
     utils.ifelse(option.get("verbose"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
 end
 
--- quietly run shell with arguments list and echo verbose info if [-v|--verbose] option is enabled
-function sandbox_os.vrunv(shellname, argv)
+-- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vrunv(program, argv)
 
     -- echo command
     if option.get("verbose") then
-        print(vformat(shellname), table.concat(argv, " "))
+        print(vformat(program), table.concat(argv, " "))
     end
 
     -- run it
-    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(shellname, argv)  
+    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(program, argv)  
 end
 
--- run shell and return output and error data
+-- run command and return output and error data
 function sandbox_os.iorun(cmd, ...)
 
     -- make command
@@ -312,14 +312,14 @@ function sandbox_os.iorun(cmd, ...)
     return outdata, errdata
 end
 
--- run shell and return output and error data
-function sandbox_os.iorunv(shellname, argv)
+-- run command and return output and error data
+function sandbox_os.iorunv(program, argv)
 
-    -- make shellname
-    shellname = vformat(shellname)
+    -- make program
+    program = vformat(program)
 
     -- run it
-    local ok, outdata, errdata = os.iorunv(shellname, argv)
+    local ok, outdata, errdata = os.iorunv(program, argv)
     if not ok then
         os.raise(errdata)
     end
@@ -328,7 +328,7 @@ function sandbox_os.iorunv(shellname, argv)
     return outdata, errdata
 end
 
--- execute shell 
+-- execute command 
 function sandbox_os.exec(cmd, ...)
 
     -- make command
@@ -341,19 +341,19 @@ function sandbox_os.exec(cmd, ...)
     end
 end
 
--- execute shell with arguments list
-function sandbox_os.execv(shellname, argv)
+-- execute command with arguments list
+function sandbox_os.execv(program, argv)
 
-    -- make shellname
-    shellname = vformat(shellname)
+    -- make program
+    program = vformat(program)
 
     -- run it
-    local ok = os.execv(shellname, argv)
+    local ok = os.execv(program, argv)
     if ok ~= 0 then
         if argv ~= nil then
-            os.raise("execv(%s %s) failed(%d)!", shellname, table.concat(argv, ' '), ok)
+            os.raise("execv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
         else
-            os.raise("execv(%s) failed(%d)!", shellname, ok)
+            os.raise("execv(%s) failed(%d)!", program, ok)
         end
     end
 end
