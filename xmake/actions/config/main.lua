@@ -277,10 +277,8 @@ function main()
         configheader.make()
     end
 
-    -- trace
-    if recheck or option.get("verbose") then
-
-        -- dump it
+    -- dump config
+    if option.get("verbose") then
         config.dump()
     end
 
