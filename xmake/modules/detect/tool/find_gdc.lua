@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_rustc.lua
+-- @file        find_gdc.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find rustc 
+-- find gdc 
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,7 +34,7 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local rustc = find_rustc()
+-- local gdc = find_gdc()
 -- 
 -- @endcode
 --
@@ -44,12 +44,12 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "rustc")
+    local program = find_program(opt.program or "gdc")
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program)
+        version = find_programver(program, "--version", function (output) return output:match("%s(%d+%.?%d+%.?%d+)%s") end)
     end
 
     -- ok?
