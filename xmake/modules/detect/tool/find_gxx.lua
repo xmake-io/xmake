@@ -26,7 +26,7 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find clang++
+-- find g++
 --
 -- @param opt   the argument options, .e.g {version = true}
 --

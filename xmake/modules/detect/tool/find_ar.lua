@@ -19,14 +19,35 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_lipo.lua
+-- @file        find_ar.lua
 --
 
 -- imports
+import("core.tool.compiler")
 import("lib.detect.find_program")
-import("lib.detect.find_programver")
 
--- find lipo 
+-- check
+function _check(program)
+
+    -- make an stub source file
+    local libraryfile   = os.tmpfile() .. ".a"
+    local objectfile    = os.tmpfile() .. ".o"
+    local sourcefile    = os.tmpfile() .. ".c"
+    io.writefile(sourcefile, "int test(void)\n{return 0;}")
+
+    -- compile it
+    compiler.compile(sourcefile, objectfile)
+
+    -- archive it
+    os.runv(program, {"-cr", libraryfile, objectfile})
+
+    -- remove files
+    os.rm(objectfile)
+    os.rm(sourcefile)
+    os.rm(libraryfile)
+end
+
+-- find ar
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,15 +55,16 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local lipo = find_lipo()
+-- local ar = find_ar()
+-- local ar, version = find_ar({program = "xcrun -sdk macosx g++", version = true})
 -- 
 -- @endcode
 --
 function main(opt)
-    
+
     -- init options
     opt = opt or {}
-    
+
     -- find program
-    return find_program(opt.program or "lipo", {}, function (program) os.run("%s -info %s", program, os.programfile()) end)
+    return find_program(opt.program or "ar", {}, _check)
 end

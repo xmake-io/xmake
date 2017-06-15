@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_lipo.lua
+-- @file        find_swiftc.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find lipo 
+-- find swiftc 
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,15 +34,25 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local lipo = find_lipo()
+-- local swiftc = find_swiftc()
+-- local swiftc, version = find_swiftc({program = "xcrun -sdk macosx swiftc", version = true})
 -- 
 -- @endcode
 --
 function main(opt)
-    
+
     -- init options
     opt = opt or {}
     
     -- find program
-    return find_program(opt.program or "lipo", {}, function (program) os.run("%s -info %s", program, os.programfile()) end)
+    local program = find_program(opt.program or "swiftc")
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program)
+    end
+
+    -- ok?
+    return program, version
 end

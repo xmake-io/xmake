@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_lipo.lua
+-- @file        find_ldc2.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find lipo 
+-- find ldc2 
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,15 +34,24 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local lipo = find_lipo()
+-- local ldc2 = find_ldc2()
 -- 
 -- @endcode
 --
 function main(opt)
-    
+
     -- init options
     opt = opt or {}
     
     -- find program
-    return find_program(opt.program or "lipo", {}, function (program) os.run("%s -info %s", program, os.programfile()) end)
+    local program = find_program(opt.program or "ldc2")
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, "--version", function (output) return output:match("%((%d+%.?%d*%.?%d*.-)%)") end)
+    end
+
+    -- ok?
+    return program, version
 end
