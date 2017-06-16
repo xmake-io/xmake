@@ -36,6 +36,6 @@ target("demo")
 
     -- add the resource files (it will be enabled after publishing new version)
     if is_plat("windows") then
-        add_files("*.rc")
+--        add_files("*.rc")
     end
        
