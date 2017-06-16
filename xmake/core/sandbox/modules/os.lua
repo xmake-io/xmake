@@ -224,13 +224,6 @@ function sandbox_os.tmpfile()
     return tmpfile
 end
 
--- get the tools directory
-function sandbox_os.toolsdir()
-   
-    -- get it
-    return xmake._TOOLS_DIR
-end
-
 -- get the script directory
 function sandbox_os.scriptdir()
   

@@ -25,20 +25,6 @@
 -- imports
 import(".checker")
 
--- check the as
-function _check_as(shellname)
-
-    -- make an empty tmp.S
-    local tmpfile = os.tmpfile() .. ".S"
-    io.writefile(tmpfile, "")
-
-    -- check it
-    os.run("%s -arch armv7 -o %s -c %s", shellname, os.nuldev(), tmpfile)
-
-    -- remove this tmp.S
-    os.rm(tmpfile)
-end
-
 -- get toolchains
 function _toolchains(config)
 
@@ -82,7 +68,7 @@ function _toolchains(config)
     if simulator then
         checker.toolchain_insert(toolchains, "as",   cross,  "clang",        "the assember") 
     else
-        checker.toolchain_insert(toolchains, "as",   path.join(os.toolsdir(), "utils/gas-preprocessor.pl " .. cross), "clang", "the assember", _check_as)
+        checker.toolchain_insert(toolchains, "as",   path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. cross), "clang", "the assember")
     end
 
     -- save toolchains

@@ -44,5 +44,5 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    return find_program(opt.program or "lipo", {}, function (program) os.run("%s -info %s", program, os.programfile()) end)
+    return find_program(opt.program or "lipo", opt.pathes, opt.check or function (program) os.run("%s -info %s", program, os.programfile()) end)
 end

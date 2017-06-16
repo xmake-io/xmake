@@ -40,9 +40,12 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
+
+    -- init options
+    opt = opt or {}
     
     -- find program
-    local program = find_program("doxygen", { "/usr/bin", "/usr/local/bin"})
+    local program = find_program(opt.program or "doxygen", opt.pathes, opt.check)
 
     -- find program version
     local version = nil

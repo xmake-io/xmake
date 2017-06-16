@@ -45,7 +45,6 @@ xmake_C_FILES 			+= \
 						path/translate \
 						path/is_absolute \
 						winreg/query \
-						string/strcmp \
 						string/endswith \
 						string/startswith \
 						process/open \

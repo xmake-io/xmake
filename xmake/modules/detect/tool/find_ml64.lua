@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_go.lua
+-- @file        find_ml64.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find go 
+-- find ml64 
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,7 +34,7 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local go = find_go()
+-- local ml64 = find_ml64()
 -- 
 -- @endcode
 --
@@ -44,14 +44,16 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "go", opt.pathes, opt.check or "version")
+    local program = find_program(opt.program or "ml64.exe", opt.pathes, opt.check or function (program) os.run(program) end)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, "version")
+        version = find_programver(program, function () local _, info = os.iorun(program); return info end,
+                                           function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end)
     end
 
     -- ok?
     return program, version
 end
+

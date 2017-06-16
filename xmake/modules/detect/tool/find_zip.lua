@@ -40,9 +40,12 @@ import("lib.detect.find_programver")
 -- @endcode
 --
 function main(opt)
+
+    -- init options
+    opt = opt or {}
     
     -- find program
-    local program = find_program("zip", {}, "-v")
+    local program = find_program(opt.program or "zip", opt.pathes, opt.check or "-v")
 
     -- find program version
     local version = nil

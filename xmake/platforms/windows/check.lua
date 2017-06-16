@@ -23,11 +23,11 @@
 --
 
 -- imports
-import("core.tool.tool")
-import("core.base.option")
-import("platforms.checker", {rootdir = os.programdir()})
+import(".checker")
 import("environment")
+import("core.base.option")
 import("detect.sdk.find_vstudio")
+import("lib.detect.find_tool")
 
 -- attempt to check vs environment
 function _check_vsenv(config)
@@ -65,7 +65,7 @@ function _check_vsenv(config)
 
                 -- check compiler
                 environment.enter("toolchains")
-                local toolpath = tool.check("cl.exe")
+                local toolpath = find_tool("cl.exe")
                 environment.leave("toolchains")
 
                 -- ok?

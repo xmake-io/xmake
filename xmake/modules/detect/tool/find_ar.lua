@@ -66,5 +66,5 @@ function main(opt)
     opt = opt or {}
 
     -- find program
-    return find_program(opt.program or "ar", {}, _check)
+    return find_program(opt.program or "ar", opt.pathes, opt.check or _check)
 end

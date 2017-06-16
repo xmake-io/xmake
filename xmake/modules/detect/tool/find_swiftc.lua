@@ -45,7 +45,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "swiftc")
+    local program = find_program(opt.program or "swiftc", opt.pathes, opt.check)
 
     -- find program version
     local version = nil

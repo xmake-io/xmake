@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_go.lua
+-- @file        find_rc.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find go 
+-- find rc 
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,7 +34,7 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local go = find_go()
+-- local rc = find_rc()
 -- 
 -- @endcode
 --
@@ -44,14 +44,15 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "go", opt.pathes, opt.check or "version")
+    local program = find_program(opt.program or "rc.exe", opt.pathes, "-?")
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, "version")
+        version = find_programver(program, "-?", function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end)
     end
 
     -- ok?
     return program, version
 end
+

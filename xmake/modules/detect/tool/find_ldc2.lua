@@ -44,7 +44,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "ldc2")
+    local program = find_program(opt.program or "ldc2", opt.pathes, opt.check)
 
     -- find program version
     local version = nil

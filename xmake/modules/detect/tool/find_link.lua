@@ -45,7 +45,7 @@ function main(opt)
     
     -- find program
     local verinfo = nil
-    local program = find_program(opt.program or "link.exe", {}, function (program) 
+    local program = find_program(opt.program or "link.exe", opt.pathes, opt.check or function (program) 
        
         -- make an stub source file
         local binaryfile = os.tmpfile() .. ".exe"

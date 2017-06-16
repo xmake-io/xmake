@@ -107,7 +107,7 @@ function sandbox._new()
     table.inherit2(instance, sandbox)
 
     -- load builtin module files
-    local builtin_module_files = os.match(path.join(xmake._CORE_DIR, "sandbox/modules/*.lua"))
+    local builtin_module_files = os.match(path.join(os.programdir(), "core/sandbox/modules/*.lua"))
     if builtin_module_files then
         for _, builtin_module_file in ipairs(builtin_module_files) do
 

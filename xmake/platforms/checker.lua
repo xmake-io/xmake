@@ -23,10 +23,10 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.base.option")
 import("detect.sdk.find_xcode_dir")
 import("detect.sdk.find_xcode_sdkvers")
+import("lib.detect.find_tool")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
@@ -39,61 +39,23 @@ function _toolchain_check(config, toolkind, toolinfo)
         local name = toolinfo.name
 
         -- get cross
-        local cross = config.get("cross") or toolinfo.cross
+        local cross = config.get("cross") or toolinfo.cross or ""
 
-        -- get shell name from the env if not cross-compilation
-        if cross and cross:trim() == "" then
-            local shellname = os.getenv(toolkind:upper():split('-')[1])
-            if shellname and shellname:trim() ~= "" then
-                toolpath = tool.check(shellname) 
+        -- get program name from the env if not cross-compilation
+        if cross:trim() == "" then
+            local program = os.getenv(toolkind:upper():split('-')[1])
+            if program and program:trim() ~= "" then
+                toolpath = find_tool(name, {program = program}) 
             end
         end
 
-        -- check it using the custom script
-        if not toolpath and toolinfo.check then
-
-            -- check it
-            try
-            {
-                function ()
-
-                    -- check it
-                    toolinfo.check(cross .. name)
-
-                    -- ok
-                    toolpath = cross .. name
-                end
-            }
-        end
-
-        -- get toolchains
-        local toolchains = config.get("toolchains")
-        if not toolchains then
-            local sdkdir = config.get("sdk")
-            if sdkdir then
-                toolchains = path.join(sdkdir, "bin")
-            end
-        end
-
-        -- attempt to check it from the given cross toolchains
-        if not toolpath and toolchains then
-            toolpath = tool.check(cross .. name, toolchains)
-        end
-
-        -- attempt to check it with cross prefix
+        -- attempt to check it 
         if not toolpath then
-            toolpath = tool.check(cross .. name)
-        end
-
-        -- attempt to check it without cross prefix
-        if not toolpath then
-            toolpath = tool.check(name)
+            toolpath = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
         end
 
         -- check ok?
         if toolpath then 
-
-            -- update config
             config.set(toolkind, toolpath) 
         end
 

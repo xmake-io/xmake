@@ -300,7 +300,7 @@ function sandbox_import.import(name, args)
     assert(rootdir)
 
     -- the sandbox modules directory
-    local modules_sandbox_dir = path.join(xmake._CORE_DIR, "sandbox/modules/import")
+    local modules_sandbox_dir = path.join(os.programdir(), "core/sandbox/modules/import")
 
     -- the extension modules directory
     local modules_extension_dir = path.join(os.programdir(), "modules")
@@ -313,8 +313,8 @@ function sandbox_import.import(name, args)
     {
         rootdir                                                 -- load module from the given root directory first 
     ,   path.join(global.directory(), "modules")                -- load module from the user global modules directory
-    ,   path.join(xmake._PROGRAM_DIR, "modules")                -- load module from the extension modules directory
-    ,   path.join(xmake._CORE_DIR, "sandbox/modules/import")    -- load module from the sandbox core modules directory
+    ,   path.join(os.programdir(), "modules")                -- load module from the extension modules directory
+    ,   path.join(os.programdir(), "core/sandbox/modules/import")    -- load module from the sandbox core modules directory
     }
 
     -- load module

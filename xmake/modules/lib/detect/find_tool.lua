@@ -29,8 +29,16 @@ import("lib.detect.find_programver")
 -- find tool from modules
 function _find_from_modules(name, opt)
 
+    -- strip arguments with spaces
+    name = name:split("%s+")[1]
+
     -- replace "+" to "x"
     name = name:gsub("%+", "x")
+
+    -- strip suffix on windows
+    if os.host() == "windows" and name:endswith(".exe") then
+        name = name:sub(1, #name - 4)
+    end
 
     -- "detect.tool.find_xxx" exists?
     if os.isfile(path.join(os.programdir(), "modules", "detect", "tool", "find_" .. name .. ".lua")) then

@@ -46,7 +46,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "gdb")
+    local program = find_program(opt.program or "gdb", opt.pathes, opt.check)
 
     -- find program version
     local version = nil

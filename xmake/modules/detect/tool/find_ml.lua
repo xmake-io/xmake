@@ -44,7 +44,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "ml.exe", {}, function (program) os.run(program) end)
+    local program = find_program(opt.program or "ml.exe", opt.pathes, opt.check or function (program) os.run(program) end)
 
     -- find program version
     local version = nil
