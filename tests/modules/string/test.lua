@@ -1,4 +1,5 @@
 function main()
-    assert(string.less("awd","dwa"))
-    assert(not string.less("dwa","awd"))
+    assert(not ("rc"):endswith("xcadas"))
+    assert(("aaaccc"):endswith("ccc"))
+    assert(("aaaccc"):startswith("aaa"))
 end
