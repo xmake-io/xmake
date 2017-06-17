@@ -84,10 +84,13 @@ function tool._find(root, name)
         name = names[#names]
     end
 
-    -- get the last name by '-': xxx-xxx-toolname
-    local names = name:split("%-")
-    if #names > 0 then
-        name = names[#names]
+    -- get the last valid name: xxx-xxx-toolname-5
+    local partnames = {}
+    for partname in name:gmatch("([%a%+]+)") do
+        table.insert(partnames, partname)
+    end
+    if #partnames > 0 then
+        name = partnames[#partnames]
     end
 
     -- remove suffix: ".xxx"
