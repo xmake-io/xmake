@@ -27,6 +27,7 @@ import("core.base.option")
 import("detect.sdk.find_xcode_dir")
 import("detect.sdk.find_xcode_sdkvers")
 import("lib.detect.find_tool")
+import("lib.detect.find_toolname")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
@@ -42,10 +43,10 @@ function _toolchain_check(config, toolkind, toolinfo)
         local cross = config.get("cross") or toolinfo.cross or ""
 
         -- get program name from the env if not cross-compilation
-        if cross:trim() == "" then
+        if config.get("plat") == os.host() and config.get("arch") ==os.arch() then
             local program = os.getenv(toolkind:upper():split('-')[1])
             if program and program:trim() ~= "" then
-                toolpath = find_tool(name, {program = program}) 
+                toolpath = find_tool(find_toolname(program), {program = program}) 
             end
         end
 
