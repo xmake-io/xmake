@@ -49,9 +49,16 @@ function init(shellname, kind)
     -- init shflags
     _g.shflags = { "-shared", "-fPIC" }
 
+    -- link stdc++ for gcc
+    _g.ldflags = {}
+    if _g.shellname:find("gcc", 1, true) then
+        table.insert(_g.ldflags, "-lstdc++")
+        table.insert(_g.shflags, "-lstdc++")
+    end
+
     -- init cxflags for the kind: shared
-    _g.shared         = {}
-    _g.shared.cxflags = {"-fPIC"}
+    _g.shared          = {}
+    _g.shared.cxflags  = {"-fPIC"}
 
     -- init flags map
     _g.mapflags = 
