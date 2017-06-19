@@ -32,9 +32,9 @@ import("lib.detect.find_toolname")
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
 
-    -- get the tool path
-    local toolpath = config.get(toolkind)
-    if not toolpath then
+    -- get the program 
+    local program = config.get(toolkind)
+    if not program then
 
         -- get name and attempt to get `$(env XX)`
         local name = vformat(toolinfo.name)
@@ -46,27 +46,28 @@ function _toolchain_check(config, toolkind, toolinfo)
         local cross = config.get("cross") or toolinfo.cross or ""
 
         -- attempt to check it 
-        if not toolpath then
-            toolpath = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
+        local program = nil
+        if not program then
+            program = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
         end
 
         -- check ok?
-        if toolpath then 
-            config.set(toolkind, toolpath) 
+        if program then 
+            config.set(toolkind, program) 
         end
 
         -- trace
         if option.get("verbose") then
-            if toolpath then
-                cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(toolpath))
+            if program then
+                cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(program))
             else
                 cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", toolinfo.description, toolkind, name)
             end
         end
     end
 
-    -- get tool path
-    return toolpath
+    -- ok?
+    return program
 end
 
 -- check all for the given config kind

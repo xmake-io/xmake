@@ -26,111 +26,20 @@
 local tool      = tool or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local utils     = require("base/utils")
-local table     = require("base/table")
-local string    = require("base/string")
-local filter    = require("base/filter")
-local config    = require("project/config")
-local global    = require("project/global")
-local sandbox   = require("sandbox/sandbox")
-local platform  = require("platform/platform")
+local os            = require("base/os")
+local path          = require("base/path")
+local utils         = require("base/utils")
+local table         = require("base/table")
+local string        = require("base/string")
+local sandbox       = require("sandbox/sandbox")
+local platform      = require("platform/platform")
+local import        = require("sandbox/modules/import")
 
--- the directories of tools
-function tool._directories(name)
-
-    -- the directories
-    return  {   path.join(config.directory(), "tools")
-            ,   path.join(global.directory(), "tools")
-            ,   path.join(xmake._PROGRAM_DIR, "tools")
-            }
-end
-
--- match the tool name
-function tool._match(name, toolname)
-
-    -- match full? ok
-    if name == toolname then return 100 end
- 
-    -- match the last word? ok
-    if name:find(toolname .. "$") then return 80 end
-
-    -- contains it? ok
-    if name:find(toolname, 1, true) then return 30 end
-
-    -- not matched
-    return 0
-end
-
--- find tool from the given root directory and name
-function tool._find(root, name)
-
-    -- attempt to get it directly first
-    local filepath = string.format("%s/%s.lua", root, name)
-    if os.isfile(filepath) then
-        return filepath
-    end
-
-    -- make the lower name
-    name = name:lower()
-
-    -- remove arguments: -xxx or --xxx
-    name = (name:gsub("%s%-+%w+", " "))
-
-    -- get the last name by ' ': xxx xxx toolname
-    local names = name:split("%s")
-    if #names > 0 then
-        name = names[#names]
-    end
-
-    -- get the last valid name: xxx-xxx-toolname-5
-    local partnames = {}
-    for partname in name:gmatch("([%a%+]+)") do
-        table.insert(partnames, partname)
-    end
-    if #partnames > 0 then
-        name = partnames[#partnames]
-    end
-
-    -- remove suffix: ".xxx"
-    name = (name:gsub("%.%w+", ""))
-
-    -- get all tool files
-    local file_ok = nil
-    local score_maxn = 0
-    local files = os.match(string.format("%s/*.lua", root))
-    for _, file in ipairs(files) do
-
-        -- the tool name
-        local toolname = path.basename(file)
-
-        -- found it?
-        if toolname and toolname ~= "tool" then
-            
-            -- match score
-            local score = tool._match(name, toolname:lower()) 
-
-            -- ok?
-            if score >= 100 then return file end
-    
-            -- select the file with the max score
-            if score > score_maxn then
-                file_ok = file
-                score_maxn = score
-            end
-        end
-    end
-
-    -- ok?
-    return file_ok
-end
-
--- load the given tool from the given shell name
-function tool._load(shellname, kind)
+-- load the given tool 
+function tool._load(kind, name, program)
 
     -- calculate the cache key
-    local key = shellname .. (kind or "")
+    local key = (kind or "") .. program
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
@@ -138,22 +47,10 @@ function tool._load(shellname, kind)
         return tool._TOOLS[key]
     end
 
-    -- find the tool script path
-    local toolpath = nil
-    local toolname = path.filename(shellname)
-    for _, dir in ipairs(tool._directories()) do
-
-        -- find this directory
-        toolpath = tool._find(dir, toolname)
-        if toolpath then
-            break
-        end
-
-    end
-
     -- not exists?
-    if not toolpath or not os.isfile(toolpath) then
-        return nil, string.format("%s not found!", shellname)
+    local toolpath = path.join(os.programdir(), "tools", name .. ".lua")
+    if not os.isfile(toolpath) then
+        return nil, string.format("%s not found!", name)
     end
 
     -- load script
@@ -174,7 +71,7 @@ function tool._load(shellname, kind)
 
         -- init the tool module
         if module.init then
-            module.init(shellname, kind)
+            module.init(program, kind)
         end
     
         -- save tool to the cache
@@ -233,14 +130,23 @@ end
 --
 function tool.load(kind)
 
-    -- get the shell name 
-    local shellname = platform.tool(kind)
-    if not shellname then
+    -- get the tool program
+    local program = platform.tool(kind)
+    if not program then
         return nil, string.format("cannot get tool for %s", kind)
     end
-   
+
+    -- import find_toolname()
+    local find_toolname = import("lib.detect.find_toolname")
+
+    -- get the tool name from the program
+    local name = find_toolname(program)
+    if not name then
+        return nil, string.format("cannot find tool name for %s", program)
+    end
+
     -- load it
-    return tool._load(shellname, kind)
+    return tool._load(kind, name, program)
 end
 
 -- check the tool and return the absolute path if exists

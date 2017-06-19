@@ -241,13 +241,13 @@ end
 --
 function platform.tool(toolkind)
 
-    -- attempt to get it from config first
-    local toolpath = config.get(toolkind)
-    if toolpath ~= nil then
-        return toolpath
+    -- attempt to get program from config first
+    local program = config.get(toolkind)
+    if program then 
+        return program
     else
         
-        -- check the tool path
+        -- check it first
         local check = platform.get("check")
         if check then
             check("config", toolkind)
