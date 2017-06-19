@@ -34,13 +34,6 @@ function init(shellname, kind)
     -- init shflags
     _super._g.shflags = { "-dynamiclib", "-fPIC" }
 
-    -- link stdc++ for clang
-    _super._g.ldflags = {}
-    if _super._g.shellname:find("clang", 1, true) then
-        table.insert(_super._g.ldflags, "-lstdc++")
-        table.insert(_super._g.shflags, "-lstdc++")
-    end
-
     -- suppress warning 
     _super._g.cxflags = {"-Qunused-arguments"}
     _super._g.mxflags = {"-Qunused-arguments"}
