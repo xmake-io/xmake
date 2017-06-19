@@ -36,19 +36,14 @@ function _toolchain_check(config, toolkind, toolinfo)
     local toolpath = config.get(toolkind)
     if not toolpath then
 
-        -- get name
-        local name = toolinfo.name
+        -- get name and attempt to get `$(env XX)`
+        local name = vformat(toolinfo.name)
+        if #name == 0 then
+            return 
+        end
 
         -- get cross
         local cross = config.get("cross") or toolinfo.cross or ""
-
-        -- get program name from the env if not cross-compilation
-        if config.get("plat") == os.host() and config.get("arch") ==os.arch() then
-            local program = os.getenv(toolkind:upper():split('-')[1])
-            if program and program:trim() ~= "" then
-                toolpath = find_tool(find_toolname(program), {program = program}) 
-            end
-        end
 
         -- attempt to check it 
         if not toolpath then

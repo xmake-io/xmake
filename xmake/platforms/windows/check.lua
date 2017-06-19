@@ -119,47 +119,47 @@ function _toolchains(config)
     local toolchains = {}
 
     -- insert c/c++ tools to toolchains
-    checker.toolchain_insert(toolchains, "cc",      "",     "cl.exe",           "the c compiler") 
-    checker.toolchain_insert(toolchains, "cxx",     "",     "cl.exe",           "the c++ compiler") 
-    checker.toolchain_insert(toolchains, "mrc",     "",     "rc.exe",           "the resource compiler") 
-    checker.toolchain_insert(toolchains, "ld",      "",     "link.exe",         "the linker") 
-    checker.toolchain_insert(toolchains, "ar",      "",     "link.exe -lib",    "the static library archiver") 
-    checker.toolchain_insert(toolchains, "sh",      "",     "link.exe -dll",    "the shared library linker") 
-    checker.toolchain_insert(toolchains, "ex",      "",     "lib.exe",          "the static library extractor") 
+    checker.toolchain_insert(toolchains, "cc",    "", "cl.exe",        "the c compiler")
+    checker.toolchain_insert(toolchains, "cxx",   "", "cl.exe",        "the c++ compiler")
+    checker.toolchain_insert(toolchains, "mrc",   "", "rc.exe",        "the resource compiler")
+    checker.toolchain_insert(toolchains, "ld",    "", "link.exe",      "the linker")
+    checker.toolchain_insert(toolchains, "ar",    "", "link.exe -lib", "the static library archiver")
+    checker.toolchain_insert(toolchains, "sh",    "", "link.exe -dll", "the shared library linker")
+    checker.toolchain_insert(toolchains, "ex",    "", "lib.exe",       "the static library extractor")
 
     -- insert golang tools to toolchains
-    checker.toolchain_insert(toolchains, "gc",       "",    "go",               "the golang compiler") 
-    checker.toolchain_insert(toolchains, "gc",       "",    "gccgo",            "the golang compiler") 
-    checker.toolchain_insert(toolchains, "gc-ar",    "",    "go",               "the golang static library archiver") 
-    checker.toolchain_insert(toolchains, "gc-ar",    "",    "gccgo",            "the golang static library archiver") 
-    checker.toolchain_insert(toolchains, "gc-ld",    "",    "go",               "the golang linker") 
-    checker.toolchain_insert(toolchains, "gc-ld",    "",    "gccgo",            "the golang linker") 
+    checker.toolchain_insert(toolchains, "gc",    "", "go",            "the golang compiler")
+    checker.toolchain_insert(toolchains, "gc",    "", "gccgo",         "the golang compiler")
+    checker.toolchain_insert(toolchains, "gc-ar", "", "go",            "the golang static library archiver")
+    checker.toolchain_insert(toolchains, "gc-ar", "", "gccgo",         "the golang static library archiver")
+    checker.toolchain_insert(toolchains, "gc-ld", "", "go",            "the golang linker")
+    checker.toolchain_insert(toolchains, "gc-ld", "", "gccgo",         "the golang linker")
 
     -- insert dlang tools to toolchains
-    checker.toolchain_insert(toolchains, "dc",       "",    "dmd",              "the dlang compiler") 
-    checker.toolchain_insert(toolchains, "dc",       "",    "ldc2",             "the dlang compiler") 
-    checker.toolchain_insert(toolchains, "dc",       "",    "gdc",              "the dlang compiler") 
-    checker.toolchain_insert(toolchains, "dc-ar",    "",    "dmd",              "the dlang static library archiver") 
-    checker.toolchain_insert(toolchains, "dc-ar",    "",    "ldc2",             "the dlang static library archiver") 
-    checker.toolchain_insert(toolchains, "dc-ar",    "",    "gdc",              "the dlang static library archiver") 
-    checker.toolchain_insert(toolchains, "dc-sh",    "",    "dmd",              "the dlang shared library linker") 
-    checker.toolchain_insert(toolchains, "dc-sh",    "",    "ldc2",             "the dlang shared library linker") 
-    checker.toolchain_insert(toolchains, "dc-sh",    "",    "gdc",              "the dlang shared library linker") 
-    checker.toolchain_insert(toolchains, "dc-ld",    "",    "dmd",              "the dlang linker") 
-    checker.toolchain_insert(toolchains, "dc-ld",    "",    "ldc2",             "the dlang linker") 
-    checker.toolchain_insert(toolchains, "dc-ld",    "",    "gdc",              "the dlang linker") 
+    checker.toolchain_insert(toolchains, "dc",    "", "dmd",           "the dlang compiler")
+    checker.toolchain_insert(toolchains, "dc",    "", "ldc2",          "the dlang compiler")
+    checker.toolchain_insert(toolchains, "dc",    "", "gdc",           "the dlang compiler")
+    checker.toolchain_insert(toolchains, "dc-ar", "", "dmd",           "the dlang static library archiver")
+    checker.toolchain_insert(toolchains, "dc-ar", "", "ldc2",          "the dlang static library archiver")
+    checker.toolchain_insert(toolchains, "dc-ar", "", "gdc",           "the dlang static library archiver")
+    checker.toolchain_insert(toolchains, "dc-sh", "", "dmd",           "the dlang shared library linker")
+    checker.toolchain_insert(toolchains, "dc-sh", "", "ldc2",          "the dlang shared library linker")
+    checker.toolchain_insert(toolchains, "dc-sh", "", "gdc",           "the dlang shared library linker")
+    checker.toolchain_insert(toolchains, "dc-ld", "", "dmd",           "the dlang linker")
+    checker.toolchain_insert(toolchains, "dc-ld", "", "ldc2",          "the dlang linker")
+    checker.toolchain_insert(toolchains, "dc-ld", "", "gdc",           "the dlang linker")
 
     -- insert rust tools to toolchains
-    checker.toolchain_insert(toolchains, "rc",       "",    "rustc",            "the rust compiler") 
-    checker.toolchain_insert(toolchains, "rc-ar",    "",    "rustc",            "the rust static library archiver") 
-    checker.toolchain_insert(toolchains, "rc-sh",    "",    "rustc",            "the rust shared library linker") 
-    checker.toolchain_insert(toolchains, "rc-ld",    "",    "rustc",            "the rust linker") 
+    checker.toolchain_insert(toolchains, "rc",    "", "rustc",         "the rust compiler")
+    checker.toolchain_insert(toolchains, "rc-ar", "", "rustc",         "the rust static library archiver")
+    checker.toolchain_insert(toolchains, "rc-sh", "", "rustc",         "the rust shared library linker")
+    checker.toolchain_insert(toolchains, "rc-ld", "", "rustc",         "the rust linker")
 
     -- insert asm tools to toolchains
     if config.get("arch"):find("64") then
-        checker.toolchain_insert(toolchains, "as",   "",    "ml64.exe",         "the assember") 
+        checker.toolchain_insert(toolchains, "as", "", "ml64.exe", "the assember")
     else
-        checker.toolchain_insert(toolchains, "as",   "",    "ml.exe",           "the assember") 
+        checker.toolchain_insert(toolchains, "as", "", "ml.exe",   "the assember")
     end
 
     -- save toolchains
