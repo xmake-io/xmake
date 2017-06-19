@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.tool.find_sudo")
+import("detect.tools.find_sudo")
 
 -- sudo run command with administrator permission
 --

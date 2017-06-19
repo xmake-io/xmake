@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.tool.find_zip")
+import("detect.tools.find_zip")
 
 -- main
 function main()

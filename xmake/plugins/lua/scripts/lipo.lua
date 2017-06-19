@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("detect.tool.find_lipo")
+import("detect.tools.find_lipo")
 
 -- main
 --

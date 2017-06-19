@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("detect.sdk.find_cross_toolchains")
+import("detect.sdks.find_cross_toolchains")
 import(".checker")
 
 -- get toolchains

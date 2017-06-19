@@ -24,8 +24,8 @@
 
 -- imports
 import("lib.detect.find_library")
-import("detect.tool.find_brew")
-import("detect.tool.find_pkg_config")
+import("detect.tools.find_brew")
+import("detect.tools.find_pkg_config")
 
 -- get package info
 --

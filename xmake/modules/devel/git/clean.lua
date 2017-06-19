@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.tool.find_git")
+import("detect.tools.find_git")
 
 -- clean files
 --

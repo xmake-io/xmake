@@ -26,7 +26,7 @@
 import(".checker")
 import("environment")
 import("core.base.option")
-import("detect.sdk.find_vstudio")
+import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
 
 -- attempt to check vs environment
@@ -65,11 +65,15 @@ function _check_vsenv(config)
 
                 -- check compiler
                 environment.enter("toolchains")
-                local toolpath = find_tool("cl.exe")
+                local program = nil
+                local tool = find_tool("cl.exe")
+                if tool then
+                    program = tool.program
+                end
                 environment.leave("toolchains")
 
                 -- ok?
-                if toolpath then
+                if program then
                     return vsver
                 end
             end

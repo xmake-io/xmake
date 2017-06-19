@@ -24,10 +24,9 @@
 
 -- imports
 import("core.base.option")
-import("detect.sdk.find_xcode_dir")
-import("detect.sdk.find_xcode_sdkvers")
+import("detect.sdks.find_xcode_dir")
+import("detect.sdks.find_xcode_sdkvers")
 import("lib.detect.find_tool")
-import("lib.detect.find_toolname")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
@@ -48,7 +47,10 @@ function _toolchain_check(config, toolkind, toolinfo)
         -- attempt to check it 
         local program = nil
         if not program then
-            program = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
+            local tool = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
+            if tool then
+                program = tool.program
+            end
         end
 
         -- check ok?

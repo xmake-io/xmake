@@ -25,7 +25,7 @@
 -- imports
 import("core.tool.tool")
 import("core.project.config")
-import("detect.tool.find_ccache")
+import("detect.tools.find_ccache")
 
 -- init it
 function init(shellname, kind)

@@ -25,12 +25,12 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("detect.tool.find_gdb")
-import("detect.tool.find_lldb")
-import("detect.tool.find_windbg")
-import("detect.tool.find_x64dbg")
-import("detect.tool.find_ollydbg")
-import("detect.tool.find_vsjitdebugger")
+import("detect.tools.find_gdb")
+import("detect.tools.find_lldb")
+import("detect.tools.find_windbg")
+import("detect.tools.find_x64dbg")
+import("detect.tools.find_ollydbg")
+import("detect.tools.find_vsjitdebugger")
 
 -- run gdb
 function _run_gdb(program, argv)

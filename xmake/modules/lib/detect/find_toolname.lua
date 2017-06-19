@@ -25,6 +25,14 @@
 -- find tool name from the given program 
 function _find(program)
 
+    -- get tool directory
+    local tooldir = path.join(os.programdir(), "modules", "detect", "tools")
+
+    -- attempt to find it directly first
+    if os.isfile(path.join(tooldir, "find_" .. program .. ".lua")) then
+        return program
+    end
+
     -- get file name first
     name = path.filename(program):lower()
 
@@ -39,9 +47,6 @@ function _find(program)
 
     -- remove suffix: ".xxx"
     name = name:gsub("%.%w+", "")
-
-    -- get tool directory
-    local tooldir = path.join(os.programdir(), "modules", "detect", "tool")
 
     -- find_toolname.lua exists? found
     local toolname = name:gsub("[%+%-]", function (ch) return ifelse(ch == "+", "x", "_") end)

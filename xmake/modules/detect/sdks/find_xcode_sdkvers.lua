@@ -24,7 +24,7 @@
 
 -- imports
 import("core.project.config")
-import("detect.sdk.find_xcode_dir")
+import("detect.sdks.find_xcode_dir")
 
 -- find xcode sdk versions for the given platform 
 --

@@ -52,12 +52,12 @@ function sandbox_lib_detect_find_package._find_from_repositories(name, opt)
     -- TODO in repo branch
 end
 
--- find package from modules (detect.package.find_xxx)
+-- find package from modules (detect.packages.find_xxx)
 function sandbox_lib_detect_find_package._find_from_modules(name, opt)
 
-    -- "detect.package.find_xxx" exists?
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "package", "find_" .. name .. ".lua")) then
-        local find_package = import("detect.package.find_" .. name)
+    -- "detect.packages.find_xxx" exists?
+    if os.isfile(path.join(os.programdir(), "modules", "detect", "packages", "find_" .. name .. ".lua")) then
+        local find_package = import("detect.packages.find_" .. name)
         if find_package then
             return find_package(opt)
         end

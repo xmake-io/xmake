@@ -25,26 +25,17 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("lib.detect.find_toolname")
 
 -- find tool from modules
 function _find_from_modules(name, opt)
 
-    -- strip arguments with spaces
-    name = name:split("%s+")[1]
-
-    -- replace "+" to "x"
-    name = name:gsub("%+", "x")
-
-    -- strip suffix on windows
-    if os.host() == "windows" and name:endswith(".exe") then
-        name = name:sub(1, #name - 4)
-    end
-
-    -- "detect.tool.find_xxx" exists?
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "tool", "find_" .. name .. ".lua")) then
-        local find_tool = import("detect.tool.find_" .. name)
+    -- "detect.tools.find_xxx" exists?
+    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", "find_" .. name .. ".lua")) then
+        local find_tool = import("detect.tools.find_" .. name)
         if find_tool then
-            return find_tool(opt)
+            local program, version = find_tool(opt)
+            return {name = name, program = program, version = version}
         end
     end
 end
@@ -54,7 +45,7 @@ end
 -- @param name      the tool name
 -- @param opt       the options, .e.g {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"}, check = function (tool) os.run("%s -h", tool) end, version = true}
 --
--- @return          the tool name or path, version
+-- @return          {name = "", program = "", version = ""}
 --
 -- @code
 --
@@ -65,7 +56,7 @@ end
 -- local tool = find_tool("clang", {check = function (tool) os.run("%s -h", tool) end})
 -- local tool = find_tool("clang", {pathes = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
 -- local tool = find_tool("clang", {pathes = {"$(env PATH)", function () return "/usr/bin"end}})
--- local tool, version = find_tool("ccache", {version = true})
+-- local tool = find_tool("ccache", {version = true})
 --
 -- @endcode
 --
@@ -74,21 +65,30 @@ function main(name, opt)
     -- init options
     opt = opt or {}
 
+    -- find tool name
+    local toolname = find_toolname(name or opt.program)
+    if not toolname then
+        return 
+    end
+
+    -- init program
+    opt.program = opt.program or name
+
     -- attempt to find tool from modules first
-    local tool, version = _find_from_modules(name, opt)
+    local tool = _find_from_modules(toolname, opt)
     if tool then
-        return tool, version
+        return tool
     end
  
     -- find tool
-    tool = find_program(opt.program or name, opt.pathes, opt.check)
+    local program = find_program(opt.program, opt.pathes, opt.check)
 
     -- find tool version
     local version = nil
-    if tool and opt.version then
-        version = find_programver(tool)
+    if program and opt.version then
+        version = find_programver(program)
     end
 
     -- ok?
-    return tool, version
+    return {name = toolname, program = program, version = version}
 end
