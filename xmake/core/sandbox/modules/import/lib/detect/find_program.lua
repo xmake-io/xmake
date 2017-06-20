@@ -31,11 +31,11 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option    = require("base/option")
-local cache     = require("project/cache")
 local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
+local cache     = require("sandbox/modules/import/lib/detect/cache")
 
 -- check program
 function sandbox_lib_detect_find_program._check(program, check)
@@ -141,11 +141,8 @@ end
 --
 function sandbox_lib_detect_find_program.main(name, pathes, check)
 
-    -- get detect cache 
-    local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
- 
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get("find_program") or {}
+    local cacheinfo = cache:load("find_program") 
     local result = cacheinfo[name]
     if result ~= nil then
         return utils.ifelse(result, result, nil)
@@ -153,7 +150,7 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
 
     -- add default search pathes 
     if os.host() ~= "windows" then
-        pathes = table.join(table.wrap(pathes), "/usr/local/lib", "/usr/lib")
+        pathes = table.join(table.wrap(pathes), "/usr/local/bin", "/usr/bin")
     end
 
     -- find executable program
@@ -163,8 +160,7 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
     cacheinfo[name] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set("find_program", cacheinfo)
-    detectcache:flush()
+    cache.save("find_program", cacheinfo)
 
     -- trace
     if option.get("verbose") then

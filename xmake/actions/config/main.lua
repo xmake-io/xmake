@@ -29,7 +29,7 @@ import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
-import("lib.detect.clear_cache")
+import("lib.detect.cache", {alias = "detectcache"})
 import("scanner")
 import("configheader")
 
@@ -234,7 +234,7 @@ function main()
         cache.set("rebuild", true)
 
         -- clear detect cache
-        clear_cache()
+        detectcache.clear()
     end
 
     -- merge the cached configure

@@ -19,11 +19,11 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clear_cache.lua
+-- @file        cache.lua
 --
 
 -- define module
-local sandbox_lib_detect_clear_cache = sandbox_lib_detect_clear_cache or {}
+local sandbox_lib_detect_cache = sandbox_lib_detect_cache or {}
 
 -- load modules
 local os        = require("base/os")
@@ -36,15 +36,54 @@ local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
+-- get detect cache instance
+function sandbox_lib_detect_cache._instance()
+    
+    -- get it
+    local detectcache = sandbox_lib_detect_cache._INSTANCE or cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
+    sandbox_lib_detect_cache._INSTANCE = detectcache
+
+    -- ok?
+    return detectcache
+end
+
+-- load detect cache
+--
+-- @param name  the cache name. .e.g find_program, find_programver, ..
+--
+function sandbox_lib_detect_cache.load(name)
+
+    -- get detect cache 
+    local detectcache = sandbox_lib_detect_cache._instance()
+ 
+    -- attempt to get result from cache first
+    return detectcache:get(name) or {}
+end
+
+-- save detect cache
+--
+-- @param name  the cache name. .e.g find_program, find_programver, ..
+-- @param info  the cache info
+--
+function sandbox_lib_detect_cache.save(name, info)
+
+    -- get detect cache 
+    local detectcache = sandbox_lib_detect_cache._instance()
+
+    -- save cache info
+    detectcache:set(name, info)
+    detectcache:flush()
+end
+
 -- clear detect cache
 --
 -- @param name  the cache name. .e.g find_program, find_programver, ..
 --
-function sandbox_lib_detect_clear_cache.main(name)
+function sandbox_lib_detect_cache.clear(name)
 
     -- get detect cache 
-    local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
- 
+    local detectcache = sandbox_lib_detect_cache._instance()
+
     -- clear cache info
     if name then
         detectcache:set(name, {})
@@ -55,4 +94,4 @@ function sandbox_lib_detect_clear_cache.main(name)
 end
 
 -- return module
-return sandbox_lib_detect_clear_cache
+return sandbox_lib_detect_cache

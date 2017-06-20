@@ -31,13 +31,11 @@ local path              = require("base/path")
 local utils             = require("base/utils")
 local table             = require("base/table")
 local option            = require("base/option")
-local cache             = require("project/cache")
 local config            = require("project/config")
 local project           = require("project/project")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
-local find_file         = import("lib.detect.find_file")
-local find_library      = import("lib.detect.find_library")
+local cache             = require("sandbox/modules/import/lib/detect/cache")
 local pkg_config        = import("lib.detect.pkg_config")
 
 -- find package from project package directories
@@ -99,6 +97,9 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
             links = pkginfo.links
         end
     end
+
+    -- import find_library
+    local find_library = import("lib.detect.find_library")
 
     -- find library 
     local result = nil
@@ -175,9 +176,6 @@ end
 --
 function sandbox_lib_detect_find_package.main(name, opt)
 
-    -- get detect cache 
-    local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
- 
     -- init options
     opt = opt or {}
     opt.plat = opt.plat or config.get("plat") or os.host()
@@ -187,7 +185,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
 
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get(key) or {}
+    local cacheinfo = cache.load(key) 
     local result = cacheinfo[name]
     if result ~= nil then
         return utils.ifelse(result, result, nil)
@@ -200,8 +198,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     cacheinfo[name] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set(key, cacheinfo)
-    detectcache:flush()
+    cache.save(key, cacheinfo)
 
     -- trace
     if option.get("verbose") then

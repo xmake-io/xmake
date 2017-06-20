@@ -31,10 +31,10 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option    = require("base/option")
-local cache     = require("project/cache")
 local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
+local cache     = require("sandbox/modules/import/lib/detect/cache")
 
 -- find program version
 --
@@ -54,11 +54,8 @@ local raise     = require("sandbox/modules/raise")
 --
 function sandbox_lib_detect_find_programver.main(program, command, parse)
 
-    -- get detect cache 
-    local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
- 
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get("find_programver") or {}
+    local cacheinfo = cache.load("find_programver") 
     local result = cacheinfo[program]
     if result ~= nil then
         return utils.ifelse(result, result, nil)
@@ -93,8 +90,7 @@ function sandbox_lib_detect_find_programver.main(program, command, parse)
     cacheinfo[program] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set("find_programver", cacheinfo)
-    detectcache:flush()
+    cache.save("find_programver", cacheinfo)
 
     -- ok?
     return result
