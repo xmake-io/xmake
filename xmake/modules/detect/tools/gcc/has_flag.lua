@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        check_flag.lua
+-- @file        has_flag.lua
 --
 
 -- imports
