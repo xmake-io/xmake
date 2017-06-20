@@ -25,29 +25,11 @@
 -- imports
 import("lib.detect.cache")
 
--- is linker?
-function _islinker(flag, opt)
-  
-    -- the flag is "-Wl,<arg>" or "-Xlinker <arg>"?
-    if flag:startswith("-Wl,") or flag:startswith("-Xlinker ") then
-        return true
-    end
-
-    -- the tool kind is ld or sh?
-    local toolkind = opt.toolkind or ""
-    return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("-ld") or toolkind:endswith("-sh")
-end
-
--- attempt to check it from the argument list of gcc
-function _check_from_arglist(flag, opt, islinker)
-
-    -- only for compiler
-    if islinker then
-        return 
-    end
+-- attempt to check it from the argument list 
+function _check_from_arglist(flag, opt)
 
     -- make cache key
-    local key = "detect.tools.gcc.has_flag"
+    local key = "detect.tools.cl.has_flag"
 
     -- make flags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
@@ -61,10 +43,10 @@ function _check_from_arglist(flag, opt, islinker)
 
         -- get argument list
         flags = {}
-        local arglist = os.iorunv(opt.program, {"--help"})
+        local arglist = os.iorunv(opt.program, {"-?"})
         if arglist then
-            for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
-                flags[arg] = true
+            for arg in arglist:gmatch("(/[%-%a%d]+)%s+") do
+                flags[arg:gsub("/", "-")] = true
             end
         end
 
@@ -74,27 +56,27 @@ function _check_from_arglist(flag, opt, islinker)
     end
 
     -- ok?
-    return flags[flag]
+    return flags[flag:gsub("/", "-")]
 end
 
 -- try running to check flag
-function _check_try_running(flag, opt, islinker)
+function _check_try_running(flag, opt)
 
-    -- check flag for linker
-    if islinker then
-
-        -- make an stub source file
-        local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flag.c")
-        if not os.isfile(sourcefile) then
-            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
-        end
-
-        -- check it
-        return try { function () os.runv(opt.program, {flag, "-o", os.nuldev(), sourcefile}); return true end }
+    -- make an stub source file
+    local sourcefile = path.join(os.tmpdir(), "detect", "cl_has_flag.c")
+    if not os.isfile(sourcefile) then
+        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end
-    
-    -- check flag for compiler
-    return try { function () os.runv(opt.program, {flag, "-S", "-o", os.nuldev(), "-xc", os.nuldev()}); return true end }
+
+    -- check it
+    return try  {   function () 
+                        local _, errors = os.iorunv(opt.program, {"-c", "-nologo", flag, "-Fo" .. os.nuldev(), sourcefile})
+                        if errors and #errors:trim() > 0 then
+                            return false
+                        end
+                        return true 
+                    end 
+                }
 end
 
 -- has_flag(flag)?
@@ -105,15 +87,12 @@ end
 --
 function main(flag, opt)
 
-    -- is linker?
-    local islinker = _islinker(flag, opt)
-
-    -- attempt to check it from the argument list of gcc
-    if _check_from_arglist(flag, opt, islinker) then
+    -- attempt to check it from the argument list 
+    if _check_from_arglist(flag, opt) then
         return true
     end
 
     -- try running to check it
-    return _check_try_running(flag, opt, islinker)
+    return _check_try_running(flag, opt)
 end
 
