@@ -6,10 +6,11 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
 * [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
-* Add `find_program`, `find_file`, `find_library` and `find_package` module interfaces.
+* Add `find_program`, `find_file`, `find_library`, `find_tool` and `find_package` module interfaces.
 * Add `net.*` and `devel.*` extension modules
 * Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * Support to compile the microsoft resource file (.rc)
+* Add `has_flags` module interfaces.
 
 ### Changes
 
@@ -23,6 +24,7 @@
 * Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
 * improve builtin-variables to support to get the value envirnoment and registry
 * Improve to detect vstudio sdk and cross toolchains envirnoment
+* [#71](https://github.com/tboox/xmake/issues/71): Improve to detect compiler and linker from env vars
 
 ### Bugs fixed
 
@@ -304,10 +306,11 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
 * [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
-* 添加`find_program`, `find_file`, `find_library`和`find_package` 等模块接口
+* 添加`find_program`, `find_file`, `find_library`, `find_tool`和`find_package` 等模块接口
 * 添加`net.*`和`devel.*`扩展模块
 * 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * 增加对微软.rc资源文件的编译支持，当在windows上编译时，可以增加资源文件了
+* 增加`has_flags`模块接口
 
 ### 改进
 
@@ -321,6 +324,7 @@
 * 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("iphoneos|arm*", function (target) end)`
 * 改进内置变量，支持环境变量和注册表数据的获取
 * 改进vstudio环境和交叉工具链的探测
+* [#71](https://github.com/tboox/xmake/issues/71): 改进从环境变量中探测链接器和编译器
 
 ### Bugs修复
 
