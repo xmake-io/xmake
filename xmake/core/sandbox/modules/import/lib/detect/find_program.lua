@@ -142,7 +142,7 @@ end
 function sandbox_lib_detect_find_program.main(name, pathes, check)
 
     -- attempt to get result from cache first
-    local cacheinfo = cache:load("find_program") 
+    local cacheinfo = cache.load("find_program") 
     local result = cacheinfo[name]
     if result ~= nil then
         return utils.ifelse(result, result, nil)

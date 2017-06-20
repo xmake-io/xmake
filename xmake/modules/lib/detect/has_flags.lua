@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("lib.detect.find_tool")
 
 -- has this flag?
@@ -58,6 +59,11 @@ function _has_flag(name, flag, opt)
         end
     else
         result = try { function () os.runv(tool.program, {flag}); return true end }
+    end
+
+    -- trace
+    if option.get("verbose") then
+        cprint("checking for the flags %s ... %s", flag, ifelse(result, "${green}ok", "${red}no"))
     end
 
     -- save result to cache
