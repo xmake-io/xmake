@@ -29,7 +29,7 @@ import("lib.detect.cache")
 function _check_from_arglist(flag, opt)
 
     -- make cache key
-    local key = "detect.tools.ar.has_flag"
+    local key = "detect.tools.ml.has_flag"
 
     -- make flags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
@@ -43,23 +43,10 @@ function _check_from_arglist(flag, opt)
 
         -- get argument list
         flags = {}
-        local arglist = nil
-        try 
-        { 
-            function () os.runv(opt.program, {"--help"}) end,
-            catch 
-            { 
-                function (errors) arglist = errors end
-            }
-        }
+        local arglist = os.iorunv(opt.program, {"-?"})
         if arglist then
-            local found = false
-            for arg in arglist:gmatch("%-r %[%-(%a+)%]") do
-                arg:gsub("%a", function (ch) flags["-" .. ch] = true; flags["-r" .. ch] = true; flags["-" .. ch .. "r"] = true end)
-                found = true
-            end
-            if found then
-                flags["-r"] = true
+            for arg in arglist:gmatch("(/[%-%a%d]+)%s+") do
+                flags[arg:gsub("/", "-")] = true
             end
         end
 
@@ -69,7 +56,27 @@ function _check_from_arglist(flag, opt)
     end
 
     -- ok?
-    return flags[flag]
+    return flags[flag:gsub("/", "-")]
+end
+
+-- try running to check flag
+function _check_try_running(flag, opt)
+
+    -- make an stub source file
+    local sourcefile = path.join(os.tmpdir(), "detect", "ml_has_flag.asm")
+    if not os.isfile(sourcefile) then
+        io.writefile(sourcefile, ".code\nend")
+    end
+
+    -- check it
+    return try  {   function () 
+                        local _, errors = os.iorunv(opt.program, {"-c", "-nologo", flag, "-Fo" .. os.nuldev(), sourcefile})
+                        if errors and #errors:trim() > 0 then
+                            return false
+                        end
+                        return true 
+                    end 
+                }
 end
 
 -- has_flag(flag)?
@@ -79,6 +86,13 @@ end
 -- @return      true or false
 --
 function main(flag, opt)
-    return _check_from_arglist(flag, opt) 
+
+    -- attempt to check it from the argument list 
+    if _check_from_arglist(flag, opt) then
+        return true
+    end
+
+    -- try running to check it
+    return _check_try_running(flag, opt)
 end
 

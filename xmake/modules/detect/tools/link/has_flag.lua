@@ -29,13 +29,13 @@ import("lib.detect.cache")
 function _check_from_arglist(flag, opt)
 
     -- make cache key
-    local key = "detect.tools.ar.has_flag"
+    local key = "detect.tools.link.has_flag"
 
     -- make flags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
 
     -- load cache
-    local cacheinfo  = cache.load(key)
+    local cacheinfo = cache.load(key)
 
     -- get all flags from argument list
     local flags = cacheinfo[flagskey]
@@ -45,21 +45,16 @@ function _check_from_arglist(flag, opt)
         flags = {}
         local arglist = nil
         try 
-        { 
-            function () os.runv(opt.program, {"--help"}) end,
+        {
+            function () os.runv(opt.program, {"-?"}) end,
             catch 
-            { 
+            {
                 function (errors) arglist = errors end
             }
         }
         if arglist then
-            local found = false
-            for arg in arglist:gmatch("%-r %[%-(%a+)%]") do
-                arg:gsub("%a", function (ch) flags["-" .. ch] = true; flags["-r" .. ch] = true; flags["-" .. ch .. "r"] = true end)
-                found = true
-            end
-            if found then
-                flags["-r"] = true
+            for arg in arglist:gmatch("(/[%-%a%d]+)%s+") do
+                flags[arg:gsub("/", "-"):lower()] = true
             end
         end
 
@@ -69,7 +64,32 @@ function _check_from_arglist(flag, opt)
     end
 
     -- ok?
-    return flags[flag]
+    return flags[flag:gsub("/", "-"):lower()]
+end
+
+-- try running to check flag
+function _check_try_running(flag, opt)
+
+    -- make an stub source file
+    local sourcefile = path.join(os.tmpdir(), "detect", "link_has_flag.c")
+    if not os.isfile(sourcefile) then
+        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+    end
+
+    -- compile the source file
+    local objectfile = os.tmpfile() .. ".obj"
+    local binaryfile = os.tmpfile() .. ".exe"
+    os.iorunv("cl", {"-c", "-nologo", "-Fo" .. objectfile, sourcefile})
+
+    -- try link it
+    local ok = try { function () os.execv(opt.program, {flag, "-nologo", "-out:" .. binaryfile, objectfile}); return true end }
+
+    -- remove files
+    os.tryrm(objectfile)
+    os.tryrm(binaryfile)
+
+    -- ok?
+    return ok
 end
 
 -- has_flag(flag)?
@@ -79,6 +99,13 @@ end
 -- @return      true or false
 --
 function main(flag, opt)
-    return _check_from_arglist(flag, opt) 
+
+    -- attempt to check it from the argument list 
+    if _check_from_arglist(flag, opt) then
+        return true
+    end
+
+    -- try running to check it
+    return _check_try_running(flag, opt)
 end
 
