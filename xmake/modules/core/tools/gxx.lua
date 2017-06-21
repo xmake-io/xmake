@@ -25,11 +25,4 @@
 -- inherit gcc
 inherit("gcc")
 
--- init it
-function init(program, kind)
-    
-    -- init super
-    _super.init(program or "g++", kind)
-
-end
 

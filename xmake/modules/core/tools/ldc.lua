@@ -26,10 +26,10 @@
 inherit("dmd")
 
 -- init it
-function init(program, kind)
+function init(self)
     
     -- init super
-    _super.init(program or "ldc", kind)
+    _super.init(self)
 
     -- init shflags
     _super._g.shflags = { "-shared" }

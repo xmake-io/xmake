@@ -23,16 +23,10 @@
 --
 
 -- init it
-function init(program, kind)
+function init(self)
    
-    -- save name
-    _g.program = program or "ml.exe"
-
-    -- save kind
-    _g.kind = kind
-
     -- init asflags
-    if _g.program:find("64") then
+    if self:program():find("64") then
         _g.asflags = { "-nologo"}
     else
         _g.asflags = { "-nologo", "-Gd"}
@@ -66,14 +60,12 @@ function init(program, kind)
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the warning flag
-function nf_warning(level)
+function nf_warning(self, level)
 
     -- the maps
     local maps = 
@@ -90,75 +82,52 @@ function nf_warning(level)
 end
 
 -- make the define flag
-function nf_define(macro)
-
-    -- make it
+function nf_define(self, macro)
     return "-D" .. macro:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function nf_undefine(macro)
-
-    -- make it
+function nf_undefine(self, macro)
     return "-U" .. macro
 end
 
 -- make the includedir flag
-function nf_includedir(dir)
-
-    -- make it
+function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
 -- make the complie command
-function _compcmd1(sourcefile, objectfile, flags)
-
-    -- make it
-    return format("%s -c %s -Fo%s %s", _g.program, flags, objectfile, sourcefile)
+function _compcmd1(self, sourcefile, objectfile, flags)
+    return format("%s -c %s -Fo%s %s", self:program(), flags, objectfile, sourcefile)
 end
 
 -- complie the source file
-function _compile1(sourcefile, objectfile, incdepfile, flags)
+function _compile1(self, sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(_compcmd1(sourcefile, objectfile, flags))
+    os.run(_compcmd1(self, sourcefile, objectfile, flags))
 end
 
 -- make the complie command
-function compcmd(sourcefiles, objectfile, flags)
+function compcmd(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(sourcefiles, objectfile, flags)
+    return _compcmd1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, incdepfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(sourcefiles, objectfile, incdepfile, flags)
-end
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local objectfile = os.tmpfile() .. ".obj"
-    local sourcefile = os.tmpfile() .. ".asm"
-    io.writefile(sourcefile, "end")
-
-    -- check it
-    os.run("%s -c %s -Fo%s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
+    _compile1(self, sourcefiles, objectfile, incdepfile, flags)
 end
 

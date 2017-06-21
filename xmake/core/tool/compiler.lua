@@ -50,7 +50,7 @@ end
 function compiler:_addflags_from_platform(flags, targetkind)
 
     -- add flags 
-    local toolkind = self:get("kind")
+    local toolkind = self:kind()
     for _, flagkind in ipairs(self:_flagkinds()) do
 
         -- add flags for platform
@@ -128,28 +128,28 @@ end
 function compiler:build(sourcefiles, targetkind, targetfile, target)
 
     -- get it
-    return sandbox.load(self:_tool().build, sourcefiles, targetkind, targetfile, (self:compflags(target)) .. " " .. (target:linkflags()))
+    return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind, targetfile, (self:compflags(target)) .. " " .. (target:linkflags()))
 end
 
 -- get the build command
 function compiler:buildcmd(sourcefiles, targetkind, targetfile, target)
 
     -- get it
-    return self:_tool().buildcmd(sourcefiles, targetkind, targetfile, (self:compflags(target) .. " " .. (target:linkflags())))
+    return self:_tool():buildcmd(sourcefiles, targetkind, targetfile, (self:compflags(target) .. " " .. (target:linkflags())))
 end
 
 -- compile the source files
 function compiler:compile(sourcefiles, objectfile, incdepfile, target)
 
     -- compile it
-    return sandbox.load(self:_tool().compile, sourcefiles, objectfile, incdepfile, (self:compflags(target)))
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, incdepfile, (self:compflags(target)))
 end
 
 -- get the compile command
 function compiler:compcmd(sourcefiles, objectfile, target)
 
     -- get it
-    return self:_tool().compcmd(sourcefiles, objectfile, (self:compflags(target)))
+    return self:_tool():compcmd(sourcefiles, objectfile, (self:compflags(target)))
 end
 
 -- get the compling flags

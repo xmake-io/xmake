@@ -13,7 +13,7 @@
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
+-- See the License for the specific tool governing permissions and
 -- limitations under the License.
 -- 
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
@@ -24,6 +24,7 @@
 
 -- define module
 local tool      = tool or {}
+local _instance = _instance or {}
 
 -- load modules
 local os            = require("base/os")
@@ -35,91 +36,63 @@ local sandbox       = require("sandbox/sandbox")
 local platform      = require("platform/platform")
 local import        = require("sandbox/modules/import")
 
--- load the given tool 
-function tool._load(kind, name, program)
+-- new an instance
+function _instance.new(kind, name, program)
 
-    -- calculate the cache key
-    local key = (kind or "") .. program
-
-    -- get it directly from cache dirst
-    tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[key] then
-        return tool._TOOLS[key]
+    -- import "core.tools.xxx"
+    local toolclass = nil
+    if os.isfile(path.join(os.programdir(), "modules", "core", "tools", name .. ".lua")) then
+        toolclass = import("core.tools." .. name)
     end
 
-    -- not exists?
-    local toolpath = path.join(os.programdir(), "tools", name .. ".lua")
-    if not os.isfile(toolpath) then
-        return nil, string.format("%s not found!", name)
+    -- not found?
+    if not toolclass then
+        return nil, string.format("cannot import \"core.tool.%s\" module!", name)
     end
 
-    -- load script
-    local script, errors = loadfile(toolpath)
-    if script then
+    -- new an instance
+    local instance = table.inherit(_instance, toolclass)
 
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, nil, path.directory(toolpath))
-        if not instance then
+    -- save name, kind and program
+    instance._NAME    = name
+    instance._KIND    = kind
+    instance._PROGRAM = program
+
+    -- init instance
+    if instance.init then
+        local ok, errors = sandbox.load(instance.init, instance)
+        if not ok then
             return nil, errors
         end
-
-        -- import the tool module
-        local module, errors = instance:import()
-        if not module then
-            return nil, errors
-        end
-
-        -- init the tool module
-        if module.init then
-            module.init(program, kind)
-        end
-    
-        -- save tool to the cache
-        tool._TOOLS[key] = module
-
-        -- ok?
-        return module
     end
 
-    -- failed
-    return nil, errors
+    -- ok
+    return instance
 end
 
--- check the program
-function tool._check(program, check)
+-- get the tool name
+function _instance:name()
+    return self._NAME
+end
 
-    -- uses the passed checker
-    if check ~= nil then
+-- get the tool kind
+function _instance:kind()
+    return self._KIND
+end
 
-        -- check it
-        local ok, errors = sandbox.load(check, program) 
-        if not ok then
-            utils.verror(errors)
-        end
+-- get the tool program
+function _instance:program()
+    return self._PROGRAM
+end
 
-        -- ok?
-        return ok
-    end
- 
-    -- load the tool module
-    local module, errors = tool._load(program)
-    if not module then
-        utils.verror(errors)
-    end
+-- has the given flag?
+function _instance:has_flags(flag)
 
-    -- no checker? attempt to run it directly
-    if not module or not module.check then
-        return 0 == os.exec(program, os.nuldev(), os.nuldev())
-    end
+    -- import has_flags()
+    self._has_flags = self._has_flags or import("lib.detect.has_flags")
 
-    -- check it
-    local ok, errors = sandbox.load(module.check) 
-    if not ok then
-        utils.verror(errors)
-    end
-
-    -- ok?
-    return ok
+    -- has flags?
+    return self._has_flags(self:name(), flag, {program = self:program()})
 end
 
 -- load the given tool from the given kind
@@ -129,6 +102,12 @@ end
 -- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
 function tool.load(kind)
+
+    -- get it directly from cache dirst
+    tool._TOOLS = tool._TOOLS or {}
+    if tool._TOOLS[kind] then
+        return tool._TOOLS[kind]
+    end
 
     -- get the tool program
     local program = platform.tool(kind)
@@ -140,50 +119,28 @@ function tool.load(kind)
     local find_toolname = import("lib.detect.find_toolname")
 
     -- get the tool name from the program
-    local name = find_toolname(program)
+    local ok, name_or_errors = sandbox.load(find_toolname, program)
+    if not ok then
+        return nil, name_or_errors
+    end
+
+    -- get name
+    local name = name_or_errors
     if not name then
         return nil, string.format("cannot find tool name for %s", program)
     end
 
-    -- load it
-    return tool._load(kind, name, program)
-end
-
--- check the tool and return the absolute path if exists
-function tool.check(program, dirs, check)
-
-    -- check
-    assert(program)
-
-    -- attempt to get result from cache first
-    tool._CHECKINFO = tool._CHECKINFO or {}
-    local result = tool._CHECKINFO[program]
-    if result then
-        return result
+    -- new an instance
+    local instance, errors = _instance.new(kind, name, program)
+    if not instance then
+        return nil, errors
     end
 
-    -- attempt to check it directly 
-    if tool._check(program, check) then
-        tool._CHECKINFO[program] = program
-        return program
-    end
+    -- save instance to the cache
+    tool._TOOLS[kind] = instance
 
-    -- attempt to check it from the given directories
-    if not path.is_absolute(program) then
-        for _, dir in ipairs(table.wrap(dirs)) do
-
-            -- the tool path
-            local toolpath = path.join(dir, program)
-            if os.isexec(toolpath) then
-            
-                -- check it
-                if tool._check(toolpath, check) then
-                    tool._CHECKINFO[program] = toolpath
-                    return toolpath
-                end
-            end
-        end
-    end
+    -- ok
+    return instance
 end
 
 -- return module

@@ -26,14 +26,8 @@
 import("core.project.config")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "link.exe"
-
-    -- save the tool kind
-    _g.kind = kind
-
     -- the architecture
     local arch = config.get("arch")
 
@@ -68,14 +62,12 @@ function init(program, kind)
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the symbol flag
-function nf_symbol(level, target)
+function nf_symbol(self, level, target)
     
     -- debug? generate *.pdb file
     local flags = ""
@@ -92,30 +84,26 @@ function nf_symbol(level, target)
 end
 
 -- make the link flag
-function nf_link(lib)
-
-    -- make it
+function nf_link(self, lib)
     return lib .. ".lib"
 end
 
 -- make the linkdir flag
-function nf_linkdir(dir)
-
-    -- make it
+function nf_linkdir(self, dir)
     return "-libpath:" .. dir
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetkind, targetfile, flags)
+function linkcmd(self, objectfiles, targetkind, targetfile, flags)
 
     -- make it
-    local cmd = format("%s %s -out:%s %s", _g.program, flags, targetfile, objectfiles)
+    local cmd = format("%s %s -out:%s %s", self:program(), flags, targetfile, objectfiles)
 
     -- too long?
     if #cmd > 4096 then
         local argfile = targetfile .. ".arg"
         io.printf(argfile, "%s -out:%s %s", flags, targetfile, objectfiles)
-        cmd = format("%s @%s", _g.program, argfile)
+        cmd = format("%s @%s", self:program(), argfile)
     end
 
     -- ok?
@@ -123,42 +111,12 @@ function linkcmd(objectfiles, targetkind, targetfile, flags)
 end
 
 -- link the target file
-function link(objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
-end
-
--- check the given flags 
-function check(flags)
-
-    -- -def:"xxx.def"? pass directly
-    if flags and flags:lower():find("def:") then
-        return 
-    end
-
-    -- make an stub source file
-    local binaryfile = os.tmpfile() .. ".exe"
-    local objectfile = os.tmpfile() .. ".obj"
-    local sourcefile = os.tmpfile() .. ".c"
-
-    -- main entry
-    if flags and flags:lower():find("subsystem:windows") then
-        io.writefile(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
-    else
-        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
-    end
-
-    -- check it
-    os.run("cl -c -Fo%s %s", objectfile, sourcefile)
-    os.run("%s %s -out:%s %s", _g.program, ifelse(flags, flags, ""), binaryfile, objectfile)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-    os.rm(binaryfile)
+    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
 end
 

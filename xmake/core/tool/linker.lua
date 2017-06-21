@@ -44,7 +44,7 @@ local compiler  = require("tool/compiler")
 function linker:_addflags_from_platform(flags, targetkind)
 
     -- add flags 
-    local toolkind = self:get("kind")
+    local toolkind = self:kind()
     for _, flagkind in ipairs(self:_flagkinds()) do
 
         -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
@@ -61,7 +61,7 @@ function linker:_addflags_from_compiler(flags, targetkind, sourcekinds)
 
     -- make flags 
     local flags_of_compiler = {}
-    local toolkind = self:get("kind")
+    local toolkind = self:kind()
     for _, sourcekind in ipairs(table.wrap(sourcekinds)) do
 
         -- load compiler
@@ -87,7 +87,7 @@ end
 function linker:_addflags_from_linker(flags)
 
     -- add flags
-    local toolkind = self:get("kind")
+    local toolkind = self:kind()
     for _, flagkind in ipairs(self:_flagkinds()) do
 
         -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
@@ -176,14 +176,14 @@ end
 function linker:link(objectfiles, targetfile, target)
 
     -- link it
-    return sandbox.load(self:_tool().link, table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
+    return sandbox.load(self:_tool().link, self:_tool(), table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
 end
 
 -- get the link command
 function linker:linkcmd(objectfiles, targetfile, target)
 
     -- get it
-    return self:_tool().linkcmd(table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
+    return self:_tool():linkcmd(table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
 end
 
 -- get the link flags

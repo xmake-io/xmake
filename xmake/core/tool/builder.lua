@@ -76,8 +76,8 @@ function builder:_mapflag(flag, mapflags)
         end
     end
 
-    -- check it 
-    if self:check(flag) then
+    -- has this flag?
+    if self:has_flags(flag) then
         return flag
     end
 end
@@ -103,9 +103,9 @@ function builder:_mapflags(flags)
 
     else
 
-        -- check flags
+        -- has flags?
         for _, flag in pairs(flags) do
-            if self:check(flag) then
+            if self:has_flags(flag) then
                 table.insert(results, flag)
             end
         end
@@ -261,8 +261,8 @@ function builder:_addflags_from_language(flags, target)
             for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
             
                 -- map and check flag
-                local flag = mapper(flagvalue, target, self:_targetkind())
-                if flag and flag ~= "" and (not checkstate or self:check(flag)) then
+                local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
+                if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
                     table.join2(flags, flag)
                 end
             end
@@ -270,11 +270,29 @@ function builder:_addflags_from_language(flags, target)
     end
 end
 
+-- get tool name
+function builder:name()
+    return self:_tool():name()
+end
+
+-- get tool kind
+function builder:kind()
+    return self:_tool():kind()
+end
+
+-- get tool program
+function builder:program()
+    return self:_tool():program()
+end
+
 -- get properties of the tool
 function builder:get(name)
+    return self:_tool():get(name)
+end
 
-    -- get it
-    return self:_tool().get(name)
+-- has flags?
+function builder:has_flags(flags)
+    return self:_tool():has_flags(name)
 end
 
 -- get the format of the given target kind 
@@ -295,41 +313,6 @@ function builder:feature(name)
     if features then
         return features[name]
     end
-end
-
--- check the given flags 
-function builder:check(flags)
-
-    -- the builder tool
-    local ctool = self:_tool()
-
-    -- no check?
-    if not ctool.check then
-        return true
-    end
-
-    -- have been checked? return it directly
-    self._CHECKED = self._CHECKED or {}
-    if self._CHECKED[flags] ~= nil then
-        return self._CHECKED[flags]
-    end
-
-    -- check it
-    local ok, errors = sandbox.load(ctool.check, flags)
-
-    -- trace
-    if option.get("verbose") then
-        utils.cprint("checking for the flags %s ... %s", flags, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok then
-            utils.cprint("${red}" .. errors or "")
-        end
-    end
-
-    -- save the checked result
-    self._CHECKED[flags] = ok
-
-    -- ok?
-    return ok
 end
 
 -- return module

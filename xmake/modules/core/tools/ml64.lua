@@ -19,41 +19,10 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clang.lua
+-- @file        ml64.lua
 --
 
--- inherit gcc
-inherit("gcc")
+-- inherit ml
+inherit("ml")
 
--- init it
-function init(program, kind)
-    
-    -- init super
-    _super.init(program or "clang", kind)
 
-    -- init shflags
-    _super._g.shflags = { "-dynamiclib", "-fPIC" }
-
-    -- suppress warning 
-    _super._g.cxflags = {"-Qunused-arguments"}
-    _super._g.mxflags = {"-Qunused-arguments"}
-    _super._g.asflags = {"-Qunused-arguments"}
-
-    -- init flags map
-    _super._g.mapflags["-s"] = "-Wl,-S"
-    _super._g.mapflags["-S"] = "-Wl,-S"
-end
-
--- make the strip flag
-function nf_strip(level)
-
-    -- the maps
-    local maps = 
-    {   
-        debug       = "-Wl,-S"
-    ,   all         = "-Wl,-S"
-    }
-
-    -- make it
-    return maps[level] or ""
-end

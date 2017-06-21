@@ -82,15 +82,11 @@ end
 
 -- get the language menu
 function _instance:menu()
-
-    -- get it
     return self._INFO.menu
 end
 
 -- get the language name
 function _instance:name()
-
-    -- get it
     return self._NAME
 end
 

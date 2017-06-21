@@ -22,31 +22,21 @@
 -- @file        lib.lua
 --
 
--- init it
-function init(program, kind)
-    
-    -- save the shell name
-    _g.program = program or "lib.exe"
-
-    -- save the tool kind
-    _g.kind = kind
-end
-
 -- get the property
-function get(name)
+function get(self, name)
 
     -- get it
     return _g[name]
 end
 
 -- extract the static library to object directory
-function extract(libraryfile, objectdir)
+function extract(self, libraryfile, objectdir)
 
     -- make the object directory first
     os.mkdir(objectdir)
 
     -- list object files 
-    local objectfiles = os.iorun("%s -nologo -list %s", _g.program, libraryfile)
+    local objectfiles = os.iorun("%s -nologo -list %s", self:program(), libraryfile)
 
     -- extrace all object files
     for _, objectfile in ipairs(objectfiles:split('\n')) do
@@ -68,28 +58,9 @@ function extract(libraryfile, objectdir)
             end
 
             -- extract it
-            os.run("%s -nologo -extract:%s -out:%s %s", _g.program, objectfile, outputfile, libraryfile)
+            os.run("%s -nologo -extract:%s -out:%s %s", self:program(), objectfile, outputfile, libraryfile)
         end
     end
 end
 
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local libfile = os.tmpfile() .. ".lib"
-    local objfile = os.tmpfile() .. ".obj"
-    local srcfile = os.tmpfile() .. ".c"
-    io.writefile(srcfile, "int test(void)\n{return 0;}")
-
-    -- check it
-    os.run("cl -c -Fo%s %s", objfile, srcfile)
-    os.run("link -lib -out:%s %s", libfile, objfile)
-    os.run("%s %s -list %s", _g.program, ifelse(flags, flags, ""), libfile)
-
-    -- remove files
-    os.rm(objfile)
-    os.rm(srcfile)
-    os.rm(libfile)
-end
 

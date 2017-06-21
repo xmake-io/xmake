@@ -28,14 +28,8 @@ import("core.project.config")
 import("core.project.project")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "go"
-
-    -- save the kind
-    _g.kind = kind
-
     -- init arflags
     _g.arflags = { "grc" }
 
@@ -51,14 +45,12 @@ function init(program, kind)
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the optimize flag
-function nf_optimize(level)
+function nf_optimize(self, level)
 
     -- the maps
     local maps = 
@@ -76,7 +68,7 @@ function nf_optimize(level)
 end
 
 -- make the symbol flag
-function nf_symbol(level, target, mapkind)
+function nf_symbol(self, level, target, mapkind)
 
     -- only for compiler
     if mapkind ~= "object" then
@@ -95,7 +87,7 @@ function nf_symbol(level, target, mapkind)
 end
 
 -- make the strip flag
-function nf_strip(level)
+function nf_strip(self, level)
 
     -- the maps
     local maps = 
@@ -109,71 +101,48 @@ function nf_strip(level)
 end
 
 -- make the includedir flag
-function nf_includedir(dir)
-
-    -- make it
+function nf_includedir(self, dir)
     return "-I " .. dir
 end
 
 -- make the linkdir flag
-function nf_linkdir(dir)
-
-    -- make it
+function nf_linkdir(self, dir)
     return "-L " .. dir
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetkind, targetfile, flags)
+function linkcmd(self, objectfiles, targetkind, targetfile, flags)
 
     -- make it
     if targetkind == "static" then
-        return format("%s tool pack %s %s %s", _g.program, flags, targetfile, objectfiles)
+        return format("%s tool pack %s %s %s", self:program(), flags, targetfile, objectfiles)
     else
-        return format("%s tool link %s -o %s %s", _g.program, flags, targetfile, objectfiles)
+        return format("%s tool link %s -o %s %s", self:program(), flags, targetfile, objectfiles)
     end
 end
 
 -- link the target file
-function link(objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
+    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command
-function compcmd(sourcefiles, objectfile, flags)
-
-    -- make it
-    return format("%s tool compile %s -o %s %s", _g.program, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+function compcmd(self, sourcefiles, objectfile, flags)
+    return format("%s tool compile %s -o %s %s", self:program(), flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(sourcefiles, objectfile, flags))
+    os.run(compcmd(self, sourcefiles, objectfile, flags))
 end
 
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local objectfile = os.tmpfile() .. ".o"
-    local sourcefile = os.tmpfile() .. ".go"
-
-    -- make stub code
-    io.writefile(sourcefile, "package main\nfunc main() {\n}")
-
-    -- check it
-    os.run("%s tool compile %s -o %s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-end

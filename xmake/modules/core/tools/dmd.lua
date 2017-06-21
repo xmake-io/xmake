@@ -28,14 +28,8 @@ import("core.project.config")
 import("core.project.project")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "dmd"
-
-    -- save the kind
-    _g.kind = kind
-
     -- init arflags
     _g.arflags = { "-lib" }
 
@@ -54,14 +48,12 @@ function init(program, kind)
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the optimize flag
-function nf_optimize(level)
+function nf_optimize(self, level)
 
     -- the maps
     local maps = 
@@ -79,7 +71,7 @@ function nf_optimize(level)
 end
 
 -- make the strip flag
-function nf_strip(level)
+function nf_strip(self, level)
 
     -- the maps
     local maps = 
@@ -93,7 +85,7 @@ function nf_strip(level)
 end
 
 -- make the symbol flag
-function nf_symbol(level)
+function nf_symbol(self, level)
 
     -- the maps
     local maps = 
@@ -107,7 +99,7 @@ function nf_symbol(level)
 end
 
 -- make the warning flag
-function nf_warning(level)
+function nf_warning(self, level)
 
     -- the maps
     local maps = 
@@ -124,7 +116,7 @@ function nf_warning(level)
 end
 
 -- make the vector extension flag
-function nf_vectorext(extension)
+function nf_vectorext(self, extension)
 
     -- the maps
     local maps = 
@@ -138,101 +130,55 @@ function nf_vectorext(extension)
 end
 
 -- make the includedir flag
-function nf_includedir(dir)
-
-    -- make it
+function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
 -- make the link flag
-function nf_link(lib)
-
-    -- make it
+function nf_link(self, lib)
     return "-L-l" .. lib
 end
 
 -- make the linkdir flag
-function nf_linkdir(dir)
-
-    -- make it
+function nf_linkdir(self, dir)
     return "-L-L" .. dir
 end
 
 -- make the rpathdir flag
-function nf_rpathdir(dir)
-
-    -- check this flag
+function nf_rpathdir(self, dir)
     local flag = "-L-rpath=" .. dir
-    if _g._RPATH == nil then
-        _g._RPATH = try
-        {
-            function ()
-                check(flag, true)
-                return true
-            end
-        }
-    end
-
-    -- ok?
-    if _g._RPATH then
+    if self:has_flags(flag) then
         return flag
     end
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetkind, targetfile, flags)
-
-    -- make it
-    return format("%s %s -of%s %s", _g.program, flags, targetfile, objectfiles)
+function linkcmd(self, objectfiles, targetkind, targetfile, flags)
+    return format("%s %s -of%s %s", self:program(), flags, targetfile, objectfiles)
 end
 
 -- link the target file
-function link(objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
+    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command
-function compcmd(sourcefiles, objectfile, flags)
-
-    -- make it
-    return format("%s -c %s -of%s %s", _g.program, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+function compcmd(self, sourcefiles, objectfile, flags)
+    return format("%s -c %s -of%s %s", self:program(), flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(sourcefiles, objectfile, flags))
+    os.run(compcmd(self, sourcefiles, objectfile, flags))
 end
 
--- check the given flags 
-function check(flags, trylink)
-
-    -- make an stub source file
-    local binaryfile = os.tmpfile() .. ".b"
-    local objectfile = os.tmpfile() .. ".o"
-    local sourcefile = os.tmpfile() .. ".d"
-
-    -- make stub code
-    io.writefile(sourcefile, "void main() {\n}")
-
-    -- check it, need check compflags and linkflags
-    if trylink then
-        os.run("%s %s -of%s %s", _g.program, ifelse(flags, flags, ""), binaryfile, sourcefile)
-    else
-        os.run("%s -c %s -of%s %s", _g.program, ifelse(flags, flags, ""), binaryfile, sourcefile)
-    end
-
-    -- remove files
-    os.tryrm(binaryfile)
-    os.tryrm(objectfile)
-    os.tryrm(sourcefile)
-end

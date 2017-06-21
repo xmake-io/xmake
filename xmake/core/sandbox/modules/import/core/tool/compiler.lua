@@ -58,7 +58,7 @@ function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, target, sou
     if not instance then
         raise(errors)
     end
-
+ 
     -- make command
     return instance:compcmd(sourcefiles, objectfile, target)
 end

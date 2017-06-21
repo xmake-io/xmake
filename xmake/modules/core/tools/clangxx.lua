@@ -19,34 +19,10 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        gccgo.lua
+-- @file        clang++.lua
 --
 
--- inherit gcc
-inherit("gcc")
+-- inherit clang
+inherit("clang")
 
--- init it
-function init(program, kind)
-    
-    -- init super
-    _super.init(program or "gccgo", kind)
-end
-
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local objectfile = os.tmpfile() .. ".o"
-    local sourcefile = os.tmpfile() .. ".go"
-
-    -- make stub code
-    io.writefile(sourcefile, "package main\nfunc main() {\n}")
-
-    -- check it
-    os.run("%s -c %s -o %s %s", _super._g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-end
 

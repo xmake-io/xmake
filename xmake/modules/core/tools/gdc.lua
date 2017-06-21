@@ -25,11 +25,5 @@
 -- inherit dmd
 inherit("dmd")
 
--- init it
-function init(program, kind)
-    
-    -- init super
-    _super.init(program or "gdc", kind)
-end
 
 

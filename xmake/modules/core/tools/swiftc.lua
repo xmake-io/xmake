@@ -27,14 +27,8 @@ import("core.project.config")
 import("detect.tools.find_ccache")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "swiftc"
-
-    -- init kind
-    _g.kind = kind
-
     -- init flags map
     _g.mapflags = 
     {
@@ -70,14 +64,12 @@ function init(program, kind)
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the strip flag
-function nf_strip(level)
+function nf_strip(self, level)
 
     -- the maps
     local maps = 
@@ -91,7 +83,7 @@ function nf_strip(level)
 end
 
 -- make the symbol flag
-function nf_symbol(level)
+function nf_symbol(self, level)
 
     -- the maps
     local maps = 
@@ -104,7 +96,7 @@ function nf_symbol(level)
 end
 
 -- make the warning flag
-function nf_warning(level)
+function nf_warning(self, level)
 
     -- the maps
     local maps = 
@@ -121,7 +113,7 @@ function nf_warning(level)
 end
 
 -- make the optimize flag
-function nf_optimize(level)
+function nf_optimize(self, level)
 
     -- the maps
     local maps = 
@@ -139,7 +131,7 @@ function nf_optimize(level)
 end
 
 -- make the vector extension flag
-function nf_vectorext(extension)
+function nf_vectorext(self, extension)
 
     -- the maps
     local maps = 
@@ -159,66 +151,52 @@ function nf_vectorext(extension)
 end
 
 -- make the includedir flag
-function nf_includedir(dir)
-
-    -- make it
+function nf_includedir(self, dir)
     return "-Xcc -I" .. dir
 end
 
 -- make the define flag
-function nf_define(macro)
-
-    -- make it
+function nf_define(self, macro)
     return "-Xcc -D" .. macro:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function nf_undefine(macro)
-
-    -- make it
+function nf_undefine(self, macro)
     return "-Xcc -U" .. macro
 end
 
 -- make the framework flag
-function nf_framework(framework)
-
-    -- make it
+function nf_framework(self, framework)
     return "-framework" .. framework
 end
 
 -- make the link flag
-function nf_link(lib)
-
-    -- make it
+function nf_link(self, lib)
     return "-l" .. lib
 end
 
 -- make the linkdir flag
-function nf_linkdir(dir)
-
-    -- make it
+function nf_linkdir(self, dir)
     return "-L" .. dir
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetkind, targetfile, flags)
-
-    -- make it
-    return format("%s -o %s %s %s", _g.program, targetfile, objectfiles, flags)
+function linkcmd(self, objectfiles, targetkind, targetfile, flags)
+    return format("%s -o %s %s %s", self:program(), targetfile, objectfiles, flags)
 end
 
 -- link the target file
-function link(objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
+    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the compile command
-function _compcmd1(sourcefile, objectfile, flags)
+function _compcmd1(self, sourcefile, objectfile, flags)
 
     -- get ccache
     local ccache = nil
@@ -227,7 +205,7 @@ function _compcmd1(sourcefile, objectfile, flags)
     end
 
     -- make it
-    local command = format("%s -c %s -o %s %s", _g.program, flags, objectfile, sourcefile)
+    local command = format("%s -c %s -o %s %s", self:program(), flags, objectfile, sourcefile)
     if ccache then
         command = ccache:append(command, " ")
     end
@@ -237,38 +215,32 @@ function _compcmd1(sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function _compile1(sourcefile, objectfile, incdepfile, flags)
+function _compile1(self, sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(_compcmd1(sourcefile, objectfile, flags))
+    os.run(_compcmd1(self, sourcefile, objectfile, flags))
 end
 
 -- make the complie command
-function compcmd(sourcefiles, objectfile, flags)
+function compcmd(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(sourcefiles, objectfile, flags)
+    return _compcmd1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, incdepfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(sourcefiles, objectfile, incdepfile, flags)
+    _compile1(self, sourcefiles, objectfile, incdepfile, flags)
 end
 
--- check the given flags 
-function check(flags)
-
-    -- check it
-    os.run("%s -h", _g.program)
-end

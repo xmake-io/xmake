@@ -27,58 +27,42 @@ import("core.base.option")
 import("core.project.project")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "rc.exe"
-
-    -- save kind
-    _g.kind = kind
-
     -- init features
     _g.features = 
     {
-        ["object:sources"]      = false
+        ["object:sources"] = false
     }
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the define flag
-function nf_define(macro)
-
-    -- make it
+function nf_define(self, macro)
     return "-d" .. macro:gsub("\"", "\\\"")
 end
 
 -- make the undefine flag
-function nf_undefine(macro)
-
-    -- make it
+function nf_undefine(self, macro)
     return "-u" .. macro
 end
 
 -- make the includedir flag
-function nf_includedir(dir)
-
-    -- make it
+function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
 -- make the complie command
-function _compcmd1(sourcefile, objectfile, flags)
-
-    -- make it
-    return format("%s %s -Fo%s %s", _g.program, flags, objectfile, sourcefile)
+function _compcmd1(self, sourcefile, objectfile, flags)
+    return format("%s %s -Fo%s %s", self:program(), flags, objectfile, sourcefile)
 end
 
 -- complie the source file
-function _compile1(sourcefile, objectfile, incdepfile, flags)
+function _compile1(self, sourcefile, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -87,7 +71,7 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
     try
     {
         function ()
-            local outdata, errdata = os.iorun(_compcmd1(sourcefile, objectfile, flags))
+            local outdata, errdata = os.iorun(_compcmd1(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -112,38 +96,23 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
 end
 
 -- make the complie command
-function compcmd(sourcefiles, objectfile, flags)
+function compcmd(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(sourcefiles, objectfile, flags)
+    return _compcmd1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, incdepfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(sourcefiles, objectfile, incdepfile, flags)
+    _compile1(self, sourcefiles, objectfile, incdepfile, flags)
 end
 
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local objectfile = os.tmpfile() .. ".res"
-    local sourcefile = os.tmpfile() .. ".rc"
-    io.writefile(sourcefile, "#define RESID 1")
-
-    -- check it
-    os.run("%s -fo%s %s", _g.program, objectfile, sourcefile)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-end
 

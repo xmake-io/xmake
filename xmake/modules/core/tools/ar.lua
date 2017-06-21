@@ -26,28 +26,21 @@
 import("core.tool.compiler")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "ar"
-
-    -- save the tool kind
-    _g.kind = kind or "ar"
-
     -- init arflags
     _g.arflags = { "-cr" }
-
 end
 
 -- get the property
-function get(name)
+function get(self, name)
 
     -- get it
     return _g[name]
 end
 
 -- make the strip flag
-function strip(level)
+function strip(self, level)
 
     -- the maps
     local maps = 
@@ -61,17 +54,17 @@ function strip(level)
 end
 
 -- make the link command
-function linkcmd(objectfiles, targetkind, targetfile, flags)
+function linkcmd(self, objectfiles, targetkind, targetfile, flags)
 
     -- check
     assert(targetkind == "static")
 
     -- make it
-    return format("%s %s %s %s", _g.program, flags, targetfile, objectfiles)
+    return format("%s %s %s %s", self:program(), flags, targetfile, objectfiles)
 end
 
 -- link the library file
-function link(objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags)
 
     -- check
     assert(targetkind == "static", "the target kind: %s is not support for ar", targetkind)
@@ -80,11 +73,11 @@ function link(objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(objectfiles, targetkind, targetfile, flags))
+    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- extract the static library to object directory
-function extract(libraryfile, objectdir)
+function extract(self, libraryfile, objectdir)
 
     -- make the object directory first
     os.mkdir(objectdir)
@@ -96,11 +89,11 @@ function extract(libraryfile, objectdir)
     local olddir = os.cd(objectdir)
 
     -- extract it
-    os.run("%s -x %s", _g.program, libraryfile)
+    os.run("%s -x %s", self:program(), libraryfile)
 
     -- check repeat object name
     local repeats = {}
-    local objectfiles = os.iorun("%s -t %s", _g.program, libraryfile)
+    local objectfiles = os.iorun("%s -t %s", self:program(), libraryfile)
     for _, objectfile in ipairs(objectfiles:split('\n')) do
         if repeats[objectfile] then
             raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)
@@ -112,29 +105,3 @@ function extract(libraryfile, objectdir)
     os.cd(olddir)
 end
 
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local libraryfile   = os.tmpfile() .. ".a"
-    local objectfile    = os.tmpfile() .. ".o"
-    local sourcefile    = os.tmpfile() .. ".c"
-    io.writefile(sourcefile, "int test(void)\n{return 0;}")
-
-    -- make flags
-    local arflags = table.concat(_g.arflags, " ")
-    if flags then
-        arflags = arflags .. " " .. flags
-    end
-
-    -- compile it
-    compiler.compile(sourcefile, objectfile)
-
-    -- check it
-    link(objectfile, "static", libraryfile, arflags)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-    os.rm(libraryfile)
-end

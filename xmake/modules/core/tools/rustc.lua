@@ -28,14 +28,8 @@ import("core.project.config")
 import("core.project.project")
 
 -- init it
-function init(program, kind)
+function init(self)
     
-    -- save the shell name
-    _g.program = program or "rustc"
-
-    -- save the kind
-    _g.kind = kind
-
     -- init arflags
     _g.arflags = { "--crate-type=lib" }
 
@@ -60,14 +54,12 @@ function init(program, kind)
 end
 
 -- get the property
-function get(name)
-
-    -- get it
+function get(self, name)
     return _g[name]
 end
 
 -- make the optimize flag
-function nf_optimize(level)
+function nf_optimize(self, level)
 
     -- the maps
     local maps = 
@@ -85,7 +77,7 @@ function nf_optimize(level)
 end
 
 -- make the symbol flag
-function nf_symbol(level)
+function nf_symbol(self, level)
 
     -- the maps
     local maps = 
@@ -99,60 +91,37 @@ function nf_symbol(level)
 end
 
 -- make the linkdir flag
-function nf_linkdir(dir)
-
-    -- make it
+function nf_linkdir(self, dir)
     return "-L " .. dir
 end
 
 -- make the build command
-function buildcmd(sourcefiles, targetkind, targetfile, flags)
-
-    -- make it
-    return format("%s %s -o %s %s", _g.program, flags, targetfile, table.concat(sourcefiles, " "))
+function buildcmd(self, sourcefiles, targetkind, targetfile, flags)
+    return format("%s %s -o %s %s", self:program(), flags, targetfile, table.concat(sourcefiles, " "))
 end
 
 -- build the target file
-function build(sourcefiles, targetkind, targetfile, flags)
+function build(self, sourcefiles, targetkind, targetfile, flags)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- build it
-    os.run(buildcmd(sourcefiles, targetkind, targetfile, flags))
+    os.run(buildcmd(self, sourcefiles, targetkind, targetfile, flags))
 end
 
 -- make the complie command
-function compcmd(sourcefiles, objectfile, flags)
-
-    -- make it
-    return format("%s --emit obj %s -o %s %s", _g.program, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+function compcmd(self, sourcefiles, objectfile, flags)
+    return format("%s --emit obj %s -o %s %s", self:program(), flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
-function compile(sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, incdepfile, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(sourcefiles, objectfile, flags))
+    os.run(compcmd(self, sourcefiles, objectfile, flags))
 end
 
--- check the given flags 
-function check(flags)
-
-    -- make an stub source file
-    local objectfile = os.tmpfile() .. ".o"
-    local sourcefile = os.tmpfile() .. ".rs"
-
-    -- make stub code
-    io.writefile(sourcefile, "fn main() {\n}")
-
-    -- check it
-    os.run("%s --emit obj %s -o %s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
-
-    -- remove files
-    os.rm(objectfile)
-    os.rm(sourcefile)
-end

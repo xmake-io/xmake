@@ -86,7 +86,7 @@ if (grep /\.c$/, @gcc_cmd) {
 } elsif (grep /\.[sS]$/, @gcc_cmd) {
     # asm file, just do C preprocessor
     @preprocess_c_cmd = (@gcc_cmd, "-E");
-} elsif (grep /-(v|-version|dumpversion)/, @gcc_cmd) {
+} elsif (grep /-(v|-help|-version|dumpversion)/, @gcc_cmd) {
     # pass -v/--version along, used during probing. Matching '-v' might have
     # uninteded results but it doesn't matter much if gas-preprocessor or
     # the compiler fails.
