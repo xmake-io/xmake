@@ -27,10 +27,10 @@ import("core.base.option")
 import("core.project.project")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "rc.exe"
+    _g.program = program or "rc.exe"
 
     -- save kind
     _g.kind = kind
@@ -74,7 +74,7 @@ end
 function _compcmd1(sourcefile, objectfile, flags)
 
     -- make it
-    return format("%s %s -Fo%s %s", _g.shellname, flags, objectfile, sourcefile)
+    return format("%s %s -Fo%s %s", _g.program, flags, objectfile, sourcefile)
 end
 
 -- complie the source file
@@ -140,7 +140,7 @@ function check(flags)
     io.writefile(sourcefile, "#define RESID 1")
 
     -- check it
-    os.run("%s -fo%s %s", _g.shellname, objectfile, sourcefile)
+    os.run("%s -fo%s %s", _g.program, objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)

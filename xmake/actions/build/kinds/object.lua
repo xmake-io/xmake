@@ -24,7 +24,6 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.tool")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.config")

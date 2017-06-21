@@ -26,10 +26,10 @@
 inherit("gcc")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- init super
-    _super.init(shellname or "gccgo", kind)
+    _super.init(program or "gccgo", kind)
 end
 
 -- check the given flags 
@@ -43,7 +43,7 @@ function check(flags)
     io.writefile(sourcefile, "package main\nfunc main() {\n}")
 
     -- check it
-    os.run("%s -c %s -o %s %s", _super._g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    os.run("%s -c %s -o %s %s", _super._g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)

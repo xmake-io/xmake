@@ -26,10 +26,10 @@
 inherit("gcc")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- init super
-    _super.init(shellname or "clang", kind)
+    _super.init(program or "clang", kind)
 
     -- init shflags
     _super._g.shflags = { "-dynamiclib", "-fPIC" }

@@ -23,16 +23,15 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "rustc"
+    _g.program = program or "rustc"
 
     -- save the kind
     _g.kind = kind
@@ -110,7 +109,7 @@ end
 function buildcmd(sourcefiles, targetkind, targetfile, flags)
 
     -- make it
-    return format("%s %s -o %s %s", _g.shellname, flags, targetfile, table.concat(sourcefiles, " "))
+    return format("%s %s -o %s %s", _g.program, flags, targetfile, table.concat(sourcefiles, " "))
 end
 
 -- build the target file
@@ -127,7 +126,7 @@ end
 function compcmd(sourcefiles, objectfile, flags)
 
     -- make it
-    return format("%s --emit obj %s -o %s %s", _g.shellname, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+    return format("%s --emit obj %s -o %s %s", _g.program, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
@@ -151,7 +150,7 @@ function check(flags)
     io.writefile(sourcefile, "fn main() {\n}")
 
     -- check it
-    os.run("%s --emit obj %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    os.run("%s --emit obj %s -o %s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)

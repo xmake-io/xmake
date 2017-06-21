@@ -23,15 +23,14 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.project.config")
 import("detect.tools.find_ccache")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "swiftc"
+    _g.program = program or "swiftc"
 
     -- init kind
     _g.kind = kind
@@ -205,7 +204,7 @@ end
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
-    return format("%s -o %s %s %s", _g.shellname, targetfile, objectfiles, flags)
+    return format("%s -o %s %s %s", _g.program, targetfile, objectfiles, flags)
 end
 
 -- link the target file
@@ -228,7 +227,7 @@ function _compcmd1(sourcefile, objectfile, flags)
     end
 
     -- make it
-    local command = format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+    local command = format("%s -c %s -o %s %s", _g.program, flags, objectfile, sourcefile)
     if ccache then
         command = ccache:append(command, " ")
     end
@@ -271,5 +270,5 @@ end
 function check(flags)
 
     -- check it
-    os.run("%s -h", _g.shellname)
+    os.run("%s -h", _g.program)
 end

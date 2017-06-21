@@ -26,10 +26,10 @@
 import("core.project.config")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "link.exe"
+    _g.program = program or "link.exe"
 
     -- save the tool kind
     _g.kind = kind
@@ -109,13 +109,13 @@ end
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
-    local cmd = format("%s %s -out:%s %s", _g.shellname, flags, targetfile, objectfiles)
+    local cmd = format("%s %s -out:%s %s", _g.program, flags, targetfile, objectfiles)
 
     -- too long?
     if #cmd > 4096 then
         local argfile = targetfile .. ".arg"
         io.printf(argfile, "%s -out:%s %s", flags, targetfile, objectfiles)
-        cmd = format("%s @%s", _g.shellname, argfile)
+        cmd = format("%s @%s", _g.program, argfile)
     end
 
     -- ok?
@@ -154,7 +154,7 @@ function check(flags)
 
     -- check it
     os.run("cl -c -Fo%s %s", objectfile, sourcefile)
-    os.run("%s %s -out:%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, objectfile)
+    os.run("%s %s -out:%s %s", _g.program, ifelse(flags, flags, ""), binaryfile, objectfile)
 
     -- remove files
     os.rm(objectfile)

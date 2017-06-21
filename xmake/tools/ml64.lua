@@ -26,7 +26,7 @@
 inherit("ml")
 
 -- init it
-function init(shellname, kind)
-    _super.init(shellname or "ml64", kind)
+function init(program, kind)
+    _super.init(program or "ml64", kind)
 end
 

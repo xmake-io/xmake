@@ -62,18 +62,18 @@ function _run_lldb(program, argv)
         return false
     end
 
-    -- attempt to split shellname, .e.g xcrun -sdk macosx lldb 
-    local shellnames = lldb:split("%s")
+    -- attempt to split name, .e.g xcrun -sdk macosx lldb 
+    local names = lldb:split("%s")
 
     -- patch arguments
     argv = argv or {}
     table.insert(argv, 1, program)
-    for i = #shellnames, 2, -1 do
-        table.insert(argv, 1, shellnames[i])
+    for i = #names, 2, -1 do
+        table.insert(argv, 1, names[i])
     end
 
     -- run it
-    os.execv(shellnames[1], argv)
+    os.execv(names[1], argv)
 
     -- ok
     return true

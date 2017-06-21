@@ -23,11 +23,11 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.tool.compiler")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
+import("core.platform.platform")
 
 -- get log makefile
 function _logfile()
@@ -99,8 +99,8 @@ function _make_object(makefile, target, sourcefile, objectfile)
         return _make_object_for_static(makefile, target, sourcefile, objectfile)
     end
 
-    -- get shellname name
-    local shellname = tool.shellname(sourcekind)
+    -- get program
+    local program = platform.tool(sourcekind)
 
     -- get complier flags
     local compflags = compiler.compflags(sourcefile, target, sourcekind)
@@ -114,8 +114,8 @@ function _make_object(makefile, target, sourcefile, objectfile)
         command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
     end
 
-    -- replace shellname to $(XX)
-    p, e = command:find(shellname, 1, true)
+    -- replace program to $(XX)
+    p, e = command:find(program, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
@@ -160,8 +160,8 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     local objectfiles = sourcebatch.objectfiles
     local incdepfiles = sourcebatch.incdepfiles
 
-    -- get shellname name
-    local shellname = tool.shellname(sourcekind)
+    -- get program
+    local program = platform.tool(sourcekind)
 
     -- get complier flags
     local compflags = compiler.compflags(sourcefiles, target, sourcekind)
@@ -175,8 +175,8 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
         command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
     end
 
-    -- replace shellname to $(XX)
-    p, e = command:find(shellname, 1, true)
+    -- replace program to $(XX)
+    p, e = command:find(program, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
@@ -250,8 +250,8 @@ function _make_target(makefile, target)
     -- get linker kind
     local linkerkind = target:linker():get("kind")
 
-    -- get shellname
-    local shellname = tool.shellname(linkerkind)
+    -- get program
+    local program = platform.tool(linkerkind)
 
     -- get command
     local command = target:linkcmd()
@@ -262,8 +262,8 @@ function _make_target(makefile, target)
         command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
     end
 
-    -- replace shellname to $(XX)
-    p, e = command:find(shellname, 1, true)
+    -- replace program to $(XX)
+    p, e = command:find(program, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
     end
@@ -322,9 +322,9 @@ function _make_all(makefile)
 
     -- make variables for source kinds
     for sourcekind, _ in pairs(language.sourcekinds()) do
-        local shellname = tool.shellname(sourcekind)
-        if shellname and shellname ~= "" then
-            makefile:print("%s=%s", sourcekind:upper(), shellname)
+        local program = platform.tool(sourcekind)
+        if program and program ~= "" then
+            makefile:print("%s=%s", sourcekind:upper(), program)
         end
     end
     makefile:print("")
@@ -335,9 +335,9 @@ function _make_all(makefile)
         table.join2(linkerkinds, _linkerkinds)
     end
     for _, linkerkind in ipairs(table.unique(linkerkinds)) do
-        local shellname = tool.shellname(linkerkind)
-        if shellname and shellname ~= "" then
-            makefile:print("%s=%s", (linkerkind:upper():gsub('%-', '_')), shellname)
+        local program = platform.tool(linkerkind)
+        if program and program ~= "" then
+            makefile:print("%s=%s", (linkerkind:upper():gsub('%-', '_')), program)
         end
     end
     makefile:print("")

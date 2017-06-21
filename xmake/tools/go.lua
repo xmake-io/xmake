@@ -23,16 +23,15 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "go"
+    _g.program = program or "go"
 
     -- save the kind
     _g.kind = kind
@@ -128,9 +127,9 @@ function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
     if targetkind == "static" then
-        return format("%s tool pack %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+        return format("%s tool pack %s %s %s", _g.program, flags, targetfile, objectfiles)
     else
-        return format("%s tool link %s -o %s %s", _g.shellname, flags, targetfile, objectfiles)
+        return format("%s tool link %s -o %s %s", _g.program, flags, targetfile, objectfiles)
     end
 end
 
@@ -148,7 +147,7 @@ end
 function compcmd(sourcefiles, objectfile, flags)
 
     -- make it
-    return format("%s tool compile %s -o %s %s", _g.shellname, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+    return format("%s tool compile %s -o %s %s", _g.program, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
@@ -172,7 +171,7 @@ function check(flags)
     io.writefile(sourcefile, "package main\nfunc main() {\n}")
 
     -- check it
-    os.run("%s tool compile %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    os.run("%s tool compile %s -o %s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)

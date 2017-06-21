@@ -26,10 +26,10 @@
 import("core.tool.compiler")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "ar"
+    _g.program = program or "ar"
 
     -- save the tool kind
     _g.kind = kind or "ar"
@@ -67,7 +67,7 @@ function linkcmd(objectfiles, targetkind, targetfile, flags)
     assert(targetkind == "static")
 
     -- make it
-    return format("%s %s %s %s", _g.shellname, flags, targetfile, objectfiles)
+    return format("%s %s %s %s", _g.program, flags, targetfile, objectfiles)
 end
 
 -- link the library file
@@ -96,11 +96,11 @@ function extract(libraryfile, objectdir)
     local olddir = os.cd(objectdir)
 
     -- extract it
-    os.run("%s -x %s", _g.shellname, libraryfile)
+    os.run("%s -x %s", _g.program, libraryfile)
 
     -- check repeat object name
     local repeats = {}
-    local objectfiles = os.iorun("%s -t %s", _g.shellname, libraryfile)
+    local objectfiles = os.iorun("%s -t %s", _g.program, libraryfile)
     for _, objectfile in ipairs(objectfiles:split('\n')) do
         if repeats[objectfile] then
             raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)

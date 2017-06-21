@@ -23,17 +23,16 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("detect.tools.find_ccache")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "gcc"
+    _g.program = program or "gcc"
 
     -- save the kind
     _g.kind = kind
@@ -281,7 +280,7 @@ end
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
-    return format("%s -o %s %s %s", _g.shellname, targetfile, objectfiles, flags)
+    return format("%s -o %s %s %s", _g.program, targetfile, objectfiles, flags)
 end
 
 -- link the target file
@@ -304,7 +303,7 @@ function _compcmd1(sourcefile, objectfile, flags)
     end
 
     -- make it
-    local command = format("%s -c %s -o %s %s", _g.shellname, flags, objectfile, sourcefile)
+    local command = format("%s -c %s -o %s %s", _g.program, flags, objectfile, sourcefile)
     if ccache then
         command = ccache:append(command, " ")
     end
@@ -353,7 +352,7 @@ function _compile1(sourcefile, objectfile, incdepfile, flags)
         local tmpfile = os.tmpfile()
 
         -- generate it
-        os.run("%s -c -MM %s -o %s %s", _g.shellname, flags or "", tmpfile, sourcefile)
+        os.run("%s -c -MM %s -o %s %s", _g.program, flags or "", tmpfile, sourcefile)
 
         -- translate it
         local results = {}
@@ -407,9 +406,9 @@ function check(flags, trylink)
 
     -- check it, need check compflags and linkflags
     if trylink then
-        os.run("%s %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+        os.run("%s %s -o %s %s", _g.program, ifelse(flags, flags, ""), binaryfile, sourcefile)
     else
-        os.run("%s -c %s -o %s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+        os.run("%s -c %s -o %s %s", _g.program, ifelse(flags, flags, ""), binaryfile, sourcefile)
     end
 
     -- remove files

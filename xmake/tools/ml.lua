@@ -23,16 +23,16 @@
 --
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
    
     -- save name
-    _g.shellname = shellname or "ml.exe"
+    _g.program = program or "ml.exe"
 
     -- save kind
     _g.kind = kind
 
     -- init asflags
-    if _g.shellname:find("64") then
+    if _g.program:find("64") then
         _g.asflags = { "-nologo"}
     else
         _g.asflags = { "-nologo", "-Gd"}
@@ -114,7 +114,7 @@ end
 function _compcmd1(sourcefile, objectfile, flags)
 
     -- make it
-    return format("%s -c %s -Fo%s %s", _g.shellname, flags, objectfile, sourcefile)
+    return format("%s -c %s -Fo%s %s", _g.program, flags, objectfile, sourcefile)
 end
 
 -- complie the source file
@@ -155,7 +155,7 @@ function check(flags)
     io.writefile(sourcefile, "end")
 
     -- check it
-    os.run("%s -c %s -Fo%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    os.run("%s -c %s -Fo%s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)

@@ -23,16 +23,15 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "dmd"
+    _g.program = program or "dmd"
 
     -- save the kind
     _g.kind = kind
@@ -184,7 +183,7 @@ end
 function linkcmd(objectfiles, targetkind, targetfile, flags)
 
     -- make it
-    return format("%s %s -of%s %s", _g.shellname, flags, targetfile, objectfiles)
+    return format("%s %s -of%s %s", _g.program, flags, targetfile, objectfiles)
 end
 
 -- link the target file
@@ -201,7 +200,7 @@ end
 function compcmd(sourcefiles, objectfile, flags)
 
     -- make it
-    return format("%s -c %s -of%s %s", _g.shellname, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+    return format("%s -c %s -of%s %s", _g.program, flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
 end
 
 -- complie the source file
@@ -227,9 +226,9 @@ function check(flags, trylink)
 
     -- check it, need check compflags and linkflags
     if trylink then
-        os.run("%s %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+        os.run("%s %s -of%s %s", _g.program, ifelse(flags, flags, ""), binaryfile, sourcefile)
     else
-        os.run("%s -c %s -of%s %s", _g.shellname, ifelse(flags, flags, ""), binaryfile, sourcefile)
+        os.run("%s -c %s -of%s %s", _g.program, ifelse(flags, flags, ""), binaryfile, sourcefile)
     end
 
     -- remove files

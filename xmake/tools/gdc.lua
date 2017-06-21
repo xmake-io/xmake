@@ -26,10 +26,10 @@
 inherit("dmd")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- init super
-    _super.init(shellname or "gdc", kind)
+    _super.init(program or "gdc", kind)
 end
 
 

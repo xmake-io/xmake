@@ -26,10 +26,10 @@
 inherit("gcc")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- init super
-    _super.init(shellname or "g++", kind)
+    _super.init(program or "g++", kind)
 
 end
 

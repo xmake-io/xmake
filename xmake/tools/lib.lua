@@ -23,10 +23,10 @@
 --
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "lib.exe"
+    _g.program = program or "lib.exe"
 
     -- save the tool kind
     _g.kind = kind
@@ -46,7 +46,7 @@ function extract(libraryfile, objectdir)
     os.mkdir(objectdir)
 
     -- list object files 
-    local objectfiles = os.iorun("%s -nologo -list %s", _g.shellname, libraryfile)
+    local objectfiles = os.iorun("%s -nologo -list %s", _g.program, libraryfile)
 
     -- extrace all object files
     for _, objectfile in ipairs(objectfiles:split('\n')) do
@@ -68,7 +68,7 @@ function extract(libraryfile, objectdir)
             end
 
             -- extract it
-            os.run("%s -nologo -extract:%s -out:%s %s", _g.shellname, objectfile, outputfile, libraryfile)
+            os.run("%s -nologo -extract:%s -out:%s %s", _g.program, objectfile, outputfile, libraryfile)
         end
     end
 end
@@ -85,7 +85,7 @@ function check(flags)
     -- check it
     os.run("cl -c -Fo%s %s", objfile, srcfile)
     os.run("link -lib -out:%s %s", libfile, objfile)
-    os.run("%s %s -list %s", _g.shellname, ifelse(flags, flags, ""), libfile)
+    os.run("%s %s -list %s", _g.program, ifelse(flags, flags, ""), libfile)
 
     -- remove files
     os.rm(objfile)

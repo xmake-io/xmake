@@ -85,14 +85,14 @@ function tool._load(kind, name, program)
     return nil, errors
 end
 
--- check the shellname
-function tool._check(shellname, check)
+-- check the program
+function tool._check(program, check)
 
     -- uses the passed checker
     if check ~= nil then
 
         -- check it
-        local ok, errors = sandbox.load(check, shellname) 
+        local ok, errors = sandbox.load(check, program) 
         if not ok then
             utils.verror(errors)
         end
@@ -102,14 +102,14 @@ function tool._check(shellname, check)
     end
  
     -- load the tool module
-    local module, errors = tool._load(shellname)
+    local module, errors = tool._load(program)
     if not module then
         utils.verror(errors)
     end
 
     -- no checker? attempt to run it directly
     if not module or not module.check then
-        return 0 == os.exec(shellname, os.nuldev(), os.nuldev())
+        return 0 == os.exec(program, os.nuldev(), os.nuldev())
     end
 
     -- check it
@@ -150,35 +150,35 @@ function tool.load(kind)
 end
 
 -- check the tool and return the absolute path if exists
-function tool.check(shellname, dirs, check)
+function tool.check(program, dirs, check)
 
     -- check
-    assert(shellname)
+    assert(program)
 
     -- attempt to get result from cache first
     tool._CHECKINFO = tool._CHECKINFO or {}
-    local result = tool._CHECKINFO[shellname]
+    local result = tool._CHECKINFO[program]
     if result then
         return result
     end
 
     -- attempt to check it directly 
-    if tool._check(shellname, check) then
-        tool._CHECKINFO[shellname] = shellname
-        return shellname
+    if tool._check(program, check) then
+        tool._CHECKINFO[program] = program
+        return program
     end
 
     -- attempt to check it from the given directories
-    if not path.is_absolute(shellname) then
+    if not path.is_absolute(program) then
         for _, dir in ipairs(table.wrap(dirs)) do
 
             -- the tool path
-            local toolpath = path.join(dir, shellname)
+            local toolpath = path.join(dir, program)
             if os.isexec(toolpath) then
             
                 -- check it
                 if tool._check(toolpath, check) then
-                    tool._CHECKINFO[shellname] = toolpath
+                    tool._CHECKINFO[program] = toolpath
                     return toolpath
                 end
             end

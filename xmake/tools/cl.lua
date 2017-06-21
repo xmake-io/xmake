@@ -26,10 +26,10 @@
 import("core.project.project")
 
 -- init it
-function init(shellname, kind)
+function init(program, kind)
     
     -- save the shell name
-    _g.shellname = shellname or "cl.exe"
+    _g.program = program or "cl.exe"
 
     -- save kind
     _g.kind = kind
@@ -231,7 +231,7 @@ end
 function _compcmd1(sourcefile, objectfile, flags)
 
     -- make it
-    return format("%s -c %s -Fo%s %s", _g.shellname, flags, objectfile, sourcefile)
+    return format("%s -c %s -Fo%s %s", _g.program, flags, objectfile, sourcefile)
 end
 
 -- complie the source file
@@ -327,7 +327,7 @@ function check(flags)
     io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
 
     -- check it
-    os.run("%s -c %s -Fo%s %s", _g.shellname, ifelse(flags, flags, ""), objectfile, sourcefile)
+    os.run("%s -c %s -Fo%s %s", _g.program, ifelse(flags, flags, ""), objectfile, sourcefile)
 
     -- remove files
     os.rm(objectfile)
