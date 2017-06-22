@@ -292,7 +292,7 @@ end
 
 -- has flags?
 function builder:has_flags(flags)
-    return self:_tool():has_flags(name)
+    return self:_tool():has_flags(flags)
 end
 
 -- get the format of the given target kind 
