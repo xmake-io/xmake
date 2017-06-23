@@ -62,7 +62,7 @@ function _has_flag(name, flag, opt)
     end
 
     -- trace
-    if option.get("verbose") then
+    if option.get("verbose") or opt.verbose then
         cprint("checking for the flags %s ... %s", flag, ifelse(result, "${green}ok", "${red}no"))
     end
 
@@ -78,7 +78,7 @@ end
 --
 -- @param name      the tool name
 -- @param flags     the flags
--- @param opt       the argument options, .e.g {program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+-- @param opt       the argument options, .e.g {verbose = false, program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return          true or false
 --
