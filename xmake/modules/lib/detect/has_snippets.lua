@@ -24,23 +24,11 @@
 
 -- imports
 import("core.base.option")
-import("core.language.language")
 import("core.tool.compiler")
+import("core.language.language")
 
 -- has this snippet?
 function _has_snippet(snippet, opt)
-
-    -- init cache and key
-    local key     = opt.name
-    local results = _g._RESULTS or {}
-    
-    -- get result from the cache first
-    if key ~= nil then
-        local result = results[key]
-        if result ~= nil then
-            return result
-        end
-    end
 
     -- get the source kind
     local sourcekind = opt.sourcekind 
@@ -52,6 +40,19 @@ function _has_snippet(snippet, opt)
     local extension = opt.extension
     if not extension and opt.sourcekind then
         extension = table.wrap(language.sourcekinds()[opt.sourcekind])[1] or ".c"
+    end
+
+    -- init cache and key
+    local key     = opt.name
+    local results = _g._RESULTS or {}
+    
+    -- get result from the cache first
+    if key ~= nil then
+        key = key .. sourcekind
+        local result = results[key]
+        if result ~= nil then
+            return result
+        end
     end
 
     -- make the source file
@@ -68,7 +69,7 @@ function _has_snippet(snippet, opt)
 
     -- trace
     if opt.name and (option.get("verbose") or opt.verbose) then
-        cprint("checking for the snippets %s ... %s", opt.name, ifelse(result, "${green}ok", "${red}no"))
+        cprint("checking for the %s %s ... %s", opt.kind or "snippet", opt.name, ifelse(result, "${green}ok", "${red}no"))
     end
 
     -- save result to cache
@@ -81,10 +82,10 @@ function _has_snippet(snippet, opt)
     return result
 end
 
--- has the given snippets for the current tool?
+-- has the given snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, .e.g {name = "", verbose = false, target = [target|option], sourcekind = "[cc|cxx|mm|mxx|sc|dc|gc|rc]", extension = "[.c|.cpp|.m|.mm|.swift|.d|.go|.rs]"}
+-- @param opt       the argument options, .e.g {kind = "snippet", name = "", verbose = false, target = [target|option], sourcekind = "[cc|cxx|mm|mxx|sc|dc|gc|rc]", extension = "[.c|.cpp|.m|.mm|.swift|.d|.go|.rs]"}
 --
 -- @return          true or false
 --
