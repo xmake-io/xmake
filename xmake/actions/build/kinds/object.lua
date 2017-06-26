@@ -152,11 +152,11 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- trace verbose info
     if verbose then
-        print(compiler.compcmd(sourcefile, objectfile, target))
+        print(compiler.compcmd(sourcefile, objectfile, {target = target}))
     end
 
     -- complie it 
-    compiler.compile(sourcefile, objectfile, incdepfile, target)
+    compiler.compile(sourcefile, objectfile, {incdepfiles = incdepfile, target = target})
 end
 
 -- build each objects from the given source batch
@@ -205,11 +205,11 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
 
     -- trace verbose info
     if verbose then
-        print(compiler.compcmd(sourcefiles, objectfiles, target, sourcekind))
+        print(compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind}))
     end
 
     -- complie them
-    compiler.compile(sourcefiles, objectfiles, incdepfiles, target, sourcekind)
+    compiler.compile(sourcefiles, objectfiles, {incdepfiles = incdepfiles, target = target, sourcekind = sourcekind})
 
     -- update object index
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles

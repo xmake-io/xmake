@@ -103,10 +103,10 @@ function _make_object(makefile, target, sourcefile, objectfile)
     local program = platform.tool(sourcekind)
 
     -- get complier flags
-    local compflags = compiler.compflags(sourcefile, target, sourcekind)
+    local compflags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
 
     -- make command
-    local command = compiler.compcmd(sourcefile, objectfile, target)
+    local command = compiler.compcmd(sourcefile, objectfile, {target = target})
 
     -- replace compflags to $(XX)
     local p, e = command:find(compflags, 1, true)
@@ -164,10 +164,10 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     local program = platform.tool(sourcekind)
 
     -- get complier flags
-    local compflags = compiler.compflags(sourcefiles, target, sourcekind)
+    local compflags = compiler.compflags(sourcefiles, {target = target, sourcekind = sourcekind})
 
     -- make command
-    local command = compiler.compcmd(sourcefiles, objectfiles, target, sourcekind)
+    local command = compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind})
 
     -- replace compflags to $(XX)
     local p, e = command:find(compflags, 1, true)
@@ -346,7 +346,7 @@ function _make_all(makefile)
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
             for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-                makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, target, sourcekind))
+                makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind}))
             end
             makefile:print("%s_%s=%s", targetname, target:linker():get("kind"):upper(), target:linkflags())
         end

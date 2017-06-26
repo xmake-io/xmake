@@ -173,21 +173,23 @@ function linker.load(targetkind, sourcekinds)
 end
 
 -- link the target file
-function linker:link(objectfiles, targetfile, target)
-
-    -- link it
-    return sandbox.load(self:_tool().link, self:_tool(), table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
+function linker:link(objectfiles, targetfile, opt)
+    return sandbox.load(self:_tool().link, self:_tool(), table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(opt)))
 end
 
 -- get the link command
-function linker:linkcmd(objectfiles, targetfile, target)
-
-    -- get it
-    return self:_tool():linkcmd(table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(target)))
+function linker:linkcmd(objectfiles, targetfile, opt)
+    return self:_tool():linkcmd(table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(opt)))
 end
 
 -- get the link flags
-function linker:linkflags(target)
+function linker:linkflags(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- get target
+    local target = opt.target
 
     -- no target?
     if not target then

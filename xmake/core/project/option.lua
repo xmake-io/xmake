@@ -70,7 +70,7 @@ function option:_check_link(sourcefile, objectfile, targetfile)
     end
 
     -- attempt to link it
-    return instance:link(objectfile, targetfile, self)
+    return instance:link(objectfile, targetfile, {target = self})
 end
 
 -- check include 
@@ -106,7 +106,7 @@ function option:_check_include(include, srcpath, objpath)
     end
 
     -- attempt to compile it
-    return instance:compile(srcpath, objpath, nil, self)
+    return instance:compile(srcpath, objpath, {target = self})
 end
 
 -- check function 
@@ -157,7 +157,7 @@ function option:_check_function(checkcode, srcpath, objpath)
     srcfile:close()
 
     -- attempt to compile it
-    return instance:compile(srcpath, objpath, nil, self)
+    return instance:compile(srcpath, objpath, {target = self})
 end
 
 -- check type 
@@ -208,7 +208,7 @@ function option:_check_type(typename, srcpath, objpath)
     srcfile:close()
 
     -- attempt to compile it
-    return instance:compile(srcpath, objpath, nil, self)
+    return instance:compile(srcpath, objpath, {target = self})
 end
 
 -- check snippet 
@@ -232,7 +232,7 @@ function option:_check_snippet(snippet, srcpath, objpath)
     end
 
     -- attempt to compile it
-    return instance:compile(srcpath, objpath, nil, self)
+    return instance:compile(srcpath, objpath, {target = self})
 end
 
 -- check option for checking links

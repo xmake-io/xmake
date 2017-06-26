@@ -31,42 +31,42 @@ local linker    = require("tool/linker")
 local raise     = require("sandbox/modules/raise")
 
 -- make command for linking target file
-function sandbox_core_tool_linker.linkcmd(objectfiles, targetfile, target)
+function sandbox_core_tool_linker.linkcmd(targetkind, sourcekinds, objectfiles, targetfile, opt)
  
     -- get the linker instance
-    local instance, errors = linker.load(target:get("kind"), target:sourcekinds())
+    local instance, errors = linker.load(targetkind, sourcekinds)
     if not instance then
         raise(errors)
     end
 
     -- make command
-    return instance:linkcmd(objectfiles, targetfile, target)
+    return instance:linkcmd(objectfiles, targetfile, opt)
 end
 
 -- make link flags for the given target
-function sandbox_core_tool_linker.linkflags(target)
- 
+function sandbox_core_tool_linker.linkflags(targetkind, sourcekinds, opt)
+
     -- get the linker instance
-    local instance, errors = linker.load(target:get("kind"), target:sourcekinds())
+    local instance, errors = linker.load(targetkind, sourcekinds)
     if not instance then
         raise(errors)
     end
 
     -- make flags
-    return instance:linkflags(target)
+    return instance:linkflags(opt)
 end
 
 -- link target file
-function sandbox_core_tool_linker.link(objectfiles, targetfile, target)
+function sandbox_core_tool_linker.link(targetkind, sourcekinds, objectfiles, targetfile, opt)
  
     -- get the linker instance
-    local instance, errors = linker.load(target:get("kind"), target:sourcekinds())
+    local instance, errors = linker.load(targetkind, sourcekinds)
     if not instance then
         raise(errors)
     end
 
     -- link it
-    local ok, errors = instance:link(objectfiles, targetfile, target)
+    local ok, errors = instance:link(objectfiles, targetfile, opt)
     if not ok then
         raise(errors)
     end

@@ -170,7 +170,7 @@ function main(csnippets, opt)
     local ok = try
     {
         function () 
-            compiler.compile(sourcefile, objectfile, nil, opt.target)
+            compiler.compile(sourcefile, objectfile, opt)
 --            linker.link(objectfile, os.nuldev(), opt.target)
             return true
         end,

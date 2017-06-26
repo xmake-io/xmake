@@ -67,7 +67,7 @@ function _build_from_objects(target, buildinfo)
     end
 
     -- link it
-    linker.link(objectfiles, targetfile, target)
+    linker.link(target:get("kind"), target:sourcekinds(), objectfiles, targetfile, {target = target})
 end
 
 -- build target from sources
@@ -89,11 +89,11 @@ function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
 
     -- trace verbose info
     if verbose then
-        print(compiler.buildcmd(sourcebatch.sourcefiles, targetfile, target, sourcekind))
+        print(compiler.buildcmd(sourcebatch.sourcefiles, targetfile, {target = target, sourcekind = sourcekind}))
     end
 
     -- build it
-    compiler.build(sourcebatch.sourcefiles, targetfile, target, sourcekind)
+    compiler.build(sourcebatch.sourcefiles, targetfile, {target = target, sourcekind = sourcekind})
 end
 
 -- build binary target

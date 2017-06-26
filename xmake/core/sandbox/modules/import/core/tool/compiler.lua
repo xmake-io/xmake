@@ -46,9 +46,13 @@ function sandbox_core_tool_compiler.feature(sourcekind, name)
 end
 
 -- make command for compiling source file
-function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, target, sourcekind)
+function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- get source kind if only one source file
+    local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
@@ -60,13 +64,17 @@ function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, target, sou
     end
  
     -- make command
-    return instance:compcmd(sourcefiles, objectfile, target)
+    return instance:compcmd(sourcefiles, objectfile, opt)
 end
 
 -- compile source files
-function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfile, target, sourcekind)
+function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- get source kind if only one source file
+    local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
@@ -78,16 +86,17 @@ function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, incdepfile,
     end
 
     -- compile it
-    local ok, errors = instance:compile(sourcefiles, objectfile, incdepfile, target)
+    local ok, errors = instance:compile(sourcefiles, objectfile, opt)
     if not ok then
         raise(errors)
     end
 end
 
--- make compiling flags for the given target
-function sandbox_core_tool_compiler.compflags(sourcefiles, target, sourcekind)
+-- make compiling flags
+function sandbox_core_tool_compiler.compflags(sourcefiles, opt)
 
     -- get source kind if only one source file
+    local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
@@ -99,13 +108,14 @@ function sandbox_core_tool_compiler.compflags(sourcefiles, target, sourcekind)
     end
 
     -- make flags
-    return instance:compflags(target)
+    return instance:compflags(opt)
 end
 
 -- make command for building source file
-function sandbox_core_tool_compiler.buildcmd(sourcefiles, targetfile, target, sourcekind)
+function sandbox_core_tool_compiler.buildcmd(sourcefiles, targetfile, opt)
 
     -- get source kind if only one source file
+    local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
@@ -117,13 +127,14 @@ function sandbox_core_tool_compiler.buildcmd(sourcefiles, targetfile, target, so
     end
 
     -- make command
-    return instance:buildcmd(sourcefiles, target:targetkind(), targetfile, target)
+    return instance:buildcmd(sourcefiles, targetfile, opt)
 end
 
 -- build source files
-function sandbox_core_tool_compiler.build(sourcefiles, targetfile, target, sourcekind)
+function sandbox_core_tool_compiler.build(sourcefiles, targetfile, opt)
 
     -- get source kind if only one source file
+    local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
@@ -135,7 +146,7 @@ function sandbox_core_tool_compiler.build(sourcefiles, targetfile, target, sourc
     end
 
     -- build it
-    local ok, errors = instance:build(sourcefiles, target:targetkind(), targetfile, target)
+    local ok, errors = instance:build(sourcefiles, targetfile, opt)
     if not ok then
         raise(errors)
     end

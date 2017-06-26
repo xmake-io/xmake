@@ -116,14 +116,14 @@ end
 function target:linkcmd(objectfiles)
  
     -- make command
-    return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), self)
+    return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), {target = self})
 end
 
 -- make link flags for the given target
 function target:linkflags()
  
     -- make flags
-    return self:linker():linkflags(self)
+    return self:linker():linkflags({target = self})
 end
 
 -- get target deps

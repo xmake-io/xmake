@@ -32,7 +32,7 @@ import("vsfile")
 function _make_compflags(sourcefile, target, vcprojdir)
 
     -- make the compiling flags
-    local _, compflags = compiler.compflags(sourcefile, target)
+    local _, compflags = compiler.compflags(sourcefile, {target = target})
 
     -- replace -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
     local flags = {}
@@ -74,7 +74,7 @@ end
 function _make_linkflags(target, vcprojdir)
 
     -- make the linking flags
-    local _, linkflags = linker.linkflags(target)
+    local _, linkflags = linker.linkflags(target:get("kind"), target:sourcekinds())
 
     -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}

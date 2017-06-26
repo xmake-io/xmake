@@ -124,36 +124,73 @@ function compiler.load(sourcekind)
     return instance
 end
 
--- build the source files
-function compiler:build(sourcefiles, targetkind, targetfile, target)
+-- build the source files (compile and link)
+function compiler:build(sourcefiles, targetfile, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- make flags 
+    local flags = self:compflags(opt)
+    if opt.target then
+        flags = flags .. " " .. (opt.target:linkflags())
+    end
+
+    -- get target kind
+    local targetkind = opt.targetkind
+    if not targetkind and opt.target then
+        targetkind = opt.target:get("kind")
+    end
 
     -- get it
-    return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind, targetfile, (self:compflags(target)) .. " " .. (target:linkflags()))
+    return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
--- get the build command
-function compiler:buildcmd(sourcefiles, targetkind, targetfile, target)
+-- get the build command (compile and link)
+function compiler:buildcmd(sourcefiles, targetfile, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- make flags 
+    local flags = self:compflags(opt)
+    if opt.target then
+        flags = flags .. " " .. (opt.target:linkflags())
+    end
+
+    -- get target kind
+    local targetkind = opt.targetkind
+    if not targetkind and opt.target then
+        targetkind = opt.target:get("kind")
+    end
 
     -- get it
-    return self:_tool():buildcmd(sourcefiles, targetkind, targetfile, (self:compflags(target) .. " " .. (target:linkflags())))
+    return self:_tool():buildcmd(sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
 -- compile the source files
-function compiler:compile(sourcefiles, objectfile, incdepfile, target)
+function compiler:compile(sourcefiles, objectfile, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- compile it
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, incdepfile, (self:compflags(target)))
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.incdepfiles, (self:compflags(opt)))
 end
 
 -- get the compile command
-function compiler:compcmd(sourcefiles, objectfile, target)
-
-    -- get it
-    return self:_tool():compcmd(sourcefiles, objectfile, (self:compflags(target)))
+function compiler:compcmd(sourcefiles, objectfile, opt)
+    return self:_tool():compcmd(sourcefiles, objectfile, (self:compflags(opt)))
 end
 
 -- get the compling flags
-function compiler:compflags(target)
+function compiler:compflags(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- get target
+    local target = opt.target
 
     -- no target?
     if not target then

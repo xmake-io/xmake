@@ -51,12 +51,12 @@ function _make_targetinfo(mode, arch, target)
     -- save compiler flags
     targetinfo.compflags = {}
     for _, sourcefile in ipairs(target:sourcefiles()) do
-        local _, compflags = compiler.compflags(sourcefile, target)
+        local _, compflags = compiler.compflags(sourcefile, {target = target})
         targetinfo.compflags[sourcefile] = compflags
     end
 
     -- save linker flags
-    local _, linkflags = linker.linkflags(target)
+    local _, linkflags = linker.linkflags(target:get("kinds"), target:sourcekinds())
     targetinfo.linkflags = linkflags
 
     -- ok
