@@ -103,7 +103,7 @@ function _sourcecode(snippets, opt)
 
     -- add functions
     for _, funcinfo in ipairs(opt.functions) do
-        sourcecode = format("%s\n    %s;", _funccode(funcinfo))
+        sourcecode = format("%s\n    %s;", sourcecode, _funccode(funcinfo))
     end
 
     -- leave main function
@@ -119,8 +119,7 @@ end
 -- @param opt       the argument options
 --                  .e.g 
 --                  { name = "", verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
---                  , types = {"wchar_t", "char*"}, includes = "stdio.h", functions = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
---                  , links = {"pthread", "z"}}
+--                  , types = {"wchar_t", "char*"}, includes = "stdio.h", functions = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}}
 --
 -- functions:
 --      sigsetjmp
@@ -152,6 +151,24 @@ function main(csnippets, opt)
         end
     end
 
+    -- get links
+    local links = table.wrap(opt.links)
+    if opt.target then
+        table.join2(links, opt.target:get("links"))
+    end
+
+    -- get types
+    local types = table.wrap(opt.types)
+
+    -- get includes
+    local includes = table.wrap(opt.includes)
+
+    -- get functions
+    local functions = {}
+    for _, funcinfo in ipairs(opt.functions) do
+        table.insert(functions, _funcname(funcinfo))
+    end
+
     -- make source code
     local sourcecode = _sourcecode(snippets, opt)
 
@@ -171,7 +188,9 @@ function main(csnippets, opt)
     {
         function () 
             compiler.compile(sourcefile, objectfile, opt)
---            linker.link(objectfile, os.nuldev(), opt.target)
+            if #links > 0 then
+                linker.link("binary", {"cc", "cxx"}, objectfile, os.nuldev(), opt)
+            end
             return true
         end,
         catch 
@@ -194,14 +213,17 @@ function main(csnippets, opt)
             cprint("checking for the %s ... %s", opt.name, ifelse(ok, "${green}ok", "${red}no"))
         else
             local kind = ifelse(sourcekind == "cc", "c", "c++")
-            for _, include in ipairs(opt.includes) do
-                cprint("checking for the %s include %s ... %s", kind, include, ifelse(ok, "${green}ok", "${red}no"))
+            if #includes > 0 then
+                cprint("checking for the %s includes %s ... %s", kind, table.concat(includes, ", "), ifelse(ok, "${green}ok", "${red}no"))
             end
-            for _, typename in ipairs(opt.types) do
-                cprint("checking for the %s type %s ... %s", kind, typename, ifelse(ok, "${green}ok", "${red}no"))
+            if #types > 0 then
+                cprint("checking for the %s types %s ... %s", kind, table.concat(types, ", "), ifelse(ok, "${green}ok", "${red}no"))
             end
-            for _, funcinfo in ipairs(opt.functions) do
-                cprint("checking for the %s function %s ... %s", kind, _funcname(funcinfo), ifelse(ok, "${green}ok", "${red}no"))
+            if #functions > 0 then
+                cprint("checking for the %s functions %s ... %s", kind, table.concat(functions, ", "), ifelse(ok, "${green}ok", "${red}no"))
+            end
+            if #links > 0 then
+                cprint("checking for the %s links %s ... %s", kind, table.concat(links, ", "), ifelse(ok, "${green}ok", "${red}no"))
             end
             for _, snippet in ipairs(opt.snippets) do
                 cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))

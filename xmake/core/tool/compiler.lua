@@ -192,36 +192,51 @@ function compiler:compflags(opt)
     -- get target
     local target = opt.target
 
-    -- no target?
-    if not target then
-        return "", {}
+    -- get the target key
+    local key = nil
+    if target then
+        key = tostring(target)
     end
 
-    -- get the target key
-    local key = tostring(target)
-
     -- get it directly from cache dirst
-    self._FLAGS = self._FLAGS or {}
-    local flags_cached = self._FLAGS[key]
-    if flags_cached then
-        return flags_cached[1], flags_cached[2]
+    if key then
+        self._FLAGS = self._FLAGS or {}
+        local flags_cached = self._FLAGS[key]
+        if flags_cached then
+            return flags_cached[1], flags_cached[2]
+        end
+    end
+
+    -- get target kind
+    local targetkind = opt.targetkind
+    if not targetkind and target then
+        targetkind = target:get("kind")
     end
 
     -- add flags from the configure 
     local flags = {}
     self:_addflags_from_config(flags)
 
-    -- add flags from the target 
-    self:_addflags_from_target(flags, target)
-
+    -- add flags for the target
+    if target then
+        self:_addflags_from_target(flags, target)
+    end
+       
     -- add flags (named) from language
-    self:_addflags_from_language(flags, target)
+    if target then
+        self:_addflags_from_language(flags, target)
+    end
+
+    -- add flags for the argument
+    self:_addflags_from_argument(flags, opt)
 
     -- add flags from the platform 
-    self:_addflags_from_platform(flags, target:get("kind"))
+    if target then
+        self:_addflags_from_platform(flags, targetkind)
+    end
 
     -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:get("kind"))
+    self:_addflags_from_compiler(flags, targetkind)
 
     -- remove repeat
     flags = table.unique(flags)
@@ -230,7 +245,9 @@ function compiler:compflags(opt)
     local flags_str = table.concat(flags, " "):trim()
 
     -- save flags
-    self._FLAGS[key] = {flags_str, flags}
+    if key then
+        self._FLAGS[key] = {flags_str, flags}
+    end
 
     -- get it
     return flags_str, flags 

@@ -194,6 +194,13 @@ function builder:_addflags_from_targetdeps(results, target, flagname)
     end
 end
 
+-- add flags from the argument option 
+function builder:_addflags_from_argument(flags, args)
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, self:_mapflags(args[flagkind]))
+    end
+end
+
 -- add flags (named) from the language 
 function builder:_addflags_from_language(flags, target)
 

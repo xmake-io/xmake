@@ -51,8 +51,10 @@ function linker:_addflags_from_platform(flags, targetkind)
         table.join2(flags, platform.get(toolkind .. 'flags') or platform.get(flagkind))
 
         -- attempt to add special lanugage flags first for target kind, .e.g gc-ldflags, dc-arflags
-        local targetflags = platform.get(targetkind) or {}
-        table.join2(flags, targetflags[toolkind .. 'flags'] or targetflags[flagkind])
+        if targetkind then
+            local targetflags = platform.get(targetkind) or {}
+            table.join2(flags, targetflags[toolkind .. 'flags'] or targetflags[flagkind])
+        end
     end
 end
 
@@ -191,36 +193,53 @@ function linker:linkflags(opt)
     -- get target
     local target = opt.target
 
-    -- no target?
-    if not target then
-        return "", {}
+    -- get the target key
+    local key = nil
+    if target then 
+        key = tostring(target)
     end
 
-    -- get the target key
-    local key = tostring(target)
-
     -- get it directly from cache dirst
-    self._FLAGS = self._FLAGS or {}
-    local flags_cached = self._FLAGS[key]
-    if flags_cached then
-        return flags_cached[1], flags_cached[2]
+    if key then
+        self._FLAGS = self._FLAGS or {}
+        local flags_cached = self._FLAGS[key]
+        if flags_cached then
+            return flags_cached[1], flags_cached[2]
+        end
+    end
+
+    -- get target kind
+    local targetkind = opt.targetkind
+    if not targetkind and target then
+        targetkind = target:get("kind")
     end
 
     -- add flags from the configure 
     local flags = {}
     self:_addflags_from_config(flags)
 
-    -- add flags from the target 
-    self:_addflags_from_target(flags, target)
-
+    -- add flags for the target
+    if target then
+        self:_addflags_from_target(flags, target)
+    end
+       
     -- add flags (named) from language
-    self:_addflags_from_language(flags, target)
+    if target then
+        self:_addflags_from_language(flags, target)
+    end
+
+    -- add flags for the argument
+    self:_addflags_from_argument(flags, opt)
 
     -- add flags from the platform 
-    self:_addflags_from_platform(flags, target:get("kind"))
+    if target then
+        self:_addflags_from_platform(flags, targetkind)
+    end
 
     -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, target:get("kind"), target:sourcekinds())
+    if target then
+        self:_addflags_from_compiler(flags, targetkind, target:sourcekinds())
+    end
 
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
@@ -232,7 +251,9 @@ function linker:linkflags(opt)
     local flags_str = table.concat(flags, " "):trim()
 
     -- save flags
-    self._FLAGS[key] = {flags_str, flags}
+    if key then
+        self._FLAGS[key] = {flags_str, flags}
+    end
 
     -- get it
     return flags_str, flags
