@@ -26,18 +26,19 @@
 local option = option or {}
 
 -- load modules
-local io        = require("base/io")
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
-local utils     = require("base/utils")
-local option_   = require("base/option")
-local config    = require("project/config")
-local cache     = require("project/cache")
-local linker    = require("tool/linker")
-local compiler  = require("tool/compiler")
-local sandbox   = require("sandbox/sandbox")
-local language  = require("language/language")
+local io       = require("base/io")
+local os       = require("base/os")
+local path     = require("base/path")
+local table    = require("base/table")
+local utils    = require("base/utils")
+local option_  = require("base/option")
+local config   = require("project/config")
+local cache    = require("project/cache")
+local linker   = require("tool/linker")
+local compiler = require("tool/compiler")
+local sandbox  = require("sandbox/sandbox")
+local language = require("language/language")
+local import   = require("sandbox/modules/import")
 
 -- get cache
 function option._cache()
@@ -54,370 +55,65 @@ function option._cache()
     return option._CACHE
 end
 
--- check link 
-function option:_check_link(sourcefile, objectfile, targetfile)
+-- check option for c/c++
+function option:_check_cx(kind)
 
-    -- check
-    assert(sourcefile and objectfile and targetfile)
+    -- get snippets
+    local snippets = self:get(kind .. "snippet") 
 
-    -- update source kinds
-    self._SOURCEKINDS = language.sourcekind_of(sourcefile)
+    -- get types
+    local types = self:get(kind .. "types")
 
-    -- load the linker instance
-    local instance = linker.load("binary", self._SOURCEKINDS)
-    if not instance then 
-        return false 
-    end
-
-    -- attempt to link it
-    return instance:link(objectfile, targetfile, {target = self})
-end
-
--- check include 
-function option:_check_include(include, srcpath, objpath)
-
-    -- check
-    assert(srcpath and objpath)
-
-    -- open the checking source file
-    local srcfile = io.open(srcpath, "w")
-    if not srcfile then 
-        return false
-    end
-
-    -- make include
-    if include then
-        srcfile:print("#include <%s>\n", include)
-    end
-
-    -- make the main function header
-    srcfile:print("int main(int argc, char** argv)")
-    srcfile:print("{")
-    srcfile:print("    return 0;")
-    srcfile:print("}")
-
-    -- exit this file
-    srcfile:close()
-
-    -- load the compiler instance
-    local instance = compiler.load(language.sourcekind_of(srcpath))
-    if not instance then 
-        return false 
-    end
-
-    -- attempt to compile it
-    return instance:compile(srcpath, objpath, {target = self})
-end
-
--- check function 
-function option:_check_function(checkcode, srcpath, objpath)
-
-    -- check
-    assert(checkcode)
-
-    -- open the checking source file
-    local srcfile = io.open(srcpath, "w")
-    if not srcfile then
-        return false 
-    end
-
-    -- get source kind
-    local sourcekind = language.sourcekind_of(srcpath)
-
-    -- load the compiler instance
-    local instance = compiler.load(sourcekind)
-    if not instance then 
-        return false 
-    end
-
-    -- make includes 
-    local includes = nil
-    if sourcekind == "cc" then includes = self:get("cincludes")
-    elseif sourcekind == "cxx" then includes = self:get("cxxincludes") 
-    end
-    if includes then
-        for _, include in ipairs(table.wrap(includes)) do
-            srcfile:print("#include <%s>", include)
-        end
-        srcfile:print("")
-    end
-
-    -- make the main function header
-    srcfile:print("int main(int argc, char** argv)")
-    srcfile:print("{")
-
-    -- make check code
-    srcfile:print("    %s;", checkcode)
-
-    -- make the main function tailer
-    srcfile:print("    return 0;")
-    srcfile:print("}")
-
-    -- exit this file
-    srcfile:close()
-
-    -- attempt to compile it
-    return instance:compile(srcpath, objpath, {target = self})
-end
-
--- check type 
-function option:_check_type(typename, srcpath, objpath)
-
-    -- check
-    assert(typename)
-
-    -- open the checking source file
-    local srcfile = io.open(srcpath, "w")
-    if not srcfile then 
-        return false 
-    end
-
-    -- get source kind
-    local sourcekind = language.sourcekind_of(srcpath)
-
-    -- load the compiler instance
-    local instance = compiler.load(sourcekind)
-    if not instance then 
-        return false 
-    end
-
-    -- make includes 
-    local includes = nil
-    if sourcekind == "cc" then includes = self:get("cincludes")
-    elseif sourcekind == "cxx" then includes = self:get("cxxincludes") 
-    end
-    if includes then
-        for _, include in ipairs(table.wrap(includes)) do
-            srcfile:print("#include <%s>", include)
-        end
-        srcfile:print("")
-    end
-
-    -- make the main function header
-    srcfile:print("int main(int argc, char** argv)")
-    srcfile:print("{")
-
-    -- make interfaces
-    srcfile:print("    typedef %s __type_xxx;", typename)
-
-    -- make the main function tailer
-    srcfile:print("    return 0;")
-    srcfile:print("}")
-
-    -- exit this file
-    srcfile:close()
-
-    -- attempt to compile it
-    return instance:compile(srcpath, objpath, {target = self})
-end
-
--- check snippet 
-function option:_check_snippet(snippet, srcpath, objpath)
-
-    -- check
-    assert(snippet)
-
-    -- get source kind
-    local sourcekind = language.sourcekind_of(srcpath)
-
-    -- load the compiler instance
-    local instance = compiler.load(sourcekind)
-    if not instance then 
-        return false 
-    end
-
-    -- write snippet to source file
-    if not io.writefile(srcpath, snippet) then
-        return false
-    end
-
-    -- attempt to compile it
-    return instance:compile(srcpath, objpath, {target = self})
-end
-
--- check option for checking links
-function option:_check_links(cfile, objectfile, targetfile)
+    -- get funcs
+    local funcs = self:get(kind .. "funcs")
 
     -- get links
-    local links = self:get("links")
-    if not links then
+    local links = self:get(kind .. "links")
+
+    -- get includes
+    local includes = self:get(kind .. "includes")
+
+    -- need not check it
+    if not snippets and not types and not funcs and not links and not includes then
         return true
     end
 
-    -- the links string
-    local links_str = table.concat(table.wrap(links), ", ")
-    
-    -- this links has been checked?
-    option._CHECKED_LINKS = option._CHECKED_LINKS or {}
-    if option._CHECKED_LINKS[links_str] then 
-        return true 
-    end
-    
-    -- only for compile a object file
-    local ok, errors = self:_check_include(nil, cfile, objectfile)
-
-    -- check link
-    if ok then ok, errors = self:_check_link(cfile, objectfile, targetfile) end
-
-    -- trace
-    utils.cprint("checking for the links %s ... %s", links_str, utils.ifelse(ok, "${green}ok", "${red}no"))
-    if not ok and option_.get("verbose") then
-        utils.cprint("${red}" .. (errors or ""))
+    -- init source kind
+    local sourcekind = kind
+    if kind == "c" then
+        sourcekind = "cc"
     end
 
-    -- cache the result
-    option._CHECKED_LINKS[links_str] = ok
+    -- import has_cxsnippets()
+    self._has_cxsnippets = self._has_cxsnippets or import("lib.detect.has_cxsnippets")
+
+    -- get the tool name from the program
+    local ok, results_or_errors = sandbox.load(self._has_cxsnippets, snippets, {name = self:name(), target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
+    if not ok then
+        return false, results_or_errors
+    end
 
     -- ok?
-    return ok
-end
-
--- check option for checking includes
-function option:_check_includes(kind, file, objectfile)
-
-    -- done
-    for _, include in ipairs(table.wrap(self:get(kind .. "includes"))) do
-        
-        -- this include has been checked?
-        option._CHECKED_INCLUDES = option._CHECKED_INCLUDES or {}
-        if option._CHECKED_INCLUDES[include] then return true end
-        
-        -- check include
-        local ok, errors = self:_check_include(include, file, objectfile)
-
-        -- trace
-        utils.cprint("checking for the %s include %s ... %s", kind, include, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok and option_.get("verbose") then
-            utils.cprint("${red}" .. (errors or ""))
-        end
-
-        -- cache the result
-        option._CHECKED_INCLUDES[include] = ok
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- check option for checking functions
-function option:_check_functions(kind, file, objectfile, targetfile)
-
-    -- done
-    for _, checkinfo in ipairs(table.wrap(self:get(kind .. "funcs"))) do
-        
-        -- parse the check code
-        local checkname, checkcode = option.checkinfo(checkinfo)
-        assert(checkname and checkcode)
-
-        -- check function
-        local ok, errors = self:_check_function(checkcode, file, objectfile)
-
-        -- check link
-        if ok and self:get("links") then ok, errors = self:_check_link(file, objectfile, targetfile) end
-
-        -- trace
-        utils.cprint("checking for the %s function %s ... %s", kind, checkname, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok and option_.get("verbose") then
-            utils.cprint("${red}" .. (errors or ""))
-        end
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- check option for checking types
-function option:_check_types(kind, file, objectfile, targetfile)
-
-    -- done
-    for _, t in ipairs(table.wrap(self:get(kind .. "types"))) do
-        
-        -- check type
-        local ok, errors = self:_check_type(t, file, objectfile)
-
-        -- trace
-        utils.cprint("checking for the %s type %s ... %s", kind, t, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok and option_.get("verbose") then
-            utils.cprint("${red}" .. (errors or ""))
-        end
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
-end
-
--- check option for checking snippets
-function option:_check_snippets(kind, file, objectfile, targetfile)
-
-    -- done
-    for name, snippet in pairs(table.wrap(self:get(kind .. "snippet"))) do
-        
-        -- check snippet
-        local ok, errors = self:_check_snippet(snippet, file, objectfile)
-
-        -- trace
-        utils.cprint("checking for the %s snippet %s ... %s", kind, name, utils.ifelse(ok, "${green}ok", "${red}no"))
-        if not ok and option_.get("verbose") then
-            utils.cprint("${red}" .. (errors or ""))
-        end
-
-        -- failed
-        if not ok then return false end
-    end
-
-    -- ok
-    return true
+    return results_or_errors
 end
 
 -- check option 
-function option:_check_condition()
- 
-    -- the files
-    local cfile         = os.tmpfile() .. ".c"
-    local cxxfile       = os.tmpfile() .. ".cpp"
-    local objectfile    = os.tmpfile() .. ".obj"
-    local targetfile    = os.tmpfile() .. ".bin"
+function option:_check()
 
-    -- check links
-    if not self:_check_links(cfile, objectfile, targetfile) then return false end
+    -- check it
+    local ok = self:_check_cx("c") and self:_check_cx("cxx")
 
-    -- check types
-    if not self:_check_types("c", cfile, objectfile, targetfile) then return false end
-    if not self:_check_types("cxx", cxxfile, objectfile, targetfile) then return false end
-
-    -- check csnippets
-    if not self:_check_snippets("c", cfile, objectfile, targetfile) then return false end
-    if not self:_check_snippets("cxx", cxxfile, objectfile, targetfile) then return false end
-
-    -- check includes and functions
-    if self:get("cincludes") or self:get("cxxincludes") then
-
-        -- check includes
-        if not self:_check_includes("c", cfile, objectfile) then return false end
-        if not self:_check_includes("cxx", cxxfile, objectfile) then return false end
-
-        -- check functions
-        if not self:_check_functions("c", cfile, objectfile, targetfile) then return false end
-        if not self:_check_functions("cxx", cxxfile, objectfile, targetfile) then return false end
+    -- get name
+    local name = self:name()
+    if name:startswith("__") then
+        name = name:sub(3)
     end
 
-    -- remove files
-    os.rm(cfile)
-    os.rm(cxxfile)
-    os.rm(objectfile)
-    os.rm(targetfile)
+    -- trace
+    utils.cprint("checking for the %s ... %s", name, utils.ifelse(ok, "${green}ok", "${red}no"))
 
-    -- ok
-    return true
+    -- ok?
+    return ok
 end
 
 -- attempt to check option 
@@ -450,7 +146,7 @@ function option:check(force)
             self:save()
 
         -- check option as boolean switch automatically if the default value not exists
-        elseif default == nil and self:_check_condition() then
+        elseif default == nil and self:_check() then
 
             -- enable this option
             config.set(name, true)

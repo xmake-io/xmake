@@ -116,10 +116,10 @@ function tool.load(kind)
     end
 
     -- import find_toolname()
-    local find_toolname = import("lib.detect.find_toolname")
+    tool._find_toolname = tool._find_toolname or import("lib.detect.find_toolname")
 
     -- get the tool name from the program
-    local ok, name_or_errors = sandbox.load(find_toolname, program)
+    local ok, name_or_errors = sandbox.load(tool._find_toolname, program)
     if not ok then
         return nil, name_or_errors
     end

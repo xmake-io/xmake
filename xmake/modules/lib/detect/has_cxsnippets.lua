@@ -101,8 +101,8 @@ function _sourcecode(snippets, opt)
     -- enter main function
     sourcecode = sourcecode .. "int main(int argc, char** argv)\n{\n"
 
-    -- add functions
-    for _, funcinfo in ipairs(opt.functions) do
+    -- add funcs
+    for _, funcinfo in ipairs(opt.funcs) do
         sourcecode = format("%s\n    %s;", sourcecode, _funccode(funcinfo))
     end
 
@@ -119,9 +119,9 @@ end
 -- @param opt       the argument options
 --                  .e.g 
 --                  { name = "", verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
---                  , types = {"wchar_t", "char*"}, includes = "stdio.h", functions = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}}
+--                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}}
 --
--- functions:
+-- funcs:
 --      sigsetjmp
 --      sigsetjmp((void*)0, 0)
 --      sigsetjmp{sigsetjmp((void*)0, 0);}
@@ -134,10 +134,13 @@ end
 -- local ok = has_csnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 -- @endcode
 --
-function main(csnippets, opt)
+function main(snippets, opt)
 
     -- init options
     opt = opt or {}
+
+    -- init snippets
+    snippets = snippets or {}
 
     -- init cache and key
     local key     = opt.name
@@ -145,6 +148,7 @@ function main(csnippets, opt)
     
     -- get result from the cache first
     if key ~= nil then
+        key = key .. (opt.sourcekind or "")
         local ok = results[key]
         if ok ~= nil then
             return ok
@@ -163,10 +167,10 @@ function main(csnippets, opt)
     -- get includes
     local includes = table.wrap(opt.includes)
 
-    -- get functions
-    local functions = {}
-    for _, funcinfo in ipairs(opt.functions) do
-        table.insert(functions, _funcname(funcinfo))
+    -- get funcs
+    local funcs = {}
+    for _, funcinfo in ipairs(opt.funcs) do
+        table.insert(funcs, _funcname(funcinfo))
     end
 
     -- make source code
@@ -209,25 +213,21 @@ function main(csnippets, opt)
 
     -- trace
     if opt.verbose or option.get("verbose") then
-        if opt.name then
-            cprint("checking for the %s ... %s", opt.name, ifelse(ok, "${green}ok", "${red}no"))
-        else
-            local kind = ifelse(sourcekind == "cc", "c", "c++")
-            if #includes > 0 then
-                cprint("checking for the %s includes %s ... %s", kind, table.concat(includes, ", "), ifelse(ok, "${green}ok", "${red}no"))
-            end
-            if #types > 0 then
-                cprint("checking for the %s types %s ... %s", kind, table.concat(types, ", "), ifelse(ok, "${green}ok", "${red}no"))
-            end
-            if #functions > 0 then
-                cprint("checking for the %s functions %s ... %s", kind, table.concat(functions, ", "), ifelse(ok, "${green}ok", "${red}no"))
-            end
-            if #links > 0 then
-                cprint("checking for the %s links %s ... %s", kind, table.concat(links, ", "), ifelse(ok, "${green}ok", "${red}no"))
-            end
-            for _, snippet in ipairs(opt.snippets) do
-                cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))
-            end
+        local kind = ifelse(sourcekind == "cc", "c", "c++")
+        if #includes > 0 then
+            cprint("checking for the %s includes %s ... %s", kind, table.concat(includes, ", "), ifelse(ok, "${green}ok", "${red}no"))
+        end
+        if #types > 0 then
+            cprint("checking for the %s types %s ... %s", kind, table.concat(types, ", "), ifelse(ok, "${green}ok", "${red}no"))
+        end
+        if #funcs > 0 then
+            cprint("checking for the %s funcs %s ... %s", kind, table.concat(funcs, ", "), ifelse(ok, "${green}ok", "${red}no"))
+        end
+        if #links > 0 then
+            cprint("checking for the %s links %s ... %s", kind, table.concat(links, ", "), ifelse(ok, "${green}ok", "${red}no"))
+        end
+        for _, snippet in ipairs(snippets) do
+            cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))
         end
     end
 
