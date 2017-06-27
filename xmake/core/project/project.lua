@@ -31,6 +31,7 @@ local io                    = require("base/io")
 local path                  = require("base/path")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
+local process               = require("base/process")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
@@ -40,7 +41,6 @@ local option                = require("project/option")
 local package               = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
-local environment           = require("platform/environment")
 local language              = require("language/language")
 local sandbox_os            = require("sandbox/modules/os")
 
@@ -370,42 +370,6 @@ function project.directory()
     return xmake._PROJECT_DIR
 end
 
--- check the project 
-function project.check(force)
-
-    -- enter the project directory
-    local ok, errors = os.cd(project.directory())
-    if not ok then
-        return false, errors
-    end
-
-    -- load the options from the the project file
-    local options, errors = project.options(true)
-    if not options then
-        return false, errors
-    end
-
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
-    -- check all options
-    for _, opt in pairs(options) do
-        opt:check(force) 
-    end
-
-    -- leave toolchains environment
-    environment.leave("toolchains")
- 
-    -- leave the project directory
-    ok, errors = os.cd("-")
-    if not ok then
-        return false, errors
-    end
-
-    -- ok
-    return true
-end
-
 -- get the project info from the given name
 function project.get(name)
 
@@ -521,7 +485,7 @@ function project.options(enable_filter)
         instance._INFO = optioninfo
 
         -- save it
-        options[optionname] = instance
+        table.insert(options,instance)
     end
 
     -- ok?
@@ -579,7 +543,7 @@ function project.menu()
 
     -- arrange options by category
     local options_by_category = {}
-    for name, opt in pairs(options) do
+    for _, opt in ipairs(options) do
 
         -- make the category
         local category = "default"
@@ -587,7 +551,7 @@ function project.menu()
         options_by_category[category] = options_by_category[category] or {}
 
         -- append option to the current category
-        options_by_category[category][name] = opt
+        options_by_category[category][opt:name()] = opt
     end
 
     -- make menu by category

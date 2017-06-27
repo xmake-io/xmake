@@ -134,19 +134,8 @@ function sandbox._new()
         end
     end
 
-    -- save instance
-    setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
-                                        if type(key) == "string" and key == "_SANDBOX" and rawget(tbl, "_SANDBOX_READABLE") then
-                                            return instance
-                                        end
-                                        return rawget(tbl, key)
-                                    end
-                                ,   __newindex = function (tbl, key, val)
-                                        if type(key) == "string" and (key == "_SANDBOX" or key == "_SANDBOX_READABLE") then
-                                            return 
-                                        end
-                                        rawset(tbl, key, val)
-                                    end}) 
+    -- bind instance to the public script envirnoment
+    instance:bind(instance._PUBLIC) 
 
     -- ok?
     return instance
@@ -192,7 +181,34 @@ function sandbox.load(script, ...)
     return xpcall(script, sandbox._traceback, ...)
 end
 
--- fork a new sandbox from the given sandbox
+-- bind self instance to the given script or envirnoment
+function sandbox:bind(script_or_env)
+
+    -- get envirnoment
+    local env = script_or_env
+    if type(script_or_env) == "function" then
+        env = getfenv(script_or_env)
+    end
+
+    -- bind instance to the script envirnoment
+    setmetatable(env, {     __index = function (tbl, key)
+                                if type(key) == "string" and key == "_SANDBOX" and rawget(tbl, "_SANDBOX_READABLE") then
+                                    return self
+                                end
+                                return rawget(tbl, key)
+                            end
+                        ,   __newindex = function (tbl, key, val)
+                                if type(key) == "string" and (key == "_SANDBOX" or key == "_SANDBOX_READABLE") then
+                                    return 
+                                end
+                                rawset(tbl, key, val)
+                            end}) 
+
+    -- ok
+    return script_or_env
+end
+
+-- fork a new sandbox from the self sandbox
 function sandbox:fork(script, rootdir)
 
     -- invalid script?
