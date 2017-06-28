@@ -57,7 +57,14 @@ function sandbox_lib_detect_cache.load(name)
     local detectcache = sandbox_lib_detect_cache._instance()
  
     -- attempt to get result from cache first
-    return detectcache:get(name) or {}
+    local cacheinfo = detectcache:get(name) 
+    if cacheinfo == nil then
+        cacheinfo = {}
+        detectcache:set(name, cacheinfo)
+    end
+
+    -- ok?
+    return cacheinfo
 end
 
 -- save detect cache
