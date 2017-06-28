@@ -103,7 +103,7 @@ function sandbox_import._loadfile(filepath, instance)
         if not result then
             return nil, errors
         end
-        
+
         -- ok
         return result, instance:script()
     end
@@ -311,10 +311,10 @@ function sandbox_import.import(name, args)
     -- init module directories
     local modules_directories = 
     {
-        rootdir                                                 -- load module from the given root directory first 
-    ,   path.join(global.directory(), "modules")                -- load module from the user global modules directory
-    ,   path.join(os.programdir(), "modules")                -- load module from the extension modules directory
-    ,   path.join(os.programdir(), "core/sandbox/modules/import")    -- load module from the sandbox core modules directory
+        rootdir                                                     -- load module from the given root directory first 
+    ,   path.join(global.directory(), "modules")                    -- load module from the user global modules directory
+    ,   path.join(os.programdir(), "modules")                       -- load module from the extension modules directory
+    ,   path.join(os.programdir(), "core/sandbox/modules/import")   -- load module from the sandbox core modules directory
     }
 
     -- load module

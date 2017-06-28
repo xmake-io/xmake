@@ -270,7 +270,6 @@ function sandbox:import()
 
     -- ok
     return module
-
 end
 
 -- get script from the given sandbox

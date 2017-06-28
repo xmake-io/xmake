@@ -66,7 +66,7 @@ function sandbox_core_project.check(force)
     environment.enter("toolchains")
 
     -- check all options
-    ok, errors = process.runjobs(instance:bind(function (index) options[index]:check(force) end), #options, 4)
+    ok, errors = process.runjobs(instance:fork(function (index) options[index]:check(force) end):script(), #options, 4)
     if not ok then
         raise(errors)
     end
