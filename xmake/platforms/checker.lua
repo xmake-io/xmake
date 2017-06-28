@@ -45,7 +45,6 @@ function _toolchain_check(config, toolkind, toolinfo)
         local cross = config.get("cross") or toolinfo.cross or ""
 
         -- attempt to check it 
-        local program = nil
         if not program then
             local tool = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
             if tool then
