@@ -25,6 +25,7 @@
 * improve builtin-variables to support to get the value envirnoment and registry
 * Improve to detect vstudio sdk and cross toolchains envirnoment
 * [#71](https://github.com/tboox/xmake/issues/71): Improve to detect compiler and linker from env vars
+* Improve the option detection (cache and multi-jobs) and increase 70% speed
 
 ### Bugs fixed
 
@@ -325,6 +326,7 @@
 * 改进内置变量，支持环境变量和注册表数据的获取
 * 改进vstudio环境和交叉工具链的探测
 * [#71](https://github.com/tboox/xmake/issues/71): 改进从环境变量中探测链接器和编译器
+* 改进option选项检测，通过多任务检测，提升70%的检测速度
 
 ### Bugs修复
 
