@@ -71,9 +71,14 @@ end
 function _check_try_running(flag, opt)
 
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "link_has_flag.c")
+    local winmain = flag:lower():find("subsystem:windows")
+    local sourcefile = path.join(os.tmpdir(), "detect", ifelse(winmain, "winmain_", "") .. "link_has_flag.c")
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+        if winmain then
+            io.writefile(sourcefile, "int WinMain(void* instance, void* previnst, char** argv, int argc)\n{return 0;}")
+        else
+            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+        end
     end
 
     -- compile the source file
