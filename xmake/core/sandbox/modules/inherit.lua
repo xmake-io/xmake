@@ -30,10 +30,16 @@ local import = require("sandbox/modules/import")
 -- we can access all super interfaces by _super
 --
 -- @note the polymiorphism is not supported for import.inherit mode now.
-function sandbox_inherit(name)
+function sandbox_inherit(name, args)
+
+    -- init args
+    args = args or {}
+
+    -- mark as inherit
+    args.inherit = true
 
     -- import and inherit it
-    return import(name, {inherit = true})
+    return import(name, args)
 end
 
 -- load module

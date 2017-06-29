@@ -329,7 +329,7 @@ function sandbox_import.import(name, args)
 
             -- load it from cache first
             local moduleinfo = modules[modulekey]
-            if moduleinfo and not args.nocache then
+            if moduleinfo and not args.nocache and not args.inherit then
                 module = moduleinfo[1]
                 errors = moduleinfo[2]
             else
