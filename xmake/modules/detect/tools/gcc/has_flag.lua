@@ -38,7 +38,7 @@ function _islinker(flag, opt)
     return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("-ld") or toolkind:endswith("-sh")
 end
 
--- attempt to check it from the argument list of gcc
+-- attempt to check it from the argument list
 function _check_from_arglist(flag, opt, islinker)
 
     -- only for compiler
@@ -108,7 +108,7 @@ function main(flag, opt)
     -- is linker?
     local islinker = _islinker(flag, opt)
 
-    -- attempt to check it from the argument list of gcc
+    -- attempt to check it from the argument list
     if _check_from_arglist(flag, opt, islinker) then
         return true
     end

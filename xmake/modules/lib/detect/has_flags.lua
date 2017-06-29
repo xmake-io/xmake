@@ -43,8 +43,17 @@ function _has_flag(name, flag, opt)
 
     -- init cache and key
     local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. flag
-    local results = _g._RESULTS or {}
+    _g._RESULTS = _g._RESULTS or {}
+    local results = _g._RESULTS
     
+    -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
+    local coroutine_running = coroutine.running()
+    if coroutine_running then
+        while _g._checking ~= nil and _g._checking == key do
+            coroutine.yield()
+        end
+    end
+
     -- get result from the cache first
     local result = results[key]
     if result ~= nil then
@@ -52,6 +61,7 @@ function _has_flag(name, flag, opt)
     end
 
     -- detect.tools.xxx.has_flag(flag, opt)?
+    _g._checking = ifelse(coroutine_running, key, nil)
     if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "has_flag.lua")) then
         local hasflag = import("detect.tools." .. tool.name .. ".has_flag")
         if hasflag then
@@ -60,15 +70,15 @@ function _has_flag(name, flag, opt)
     else
         result = try { function () os.runv(tool.program, {flag}); return true end }
     end
+    _g._checking = nil
 
     -- trace
     if option.get("verbose") or opt.verbose then
-        cprint("checking for the flags %s ... %s", flag, ifelse(result, "${green}ok", "${red}no"))
+        cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), flag, ifelse(result, "${green}ok", "${red}no"))
     end
 
     -- save result to cache
     results[key] = ifelse(result, result, false)
-    _g._RESULTS = results
 
     -- ok?
     return result
