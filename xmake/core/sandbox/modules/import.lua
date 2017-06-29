@@ -133,10 +133,10 @@ function sandbox_import._find(dir, name)
 
     -- the single module?
     if os.isfile(key .. ".lua") then
-        return key
+        return path.absolute(key)
     -- modules?
     elseif os.isdir(key) then
-        return key
+        return path.absolute(key)
     end
 end
 
