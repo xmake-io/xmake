@@ -305,6 +305,9 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
             -- make linker flags
             local flags = table.concat(_make_linkflags(targetinfo, vcxprojdir), " "):trim()
 
+            -- remove "-machine:[x86|x64]"
+            flags = flags:gsub("[%-/]machine:.+", "")
+
             -- make AdditionalOptions
             vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
 
