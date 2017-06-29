@@ -23,8 +23,8 @@ script:
   - scripts/get.sh __local__
   - source ~/.xmake/profile
   - xmake lua versioninfo
-  - xmake f -m coverage -P core
-  - xmake -P core
+  - xmake f -m coverage -P core 
+  - xmake -v -P core 
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo
   - echo "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})" > tmp
