@@ -142,12 +142,21 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     ,   vs2017 = "141"
     }
 
-    -- the sdk version
+    -- the default sdk version
     local sdk_versions = 
     {
         vs2015 = "10.0.10240.0"
     ,   vs2017 = "10.0.14393.0"
     }
+
+    -- get sdk version
+    local sdkver = nil
+    for _, targetinfo in ipairs(target.info) do
+        sdkver = targetinfo.sdkver
+        if sdkver then
+            break
+        end
+    end
 
     -- make ProjectConfigurations
     vcxprojfile:enter("<ItemGroup Label=\"ProjectConfigurations\">")
@@ -164,7 +173,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:print("<ProjectGuid>{%s}</ProjectGuid>", os.uuid(targetname))
         vcxprojfile:print("<RootNamespace>%s</RootNamespace>", targetname)
         if vsinfo.vstudio_version >= "2015" then
-            vcxprojfile:print("<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>", sdk_versions["vs" .. vsinfo.vstudio_version])
+            vcxprojfile:print("<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>", sdkver or sdk_versions["vs" .. vsinfo.vstudio_version])
         end
     vcxprojfile:leave("</PropertyGroup>")
 

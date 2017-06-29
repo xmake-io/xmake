@@ -64,6 +64,12 @@ function _load_vcvarsall(vcvarsall, arch)
         end
     end
 
+    -- get sdk version
+    local include = variables["include"]
+    if include then
+        variables["sdkver"] = include:match("Windows Kits\\%d+\\include\\(%d+%.%d+%.%d+%.%d+)\\")
+    end
+
     -- ok
     return variables
 end

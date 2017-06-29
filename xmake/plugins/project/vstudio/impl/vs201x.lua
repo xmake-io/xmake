@@ -39,6 +39,12 @@ function _make_targetinfo(mode, arch, target)
     -- init target info
     local targetinfo = { mode = mode, arch = ifelse(arch == "x86", "Win32", "x64") }
 
+    -- get sdk version
+    local vcvarsall = config.get("__vcvarsall")
+    if vcvarsall then
+        targetinfo.sdkver = (vcvarsall[arch] or {}).sdkver
+    end
+
     -- save symbols
     targetinfo.symbols = target:get("symbols")
 
