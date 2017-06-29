@@ -101,53 +101,51 @@ function process.runjobs(jobfunc, total, comax, timeout, timer)
         -- wait processes
         local tasks_finished = {}
         local procs_count = #procs
+        local procs_infos = nil
         if procs_count > 0 then
-
-            -- wait them
-            local count, procinfos = process.waitlist(procs, utils.ifelse(procs_count < comax and index <= total, 0, timeout))
+            local count = -1
+            count, procs_infos = process.waitlist(procs, utils.ifelse(#tasks < comax and index <= total, 0, timeout))
             if count < 0 then
                 return false, string.format("wait processes(%d) failed(%d)", #procs, count)
             end
+        end
 
-            -- timer is triggered? call timer
-            if timer and os.mclock() - time > timeout then
-                timer(indices)
-                time = os.mclock()
+        -- timer is triggered? call timer
+        if timer and os.mclock() - time > timeout then
+            timer(indices)
+            time = os.mclock()
+        end
+
+        -- append fake procs_infos for coroutine.yield()
+        procs_infos = procs_infos or {}
+        for taskid = #procs + 1, #tasks do
+            table.insert(procs_infos, {nil, taskid, 0})
+        end
+
+        -- wait ok
+        for _, procinfo in ipairs(procs_infos) do
+            
+            -- the process info
+            local proc      = procinfo[1]
+            local taskid    = procinfo[2]
+            local status    = procinfo[3]
+
+            -- check
+            assert(procs[taskid] == proc)
+
+            -- resume this task
+            local job_task = tasks[taskid]
+            local ok, job_proc_or_errors = coroutine.resume(job_task, 1, status)
+            if not ok then
+                return false, job_proc_or_errors
             end
 
-            -- wait ok
-            for _, procinfo in ipairs(procinfos) do
-                
-                -- the process info
-                local proc      = procinfo[1]
-                local procid    = procinfo[2]
-                local status    = procinfo[3]
-
-                -- check
-                assert(procs[procid] == proc)
-
-                -- resume this task
-                local job_task = tasks[procid]
-                local ok, job_proc_or_errors = coroutine.resume(job_task, 1, status)
-                if not ok then
-                    return false, job_proc_or_errors
-                end
-
-                -- the other process is pending for this task?
-                if coroutine.status(job_task) ~= "dead" then
-
-                    -- check
-                    assert(job_proc_or_errors)
-
-                    -- update the pending process
-                    procs[procid] = job_proc_or_errors
-
-                -- this task has been finised?
-                else
-
-                    -- mark this task as finised
-                    tasks_finished[procid] = true
-                end
+            -- the other process is pending for this task?
+            if coroutine.status(job_task) ~= "dead" then
+                procs[taskid] = job_proc_or_errors 
+            else
+                -- mark this task as finished?
+                tasks_finished[taskid] = true
             end
         end
 
@@ -156,9 +154,15 @@ function process.runjobs(jobfunc, total, comax, timeout, timer)
         local procs_pending     = {}
         local indices_pending   = {}
         for taskid, job_task in ipairs(tasks) do
-            if not tasks_finished[taskid] then
+            if not tasks_finished[taskid] and procs[taskid] ~= nil then -- for coroutine.yield(proc) in os.execv
                 table.insert(tasks_pending,     job_task)
                 table.insert(procs_pending,     procs[taskid])
+                table.insert(indices_pending,   indices[taskid])
+            end
+        end
+        for taskid, job_task in ipairs(tasks) do
+            if not tasks_finished[taskid] and procs[taskid] == nil then -- for coroutine.yield()
+                table.insert(tasks_pending,     job_task)
                 table.insert(indices_pending,   indices[taskid])
             end
         end
@@ -167,7 +171,9 @@ function process.runjobs(jobfunc, total, comax, timeout, timer)
         indices = indices_pending
 
         -- produce tasks
-        while #tasks < comax and index <= total do
+        tasks_pending   = {}
+        indices_pending = {}
+        while (#tasks + #tasks_pending) < comax and index <= total do
 
             -- new task
             local job_task = coroutine.create(jobfunc)
@@ -180,19 +186,23 @@ function process.runjobs(jobfunc, total, comax, timeout, timer)
 
             -- add pending tasks
             if coroutine.status(job_task) ~= "dead" then
-
-                -- check
-                assert(job_proc_or_errors)
-
-                -- put task and proc to the pendings tasks
-                table.insert(tasks, job_task)
-                table.insert(procs, job_proc_or_errors)
-                table.insert(indices, index)
+                if job_proc_or_errors ~= nil then -- for coroutine.yield(proc) in os.execv
+                    table.insert(tasks, job_task)
+                    table.insert(procs, job_proc_or_errors)
+                    table.insert(indices, index)
+                else
+                    table.insert(tasks_pending, job_task)
+                    table.insert(indices_pending, index)
+                end
             end
 
             -- next index
             index = index + 1
         end
+
+        -- append pending tasks without process
+        table.join2(tasks, tasks_pending)
+        table.join2(indices, indices_pending)
 
     until #tasks == 0
 

@@ -71,7 +71,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
     if (count <= 0 || count > 64)
     {
         // error
-        lua_pushfstring(lua, "invalid process count(%ld) for process.waitlist", count);
+        lua_pushfstring(lua, "invalid process count(%d) for process.waitlist", count);
         lua_error(lua);
         return 0;
     }

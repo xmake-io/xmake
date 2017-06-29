@@ -185,6 +185,7 @@ function main(snippets, opt)
     -- make the source file
     local sourcefile = os.tmpfile() .. extension
     local objectfile = os.tmpfile() .. ".o"
+    local binaryfile = os.tmpfile() .. ".b"
     io.writefile(sourcefile, sourcecode)
 
     -- attempt to compile it
@@ -193,7 +194,7 @@ function main(snippets, opt)
         function () 
             compiler.compile(sourcefile, objectfile, opt)
             if #links > 0 then
-                linker.link("binary", {"cc", "cxx"}, objectfile, os.nuldev(), opt)
+                linker.link("binary", {"cc", "cxx"}, objectfile, binaryfile, opt)
             end
             return true
         end,
@@ -210,6 +211,7 @@ function main(snippets, opt)
     -- remove some files
     os.tryrm(sourcefile)
     os.tryrm(objectfile)
+    os.tryrm(binaryfile)
 
     -- trace
     if opt.verbose or option.get("verbose") then

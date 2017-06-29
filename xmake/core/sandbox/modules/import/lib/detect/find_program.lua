@@ -37,6 +37,9 @@ local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 local cache     = require("sandbox/modules/import/lib/detect/cache")
 
+-- globals
+local checking  = nil
+
 -- check program
 function sandbox_lib_detect_find_program._check(program, check)
 
@@ -141,6 +144,14 @@ end
 --
 function sandbox_lib_detect_find_program.main(name, pathes, check)
 
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (.e.g ccache)
+    local coroutine_running = coroutine.running()
+    if coroutine_running then
+        while checking ~= nil and checking == name do
+            coroutine.yield()
+        end
+    end
+
     -- attempt to get result from cache first
     local cacheinfo = cache.load("find_program") 
     local result = cacheinfo[name]
@@ -154,7 +165,9 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
     end
 
     -- find executable program
+    checking = utils.ifelse(coroutine_running, name, nil)
     result = sandbox_lib_detect_find_program._find(name, pathes, check) 
+    checking = nil
 
     -- cache result
     cacheinfo[name] = utils.ifelse(result, result, false)
