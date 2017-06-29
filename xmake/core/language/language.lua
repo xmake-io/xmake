@@ -115,15 +115,11 @@ end
 
 -- get the source kinds
 function _instance:sourcekinds()
-
-    -- get it
     return self._INFO.sourcekinds
 end
 
 -- get the source flags
 function _instance:sourceflags()
-
-    -- get it
     return self._INFO.sourceflags
 end
 
@@ -133,8 +129,6 @@ end
 -- {binary = "ld", static = "ar", shared = "sh"}
 --
 function _instance:targetkinds()
-
-    -- get it
     return self._INFO.targetkinds
 end
 
@@ -654,7 +648,7 @@ function language.targetkinds()
     -- merge all for each language
     local targetkinds = {}
     for name, instance in pairs(languages) do
-        for targetkind, linkerkind in pairs(instance:targetkinds()) do
+        for targetkind, linkerkind in pairs(table.wrap(instance:targetkinds())) do
             targetkinds[targetkind] = targetkinds[targetkind] or {}
             table.insert(targetkinds[targetkind], linkerkind)
         end

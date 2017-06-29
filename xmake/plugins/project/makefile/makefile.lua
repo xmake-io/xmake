@@ -248,7 +248,7 @@ function _make_target(makefile, target)
     makefile:print("")
 
     -- get linker kind
-    local linkerkind = target:linker():get("kind")
+    local linkerkind = target:linker():kind()
 
     -- get program
     local program = platform.tool(linkerkind)
@@ -348,7 +348,7 @@ function _make_all(makefile)
             for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
                 makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind}))
             end
-            makefile:print("%s_%s=%s", targetname, target:linker():get("kind"):upper(), target:linkflags())
+            makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), target:linkflags())
         end
     end
     makefile:print("")

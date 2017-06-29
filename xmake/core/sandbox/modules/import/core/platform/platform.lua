@@ -63,9 +63,15 @@ end
 
 -- get the current platform configure
 function sandbox_core_platform.get(name, plat)
-
-    -- get the given platform configure
     return platform.get(name, plat)
+end
+
+-- get the platform tool from the kind
+--
+-- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+--
+function sandbox_core_platform.tool(toolkind)
+    return platform.tool(toolkind)
 end
 
 -- return module

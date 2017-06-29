@@ -56,7 +56,7 @@ function _make_targetinfo(mode, arch, target)
     end
 
     -- save linker flags
-    local _, linkflags = linker.linkflags(target:get("kinds"), target:sourcekinds())
+    local _, linkflags = linker.linkflags(target:get("kind"), target:sourcekinds())
     targetinfo.linkflags = linkflags
 
     -- ok
