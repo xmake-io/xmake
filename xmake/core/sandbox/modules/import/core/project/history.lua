@@ -22,8 +22,8 @@
 -- @file        history.lua
 --
 
--- define module, @note cannot be cached, a new instance in each sandbox module
-local sandbox_core_project_history = {}
+-- define module
+local sandbox_core_project_history = sandbox_core_project_history or {}
 
 -- load modules
 local os        = require("base/os")

@@ -24,9 +24,9 @@
 
 -- imports
 import("core.base.option")
-import("core.project.cache")
+import("core.project.cache", {nocache = true})
 import("core.project.config")
-import("core.project.history")
+import("core.project.history", {nocache = true})
 
 -- the macro directories
 function _directories()

@@ -237,6 +237,11 @@ end
 
 -- import module
 --
+-- @param name      the module name, .e.g core.platform
+-- @param args      the arguments, .e.g {alias = "", rootdir = "", inherit = false, anonymous = false, nocache = false}
+--
+-- @return          the module instance
+--
 -- .e.g 
 --
 -- import("core.platform")
@@ -324,7 +329,7 @@ function sandbox_import.import(name, args)
 
             -- load it from cache first
             local moduleinfo = modules[modulekey]
-            if moduleinfo then
+            if moduleinfo and not args.nocache then
                 module = moduleinfo[1]
                 errors = moduleinfo[2]
             else
@@ -332,7 +337,9 @@ function sandbox_import.import(name, args)
                 module, errors = sandbox_import._load(moduledir, name, utils.ifelse(idx < #modules_directories, instance, nil)) -- last modules need not fork sandbox
 
                 -- cache this module
-                modules[modulekey] = {module, errors}
+                if not args.nocache then
+                    modules[modulekey] = {module, errors}
+                end
             end
 
             -- end

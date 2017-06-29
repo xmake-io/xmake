@@ -27,7 +27,7 @@ import("core.base.option")
 import("core.project.task")
 import("core.project.config")
 import("core.project.project")
-import("core.project.cache")
+import("core.project.cache", {nocache = true})
 import("core.platform.platform")
 import("builder")
 
