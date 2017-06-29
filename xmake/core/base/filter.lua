@@ -32,8 +32,8 @@ local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- globals
-local escape_table1 = {["$"] = "\001", ["("] = "\002", [")"] = "\003"}
-local escape_table2 = {["\001"] = "$", ["\002"] = "(", ["\003"] = ")"}
+local escape_table1 = {["$"] = "\001", ["("] = "\002", [")"] = "\003", ["%"] = "\004"}
+local escape_table2 = {["\001"] = "$", ["\002"] = "(", ["\003"] = ")", ["\004"] = "%"}
 
 -- new filter instance
 function filter.new()
@@ -159,19 +159,19 @@ function filter:handle(value)
     -- check
     assert(type(value) == "string")
 
-    -- escape "%$", "%(", "%)" to "\001", "\002", "\003"
-    value = value:gsub("%%([%$%(%)])", function (ch) return escape_table1[ch] end)
+    -- escape "%$", "%(", "%)", "%%" to "\001", "\002", "\003", "\004"
+    value = value:gsub("%%([%$%(%)%%])", function (ch) return escape_table1[ch] end)
 
     -- filter the builtin variables
     return (value:gsub("%$%((.-)%)", function (variable) 
         
-        -- escape "%$", "%(", "%)" to "$", "(", ")"
-        variable = variable:gsub("[\001\002\003]", function (ch) return escape_table2[ch] end)
+        -- escape "%$", "%(", "%)", "%%" to "$", "(", ")", "%"
+        variable = variable:gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end)
 
         -- get variable value
         return self:get(variable) or ""
 
-    end):gsub("[\001\002\003]", function (ch) return escape_table2[ch] end))
+    end):gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end))
 end
 
 -- return module: filter
