@@ -74,7 +74,7 @@ end
 function _make_linkflags(target, vcprojdir)
 
     -- make the linking flags
-    local _, linkflags = linker.linkflags(target:get("kind"), target:sourcekinds())
+    local _, linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
 
     -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}
