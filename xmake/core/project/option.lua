@@ -175,9 +175,18 @@ end
 
 -- get the option info
 function option:get(infoname)
-
-    -- get it
     return self._INFO[infoname]
+end
+
+-- add the value to the option info
+function option:add(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        self._INFO[name_or_info] = table.unique(table.join2(table.wrap(self._INFO[name_or_info]), ...))
+    elseif type(name_or_info) == "table" and #name_or_info == 0 then
+        for name, info in pairs(name_or_info) do
+            self:add(name, info)
+        end
+    end
 end
 
 -- get option deps
@@ -188,23 +197,17 @@ end
 
 -- save the option info to the cache
 function option:save()
-
-    -- save it
     option._cache():set(self:name(), self._INFO)
     option._cache():flush()
 end
 
 -- clear the option info for cache
 function option:clear()
-
-    -- clear it
     option._cache():set(self:name(), nil)
 end
 
 -- get the option name
 function option:name()
-
-    -- get it
     return self._NAME
 end
 
@@ -227,44 +230,6 @@ function option.load(name)
 
     -- ok
     return instance
-end
-
--- get the kinds of sourcefiles
-function option:sourcekinds()
-
-    -- cached? return it directly
-    if self._SOURCEKINDS then
-        return self._SOURCEKINDS
-    end
-
-    -- ok?
-    return {"cc", "cxx"} 
-end
-
--- get function name and check code
---
--- sigsetjmp
--- sigsetjmp((void*)0, 0)
--- sigsetjmp{sigsetjmp((void*)0, 0);}
--- sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
---
-function option.checkinfo(checkinfo)
-
-    -- parse name and code
-    local name, code = string.match(checkinfo, "(.+){(.+)}")
-    if code == nil then
-        local pos = checkinfo:find("%(")
-        if pos then
-            name = checkinfo:sub(1, pos - 1)
-            code = checkinfo
-        else
-            name = checkinfo
-            code = string.format("volatile void* p%s = (void*)&%s;", name, name)
-        end
-    end
-
-    -- ok
-    return name:trim(), code
 end
 
 -- return module

@@ -22,34 +22,57 @@
 -- @file        api.lua
 --
 
--- imports
-import("core.project.option")
+-- get function name and function info
+--
+-- sigsetjmp
+-- sigsetjmp((void*)0, 0)
+-- sigsetjmp{sigsetjmp((void*)0, 0);}
+-- sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
+--
+function _funcinfo(func)
+
+    -- parse name and code
+    local name, code = string.match(func, "(.+){(.+)}")
+    if code == nil then
+        local pos = func:find("%(")
+        if pos then
+            name = func:sub(1, pos - 1)
+            code = func
+        else
+            name = func
+            code = string.format("volatile void* p%s = (void*)&%s;", name, name)
+        end
+    end
+
+    -- ok
+    return name:trim(), code
+end
 
 -- add c function
-function _api_add_cfunc(interp, module, alias, links, includes, checkinfo)
+function _api_add_cfunc(interp, module, alias, links, includes, func)
 
-    -- parse the check code
-    local checkname, checkcode = option.checkinfo(checkinfo)
+    -- parse the function info
+    local funcname, funccode = _funcinfo(func)
 
     -- make the option name
     local name = nil
     if module ~= nil then
-        name = format("__%s_%s", module, checkname)
+        name = format("__%s_%s", module, funcname)
     else
-        name = format("__%s", checkname)
+        name = format("__%s", funcname)
     end
 
     -- uses the alias name
     if alias ~= nil then
-        checkname = alias
+        funcname = alias
     end
 
     -- make the option define
     local define = nil
     if module ~= nil then
-        define = format("$(prefix)_%s_HAVE_%s", module:upper(), checkname:upper())
+        define = format("$(prefix)_%s_HAVE_%s", module:upper(), funcname:upper())
     else
-        define = format("$(prefix)_HAVE_%s", checkname:upper())
+        define = format("$(prefix)_HAVE_%s", funcname:upper())
     end
 
     -- save the current scope
@@ -58,7 +81,7 @@ function _api_add_cfunc(interp, module, alias, links, includes, checkinfo)
     -- check option
     interp:api_call("option", name)
     interp:api_call("set_category", "cfuncs")
-    interp:api_call("add_cfuncs", checkinfo)
+    interp:api_call("add_cfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cincludes", includes) end
     interp:api_call("add_defines_h_if_ok", define)
@@ -74,36 +97,36 @@ end
 function _api_add_cfuncs(interp, module, links, includes, ...)
 
     -- done
-    for _, checkinfo in ipairs({...}) do
-        _api_add_cfunc(interp, module, nil, links, includes, checkinfo)
+    for _, func in ipairs({...}) do
+        _api_add_cfunc(interp, module, nil, links, includes, func)
     end
 end
 
 -- add c++ function
-function _api_add_cxxfunc(interp, module, alias, links, includes, checkinfo)
+function _api_add_cxxfunc(interp, module, alias, links, includes, func)
 
-    -- parse the check code
-    local checkname, checkcode = option.checkinfo(checkinfo)
+    -- parse the function info
+    local funcname, funccode = _funcinfo(func)
 
     -- make the option name
     local name = nil
     if module ~= nil then
-        name = format("__%s_%s", module, checkname)
+        name = format("__%s_%s", module, funcname)
     else
-        name = format("__%s", checkname)
+        name = format("__%s", funcname)
     end
 
     -- uses the alias name
     if alias ~= nil then
-        checkname = alias
+        funcname = alias
     end
 
     -- make the option define
     local define = nil
     if module ~= nil then
-        define = format("$(prefix)_%s_HAVE_%s", module:upper(), checkname:upper())
+        define = format("$(prefix)_%s_HAVE_%s", module:upper(), funcname:upper())
     else
-        define = format("$(prefix)_HAVE_%s", checkname:upper())
+        define = format("$(prefix)_HAVE_%s", funcname:upper())
     end
 
     -- save the current scope
@@ -112,7 +135,7 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, checkinfo)
     -- check option
     interp:api_call("option", name)
     interp:api_call("set_category", "cxxfuncs")
-    interp:api_call("add_cxxfuncs", checkinfo)
+    interp:api_call("add_cxxfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cxxincludes", includes) end
     interp:api_call("add_defines_h_if_ok", define)
@@ -128,8 +151,8 @@ end
 function _api_add_cxxfuncs(interp, module, links, includes, ...)
 
     -- done
-    for _, checkinfo in ipairs({...}) do
-        _api_add_cxxfunc(interp, module, nil, links, includes, checkinfo)
+    for _, func in ipairs({...}) do
+        _api_add_cxxfunc(interp, module, nil, links, includes, func)
     end
 end
 

@@ -59,12 +59,12 @@ function linker:_addflags_from_platform(flags, targetkind)
 end
 
 -- add flags from the compiler 
-function linker:_addflags_from_compiler(flags, targetkind, sourcekinds)
+function linker:_addflags_from_compiler(flags, targetkind)
 
     -- make flags 
     local flags_of_compiler = {}
     local toolkind = self:kind()
-    for _, sourcekind in ipairs(table.wrap(sourcekinds)) do
+    for _, sourcekind in ipairs(self._SOURCEKINDS) do
 
         -- load compiler
         local instance, errors = compiler.load(sourcekind)
@@ -164,6 +164,9 @@ function linker.load(targetkind, sourcekinds)
     -- init target kind
     instance._TARGETKIND = targetkind
 
+    -- init source kinds
+    instance._SOURCEKINDS = sourcekinds
+
     -- init flag kinds
     instance._FLAGKINDS = {linkerinfo.linkerflag}
 
@@ -238,7 +241,7 @@ function linker:linkflags(opt)
 
     -- add flags from the compiler 
     if target then
-        self:_addflags_from_compiler(flags, targetkind, target:sourcekinds())
+        self:_addflags_from_compiler(flags, targetkind)
     end
 
     -- add flags from the linker 
