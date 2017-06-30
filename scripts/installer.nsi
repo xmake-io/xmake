@@ -44,6 +44,13 @@ RequestExecutionLevel admin
 
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
+ 
+;--------------------------------
+; Finish Pages
+
+!define MUI_FINISHPAGE_LINK "Donate $$5"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://xmake.io/pages/donation.html#donate"
+!insertmacro MUI_PAGE_FINISH
 
 ;--------------------------------
 ; Languages
@@ -53,13 +60,13 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Version Information
 
-VIProductVersion "2.1.4.0402"
+VIProductVersion "2.1.5.0630"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: http://www.xmake.io"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2015-2017 tboox.org"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "The Make-like Build Utility based on Lua"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.1.4"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.1.5"
 
 ;--------------------------------
 

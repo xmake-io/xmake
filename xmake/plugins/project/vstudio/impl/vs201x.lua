@@ -69,6 +69,28 @@ function _make_targetinfo(mode, arch, target)
     return targetinfo
 end
 
+-- make target headers
+function _make_targetheaders(target)
+
+    -- only for static and shared target
+    local kind = target:get("kind")
+    if kind == "static" or kind == "shared" then
+
+        -- make headers
+        local srcheaders, dstheaders = target:headerfiles()
+        if srcheaders and dstheaders then
+            local i = 1
+            for _, srcheader in ipairs(srcheaders) do
+                local dstheader = dstheaders[i]
+                if dstheader then
+                    os.cp(srcheader, dstheader)
+                end
+                i = i + 1
+            end
+        end
+    end
+end
+
 -- make vstudio project
 function make(outputdir, vsinfo)
 
@@ -135,6 +157,9 @@ function make(outputdir, vsinfo)
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                     _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+
+                    -- make target headers
+                    _make_targetheaders(target)
                 end
             end
         end
