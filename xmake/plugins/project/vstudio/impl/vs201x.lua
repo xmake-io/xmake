@@ -32,6 +32,7 @@ import("core.tool.linker")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
+import("actions.config.configheader", {rootdir = os.programdir()})
 
 -- make target info
 function _make_targetinfo(mode, arch, target)
@@ -70,7 +71,7 @@ function _make_targetinfo(mode, arch, target)
 end
 
 -- make target headers
-function _make_targetheaders(target)
+function _make_targetheaders(mode, arch, target, last)
 
     -- only for static and shared target
     local kind = target:get("kind")
@@ -86,6 +87,35 @@ function _make_targetheaders(target)
                     os.cp(srcheader, dstheader)
                 end
                 i = i + 1
+            end
+        end
+
+        -- make config header
+        local configheader_raw = target:configheader()
+        if configheader_raw and os.isfile(configheader_raw) then
+
+            -- init the config header path for each mode and arch
+            local configheader_mode_arch = path.join(path.directory(configheader_raw), mode .. "." .. arch .. "." .. path.filename(configheader_raw))
+
+            -- init the temporary config header path 
+            local configheader_tmp = path.join(path.directory(configheader_raw), "tmp." .. path.filename(configheader_raw))
+
+            -- copy the original config header first
+            os.cp(configheader_raw, configheader_mode_arch)
+
+            -- append the current config header
+            local file = io.open(configheader_tmp, "a+")
+            if file then
+                file:print("")
+                file:print("#if defined(__config_%s__) && defined(__config_%s__)", mode, arch)
+                file:print("#    include \"%s.%s.%s\"", mode, arch, path.filename(configheader_raw))
+                file:print("#endif")
+                file:close()
+            end
+
+            -- override the raw config header at last 
+            if last and os.isfile(configheader_tmp) then
+                os.mv(configheader_tmp, configheader_raw)
             end
         end
     end
@@ -116,8 +146,11 @@ function make(outputdir, vsinfo)
 
     -- load targets
     local targets = {}
-    for _, mode in ipairs(vsinfo.modes) do
-        for _, arch in ipairs({"x86", "x64"}) do
+    for mode_idx, mode in ipairs(vsinfo.modes) do
+        for arch_idx, arch in ipairs({"x86", "x64"}) do
+
+            -- trace
+            print("checking for the %s.%s ...", mode, arch)
 
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then
@@ -134,6 +167,9 @@ function make(outputdir, vsinfo)
 
                 -- reload project
                 project.load()
+
+                -- remake configheader
+                configheader.make()
             end
 
             -- ensure to enter project directory
@@ -159,7 +195,7 @@ function make(outputdir, vsinfo)
                     _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
                     -- make target headers
-                    _make_targetheaders(target)
+                    _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
                 end
             end
         end

@@ -55,6 +55,10 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
         table.insert(flags, flag)
     end
 
+    -- add -D__config_$(mode)__ and -D__config_$(arch)__ for the config header
+    table.insert(flags, "-D__config_" .. targetinfo.mode .. "__")
+    table.insert(flags, "-D__config_" .. targetinfo.arch .. "__")
+
     -- ok?
     return flags
 end
