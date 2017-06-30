@@ -118,7 +118,7 @@ end
 -- @param snippets  the snippets
 -- @param opt       the argument options
 --                  .e.g 
---                  { name = "", verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
+--                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}}
 --
 -- funcs:
@@ -141,19 +141,6 @@ function main(snippets, opt)
 
     -- init snippets
     snippets = snippets or {}
-
-    -- init cache and key
-    local key     = opt.name
-    local results = _g._RESULTS or {}
-    
-    -- get result from the cache first
-    if key ~= nil then
-        key = key .. (opt.sourcekind or "")
-        local ok = results[key]
-        if ok ~= nil then
-            return ok
-        end
-    end
 
     -- get links
     local links = table.wrap(opt.links)
@@ -188,6 +175,7 @@ function main(snippets, opt)
     local binaryfile = os.tmpfile() .. ".b"
     io.writefile(sourcefile, sourcecode)
 
+    -- @note cannot cache result, all conditions will be changed
     -- attempt to compile it
     local ok = try
     {
@@ -231,12 +219,6 @@ function main(snippets, opt)
         for _, snippet in ipairs(snippets) do
             cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))
         end
-    end
-
-    -- save result to cache
-    if key ~= nil then
-        results[key] = ifelse(ok, ok, false)
-        _g._RESULTS = results
     end
 
     -- ok?

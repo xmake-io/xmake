@@ -88,7 +88,7 @@ function option:_check_cx(kind)
     self._has_cxsnippets = self._has_cxsnippets or import("lib.detect.has_cxsnippets")
 
     -- get the tool name from the program
-    local ok, results_or_errors = sandbox.load(self._has_cxsnippets, snippets, {name = self:name(), target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
+    local ok, results_or_errors = sandbox.load(self._has_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
     if not ok then
         return false, results_or_errors
     end
