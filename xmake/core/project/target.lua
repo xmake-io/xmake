@@ -70,6 +70,17 @@ function target:get(name)
     return self._INFO[name]
 end
 
+-- set the value to the target info
+function target:set(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        self._INFO[name_or_info] = table.unique(table.join(...))
+    elseif type(name_or_info) == "table" and #name_or_info == 0 then
+        for name, info in pairs(name_or_info) do
+            self:set(name, info)
+        end
+    end
+end
+
 -- add the value to the target info
 function target:add(name_or_info, ...)
     if type(name_or_info) == "string" then

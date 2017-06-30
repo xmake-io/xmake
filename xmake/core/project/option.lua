@@ -56,52 +56,76 @@ function option._cache()
 end
 
 -- check option for c/c++
-function option:_check_cx(kind)
-
-    -- get snippets
-    local snippets = self:get(kind .. "snippet") 
-
-    -- get types
-    local types = self:get(kind .. "types")
-
-    -- get funcs
-    local funcs = self:get(kind .. "funcs")
-
-    -- get links
-    local links = self:get(kind .. "links")
-
-    -- get includes
-    local includes = self:get(kind .. "includes")
-
-    -- need not check it
-    if not snippets and not types and not funcs and not links and not includes then
-        return true
-    end
-
-    -- init source kind
-    local sourcekind = kind
-    if kind == "c" then
-        sourcekind = "cc"
-    end
+function option:_cx_check()
 
     -- import has_cxsnippets()
     self._has_cxsnippets = self._has_cxsnippets or import("lib.detect.has_cxsnippets")
 
-    -- get the tool name from the program
-    local ok, results_or_errors = sandbox.load(self._has_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
-    if not ok then
-        return false, results_or_errors
+    -- check for c and c++
+    for _, kind in ipairs({"c", "cxx"}) do
+
+        -- get conditions
+        local snippets = self:get(kind .. "snippet")
+        local types    = self:get(kind .. "types")
+        local funcs    = self:get(kind .. "funcs")
+        local links    = self:get(kind .. "links")
+        local includes = self:get(kind .. "includes")
+
+        -- need check it?
+        if snippets or types or funcs or links or includes then
+
+            -- init source kind
+            local sourcekind = kind
+            if kind == "c" then
+                sourcekind = "cc"
+            end
+
+            -- check it
+            local ok, results_or_errors = sandbox.load(self._has_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
+            if not ok then
+                return false, results_or_errors
+            end
+
+            -- not pass?
+            if not results_or_errors then
+                return false
+            end
+        end
     end
 
-    -- ok?
-    return results_or_errors
+    -- ok
+    return true
+end
+
+-- on check
+function option:_on_check()
+
+    -- get check script
+    local check = self:get("check")
+    if check then
+
+        -- check it
+        local ok, results_or_errors = sandbox.load(check, self)
+        if not ok then
+            return false, results_or_errors
+        else
+            return results_or_errors
+        end
+    end
 end
 
 -- check option 
 function option:_check()
 
     -- check it
-    local ok = self:_check_cx("c") and self:_check_cx("cxx")
+    local ok = nil
+    local errors = nil
+    for _, check in ipairs({self._on_check, self._cx_check}) do
+        ok, errors = check(self)
+        if ok ~= nil then
+            break
+        end
+    end
 
     -- get name
     local name = self:name()
@@ -111,6 +135,9 @@ function option:_check()
 
     -- trace
     utils.cprint("checking for the %s ... %s", name, utils.ifelse(ok, "${green}ok", "${red}no"))
+    if not ok and option_.get("verbose") and errors then
+        utils.cprint("${red}%s", errors)
+    end
 
     -- ok?
     return ok
@@ -178,6 +205,17 @@ function option:get(infoname)
     return self._INFO[infoname]
 end
 
+-- set the value to the option info
+function option:set(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        self._INFO[name_or_info] = table.unique(table.join(...))
+    elseif type(name_or_info) == "table" and #name_or_info == 0 then
+        for name, info in pairs(name_or_info) do
+            self:set(name, info)
+        end
+    end
+end
+
 -- add the value to the option info
 function option:add(name_or_info, ...)
     if type(name_or_info) == "string" then
@@ -197,6 +235,11 @@ end
 
 -- save the option info to the cache
 function option:save()
+
+    -- clear scripts for caching to file    
+    self:set("check", nil)
+
+    -- save this option to cache
     option._cache():set(self:name(), self._INFO)
     option._cache():flush()
 end
