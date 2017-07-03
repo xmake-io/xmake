@@ -34,6 +34,11 @@ function _build_from_objects(target, buildinfo)
     -- build objects
     object.build(target, buildinfo)
 
+    -- the object files are not modified?
+    if not buildinfo.objects_modified then
+        return 
+    end
+
     -- expand object files with *.o/obj
     local objectfiles = {}
     for _, objectfile in ipairs(target:objectfiles()) do

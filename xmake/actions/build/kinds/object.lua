@@ -140,6 +140,9 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
         return 
     end
 
+    -- the object files are modified
+    buildinfo.objects_modified = true
+
     -- is verbose?
     local verbose = option.get("verbose")
 

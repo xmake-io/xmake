@@ -34,6 +34,11 @@ function _build_from_objects(target, buildinfo)
     -- build objects
     object.build(target, buildinfo)
 
+    -- the object files are not modified?
+    if not buildinfo.objects_modified then
+        return 
+    end
+
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
     if srcheaders and dstheaders then

@@ -27,6 +27,7 @@
 * Improve to detect vstudio sdk and cross toolchains envirnoment
 * [#71](https://github.com/tboox/xmake/issues/71): Improve to detect compiler and linker from env vars
 * Improve the option detection (cache and multi-jobs) and increase 70% speed
+* [#129](https://github.com/tboox/xmake/issues/129): Check link deps and cache the target file
 
 ### Bugs fixed
 
@@ -330,6 +331,7 @@
 * 改进vstudio环境和交叉工具链的探测
 * [#71](https://github.com/tboox/xmake/issues/71): 改进从环境变量中探测链接器和编译器
 * 改进option选项检测，通过多任务检测，提升70%的检测速度
+* [#129](https://github.com/tboox/xmake/issues/129): 检测链接依赖，如果源文件没有改变，就不必重新链接目标文件了
 
 ### Bugs修复
 
