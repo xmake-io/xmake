@@ -135,8 +135,8 @@ function option:_check()
 
     -- trace
     utils.cprint("checking for the %s ... %s", name, utils.ifelse(ok, "${green}ok", "${red}no"))
-    if not ok and option_.get("verbose") and errors then
-        utils.cprint("${red}%s", errors)
+    if not ok and errors then
+        os.raise(errors)
     end
 
     -- ok?
@@ -158,6 +158,13 @@ function option:check(force)
     local default = self:get("default")
     if default == nil then
         default = self:get("enable")
+    end
+
+    -- before and after check
+    local check_before = self:get("check_before")
+    local check_after  = self:get("check_after")
+    if check_before then
+        check_before(self)
     end
 
     -- need check? (only force to check the automatical option without the default value)
@@ -196,8 +203,23 @@ function option:check(force)
         self:save()
     end    
 
+    -- after check
+    if check_after then
+        check_after(self)
+    end
+
     -- checked
     self._CHECKED = true
+end
+
+-- this option is enabled?
+function option:enabled()
+    return config.get(self:name())
+end
+
+-- dump this option
+function option:dump()
+    table.dump(self._INFO)
 end
 
 -- get the option info
@@ -208,7 +230,12 @@ end
 -- set the value to the option info
 function option:set(name_or_info, ...)
     if type(name_or_info) == "string" then
-        self._INFO[name_or_info] = table.unique(table.join(...))
+        local args = ...
+        if args ~= nil then
+            self._INFO[name_or_info] = table.unique(table.join(...))
+        else
+            self._INFO[name_or_info] = nil
+        end
     elseif type(name_or_info) == "table" and #name_or_info == 0 then
         for name, info in pairs(name_or_info) do
             self:set(name, info)
@@ -238,6 +265,8 @@ function option:save()
 
     -- clear scripts for caching to file    
     self:set("check", nil)
+    self:set("check_after", nil)
+    self:set("check_before", nil)
 
     -- save this option to cache
     option._cache():set(self:name(), self._INFO)

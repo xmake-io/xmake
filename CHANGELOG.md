@@ -11,6 +11,7 @@
 * Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * Support to compile the microsoft resource file (.rc)
 * Add `has_flags` module interfaces.
+* Add `option.on_check`, `option.after_check` and `option.before_check` api
 
 ### Changes
 
@@ -313,6 +314,7 @@
 * 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * 增加对微软.rc资源文件的编译支持，当在windows上编译时，可以增加资源文件了
 * 增加`has_flags`模块接口
+* 添加`option.on_check`, `option.after_check` 和 `option.before_check` 接口
 
 ### 改进
 

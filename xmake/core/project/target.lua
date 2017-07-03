@@ -73,7 +73,12 @@ end
 -- set the value to the target info
 function target:set(name_or_info, ...)
     if type(name_or_info) == "string" then
-        self._INFO[name_or_info] = table.unique(table.join(...))
+        local args = ...
+        if args ~= nil then
+            self._INFO[name_or_info] = table.unique(table.join(...))
+        else
+            self._INFO[name_or_info] = nil
+        end
     elseif type(name_or_info) == "table" and #name_or_info == 0 then
         for name, info in pairs(name_or_info) do
             self:set(name, info)
@@ -90,6 +95,11 @@ function target:add(name_or_info, ...)
             self:add(name, info)
         end
     end
+end
+
+-- dump this target
+function target:dump()
+    table.dump(self._INFO)
 end
 
 -- get the target name
