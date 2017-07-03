@@ -52,6 +52,9 @@ function _make_targetinfo(mode, arch, target)
     -- save target kind
     targetinfo.targetkind = target:targetkind()
 
+    -- save target file
+    targetinfo.targetfile = target:targetfile()
+
     -- save sourcebatches
     targetinfo.sourcebatches = target:sourcebatches()
 

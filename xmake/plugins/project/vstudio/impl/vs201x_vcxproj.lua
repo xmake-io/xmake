@@ -215,6 +215,10 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<OutDir>%s\\</OutDir>", path.relative(path.absolute(config.get("buildir")), vcxprojdir))
             vcxprojfile:print("<IntDir>%$(Configuration)\\</IntDir>")
+            vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
+            vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
+            vcxprojfile:print("<TargetPath>%s</TargetPath>", path.relative(path.absolute(targetinfo.targetfile), vcxprojdir))
+
             if target.kind == "binary" then
                 vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
             end
@@ -339,6 +343,9 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
         
             -- make TargetMachine
             vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(targetinfo.arch == "x64", "MachineX64", "MachineX86"))
+
+            -- make OutputFile
+            vcxprojfile:print("<OutputFile>%s</OutputFile>", path.relative(path.absolute(targetinfo.targetfile), vcxprojdir))
 
         vcxprojfile:leave("</Link>")
     end
