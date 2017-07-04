@@ -66,7 +66,7 @@ end
 -- make linking flags
 function _make_linkflags(targetinfo, vcxprojdir)
 
-    -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
+    -- replace -libpath:dir or /libpath:dir
     local flags = {}
     for _, flag in ipairs(targetinfo.linkflags) do
 
@@ -77,15 +77,6 @@ function _make_linkflags(targetinfo, vcxprojdir)
                             dir = path.relative(path.absolute(dir), vcxprojdir)
                         end
                         return "/libpath:" .. dir
-                    end)
-
-        -- replace -pdb:symbol.pdb or /pdb:symbol.pdb
-        flag = flag:gsub("[%-|/]pdb:(.*)", function (dir)
-                        dir = dir:trim()
-                        if not path.is_absolute(dir) then
-                            dir = path.relative(path.absolute(dir), vcxprojdir)
-                        end
-                        return "/pdb:" .. dir
                     end)
 
         -- save flag
@@ -315,20 +306,36 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     -- enter ItemDefinitionGroup 
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
     
+    -- init the linker kinds
+    local linkerkinds = 
+    {
+        binary = "Link"
+    ,   static = "Lib"
+    ,   shared = "Link"
+    }
+
     -- for linker?
-    if targetinfo.targetkind == "binary" then
-        vcxprojfile:enter("<Link>")
+    vcxprojfile:enter("<%s>", linkerkinds[targetinfo.targetkind])
 
-            -- make linker flags
-            local flags = table.concat(_make_linkflags(targetinfo, vcxprojdir), " "):trim()
+        -- make linker flags
+        local flags = table.concat(_make_linkflags(targetinfo, vcxprojdir), " "):trim()
 
-            -- remove "-machine:[x86|x64]"
-            flags = flags:gsub("[%-/]machine:.+", "")
+        -- remove "-machine:[x86|x64]"
+        flags = flags:gsub("[%-/]machine:%w+", "")
 
-            -- make AdditionalOptions
-            vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+        -- remove "-pdb:*.pdb"
+        flags = flags:gsub("[%-/]pdb:.+%.pdb", "")
 
-            -- generate debug infomation?
+        -- remove "-debug"
+        flags = flags:gsub("[%-/]debug", "")
+
+        -- make AdditionalOptions
+        vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+
+        -- generate debug infomation?
+        if linkerkinds[targetinfo.targetkind] == "Link" then
+
+            -- enable debug infomation?
             local debug = false
             for _, symbol in ipairs(targetinfo.symbols) do
                 if symbol == "debug" then
@@ -338,17 +345,25 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
             end
             vcxprojfile:print("<GenerateDebugInformation>%s</GenerateDebugInformation>", tostring(debug))
 
-            -- make SubSystem
+            -- make *.pdb file path
+            local symbolfile = targetinfo.symbolfile
+            if symbolfile then
+                vcxprojfile:print("<ProgramDatabaseFile>%s</ProgramDatabaseFile>", path.relative(path.absolute(symbolfile), vcxprojdir))
+            end
+        end
+
+        -- make SubSystem
+        if targetinfo.targetkind == "binary" then
             vcxprojfile:print("<SubSystem>Console</SubSystem>")
-        
-            -- make TargetMachine
-            vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(targetinfo.arch == "x64", "MachineX64", "MachineX86"))
+        end
+    
+        -- make TargetMachine
+        vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(targetinfo.arch == "x64", "MachineX64", "MachineX86"))
 
-            -- make OutputFile
-            vcxprojfile:print("<OutputFile>%s</OutputFile>", path.relative(path.absolute(targetinfo.targetfile), vcxprojdir))
+        -- make OutputFile
+        vcxprojfile:print("<OutputFile>%s</OutputFile>", path.relative(path.absolute(targetinfo.targetfile), vcxprojdir))
 
-        vcxprojfile:leave("</Link>")
-    end
+    vcxprojfile:leave("</%s>", linkerkinds[targetinfo.targetkind])
 
     -- for compiler?
     vcxprojfile:enter("<ClCompile>")
@@ -356,8 +371,11 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
         -- make source options
         _make_source_options(vcxprojfile, targetinfo.commonflags)
 
-        -- make ProgramDataBaseFileName (default: empty)
-        vcxprojfile:print("<ProgramDataBaseFileName></ProgramDataBaseFileName>") 
+        -- make *.pdb file path
+        local symbolfile = targetinfo.symbolfile
+        if symbolfile then
+            vcxprojfile:print("<ProgramDatabaseFile>%s</ProgramDatabaseFile>", path.relative(path.absolute(symbolfile), vcxprojdir))
+        end
 
     vcxprojfile:leave("</ClCompile>")
 

@@ -55,6 +55,9 @@ function _make_targetinfo(mode, arch, target)
     -- save target file
     targetinfo.targetfile = target:targetfile()
 
+    -- save symbol file
+    targetinfo.symbolfile = target:symbolfile()
+
     -- save sourcebatches
     targetinfo.sourcebatches = target:sourcebatches()
 

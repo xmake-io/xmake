@@ -364,16 +364,12 @@ end
 
 -- get the project file
 function project.file()
-
-    -- get it
-    return xmake._PROJECT_FILE
+    return os.projectfile()
 end
 
 -- get the project directory
 function project.directory()
-
-    -- get it
-    return xmake._PROJECT_DIR
+    return os.projectdir()
 end
 
 -- get the project info from the given name

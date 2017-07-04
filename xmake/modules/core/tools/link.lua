@@ -71,7 +71,8 @@ function nf_symbol(self, level, target)
     
     -- debug? generate *.pdb file
     local flags = ""
-    if level == "debug" then
+    local targetkind = target:get("kind")
+    if level == "debug" and (targetkind == "binary" or targetkind == "shared") then
         if target and target.symbolfile then
             flags = "-debug -pdb:" .. target:symbolfile()
         else

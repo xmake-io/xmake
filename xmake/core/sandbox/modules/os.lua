@@ -48,6 +48,8 @@ sandbox_os.nuldev       = os.nuldev
 sandbox_os.emptydir     = os.emptydir
 sandbox_os.programdir   = os.programdir
 sandbox_os.programfile  = os.programfile
+sandbox_os.projectdir   = os.projectdir
+sandbox_os.projectfile  = os.projectfile
 sandbox_os.versioninfo  = os.versioninfo
 
 -- copy file or directory

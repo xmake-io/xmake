@@ -700,16 +700,22 @@ end
 
 -- get the program directory
 function os.programdir()
-   
-    -- get it
     return xmake._PROGRAM_DIR
 end
 
 -- get the program file
 function os.programfile()
-   
-    -- get it
     return xmake._PROGRAM_FILE
+end
+
+-- get the project directory
+function os.projectdir()
+    return xmake._PROJECT_DIR
+end
+
+-- get the project file
+function os.projectfile()
+    return xmake._PROJECT_FILE
 end
 
 -- get version info
