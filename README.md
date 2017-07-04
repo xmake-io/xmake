@@ -1,6 +1,6 @@
 # A make-like build utility based on Lua 
 
-[![Backers on Open Collective](https://opencollective.com/xmake/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/xmake/sponsors/badge.svg)](#sponsors) [![Build Status](https://api.travis-ci.org/tboox/xmake.svg?branch=master)](https://travis-ci.org/tboox/xmake) [![Build status](https://ci.appveyor.com/api/projects/status/ry9oa2mxrj8hk613/branch/master?svg=true)](https://ci.appveyor.com/project/waruqi/xmake/branch/master) [![codecov](https://codecov.io/gh/tboox/xmake/branch/master/graph/badge.svg)](https://codecov.io/gh/tboox/xmake) [![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate)
+[![Build Status](https://api.travis-ci.org/tboox/xmake.svg?branch=master)](https://travis-ci.org/tboox/xmake) [![Build status](https://ci.appveyor.com/api/projects/status/ry9oa2mxrj8hk613/branch/master?svg=true)](https://ci.appveyor.com/project/waruqi/xmake/branch/master) [![codecov](https://codecov.io/gh/tboox/xmake/branch/master/graph/badge.svg)](https://codecov.io/gh/tboox/xmake) [![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate) [![Backers on Open Collective](https://opencollective.com/xmake/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/xmake/sponsors/badge.svg)](#sponsors)
 
 [![logo](http://tboox.org/static/img/xmake/logo256.png)](http://xmake.io)
 
@@ -256,19 +256,11 @@ Some projects using xmake:
 * Homepage：[tboox.org](http://www.tboox.org)
 * Community：[tboox@community](https://github.com/tboox/community/issues)
 
-
-## Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
-<a href="graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890" /></a>
-
-
 ## Backers
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/xmake#backer)]
 
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
-
 
 ## Sponsors
 
