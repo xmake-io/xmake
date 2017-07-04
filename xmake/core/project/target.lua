@@ -385,10 +385,6 @@ function target:objectfile(sourcefile)
     local objectdir = self:objectdir()
     assert(objectdir and type(objectdir) == "string")
 
-    -- make object file
-    -- full file name(not base) to avoid name-clash of object file
-    local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(path.filename(sourcefile), "object"))
-
     -- translate path
     --
     -- .e.g 
@@ -401,10 +397,11 @@ function target:objectfile(sourcefile)
     --
     -- we need replace '..' to '__' in this case
     --
-    objectfile = (path.translate(objectfile):gsub("%.%.", "__"))
+    local sourcedir = path.directory(sourcefile):gsub("%.%.", "__")
 
-    -- ok?
-    return objectfile
+    -- make object file
+    -- full file name(not base) to avoid name-clash of object file
+    return string.format("%s/%s/%s/%s", objectdir, self:name(), sourcedir, target.filename(path.filename(sourcefile), "object"))
 end
 
 -- get the object files
