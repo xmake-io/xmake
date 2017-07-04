@@ -479,7 +479,7 @@ function option.init(menu)
     end
 
     -- init the default value
-    for _, o in ipairs(option._taskmenu().options) do
+    for _, o in ipairs(table.wrap(option._taskmenu().options)) do
 
         -- the long name
         local longname = option._longname(o[2])
