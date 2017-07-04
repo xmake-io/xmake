@@ -30,17 +30,21 @@ local string    = require("base/string")
 local sandbox_os = sandbox_os or {}
 
 -- export some readonly interfaces
-sandbox_os.date     = os.date
-sandbox_os.time     = os.time
-sandbox_os.mtime    = os.mtime
-sandbox_os.mclock   = os.mclock
-sandbox_os.getenv   = os.getenv
-sandbox_os.isdir    = os.isdir
-sandbox_os.isfile   = os.isfile
-sandbox_os.exists   = os.exists
-sandbox_os.curdir   = os.curdir
-sandbox_os.tmpdir   = os.tmpdir
-sandbox_os.uuid     = os.uuid
+sandbox_os.date        = os.date
+sandbox_os.time        = os.time
+sandbox_os.mtime       = os.mtime
+sandbox_os.mclock      = os.mclock
+sandbox_os.getenv      = os.getenv
+sandbox_os.isdir       = os.isdir
+sandbox_os.isfile      = os.isfile
+sandbox_os.exists      = os.exists
+sandbox_os.curdir      = os.curdir
+sandbox_os.tmpdir      = os.tmpdir
+sandbox_os.programdir  = os.programdir
+sandbox_os.programfile = os.programfile
+sandbox_os.projectdir  = os.projectdir
+sandbox_os.projectfile = os.projectfile
+sandbox_os.uuid        = os.uuid
 
 -- match files
 function sandbox_os.files(pattern, ...)

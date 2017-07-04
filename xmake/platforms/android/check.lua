@@ -24,8 +24,8 @@
 
 -- imports
 import(".checker")
-import("detect.sdk.find_ndk_sdkvers")
-import("detect.sdk.find_ndk_toolchains")
+import("detect.sdks.find_ndk_sdkvers")
+import("detect.sdks.find_ndk_toolchains")
 
 -- check the sdk version for ndk
 function _check_ndk_sdkver(config)

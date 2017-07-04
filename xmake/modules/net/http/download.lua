@@ -24,8 +24,8 @@
 
 -- imports
 import("core.base.option")
-import("detect.tool.find_curl")
-import("detect.tool.find_wget")
+import("detect.tools.find_curl")
+import("detect.tools.find_wget")
 
 -- download url using curl
 function _curl_download(program, url, outputfile)

@@ -23,92 +23,52 @@
 --
 
 -- imports
-import("core.tool.tool")
 import("core.base.option")
-import("detect.sdk.find_xcode_dir")
-import("detect.sdk.find_xcode_sdkvers")
+import("detect.sdks.find_xcode_dir")
+import("detect.sdks.find_xcode_sdkvers")
+import("lib.detect.find_tool")
 
 -- find the given tool
 function _toolchain_check(config, toolkind, toolinfo)
 
-    -- get the tool path
-    local toolpath = config.get(toolkind)
-    if not toolpath then
+    -- get the program 
+    local program = config.get(toolkind)
+    if not program then
 
-        -- get name
-        local name = toolinfo.name
+        -- get name and attempt to get `$(env XX)`
+        local name = vformat(toolinfo.name)
+        if #name == 0 then
+            return 
+        end
 
         -- get cross
-        local cross = config.get("cross") or toolinfo.cross
+        local cross = config.get("cross") or toolinfo.cross or ""
 
-        -- get shell name from the env if not cross-compilation
-        if cross and cross:trim() == "" then
-            local shellname = os.getenv(toolkind:upper():split('-')[1])
-            if shellname and shellname:trim() ~= "" then
-                toolpath = tool.check(shellname) 
+        -- attempt to check it 
+        if not program then
+            local tool = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
+            if tool then
+                program = tool.program
             end
-        end
-
-        -- check it using the custom script
-        if not toolpath and toolinfo.check then
-
-            -- check it
-            try
-            {
-                function ()
-
-                    -- check it
-                    toolinfo.check(cross .. name)
-
-                    -- ok
-                    toolpath = cross .. name
-                end
-            }
-        end
-
-        -- get toolchains
-        local toolchains = config.get("toolchains")
-        if not toolchains then
-            local sdkdir = config.get("sdk")
-            if sdkdir then
-                toolchains = path.join(sdkdir, "bin")
-            end
-        end
-
-        -- attempt to check it from the given cross toolchains
-        if not toolpath and toolchains then
-            toolpath = tool.check(cross .. name, toolchains)
-        end
-
-        -- attempt to check it with cross prefix
-        if not toolpath then
-            toolpath = tool.check(cross .. name)
-        end
-
-        -- attempt to check it without cross prefix
-        if not toolpath then
-            toolpath = tool.check(name)
         end
 
         -- check ok?
-        if toolpath then 
-
-            -- update config
-            config.set(toolkind, toolpath) 
+        if program then 
+            config.set(toolkind, program) 
         end
 
         -- trace
         if option.get("verbose") then
-            if toolpath then
-                cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(toolpath))
+            if program then
+                cprint("checking for %s (%s) ... ${green}%s", toolinfo.description, toolkind, path.filename(program))
             else
                 cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", toolinfo.description, toolkind, name)
             end
         end
     end
 
-    -- get tool path
-    return toolpath
+    -- ok?
+    return program
 end
 
 -- check all for the given config kind

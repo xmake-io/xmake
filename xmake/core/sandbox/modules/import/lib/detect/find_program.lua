@@ -31,11 +31,14 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option    = require("base/option")
-local cache     = require("project/cache")
 local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
+local cache     = require("sandbox/modules/import/lib/detect/cache")
+
+-- globals
+local checking  = nil
 
 -- check program
 function sandbox_lib_detect_find_program._check(program, check)
@@ -123,7 +126,7 @@ end
 -- find program
 --
 -- @param name      the program name
--- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes)
+-- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes, script pathes)
 -- @param check     the check script or command 
 --
 -- @return          the program name or path
@@ -131,21 +134,26 @@ end
 -- @code
 --
 -- local program = find_program("ccache")
--- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"})
--- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
--- local program = find_program("ccache", { "/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
--- local program = find_program("ccache", { "$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
--- local program = find_program("ccache", { "$(env PATH)", function () return val("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"):match("\"(.-)\"") end})
+-- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"})
+-- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
+-- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
+-- local program = find_program("ccache", {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
+-- local program = find_program("ccache", {"$(env PATH)", function () return "/usr/local/bin" end})
 --
 -- @endcode
 --
 function sandbox_lib_detect_find_program.main(name, pathes, check)
 
-    -- get detect cache 
-    local detectcache = cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
- 
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (.e.g ccache)
+    local coroutine_running = coroutine.running()
+    if coroutine_running then
+        while checking ~= nil and checking == name do
+            coroutine.yield()
+        end
+    end
+
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get("find_program") or {}
+    local cacheinfo = cache.load("find_program") 
     local result = cacheinfo[name]
     if result ~= nil then
         return utils.ifelse(result, result, nil)
@@ -153,18 +161,19 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
 
     -- add default search pathes 
     if os.host() ~= "windows" then
-        pathes = table.join(table.wrap(pathes), "/usr/local/lib", "/usr/lib")
+        pathes = table.join(table.wrap(pathes), "/usr/local/bin", "/usr/bin")
     end
 
     -- find executable program
+    checking = utils.ifelse(coroutine_running, name, nil)
     result = sandbox_lib_detect_find_program._find(name, pathes, check) 
+    checking = nil
 
     -- cache result
     cacheinfo[name] = utils.ifelse(result, result, false)
 
     -- save cache info
-    detectcache:set("find_program", cacheinfo)
-    detectcache:flush()
+    cache.save("find_program", cacheinfo)
 
     -- trace
     if option.get("verbose") then

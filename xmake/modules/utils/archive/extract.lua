@@ -25,10 +25,10 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_file")
-import("detect.tool.find_7z")
-import("detect.tool.find_tar")
-import("detect.tool.find_gzip")
-import("detect.tool.find_unzip")
+import("detect.tools.find_7z")
+import("detect.tools.find_tar")
+import("detect.tools.find_gzip")
+import("detect.tools.find_unzip")
 
 -- extract archivefile using tar
 function _extract_using_tar(archivefile, outputdir, extension)

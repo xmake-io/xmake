@@ -23,6 +23,7 @@
 --
 
 -- load modules
+local utils     = require("base/utils")
 local string    = require("base/string")
 local sandbox   = require("sandbox/sandbox")
 
@@ -46,12 +47,14 @@ function sandbox_string.vformat(format, ...)
     local instance = sandbox.instance()
     assert(instance)
 
-    -- ignore %$(...)
-    format = format:gsub("%%%$", "__$__")
-
     -- format string if exists arguments
     local result = format
     if #{...} > 0 then
+
+        -- escape "%$", "%(", "%)", "%%" to '$', '(', ')', '%%'
+        format = format:gsub("%%([%$%(%)%%])", function (ch) return utils.ifelse(ch ~= "%", "%%" .. ch, "%%%%") end)
+
+        -- try to format it
         result = string.format(format, ...)
     end
     assert(result)
@@ -61,9 +64,6 @@ function sandbox_string.vformat(format, ...)
     if filter then
         result = filter:handle(result)
     end
-
-    -- escape to $(...)
-    result = result:gsub("__%$__", "$")
 
     -- ok?
     return result

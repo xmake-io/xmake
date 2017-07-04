@@ -4,6 +4,9 @@ import("privilege.sudo")
 -- main entry
 function main(argv)
 
+    -- check global config
+    os.exec("xmake g -c")
+
     -- generic?
     os.exec("xmake m -b")
     os.exec("xmake f -c")

@@ -90,7 +90,7 @@ function template._replace(macros, macrofiles)
     -- make all files
     local files = {}
     for _, macrofile in ipairs(table.wrap(macrofiles)) do
-        local matchfiles = os.match(macrofile)
+        local matchfiles = os.files(macrofile)
         if matchfiles then
             table.join2(files, matchfiles)
         end
@@ -114,7 +114,7 @@ function template.languages()
     local list = {}
 
     -- get the language list 
-    local languages = os.match(xmake._TEMPLATES_DIR .. "/*", true)
+    local languages = os.dirs(path.join(os.programdir(), "templates", "*"))
     if languages then
         for _, v in ipairs(languages) do
             table.insert(list, path.basename(v))
@@ -137,7 +137,7 @@ function template.templates(language)
 
     -- load all templates
     local templates = {}
-    local templatefiles = os.match(string.format("%s/%s/**/template.lua", xmake._TEMPLATES_DIR, language))
+    local templatefiles = os.files(path.join(os.programdir(), "templates", language, "**", "template.lua"))
     if templatefiles then
 
         -- load template
@@ -159,7 +159,7 @@ function template.templates(language)
     end
 
     -- sort templates
-    table.sort(templates, function(a, b) return a.description:less(b.description) end)
+    table.sort(templates, function(a, b) return a.description < b.description end)
 
     -- ok?
     return templates

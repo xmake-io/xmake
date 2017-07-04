@@ -38,8 +38,6 @@ local tool      = require("tool/tool")
 
 -- get the current tool
 function extractor:_tool()
-
-    -- get it
     return self._TOOL
 end
 
@@ -72,16 +70,12 @@ end
 
 -- get properties of the tool
 function extractor:get(name)
-
-    -- get it
-    return self:_tool().get(name)
+    return self:_tool():get(name)
 end
 
 -- extract the library file
 function extractor:extract(libraryfile, objectdir)
-
-    -- extract it
-    return sandbox.load(self:_tool().extract, libraryfile, objectdir)
+    return sandbox.load(self:_tool().extract, self:_tool(), libraryfile, objectdir)
 end
 
 -- return module

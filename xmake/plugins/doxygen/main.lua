@@ -26,7 +26,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
-import("detect.tool.find_doxygen")
+import("detect.tools.find_doxygen")
 
 -- main
 function main()

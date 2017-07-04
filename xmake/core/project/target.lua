@@ -66,26 +66,49 @@ function target.new(name, info)
 end
 
 -- get the target info
-function target:get(infoname)
+function target:get(name)
+    return self._INFO[name]
+end
 
-    -- check
-    assert(self and self._INFO and infoname)
+-- set the value to the target info
+function target:set(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        local args = ...
+        if args ~= nil then
+            self._INFO[name_or_info] = table.unique(table.join(...))
+        else
+            self._INFO[name_or_info] = nil
+        end
+    elseif type(name_or_info) == "table" and #name_or_info == 0 then
+        for name, info in pairs(name_or_info) do
+            self:set(name, info)
+        end
+    end
+end
 
-    -- get it
-    return self._INFO[infoname]
+-- add the value to the target info
+function target:add(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        self._INFO[name_or_info] = table.unique(table.join2(table.wrap(self._INFO[name_or_info]), ...))
+    elseif type(name_or_info) == "table" and #name_or_info == 0 then
+        for name, info in pairs(name_or_info) do
+            self:add(name, info)
+        end
+    end
+end
+
+-- dump this target
+function target:dump()
+    table.dump(self._INFO)
 end
 
 -- get the target name
 function target:name()
-
-    -- get it
     return self._NAME
 end
 
 -- get the base name of target file
 function target:basename()
-
-    -- get it
     return self:get("basename")
 end
 
@@ -114,14 +137,14 @@ end
 function target:linkcmd(objectfiles)
  
     -- make command
-    return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), self)
+    return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), {target = self})
 end
 
 -- make link flags for the given target
 function target:linkflags()
  
     -- make flags
-    return self:linker():linkflags(self)
+    return self:linker():linkflags({target = self})
 end
 
 -- get target deps
@@ -362,10 +385,6 @@ function target:objectfile(sourcefile)
     local objectdir = self:objectdir()
     assert(objectdir and type(objectdir) == "string")
 
-    -- make object file
-    -- full file name(not base) to avoid name-clash of object file
-    local objectfile = string.format("%s/%s/%s/%s", objectdir, self:name(), path.directory(sourcefile), target.filename(path.filename(sourcefile), "object"))
-
     -- translate path
     --
     -- .e.g 
@@ -378,10 +397,11 @@ function target:objectfile(sourcefile)
     --
     -- we need replace '..' to '__' in this case
     --
-    objectfile = (path.translate(objectfile):gsub("%.%.", "__"))
+    local sourcedir = path.directory(sourcefile):gsub("%.%.", "__")
 
-    -- ok?
-    return objectfile
+    -- make object file
+    -- full file name(not base) to avoid name-clash of object file
+    return string.format("%s/%s/%s/%s", objectdir, self:name(), sourcedir, target.filename(path.filename(sourcefile), "object"))
 end
 
 -- get the object files

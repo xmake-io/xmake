@@ -103,7 +103,7 @@ function sandbox_import._loadfile(filepath, instance)
         if not result then
             return nil, errors
         end
-        
+
         -- ok
         return result, instance:script()
     end
@@ -128,19 +128,16 @@ function sandbox_import._find(dir, name)
     name = sandbox_import._modulepath(name)
     assert(name)
 
-    -- load the single module?
-    local module = nil
-    if os.isfile(path.join(dir, name .. ".lua")) then
-        return true
+    -- get module key
+    local key = path.join(dir, name)
 
-    -- load modules
-    elseif os.isdir(path.join(dir, name)) then
-        return true
+    -- the single module?
+    if os.isfile(key .. ".lua") then
+        return path.absolute(key)
+    -- modules?
+    elseif os.isdir(key) then
+        return path.absolute(key)
     end
-
-    -- not found
-    return false
-
 end
 
 -- load module
@@ -240,6 +237,11 @@ end
 
 -- import module
 --
+-- @param name      the module name, .e.g core.platform
+-- @param args      the arguments, .e.g {alias = "", rootdir = "", inherit = false, anonymous = false, nocache = false}
+--
+-- @return          the module instance
+--
 -- .e.g 
 --
 -- import("core.platform")
@@ -260,7 +262,7 @@ end
 -- => inherit the all interfaces of core.platform to the current scope
 --
 -- local test = import("test", {rootdir = "/tmp/xxx", anonymous = true})
--- => only return imported module and do not cache it
+-- => only return imported module
 --
 -- @note the polymiorphism is not supported for import.inherit mode now.
 --
@@ -271,6 +273,10 @@ function sandbox_import.import(name, args)
 
     -- the arguments
     args = args or {}
+
+    -- init module cache
+    sandbox_import._MODULES = sandbox_import._MODULES or {}
+    local modules = sandbox_import._MODULES
 
     -- get the parent scope
     local scope_parent = getfenv(2)
@@ -285,12 +291,6 @@ function sandbox_import.import(name, args)
     -- the imported name
     local imported_name = args.alias or modulename
 
-    -- this module has been imported?
-    local module = rawget(scope_parent, imported_name)
-    if module ~= nil then
-        return module
-    end
-
     -- get the current sandbox instance
     local instance = sandbox.instance()
     assert(instance)
@@ -300,7 +300,7 @@ function sandbox_import.import(name, args)
     assert(rootdir)
 
     -- the sandbox modules directory
-    local modules_sandbox_dir = path.join(xmake._CORE_DIR, "sandbox/modules/import")
+    local modules_sandbox_dir = path.join(os.programdir(), "core/sandbox/modules/import")
 
     -- the extension modules directory
     local modules_extension_dir = path.join(os.programdir(), "modules")
@@ -311,18 +311,39 @@ function sandbox_import.import(name, args)
     -- init module directories
     local modules_directories = 
     {
-        rootdir                                                 -- load module from the given root directory first 
-    ,   path.join(global.directory(), "modules")                -- load module from the user global modules directory
-    ,   path.join(xmake._PROGRAM_DIR, "modules")                -- load module from the extension modules directory
-    ,   path.join(xmake._CORE_DIR, "sandbox/modules/import")    -- load module from the sandbox core modules directory
+        rootdir                                                     -- load module from the given root directory first 
+    ,   path.join(global.directory(), "modules")                    -- load module from the user global modules directory
+    ,   path.join(os.programdir(), "modules")                       -- load module from the extension modules directory
+    ,   path.join(os.programdir(), "core/sandbox/modules/import")   -- load module from the sandbox core modules directory
     }
 
     -- load module
-    local module = nil
     local errors = nil
+    local module = nil
+    local modulekey = nil
     for idx, moduledir in ipairs(modules_directories) do
-        if sandbox_import._find(moduledir, name) then
-            module, errors = sandbox_import._load(moduledir, name, utils.ifelse(idx < #modules_directories, instance, nil)) -- last modules need not fork sandbox
+
+        -- find module and key
+        modulekey = sandbox_import._find(moduledir, name) 
+        if modulekey then
+
+            -- load it from cache first
+            local moduleinfo = modules[modulekey]
+            if moduleinfo and not args.nocache and not args.inherit then
+                module = moduleinfo[1]
+                errors = moduleinfo[2]
+            else
+                -- load it from the script file
+                module, errors = sandbox_import._load(moduledir, name, utils.ifelse(idx < #modules_directories, instance, nil)) -- last modules need not fork sandbox
+
+                -- cache this module
+                if not args.nocache then
+                    modules[modulekey] = {module, errors}
+                end
+            end
+
+            -- end
+            break
         end
     end
 

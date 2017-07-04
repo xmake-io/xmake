@@ -99,7 +99,6 @@ tb_int_t xm_winreg_query(lua_State* lua);
 #endif
 
 // the string functions
-tb_int_t xm_string_strcmp(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
 
@@ -172,8 +171,7 @@ static luaL_Reg const g_path_functions[] =
 // the string functions
 static luaL_Reg const g_string_functions[] = 
 {
-    { "strcmp",         xm_string_strcmp        }
-,   { "endswith",       xm_string_endswith      }
+    { "endswith",       xm_string_endswith      }
 ,   { "startswith",     xm_string_startswith    }
 ,   { tb_null,          tb_null                 }
 };

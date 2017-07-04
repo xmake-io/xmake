@@ -28,8 +28,8 @@ import("core.project.config")
 import("core.project.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.project.cache")
-import("lib.detect.clear_cache")
+import("core.project.cache", {nocache = true})
+import("lib.detect.cache", {alias = "detectcache"})
 import("scanner")
 import("configheader")
 
@@ -234,7 +234,7 @@ function main()
         cache.set("rebuild", true)
 
         -- clear detect cache
-        clear_cache()
+        detectcache.clear()
     end
 
     -- merge the cached configure
@@ -277,10 +277,8 @@ function main()
         configheader.make()
     end
 
-    -- trace
-    if recheck or option.get("verbose") then
-
-        -- dump it
+    -- dump config
+    if option.get("verbose") then
         config.dump()
     end
 

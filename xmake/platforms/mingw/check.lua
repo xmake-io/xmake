@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("detect.sdk.find_cross_toolchains")
+import("detect.sdks.find_cross_toolchains")
 import(".checker")
 
 -- get toolchains
@@ -53,16 +53,16 @@ function _toolchains(config)
 
     -- make toolchains
     local toolchains = {}
-    checker.toolchain_insert(toolchains, "cc",   cross, "gcc",       "the c compiler") 
-    checker.toolchain_insert(toolchains, "cxx",  cross, "g++",       "the c++ compiler") 
-    checker.toolchain_insert(toolchains, "cxx",  cross, "gcc",       "the c++ compiler") 
-    checker.toolchain_insert(toolchains, "as",   cross, "gcc",       "the assember")
-    checker.toolchain_insert(toolchains, "ld",   cross, "g++",       "the linker") 
-    checker.toolchain_insert(toolchains, "ld",   cross, "gcc",       "the linker") 
-    checker.toolchain_insert(toolchains, "ar",   cross, "ar",        "the static library archiver") 
-    checker.toolchain_insert(toolchains, "ex",   cross, "ar",        "the static library extractor") 
-    checker.toolchain_insert(toolchains, "sh",   cross, "g++",       "the shared library linker") 
-    checker.toolchain_insert(toolchains, "sh",   cross, "gcc",       "the shared library linker") 
+    checker.toolchain_insert(toolchains, "cc",  cross, "gcc", "the c compiler")
+    checker.toolchain_insert(toolchains, "cxx", cross, "g++", "the c++ compiler")
+    checker.toolchain_insert(toolchains, "cxx", cross, "gcc", "the c++ compiler")
+    checker.toolchain_insert(toolchains, "as",  cross, "gcc", "the assember")
+    checker.toolchain_insert(toolchains, "ld",  cross, "g++", "the linker")
+    checker.toolchain_insert(toolchains, "ld",  cross, "gcc", "the linker")
+    checker.toolchain_insert(toolchains, "ar",  cross, "ar",  "the static library archiver")
+    checker.toolchain_insert(toolchains, "ex",  cross, "ar",  "the static library extractor")
+    checker.toolchain_insert(toolchains, "sh",  cross, "g++", "the shared library linker")
+    checker.toolchain_insert(toolchains, "sh",  cross, "gcc", "the shared library linker")
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains

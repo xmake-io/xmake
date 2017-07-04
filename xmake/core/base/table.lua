@@ -315,9 +315,6 @@ end
 -- remove repeat from the given array
 function table.unique(array)
 
-    -- check
-    assert(array)
-
     -- remove repeat
     if type(array) == "table" then
 

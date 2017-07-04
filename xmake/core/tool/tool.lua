@@ -13,7 +13,7 @@
 -- Unless required by applicable law or agreed to in writing, software
 -- distributed under the License is distributed on an "AS IS" BASIS,
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
+-- See the License for the specific tool governing permissions and
 -- limitations under the License.
 -- 
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
@@ -24,202 +24,75 @@
 
 -- define module
 local tool      = tool or {}
+local _instance = _instance or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local utils     = require("base/utils")
-local table     = require("base/table")
-local string    = require("base/string")
-local filter    = require("base/filter")
-local config    = require("project/config")
-local global    = require("project/global")
-local sandbox   = require("sandbox/sandbox")
-local platform  = require("platform/platform")
+local os            = require("base/os")
+local path          = require("base/path")
+local utils         = require("base/utils")
+local table         = require("base/table")
+local string        = require("base/string")
+local sandbox       = require("sandbox/sandbox")
+local platform      = require("platform/platform")
+local import        = require("sandbox/modules/import")
 
--- the directories of tools
-function tool._directories(name)
+-- new an instance
+function _instance.new(kind, name, program)
 
-    -- the directories
-    return  {   path.join(config.directory(), "tools")
-            ,   path.join(global.directory(), "tools")
-            ,   path.join(xmake._PROGRAM_DIR, "tools")
-            }
-end
-
--- match the tool name
-function tool._match(name, toolname)
-
-    -- match full? ok
-    if name == toolname then return 100 end
- 
-    -- match the last word? ok
-    if name:find(toolname .. "$") then return 80 end
-
-    -- contains it? ok
-    if name:find(toolname, 1, true) then return 30 end
-
-    -- not matched
-    return 0
-end
-
--- find tool from the given root directory and name
-function tool._find(root, name)
-
-    -- attempt to get it directly first
-    local filepath = string.format("%s/%s.lua", root, name)
-    if os.isfile(filepath) then
-        return filepath
+    -- import "core.tools.xxx"
+    local toolclass = nil
+    if os.isfile(path.join(os.programdir(), "modules", "core", "tools", name .. ".lua")) then
+        toolclass = import("core.tools." .. name)
     end
 
-    -- make the lower name
-    name = name:lower()
-
-    -- remove arguments: -xxx or --xxx
-    name = (name:gsub("%s%-+%w+", " "))
-
-    -- get the last name by ' ': xxx xxx toolname
-    local names = name:split("%s")
-    if #names > 0 then
-        name = names[#names]
+    -- not found?
+    if not toolclass then
+        return nil, string.format("cannot import \"core.tool.%s\" module!", name)
     end
 
-    -- get the last name by '-': xxx-xxx-toolname
-    local names = name:split("%-")
-    if #names > 0 then
-        name = names[#names]
-    end
+    -- new an instance
+    local instance = table.inherit(_instance, toolclass)
 
-    -- remove suffix: ".xxx"
-    name = (name:gsub("%.%w+", ""))
+    -- save name, kind and program
+    instance._NAME    = name
+    instance._KIND    = kind
+    instance._PROGRAM = program
 
-    -- get all tool files
-    local file_ok = nil
-    local score_maxn = 0
-    local files = os.match(string.format("%s/*.lua", root))
-    for _, file in ipairs(files) do
-
-        -- the tool name
-        local toolname = path.basename(file)
-
-        -- found it?
-        if toolname and toolname ~= "tool" then
-            
-            -- match score
-            local score = tool._match(name, toolname:lower()) 
-
-            -- ok?
-            if score >= 100 then return file end
-    
-            -- select the file with the max score
-            if score > score_maxn then
-                file_ok = file
-                score_maxn = score
-            end
-        end
-    end
-
-    -- ok?
-    return file_ok
-end
-
--- load the given tool from the given shell name
-function tool._load(shellname, kind)
-
-    -- calculate the cache key
-    local key = shellname .. (kind or "")
-
-    -- get it directly from cache dirst
-    tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[key] then
-        return tool._TOOLS[key]
-    end
-
-    -- find the tool script path
-    local toolpath = nil
-    local toolname = path.filename(shellname)
-    for _, dir in ipairs(tool._directories()) do
-
-        -- find this directory
-        toolpath = tool._find(dir, toolname)
-        if toolpath then
-            break
-        end
-
-    end
-
-    -- not exists?
-    if not toolpath or not os.isfile(toolpath) then
-        return nil, string.format("%s not found!", shellname)
-    end
-
-    -- load script
-    local script, errors = loadfile(toolpath)
-    if script then
-
-        -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(script, nil, path.directory(toolpath))
-        if not instance then
-            return nil, errors
-        end
-
-        -- import the tool module
-        local module, errors = instance:import()
-        if not module then
-            return nil, errors
-        end
-
-        -- init the tool module
-        if module.init then
-            module.init(shellname, kind)
-        end
-    
-        -- save tool to the cache
-        tool._TOOLS[key] = module
-
-        -- ok?
-        return module
-    end
-
-    -- failed
-    return nil, errors
-end
-
--- check the shellname
-function tool._check(shellname, check)
-
-    -- uses the passed checker
-    if check ~= nil then
-
-        -- check it
-        local ok, errors = sandbox.load(check, shellname) 
+    -- init instance
+    if instance.init then
+        local ok, errors = sandbox.load(instance.init, instance)
         if not ok then
-            utils.verror(errors)
+            return nil, errors
         end
-
-        -- ok?
-        return ok
-    end
- 
-    -- load the tool module
-    local module, errors = tool._load(shellname)
-    if not module then
-        utils.verror(errors)
     end
 
-    -- no checker? attempt to run it directly
-    if not module or not module.check then
-        return 0 == os.exec(shellname, os.nuldev(), os.nuldev())
-    end
+    -- ok
+    return instance
+end
 
-    -- check it
-    local ok, errors = sandbox.load(module.check) 
-    if not ok then
-        utils.verror(errors)
-    end
+-- get the tool name
+function _instance:name()
+    return self._NAME
+end
 
-    -- ok?
-    return ok
+-- get the tool kind
+function _instance:kind()
+    return self._KIND
+end
+
+-- get the tool program
+function _instance:program()
+    return self._PROGRAM
+end
+
+-- has the given flag?
+function _instance:has_flags(flag)
+
+    -- import has_flags()
+    self._has_flags = self._has_flags or import("lib.detect.has_flags")
+
+    -- has flags?
+    return self._has_flags(self:name(), flag, {program = self:program()})
 end
 
 -- load the given tool from the given kind
@@ -230,51 +103,44 @@ end
 --
 function tool.load(kind)
 
-    -- get the shell name 
-    local shellname = platform.tool(kind)
-    if not shellname then
+    -- get it directly from cache dirst
+    tool._TOOLS = tool._TOOLS or {}
+    if tool._TOOLS[kind] then
+        return tool._TOOLS[kind]
+    end
+
+    -- get the tool program
+    local program = platform.tool(kind)
+    if not program then
         return nil, string.format("cannot get tool for %s", kind)
     end
-   
-    -- load it
-    return tool._load(shellname, kind)
-end
 
--- check the tool and return the absolute path if exists
-function tool.check(shellname, dirs, check)
+    -- import find_toolname()
+    tool._find_toolname = tool._find_toolname or import("lib.detect.find_toolname")
 
-    -- check
-    assert(shellname)
-
-    -- attempt to get result from cache first
-    tool._CHECKINFO = tool._CHECKINFO or {}
-    local result = tool._CHECKINFO[shellname]
-    if result then
-        return result
+    -- get the tool name from the program
+    local ok, name_or_errors = sandbox.load(tool._find_toolname, program)
+    if not ok then
+        return nil, name_or_errors
     end
 
-    -- attempt to check it directly 
-    if tool._check(shellname, check) then
-        tool._CHECKINFO[shellname] = shellname
-        return shellname
+    -- get name
+    local name = name_or_errors
+    if not name then
+        return nil, string.format("cannot find tool name for %s", program)
     end
 
-    -- attempt to check it from the given directories
-    if not path.is_absolute(shellname) then
-        for _, dir in ipairs(table.wrap(dirs)) do
-
-            -- the tool path
-            local toolpath = path.join(dir, shellname)
-            if os.isexec(toolpath) then
-            
-                -- check it
-                if tool._check(toolpath, check) then
-                    tool._CHECKINFO[shellname] = toolpath
-                    return toolpath
-                end
-            end
-        end
+    -- new an instance
+    local instance, errors = _instance.new(kind, name, program)
+    if not instance then
+        return nil, errors
     end
+
+    -- save instance to the cache
+    tool._TOOLS[kind] = instance
+
+    -- ok
+    return instance
 end
 
 -- return module

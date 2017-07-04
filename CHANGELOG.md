@@ -6,10 +6,12 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
 * [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
-* Add `find_program`, `find_file` and `find_library` module interfaces.
+* Add `find_program`, `find_file`, `find_library`, `find_tool` and `find_package` module interfaces.
 * Add `net.*` and `devel.*` extension modules
 * Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * Support to compile the microsoft resource file (.rc)
+* Add `has_flags` module interfaces.
+* Add `option.on_check`, `option.after_check` and `option.before_check` api
 
 ### Changes
 
@@ -23,12 +25,16 @@
 * Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
 * improve builtin-variables to support to get the value envirnoment and registry
 * Improve to detect vstudio sdk and cross toolchains envirnoment
+* [#71](https://github.com/tboox/xmake/issues/71): Improve to detect compiler and linker from env vars
+* Improve the option detection (cache and multi-jobs) and increase 70% speed
+* [#129](https://github.com/tboox/xmake/issues/129): Check link deps and cache the target file
 
 ### Bugs fixed
 
 * Fix `try-catch-finally`
 * Fix interpreter bug when parsing multi-level subdirs
 * [#115](https://github.com/tboox/xmake/pull/115): Fix the path problem of the install script `get.sh`
+* Fix cache bug for import()
 
 ## v2.1.4
 
@@ -304,10 +310,12 @@
 
 * [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
 * [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
-* 添加`find_program`, `find_file` 和 `find_library` 等模块接口
+* 添加`find_program`, `find_file`, `find_library`, `find_tool`和`find_package` 等模块接口
 * 添加`net.*`和`devel.*`扩展模块
 * 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * 增加对微软.rc资源文件的编译支持，当在windows上编译时，可以增加资源文件了
+* 增加`has_flags`模块接口
+* 添加`option.on_check`, `option.after_check` 和 `option.before_check` 接口
 
 ### 改进
 
@@ -321,12 +329,16 @@
 * 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("iphoneos|arm*", function (target) end)`
 * 改进内置变量，支持环境变量和注册表数据的获取
 * 改进vstudio环境和交叉工具链的探测
+* [#71](https://github.com/tboox/xmake/issues/71): 改进从环境变量中探测链接器和编译器
+* 改进option选项检测，通过多任务检测，提升70%的检测速度
+* [#129](https://github.com/tboox/xmake/issues/129): 检测链接依赖，如果源文件没有改变，就不必重新链接目标文件了
 
 ### Bugs修复
 
 * 修复`try-catch-finally`
 * 修复解释器bug，解决当加载多级子目录时，根域属性设置不对
 * [#115](https://github.com/tboox/xmake/pull/115): 修复安装脚本`get.sh`的路径问题
+* 修复`import()`导入接口的缓存问题
 
 ## v2.1.4
 

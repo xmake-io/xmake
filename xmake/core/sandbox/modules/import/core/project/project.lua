@@ -26,10 +26,12 @@
 local sandbox_core_project = sandbox_core_project or {}
 
 -- load modules
-local table     = require("base/table")
-local config    = require("project/config")
-local project   = require("project/project")
-local raise     = require("sandbox/modules/raise")
+local table       = require("base/table")
+local config      = require("project/config")
+local project     = require("project/project")
+local sandbox     = require("sandbox/sandbox")
+local raise       = require("sandbox/modules/raise")
+local environment = require("platform/environment")
 
 -- load project
 function sandbox_core_project.load()
@@ -44,8 +46,36 @@ end
 -- check project options
 function sandbox_core_project.check(force)
 
-    -- check it
-    local ok, errors = project.check(force)
+    -- enter the project directory
+    local ok, errors = os.cd(project.directory())
+    if not ok then
+        raise(errors) 
+    end
+
+    -- load the options from the the project file
+    local options, errors = project.options(true)
+    if not options then
+        raise(errors)
+    end
+
+    -- get sandbox instance
+    local instance = sandbox.instance()
+    assert(instance)
+
+    -- enter toolchains environment
+    environment.enter("toolchains")
+
+    -- check all options
+    ok, errors = process.runjobs(instance:fork(function (index) options[index]:check(force) end):script(), #options, 4)
+    if not ok then
+        raise(errors)
+    end
+
+    -- leave toolchains environment
+    environment.leave("toolchains")
+ 
+    -- leave the project directory
+    ok, errors = os.cd("-")
     if not ok then
         raise(errors)
     end

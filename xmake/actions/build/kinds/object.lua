@@ -24,11 +24,10 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.tool")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.config")
-import("detect.tool.find_ccache")
+import("detect.tools.find_ccache")
 
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
@@ -75,7 +74,7 @@ function _build_from_static(target, sourcefile, objectfile, percent)
 end
 
 -- build object
-function _build_object(target, buildinfo, index, sourcebatch)
+function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- get the object and source with the given index
     local sourcefile = sourcebatch.sourcefiles[index]
@@ -141,14 +140,11 @@ function _build_object(target, buildinfo, index, sourcebatch)
         return 
     end
 
+    -- the object files are modified
+    buildinfo.objects_modified = true
+
     -- is verbose?
     local verbose = option.get("verbose")
-
-    -- get ccache
-    local ccache = nil
-    if config.get("ccache") then
-        ccache = find_ccache()
-    end
 
     -- trace percent info
     if verbose then
@@ -159,15 +155,15 @@ function _build_object(target, buildinfo, index, sourcebatch)
 
     -- trace verbose info
     if verbose then
-        print(compiler.compcmd(sourcefile, objectfile, target))
+        print(compiler.compcmd(sourcefile, objectfile, {target = target}))
     end
 
     -- complie it 
-    compiler.compile(sourcefile, objectfile, incdepfile, target)
+    compiler.compile(sourcefile, objectfile, {incdepfiles = incdepfile, target = target})
 end
 
 -- build each objects from the given source batch
-function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
+function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
 
     -- run build jobs for each source file 
     local curdir = os.curdir()
@@ -177,7 +173,7 @@ function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
         os.cd(curdir)
 
         -- build object
-        _build_object(target, buildinfo, index, sourcebatch)
+        _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     end, #sourcebatch.sourcefiles, jobs)
 
@@ -186,7 +182,7 @@ function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
 end
 
 -- compile source files to single object at the same time
-function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
+function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
 
     -- is verbose?
     local verbose = option.get("verbose")
@@ -195,12 +191,6 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
     local sourcefiles = sourcebatch.sourcefiles
     local objectfiles = sourcebatch.objectfiles
     local incdepfiles = sourcebatch.incdepfiles
-
-    -- get ccache
-    local ccache = nil
-    if config.get("ccache") then
-        ccache = find_ccache()
-    end
 
     -- trace percent info
     for index, sourcefile in ipairs(sourcefiles) do
@@ -218,11 +208,11 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
 
     -- trace verbose info
     if verbose then
-        print(compiler.compcmd(sourcefiles, objectfiles, target, sourcekind))
+        print(compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind}))
     end
 
     -- complie them
-    compiler.compile(sourcefiles, objectfiles, incdepfiles, target, sourcekind)
+    compiler.compile(sourcefiles, objectfiles, {incdepfiles = incdepfiles, target = target, sourcekind = sourcekind})
 
     -- update object index
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
@@ -238,6 +228,12 @@ function build(target, buildinfo)
     -- get the max job count
     local jobs = tonumber(option.get("jobs") or "4")
 
+    -- get ccache
+    local ccache = nil
+    if config.get("ccache") then
+        ccache = find_ccache()
+    end
+
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
 
@@ -245,12 +241,12 @@ function build(target, buildinfo)
         if type(sourcebatch.objectfiles) == "string" then
         
             -- build single object
-            _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
+            _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
 
         else
 
             -- build each objects
-            _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
+            _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
         end
     end
 end

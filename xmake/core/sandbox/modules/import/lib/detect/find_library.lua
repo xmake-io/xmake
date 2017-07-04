@@ -31,13 +31,9 @@ local path              = require("base/path")
 local utils             = require("base/utils")
 local table             = require("base/table")
 local target            = require("project/target")
-local config            = require("project/config")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
-
--- import sandbox modules
-import("lib.detect.find_file")
-import("detect.tool.find_pkg_config")
+local find_file         = import("lib.detect.find_file")
 
 -- get link name from the file name
 function sandbox_lib_detect_find_library._link(filename)
@@ -57,64 +53,30 @@ end
 -- find library 
 --
 -- @param names     the library names
--- @param pathes    the library pathes
--- @param kinds     the library kinds, .e.g {"static", "shared"}
+-- @param pathes    the search pathes
+-- @param opt       the options, .e.g {kind = "static/shared", suffixes = {"/aa", "/bb"}}
 --
 -- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a"}
 --
 -- @code 
 --
--- local library = find_library("crypto")
 -- local library = find_library({"crypto", "cryp*"}, {"/usr/lib", "/usr/local/lib"})
+-- local library = find_library(crypto, {"/usr/lib", "/usr/local/lib"}, {kind = "static"})
 -- 
 -- @endcode
 --
-function sandbox_lib_detect_find_library.main(names, paths, kinds)
+function sandbox_lib_detect_find_library.main(names, pathes, opt)
 
-    -- init pathes
-    pathes = table.wrap(pathes)
+    -- init options
+    opt = opt or {}
 
     -- init kinds
-    kinds = kinds or {"static", "shared"}
-
-    -- get current platform
-    local plat = config.get("plat") or os.host()
-
-    -- get current architecture
-    local arch = config.get("arch") or os.arch()
-
-    -- attempt to add search pathes from pkg-config
-    local pkg_config = find_pkg_config()
-    if pkg_config then
-        for _, name in ipairs(table.wrap(names)) do
-
-            -- attempt to get -L/xxx/dir
-            local ok, libs_only_L = os.iorunv(pkg_config, {"--libs-only-L", name})
-            if not ok and not name:startswith("lib") then 
-                ok, libs_only_L = os.iorunv(pkg_config, {"--libs-only-L", "lib" .. name})
-            end
-
-            -- add linkdir to pathes
-            if libs_only_L then
-                local linkdir = (libs_only_L:match("%-L(.+)") or ""):trim()
-                if os.isdir(linkdir) then
-                    table.insert(pathes, linkdir)
-                    break
-                end
-            end
-        end
-    end
-
-    -- add default search pathes on pc host
-    if plat == "macosx" or (plat == "linux" and arch == os.arch()) then
-        table.insert(pathes, "/usr/local/lib")
-        table.insert(pathes, "/usr/lib")
-    end
+    kinds = opt.kind or {"static", "shared"}
 
     -- find library file from the given pathes
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
-            local filepath = find_file(target.filename(name, kind), pathes)
+            local filepath = find_file(target.filename(name, kind), pathes, opt)
             if filepath then
                 local filename = path.filename(filepath)
                 return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = sandbox_lib_detect_find_library._link(filename)}
