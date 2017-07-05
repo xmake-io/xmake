@@ -28,14 +28,14 @@ import("lib.detect.find_tool")
 -- get all features of the current tool
 --
 -- @param name      the tool name
--- @param opt       the argument options, .e.g {program = "", flags = {}, toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+-- @param opt       the argument options, .e.g {program = "", flags = {}}
 --
 -- @return          the features dictionary
 --
 -- @code
 -- local features = features("clang")
 -- local features = features("clang", {flags = "-O0", program = "xcrun -sdk macosx clang"})
--- local features = features("clang", {flags = {"-g", "-O0"}, toolkind = "cxx"})
+-- local features = features("clang", {flags = {"-g", "-O0"}})
 -- @endcode
 --
 function main(name, opt)
@@ -56,7 +56,7 @@ function main(name, opt)
     opt.programver = tool.version
 
     -- init cache and key
-    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. table.concat(table.wrap(opt.flags), ",")
+    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. table.concat(table.wrap(opt.flags), ",")
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
     

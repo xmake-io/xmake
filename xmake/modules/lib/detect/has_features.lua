@@ -30,14 +30,14 @@ import("lib.detect.features", {alias = "get_features"})
 --
 -- @param name      the tool name
 -- @param features  the features
--- @param opt       the argument options, .e.g {verbose = false, flags = {}, program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+-- @param opt       the argument options, .e.g {verbose = false, flags = {}, program = ""}}
 --
 -- @return          the supported features or nil
 --
 -- @code
 -- local features = has_features("clang", "cxx_constexpr")
 -- local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = {"-g", "-O0"}, program = "xcrun -sdk macosx clang"})
--- local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = "-g", toolkind = "cxx"})
+-- local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = "-g"})
 -- @endcode
 --
 function main(name, features, opt)
