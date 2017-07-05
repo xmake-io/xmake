@@ -35,8 +35,11 @@ function _enter(name)
         return 
     end
 
+    -- get arch
+    local arch = config.get("arch") or global.get("arch") or ""
+
     -- get vs environment for the current arch
-    local vsenv = vcvarsall[config.get("arch") or ""] or {}
+    local vsenv = vcvarsall[arch] or {}
 
     -- get the pathes for the vs environment
     local old = nil
