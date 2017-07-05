@@ -135,6 +135,9 @@ function build(targetname)
     -- clear finished states
     _g.finished = {}
 
+    -- clear modified states
+    _g.modified = {}
+
     -- init target index
     _g.targetindex = 0
 

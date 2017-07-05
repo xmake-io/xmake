@@ -34,9 +34,18 @@ function _build_from_objects(target, buildinfo)
     -- build objects
     object.build(target, buildinfo)
 
-    -- the object files are not modified?
-    if not buildinfo.objects_modified then
-        return 
+    -- this target and it's deps are not modified?
+    local modified = buildinfo.modified[target:name()]
+    if not modified then
+        for _, depname in ipairs(target:get("deps")) do
+            modified = buildinfo.modified[depname]
+            if modified then
+                break
+            end
+        end
+        if not modified then
+            return 
+        end
     end
 
     -- expand object files with *.o/obj
