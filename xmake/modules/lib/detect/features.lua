@@ -19,21 +19,35 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_flags.lua
+-- @file        features.lua
 --
 
 -- imports
-import("core.base.option")
 import("lib.detect.find_tool")
 
--- has this flag?
-function _has_flag(name, flag, opt)
+-- get all features of the current tool
+--
+-- @param name      the tool name
+-- @param opt       the argument options, .e.g {program = "", flags = {}, toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+--
+-- @return          the features dictionary
+--
+-- @code
+-- local features = features("clang")
+-- local features = features("clang", {flags = "-O0", program = "xcrun -sdk macosx clang"})
+-- local features = features("clang", {flags = {"-g", "-O0"}, toolkind = "cxx"})
+-- @endcode
+--
+function main(name, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- find tool program and version first
     opt.version = true
     local tool = find_tool(name, opt)
     if not tool then
-        return false
+        return {}
     end
 
     -- init tool
@@ -42,7 +56,7 @@ function _has_flag(name, flag, opt)
     opt.programver = tool.version
 
     -- init cache and key
-    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. flag
+    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. table.concat(table.wrap(opt.flags), ",")
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
     
@@ -62,56 +76,20 @@ function _has_flag(name, flag, opt)
 
     -- detect.tools.xxx.has_flag(flag, opt)?
     _g._checking = ifelse(coroutine_running, key, nil)
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "has_flag.lua")) then
-        local hasflag = import("detect.tools." .. tool.name .. ".has_flag")
-        if hasflag then
-            result = hasflag(flag, opt)
+    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "features.lua")) then
+        local features = import("detect.tools." .. tool.name .. ".features")
+        if features then
+            result = features(opt)
         end
-    else
-        result = try { function () os.runv(tool.program, {flag}); return true end }
     end
     _g._checking = nil
 
-    -- trace
-    if option.get("verbose") or opt.verbose then
-        cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), flag, ifelse(result, "${green}ok", "${red}no"))
-    end
+    -- no features?
+    result = result or {}
 
     -- save result to cache
-    results[key] = ifelse(result, result, false)
+    results[key] = result
 
     -- ok?
     return result
-end
-
--- has the given flags for the current tool?
---
--- @param name      the tool name
--- @param flags     the flags
--- @param opt       the argument options, .e.g {verbose = false, program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
---
--- @return          the supported flags or nil
---
--- @code
--- local flags = has_flags("clang", "-g")
--- local flags = has_flags("clang", {"-g", "-O0"}, {program = "xcrun -sdk macosx clang"})
--- local flags = has_flags("clang", "-g", {toolkind = "cxx"})
--- @endcode
---
-function main(name, flags, opt)
-
-    -- init options
-    opt = opt or {}
-
-    -- has all flags?
-    local results = nil
-    for _, flag in ipairs(flags) do
-        if _has_flag(name, flag, opt) then
-            results = results or {}
-            table.insert(results, flag)
-        end
-    end
-
-    -- ok?
-    return results
 end
