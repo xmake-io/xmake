@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_csnippets.lua
+-- @file        check_cxsnippets.lua
 --
 
 -- imports
@@ -113,7 +113,7 @@ function _sourcecode(snippets, opt)
     return sourcecode
 end
 
--- has the given c snippets?
+-- check the given c snippets?
 --
 -- @param snippets  the snippets
 -- @param opt       the argument options
@@ -130,8 +130,8 @@ end
 -- @return          true or false
 --
 -- @code
--- local ok = has_csnippets("void test() {}")
--- local ok = has_csnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok = check_cxsnippets("void test() {}")
+-- local ok = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 -- @endcode
 --
 function main(snippets, opt)

@@ -58,8 +58,8 @@ end
 -- check option for c/c++
 function option:_cx_check()
 
-    -- import has_cxsnippets()
-    self._has_cxsnippets = self._has_cxsnippets or import("lib.detect.has_cxsnippets")
+    -- import check_cxsnippets()
+    self._check_cxsnippets = self._check_cxsnippets or import("lib.detect.check_cxsnippets")
 
     -- check for c and c++
     for _, kind in ipairs({"c", "cxx"}) do
@@ -81,7 +81,7 @@ function option:_cx_check()
             end
 
             -- check it
-            local ok, results_or_errors = sandbox.load(self._has_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
+            local ok, results_or_errors = sandbox.load(self._check_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
             if not ok then
                 return false, results_or_errors
             end
