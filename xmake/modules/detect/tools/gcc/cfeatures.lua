@@ -31,8 +31,17 @@ end
 -- get features 
 function main()
 
-    -- static_assert()
-    _set("c_static_assert", "defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201000L")
+    -- init conditions
+    local gcc_minver = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 304"
+    local gcc46_c11  = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 406 && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201000L"
+    local gcc34_c99  = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 304 && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L"
+    local gcc_c90    = gcc_minver
+
+    -- set features
+    _set("c_static_assert",       gcc46_c11)
+    _set("c_restrict",            gcc34_c99)
+    _set("c_variadic_macros",     gcc34_c99)
+    _set("c_function_prototypes", gcc_c90)
 
     -- get features
     return _g.features

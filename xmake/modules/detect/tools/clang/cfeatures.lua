@@ -36,8 +36,17 @@ function main()
     -- init features
     _g.features = cfeatures()
 
-    -- TODO
-    -- set("", "")
+    -- init conditions
+    local clang_minver = "((__clang_major__ * 100) + __clang_minor__) >= 304"
+    local c11          = clang_minver .. " && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L"
+    local c99          = clang_minver .. " && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L"
+    local c90          = clang_minver
+
+    -- set features
+    _set("c_static_assert",       c11)
+    _set("c_restrict",            c99)
+    _set("c_variadic_macros",     c99)
+    _set("c_function_prototypes", c90)
 
     -- get features
     return _g.features
