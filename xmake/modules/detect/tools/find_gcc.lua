@@ -54,5 +54,5 @@ function main(opt)
     end
 
     -- ok?
-    return program, version
+    return program, version, ifelse(os.host() == "macosx", "clang", "gcc")
 end

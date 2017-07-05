@@ -34,8 +34,8 @@ function _find_from_modules(name, opt)
     if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", "find_" .. name .. ".lua")) then
         local find_tool = import("detect.tools.find_" .. name)
         if find_tool then
-            local program, version = find_tool(opt)
-            return {name = name, program = program, version = version}
+            local program, version, toolname = find_tool(opt)
+            return {name = toolname or name, program = program, version = version}
         end
     end
 end
