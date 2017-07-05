@@ -211,6 +211,9 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
         print(compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind}))
     end
 
+    -- mark this target as modified
+    buildinfo.modified[target:name()] = true
+
     -- complie them
     compiler.compile(sourcefiles, objectfiles, {incdepfiles = incdepfiles, target = target, sourcekind = sourcekind})
 
