@@ -38,17 +38,17 @@ end
 function main()
 
     -- init conditions
-    local gcc_minver = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404"
-    local gcc50_cxx14 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L"
-    local gcc49_cxx14 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 409 && __cplusplus > 201103L"
-    local gcc481_cxx11 = "((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40801) && __cplusplus >= 201103L"
-    local gcc48_cxx11 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 408 && __cplusplus >= 201103L"
-    local gcc47_cxx11 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 407 && __cplusplus >= 201103L"
+    local gcc_minver        = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404"
+    local gcc50_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L"
+    local gcc49_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 409 && __cplusplus > 201103L"
+    local gcc481_cxx11      = "((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40801) && __cplusplus >= 201103L"
+    local gcc48_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 408 && __cplusplus >= 201103L"
+    local gcc47_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 407 && __cplusplus >= 201103L"
     local gcc_cxx0x_defined = "(__cplusplus >= 201103L || (defined(__GXX_EXPERIMENTAL_CXX0X__) && __GXX_EXPERIMENTAL_CXX0X__))"
-    local gcc46_cxx11 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 406 && " .. gcc_cxx0x_defined
-    local gcc45_cxx11 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 405 && " .. gcc_cxx0x_defined
-    local gcc44_cxx11 = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404 && " .. gcc_cxx0x_defined
-    local gcc43_cxx11 = gcc_minver .. " && " .. gcc_cxx0x_defined
+    local gcc46_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 406 && " .. gcc_cxx0x_defined
+    local gcc45_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 405 && " .. gcc_cxx0x_defined
+    local gcc44_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404 && " .. gcc_cxx0x_defined
+    local gcc43_cxx11       = gcc_minver .. " && " .. gcc_cxx0x_defined
 
     -- set features
     _set("cxx_variable_templates",             gcc50_cxx14)
@@ -80,23 +80,23 @@ function main()
 
     -- Introduced in GCC 4.8.1
     _set("cxx_decltype_incomplete_return_types", gcc481_cxx11)
-    _set("cxx_reference_qualified_functions", gcc481_cxx11)
+    _set("cxx_reference_qualified_functions",    gcc481_cxx11)
 
     -- The alignof feature works with GNU 4.7 and -std=c++11, but it is documented
     -- as available with GNU 4.8, so treat that as true.
-    _set("cxx_alignas", gcc48_cxx11)
-    _set("cxx_alignof", gcc48_cxx11)
-    _set("cxx_attributes", gcc48_cxx11)
+    _set("cxx_alignas",                 gcc48_cxx11)
+    _set("cxx_alignof",                 gcc48_cxx11)
+    _set("cxx_attributes",              gcc48_cxx11)
     _set("cxx_inheriting_constructors", gcc48_cxx11)
-    _set("cxx_thread_local", gcc48_cxx11)
+    _set("cxx_thread_local",            gcc48_cxx11)
 
-    _set("cxx_alias_templates", gcc47_cxx11)
-    _set("cxx_delegating_constructors", gcc47_cxx11)
+    _set("cxx_alias_templates",              gcc47_cxx11)
+    _set("cxx_delegating_constructors",      gcc47_cxx11)
     _set("cxx_extended_friend_declarations", gcc47_cxx11)
-    _set("cxx_final", gcc47_cxx11)
-    _set("cxx_nonstatic_member_init", gcc47_cxx11)
-    _set("cxx_override", gcc47_cxx11)
-    _set("cxx_user_literals", gcc47_cxx11)
+    _set("cxx_final",                        gcc47_cxx11)
+    _set("cxx_nonstatic_member_init",        gcc47_cxx11)
+    _set("cxx_override",                     gcc47_cxx11)
+    _set("cxx_user_literals",                gcc47_cxx11)
 
     -- NOTE: C++11 was ratified in September 2011. GNU 4.7 is the first minor
     -- release following that (March 2012), and the first minor release to
@@ -107,30 +107,30 @@ function main()
     -- https://gcc.gnu.org/bugzilla/show_bug.cgi?id=1773
     -- __GXX_EXPERIMENTAL_CXX0X__ is defined in prior versions, but may not be
     -- defined in the future.
-    _set("cxx_constexpr", gcc46_cxx11)
+    _set("cxx_constexpr",                   gcc46_cxx11)
     _set("cxx_defaulted_move_initializers", gcc46_cxx11)
-    _set("cxx_enum_forward_declarations", gcc46_cxx11)
-    _set("cxx_noexcept", gcc46_cxx11)
-    _set("cxx_nullptr", gcc46_cxx11)
-    _set("cxx_range_for", gcc46_cxx11)
-    _set("cxx_unrestricted_unions", gcc46_cxx11)
+    _set("cxx_enum_forward_declarations",   gcc46_cxx11)
+    _set("cxx_noexcept",                    gcc46_cxx11)
+    _set("cxx_nullptr",                     gcc46_cxx11)
+    _set("cxx_range_for",                   gcc46_cxx11)
+    _set("cxx_unrestricted_unions",         gcc46_cxx11)
 
-    _set("cxx_explicit_conversions", gcc45_cxx11)
-    _set("cxx_lambdas", gcc45_cxx11)
+    _set("cxx_explicit_conversions",     gcc45_cxx11)
+    _set("cxx_lambdas",                  gcc45_cxx11)
     _set("cxx_local_type_template_args", gcc45_cxx11)
-    _set("cxx_raw_string_literals", gcc45_cxx11)
+    _set("cxx_raw_string_literals",      gcc45_cxx11)
 
-    _set("cxx_auto_type", gcc44_cxx11)
-    _set("cxx_defaulted_functions", gcc44_cxx11)
-    _set("cxx_deleted_functions", gcc44_cxx11)
+    _set("cxx_auto_type",                gcc44_cxx11)
+    _set("cxx_defaulted_functions",      gcc44_cxx11)
+    _set("cxx_deleted_functions",        gcc44_cxx11)
     _set("cxx_generalized_initializers", gcc44_cxx11)
-    _set("cxx_inline_namespaces", gcc44_cxx11)
-    _set("cxx_sizeof_member", gcc44_cxx11)
-    _set("cxx_strong_enums", gcc44_cxx11)
-    _set("cxx_trailing_return_types", gcc44_cxx11)
-    _set("cxx_unicode_literals", gcc44_cxx11)
-    _set("cxx_uniform_initialization", gcc44_cxx11)
-    _set("cxx_variadic_templates", gcc44_cxx11)
+    _set("cxx_inline_namespaces",        gcc44_cxx11)
+    _set("cxx_sizeof_member",            gcc44_cxx11)
+    _set("cxx_strong_enums",             gcc44_cxx11)
+    _set("cxx_trailing_return_types",    gcc44_cxx11)
+    _set("cxx_unicode_literals",         gcc44_cxx11)
+    _set("cxx_uniform_initialization",   gcc44_cxx11)
+    _set("cxx_variadic_templates",       gcc44_cxx11)
 
     -- TODO: If features are ever recorded for GNU 4.3, there should possibly
     -- be a new feature added like cxx_variadic_template_template_parameters,
@@ -140,12 +140,12 @@ function main()
     -- templates capability in CMake. See
     -- http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2555.pdf
     -- TODO: Should be supported by GNU 4.3
-    _set("cxx_decltype", gcc43_cxx11)
+    _set("cxx_decltype",                       gcc43_cxx11)
     _set("cxx_default_function_template_args", gcc43_cxx11)
-    _set("cxx_long_long_type", gcc43_cxx11)
-    _set("cxx_right_angle_brackets", gcc43_cxx11)
-    _set("cxx_rvalue_references", gcc43_cxx11)
-    _set("cxx_static_assert", gcc43_cxx11)
+    _set("cxx_long_long_type",                 gcc43_cxx11)
+    _set("cxx_right_angle_brackets",           gcc43_cxx11)
+    _set("cxx_rvalue_references",              gcc43_cxx11)
+    _set("cxx_static_assert",                  gcc43_cxx11)
 
     -- TODO: Should be supported since GNU 3.4?
     _set("cxx_extern_templates", gcc_minver .. " && " .. gcc_cxx0x_defined)
