@@ -1,8 +1,41 @@
-# 一个基于Lua的轻量级跨平台自动构建工具 
+<div align="center">
+  <a href="http://xmake.io/cn">
+    <img width="200" heigth="200" src="http://tboox.org/static/img/xmake/logo256c.png">
+  </a>  
 
-[![Build Status](https://api.travis-ci.org/tboox/xmake.svg?branch=master)](https://travis-ci.org/tboox/xmake) [![Build status](https://ci.appveyor.com/api/projects/status/ry9oa2mxrj8hk613/branch/master?svg=true)](https://ci.appveyor.com/project/waruqi/xmake/branch/master) [![codecov](https://codecov.io/gh/tboox/xmake/branch/master/graph/badge.svg)](https://codecov.io/gh/tboox/xmake) [![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![donate](http://tboox.org/static/img/donate.svg)](http://xmake.io/pages/donation.html#donate) [![Backers on Open Collective](https://opencollective.com/xmake/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/xmake/sponsors/badge.svg)](#sponsors)
+  <h1>xmake</h1>
 
-[![logo](http://tboox.org/static/img/xmake/logo256.png)](http://xmake.io/cn)
+  <div>
+    <a href="https://travis-ci.org/tboox/xmake">
+      <img src="https://img.shields.io/travis/tboox/xmake/master.svg?style=flat-square" alt="travis-ci" />
+    </a>
+    <a href="https://ci.appveyor.com/project/waruqi/xmake/branch/master">
+      <img src="https://img.shields.io/appveyor/ci/waruqi/xmake/master.svg?style=flat-square" alt="appveyor-ci" />
+    </a>
+    <a href="https://codecov.io/gh/tboox/xmake">
+      <img src="https://img.shields.io/codecov/c/github/tboox/xmake/master.svg?style=flat-square" alt="Coverage" />
+    </a>
+    <a href="https://github.com/tboox/xmake/releases">
+      <img src="https://img.shields.io/github/release/tboox/xmake.svg?style=flat-square" alt="Github All Releases" />
+    </a>
+    <a href="https://github.com/tboox/xmake/releases">
+      <img src="https://img.shields.io/github/downloads/tboox/xmake/total.svg?style=flat-square" alt="Downloads" />
+    </a>
+  </div>
+  <div>
+    <a href="https://github.com/tboox/xmake/blob/master/LICENSE.md">
+      <img src="https://img.shields.io/github/license/tboox/xmake.svg?colorB=f48041&style=flat-square" alt="license" />
+    </a>
+    <a href="https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
+      <img src="https://img.shields.io/gitter/room/tboox/tboox.svg?style=flat-square&colorB=96c312" alt="Gitter" />
+    </a>
+    <a href="http://xmake.io/pages/donation.html#donate">
+      <img src="http://tboox.org/static/img/donate.svg" alt="Donate" />
+    </a>
+  </div>
+
+  <p>一个基于Lua的轻量级跨平台自动构建工具</p>
+</div>
 
 ## 简介
 
