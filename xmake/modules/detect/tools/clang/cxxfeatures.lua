@@ -31,6 +31,9 @@ function _set(feature, condition)
 end
 
 -- get features 
+-- 
+-- porting from Modules/Compiler/Clang-CXX-FeatureTests.cmake
+--
 function main()
 
     -- init features

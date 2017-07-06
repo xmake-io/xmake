@@ -38,7 +38,7 @@ function main()
     local gcc_c90    = gcc_minver
 
     -- set features
-    _set("c_static_assert",       gcc46_c11)
+    _set("c_static_assert",       gcc46_c11) -- GNU 4.7 correctly sets __STDC_VERSION__ to 201112L, but GNU 4.6 sets it to 201000L
     _set("c_restrict",            gcc34_c99)
     _set("c_variadic_macros",     gcc34_c99)
     _set("c_function_prototypes", gcc_c90)
