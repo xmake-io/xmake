@@ -30,7 +30,7 @@
       <img src="https://img.shields.io/gitter/room/tboox/tboox.svg?style=flat-square&colorB=96c312" alt="Gitter" />
     </a>
     <a href="http://xmake.io/pages/donation.html#donate">
-      <img src="http://tboox.org/static/img/donate.svg" alt="Donate" />
+      <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
     </a>
   </div>
 

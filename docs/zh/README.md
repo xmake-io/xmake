@@ -35,8 +35,8 @@ search: zh
     <a href="https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
       <img src="https://img.shields.io/gitter/room/tboox/tboox.svg?style=flat-square&colorB=96c312" alt="Gitter" />
     </a>
-    <a href="http://xmake.io/pages/donation.html#donate">
-      <img src="http://tboox.org/static/img/donate.svg" alt="Donate" />
+    <a href="http://xmake.io/cn/pages/donation.html#donate">
+      <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
     </a>
   </div>
 
