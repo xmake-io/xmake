@@ -31,10 +31,16 @@ end
 -- get features 
 function main()
 
-    -- TODO
+    -- init conditions
+    local msvc_minver = "_MSC_VER >= 1200"
+    local msvc_2005   = "_MSC_VER >= 1400"
+    local msvc_2010   = "_MSC_VER >= 1600"
+
     -- set features
-    _set("c_static_assert",       "defined(_WIN32)")
-    _set("c_restrict",            "defined(_MSC_VER)")
+    _set("c_static_assert",       msvc_2010)
+    _set("c_restrict",            msvc_2005)
+    _set("c_variadic_macros",     msvc_2005)
+    _set("c_function_prototypes", msvc_minver)
 
     -- get features
     return _g.features
