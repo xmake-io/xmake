@@ -64,7 +64,6 @@ function init(self)
          -- strip
     ,   ["-s"]  = "-s"
     ,   ["-S"]  = "-S"
-
     }
 
     -- init features

@@ -188,6 +188,10 @@ function linker:linkcmd(objectfiles, targetfile, opt)
 end
 
 -- get the link flags
+--
+-- @param opt   the argument options (contain all the linker attributes of target), 
+--              .e.g {target = ..., targetkind = "static", ldflags = "", links = "", linkdirs = "", ...}
+--
 function linker:linkflags(opt)
 
     -- init options
@@ -196,10 +200,10 @@ function linker:linkflags(opt)
     -- get target
     local target = opt.target
 
-    -- get the target key
+    -- make the key
     local key = nil
-    if target then 
-        key = tostring(target)
+    for _, arg in pairs(opt) do
+        key = (key or "") .. tostring(arg)
     end
 
     -- get it directly from cache dirst

@@ -25,6 +25,7 @@
 -- imports
 import("cfeatures")
 import("cxxfeatures")
+import("core.language.language")
 
 -- get macro defines
 function _get_macro_defines(snippets, extension, opt)
@@ -62,11 +63,11 @@ function _set_feature(feature, condition)
     local kind = feature:match("^(%w-)_")
     assert(kind, "unknown kind for the feature: %s", feature)
 
-    -- init language extensions
-    _g.extensions = _g.extensions or {c = ".c", cxx = ".cpp", objc = ".m", objcxx = ".mm"}
+    -- init maps for c, objc
+    local kinds = {c = "cc", m = "mm"}
 
     -- get extension
-    local extension = _g.extensions[kind]
+    local extension = table.wrap(language.sourcekinds()[kinds[kind] or kind])[1]
     assert(extension, "not supported kind for the feature: %s", feature)
 
     -- make snippet

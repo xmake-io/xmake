@@ -44,6 +44,12 @@ function sandbox_core_tool_linker.linkcmd(targetkind, sourcekinds, objectfiles, 
 end
 
 -- make link flags for the given target
+--
+-- @param targetkind    the target kind
+-- @param sourcekinds   the source kinds
+-- @param opt           the argument options (contain all the linker attributes of target), 
+--                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--
 function sandbox_core_tool_linker.linkflags(targetkind, sourcekinds, opt)
 
     -- get the linker instance
@@ -70,6 +76,26 @@ function sandbox_core_tool_linker.link(targetkind, sourcekinds, objectfiles, tar
     if not ok then
         raise(errors)
     end
+end
+
+-- has the given flags?
+--
+-- @param targetkind    the target kind
+-- @param sourcekinds   the source kinds
+-- @param flags         the flags
+--
+-- @return              the supported flags or nil
+--
+function sandbox_core_tool_linker.has_flags(targetkind, sourcekinds, flags)
+  
+    -- get the linker instance
+    local instance, errors = linker.load(targetkind, sourcekinds)
+    if not instance then
+        raise(errors)
+    end
+
+    -- has flags?
+    return instance:has_flags(flags)
 end
 
 -- return module

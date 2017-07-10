@@ -92,7 +92,7 @@ function _instance:has_flags(flag)
     self._has_flags = self._has_flags or import("lib.detect.has_flags")
 
     -- has flags?
-    return self._has_flags(self:name(), flag, {program = self:program()})
+    return self._has_flags(self:name(), flag, {program = self:program(), toolkind = self:kind()})
 end
 
 -- load the given tool from the given kind

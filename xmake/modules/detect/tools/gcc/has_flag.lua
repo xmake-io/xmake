@@ -24,6 +24,7 @@
 
 -- imports
 import("lib.detect.cache")
+import("core.language.language")
 
 -- is linker?
 function _islinker(flag, opt)
@@ -83,8 +84,11 @@ function _check_try_running(flag, opt, islinker)
     -- check flag for linker
     if islinker then
 
+        -- get extension
+        local extension = table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c"
+
         -- make an stub source file
-        local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flag.c")
+        local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flag" .. extension)
         if not os.isfile(sourcefile) then
             io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
         end
@@ -92,9 +96,15 @@ function _check_try_running(flag, opt, islinker)
         -- check it
         return try { function () os.runv(opt.program, {flag, "-o", os.nuldev(), sourcefile}); return true end }
     end
+
+    -- get language
+    local lang = "c"
+    if opt.toolkind and (opt.toolkind == "cxx" or opt.toolkind == "mxx") then
+        lang = "c++"
+    end
     
     -- check flag for compiler
-    return try { function () os.runv(opt.program, {flag, "-S", "-o", os.nuldev(), "-xc", os.nuldev()}); return true end }
+    return try { function () os.runv(opt.program, {flag, "-S", "-o", os.nuldev(), "-x" .. lang, os.nuldev()}); return true end }
 end
 
 -- has_flag(flag)?

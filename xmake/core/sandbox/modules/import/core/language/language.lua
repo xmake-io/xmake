@@ -31,36 +31,26 @@ local raise     = require("sandbox/modules/raise")
 
 -- get the source extensions of all languages
 function sandbox_core_language.extensions()
-
-    -- get it
     return language.extensions()
 end
 
 -- get the target kinds of all languages
 function sandbox_core_language.targetkinds()
-
-    -- get it
     return language.targetkinds()
 end
 
 -- get the source kinds of all languages
 function sandbox_core_language.sourcekinds()
-
-    -- get it
     return language.sourcekinds()
 end
 
 -- get the source flags of all languages
 function sandbox_core_language.sourceflags()
-
-    -- get it
     return language.sourceflags()
 end
 
 -- get the linker kinds of all languages
 function sandbox_core_language.linkerkinds()
-
-    -- get it
     return language.linkerkinds()
 end
 

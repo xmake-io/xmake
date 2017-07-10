@@ -26,17 +26,17 @@
 local builder = builder or {}
 
 -- load modules
-local io        = require("base/io")
-local path      = require("base/path")
-local utils     = require("base/utils")
-local table     = require("base/table")
-local string    = require("base/string")
-local option    = require("base/option")
-local tool      = require("tool/tool")
-local config    = require("project/config")
-local sandbox   = require("sandbox/sandbox")
-local language  = require("language/language")
-local platform  = require("platform/platform")
+local io       = require("base/io")
+local path     = require("base/path")
+local utils    = require("base/utils")
+local table    = require("base/table")
+local string   = require("base/string")
+local option   = require("base/option")
+local tool     = require("tool/tool")
+local config   = require("project/config")
+local sandbox  = require("sandbox/sandbox")
+local language = require("language/language")
+local platform = require("platform/platform")
 
 -- get the tool of builder
 function builder:_tool()

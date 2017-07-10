@@ -184,6 +184,12 @@ function compiler:compcmd(sourcefiles, objectfile, opt)
 end
 
 -- get the compling flags
+--
+-- @param opt   the argument options (contain all the compiler attributes of target), 
+--              .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--
+-- @return      flags string, flags list
+--
 function compiler:compflags(opt)
 
     -- init options
@@ -192,10 +198,10 @@ function compiler:compflags(opt)
     -- get target
     local target = opt.target
 
-    -- get the target key
+    -- make the key
     local key = nil
-    if target then
-        key = tostring(target)
+    for _, arg in pairs(opt) do
+        key = (key or "") .. tostring(arg)
     end
 
     -- get it directly from cache dirst
