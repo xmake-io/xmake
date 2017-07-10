@@ -246,6 +246,7 @@ function project._interpreter()
         {
             -- target.on_xxx
             "target.on_run"
+        ,   "target.on_load"
         ,   "target.on_build"
         ,   "target.on_clean"
         ,   "target.on_package"
@@ -432,6 +433,17 @@ function project.load()
 
     -- save targets
     project._TARGETS = targets
+
+    -- on load for each target
+    for _, target in pairs(targets) do
+        local on_load = target:script("load")
+        if on_load then
+            ok, errors = sandbox.load(on_load, target)
+            if not ok then
+                return false, errors
+            end
+        end
+    end
 
     -- ok
     return true
