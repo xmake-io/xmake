@@ -82,7 +82,7 @@ function linker:_addflags_from_compiler(flags, targetkind)
     end
 
     -- add flags
-    table.join2(flags, table.unique(flags_of_compiler))
+    table.join2(flags, flags_of_compiler)
 end
 
 -- add flags from the linker 
@@ -250,9 +250,6 @@ function linker:linkflags(opt)
 
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
-
-    -- remove repeat
-    flags = table.unique(flags)
 
     -- make flags string 
     local flags_str = table.concat(flags, " "):trim():gsub("\"", "\\\"")

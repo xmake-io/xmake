@@ -244,9 +244,6 @@ function compiler:compflags(opt)
     -- add flags from the compiler 
     self:_addflags_from_compiler(flags, targetkind)
 
-    -- remove repeat
-    flags = table.unique(flags)
-
     -- make flags string
     local flags_str = table.concat(flags, " "):trim():gsub("\"", "\\\"")
 
