@@ -38,20 +38,20 @@ function main()
     local xcode_sdkdir  = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
 
     -- init flags for c/c++
-    _g.cxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot " .. xcode_sdkdir, "-I/usr/local/include", "-I/usr/include" }
-    _g.ldflags = { "-arch " .. arch, "-mmacosx-version-min=" .. target_minver, "-isysroot " .. xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
-    _g.shflags = { "-arch " .. arch, "-mmacosx-version-min=" .. target_minver, "-isysroot " .. xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
+    _g.cxflags = { "-arch", arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot", xcode_sdkdir, "-I/usr/local/include", "-I/usr/include" }
+    _g.ldflags = { "-arch", arch, "-mmacosx-version-min=" .. target_minver, "-isysroot", xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
+    _g.shflags = { "-arch", arch, "-mmacosx-version-min=" .. target_minver, "-isysroot", xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
 
     -- init flags for objc/c++ (with _g.ldflags and _g.shflags)
-    _g.mxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot " .. xcode_sdkdir }
+    _g.mxflags = { "-arch", arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot " .. xcode_sdkdir }
 
     -- init flags for asm (with _g.ldflags and _g.shflags)
-    _g.asflags = { "-arch " .. arch, "-isysroot " .. xcode_sdkdir }
+    _g.asflags = { "-arch", arch, "-isysroot", xcode_sdkdir }
 
     -- init flags for swift
-    _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-shflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-ldflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+    _g.scflags = { "-target", format("%s-apple-macosx%s", arch, target_minver) , "-sdk", xcode_sdkdir }
+    _g["sc-shflags"] = { "-target", format("%s-apple-macosx%s", arch, target_minver) , "-sdk", xcode_sdkdir }
+    _g["sc-ldflags"] = { "-target", format("%s-apple-macosx%s", arch, target_minver) , "-sdk", xcode_sdkdir }
 
     -- init flags for golang
     _g["gc-ldflags"] = {}

@@ -55,16 +55,11 @@ function nf_optimize(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-N"
-    ,   fast        = ""
-    ,   faster      = ""
-    ,   fastest     = ""
-    ,   smallest    = ""
-    ,   aggressive  = ""
+        none = "-N"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the symbol flag
@@ -72,18 +67,17 @@ function nf_symbol(self, level, target, mapkind)
 
     -- only for compiler
     if mapkind ~= "object" then
-        return ""
+        return 
     end
 
     -- the maps
     local maps = 
     {   
-        debug       = "-E"
-    ,   hidden      = ""
+        debug = "-E"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the strip flag
@@ -92,22 +86,22 @@ function nf_strip(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-s"
-    ,   all         = "-s"
+        debug = "-s"
+    ,   all   = "-s"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I " .. dir
+    return {"-I", dir}
 end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L " .. dir
+    return {"-L", dir}
 end
 
 -- make the link command

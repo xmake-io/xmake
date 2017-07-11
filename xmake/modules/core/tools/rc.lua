@@ -43,7 +43,7 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-d" .. macro:gsub("\"", "\\\"")
+    return "-d" .. macro
 end
 
 -- make the undefine flag

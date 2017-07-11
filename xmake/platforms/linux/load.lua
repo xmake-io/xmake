@@ -48,20 +48,20 @@ function main()
     if arch then
         if arch == "x86_64" then archflags = "-m64"
         elseif arch == "i386" then archflags = "-m32"
-        else archflags = "-arch " .. arch
+        else archflags = {"-arch", arch}
         end
     end
 
     -- init flags for c/c++
-    _g.cxflags       = { archflags, "-I/usr/local/include", "-I/usr/include" }
-    _g.ldflags       = { archflags, "-L/usr/local/lib", "-L/usr/lib" }
-    _g.shflags       = { archflags, "-L/usr/local/lib", "-L/usr/lib" }
+    _g.cxflags       = table.join(table.wrap(archflags), "-I/usr/local/include", "-I/usr/include")
+    _g.ldflags       = table.join(table.wrap(archflags), "-L/usr/local/lib", "-L/usr/lib")
+    _g.shflags       = table.join(table.wrap(archflags), "-L/usr/local/lib", "-L/usr/lib")
 
     -- init flags for objc/c++  (with _g.ldflags and _g.shflags)
-    _g.mxflags       = { archflags }
+    _g.mxflags       = table.wrap(archflags)
 
     -- init flags for asm  (with _g.ldflags and _g.shflags)
-    _g.asflags       = { archflags }
+    _g.asflags       = table.wrap(archflags)
 
     -- init flags for golang
     _g["gc-ldflags"] = {}

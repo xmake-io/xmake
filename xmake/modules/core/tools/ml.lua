@@ -70,20 +70,20 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-w"
-    ,   less        = "-W1"
-    ,   more        = "-W3"
-    ,   all         = "-W3"
-    ,   error       = "-WX"
+        none  = "-w"
+    ,   less  = "-W1"
+    ,   more  = "-W3"
+    ,   all   = "-W3"
+    ,   error = "-WX"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-D" .. macro:gsub("\"", "\\\"")
+    return "-D" .. macro
 end
 
 -- make the undefine flag

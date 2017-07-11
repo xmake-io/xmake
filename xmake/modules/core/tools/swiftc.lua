@@ -152,22 +152,22 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-Xcc -I" .. dir
+    return {"-Xcc", "-I" .. dir}
 end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-Xcc -D" .. macro:gsub("\"", "\\\"")
+    return {"-Xcc", "-D" .. macro}
 end
 
 -- make the undefine flag
 function nf_undefine(self, macro)
-    return "-Xcc -U" .. macro
+    return {"-Xcc", "-U" .. macro}
 end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return "-framework" .. framework
+    return {"-framework", framework}
 end
 
 -- make the link flag

@@ -19,80 +19,101 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_flag.lua
+-- @file        has_flags.lua
 --
 
 -- imports
 import("lib.detect.cache")
 
+-- is linker?
+function _islinker(flags, opt)
+  
+    -- the flags is "-L=<arg>" or "-L<arg>"?
+    local flags_str = table.concat(flags, " ")
+    if flags_str:startswith("-L=") or flags_str:startswith("-L-") then
+        return true
+    end
+
+    -- the tool kind is ld or sh?
+    local toolkind = opt.toolkind or ""
+    return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("-ld") or toolkind:endswith("-sh")
+end
+
 -- attempt to check it from the argument list 
-function _check_from_arglist(flag, opt)
+function _check_from_arglist(flags, opt, islinker)
+
+    -- only for compiler
+    if islinker or #flags > 1 then
+        return 
+    end
 
     -- make cache key
-    local key = "detect.tools.ml.has_flag"
+    local key = "detect.tools.dmd.has_flags"
 
-    -- make flags key
+    -- make allflags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
 
     -- load cache
     local cacheinfo  = cache.load(key)
 
-    -- get all flags from argument list
-    local flags = cacheinfo[flagskey]
-    if not flags then
+    -- get all allflags from argument list
+    local allflags = cacheinfo[flagskey]
+    if not allflags then
 
         -- get argument list
-        flags = {}
-        local arglist = os.iorunv(opt.program, {"-?"})
+        allflags = {}
+        local arglist = os.iorunv(opt.program, {"--help"})
         if arglist then
-            for arg in arglist:gmatch("(/[%-%a%d]+)%s+") do
-                flags[arg:gsub("/", "-")] = true
+            for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
+                allflags[arg] = true
             end
         end
 
         -- save cache
-        cacheinfo[flagskey] = flags
+        cacheinfo[flagskey] = allflags
         cache.save(key, cacheinfo)
     end
 
     -- ok?
-    return flags[flag:gsub("/", "-")]
+    return allflags[flags[1]]
 end
 
--- try running to check flag
-function _check_try_running(flag, opt)
+-- try running to check flags
+function _check_try_running(flags, opt, islinker)
 
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "ml_has_flag.asm")
+    local sourcefile = path.join(os.tmpdir(), "detect", "dmd_has_flags.d")
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, ".code\nend")
+        io.writefile(sourcefile, "void main() {\n}")
+    end
+
+    -- init argv
+    local argv = table.join(flags, "-of" .. os.nuldev(), sourcefile)
+    if not islinker then
+        table.insert(argv, 1, "-c")
     end
 
     -- check it
-    return try  {   function () 
-                        local _, errors = os.iorunv(opt.program, {"-c", "-nologo", flag, "-Fo" .. os.nuldev(), sourcefile})
-                        if errors and #errors:trim() > 0 then
-                            return false
-                        end
-                        return true 
-                    end 
-                }
+    return try { function () os.runv(opt.program, argv); return true end }
 end
 
--- has_flag(flag)?
+-- has_flags(flags)?
 -- 
 -- @param opt   the argument options, .e.g {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return      true or false
 --
-function main(flag, opt)
+function main(flags, opt)
+
+    -- is linker?
+    local islinker = _islinker(flags, opt)
 
     -- attempt to check it from the argument list 
-    if _check_from_arglist(flag, opt) then
+    if _check_from_arglist(flags, opt, islinker) then
         return true
     end
 
     -- try running to check it
-    return _check_try_running(flag, opt)
+    return _check_try_running(flags, opt, islinker)
 end
 

@@ -58,16 +58,15 @@ function nf_optimize(self, level)
     -- the maps
     local maps = 
     {   
-        none        = ""
-    ,   fast        = "-O"
-    ,   faster      = "-O -release"
-    ,   fastest     = "-O -release -inline -boundscheck=off"
-    ,   smallest    = "-O -release -boundscheck=off"
-    ,   aggressive  = "-O -release -inline -boundscheck=off"
+    ,   fast        = {"-O"}
+    ,   faster      = {"-O", "-release"}
+    ,   fastest     = {"-O", "-release", "-inline", "-boundscheck=off"}
+    ,   smallest    = {"-O", "-release", "-boundscheck=off"}
+    ,   aggressive  = {"-O", "-release", "-inline", "-boundscheck=off"}
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the strip flag
@@ -81,7 +80,7 @@ function nf_strip(self, level)
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the symbol flag
@@ -90,12 +89,11 @@ function nf_symbol(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-g -debug"
-    ,   hidden      = ""
+        debug = {"-g", "-debug"}
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the warning flag
@@ -106,13 +104,13 @@ function nf_warning(self, level)
     {   
         none        = "-d"
     ,   less        = "-w"
-    ,   more        = "-w -wi"
-    ,   all         = "-w -wi"
+    ,   more        = {"-w", "-wi"}
+    ,   all         = {"-w", "-wi"}
     ,   error       = "-de"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the vector extension flag
@@ -126,7 +124,7 @@ function nf_vectorext(self, extension)
     }
 
     -- make it
-    return maps[extension] or ""
+    return maps[extension] 
 end
 
 -- make the includedir flag

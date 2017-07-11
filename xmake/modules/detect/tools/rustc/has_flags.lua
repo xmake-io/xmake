@@ -19,66 +19,85 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_flag.lua
+-- @file        has_flags.lua
 --
 
 -- imports
 import("lib.detect.cache")
 
 -- attempt to check it from the argument list 
-function _check_from_arglist(flag, opt)
+function _check_from_arglist(flags, opt)
+
+    -- only one flag?
+    if #flags > 1 then
+        return 
+    end
 
     -- make cache key
-    local key = "detect.tools.ar.has_flag"
+    local key = "detect.tools.rustc.has_flags"
 
-    -- make flags key
+    -- make allflags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
 
     -- load cache
     local cacheinfo  = cache.load(key)
 
-    -- get all flags from argument list
-    local flags = cacheinfo[flagskey]
-    if not flags then
+    -- get all allflags from argument list
+    local allflags = cacheinfo[flagskey]
+    if not allflags then
 
         -- get argument list
-        flags = {}
-        local arglist = nil
-        try 
-        { 
-            function () os.runv(opt.program, {"--help"}) end,
-            catch 
-            { 
-                function (errors) arglist = errors end
-            }
-        }
+        allflags = {}
+        local arglist = os.iorunv(opt.program, {"--help"})
         if arglist then
-            local found = false
-            for arg in arglist:gmatch("%-r %[%-(%a+)%]") do
-                arg:gsub("%a", function (ch) flags["-" .. ch] = true; flags["-r" .. ch] = true; flags["-" .. ch .. "r"] = true end)
-                found = true
-            end
-            if found then
-                flags["-r"] = true
+            for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
+                allflags[arg] = true
             end
         end
 
         -- save cache
-        cacheinfo[flagskey] = flags
+        cacheinfo[flagskey] = allflags
         cache.save(key, cacheinfo)
     end
 
     -- ok?
-    return flags[flag]
+    return allflags[flags[1]]
 end
 
--- has_flag(flag)?
+-- try running to check flags
+function _check_try_running(flags, opt)
+
+    -- make an stub source file
+    local sourcefile = path.join(os.tmpdir(), "detect", "rustc_has_flags.rs")
+    if not os.isfile(sourcefile) then
+        io.writefile(sourcefile, "fn main() {\n}")
+    end
+
+    -- check it
+    local objectfile = os.tmpfile() .. ".o"
+    local ok = try { function () os.runv(opt.program, table.join("--emit", "obj", flags, "-o", objectfile, sourcefile)); return true end }
+
+    -- remove files
+    os.tryrm(objectfile)
+
+    -- ok?
+    return ok
+end
+
+-- has_flags(flags)?
 -- 
 -- @param opt   the argument options, .e.g {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return      true or false
 --
-function main(flag, opt)
-    return _check_from_arglist(flag, opt) 
+function main(flags, opt)
+
+    -- attempt to check it from the argument list 
+    if _check_from_arglist(flags, opt) then
+        return true
+    end
+
+    -- try running to check it
+    return _check_try_running(flags, opt)
 end
 

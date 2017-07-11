@@ -26,8 +26,24 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 
--- has this flag?
-function _has_flag(name, flag, opt)
+-- has the given flags for the current tool?
+--
+-- @param name      the tool name
+-- @param flags     the flags
+-- @param opt       the argument options, .e.g {verbose = false, program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+--
+-- @return          true or false
+--
+-- @code
+-- local ok = has_flags("clang", "-g")
+-- local ok = has_flags("clang", {"-g", "-O0"}, {program = "xcrun -sdk macosx clang"})
+-- local ok = has_flags("clang", "-g", {toolkind = "cxx"})
+-- @endcode
+--
+function main(name, flags, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- find tool program and version first
     opt.version = true
@@ -36,13 +52,16 @@ function _has_flag(name, flag, opt)
         return false
     end
 
+    -- wrap flags
+    flags = table.wrap(flags)
+
     -- init tool
     opt.toolname   = tool.name
     opt.program    = tool.program
     opt.programver = tool.version
 
     -- init cache and key
-    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. flag
+    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ")
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
     
@@ -60,21 +79,21 @@ function _has_flag(name, flag, opt)
         return result
     end
 
-    -- detect.tools.xxx.has_flag(flag, opt)?
+    -- detect.tools.xxx.has_flags(flags, opt)?
     _g._checking = ifelse(coroutine_running, key, nil)
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "has_flag.lua")) then
-        local hasflag = import("detect.tools." .. tool.name .. ".has_flag")
-        if hasflag then
-            result = hasflag(flag, opt)
+    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "has_flags.lua")) then
+        local hasflags = import("detect.tools." .. tool.name .. ".has_flags")
+        if hasflags then
+            result = hasflags(flags, opt)
         end
     else
-        result = try { function () os.runv(tool.program, {flag}); return true end }
+        result = try { function () os.runv(tool.program, flags); return true end }
     end
     _g._checking = nil
 
     -- trace
     if option.get("verbose") or opt.verbose then
-        cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), flag, ifelse(result, "${green}ok", "${red}no"))
+        cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), table.concat(flags, " "), ifelse(result, "${green}ok", "${red}no"))
     end
 
     -- save result to cache
@@ -84,34 +103,3 @@ function _has_flag(name, flag, opt)
     return result
 end
 
--- has the given flags for the current tool?
---
--- @param name      the tool name
--- @param flags     the flags
--- @param opt       the argument options, .e.g {verbose = false, program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
---
--- @return          the supported flags or nil
---
--- @code
--- local flags = has_flags("clang", "-g")
--- local flags = has_flags("clang", {"-g", "-O0"}, {program = "xcrun -sdk macosx clang"})
--- local flags = has_flags("clang", "-g", {toolkind = "cxx"})
--- @endcode
---
-function main(name, flags, opt)
-
-    -- init options
-    opt = opt or {}
-
-    -- has all flags?
-    local results = nil
-    for _, flag in ipairs(flags) do
-        if _has_flag(name, flag, opt) then
-            results = results or {}
-            table.insert(results, flag)
-        end
-    end
-
-    -- ok?
-    return results
-end

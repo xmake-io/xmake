@@ -19,9 +19,9 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_flag.lua
+-- @file        has_flags.lua
 --
 
 -- imports
-inherit("detect.tools.gcc.has_flag")
+inherit("detect.tools.gcc.has_flags")
 

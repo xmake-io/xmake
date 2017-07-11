@@ -113,8 +113,8 @@ function main()
 
     -- init flags for rust
     _g.rcflags       = { "--target=" .. targets[arch] }
-    _g["rc-shflags"] = { "-C linker=" .. config.get("sh"), "-C link-args=\"" .. (table.concat(_g.shflags, " "):gsub("%-march=.-%s", "")) .. "\"" }
-    _g["rc-ldflags"] = { "-C linker=" .. config.get("ld"), "-C link-args=\"" .. (table.concat(_g.ldflags, " "):gsub("%-march=.-%s", "")) .. "\"" }
+    _g["rc-shflags"] = { "-C", "linker=" .. config.get("sh"), "-C", "link-args=\"" .. (table.concat(_g.shflags, " "):gsub("%-march=.-%s", "")) .. "\"" }
+    _g["rc-ldflags"] = { "-C", "linker=" .. config.get("ld"), "-C", "link-args=\"" .. (table.concat(_g.ldflags, " "):gsub("%-march=.-%s", "")) .. "\"" }
 
     -- ok
     return _g

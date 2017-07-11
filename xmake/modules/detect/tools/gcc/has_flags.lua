@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_flag.lua
+-- @file        has_flags.lua
 --
 
 -- imports
@@ -27,10 +27,11 @@ import("lib.detect.cache")
 import("core.language.language")
 
 -- is linker?
-function _islinker(flag, opt)
+function _islinker(flags, opt)
   
-    -- the flag is "-Wl,<arg>" or "-Xlinker <arg>"?
-    if flag:startswith("-Wl,") or flag:startswith("-Xlinker ") then
+    -- the flags is "-Wl,<arg>" or "-Xlinker <arg>"?
+    local flags_str = table.concat(flags, " ")
+    if flags_str:startswith("-Wl,") or flags_str:startswith("-Xlinker ") then
         return true
     end
 
@@ -40,15 +41,15 @@ function _islinker(flag, opt)
 end
 
 -- attempt to check it from the argument list
-function _check_from_arglist(flag, opt, islinker)
+function _check_from_arglist(flags, opt, islinker)
 
     -- only for compiler
-    if islinker then
+    if islinker or #flags > 1 then
         return 
     end
 
     -- make cache key
-    local key = "detect.tools.gcc.has_flag"
+    local key = "detect.tools.gcc.has_flags"
 
     -- make flags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
@@ -57,44 +58,44 @@ function _check_from_arglist(flag, opt, islinker)
     local cacheinfo  = cache.load(key)
 
     -- get all flags from argument list
-    local flags = cacheinfo[flagskey]
-    if not flags then
+    local allflags = cacheinfo[flagskey]
+    if not allflags then
 
         -- get argument list
-        flags = {}
+        allflags = {}
         local arglist = os.iorunv(opt.program, {"--help"})
         if arglist then
             for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
-                flags[arg] = true
+                allflags[arg] = true
             end
         end
 
         -- save cache
-        cacheinfo[flagskey] = flags
+        cacheinfo[flagskey] = allflags
         cache.save(key, cacheinfo)
     end
 
     -- ok?
-    return flags[flag]
+    return allflags[flags[1]]
 end
 
--- try running to check flag
-function _check_try_running(flag, opt, islinker)
+-- try running to check flags
+function _check_try_running(flags, opt, islinker)
 
-    -- check flag for linker
+    -- check flags for linker
     if islinker then
 
         -- get extension
         local extension = table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c"
 
         -- make an stub source file
-        local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flag" .. extension)
+        local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flags" .. extension)
         if not os.isfile(sourcefile) then
             io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
         end
 
         -- check it
-        return try { function () os.runv(opt.program, {flag, "-o", os.nuldev(), sourcefile}); return true end }
+        return try { function () os.runv(opt.program, table.join(flags, "-o", os.nuldev(), sourcefile)); return true end }
     end
 
     -- get language
@@ -103,27 +104,27 @@ function _check_try_running(flag, opt, islinker)
         lang = "c++"
     end
     
-    -- check flag for compiler
-    return try { function () os.runv(opt.program, {flag, "-S", "-o", os.nuldev(), "-x" .. lang, os.nuldev()}); return true end }
+    -- check flags for compiler
+    return try { function () os.runv(opt.program, table.join(flags, "-S", "-o", os.nuldev(), "-x" .. lang, os.nuldev())); return true end }
 end
 
--- has_flag(flag)?
+-- has_flags(flags)?
 -- 
 -- @param opt   the argument options, .e.g {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|mm|mxx]"}
 --
 -- @return      true or false
 --
-function main(flag, opt)
+function main(flags, opt)
 
     -- is linker?
-    local islinker = _islinker(flag, opt)
+    local islinker = _islinker(flags, opt)
 
     -- attempt to check it from the argument list
-    if _check_from_arglist(flag, opt, islinker) then
+    if _check_from_arglist(flags, opt, islinker) then
         return true
     end
 
     -- try running to check it
-    return _check_try_running(flag, opt, islinker)
+    return _check_try_running(flags, opt, islinker)
 end
 

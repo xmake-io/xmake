@@ -24,8 +24,6 @@
 
 -- get the property
 function get(self, name)
-
-    -- get it
     return _g[name]
 end
 

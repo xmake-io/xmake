@@ -42,7 +42,7 @@ function _toolchain_check(config, toolkind, toolinfo)
         end
 
         -- get cross
-        local cross = config.get("cross") or toolinfo.cross or ""
+        local cross = toolinfo.cross or ""
 
         -- attempt to check it 
         if not program then

@@ -74,7 +74,7 @@ function main(name, opt)
         return result
     end
 
-    -- detect.tools.xxx.has_flag(flag, opt)?
+    -- detect.tools.xxx.features(opt)?
     _g._checking = ifelse(coroutine_running, key, nil)
     if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "features.lua")) then
         local features = import("detect.tools." .. tool.name .. ".features")

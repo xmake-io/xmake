@@ -35,9 +35,9 @@ function init(self)
     _g.mxflags = {  "-fmessage-length=0"
                 ,   "-pipe"
                 ,   "-fpascal-strings"
-                ,   "\"-DIBOutlet=__attribute__((iboutlet))\""
-                ,   "\"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))\""
-                ,   "\"-DIBAction=void)__attribute__((ibaction)\""}
+                ,   "-DIBOutlet=__attribute__((iboutlet))"
+                ,   "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
+                ,   "-DIBAction=void)__attribute__((ibaction)"}
 
     -- init shflags
     _g.shflags = { "-shared", "-fPIC" }
@@ -86,12 +86,12 @@ function nf_strip(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-S"
-    ,   all         = "-s"
+        debug = "-S"
+    ,   all   = "-s"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the symbol flag
@@ -100,12 +100,12 @@ function nf_symbol(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-g"
-    ,   hidden      = "-fvisibility=hidden"
+        debug  = "-g"
+    ,   hidden = "-fvisibility=hidden"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the warning flag
@@ -114,15 +114,15 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-w"
-    ,   less        = "-W1"
-    ,   more        = "-W3"
-    ,   all         = "-Wall"
-    ,   error       = "-Werror"
+        none  = "-w"
+    ,   less  = "-W1"
+    ,   more  = "-W3"
+    ,   all   = "-Wall"
+    ,   error = "-Werror"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the optimize flag
@@ -131,16 +131,16 @@ function nf_optimize(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-O0"
-    ,   fast        = "-O1"
-    ,   faster      = "-O2"
-    ,   fastest     = "-O3"
-    ,   smallest    = "-Os"
-    ,   aggressive  = "-Ofast"
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Os"
+    ,   aggressive = "-Ofast"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the vector extension flag
@@ -149,18 +149,18 @@ function nf_vectorext(self, extension)
     -- the maps
     local maps = 
     {   
-        mmx         = "-mmmx"
-    ,   sse         = "-msse"
-    ,   sse2        = "-msse2"
-    ,   sse3        = "-msse3"
-    ,   ssse3       = "-mssse3"
-    ,   avx         = "-mavx"
-    ,   avx2        = "-mavx2"
-    ,   neon        = "-mfpu=neon"
+        mmx   = "-mmmx"
+    ,   sse   = "-msse"
+    ,   sse2  = "-msse2"
+    ,   sse3  = "-msse3"
+    ,   ssse3 = "-mssse3"
+    ,   avx   = "-mavx"
+    ,   avx2  = "-mavx2"
+    ,   neon  = "-mfpu=neon"
     }
 
     -- make it
-    return maps[extension] or ""
+    return maps[extension] 
 end
 
 -- make the language flag
@@ -203,12 +203,12 @@ function nf_language(self, stdname)
     end
 
     -- make it
-    return maps[stdname] or ""
+    return maps[stdname]
 end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-D" .. macro:gsub("\"", "\\\"")
+    return "-D" .. macro
 end
 
 -- make the undefine flag
@@ -240,7 +240,7 @@ end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return "-framework " .. framework
+    return {"-framework", framework}
 end
 
 -- make the link command

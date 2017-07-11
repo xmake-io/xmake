@@ -27,15 +27,11 @@ import("core.tool.compiler")
 
 -- init it
 function init(self)
-    
-    -- init arflags
     _g.arflags = { "-cr" }
 end
 
 -- get the property
 function get(self, name)
-
-    -- get it
     return _g[name]
 end
 
@@ -45,12 +41,12 @@ function strip(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-S"
-    ,   all         = "-s"
+        debug = "-S"
+    ,   all   = "-s"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the link command

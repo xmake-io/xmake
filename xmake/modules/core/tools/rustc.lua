@@ -64,16 +64,16 @@ function nf_optimize(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-C opt-level=0"
-    ,   fast        = "-C opt-level=1"
-    ,   faster      = "-C opt-level=2"
-    ,   fastest     = "-C opt-level=3"
-    ,   smallest    = "-C opt-level=s"
-    ,   aggressive  = "-C opt-level=z"
+        none        = {"-C", "opt-level=0"}
+    ,   fast        = {"-C", "opt-level=1"}
+    ,   faster      = {"-C", "opt-level=2"}
+    ,   fastest     = {"-C", "opt-level=3"}
+    ,   smallest    = {"-C", "opt-level=s"}
+    ,   aggressive  = {"-C", "opt-level=z"}
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the symbol flag
@@ -82,17 +82,16 @@ function nf_symbol(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-C debuginfo=2"
-    ,   hidden      = ""
+        debug = {"-C", "debuginfo=2"}
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L " .. dir
+    return {"-L", dir}
 end
 
 -- make the build command

@@ -254,8 +254,8 @@ function linker:linkflags(opt)
     -- remove repeat
     flags = table.unique(flags)
 
-    -- merge flags
-    local flags_str = table.concat(flags, " "):trim()
+    -- make flags string 
+    local flags_str = table.concat(flags, " "):trim():gsub("\"", "\\\"")
 
     -- save flags
     if key then

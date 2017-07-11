@@ -48,12 +48,12 @@ end
 function nf_strip(self, level)
 
     -- the maps
-    local maps = 
+    local maps =
     {   
-        debug       = "-Wl,-S"
-    ,   all         = "-Wl,-S"
+        debug  = "-Wl,-S"
+    ,   all    = "-Wl,-S"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
