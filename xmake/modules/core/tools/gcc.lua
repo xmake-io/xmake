@@ -243,9 +243,9 @@ function nf_framework(self, framework)
     return {"-framework", framework}
 end
 
--- make the link command
-function linkcmd(self, objectfiles, targetkind, targetfile, flags)
-    return format("%s -o %s %s %s", self:program(), targetfile, objectfiles, flags)
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
+    return self:program(), table.join("-o", targetfile, objectfiles, flags)
 end
 
 -- link the target file
@@ -255,11 +255,11 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- make the complie command
-function _compcmd1(self, sourcefile, objectfile, flags)
+-- make the complie arguments list
+function _compargv1(self, sourcefile, objectfile, flags)
 
     -- get ccache
     local ccache = nil
@@ -267,14 +267,24 @@ function _compcmd1(self, sourcefile, objectfile, flags)
         ccache = find_ccache()
     end
 
-    -- make it
-    local command = format("%s -c %s -o %s %s", self:program(), flags, objectfile, sourcefile)
+    -- make argv
+    local argv = table.join("-c", flags or {}, "-o", objectfile, sourcefile)
+
+    -- uses cache?
+    local program = self:program()
     if ccache then
-        command = ccache:append(command, " ")
+            
+        -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
+        if not os.isexec(program) then
+            argv = table.join(program:split("%s"), argv)
+        else 
+            table.insert(argv, 1, program)
+        end
+        return ccache, argv
     end
 
-    -- ok
-    return command
+    -- no cache
+    return program, argv
 end
 
 -- complie the source file
@@ -287,7 +297,7 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     try
     {
         function ()
-            local outdata, errdata = os.iorun(_compcmd1(self, sourcefile, objectfile, flags))
+            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -317,7 +327,7 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
         local tmpfile = os.tmpfile()
 
         -- generate it
-        os.run("%s -c -MM %s -o %s %s", self:program(), flags or "", tmpfile, sourcefile)
+        os.runv(self:program(), table.join("-c", "-MM", flags or {}, "-o", tmpfile, sourcefile))
 
         -- translate it
         local results = {}
@@ -338,14 +348,14 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     end
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(self, sourcefiles, objectfile, flags)
+    return _compargv1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file

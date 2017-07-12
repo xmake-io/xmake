@@ -49,14 +49,14 @@ function strip(self, level)
     return maps[level] 
 end
 
--- make the link command
-function linkcmd(self, objectfiles, targetkind, targetfile, flags)
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- check
     assert(targetkind == "static")
 
     -- make it
-    return format("%s %s %s %s", self:program(), flags, targetfile, objectfiles)
+    return self:program(), table.join(flags or {}, targetfile, objectfiles)
 end
 
 -- link the library file
@@ -69,7 +69,7 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- extract the static library to object directory
@@ -85,11 +85,11 @@ function extract(self, libraryfile, objectdir)
     local olddir = os.cd(objectdir)
 
     -- extract it
-    os.run("%s -x %s", self:program(), libraryfile)
+    os.runv(self:program(), {"-x", libraryfile})
 
     -- check repeat object name
     local repeats = {}
-    local objectfiles = os.iorun("%s -t %s", self:program(), libraryfile)
+    local objectfiles = os.iorunv(self:program(), {"-t", libraryfile})
     for _, objectfile in ipairs(objectfiles:split('\n')) do
         if repeats[objectfile] then
             raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)

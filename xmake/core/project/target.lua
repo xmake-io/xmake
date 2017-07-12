@@ -135,15 +135,16 @@ end
 
 -- make linking command for this target 
 function target:linkcmd(objectfiles)
- 
-    -- make command
     return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), {target = self})
+end
+
+-- make linking arguments for this target 
+function target:linkargv(objectfiles)
+    return self:linker():linkargv(objectfiles or self:objectfiles(), self:targetfile(), {target = self})
 end
 
 -- make link flags for the given target
 function target:linkflags()
- 
-    -- make flags
     return self:linker():linkflags({target = self})
 end
 

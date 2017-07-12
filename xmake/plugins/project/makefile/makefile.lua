@@ -103,7 +103,7 @@ function _make_object(makefile, target, sourcefile, objectfile)
     local program = platform.tool(sourcekind)
 
     -- get complier flags
-    local compflags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
+    local compflags = os.args(compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind}))
 
     -- make command
     local command = compiler.compcmd(sourcefile, objectfile, {target = target})
@@ -115,7 +115,10 @@ function _make_object(makefile, target, sourcefile, objectfile)
     end
 
     -- replace program to $(XX)
-    p, e = command:find(program, 1, true)
+    p, e = command:find("\"" .. program .. "\"", 1, true)
+    if not p then
+        p, e = command:find(program, 1, true)
+    end
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
@@ -164,7 +167,7 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     local program = platform.tool(sourcekind)
 
     -- get complier flags
-    local compflags = compiler.compflags(sourcefiles, {target = target, sourcekind = sourcekind})
+    local compflags = os.args(compiler.compflags(sourcefiles, {target = target, sourcekind = sourcekind}))
 
     -- make command
     local command = compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind})
@@ -257,13 +260,16 @@ function _make_target(makefile, target)
     local command = target:linkcmd()
 
     -- replace linkflags to $(XX)
-    local p, e = command:find(target:linkflags(), 1, true)
+    local p, e = command:find(os.args(target:linkflags()), 1, true)
     if p then
         command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
     end
 
     -- replace program to $(XX)
-    p, e = command:find(program, 1, true)
+    p, e = command:find("\"" .. program .. "\"", 1, true)
+    if not p then
+        p, e = command:find(program, 1, true)
+    end
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
     end
@@ -346,9 +352,9 @@ function _make_all(makefile)
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
             for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-                makefile:print("%s_%s=%s", targetname, sourcekind:upper(), compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind}))
+                makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind})))
             end
-            makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), target:linkflags())
+            makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), os.args(target:linkflags()))
         end
     end
     makefile:print("")

@@ -32,6 +32,11 @@ local raise     = require("sandbox/modules/raise")
 
 -- make command for linking target file
 function sandbox_core_tool_linker.linkcmd(targetkind, sourcekinds, objectfiles, targetfile, opt)
+    return os.args(table.join(sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)))
+end
+ 
+-- make arguments list for linking target file
+function sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)
  
     -- get the linker instance
     local instance, errors = linker.load(targetkind, sourcekinds)
@@ -39,8 +44,8 @@ function sandbox_core_tool_linker.linkcmd(targetkind, sourcekinds, objectfiles, 
         raise(errors)
     end
 
-    -- make command
-    return instance:linkcmd(objectfiles, targetfile, opt)
+    -- make arguments list
+    return instance:linkargv(objectfiles, targetfile, opt)
 end
 
 -- make link flags for the given target

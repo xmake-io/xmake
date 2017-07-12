@@ -133,7 +133,7 @@ function compiler:build(sourcefiles, targetfile, opt)
     -- make flags 
     local flags = self:compflags(opt)
     if opt.target then
-        flags = flags .. " " .. (opt.target:linkflags())
+        flags = table.join(flags, opt.target:linkflags())
     end
 
     -- get target kind
@@ -146,8 +146,8 @@ function compiler:build(sourcefiles, targetfile, opt)
     return sandbox.load(self:_tool().build, self:_tool(), sourcefiles, targetkind or "binary", targetfile, flags)
 end
 
--- get the build command (compile and link)
-function compiler:buildcmd(sourcefiles, targetfile, opt)
+-- get the build arguments list (compile and link)
+function compiler:buildargv(sourcefiles, targetfile, opt)
 
     -- init options
     opt = opt or {}
@@ -155,7 +155,7 @@ function compiler:buildcmd(sourcefiles, targetfile, opt)
     -- make flags 
     local flags = self:compflags(opt)
     if opt.target then
-        flags = flags .. " " .. (opt.target:linkflags())
+        flags = table.join(flags, opt.target:linkflags())
     end
 
     -- get target kind
@@ -165,7 +165,12 @@ function compiler:buildcmd(sourcefiles, targetfile, opt)
     end
 
     -- get it
-    return self:_tool():buildcmd(sourcefiles, targetkind or "binary", targetfile, flags)
+    return self:_tool():buildargv(sourcefiles, targetkind or "binary", targetfile, flags)
+end
+
+-- get the build command
+function compiler:buildcmd(sourcefiles, targetfile, opt)
+    return os.args(table.join(self:buildargv(sourcefiles, targetfile, opt)))
 end
 
 -- compile the source files
@@ -175,12 +180,17 @@ function compiler:compile(sourcefiles, objectfile, opt)
     opt = opt or {}
 
     -- compile it
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.incdepfiles, (self:compflags(opt)))
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.incdepfiles, self:compflags(opt))
+end
+
+-- get the compile arguments list
+function compiler:compargv(sourcefiles, objectfile, opt)
+    return self:_tool():compargv(sourcefiles, objectfile, self:compflags(opt))
 end
 
 -- get the compile command
 function compiler:compcmd(sourcefiles, objectfile, opt)
-    return self:_tool():compcmd(sourcefiles, objectfile, (self:compflags(opt)))
+    return os.args(table.join(self:compargv(sourcefiles, objectfile, opt)))
 end
 
 -- get the compling flags
@@ -209,7 +219,7 @@ function compiler:compflags(opt)
         self._FLAGS = self._FLAGS or {}
         local flags_cached = self._FLAGS[key]
         if flags_cached then
-            return flags_cached[1], flags_cached[2]
+            return flags_cached
         end
     end
 
@@ -244,16 +254,13 @@ function compiler:compflags(opt)
     -- add flags from the compiler 
     self:_addflags_from_compiler(flags, targetkind)
 
-    -- make flags string
-    local flags_str = os.args(flags)
-
     -- save flags
     if key then
-        self._FLAGS[key] = {flags_str, flags}
+        self._FLAGS[key] = flags
     end
 
     -- get it
-    return flags_str, flags 
+    return flags 
 end
 
 -- return module

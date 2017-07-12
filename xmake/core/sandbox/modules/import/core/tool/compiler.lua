@@ -49,6 +49,11 @@ end
 
 -- make command for compiling source file
 function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, opt)
+    return os.args(table.join(sandbox_core_tool_compiler.compargv(sourcefiles, objectfile, opt)))
+end
+
+-- make arguments list for compiling source file
+function sandbox_core_tool_compiler.compargv(sourcefiles, objectfile, opt)
 
     -- init options
     opt = opt or {}
@@ -65,8 +70,8 @@ function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, opt)
         raise(errors)
     end
  
-    -- make command
-    return instance:compcmd(sourcefiles, objectfile, opt)
+    -- make arguments list
+    return instance:compargv(sourcefiles, objectfile, opt)
 end
 
 -- compile source files
@@ -100,7 +105,7 @@ end
 -- @param opt           the argument options (contain all the compiler attributes of target), 
 --                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
 --
--- @return              flags string, flags list
+-- @return              the flags list
 --
 function sandbox_core_tool_compiler.compflags(sourcefiles, opt)
 
@@ -122,6 +127,11 @@ end
 
 -- make command for building source file
 function sandbox_core_tool_compiler.buildcmd(sourcefiles, targetfile, opt)
+    return os.args(table.join(sandbox_core_tool_compiler.buildargv(sourcefiles, targetfile, opt)))
+end
+
+-- make arguments list for building source file
+function sandbox_core_tool_compiler.buildargv(sourcefiles, targetfile, opt)
 
     -- get source kind if only one source file
     local sourcekind = opt.sourcekind
@@ -135,8 +145,8 @@ function sandbox_core_tool_compiler.buildcmd(sourcefiles, targetfile, opt)
         raise(errors)
     end
 
-    -- make command
-    return instance:buildcmd(sourcefiles, targetfile, opt)
+    -- make arguments list
+    return instance:buildargv(sourcefiles, targetfile, opt)
 end
 
 -- build source files
@@ -182,7 +192,7 @@ function sandbox_core_tool_compiler.features(sourcekind, opt)
     if sandbox_core_tool_compiler._features then
 
         -- get flags
-        local _, flags = instance:compflags(opt)
+        local flags = instance:compflags(opt)
 
         -- get features
         local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._features, instance:name(), {flags = flags, program = instance:program()})
@@ -244,7 +254,7 @@ function sandbox_core_tool_compiler.has_features(features, opt)
         end
 
         -- get flags
-        local _, flags = instance:compflags(opt)
+        local flags = instance:compflags(opt)
 
         -- has features?
         local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._has_features, instance:name(), features, {flags = flags, program = instance:program()})

@@ -179,12 +179,17 @@ end
 
 -- link the target file
 function linker:link(objectfiles, targetfile, opt)
-    return sandbox.load(self:_tool().link, self:_tool(), table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(opt)))
+    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, self:linkflags(opt))
+end
+
+-- get the link arguments list
+function linker:linkargv(objectfiles, targetfile, opt)
+    return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, self:linkflags(opt))
 end
 
 -- get the link command
 function linker:linkcmd(objectfiles, targetfile, opt)
-    return self:_tool():linkcmd(table.concat(table.wrap(objectfiles), " "), self:_targetkind(), targetfile, (self:linkflags(opt)))
+    return os.args(table.join(self:linkargv(objectfiles, targetfile, opt)))
 end
 
 -- get the link flags
@@ -211,7 +216,7 @@ function linker:linkflags(opt)
         self._FLAGS = self._FLAGS or {}
         local flags_cached = self._FLAGS[key]
         if flags_cached then
-            return flags_cached[1], flags_cached[2]
+            return flags_cached
         end
     end
 
@@ -256,11 +261,11 @@ function linker:linkflags(opt)
 
     -- save flags
     if key then
-        self._FLAGS[key] = {flags_str, flags}
+        self._FLAGS[key] = flags
     end
 
     -- get it
-    return flags_str, flags
+    return flags
 end
 
 -- return module

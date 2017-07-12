@@ -159,6 +159,15 @@ end
 -- make string from arguments list
 function os.args(argv)
 
+    -- init key
+    local key = tostring(argv)
+
+    -- init cache
+    os._ARGS = os._ARGS or {}
+    if os._ARGS[key] then
+        return os._ARGS[key]
+    end
+
     -- make it
     local args = nil
     for _, arg in ipairs(argv) do
@@ -180,6 +189,9 @@ function os.args(argv)
             end
         end
     end
+
+    -- cache it
+    os._ARGS[key] = args or ""
 
     -- ok?
     return args or ""
