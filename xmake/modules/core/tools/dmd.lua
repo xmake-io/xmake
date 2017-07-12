@@ -58,7 +58,7 @@ function nf_optimize(self, level)
     -- the maps
     local maps = 
     {   
-    ,   fast        = {"-O"}
+        fast        = {"-O"}
     ,   faster      = {"-O", "-release"}
     ,   fastest     = {"-O", "-release", "-inline", "-boundscheck=off"}
     ,   smallest    = {"-O", "-release", "-boundscheck=off"}

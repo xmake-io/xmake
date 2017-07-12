@@ -43,7 +43,7 @@ function main()
     _g.shflags = { "-arch", arch, "-mmacosx-version-min=" .. target_minver, "-isysroot", xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
 
     -- init flags for objc/c++ (with _g.ldflags and _g.shflags)
-    _g.mxflags = { "-arch", arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot " .. xcode_sdkdir }
+    _g.mxflags = { "-arch", arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot", xcode_sdkdir }
 
     -- init flags for asm (with _g.ldflags and _g.shflags)
     _g.asflags = { "-arch", arch, "-isysroot", xcode_sdkdir }

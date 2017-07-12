@@ -245,7 +245,7 @@ function compiler:compflags(opt)
     self:_addflags_from_compiler(flags, targetkind)
 
     -- make flags string
-    local flags_str = table.concat(flags, " "):trim():gsub("\"", "\\\"")
+    local flags_str = os.args(flags)
 
     -- save flags
     if key then

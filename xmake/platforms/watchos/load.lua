@@ -45,20 +45,20 @@ function main()
     local xcode_sdkdir  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode_dir, platname, platname, xcode_sdkver)
 
     -- init flags for c/c++
-    _g.cxflags = { "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir }
-    _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir }
-    _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir }
+    _g.cxflags = { "-arch", arch, target_minver_flags, "-isysroot", xcode_sdkdir }
+    _g.ldflags = { "-arch", arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sdkdir }
+    _g.shflags = { "-arch", arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sdkdir }
 
     -- init flags for objc/c++
-    _g.mxflags = { "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir }
+    _g.mxflags = { "-arch", arch, target_minver_flags, "-isysroot", xcode_sdkdir }
 
     -- init flags for asm
-    _g.asflags = { "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir }
+    _g.asflags = { "-arch", arch, target_minver_flags, "-isysroot", xcode_sdkdir }
 
     -- init flags for swift (with _g.ldflags and _g.shflags)
-    _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-shflags"] = { format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir } 
-    _g["sc-ldflags"] = { format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+    _g.scflags = { "-target", format("%s-apple-ios%s", arch, target_minver) , "-sdk", xcode_sdkdir }
+    _g["sc-shflags"] = { "-target", format("%s-apple-ios%s", arch, target_minver) , "-sdk", xcode_sdkdir } 
+    _g["sc-ldflags"] = { "-target", format("%s-apple-ios%s", arch, target_minver) , "-sdk", xcode_sdkdir }
 
     -- ok
     return _g

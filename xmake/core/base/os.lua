@@ -156,6 +156,35 @@ function os.argw(argv)
     return results
 end
 
+-- make string from arguments list
+function os.args(argv)
+
+    -- make it
+    local args = nil
+    for _, arg in ipairs(argv) do
+        arg = arg:trim()
+        if #arg > 0 then
+            arg = arg:gsub("([\"\\])", "\\%1")
+            if arg:find("%s") then
+                if args then
+                    args = args .. " \"" .. arg .. "\""
+                else
+                    args = "\"" .. arg .. "\""
+                end
+            else
+                if args then
+                    args = args .. " " .. arg
+                else
+                    args = arg
+                end
+            end
+        end
+    end
+
+    -- ok?
+    return args or ""
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern 

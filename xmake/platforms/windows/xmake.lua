@@ -53,9 +53,9 @@ platform("windows")
 
         -- init flags for dlang
         local dc_archs = { x86 = "-m32", x64 = "-m64" }
-        _g.dcflags       = { dc_archs[arch] or "" }
-        _g["dc-shflags"] = { dc_archs[arch] or "" }
-        _g["dc-ldflags"] = { dc_archs[arch] or "" }
+        _g.dcflags       = { dc_archs[arch] }
+        _g["dc-shflags"] = { dc_archs[arch] }
+        _g["dc-ldflags"] = { dc_archs[arch] }
 
         -- ok
         return _g
