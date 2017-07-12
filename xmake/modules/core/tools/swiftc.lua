@@ -74,12 +74,12 @@ function nf_strip(self, level)
     -- the maps
     local maps = 
     {   
-        debug       = "-Xlinker -S"
-    ,   all         = "-Xlinker -s"
+        debug = {"-Xlinker", "-S"}
+    ,   all   = {"-Xlinker", "-s"}
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the symbol flag
@@ -92,7 +92,7 @@ function nf_symbol(self, level)
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the warning flag
@@ -101,15 +101,15 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-w"
-    ,   less        = "-W1"
-    ,   more        = "-W3"
-    ,   all         = "-Wall"
-    ,   error       = "-Werror"
+        none  = "-w"
+    ,   less  = "-W1"
+    ,   more  = "-W3"
+    ,   all   = "-Wall"
+    ,   error = "-Werror"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the optimize flag
@@ -127,7 +127,7 @@ function nf_optimize(self, level)
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the vector extension flag
@@ -136,14 +136,14 @@ function nf_vectorext(self, extension)
     -- the maps
     local maps = 
     {   
-        mmx         = "-mmmx"
-    ,   sse         = "-msse"
-    ,   sse2        = "-msse2"
-    ,   sse3        = "-msse3"
-    ,   ssse3       = "-mssse3"
-    ,   avx         = "-mavx"
-    ,   avx2        = "-mavx2"
-    ,   neon        = "-mfpu=neon"
+        mmx   = "-mmmx"
+    ,   sse   = "-msse"
+    ,   sse2  = "-msse2"
+    ,   sse3  = "-msse3"
+    ,   ssse3 = "-mssse3"
+    ,   avx   = "-mavx"
+    ,   avx2  = "-mavx2"
+    ,   neon  = "-mfpu=neon"
     }
 
     -- make it
