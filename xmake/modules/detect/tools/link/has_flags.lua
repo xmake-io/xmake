@@ -76,7 +76,8 @@ end
 function _check_try_running(flags, opt)
 
     -- make an stub source file
-    local winmain = flags:lower():find("subsystem:windows")
+    local flags_str = table.concat(flags, " "):lower()
+    local winmain = flags_str:find("subsystem:windows")
     local sourcefile = path.join(os.tmpdir(), "detect", ifelse(winmain, "winmain_", "") .. "link_has_flags.c")
     if not os.isfile(sourcefile) then
         if winmain then
