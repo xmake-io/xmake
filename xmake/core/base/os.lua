@@ -51,7 +51,7 @@ function os._cp(src, dst)
     if os.isfile(src) then
         
         -- the destination is directory? append the filename
-        if os.isdir(dst) then
+        if os.isdir(dst) or dst:endswith(path.seperator()) then
             dst = path.join(dst, path.filename(src))
         end
 
@@ -63,7 +63,7 @@ function os._cp(src, dst)
     elseif os.isdir(src) then
         
         -- the destination directory exists? append the filename
-        if os.isdir(dst) then
+        if os.isdir(dst) or dst:endswith(path.seperator()) then
             dst = path.join(dst, path.filename(path.translate(src)))
         end
 
@@ -91,7 +91,7 @@ function os._mv(src, dst)
     if os.exists(src) then
  
         -- the destination directory exists? append the filename
-        if os.isdir(dst) then
+        if os.isdir(dst) or dst:endswith(path.seperator()) then
             dst = path.join(dst, path.filename(path.translate(src)))
         end
 
