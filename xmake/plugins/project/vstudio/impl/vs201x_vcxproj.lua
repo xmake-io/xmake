@@ -469,50 +469,64 @@ function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, v
 
         -- for *.c/cpp files
         else
+
+            -- init items
+            local items = 
+            {
+                AdditionalOptions = 
+                {
+                    key = function (info) return os.args(info.flags) end
+                ,   value = function (key) return key .. " %%(AdditionalOptions)" end
+                }
+            ,   ObjectFileName =
+                {
+                    key = function (info) return path.relative(path.absolute(info.objectfile), vcxprojdir) end
+                ,   value = function (key) return key end
+                }
+            }
         
-            -- make AdditionalOptions
-            local mergeflags  = {}
-            local objectfiles = {}
-            for _, info in ipairs(sourceinfo) do
-                local flags = os.args(info.flags)
-                mergeflags[flags] = mergeflags[flags] or {}
-                mergeflags[flags][info.mode .. '|' .. info.arch] = true
-                objectfiles[flags] = path.relative(path.absolute(info.objectfile), vcxprojdir)
-            end
-            for flags, mergeinfos in pairs(mergeflags) do
+            -- make items
+            for itemname, iteminfo in pairs(items) do
 
-                -- merge mode and arch first
-                local count = 0
-                for _, mode in ipairs(vsinfo.modes) do
-                    if mergeinfos[mode .. "|Win32"] and mergeinfos[mode .. "|x64"] then
-                        mergeinfos[mode .. "|Win32"] = nil
-                        mergeinfos[mode .. "|x64"]   = nil
-                        mergeinfos[mode]             = true
-                    end
-                    if mergeinfos[mode] then
-                        count = count + 1
-                    end
+                -- make merge keys
+                local mergekeys  = {}
+                for _, info in ipairs(sourceinfo) do
+                    local key = iteminfo.key(info)
+                    mergekeys[key] = mergekeys[key] or {}
+                    mergekeys[key][info.mode .. '|' .. info.arch] = true
                 end
+                for key, mergeinfos in pairs(mergekeys) do
 
-                -- all modes and archs exist?
-                if count == #vsinfo.modes then
-                    vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", objectfiles[flags])
-                    if #flags > 0 then
-                        vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
+                    -- merge mode and arch first
+                    local count = 0
+                    for _, mode in ipairs(vsinfo.modes) do
+                        if mergeinfos[mode .. "|Win32"] and mergeinfos[mode .. "|x64"] then
+                            mergeinfos[mode .. "|Win32"] = nil
+                            mergeinfos[mode .. "|x64"]   = nil
+                            mergeinfos[mode]             = true
+                        end
+                        if mergeinfos[mode] then
+                            count = count + 1
+                        end
                     end
-                else
-                    for cond, _ in pairs(mergeinfos) do
-                        if cond:find('|', 1, true) then
-                            -- for mode | arch
-                            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</ObjectFileName>", cond, objectfiles[flags])
-                            if #flags > 0 then
-                                vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", cond, flags)
-                            end
-                        else
-                            -- only for mode
-                            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)\'==\'%s\'\">%s</ObjectFileName>", cond, objectfiles[flags])
-                            if #flags > 0 then
-                                vcxprojfile:print("<AdditionalOptions Condition=\"\'%$(Configuration)\'==\'%s\'\">%s %%(AdditionalOptions)</AdditionalOptions>", cond, flags)
+
+                    -- all modes and archs exist?
+                    if count == #vsinfo.modes then
+                        if #key > 0 then
+                            vcxprojfile:print("<%s>%s</%s>", itemname, iteminfo.value(key), itemname)
+                        end
+                    else
+                        for cond, _ in pairs(mergeinfos) do
+                            if cond:find('|', 1, true) then
+                                -- for mode | arch
+                                if #key > 0 then
+                                    vcxprojfile:print("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</%s>", itemname, cond, iteminfo.value(key), itemname)
+                                end
+                            else
+                                -- only for mode
+                                if #key > 0 then
+                                    vcxprojfile:print("<%s Condition=\"\'%$(Configuration)\'==\'%s\'\">%s</%s>", itemname, cond, iteminfo.value(key), itemname)
+                                end
                             end
                         end
                     end
