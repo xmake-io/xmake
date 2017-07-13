@@ -42,15 +42,6 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
                         return "/I" .. dir
                     end)
 
-        -- -Fdsymbol.pdb or /Fdsymbol.pdb
-        flag = flag:gsub("[%-|/]Fd(.*)", function (dir)
-                        dir = dir:trim()
-                        if not path.is_absolute(dir) then
-                            dir = path.relative(path.absolute(dir), vcxprojdir)
-                        end
-                        return "/Fd" .. dir
-                    end)
-
         -- save flag
         table.insert(flags, flag)
     end
@@ -224,7 +215,7 @@ function _make_source_options(vcxprojfile, flags, condition)
     condition = condition or ""
 
     -- get flags string
-    local flagstr = table.concat(flags, " ")
+    local flagstr = os.args(flags)
 
     -- make Optimization
     if flagstr:find("[%-|/]Os") or flagstr:find("[%-|/]O1") then
@@ -282,7 +273,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP"}
+    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd"}
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
@@ -296,7 +287,7 @@ function _make_source_options(vcxprojfile, flags, condition)
         end
     end
     if #additional_flags > 0 then
-        vcxprojfile:print("<AdditionalOptions%s>%s %%(AdditionalOptions)</AdditionalOptions>", condition, table.concat(additional_flags, " "):trim())
+        vcxprojfile:print("<AdditionalOptions%s>%s %%(AdditionalOptions)</AdditionalOptions>", condition, os.args(additional_flags))
     end
 end
 
@@ -318,16 +309,15 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
     vcxprojfile:enter("<%s>", linkerkinds[targetinfo.targetkind])
 
         -- make linker flags
-        local flags = table.concat(_make_linkflags(targetinfo, vcxprojdir), " "):trim()
+        local flags = {}
+        for _, flag in ipairs(_make_linkflags(targetinfo, vcxprojdir)) do
 
-        -- remove "-machine:[x86|x64]"
-        flags = flags:gsub("[%-/]machine:%w+", "")
-
-        -- remove "-pdb:*.pdb"
-        flags = flags:gsub("[%-/]pdb:.+%.pdb", "")
-
-        -- remove "-debug"
-        flags = flags:gsub("[%-/]debug", "")
+            -- remove "-machine:[x86|x64]", "-pdb:*.pdb" and "-debug"
+            if not flag:find("[%-/]machine:%w+") and not flag:find("[%-/]pdb:.+%.pdb") and not flag:find("[%-/]debug") then
+                table.insert(flags, flag)
+            end
+        end
+        flags = os.args(flags)
 
         -- make AdditionalOptions
         vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", flags)
@@ -468,7 +458,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, v
         -- make AdditionalOptions
         local mergeflags = {}
         for _, info in ipairs(sourceinfo) do
-            local flags = table.concat(info.flags, " "):trim()
+            local flags = os.args(info.flags)
             if flags ~= "" then 
                 mergeflags[flags] = mergeflags[flags] or {}
                 mergeflags[flags][info.mode .. '|' .. info.arch] = true
@@ -522,7 +512,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, 
         vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", path.relative(path.absolute(info.objectfile), vcxprojdir))
 
         -- get source flags
-        local flags = table.concat(info.flags, " "):trim()
+        local flags = os.args(info.flags)
 
         -- make AdditionalOptions 
         if flags ~= "" then 

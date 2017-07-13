@@ -32,7 +32,7 @@ import("vsfile")
 function _make_compflags(sourcefile, target, vcprojdir)
 
     -- make the compiling flags
-    local _, compflags = compiler.compflags(sourcefile, {target = target})
+    local compflags = compiler.compflags(sourcefile, {target = target})
 
     -- replace -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
     local flags = {}
@@ -60,8 +60,8 @@ function _make_compflags(sourcefile, target, vcprojdir)
         table.insert(flags, flag)
     end
 
-    -- concat flags
-    flags = table.concat(flags, " "):trim()
+    -- make flags string
+    flags = os.args(flags)
 
     -- replace " => &quot;
     flags = flags:gsub("\"", "&quot;")
@@ -74,7 +74,7 @@ end
 function _make_linkflags(target, vcprojdir)
 
     -- make the linking flags
-    local _, linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
+    local linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
 
     -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}
@@ -102,8 +102,8 @@ function _make_linkflags(target, vcprojdir)
         table.insert(flags, flag)
     end
     
-    -- concat flags
-    flags = table.concat(flags, " "):trim()
+    -- make flags string
+    flags = os.args(flags)
 
     -- replace " => &quot;
     flags = flags:gsub("\"", "&quot;")

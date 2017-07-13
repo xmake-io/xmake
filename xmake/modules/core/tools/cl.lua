@@ -211,7 +211,8 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
 
     -- generate includes file
     if incdepfile then
-        flags = (flags or "") .. " -showIncludes"
+        flags = flags or {}
+        table.insert(flags, "-showIncludes")
     end
 
     -- compile it
