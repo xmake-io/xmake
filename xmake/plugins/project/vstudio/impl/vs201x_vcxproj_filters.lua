@@ -93,9 +93,10 @@ function _make_sources(filtersfile, vsinfo, target, vcxprojdir)
         for _, sourcefile in ipairs(target.sourcefiles) do
             local filter = _make_filter(sourcefile, target, vcxprojdir)
             if filter then
-                filtersfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(sourcefile), vcxprojdir))
+                local as = sourcefile:endswith(".asm")
+                filtersfile:enter("<%s Include=\"%s\">", ifelse(as, "CustomBuild", "ClCompile"), path.relative(path.absolute(sourcefile), vcxprojdir))
                 filtersfile:print("<Filter>%s</Filter>", filter)
-                filtersfile:leave("</ClCompile>")
+                filtersfile:leave("</%s>", ifelse(as, "CustomBuild", "ClCompile"))
             end
         end
     filtersfile:leave("</ItemGroup>")
