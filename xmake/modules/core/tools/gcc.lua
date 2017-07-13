@@ -268,7 +268,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
     end
 
     -- make argv
-    local argv = table.join("-c", flags or {}, "-o", objectfile, sourcefile)
+    local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
 
     -- uses cache?
     local program = self:program()

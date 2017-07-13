@@ -70,11 +70,11 @@ end
 function nf_symbol(self, level, target)
     
     -- debug? generate *.pdb file
-    local flags = ""
+    local flags = nil
     local targetkind = target:get("kind")
     if level == "debug" and (targetkind == "binary" or targetkind == "shared") then
         if target and target.symbolfile then
-            flags = "-debug -pdb:" .. target:symbolfile()
+            flags = {"-debug", "-pdb:" .. target:symbolfile()}
         else
             flags = "-debug"
         end
@@ -94,21 +94,22 @@ function nf_linkdir(self, dir)
     return "-libpath:" .. dir
 end
 
--- make the link command
-function linkcmd(self, objectfiles, targetkind, targetfile, flags)
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
-    -- make it
-    local cmd = format("%s %s -out:%s %s", self:program(), flags, targetfile, objectfiles)
+    -- make arguments list
+    local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
 
     -- too long?
-    if #cmd > 4096 then
+    local args = os.args(argv)
+    if #args > 4096 then
         local argfile = targetfile .. ".arg"
-        io.printf(argfile, "%s -out:%s %s", flags, targetfile, objectfiles)
-        cmd = format("%s @%s", self:program(), argfile)
+        io.printf(argfile, args)
+        argv = {"@" .. argfile}
     end
 
     -- ok?
-    return cmd
+    return self:program(), argv
 end
 
 -- link the target file
@@ -118,6 +119,6 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 

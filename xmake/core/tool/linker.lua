@@ -256,9 +256,6 @@ function linker:linkflags(opt)
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
 
-    -- make flags string 
-    local flags_str = os.args(flags)
-
     -- save flags
     if key then
         self._FLAGS[key] = flags

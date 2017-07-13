@@ -94,9 +94,9 @@ function nf_linkdir(self, dir)
     return {"-L", dir}
 end
 
--- make the build command
-function buildcmd(self, sourcefiles, targetkind, targetfile, flags)
-    return format("%s %s -o %s %s", self:program(), flags, targetfile, table.concat(sourcefiles, " "))
+-- make the build arguments list
+function buildargv(self, sourcefiles, targetkind, targetfile, flags)
+    return self:program(), table.join(flags, "-o", targetfile, sourcefiles)
 end
 
 -- build the target file
@@ -106,12 +106,12 @@ function build(self, sourcefiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- build it
-    os.run(buildcmd(self, sourcefiles, targetkind, targetfile, flags))
+    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
-    return format("%s --emit obj %s -o %s %s", self:program(), flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
+    return self:program(), table.join("--emit", "obj", flags, "-o", objectfile, sourcefiles)
 end
 
 -- complie the source file
@@ -121,6 +121,6 @@ function compile(self, sourcefiles, objectfile, incdepfile, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(self, sourcefiles, objectfile, flags))
+    os.runv(compargv(self, sourcefiles, objectfile, flags))
 end
 

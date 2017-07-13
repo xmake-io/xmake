@@ -104,14 +104,14 @@ function nf_linkdir(self, dir)
     return {"-L", dir}
 end
 
--- make the link command
-function linkcmd(self, objectfiles, targetkind, targetfile, flags)
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- make it
     if targetkind == "static" then
-        return format("%s tool pack %s %s %s", self:program(), flags, targetfile, objectfiles)
+        return self:program(), table.join("tool", "pack", flags, targetfile, objectfiles)
     else
-        return format("%s tool link %s -o %s %s", self:program(), flags, targetfile, objectfiles)
+        return self:program(), table.join("tool", "link", flags, "-o", targetfile, objectfiles)
     end
 end
 
@@ -122,12 +122,12 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
-    return format("%s tool compile %s -o %s %s", self:program(), flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
+    return self:program(), table.join("tool", "compile", flags, "-o", objectfile, sourcefiles)
 end
 
 -- complie the source file
@@ -137,6 +137,6 @@ function compile(self, sourcefiles, objectfile, incdepfile, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(self, sourcefiles, objectfile, flags))
+    os.runv(compargv(self, sourcefiles, objectfile, flags))
 end
 

@@ -56,7 +56,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     assert(targetkind == "static")
 
     -- make it
-    return self:program(), table.join(flags or {}, targetfile, objectfiles)
+    return self:program(), table.join(flags, targetfile, objectfiles)
 end
 
 -- link the library file

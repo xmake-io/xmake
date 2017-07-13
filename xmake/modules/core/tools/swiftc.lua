@@ -180,9 +180,9 @@ function nf_linkdir(self, dir)
     return "-L" .. dir
 end
 
--- make the link command
-function linkcmd(self, objectfiles, targetkind, targetfile, flags)
-    return format("%s -o %s %s %s", self:program(), targetfile, objectfiles, flags)
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
+    return self:program(), table.join("-o", targetfile, objectfiles, flags)
 end
 
 -- link the target file
@@ -192,11 +192,11 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- make the compile command
-function _compcmd1(self, sourcefile, objectfile, flags)
+-- make the compile arguments list
+function _compargv1(self, sourcefile, objectfile, flags)
 
     -- get ccache
     local ccache = nil
@@ -204,14 +204,24 @@ function _compcmd1(self, sourcefile, objectfile, flags)
         ccache = find_ccache()
     end
 
-    -- make it
-    local command = format("%s -c %s -o %s %s", self:program(), flags, objectfile, sourcefile)
+    -- make argv
+    local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
+
+    -- uses cache?
+    local program = self:program()
     if ccache then
-        command = ccache:append(command, " ")
+            
+        -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
+        if not os.isexec(program) then
+            argv = table.join(program:split("%s"), argv)
+        else 
+            table.insert(argv, 1, program)
+        end
+        return ccache, argv
     end
 
-    -- ok
-    return command
+    -- no cache
+    return program, argv
 end
 
 -- complie the source file
@@ -221,17 +231,17 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(_compcmd1(self, sourcefile, objectfile, flags))
+    os.runv(_compargv1(self, sourcefile, objectfile, flags))
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(self, sourcefiles, objectfile, flags)
+    return _compargv1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file

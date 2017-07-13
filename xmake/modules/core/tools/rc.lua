@@ -56,9 +56,9 @@ function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
--- make the complie command
-function _compcmd1(self, sourcefile, objectfile, flags)
-    return format("%s %s -Fo%s %s", self:program(), flags, objectfile, sourcefile)
+-- make the complie arguments list
+function _compargv1(self, sourcefile, objectfile, flags)
+    return self:program(), table.join(flags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- complie the source file
@@ -71,7 +71,7 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     try
     {
         function ()
-            local outdata, errdata = os.iorun(_compcmd1(self, sourcefile, objectfile, flags))
+            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -95,14 +95,14 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     }
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(self, sourcefiles, objectfile, flags)
+    return _compargv1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file

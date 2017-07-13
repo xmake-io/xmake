@@ -150,9 +150,9 @@ function nf_rpathdir(self, dir)
     end
 end
 
--- make the link command
-function linkcmd(self, objectfiles, targetkind, targetfile, flags)
-    return format("%s %s -of%s %s", self:program(), flags, targetfile, objectfiles)
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
+    return self:program(), table.join(flags, "-of" .. targetfile, objectfiles)
 end
 
 -- link the target file
@@ -162,12 +162,12 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.run(linkcmd(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
-    return format("%s -c %s -of%s %s", self:program(), flags, objectfile, table.concat(table.wrap(sourcefiles), " "))
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
+    return self:program(), table.join("-c", flags, "-of" .. objectfile, sourcefiles)
 end
 
 -- complie the source file
@@ -177,6 +177,6 @@ function compile(self, sourcefiles, objectfile, incdepfile, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.run(compcmd(self, sourcefiles, objectfile, flags))
+    os.runv(compargv(self, sourcefiles, objectfile, flags))
 end
 

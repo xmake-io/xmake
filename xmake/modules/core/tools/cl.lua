@@ -39,7 +39,7 @@ function init(self)
     ,   ["-O1"]                     = ""
     ,   ["-Os"]                     = "-O1"
     ,   ["-O3"]                     = "-Ox"
-    ,   ["-Ofast"]                  = "-Ox -fp:fast"
+    ,   ["-Ofast"]                  = {"-Ox", "-fp:fast"}
     ,   ["-fomit-frame-pointer"]    = "-Oy"
 
         -- symbols
@@ -87,8 +87,6 @@ end
 
 -- get the property
 function get(self, name)
-
-    -- get it
     return _g[name]
 end
 
@@ -96,12 +94,12 @@ end
 function nf_symbol(self, level, target)
 
     -- debug? generate *.pdb file
-    local flags = ""
+    local flags = nil
     if level == "debug" then
         if target and target.symbolfile then
-            flags = "-ZI -Fd" .. target:symbolfile() 
-            if self:has_flags("-ZI -FS -Fd" .. os.tmpfile() .. ".pdb") then
-                flags = "-FS " .. flags
+            flags = {"-ZI", "-Fd" .. target:symbolfile()}
+            if self:has_flags({"-ZI", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}) then
+                table.insert(flags, 1, "-FS")
             end
         else
             flags = "-ZI"
@@ -118,15 +116,15 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none        = "-W0"
-    ,   less        = "-W1"
-    ,   more        = "-W3"
-    ,   all         = "-W3" -- = "-Wall" will enable too more warnings
-    ,   error       = "-WX"
+        none  = "-W0"
+    ,   less  = "-W1"
+    ,   more  = "-W3"
+    ,   all   = "-W3" -- = "-Wall" will enable too more warnings
+    ,   error = "-WX"
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level] 
 end
 
 -- make the optimize flag
@@ -136,31 +134,30 @@ function nf_optimize(self, level)
     local maps = 
     {   
         none        = "-Od"
-    ,   fast        = ""
     ,   faster      = "-Ox"
-    ,   fastest     = "-Ox -fp:fast"
+    ,   fastest     = {"-Ox", "-fp:fast"}
     ,   smallest    = "-O1"
-    ,   aggressive  = "-Ox -fp:fast"
+    ,   aggressive  = {"-Ox", "-fp:fast"}
     }
 
     -- make it
-    return maps[level] or ""
+    return maps[level]
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
 
     -- the maps
-    local maps = 
+    local maps =
     {   
-        sse         = "-arch:SSE"
-    ,   sse2        = "-arch:SSE2"
-    ,   avx         = "-arch:AVX"
-    ,   avx2        = "-arch:AVX2"
+        sse    = "-arch:SSE"
+    ,   sse2   = "-arch:SSE2"
+    ,   avx    = "-arch:AVX"
+    ,   avx2   = "-arch:AVX2"
     }
 
     -- make it
-    return maps[extension] or ""
+    return maps[extension] 
 end
 
 -- make the language flag
@@ -170,10 +167,10 @@ function nf_language(self, stdname)
     local cmaps = 
     {
         -- stdc
-        c99         = "-TP" -- compile as c++ files because msvc only support c89
-    ,   gnu99       = "-TP"
-    ,   c11         = "-TP"
-    ,   gnu11       = "-TP"
+        c99   = "-TP" -- compile as c++ files because msvc only support c89
+    ,   gnu99 = "-TP"
+    ,   c11   = "-TP"
+    ,   gnu11 = "-TP"
     }
 
     -- select maps
@@ -183,7 +180,7 @@ function nf_language(self, stdname)
     end
 
     -- make it
-    return maps[stdname] or ""
+    return maps[stdname]
 end
 
 -- make the define flag
@@ -201,9 +198,9 @@ function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
--- make the complie command
-function _compcmd1(self, sourcefile, objectfile, flags)
-    return format("%s -c %s -Fo%s %s", self:program(), flags, objectfile, sourcefile)
+-- make the complie arguments list
+function _compargv1(self, sourcefile, objectfile, flags)
+    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- complie the source file
@@ -221,7 +218,7 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     local outdata = try
     {
         function ()
-            return os.iorun(_compcmd1(self, sourcefile, objectfile, flags))
+            return os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
         end,
         
         catch
@@ -270,14 +267,14 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
     end
 end
 
--- make the complie command
-function compcmd(self, sourcefiles, objectfile, flags)
+-- make the complie arguments list
+function compargv(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    return _compcmd1(self, sourcefiles, objectfile, flags)
+    return _compargv1(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
