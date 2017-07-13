@@ -58,11 +58,11 @@ function nf_optimize(self, level)
     -- the maps
     local maps = 
     {   
-        fast        = {"-O"}
-    ,   faster      = {"-O", "-release"}
-    ,   fastest     = {"-O", "-release", "-inline", "-boundscheck=off"}
-    ,   smallest    = {"-O", "-release", "-boundscheck=off"}
-    ,   aggressive  = {"-O", "-release", "-inline", "-boundscheck=off"}
+        fast        = "-O"
+    ,   faster      = "-O -release"
+    ,   fastest     = "-O -release -inline -boundscheck=off"
+    ,   smallest    = "-O -release -boundscheck=off"
+    ,   aggressive  = "-O -release -inline -boundscheck=off"
     }
 
     -- make it
@@ -89,7 +89,7 @@ function nf_symbol(self, level)
     -- the maps
     local maps = 
     {   
-        debug = {"-g", "-debug"}
+        debug = "-g -debug"
     }
 
     -- make it
@@ -104,8 +104,8 @@ function nf_warning(self, level)
     {   
         none        = "-d"
     ,   less        = "-w"
-    ,   more        = {"-w", "-wi"}
-    ,   all         = {"-w", "-wi"}
+    ,   more        = "-w -wi"
+    ,   all         = "-w -wi"
     ,   error       = "-de"
     }
 

@@ -34,13 +34,13 @@ function main()
     if arch then
         if arch == "x86_64" then archflags = "-m64"
         elseif arch == "i386" then archflags = "-m32"
-        else archflags = {"-arch", arch}
+        else archflags = "-arch " .. arch
         end
     end
-    _g.cxflags = table.wrap(archflags)
-    _g.asflags = table.wrap(archflags)
-    _g.ldflags = table.wrap(archflags)
-    _g.shflags = table.wrap(archflags)
+    _g.cxflags = { archflags }
+    _g.asflags = { archflags }
+    _g.ldflags = { archflags }
+    _g.shflags = { archflags }
 
     -- init linkdirs and includedirs
     local sdkdir = config.get("sdk") 
@@ -52,5 +52,4 @@ function main()
     -- ok
     return _g
 end
-
 

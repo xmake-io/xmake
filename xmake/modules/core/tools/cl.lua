@@ -39,7 +39,7 @@ function init(self)
     ,   ["-O1"]                     = ""
     ,   ["-Os"]                     = "-O1"
     ,   ["-O3"]                     = "-Ox"
-    ,   ["-Ofast"]                  = {"-Ox", "-fp:fast"}
+    ,   ["-Ofast"]                  = "-Ox -fp:fast"
     ,   ["-fomit-frame-pointer"]    = "-Oy"
 
         -- symbols
@@ -97,9 +97,9 @@ function nf_symbol(self, level, target)
     local flags = nil
     if level == "debug" then
         if target and target.symbolfile then
-            flags = {"-ZI", "-Fd" .. target:symbolfile()}
+            flags = "-ZI -Fd" .. target:symbolfile()
             if self:has_flags({"-ZI", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}) then
-                table.insert(flags, 1, "-FS")
+                flags = "-FS " .. flags
             end
         else
             flags = "-ZI"
@@ -135,9 +135,9 @@ function nf_optimize(self, level)
     {   
         none        = "-Od"
     ,   faster      = "-Ox"
-    ,   fastest     = {"-Ox", "-fp:fast"}
+    ,   fastest     = "-Ox -fp:fast"
     ,   smallest    = "-O1"
-    ,   aggressive  = {"-Ox", "-fp:fast"}
+    ,   aggressive  = "-Ox -fp:fast"
     }
 
     -- make it

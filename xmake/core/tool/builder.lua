@@ -125,8 +125,6 @@ end
 
 -- add flags from the configure 
 function builder:_addflags_from_config(flags)
-
-    -- done
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, config.get(flagkind))
     end

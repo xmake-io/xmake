@@ -254,13 +254,29 @@ function compiler:compflags(opt)
     -- add flags from the compiler 
     self:_addflags_from_compiler(flags, targetkind)
 
+    -- remove repeat
+    flags = table.unique(flags)
+
+    -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
+    local results = {}
+    for _, flag in ipairs(flags) do
+        flag = flag:trim()
+        if #flag > 0 then
+            if flag:find(" ", 1, true) then
+                table.join2(results, os.argv(flag))
+            else
+                table.insert(results, flag)
+            end
+        end
+    end
+
     -- save flags
     if key then
-        self._FLAGS[key] = flags
+        self._FLAGS[key] = results
     end
 
     -- get it
-    return flags 
+    return results 
 end
 
 -- return module

@@ -55,6 +55,20 @@ function main(name, flags, opt)
     -- wrap flags
     flags = table.wrap(flags)
 
+    -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
+    local results = {}
+    for _, flag in ipairs(flags) do
+        flag = flag:trim()
+        if #flag > 0 then
+            if flag:find(" ", 1, true) then
+                table.join2(results, os.argv(flag))
+            else
+                table.insert(results, flag)
+            end
+        end
+    end
+    flags = results
+
     -- init tool
     opt.toolname   = tool.name
     opt.program    = tool.program

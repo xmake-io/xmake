@@ -74,8 +74,8 @@ function nf_strip(self, level)
     -- the maps
     local maps = 
     {   
-        debug = {"-Xlinker", "-S"}
-    ,   all   = {"-Xlinker", "-s"}
+        debug = "-Xlinker -S"
+    ,   all   = "-Xlinker -s"
     }
 
     -- make it
@@ -147,27 +147,27 @@ function nf_vectorext(self, extension)
     }
 
     -- make it
-    return maps[extension] or ""
+    return maps[extension]
 end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return {"-Xcc", "-I" .. dir}
+    return "-Xcc -I" .. dir
 end
 
 -- make the define flag
 function nf_define(self, macro)
-    return {"-Xcc", "-D" .. macro}
+    return "-Xcc -D" .. macro
 end
 
 -- make the undefine flag
 function nf_undefine(self, macro)
-    return {"-Xcc", "-U" .. macro}
+    return "-Xcc -U" .. macro
 end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return {"-framework", framework}
+    return "-framework " .. framework
 end
 
 -- make the link flag

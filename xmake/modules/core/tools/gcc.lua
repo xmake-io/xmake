@@ -240,7 +240,7 @@ end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return {"-framework", framework}
+    return "-framework " .. framework
 end
 
 -- make the link arguments list
