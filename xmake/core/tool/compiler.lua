@@ -208,20 +208,9 @@ function compiler:compflags(opt)
     -- get target
     local target = opt.target
 
-    -- make the key
-    local key = nil
-    for _, arg in pairs(opt) do
-        key = (key or "") .. tostring(arg)
-    end
-
-    -- get it directly from cache dirst
-    if key then
-        self._FLAGS = self._FLAGS or {}
-        local flags_cached = self._FLAGS[key]
-        if flags_cached then
-            return flags_cached
-        end
-    end
+    -- init cache
+    self._COMPFLAGS = self._COMPFLAGS or {}
+    local cache = self._COMPFLAGS
 
     -- get target kind
     local targetkind = opt.targetkind
@@ -233,14 +222,25 @@ function compiler:compflags(opt)
     local flags = {}
     self:_addflags_from_config(flags)
 
-    -- add flags for the target
+    -- add flags about target
     if target then
-        self:_addflags_from_target(flags, target)
-    end
-       
-    -- add flags (named) from language
-    if target then
-        self:_addflags_from_language(flags, target)
+    
+        -- get flags from cache first
+        local key = tostring(target)
+        local targetflags = cache[key]
+        if not targetflags then
+        
+            -- add flags for the target
+            targetflags = {}
+            self:_addflags_from_target(targetflags, target)
+           
+            -- add flags (named) from language
+            self:_addflags_from_language(targetflags, target)
+
+            -- cache it
+            cache[key] = targetflags
+        end
+        table.join2(flags, targetflags)
     end
 
     -- add flags for the argument
@@ -268,11 +268,6 @@ function compiler:compflags(opt)
                 table.insert(results, flag)
             end
         end
-    end
-
-    -- save flags
-    if key then
-        self._FLAGS[key] = results
     end
 
     -- get it

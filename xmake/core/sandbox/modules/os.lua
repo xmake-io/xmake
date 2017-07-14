@@ -44,8 +44,12 @@ sandbox_os.argv         = os.argv
 sandbox_os.argw         = os.argw
 sandbox_os.mtime        = os.mtime
 sandbox_os.sleep        = os.sleep
+sandbox_os.raise        = os.raise
 sandbox_os.mclock       = os.mclock
 sandbox_os.nuldev       = os.nuldev
+sandbox_os.getenv       = os.getenv
+sandbox_os.setenv       = os.setenv
+sandbox_os.addenv       = os.addenv
 sandbox_os.emptydir     = os.emptydir
 sandbox_os.programdir   = os.programdir
 sandbox_os.programfile  = os.programfile
@@ -432,43 +436,6 @@ function sandbox_os.exists(file_or_dir)
 
     -- done
     return os.exists(file_or_dir)
-end
-
--- raise an exception and abort the current script
-function sandbox_os.raise(msg, ...)
-
-    -- raise it
-    os.raise(msg, ...)
-end
-
--- get values of the envirnoment variable 
-function sandbox_os.getenv(name)
-
-    -- check
-    assert(name)
-
-    -- get it
-    return os.getenv(name)
-end
-
--- set values to the envirnoment variable
-function sandbox_os.setenv(name, ...)
-
-    -- check
-    assert(name)
-
-    -- set it
-    os.setenv(name, ...)
-end
-
--- add values to the envirnoment variable
-function sandbox_os.addenv(name, ...)
-
-    -- check
-    assert(name)
-
-    -- add it
-    os.addenv(name, ...)
 end
 
 -- make a new uuid

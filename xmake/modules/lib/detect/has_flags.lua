@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("lib.detect.find_tool")
 
 -- has the given flags for the current tool?
@@ -74,8 +75,15 @@ function main(name, flags, opt)
     opt.program    = tool.program
     opt.programver = tool.version
 
+    -- get tool arch 
+    --
+    -- some tools select arch by path environment, not be flags, .e.g cl.exe of msvc)
+    -- so, it will affect the cache result
+    --
+    local arch = config.get("arch") or os.arch()
+
     -- init cache and key
-    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ")
+    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ") .. "_" .. arch
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
     

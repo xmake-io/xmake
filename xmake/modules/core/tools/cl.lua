@@ -156,8 +156,11 @@ function nf_vectorext(self, extension)
     ,   avx2   = "-arch:AVX2"
     }
 
-    -- make it
-    return maps[extension] 
+    -- check it
+    local flag = maps[extension]
+    if flag and self:has_flags(flag) then
+        return flag
+    end
 end
 
 -- make the language flag
