@@ -34,8 +34,8 @@ local assert   = require("sandbox/modules/assert")
 local import   = require("sandbox/modules/import")
 local sandbox  = require("sandbox/sandbox")
 
--- get the feature of compiler
-function sandbox_core_tool_compiler.feature(sourcekind, name)
+-- get the build mode of compiler
+function sandbox_core_tool_compiler.buildmode(sourcekind, name)
  
     -- get the compiler instance
     local instance, errors = compiler.load(sourcekind)
@@ -43,8 +43,8 @@ function sandbox_core_tool_compiler.feature(sourcekind, name)
         raise(errors)
     end
 
-    -- get feature
-    return instance:feature(name)
+    -- get build mode
+    return instance:buildmode(name)
 end
 
 -- make command for compiling source file

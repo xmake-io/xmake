@@ -37,8 +37,8 @@ function init(self)
     _g.formats          = {}
     _g.formats.static   = {"", ".a"}
 
-    -- init features
-    _g.features = 
+    -- init buildmodes
+    _g.buildmodes = 
     {
         ["object:sources"] = true
     }

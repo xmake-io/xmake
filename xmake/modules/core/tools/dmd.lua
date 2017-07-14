@@ -40,8 +40,8 @@ function init(self)
     _g.shared           = {}
     _g.shared.dcflags   = {"-fPIC"}
 
-    -- init features
-    _g.features = 
+    -- init buildmodes
+    _g.buildmodes = 
     {
         ["object:sources"] = false
     }

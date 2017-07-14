@@ -66,8 +66,8 @@ function init(self)
     ,   ["-S"]  = "-S"
     }
 
-    -- init features
-    _g.features = 
+    -- init buildmodes
+    _g.buildmodes = 
     {
         ["object:sources"] = false
     }

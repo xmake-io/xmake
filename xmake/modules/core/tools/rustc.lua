@@ -43,8 +43,8 @@ function init(self)
     _g.formats          = {}
     _g.formats.static   = {"lib", ".rlib"}
 
-    -- init features
-    _g.features = 
+    -- init buildmodes
+    _g.buildmodes = 
     {
         ["object:sources"] = false  -- compile multiple source filess to the single object
     ,   ["binary:sources"] = true   -- build multiple source files to the binary target file

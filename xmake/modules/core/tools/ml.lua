@@ -52,8 +52,8 @@ function init(self)
     ,   ["-fsanitize=address"]      = ""
     }
 
-    -- init features
-    _g.features = 
+    -- init buildmodes
+    _g.buildmodes = 
     {
         ["object:sources"]      = false
     }

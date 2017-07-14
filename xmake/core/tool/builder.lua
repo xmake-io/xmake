@@ -310,13 +310,13 @@ function builder:format(targetkind)
     end
 end
 
--- get feature of the tool
-function builder:feature(name)
+-- get buildmode of the tool
+function builder:buildmode(name)
 
     -- get it
-    local features = self:get("features")
-    if features then
-        return features[name]
+    local buildmodes = self:get("buildmodes")
+    if buildmodes then
+        return buildmodes[name]
     end
 end
 

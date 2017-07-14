@@ -29,8 +29,8 @@ import("core.project.project")
 -- init it
 function init(self)
     
-    -- init features
-    _g.features = 
+    -- init buildmodes
+    _g.buildmodes = 
     {
         ["object:sources"] = false
     }

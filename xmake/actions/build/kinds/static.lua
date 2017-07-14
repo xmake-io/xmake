@@ -140,7 +140,7 @@ function build(target, buildinfo)
     end
 
     -- build target
-    if kindcount == 1 and sourcekind and compiler.feature(sourcekind, "static:sources") then
+    if kindcount == 1 and sourcekind and compiler.buildmode(sourcekind, "static:sources") then
         _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     else
         _build_from_objects(target, buildinfo)
