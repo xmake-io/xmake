@@ -37,6 +37,9 @@ language("objc++")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set language kinds
+    set_langkinds {m = "mm", mxx = "mxx"}
+
     -- set mixing kinds
     set_mixingkinds("mm", "mxx", "cc", "cxx", "as")
 

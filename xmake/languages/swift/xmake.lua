@@ -37,6 +37,9 @@ language("swift")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set language kinds
+    set_langkinds {swift = "sc"}
+
     -- set mixing kinds
     set_mixingkinds("sc", "mm", "mxx", "cc", "cxx")
 

@@ -54,6 +54,11 @@ function sandbox_core_language.linkerkinds()
     return language.linkerkinds()
 end
 
+-- get the language kinds of all languages
+function sandbox_core_language.langkinds()
+    return language.langkinds()
+end
+
 -- load the language from the given name (c++, objc++, swift, golang, asm, ...)
 function sandbox_core_language.load(name)
 

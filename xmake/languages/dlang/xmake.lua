@@ -37,6 +37,9 @@ language("dlang")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set language kinds
+    set_langkinds {d = "dc"}
+
     -- set mixing kinds
     set_mixingkinds("dc", "cc", "cxx", "as")
 

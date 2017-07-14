@@ -154,6 +154,11 @@ function _instance:mixingkinds()
     return self._INFO.mixingkinds
 end
 
+-- get the language kinds
+function _instance:langkinds()
+    return self._INFO.langkinds
+end
+
 -- get the name flags
 function _instance:nameflags()
 
@@ -244,6 +249,7 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_nameflags"
+        ,   "language.set_langkinds"
         ,   "language.set_sourcekinds"
         ,   "language.set_sourceflags"
         ,   "language.set_targetkinds"
@@ -662,6 +668,48 @@ function language.targetkinds()
 
     -- ok
     return targetkinds
+end
+
+-- get language kinds (langkind => sourcekind)
+--
+-- .e.g
+--
+-- {
+--      c           = "cc"
+-- ,    cxx         = "cxx"
+-- ,    m           = "mm"
+-- ,    mxx         = "mxx"
+-- ,    swift       = "sc"
+-- ,    go          = "gc"
+-- ,    as          = "as"
+-- ,    rust        = "rc"
+-- ,    d           = "dc"
+-- }
+--
+function language.langkinds()
+
+    -- attempt to get it from cache
+    if language._LANGKINDS then
+        return language._LANGKINDS
+    end
+
+    -- load all languages
+    local languages, errors = language.load()
+    if not languages then
+        os.raise(errors)
+    end
+
+    -- merge all for each language
+    local langkinds = {}
+    for name, instance in pairs(languages) do
+        table.join2(langkinds, instance:langkinds())
+    end
+
+    -- cache it
+    language._LANGKINDS = langkinds
+
+    -- ok
+    return langkinds
 end
 
 -- return module

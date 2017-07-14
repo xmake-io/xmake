@@ -37,6 +37,9 @@ language("golang")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags"}
 
+    -- set language kinds
+    set_langkinds {go = "gc"}
+
     -- set mixing kinds
     set_mixingkinds("gc")
 

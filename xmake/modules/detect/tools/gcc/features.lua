@@ -59,15 +59,16 @@ function _set_feature(feature, condition)
     -- init features
     _g.features = _g.features or {}
 
-    -- get feature kind
-    local kind = feature:match("^(%w-)_")
-    assert(kind, "unknown kind for the feature: %s", feature)
+    -- get language kind
+    local langkind = feature:match("^(%w-)_")
+    assert(langkind, "unknown language kind for the feature: %s", feature)
 
-    -- init maps for c, objc
-    local kinds = {c = "cc", m = "mm"}
+    -- get source kind from the language kind
+    local sourcekind = language.langkinds()[langkind]
+    assert(sourcekind, "unknown language kind: " .. langkind)
 
     -- get extension
-    local extension = table.wrap(language.sourcekinds()[kinds[kind] or kind])[1]
+    local extension = table.wrap(language.sourcekinds()[sourcekind])[1]
     assert(extension, "not supported kind for the feature: %s", feature)
 
     -- make snippet

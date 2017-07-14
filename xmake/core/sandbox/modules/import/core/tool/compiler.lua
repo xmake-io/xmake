@@ -173,13 +173,17 @@ end
 
 -- get all compiler features
 --
--- @param sourcekind    the source kind, .e.g cc, cxx, mm, mxx, sc
+-- @param langkind      the language kind, .e.g c, cxx, mm, mxx, swift, go, rust, d, as
 -- @param opt           the argument options (contain all the compiler attributes of target), 
 --                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
 --
 -- @return              the features
 --
-function sandbox_core_tool_compiler.features(sourcekind, opt)
+function sandbox_core_tool_compiler.features(langkind, opt)
+
+    -- get sourcekind from the language kind
+    local sourcekind = language.langkinds()[langkind]
+    assert(sourcekind, "unknown language kind: " .. langkind)
  
     -- get the compiler instance
     local instance, errors = compiler.load(sourcekind)
@@ -218,37 +222,38 @@ end
 --
 function sandbox_core_tool_compiler.has_features(features, opt)
  
-    -- init maps for c, objc
-    local kinds = {c = "cc", m = "mm"}
-
     -- import "lib.detect.has_features"
     sandbox_core_tool_compiler._has_features = sandbox_core_tool_compiler._has_features or import("lib.detect.has_features")
     if not sandbox_core_tool_compiler._has_features then
         return 
     end
 
-    -- classify features by kind
+    -- get the language kinds
+    local langkinds = language.langkinds()
+ 
+    -- classify features by the source kind
     local features_by_kind = {}
     for _, feature in ipairs(table.wrap(features)) do
 
-        -- get feature kind
-        local kind = feature:match("^(%w-)_")
-        assert(kind, "unknown kind for the feature: %s", feature)
+        -- get language kind
+        local langkind = feature:match("^(%w-)_")
+        assert(langkind, "unknown language kind for the feature: %s", feature)
 
-        -- fix kind for c, objc
-        kind = kinds[kind] or kind
+        -- get the sourcekind from the language kind
+        local sourcekind = langkinds[langkind] 
+        assert(sourcekind, "unknown language kind: " .. langkind)
      
         -- add feature
-        features_by_kind[kind] = features_by_kind[kind] or {}
-        table.insert(features_by_kind[kind], feature)
+        features_by_kind[sourcekind] = features_by_kind[sourcekind] or {}
+        table.insert(features_by_kind[sourcekind], feature)
     end
 
     -- has features for each compiler?
     local results = nil
-    for kind, features in pairs(features_by_kind) do
+    for sourcekind, features in pairs(features_by_kind) do
  
         -- get the compiler instance
-        local instance, errors = compiler.load(kind)
+        local instance, errors = compiler.load(sourcekind)
         if not instance then
             raise(errors)
         end
@@ -274,7 +279,7 @@ end
 
 -- has the given flags?
 --
--- @param sourcekind    the source kind 
+-- @param sourcekind    the source kind, .e.g cc, cxx, sc, gc, dc, rc, .. 
 -- @param flags         the flags
 --
 -- @return              the supported flags or nil

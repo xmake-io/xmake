@@ -31,6 +31,9 @@ language("msrc")
     -- set source file flags
     set_sourceflags {mrc = "mrcflags"}
 
+    -- set language kinds
+    set_langkinds {msrc = "mrc"}
+
     -- set mixing kinds
     set_mixingkinds("mrc")
 

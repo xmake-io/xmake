@@ -37,6 +37,9 @@ language("c++")
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
+    -- set language kinds
+    set_langkinds {c = "cc", cxx = "cxx"}
+
     -- set mixing kinds
     set_mixingkinds("cc", "cxx", "as", "mrc")
 
