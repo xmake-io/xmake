@@ -1,14 +1,23 @@
-var langs = [
+const langs = [
   {title: 'English', path: '/home'},
   {title: '中文', path: '/zh/'},
 ]
 
-self.$config = {
+docute.init({
     landing: true,
     repo: 'tboox/xmake',
     twitter: 'waruqi',
     url: 'http://xmake.io',
     'edit-link': 'https://github.com/tboox/xmake/blob/dev/docs',
+    announcement(route) {
+    const info = { type: 'success' }
+    if (/\/zh/.test(route.path)) {
+      info.html = '<a style="margin-right:10px;" class="docute-button docute-button-mini docute-button-success" href="/cn/pages/donation.html#donate" target="_blank">捐赠!</a> 通过成为赞助商或者一次性捐赠支持xmake的开发和文档更新。'
+    } else {
+      info.html = '<a style="margin-right:10px;" class="docute-button docute-button-mini docute-button-success" href="/pages/donation.html#donate" target="_blank">Donate!</a> Support xmake development and documentation updates by becoming a sponsor or one-time donation.'
+    }
+    return info
+   },
     nav: {
     default: [
       {
@@ -64,4 +73,4 @@ self.$config = {
       tags: ['en', 'zh']
     })
   ]
-}
+})
