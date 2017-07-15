@@ -55,6 +55,7 @@ language("c++")
         object =
         {
             "config.includedirs"
+        ,   "config.frameworkdirs"
         ,   "config.frameworks"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -64,6 +65,7 @@ language("c++")
         ,   "target.includedirs"
         ,   "target.defines"
         ,   "target.undefines"
+        ,   "target.frameworkdirs"
         ,   "target.frameworks"
         ,   "option.symbols"
         ,   "option.warnings"
@@ -75,16 +77,20 @@ language("c++")
         ,   "option.undefines"
         ,   "option.defines_if_ok"
         ,   "option.undefines_if_ok"
+        ,   "option.frameworkdirs"
         ,   "option.frameworks"
         ,   "platform.includedirs"
         ,   "platform.defines"
         ,   "platform.undefines"
+        ,   "platform.frameworkdirs"
         ,   "platform.frameworks"
         }
     ,   binary =
         {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
@@ -92,8 +98,10 @@ language("c++")
         ,   "option.symbols"
         ,   "option.linkdirs"
         ,   "option.rpathdirs"
+        ,   "option.frameworkdirs"
         ,   "platform.linkdirs"
         ,   "platform.rpathdirs"
+        ,   "platform.frameworkdirs"
         ,   "config.links"
         ,   "config.frameworks"
         ,   "target.links"
@@ -106,13 +114,17 @@ language("c++")
     ,   shared =
         {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.strip"
         ,   "option.symbols"
         ,   "option.linkdirs"
+        ,   "option.frameworkdirs"
         ,   "platform.linkdirs"
+        ,   "platform.frameworkdirs"
         ,   "config.links"
         ,   "config.frameworks"
         ,   "target.links"
@@ -133,29 +145,31 @@ language("c++")
     set_menu {
                 config = 
                 {   
-                    {}
-                ,   {nil, "cc",         "kv", nil,          "The C Compiler"                        }
-                ,   {nil, "cxx",        "kv", nil,          "The C++ Compiler"                      }
-                ,   {nil, "cflags",     "kv", nil,          "The C Compiler Flags"                  }
-                ,   {nil, "cxflags",    "kv", nil,          "The C/C++ compiler Flags"              }
-                ,   {nil, "cxxflags",   "kv", nil,          "The C++ Compiler Flags"                }
+                    {                                                                                               }
+                ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
+                ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }
+                ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }
+                ,   {nil, "cxflags",       "kv", nil,          "The C/C++ compiler Flags"                           }
+                ,   {nil, "cxxflags",      "kv", nil,          "The C++ Compiler Flags"                             }
 
-                ,   {}
-                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
-                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+                ,   {                                                                                               }
+                ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
+                ,   {nil, "ldflags",       "kv", nil,          "The Binary Linker Flags"                            }
 
-                ,   {}
-                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
-                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
+                ,   {                                                                                               }
+                ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
+                ,   {nil, "arflags",       "kv", nil,          "The Static Library Linker Flags"                    }
 
-                ,   {}
-                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"             }
-                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"       }
+                ,   {                                                                                               }
+                ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
+                ,   {nil, "shflags",       "kv", nil,          "The Shared Library Linker Flags"                    }
 
-                ,   {}
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }
-                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
+                ,   {                                                                                               }
+                ,   {nil, "links",         "kv", nil,          "The Link Libraries"                                 }
+                ,   {nil, "linkdirs",      "kv", nil,          "The Link Search Directories"                        }
+                ,   {nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }
+                ,   {nil, "frameworks",    "kv", nil,          "The Include and Link Frameworks"                    }
+                ,   {nil, "frameworkdirs", "kv", nil,          "The Include and Link Frameworks Search Directories" }
                 }
             }
 

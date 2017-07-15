@@ -212,10 +212,12 @@ function apis()
     ,   "target.add_linkdirs"
     ,   "target.add_rpathdirs"
     ,   "target.add_includedirs"
+    ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_rpathdirs"
     ,   "option.add_includedirs"
+    ,   "option.add_frameworkdirs"
     }
     _g.dictionary =
     {

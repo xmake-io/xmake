@@ -52,6 +52,7 @@ language("swift")
         object =
         {
             "config.includedirs"
+        ,   "config.frameworkdirs"
         ,   "config.Frameworks"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -61,6 +62,7 @@ language("swift")
         ,   "target.includedirs"
         ,   "target.defines"
         ,   "target.undefines"
+        ,   "target.frameworkdirs"
         ,   "target.frameworks"
         ,   "option.symbols"
         ,   "option.warnings"
@@ -72,25 +74,31 @@ language("swift")
         ,   "option.undefines"
         ,   "option.defines_if_ok"
         ,   "option.undefines_if_ok"
+        ,   "option.frameworkdirs"
         ,   "option.frameworks"
         ,   "platform.includedirs"
         ,   "platform.defines"
         ,   "platform.undefines"
+        ,   "platform.frameworkdirs"
         ,   "platform.frameworks"
         }
     ,   binary =
         {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
+        ,   "target.frameworkdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.strip"
         ,   "option.symbols"
         ,   "option.linkdirs"
         ,   "option.rpathdirs"
+        ,   "option.frameworkdirs"
         ,   "platform.linkdirs"
         ,   "platform.rpathdirs"
+        ,   "platform.frameworkdirs"
         ,   "config.links"
         ,   "config.frameworks"
         ,   "target.links"
@@ -103,13 +111,17 @@ language("swift")
     ,   shared =
         {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.strip"
         ,   "option.symbols"
         ,   "option.linkdirs"
+        ,   "option.frameworkdirs"
         ,   "platform.linkdirs"
+        ,   "platform.frameworkdirs"
         ,   "config.links"
         ,   "config.frameworks"
         ,   "target.links"
@@ -130,16 +142,17 @@ language("swift")
     set_menu {
                 config = 
                 {   
-                  {                                                                            }
-                , { nil, "sc",         "kv", nil,          "The Swift Compiler"                }
-                , { nil, "sc-ld",      "kv", nil,          "The Swift Linker"                  }
-                , { nil, "sc-sh",      "kv", nil,          "The Swift Shared Library Linker"   }
+                  {                                                                                               }
+                , {nil, "sc",            "kv", nil,          "The Swift Compiler"                                 }
+                , {nil, "sc-ld",         "kv", nil,          "The Swift Linker"                                   }
+                , {nil, "sc-sh",         "kv", nil,          "The Swift Shared Library Linker"                    }
 
-                , {                                                                            }
-                , { nil, "links",      "kv", nil,          "The Link Libraries"                }
-                , { nil, "linkdirs",   "kv", nil,          "The Link Search Directories"       }
-                , { nil, "includedirs","kv", nil,          "The Include Search Directories"    }
-                , { nil, "frameworks", "kv", nil,          "The Link Frameworks"               }
+                , {                                                                                               }
+                , {nil, "links",         "kv", nil,          "The Link Libraries"                                 }
+                , {nil, "linkdirs",      "kv", nil,          "The Link Search Directories"                        }
+                , {nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }
+                , {nil, "frameworks",    "kv", nil,          "The Include and Link Frameworks"                    }
+                , {nil, "frameworkdirs", "kv", nil,          "The Include and Link Frameworks Search Directories" }
                 }
             } 
 

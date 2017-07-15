@@ -243,6 +243,11 @@ function nf_framework(self, framework)
     return "-framework " .. framework
 end
 
+-- make the frameworkdir flag
+function nf_frameworkdir(self, frameworkdir)
+    return "-F " .. frameworkdir
+end
+
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
     return self:program(), table.join("-o", targetfile, objectfiles, flags)

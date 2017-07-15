@@ -170,6 +170,11 @@ function nf_framework(self, framework)
     return "-framework " .. framework
 end
 
+-- make the frameworkdir flag
+function nf_frameworkdir(self, frameworkdir)
+    return "-F " .. frameworkdir
+end
+
 -- make the link flag
 function nf_link(self, lib)
     return "-l" .. lib
