@@ -14,6 +14,7 @@
 * Add `option.on_check`, `option.after_check` and `option.before_check` api
 * Add `target.on_load` api
 * [#132](https://github.com/tboox/xmake/issues/132): Add `add_frameworkdirs` api
+* Add `lib.detect.has_xxx` and `lib.detect.find_xxx` apis.
 
 ### Changes
 
@@ -321,6 +322,7 @@
 * 添加`option.on_check`, `option.after_check` 和 `option.before_check` 接口
 * 添加`target.on_load`接口
 * [#132](https://github.com/tboox/xmake/issues/132): 添加`add_frameworkdirs`接口
+* 添加`lib.detect.has_xxx`和`lib.detect.find_xxx`接口
 
 ### 改进
 

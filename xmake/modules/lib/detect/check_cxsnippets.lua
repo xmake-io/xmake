@@ -113,7 +113,7 @@ function _sourcecode(snippets, opt)
     return sourcecode
 end
 
--- check the given c snippets?
+-- check the given c/c++ snippets?
 --
 -- @param snippets  the snippets
 -- @param opt       the argument options
