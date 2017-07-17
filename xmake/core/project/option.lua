@@ -55,6 +55,25 @@ function option._cache()
     return option._CACHE
 end
 
+-- save the option info to the cache
+function option:_save()
+
+    -- clear scripts for caching to file    
+    self:set("check", nil)
+    self:set("check_after", nil)
+    self:set("check_before", nil)
+
+    -- save this option to cache
+    option._cache():set(self:name(), self._INFO)
+    option._cache():flush()
+end
+
+-- clear the option info for cache
+function option:_clear()
+    option._cache():set(self:name(), nil)
+    option._cache():flush()
+end
+
 -- check option for c/c++
 function option:_cx_check()
 
@@ -86,9 +105,9 @@ function option:_cx_check()
                 return false, results_or_errors
             end
 
-            -- not pass?
-            if not results_or_errors then
-                return false
+            -- passed?
+            if results_or_errors then
+                self:enable(true)
             end
         end
     end
@@ -103,29 +122,20 @@ function option:_on_check()
     -- get check script
     local check = self:get("check")
     if check then
-
-        -- check it
-        local ok, results_or_errors = sandbox.load(check, self)
-        if not ok then
-            return false, results_or_errors
-        else
-            return results_or_errors
-        end
+        return sandbox.load(check, self)
+    else
+        return self:_cx_check()
     end
 end
 
 -- check option 
 function option:_check()
 
+    -- disable this option first
+    self:enable(false)
+
     -- check it
-    local ok = nil
-    local errors = nil
-    for _, check in ipairs({self._on_check, self._cx_check}) do
-        ok, errors = check(self)
-        if ok ~= nil then
-            break
-        end
-    end
+    local ok, errors = self:_on_check()
 
     -- get name
     local name = self:name()
@@ -134,13 +144,10 @@ function option:_check()
     end
 
     -- trace
-    utils.cprint("checking for the %s ... %s", name, utils.ifelse(ok, "${green}ok", "${red}no"))
-    if not ok and errors then
+    utils.cprint("checking for the %s ... %s", name, utils.ifelse(self:is_enabled(), "${green}ok", "${red}no"))
+    if not ok then
         os.raise(errors)
     end
-
-    -- ok?
-    return ok
 end
 
 -- attempt to check option 
@@ -172,35 +179,18 @@ function option:check(force)
 
         -- use it directly if the default value exists
         if default ~= nil then
-
-            -- save the default value
-            config.set(name, default)
-
-            -- save this option to configure 
-            self:save()
-
+            self:set_value(default)
         -- check option as boolean switch automatically if the default value not exists
-        elseif default == nil and self:_check() then
-
-            -- enable this option
-            config.set(name, true)
-
-            -- save this option to configure 
-            self:save()
+        elseif default == nil then
+            self:_check()
+        -- disable this option in other case
         else
-
-            -- disable this option
-            config.set(name, false)
-
-            -- clear this option to configure 
-            self:clear()
+            self:enable(false)
         end
 
-    -- no check
+    -- no check? save this option to configure directly
     elseif config.get(name) then
-
-        -- save this option to configure directly
-        self:save()
+        self:_save()
     end    
 
     -- after check
@@ -208,13 +198,41 @@ function option:check(force)
         check_after(self)
     end
 
+    -- flush the option cache
+    self:_flush()
+
     -- checked
     self._CHECKED = true
 end
 
--- this option is enabled?
-function option:enabled()
+-- get the option value
+function option:value()
     return config.get(self:name())
+end
+
+-- set the option value
+function option:set_value(value)
+    config.set(self:name(), value)
+    self:_save()
+end
+
+-- this option is enabled?
+function option:is_enabled()
+    return config.get(self:name())
+end
+
+-- enable or disable this option
+function option:enable(is_enabled)
+
+    -- enable or disable this option?
+    config.set(self:name(), is_enabled)
+
+    -- save or clear this option in cache 
+    if is_enabled then
+        self:_save()
+    else
+        self:_clear()
+    end
 end
 
 -- dump this option
@@ -261,21 +279,25 @@ function option:deps()
 end
 
 -- save the option info to the cache
-function option:save()
+function option:_save()
+    option._cache():set(self:name(), self._INFO)
+end
+
+-- clear the option info for cache
+function option:_clear()
+    option._cache():set(self:name(), nil)
+end
+
+-- flush the option cache to file
+function option:_flush()
 
     -- clear scripts for caching to file    
     self:set("check", nil)
     self:set("check_after", nil)
     self:set("check_before", nil)
 
-    -- save this option to cache
-    option._cache():set(self:name(), self._INFO)
+    -- flush cache
     option._cache():flush()
-end
-
--- clear the option info for cache
-function option:clear()
-    option._cache():set(self:name(), nil)
 end
 
 -- get the option name

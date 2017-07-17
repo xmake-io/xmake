@@ -506,7 +506,7 @@ function project.options(enable_filter)
         instance._INFO = optioninfo
 
         -- save it
-        table.insert(options,instance)
+        table.insert(options, instance)
     end
 
     -- ok?

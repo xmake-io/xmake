@@ -160,7 +160,7 @@ end
 -- find package 
 --
 -- @param name      the package name
--- @param opt       the package options. e.g. {plat = "iphoneos", arch = "arm64", version = "1.0.1", pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}}
+-- @param opt       the package options. e.g. {verbose = false, plat = "iphoneos", arch = "arm64", version = "1.0.1", pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
@@ -201,7 +201,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     cache.save(key, cacheinfo)
 
     -- trace
-    if option.get("verbose") then
+    if opt.verbose or option.get("verbose") then
         if result then
             utils.cprint("checking for the %s ... ${green}ok", name)
         else

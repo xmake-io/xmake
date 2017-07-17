@@ -72,10 +72,12 @@ function _make_for_target(files, target)
     for _, opt in ipairs(target:options()) do
 
         -- get the option defines
-        table.join2(defines, opt:get("defines_h_if_ok")) 
+        table.join2(defines, opt:get("defines_h")) 
+        table.join2(defines, opt:get("defines_h_if_ok")) -- deprecated 
 
         -- get the option undefines
-        table.join2(undefines, opt:get("undefines_h_if_ok")) 
+        table.join2(undefines, opt:get("undefines_h")) 
+        table.join2(undefines, opt:get("undefines_h_if_ok")) -- deprecated
     end
 
     -- make the defines
