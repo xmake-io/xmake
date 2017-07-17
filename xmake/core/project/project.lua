@@ -44,6 +44,7 @@ local platform              = require("platform/platform")
 local environment           = require("platform/environment")
 local language              = require("language/language")
 local sandbox_os            = require("sandbox/modules/os")
+local sandbox_module        = require("sandbox/modules/import/core/sandbox/module")
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -146,7 +147,12 @@ function project._api_is_option(interp, ...)
     end
 end
 
--- load all plugins from the given directories
+-- add module directories
+function project._api_add_moduledirs(interp, ...)
+    sandbox_module.add_directories(...)
+end
+
+-- add plugin directories load all plugins from the given directories
 function project._api_add_plugindirs(interp, ...)
 
     -- get all directories
@@ -160,7 +166,7 @@ function project._api_add_plugindirs(interp, ...)
     interp:api_builtin_add_subdirs(plugindirs)
 end
 
--- load all packages from the given directories
+-- add package directories and load all packages from the given directories
 function project._api_add_packagedirs(interp, ...)
 
     -- get all directories
@@ -287,6 +293,7 @@ function project._interpreter()
         ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_option",               project._api_is_option        }
             -- add_xxx
+        ,   {"add_moduledirs",          project._api_add_moduledirs   }
         ,   {"add_plugindirs",          project._api_add_plugindirs   }
         ,   {"add_packagedirs",         project._api_add_packagedirs  }
         }

@@ -15,6 +15,7 @@
 * Add `target.on_load` api
 * [#132](https://github.com/tboox/xmake/issues/132): Add `add_frameworkdirs` api
 * Add `lib.detect.has_xxx` and `lib.detect.find_xxx` apis.
+* Add `add_moduledirs` api
 
 ### Changes
 
@@ -323,6 +324,7 @@
 * 添加`target.on_load`接口
 * [#132](https://github.com/tboox/xmake/issues/132): 添加`add_frameworkdirs`接口
 * 添加`lib.detect.has_xxx`和`lib.detect.find_xxx`接口
+* 添加`add_moduledirs`接口在工程中定义和加载扩展模块
 
 ### 改进
 

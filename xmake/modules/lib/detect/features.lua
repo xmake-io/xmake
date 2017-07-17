@@ -76,11 +76,9 @@ function main(name, opt)
 
     -- detect.tools.xxx.features(opt)?
     _g._checking = ifelse(coroutine_running, key, nil)
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "features.lua")) then
-        local features = import("detect.tools." .. tool.name .. ".features")
-        if features then
-            result = features(opt)
-        end
+    local features = import("detect.tools." .. tool.name .. ".features", {try = true})
+    if features then
+        result = features(opt)
     end
     _g._checking = nil
 

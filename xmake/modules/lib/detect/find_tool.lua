@@ -30,13 +30,11 @@ import("lib.detect.find_toolname")
 -- find tool from modules
 function _find_from_modules(name, opt)
 
-    -- "detect.tools.find_xxx" exists?
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", "find_" .. name .. ".lua")) then
-        local find_tool = import("detect.tools.find_" .. name)
-        if find_tool then
-            local program, version, toolname = find_tool(opt)
-            return {name = toolname or name, program = program, version = version}
-        end
+    -- attempt to import "detect.tools.find_xxx" 
+    local find_tool = import("detect.tools.find_" .. name, {try = true})
+    if find_tool then
+        local program, version, toolname = find_tool(opt)
+        return {name = toolname or name, program = program, version = version}
     end
 end
 

@@ -30,9 +30,9 @@ local os            = require("base/os")
 local table         = require("base/table")
 local utils         = require("base/utils")
 local string        = require("base/string")
+local global        = require("base/global")
 local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
-local global        = require("base/global")
 local config        = require("project/config")
 local project       = require("project/project")
 local package       = require("project/package")
@@ -42,8 +42,8 @@ local sandbox_os    = require("sandbox/modules/os")
 function task._directories()
 
     return  {   path.join(global.directory(), "plugins")
-            ,   path.join(xmake._PROGRAM_DIR, "plugins")
-            ,   path.join(xmake._PROGRAM_DIR, "actions")
+            ,   path.join(os.programdir(), "plugins")
+            ,   path.join(os.programdir(), "actions")
             }
 end
 

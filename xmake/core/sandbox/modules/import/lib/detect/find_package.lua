@@ -54,11 +54,9 @@ end
 function sandbox_lib_detect_find_package._find_from_modules(name, opt)
 
     -- "detect.packages.find_xxx" exists?
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "packages", "find_" .. name .. ".lua")) then
-        local find_package = import("detect.packages.find_" .. name)
-        if find_package then
-            return find_package(opt)
-        end
+    local find_package = import("detect.packages.find_" .. name, {try = true})
+    if find_package then
+        return find_package(opt)
     end
 end
 

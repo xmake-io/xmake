@@ -22,14 +22,14 @@
 -- @file        find_toolname.lua
 --
 
+-- imports
+import("core.sandbox.module")
+
 -- find tool name from the given program 
 function _find(program)
 
-    -- get tool directory
-    local tooldir = path.join(os.programdir(), "modules", "detect", "tools")
-
     -- attempt to find it directly first
-    if os.isfile(path.join(tooldir, "find_" .. program .. ".lua")) then
+    if module.find("detect.tools.find_" .. program) then
         return program
     end
 
@@ -50,7 +50,7 @@ function _find(program)
 
     -- find_toolname.lua exists? found
     local toolname = name:gsub("[%+%-]", function (ch) return ifelse(ch == "+", "x", "_") end)
-    if os.isfile(path.join(tooldir, "find_" .. toolname .. ".lua")) then
+    if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end
 
@@ -65,7 +65,7 @@ function _find(program)
 
     -- find_toolname.lua exists? found
     toolname = name:gsub("%+", "x")
-    if os.isfile(path.join(tooldir, "find_" .. toolname .. ".lua")) then
+    if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end
 end

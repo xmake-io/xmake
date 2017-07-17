@@ -103,11 +103,9 @@ function main(name, flags, opt)
 
     -- detect.tools.xxx.has_flags(flags, opt)?
     _g._checking = ifelse(coroutine_running, key, nil)
-    if os.isfile(path.join(os.programdir(), "modules", "detect", "tools", tool.name, "has_flags.lua")) then
-        local hasflags = import("detect.tools." .. tool.name .. ".has_flags")
-        if hasflags then
-            result = hasflags(flags, opt)
-        end
+    local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
+    if hasflags then
+        result = hasflags(flags, opt)
     else
         result = try { function () os.runv(tool.program, flags); return true end }
     end
