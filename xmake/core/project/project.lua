@@ -507,6 +507,14 @@ function project.options(enable_filter)
 
         -- save it
         table.insert(options, instance)
+
+        -- mark add_defines_h_if_ok and add_undefines_h_if_ok as deprecated
+        if instance:get("defines_h_if_ok") then
+            deprecated.add("add_defines_h(\"%s\")", "add_defines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("defines_h_if_ok")), "\", \""))
+        end
+        if instance:get("undefines_h_if_ok") then
+            deprecated.add("add_undefines_h(\"%s\")", "add_undefines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("undefines_h_if_ok")), "\", \""))
+        end
     end
 
     -- ok?

@@ -84,7 +84,7 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_cfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cincludes", includes) end
-    interp:api_call("add_defines_h_if_ok", define)
+    interp:api_call("add_defines_h", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -138,7 +138,7 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_cxxfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cxxincludes", includes) end
-    interp:api_call("add_defines_h_if_ok", define)
+    interp:api_call("add_defines_h", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
