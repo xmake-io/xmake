@@ -60,13 +60,15 @@ function info(name, opt)
 
     -- get pkg-config path from brew
     local brew = find_brew()
+    local brewprefix = nil
     local configdirs = opt.configdirs or {}
     if brew then
-        local prefix = try { function () return os.iorunv(brew, {"--prefix", name}) end }
-        if prefix then
-            prefix = path.join(prefix:trim(), "lib", "pkgconfig")
-            if os.isdir(prefix) then
-                table.insert(configdirs, prefix)
+        brewprefix = try { function () return os.iorunv(brew, {"--prefix", name}) end }
+        if brewprefix then
+            brewprefix = brewprefix:trim()
+            local configdir = path.join(brewprefix, "lib", "pkgconfig")
+            if os.isdir(configdir) then
+                table.insert(configdirs, configdir)
             end
         end
     end
@@ -109,6 +111,8 @@ function info(name, opt)
                 table.insert(result.includedirs, includedir)
             end
         end
+    elseif brewprefix then
+        result = {linkdirs = {path.join(brewprefix, "lib")}, includedirs  = {path.join(brewprefix, "include")}}
     end
 
     -- get version
@@ -137,7 +141,7 @@ end
 -- find package 
 --
 -- @param name  the package name
--- @param opt   the argument options, {plat = "", arch = "", version = "1.0.1"}
+-- @param opt   the argument options, {plat = "", arch = "", version = "1.0.1", links = {...}}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}}
 --
@@ -160,10 +164,16 @@ function find(name, opt)
     if opt.version and pkginfo.version ~= opt.version then
         return 
     end
-    
+
+    -- get links
+    local links = pkginfo.links
+    if not links or #links == 0 then
+        links = opt.links
+    end
+
     -- find library 
     local result = nil
-    for _, link in ipairs(table.wrap(pkginfo.links)) do
+    for _, link in ipairs(table.wrap(links)) do
         local libinfo = find_library(link, pkginfo.linkdirs)
         if libinfo then
             result          = result or {}

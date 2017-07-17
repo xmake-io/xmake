@@ -380,7 +380,7 @@ end
 function target:objectfile(sourcefile)
 
     -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
-    sourcefile = sourcefile:gsub(target.filename("([%w_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
+    sourcefile = sourcefile:gsub(target.filename("([%w%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
     -- get the object directory
     local objectdir = self:objectdir()

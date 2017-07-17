@@ -39,9 +39,9 @@ local find_file         = import("lib.detect.find_file")
 function sandbox_lib_detect_find_library._link(filename)
 
     -- get link
-    local link, count = filename:gsub(target.filename("([%w_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
+    local link, count = filename:gsub(target.filename("([%w%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
     if count == 0 then
-        link, count = filename:gsub(target.filename("([%w_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
+        link, count = filename:gsub(target.filename("([%w%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
     end
 
     -- ok?
