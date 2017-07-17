@@ -24,7 +24,7 @@
 
 -- imports
 import("core.project.config")
-import("core.project.global")
+import("core.base.global")
 
 -- enter the given environment
 function _enter(name)

@@ -31,7 +31,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
-local global    = require("project/global")
+local global    = require("base/global")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
@@ -299,23 +299,17 @@ function sandbox_import.import(name, args)
     local rootdir = args.rootdir or instance:rootdir()
     assert(rootdir)
 
+    -- the global modules directory of users
+    local modules_global_dir = path.join(global.directory(), "modules")
+
+    -- the program modules directory
+    local modules_program_dir = path.join(os.programdir(), "modules")
+
     -- the sandbox modules directory
     local modules_sandbox_dir = path.join(os.programdir(), "core/sandbox/modules/import")
 
-    -- the extension modules directory
-    local modules_extension_dir = path.join(os.programdir(), "modules")
-
-    -- the global modules directory for users
-    local modules_global_dir = path.join(global.directory(), "modules")
-
     -- init module directories
-    local modules_directories = 
-    {
-        rootdir                                                     -- load module from the given root directory first 
-    ,   path.join(global.directory(), "modules")                    -- load module from the user global modules directory
-    ,   path.join(os.programdir(), "modules")                       -- load module from the extension modules directory
-    ,   path.join(os.programdir(), "core/sandbox/modules/import")   -- load module from the sandbox core modules directory
-    }
+    local modules_directories = table.join(rootdir, modules_global_dir, modules_program_dir, modules_sandbox_dir)
 
     -- load module
     local errors = nil

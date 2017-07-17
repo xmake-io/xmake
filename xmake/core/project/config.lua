@@ -32,12 +32,9 @@ local path          = require("base/path")
 local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
-local global        = require("project/global")
 
 -- get the configure file
 function config._file()
-    
-    -- get it
     return path.join(config.directory(), "xmake.conf")
 end
 
@@ -95,7 +92,6 @@ function config.set(name, value)
 
     -- set it 
     configs[name] = value
-
 end
 
 -- get all options
@@ -138,9 +134,7 @@ end
 
 -- get the configure directory
 function config.directory()
-
-    -- get it
-    return path.join(xmake._PROJECT_DIR, ".xmake")
+    return path.join(os.projectdir(), ".xmake")
 end
 
 -- load the project configure
@@ -218,10 +212,7 @@ end
 
 -- init the config
 function config.init()
-
-    -- clear it
     config._CONFIGS = {}
-
 end
 
 -- dump the configure

@@ -34,8 +34,6 @@ local option        = require("base/option")
 
 -- get the configure file
 function global._file()
-    
-    -- get it
     return path.join(global.directory(), "xmake.conf")
 end
 
@@ -64,7 +62,6 @@ function global.set(name, value)
 
     -- set it 
     configs[name] = value
-
 end
 
 -- get all options
@@ -84,8 +81,6 @@ end
 
 -- get the global configure directory
 function global.directory()
-
-    -- get it
     return path.translate("~/.xmake")
 end
 

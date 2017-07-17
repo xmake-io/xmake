@@ -101,22 +101,16 @@ end
 
 -- get the project file
 function sandbox_core_project.file()
-
-    -- get it
     return project.file()
 end
 
 -- get the project directory
 function sandbox_core_project.directory()
-
-    -- get it
     return project.directory()
 end
 
 -- get the project mtimes
 function sandbox_core_project.mtimes()
-
-    -- get it
     return project.mtimes()
 end
 

@@ -34,7 +34,7 @@ local table         = require("base/table")
 local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
-local global        = require("project/global")
+local global        = require("base/global")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -213,9 +213,7 @@ end
 
 -- the directory of language
 function language._directory()
-
-    -- the directory
-    return path.join(xmake._PROGRAM_DIR, "languages")
+    return path.join(os.programdir(), "languages")
 end
 
 -- the interpreter

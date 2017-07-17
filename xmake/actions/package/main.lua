@@ -26,7 +26,7 @@
 import("core.base.option")
 import("core.project.task")
 import("core.project.config")
-import("core.project.global")
+import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
 

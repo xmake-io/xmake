@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("core.project.global")
+import("core.base.global")
 
 -- main
 function main()

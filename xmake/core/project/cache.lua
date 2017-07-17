@@ -32,7 +32,7 @@ local path          = require("base/path")
 local table         = require("base/table")
 local utils         = require("base/utils")
 local config        = require("project/config")
-local global        = require("project/global")
+local global        = require("base/global")
 
 -- the cache instance
 --

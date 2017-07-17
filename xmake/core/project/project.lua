@@ -36,7 +36,7 @@ local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
 local config                = require("project/config")
-local global                = require("project/global")
+local global                = require("base/global")
 local option                = require("project/option")
 local package               = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
@@ -146,20 +146,6 @@ function project._api_is_option(interp, ...)
     end
 end
 
--- load all packages from the given directories
-function project._api_add_pkgdirs(interp, ...)
-
-    -- get all directories
-    local pkgdirs = {}
-    local dirs = table.join(...)
-    for _, dir in ipairs(dirs) do
-        table.insert(pkgdirs, dir .. "/*.pkg")
-    end
-
-    -- add all packages
-    interp:api_builtin_add_subdirs(pkgdirs)
-end
-
 -- load all plugins from the given directories
 function project._api_add_plugindirs(interp, ...)
 
@@ -172,6 +158,20 @@ function project._api_add_plugindirs(interp, ...)
 
     -- add all plugins
     interp:api_builtin_add_subdirs(plugindirs)
+end
+
+-- load all packages from the given directories
+function project._api_add_packagedirs(interp, ...)
+
+    -- get all directories
+    local pkgdirs = {}
+    local dirs = table.join(...)
+    for _, dir in ipairs(dirs) do
+        table.insert(pkgdirs, dir .. "/*.pkg")
+    end
+
+    -- add all packages
+    interp:api_builtin_add_subdirs(pkgdirs)
 end
 
 -- get interpreter
@@ -279,16 +279,16 @@ function project._interpreter()
     ,   custom = 
         {
             -- is_xxx
-            {"is_os",                   project._api_is_os          }
-        ,   {"is_kind",                 project._api_is_kind        }
-        ,   {"is_host",                 project._api_is_host        }
-        ,   {"is_mode",                 project._api_is_mode        }
-        ,   {"is_plat",                 project._api_is_plat        }
-        ,   {"is_arch",                 project._api_is_arch        }
-        ,   {"is_option",               project._api_is_option      }
+            {"is_os",                   project._api_is_os            }
+        ,   {"is_kind",                 project._api_is_kind          }
+        ,   {"is_host",                 project._api_is_host          }
+        ,   {"is_mode",                 project._api_is_mode          }
+        ,   {"is_plat",                 project._api_is_plat          }
+        ,   {"is_arch",                 project._api_is_arch          }
+        ,   {"is_option",               project._api_is_option        }
             -- add_xxx
-        ,   {"add_packagedirs",         project._api_add_pkgdirs    }
-        ,   {"add_plugindirs",          project._api_add_plugindirs }
+        ,   {"add_plugindirs",          project._api_add_plugindirs   }
+        ,   {"add_packagedirs",         project._api_add_packagedirs  }
         }
     }
 

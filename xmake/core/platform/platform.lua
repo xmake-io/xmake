@@ -34,7 +34,7 @@ local table         = require("base/table")
 local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
-local global        = require("project/global")
+local global        = require("base/global")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -82,29 +82,21 @@ end
 
 -- get the platform os
 function _instance:os()
-
-    -- get it
     return self._INFO.os
 end
 
 -- get the platform menu
 function _instance:menu()
-
-    -- get it
     return self._INFO.menu
 end
 
 -- get the platform hosts
 function _instance:hosts()
-
-    -- get it
     return self._INFO.hosts
 end
 
 -- get the platform archs
 function _instance:archs()
-
-    -- get it
     return self._INFO.archs
 end
 
@@ -114,7 +106,7 @@ function platform._directories()
     -- the directories
     return  {   path.join(config.directory(), "platforms")
             ,   path.join(global.directory(), "platforms")
-            ,   path.join(xmake._PROGRAM_DIR, "platforms")
+            ,   path.join(os.programdir(), "platforms")
             }
 end
 

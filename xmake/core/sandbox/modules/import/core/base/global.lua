@@ -23,37 +23,31 @@
 --
 
 -- define module
-local sandbox_core_project_global = sandbox_core_project_global or {}
+local sandbox_core_base_global = sandbox_core_base_global or {}
 
 -- load modules
 local table     = require("base/table")
-local global    = require("project/global")
+local global    = require("base/global")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
 -- get the configure
-function sandbox_core_project_global.get(name)
-
-    -- get it
+function sandbox_core_base_global.get(name)
     return global.get(name)
 end
 
 -- set the configure 
-function sandbox_core_project_global.set(name, value)
-
-    -- set it
+function sandbox_core_base_global.set(name, value)
     global.set(name, value)
 end
 
 -- dump the configure
-function sandbox_core_project_global.dump()
-
-    -- dump it
+function sandbox_core_base_global.dump()
     global.dump()
 end
 
 -- load the configure
-function sandbox_core_project_global.load()
+function sandbox_core_base_global.load()
 
     -- load it
     local ok, errors = global.load()
@@ -63,7 +57,7 @@ function sandbox_core_project_global.load()
 end
 
 -- save the configure
-function sandbox_core_project_global.save()
+function sandbox_core_base_global.save()
 
     -- save it
     local ok, errors = global.save()
@@ -73,14 +67,12 @@ function sandbox_core_project_global.save()
 end
 
 -- init the configure
-function sandbox_core_project_global.init()
-
-    -- init it
+function sandbox_core_base_global.init()
     global.init()
 end
 
 -- check the configure
-function sandbox_core_project_global.check()
+function sandbox_core_base_global.check()
 
     -- check all platforms with the current host
     for _, plat in ipairs(table.wrap(platform.plats())) do
@@ -111,14 +103,12 @@ function sandbox_core_project_global.check()
 end
 
 -- get all options
-function sandbox_core_project_global.options()
-        
-    -- get it
+function sandbox_core_base_global.options()
     return global.options()
 end
 
 -- get the configure directory
-function sandbox_core_project_global.directory()
+function sandbox_core_base_global.directory()
 
     -- get it
     local dir = global.directory()
@@ -130,4 +120,4 @@ end
 
 
 -- return module
-return sandbox_core_project_global
+return sandbox_core_base_global
