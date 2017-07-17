@@ -123,7 +123,7 @@ function main(kind, toolkind)
 
     -- only check the given tool?
     if toolkind then
-        return checker.toolchain_check(import("core.project." .. kind), toolkind, _toolchains)
+        return checker.toolchain_check(kind, toolkind, _toolchains)
     end
 
     -- init the check list of config

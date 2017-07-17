@@ -179,14 +179,11 @@ function main(kind, toolkind)
     -- only check the given tool?
     if toolkind then
 
-        -- import the given config
-        local config = import("core.project." .. kind)
-
         -- enter environment
         environment.enter("toolchains")
 
         -- check it
-        checker.toolchain_check(config, toolkind, _toolchains)
+        checker.toolchain_check(kind, toolkind, _toolchains)
 
         -- leave environment
         environment.leave("toolchains")

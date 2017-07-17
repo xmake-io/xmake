@@ -74,8 +74,11 @@ end
 -- check all for the given config kind
 function check(kind, checkers)
 
+    -- init config name
+    local confignames = {config = "core.project.config", global = "core.base.global"}
+
     -- import config module
-    local config = import("core.project." .. kind)
+    local config = import(confignames[kind])
 
     -- check all
     for _, checker in ipairs(checkers[kind]) do
@@ -181,7 +184,13 @@ function toolchain_insert(toolchains, toolkind, cross, name, description, check)
 end
 
 -- check the toolchain 
-function toolchain_check(config, toolkind, toolchains)
+function toolchain_check(kind, toolkind, toolchains)
+
+    -- init config name
+    local confignames = {config = "core.project.config", global = "core.base.global"}
+
+    -- import config module
+    local config = import(confignames[kind])
 
     -- load toolchains if be function
     if type(toolchains) == "function" then
