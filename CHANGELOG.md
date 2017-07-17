@@ -16,6 +16,7 @@
 * [#132](https://github.com/tboox/xmake/issues/132): Add `add_frameworkdirs` api
 * Add `lib.detect.has_xxx` and `lib.detect.find_xxx` apis.
 * Add `add_moduledirs` api
+* Add `includes` api instead of `add_subdirs` and `add_subfiles`
 
 ### Changes
 
@@ -325,6 +326,7 @@
 * [#132](https://github.com/tboox/xmake/issues/132): 添加`add_frameworkdirs`接口
 * 添加`lib.detect.has_xxx`和`lib.detect.find_xxx`接口
 * 添加`add_moduledirs`接口在工程中定义和加载扩展模块
+* 添加`includes`接口替换`add_subdirs`和`add_subfiles`
 
 ### 改进
 

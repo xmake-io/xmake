@@ -351,7 +351,7 @@ function interpreter:_api_translate_pathes(...)
 end
 
 -- the builtin api: add_subdirs() or add_subfiles()
-function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
+function interpreter:_api_builtin_add_subdirfiles(...)
 
     -- check
     assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
@@ -370,8 +370,10 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
     -- match all subpathes
     local subpathes_matched = {}
     for _, subpath in ipairs(subpathes) do
-        local files = os.match(subpath, isdirs)
-        if files then table.join2(subpathes_matched, files) end
+        local files = os.match(subpath, not subpath:endswith(".lua"))
+        if files then
+            table.join2(subpathes_matched, files) 
+        end
     end
 
     -- done
@@ -380,7 +382,7 @@ function interpreter:_api_builtin_add_subdirfiles(isdirs, ...)
 
             -- the file path
             local file = subpath
-            if isdirs then
+            if not subpath:endswith(".lua") then
                 file = path.join(subpath, path.filename(curfile))
             end
 
@@ -695,8 +697,9 @@ function interpreter.new()
                                     end}) 
 
     -- register the builtin interfaces
-    instance:api_register(nil, "add_subdirs", interpreter.api_builtin_add_subdirs)
-    instance:api_register(nil, "add_subfiles", interpreter.api_builtin_add_subfiles)
+    instance:api_register(nil, "includes",     interpreter.api_builtin_includes)
+    instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_includes)
+    instance:api_register(nil, "add_subfiles", interpreter.api_builtin_includes)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
 
     -- load builtin module files
@@ -1389,26 +1392,6 @@ function interpreter:api_define(apis)
     end
 end
 
--- the builtin api: add_subdirs()
-function interpreter:api_builtin_add_subdirs(...)
-    
-    -- check
-    assert(self)
-
-    -- done
-    return self:_api_builtin_add_subdirfiles(true, ...)
-end
-
--- the builtin api: add_subfiles()
-function interpreter:api_builtin_add_subfiles(...)
- 
-    -- check
-    assert(self)
-
-    -- done
-    return self:_api_builtin_add_subdirfiles(false, ...)
-end
-
 -- the builtin api: set_xmakever()
 function interpreter:api_builtin_set_xmakever(minver)
 
@@ -1436,6 +1419,113 @@ function interpreter:api_builtin_set_xmakever(minver)
     if curvers_num < minvers_num then
         os.raise("[nobacktrace]: xmake v%s < v%s, please upgrade xmake!", xmake._VERSION_SHORT, minver)
     end
+end
+
+-- the builtin api: includes()
+function interpreter:api_builtin_includes(...)
+
+    -- check
+    assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
+
+    -- the current file 
+    local curfile = self._PRIVATE._CURFILE
+    assert(curfile)
+
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes)
+
+    -- get all subpathes 
+    local subpathes = table.join(...)
+
+    -- match all subpathes
+    local subpathes_matched = {}
+    for _, subpath in ipairs(subpathes) do
+        local files = os.match(subpath, not subpath:endswith(".lua"))
+        if files then
+            table.join2(subpathes_matched, files) 
+        end
+    end
+
+    -- done
+    for _, subpath in ipairs(subpathes_matched) do
+        if subpath and type(subpath) == "string" then
+
+            -- the file path
+            local file = subpath
+            if not subpath:endswith(".lua") then
+                file = path.join(subpath, path.filename(curfile))
+            end
+
+            -- get the absolute file path
+            if not path.is_absolute(file) then
+                file = path.absolute(file)
+            end
+
+            -- update the current file
+            self._PRIVATE._CURFILE = file
+
+            -- load the file script
+            local script, errors = loadfile(file)
+            if script then
+
+                -- bind public scope
+                setfenv(script, self._PUBLIC)
+
+                -- save the previous root scope
+                local root_prev = scopes._ROOT
+
+                -- save the previous scope
+                local scope_prev = scopes._CURRENT
+
+                -- save the previous scope kind
+                local scope_kind_prev = scopes._CURRENT_KIND
+
+                -- clear the current root scope 
+                scopes._ROOT = nil
+
+                -- clear the current scope, force to enter root scope
+                scopes._CURRENT = nil
+
+                -- save the current directory
+                local olddir = os.curdir()
+
+                -- enter the script directory
+                os.cd(path.directory(file))
+
+                -- done interpreter
+                local ok, errors = xpcall(script, interpreter._traceback)
+                if not ok then
+                    os.raise(errors)
+                end
+
+                -- leave the script directory
+                os.cd(olddir)
+
+                -- restore the previous scope kind
+                scopes._CURRENT_KIND = scope_kind_prev
+
+                -- restore the previous scope
+                scopes._CURRENT = scope_prev
+
+                -- fetch the root values in root scopes first
+                interpreter._fetch_root_scope(scopes._ROOT)
+
+                -- restore the previous root scope and merge current root scope
+                -- it will override the previous values if the current values are override mode 
+                -- so we priority use the values in subdirs scope
+                scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, root_prev, true)
+
+                -- get mtime of the file
+                self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
+            else
+                os.raise(errors)
+            end
+        end
+    end
+
+    -- restore the current file 
+    self._PRIVATE._CURFILE = curfile
 end
 
 -- get api function

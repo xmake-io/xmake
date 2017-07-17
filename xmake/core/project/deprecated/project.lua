@@ -47,14 +47,14 @@ function deprecated_project._api_add_pkgdirs(interp, ...)
     end
 
     -- add all packages
-    interp:api_builtin_add_subdirs(pkgdirs)
+    interp:api_builtin_includes(pkgdirs)
 end
 
 -- load the given packages
 function deprecated_project._api_add_pkgs(interp, ...)
 
     -- add all packages
-    interp:api_builtin_add_subdirs(...)
+    interp:api_builtin_includes(...)
 end
 
 -- load all packages from the given directories
