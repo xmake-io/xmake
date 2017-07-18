@@ -251,9 +251,6 @@ function main()
         config.set("buildir", path.relative(buildir, project.directory()))
     end
 
-    -- load project
-    project.load()
-
     -- check target
     _check_target(targetname)
 

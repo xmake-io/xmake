@@ -234,6 +234,7 @@ function project._interpreter()
         ,   "option.set_languages"
         ,   "option.set_description"
             -- option.add_xxx
+        ,   "option.add_deps"
         ,   "option.add_vectorexts"
         ,   "option.add_bindings"
         ,   "option.add_rbindings"
@@ -355,20 +356,140 @@ function project._interpreter()
 end
 
 -- load target deps
-function project._load_target_deps(target, targets)
+function project._load_deps(target, targets)
 
     -- get dep targets
     local deptargets = {}
     for _, dep in ipairs(table.wrap(target:get("deps"))) do
         local deptarget = targets[dep]
         if deptarget then
-            table.join2(deptargets, project._load_target_deps(deptarget, targets))
+            table.join2(deptargets, project._load_deps(deptarget, targets))
             table.insert(deptargets, deptarget)
         end
     end
 
     -- ok?
     return table.unique(deptargets)
+end
+
+-- load targets 
+function project._load_targets()
+
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- enter the project directory
+    local ok, errors = os.cd(project.directory())
+    if not ok then
+        return nil, errors
+    end
+
+    -- load targets
+    local results, errors = interp:load(project.file(), "target", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- leave the project directory
+    ok, errors = os.cd("-")
+    if not ok then
+        return nil, errors
+    end
+
+    -- make targets
+    local targets = {}
+    for targetname, targetinfo in pairs(results) do
+        targets[targetname] = target.new(targetname, targetinfo)
+    end
+
+    -- load and attach target deps
+    for _, target in pairs(targets) do
+        target._DEPS = project._load_deps(target, targets)
+    end
+
+    -- enter toolchains environment
+    environment.enter("toolchains")
+
+    -- on load for each target
+    for _, target in pairs(targets) do
+        local on_load = target:script("load")
+        if on_load then
+            ok, errors = sandbox.load(on_load, target)
+            if not ok then
+                break
+            end
+        end
+    end
+
+    -- leave toolchains environment
+    environment.leave("toolchains")
+
+    -- on load failed?
+    if not ok then
+        return nil, errors
+    end
+
+    -- ok
+    return targets
+end
+
+-- load options
+function project._load_options(disable_filter)
+
+    -- get interpreter
+    local interp = project._interpreter()
+    assert(interp) 
+
+    -- enter the project directory
+    local ok, errors = os.cd(project.directory())
+    if not ok then
+        return nil, errors
+    end
+
+    -- load the options from the the project file
+    local results, errors = interp:load(project.file(), "option", true, not disable_filter)
+    if not results then
+        return nil, errors
+    end
+
+    -- leave the project directory
+    ok, errors = os.cd("-")
+    if not ok then
+        return nil, errors
+    end
+
+    -- check options
+    local options = {}
+    for optionname, optioninfo in pairs(results) do
+        
+        -- init a option instance
+        local instance = table.inherit(option)
+        assert(instance)
+
+        -- save name and info
+        instance._NAME = optionname
+        instance._INFO = optioninfo
+
+        -- save it
+        options[optionname] = instance
+
+        -- mark add_defines_h_if_ok and add_undefines_h_if_ok as deprecated
+        if instance:get("defines_h_if_ok") then
+            deprecated.add("add_defines_h(\"%s\")", "add_defines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("defines_h_if_ok")), "\", \""))
+        end
+        if instance:get("undefines_h_if_ok") then
+            deprecated.add("add_undefines_h(\"%s\")", "add_undefines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("undefines_h_if_ok")), "\", \""))
+        end
+    end
+
+    -- load and attach options deps
+    for _, opt in pairs(options) do
+        opt._DEPS = project._load_deps(opt, options)
+    end
+
+    -- ok?
+    return options
 end
 
 -- get the project file
@@ -403,129 +524,59 @@ function project.get(name)
     end
 end
 
--- load the project 
-function project.load()
+-- clear project cache to reload targets and options
+function project.clear()
 
-    -- get interpreter
-    local interp = project._interpreter()
-    assert(interp) 
-
-    -- enter the project directory
-    local ok, errors = os.cd(project.directory())
-    if not ok then
-        return false, errors
+    -- clear options status in config file first
+    for _, opt in ipairs(table.wrap(project._OPTIONS)) do
+        opt:clear()
     end
 
-    -- load targets
-    local results, errors = interp:load(project.file(), "target", true, true)
-    if not results then
-        return false, errors
-    end
-
-    -- leave the project directory
-    ok, errors = os.cd("-")
-    if not ok then
-        return false, errors
-    end
-
-    -- make targets
-    local targets = {}
-    for targetname, targetinfo in pairs(results) do
-        targets[targetname] = target.new(targetname, targetinfo)
-    end
-
-    -- load and attach target deps
-    for _, target in pairs(targets) do
-        target._DEPS = project._load_target_deps(target, targets)
-    end
-
-    -- save targets
-    project._TARGETS = targets
-
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
-    -- on load for each target
-    for _, target in pairs(targets) do
-        local on_load = target:script("load")
-        if on_load then
-            ok, errors = sandbox.load(on_load, target)
-            if not ok then
-                break
-            end
-        end
-    end
-
-    -- leave toolchains environment
-    environment.leave("toolchains")
-
-    -- ok?
-    return ok, errors
+    -- clear targets and options
+    project._TARGETS = nil
+    project._OPTIONS = nil
 end
 
 -- get the given target
-function project.target(targetname)
-
-    -- check
-    assert(targetname)
-
-    -- the targets
-    local targets = project.targets()
-    assert(targets)
-
-    -- get it
-    return targets[targetname]
+function project.target(name)
+    return project.targets()[name]
 end
 
 -- get the current configure for targets
 function project.targets()
 
-    -- check
-    assert(project._TARGETS)
+    -- load targets
+    if not project._TARGETS then
+        local targets, errors = project._load_targets()
+        if not targets then
+            os.raise(errors)
+        end
+        project._TARGETS = targets
+    end
 
-    -- return it
+    -- ok
     return project._TARGETS
 end
 
+-- get the given option
+function project.option(name)
+    return project.options()[name]
+end
+
 -- get options
-function project.options(enable_filter)
+function project.options()
 
-    -- get interpreter
-    local interp = project._interpreter()
-    assert(interp) 
-
-    -- load the options from the the project file
-    local results, errors = interp:load(project.file(), "option", true, enable_filter)
-    if not results then
-        return nil, errors
+    -- load options and enable filter
+    if not project._OPTIONS then
+        local options, errors = project._load_options()
+        if not options then
+            os.raise(errors)
+        end
+        project._OPTIONS = options
     end
 
-    -- check options
-    local options = {}
-    for optionname, optioninfo in pairs(results) do
-        
-        -- init a option instance
-        local instance = table.inherit(option)
-        assert(instance)
-
-        -- save name and info
-        instance._NAME = optionname
-        instance._INFO = optioninfo
-
-        -- save it
-        table.insert(options, instance)
-
-        -- mark add_defines_h_if_ok and add_undefines_h_if_ok as deprecated
-        if instance:get("defines_h_if_ok") then
-            deprecated.add("add_defines_h(\"%s\")", "add_defines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("defines_h_if_ok")), "\", \""))
-        end
-        if instance:get("undefines_h_if_ok") then
-            deprecated.add("add_undefines_h(\"%s\")", "add_undefines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("undefines_h_if_ok")), "\", \""))
-        end
-    end
-
-    -- ok?
-    return options
+    -- ok
+    return project._OPTIONS
 end
 
 -- get tasks
@@ -568,7 +619,7 @@ function project.menu()
     local options = nil
     local errors = nil
     if os.isfile(project.file()) then
-        options, errors = project.options(false)
+        options, errors = project._load_options(true)
     end
 
     -- failed?

@@ -63,14 +63,17 @@ function option:_save()
     self:set("check_after", nil)
     self:set("check_before", nil)
 
-    -- save this option to cache
+    -- save option
     option._cache():set(self:name(), self._INFO)
-    option._cache():flush()
 end
 
 -- clear the option info for cache
 function option:_clear()
     option._cache():set(self:name(), nil)
+end
+
+-- flush the option cache to file
+function option:_flush()
     option._cache():flush()
 end
 
@@ -151,12 +154,7 @@ function option:_check()
 end
 
 -- attempt to check option 
-function option:check(force)
-
-    -- have been checked?
-    if self._CHECKED and not force then
-        return 
-    end
+function option:check()
 
     -- the option name
     local name = self:name()
@@ -175,7 +173,7 @@ function option:check(force)
     end
 
     -- need check? (only force to check the automatical option without the default value)
-    if config.get(name) == nil or (default == nil and force) then
+    if config.get(name) == nil or default == nil then
 
         -- use it directly if the default value exists
         if default ~= nil then
@@ -197,12 +195,6 @@ function option:check(force)
     if check_after then
         check_after(self)
     end
-
-    -- flush the option cache
-    self:_flush()
-
-    -- checked
-    self._CHECKED = true
 end
 
 -- get the option value
@@ -212,13 +204,31 @@ end
 
 -- set the option value
 function option:set_value(value)
+
+    -- set value to option
     config.set(self:name(), value)
+
+    -- save option and flush cache to file
     self:_save()
+    self:_flush()
 end
 
 -- this option is enabled?
 function option:is_enabled()
     return config.get(self:name())
+end
+
+-- clear the option status and need recheck it
+function option:clear()
+
+    -- enable or disable this option?
+    config.set(self:name(), nil)
+
+    -- clear this option in cache 
+    self:_clear()
+
+    -- flush cache to file
+    self:_flush()
 end
 
 -- enable or disable this option
@@ -233,6 +243,9 @@ function option:enable(is_enabled)
     else
         self:_clear()
     end
+
+    -- flush cache to file
+    self:_flush()
 end
 
 -- dump this option
@@ -274,30 +287,7 @@ end
 
 -- get option deps
 function option:deps()
-    -- TODO in the future
-    return {}
-end
-
--- save the option info to the cache
-function option:_save()
-    option._cache():set(self:name(), self._INFO)
-end
-
--- clear the option info for cache
-function option:_clear()
-    option._cache():set(self:name(), nil)
-end
-
--- flush the option cache to file
-function option:_flush()
-
-    -- clear scripts for caching to file    
-    self:set("check", nil)
-    self:set("check_after", nil)
-    self:set("check_before", nil)
-
-    -- flush cache
-    option._cache():flush()
+    return self._DEPS
 end
 
 -- get the option name

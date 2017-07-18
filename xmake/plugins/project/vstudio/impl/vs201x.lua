@@ -166,14 +166,14 @@ function make(outputdir, vsinfo)
                 config.set("mode", mode)
                 config.set("arch", arch)
 
-                -- recheck project options
-                project.check(true)
+                -- clear project to reload and recheck it
+                project.clear()
+
+                -- check project options
+                project.check()
 
                 -- reload platform
                 platform.load(config.plat())
-
-                -- reload project
-                project.load()
 
                 -- remake configheader
                 configheader.make()

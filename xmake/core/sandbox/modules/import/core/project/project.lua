@@ -27,6 +27,7 @@ local sandbox_core_project = sandbox_core_project or {}
 
 -- load modules
 local table       = require("base/table")
+local deprecated  = require("base/deprecated")
 local config      = require("project/config")
 local project     = require("project/project")
 local sandbox     = require("sandbox/sandbox")
@@ -35,27 +36,22 @@ local environment = require("platform/environment")
 
 -- load project
 function sandbox_core_project.load()
+    -- deprecated
+    deprecated.add("project.clear() or only remove it", "project.load()")
+end
 
-    -- load it
-    local ok, errors = project.load()
-    if not ok then
-        raise(errors)
-    end
+-- clear project
+function sandbox_core_project.clear()
+    project.clear()
 end
 
 -- check project options
-function sandbox_core_project.check(force)
+function sandbox_core_project.check()
 
-    -- enter the project directory
-    local ok, errors = os.cd(project.directory())
-    if not ok then
-        raise(errors) 
-    end
-
-    -- load the options from the the project file
-    local options, errors = project.options(true)
-    if not options then
-        raise(errors)
+    -- get project options
+    local options = {}
+    for _, opt in pairs(project.options()) do
+        table.insert(options, opt)
     end
 
     -- get sandbox instance
@@ -65,38 +61,58 @@ function sandbox_core_project.check(force)
     -- enter toolchains environment
     environment.enter("toolchains")
 
+    -- init check task
+    local checked   = {}
+    local checktask = function (index) 
+
+        -- get option
+        local opt = options[index]
+        if opt then
+
+            -- check deps of this option first
+            for _, dep in ipairs(opt:deps()) do
+                if not checked[dep:name()] then
+                    dep:check()
+                    checked[dep:name()] = true
+                end
+            end
+
+            -- check this option
+            if not checked[opt:name()] then
+                opt:check() 
+                checked[opt:name()] = true
+            end
+        end
+    end
+
     -- check all options
-    ok, errors = process.runjobs(instance:fork(function (index) options[index]:check(force) end):script(), #options, 4)
+    ok, errors = process.runjobs(instance:fork(checktask):script(), #options, 4)
     if not ok then
         raise(errors)
     end
 
     -- leave toolchains environment
     environment.leave("toolchains")
- 
-    -- leave the project directory
-    ok, errors = os.cd("-")
-    if not ok then
-        raise(errors)
-    end
 end
 
 -- get the given target
-function sandbox_core_project.target(targetname)
-
-    -- get it
-    return project.target(targetname)
+function sandbox_core_project.target(name)
+    return project.target(name)
 end
 
 -- get the all targets
 function sandbox_core_project.targets()
+    return project.targets()
+end
 
-    -- get targets
-    local targets = project.targets()
-    assert(targets)
+-- get the given option
+function sandbox_core_project.option(name)
+    return project.option(name)
+end
 
-    -- ok
-    return targets
+-- get the all options
+function sandbox_core_project.options()
+    return project.options()
 end
 
 -- get the project file
