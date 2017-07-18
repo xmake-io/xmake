@@ -236,8 +236,8 @@ function project._interpreter()
             -- option.add_xxx
         ,   "option.add_deps"
         ,   "option.add_vectorexts"
-        ,   "option.add_bindings"
-        ,   "option.add_rbindings"
+        ,   "option.add_bindings"  -- deprecated
+        ,   "option.add_rbindings" -- deprecated
             -- task.set_xxx
         ,   "task.set_category"
         ,   "task.set_menu"
@@ -657,7 +657,7 @@ function project.menu()
                     first = false
                 end
 
-                -- make bindings
+                -- deprecated, make bindings
                 local bindings = nil
                 if opt:get("bindings") then
                     bindings = string.join(table.wrap(opt:get("bindings")), ',')

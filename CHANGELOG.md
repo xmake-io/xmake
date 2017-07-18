@@ -34,6 +34,7 @@
 * Improve the option detection (cache and multi-jobs) and increase 70% speed
 * [#129](https://github.com/tboox/xmake/issues/129): Check link deps and cache the target file
 * Support `*.asm` source files for vs201x project plugin
+* Mark `add_bindings` and `add_rbindings` as deprecated
 
 ### Bugs fixed
 
@@ -344,6 +345,7 @@
 * 改进option选项检测，通过多任务检测，提升70%的检测速度
 * [#129](https://github.com/tboox/xmake/issues/129): 检测链接依赖，如果源文件没有改变，就不必重新链接目标文件了
 * 在vs201x工程插件中增加对`*.asm`文件的支持
+* 标记`add_bindings`和`add_rbindings`为废弃接口
 
 ### Bugs修复
 
