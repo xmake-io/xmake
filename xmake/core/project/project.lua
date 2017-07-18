@@ -355,23 +355,6 @@ function project._interpreter()
     return interp
 end
 
--- load target deps
-function project._load_deps(target, targets)
-
-    -- get dep targets
-    local deptargets = {}
-    for _, dep in ipairs(table.wrap(target:get("deps"))) do
-        local deptarget = targets[dep]
-        if deptarget then
-            table.join2(deptargets, project._load_deps(deptarget, targets))
-            table.insert(deptargets, deptarget)
-        end
-    end
-
-    -- ok?
-    return table.unique(deptargets)
-end
-
 -- load targets 
 function project._load_targets()
 
@@ -405,7 +388,10 @@ function project._load_targets()
 
     -- load and attach target deps
     for _, target in pairs(targets) do
-        target._DEPS = project._load_deps(target, targets)
+        target._DEPS = {}
+        for _, dep in ipairs(table.wrap(target:get("deps"))) do
+            target._DEPS[dep] = targets[dep]
+        end
     end
 
     -- enter toolchains environment
@@ -485,7 +471,10 @@ function project._load_options(disable_filter)
 
     -- load and attach options deps
     for _, opt in pairs(options) do
-        opt._DEPS = project._load_deps(opt, options)
+        opt._DEPS = {}
+        for _, dep in ipairs(table.wrap(opt:get("deps"))) do
+            opt._DEPS[dep] = options[dep]
+        end
     end
 
     -- ok?
@@ -630,7 +619,7 @@ function project.menu()
 
     -- arrange options by category
     local options_by_category = {}
-    for _, opt in ipairs(options) do
+    for _, opt in pairs(options) do
 
         -- make the category
         local category = "default"

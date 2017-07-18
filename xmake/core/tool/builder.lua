@@ -154,7 +154,7 @@ end
 function builder:_addflags_from_targetdeps(results, target, flagname)
 
     -- for all target deps
-    for _, dep in ipairs(target:deps()) do
+    for _, dep in pairs(target:deps()) do
 
         -- is static or shared target library? link it
         local depkind = dep:get("kind")

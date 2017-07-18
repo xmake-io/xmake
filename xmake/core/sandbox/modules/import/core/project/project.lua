@@ -70,10 +70,10 @@ function sandbox_core_project.check()
         if opt then
 
             -- check deps of this option first
-            for _, dep in ipairs(opt:deps()) do
-                if not checked[dep:name()] then
+            for depname, dep in pairs(opt:deps()) do
+                if not checked[depname] then
                     dep:check()
-                    checked[dep:name()] = true
+                    checked[depname] = true
                 end
             end
 

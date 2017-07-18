@@ -148,6 +148,14 @@ function target:linkflags()
     return self:linker():linkflags({target = self})
 end
 
+-- get the given dependent option
+function target:dep(name)
+    local deps = self:deps()
+    if deps then
+        return deps[name]
+    end
+end
+
 -- get target deps
 function target:deps()
     return self._DEPS

@@ -147,7 +147,7 @@ function option:_check()
     end
 
     -- trace
-    utils.cprint("checking for the %s ... %s", name, utils.ifelse(self:is_enabled(), "${green}ok", "${red}no"))
+    utils.cprint("checking for the %s ... %s", name, utils.ifelse(self:enabled(), "${green}ok", "${red}no"))
     if not ok then
         os.raise(errors)
     end
@@ -213,11 +213,6 @@ function option:set_value(value)
     self:_flush()
 end
 
--- this option is enabled?
-function option:is_enabled()
-    return config.get(self:name())
-end
-
 -- clear the option status and need recheck it
 function option:clear()
 
@@ -231,14 +226,19 @@ function option:clear()
     self:_flush()
 end
 
+-- this option is enabled?
+function option:enabled()
+    return config.get(self:name())
+end
+
 -- enable or disable this option
-function option:enable(is_enabled)
+function option:enable(enabled)
 
     -- enable or disable this option?
-    config.set(self:name(), is_enabled)
+    config.set(self:name(), enabled)
 
     -- save or clear this option in cache 
-    if is_enabled then
+    if enabled then
         self:_save()
     else
         self:_clear()
@@ -282,6 +282,14 @@ function option:add(name_or_info, ...)
         for name, info in pairs(table.join(name_or_info, ...)) do
             self:add(name, info)
         end
+    end
+end
+
+-- get the given dependent option
+function option:dep(name)
+    local deps = self:deps()
+    if deps then
+        return deps[name]
     end
 end
 
