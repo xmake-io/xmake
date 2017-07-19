@@ -58,6 +58,12 @@ function sandbox_core_project.check()
     local instance = sandbox.instance()
     assert(instance)
 
+    -- enter the project directory
+    local ok, errors = os.cd(os.projectdir())
+    if not ok then
+        raise(errors)
+    end
+
     -- enter toolchains environment
     environment.enter("toolchains")
 
@@ -93,6 +99,12 @@ function sandbox_core_project.check()
 
     -- leave toolchains environment
     environment.leave("toolchains")
+
+    -- leave the project directory
+    local ok, errors = os.cd("-")
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- get the given target

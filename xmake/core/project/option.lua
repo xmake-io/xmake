@@ -112,6 +112,9 @@ function option:_cx_check()
             if results_or_errors then
                 self:enable(true)
             end
+        else
+            -- no checked conditions, passed directly
+            self:enable(true)
         end
     end
 
