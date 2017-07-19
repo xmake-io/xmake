@@ -55,13 +55,13 @@ function _host_changed(targetname)
 end
 
 -- need check
-function _need_check()
+function _need_check(override)
 
     -- clean?
     local changed = option.get("clean")
 
     -- the configure has been changed? reconfig it
-    if not changed and config.changed() then
+    if not changed and override then
         changed = true
     end
 
@@ -180,11 +180,13 @@ function main()
     -- load global configure
     global.load()
 
-    -- init the project configure
+    -- load the project configure
     --
     -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache
     --
-    config.init()
+    if not option.get("clean") then
+        config.load()
+    end
 
     -- enter cache scope
     cache.enter("local.config")
@@ -199,11 +201,15 @@ function main()
     end
 
     -- override configure from the options or cache 
+    local override = false
     if not option.get("clean") then
         options = options or cache.get("options_" .. targetname)
     end
     for name, value in pairs(options) do
-        config.set(name, value)
+        if config.get(name) ~= value then
+            config.set(name, value)
+            override = true
+        end
     end
 
     -- merge the global configure 
@@ -221,7 +227,7 @@ function main()
     end
 
     -- merge the checked configure 
-    local recheck = _need_check()
+    local recheck = _need_check(override)
     if recheck then
 
         -- check configure

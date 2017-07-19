@@ -32,36 +32,26 @@ local raise     = require("sandbox/modules/raise")
 
 -- get the build directory
 function sandbox_core_project_config.buildir()
-
-    -- get it 
     return config.buildir()
 end
 
 -- get the current platform
 function sandbox_core_project_config.plat()
-
-    -- get it 
     return config.get("plat")
 end
 
 -- get the current architecture
 function sandbox_core_project_config.arch()
-
-    -- get it 
     return config.get("arch")
 end
 
 -- get the current mode
 function sandbox_core_project_config.mode()
-
-    -- get it 
     return config.get("mode")
 end
 
 -- get the current host
 function sandbox_core_project_config.host()
-
-    -- get it 
     return config.get("host")
 end
 
@@ -112,23 +102,7 @@ end
 
 -- read the value from the configure file directly
 function sandbox_core_project_config.read(name, targetname)
-
-    -- read it
     return config.read(name, targetname)
-end
-
--- the configure has been changed for the given target?
-function sandbox_core_project_config.changed(targetname)
-
-    -- changed?
-    return config.changed(targetname)
-end
-
--- init the configure
-function sandbox_core_project_config.init()
-
-    -- init it
-    config.init()
 end
 
 -- check the configure
@@ -143,8 +117,6 @@ end
 
 -- dump the configure
 function sandbox_core_project_config.dump()
-
-    -- dump it
     config.dump()
 end
 

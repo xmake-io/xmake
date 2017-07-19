@@ -210,47 +210,12 @@ function config.read(name, targetname)
     return value
 end
 
--- init the config
-function config.init()
-    config._CONFIGS = {}
-end
-
 -- dump the configure
 function config.dump()
    
     -- dump
     if not option.get("quiet") then
         table.dump(config.options(), "__%w*", "configure")
-    end
-end
-
--- the configure has been changed for the given target?
-function config.changed(targetname)
-
-    -- check
-    targetname = targetname or "all"
-
-    -- load configure from the file 
-    local fileinfo = {}
-    local filepath = config._file()
-    if os.isfile(filepath) then
-
-        -- load it 
-        local results = io.load(filepath)
-        if results and results._TARGETS then
-            for name, value in pairs(table.wrap(results._TARGETS[targetname])) do
-                fileinfo[name] = value
-            end
-        end
-    end
-
-    -- compare the current configure
-    for name, value in pairs(config.options()) do
-
-        -- changed?
-        if fileinfo[name] ~= value then
-            return true
-        end
     end
 end
 
