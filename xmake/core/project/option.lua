@@ -72,11 +72,6 @@ function option:_clear()
     option._cache():set(self:name(), nil)
 end
 
--- flush the option cache to file
-function option:_flush()
-    option._cache():flush()
-end
-
 -- check option for c/c++
 function option:_cx_check()
 
@@ -218,9 +213,8 @@ function option:set_value(value)
     -- set value to option
     config.set(self:name(), value)
 
-    -- save option and flush cache to file
+    -- save option 
     self:_save()
-    self:_flush()
 end
 
 -- clear the option status and need recheck it
@@ -231,9 +225,6 @@ function option:clear()
 
     -- clear this option in cache 
     self:_clear()
-
-    -- flush cache to file
-    self:_flush()
 end
 
 -- this option is enabled?
@@ -255,9 +246,6 @@ function option:enable(enabled)
     else
         self:_clear()
     end
-
-    -- flush cache to file
-    self:_flush()
 end
 
 -- dump this option
@@ -334,6 +322,11 @@ function option.load(name)
 
     -- ok
     return instance
+end
+
+-- save all options to the cache file
+function option.save()
+    option._cache():flush()
 end
 
 -- return module

@@ -29,6 +29,7 @@ local sandbox_core_project = sandbox_core_project or {}
 local table       = require("base/table")
 local deprecated  = require("base/deprecated")
 local config      = require("project/config")
+local option      = require("project/option")
 local project     = require("project/project")
 local sandbox     = require("sandbox/sandbox")
 local raise       = require("sandbox/modules/raise")
@@ -99,6 +100,9 @@ function sandbox_core_project.check()
 
     -- leave toolchains environment
     environment.leave("toolchains")
+
+    -- save all options to the cache file
+    option.save()
 
     -- leave the project directory
     ok, errors = os.cd(oldir)
