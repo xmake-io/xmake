@@ -388,6 +388,9 @@ function os.cd(dir)
     -- check
     assert(dir)
 
+    -- the previous directory
+    local oldir = os.curdir()
+
     -- change to the previous directory?
     if dir == "-" then
         -- exists the previous directory?
@@ -396,31 +399,28 @@ function os.cd(dir)
             os._PREDIR = nil
         else
             -- error
-            return false, string.format("not found the previous directory %s", os.strerror())
+            return nil, string.format("not found the previous directory %s", os.strerror())
         end
     end
 
     -- is directory?
     if os.isdir(dir) then
 
-        -- get the current directory
-        local current = os.curdir()
-
         -- change to directory
         if not os.chdir(dir) then
-            return false, string.format("cannot change directory %s %s", dir, os.strerror())
+            return nil, string.format("cannot change directory %s %s", dir, os.strerror())
         end
 
         -- save the previous directory
-        os._PREDIR = current
+        os._PREDIR = oldir
 
     -- not exists?
     else
-        return false, string.format("cannot change directory %s, not found this directory %s", dir, os.strerror())
+        return nil, string.format("cannot change directory %s, not found this directory %s", dir, os.strerror())
     end
     
     -- ok
-    return true
+    return oldir
 end
 
 -- create directories

@@ -59,8 +59,8 @@ function sandbox_core_project.check()
     assert(instance)
 
     -- enter the project directory
-    local ok, errors = os.cd(os.projectdir())
-    if not ok then
+    local oldir, errors = os.cd(os.projectdir())
+    if not oldir then
         raise(errors)
     end
 
@@ -92,7 +92,7 @@ function sandbox_core_project.check()
     end
 
     -- check all options
-    ok, errors = process.runjobs(instance:fork(checktask):script(), #options, 4)
+    local ok, errors = process.runjobs(instance:fork(checktask):script(), #options, 4)
     if not ok then
         raise(errors)
     end
@@ -101,7 +101,7 @@ function sandbox_core_project.check()
     environment.leave("toolchains")
 
     -- leave the project directory
-    local ok, errors = os.cd("-")
+    ok, errors = os.cd(oldir)
     if not ok then
         raise(errors)
     end

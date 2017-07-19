@@ -363,8 +363,8 @@ function project._load_targets()
     assert(interp) 
 
     -- enter the project directory
-    local ok, errors = os.cd(os.projectdir())
-    if not ok then
+    local oldir, errors = os.cd(os.projectdir())
+    if not oldir then
         return nil, errors
     end
 
@@ -375,7 +375,7 @@ function project._load_targets()
     end
 
     -- leave the project directory
-    ok, errors = os.cd("-")
+    local ok, errors = os.cd(oldir)
     if not ok then
         return nil, errors
     end
@@ -428,8 +428,8 @@ function project._load_options(disable_filter)
     assert(interp) 
 
     -- enter the project directory
-    local ok, errors = os.cd(os.projectdir())
-    if not ok then
+    local oldir, errors = os.cd(os.projectdir())
+    if not oldir then
         return nil, errors
     end
 
@@ -440,7 +440,7 @@ function project._load_options(disable_filter)
     end
 
     -- leave the project directory
-    ok, errors = os.cd("-")
+    local ok, errors = os.cd(oldir)
     if not ok then
         return nil, errors
     end
