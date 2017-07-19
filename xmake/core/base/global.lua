@@ -88,6 +88,7 @@ end
 function global.load()
 
     -- load configure from the file first
+    local ok = false
     local filepath = global._file()
     if os.isfile(filepath) then
 
@@ -97,19 +98,20 @@ function global.load()
         -- error?
         if not results then
             utils.error(errors)
-            return true
+            return false
         end
 
         -- merge the configure 
         for name, value in pairs(results) do
             if global.get(name) == nil then
                 global.set(name, value)
+                ok = true
             end
         end
     end
 
-    -- ok
-    return true
+    -- ok?
+    return ok
 end
 
 -- save the global configure
@@ -124,14 +126,6 @@ function global.save()
 
     -- save it
     return io.save(global._file(), options) 
-end
-
--- init the config
-function global.init()
-
-    -- clear it
-    global._CONFIGS = {}
-
 end
 
 -- dump the configure

@@ -68,26 +68,17 @@ end
 
 -- get the given configure from the current 
 function sandbox_core_project_config.get(name)
-
-    -- get it
     return config.get(name)
 end
 
 -- set the given configure to the current 
 function sandbox_core_project_config.set(name, value)
-
-    -- set it
     return config.set(name, value)
 end
 
 -- load the configure
 function sandbox_core_project_config.load(targetname)
-
-    -- load it
-    local ok, errors = config.load(targetname)
-    if not ok then
-        raise(errors)
-    end
+    return config.load(targetname)
 end
 
 -- save the configure

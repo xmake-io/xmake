@@ -144,18 +144,20 @@ function config.load(targetname)
     local results, errors = config._load(targetname)
     if not results then
         utils.error(errors)
-        return true
+        return false
     end
 
     -- merge the target configure first
+    local ok = false
     for name, value in pairs(results) do
         if config.get(name) == nil then
             config.set(name, value)
+            ok = true
         end
     end
 
-    -- ok
-    return true
+    -- ok?
+    return ok
 end
 
 -- save the project configure

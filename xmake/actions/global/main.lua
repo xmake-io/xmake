@@ -29,16 +29,24 @@ import("core.base.global")
 -- main
 function main()
 
-    -- init the global configure
+    -- load the global configure
     --
     -- priority: option > option_default > config_check > global_cache 
     --
-    global.init()
+    local override = false
+    if not option.get("clean") then
+        if not global.load() then
+            override = true
+        end
+    end
 
     -- override the option configure 
     for name, value in pairs(option.options()) do
         if name ~= "verbose" then
-            global.set(name, value)
+            if global.get(name) ~= value then
+                global.set(name, value)
+                override = true
+            end
         end
     end
 
@@ -49,14 +57,11 @@ function main()
         end
     end
 
-    -- merge the checked configure 
-    global.check()
-  
-    -- merge the cached configure
-    if not option.get("clean") then
-        global.load()
+    -- check the global configure 
+    if override then
+        global.check()
     end
-
+  
     -- save it
     global.save()
 

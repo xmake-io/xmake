@@ -184,8 +184,11 @@ function main()
     --
     -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache
     --
+    local override = false
     if not option.get("clean") then
-        config.load()
+        if not config.load() then
+            override = true
+        end
     end
 
     -- enter cache scope
@@ -201,7 +204,6 @@ function main()
     end
 
     -- override configure from the options or cache 
-    local override = false
     if not option.get("clean") then
         options = options or cache.get("options_" .. targetname)
     end

@@ -48,12 +48,7 @@ end
 
 -- load the configure
 function sandbox_core_base_global.load()
-
-    -- load it
-    local ok, errors = global.load()
-    if not ok then
-        raise(errors)
-    end
+    return global.load()
 end
 
 -- save the configure
@@ -64,11 +59,6 @@ function sandbox_core_base_global.save()
     if not ok then
         raise(errors)
     end
-end
-
--- init the configure
-function sandbox_core_base_global.init()
-    global.init()
 end
 
 -- check the configure
