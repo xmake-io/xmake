@@ -184,10 +184,6 @@ function main()
     --
     -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache
     --
-    local configcache = false
-    if not option.get("clean") and not _host_changed(targetname) then
-        configcache = config.load(targetname) 
-    end
 
     -- get the options
     local options = nil
@@ -199,17 +195,29 @@ function main()
     end
 
     -- override configure from the options or cache 
-    local changed = false
+    local options_changed = false
+    local options_history = {}
     if not option.get("clean") then
-        options = options or cache.get("options_" .. targetname)
+        options_history = cache.get("options_" .. targetname)
+        options = options or options_history
     end
     for name, value in pairs(options) do
             
-        -- the config value is changed by argument options?
-        changed = changed or config.get(name) ~= value
+        -- options is changed by argument options?
+        options_changed = options_changed or options_history[name] ~= value
 
-        -- @note override it and mark as readonly
+        -- @note override it and mark as readonly (highest priority)
         config.set(name, value, true)
+    end
+
+    -- merge the cached configure
+    --
+    -- @note we cannot load cache config when switching platform, arch .. 
+    -- so we need known whether options have been changed
+    --
+    local configcache = false
+    if not options_changed and not option.get("clean") and not _host_changed(targetname) then
+        configcache = config.load(targetname) 
     end
 
     -- merge the global configure 
@@ -227,7 +235,7 @@ function main()
     end
 
     -- merge the checked configure 
-    local recheck = _need_check(changed or not configcache)
+    local recheck = _need_check(options_changed or not configcache)
     if recheck then
 
         -- check configure
