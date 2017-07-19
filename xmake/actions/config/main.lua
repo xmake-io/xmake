@@ -198,7 +198,7 @@ function main()
     local options_changed = false
     local options_history = {}
     if not option.get("clean") then
-        options_history = cache.get("options_" .. targetname)
+        options_history = cache.get("options_" .. targetname) or {}
         options = options or options_history
     end
     for name, value in pairs(options) do
