@@ -41,13 +41,19 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     -- get compile arguments
     local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
 
+    -- escape '"', '\'
+    local arguments_escape = {}
+    for _, arg in ipairs(arguments) do
+        table.insert(arguments_escape, (arg:gsub("[\"\\]", "\\%1")))
+    end
+
     -- make body
     jsonfile:printf(
 [[%s{
   "directory": "%s",
   "arguments": ["%s"],
   "file": "%s"
-}]], ifelse(_g.firstline, "", ",\n"), os.projectdir(), table.concat(arguments, "\", \""), sourcefile)
+}]], ifelse(_g.firstline, "", ",\n"), os.projectdir(), table.concat(arguments_escape, "\", \""), sourcefile)
 
     -- clear first line marks
     _g.firstline = false
