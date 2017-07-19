@@ -39,16 +39,15 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     end
 
     -- get compile arguments
-    local arguments = table.join(compiler.compargv(sourcefile, {target = target, sourcekind = sourcekind}))
+    local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
 
     -- make body
     jsonfile:printf(
 [[%s{
   "directory": "%s",
   "arguments": ["%s"],
-  "file": "%s",
-  "output": "%s"
-}]], ifelse(_g.firstline, "", ",\n"), os.projectdir(), table.concat(arguments, "\", \""), sourcefile, objectfile)
+  "file": "%s"
+}]], ifelse(_g.firstline, "", ",\n"), os.projectdir(), table.concat(arguments, "\", \""), sourcefile)
 
     -- clear first line marks
     _g.firstline = false
