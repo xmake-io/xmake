@@ -67,31 +67,42 @@ end
 -- get the current given configure
 function config.get(name)
 
-    -- get configs
-    local configs = config._CONFIGS or {}
-
     -- get it 
-    local value = configs[name]
-    if type(value) == "string" and value == "auto" then
-        value = nil
+    local value = nil
+    if config._CONFIGS then
+        value = config._CONFIGS[name]
+        if type(value) == "string" and value == "auto" then
+            value = nil
+        end
     end
 
     -- get it
     return value
 end
 
+-- this config name is readonly?
+function config.readonly(name)
+    return config._MODES and config._MODES["__readonly_" .. name]
+end
+
 -- set the given configure to the current 
-function config.set(name, value)
+function config.set(name, value, readonly)
 
     -- check
     assert(name)
 
-    -- get configs
-    local configs = config._CONFIGS or {}
-    config._CONFIGS = configs
+    -- check readonly
+    assert(not config.readonly(name), "cannot set readonly config: " .. name)
 
     -- set it 
-    configs[name] = value
+    config._CONFIGS = config._CONFIGS or {}
+    config._CONFIGS[name] = value
+
+    -- mark as readonly
+    if readonly then
+        config._MODES = config._MODES or {}
+        config._MODES["__readonly_" .. name] = true
+    end
 end
 
 -- get all options

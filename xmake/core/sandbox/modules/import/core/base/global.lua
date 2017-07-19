@@ -37,8 +37,13 @@ function sandbox_core_base_global.get(name)
 end
 
 -- set the configure 
-function sandbox_core_base_global.set(name, value)
-    global.set(name, value)
+function sandbox_core_base_global.set(name, value, readonly)
+    global.set(name, value, readonly)
+end
+
+-- this config name is readonly?
+function sandbox_core_base_global.readonly(name)
+    return config.readonly(name)
 end
 
 -- dump the configure

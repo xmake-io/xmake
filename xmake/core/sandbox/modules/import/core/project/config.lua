@@ -72,8 +72,13 @@ function sandbox_core_project_config.get(name)
 end
 
 -- set the given configure to the current 
-function sandbox_core_project_config.set(name, value)
-    return config.set(name, value)
+function sandbox_core_project_config.set(name, value, readonly)
+    return config.set(name, value, readonly)
+end
+
+-- this config name is readonly?
+function sandbox_core_project_config.readonly(name)
+    return config.readonly(name)
 end
 
 -- load the configure

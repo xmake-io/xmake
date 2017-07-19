@@ -33,20 +33,20 @@ function main()
     --
     -- priority: option > option_default > config_check > global_cache 
     --
-    local override = false
+    local configcache = false
     if not option.get("clean") then
-        if not global.load() then
-            override = true
-        end
+        configcache = global.load() 
     end
 
     -- override the option configure 
+    local changed = false
     for name, value in pairs(option.options()) do
         if name ~= "verbose" then
-            if global.get(name) ~= value then
-                global.set(name, value)
-                override = true
-            end
+            -- the config value is changed by argument options?
+            changed = changed or global.get(name) ~= value
+
+            -- @note override it and mark as readonly
+            global.set(name, value, true)
         end
     end
 
@@ -58,7 +58,7 @@ function main()
     end
 
     -- check the global configure 
-    if override then
+    if changed or not configcache then
         global.check()
     end
   

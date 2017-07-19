@@ -37,31 +37,45 @@ function global._file()
     return path.join(global.directory(), "xmake.conf")
 end
 
--- get the current given configure from  
+-- get the current given configure
 function global.get(name)
 
-    -- get configs
-    local configs = global._CONFIGS or {}
-
-    -- the value
-    local value = configs[name]
-    if type(value) == "string" and value == "auto" then
-        value = nil
+    -- get it 
+    local value = nil
+    if global._CONFIGS then
+        value = global._CONFIGS[name]
+        if type(value) == "string" and value == "auto" then
+            value = nil
+        end
     end
 
     -- get it
     return value
 end
 
--- set the current given configure  
-function global.set(name, value)
+-- this global name is readonly?
+function global.readonly(name)
+    return global._MODES and global._MODES["__readonly_" .. name]
+end
 
-    -- get configs
-    local configs = global._CONFIGS or {}
-    global._CONFIGS = configs
+-- set the given configure to the current 
+function global.set(name, value, readonly)
+
+    -- check
+    assert(name)
+
+    -- check readonly
+    assert(not global.readonly(name), "cannot set readonly global: " .. name)
 
     -- set it 
-    configs[name] = value
+    global._CONFIGS = global._CONFIGS or {}
+    global._CONFIGS[name] = value
+
+    -- mark as readonly
+    if readonly then
+        global._MODES = global._MODES or {}
+        global._MODES["__readonly_" .. name] = true
+    end
 end
 
 -- get all options

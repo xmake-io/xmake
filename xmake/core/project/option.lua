@@ -245,10 +245,12 @@ end
 function option:enable(enabled)
 
     -- enable or disable this option?
-    config.set(self:name(), enabled)
+    if not config.readonly(self:name()) then
+        config.set(self:name(), enabled)
+    end
 
     -- save or clear this option in cache 
-    if enabled then
+    if self:enabled() then
         self:_save()
     else
         self:_clear()

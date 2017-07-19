@@ -55,14 +55,11 @@ function _host_changed(targetname)
 end
 
 -- need check
-function _need_check(override)
+function _need_check(changed)
 
     -- clean?
-    local changed = option.get("clean")
-
-    -- the configure has been changed? reconfig it
-    if not changed and override then
-        changed = true
+    if not changed then
+        changed = option.get("clean")
     end
 
     -- get the current mtimes 
@@ -177,6 +174,9 @@ function main()
     -- the target name
     local targetname = option.get("target") or "all"
 
+    -- enter cache scope
+    cache.enter("local.config")
+
     -- load global configure
     global.load()
 
@@ -184,15 +184,10 @@ function main()
     --
     -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache
     --
-    local override = false
-    if not option.get("clean") then
-        if not config.load() then
-            override = true
-        end
+    local configcache = false
+    if not option.get("clean") and not _host_changed(targetname) then
+        configcache = config.load(targetname) 
     end
-
-    -- enter cache scope
-    cache.enter("local.config")
 
     -- get the options
     local options = nil
@@ -204,14 +199,17 @@ function main()
     end
 
     -- override configure from the options or cache 
+    local changed = false
     if not option.get("clean") then
         options = options or cache.get("options_" .. targetname)
     end
     for name, value in pairs(options) do
-        if config.get(name) ~= value then
-            config.set(name, value)
-            override = true
-        end
+            
+        -- the config value is changed by argument options?
+        changed = changed or config.get(name) ~= value
+
+        -- @note override it and mark as readonly
+        config.set(name, value, true)
     end
 
     -- merge the global configure 
@@ -229,7 +227,7 @@ function main()
     end
 
     -- merge the checked configure 
-    local recheck = _need_check(override)
+    local recheck = _need_check(changed or not configcache)
     if recheck then
 
         -- check configure
@@ -243,11 +241,6 @@ function main()
 
         -- clear detect cache
         detectcache.clear()
-    end
-
-    -- merge the cached configure
-    if not option.get("clean") and not _host_changed(targetname) then
-        config.load(targetname)
     end
 
     -- load platform
