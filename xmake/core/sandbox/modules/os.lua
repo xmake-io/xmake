@@ -318,7 +318,7 @@ function sandbox_os.iorunv(program, argv)
     -- run it
     local ok, outdata, errdata = os.iorunv(program, argv)
     if not ok then
-        os.raise(errdata)
+        os.raise((outdata or "") .. (errdata or ""))
     end
 
     -- ok
