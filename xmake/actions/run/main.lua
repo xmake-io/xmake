@@ -89,7 +89,7 @@ function main()
     task.run("build", {target = targetname, all = option.get("all")})
 
     -- enter project directory
-    local olddir = os.cd(project.directory())
+    local oldir = os.cd(project.directory())
 
     -- run the given target?
     if targetname then
@@ -107,5 +107,5 @@ function main()
     end
 
     -- leave project directory
-    os.cd(olddir)
+    os.cd(oldir)
 end

@@ -31,7 +31,7 @@ import("core.platform.platform")
 function _install_target(target)
 
     -- enter project directory
-    local olddir = os.cd(project.directory())
+    local oldir = os.cd(project.directory())
 
     -- the target scripts
     local scripts =
@@ -50,7 +50,7 @@ function _install_target(target)
     end
 
     -- leave project directory
-    os.cd(olddir)
+    os.cd(oldir)
 end
 
 -- install the given target and deps

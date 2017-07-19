@@ -417,7 +417,7 @@ function interpreter:_api_builtin_add_subdirfiles(...)
                 scopes._CURRENT = nil
 
                 -- save the current directory
-                local olddir = os.curdir()
+                local oldir = os.curdir()
 
                 -- enter the script directory
                 os.cd(path.directory(file))
@@ -429,7 +429,7 @@ function interpreter:_api_builtin_add_subdirfiles(...)
                 end
 
                 -- leave the script directory
-                os.cd(olddir)
+                os.cd(oldir)
 
                 -- restore the previous scope kind
                 scopes._CURRENT_KIND = scope_kind_prev
@@ -1488,7 +1488,7 @@ function interpreter:api_builtin_includes(...)
                 scopes._CURRENT = nil
 
                 -- save the current directory
-                local olddir = os.curdir()
+                local oldir = os.curdir()
 
                 -- enter the script directory
                 os.cd(path.directory(file))
@@ -1500,7 +1500,7 @@ function interpreter:api_builtin_includes(...)
                 end
 
                 -- leave the script directory
-                os.cd(olddir)
+                os.cd(oldir)
 
                 -- restore the previous scope kind
                 scopes._CURRENT_KIND = scope_kind_prev

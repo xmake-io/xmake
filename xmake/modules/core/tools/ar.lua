@@ -82,7 +82,7 @@ function extract(self, libraryfile, objectdir)
     libraryfile = path.absolute(libraryfile)
 
     -- enter the object directory
-    local olddir = os.cd(objectdir)
+    local oldir = os.cd(objectdir)
 
     -- extract it
     os.runv(self:program(), {"-x", libraryfile})
@@ -98,6 +98,6 @@ function extract(self, libraryfile, objectdir)
     end                                                          
 
     -- leave the object directory
-    os.cd(olddir)
+    os.cd(oldir)
 end
 

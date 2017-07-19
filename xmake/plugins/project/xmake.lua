@@ -44,9 +44,12 @@ task("project")
                 {
                     {'k', "kind",      "kv", "makefile",    "Set the project kind." 
                                                        ,    "    - makefile"
+                                                       ,    "    - compile_commands (clang compilation database with json format)"
                                                        ,    "    - vs2002, vs2003, vs2005, vs2008, vs2010, vs2012, vs2013, vs2015, vs2017" }
                 ,   {'m', "modes",     "kv", nil,           "Set the project modes." 
                                                        ,    "    .e.g "
+                                                       ,    "    - xmake project -k makefile"
+                                                       ,    "    - xmake project -k compile_commands"
                                                        ,    "    - xmake project -k vs2015 -m \"release,debug\"" }
                 ,   {nil, "outputdir", "v",  ".",           "Set the output directory." }
                 }

@@ -17,6 +17,7 @@
 * Add `lib.detect.has_xxx` and `lib.detect.find_xxx` apis.
 * Add `add_moduledirs` api
 * Add `includes` api instead of `add_subdirs` and `add_subfiles`
+* [#133](https://github.com/tboox/xmake/issues/133): Improve the project plugin to generate `compile_commands.json` by run  `xmake project -k compile_commands`
 
 ### Changes
 
@@ -328,6 +329,7 @@
 * 添加`lib.detect.has_xxx`和`lib.detect.find_xxx`接口
 * 添加`add_moduledirs`接口在工程中定义和加载扩展模块
 * 添加`includes`接口替换`add_subdirs`和`add_subfiles`
+* [#133](https://github.com/tboox/xmake/issues/133): 改进工程插件，通过运行`xmake project -k compile_commands`来导出`compile_commands.json`
 
 ### 改进
 

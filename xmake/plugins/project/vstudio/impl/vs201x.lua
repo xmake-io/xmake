@@ -132,7 +132,7 @@ end
 function make(outputdir, vsinfo)
 
     -- enter project directory
-    local olddir = os.cd(project.directory())
+    local oldir = os.cd(project.directory())
 
     -- init solution directory
     vsinfo.solution_dir = path.join(outputdir, "vs" .. vsinfo.vstudio_version)
@@ -224,5 +224,5 @@ function make(outputdir, vsinfo)
     end
 
     -- leave project directory
-    os.cd(olddir)
+    os.cd(oldir)
 end

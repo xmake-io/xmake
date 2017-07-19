@@ -158,11 +158,11 @@ function main()
     _g.finished = {}
 
     -- enter project directory
-    local olddir = os.cd(project.directory())
+    local oldir = os.cd(project.directory())
 
     -- clean the current target
     _clean(targetname) 
 
     -- leave project directory
-    os.cd(olddir)
+    os.cd(oldir)
 end

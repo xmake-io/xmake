@@ -61,7 +61,7 @@ function main()
     cache.flush()
 
     -- enter project directory
-    local olddir = os.cd(project.directory())
+    local oldir = os.cd(project.directory())
 
     -- build it
     try
@@ -89,7 +89,7 @@ function main()
     }
 
     -- leave project directory
-    os.cd(olddir)
+    os.cd(oldir)
 
     -- trace
     if rebuild then
