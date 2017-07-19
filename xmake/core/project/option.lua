@@ -84,6 +84,7 @@ function option:_cx_check()
     self._check_cxsnippets = self._check_cxsnippets or import("lib.detect.check_cxsnippets")
 
     -- check for c and c++
+    local checked = false
     for _, kind in ipairs({"c", "cxx"}) do
 
         -- get conditions
@@ -108,14 +109,20 @@ function option:_cx_check()
                 return false, results_or_errors
             end
 
+            -- mark as checked
+            checked = true
+
             -- passed?
             if results_or_errors then
                 self:enable(true)
+                break
             end
-        else
-            -- no checked conditions, passed directly
-            self:enable(true)
         end
+    end
+        
+    -- no checked conditions, passed directly
+    if not checked then
+        self:enable(true)
     end
 
     -- ok
