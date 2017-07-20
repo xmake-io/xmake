@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("core.project.task")
+import("core.base.task")
 import("core.project.project")
 import("core.platform.platform")
 

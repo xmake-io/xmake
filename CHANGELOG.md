@@ -37,6 +37,7 @@
 * Support `*.asm` source files for vs201x project plugin
 * Mark `add_bindings` and `add_rbindings` as deprecated
 * Optimize `xmake rebuild` speed on windows
+* Move `core.project.task` to `core.base.task`
 
 ### Bugs fixed
 
@@ -350,6 +351,7 @@
 * 在vs201x工程插件中增加对`*.asm`文件的支持
 * 标记`add_bindings`和`add_rbindings`为废弃接口
 * 优化`xmake rebuild`在windows上的构建速度
+* 将`core.project.task`模块迁移至`core.base.task`
 
 ### Bugs修复
 

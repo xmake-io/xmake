@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("core.project.task")
+import("core.base.task")
 import("core.platform.environment")
 import("makefile.makefile")
 import("vstudio.vs2002")

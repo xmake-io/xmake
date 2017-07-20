@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("core.project.task")
+import("core.base.task")
 import("core.platform.platform")
 import("core.base.privilege")
 import("privilege.sudo")
