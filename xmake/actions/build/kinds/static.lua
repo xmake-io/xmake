@@ -35,7 +35,7 @@ function _build_from_objects(target, buildinfo)
     object.build(target, buildinfo)
 
     -- this target and it's deps are not modified?
-    local modified = buildinfo.modified[target:name()]
+    local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
     if not modified then
         for _, depname in ipairs(target:get("deps")) do
             modified = buildinfo.modified[depname]

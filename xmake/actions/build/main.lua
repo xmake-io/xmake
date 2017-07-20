@@ -50,9 +50,6 @@ function main()
         -- mark as rebuild
         rebuild = true
         
-        -- clean it first
-        task.run("clean", {target = targetname})
-
         -- reset state
         cache.set("rebuild", nil)
     end
@@ -69,7 +66,7 @@ function main()
         function ()
 
             -- build 
-            builder.build(targetname) 
+            builder.build(targetname, rebuild) 
         end,
 
         catch 

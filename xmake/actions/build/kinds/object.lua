@@ -136,7 +136,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     end
 
     -- we need not rebuild it if the files are not modified 
-    if not modified then
+    if not modified and not buildinfo.rebuild then
         return 
     end
 

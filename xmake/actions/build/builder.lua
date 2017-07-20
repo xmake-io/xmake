@@ -124,13 +124,16 @@ function _stat_target_count(targetname)
 end
 
 -- build
-function build(targetname)
+function build(targetname, rebuild)
 
     -- enter toolchains environment
     environment.enter("toolchains")
 
     -- stat targets count
     _stat_target_count(targetname)
+
+    -- mark as rebuild
+    _g.rebuild = rebuild
 
     -- clear finished states
     _g.finished = {}
