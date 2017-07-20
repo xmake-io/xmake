@@ -38,6 +38,7 @@
 * Mark `add_bindings` and `add_rbindings` as deprecated
 * Optimize `xmake rebuild` speed on windows
 * Move `core.project.task` to `core.base.task`
+* Move `echo` and `app2ipa` plugins to [xmake-plugins](https://github.com/tboox/xmake-plugins) repo.
 
 ### Bugs fixed
 
@@ -352,6 +353,7 @@
 * 标记`add_bindings`和`add_rbindings`为废弃接口
 * 优化`xmake rebuild`在windows上的构建速度
 * 将`core.project.task`模块迁移至`core.base.task`
+* 将`echo` 和 `app2ipa` 插件迁移到 [xmake-plugins](https://github.com/tboox/xmake-plugins) 仓库
 
 ### Bugs修复
 

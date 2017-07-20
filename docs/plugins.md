@@ -466,6 +466,10 @@ Please ensure that the doxygen tool has been installed first.
 $ xmake doxygen
 ```
 
+## More Plugins
+
+Please download and install from the plugins repository [xmake-plugins](https://github.com/tboox/xmake-plugins).
+
 #### Convert .app to .ipa
 
 ```bash

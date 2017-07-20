@@ -84,7 +84,10 @@ $ xmake run -d console
 * 加载自定义lua脚本插件
 * 生成IDE工程文件插件（makefile, vs2002 - vs2017, ...）
 * 生成doxygen文档插件
-* iOS app2ipa插件
+
+## 更多插件
+
+请到插件仓库进行下载安装: [xmake-plugins](https://github.com/tboox/xmake-plugins).
 
 ## 使用演示
 

@@ -84,7 +84,10 @@ $ xmake run -d console
 * Run the custom lua script plugin
 * Generate IDE project file plugin（makefile, vs2002 - vs2017 .. ）
 * Generate doxygen document plugin
-* Convert .app to .ipa plugin
+
+## More Plugins
+
+Please download and install from the plugins repository [xmake-plugins](https://github.com/tboox/xmake-plugins).
 
 ## Examples
 
