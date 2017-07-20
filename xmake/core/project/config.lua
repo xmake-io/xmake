@@ -86,20 +86,28 @@ function config.readonly(name)
 end
 
 -- set the given configure to the current 
-function config.set(name, value, readonly)
+--
+-- @param name  the name
+-- @param value the value
+-- @param opt   the argument options, .e.g {readonly = false, force = false}
+--
+function config.set(name, value, opt)
 
     -- check
     assert(name)
 
+    -- init options
+    opt = opt or {}
+
     -- check readonly
-    assert(not config.readonly(name), "cannot set readonly config: " .. name)
+    assert(opt.force or not config.readonly(name), "cannot set readonly config: " .. name)
 
     -- set it 
     config._CONFIGS = config._CONFIGS or {}
     config._CONFIGS[name] = value
 
     -- mark as readonly
-    if readonly then
+    if opt.readonly then
         config._MODES = config._MODES or {}
         config._MODES["__readonly_" .. name] = true
     end

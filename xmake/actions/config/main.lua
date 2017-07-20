@@ -207,7 +207,7 @@ function main()
         options_changed = options_changed or options_history[name] ~= value
 
         -- @note override it and mark as readonly (highest priority)
-        config.set(name, value, true)
+        config.set(name, value, {readonly = true})
     end
 
     -- merge the cached configure

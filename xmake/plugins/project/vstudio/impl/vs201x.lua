@@ -163,8 +163,8 @@ function make(outputdir, vsinfo)
             if mode ~= config.mode() or arch ~= config.arch() then
                 
                 -- modify config
-                config.set("mode", mode)
-                config.set("arch", arch)
+                config.set("mode", mode, {readonly = true, force = true})
+                config.set("arch", arch, {readonly = true, force = true})
 
                 -- clear project to reload and recheck it
                 project.clear()

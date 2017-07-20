@@ -37,8 +37,13 @@ function sandbox_core_base_global.get(name)
 end
 
 -- set the configure 
-function sandbox_core_base_global.set(name, value, readonly)
-    global.set(name, value, readonly)
+--
+-- @param name  the name
+-- @param value the value
+-- @param opt   the argument options, .e.g {readonly = false, force = false}
+--
+function sandbox_core_base_global.set(name, value, opt)
+    global.set(name, value, opt)
 end
 
 -- this config name is readonly?

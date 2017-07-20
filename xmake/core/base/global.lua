@@ -59,20 +59,28 @@ function global.readonly(name)
 end
 
 -- set the given configure to the current 
-function global.set(name, value, readonly)
+--
+-- @param name  the name
+-- @param value the value
+-- @param opt   the argument options, .e.g {readonly = false, force = false}
+--
+function global.set(name, value, opt)
 
     -- check
     assert(name)
 
+    -- init options
+    opt = opt or {}
+
     -- check readonly
-    assert(not global.readonly(name), "cannot set readonly global: " .. name)
+    assert(opt.force or not global.readonly(name), "cannot set readonly global: " .. name)
 
     -- set it 
     global._CONFIGS = global._CONFIGS or {}
     global._CONFIGS[name] = value
 
     -- mark as readonly
-    if readonly then
+    if opt.readonly then
         global._MODES = global._MODES or {}
         global._MODES["__readonly_" .. name] = true
     end

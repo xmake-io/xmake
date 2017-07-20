@@ -46,7 +46,7 @@ function main()
             changed = changed or global.get(name) ~= value
 
             -- @note override it and mark as readonly
-            global.set(name, value, true)
+            global.set(name, value, {readonly = true})
         end
     end
 
