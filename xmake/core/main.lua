@@ -34,6 +34,7 @@ local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("project/task")
+local project       = require("project/project")
 local history       = require("project/history")
 
 -- init the option menu
@@ -155,6 +156,9 @@ function main._init()
     else
         os.addenv("PATH", os.programdir())
     end
+
+    -- define task and package apis first before loading project's xmake.lua - calling option.init()
+    project.define_apis(task.apis())
 end
 
 -- the main function

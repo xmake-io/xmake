@@ -35,7 +35,6 @@ local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local project       = require("project/project")
-local package       = require("project/package")
 local sandbox_os    = require("sandbox/modules/os")
 
 -- the directories of tasks
@@ -167,20 +166,7 @@ function task._interpreter()
     assert(interp)
   
     -- define apis
-    interp:api_define
-    {
-        values =
-        {
-            -- task.set_xxx
-            "task.set_category"     -- main, action, plugin, task (default)
-        ,   "task.set_menu"
-        }
-    ,   script =
-        {
-            -- task.on_xxx
-            "task.on_run"
-        }
-    }
+    interp:api_define(task.apis())
 
     -- set filter
     interp:filter():register("task", function (variable)
@@ -202,7 +188,6 @@ function task._interpreter()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = os.projectdir()
-            ,   packagedir  = package.directory()
             ,   programdir  = os.programdir()
             }
 
@@ -327,6 +312,25 @@ function task._load(filepath)
 
     -- ok?
     return tasks
+end
+ 
+-- get task apis
+function task.apis()
+
+    return 
+    {
+        values =
+        {
+            -- task.set_xxx
+            "task.set_category"     -- main, action, plugin, task (default)
+        ,   "task.set_menu"
+        }
+    ,   script =
+        {
+            -- task.on_xxx
+            "task.on_run"
+        }
+    }
 end
 
 -- get all tasks

@@ -31,14 +31,13 @@ local io                    = require("base/io")
 local path                  = require("base/path")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
+local global                = require("base/global")
 local process               = require("base/process")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local target                = require("project/target")
 local config                = require("project/config")
-local global                = require("base/global")
 local option                = require("project/option")
-local package               = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
@@ -201,7 +200,7 @@ function project._interpreter()
     -- define apis for language
     interp:api_define(language.apis())
 
-    -- define apis for target, option and task
+    -- define apis for target, option
     interp:api_define
     {
         values =
@@ -238,9 +237,6 @@ function project._interpreter()
         ,   "option.add_vectorexts"
         ,   "option.add_bindings"  -- deprecated
         ,   "option.add_rbindings" -- deprecated
-            -- task.set_xxx
-        ,   "task.set_category"
-        ,   "task.set_menu"
         }
     ,   pathes = 
         {
@@ -300,6 +296,12 @@ function project._interpreter()
         }
     }
 
+    -- define registered apis
+    for _, apis in ipairs(project._APIS or {}) do
+        interp:api_define(apis)
+    end
+
+    -- TODO 
     -- register api: add_packages() to target
     interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
 
@@ -333,7 +335,6 @@ function project._interpreter()
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
-            ,   packagedir  = package.directory()
             ,   programdir  = os.programdir()
             }
 
@@ -353,6 +354,48 @@ function project._interpreter()
 
     -- ok?
     return interp
+end
+
+-- define apis
+function project.define_apis(apis)
+
+    -- init apis
+    project._APIS = project._APIS or {}
+
+    -- define these apis
+    table.insert(project._APIS, apis)
+end
+
+-- get the project file
+function project.file()
+    return os.projectfile()
+end
+
+-- get the project directory
+function project.directory()
+    return os.projectdir()
+end
+
+-- get the project info from the given name
+function project.get(name)
+
+    -- load the global project infos
+    local infos = project._INFOS 
+    if not infos then
+
+        -- get interpreter
+        local interp = project._interpreter()
+        assert(interp) 
+
+        -- load infos
+        infos = interp:load(project.file(), nil, true, true)
+        project._INFOS = infos
+    end
+
+    -- get it
+    if infos then
+        return infos[name]
+    end
 end
 
 -- load targets 
@@ -657,7 +700,7 @@ function project.menu()
                     first = false
                 end
 
-                -- deprecated, make bindings
+                -- deprecated: make bindings
                 local bindings = nil
                 if opt:get("bindings") then
                     bindings = string.join(table.wrap(opt:get("bindings")), ',')
