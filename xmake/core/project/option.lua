@@ -83,10 +83,10 @@ function option:_cx_check()
     for _, kind in ipairs({"c", "cxx"}) do
 
         -- get conditions
+        local links    = self:get("links")
         local snippets = self:get(kind .. "snippet")
         local types    = self:get(kind .. "types")
         local funcs    = self:get(kind .. "funcs")
-        local links    = self:get(kind .. "links")
         local includes = self:get(kind .. "includes")
 
         -- need check it?
@@ -115,11 +115,6 @@ function option:_cx_check()
         end
     end
         
-    -- no checked conditions, passed directly
-    if not checked then
-        self:enable(true)
-    end
-
     -- ok
     return true
 end

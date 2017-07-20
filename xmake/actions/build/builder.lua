@@ -32,6 +32,7 @@ import("core.platform.environment")
 function _clean_target(target)
     if not target:isphony() then
         os.tryrm(target:symbolfile())
+        os.tryrm(target:targetfile())
     end
 end
 
