@@ -104,6 +104,10 @@
 #       define TB_ARCH_ARM_VERSION          (5)
 #       define TB_ARCH_ARM_v5
 #       define  TB_ARCH_STRING              "armv5"
+#   elif defined(__ARM_ARCH_4T__)
+#       define TB_ARCH_ARM_VERSION          (4)
+#       define TB_ARCH_ARM_v4t
+#       define  TB_ARCH_STRING              "armv4t"
 #   elif defined(__ARM_ARCH)
 #       define TB_ARCH_ARM_VERSION          __ARM_ARCH
 #       if __ARM_ARCH >= 8

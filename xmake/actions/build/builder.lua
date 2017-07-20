@@ -28,6 +28,13 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.environment")
 
+-- clean target for rebuilding
+function _clean_target(target)
+    if not target:isphony() then
+        os.tryrm(target:symbolfile())
+    end
+end
+
 -- on build the given target
 function _on_build_target(target)
 
@@ -47,6 +54,11 @@ function _build_target(target)
     ,   target:script("build", _on_build_target)
     ,   target:script("build_after")
     }
+
+    -- clean target if rebuild
+    if _g.rebuild then
+        _clean_target(target)
+    end
 
     -- run the target scripts
     for i = 1, 3 do

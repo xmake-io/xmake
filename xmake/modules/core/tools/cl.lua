@@ -233,7 +233,7 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
                 local including_file = errors:match("\n(.-: .-:)%s*.-\r*\n")
 
                 -- filter includes notes
-                if errors and including_file then
+                if errors and #errors:split("\n") > 10 and including_file then
                     errors = errors:gsub((including_file or "") .. ".-\r*\n", "") 
                 end
                 os.raise(errors)
