@@ -233,7 +233,8 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    if self:has_flags("-Wl,-rpath=" .. dir) then
+    local flag = "-Wl,-rpath=" .. dir
+    if self:has_flags(flag) then
         return flag
     end
 end

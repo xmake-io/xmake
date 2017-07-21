@@ -173,7 +173,7 @@ function builder:_addflags_from_targetdeps(results, target, flagname)
             elseif flagname == "rpathdirs" and targetkind == "binary" then
 
                 -- add dependent rpathdirs (need absolute path)
-                table.insert(results, path.directory(path.absolute(dep:targetfile(), xmake._PROJECT_DIR)))
+                table.insert(results, path.directory(path.absolute(dep:targetfile(), os.projectdir())))
 
             elseif flagname == "includedirs" then
 
