@@ -184,13 +184,16 @@ function toolchain_insert(toolchains, toolkind, cross, name, description, check)
 end
 
 -- check the toolchain 
-function toolchain_check(kind, toolkind, toolchains)
+function toolchain_check(config_or_kind, toolkind, toolchains)
 
     -- init config name
     local confignames = {config = "core.project.config", global = "core.base.global"}
 
     -- import config module
-    local config = import(confignames[kind])
+    local config = config_or_kind
+    if type(config_or_kind) == "string" then
+        config = import(confignames[config_or_kind])
+    end
 
     -- load toolchains if be function
     if type(toolchains) == "function" then
