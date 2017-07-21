@@ -38,10 +38,97 @@ local import            = require("sandbox/modules/import")
 local cache             = require("sandbox/modules/import/lib/detect/cache")
 local pkg_config        = import("lib.detect.pkg_config")
 
--- find package from project package directories
-function sandbox_lib_detect_find_package._find_from_project_packagedirs(name, opt)
+-- find package from package directories
+function sandbox_lib_detect_find_package._find_from_packagedirs(name, opt)
 
-    -- TODO
+    -- get package path (.e.g name.pkg) in the package directories
+    local packagepath = nil
+    for _, dir in ipairs(table.wrap(opt.packagedirs)) do
+        local p = path.join(dir, name .. ".pkg")
+        if os.isdir(p) then
+            packagepath = p
+            break
+        end
+    end
+    if not packagepath then
+        return 
+    end
+
+    -- get package file (.e.g name.pkg/xmake.lua)
+    local packagefile = path.join(packagepath, "xmake.lua")
+    if not os.isfile(packagefile) then
+        return 
+    end
+
+    -- get interpreter
+    local interp = project.interpreter()
+
+    -- register filter handler
+    interp:filter():register("find_package_" .. name, function (variable)
+ 
+        -- init maps
+        local maps = 
+        {
+            arch        = opt.arch
+        ,   plat        = opt.plat
+        ,   mode        = opt.mode
+        }
+
+        -- get variable
+        return maps[variable]
+    end)
+
+    -- load the package from the the package file
+    local packageinfos, errors = interp:load(packagefile, "option", true, true)
+    if not packageinfos then
+        raise(errors)
+    end
+
+    -- clear filter handler
+    interp:filter():register("find_package_" .. name, nil)
+
+    -- get package info
+    local packageinfo = packageinfos[name]
+    if not packageinfo then
+        return 
+    end
+
+    -- get linkdirs
+    local linkdirs = {}
+    for _, linkdir in ipairs(table.wrap(packageinfo.linkdirs)) do
+        table.insert(linkdirs, path.join(packagepath, linkdir))
+    end
+    if #linkdirs == 0 then
+        return 
+    end
+
+    -- import find_library
+    local find_library = import("lib.detect.find_library")
+
+    -- find library 
+    local result = nil
+    for _, link in ipairs(table.wrap(packageinfo.links)) do
+        local libinfo = find_library(link, linkdirs)
+        if libinfo then
+            result          = result or {}
+            result.links    = table.join(result.links or {}, libinfo.link)
+            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+        end
+    end
+
+    -- inherit other package info
+    if result then
+        result.includedirs = {}
+        for _, includedir in ipairs(table.wrap(packageinfo.includedirs)) do
+            table.insert(result.includedirs, path.join(packagepath, includedir))
+        end
+        for _, infoname in ipairs({"defines", "languages", "warnings"}) do
+            result[infoname] = packageinfo[infoname]
+        end
+    end
+
+    -- ok?
+    return result
 end
 
 -- find package from repositories
@@ -62,7 +149,7 @@ end
 
 -- find package from pkg-config
 function sandbox_lib_detect_find_package._find_from_pkg_config(name, opt)
-    return pkg_config.find(name, opt)
+    return import("lib.detect.pkg_config").find(name, opt)
 end
 
 -- find package from system directories
@@ -90,7 +177,7 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
     local pkginfo = nil
     local links = opt.links
     if not links then
-        pkginfo = pkg_config.info(name)
+        pkginfo = import("lib.detect.pkg_config").info(name)
         if pkginfo then
             links = pkginfo.links
         end
@@ -125,7 +212,7 @@ function sandbox_lib_detect_find_package._find(name, opt)
     -- init find scripts
     local findscripts = 
     {
-        sandbox_lib_detect_find_package._find_from_project_packagedirs
+        sandbox_lib_detect_find_package._find_from_packagedirs
     ,   sandbox_lib_detect_find_package._find_from_repositories
     ,   sandbox_lib_detect_find_package._find_from_modules
     }
@@ -158,7 +245,10 @@ end
 -- find package 
 --
 -- @param name      the package name
--- @param opt       the package options. e.g. {verbose = false, plat = "iphoneos", arch = "arm64", version = "1.0.1", pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}}
+-- @param opt       the package options. 
+--                  e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.1", 
+    --                     pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}
+    --                     packagedirs = {"/tmp/packages"}}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
@@ -178,6 +268,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     opt = opt or {}
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
+    opt.mode = opt.mode or config.get("mode") 
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
@@ -185,7 +276,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     -- attempt to get result from cache first
     local cacheinfo = cache.load(key) 
     local result = cacheinfo[name]
-    if result ~= nil then
+    if result ~= nil and not opt.force then
         return utils.ifelse(result, result, nil)
     end
 

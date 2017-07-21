@@ -180,7 +180,7 @@ function project._api_add_packagedirs(interp, ...)
 end
 
 -- get interpreter
-function project._interpreter()
+function project.interpreter()
 
     -- the interpreter has been initialized? return it directly
     if project._INTERPRETER then
@@ -384,7 +384,7 @@ function project.get(name)
     if not infos then
 
         -- get interpreter
-        local interp = project._interpreter()
+        local interp = project.interpreter()
         assert(interp) 
 
         -- load infos
@@ -402,7 +402,7 @@ end
 function project._load_targets()
 
     -- get interpreter
-    local interp = project._interpreter()
+    local interp = project.interpreter()
     assert(interp) 
 
     -- enter the project directory
@@ -467,7 +467,7 @@ end
 function project._load_options(disable_filter)
 
     -- get interpreter
-    local interp = project._interpreter()
+    local interp = project.interpreter()
     assert(interp) 
 
     -- enter the project directory
@@ -542,7 +542,7 @@ function project.get(name)
     if not infos then
 
         -- get interpreter
-        local interp = project._interpreter()
+        local interp = project.interpreter()
         assert(interp) 
 
         -- load infos
@@ -615,7 +615,7 @@ end
 function project.tasks()
 
     -- get interpreter
-    local interp = project._interpreter()
+    local interp = project.interpreter()
     assert(interp) 
 
     -- the project file is not found?
@@ -635,13 +635,7 @@ end
 
 -- get the mtimes
 function project.mtimes()
-
-    -- get interpreter
-    local interp = project._interpreter()
-    assert(interp) 
-
-    -- get it
-    return interp:mtimes()
+    return project.interpreter():mtimes()
 end
 
 -- get the project menu
