@@ -228,6 +228,15 @@ function _make_source_options(vcxprojfile, flags, condition)
         vcxprojfile:print("<Optimization%s>Disabled</Optimization>", condition) 
     end
 
+    -- make FloatingPointModel
+    if flagstr:find("[%-|/]fp:fast") then
+        vcxprojfile:print("<FloatingPointModel%s>Fast</FloatingPointModel>", condition) 
+    elseif flagstr:find("[%-|/]fp:strict") then
+        vcxprojfile:print("<FloatingPointModel%s>Strict</FloatingPointModel>", condition) 
+    elseif flagstr:find("[%-|/]fp:precise") then
+        vcxprojfile:print("<FloatingPointModel%s>Precise</FloatingPointModel>", condition) 
+    end
+
     -- make WarningLevel
     if flagstr:find("[%-|/]W1") then
         vcxprojfile:print("<WarningLevel%s>Level1</WarningLevel>", condition) 
@@ -273,7 +282,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd"}
+    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp"}
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
