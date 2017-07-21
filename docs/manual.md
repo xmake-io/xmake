@@ -238,16 +238,24 @@ end
 
 The global interface affects the whole project description scope and all sub-project files.
 
-| Interfaces                            | Description                   | Version  |
-| ------------------------------------- | ----------------------------- | -------- |
-| [set_modes](#set_modes)               | Set project compilation modes | >= 2.1.2 |
-| [set_project](#set_project)           | Set project name              | >= 2.0.1 |
-| [set_version](#set_version)           | Set project version           | >= 2.0.1 |
-| [set_xmakever](#set_xmakever)         | Set minimal xmake version     | >= 2.1.1 |
-| [add_subdirs](#add_subdirs)           | Add sub-project directories   | >= 1.0.1 |
-| [add_subfiles](#add_subfiles)         | Add sub-project files         | >= 1.0.1 |
-| [add_plugindirs](#add_plugindirs)     | Add plugin directories        | >= 2.0.1 |
-| [add_packagedirs](#add_packagedirs)   | Add package directories       | >= 2.0.1 |
+| Interfaces                            | Description                           | Version  |
+| ------------------------------------- | ------------------------------------- | -------- |
+| [includes](#includes)                 | Add sub-project files and directories | >= 2.1.5 |
+| [set_modes](#set_modes)               | Set project compilation modes         | >= 2.1.2 |
+| [set_project](#set_project)           | Set project name                      | >= 2.0.1 |
+| [set_version](#set_version)           | Set project version                   | >= 2.0.1 |
+| [set_xmakever](#set_xmakever)         | Set minimal xmake version             | >= 2.1.1 |
+| [add_subdirs](#add_subdirs)           | Add sub-project directories           | >= 1.0.1 |
+| [add_subfiles](#add_subfiles)         | Add sub-project files                 | >= 1.0.1 |
+| [add_moduledirs](#add_moduledirs)     | Add module directories                | >= 2.1.5 |
+| [add_plugindirs](#add_plugindirs)     | Add plugin directories                | >= 2.0.1 |
+| [add_packagedirs](#add_packagedirs)   | Add package directories               | >= 2.0.1 |
+
+##### includes
+
+###### Add sub-project files and directories
+
+It is used to replace [add_subdirs](#add_subdirs) and [add_subfiles](#add_subfiles).
 
 ##### set_modes
 
@@ -370,6 +378,17 @@ for example:
 ```lua
 add_subfiles("src/tbox/xmake.lua")
 ```
+
+##### add_moduledirs
+
+###### Add module directories
+
+The builtin modules are placed in the 'xmake/modules' directory, but for some user-defined modules for a specific project, you can configure additional module directory is specified in the 'xmake.lua`.
+
+```lua
+add_moduledirs("$(projectdir)/modules")
+```
+xmake will load the given module in the given directory when calling `import`.
 
 ##### add_plugindirs
 

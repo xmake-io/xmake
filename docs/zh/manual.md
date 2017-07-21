@@ -251,14 +251,22 @@ end
 
 | 接口                                  | 描述                          | 支持版本 |
 | ------------------------------------- | ----------------------------- | -------- |
+| [includes](#includes)                 | 添加子工程文件和目录          | >= 2.1.5 |
 | [set_modes](#set_modes)               | 设置支持的编译模式            | >= 2.1.2 |
 | [set_project](#set_project)           | 设置工程名                    | >= 2.0.1 |
 | [set_version](#set_version)           | 设置工程版本                  | >= 2.0.1 |
 | [set_xmakever](#set_xmakever)         | 设置最小xmake版本             | >= 2.1.1 |
 | [add_subdirs](#add_subdirs)           | 添加子工程目录                | >= 1.0.1 |
 | [add_subfiles](#add_subfiles)         | 添加子工程文件                | >= 1.0.1 |
+| [add_moduledirs](#add_moduledirs)     | 添加模块目录                  | >= 2.1.5 |
 | [add_plugindirs](#add_plugindirs)     | 添加插件目录                  | >= 2.0.1 | 
 | [add_packagedirs](#add_packagedirs)   | 添加包目录                    | >= 2.0.1 |
+
+##### includes
+
+###### 添加子工程文件和目录
+
+同时支持子工程文件和目录的添加，用于替代[add_subdirs](#add_subdirs)和[add_subfiles](#add_subfiles)接口。
 
 ##### set_modes
 
@@ -385,6 +393,25 @@ $ xmake build tbox
 add_subfiles("src/tbox/xmake.lua")
 ```
 
+##### add_moduledirs
+
+###### 添加模块目录
+
+xmake内置的扩展模块都在`xmake/modules`目录下，可通过[import](#import)来导入他们，如果自己在工程里面实现了一些扩展模块，
+可以放置在这个接口指定的目录下，import也就会能找到，并且优先进行导入。
+
+例如定义一个`find_openssl.lua`的扩展模块，用于扩展内置的[lib.detect.find_package](#detect-find_package)接口，则只需要将它放置在：
+
+```
+projectdir/xmake/modules/detect/packages/find_openssl.lua
+```
+
+然后在工程`xmake.lua`下指定这个模块目录，`find_package`就可以自动找到了：
+
+```lua
+add_moduledirs("projectdir/xmake/modules")
+```
+
 ##### add_plugindirs
 
 ###### 添加插件目录
@@ -454,74 +481,76 @@ target("test2")
 </p>
 
 
-| 接口                                        | 描述                                 | 支持版本 |
-| ------------------------------------------- | ------------------------------------ | -------- |
-| [target](#target)                           | 定义工程目标                         | >= 1.0.1 |
-| [target_end](#target_end)                   | 结束定义工程目标                     | >= 2.1.1 |
-| [set_kind](#targetset_kind)                 | 设置目标编译类型                     | >= 1.0.1 |
-| [set_strip](#targetset_strip)               | 设置是否strip信息                    | >= 1.0.1 |
-| [set_default](#targetset_default)           | 设置是否为默认构建安装目标           | >= 2.1.3 |
-| [set_options](#targetset_options)           | 设置关联选项                         | >= 1.0.1 |
-| [set_symbols](#targetset_symbols)           | 设置符号信息                         | >= 1.0.1 |
-| [set_basename](#targetset_basename)         | 设置目标文件名                       | >= 2.1.2 |
-| [set_warnings](#targetset_warnings)         | 设置警告级别                         | >= 1.0.1 |
-| [set_optimize](#targetset_optimize)         | 设置优化级别                         | >= 1.0.1 |
-| [set_languages](#targetset_languages)       | 设置代码语言标准                     | >= 1.0.1 |
-| [set_headerdir](#targetset_headerdir)       | 设置头文件安装目录                   | >= 1.0.1 |
-| [set_targetdir](#targetset_targetdir)       | 设置生成目标文件目录                 | >= 1.0.1 |
-| [set_objectdir](#targetset_objectdir)       | 设置对象文件生成目录                 | >= 1.0.1 |
-| [on_build](#targeton_build)                 | 自定义编译脚本                       | >= 2.0.1 |
-| [on_clean](#targeton_clean)                 | 自定义清理脚本                       | >= 2.0.1 |
-| [on_package](#targeton_package)             | 自定义打包脚本                       | >= 2.0.1 |
-| [on_install](#targeton_install)             | 自定义安装脚本                       | >= 2.0.1 |
-| [on_uninstall](#targeton_uninstall)         | 自定义卸载脚本                       | >= 2.0.1 |
-| [on_run](#targeton_run)                     | 自定义运行脚本                       | >= 2.0.1 |
-| [before_build](#targetbefore_build)         | 在构建之前执行一些自定义脚本         | >= 2.0.1 |
-| [before_clean](#targetbefore_clean)         | 在清除之前执行一些自定义脚本         | >= 2.0.1 |
-| [before_package](#targetbefore_package)     | 在打包之前执行一些自定义脚本         | >= 2.0.1 |
-| [before_install](#targetbefore_install)     | 在安装之前执行一些自定义脚本         | >= 2.0.1 |
-| [before_uninstall](#targetbefore_uninstall) | 在卸载之前执行一些自定义脚本         | >= 2.0.1 |
-| [before_run](#targetbefore_run)             | 在运行之前执行一些自定义脚本         | >= 2.0.1 |
-| [after_build](#targetafter_build)           | 在构建之后执行一些自定义脚本         | >= 2.0.1 |
-| [after_clean](#targetafter_clean)           | 在清除之后执行一些自定义脚本         | >= 2.0.1 |
-| [after_package](#targetafter_package)       | 在打包之后执行一些自定义脚本         | >= 2.0.1 |
-| [after_install](#targetafter_install)       | 在安装之后执行一些自定义脚本         | >= 2.0.1 |
-| [after_uninstall](#targetafter_uninstall)   | 在卸载之后执行一些自定义脚本         | >= 2.0.1 |
-| [after_run](#targetafter_run)               | 在运行之后执行一些自定义脚本         | >= 2.0.1 |
-| [set_config_h](#targetset_config_h)         | 设置自动生成的配置头文件路径         | >= 1.0.1 |
-| [set_config_h_prefix](#targetset_config_h)  | 设置自动生成的头文件中宏定义命名前缀 | >= 1.0.1 |
-| [add_deps](#targetadd_deps)                 | 添加子工程目标依赖                   | >= 1.0.1 |
-| [add_links](#targetadd_links)               | 添加链接库名                         | >= 1.0.1 |
-| [add_files](#targetadd_files)               | 添加源代码文件                       | >= 1.0.1 |
-| [add_headers](#targetadd_headers)           | 添加安装的头文件                     | >= 1.0.1 |
-| [add_linkdirs](#targetadd_linkdirs)         | 添加链接库搜索目录                   | >= 1.0.1 |
-| [add_rpathdirs](#targetadd_rpathdirs)       | 添加运行时候动态链接库搜索目录       | >= 2.1.3 |
-| [add_includedirs](#targetadd_includedirs)   | 添加头文件搜索目录                   | >= 1.0.1 |
-| [add_defines](#targetadd_defines)           | 添加宏定义                           | >= 1.0.1 |
-| [add_undefines](#targetadd_undefines)       | 取消宏定义                           | >= 1.0.1 |
-| [add_defines_h](#targetadd_defines_h)       | 添加宏定义到头文件                   | >= 1.0.1 |
-| [add_undefines_h](#targetadd_undefines_h)   | 取消宏定义到头文件                   | >= 1.0.1 |
-| [add_cflags](#targetadd_cflags)             | 添加c编译选项                        | >= 1.0.1 |
-| [add_cxflags](#targetadd_cxflags)           | 添加c/c++编译选项                    | >= 1.0.1 |
-| [add_cxxflags](#targetadd_cxxflags)         | 添加c++编译选项                      | >= 1.0.1 |
-| [add_mflags](#targetadd_mflags)             | 添加objc编译选项                     | >= 1.0.1 |
-| [add_mxflags](#targetadd_mxflags)           | 添加objc/objc++编译选项              | >= 1.0.1 |
-| [add_mxxflags](#targetadd_mxxflags)         | 添加objc++编译选项                   | >= 1.0.1 |
-| [add_scflags](#targetadd_scflags)           | 添加swift编译选项                    | >= 2.0.1 |
-| [add_asflags](#targetadd_asflags)           | 添加汇编编译选项                     | >= 2.0.1 |
-| [add_gcflags](#targetadd_gcflags)           | 添加go编译选项                       | >= 2.1.1 |
-| [add_ldflags](#targetadd_ldflags)           | 添加链接选项                         | >= 1.0.1 |
-| [add_arflags](#targetadd_arflags)           | 添加静态库归档选项                   | >= 1.0.1 |
-| [add_shflags](#targetadd_shflags)           | 添加动态库链接选项                   | >= 1.0.1 |
-| [add_cfunc](#targetadd_cfunc)               | 添加单个c库函数检测                  | >= 2.0.1 |
-| [add_cxxfunc](#targetadd_cxxfunc)           | 添加单个c++库函数检测                | >= 2.0.1 |
-| [add_cfuncs](#targetadd_cfuncs)             | 添加c库函数检测                      | >= 2.0.1 |
-| [add_cxxfuncs](#targetadd_cxxfuncs)         | 添加c++库函数接口                    | >= 2.0.1 |
-| [add_packages](#targetadd_packages)         | 添加包依赖                           | >= 2.0.1 |
-| [add_options](#targetadd_options)           | 添加关联选项                         | >= 2.0.1 |
-| [add_languages](#targetadd_languages)       | 添加语言标准                         | >= 1.0.1 |
-| [add_vectorexts](#targetadd_vectorexts)     | 添加向量扩展指令                     | >= 1.0.1 |
-| [add_frameworks](#targetadd_frameworks)     | 添加链接框架                         | >= 2.1.1 |
+| 接口                                          | 描述                                 | 支持版本 |
+| --------------------------------------------- | ------------------------------------ | -------- |
+| [target](#target)                             | 定义工程目标                         | >= 1.0.1 |
+| [target_end](#target_end)                     | 结束定义工程目标                     | >= 2.1.1 |
+| [set_kind](#targetset_kind)                   | 设置目标编译类型                     | >= 1.0.1 |
+| [set_strip](#targetset_strip)                 | 设置是否strip信息                    | >= 1.0.1 |
+| [set_default](#targetset_default)             | 设置是否为默认构建安装目标           | >= 2.1.3 |
+| [set_options](#targetset_options)             | 设置关联选项                         | >= 1.0.1 |
+| [set_symbols](#targetset_symbols)             | 设置符号信息                         | >= 1.0.1 |
+| [set_basename](#targetset_basename)           | 设置目标文件名                       | >= 2.1.2 |
+| [set_warnings](#targetset_warnings)           | 设置警告级别                         | >= 1.0.1 |
+| [set_optimize](#targetset_optimize)           | 设置优化级别                         | >= 1.0.1 |
+| [set_languages](#targetset_languages)         | 设置代码语言标准                     | >= 1.0.1 |
+| [set_headerdir](#targetset_headerdir)         | 设置头文件安装目录                   | >= 1.0.1 |
+| [set_targetdir](#targetset_targetdir)         | 设置生成目标文件目录                 | >= 1.0.1 |
+| [set_objectdir](#targetset_objectdir)         | 设置对象文件生成目录                 | >= 1.0.1 |
+| [on_load](#targeton_load)                     | 自定义目标加载脚本                   | >= 2.1.5 |
+| [on_build](#targeton_build)                   | 自定义编译脚本                       | >= 2.0.1 |
+| [on_clean](#targeton_clean)                   | 自定义清理脚本                       | >= 2.0.1 |
+| [on_package](#targeton_package)               | 自定义打包脚本                       | >= 2.0.1 |
+| [on_install](#targeton_install)               | 自定义安装脚本                       | >= 2.0.1 |
+| [on_uninstall](#targeton_uninstall)           | 自定义卸载脚本                       | >= 2.0.1 |
+| [on_run](#targeton_run)                       | 自定义运行脚本                       | >= 2.0.1 |
+| [before_build](#targetbefore_build)           | 在构建之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_clean](#targetbefore_clean)           | 在清除之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_package](#targetbefore_package)       | 在打包之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_install](#targetbefore_install)       | 在安装之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_uninstall](#targetbefore_uninstall)   | 在卸载之前执行一些自定义脚本         | >= 2.0.1 |
+| [before_run](#targetbefore_run)               | 在运行之前执行一些自定义脚本         | >= 2.0.1 |
+| [after_build](#targetafter_build)             | 在构建之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_clean](#targetafter_clean)             | 在清除之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_package](#targetafter_package)         | 在打包之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_install](#targetafter_install)         | 在安装之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_uninstall](#targetafter_uninstall)     | 在卸载之后执行一些自定义脚本         | >= 2.0.1 |
+| [after_run](#targetafter_run)                 | 在运行之后执行一些自定义脚本         | >= 2.0.1 |
+| [set_config_h](#targetset_config_h)           | 设置自动生成的配置头文件路径         | >= 1.0.1 |
+| [set_config_h_prefix](#targetset_config_h)    | 设置自动生成的头文件中宏定义命名前缀 | >= 1.0.1 |
+| [add_deps](#targetadd_deps)                   | 添加子工程目标依赖                   | >= 1.0.1 |
+| [add_links](#targetadd_links)                 | 添加链接库名                         | >= 1.0.1 |
+| [add_files](#targetadd_files)                 | 添加源代码文件                       | >= 1.0.1 |
+| [add_headers](#targetadd_headers)             | 添加安装的头文件                     | >= 1.0.1 |
+| [add_linkdirs](#targetadd_linkdirs)           | 添加链接库搜索目录                   | >= 1.0.1 |
+| [add_rpathdirs](#targetadd_rpathdirs)         | 添加运行时候动态链接库搜索目录       | >= 2.1.3 |
+| [add_includedirs](#targetadd_includedirs)     | 添加头文件搜索目录                   | >= 1.0.1 |
+| [add_defines](#targetadd_defines)             | 添加宏定义                           | >= 1.0.1 |
+| [add_undefines](#targetadd_undefines)         | 取消宏定义                           | >= 1.0.1 |
+| [add_defines_h](#targetadd_defines_h)         | 添加宏定义到头文件                   | >= 1.0.1 |
+| [add_undefines_h](#targetadd_undefines_h)     | 取消宏定义到头文件                   | >= 1.0.1 |
+| [add_cflags](#targetadd_cflags)               | 添加c编译选项                        | >= 1.0.1 |
+| [add_cxflags](#targetadd_cxflags)             | 添加c/c++编译选项                    | >= 1.0.1 |
+| [add_cxxflags](#targetadd_cxxflags)           | 添加c++编译选项                      | >= 1.0.1 |
+| [add_mflags](#targetadd_mflags)               | 添加objc编译选项                     | >= 1.0.1 |
+| [add_mxflags](#targetadd_mxflags)             | 添加objc/objc++编译选项              | >= 1.0.1 |
+| [add_mxxflags](#targetadd_mxxflags)           | 添加objc++编译选项                   | >= 1.0.1 |
+| [add_scflags](#targetadd_scflags)             | 添加swift编译选项                    | >= 2.0.1 |
+| [add_asflags](#targetadd_asflags)             | 添加汇编编译选项                     | >= 2.0.1 |
+| [add_gcflags](#targetadd_gcflags)             | 添加go编译选项                       | >= 2.1.1 |
+| [add_ldflags](#targetadd_ldflags)             | 添加链接选项                         | >= 1.0.1 |
+| [add_arflags](#targetadd_arflags)             | 添加静态库归档选项                   | >= 1.0.1 |
+| [add_shflags](#targetadd_shflags)             | 添加动态库链接选项                   | >= 1.0.1 |
+| [add_cfunc](#targetadd_cfunc)                 | 添加单个c库函数检测                  | >= 2.0.1 |
+| [add_cxxfunc](#targetadd_cxxfunc)             | 添加单个c++库函数检测                | >= 2.0.1 |
+| [add_cfuncs](#targetadd_cfuncs)               | 添加c库函数检测                      | >= 2.0.1 |
+| [add_cxxfuncs](#targetadd_cxxfuncs)           | 添加c++库函数接口                    | >= 2.0.1 |
+| [add_packages](#targetadd_packages)           | 添加包依赖                           | >= 2.0.1 |
+| [add_options](#targetadd_options)             | 添加关联选项                         | >= 2.0.1 |
+| [add_languages](#targetadd_languages)         | 添加语言标准                         | >= 1.0.1 |
+| [add_vectorexts](#targetadd_vectorexts)       | 添加向量扩展指令                     | >= 1.0.1 |
+| [add_frameworks](#targetadd_frameworks)       | 添加链接框架                         | >= 2.1.1 |
+| [add_frameworkdirs](#targetadd_frameworkdirs) | 添加链接框架的搜索目录               | >= 2.1.5 |
 
 ##### target
 
@@ -899,6 +928,23 @@ target("test")
 target("test")
     set_objectdir("$(buildir)/.objs")
 ```
+
+##### target:on_load
+
+###### 自定义目标加载脚本
+
+在target初始化加载的时候，将会执行此脚本，在里面可以做一些动态的目标配置，实现更灵活的目标描述定义，例如：
+
+```lua
+target("test")
+    on_load(function (target)
+        target:add("defines", "DEBUG", "TEST=\"hello\"")
+        target:add("linkdirs", "/usr/lib", "/usr/local/lib")
+        target:add({includedirs = "/usr/include", "links" = "pthread"})
+    end)
+```
+
+可以在`on_load`里面，通过`target:set`, `target:add` 来动态添加各种target属性。
 
 ##### target:on_build
 
@@ -1310,6 +1356,7 @@ target("demo")
 | .go                | golang文件                         |
 | .o/.obj            | 对象文件                           |
 | .a/.lib            | 静态库文件，会自动合并库到目标程序 |
+| .rc                | msvc的资源文件                     |
 
 其中通配符`*`表示匹配当前目录下文件，而`**`则匹配多级目录下的文件。
 
@@ -1794,6 +1841,18 @@ target("test")
 
 如果不是这两个平台，这些设置将会被忽略。
 
+##### target:add_frameworkdirs
+
+###### 添加链接框架搜索目录
+
+对于一些第三方framework，那么仅仅通过[add_frameworks](#targetadd_frameworks)是没法找到的，还需要通过这个接口来添加搜索目录。
+
+```lua
+target("test")
+    add_frameworks("MyFramework")
+    add_frameworkdirs("/tmp/frameworkdir", "/tmp/frameworkdir2")
+```
+
 #### 选项定义
 
 定义和设置选项开关，每个`option`对应一个选项，可用于自定义编译配置选项、开关设置。
@@ -1827,12 +1886,14 @@ option("test2")
 | ----------------------------------------------------- | -------------------------------------------- | -------- |
 | [option](#option)                                     | 定义选项                                     | >= 2.0.1 |
 | [option_end](#option_end)                             | 结束定义选项                                 | >= 2.1.1 |
+| [add_deps](#optionadd_deps)                           | 添加选项依赖                                 | >= 2.1.5 |
+| [before_check](#optionbefore_check)                   | 选项检测之前执行此脚本                       | >= 2.1.5 |
+| [on_check](#optionon_check)                           | 自定义选项检测脚本                           | >= 2.1.5 |
+| [after_check](#optionafter_check)                     | 选项检测之后执行此脚本                       | >= 2.1.5 |
 | [set_default](#optionset_default)                     | 设置默认值                                   | >= 2.0.1 |
 | [set_showmenu](#optionset_showmenu)                   | 设置是否启用菜单显示                         | >= 1.0.1 |
 | [set_category](#optionset_category)                   | 设置选项分类，仅用于菜单显示                 | >= 1.0.1 |
 | [set_description](#optionset_description)             | 设置菜单显示描述                             | >= 1.0.1 |
-| [add_bindings](#optionadd_bindings)                   | 添加正向关联选项，同步启用和禁用             | >= 2.0.1 |
-| [add_rbindings](#optionadd_rbindings)                 | 添加逆向关联选项，同步启用和禁用             | >= 2.0.1 |
 | [add_links](#optionadd_links)                         | 添加链接库检测                               | >= 1.0.1 |
 | [add_linkdirs](#optionadd_linkdirs)                   | 添加链接库检测需要的搜索目录                 | >= 1.0.1 |
 | [add_rpathdirs](#optionadd_rpathdirs)                 | 添加运行时候动态链接库搜索目录               | >= 2.1.3 |
@@ -1840,45 +1901,45 @@ option("test2")
 | [add_cxxincludes](#optionadd_cxxincludes)             | 添加c++头文件检测                            | >= 1.0.1 |
 | [add_ctypes](#optionadd_ctypes)                       | 添加c类型检测                                | >= 1.0.1 |
 | [add_cxxtypes](#optionadd_cxxtypes)                   | 添加c++类型检测                              | >= 1.0.1 |
-| [add_defines_if_ok](#optionadd_defines_if_ok)         | 如果检测选项通过，则添加宏定义               | >= 1.0.1 |
-| [add_defines_h_if_ok](#optionadd_defines_h_if_ok)     | 如果检测选项通过，则添加宏定义到配置头文件   | >= 1.0.1 |
-| [add_undefines_if_ok](#optionadd_undefines_if_ok)     | 如果检测选项通过，则取消宏定义               | >= 1.0.1 |
-| [add_undefines_h_if_ok](#optionadd_undefines_h_if_ok) | 如果检测选项通过，则在配置头文件中取消宏定义 | >= 1.0.1 |
+| [add_csnippet](#optionadd_csnippet)                   | 添加c代码片段检测                            | >= 2.1.5 |
+| [add_cxxsnippet](#optionadd_cxxsnippet)               | 添加c++代码片段检测                          | >= 2.1.5 |
+| [set_warnings](#targetset_warnings)                   | 设置警告级别                                 | >= 1.0.1 |
+| [set_optimize](#targetset_optimize)                   | 设置优化级别                                 | >= 1.0.1 |
+| [set_languages](#targetset_languages)                 | 设置代码语言标准                             | >= 1.0.1 |
+| [add_includedirs](#targetadd_includedirs)             | 添加头文件搜索目录                           | >= 1.0.1 |
+| [add_defines](#targetadd_defines)                     | 添加宏定义                                   | >= 1.0.1 |
+| [add_undefines](#targetadd_undefines)                 | 取消宏定义                                   | >= 1.0.1 |
+| [add_defines_h](#targetadd_defines_h)                 | 添加宏定义到头文件                           | >= 1.0.1 |
+| [add_undefines_h](#targetadd_undefines_h)             | 取消宏定义到头文件                           | >= 1.0.1 |
+| [add_cflags](#targetadd_cflags)                       | 添加c编译选项                                | >= 1.0.1 |
+| [add_cxflags](#targetadd_cxflags)                     | 添加c/c++编译选项                            | >= 1.0.1 |
+| [add_cxxflags](#targetadd_cxxflags)                   | 添加c++编译选项                              | >= 1.0.1 |
+| [add_mflags](#targetadd_mflags)                       | 添加objc编译选项                             | >= 2.0.1 |
+| [add_mxflags](#targetadd_mxflags)                     | 添加objc/objc++编译选项                      | >= 2.0.1 |
+| [add_mxxflags](#targetadd_mxxflags)                   | 添加objc++编译选项                           | >= 2.0.1 |
+| [add_scflags](#targetadd_scflags)                     | 添加swift编译选项                            | >= 2.1.1 |
+| [add_asflags](#targetadd_asflags)                     | 添加汇编编译选项                             | >= 2.1.1 |
+| [add_gcflags](#targetadd_gcflags)                     | 添加go编译选项                               | >= 2.1.1 |
+| [add_dcflags](#targetadd_dcflags)                     | 添加dlang编译选项                            | >= 2.1.1 |
+| [add_rcflags](#targetadd_rcflags)                     | 添加rust编译选项                             | >= 2.1.1 |
+| [add_ldflags](#targetadd_ldflags)                     | 添加链接选项                                 | >= 2.1.1 |
+| [add_arflags](#targetadd_arflags)                     | 添加静态库归档选项                           | >= 2.1.1 |
+| [add_shflags](#targetadd_shflags)                     | 添加动态库链接选项                           | >= 2.0.1 |
+| [add_cfuncs](#targetadd_cfuncs)                       | 添加c库函数检测                              | >= 1.0.1 |
+| [add_cxxfuncs](#targetadd_cxxfuncs)                   | 添加c++库函数接口                            | >= 1.0.1 |
+| [add_languages](#targetadd_languages)                 | 添加语言标准                                 | >= 2.0.1 |
+| [add_vectorexts](#targetadd_vectorexts)               | 添加向量扩展指令                             | >= 2.0.1 |
+| [add_frameworks](#targetadd_frameworks)               | 添加链接框架                                 | >= 2.1.1 |
+| [add_frameworkdirs](#targetadd_frameworkdirs)         | 添加链接框架                                 | >= 2.1.5 |
 
-##### 通用接口 (target)
-
-下面的这些接口，是跟`target`目标域接口通用的，在`option()`和`target()`域范围内都能同时使用，可直接参考上面`target`中的接口描述。
-
-| 接口                                      | 描述                                 | 支持版本 |
-| ----------------------------------------- | ------------------------------------ | -------- |
-| [set_warnings](#targetset_warnings)       | 设置警告级别                         | >= 1.0.1 |
-| [set_optimize](#targetset_optimize)       | 设置优化级别                         | >= 1.0.1 |
-| [set_languages](#targetset_languages)     | 设置代码语言标准                     | >= 1.0.1 |
-| [add_includedirs](#targetadd_includedirs) | 添加头文件搜索目录                   | >= 1.0.1 |
-| [add_defines](#targetadd_defines)         | 添加宏定义                           | >= 1.0.1 |
-| [add_undefines](#targetadd_undefines)     | 取消宏定义                           | >= 1.0.1 |
-| [add_defines_h](#targetadd_defines_h)     | 添加宏定义到头文件                   | >= 1.0.1 |
-| [add_undefines_h](#targetadd_undefines_h) | 取消宏定义到头文件                   | >= 1.0.1 |
-| [add_cflags](#targetadd_cflags)           | 添加c编译选项                        | >= 1.0.1 |
-| [add_cxflags](#targetadd_cxflags)         | 添加c/c++编译选项                    | >= 1.0.1 |
-| [add_cxxflags](#targetadd_cxxflags)       | 添加c++编译选项                      | >= 1.0.1 |
-| [add_mflags](#targetadd_mflags)           | 添加objc编译选项                     | >= 2.0.1 |
-| [add_mxflags](#targetadd_mxflags)         | 添加objc/objc++编译选项              | >= 2.0.1 |
-| [add_mxxflags](#targetadd_mxxflags)       | 添加objc++编译选项                   | >= 2.0.1 |
-| [add_scflags](#targetadd_scflags)         | 添加swift编译选项                    | >= 2.1.1 |
-| [add_asflags](#targetadd_asflags)         | 添加汇编编译选项                     | >= 2.1.1 |
-| [add_gcflags](#targetadd_gcflags)         | 添加go编译选项                       | >= 2.1.1 |
-| [add_dcflags](#targetadd_dcflags)         | 添加dlang编译选项                    | >= 2.1.1 |
-| [add_rcflags](#targetadd_rcflags)         | 添加rust编译选项                     | >= 2.1.1 |
-| [add_ldflags](#targetadd_ldflags)         | 添加链接选项                         | >= 2.1.1 |
-| [add_arflags](#targetadd_arflags)         | 添加静态库归档选项                   | >= 2.1.1 |
-| [add_shflags](#targetadd_shflags)         | 添加动态库链接选项                   | >= 2.0.1 |
-| [add_cfuncs](#targetadd_cfuncs)           | 添加c库函数检测                      | >= 1.0.1 |
-| [add_cxxfuncs](#targetadd_cxxfuncs)       | 添加c++库函数接口                    | >= 1.0.1 |
-| [add_languages](#targetadd_languages)     | 添加语言标准                         | >= 2.0.1 |
-| [add_vectorexts](#targetadd_vectorexts)   | 添加向量扩展指令                     | >= 2.0.1 |
-| [add_frameworks](#targetadd_frameworks)   | 添加链接框架                         | >= 2.1.1 |
-
+| 废弃接口                                              | 描述                                         | 支持版本         |
+| ----------------------------------------------------- | -------------------------------------------- | ---------------- |
+| [add_bindings](#optionadd_bindings)                   | 添加正向关联选项，同步启用和禁用             | >= 2.0.1 < 2.1.5 |
+| [add_rbindings](#optionadd_rbindings)                 | 添加逆向关联选项，同步启用和禁用             | >= 2.0.1 < 2.1.5 |
+| [add_defines_if_ok](#optionadd_defines_if_ok)         | 如果检测选项通过，则添加宏定义               | >= 1.0.1 < 2.1.5 |
+| [add_defines_h_if_ok](#optionadd_defines_h_if_ok)     | 如果检测选项通过，则添加宏定义到配置头文件   | >= 1.0.1 < 2.1.5 |
+| [add_undefines_if_ok](#optionadd_undefines_if_ok)     | 如果检测选项通过，则取消宏定义               | >= 1.0.1 < 2.1.5 |
+| [add_undefines_h_if_ok](#optionadd_undefines_h_if_ok) | 如果检测选项通过，则在配置头文件中取消宏定义 | >= 1.0.1 < 2.1.5 |
 
 ##### option
 
@@ -1915,6 +1976,80 @@ $ xmake
 ###### 结束定义选项
 
 这是一个可选api，显示离开选项作用域，用法和[target_end](#target_end)类似。
+
+##### option:add_deps
+
+###### 添加选项依赖
+
+通过设置依赖，可以调整选项的检测顺序，一般用于[on_check](#optionon_check)等检测脚本的调用时机。
+
+```lua
+option("small")
+    set_default(true)
+    on_check(function (option)
+        -- ...
+    end)
+
+option("test")
+    add_deps("small")
+    set_default(true)
+    on_check(function (option)
+        if option:dep("small"):enabled() then
+            option:enable(false)
+        end
+    end)
+```
+
+当依赖的small选项检测完成后，通过判断small选项的状态，来控制test的选项状态。
+
+##### option:before_check
+
+###### 选项检测之前执行此脚本
+
+例如：在检测之前，通过[find_package](#detect-find_package)来查找包，将`links`, `includedirs`和`linkdirs`等信息添加到option中去，
+然后开始选项检测，通过后就会自动链接到target上。
+
+```lua
+option("zlib")
+    before_check(function (option)
+        import("lib.detect.find_package")
+        option:add(find_package("zlib"))
+    end)
+```
+
+##### option:on_check
+
+###### 自定义选项检测脚本
+
+此脚本会覆盖内置的选项检测逻辑。
+
+```lua
+option("test")
+    add_deps("small")
+    set_default(true)
+    on_check(function (option)
+        if option:dep("small"):enabled() then
+            option:enable(false)
+        end
+    end)
+```
+
+如果test依赖的选项通过，则禁用test选项。
+
+##### option:after_check
+
+###### 选项检测之后执行此脚本
+
+在选项检测完成后，执行此脚本做一些后期处理，也可以在此时重新禁用选项：
+
+```lua
+option("test")
+    add_deps("small")
+    add_links("pthread")
+    after_check(function (option)
+        option:enable(false)
+    end)
+```
 
 ##### option:set_default
 
@@ -2090,6 +2225,10 @@ $ xmake f --mode=release
 
 ###### 添加正向关联选项，同步启用和禁用
 
+<p class="tip">
+2.1.5版本之后已废弃，请用[add_deps](#optionadd_deps), [on_check](#optionon_check), [after_check](#optionafter_check)等接口代替。
+</p>
+
 绑定关联选项，例如我想在命令行中配置一个`smallest`的参数：`xmake f --smallest=y`
 
 这个时候，需要同时禁用多个其他的选项开关，来禁止编译多个模块，就是这个需求，相当于一个选项 与其他 多个选项之间 是有联动效应的。
@@ -2107,6 +2246,10 @@ option("smallest")
 ##### option:add_rbindings
 
 ###### 添加逆向关联选项，同步启用和禁用
+
+<p class="tip">
+2.1.5版本之后已废弃，请用[add_deps](#optionadd_deps), [on_check](#optionon_check), [after_check](#optionafter_check)等接口代替。
+</p>
 
 逆向绑定关联选项，被关联选项的开关状态是相反的。
 
@@ -2209,15 +2352,45 @@ target("test")
 
 与[add_ctypes](#optionadd_ctypes)类似，只是检测的类型是c++类型。
 
+##### option:add_csnippet
+
+###### 添加c代码片段检测
+
+如果现有的[add_ctypes](#optionadd_ctypes), [add_cfuncs](#optionadd_cfuncs)等不能满足当前的检测需求，
+可以用这个接口实现更加定制化检测一些编译器特性检测，具体见: [add_cxxsnippet](#optionadd_cxxsnippet)。
+
+##### option:add_cxxsnippet
+
+###### 添加c++代码片段检测
+
+可以用这个接口实现更加定制化检测一些编译器特性检测，尤其是c++的各种特性的检测支持，例如：
+
+```lua
+option("constexpr")
+    add_cxxsnippet("constexpr int f(int x) { int sum=0; for (int i=0; i<=x; ++i) sum += i; return sum; } constexpr int x = f(5);  static_assert(x == 15);")
+```
+
+上述代码，实现对c++的constexpr特性的检测，如果检测通过，则启用constexpr选项，当然这里只是个例子。
+
+对于编译器特性的检测，有更加方便高效的检测模块，提供更强大的检测支持，具体见：[compiler.has_features](#compiler-has_features)和[detect.check_cxsnippets](#detect-check_cxsnippets)
+
 ##### option:add_defines_if_ok
 
 ###### 如果检测选项通过，则添加宏定义
+
+<p class="tip">
+2.1.5版本之后已废弃，请用[add_defines](#targetadd_defines)接口代替。
+</p>
 
 检测选项通过后才会被设置，具体使用见[add_cincludes](#optionadd_cincludes)中的例子。
 
 ##### option:add_defines_h_if_ok
 
 ###### 如果检测选项通过，则添加宏定义到配置头文件
+
+<p class="tip">
+2.1.5版本之后已废弃，请用[add_defines_h](#targetadd_defines_h)接口代替。
+</p>
 
 跟[add_defines_if_ok](#optionadd_defines_if_ok)类似，只是检测通过后，会在`config.h`头文件中自动加上被设置的宏定义。
 
@@ -2245,11 +2418,19 @@ target("test")
 
 ###### 如果检测选项通过，则取消宏定义
 
+<p class="tip">
+2.1.5版本之后已废弃，请用[add_undefines](#targetadd_undefines)接口代替。
+</p>
+
 跟[add_defines_if_ok](#optionadd_defines_if_ok)类似，只是检测通过后，取消被设置的宏定义。
 
 ##### option:add_undefines_h_if_ok
 
 ###### 如果检测选项通过，则在配置头文件中取消宏定义
+
+<p class="tip">
+2.1.5版本之后已废弃，请用[add_undefines_h](#targetadd_undefines_h)接口代替。
+</p>
 
 跟[add_defines_h_if_ok](#optionadd_defines_h_if_ok)类似，只是检测通过后，会在`config.h`中取消被设置的宏定义。
 
@@ -2938,6 +3119,8 @@ target("test")
     end)
 ```
 
+所有的内置变量，也可以通过[val](#val)接口，来获取他们的值。
+
 这种使用内置变量的方式，使得描述编写更加的简洁易读，下面是一些xmake内置的变量，可以直接获取：
 
 | 接口                                            | 描述                                         | 支持版本 |
@@ -2951,8 +3134,9 @@ target("test")
 | [$(globaldir)](#var-globaldir)                  | 获取全局配置目录                             | >= 2.0.1 |
 | [$(configdir)](#var-configdir)                  | 获取本地工程配置目录                         | >= 2.0.1 |
 | [$(projectdir)](#var-projectdir)                | 获取工程根目录                               | >= 2.0.1 |
-| [$(packagedir)](#var-packagedir)                | 获取依赖包目录                               | >= 2.0.1 |
 | [$(shell)](#var-shell)                          | 执行外部shell命令                            | >= 2.0.1 |
+| [$(env)](#var-env)                              | 获取外部环境变量                             | >= 2.1.5 |
+| [$(reg)](#var-reg)                              | 获取windows注册表配置项的值                  | >= 2.1.5 |
 
 当然这种变量模式，也是可以扩展的，默认通过`xmake f --var=val`命令，配置的参数都是可以直接获取，例如：
 
@@ -3019,12 +3203,6 @@ xmake的`xmake g|global`全局配置命令，数据存储的目录路径，在�
 
 也就是`xmake -P xxx`命令中指定的目录路径，默认不指定就是`xmake`命令执行时的当前目录，一般用于定位工程文件。
 
-##### var.$(packagedir)
-
-###### 依赖包目录
-
-也就是加载依赖包的搜索目录，通常用于获取一些包文件。
-
 ##### var.$(shell)
 
 ###### 执行外部shell命令
@@ -3045,6 +3223,27 @@ target("test")
 
 但是这个例子可以说明，xmake是完全可以通过原生shell，来与一些第三方的工具进行配合使用。。
 
+##### var.$(env)
+
+###### 获取外部环境变量
+
+例如，可以通过获取环境变量中的路径：
+
+```lua
+target("test")
+    add_includedirs("$(env PROGRAMFILES)/OpenSSL/inc")
+```
+
+##### var.$(reg)
+
+###### 获取windows注册表配置项的值 
+
+通过 `regpath; name` 的方式获取注册表中某个项的值：
+
+```lua
+print("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name)")
+```
+
 #### 内置模块
 
 在自定义脚本、插件脚本、任务脚本、平台扩展、模板扩展等脚本代码中使用，也就是在类似下面的代码块中，可以使用这些模块接口：
@@ -3062,6 +3261,7 @@ end)
 
 | 接口                                            | 描述                                         | 可使用域                   | 支持版本 |
 | ----------------------------------------------- | -------------------------------------------- | -------------------------- | -------- |
+| [val](#val)                                     | 获取内置变量的值                             | 脚本域                     | >= 2.1.5 |
 | [import](#import)                               | 导入扩展摸块                                 | 脚本域                     | >= 2.0.1 |
 | [inherit](#inherit)                             | 导入并继承基类模块                           | 脚本域                     | >= 2.0.1 |
 | [ifelse](#ifelse)                               | 类似三元条件判断                             | 描述域、脚本域             | >= 2.0.1 |
@@ -3073,6 +3273,7 @@ end)
 | [cprint](#cprint)                               | 换行彩色打印终端日志                         | 脚本域                     | >= 2.0.1 |
 | [cprintf](#cprintf)                             | 无换行彩色打印终端日志                       | 脚本域                     | >= 2.0.1 |
 | [format](#format)                               | 格式化字符串                                 | 描述域、脚本域             | >= 2.0.1 |
+| [vformat](#vformat)                             | 格式化字符串，支持内置变量转义               | 脚本域                     | >= 2.0.1 |
 | [raise](#raise)                                 | 抛出异常中断程序                             | 脚本域                     | >= 2.0.1 |
 | [os](#os)                                       | 系统操作模块                                 | 部分只读操作描述域、脚本域 | >= 2.0.1 |
 | [io](#io)                                       | 文件操作模块                                 | 脚本域                     | >= 2.0.1 |
@@ -3109,6 +3310,26 @@ target("test")
 
 -- 描述域
 ```
+
+##### val
+
+###### 获取内置变量的值
+
+[内置变量](#内置变量)可以通过此接口直接获取，而不需要再加`$()`的包裹，使用更加简单，例如：
+
+```lua
+print(val("host"))
+print(val("env PATH"))
+local s = val("shell echo hello")
+```
+
+而用[vformat](#vformat)就比较繁琐了：
+
+```lua
+local s = vformat("$(shell echo hello)")
+```
+
+不过`vformat`支持字符串参数格式化，更加强大， 所以应用场景不同。
 
 ##### import
 
@@ -3586,6 +3807,16 @@ xmake会同时支持这两种写法，内部会去自动智能检测，选择输
 
 ```lua
 local s = format("hello %s", xmake)
+```
+
+##### vformat
+
+###### 格式化字符串，支持内置变量转义
+
+此接口跟[format](#format)接口类似，只是增加对内置变量的获取和转义支持。
+
+```lua
+local s = vformat("hello %s $(mode) $(arch) $(env PATH)", xmake)
 ```
 
 ##### raise
