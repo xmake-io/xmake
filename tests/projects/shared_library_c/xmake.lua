@@ -28,7 +28,7 @@ target("shared_library_c")
     set_kind("shared")
 
     -- add files
-    add_files("src/interface.cpp") 
+    add_files("src/interface.c") 
 
 -- add target
 target("test")
@@ -40,6 +40,6 @@ target("test")
     add_deps("shared_library_c")
 
     -- add files
-    add_files("src/test.cpp") 
+    add_files("src/test.c") 
 
 

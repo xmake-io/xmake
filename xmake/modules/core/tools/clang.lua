@@ -31,9 +31,6 @@ function init(self)
     -- init super
     _super.init(self)
 
-    -- init shflags
-    _super._g.shflags = { "-dynamiclib", "-fPIC" }
-
     -- suppress warning 
     _super._g.cxflags = {"-Qunused-arguments"}
     _super._g.mxflags = {"-Qunused-arguments"}
