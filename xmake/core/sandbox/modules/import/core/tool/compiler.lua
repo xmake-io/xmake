@@ -279,13 +279,17 @@ end
 
 -- has the given flags?
 --
--- @param sourcekind    the source kind, .e.g cc, cxx, sc, gc, dc, rc, .. 
+-- @param langkind      the language kind, .e.g c, cxx, mm, mxx, swift, go, rust, d, as
 -- @param flags         the flags
 --
 -- @return              the supported flags or nil
 --
-function sandbox_core_tool_compiler.has_flags(sourcekind, flags)
+function sandbox_core_tool_compiler.has_flags(langkind, flags)
   
+    -- get sourcekind from the language kind
+    local sourcekind = language.langkinds()[langkind]
+    assert(sourcekind, "unknown language kind: " .. langkind)
+ 
     -- get the compiler instance
     local instance, errors = compiler.load(sourcekind)
     if not instance then

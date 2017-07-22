@@ -963,7 +963,27 @@ target("test")
     end)
 ```
 
-<p class="warning">
+注：2.1.5版本之后，所有target的自定义脚本都可以针对不同平台和架构，分别处理，例如：
+
+```lua
+target("test")
+    on_build("iphoneos|arm*", function (target)
+        print("build for iphoneos and arm")
+    end)
+```
+
+其中如果第一个参数为字符串，那么就是指定这个脚本需要在哪个`平台|架构`下，才会被执行，并且支持模式匹配，例如`arm*`匹配所有arm架构。
+
+当然也可以只设置平台，不设置架构，这样就是匹配指定平台下，执行脚本：
+
+```lua
+target("test")
+    on_build("windows", function (target)
+        print("build for windows")
+    end)
+```
+
+<p class="tip">
 一旦对这个target目标设置了自己的build过程，那么xmake默认的构建过程将不再被执行。
 </p>
 
@@ -986,13 +1006,18 @@ target("test")
 
 一些target接口描述如下：
 
-| target接口            | 描述                                                             |
-| --------------------- | ---------------------------------------------------------------- |
-| target:name()         | 获取目标名                                                       |
-| target:targetfile()   | 获取目标文件路径                                                 |
-| target:get("kind")    | 获取目标的构建类型                                               |
-| target:get("defines") | 获取目标的宏定义                                                 |
-| target:get("xxx")     | 其他通过 `set_/add_`接口设置的target信息，都可以通过此接口来获取 |
+| target接口                          | 描述                                                             |
+| ----------------------------------- | ---------------------------------------------------------------- |
+| target:name()                       | 获取目标名                                                       |
+| target:targetfile()                 | 获取目标文件路径                                                 |
+| target:get("kind")                  | 获取目标的构建类型                                               |
+| target:get("defines")               | 获取目标的宏定义                                                 |
+| target:get("xxx")                   | 其他通过 `set_/add_`接口设置的target信息，都可以通过此接口来获取 |
+| target:add("links", "pthread")      | 添加目标设置                                                     |
+| target:set("links", "pthread", "z") | 覆写目标设置                                                     |
+| target:deps()                       | 获取目标的所有依赖目标                                           |
+| target:dep("depname")               | 获取指定的依赖目标                                               |
+| target:sourcebatches()              | 获取目标的所有源文件列表                                         |
 
 ##### target:on_package
 
@@ -3133,6 +3158,7 @@ target("test")
 | [$(scriptdir)](#var-scriptdir)                  | 获取工程描述脚本目录                         | >= 2.1.1 |
 | [$(globaldir)](#var-globaldir)                  | 获取全局配置目录                             | >= 2.0.1 |
 | [$(configdir)](#var-configdir)                  | 获取本地工程配置目录                         | >= 2.0.1 |
+| [$(programdir)](#var-programdir)                | xmake安装脚本目录                            | >= 2.1.5 |
 | [$(projectdir)](#var-projectdir)                | 获取工程根目录                               | >= 2.0.1 |
 | [$(shell)](#var-shell)                          | 执行外部shell命令                            | >= 2.0.1 |
 | [$(env)](#var-env)                              | 获取外部环境变量                             | >= 2.1.5 |
@@ -3196,6 +3222,12 @@ xmake的`xmake g|global`全局配置命令，数据存储的目录路径，在�
 ###### 当前工程配置目录
 
 当前工程的配置存储目录，也就是`xmake f|config`配置命令的存储目录，默认为：`projectdir/.config`
+
+##### var.$(programdir)
+
+###### xmake安装脚本目录
+
+也就是`XMAKE_PROGRAM_DIR`环境变量所在目录，我们也可以通过设置这个环境量，来修改xmake的加载脚本，实现版本切换。
 
 ##### var.$(projectdir)
 
@@ -3357,7 +3389,7 @@ import的主要用于导入xmake的扩展类库以及一些自定义的类库模
 ```lua
 import("core.base.option")
 import("core.project")
-import("core.project.task")
+import("core.base.task") -- 2.1.5 以前是 core.project.task
 import("core")
 
 function main()
@@ -3368,7 +3400,7 @@ function main()
     -- 运行任务和插件
     task.run("hello")
     project.task.run("hello")
-    core.project.task.run("hello")
+    core.base.task.run("hello")
 end
 ```
 
@@ -3419,6 +3451,11 @@ import("xxx.xxx", {inherit = true})
 ```
 
 这样导入的不是这个模块的引用，而是导入的这个模块的所有公有接口本身，这样就会跟当前模块的接口进行合并，实现模块间的继承。
+
+2.1.5版本新增两个新属性：`import("xxx.xxx", {try = true, anonymous = true})`
+
+try为true，则导入的模块不存在的话，仅仅返回nil，并不会抛异常后中断xmake.
+anonymous为true，则导入的模块不会引入当前作用域，仅仅在import接口返回导入的对象引用。
 
 ##### inherit
 
@@ -3852,14 +3889,19 @@ if (errors) raise(errors)
 | [os.files](#os-files)                           | 遍历获取指定目录下的所有文件                 | >= 2.0.1 |
 | [os.filedirs](#os-filedirs)                     | 遍历获取指定目录下的所有文件或目录           | >= 2.0.1 |
 | [os.run](#os-run)                               | 安静运行程序                                 | >= 2.0.1 |
+| [os.runv](#os-runv)                             | 安静运行程序，带参数列表                     | >= 2.1.5 |
 | [os.exec](#os-exec)                             | 回显运行程序                                 | >= 2.0.1 |
+| [os.execv](#os-execv)                           | 回显运行程序，带参数列表                     | >= 2.1.5 |
 | [os.iorun](#os-iorun)                           | 运行并获取程序输出内容                       | >= 2.0.1 |
+| [os.iorunv](#os-iorunv)                         | 运行并获取程序输出内容，带参数列表           | >= 2.1.5 |
 | [os.getenv](#os-getenv)                         | 获取环境变量                                 | >= 2.0.1 |
 | [os.setenv](#os-setenv)                         | 设置环境变量                                 | >= 2.0.1 |
 | [os.tmpdir](#os-tmpdir)                         | 获取临时目录路径                             | >= 2.0.1 |
 | [os.tmpfile](#os-tmpfile)                       | 获取临时文件路径                             | >= 2.0.1 |
 | [os.curdir](#os-curdir)                         | 获取当前目录路径                             | >= 2.0.1 |
 | [os.scriptdir](#os-scriptdir)                   | 获取脚本目录路径                             | >= 2.0.1 |
+| [os.programdir](#os-programdir)                 | 获取xmake安装主程序脚本目录                  | >= 2.1.5 |
+| [os.projectdir](#os-projectdir)                 | 获取工程主目录                               | >= 2.1.5 |
 | [os.arch](#os-arch)                             | 获取当前系统架构                             | >= 2.0.1 |
 | [os.host](#os-host)                             | 获取当前主机系统                             | >= 2.0.1 |
 
@@ -4062,11 +4104,31 @@ os.run("ls -l $(buildir)")
 
 更加高级的进程运行和控制，见[process](#process)模块接口。
 
+###### os.runv
+
+- 安静运行原生shell命令，带参数列表
+
+跟[os.run](#os-run)类似，只是传递参数的方式是通过参数列表传递，而不是字符串命令，例如：
+
+```lua
+os.runv("echo", {"hello", "xmake!"})
+```
+
 ###### os.exec
 
 - 回显运行原生shell命令
 
 与[os.run](#os-run)接口类似，唯一的不同是，此接口执行shell程序时，是带回显输出的，一般调试的时候用的比较多
+
+###### os.execv
+
+- 回显运行原生shell命令，带参数列表
+
+跟[os.execv](#os-execv)类似，只是传递参数的方式是通过参数列表传递，而不是字符串命令，例如：
+
+```lua
+os.execv("echo", {"hello", "xmake!"})
+```
 
 ###### os.iorun
 
@@ -4078,6 +4140,16 @@ os.run("ls -l $(buildir)")
 
 ```lua
 local outdata, errdata = os.iorun("echo hello xmake!")
+```
+
+###### os.iorunv
+
+- 安静运行原生shell命令并获取输出内容，带参数列表
+
+跟[os.iorunv](#os-iorunv)类似，只是传递参数的方式是通过参数列表传递，而不是字符串命令，例如：
+
+```lua
+local result, errors = os.iorunv("echo", {"hello", "xmake!"})
 ```
 
 ###### os.getenv
@@ -4133,6 +4205,18 @@ print("$(tmpdir)/file.txt"))
 跟[$(scriptdir)](#var-scriptdir)结果一致，只不过是直接获取返回一个变量，可以用后续字符串维护。
 
 用法参考：[os.tmpdir](#os-tmpdir)。
+
+###### os.programdir
+
+- 获取xmake安装主程序脚本目录
+
+跟[$(programdir)](#var-programdir)结果一致，只不过是直接获取返回一个变量，可以用后续字符串维护。
+
+###### os.projectdir
+
+- 获取工程主目录
+
+跟[$(projectdir)](#var-projectdir)结果一致，只不过是直接获取返回一个变量，可以用后续字符串维护。
 
 ###### os.arch
 
@@ -4698,6 +4782,70 @@ end
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [option.get](#option-get)                       | 获取参数选项值                               | >= 2.0.1 |
 
+##### core.base.task
+
+用于任务操作，一般用于在自定义脚本中、插件任务中，调用运行其他task任务。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [task.run](#task-run)                           | 运行指定任务                                 | >= 2.0.1 |
+
+###### task.run
+
+- 运行指定任务
+
+用于在自定义脚本、插件任务中运行[task](#task)定义的任务或插件，例如：
+
+```lua
+task("hello")
+    on_run(function ()
+        print("hello xmake!")
+    end)
+
+target("demo")
+    on_clean(function(target)
+
+        -- 导入task模块
+        import("core.base.task")
+
+        -- 运行这个hello task
+        task.run("hello")
+    end)
+```
+
+我们还可以在运行任务时，增加参数传递，例如：
+
+```lua
+task("hello")
+    on_run(function (arg1, arg2)
+        print("hello xmake: %s %s!", arg1, arg2)
+    end)
+
+target("demo")
+    on_clean(function(target)
+
+        -- 导入task
+        import("core.base.task")
+
+        -- {} 这个是给第一种选项传参使用，这里置空，这里在最后面传入了两个参数：arg1, arg2
+        task.run("hello", {}, "arg1", "arg2")
+    end)
+```
+
+对于`task.run`的第二个参数，用于传递命令行菜单中的选项，而不是直接传入`function (arg, ...)`函数入口中，例如：
+
+```lua
+-- 导入task
+import("core.base.task")
+
+-- 插件入口
+function main(...)
+
+    -- 运行内置的xmake配置任务，相当于：xmake f|config --plat=iphoneos --arch=armv7
+    task.run("config", {plat="iphoneos", arch="armv7"})
+emd
+```
+
 ###### option.get
 
 - 获取参数选项值
@@ -4734,7 +4882,9 @@ task("hello")
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [linker.link](#linker-link)                     | 执行链接                                     | >= 2.0.1 |
 | [linker.linkcmd](#linker-linkcmd)               | 获取链接命令行                               | >= 2.0.1 |
+| [linker.linkargv](#linker-linkargv)             | 获取链接命令行列表                           | >= 2.1.5 |
 | [linker.linkflags](#linker-linkflags)           | 获取链接选项                                 | >= 2.0.1 |
+| [linker.has_flags](#linker-has_flags)           | 判断指定链接选项是否支持                     | >= 2.1.5 |
 
 ###### linker.link
 
@@ -4743,7 +4893,7 @@ task("hello")
 针对target，链接指定对象文件列表，生成对应的目标文件，例如：
 
 ```lua
-linker.link({"a.o", "b.o", "c.o"}, target:targetfile(), target)
+linker.link({"a.o", "b.o", "c.o"}, target:targetfile(), {target = target})
 ```
 
 其中[target](#target)，为工程目标，这里传入，主要用于获取target特定的链接选项，具体如果获取工程目标对象，见：[core.project.project](#core-project-project)
@@ -4751,30 +4901,68 @@ linker.link({"a.o", "b.o", "c.o"}, target:targetfile(), target)
 当然也可以不指定target，例如：
 
 ```lua
-linker.link({"a.o", "b.o", "c.o"}, "/tmp/targetfile")
+linker.link("binary", "cc", {"a.o", "b.o", "c.o"}, "/tmp/targetfile")
 ```
 
 ###### linker.linkcmd
 
-- 获取链接命令行
+- 获取链接命令行字符串
 
 直接获取[linker.link](#linker-link)中执行的命令行字符串，相当于：
 
 ```lua
-os.run(linker.linkcmd({"a.o", "b.o", "c.o"}, target:targetfile(), target))
+local cmdstr = linker.linkcmd("static", "cxx", {"a.o", "b.o", "c.o"}, target:targetfile(), {target = target})
 ```
+
+注：后面`{target = target}`扩展参数部分是可选的，如果传递了target对象，那么生成的链接命令，会加上这个target配置对应的链接选项。
+
+并且还可以自己传递各种配置，例如：
+
+```lua
+local cmdstr = linker.linkcmd("static", "cxx", {"a.o", "b.o", "c.o"}, target:targetfile(), {linkdirs = "/usr/lib"})
+```
+
+###### linker.linkargv
+
+- 获取链接命令行参数列表
+
+跟[linker.linkcmd](#linker-linkcmd)稍微有点区别的是，此接口返回的是参数列表，table表示，更加方便操作：
+
+```lua
+local program, argv = linker.linkargv("static", "cxx", {"a.o", "b.o", "c.o"}, target:targetfile(), {target = target})
+```
+
+其中返回的第一个值是主程序名，后面是参数列表，而`os.args(table.join(program, argv))`等价于`linker.linkcmd`。
+
+我们也可以通过传入返回值给[os.runv](#os-runv)来直接运行它：`os.runv(linker.linkargv(..))`
 
 ###### linker.linkflags
 
 - 获取链接选项
 
-获取[linker.linkcmd](#linker-linkcmd)中的链接选项字符串部分，不带shellname和对象文件列表，例如：
+获取[linker.linkcmd](#linker-linkcmd)中的链接选项字符串部分，不带shellname和对象文件列表，并且是按数组返回，例如：
 
 ```lua
-print(linker.linkflags(target))
+local flags = linker.linkflags("shared", "cc", {target = target})
+for _, flag in ipairs(flags) do
+    print(flag)
+end
 ```
 
-获取target工程目标中的链接选项：`-L/tmp -lz -ldl ..`
+返回的是flags的列表数组。
+
+###### linker.has_flags
+
+- 判断指定链接选项是否支持
+
+虽然通过[lib.detect.has_flags](detect-has_flags)也能判断，但是那个接口更加底层，需要指定链接器名称
+而此接口只需要指定target的目标类型，源文件类型，它会自动切换选择当前支持的链接器。
+
+```lua
+if linker.has_flags(target:targetkind(), target:sourcekinds(), "-L/usr/lib -lpthread") then
+    -- ok
+end
+```
 
 ##### core.tool.compiler
 
@@ -4784,8 +4972,11 @@ print(linker.linkflags(target))
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [compiler.compile](#compiler-compile)           | 执行编译                                     | >= 2.0.1 |
 | [compiler.compcmd](#compiler-compcmd)           | 获取编译命令行                               | >= 2.0.1 |
+| [compiler.compargv](#compiler-compargv)         | 获取编译命令行列表                           | >= 2.1.5 |
 | [compiler.compflags](#compiler-compflags)       | 获取编译选项                                 | >= 2.0.1 |
-
+| [compiler.has_flags](#compiler-has_flags)       | 判断指定编译选项是否支持                     | >= 2.1.5 |
+| [compiler.features](#compiler-features)         | 获取所有编译器特性                           | >= 2.1.5 |
+| [compiler.has_features](#compiler-has_features) | 判断指定编译特性是否支持                     | >= 2.1.5 |
 
 ###### compiler.compile
 
@@ -4794,7 +4985,7 @@ print(linker.linkflags(target))
 针对target，链接指定对象文件列表，生成对应的目标文件，例如：
 
 ```lua
-compiler.compile("xxx.c", "xxx.o", "xxx.h.d", target)
+compiler.compile("xxx.c", "xxx.o", "xxx.h.d", {target = target})
 ```
 
 其中[target](#target)，为工程目标，这里传入主要用于获取taeget的特定编译选项，具体如果获取工程目标对象，见：[core.project.project](#core-project-project)
@@ -4814,13 +5005,27 @@ compiler.compile("xxx.c", "xxx.o")
 直接获取[compiler.compile](#compiler-compile)中执行的命令行字符串，相当于：
 
 ```lua
-os.run(compiler.compcmd("xxx.c", "xxx.o", incdepfile, target))
+local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {incdepfile = incdepfile, target = target})
 ```
 
-其中第一个返回值是所有编译选项的字符串，第二个返回值是所有选项的数组列表，更加便于操作，例如：
+注：后面`{incdepfile = incdepfile, target = target}`扩展参数部分是可选的，如果传递了target对象，那么生成的编译命令，会加上这个target配置对应的链接选项。
+
+如果传递了incdepfile，那么还会生成头文件依赖列表文件`xxx.d`
+
+并且还可以自己传递各种配置，例如：
 
 ```lua
-local flagstr, flags = compiler.compcmd("xxx.c", "xxx.o")
+local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {includedirs = "/usr/include", defines = "DEBUG"})
+```
+
+###### compiler.compargv
+
+- 获取编译命令行列表
+
+跟[compiler.compargv](#compiler-compargv)稍微有点区别的是，此接口返回的是参数列表，table表示，更加方便操作：
+
+```lua
+local program, argv = compiler.compargv("xxx.c", "xxx.o")
 ```
 
 ###### compiler.compflags
@@ -4830,8 +5035,143 @@ local flagstr, flags = compiler.compcmd("xxx.c", "xxx.o")
 获取[compiler.compcmd](#compiler-compcmd)中的编译选项字符串部分，不带shellname和文件列表，例如：
 
 ```lua
-print(compiler.compflags(sourcefile, target))
+local flags = compiler.compflags(sourcefile, {targer = target})
+for _, flag in ipairs(flags) do
+    print(flag)
+end
 ```
+
+返回的是flags的列表数组。
+
+###### compiler.has_flags
+
+- 判断指定编译选项是否支持
+
+虽然通过[lib.detect.has_flags](detect-has_flags)也能判断，但是那个接口更加底层，需要指定编译器名称。
+而此接口只需要指定语言类型，它会自动切换选择当前支持的编译器。
+
+```lua
+-- 判断c语言编译器是否支持选项: -g
+if compiler.has_flags("c", "-g") then
+    -- ok
+end
+
+-- 判断c++语言编译器是否支持选项: -g
+if compiler.has_flags("cxx", "-g") then
+    -- ok
+end
+```
+
+###### compiler.features
+
+- 获取所有编译器特性
+
+虽然通过[lib.detect.features](detect-features)也能获取，但是那个接口更加底层，需要指定编译器名称。
+而此接口只需要指定语言类型，它会自动切换选择当前支持的编译器，然后获取当前的编译器特性列表。
+
+```lua
+-- 获取当前c语言编译器的所有特性
+local features = compiler.features("c")
+
+-- 获取当前c++语言编译器的所有特性，启用c++11标准，否则获取不到新标准的特性
+local features = compiler.features("cxx", {cxxflags = "-std=c++11"})
+
+-- 获取当前c++语言编译器的所有特性，传递工程target的所有配置信息
+local features = compiler.features("cxx", {target = target, defines = "..", includedirs = ".."})
+```
+
+所有c编译器特性列表：
+
+| 特性名                |
+| --------------------- |
+| c_static_assert       |
+| c_restrict            |
+| c_variadic_macros     |
+| c_function_prototypes |
+
+所有c++编译器特性列表：
+
+| 特性名                               |
+| ------------------------------------ |
+| cxx_variable_templates               |
+| cxx_relaxed_constexpr                |
+| cxx_aggregate_default_initializers   |
+| cxx_contextual_conversions           |
+| cxx_attribute_deprecated             |
+| cxx_decltype_auto                    |
+| cxx_digit_separators                 |
+| cxx_generic_lambdas                  |
+| cxx_lambda_init_captures             |
+| cxx_binary_literals                  |
+| cxx_return_type_deduction            |
+| cxx_decltype_incomplete_return_types |
+| cxx_reference_qualified_functions    |
+| cxx_alignof                          |
+| cxx_attributes                       |
+| cxx_inheriting_constructors          |
+| cxx_thread_local                     |
+| cxx_alias_templates                  |
+| cxx_delegating_constructors          |
+| cxx_extended_friend_declarations     |
+| cxx_final                            |
+| cxx_nonstatic_member_init            |
+| cxx_override                         |
+| cxx_user_literals                    |
+| cxx_constexpr                        |
+| cxx_defaulted_move_initializers      |
+| cxx_enum_forward_declarations        |
+| cxx_noexcept                         |
+| cxx_nullptr                          |
+| cxx_range_for                        |
+| cxx_unrestricted_unions              |
+| cxx_explicit_conversions             |
+| cxx_lambdas                          |
+| cxx_local_type_template_args         |
+| cxx_raw_string_literals              |
+| cxx_auto_type                        |
+| cxx_defaulted_functions              |
+| cxx_deleted_functions                |
+| cxx_generalized_initializers         |
+| cxx_inline_namespaces                |
+| cxx_sizeof_member                    |
+| cxx_strong_enums                     |
+| cxx_trailing_return_types            |
+| cxx_unicode_literals                 |
+| cxx_uniform_initialization           |
+| cxx_variadic_templates               |
+| cxx_decltype                         |
+| cxx_default_function_template_args   |
+| cxx_long_long_type                   |
+| cxx_right_angle_brackets             |
+| cxx_rvalue_references                |
+| cxx_static_assert                    |
+| cxx_extern_templates                 |
+| cxx_func_identifier                  |
+| cxx_variadic_macros                  |
+| cxx_template_template_parameters     |
+
+###### compiler.has_features
+
+- 判断指定的编译器特性是否支持
+
+虽然通过[lib.detect.has_features](detect-has-features)也能获取，但是那个接口更加底层，需要指定编译器名称。
+而此接口只需要指定需要检测的特姓名称列表，就能自动切换选择当前支持的编译器，然后判断指定特性在当前的编译器中是否支持。
+
+```lua
+if compiler.has_features("c_static_assert") then
+    -- ok
+end
+
+if compiler.has_features({"c_static_assert", "cxx_constexpr"}, {languages = "cxx11"}) then
+    -- ok
+end
+
+if compiler.has_features("cxx_constexpr", {target = target, defines = "..", includedirs = ".."}) then
+    -- ok
+end
+```
+
+具体特性名有哪些，可以参考：[compiler.features](#compiler-features)。
 
 ##### core.project.config
 
@@ -4999,80 +5339,24 @@ end
 
 ##### core.project.task
 
-用于任务操作，一般用于在自定义脚本中、插件任务中，调用运行其他task任务。
-
-| 接口                                            | 描述                                         | 支持版本 |
-| ----------------------------------------------- | -------------------------------------------- | -------- |
-| [task.run](#task-run)                           | 运行指定任务                                 | >= 2.0.1 |
-
-###### task.run
-
-- 运行指定任务
-
-用于在自定义脚本、插件任务中运行[task](#task)定义的任务或插件，例如：
-
-```lua
-task("hello")
-    on_run(function ()
-        print("hello xmake!")
-    end)
-
-target("demo")
-    on_clean(function(target)
-
-        -- 导入task模块
-        import("core.project.task")
-
-        -- 运行这个hello task
-        task.run("hello")
-    end)
-```
-
-我们还可以在运行任务时，增加参数传递，例如：
-
-```lua
-task("hello")
-    on_run(function (arg1, arg2)
-        print("hello xmake: %s %s!", arg1, arg2)
-    end)
-
-target("demo")
-    on_clean(function(target)
-
-        -- 导入task
-        import("core.project.task")
-
-        -- {} 这个是给第一种选项传参使用，这里置空，这里在最后面传入了两个参数：arg1, arg2
-        task.run("hello", {}, "arg1", "arg2")
-    end)
-```
-
-对于`task.run`的第二个参数，用于传递命令行菜单中的选项，而不是直接传入`function (arg, ...)`函数入口中，例如：
-
-```lua
--- 导入task
-import("core.project.task")
-
--- 插件入口
-function main(...)
-
-    -- 运行内置的xmake配置任务，相当于：xmake f|config --plat=iphoneos --arch=armv7
-    task.run("config", {plat="iphoneos", arch="armv7"})
-emd
-```
+<p class="tip">
+此模块自2.1.5版本后迁移至[core.base.task](#core-base-task)。
+</p>
 
 ##### core.project.project
 
 用于获取当前工程的一些描述信息，也就是在`xmake.lua`工程描述文件中定义的配置信息，例如：[target](#target)、[option](#option)等。
 
-| 接口                                            | 描述                                         | 支持版本 |
-| ----------------------------------------------- | -------------------------------------------- | -------- |
-| [project.load](#project-load)                   | 加载工程配置                                 | >= 2.0.1 |
-| [project.directory](#project-directory)         | 获取工程目录                                 | >= 2.0.1 |
-| [project.target](#project-target)               | 获取指定工程目标对象                         | >= 2.0.1 |
-| [project.targets](#project-targets)             | 获取工程目标对象列表                         | >= 2.0.1 |
-| [project.name](#project-name)                   | 获取当前工程名                               | >= 2.0.1 |
-| [project.version](#project-version)             | 获取当前工程版本号                           | >= 2.0.1 |
+| 接口                                            | 描述                                         | 支持版本             |
+| ----------------------------------------------- | -------------------------------------------- | -------------------- |
+| [project.load](#project-load)                   | 加载工程配置                                 | >= 2.0.1 (2.1.5废弃) |
+| [project.directory](#project-directory)         | 获取工程目录                                 | >= 2.0.1             |
+| [project.target](#project-target)               | 获取指定工程目标对象                         | >= 2.0.1             |
+| [project.targets](#project-targets)             | 获取工程目标对象列表                         | >= 2.0.1             |
+| [project.option](#project-option)               | 获取指定的选项对象                           | >= 2.1.5             |
+| [project.options](#project-options)             | 获取工程所有的选项对象                       | >= 2.1.5             |
+| [project.name](#project-name)                   | 获取当前工程名                               | >= 2.0.1             |
+| [project.version](#project-version)             | 获取当前工程版本号                           | >= 2.0.1             |
 
 ###### project.load
 
@@ -5095,11 +5379,19 @@ function main(...)
 end
 ```
 
+<p class="tip">
+2.1.5版本后，不在需要，工程加载会自动在合适时机延迟加载。
+</p>
+
 ###### project.directory
 
 - 获取工程目录
 
 获取当前工程目录，也就是`xmake -P xxx`中指定的目录，否则为默认当前`xmake`命令执行目录。
+
+<p class="tip">
+2.1.5版本后，建议使用[os.projectdir](#os-projectdir)来获取。
+</p>
 
 ###### project.target
 
@@ -5139,7 +5431,32 @@ end
 
 ```lua
 for targetname, target in pairs(project.targets())
-    -- ...
+    print(target:targetfile())
+end
+```
+
+###### project.option
+
+- 获取指定选项对象
+
+获取和访问工程中指定的选项对象，例如：
+
+```lua
+local option = project.option("test")
+if option:enabled() then
+    option:enable(false)
+end
+```
+
+###### project.options
+
+- 获取工程所有选项对象
+
+返回当前工程的所有编译目标，例如：
+
+```lua
+for optionname, option in pairs(project.options())
+    print(option:enabled())
 end
 ```
 

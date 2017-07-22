@@ -428,6 +428,28 @@ If you want to cancel multiline input, please input character `q`, for example:
 $ xmake project -k makefile
 ```
 
+##### Generate compiler_commands
+
+We can export the compilation commands info of all source files and it is JSON compilation database format.
+
+```console
+$ xmake project -k compile_commands
+```
+
+The the content of the output file:
+
+```
+[
+  { "directory": "/home/user/llvm/build",
+    "command": "/usr/bin/clang++ -Irelative -DSOMEDEF=\"With spaces, quotes and \\-es.\" -c -o file.o file.cc",
+    "file": "file.cc" },
+  ...
+]
+
+```
+
+Please see [JSONCompilationDatabase](#https://clang.llvm.org/docs/JSONCompilationDatabase.html) if need known more info about `compile_commands`.
+
 ##### Generate VisualStudio Project
 
 ```bash

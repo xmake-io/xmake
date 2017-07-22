@@ -76,7 +76,7 @@ hello
 
 接下来，我们尝试运行下这个插件：
 
-```bash
+```console
 xmake hello
 ```
 
@@ -121,7 +121,7 @@ target("demo")
 
 ##### 记录操作
 
-```bash
+```console
 # 开始记录宏
 $ xmake macro --begin
 
@@ -149,7 +149,7 @@ xmake macro --end
 
 ##### 回放
 
-```bash
+```console
 # 回放一个匿名宏
 $ xmake macro .
 ```
@@ -158,7 +158,7 @@ $ xmake macro .
 
 匿名宏的好处就是快速记录，快速回放，如果需要长久保存，就需要给宏取个名字。
 
-```bash
+```console
 $ xmake macro --begin
 $ ...
 $ xmake macro --end macroname
@@ -169,14 +169,14 @@ $ xmake macro macroname
 
 导入指定的宏脚本或者宏目录：
 
-```bash
+```console
 $ xmake macro --import=/xxx/macro.lua macroname
 $ xmake macro --import=/xxx/macrodir
 ```
 
 导出指定的宏到脚本或者目录：
 
-```bash
+```console
 $ xmake macro --export=/xxx/macro.lua macroname
 $ xmake macro --export=/xxx/macrodir
 ```
@@ -185,13 +185,13 @@ $ xmake macro --export=/xxx/macrodir
 
 列举所有`xmake`内置的宏脚本：
 
-```bash
+```console
 $ xmake macro --list
 ```
 
 显示指定的宏脚本内容：
 
-```bash
+```console
 $ xmake macro --show macroname
 ```
 
@@ -222,13 +222,13 @@ end
 
 导入到xmake，并且定义宏名字：
 
-```bash
+```console
 $ xmake macro --import=/xxx/macro.lua [macroname]
 ```
 
 回放这个宏脚本：
 
-```bash
+```console
 $ xmake macro [.|macroname]
 ```
 
@@ -238,7 +238,7 @@ XMake 提供了一些内置的宏脚本，来简化我们的日常开发工作�
 
 例如，我们可以使用 `package` 宏来对`iphoneos`平台的所有架构，一次性批量构建和打包：
 
-```bash
+```console
 $ xmake macro package -p iphoneos 
 ```
 
@@ -363,7 +363,7 @@ end
 
 然后直接运行它就行了：
 
-```bash
+```console
 $ xmake lua /tmp/test.lua
 ```
 
@@ -375,7 +375,7 @@ $ xmake lua /tmp/test.lua
 
 你可以运行 `xmake lua -l` 来列举所有内置的脚本名，例如：
 
-```bash
+```console
 $ xmake lua -l
 scripts:
     cat
@@ -387,7 +387,7 @@ scripts:
 
 并且运行它们：
 
-```bash
+```console
 $ xmake lua cat ~/file.txt
 $ xmake lua echo "hello xmake"
 $ xmake lua cp /tmp/file /tmp/file2
@@ -400,7 +400,7 @@ $ xmake lua versioninfo
 
 我们先看下，如何进入交互模式：
 
-```bash
+```console
 # 不带任何参数执行，就可以进入
 $ xmake lua
 >
@@ -425,7 +425,7 @@ $ xmake lua
 
 我们也能够通过 `import` 来导入扩展模块：
 
-```bash
+```console
 > task = import("core.project.task")
 > task.run("hello")
 hello xmake!
@@ -433,7 +433,7 @@ hello xmake!
 
 如果要中途取消多行输入，只需要输入字符：`q` 就行了
 
-```bash
+```console
 > for _, v in ipairs({1, 2}) do
 >> print(v)
 >> q             <--  取消多行输入，清空先前的输入数据
@@ -455,19 +455,41 @@ XMake跟`cmake`, `premake`等其他一些构建工具的区别在于：
 
 ##### 生成Makefile
 
-```bash
+```console
 $ xmake project -k makefile
 ```
 
+##### 生成compiler_commands
+
+导出每个源文件的编译信息，生成基于clang的编译数据库文件，json格式，可用于跟ide，编辑器，静态分析工具进行交互。
+
+```console
+$ xmake project -k compile_commands
+```
+
+输出的内容格式如下：
+
+```
+[
+  { "directory": "/home/user/llvm/build",
+    "command": "/usr/bin/clang++ -Irelative -DSOMEDEF=\"With spaces, quotes and \\-es.\" -c -o file.o file.cc",
+    "file": "file.cc" },
+  ...
+]
+
+```
+
+对于`compile_commands`的详细说明见：[JSONCompilationDatabase](#https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+
 ##### 生成VisualStudio工程
 
-```bash
+```console
 $ xmake project -k [vs2008|vs2013|vs2015|..]
 ```
 
 v2.1.2以上版本，增强了vs201x版本工程的生成，支持多模式+多架构生成，生成的时候只需要指定：
 
-```bash
+```console
 $ xmake project -k vs2017 -m "debug,release"
 ```
 
@@ -486,7 +508,7 @@ set_modes("debug", "release")
 
 请先确保本机已安装`doxygen`工具，然后在工程目录下运行：
 
-```bash
+```console
 $ xmake doxygen
 ```
 
@@ -498,6 +520,6 @@ $ xmake doxygen
 
 这仅仅是一个小插件，ios开发的同学，可能会用的到。
 
-```bash
+```console
 $ xmake app2ipa --icon=/xxx.png /xxx/ios.app -o /xxx.ios.ipa
 ```
