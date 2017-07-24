@@ -4782,6 +4782,81 @@ end
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [option.get](#option-get)                       | 获取参数选项值                               | >= 2.0.1 |
 
+###### option.get
+
+- 获取参数选项值
+
+在插件开发中用于获取参数选项值，例如：
+
+```lua
+-- 导入选项模块
+import("core.base.option")
+
+-- 插件入口函数
+function main(...)
+    print(option.get("info"))
+end
+```
+
+上面的代码获取hello插件，执行：`xmake hello --info=xxxx` 命令时候传入的`--info=`选项的值，并显示：`xxxx`
+
+对于非main入口的task任务或插件，可以这么使用：
+
+```lua
+task("hello")
+    on_run(function ())
+        import("core.base.option")
+        print(option.get("info"))
+    end)
+```
+
+##### core.base.global
+
+用于获取xmake全局的配置信息，也就是`xmake g|global --xxx=val` 传入的参数选项值。
+
+| 接口                                            | 描述                                         | 支持版本 |
+| ----------------------------------------------- | -------------------------------------------- | -------- |
+| [global.get](#global-get)                       | 获取指定配置值                               | >= 2.0.1 |
+| [global.load](#global-load)                     | 加载配置                                     | >= 2.0.1 |
+| [global.directory](#global-directory)           | 获取全局配置信息目录                         | >= 2.0.1 |
+| [global.dump](#global-dump)                     | 打印输出所有全局配置信息                     | >= 2.0.1 |
+
+<p class="tip">
+2.1.5版本之前为`core.project.global`。
+</p>
+
+###### global.get
+
+- 获取指定配置值
+
+类似[config.get](#config-get)，唯一的区别就是这个是从全局配置中获取。
+
+###### global.load
+
+- 加载配置
+
+类似[global.get](#global-get)，唯一的区别就是这个是从全局配置中加载。
+
+###### global.directory
+
+- 获取全局配置信息目录
+
+默认为`~/.config`目录。
+
+###### global.dump
+
+- 打印输出所有全局配置信息
+
+输出结果如下：
+
+```lua
+{
+    clean = true
+,   ccache = "ccache"
+,   xcode_dir = "/Applications/Xcode.app"
+}
+```
+
 ##### core.base.task
 
 用于任务操作，一般用于在自定义脚本中、插件任务中，调用运行其他task任务。
@@ -4789,6 +4864,10 @@ end
 | 接口                                            | 描述                                         | 支持版本 |
 | ----------------------------------------------- | -------------------------------------------- | -------- |
 | [task.run](#task-run)                           | 运行指定任务                                 | >= 2.0.1 |
+
+<p class="tip">
+2.1.5版本之前为`core.project.task`。
+</p>
 
 ###### task.run
 
@@ -4844,34 +4923,6 @@ function main(...)
     -- 运行内置的xmake配置任务，相当于：xmake f|config --plat=iphoneos --arch=armv7
     task.run("config", {plat="iphoneos", arch="armv7"})
 emd
-```
-
-###### option.get
-
-- 获取参数选项值
-
-在插件开发中用于获取参数选项值，例如：
-
-```lua
--- 导入选项模块
-import("core.base.option")
-
--- 插件入口函数
-function main(...)
-    print(option.get("info"))
-end
-```
-
-上面的代码获取hello插件，执行：`xmake hello --info=xxxx` 命令时候传入的`--info=`选项的值，并显示：`xxxx`
-
-对于非main入口的task任务或插件，可以这么使用：
-
-```lua
-task("hello")
-    on_run(function ())
-        import("core.base.option")
-        print(option.get("info"))
-    end)
 ```
 
 ##### core.tool.linker
@@ -5018,6 +5069,20 @@ local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {incdepfile = incdepfile, targ
 local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {includedirs = "/usr/include", defines = "DEBUG"})
 ```
 
+通过target，我们可以导出指定目标的所有源文件编译命令：
+
+```lua
+import("core.project.project")
+
+for _, target in pairs(project.targets()) do
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        for index, objectfile in ipairs(sourcebatch.objectfiles) do
+            local cmdstr = compiler.compcmd(sourcebatch.sourcefiles[index], objectfile, {target = target})
+        end
+    end
+end
+```
+
 ###### compiler.compargv
 
 - 获取编译命令行列表
@@ -5035,7 +5100,7 @@ local program, argv = compiler.compargv("xxx.c", "xxx.o")
 获取[compiler.compcmd](#compiler-compcmd)中的编译选项字符串部分，不带shellname和文件列表，例如：
 
 ```lua
-local flags = compiler.compflags(sourcefile, {targer = target})
+local flags = compiler.compflags(sourcefile, {target = target})
 for _, flag in ipairs(flags) do
     print(flag)
 end
@@ -5296,46 +5361,9 @@ end
 
 ##### core.project.global
 
-用于获取xmake全局的配置信息，也就是`xmake g|global --xxx=val` 传入的参数选项值。
-
-| 接口                                            | 描述                                         | 支持版本 |
-| ----------------------------------------------- | -------------------------------------------- | -------- |
-| [global.get](#global-get)                       | 获取指定配置值                               | >= 2.0.1 |
-| [global.load](#global-load)                     | 加载配置                                     | >= 2.0.1 |
-| [global.directory](#global-directory)           | 获取全局配置信息目录                         | >= 2.0.1 |
-| [global.dump](#global-dump)                     | 打印输出所有全局配置信息                     | >= 2.0.1 |
-
-###### global.get
-
-- 获取指定配置值
-
-类似[config.get](#config-get)，唯一的区别就是这个是从全局配置中获取。
-
-###### global.load
-
-- 加载配置
-
-类似[global.get](#global-get)，唯一的区别就是这个是从全局配置中加载。
-
-###### global.directory
-
-- 获取全局配置信息目录
-
-默认为`~/.config`目录。
-
-###### global.dump
-
-- 打印输出所有全局配置信息
-
-输出结果如下：
-
-```lua
-{
-    clean = true
-,   ccache = "ccache"
-,   xcode_dir = "/Applications/Xcode.app"
-}
-```
+<p class="tip">
+此模块自2.1.5版本后迁移至[core.base.global](#core-base-global)。
+</p>
 
 ##### core.project.task
 
@@ -5676,3 +5704,51 @@ environment.leave("toolchains")
 - 离开指定环境
 
 具体使用见：[environment.enter](#environment-enter)
+
+##### lib.detect
+
+此模块提供了非常强大的探测功能，用于探测程序、编译器、语言特性、依赖包等。
+
+<p class="tip">
+此模块的接口分散在多个模块目录中，尽量通过导入单个接口来使用，这样效率更高，例如：`import("lib.detect.find_package")`，而不是通过`import("lib.detect")`导入所有来调用。
+</p>
+
+| 接口                                                | 描述                                         | 支持版本             |
+| --------------------------------------------------- | -------------------------------------------- | -------------------- |
+| [detect.find_file](#detect-find_file)               | 查找文件                                     | >= 2.1.5             |
+| [detect.find_path](#detect-find_path)               | 查找文件路径                                 | >= 2.1.5             |
+| [detect.find_library](#detect-find_library)         | 查找库文件                                   | >= 2.1.5             |
+| [detect.find_program](#detect-find_program)         | 查找可执行程序                               | >= 2.1.5             |
+| [detect.find_package](#detect-find_package)         | 查找包文件，包含库文件和搜索路径             | >= 2.1.5             |
+| [detect.find_tool](#detect-find_tool)               | 查找工具                                     | >= 2.1.5             |
+| [detect.find_toolname](#detect-find_toolname)       | 查找工具名                                   | >= 2.1.5             |
+| [detect.features](#detect-features)                 | 获取指定工具的所有特性                       | >= 2.1.5             |
+| [detect.has_features](#detect-has_features)         | 判断指定特性是否支持                         | >= 2.1.5             |
+| [detect.has_flags](#detect-has_flags)               | 判断指定参数选项是否支持                     | >= 2.1.5             |
+| [detect.has_cfuncs](#detect-has_cfuncs)             | 判断指定c函数是否存在                        | >= 2.1.5             |
+| [detect.has_cxxfuncs](#detect-has_cxxfuncs)         | 判断指定c++函数是否存在                      | >= 2.1.5             |
+| [detect.has_cincludes](#detect-has_cincludes)       | 判断指定c头文件是否存在                      | >= 2.1.5             |
+| [detect.has_cxxincludess](#detect-has_cxxincludes)  | 判断指定c++头文件是否存在                    | >= 2.1.5             |
+| [detect.has_ctypes](#detect-has_ctypes)             | 判断指定c类型是否存在                        | >= 2.1.5             |
+| [detect.has_cxxtypes](#detect-has_cxxtypes)         | 判断指定c++类型是否存在                      | >= 2.1.5             |
+| [detect.check_cxsnippets](#detect-check_cxsnippets) | 检测c/c++代码片段是否能够编译通过            | >= 2.1.5             |
+
+##### net.http
+
+此模块提供http的各种操作支持，目前提供的接口如下：
+
+| 接口                                                | 描述                                         | 支持版本             |
+| --------------------------------------------------- | -------------------------------------------- | -------------------- |
+| [http.download](#http-download)                     | 下载http文件                                 | >= 2.1.5             |
+
+##### privilege.sudo
+
+此接口用于通过`sudo`来运行命令，并且提供了平台一致性处理。
+
+##### devel.git
+
+此接口提供了git各种命令的访问接口。
+
+##### devel.debugger
+
+##### utils.archive
