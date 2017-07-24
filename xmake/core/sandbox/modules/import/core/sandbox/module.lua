@@ -133,15 +133,15 @@ function core_sandbox_module._find(dir, name)
 
     -- the single module?
     if os.isfile(key .. ".lua") then
-        return path.absolute(key)
+        return path.absolute(key), false
     -- modules?
     elseif os.isdir(key) then
-        return path.absolute(key)
+        return path.absolute(key), true
     end
 end
 
 -- load module
-function core_sandbox_module._load(dir, name, instance)
+function core_sandbox_module._load(dir, name, instance, module)
 
     -- check
     assert(dir and name)
@@ -151,9 +151,11 @@ function core_sandbox_module._load(dir, name, instance)
     assert(name)
 
     -- load the single module?
-    local module = nil
     local script = nil
     if os.isfile(path.join(dir, name .. ".lua")) then
+
+        -- check
+        assert(not module)
 
         -- load module
         local result, errors = core_sandbox_module._loadfile(path.join(dir, name .. ".lua"), instance)
@@ -267,7 +269,7 @@ function core_sandbox_module.find(name)
 
     -- find it from the module directories
     for _, moduledir in ipairs(core_sandbox_module.directories()) do
-        if core_sandbox_module._find(moduledir, name) then
+        if (core_sandbox_module._find(moduledir, name)) then
             return true
         end
     end
@@ -348,10 +350,12 @@ function core_sandbox_module.import(name, opt)
     local errors = nil
     local module = nil
     local modulekey = nil
+    local isdirs = false
+    local loadnext = false
     for idx, moduledir in ipairs(modules_directories) do
 
         -- find module and key
-        modulekey = core_sandbox_module._find(moduledir, name) 
+        modulekey, isdirs = core_sandbox_module._find(moduledir, name) 
         if modulekey then
 
             -- load it from cache first
@@ -360,18 +364,25 @@ function core_sandbox_module.import(name, opt)
                 module = moduleinfo[1]
                 errors = moduleinfo[2]
             else
-                -- load it from the script file
-                module, errors = core_sandbox_module._load(moduledir, name, utils.ifelse(idx < #modules_directories, instance, nil)) -- last modules need not fork sandbox
 
-                -- cache this module
-                if not opt.nocache then
-                    modules[modulekey] = {module, errors}
+                -- load it from the script file
+                module, errors = core_sandbox_module._load(   moduledir, name
+                                                            , utils.ifelse(idx < #modules_directories, instance, nil)  -- last modules need not fork sandbox
+                                                            , module) 
+
+                -- continue to load?
+                if module and isdirs then
+                    loadnext = true
                 end
             end
 
-            -- end
+            -- found
             found = true
-            break
+
+            -- end?
+            if not loadnext then
+                break
+            end
         end
     end
 
@@ -387,6 +398,11 @@ function core_sandbox_module.import(name, opt)
     -- check
     if not module then
         raise("cannot import module: %s, %s", name, errors)
+    end
+
+    -- cache this module
+    if not opt.nocache then
+        modules[modulekey] = modules[modulekey] or {module, errors}
     end
 
     -- get module script
