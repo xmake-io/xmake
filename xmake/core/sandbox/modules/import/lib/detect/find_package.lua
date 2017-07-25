@@ -247,8 +247,8 @@ end
 -- @param name      the package name
 -- @param opt       the package options. 
 --                  e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.1", 
-    --                     pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}
-    --                     packagedirs = {"/tmp/packages"}}
+--                     pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}
+--                     packagedirs = {"/tmp/packages"}}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --

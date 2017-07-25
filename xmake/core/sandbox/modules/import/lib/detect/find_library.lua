@@ -61,7 +61,7 @@ end
 -- @code 
 --
 -- local library = find_library({"crypto", "cryp*"}, {"/usr/lib", "/usr/local/lib"})
--- local library = find_library(crypto, {"/usr/lib", "/usr/local/lib"}, {kind = "static"})
+-- local library = find_library("crypto", {"/usr/lib", "/usr/local/lib"}, {kind = "static"})
 -- 
 -- @endcode
 --

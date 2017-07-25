@@ -5719,6 +5719,7 @@ environment.leave("toolchains")
 | [detect.find_path](#detect-find_path)               | 查找文件路径                                 | >= 2.1.5             |
 | [detect.find_library](#detect-find_library)         | 查找库文件                                   | >= 2.1.5             |
 | [detect.find_program](#detect-find_program)         | 查找可执行程序                               | >= 2.1.5             |
+| [detect.find_programver](#detect-find_programver)   | 查找可执行程序版本号                         | >= 2.1.5             |
 | [detect.find_package](#detect-find_package)         | 查找包文件，包含库文件和搜索路径             | >= 2.1.5             |
 | [detect.find_tool](#detect-find_tool)               | 查找工具                                     | >= 2.1.5             |
 | [detect.find_toolname](#detect-find_toolname)       | 查找工具名                                   | >= 2.1.5             |
@@ -5732,6 +5733,384 @@ environment.leave("toolchains")
 | [detect.has_ctypes](#detect-has_ctypes)             | 判断指定c类型是否存在                        | >= 2.1.5             |
 | [detect.has_cxxtypes](#detect-has_cxxtypes)         | 判断指定c++类型是否存在                      | >= 2.1.5             |
 | [detect.check_cxsnippets](#detect-check_cxsnippets) | 检测c/c++代码片段是否能够编译通过            | >= 2.1.5             |
+
+###### detect.find_file
+
+- 查找文件
+
+这个接口提供了比[os.files](#os-files)更加强大的工程， 可以同时指定多个搜索目录，并且还能对每个目录指定附加的子目录，来模式匹配查找，相当于是[os.files](#os-files)的增强版。
+
+例如：
+
+```lua
+import("lib.detect.find_file")
+local file = find_file("ccache", { "/usr/bin", "/usr/local/bin"})
+```
+
+如果找到，返回的结果是：`/usr/bin/ccache`
+
+它同时也支持模式匹配路径，进行递归查找，类似`os.files`：
+
+```lua
+local file = find_file("test.h", { "/usr/include", "/usr/local/include/**"})
+```
+
+不仅如此，里面的路径也支持内建变量，来从环境变量和注册表中获取路径进行查找：
+
+```lua
+local file = find_file("xxx.h", { "$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name)"})
+```
+
+如果路径规则比较复杂多变，还可以通过自定义脚本来动态生成路径传入：
+
+```lua
+local file = find_file("xxx.h", { "$(env PATH)", function () return val("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name"):match("\"(.-)\"") end})
+```
+
+大部分场合下，上面的使用已经满足各种需求了，如果还需要一些扩展功能，可以通过传入第三个参数，自定义一些可选配置，例如：
+
+```lua
+local file = find_file("test.h", { "/usr", "/usr/local"}, {suffixes = {"/include", "/lib"}})
+```
+
+通过指定suffixes子目录列表，可以扩展路径列表（第二个参数），使得实际的搜索目录扩展为：
+
+```
+/usr/include
+/usr/lib
+/usr/local/include
+/usr/local/lib
+```
+
+并且不用改变路径列表，就能动态切换子目录来搜索文件。
+
+<p class="tip">
+我们也可以通过`xmake lua`插件来快速调用和测试此接口：`xmake lua lib.detect.find_file test.h /usr/local`
+</p>
+
+###### detect.find_path
+
+- 查找路径
+
+这个接口的用法跟[lib.detect.find_file](#detect-find_file)类似，唯一的区别是返回的结果不同。
+此接口查找到传入的文件路径后，返回的是对应的搜索路径，而不是文件路径本身，一般用于查找文件对应的父目录位置。
+
+```lua
+import("lib.detect.find_path")
+local p = find_path("include/test.h", { "/usr", "/usr/local"})
+```
+
+上述代码如果查找成功，则返回：`/usr/local`，如果`test.h`在`/usr/local/include/test.h`的话。
+
+还有一个区别就是，这个接口传入不只是文件路径，还可以传入目录路径来查找：
+
+```lua
+local p = find_path("lib/xxx", { "$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\XXXX;Name)"})
+```
+
+同样，此接口也支持模式匹配和后缀子目录：
+
+```lua
+local p = find_path("include/*.h", { "/usr", "/usr/local/**"}, {suffixes = "/subdir"})
+```
+
+###### detect.find_library
+
+- 查找库文件
+
+此接口用于指定的搜索目录中查找库文件（静态库，动态库），例如：
+
+```lua
+import("lib.detect.find_library")
+local library = find_library("crypto", {"/usr/lib", "/usr/local/lib"})
+```
+
+在macosx上运行，返回的结果如下：
+
+```lua
+{
+    filename = libcrypto.dylib
+,   linkdir = /usr/lib
+,   link = crypto
+,   kind = shared
+}
+```
+
+如果不指定是否需要静态库还是动态库，那么此接口会自动选择一个存在的库（有可能是静态库、也有可能是动态库）进行返回。
+
+如果需要强制指定需要查找的库类型，可以指定kind参数为（`static/shared`）：
+
+```lua
+local library = find_library("crypto", {"/usr/lib", "/usr/local/lib"}, {kind = "static"})
+```
+
+此接口也支持suffixes后缀子目录搜索和模式匹配操作：
+
+```lua
+local library = find_library("cryp*", {"/usr", "/usr/local"}, {suffixes = "/lib"})
+```
+
+###### detect.find_program
+
+- 查找可执行程序
+
+这个接口比[lib.detect.find_tool](#detect-find_tool)较为原始底层，通过指定的参数目录来查找可执行程序。
+
+```lua
+import("lib.detect.find_program")
+local program = find_program("ccache")
+```
+
+上述代码犹如没有传递搜索目录，所以它会尝试直接执行指定程序，如果运行ok，那么直接返回：`ccache`，表示查找成功。
+
+指定搜索目录，修改尝试运行的检测命令参数（默认是：`ccache --version`）：
+
+```lua
+local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, "--help") 
+```
+
+上述代码会尝试运行：`/usr/bin/ccache --help`，如果运行成功，则返回：`/usr/bin/ccache`。
+
+如果`--help`也没法满足需求，有些程序没有`--version/--help`参数，那么可以自定义运行脚本，来运行检测：
+
+```lua
+local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
+```
+
+同样，搜索路径列表支持内建变量和自定义脚本：
+
+```lua
+local program = find_program("ccache", {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
+local program = find_program("ccache", {"$(env PATH)", function () return "/usr/local/bin" end})
+```
+
+<p class="tip">
+为了加速频发查找的效率，此接口是默认自带cache的，所以就算频繁查找相同的程序，也不会花太多时间。
+如果要禁用cache，可以在工程目录执行`xmake f -c`清除本地cache。
+</p>
+
+我们也可以通过`xmake lua lib.detect.find_program ccache` 来快速测试。
+
+###### detect.find_programver
+
+- 查找可执行程序版本号
+
+
+```lua
+import("lib.detect.find_programver")
+local programver = find_programver("ccache")
+```
+
+返回结果为：3.2.2
+
+默认它会通过`ccache --version`尝试获取版本，如果不存在此参数，可以自己指定其他参数：
+
+```lua
+local version = find_programver("ccache", "-v")
+```
+
+甚至自定义版本获取脚本：
+
+```lua
+local version = find_programver("ccache", function () return os.iorun("ccache --version") end)
+```
+
+对于版本号的提取规则，如果内置的匹配模式不满足要求，也可以自定义：
+
+```lua
+local version = find_programver("ccache", "--version", "(%d+%.?%d*%.?%d*.-)%s")
+local version = find_programver("ccache", "--version", function (output) return output:match("(%d+%.?%d*%.?%d*.-)%s") end)
+```
+
+<p class="tip">
+为了加速频发查找的效率，此接口是默认自带cache的，如果要禁用cache，可以在工程目录执行`xmake f -c`清除本地cache。
+</p>
+
+我们也可以通过`xmake lua lib.detect.find_programver ccache` 来快速测试。
+
+###### detect.find_package
+
+- 查找包文件
+
+此接口也是用于查找库文件，但是比[lib.detect.find_library](#detect-find_library)更加上层，也更为强大和简单易用，因为它是以包为力度进行查找。
+
+那怎样算是一个完整的包，它包含：
+
+1. 多个静态库或者动态库文件
+2. 库的搜索目录
+3. 头文件的搜索目录
+4. 可选的编译链接选项，例如：`defines`等
+5. 可选的版本号
+
+例如我们查找一个openssl包：
+
+```lua
+import("lib.detect.find_package")
+local package = find_package("openssl")
+```
+
+返回的结果如下：
+
+```lua
+{links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
+```
+
+如果查找成功，则返回一个包含所有包信息的table，如果失败返回nil
+
+这里的返回结果可以直接作为`target:add`, `option:add`的参数传入，用于动态增加`target/option`的配置：
+
+```lua
+option("zlib")
+    set_showmenu(true)
+    before_check(function (option)
+        import("lib.detect.find_package")
+        option:add(find_package("zlib"))
+    end)
+```
+
+```lua
+target("test")
+    on_load(function (target)
+        import("lib.detect.find_package")
+        target:add(find_package("zlib"))
+    end)
+```
+
+如果系统上装有`homebrew`, `pkg-config`等第三方工具，那么此接口会尝试使用它们去改进查找结果。
+
+我们也可以通过指定版本号，来选择查找指定版本的包（如果这个包获取不到版本信息或者没有匹配版本的包，则返回nil）：
+
+```lua
+local package = find_package("openssl", {version = "1.0.1"})
+```
+
+默认情况下查找的包是根据如下规则匹配平台，架构和模式的：
+
+1. 如果参数传入指定了`{plat = "iphoneos", arch = "arm64", mode = "release"}`，则优先匹配，例如：`find_package("openssl", {plat = "iphoneos"})`。
+2. 如果是在当前工程环境，存在配置文件，则优先尝试从`config.get("plat")`, `config.get("arch")`和`config.get("mode")`获取平台架构进行匹配。
+3. 最后从`os.host()`和`os.arch()`中进行匹配，也就是当前主机的平台架构环境。
+
+如果系统的库目录以及`pkg-config`都不能满足需求，找不到包，那么可以自己手动设置搜索路径：
+
+```lua
+local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}})
+```
+
+也可以同时指定需要搜索的链接名，头文件名：
+
+```lua
+local package = find_package("openssl", {links = {"ssl", "crypto"}, includes = "ssl.h"}})
+```
+
+甚至可以指定xmake的`packagedir/*.pkg`包目录，用于查找对应的`openssl.pkg`包，一般用于查找内置在工程目录中的本地包。
+
+例如，tbox工程内置了`pkg/openssl.pkg`本地包载项目中，我们可以通过下面的脚本，传入`{packagedirs = ""}`参数优先查找本地包，如果找不到再去找系统包。
+
+```lua
+target("test")
+    on_load(function (target)
+        import("lib.detect.find_package")
+        target:add(find_package("openssl", {packagedirs = path.join(os.projectdir(), "pkg")}))
+    end)
+```
+
+总结下，现在的查找顺序：
+
+1. 如果指定`{packagedirs = ""}`参数，优先从这个参数指定的路径中查找本地包`*.pkg`
+2. 如果在`xmake/modules`下面存在`detect.packages.find_xxx`脚本，那么尝试调用此脚本来改进查找结果
+3. 如果系统存在`pkg-config`，并且查找的是系统环境的库，则尝试使用`pkg-config`提供的路径和链接信息进行查找
+4. 如果系统存在`homebrew`，并且查找的是系统环境的库，则尝试使用`brew --prefix xxx`提供的信息进行查找
+5. 从参数中指定的pathes路径和一些已知的系统路径`/usr/lib`, `/usr/include`中进行查找
+
+这里需要着重说下第二点，通过在`detect.packages.find_xxx`脚本来改进查找结果，很多时候自动的包探测是没法完全探测到包路径的，
+尤其是针对windows平台，没有默认的库目录，也没有包管理app，很多库装的时候，都是自己所处放置在系统目录，或者添加注册表项。
+
+因此查找起来没有同意的规则，这个时候，就可以自定义一个查找脚本，去改进`find_package`的查找机制，对指定包进行更精准的查找。
+
+在xmake自带的`xmake/modules/detect/packages`目录下，已经有许多的内置包脚本，来对常用的包进行更好的查找支持。
+当然这不可能满足所有用户的需求，如果用户需要的包还是找不到，那么可以自己定义一个查找脚本，例如：
+
+查找一个名为`openssl`的包，可以编写一个`find_openssl.lua`的脚本放置在工程目录：
+
+```
+projectdir
+ - xmake
+   - modules
+     - detect/package/find_openssl.lua
+```
+
+然后在工程的`xmake.lua`文件的开头指定下这个modules的目录：
+
+```lua
+add_moduledirs("$(projectdir)/xmake/modules")
+```
+
+这样xmake就能找到自定义的扩展模块了。
+
+接下来我们看下`find_openssl.lua`的实现：
+
+```lua
+-- imports
+import("lib.detect.find_path")
+import("lib.detect.find_library")
+
+-- find openssl 
+--
+-- @param opt   the package options. e.g. see the options of find_package()
+--
+-- @return      see the return value of find_package()
+--
+function main(opt)
+
+    -- for windows platform
+    --
+    -- http://www.slproweb.com/products/Win32OpenSSL.html
+    --
+    if opt.plat == "windows" then
+
+        -- init bits
+        local bits = ifelse(opt.arch == "x64", "64", "32")
+
+        -- init search pathes
+        local pathes = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL %(" .. bits .. "-bit%)_is1;Inno Setup: App Path)",
+                        "$(env PROGRAMFILES)/OpenSSL",
+                        "$(env PROGRAMFILES)/OpenSSL-Win" .. bits,
+                        "C:/OpenSSL",
+                        "C:/OpenSSL-Win" .. bits}
+
+        -- find library
+        local result = {links = {}, linkdirs = {}, includedirs = {}}
+        for _, name in ipairs({"libssl", "libcrypto"}) do
+            local linkinfo = find_library(name, pathes, {suffixes = "lib"})
+            if linkinfo then
+                table.insert(result.links, linkinfo.link)
+                table.insert(result.linkdirs, linkinfo.linkdir)
+            end
+        end
+
+        -- not found?
+        if #result.links ~= 2 then
+            return 
+        end
+
+        -- find include
+        table.insert(result.includedirs, find_path("openssl/ssl.h", pathes, {suffixes = "include"}))
+
+        -- ok
+        return result
+    end
+end
+```
+
+里面对windows平台进行注册表读取，去查找指定的库文件，其底层其实也是调用的[find_library](#detect-find_library)等接口。
+
+<p class="tip">
+为了加速频发查找的效率，此接口是默认自带cache的，如果要禁用cache，可以在工程目录执行`xmake f -c`清除本地cache。
+也可以通过指定force参数，来禁用cache，强制重新查找：`find_package("openssl", {force = true})`
+</p>
+
+我们也可以通过`xmake lua lib.detect.find_package openssl` 来快速测试。
+
 
 ##### net.http
 
