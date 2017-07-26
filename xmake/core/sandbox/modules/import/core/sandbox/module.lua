@@ -370,10 +370,16 @@ function core_sandbox_module.import(name, opt)
                                                             , utils.ifelse(idx < #modules_directories, instance, nil)  -- last modules need not fork sandbox
                                                             , module) 
 
-                -- continue to load?
-                if module and isdirs then
-                    loadnext = true
+
+                -- cache this module
+                if not opt.nocache then
+                    modules[modulekey] = {module, errors}
                 end
+            end
+
+            -- continue to load?
+            if module and isdirs then
+                loadnext = true
             end
 
             -- found
@@ -398,11 +404,6 @@ function core_sandbox_module.import(name, opt)
     -- check
     if not module then
         raise("cannot import module: %s, %s", name, errors)
-    end
-
-    -- cache this module
-    if not opt.nocache then
-        modules[modulekey] = modules[modulekey] or {module, errors}
     end
 
     -- get module script
