@@ -5770,6 +5770,7 @@ environment.leave("toolchains")
 
 ```lua
 import("lib.detect.find_file")
+
 local file = find_file("ccache", { "/usr/bin", "/usr/local/bin"})
 ```
 
@@ -5823,6 +5824,7 @@ local file = find_file("test.h", { "/usr", "/usr/local"}, {suffixes = {"/include
 
 ```lua
 import("lib.detect.find_path")
+
 local p = find_path("include/test.h", { "/usr", "/usr/local"})
 ```
 
@@ -5848,6 +5850,7 @@ local p = find_path("include/*.h", { "/usr", "/usr/local/**"}, {suffixes = "/sub
 
 ```lua
 import("lib.detect.find_library")
+
 local library = find_library("crypto", {"/usr/lib", "/usr/local/lib"})
 ```
 
@@ -5884,6 +5887,7 @@ local library = find_library("cryp*", {"/usr", "/usr/local"}, {suffixes = "/lib"
 
 ```lua
 import("lib.detect.find_program")
+
 local program = find_program("ccache")
 ```
 
@@ -5924,6 +5928,7 @@ local program = find_program("ccache", {"$(env PATH)", function () return "/usr/
 
 ```lua
 import("lib.detect.find_programver")
+
 local programver = find_programver("ccache")
 ```
 
@@ -5972,6 +5977,7 @@ local version = find_programver("ccache", "--version", function (output) return 
 
 ```lua
 import("lib.detect.find_package")
+
 local package = find_package("openssl")
 ```
 
@@ -6159,6 +6165,7 @@ end
 
 ```lua
 import("lib.detect.find_tool")
+
 local tool = find_tool("clang")
 ```
 
@@ -6269,6 +6276,7 @@ toolname相比program，更能唯一标示某个工具，也方便查找和加�
 
 ```lua
 import("lib.detect.features")
+
 local features = features("clang")
 local features = features("clang", {flags = "-O0", program = "xcrun -sdk macosx clang"})
 local features = features("clang", {flags = {"-g", "-O0", "-std=c++11"}})
@@ -6288,6 +6296,7 @@ local features = features("clang", {flags = {"-g", "-O0", "-std=c++11"}})
 
 ```lua
 import("lib.detect.has_features")
+
 local features = has_features("clang", "cxx_constexpr")
 local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = {"-g", "-O0"}, program = "xcrun -sdk macosx clang"})
 local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = "-g"})
@@ -6305,6 +6314,7 @@ local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {fl
 
 ```lua
 import("lib.detect.has_flags")
+
 local ok = has_flags("clang", "-g")
 local ok = has_flags("clang", {"-g", "-O0"}, {program = "xcrun -sdk macosx clang"})
 local ok = has_flags("clang", "-g -O0", {toolkind = "cxx"})
@@ -6322,6 +6332,7 @@ local ok = has_flags("clang", "-g -O0", {toolkind = "cxx"})
 
 ```lua
 import("lib.detect.has_cfuncs")
+
 local ok = has_cfuncs("setjmp")
 local ok = has_cfuncs({"sigsetjmp((void*)0, 0)", "setjmp"}, {includes = "setjmp.h"})
 ```
@@ -6356,6 +6367,7 @@ local ok = has_cfuncs({"sigsetjmp((void*)0, 0)", "setjmp"}, {includes = "setjmp.
 
 ```lua
 import("lib.detect.has_cincludes")
+
 local ok = has_cincludes("stdio.h")
 local ok = has_cincludes({"stdio.h", "stdlib.h"}, {target = target})
 local ok = has_cincludes({"stdio.h", "stdlib.h"}, {defines = "_GNU_SOURCE=1", languages = "cxx11"})
@@ -6375,6 +6387,7 @@ local ok = has_cincludes({"stdio.h", "stdlib.h"}, {defines = "_GNU_SOURCE=1", la
 
 ```lua
 import("lib.detect.has_ctypes")
+
 local ok = has_ctypes("wchar_t")
 local ok = has_ctypes({"char", "wchar_t"}, {includes = "stdio.h"})
 local ok = has_ctypes("wchar_t", {includes = {"stdio.h", "stdlib.h"}, "defines = "_GNU_SOURCE=1", languages = "cxx11"})
@@ -6396,6 +6409,7 @@ local ok = has_ctypes("wchar_t", {includes = {"stdio.h", "stdlib.h"}, "defines =
 
 ```lua
 import("lib.detect.check_cxsnippets")
+
 local ok = check_cxsnippets("void test() {}")
 local ok = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 ```
