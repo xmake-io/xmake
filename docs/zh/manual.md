@@ -1350,6 +1350,44 @@ target("demo")
 
 上面的例子，在编译目标demo的时候，需要先编译test1, test2目标，因为demo会去用到他们
 
+<p class="tip">
+2.1.5版本后，target会自动继承依赖目标中的配置和属性，不再需要额外调用`add_links`, `add_includedirs`和`add_linkdirs`等接口去关联依赖目标了。
+</p>
+
+2.1.5版本之后，上述代码可简化为：
+
+```lua
+target("test1")
+    set_kind("static")
+    set_files("*.c")
+
+target("test2")
+    set_kind("static")
+    set_files("*.c")
+
+target("demo")
+    add_deps("test1", "test2") -- 会自动链接依赖目标
+```
+
+并且继承关系是支持级联的，例如：
+
+```lua
+target("library1")
+    set_kind("static")
+    add_files("*.c")
+    add_headers("inc1/*.h")
+
+target("library2")
+    set_kind("static")
+    add_deps("library1")
+    add_files("*.c")
+    add_headers("inc2/*.h")
+
+target("test")
+    set_kind("binary")
+    add_deps("library2")
+```
+
 ##### target:add_links
 
 ###### 添加链接库名
@@ -1702,6 +1740,8 @@ target("demo")
 
 #endif
 ```
+
+如果要更加灵活的函数检测，可以通过[lib.detect.has_cfuncs](#detect-has_cfuncs)在自定义脚本中实现。
 
 ##### target:add_cxxfunc
 
@@ -2347,6 +2387,8 @@ target("test")
 
 此选项检测是否存在`pthread.h`的头文件，如果检测通过那么`test`目标程序将会加上`ENABLE_PTHREAD`的宏定义。
 
+如果想要更加灵活的检测，可以通过[lib.detect.has_cincludes](#detect-has_cincludes)在[option.on_check](#optionon_check)中去实现。
+
 ##### option:add_cxxincludes
 
 ###### 添加c++头文件检测
@@ -2370,6 +2412,8 @@ target("test")
 ```
 
 此选项检测是否存在`wchar_t`的类型，如果检测通过那么`test`目标程序将会加上`HAVE_WCHAR`的宏定义。
+
+如果想要更加灵活的检测，可以通过[lib.detect.has_ctypes](#detect-has_ctypes)在[option.on_check](#optionon_check)中去实现。
 
 ##### option:add_cxxtypes
 
@@ -2398,6 +2442,8 @@ option("constexpr")
 上述代码，实现对c++的constexpr特性的检测，如果检测通过，则启用constexpr选项，当然这里只是个例子。
 
 对于编译器特性的检测，有更加方便高效的检测模块，提供更强大的检测支持，具体见：[compiler.has_features](#compiler-has_features)和[detect.check_cxsnippets](#detect-check_cxsnippets)
+
+如果想要更加灵活的检测，可以通过[lib.detect.check_cxsnippets](#detect-check_cxsnippets)在[option.on_check](#optionon_check)中去实现。
 
 ##### option:add_defines_if_ok
 
@@ -6111,6 +6157,288 @@ end
 
 我们也可以通过`xmake lua lib.detect.find_package openssl` 来快速测试。
 
+###### detect.find_tool
+
+- 查找工具
+
+此接口也是用于查找可执行程序，不过比[lib.detect.find_program](#detect-find_program)更加的高级，功能也更加强大，它对可执行程序进行了封装，提供了工具这个概念：
+
+* toolname: 工具名，可执行程序的简称，用于标示某个工具，例如：`gcc`, `clang`等
+* program: 可执行程序命令，例如：`xcrun -sdk macosx clang`
+
+其对应关系如下：
+
+| toolname  | program                             |
+| --------- | ----------------------------------- |
+| clang     | `xcrun -sdk macosx clang`           |
+| gcc       | `/usr/toolchains/bin/arm-linux-gcc` |
+| link      | `link.exe -lib`                     |
+
+[lib.detect.find_program](#detect-find_program)只能通过传入的原始program命令或路径，去判断该程序是否存在。
+而`find_tool`则可以通过更加一致的toolname去查找工具，并且返回对应的program完整命令路径，例如：
+
+```lua
+import("lib.detect.find_tool")
+local tool = find_tool("clang")
+```
+
+返回的结果为：`{name = "clang", program = "clang"}`，这个时候还看不出区别，我们可以手动指定可执行的命令：
+
+```lua
+local tool = find_tool("clang", {program = "xcrun -sdk macosx clang"})
+```
+
+返回的结果为：`{name = "clang", program = "xcrun -sdk macosx clang"}`
+
+而在macosx下，gcc就是clang，如果我们执行`gcc --version`可以看到就是clang的一个马甲，我们可以通过`find_tool`接口进行智能识别：
+
+```lua
+local tool = find_tool("gcc")
+```
+
+返回的结果为：`{name = "clang", program = "gcc"}`
+
+通过这个结果就可以看的区别来了，工具名实际会被标示为clang，但是可执行的命令用的是gcc。
+
+我们也可以指定`{version = true}`参数去获取工具的版本，并且指定一个自定义的搜索路径，也支持内建变量和自定义脚本哦： 
+
+```lua
+local tool = find_tool("clang", {version = true, {pathes = {"/usr/bin", "/usr/local/bin", "$(env PATH)", function () return "/usr/xxx/bin" end}})
+```
+
+返回的结果为：`{name = "clang", program = "/usr/bin/clang", version = "4.0"}`
+
+这个接口是对`find_program`的上层封装，因此也支持自定义脚本检测：
+
+```lua
+local tool = find_tool("clang", {check = "--help"}) 
+local tool = find_tool("clang", {check = function (tool) os.run("%s -h", tool) end})
+```
+
+最后总结下，`find_tool`的查找流程：
+
+1. 优先通过`{program = "xxx"}`的参数来尝试运行和检测。
+2. 如果在`xmake/modules/detect/tools`下存在`detect.tools.find_xxx`脚本，则调用此脚本进行更加精准的检测。
+3. 尝试从`/usr/bin`，`/usr/local/bin`等系统目录进行检测。
+
+我们也可以在工程`xmake.lua`中`add_moduledirs`指定的模块目录中，添加自定义查找脚本，来改进检测机制：
+
+```
+projectdir
+  - xmake/modules
+    - detect/tools/find_xxx.lua
+```
+
+例如我们自定义一个`find_7z.lua`的查找脚本：
+
+```lua
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
+
+function main(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- find program
+    local program = find_program(opt.program or "7z", opt.pathes, opt.check or "--help")
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, "--help", "(%d+%.?%d*)%s")
+    end
+
+    -- ok?
+    return program, version
+end
+```
+
+将它放置到工程的模块目录下后，执行：`xmake l lib.detect.find_tool 7z`就可以查找到了。
+
+<p class="tip">
+为了加速频发查找的效率，此接口是默认自带cache的，如果要禁用cache，可以在工程目录执行`xmake f -c`清除本地cache。
+</p>
+
+我们也可以通过`xmake lua lib.detect.find_tool clang` 来快速测试。
+
+###### detect.find_toolname
+
+- 查找工具名
+
+通过program命令匹配对应的工具名，例如：
+
+| program                   | toolname   |
+| ------------------------- | ---------- |
+| `xcrun -sdk macosx clang` | clang      |
+| `/usr/bin/arm-linux-gcc`  | gcc        |
+| `link.exe -lib`           | link       |
+| `gcc-5`                   | gcc        |
+| `arm-android-clang++`     | clangxx    |
+| `pkg-config`              | pkg_config |
+
+toolname相比program，更能唯一标示某个工具，也方便查找和加载对应的脚本`find_xxx.lua`。
+
+###### detect.features
+
+- 获取指定工具的所有特性
+
+此接口跟[compiler.features](#compiler-features)类似，区别就是此接口更加的原始，传入的参数是实际的工具名toolname。
+
+并且此接口不仅能够获取编译器的特性，任何工具的特性都可以获取，因此更加通用。
+
+```lua
+import("lib.detect.features")
+local features = features("clang")
+local features = features("clang", {flags = "-O0", program = "xcrun -sdk macosx clang"})
+local features = features("clang", {flags = {"-g", "-O0", "-std=c++11"}})
+```
+
+通过传入flags，可以改变特性的获取结果，例如一些c++11的特性，默认情况下获取不到，通过启用`-std=c++11`后，就可以获取到了。
+
+所有编译器的特性列表，可以见：[compiler.features](#compiler-features)。
+
+###### detect.has_features
+
+- 判断指定特性是否支持
+
+此接口跟[compiler.has_features](#compiler-has_features)类似，但是更加原始，传入的参数是实际的工具名toolname。
+
+并且此接口不仅能够判断编译器的特性，任何工具的特性都可以判断，因此更加通用。
+
+```lua
+import("lib.detect.has_features")
+local features = has_features("clang", "cxx_constexpr")
+local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = {"-g", "-O0"}, program = "xcrun -sdk macosx clang"})
+local features = has_features("clang", {"cxx_constexpr", "c_static_assert"}, {flags = "-g"})
+```
+
+如果指定的特性列表存在，则返回实际支持的特性子列表，如果都不支持，则返回nil，我们也可以通过指定flags去改变特性的获取规则。
+
+所有编译器的特性列表，可以见：[compiler.features](#compiler-features)。
+
+###### detect.has_flags
+
+- 判断指定参数选项是否支持
+
+此接口跟[compiler.has_flags](#compiler-has_flags)类似，但是更加原始，传入的参数是实际的工具名toolname。
+
+```lua
+import("lib.detect.has_flags")
+local ok = has_flags("clang", "-g")
+local ok = has_flags("clang", {"-g", "-O0"}, {program = "xcrun -sdk macosx clang"})
+local ok = has_flags("clang", "-g -O0", {toolkind = "cxx"})
+```
+
+如果检测通过，则返回true。
+
+此接口的检测做了一些优化，除了cache机制外，大部分场合下，会去拉取工具的选项列表（`--help`）直接判断，如果选项列表里获取不到的话，才会通过尝试运行的方式来检测。
+
+###### detect.has_cfuncs
+
+- 判断指定c函数是否存在
+
+此接口是[lib.detect.check_cxsnippets](#detect-check_cxsnippets)的简化版本，仅用于检测函数。
+
+```lua
+import("lib.detect.has_cfuncs")
+local ok = has_cfuncs("setjmp")
+local ok = has_cfuncs({"sigsetjmp((void*)0, 0)", "setjmp"}, {includes = "setjmp.h"})
+```
+
+对于函数的描述规则如下：
+
+| 函数描述                                        | 说明          |
+| ----------------------------------------------- | ------------- |
+| `sigsetjmp`                                     | 纯函数名      |
+| `sigsetjmp((void*)0, 0)`                        | 函数调用      |
+| `sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}` | 函数名 + {}块 |
+
+在最后的可选参数中，除了可以指定`includes`外，还可以指定其他的一些参数用于控制编译检测的选项条件：
+
+```lua
+{ verbose = false, target = [target|option], linkdirs = .., links = .., includes = .., defines = .., .. }
+```
+
+其中verbose用于回显检测信息，target用于在检测前追加target中的配置信息。
+
+###### detect.has_cxxfuncs
+
+- 判断指定c++函数是否存在
+
+此接口跟[lib.detect.has_cfuncs](#detect-has_cfuncs)类似，请直接参考它的使用说明，唯一区别是这个接口用于检测c++函数。
+
+###### detect.has_cincludes
+
+- 判断指定c头文件是否存在
+
+此接口是[lib.detect.check_cxsnippets](#detect-check_cxsnippets)的简化版本，仅用于检测函数。
+
+```lua
+import("lib.detect.has_cincludes")
+local ok = has_cincludes("stdio.h")
+local ok = has_cincludes({"stdio.h", "stdlib.h"}, {target = target})
+local ok = has_cincludes({"stdio.h", "stdlib.h"}, {defines = "_GNU_SOURCE=1", languages = "cxx11"})
+```
+
+###### detect.has_cxxincludes
+
+- 判断指定c++头文件是否存在
+
+此接口跟[lib.detect.has_cincludess](#detect-has_cincludes)类似，请直接参考它的使用说明，唯一区别是这个接口用于检测c++头文件。
+
+###### detect.has_ctypes
+
+- 判断指定c类型是否存在
+
+此接口是[lib.detect.check_cxsnippets](#detect-check_cxsnippets)的简化版本，仅用于检测函数。
+
+```lua
+import("lib.detect.has_ctypes")
+local ok = has_ctypes("wchar_t")
+local ok = has_ctypes({"char", "wchar_t"}, {includes = "stdio.h"})
+local ok = has_ctypes("wchar_t", {includes = {"stdio.h", "stdlib.h"}, "defines = "_GNU_SOURCE=1", languages = "cxx11"})
+```
+
+###### detect.has_cxxtypes
+
+- 判断指定c++类型是否存在
+
+此接口跟[lib.detect.has_ctypess](#detect-has_ctypes)类似，请直接参考它的使用说明，唯一区别是这个接口用于检测c++类型。
+
+###### detect.check_cxsnippets
+
+- 检测c/c++代码片段是否能够编译通过
+
+通用的c/c++代码片段检测接口，通过传入多个代码片段列表，它会自动生成一个编译文件，然后常识对它进行编译，如果编译通过返回true。
+
+对于一些复杂的编译器特性，连[compiler.has_features](#compiler-has_features)都无法检测到的时候，可以通过此接口通过尝试编译来检测它。
+
+```lua
+import("lib.detect.check_cxsnippets")
+local ok = check_cxsnippets("void test() {}")
+local ok = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+```
+
+此接口是[detect.has_cfuncs](#detect-has_cfuncs), [detect.has_cincludes](#detect-has_cincludes)和[detect.has_ctypes](detect-has_ctypes)等接口的通用版本，也更加底层。
+
+因此我们可以用它来检测：types, functions, includes 还有 links，或者是组合起来一起检测。
+
+第一个参数为代码片段列表，一般用于一些自定义特性的检测，如果为空，则可以仅仅检测可选参数中条件，例如：
+
+```lua
+local ok = check_cxsnippets({}, {types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}})
+```
+
+上面那个调用，会去同时检测types, includes和funcs是否都满足，如果通过返回true。
+
+还有其他一些可选参数：
+
+```lua
+{ verbose = false, target = [target|option], sourcekind = "[cc|cxx]"}
+```
+
+其中verbose用于回显检测信息，target用于在检测前追加target中的配置信息, sourcekind 用于指定编译器等工具类型，例如传入`cxx`强制作为c++代码来检测。
 
 ##### net.http
 
@@ -6120,6 +6448,18 @@ end
 | --------------------------------------------------- | -------------------------------------------- | -------------------- |
 | [http.download](#http-download)                     | 下载http文件                                 | >= 2.1.5             |
 
+###### http.download
+
+- 下载http文件
+
+这个接口比较简单，就是单纯的下载文件。
+
+```lua
+import("net.http")
+
+http.download("http://xmake.io", "/tmp/index.html")
+```
+
 ##### privilege.sudo
 
 此接口用于通过`sudo`来运行命令，并且提供了平台一致性处理。
@@ -6128,6 +6468,25 @@ end
 
 此接口提供了git各种命令的访问接口。
 
-##### devel.debugger
-
 ##### utils.archive
+
+此模块用于压缩和解压缩文件。
+
+| 接口                                                | 描述                                         | 支持版本             |
+| --------------------------------------------------- | -------------------------------------------- | -------------------- |
+| [archive.extract](#archive-extract)                 | 解压文件                                     | >= 2.1.5             |
+
+###### archive.extract
+
+- 解压文件
+
+支持大部分常用压缩文件的解压，它会自动检测系统提供了哪些解压工具，然后适配到最合适的解压器对指定压缩文件进行解压操作。
+
+```lua
+import("utils.archive")
+
+archive.extract("/tmp/a.zip", "/tmp/outputdir")
+archive.extract("/tmp/a.7z", "/tmp/outputdir")
+archive.extract("/tmp/a.gzip", "/tmp/outputdir")
+archive.extract("/tmp/a.tar.bz2", "/tmp/outputdir")
+```
