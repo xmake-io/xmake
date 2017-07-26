@@ -6462,11 +6462,183 @@ http.download("http://xmake.io", "/tmp/index.html")
 
 ##### privilege.sudo
 
-此接口用于通过`sudo`来运行命令，并且提供了平台一致性处理。
+此接口用于通过`sudo`来运行命令，并且提供了平台一致性处理，对于一些需要root权限运行的脚本，可以使用此接口。
+
+<p class="warning">
+为了保证安全性，除非必须使用的场合，其他情况下尽量不要使用此接口。
+</p>
+
+| 接口                                                | 描述                                         | 支持版本             |
+| --------------------------------------------------- | -------------------------------------------- | -------------------- |
+| [sudo.has](#sudo-has)                               | 判断sudo是否支持                             | >= 2.1.5             |
+| [sudo.run](#sudo-run)                               | 安静运行程序                                 | >= 2.1.5             |
+| [sudo.runv](#sudo-runv)                             | 安静运行程序，带参数列表                     | >= 2.1.5             |
+| [sudo.exec](#sudo-exec)                             | 回显运行程序                                 | >= 2.1.5             |
+| [sudo.execv](#sudo-execv)                           | 回显运行程序，带参数列表                     | >= 2.1.5             |
+| [sudo.iorun](#sudo-iorun)                           | 运行并获取程序输出内容                       | >= 2.1.5             |
+| [sudo.iorunv](#sudo-iorunv)                         | 运行并获取程序输出内容，带参数列表           | >= 2.1.5             |
+
+###### sudo.has
+
+-  判断sudo是否支持
+
+目前仅在`macosx/linux`下支持sudo，windows上的管理员权限运行暂时还不支持，因此建议使用前可以通过此接口判断支持情况后，针对性处理。
+
+```lua
+import("privilege.sudo")
+
+if sudo.has() then
+    sudo.run("rm /system/file")
+end
+```
+
+###### sudo.run
+
+- 安静运行原生shell命令
+
+具体用法可参考：[os.run](#os-run)。
+
+```lua
+import("privilege.sudo")
+
+sudo.run("rm /system/file")
+```
+
+###### sudo.runv
+
+- 安静运行原生shell命令，带参数列表
+
+具体用法可参考：[os.runv](#os-runv)。
+
+###### sudo.exec
+
+- 回显运行原生shell命令
+
+具体用法可参考：[os.exec](#os-exec)。
+
+###### sudo.execv
+
+- 回显运行原生shell命令，带参数列表
+
+具体用法可参考：[os.execv](#os-execv)。
+
+###### sudo.iorun
+
+- 安静运行原生shell命令并获取输出内容
+
+具体用法可参考：[os.iorun](#os-iorun)。
+
+###### sudo.iorunv
+
+- 安静运行原生shell命令并获取输出内容，带参数列表
+
+具体用法可参考：[os.iorunv](#os-iorunv)。
 
 ##### devel.git
 
-此接口提供了git各种命令的访问接口。
+此接口提供了git各种命令的访问接口，相对于直接调用git命令，此模块提供了更加上层易用的封装接口，并且提供对git的自动检测和跨平台处理。
+
+<p class="tip">
+目前windows上，需要手动安装git包后，才能检测到，后续版本会提供自动集成git功能，用户将不用关心如何安装git，就可以直接使用。
+</p>
+
+| 接口                                                | 描述                                         | 支持版本             |
+| --------------------------------------------------- | -------------------------------------------- | -------------------- |
+| [git.clone](#git-clone)                             | clone代码库                                  | >= 2.1.5             |
+| [git.pull](#git-pull)                               | 拉取代码库最新提交                           | >= 2.1.5             |
+| [git.clean](#git-clean)                             | 清理代码库文件                               | >= 2.1.5             |
+| [git.checkout](#git-checkout)                       | 签出指定分支版本                             | >= 2.1.5             |
+| [git.refs](#git-refs)                               | 获取所有引用列表                             | >= 2.1.5             |
+| [git.tags](#git-tags)                               | 获取所有标记列表                             | >= 2.1.5             |
+| [git.branches](#git-branches)                       | 获取所有分支列表                             | >= 2.1.5             |
+
+###### git.clone
+
+- clone代码库
+
+此接口对应`git clone`命令
+
+```lua
+import("devel.git")
+ 
+git.clone("git@github.com:tboox/xmake.git")
+git.clone("git@github.com:tboox/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+```
+
+###### git.pull
+
+- 拉取代码库最新提交
+
+此接口对应`git pull`命令
+
+```lua
+import("devel.git")
+ 
+git.pull()
+git.pull({remote = "origin", tags = true, branch = "master", repodir = "/tmp/xmake"})
+```
+
+###### git.clean
+
+- 清理代码库文件
+
+此接口对应`git clean`命令
+
+```lua
+import("devel.git")
+ 
+git.clean()
+git.clean({repodir = "/tmp/xmake", force = true})
+```
+
+###### git.checkout
+
+- 签出指定分支版本
+
+此接口对应`git checkout`命令
+
+```lua
+import("devel.git")
+ 
+git.checkout("master", {repodir = "/tmp/xmake"})
+git.checkout("v1.0.1", {repodir = "/tmp/xmake"})
+```
+
+###### git.refs
+
+- 获取所有引用列表 
+
+此接口对应`git ls-remote --refs`命令
+
+```lua
+import("devel.git")
+ 
+local refs = git.refs(url)
+```
+
+###### git.tags
+
+- 获取所有标记列表 
+
+此接口对应`git ls-remote --tags`命令
+
+```lua
+import("devel.git")
+ 
+local tags = git.tags(url)
+```
+
+###### git.branches
+
+- 获取所有分支列表 
+
+此接口对应`git ls-remote --heads`命令
+
+```lua
+import("devel.git")
+ 
+local branches = git.branches(url)
+```
 
 ##### utils.archive
 
