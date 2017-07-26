@@ -103,6 +103,17 @@ function _check_try_running(flags, opt)
     return ok
 end
 
+-- ignore some flags
+function _ignore_flags(flags)
+    local results = {}
+    for _, flag in ipairs(flags) do
+        if not flag:find("[%-/]def:.+%.def") then
+            table.insert(results, flag)
+        end
+    end
+    return results
+end
+
 -- has_flags(flags)?
 -- 
 -- @param opt   the argument options, .e.g {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
@@ -110,6 +121,12 @@ end
 -- @return      true or false
 --
 function main(flags, opt)
+
+    -- ignore some flags
+    flags = _ignore_flags(flags)
+    if #flags == 0 then
+        return true
+    end
 
     -- attempt to check it from the argument list 
     if _check_from_arglist(flags, opt) then

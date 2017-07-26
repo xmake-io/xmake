@@ -135,14 +135,10 @@ function make()
             file:print("    add_files(\"%s\")", sourcefile)
             file:print("")
     
-            -- add links
+            -- add deps
             if #sourcefiles > 0 then
                 file:print("    -- add deps")
                 file:print("    add_deps(\"%s\")", targetname)
-                file:print("")
-                file:print("    -- add links")
-                file:print("    add_links(\"%s\")", targetname)
-                file:print("    add_linkdirs(\"%$(buildir)\")")
                 file:print("")
             end
         end
