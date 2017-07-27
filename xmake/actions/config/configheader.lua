@@ -34,31 +34,31 @@ function _make_for_target(files, target)
     local configheader = target:configheader()
     if not configheader then return end
 
-    -- the prefix
-    local prefix = target:get("config_h_prefix") or (target:name():upper() .. "_CONFIG")
+    -- get the config prefix
+    local configprefix = target:configprefix()
 
     -- open the file
     local file = files[configheader] or io.open(configheader, "w")
 
     -- make the head
     if files[configheader] then file:print("") end
-    file:print("#ifndef %s_H", prefix)
-    file:print("#define %s_H", prefix)
+    file:print("#ifndef %s_H", configprefix)
+    file:print("#define %s_H", configprefix)
     file:print("")
 
     -- make version
     local version = project.version()
     if version then
         file:print("// version")
-        file:print("#define %s_VERSION \"%s\"", prefix, version)
+        file:print("#define %s_VERSION \"%s\"", configprefix, version)
         local i = 1
         local m = {"MAJOR", "MINOR", "ALTER"}
         for v in version:gmatch("%d+") do
-            file:print("#define %s_VERSION_%s %s", prefix, m[i], v)
+            file:print("#define %s_VERSION_%s %s", configprefix, m[i], v)
             i = i + 1
             if i > 3 then break end
         end
-        file:print("#define %s_VERSION_BUILD %s", prefix, os.date("%Y%m%d%H%M", os.time()))
+        file:print("#define %s_VERSION_BUILD %s", configprefix, os.date("%Y%m%d%H%M", os.time()))
         file:print("")
     end
 
@@ -85,9 +85,9 @@ function _make_for_target(files, target)
         file:print("// defines")
         for _, define in ipairs(defines) do
             if define:find("=") then
-                file:print("#define %s", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
+                file:print("#define %s", define:gsub("=", " "):gsub("%$%((.-)%)", function (w) if w == "prefix" then return configprefix end end))
             else
-                file:print("#define %s 1", define:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
+                file:print("#define %s 1", define:gsub("%$%((.-)%)", function (w) if w == "prefix" then return configprefix end end))
             end
         end
         file:print("")
@@ -97,7 +97,7 @@ function _make_for_target(files, target)
     if #undefines ~= 0 then
         file:print("// undefines")
         for _, undefine in ipairs(undefines) do
-            file:print("#undef %s", undefine:gsub("%$%((.-)%)", function (w) if w == "prefix" then return prefix end end))
+            file:print("#undef %s", undefine:gsub("%$%((.-)%)", function (w) if w == "prefix" then return configprefix end end))
         end
         file:print("")
     end

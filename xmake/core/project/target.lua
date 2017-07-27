@@ -271,38 +271,6 @@ function target:headerdir()
     return self:get("headerdir") or config.get("buildir")
 end
 
--- get the config header files
-function target:configheader(outputdir)
-
-    -- get config header
-    local configheader = self:get("config_h")
-    if not configheader then
-        return 
-    end
-
-    -- get the root directory
-    local rootdir, count = configheader:gsub("|.*$", ""):gsub("%(.*%)$", "")
-    if count == 0 then
-        rootdir = nil
-    end
-
-    -- remove '(' and ')'
-    configheader = configheader:gsub("[%(%)]", "")
-
-    -- get the output header
-    local outputheader = nil
-    if outputdir then
-        if rootdir then
-            outputheader = path.absolute(path.relative(configheader, rootdir), outputdir)
-        else
-            outputheader = path.join(outputdir, path.filename(configheader))
-        end
-    end
-
-    -- ok
-    return configheader, outputheader
-end
-
 -- get the source files 
 function target:sourcefiles()
 
@@ -691,6 +659,64 @@ function target:script(name, generic)
 
     -- only generic script
     return generic
+end
+
+-- get the config header prefix
+function target:configprefix()
+
+    -- get the config prefix
+    local configprefix = nil
+    local configheader = self:get("config_header")
+    if type(configheader) == "table" then
+        local opt = configheader[2]
+        if opt then
+            configprefix = opt.prefix
+        end
+    end
+    if not configprefix then
+        configprefix = self:get("config_h_prefix") or (self:name():upper() .. "_CONFIG")
+    end
+
+    -- ok?
+    return configprefix
+end
+
+-- get the config header files
+function target:configheader(outputdir)
+
+    -- get config header
+    local configheader = self:get("config_header") -- set_config_header("/xxx/config.h", {prefix = XX_CONFIG})
+    if type(configheader) == "table" then
+        configheader = configheader[1]
+    end
+    if not configheader then
+        configheader = self:get("config_h")
+    end
+    if not configheader then
+        return 
+    end
+
+    -- get the root directory
+    local rootdir, count = configheader:gsub("|.*$", ""):gsub("%(.*%)$", "")
+    if count == 0 then
+        rootdir = nil
+    end
+
+    -- remove '(' and ')'
+    configheader = configheader:gsub("[%(%)]", "")
+
+    -- get the output header
+    local outputheader = nil
+    if outputdir then
+        if rootdir then
+            outputheader = path.absolute(path.relative(configheader, rootdir), outputdir)
+        else
+            outputheader = path.join(outputdir, path.filename(configheader))
+        end
+    end
+
+    -- ok
+    return configheader, outputheader
 end
 
 -- return module

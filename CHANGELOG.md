@@ -39,6 +39,7 @@
 * Optimize `xmake rebuild` speed on windows
 * Move `core.project.task` to `core.base.task`
 * Move `echo` and `app2ipa` plugins to [xmake-plugins](https://github.com/tboox/xmake-plugins) repo.
+* Add new api `set_config_header("config.h", {prefix = ""})` instead of `set_config_h` and `set_config_h_prefix`
 
 ### Bugs fixed
 
@@ -354,6 +355,7 @@
 * 优化`xmake rebuild`在windows上的构建速度
 * 将`core.project.task`模块迁移至`core.base.task`
 * 将`echo` 和 `app2ipa` 插件迁移到 [xmake-plugins](https://github.com/tboox/xmake-plugins) 仓库
+* 添加`set_config_header("config.h", {prefix = ""})` 代替 `set_config_h` 和 `set_config_h_prefix`
 
 ### Bugs修复
 

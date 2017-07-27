@@ -333,15 +333,17 @@ function interpreter:_api_translate_pathes(...)
     local curdir = path.directory(curfile)
     assert(curdir)
 
-    -- get all pathes
-    local pathes = table.join(...)
-
     -- translate the relative path 
     local results = {}
-    for _, p in ipairs(pathes) do
-        if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
-            table.insert(results, path.relative(path.absolute(p, curdir), self._PRIVATE._ROOTDIR))
+    for _, p in ipairs({...}) do
+        if type(p) == "string" then
+            if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
+                table.insert(results, path.relative(path.absolute(p, curdir), self._PRIVATE._ROOTDIR))
+            else
+                table.insert(results, p)
+            end
         else
+            -- @note do not translate non-string value, .e.g set_xxx("/xx/xx/xx", {arg = ""})
             table.insert(results, p)
         end
     end
@@ -1092,7 +1094,6 @@ function interpreter:api_register_add_values(scope_kind, ...)
         -- append values?
         scope[name] = scope[name] or {}
         table.join2(scope[name], ...)
-
     end
 
     -- register implementation
@@ -1111,7 +1112,6 @@ function interpreter:api_register_set_array(scope_kind, ...)
         -- update array?
         scope[name] = {}
         table.insert(scope[name], {...})
-
     end
 
     -- register implementation
