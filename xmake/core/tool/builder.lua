@@ -247,13 +247,15 @@ function builder:_addflags_from_language(flags, target)
 
         -- get api name of tool 
         --
+        -- ignore "nf_" and "_if_ok"
+        --
         -- .e.g
         --
         -- defines => define
         -- defines_if_ok => define
         -- ...
         --
-        local apiname = flagname:split('_')[1]
+        local apiname = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
         if apiname:endswith("s") then
             apiname = apiname:sub(1, #apiname - 1)
         end

@@ -200,9 +200,6 @@ end
 -- get the object file directory
 function target:objectdir()
 
-    -- check
-    assert(self)
-
     -- the object directory
     local objectdir = self:get("objectdir")
     if not objectdir then
@@ -217,16 +214,11 @@ end
 
 -- get the target kind
 function target:targetkind()
-
-    -- get it
     return self:get("kind")
 end
 
 -- get the target file 
 function target:targetfile()
-
-    -- check
-    assert(self)
 
     -- the target directory
     local targetdir = self:get("targetdir") or config.get("buildir")
@@ -245,9 +237,6 @@ end
 
 -- get the symbol file
 function target:symbolfile()
-
-    -- check
-    assert(self)
 
     -- the target directory
     local targetdir = self:get("targetdir") or config.get("buildir")
@@ -273,9 +262,6 @@ end
 
 -- get the source files 
 function target:sourcefiles()
-
-    -- check
-    assert(self)
 
     -- cached? return it directly
     if self._SOURCEFILES then
@@ -320,23 +306,22 @@ function target:sourcefiles()
         end
 
         -- match source files
-        local srcfiles = os.match(file)
-        if #srcfiles == 0 then
+        local results = os.match(file)
+        if #results == 0 then
             utils.warning("cannot match add_files(\"%s\")", file)
         end
 
         -- process source files
-        for _, srcfile in ipairs(srcfiles) do
+        for _, sourcefile in ipairs(results) do
 
             -- convert to the relative path
-            if path.is_absolute(srcfile) then
-                srcfile = path.relative(srcfile, xmake._PROJECT_DIR)
+            if path.is_absolute(sourcefile) then
+                sourcefile = path.relative(sourcefile, os.projectdir())
             end
 
             -- save it
-            sourcefiles[i] = srcfile
+            sourcefiles[i] = sourcefile
             i = i + 1
-
         end
     end
 
@@ -691,6 +676,11 @@ function target:configheader(outputdir)
     end
     if not configheader then
         configheader = self:get("config_h")
+
+        -- mark as deprecated
+        if configheader then
+            deprecated.add("set_config_header(\"%s\", {prefix = \"...\"})", "set_config_h(\"%s\")", configheader)
+        end
     end
     if not configheader then
         return 
@@ -717,6 +707,17 @@ function target:configheader(outputdir)
 
     -- ok
     return configheader, outputheader
+end
+
+-- get the precompiled header file (xxx.h.pch)
+function target:pcheaderfile()
+
+    -- get the precompiled header file in the object directory
+    local precompiled_header = self:get("precompiled_header")
+    if precompiled_header then
+        local headerdir = path.directory(precompiled_header):gsub("%.%.", "__")
+        return string.format("%s/%s/%s/%s", self:objectdir(), self:name(), headerdir, path.filename(precompiled_header) .. ".pch")
+    end
 end
 
 -- return module

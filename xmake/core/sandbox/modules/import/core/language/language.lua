@@ -111,6 +111,19 @@ function sandbox_core_language.sourcekind_of(sourcefile)
     return sourcekind
 end
 
+-- get extension of the source kind
+function sandbox_core_language.extension_of(sourcekind)
+
+    -- get it
+    local extension, errors = language.extension_of(sourcekind)
+    if not extension then
+        raise(errors)
+    end
+
+    -- ok
+    return extension
+end
+
 -- get linker info (kind and flag) of the source kinds
 function sandbox_core_language.linkerinfo_of(targetkind, sourcekinds)
 

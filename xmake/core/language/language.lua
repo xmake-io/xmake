@@ -561,6 +561,19 @@ function language.sourcekind_of(sourcefile)
     return sourcekind
 end
 
+-- get extension of the source kind
+function language.extension_of(sourcekind)
+
+    -- get extension
+    local extension = table.wrap(language.sourcekinds()[sourcekind])[1] 
+    if not extension then
+        return nil, string.format("%s is unknown source kind", sourcekind)
+    end
+
+    -- ok
+    return extension
+end
+
 -- get linker infos(kind and flag) of the target kind and the source kinds
 function language.linkerinfos_of(targetkind, sourcekinds)
 

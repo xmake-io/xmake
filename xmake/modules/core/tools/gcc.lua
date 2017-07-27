@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.language.language")
 import("detect.tools.find_ccache")
 
 -- init it
@@ -249,6 +250,11 @@ function nf_frameworkdir(self, frameworkdir)
     return "-F " .. frameworkdir
 end
 
+-- make the precompiled header flag
+function nf_precompiled_header(self, headerfile, target)
+    return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
+end
+
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
     return self:program(), table.join("-o", targetfile, objectfiles, flags)
@@ -264,8 +270,91 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
+-- get include deps
+function _include_deps(self, sourcefile, flags)
+
+    -- get it from the cache first
+    _g._INCDEPS = _g._INCDEPS or {}
+    local results = _g._INCDEPS[sourcefile]
+    if results then
+        return results
+    end
+
+    -- the temporary file
+    local tmpfile = os.tmpfile()
+
+    -- generate it
+    os.runv(self:program(), table.join("-c", "-MM", flags or {}, "-o", tmpfile, sourcefile))
+
+    -- translate it
+    results = {}
+    local incdeps = io.readfile(tmpfile)
+    for includefile in string.gmatch(incdeps, "%s+([%w/%.%-%+_%$%.]+)") do
+
+        -- save it if belong to the project
+        if not path.is_absolute(includefile) then
+            table.insert(results, includefile)
+        end
+    end
+
+    -- remove the temporary file
+    os.rm(tmpfile)
+
+    -- ok?
+    return results
+end
+
+-- make the complie arguments list for the precompiled header
+function _compargv1_pch(self, headerfile, objectfile, flags)
+
+    -- init cache key
+    local key = headerfile
+
+    -- make a temporary source file
+    local sourcefile = os.tmpfile() .. language.extension_of(self:kind())
+    io.writefile(sourcefile, format("#include \"%s\"", headerfile))
+
+    -- remove "-include xxx.h" and "-include-pch xxx.pch"
+    local pchflags = {}
+    local include = false
+    for _, flag in ipairs(flags) do
+        if not include and not flag:find("-include", 1, true) then
+            table.insert(pchflags, flag)
+            include = false
+        else
+            include = true
+        end
+    end
+
+    -- get the header file path and include deps
+    local incdeps = {}
+    for _, incdep in ipairs(_include_deps(self, sourcefile, pchflags)) do
+        if incdep:endswith(headerfile) then
+            headerfile = incdep
+        else
+            table.insert(incdeps, incdep)
+        end
+    end
+
+    -- save this include deps to cache
+    _g._INCDEPS = _g._INCDEPS or {}
+    _g._INCDEPS[key] = incdeps
+
+    -- remove files
+    os.tryrm(sourcefile)
+
+    -- make complie arguments list
+    return self:program(), table.join("-c", pchflags, "-o", objectfile, headerfile)
+end
+
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
+
+    -- precompiled header?
+    local extension = path.extension(sourcefile)
+    if extension == ".h" or extension == ".hpp" then
+        return _compargv1_pch(self, sourcefile, objectfile, flags)
+    end
 
     -- get ccache
     local ccache = nil
@@ -328,29 +417,7 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
 
     -- generate includes file
     if incdepfile and self:kind() ~= "as" then
-
-        -- the temporary file
-        local tmpfile = os.tmpfile()
-
-        -- generate it
-        os.runv(self:program(), table.join("-c", "-MM", flags or {}, "-o", tmpfile, sourcefile))
-
-        -- translate it
-        local results = {}
-        local incdeps = io.readfile(tmpfile)
-        for includefile in string.gmatch(incdeps, "%s+([%w/%.%-%+_%$%.]+)") do
-
-            -- save it if belong to the project
-            if not path.is_absolute(includefile) then
-                table.insert(results, includefile)
-            end
-        end
-
-        -- update it
-        io.save(incdepfile, results)
-
-        -- remove the temporary file
-        os.rm(tmpfile)
+        io.save(incdepfile, _include_deps(self, sourcefile, flags))
     end
 end
 

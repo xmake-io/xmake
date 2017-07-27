@@ -67,6 +67,7 @@ language("c++")
         ,   "target.undefines"
         ,   "target.frameworkdirs"
         ,   "target.frameworks"
+        ,   "target.precompiled_header"
         ,   "option.symbols"
         ,   "option.warnings"
         ,   "option.optimize:check"

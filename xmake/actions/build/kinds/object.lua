@@ -80,15 +80,16 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     local sourcefile = sourcebatch.sourcefiles[index]
     local objectfile = sourcebatch.objectfiles[index]
     local incdepfile = sourcebatch.incdepfiles[index]
+    local sourcekind = sourcebatch.sourcekind
 
     -- calculate percent
     local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
     -- build the object for the *.o/obj source makefile
-    if sourcebatch.sourcekind == "obj" then 
+    if sourcekind == "obj" then 
         return _build_from_object(target, sourcefile, objectfile, percent)
     -- build the object for the *.[a|lib] source file
-    elseif sourcebatch.sourcekind == "lib" then 
+    elseif sourcekind == "lib" then 
         return _build_from_static(target, sourcefile, objectfile, percent)
     end
 
@@ -155,11 +156,11 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- trace verbose info
     if verbose then
-        print(compiler.compcmd(sourcefile, objectfile, {target = target}))
+        print(compiler.compcmd(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
     end
 
     -- complie it 
-    compiler.compile(sourcefile, objectfile, {incdepfiles = incdepfile, target = target})
+    compiler.compile(sourcefile, objectfile, {incdepfiles = incdepfile, target = target, sourcekind = sourcekind})
 end
 
 -- build each objects from the given source batch
@@ -221,6 +222,31 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
 end
 
+-- build precompiled header (only for c/c++)
+function _build_precompiled_header(target, buildinfo)
+
+    -- get the precompiled header
+    local precompiled_header = target:get("precompiled_header")
+    if not precompiled_header then
+        return 
+    end
+
+    -- init sourcekinds
+    local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx"}
+
+    -- init sourcefile, objectfile and incdepfile
+    local sourcefile = precompiled_header
+    local objectfile = target:pcheaderfile()
+    local incdepfile = objectfile .. ".d"
+    local sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
+
+    -- init source batch
+    local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, incdepfiles = {incdepfile}}
+
+    -- build this precompiled header
+    _build_object(target, buildinfo, 1, sourcebatch, false)
+end
+
 -- build objects for the given target
 function build(target, buildinfo)
 
@@ -237,6 +263,9 @@ function build(target, buildinfo)
         ccache = find_ccache()
     end
 
+    -- build precompiled header
+   _build_precompiled_header(target, buildinfo)
+
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
 
@@ -245,7 +274,6 @@ function build(target, buildinfo)
         
             -- build single object
             _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
-
         else
 
             -- build each objects
