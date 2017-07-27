@@ -30,7 +30,6 @@ function apis()
     {
         -- target.set_xxx
         "target.set_config_h_prefix" -- deprecated
-    ,   "target.set_precompiled_header"
         -- target.add_xxx
     ,   "target.add_links"
     ,   "target.add_mflags"
@@ -72,6 +71,7 @@ function apis()
         "target.set_headerdir"
     ,   "target.set_config_h" -- deprecated
     ,   "target.set_config_header"
+    ,   "target.set_precompiled_header"
         -- target.add_xxx
     ,   "target.add_headers"
     ,   "target.add_linkdirs"

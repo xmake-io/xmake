@@ -273,18 +273,11 @@ end
 -- get include deps
 function _include_deps(self, sourcefile, flags)
 
-    -- get it from the cache first
-    _g._INCDEPS = _g._INCDEPS or {}
-    local results = _g._INCDEPS[sourcefile]
-    if results then
-        return results
-    end
-
     -- the temporary file
     local tmpfile = os.tmpfile()
 
     -- generate it
-    os.runv(self:program(), table.join("-c", "-MM", flags or {}, "-o", tmpfile, sourcefile))
+    os.runv(self:program(), table.join("-c", "-E", "-MM", flags or {}, "-o", tmpfile, sourcefile))
 
     -- translate it
     results = {}
@@ -307,13 +300,6 @@ end
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, headerfile, objectfile, flags)
 
-    -- init cache key
-    local key = headerfile
-
-    -- make a temporary source file
-    local sourcefile = os.tmpfile() .. language.extension_of(self:kind())
-    io.writefile(sourcefile, format("#include \"%s\"", headerfile))
-
     -- remove "-include xxx.h" and "-include-pch xxx.pch"
     local pchflags = {}
     local include = false
@@ -325,23 +311,6 @@ function _compargv1_pch(self, headerfile, objectfile, flags)
             include = true
         end
     end
-
-    -- get the header file path and include deps
-    local incdeps = {}
-    for _, incdep in ipairs(_include_deps(self, sourcefile, pchflags)) do
-        if incdep:endswith(headerfile) then
-            headerfile = incdep
-        else
-            table.insert(incdeps, incdep)
-        end
-    end
-
-    -- save this include deps to cache
-    _g._INCDEPS = _g._INCDEPS or {}
-    _g._INCDEPS[key] = incdeps
-
-    -- remove files
-    os.tryrm(sourcefile)
 
     -- make complie arguments list
     return self:program(), table.join("-c", pchflags, "-o", objectfile, headerfile)
