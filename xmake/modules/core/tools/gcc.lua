@@ -252,7 +252,11 @@ end
 
 -- make the precompiled header flag
 function nf_precompiled_header(self, headerfile, target)
-    return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
+    if self:name() == "clang" then
+        return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
+    else
+        return "-include " .. headerfile 
+    end
 end
 
 -- make the link arguments list

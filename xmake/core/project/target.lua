@@ -33,6 +33,7 @@ local table      = require("base/table")
 local deprecated = require("base/deprecated")
 local option     = require("project/option")
 local config     = require("project/config")
+local tool       = require("tool/tool")
 local linker     = require("tool/linker")
 local compiler   = require("tool/compiler")
 local platform   = require("platform/platform")
@@ -716,8 +717,36 @@ function target:pcheaderfile()
     -- get the precompiled header file in the object directory
     local precompiled_header = self:get("precompiled_header")
     if precompiled_header then
-        local headerdir = path.directory(precompiled_header):gsub("%.%.", "__")
-        return string.format("%s/%s/%s/%s", self:objectdir(), self:name(), headerdir, path.filename(precompiled_header) .. ".pch")
+
+        -- get it from the cache first
+        if self._PCHEADERFILE then
+            return self._PCHEADERFILE
+        end
+        
+        -- init sourcekinds
+        local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx"}
+
+        -- get source kind
+        local sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
+
+        -- load tool instance
+        local toolinstance = tool.load(sourcekind)
+
+        -- make precompiled header file 
+        --
+        -- @note gcc has not -include-pch option to set the pch file path
+        --
+        local pcheaderfile = nil
+        if toolinstance and toolinstance:name() == "gcc" then
+            pcheaderfile = precompiled_header .. ".gch"
+        else
+            local headerdir = path.directory(precompiled_header):gsub("%.%.", "__")
+            pcheaderfile = string.format("%s/%s/%s/%s", self:objectdir(), self:name(), headerdir, path.filename(precompiled_header) .. ".pch")
+        end
+
+        -- save to cache
+        self._PCHEADERFILE = pcheaderfile
+        return pcheaderfile
     end
 end
 
