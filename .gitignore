@@ -24,6 +24,8 @@
 .xmake
 *.deb
 *.zip
+*.gch
+*.d
 cscope.*
 gmon.out
 other
