@@ -348,6 +348,12 @@ function _make_all(makefile)
     end
     makefile:print("")
 
+    -- TODO
+    -- disable precompiled header first
+    for _, target in pairs(project.targets()) do
+        target:set("precompiled_header", nil)
+    end
+
     -- make variables for target flags
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
