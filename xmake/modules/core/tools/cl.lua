@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.project")
+import("core.language.language")
 
 -- init it
 function init(self)
@@ -201,8 +202,88 @@ function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
+-- make the precompiled header flag
+function nf_precompiled_header(self, headerfile, target)
+
+    -- cache precompiled source file
+    local _, sourcefile = target:pcsourcefile()
+    if sourcefile then
+
+        -- parse headerfile from sourcefile
+        if os.isfile(sourcefile) then
+            local sourcedata = io.readfile(sourcefile)
+            if sourcedata then
+                local includefile = sourcedata:match("#include%s+[<\"](.+)[>\"]")
+                if includefile then
+                    headerfile = includefile
+                end
+            end
+        end
+
+        -- cache sourcefile
+        _g._PCHSOURCEFILES = _g._PCHSOURCEFILES or {}
+        _g._PCHSOURCEFILES[target:pcheaderfile()] = sourcefile
+    else
+        headerfile = path.filename(headerfile)
+    end
+
+    -- patch objectfile
+    local objectfiles = target:objectfiles()
+    if objectfiles then
+        table.insert(objectfiles, target:pcheaderfile() .. ".obj")
+    end
+
+    -- make flag
+    local extension = path.extension(headerfile)
+    if extension == ".h" or extension == ".hpp" then
+        return "-Yu" .. headerfile .. " -Fp" .. target:pcheaderfile()
+    end
+end
+
+-- make the complie arguments list for the precompiled header
+function _compargv1_pch(self, headerfile, objectfile, flags)
+
+    -- remove "-Yuxxx.h" and "-Fpxxx.pch"
+    local pchflags = {}
+    for _, flag in ipairs(flags) do
+        if not flag:find("-Yu", 1, true) and not flag:find("-Fp", 1, true) then
+            table.insert(pchflags, flag)
+        end
+    end
+
+    -- get pcheaderfile
+    local pcheaderfile = objectfile
+
+    -- get sourcefile from the *.pch file
+    local sourcefile = nil
+    if _g._PCHSOURCEFILES then
+        sourcefile = _g._PCHSOURCEFILES[pcheaderfile]
+    end
+
+    -- make it if no sourcefile 
+    if not sourcefile then
+        sourcefile = os.tmpfile() .. language.extension_of(self:kind())
+        io.writefile(sourcefile, format("#include \"%s\"", path.filename(headerfile)))
+        table.insert(pchflags, "-I" .. path.directory(headerfile))
+    end
+
+    -- make objectfile 
+    objectfile = pcheaderfile .. ".obj"
+
+    -- make complie arguments list
+    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcheaderfile, "-Fo" .. objectfile, sourcefile)
+end
+
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
+
+    -- precompiled header?
+    local extension = path.extension(sourcefile)
+    if extension == ".h" or extension == ".hpp" then
+        return _compargv1_pch(self, sourcefile, objectfile, flags)
+    end
+
+    -- make complie arguments list
     return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 
