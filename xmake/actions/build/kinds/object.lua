@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.config")
+import("core.language.language")
 import("detect.tools.find_ccache")
 
 -- build the object from the *.[o|obj] source file
@@ -101,10 +102,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     table.insert(depfiles, sourcefile)
     
     -- add precompiled header to the dependent files
-    local precompiled_header = target:get("precompiled_header")
-    if precompiled_header then
-        table.insert(depfiles, precompiled_header)
-    end
+    table.join2(depfiles, target:pcsourcefile())
 
     -- check the dependent files are modified?
     local modified      = false
@@ -232,7 +230,7 @@ end
 function _build_precompiled_header(target, buildinfo)
 
     -- get the precompiled header
-    local precompiled_header = target:get("precompiled_header")
+    local precompiled_header, precompiled_source = target:pcsourcefile()
     if not precompiled_header then
         return 
     end
@@ -244,7 +242,14 @@ function _build_precompiled_header(target, buildinfo)
     local sourcefile = precompiled_header
     local objectfile = target:pcheaderfile()
     local incdepfile = objectfile .. ".d"
-    local sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
+
+    -- init sourcekind
+    local sourcekind = nil
+    if precompiled_source then
+        sourcekind = language.sourcekind_of(precompiled_source)
+    else
+        sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
+    end
 
     -- init source batch
     local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, incdepfiles = {incdepfile}}

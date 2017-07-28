@@ -25,7 +25,7 @@
 *.deb
 *.zip
 *.gch
-*.d
+*.gch.d
 cscope.*
 gmon.out
 other

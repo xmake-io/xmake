@@ -252,10 +252,13 @@ end
 
 -- make the precompiled header flag
 function nf_precompiled_header(self, headerfile, target)
-    if self:name() == "clang" then
-        return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
-    else
-        return "-include " .. headerfile 
+    local extension = path.extension(headerfile)
+    if extension == ".h" or extension == ".hpp" then
+        if self:name() == "clang" then
+            return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
+        else
+            return "-include " .. headerfile 
+        end
     end
 end
 
@@ -279,6 +282,15 @@ function _include_deps(self, sourcefile, flags)
 
     -- the temporary file
     local tmpfile = os.tmpfile()
+
+    -- uses pchflags for precompiled header
+    if _g._PCHFLAGS then
+        local key = sourcefile .. tostring(flags)
+        local pchflags = _g._PCHFLAGS[key] 
+        if pchflags then
+            flags = pchflags
+        end
+    end
 
     -- generate it
     os.runv(self:program(), table.join("-c", "-E", "-MM", flags or {}, "-o", tmpfile, sourcefile))
@@ -304,6 +316,10 @@ end
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, headerfile, objectfile, flags)
 
+    -- init key and cache
+    local key = headerfile .. tostring(flags)
+    _g._PCHFLAGS = _g._PCHFLAGS or {}
+
     -- remove "-include xxx.h" and "-include-pch xxx.pch"
     local pchflags = {}
     local include = false
@@ -315,6 +331,15 @@ function _compargv1_pch(self, headerfile, objectfile, flags)
             include = true
         end
     end
+
+    -- compile header.h as c++?
+    if self:kind() == "cxx" and headerfile:endswith(".h") then
+        table.insert(pchflags, "-x")
+        table.insert(pchflags, "c++-header")
+    end
+
+    -- save pchflags to cache
+    _g._PCHFLAGS[key] = pchflags
 
     -- make complie arguments list
     return self:program(), table.join("-c", pchflags, "-o", objectfile, headerfile)

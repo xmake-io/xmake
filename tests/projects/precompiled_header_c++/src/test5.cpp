@@ -1,6 +1,6 @@
 
 // main.cpp
-#include "header.hpp"
+#include "header.h"
 
 int test5()
 {

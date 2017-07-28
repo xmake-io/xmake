@@ -711,11 +711,41 @@ function target:configheader(outputdir)
     return configheader, outputheader
 end
 
+-- get the precompiled source file (.[h|hpp], .[c|cpp])
+function target:pcsourcefile()
+
+    -- get it from the cache first
+    if self._PCSOURCEFILE then
+        return unpack(self._PCSOURCEFILE)
+    end
+
+    -- get the precompiled header and source file 
+    local headerfile = nil
+    local sourcefile = nil
+    for _, file in ipairs(table.wrap(self:get("precompiled_header"))) do
+        local extension = path.extension(file)
+        if not headerfile and extension:startswith(".h") then
+            headerfile = file
+        else
+            sourcefile = file
+        end
+        if headerfile and sourcefile then
+            break
+        end
+    end
+
+    -- save to cache
+    self._PCSOURCEFILE = {headerfile, sourcefile}
+
+    -- ok?
+    return headerfile, sourcefile
+end
+
 -- get the precompiled header file (xxx.h.pch)
 function target:pcheaderfile()
 
     -- get the precompiled header file in the object directory
-    local precompiled_header = self:get("precompiled_header")
+    local precompiled_header = self:pcsourcefile()
     if precompiled_header then
 
         -- get it from the cache first
