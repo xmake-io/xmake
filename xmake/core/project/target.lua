@@ -26,16 +26,17 @@
 local target = target or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local utils     = require("base/utils")
-local table     = require("base/table")
-local option    = require("project/option")
-local config    = require("project/config")
-local linker    = require("tool/linker")
-local compiler  = require("tool/compiler")
-local platform  = require("platform/platform")
-local language  = require("language/language")
+local os         = require("base/os")
+local path       = require("base/path")
+local utils      = require("base/utils")
+local table      = require("base/table")
+local deprecated = require("base/deprecated")
+local option     = require("project/option")
+local config     = require("project/config")
+local linker     = require("tool/linker")
+local compiler   = require("tool/compiler")
+local platform   = require("platform/platform")
+local language   = require("language/language")
 
 -- get the filename from the given target name and kind
 function target.filename(targetname, targetkind, targetformat)
@@ -679,7 +680,7 @@ function target:configheader(outputdir)
 
         -- mark as deprecated
         if configheader then
-            deprecated.add("set_config_header(\"%s\", {prefix = \"...\"})", "set_config_h(\"%s\")", configheader)
+            deprecated.add("set_config_header(\"%s\", {prefix = \"...\"})", "set_config_h(\"%s\")", path.relative(configheader, os.projectdir()))
         end
     end
     if not configheader then

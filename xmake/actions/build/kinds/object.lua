@@ -99,6 +99,12 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
         depfiles = io.load(incdepfile)
     end
     table.insert(depfiles, sourcefile)
+    
+    -- add precompiled header to the dependent files
+    local precompiled_header = target:get("precompiled_header")
+    if precompiled_header then
+        table.insert(depfiles, precompiled_header)
+    end
 
     -- check the dependent files are modified?
     local modified      = false
