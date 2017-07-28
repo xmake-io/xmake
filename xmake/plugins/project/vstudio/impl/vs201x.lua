@@ -189,6 +189,10 @@ function make(outputdir, vsinfo)
             for targetname, target in pairs(project.targets()) do
                 if not target:isphony() then
 
+                    -- TODO
+                    -- disable precompiled header first
+                    target:set("precompiled_header", nil)
+
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
                     local _target = targets[targetname]

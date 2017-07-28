@@ -39,6 +39,12 @@ function make(outputdir, vsinfo)
     -- make solution
     vs200x_solution.make(vsinfo)
 
+    -- TODO
+    -- disable precompiled header first
+    for _, target in pairs(project.targets()) do
+        target:set("precompiled_header", nil)
+    end
+
     -- make vsprojs
     for _, target in pairs(project.targets()) do
         if not target:isphony() then

@@ -78,6 +78,10 @@ end
 -- make target
 function _make_target(jsonfile, target)
 
+    -- TODO
+    -- disable precompiled header first
+    target:set("precompiled_header", nil)
+
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
         if type(sourcebatch.objectfiles) == "string" then
