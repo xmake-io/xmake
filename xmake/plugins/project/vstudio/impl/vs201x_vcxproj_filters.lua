@@ -99,6 +99,14 @@ function _make_sources(filtersfile, vsinfo, target, vcxprojdir)
                 filtersfile:leave("</%s>", ifelse(as, "CustomBuild", "ClCompile"))
             end
         end
+        if target.pcsourcefile then
+            local filter = _make_filter(target.pcsourcefile, target, vcxprojdir)
+            if filter then
+                filtersfile:enter("<ClCompile Include=\"%s\">", path.relative(path.absolute(target.pcsourcefile), vcxprojdir))
+                filtersfile:print("<Filter>%s</Filter>", filter)
+                filtersfile:leave("</ClCompile>")
+            end
+        end
     filtersfile:leave("</ItemGroup>")
 end
 
@@ -111,7 +119,15 @@ function _make_headers(filtersfile, vsinfo, target, vcxprojdir)
             local filter = _make_filter(headerfile, target, vcxprojdir)
             if filter then
                 filtersfile:enter("<ClInclude Include=\"%s\">", path.relative(path.absolute(headerfile), vcxprojdir))
-                filtersfile:print("<Filter>%s</Filter>", _make_filter(headerfile, target, vcxprojdir))
+                filtersfile:print("<Filter>%s</Filter>", filter)
+                filtersfile:leave("</ClInclude>")
+            end
+        end
+        if target.pcheader then
+            local filter = _make_filter(target.pcheader, target, vcxprojdir)
+            if filter then
+                filtersfile:enter("<ClInclude Include=\"%s\">", path.relative(path.absolute(target.pcheader), vcxprojdir))
+                filtersfile:print("<Filter>%s</Filter>", filter)
                 filtersfile:leave("</ClInclude>")
             end
         end

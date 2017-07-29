@@ -301,7 +301,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 end
 
 -- make common item 
-function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
+function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
 
     -- enter ItemDefinitionGroup 
     vcxprojfile:enter("<ItemDefinitionGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
@@ -376,6 +376,29 @@ function _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
             vcxprojfile:print("<ProgramDatabaseFile>%s</ProgramDatabaseFile>", path.relative(path.absolute(symbolfile), vcxprojdir))
         end
 
+        -- use precompiled header
+        if target.pcheader then 
+
+            -- get precompiled header file
+            local pcheader = path.filename(target.pcheader)
+            if target.pcsourcefile and os.isfile(target.pcsourcefile) then
+                local sourcedata = io.readfile(target.pcsourcefile)
+                if sourcedata then
+                    local includefile = sourcedata:match("#include%s+[<\"](.+)[>\"]")
+                    if includefile then
+                        pcheader = includefile
+                    end
+                end
+            end
+            
+            -- make precompiled header and outputfile
+            vcxprojfile:print("<PrecompiledHeader>Use</PrecompiledHeader>")
+            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", pcheader)
+            if target.pcheaderfile then
+                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(target.pcheaderfile), vcxprojdir))
+            end
+        end
+
     vcxprojfile:leave("</ClCompile>")
 
     -- leave ItemDefinitionGroup 
@@ -443,7 +466,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         targetinfo.sourceflags = sourceflags
 
         -- make common item
-        _make_common_item(vcxprojfile, vsinfo, targetinfo, vcxprojdir)
+        _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
     end
 end
 
@@ -576,6 +599,19 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, 
     end
 end
 
+-- make source file for precompiled header 
+function _make_source_file_forpch(vcxprojfile, vsinfo, pcsourcefile, pcheaderfile, vcxprojdir)
+
+    -- add precompiled source file
+    local sourcefile = path.relative(path.absolute(pcsourcefile), vcxprojdir)
+    local objectfile = path.relative(path.absolute(pcheaderfile .. ".obj"), vcxprojdir)
+    vcxprojfile:enter("<ClCompile Include=\"%s\">", sourcefile)
+        vcxprojfile:print("<PrecompiledHeader>Create</PrecompiledHeader>")
+        vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", objectfile)
+        vcxprojfile:print("<AdditionalOptions> %%(AdditionalOptions)</AdditionalOptions>")
+    vcxprojfile:leave("</ClCompile>")
+end
+
 -- make source files
 function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
 
@@ -607,12 +643,20 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
             end
         end
 
+        -- make precompiled source file
+        if target.pcsourcefile then
+            _make_source_file_forpch(vcxprojfile, vsinfo, target.pcsourcefile, target.pcheaderfile, vcxprojdir) 
+        end
+
     vcxprojfile:leave("</ItemGroup>")
 
     -- add headers
     vcxprojfile:enter("<ItemGroup>")
         for _, includefile in ipairs(target.headerfiles) do
             _make_header_file(vcxprojfile, includefile, vcxprojdir)
+        end
+        if target.pcheader then
+            _make_header_file(vcxprojfile, target.pcheader, vcxprojdir)
         end
     vcxprojfile:leave("</ItemGroup>")
 end

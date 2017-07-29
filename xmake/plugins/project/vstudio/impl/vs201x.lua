@@ -189,13 +189,16 @@ function make(outputdir, vsinfo)
             for targetname, target in pairs(project.targets()) do
                 if not target:isphony() then
 
-                    -- TODO
-                    -- disable precompiled header first
-                    target:set("precompiled_header", nil)
-
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
                     local _target = targets[targetname]
+
+                    -- save precompiled header and source
+                    local precompiled_header, precompiled_source = target:pcsourcefile()
+                    _target.pcheader     = precompiled_header    -- header.h
+                    _target.pcsourcefile = precompiled_source    -- header.cpp
+                    _target.pcheaderfile = target:pcheaderfile() -- header.h.pch
+                    target:set("precompiled_header", nil)
 
                     -- init target info
                     _target.name = targetname
