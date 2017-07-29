@@ -394,8 +394,8 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
             -- make precompiled header and outputfile
             vcxprojfile:print("<PrecompiledHeader>Use</PrecompiledHeader>")
             vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", pcheader)
-            if target.pcheaderfile then
-                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(target.pcheaderfile), vcxprojdir))
+            if targetinfo.pcheaderfile then
+                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(targetinfo.pcheaderfile), vcxprojdir))
             end
         end
 
@@ -600,15 +600,17 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, 
 end
 
 -- make source file for precompiled header 
-function _make_source_file_forpch(vcxprojfile, vsinfo, pcsourcefile, pcheaderfile, vcxprojdir)
+function _make_source_file_forpch(vcxprojfile, vsinfo, pcsourcefile, targetinfo, vcxprojdir)
 
     -- add precompiled source file
     local sourcefile = path.relative(path.absolute(pcsourcefile), vcxprojdir)
-    local objectfile = path.relative(path.absolute(pcheaderfile .. ".obj"), vcxprojdir)
     vcxprojfile:enter("<ClCompile Include=\"%s\">", sourcefile)
         vcxprojfile:print("<PrecompiledHeader>Create</PrecompiledHeader>")
-        vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", objectfile)
         vcxprojfile:print("<AdditionalOptions> %%(AdditionalOptions)</AdditionalOptions>")
+        for _, info in ipairs(targetinfo) do
+            local objectfile = path.relative(path.absolute(info.pcheaderfile .. ".obj"), vcxprojdir)
+            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, objectfile)
+        end
     vcxprojfile:leave("</ClCompile>")
 end
 
@@ -645,7 +647,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
 
         -- make precompiled source file
         if target.pcsourcefile then
-            _make_source_file_forpch(vcxprojfile, vsinfo, target.pcsourcefile, target.pcheaderfile, vcxprojdir) 
+            _make_source_file_forpch(vcxprojfile, vsinfo, target.pcsourcefile, target.info, vcxprojdir) 
         end
 
     vcxprojfile:leave("</ItemGroup>")
