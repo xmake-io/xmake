@@ -310,6 +310,9 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
         {
             function (errors)
 
+                -- try removing the old object file for forcing to rebuild this source file
+                os.tryrm(objectfile)
+
                 -- get prefix: "Note: including file:", @note maybe not english language
                 local including_file = errors:match("\n(.-: .-:)%s*.-\r*\n")
 

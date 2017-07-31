@@ -397,7 +397,10 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
         {
             function (errors)
 
-                -- compiling errors
+                -- try removing the old object file for forcing to rebuild this source file
+                os.tryrm(objectfile)
+
+                -- raise compiling errors
                 os.raise(errors)
             end
         },
