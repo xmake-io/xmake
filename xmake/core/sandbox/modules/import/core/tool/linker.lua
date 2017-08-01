@@ -30,6 +30,19 @@ local platform  = require("platform/platform")
 local linker    = require("tool/linker")
 local raise     = require("sandbox/modules/raise")
 
+-- load the linker from the given target kind
+function sandbox_core_tool_linker.load(targetkind, sourcekinds)
+ 
+    -- get the linker instance
+    local instance, errors = linker.load(targetkind, sourcekinds)
+    if not instance then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
 -- make command for linking target file
 function sandbox_core_tool_linker.linkcmd(targetkind, sourcekinds, objectfiles, targetfile, opt)
     return os.args(table.join(sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)))

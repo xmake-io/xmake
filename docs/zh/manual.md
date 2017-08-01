@@ -5216,12 +5216,10 @@ compiler.compile("xxx.c", "xxx.o")
 直接获取[compiler.compile](#compiler-compile)中执行的命令行字符串，相当于：
 
 ```lua
-local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {incdepfile = incdepfile, target = target})
+local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {target = target})
 ```
 
-注：后面`{incdepfile = incdepfile, target = target}`扩展参数部分是可选的，如果传递了target对象，那么生成的编译命令，会加上这个target配置对应的链接选项。
-
-如果传递了incdepfile，那么还会生成头文件依赖列表文件`xxx.d`
+注：后面`{target = target}`扩展参数部分是可选的，如果传递了target对象，那么生成的编译命令，会加上这个target配置对应的链接选项。
 
 并且还可以自己传递各种配置，例如：
 

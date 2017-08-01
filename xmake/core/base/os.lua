@@ -161,7 +161,7 @@ function os.args(argv)
 
     -- make it
     local args = nil
-    for _, arg in ipairs(argv) do
+    for _, arg in ipairs(table.wrap(argv)) do
         arg = arg:trim()
         if #arg > 0 then
             arg = arg:gsub("([\"\\])", "\\%1")

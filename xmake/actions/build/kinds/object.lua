@@ -31,7 +31,7 @@ import("core.language.language")
 import("detect.tools.find_ccache")
 
 -- is modified?
-function _is_modified(target, sourcefile, objectfile, depinfo, sourcekind, buildinfo)
+function _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, compiler_instance)
 
     -- rebuild?
     if buildinfo.rebuild then
@@ -71,8 +71,13 @@ function _is_modified(target, sourcefile, objectfile, depinfo, sourcekind, build
         end
     end
 
-    -- the command has been modified?
-    return compiler.compcmd(sourcefile, objectfile, {target = target, sourcekind = sourcekind}) ~= depinfo.command
+    -- the program has been modified?
+    if compiler_instance:program() ~= depinfo.program then
+        return true
+    end
+
+    -- the flags has been modified?
+    return os.args(compiler_instance:compflags({target = target})) ~= os.args(depinfo.flags)
 end
 
 -- build the object from the *.[o|obj] source file
@@ -144,9 +149,12 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     if not buildinfo.rebuild and os.isfile(incdepfile) then
         depinfo = io.load(incdepfile) or {}
     end
+    
+    -- load compiler instance
+    local compiler_instance = compiler.load(sourcekind)
 
     -- is modified?
-    local modified = _is_modified(target, sourcefile, objectfile, depinfo, sourcekind, buildinfo)
+    local modified = _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, compiler_instance)
     if not modified then
         return 
     end
@@ -165,19 +173,21 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     end
 
     -- trace verbose info
-    local command = compiler.compcmd(sourcefile, objectfile, {target = target, sourcekind = sourcekind})
     if verbose then
-        print(command)
+        print(compiler_instance:compcmd(sourcefile, objectfile, {target = target}))
     end
 
     -- complie it 
-    compiler.compile(sourcefile, objectfile, {depinfo = depinfo, target = target, sourcekind = sourcekind})
+    compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, target = target})
 
     -- save sources to the dependent info
     depinfo.sources = {sourcefile, target:pcsourcefile()}
 
-    -- save command to the dependent info
-    depinfo.command = command
+    -- save program to the dependent info
+    depinfo.program = compiler_instance:program()
+
+    -- save flags to the dependent info
+    depinfo.flags = compiler_instance:compflags({target = target})
 
     -- save the dependent info
     io.save(incdepfile, depinfo)
