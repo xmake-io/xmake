@@ -244,9 +244,6 @@ function main()
         -- check project options
         project.check()
 
-        -- rebuild it
-        cache.set("rebuild", true)
-
         -- clear detect cache
         detectcache.clear()
     end

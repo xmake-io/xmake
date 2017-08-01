@@ -230,7 +230,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function _compile1(self, sourcefile, objectfile, incdepfile, flags)
+function _compile1(self, sourcefile, objectfile, depinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -250,12 +250,12 @@ function compargv(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(self, sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, depinfo, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(self, sourcefiles, objectfile, incdepfile, flags)
+    _compile1(self, sourcefiles, objectfile, depinfo, flags)
 end
 

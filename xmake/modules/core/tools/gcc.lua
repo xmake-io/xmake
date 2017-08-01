@@ -297,8 +297,8 @@ function _include_deps(self, sourcefile, flags)
 
     -- translate it
     results = {}
-    local incdeps = io.readfile(tmpfile)
-    for includefile in string.gmatch(incdeps, "%s+([%w/%.%-%+_%$%.]+)") do
+    local deps = io.readfile(tmpfile)
+    for includefile in string.gmatch(deps, "%s+([%w/%.%-%+_%$%.]+)") do
 
         -- save it if belong to the project
         if not path.is_absolute(includefile) then
@@ -381,7 +381,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function _compile1(self, sourcefile, objectfile, incdepfile, flags)
+function _compile1(self, sourcefile, objectfile, depinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -416,9 +416,9 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
         }
     }
 
-    -- generate includes file
-    if incdepfile and self:kind() ~= "as" then
-        io.save(incdepfile, _include_deps(self, sourcefile, flags))
+    -- generate the dependent includes
+    if depinfo and self:kind() ~= "as" then
+        depinfo.includes = _include_deps(self, sourcefile, flags)
     end
 end
 
@@ -433,12 +433,12 @@ function compargv(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(self, sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, depinfo, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(self, sourcefiles, objectfile, incdepfile, flags)
+    _compile1(self, sourcefiles, objectfile, depinfo, flags)
 end
 

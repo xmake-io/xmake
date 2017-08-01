@@ -27,7 +27,6 @@ import("core.base.option")
 import("core.base.task")
 import("core.project.config")
 import("core.project.project")
-import("core.project.cache", {nocache = true})
 import("core.platform.platform")
 import("builder")
 
@@ -40,23 +39,6 @@ function main()
     -- config it first
     task.run("config", {target = targetname})
 
-    -- enter cache scope
-    cache.enter("local.config")
-
-    -- rebuild?
-    local rebuild = false
-    if option.get("rebuild") or cache.get("rebuild") then
-
-        -- mark as rebuild
-        rebuild = true
-        
-        -- reset state
-        cache.set("rebuild", nil)
-    end
-
-    -- flush cache to file
-    cache.flush()
-
     -- enter project directory
     local oldir = os.cd(project.directory())
 
@@ -64,9 +46,7 @@ function main()
     try
     {
         function ()
-
-            -- build 
-            builder.build(targetname, rebuild) 
+            builder.build(targetname, option.get("rebuild")) 
         end,
 
         catch 

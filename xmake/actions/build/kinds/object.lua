@@ -30,6 +30,51 @@ import("core.project.config")
 import("core.language.language")
 import("detect.tools.find_ccache")
 
+-- is modified?
+function _is_modified(target, sourcefile, objectfile, depinfo, sourcekind, buildinfo)
+
+    -- rebuild?
+    if buildinfo.rebuild then
+        return true
+    end
+
+    -- get the dependent files
+    local depfiles = table.join(depinfo.sources or {}, depinfo.includes or {})
+
+    -- check the dependent files are modified?
+    local modified      = false
+    local objectmtime   = nil
+    _g.depfile_results  = _g.depfile_results or {}
+    for _, depfile in ipairs(depfiles) do
+
+        -- optimization: this depfile has been not checked?
+        local status = _g.depfile_results[depfile]
+        if status == nil then
+
+            -- optimization: only uses the mtime of first object file
+            objectmtime = objectmtime or os.mtime(objectfile)
+
+            -- source and header files have been modified?
+            if os.mtime(depfile) > objectmtime then
+
+                -- mark this depfile as modified
+                _g.depfile_results[depfile] = true
+                return true
+            end
+
+            -- mark this depfile as not modified
+            _g.depfile_results[depfile] = false
+        
+        -- has been checked and modified?
+        elseif status then
+            return true
+        end
+    end
+
+    -- the command has been modified?
+    return compiler.compcmd(sourcefile, objectfile, {target = target, sourcekind = sourcekind}) ~= depinfo.command
+end
+
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
 
@@ -94,54 +139,15 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
         return _build_from_static(target, sourcefile, objectfile, percent)
     end
 
-    -- get dependent files
-    local depfiles = {}
-    if incdepfile and os.isfile(incdepfile) then
-        depfiles = io.load(incdepfile)
-    end
-    table.insert(depfiles, sourcefile)
-    
-    -- add precompiled header to the dependent files
-    table.join2(depfiles, target:pcsourcefile())
-
-    -- check the dependent files are modified?
-    local modified      = false
-    local objectmtime   = nil
-    _g.depfile_results  = _g.depfile_results or {}
-    for _, depfile in ipairs(depfiles) do
-
-        -- optimization: this depfile has been not checked?
-        local status = _g.depfile_results[depfile]
-        if status == nil then
-
-            -- optimization: only uses the mtime of first object file
-            objectmtime = objectmtime or os.mtime(objectfile)
-
-            -- source and header files have been modified?
-            if os.mtime(depfile) > objectmtime then
-
-                -- modified
-                modified = true
-
-                -- mark this depfile as modified
-                _g.depfile_results[depfile] = true
-                break
-            end
-
-            -- mark this depfile as not modified
-            _g.depfile_results[depfile] = false
-        
-        -- has been checked and modified?
-        elseif status then
-        
-            -- modified
-            modified = true
-            break
-        end
+    -- get dependent info 
+    local depinfo = {}
+    if not buildinfo.rebuild and os.isfile(incdepfile) then
+        depinfo = io.load(incdepfile) or {}
     end
 
-    -- we need not rebuild it if the files are not modified 
-    if not modified and not buildinfo.rebuild then
+    -- is modified?
+    local modified = _is_modified(target, sourcefile, objectfile, depinfo, sourcekind, buildinfo)
+    if not modified then
         return 
     end
 
@@ -159,12 +165,22 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     end
 
     -- trace verbose info
+    local command = compiler.compcmd(sourcefile, objectfile, {target = target, sourcekind = sourcekind})
     if verbose then
-        print(compiler.compcmd(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+        print(command)
     end
 
     -- complie it 
-    compiler.compile(sourcefile, objectfile, {incdepfiles = incdepfile, target = target, sourcekind = sourcekind})
+    compiler.compile(sourcefile, objectfile, {depinfo = depinfo, target = target, sourcekind = sourcekind})
+
+    -- save sources to the dependent info
+    depinfo.sources = {sourcefile, target:pcsourcefile()}
+
+    -- save command to the dependent info
+    depinfo.command = command
+
+    -- save the dependent info
+    io.save(incdepfile, depinfo)
 end
 
 -- build each objects from the given source batch

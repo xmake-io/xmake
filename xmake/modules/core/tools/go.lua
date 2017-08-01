@@ -131,7 +131,7 @@ function compargv(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(self, sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, depinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))

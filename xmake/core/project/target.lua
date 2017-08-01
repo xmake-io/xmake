@@ -214,6 +214,21 @@ function target:objectdir()
     return objectdir
 end
 
+-- get the target dependent file 
+function target:depfile()
+
+    -- the target directory
+    local targetdir = self:get("targetdir") or config.get("buildir")
+    assert(targetdir and type(targetdir) == "string")
+
+    -- the symbol file name
+    local filename = (self:basename() or self:name()) .. ".d"
+    assert(filename)
+
+    -- make the dependent file path
+    return path.join(targetdir, filename)
+end
+
 -- get the target kind
 function target:targetkind()
     return self:get("kind")

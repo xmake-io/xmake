@@ -240,6 +240,33 @@ function nf_precompiled_header(self, headerfile, target)
     end
 end
 
+-- get include deps
+function _include_deps(self, outdata)
+
+    -- translate it
+    local results = {}
+    local uniques = {}
+    for includefile in string.gmatch(outdata, ".-: .-:%s*(.-)\r*\n") do
+
+        -- slower, only for debuging
+        -- assert(os.isfile(includefile), "invalid include file: %s for %s", includefile, depinfo)
+
+        -- get the relative
+        includefile = path.relative(includefile, project.directory())
+
+        -- save it if belong to the project
+        if not path.is_absolute(includefile) then
+
+            -- insert it and filter repeat
+            if not uniques[includefile] then
+                table.insert(results, includefile)
+                uniques[includefile] = true
+            end
+        end
+    end
+    return results
+end
+
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, headerfile, objectfile, flags)
 
@@ -288,22 +315,22 @@ function _compargv1(self, sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function _compile1(self, sourcefile, objectfile, incdepfile, flags)
+function _compile1(self, sourcefile, objectfile, depinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-
-    -- generate includes file
-    if incdepfile then
-        flags = flags or {}
-        table.insert(flags, "-showIncludes")
-    end
 
     -- compile it
     local outdata = try
     {
         function ()
-            return os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+
+            -- generate includes file
+            local compflags = flags
+            if depinfo then
+                compflags = table.join(flags, "-showIncludes")
+            end
+            return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
         end,
         
         catch
@@ -325,33 +352,9 @@ function _compile1(self, sourcefile, objectfile, incdepfile, flags)
         }
     }
 
-    -- parse include dependencies
-    if incdepfile and outdata then
-
-        -- translate it
-        local results = {}
-        local uniques = {}
-        for includefile in string.gmatch(outdata, ".-: .-:%s*(.-)\r*\n") do
-
-            -- slower, only for debuging
---            assert(os.isfile(includefile), "invalid include file: %s for %s", includefile, incdepfile)
-
-            -- get the relative
-            includefile = path.relative(includefile, project.directory())
-
-            -- save it if belong to the project
-            if not path.is_absolute(includefile) then
-
-                -- insert it and filter repeat
-                if not uniques[includefile] then
-                    table.insert(results, includefile)
-                    uniques[includefile] = true
-                end
-            end
-        end
-
-        -- update it
-        io.save(incdepfile, results)
+    -- generate the dependent includes
+    if depinfo and outdata then
+        depinfo.includes = _include_deps(self, outdata)
     end
 end
 
@@ -366,13 +369,13 @@ function compargv(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(self, sourcefiles, objectfile, incdepfile, flags)
+function compile(self, sourcefiles, objectfile, depinfo, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(self, sourcefiles, objectfile, incdepfile, flags)
+    _compile1(self, sourcefiles, objectfile, depinfo, flags)
 end
 
 

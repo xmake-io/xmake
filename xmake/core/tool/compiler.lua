@@ -180,7 +180,7 @@ function compiler:compile(sourcefiles, objectfile, opt)
     opt = opt or {}
 
     -- compile it
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.incdepfiles, self:compflags(opt))
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.depinfo, self:compflags(opt))
 end
 
 -- get the compile arguments list

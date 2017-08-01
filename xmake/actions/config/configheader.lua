@@ -107,7 +107,6 @@ function _make_for_target(files, target)
 
     -- cache the file
     files[configheader] = file
-
 end
 
 -- make the configure file for the given target and dependents

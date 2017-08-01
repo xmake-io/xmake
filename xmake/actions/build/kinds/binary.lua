@@ -28,6 +28,32 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("object")
 
+-- is modified?
+function _is_modified(target, depfile, buildinfo)
+
+    -- this target and it's deps are not modified?
+    local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
+    if modified then
+        return true
+    end
+
+    -- deps modified?
+    for _, depname in ipairs(target:get("deps")) do
+        if buildinfo.modified[depname] then
+            return true
+        end
+    end
+
+    -- get dependent info 
+    local depinfo = {}
+    if os.isfile(depfile) then
+        depinfo = io.load(depfile) or {}
+    end
+
+    -- the command has been modified?
+    return target:linkcmd(objectfiles) ~= depinfo.command
+end
+
 -- build target from sources
 function _build_from_objects(target, buildinfo)
 
@@ -35,17 +61,10 @@ function _build_from_objects(target, buildinfo)
     object.build(target, buildinfo)
 
     -- this target and it's deps are not modified?
-    local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
+    local depfile = target:depfile()
+    local modified = _is_modified(target, depfile, buildinfo)
     if not modified then
-        for _, depname in ipairs(target:get("deps")) do
-            modified = buildinfo.modified[depname]
-            if modified then
-                break
-            end
-        end
-        if not modified then
-            return 
-        end
+        return
     end
 
     -- expand object files with *.o/obj
@@ -82,6 +101,9 @@ function _build_from_objects(target, buildinfo)
 
     -- link it
     linker.link(target:get("kind"), target:sourcekinds(), objectfiles, targetfile, {target = target})
+
+    -- save command to the dependent file
+    io.save(depfile, {command = target:linkcmd(objectfiles)})
 end
 
 -- build target from sources

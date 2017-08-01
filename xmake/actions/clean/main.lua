@@ -62,6 +62,9 @@ function _on_clean_target(target)
     -- remove the target arguments file if exists
     _remove(target:targetfile() .. ".arg") 
 
+    -- remove the target dependent file if exists
+    _remove(target:depfile()) 
+
     -- remove the symbol file 
     _remove(target:symbolfile()) 
 
