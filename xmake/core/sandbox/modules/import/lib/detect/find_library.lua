@@ -67,6 +67,11 @@ end
 --
 function sandbox_lib_detect_find_library.main(names, pathes, opt)
 
+    -- no pathes?
+    if not pathes or #pathes == 0 then
+        return 
+    end
+
     -- init options
     opt = opt or {}
 

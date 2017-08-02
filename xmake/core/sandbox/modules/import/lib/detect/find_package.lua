@@ -160,40 +160,72 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
         return 
     end
 
-    -- add default search pathes on pc host
-    local pathes = {}
+    -- add default search includedirs on pc host
+    local includedirs = table.wrap(opt.includedirs)
     if opt.plat == "linux" or opt.plat == "macosx" then
-        table.insert(pathes, "/usr/local/lib")
-        table.insert(pathes, "/usr/lib")
-        table.insert(pathes, "/opt/local/lib")
-        table.insert(pathes, "/opt/lib")
+        table.insert(includedirs, "/usr/local/include")
+        table.insert(includedirs, "/usr/include")
+        table.insert(includedirs, "/opt/local/include")
+        table.insert(includedirs, "/opt/include")
+    end
+
+    -- add default search linkdirs on pc host
+    local linkdirs = table.wrap(opt.linkdirs)
+    if opt.plat == "linux" or opt.plat == "macosx" then
+        table.insert(linkdirs, "/usr/local/lib")
+        table.insert(linkdirs, "/usr/lib")
+        table.insert(linkdirs, "/opt/local/lib")
+        table.insert(linkdirs, "/opt/lib")
         if opt.plat == "linux" and opt.arch == "x86_64" then
-            table.insert(pathes, "/usr/local/lib/x86_64-linux-gnu")
-            table.insert(pathes, "/usr/lib/x86_64-linux-gnu")
+            table.insert(linkdirs, "/usr/local/lib/x86_64-linux-gnu")
+            table.insert(linkdirs, "/usr/lib/x86_64-linux-gnu")
         end
     end
 
     -- attempt to get links from pkg-config
     local pkginfo = nil
-    local links = opt.links
-    if not links then
+    local links = table.wrap(opt.links)
+    if #links == 0 then
         pkginfo = import("lib.detect.pkg_config").info(name)
         if pkginfo then
-            links = pkginfo.links
+            links = table.wrap(pkginfo.links)
         end
     end
 
-    -- import find_library
+    -- uses name as links directly .e.g libname.a
+    if #links == 0 then
+        links = table.wrap(name)
+    end
+
+    -- import find_path and find_library
+    local find_path    = import("lib.detect.find_path")
     local find_library = import("lib.detect.find_library")
 
     -- find library 
     local result = nil
-    for _, link in ipairs(table.wrap(links)) do
-        local libinfo = find_library(link, pathes)
+    for _, link in ipairs(links) do
+        local libinfo = find_library(link, linkdirs)
         if libinfo then
             result          = result or {}
             result.links    = table.join(result.links or {}, libinfo.link)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+        end
+    end
+
+    -- find includes
+    for _, include in ipairs(table.wrap(opt.includes)) do
+        local includedir = find_path(include, includedirs)
+        if includedir then
+            result             = result or {}
+            result.includedirs = table.join(result.includedirs or {}, includedir)
+        end
+    end
+    for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
+        local includedir = find_path(include, includedirs)
+        if includedir then
+            result             = result or {}
+            result.includedirs = table.join(result.includedirs or {}, includedir)
+            break
         end
     end
 
@@ -247,7 +279,7 @@ end
 -- @param name      the package name
 -- @param opt       the package options. 
 --                  e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.1", 
---                     pathes = {"/usr/lib"}, links = {"ssl"}, includes = {"ssl.h"}
+--                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
@@ -257,8 +289,8 @@ end
 -- local package = find_package("openssl")
 -- local package = find_package("openssl", {version = "1.0.1"})
 -- local package = find_package("openssl", {plat = "iphoneos"})
--- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, version = "1.0.1"})
--- local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}, links = {"ssl", "crypto"}, includes = {"ssl.h"}})
+-- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
+-- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
 -- 
 -- @endcode
 --

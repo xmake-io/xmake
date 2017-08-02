@@ -6138,7 +6138,7 @@ local package = find_package("openssl", {version = "1.0.1"})
 如果系统的库目录以及`pkg-config`都不能满足需求，找不到包，那么可以自己手动设置搜索路径：
 
 ```lua
-local package = find_package("openssl", {pathes = {"/usr/lib", "/usr/local/lib", "/usr/local/include"}})
+local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include"})
 ```
 
 也可以同时指定需要搜索的链接名，头文件名：
