@@ -113,7 +113,7 @@ function _build_from_objects(target, buildinfo)
     end
 
     -- link it
-    linker.link(target:get("kind"), target:sourcekinds(), objectfiles, targetfile, {target = target})
+    assert(linker.link(target:get("kind"), target:sourcekinds(), objectfiles, targetfile, {target = target}))
 
     -- save command to the dependent file
     io.save(depfile, {command = target:linkcmd(objectfiles)})

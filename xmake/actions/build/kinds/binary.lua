@@ -108,7 +108,7 @@ function _build_from_objects(target, buildinfo)
     end
 
     -- link it
-    linker_instance:link(objectfiles, targetfile, {target = target})
+    assert(linker_instance:link(objectfiles, targetfile, {target = target}))
 
     -- save program and flags to the dependent file
     io.save(depfile, {program = linker_instance:program(), flags = linker_instance:linkflags({target = target})})

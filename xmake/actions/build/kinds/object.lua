@@ -178,7 +178,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     end
 
     -- complie it 
-    compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, target = target})
+    assert(compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, target = target}))
 
     -- save sources to the dependent info
     depinfo.sources = {sourcefile, target:pcsourcefile()}
