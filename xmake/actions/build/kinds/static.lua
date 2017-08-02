@@ -29,7 +29,7 @@ import("core.tool.compiler")
 import("object")
 
 -- is modified?
-function _is_modified(target, depfile, buildinfo)
+function _is_modified(target, depfile, buildinfo, linker_instance)
 
     -- this target and it's deps are not modified?
     local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
@@ -50,8 +50,13 @@ function _is_modified(target, depfile, buildinfo)
         depinfo = io.load(depfile) or {}
     end
 
-    -- the command has been modified?
-    return target:linkcmd(objectfiles) ~= depinfo.command
+    -- the program has been modified?
+    if linker_instance:program() ~= depinfo.program then
+        return true
+    end
+
+    -- the flags has been modified?
+    return os.args(linker_instance:linkflags({target = target})) ~= os.args(depinfo.flags)
 end
 
 -- build target from objects
@@ -60,9 +65,12 @@ function _build_from_objects(target, buildinfo)
     -- build objects
     object.build(target, buildinfo)
 
+    -- load linker instance
+    local linker_instance = linker.load(target:targetkind(), target:sourcekinds())
+
     -- this target and it's deps are not modified?
     local depfile = target:depfile()
-    local modified = _is_modified(target, depfile, buildinfo)
+    local modified = _is_modified(target, depfile, buildinfo, linker_instance)
     if not modified then
         return
     end
@@ -109,14 +117,14 @@ function _build_from_objects(target, buildinfo)
 
     -- trace verbose info
     if verbose then
-        print(target:linkcmd(objectfiles))
+        print(linker_instance:linkcmd(objectfiles, targetfile, {target = target}))
     end
 
     -- link it
-    assert(linker.link(target:get("kind"), target:sourcekinds(), objectfiles, targetfile, {target = target}))
+    assert(linker_instance:link(objectfiles, targetfile, {target = target}))
 
-    -- save command to the dependent file
-    io.save(depfile, {command = target:linkcmd(objectfiles)})
+    -- save program and flags to the dependent file
+    io.save(depfile, {program = linker_instance:program(), flags = linker_instance:linkflags({target = target})})
 end
 
 -- build target from sources
