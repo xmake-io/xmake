@@ -3338,6 +3338,11 @@ target("test")
     add_defines("-DTEST=$(var)")
 ```
 
+<p class="tip">
+所有`xmake f --xxx=...`配置的参数值，都是可以通过内置变量获取到，例如：`xmake f --arch=x86`对应`$(arch)`，其他的还有`$(plat)`, `$(mode)`等等。
+具体有哪些参数，可以通过：`xmake f -h`才查看。
+</p>
+
 既然支持直接从配置选项中获取，那么当然也就能很方便的扩展自定义的选项，来获取自定义的变量了，具体如何自定义选项见：[option](#option)
 
 ##### var.$(os)
