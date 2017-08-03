@@ -99,3 +99,4 @@ Please download and install from the plugins repository [xmake-plugins](https://
 * Homepage：[tboox.org](http://www.tboox.org)
 * Community：[tboox@community](https://github.com/tboox/community/issues)
 * ChatRoom：[![Join the chat at https://gitter.im/tboox/tboox](https://badges.gitter.im/tboox/tboox.svg)](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* Source Code：[Github](https://github.com/tboox/xmake), [Gitee](https://gitee.com/tboox/xmake)
