@@ -302,7 +302,11 @@ function sandbox_os.iorun(cmd, ...)
     -- run it
     local ok, outdata, errdata = os.iorun(cmd)
     if not ok then
-        os.raise((outdata or "") .. (errdata or ""))
+        local errors = errdata or ""
+        if #errors:trim() == 0 then
+            errors = outdata or ""
+        end
+        os.raise(errors)
     end
 
     -- ok
@@ -318,7 +322,11 @@ function sandbox_os.iorunv(program, argv)
     -- run it
     local ok, outdata, errdata = os.iorunv(program, argv)
     if not ok then
-        os.raise((outdata or "") .. (errdata or ""))
+        local errors = errdata or ""
+        if #errors:trim() == 0 then
+            errors = outdata or ""
+        end
+        os.raise(errors)
     end
 
     -- ok

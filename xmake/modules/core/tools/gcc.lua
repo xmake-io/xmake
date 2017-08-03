@@ -400,6 +400,14 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
 
+                -- get last 16 lines
+                if not option.get("verbose") then
+                    local lines = errors:split("\n")
+                    if #lines > 32 then
+                        errors = table.concat(table.slice(lines, #lines - 16), "\n")
+                    end
+                end
+
                 -- raise compiling errors
                 os.raise(errors)
             end
