@@ -317,8 +317,24 @@ $ xmake
 
 ##### 交叉编译
 
+linux平台的交叉编译：
+
 ```bash
 $ xmake f -p linux --sdk=/usr/local/arm-linux-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
+$ xmake
+``` 
+
+其他平台的交叉编译：
+
+```bash
+$ xmake f -p cross --sdk=/usr/local/arm-xxx-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
+$ xmake
+``` 
+
+如果不关心实际的平台名，只想交叉编译，可以直接用上面的命令，如果需要通过`is_plat("myplat")`判断自己的平台逻辑，则：
+
+```bash
+$ xmake f -p myplat --sdk=/usr/local/arm-xxx-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
 $ xmake
 ``` 
 

@@ -84,7 +84,7 @@ function project._api_is_plat(interp, ...)
 
     -- exists this platform? and escape '-'
     for _, p in ipairs(table.join(...)) do
-        if p and type(p) == "string" and plat:find(p:gsub("%-", "%%-")) then
+        if p and type(p) == "string" and plat:find("^" .. p:gsub("%-", "%%-") .. "$") then
             return true
         end
     end
@@ -99,7 +99,7 @@ function project._api_is_arch(interp, ...)
 
     -- exists this architecture? and escape '-'
     for _, a in ipairs(table.join(...)) do
-        if a and type(a) == "string" and arch:find(a:gsub("%-", "%%-")) then
+        if a and type(a) == "string" and arch:find("^" .. a:gsub("%-", "%%-") .. "$") then
             return true
         end
     end

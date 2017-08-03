@@ -19,6 +19,7 @@
 * Add `includes` api instead of `add_subdirs` and `add_subfiles`
 * [#133](https://github.com/tboox/xmake/issues/133): Improve the project plugin to generate `compile_commands.json` by run  `xmake project -k compile_commands`
 * Add `set_precompiled_header` to support the precompiled header, support gcc, clang, msvc
+* Add `xmake f -p cross` platform and support the custom platform
 
 ### Changes
 
@@ -36,7 +37,7 @@
 * Improve the option detection (cache and multi-jobs) and increase 70% speed
 * [#129](https://github.com/tboox/xmake/issues/129): Check link deps and cache the target file
 * Support `*.asm` source files for vs201x project plugin
-* Mark `add_bindings` and `add_rbindings` as deprecated
+* Mark `add_bindings` and `add_rbi7777777ndings` as deprecated
 * Optimize `xmake rebuild` speed on windows
 * Move `core.project.task` to `core.base.task`
 * Move `echo` and `app2ipa` plugins to [xmake-plugins](https://github.com/tboox/xmake-plugins) repo.
@@ -336,6 +337,7 @@
 * 添加`includes`接口替换`add_subdirs`和`add_subfiles`
 * [#133](https://github.com/tboox/xmake/issues/133): 改进工程插件，通过运行`xmake project -k compile_commands`来导出`compile_commands.json`
 * 添加`set_precompiled_header`去支持跨编译器预编译头文件，支持`gcc`, `clang`和`msvc`
+* 添加`xmake f -p cross`平台用于交叉编译，并且支持自定义平台名
 
 ### 改进
 

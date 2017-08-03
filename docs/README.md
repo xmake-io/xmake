@@ -293,8 +293,24 @@ $ xmake
 
 ##### Cross Compilation
 
+For linux platform:
+
 ```bash
 $ xmake f -p linux --sdk=/usr/local/arm-linux-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
+$ xmake
+``` 
+
+Fro other cross platform:
+
+```bash
+$ xmake f -p cross --sdk=/usr/local/arm-xxx-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
+$ xmake
+``` 
+
+For custem cross platform (`is_plat("myplat")`):
+
+```bash
+$ xmake f -p myplat --sdk=/usr/local/arm-xxx-gcc/ [--toolchains=/sdk/bin] [--cross=arm-linux-]
 $ xmake
 ``` 
 

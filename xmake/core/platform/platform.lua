@@ -181,10 +181,17 @@ function platform.load(plat)
     for _, dir in ipairs(platform._directories()) do
 
         -- find this directory
-        scriptpath = path.join(path.join(dir, plat), "xmake.lua")
+        scriptpath = path.join(dir, plat, "xmake.lua")
         if os.isfile(scriptpath) then
             break
         end
+    end
+
+    -- unknown platform? switch to cross compilation platform
+    local cross = false
+    if not scriptpath or not os.isfile(scriptpath) then
+        scriptpath = path.join(os.programdir(), "platforms", "cross", "xmake.lua")
+        cross = true
     end
 
     -- not exists?
@@ -198,13 +205,16 @@ function platform.load(plat)
         return nil, errors
     end
 
+    -- get result
+    local result = utils.ifelse(cross, results["cross"], results[plat])
+
     -- check the platform name
-    if not results[plat] then
+    if not result then
         return nil, string.format("the platform %s not found!", plat)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(plat, results[plat], platform._interpreter():rootdir())
+    local instance, errors = _instance.new(plat, result, platform._interpreter():rootdir())
     if not instance then
         return nil, errors
     end

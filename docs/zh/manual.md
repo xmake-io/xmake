@@ -108,13 +108,20 @@ end
 目前支持的平台有：
 
 * windows
+* cross
 * linux
 * macosx
 * android
 * iphoneos
 * watchos
 
-当然你也可以自己扩展添加自己的平台。。。
+当然你也可以自己扩展添加自己的平台，甚至直接指定自己的平台名：
+
+```bash
+$ xmake f -p other --sdk=...
+```
+
+如果指定的平台名不存在，就会自动切到`cross`平台进行交叉编译，但是缺可以通过`is_plat("other")`来判断自己的平台逻辑。
 
 ##### is_host
 
