@@ -400,11 +400,22 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
 
-                -- get last 16 lines
+                -- attempt to find first error 
                 if not option.get("verbose") then
+
+                    -- find the start line of error
                     local lines = errors:split("\n")
-                    if #lines > 32 then
-                        errors = table.concat(table.slice(lines, #lines - 16), "\n")
+                    local start = 1
+                    for index, line in ipairs(lines) do
+                        if line:find("error:", 1, true) then
+                            start = index
+                            break
+                        end
+                    end
+
+                    -- get 16 lines of errors
+                    if #lines - start > 16 then
+                        errors = table.concat(table.slice(lines, start, start + 16), "\n")
                     end
                 end
 
