@@ -253,7 +253,7 @@ end
 -- make the precompiled header flag
 function nf_precompiled_header(self, headerfile, target)
     local extension = path.extension(headerfile)
-    if extension == ".h" or extension == ".hpp" then
+    if (extension:startswith(".h") or extension == ".inl") then
         if self:name() == "clang" then
             return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
         else
@@ -350,7 +350,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
-    if extension == ".h" or extension == ".hpp" then
+    if (extension:startswith(".h") or extension == ".inl") then
         return _compargv1_pch(self, sourcefile, objectfile, flags)
     end
 

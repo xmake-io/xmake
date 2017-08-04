@@ -262,7 +262,7 @@ function _build_precompiled_header(target, buildinfo)
     end
 
     -- init sourcekinds
-    local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx"}
+    local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx", [".inl"] = "cxx"}
 
     -- init sourcefile, objectfile and incdepfile
     local sourcefile = precompiled_header

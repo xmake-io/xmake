@@ -235,7 +235,7 @@ function nf_precompiled_header(self, headerfile, target)
 
     -- make flag
     local extension = path.extension(headerfile)
-    if extension == ".h" or extension == ".hpp" then
+    if (extension:startswith(".h") or extension == ".inl") then
         return "-Yu" .. headerfile .. " -Fp" .. target:pcheaderfile()
     end
 end
@@ -306,7 +306,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
-    if extension == ".h" or extension == ".hpp" then
+    if (extension:startswith(".h") or extension == ".inl") then
         return _compargv1_pch(self, sourcefile, objectfile, flags)
     end
 

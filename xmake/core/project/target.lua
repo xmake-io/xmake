@@ -726,7 +726,7 @@ function target:configheader(outputdir)
     return configheader, outputheader
 end
 
--- get the precompiled source file (.[h|hpp], .[c|cpp])
+-- get the precompiled source file (.[h|hpp|inl], .[c|cpp])
 function target:pcsourcefile()
 
     -- get it from the cache first
@@ -739,7 +739,7 @@ function target:pcsourcefile()
     local sourcefile = nil
     for _, file in ipairs(table.wrap(self:get("precompiled_header"))) do
         local extension = path.extension(file)
-        if not headerfile and extension:startswith(".h") then
+        if not headerfile and (extension:startswith(".h") or extension == ".inl") then
             headerfile = file
         else
             sourcefile = file
@@ -769,7 +769,7 @@ function target:pcheaderfile()
         end
         
         -- init sourcekinds
-        local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx"}
+        local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx", [".inl"] = "cxx"}
 
         -- get source kind
         local sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
