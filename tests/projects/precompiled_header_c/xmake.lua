@@ -5,8 +5,8 @@ target("main")
     set_kind("binary")
 
     -- set precompiled header
-    set_precompiled_header("src/header.h", "src/header.c")
+    set_pcheader("src/header.h")
 
     -- add files
-    add_files("src/*.c|header.c")
+    add_files("src/*.c", "src/*.cpp")
 

@@ -250,14 +250,24 @@ function nf_frameworkdir(self, frameworkdir)
     return "-F " .. frameworkdir
 end
 
--- make the precompiled header flag
-function nf_precompiled_header(self, headerfile, target)
-    local extension = path.extension(headerfile)
-    if (extension:startswith(".h") or extension == ".inl") then
+-- make the c precompiled header flag
+function nf_pcheader(self, pcheaderfile, target)
+    if self:kind() == "cc" then
         if self:name() == "clang" then
-            return "-include " .. headerfile .. " -include-pch " .. target:pcheaderfile()
+            return "-include " .. pcheaderfile .. " -include-pch " .. target:pcoutputfile("c")
         else
-            return "-include " .. headerfile 
+            return "-include " .. pcheaderfile 
+        end
+    end
+end
+
+-- make the c++ precompiled header flag
+function nf_pcxxheader(self, pcheaderfile, target)
+    if self:kind() == "cxx" then
+        if self:name() == "clang" then
+            return "-include " .. pcheaderfile .. " -include-pch " .. target:pcoutputfile("cxx")
+        else
+            return "-include " .. pcheaderfile 
         end
     end
 end
@@ -314,10 +324,10 @@ function _include_deps(self, sourcefile, flags)
 end
 
 -- make the complie arguments list for the precompiled header
-function _compargv1_pch(self, headerfile, objectfile, flags)
+function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
     -- init key and cache
-    local key = headerfile .. tostring(flags)
+    local key = pcheaderfile .. tostring(flags)
     _g._PCHFLAGS = _g._PCHFLAGS or {}
 
     -- remove "-include xxx.h" and "-include-pch xxx.pch"
@@ -333,7 +343,7 @@ function _compargv1_pch(self, headerfile, objectfile, flags)
     end
 
     -- compile header.h as c++?
-    if self:kind() == "cxx" and headerfile:endswith(".h") then
+    if self:kind() == "cxx" then
         table.insert(pchflags, "-x")
         table.insert(pchflags, "c++-header")
     end
@@ -342,7 +352,7 @@ function _compargv1_pch(self, headerfile, objectfile, flags)
     _g._PCHFLAGS[key] = pchflags
 
     -- make complie arguments list
-    return self:program(), table.join("-c", pchflags, "-o", objectfile, headerfile)
+    return self:program(), table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
 end
 
 -- make the complie arguments list

@@ -726,72 +726,50 @@ function target:configheader(outputdir)
     return configheader, outputheader
 end
 
--- get the precompiled source file (.[h|hpp|inl], .[c|cpp])
-function target:pcsourcefile()
-
-    -- get it from the cache first
-    if self._PCSOURCEFILE then
-        return unpack(self._PCSOURCEFILE)
-    end
-
-    -- get the precompiled header and source file 
-    local headerfile = nil
-    local sourcefile = nil
-    for _, file in ipairs(table.wrap(self:get("precompiled_header"))) do
-        local extension = path.extension(file)
-        if not headerfile and (extension:startswith(".h") or extension == ".inl") then
-            headerfile = file
-        else
-            sourcefile = file
-        end
-        if headerfile and sourcefile then
-            break
-        end
-    end
-
-    -- save to cache
-    self._PCSOURCEFILE = {headerfile, sourcefile}
-
-    -- ok?
-    return headerfile, sourcefile
+-- get the precompiled header file (xxx.[h|hpp|inl])
+--
+-- @param langkind  c/cxx
+--
+function target:pcheaderfile(langkind)
+    return self:get("p" .. langkind .. "header")
 end
 
--- get the precompiled header file (xxx.h.pch)
-function target:pcheaderfile()
+-- get the output of precompiled header file (xxx.h.pch)
+--
+-- @param langkind  c/cxx
+--
+function target:pcoutputfile(langkind)
 
-    -- get the precompiled header file in the object directory
-    local precompiled_header = self:pcsourcefile()
-    if precompiled_header then
+    -- init cache
+    self._PCOUTPUTFILES = self._PCOUTPUTFILES or {}
 
-        -- get it from the cache first
-        if self._PCHEADERFILE then
-            return self._PCHEADERFILE
-        end
+    -- get it from the cache first
+    local pcoutputfile = self._PCOUTPUTFILES[langkind]
+    if pcoutputfile then
+        return pcoutputfile
+    end
         
-        -- init sourcekinds
-        local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx", [".inl"] = "cxx"}
-
-        -- get source kind
-        local sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
+    -- get the precompiled header file in the object directory
+    local pcheaderfile = self:pcheaderfile(langkind)
+    if pcheaderfile then
 
         -- load tool instance
-        local toolinstance = tool.load(sourcekind)
+        local toolinstance = tool.load(language.langkinds()[langkind])
 
-        -- make precompiled header file 
+        -- make precompiled output file 
         --
         -- @note gcc has not -include-pch option to set the pch file path
         --
-        local pcheaderfile = nil
         if toolinstance and toolinstance:name() == "gcc" then
-            pcheaderfile = precompiled_header .. ".gch"
+            pcoutputfile = pcheaderfile .. ".gch"
         else
-            local headerdir = path.directory(precompiled_header):gsub("%.%.", "__")
-            pcheaderfile = string.format("%s/%s/%s/%s", self:objectdir(), self:name(), headerdir, path.filename(precompiled_header) .. ".pch")
+            local headerdir = path.directory(pcheaderfile):gsub("%.%.", "__")
+            pcoutputfile = string.format("%s/%s/%s/%s", self:objectdir(), self:name(), headerdir, path.filename(pcheaderfile) .. ".pch")
         end
 
         -- save to cache
-        self._PCHEADERFILE = pcheaderfile
-        return pcheaderfile
+        self._PCOUTPUTFILES[langkind] = pcoutputfile
+        return pcoutputfile
     end
 end
 

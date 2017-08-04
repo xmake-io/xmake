@@ -40,22 +40,16 @@ local platform = require("platform/platform")
 
 -- get the tool of builder
 function builder:_tool()
-
-    -- get it
     return self._TOOL
 end
 
 -- get the name flags
 function builder:_nameflags()
-
-    -- get it
     return self._NAMEFLAGS
 end
 
 -- get the target kind
 function builder:_targetkind()
-
-    -- get it
     return self._TARGETKIND
 end
 

@@ -8,8 +8,8 @@ target("main")
     set_languages("cxx11")
 
     -- set precompiled header
-    set_precompiled_header("src/header.h", "src/header.cpp")
+    set_pcxxheader("src/header.h")
 
     -- add files
-    add_files("src/*.cpp|header.cpp")
+    add_files("src/*.cpp", "src/*.c")
 

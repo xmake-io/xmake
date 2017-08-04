@@ -80,7 +80,8 @@ function _make_target(jsonfile, target)
 
     -- TODO
     -- disable precompiled header first
-    target:set("precompiled_header", nil)
+    target:set("pcheader", nil)
+    target:set("pcxxheader", nil)
 
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do

@@ -47,9 +47,11 @@ function _make_targetinfo(mode, arch, target)
         targetinfo.sdkver = (vcvarsall[arch] or {}).sdkver
     end
 
-    -- save precompiled header file (.pch)
-    targetinfo.pcheaderfile = target:pcheaderfile()
-    target:set("precompiled_header", nil)
+    -- save c/c++ precompiled output file (.pch)
+    targetinfo.pcoutputfile = target:pcoutputfile("c")
+    targetinfo.pcxxoutputfile = target:pcoutputfile("cxx")
+    target:set("pcheader", nil)
+    target:set("pcxxheader", nil)
 
     -- save symbols
     targetinfo.symbols = target:get("symbols")
@@ -197,10 +199,9 @@ function make(outputdir, vsinfo)
                     targets[targetname] = targets[targetname] or {}
                     local _target = targets[targetname]
 
-                    -- save precompiled header and source
-                    local precompiled_header, precompiled_source = target:pcsourcefile()
-                    _target.pcheader     = precompiled_header    -- header.h
-                    _target.pcsourcefile = precompiled_source    -- header.cpp
+                    -- save c/c++ precompiled header 
+                    _target.pcheader   = target:pcheaderfile("c")     -- header.h
+                    _target.pcxxheader = target:pcheaderfile("cxx")   -- header.[hpp|inl]
 
                     -- init target info
                     _target.name = targetname

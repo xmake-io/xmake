@@ -181,7 +181,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     assert(compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, target = target}))
 
     -- save sources to the dependent info
-    depinfo.sources = {sourcefile, target:pcsourcefile()}
+    depinfo.sources = table.join(sourcefile, target:pcheaderfile("cxx") or {}, target:pcheaderfile("c"))
 
     -- save program to the dependent info
     depinfo.program = compiler_instance:program()
@@ -252,36 +252,29 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
 end
 
--- build precompiled header (only for c/c++)
-function _build_precompiled_header(target, buildinfo)
+-- build precompiled header files (only for c/c++)
+function _build_pcheaderfiles(target, buildinfo)
 
-    -- get the precompiled header
-    local precompiled_header, precompiled_source = target:pcsourcefile()
-    if not precompiled_header then
-        return 
+    -- for c/c++
+    for _, langkind in ipairs({"c", "cxx"}) do
+
+        -- get the precompiled header
+        local pcheaderfile = target:pcheaderfile(langkind)
+        if pcheaderfile then
+
+            -- init sourcefile, objectfile and incdepfile
+            local sourcefile = pcheaderfile
+            local objectfile = target:pcoutputfile(langkind)
+            local incdepfile = objectfile .. ".d"
+            local sourcekind = language.langkinds()[langkind]
+
+            -- init source batch
+            local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, incdepfiles = {incdepfile}}
+
+            -- build this precompiled header
+            _build_object(target, buildinfo, 1, sourcebatch, false)
+        end
     end
-
-    -- init sourcekinds
-    local sourcekinds = {[".h"] = "cc", [".hpp"] = "cxx", [".inl"] = "cxx"}
-
-    -- init sourcefile, objectfile and incdepfile
-    local sourcefile = precompiled_header
-    local objectfile = target:pcheaderfile()
-    local incdepfile = objectfile .. ".d"
-
-    -- init sourcekind
-    local sourcekind = nil
-    if precompiled_source then
-        sourcekind = language.sourcekind_of(precompiled_source)
-    else
-        sourcekind = sourcekinds[path.extension(precompiled_header)] or "cc"
-    end
-
-    -- init source batch
-    local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, incdepfiles = {incdepfile}}
-
-    -- build this precompiled header
-    _build_object(target, buildinfo, 1, sourcebatch, false)
 end
 
 -- build objects for the given target
@@ -300,8 +293,8 @@ function build(target, buildinfo)
         ccache = find_ccache()
     end
 
-    -- build precompiled header
-   _build_precompiled_header(target, buildinfo)
+    -- build precompiled headers
+   _build_pcheaderfiles(target, buildinfo)
 
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do

@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.config")
+import("core.language.language")
 import("vsfile")
 
 -- make compiling flags
@@ -376,26 +377,16 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
             vcxprojfile:print("<ProgramDatabaseFile>%s</ProgramDatabaseFile>", path.relative(path.absolute(symbolfile), vcxprojdir))
         end
 
-        -- use precompiled header
-        if target.pcheader then 
+        -- use c or c++ precompiled header
+        local pcheader = target.pcxxheader or target.pcheader
+        if pcheader then 
 
-            -- get precompiled header file
-            local pcheader = path.filename(target.pcheader)
-            if target.pcsourcefile and os.isfile(target.pcsourcefile) then
-                local sourcedata = io.readfile(target.pcsourcefile)
-                if sourcedata then
-                    local includefile = sourcedata:match("#include%s+[<\"](.+)[>\"]")
-                    if includefile then
-                        pcheader = includefile
-                    end
-                end
-            end
-            
             -- make precompiled header and outputfile
             vcxprojfile:print("<PrecompiledHeader>Use</PrecompiledHeader>")
-            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", pcheader)
-            if targetinfo.pcheaderfile then
-                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(targetinfo.pcheaderfile), vcxprojdir))
+            vcxprojfile:print("<PrecompiledHeaderFile>%s</PrecompiledHeaderFile>", path.filename(pcheader))
+            local pcoutputfile = targetinfo.pcxxoutputfile or targetinfo.pcoutputfile
+            if pcoutputfile then
+                vcxprojfile:print("<PrecompiledHeaderOutputFile>%s</PrecompiledHeaderOutputFile>", path.relative(path.absolute(pcoutputfile), vcxprojdir))
             end
         end
 
@@ -476,7 +467,7 @@ function _make_header_file(vcxprojfile, includefile, vcxprojdir)
 end
 
 -- make source file for all modes
-function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
+function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir)
 
     -- get object file and source kind 
     local sourcekind = nil
@@ -542,10 +533,20 @@ function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, v
                         end
                     end
 
+                    -- disable the precompiled header if sourcekind ~= headerkind
+                    local pcheader = target.pcxxheader or target.pcheader
+                    local pcheader_disable = false
+                    if pcheader and language.sourcekind_of(sourcefile) ~= ifelse(target.pcxxheader, "cxx", "cc") then
+                        pcheader_disable = true
+                    end
+
                     -- all modes and archs exist?
                     if count == #vsinfo.modes then
                         if #key > 0 then
                             vcxprojfile:print("<%s>%s</%s>", itemname, iteminfo.value(key), itemname)
+                            if pcheader_disable then
+                                vcxprojfile:print("<PrecompiledHeader>NotUsing</PrecompiledHeader>")
+                            end
                         end
                     else
                         for cond, _ in pairs(mergeinfos) do
@@ -553,11 +554,17 @@ function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, v
                                 -- for mode | arch
                                 if #key > 0 then
                                     vcxprojfile:print("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</%s>", itemname, cond, iteminfo.value(key), itemname)
+                                    if pcheader_disable then
+                                        vcxprojfile:print("<PrecompiledHeader Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">NotUsing</PrecompiledHeader>", cond)
+                                    end
                                 end
                             else
                                 -- only for mode
                                 if #key > 0 then
                                     vcxprojfile:print("<%s Condition=\"\'%$(Configuration)\'==\'%s\'\">%s</%s>", itemname, cond, iteminfo.value(key), itemname)
+                                    if pcheader_disable then
+                                        vcxprojfile:print("<PrecompiledHeader Condition=\"\'%$(Configuration)\'==\'%s\'\">NotUsing</PrecompiledHeader>", cond)
+                                    end
                                 end
                             end
                         end
@@ -571,7 +578,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, v
 end
 
 -- make source file for specific modes
-function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir)
+function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir)
 
     -- add source file
     sourcefile = path.relative(path.absolute(sourcefile), vcxprojdir)
@@ -590,6 +597,12 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, 
 
         -- for *.c/cpp files
         else
+
+            -- disable the precompiled header if sourcekind ~= headerkind
+            local pcheader = target.pcxxheader or target.pcheader
+            if pcheader and language.sourcekind_of(sourcefile) ~= ifelse(target.pcxxheader, "cxx", "cc") then
+                vcxprojfile:print("<PrecompiledHeader>NotUsing</PrecompiledHeader>")
+            end
             vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", objectfile)
             vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", os.args(info.flags))
         end
@@ -600,18 +613,31 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, 
 end
 
 -- make source file for precompiled header 
-function _make_source_file_forpch(vcxprojfile, vsinfo, pcsourcefile, targetinfo, vcxprojdir)
+function _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- add precompiled source file
-    local sourcefile = path.relative(path.absolute(pcsourcefile), vcxprojdir)
-    vcxprojfile:enter("<ClCompile Include=\"%s\">", sourcefile)
-        vcxprojfile:print("<PrecompiledHeader>Create</PrecompiledHeader>")
-        vcxprojfile:print("<AdditionalOptions> %%(AdditionalOptions)</AdditionalOptions>")
-        for _, info in ipairs(targetinfo) do
-            local objectfile = path.relative(path.absolute(info.pcheaderfile .. ".obj"), vcxprojdir)
-            vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, objectfile)
-        end
-    vcxprojfile:leave("</ClCompile>")
+    local pcheader = target.pcxxheader or target.pcheader
+    if pcheader then
+        local sourcefile = path.relative(path.absolute(pcheader), vcxprojdir)
+        vcxprojfile:enter("<ClCompile Include=\"%s\">", sourcefile)
+            vcxprojfile:print("<PrecompiledHeader>Create</PrecompiledHeader>")
+            vcxprojfile:print("<PrecompiledHeaderFile></PrecompiledHeaderFile>")
+            vcxprojfile:print("<AdditionalOptions> %%(AdditionalOptions)</AdditionalOptions>")
+            for _, info in ipairs(target.info) do
+
+                -- compile as c/c++
+                local compileas = ifelse(target.pcxxheader, "CompileAsCpp", "CompileAsC")
+                vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</CompileAs>", info.mode, info.arch, compileas)
+
+                -- add object file
+                local pcoutputfile = info.pcxxoutputfile or info.pcoutputfile
+                if pcoutputfile then
+                    local objectfile = path.relative(path.absolute(pcoutputfile .. ".obj"), vcxprojdir)
+                    vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, objectfile)
+                end
+            end
+        vcxprojfile:leave("</ClCompile>")
+    end
 end
 
 -- make source files
@@ -639,16 +665,14 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make source files
         for sourcefile, sourceinfo in pairs(sourceinfos) do
             if #sourceinfo == #target.info then
-                _make_source_file_forall(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir) 
+                _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir) 
             else
-                _make_source_file_forspec(vcxprojfile, vsinfo, sourcefile, sourceinfo, vcxprojdir) 
+                _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir) 
             end
         end
 
         -- make precompiled source file
-        if target.pcsourcefile then
-            _make_source_file_forpch(vcxprojfile, vsinfo, target.pcsourcefile, target.info, vcxprojdir) 
-        end
+        _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir) 
 
     vcxprojfile:leave("</ItemGroup>")
 
@@ -656,9 +680,6 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
     vcxprojfile:enter("<ItemGroup>")
         for _, includefile in ipairs(target.headerfiles) do
             _make_header_file(vcxprojfile, includefile, vcxprojdir)
-        end
-        if target.pcheader then
-            _make_header_file(vcxprojfile, target.pcheader, vcxprojdir)
         end
     vcxprojfile:leave("</ItemGroup>")
 end

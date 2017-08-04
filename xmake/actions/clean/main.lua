@@ -68,8 +68,9 @@ function _on_clean_target(target)
     -- remove the symbol file 
     _remove(target:symbolfile()) 
 
-    -- remove the precompiled header file 
-    _remove(target:pcheaderfile()) 
+    -- remove the c/c++ precompiled header file 
+    _remove(target:pcoutputfile("c")) 
+    _remove(target:pcoutputfile("cxx")) 
 
     -- remove the object files 
     _remove(target:objectfiles())

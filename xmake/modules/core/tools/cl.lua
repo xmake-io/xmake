@@ -202,41 +202,37 @@ function nf_includedir(self, dir)
     return "-I" .. dir
 end
 
--- make the precompiled header flag
-function nf_precompiled_header(self, headerfile, target)
+-- make the c precompiled header flag
+function nf_pcheader(self, pcheaderfile, target)
 
-    -- cache precompiled source file
-    local _, sourcefile = target:pcsourcefile()
-    if sourcefile then
+    -- for c source file
+    if self:kind() == "cc" then
 
-        -- parse headerfile from sourcefile
-        if os.isfile(sourcefile) then
-            local sourcedata = io.readfile(sourcefile)
-            if sourcedata then
-                local includefile = sourcedata:match("#include%s+[<\"](.+)[>\"]")
-                if includefile then
-                    headerfile = includefile
-                end
-            end
+        -- patch objectfile
+        local objectfiles = target:objectfiles()
+        if objectfiles then
+            table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
         end
 
-        -- cache sourcefile
-        _g._PCHSOURCEFILES = _g._PCHSOURCEFILES or {}
-        _g._PCHSOURCEFILES[target:pcheaderfile()] = sourcefile
-    else
-        headerfile = path.filename(headerfile)
+        -- make flag
+        return "-Yu" .. path.filename(pcheaderfile) .. " -Fp" .. target:pcoutputfile("c")
     end
+end
 
-    -- patch objectfile
-    local objectfiles = target:objectfiles()
-    if objectfiles then
-        table.insert(objectfiles, target:pcheaderfile() .. ".obj")
-    end
+-- make the c++ precompiled header flag
+function nf_pcxxheader(self, pcheaderfile, target)
 
-    -- make flag
-    local extension = path.extension(headerfile)
-    if (extension:startswith(".h") or extension == ".inl") then
-        return "-Yu" .. headerfile .. " -Fp" .. target:pcheaderfile()
+    -- for c++ source file
+    if self:kind() == "cxx" then
+
+        -- patch objectfile
+        local objectfiles = target:objectfiles()
+        if objectfiles then
+            table.insert(objectfiles, target:pcoutputfile("cxx") .. ".obj")
+        end
+
+        -- make flag
+        return "-Yu" .. path.filename(pcheaderfile) .. " -Fp" .. target:pcoutputfile("cxx")
     end
 end
 
@@ -268,7 +264,7 @@ function _include_deps(self, outdata)
 end
 
 -- make the complie arguments list for the precompiled header
-function _compargv1_pch(self, headerfile, objectfile, flags)
+function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
     -- remove "-Yuxxx.h" and "-Fpxxx.pch"
     local pchflags = {}
@@ -278,27 +274,15 @@ function _compargv1_pch(self, headerfile, objectfile, flags)
         end
     end
 
-    -- get pcheaderfile
-    local pcheaderfile = objectfile
-
-    -- get sourcefile from the *.pch file
-    local sourcefile = nil
-    if _g._PCHSOURCEFILES then
-        sourcefile = _g._PCHSOURCEFILES[pcheaderfile]
+    -- compile as c/c++ source file
+    if self:kind() == "cc" then
+        table.insert(pchflags, "-TC")
+    elseif self:kind() == "cxx" then
+        table.insert(pchflags, "-TP")
     end
-
-    -- make it if no sourcefile 
-    if not sourcefile then
-        sourcefile = os.tmpfile() .. language.extension_of(self:kind())
-        io.writefile(sourcefile, format("#include \"%s\"", path.filename(headerfile)))
-        table.insert(pchflags, "-I" .. path.directory(headerfile))
-    end
-
-    -- make objectfile 
-    objectfile = pcheaderfile .. ".obj"
 
     -- make complie arguments list
-    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcheaderfile, "-Fo" .. objectfile, sourcefile)
+    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
 end
 
 -- make the complie arguments list

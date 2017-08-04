@@ -351,7 +351,8 @@ function _make_all(makefile)
     -- TODO
     -- disable precompiled header first
     for _, target in pairs(project.targets()) do
-        target:set("precompiled_header", nil)
+        target:set("pcheader", nil)
+        target:set("pcxxheader", nil)
     end
 
     -- make variables for target flags
