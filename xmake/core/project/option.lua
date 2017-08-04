@@ -272,7 +272,7 @@ end
 -- add the value to the option info
 function option:add(name_or_info, ...)
     if type(name_or_info) == "string" then
-        self._INFO[name_or_info] = table.unique(table.join2(table.wrap(self._INFO[name_or_info]), ...))
+        self._INFO[name_or_info] = table.unique(table.join(table.wrap(self._INFO[name_or_info]), ...))
     elseif type(name_or_info) == "table" and #name_or_info == 0 then
         for name, info in pairs(table.join(name_or_info, ...)) do
             self:add(name, info)
