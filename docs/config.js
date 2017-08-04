@@ -36,7 +36,7 @@ docute.init({
         title: 'Feedback', path: 'https://github.com/tboox/xmake/issues'
       },
       {
-        title: 'Community', path: 'http://www.tboox.org/forum'
+        title: 'Community', path: 'https://github.com/tboox/community/issues'
       },
       {
         title: 'English', type: 'dropdown', items: langs, exact: true
@@ -59,7 +59,7 @@ docute.init({
         title: '反馈', path: 'https://github.com/tboox/xmake/issues'
       },
       {
-        title: '社区', path: 'http://www.tboox.org/forum'
+        title: '社区', path: 'https://github.com/tboox/community/issues'
       },
       {
         title: '中文', type: 'dropdown', items: langs, exact: true
