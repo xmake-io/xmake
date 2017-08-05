@@ -1,3 +1,9 @@
+xmake (2.1.5-1) yakkety; urgency=medium
+
+  * update 2.1.5
+
+ -- ruki <waruqi@gmail.com>  Thu, 05 Aug 2017 21:22:12 +0800
+
 xmake (2.1.4-1) yakkety; urgency=medium
 
   * update 2.1.4
