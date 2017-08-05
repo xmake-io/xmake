@@ -37,7 +37,7 @@
 * Improve the option detection (cache and multi-jobs) and increase 70% speed
 * [#129](https://github.com/tboox/xmake/issues/129): Check link deps and cache the target file
 * Support `*.asm` source files for vs201x project plugin
-* Mark `add_bindings` and `add_rbi7777777ndings` as deprecated
+* Mark `add_bindings` and `add_rbindings` as deprecated
 * Optimize `xmake rebuild` speed on windows
 * Move `core.project.task` to `core.base.task`
 * Move `echo` and `app2ipa` plugins to [xmake-plugins](https://github.com/tboox/xmake-plugins) repo.

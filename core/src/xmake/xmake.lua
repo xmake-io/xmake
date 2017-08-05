@@ -11,8 +11,7 @@ target("xmake")
     add_defines("__tb_prefix__=\"xmake\"")
 
     -- set the auto-generated config.h
-    set_config_h("$(projectdir)/xmake.config.h")
-    set_config_h_prefix("XM_CONFIG")
+    set_config_header("$(projectdir)/xmake.config.h", {prefix = "XM_CONFIG"})
 
     -- set the object files directory
     set_objectdir("$(buildir)/.objs")
