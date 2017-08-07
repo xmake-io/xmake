@@ -401,15 +401,13 @@ add_plugindirs("$(projectdir)/plugins")
 ```
 xmake will load all plugins in the given directory.
 
-<p class="warning">
-Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
-</p>
-
 ##### add_packagedirs
 
 ###### Add package directories
 
-通过设置依赖包目录，可以方便的集成一些第三方的依赖库，以tbox工程为例，其包目录如下：
+By setting up a dependency package directory, you can easily integrate some third-party dependent libraries, 
+taking the tbox project as an example, and its package directory is as follows:
+ 
 
 ```
 tbox.pkg
@@ -422,20 +420,30 @@ tbox.pkg
 - ...
 ```
 
-如果要让当前工程识别加载这些包，首先要指定包目录路径，例如：
+If you want the current project to load these packages, first specify the package directory path, for example:
 
 ```lua
 add_packagedirs("pkg")
 ```
 
-指定好后，就可以在target作用域中，通过[add_packages](#add_packages)接口，来添加集成包依赖了，例如：
+Then, please add these packages to the given target by [add_packages](#add_packages):
 
 ```lua
 target("tbox")
     add_packages("zlib", "polarssl", "pcre", "mysql")
 ```
 
+xmake will check these packages automatically and link them if exists, and we can disable them manually.
+
+```bash
+$ xmake f --openssl=n
+```
+
 #### Project Target
+
+<p class="warning">
+Translating ..., help me please! [Edit this page](https://github.com/tboox/xmake/blob/master/docs/manual.md)
+</p>
 
 定义和设置子工程模块，每个`target`对应一个子工程，最后会生成一个目标程序，有可能是可执行程序，也有可能是库模块。
 
