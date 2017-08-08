@@ -97,7 +97,7 @@ function _check_vs(config)
     if vs then
 
         -- save it
-        config.set("vs", vs)
+        config.set("vs", vs, {force = true})
 
         -- trace
         print("checking for the Microsoft Visual Studio (%s) version ... %s", config.get("arch"), vs)
