@@ -27,11 +27,6 @@ local table = table or {}
 
 -- clear the table
 function table.clear(self)
-
-    -- check
-    assert(self and type(self) == "table")
-
-    -- clear it
     for k in next, self do
         rawset(self, k, nil) 
     end
@@ -40,10 +35,8 @@ end
 -- join all objects and tables
 function table.join(...)
 
-    -- done
-    local args = {...}
     local result = {}
-    for _, t in ipairs(args) do
+    for _, t in ipairs({...}) do
         if type(t) == "table" then
             for k, v in pairs(t) do
                 if type(k) == "number" then table.insert(result, v)
@@ -53,20 +46,13 @@ function table.join(...)
             table.insert(result, t)
         end
     end
-
-    -- ok?
     return result
 end
 
 -- join all objects and tables to self
 function table.join2(self, ...)
 
-    -- check
-    assert(self and type(self) == "table")
-
-    -- done
-    local args = {...}
-    for _, t in ipairs(args) do
+    for _, t in ipairs({...}) do
         if type(t) == "table" then
             for k, v in pairs(t) do
                 if type(k) == "number" then table.insert(self, v)
@@ -76,9 +62,15 @@ function table.join2(self, ...)
             table.insert(self, t)
         end
     end
-
-    -- ok?
     return self
+end
+
+-- append all objects to array
+function table.append(array, ...)
+    for _, value in ipairs({...}) do
+        table.insert(array, value)
+    end
+    return array
 end
 
 -- copy the table to self

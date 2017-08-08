@@ -1072,10 +1072,7 @@ function interpreter:api_register_set_values(scope_kind, ...)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
-
-        -- update values?
-        scope[name] = {}
-        table.join2(scope[name], ...)
+        scope[name] = {...}
     end
 
     -- register implementation
@@ -1090,10 +1087,8 @@ function interpreter:api_register_add_values(scope_kind, ...)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
-
-        -- append values?
         scope[name] = scope[name] or {}
-        table.join2(scope[name], ...)
+        table.append(scope[name], ...)
     end
 
     -- register implementation
@@ -1282,7 +1277,6 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
         -- append values?
         scope[name] = scope[name] or {}
         table.join2(scope[name], self:_api_translate_pathes(...))
-
     end
 
     -- register implementation
