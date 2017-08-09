@@ -131,7 +131,6 @@ function platform._interpreter()
             "platform.set_os"
         ,   "platform.set_hosts"
         ,   "platform.set_archs"
-        ,   "platform.set_menu"
         ,   "platform.set_installdir"
         }
     ,   script =
@@ -150,7 +149,8 @@ function platform._interpreter()
     ,   dictionary =
         {
             -- platform.set_xxx
-            "platform.set_formats"
+            "platform.set_menu"
+        ,   "platform.set_formats"
         }
     }
 

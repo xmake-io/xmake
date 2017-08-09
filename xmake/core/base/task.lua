@@ -323,7 +323,11 @@ function task.apis()
         {
             -- task.set_xxx
             "task.set_category"     -- main, action, plugin, task (default)
-        ,   "task.set_menu"
+        }
+    ,   dictionary = 
+        {
+            -- task.set_xxx
+            "task.set_menu"
         }
     ,   script =
         {

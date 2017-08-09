@@ -234,8 +234,7 @@ function language._interpreter()
         values =
         {
             -- language.set_xxx
-            "language.set_menu"
-        ,   "language.set_mixingkinds"
+            "language.set_mixingkinds"
         }
     ,   script =
         {
@@ -246,7 +245,8 @@ function language._interpreter()
     ,   dictionary =
         {
             -- language.set_xxx
-            "language.set_nameflags"
+            "language.set_menu"
+        ,   "language.set_nameflags"
         ,   "language.set_langkinds"
         ,   "language.set_sourcekinds"
         ,   "language.set_sourceflags"
