@@ -320,7 +320,7 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
 end
 
 -- translate api pathes 
-function interpreter:_api_translate_pathes(...)
+function interpreter:_api_translate_pathes(values)
 
     -- check
     assert(self and self._PRIVATE)
@@ -335,15 +335,11 @@ function interpreter:_api_translate_pathes(...)
 
     -- translate the relative path 
     local results = {}
-    for _, p in ipairs({...}) do
-        if type(p) == "string" then
-            if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
-                table.insert(results, path.relative(path.absolute(p, curdir), self._PRIVATE._ROOTDIR))
-            else
-                table.insert(results, p)
-            end
+    for _, p in ipairs(values) do
+        assert(type(p) == "string", "invalid path value: " .. tostring(p))
+        if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
+            table.insert(results, path.relative(path.absolute(p, curdir), self._PRIVATE._ROOTDIR))
         else
-            -- @note do not translate non-string value, .e.g set_xxx("/xx/xx/xx", {arg = ""})
             table.insert(results, p)
         end
     end
@@ -1072,7 +1068,12 @@ function interpreter:api_register_set_values(scope_kind, ...)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
-        scope[name] = {...}
+        local values = {...}
+        if table.is_dictionary(values[#values]) then 
+            scope["__extra_" .. name] = values[#values] -- save extra info
+            table.remove(values)
+        end
+        scope[name] = values
     end
 
     -- register implementation
@@ -1087,8 +1088,12 @@ function interpreter:api_register_add_values(scope_kind, ...)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
-        scope[name] = scope[name] or {}
-        table.append(scope[name], ...)
+        local values = {...}
+        if table.is_dictionary(values[#values]) then 
+            scope["__extra_" .. name] = table.join2(scope["__extra_" .. name] or {}, values[#values]) -- save extra info
+            table.remove(values)
+        end
+        scope[name] = table.join2(scope[name] or {}, values)
     end
 
     -- register implementation
@@ -1256,9 +1261,12 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
-        -- update values?
-        scope[name] = {}
-        table.join2(scope[name], self:_api_translate_pathes(...))
+        local values = {...}
+        if table.is_dictionary(values[#values]) then 
+            scope["__extra_" .. name] = values[#values] -- save extra info
+            table.remove(values)
+        end
+        scope[name] = self:_api_translate_pathes(values)
     end
 
     -- register implementation
@@ -1274,9 +1282,12 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
-        -- append values?
-        scope[name] = scope[name] or {}
-        table.join2(scope[name], self:_api_translate_pathes(...))
+        local values = {...}
+        if table.is_dictionary(values[#values]) then 
+            scope["__extra_" .. name] = table.join2(scope["__extra_" .. name] or {}, values[#values]) -- save extra info
+            table.remove(values)
+        end
+        scope[name] = table.join2(scope[name] or {}, self:_api_translate_pathes(values))
     end
 
     -- register implementation

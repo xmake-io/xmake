@@ -158,43 +158,13 @@ function table.slice(self, first, last, step)
 end
 
 -- is array?
-function table.is_array(self)
-
-    -- not table?
-    if type(self) ~= "table" then
-        return false
-    end
-
-    -- is array?
-    for k, v in pairs(self) do
-        if type(k) == "number" then
-            return true
-        end
-        break
-    end
-
-    -- dictionary
-    return false
+function table.is_array(array)
+    return type(array) == "table" and array[1] ~= nil
 end
 
 -- is dictionary?
-function table.is_dictionary(self)
-
-    -- not table?
-    if type(self) ~= "table" then
-        return false
-    end
-
-    -- is dictionary?
-    for k, v in pairs(self) do
-        if type(k) == "string" then
-            return true
-        end
-        break
-    end
-
-    -- array
-    return false
+function table.is_dictionary(dict)
+    return type(dict) == "table" and dict[1] == nil
 end
 
 -- dump it with the level

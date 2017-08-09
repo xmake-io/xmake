@@ -669,12 +669,9 @@ function target:configprefix()
 
     -- get the config prefix
     local configprefix = nil
-    local configheader = self:get("config_header")
-    if type(configheader) == "table" then
-        local opt = configheader[2]
-        if opt then
-            configprefix = opt.prefix
-        end
+    local configheader_extra = self:get("__extra_config_header")
+    if type(configheader_extra) == "table" then
+        configprefix = configheader_extra.prefix
     end
     if not configprefix then
         configprefix = self:get("config_h_prefix") or (self:name():upper() .. "_CONFIG")
@@ -688,20 +685,14 @@ end
 function target:configheader(outputdir)
 
     -- get config header
-    local configheader = self:get("config_header") -- set_config_header("/xxx/config.h", {prefix = XX_CONFIG})
-    if type(configheader) == "table" then
-        configheader = configheader[1]
-    end
-    if not configheader then
-        configheader = self:get("config_h")
-
-        -- mark as deprecated
-        if configheader then
-            deprecated.add("set_config_header(\"%s\", {prefix = \"...\"})", "set_config_h(\"%s\")", path.relative(configheader, os.projectdir()))
-        end
-    end
+    local configheader = self:get("config_header") or self:get("config_h")
     if not configheader then
         return 
+    end
+
+    -- mark as deprecated
+    if self:get("config_h") then
+        deprecated.add("set_config_header(\"%s\", {prefix = \"...\"})", "set_config_h(\"%s\")", path.relative(self:get("config_h"), os.projectdir()))
     end
 
     -- get the root directory
