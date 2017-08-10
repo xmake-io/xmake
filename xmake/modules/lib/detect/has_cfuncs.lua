@@ -30,7 +30,7 @@ import("lib.detect.check_cxsnippets")
 -- @param funcs     the funcs
 -- @param opt       the argument options
 --                  .e.g 
---                  { verbose = false, target = [target|option], linkdirs = .., links = .., includes = .., defines = .., .. }
+--                  { verbose = false, target = [target|option], includes = "", config = {linkdirs = .., links = .., defines = .., ..}}
 --
 -- funcs:
 --      sigsetjmp

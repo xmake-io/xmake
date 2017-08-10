@@ -41,8 +41,6 @@ local platform  = require("platform/platform")
 
 -- get the language of compiler
 function compiler:_language()
-
-    -- get it
     return self._LANGUAGE
 end
 
@@ -130,8 +128,18 @@ function compiler:build(sourcefiles, targetfile, opt)
     -- init options
     opt = opt or {}
 
+    -- get compile flags
+    local compflags = opt.compflags
+    if not compflags then
+        -- patch sourcefile to get flags of the given source file
+        if type(sourcefiles) == "string" then
+            opt.sourcefile = sourcefiles
+        end
+        compflags = self:compflags(opt)
+    end
+
     -- make flags 
-    local flags = self:compflags(opt)
+    local flags = compflags
     if opt.target then
         flags = table.join(flags, opt.target:linkflags())
     end
@@ -152,8 +160,18 @@ function compiler:buildargv(sourcefiles, targetfile, opt)
     -- init options
     opt = opt or {}
 
+    -- get compile flags
+    local compflags = opt.compflags
+    if not compflags then
+        -- patch sourcefile to get flags of the given source file
+        if type(sourcefiles) == "string" then
+            opt.sourcefile = sourcefiles
+        end
+        compflags = self:compflags(opt)
+    end
+
     -- make flags 
-    local flags = self:compflags(opt)
+    local flags = compflags
     if opt.target then
         flags = table.join(flags, opt.target:linkflags())
     end
@@ -179,13 +197,36 @@ function compiler:compile(sourcefiles, objectfile, opt)
     -- init options
     opt = opt or {}
 
+    -- get compile flags
+    local compflags = opt.compflags
+    if not compflags then
+        -- patch sourcefile to get flags of the given source file
+        if type(sourcefiles) == "string" then
+            opt.sourcefile = sourcefiles
+        end
+        compflags = self:compflags(opt)
+    end
+
     -- compile it
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.depinfo, self:compflags(opt))
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.depinfo, compflags)
 end
 
 -- get the compile arguments list
 function compiler:compargv(sourcefiles, objectfile, opt)
-    return self:_tool():compargv(sourcefiles, objectfile, self:compflags(opt))
+
+    -- init options
+    opt = opt or {}
+
+    -- get compile flags
+    local compflags = opt.compflags
+    if not compflags then
+        -- patch sourcefile to get flags of the given source file
+        if type(sourcefiles) == "string" then
+            opt.sourcefile = sourcefiles
+        end
+        compflags = self:compflags(opt)
+    end
+    return self:_tool():compargv(sourcefiles, objectfile, compflags)
 end
 
 -- get the compile command
@@ -196,7 +237,8 @@ end
 -- get the compling flags
 --
 -- @param opt   the argument options (contain all the compiler attributes of target), 
---              .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--              .e.g
+--              {target = ..., targetkind = "static", config = {defines = "", cxflags = "", includedirs = ""}}
 --
 -- @return      flags string, flags list
 --
@@ -208,10 +250,6 @@ function compiler:compflags(opt)
     -- get target
     local target = opt.target
 
-    -- init cache
-    self._COMPFLAGS = self._COMPFLAGS or {}
-    local cache = self._COMPFLAGS
-
     -- get target kind
     local targetkind = opt.targetkind
     if not targetkind and target then
@@ -222,29 +260,21 @@ function compiler:compflags(opt)
     local flags = {}
     self:_addflags_from_config(flags)
 
-    -- add flags about target
-    if target then
-    
-        -- get flags from cache first
-        local key = tostring(target)
-        local targetflags = cache[key]
-        if not targetflags then
-        
-            -- add flags for the target
-            targetflags = {}
-            self:_addflags_from_target(targetflags, target)
-           
-            -- add flags (named) from language
-            self:_addflags_from_language(targetflags, target)
+    -- add flags for the target
+    self:_addflags_from_target(flags, target)
 
-            -- cache it
-            cache[key] = targetflags
+    -- add flags for the source file
+    if opt.sourcefile and target and target.fileconfig then
+        local fileconfig = target:fileconfig(opt.sourcefile)
+        if fileconfig then
+            self:_addflags_from_argument(flags, target, fileconfig)
         end
-        table.join2(flags, targetflags)
     end
 
     -- add flags for the argument
-    self:_addflags_from_argument(flags, opt)
+    if opt.config then
+        self:_addflags_from_argument(flags, target, opt.config)
+    end
 
     -- add flags from the platform 
     if target then

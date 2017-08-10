@@ -2,6 +2,12 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Improve `add_files` to configure the compile option of the given files
+
+## v2.1.5
+
 ### New features
 
 * [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
@@ -319,6 +325,12 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 改进`add_files`，支持对files粒度进行编译选项的各种配置，更加灵活。
+
+## v2.1.5
 
 ### 新特性
 

@@ -31,7 +31,7 @@ import("core.language.language")
 import("detect.tools.find_ccache")
 
 -- is modified?
-function _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, compiler_instance)
+function _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, program, compflags)
 
     -- rebuild?
     if buildinfo.rebuild then
@@ -72,12 +72,12 @@ function _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, compil
     end
 
     -- the program has been modified?
-    if compiler_instance:program() ~= depinfo.program then
+    if program ~= depinfo.program then
         return true
     end
 
     -- the flags has been modified?
-    return os.args(compiler_instance:compflags({target = target})) ~= os.args(depinfo.flags)
+    return os.args(compflags) ~= os.args(depinfo.flags)
 end
 
 -- build the object from the *.[o|obj] source file
@@ -153,8 +153,14 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     -- load compiler instance
     local compiler_instance = compiler.load(sourcekind)
 
+    -- get compiler program
+    local program = compiler_instance:program()
+
+    -- get compile flags
+    local compflags = compiler_instance:compflags({target = target, sourcefile = sourcefile})
+
     -- is modified?
-    local modified = _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, compiler_instance)
+    local modified = _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, program, compflags)
     if not modified then
         return 
     end
@@ -174,20 +180,20 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- trace verbose info
     if verbose then
-        print(compiler_instance:compcmd(sourcefile, objectfile, {target = target}))
+        print(compiler_instance:compcmd(sourcefile, objectfile, {compflags = compflags}))
     end
 
     -- complie it 
-    assert(compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, target = target}))
+    assert(compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, compflags = compflags}))
 
     -- save sources to the dependent info
     depinfo.sources = table.join(sourcefile, target:pcheaderfile("cxx") or {}, target:pcheaderfile("c"))
 
     -- save program to the dependent info
-    depinfo.program = compiler_instance:program()
+    depinfo.program = program
 
     -- save flags to the dependent info
-    depinfo.flags = compiler_instance:compflags({target = target})
+    depinfo.flags = compflags
 
     -- save the dependent info
     io.save(incdepfile, depinfo)

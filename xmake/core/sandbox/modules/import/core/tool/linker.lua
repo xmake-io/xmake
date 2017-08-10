@@ -66,7 +66,7 @@ end
 -- @param targetkind    the target kind
 -- @param sourcekinds   the source kinds
 -- @param opt           the argument options (contain all the linker attributes of target), 
---                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--                      .e.g {target = ..., targetkind = "static", config = {cxflags = "", defines = "", includedirs = "", ...}}
 --
 function sandbox_core_tool_linker.linkflags(targetkind, sourcekinds, opt)
 

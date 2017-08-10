@@ -1068,12 +1068,27 @@ function interpreter:api_register_set_values(scope_kind, ...)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
+
+        -- get extra config
         local values = {...}
-        if table.is_dictionary(values[#values]) then 
-            scope["__extra_" .. name] = values[#values] -- save extra info
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
             table.remove(values)
+        else
+            extra_config = nil
         end
+
+        -- save values
         scope[name] = values
+
+        -- save extra config
+        if extra_config then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            for _, value in ipairs(values) do
+                extrascope[value] = extra_config
+            end
+        end
     end
 
     -- register implementation
@@ -1088,12 +1103,27 @@ function interpreter:api_register_add_values(scope_kind, ...)
 
     -- define implementation
     local implementation = function (self, scope, name, ...)
+
+        -- get extra config
         local values = {...}
-        if table.is_dictionary(values[#values]) then 
-            scope["__extra_" .. name] = table.join2(scope["__extra_" .. name] or {}, values[#values]) -- save extra info
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
             table.remove(values)
+        else
+            extra_config = nil
         end
+
+        -- save values
         scope[name] = table.join2(scope[name] or {}, values)
+
+        -- save extra config
+        if extra_config then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            for _, value in ipairs(values) do
+                extrascope[value] = extra_config
+            end
+        end
     end
 
     -- register implementation
@@ -1261,12 +1291,29 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
+        -- get extra config
         local values = {...}
-        if table.is_dictionary(values[#values]) then 
-            scope["__extra_" .. name] = values[#values] -- save extra info
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
             table.remove(values)
+        else
+            extra_config = nil
         end
-        scope[name] = self:_api_translate_pathes(values)
+
+        -- translate pathes
+        local pathes = self:_api_translate_pathes(values)
+
+        -- save values
+        scope[name] = pathes
+
+        -- save extra config
+        if extra_config then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            for _, value in ipairs(pathes) do
+                extrascope[value] = extra_config
+            end
+        end
     end
 
     -- register implementation
@@ -1282,12 +1329,29 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
+        -- get extra config
         local values = {...}
-        if table.is_dictionary(values[#values]) then 
-            scope["__extra_" .. name] = table.join2(scope["__extra_" .. name] or {}, values[#values]) -- save extra info
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
             table.remove(values)
+        else
+            extra_config = nil
         end
-        scope[name] = table.join2(scope[name] or {}, self:_api_translate_pathes(values))
+
+        -- translate pathes
+        local pathes = self:_api_translate_pathes(values)
+
+        -- save values
+        scope[name] = table.join2(scope[name] or {}, pathes)
+
+        -- save extra config
+        if extra_config then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            for _, value in ipairs(pathes) do
+                extrascope[value] = extra_config
+            end
+        end
     end
 
     -- register implementation

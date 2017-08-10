@@ -116,11 +116,19 @@ end
 --
 -- @param sourcefiles   the source files
 -- @param opt           the argument options (contain all the compiler attributes of target), 
---                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--                      .e.g {target = ..., targetkind = "static", config = {cxflags = "", defines = "", includedirs = "", ...}}
 --
 -- @return              the flags list
 --
 function sandbox_core_tool_compiler.compflags(sourcefiles, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- patch sourcefile to get flags of the given source file
+    if type(sourcefiles) == "string" then
+        opt.sourcefile = sourcefiles
+    end
 
     -- get source kind if only one source file
     local sourcekind = opt.sourcekind

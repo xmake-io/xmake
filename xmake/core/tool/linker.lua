@@ -179,12 +179,13 @@ end
 
 -- link the target file
 function linker:link(objectfiles, targetfile, opt)
-    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, self:linkflags(opt))
+    opt = opt or {}
+    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt))
 end
 
 -- get the link arguments list
 function linker:linkargv(objectfiles, targetfile, opt)
-    return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, self:linkflags(opt))
+    return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt))
 end
 
 -- get the link command
@@ -195,7 +196,7 @@ end
 -- get the link flags
 --
 -- @param opt   the argument options (contain all the linker attributes of target), 
---              .e.g {target = ..., targetkind = "static", ldflags = "", links = "", linkdirs = "", ...}
+--              .e.g {target = ..., targetkind = "static", config = {ldflags = "", links = "", linkdirs = "", ...}}
 --
 function linker:linkflags(opt)
 
@@ -204,10 +205,6 @@ function linker:linkflags(opt)
 
     -- get target
     local target = opt.target
-
-    -- init cache
-    self._COMPFLAGS = self._COMPFLAGS or {}
-    local cache = self._COMPFLAGS
 
     -- get target kind
     local targetkind = opt.targetkind
@@ -219,29 +216,13 @@ function linker:linkflags(opt)
     local flags = {}
     self:_addflags_from_config(flags)
 
-    -- add flags about target
-    if target then
-    
-        -- get flags from cache first
-        local key = tostring(target)
-        local targetflags = cache[key]
-        if not targetflags then
-        
-            -- add flags for the target
-            targetflags = {}
-            self:_addflags_from_target(targetflags, target)
-           
-            -- add flags (named) from language
-            self:_addflags_from_language(targetflags, target)
-
-            -- cache it
-            cache[key] = targetflags
-        end
-        table.join2(flags, targetflags)
-    end
+    -- add flags for the target
+    self:_addflags_from_target(flags, target)
 
     -- add flags for the argument
-    self:_addflags_from_argument(flags, opt)
+    if opt.config then
+        self:_addflags_from_argument(flags, target, opt.config)
+    end
 
     -- add flags from the platform 
     if target then

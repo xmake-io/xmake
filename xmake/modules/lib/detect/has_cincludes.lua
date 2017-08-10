@@ -30,7 +30,7 @@ import("lib.detect.check_cxsnippets")
 -- @param includes  the includes
 -- @param opt       the argument options
 --                  .e.g 
---                  { verbose = false, target = [target|option], defines = "..", .. }
+--                  { verbose = false, target = [target|option], config = {defines = "..", .. }}
 --
 -- @return          true or false
 --

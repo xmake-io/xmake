@@ -124,24 +124,52 @@ function builder:_addflags_from_config(flags)
     end
 end
 
--- add flags from the target 
-function builder:_addflags_from_target(flags, target)
-
-    -- add the target flags 
+-- add flags from the option 
+function builder:_addflags_from_option(flags, target)
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, self:_mapflags(target:get(flagkind)))
     end
+end
 
-    -- for target options? 
-    if target.options then
+-- add flags from the target 
+function builder:_addflags_from_target(flags, target)
+
+    -- no target?
+    if not target then
+        return
+    end
+ 
+    -- init cache
+    self._TARGETFLAGS = self._TARGETFLAGS or {}
+    local cache = self._TARGETFLAGS
+
+    -- get flags from cache first
+    local key = tostring(target)
+    local targetflags = cache[key]
+    if not targetflags then
+    
+        -- add the target flags 
+        targetflags = {}
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            table.join2(targetflags, self:_mapflags(target:get(flagkind)))
+        end
 
         -- add the flags for the target options
-        for _, opt in ipairs(target:options()) do
-
-            -- add the flags from the option
-            self:_addflags_from_target(flags, opt)
+        if target.options then
+            for _, opt in ipairs(target:options()) do
+                self:_addflags_from_option(targetflags, opt)
+            end
         end
+
+        -- add flags (named) from language
+        self:_addflags_from_language(targetflags, target)
+
+        -- cache it
+        cache[key] = targetflags
     end
+
+    -- add flags
+    table.join2(flags, targetflags)
 end
 
 -- add flags from target deps
@@ -187,17 +215,25 @@ function builder:_addflags_from_targetdeps(results, target, flagname)
 end
 
 -- add flags from the argument option 
-function builder:_addflags_from_argument(flags, args)
+function builder:_addflags_from_argument(flags, target, args)
+
+    -- add flags from the flag kinds (cxflags, ..)
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, self:_mapflags(args[flagkind]))
+    end
+
+    -- add flags (named) from the language 
+    if target then
+        local key = utils.ifelse(target.options, "target", "option")
+        self:_addflags_from_language(flags, target, {[key] = function (name) return args[name] end})
     end
 end
 
 -- add flags (named) from the language 
-function builder:_addflags_from_language(flags, target)
+function builder:_addflags_from_language(flags, target, getters)
 
     -- init getters
-    local getters =
+    local getters = getters or
     {
         config      =   config.get
     ,   platform    =   platform.get
@@ -237,34 +273,35 @@ function builder:_addflags_from_language(flags, target)
 
         -- get getter
         local getter = getters[flagscope]
-        assert(getter)
+        if getter then
 
-        -- get api name of tool 
-        --
-        -- ignore "nf_" and "_if_ok"
-        --
-        -- .e.g
-        --
-        -- defines => define
-        -- defines_if_ok => define
-        -- ...
-        --
-        local apiname = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
-        if apiname:endswith("s") then
-            apiname = apiname:sub(1, #apiname - 1)
-        end
+            -- get api name of tool 
+            --
+            -- ignore "nf_" and "_if_ok"
+            --
+            -- .e.g
+            --
+            -- defines => define
+            -- defines_if_ok => define
+            -- ...
+            --
+            local apiname = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
+            if apiname:endswith("s") then
+                apiname = apiname:sub(1, #apiname - 1)
+            end
 
-        -- map name flag to real flag
-        local mapper = self:_tool()["nf_" .. apiname]
-        if mapper then
-            
-            -- add the flags 
-            for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
-            
-                -- map and check flag
-                local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
-                if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                    table.join2(flags, flag)
+            -- map name flag to real flag
+            local mapper = self:_tool()["nf_" .. apiname]
+            if mapper then
+                
+                -- add the flags 
+                for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
+                
+                    -- map and check flag
+                    local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
+                    if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
+                        table.join2(flags, flag)
+                    end
                 end
             end
         end

@@ -278,6 +278,40 @@ function target:headerdir()
     return self:get("headerdir") or config.get("buildir")
 end
 
+-- get the config info of the given source file
+function target:fileconfig(sourcefile)
+
+    -- get files config
+    local filesconfig = self._FILESCONFIG
+    if not filesconfig then
+        filesconfig = {}
+        for filepath, fileconfig in pairs(table.wrap(self:get("__extra_files"))) do
+
+            -- match source files
+            local results = os.match(filepath)
+            if #results == 0 then
+                utils.warning("cannot match add_files(\"%s\")", filepath)
+            end
+
+            -- process source files
+            for _, file in ipairs(results) do
+
+                -- convert to the relative path
+                if path.is_absolute(file) then
+                    file = path.relative(file, os.projectdir())
+                end
+
+                -- save it
+                filesconfig[file] = fileconfig
+            end
+        end
+        self._FILESCONFIG = filesconfig
+    end
+
+    -- get file config
+    return filesconfig[sourcefile]
+end
+
 -- get the source files 
 function target:sourcefiles()
 
@@ -669,9 +703,10 @@ function target:configprefix()
 
     -- get the config prefix
     local configprefix = nil
+    local configheader = self:get("config_header")
     local configheader_extra = self:get("__extra_config_header")
     if type(configheader_extra) == "table" then
-        configprefix = configheader_extra.prefix
+        configprefix = table.wrap(configheader_extra[configheader]).prefix
     end
     if not configprefix then
         configprefix = self:get("config_h_prefix") or (self:name():upper() .. "_CONFIG")
