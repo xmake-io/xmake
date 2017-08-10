@@ -76,7 +76,7 @@ $ bash <(wget http://xmake.io/get.sh -O -)
 ##### 使用powershell
 
 ```bash
-$ Invoke-Expression (Invoke-Webrequest 'http://xmake.io/get.ps1' -UseBasicParsing).Content
+$ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
 
 #### Windows

@@ -1214,22 +1214,16 @@ end
 
 -- register api for on_script
 function interpreter:api_register_on_script(scope_kind, ...)
-
-    -- register implementation
     self:_api_register_xxx_script(scope_kind, "on", ...)
 end
 
 -- register api for before_script
 function interpreter:api_register_before_script(scope_kind, ...)
-
-    -- register implementation
     self:_api_register_xxx_script(scope_kind, "before", ...)
 end
 
 -- register api for after_script
 function interpreter:api_register_after_script(scope_kind, ...)
-
-    -- register implementation
     self:_api_register_xxx_script(scope_kind, "after", ...)
 end
 
