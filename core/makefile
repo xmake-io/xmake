@@ -38,7 +38,7 @@ endif
 all : .null
 	@echo "" > /tmp/$(PRO_NAME).out
 	@echo make $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) 
+	@$(MAKE) --no-print-directory -C $(SRC_DIR) || cat /tmp/$(PRO_NAME).out
 
 # make rebuild
 rebuild : .null

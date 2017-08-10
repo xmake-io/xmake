@@ -18,17 +18,9 @@ ASM_SUFFIX 			= .s
 # prefix
 PRE_ 				:= $(if $(BIN),$(BIN)/$(PRE),)
 
-# cc
-CC_ 				:= ${shell if [ -f "/usr/bin/clang" ]; then echo "clang"; elif [ -f "/usr/local/bin/clang" ]; then echo "clang"; else echo "gcc"; fi }
-CC_ 				:= $(if $(findstring y,$(PROF)),gcc,$(CC_))
-CC 					= $(PRE_)$(CC_)
-
-# ld
-LD_ 				:= ${shell if [ -f "/usr/bin/clang" ]; then echo "clang"; elif [ -f "/usr/local/bin/clang" ]; then echo "clang"; else echo "gcc"; fi }
-LD_ 				:= $(if $(findstring y,$(PROF)),gcc,$(LD_))
-LD 					= $(PRE_)$(LD_)
-
 # tool
+CC 					= $(PRE_)gcc
+LD 					= $(PRE_)gcc
 AR 					= $(PRE_)ar
 STRIP 				= $(PRE_)strip
 RANLIB 				= $(PRE_)ranlib
