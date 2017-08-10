@@ -98,12 +98,12 @@ function nf_symbol(self, level, target)
     local flags = nil
     if level == "debug" then
         if target and target.symbolfile then
-            flags = "-ZI -Fd" .. target:symbolfile()
-            if self:has_flags({"-ZI", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}) then
+            flags = "-Zi -Fd" .. target:symbolfile()
+            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}) then
                 flags = "-FS " .. flags
             end
         else
-            flags = "-ZI"
+            flags = "-Zi"
         end
     end
 
