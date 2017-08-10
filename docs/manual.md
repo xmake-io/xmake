@@ -1532,6 +1532,17 @@ add_files("src/*.cpp|test.cpp|hello.cpp|xx_*.cpp")
 所以上面的例子后面过滤的都是在src下的文件，这个是要注意的。
 </p>
 
+2.1.6版本之后，对`add_files`进行了改进，支持基于files更细粒度的编译选项控制，例如：
+
+```lua
+target("test")
+    add_defines("TEST1")
+    add_files("src/*.c")
+    add_files("test/*.c", "test2/test2.c", {defines = "TEST2", languages = "c99", includedirs = ".", cflags = "-O0"})
+```
+
+可以在`add_files`的最后一个参数，传入一个配置table，去控制指定files的编译选项，里面的配置参数跟target的一致，并且这些文件还会继承target的通用配置`-DTEST1`
+
 ##### target:add_headers
 
 ###### 添加安装的头文件
@@ -5099,7 +5110,7 @@ local cmdstr = linker.linkcmd("static", "cxx", {"a.o", "b.o", "c.o"}, target:tar
 并且还可以自己传递各种配置，例如：
 
 ```lua
-local cmdstr = linker.linkcmd("static", "cxx", {"a.o", "b.o", "c.o"}, target:targetfile(), {linkdirs = "/usr/lib"})
+local cmdstr = linker.linkcmd("static", "cxx", {"a.o", "b.o", "c.o"}, target:targetfile(), {config = {linkdirs = "/usr/lib"}})
 ```
 
 ###### linker.linkargv
@@ -5193,7 +5204,7 @@ local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {target = target})
 并且还可以自己传递各种配置，例如：
 
 ```lua
-local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {includedirs = "/usr/include", defines = "DEBUG"})
+local cmdstr = compiler.compcmd("xxx.c", "xxx.o", {config = {includedirs = "/usr/include", defines = "DEBUG"}})
 ```
 
 通过target，我们可以导出指定目标的所有源文件编译命令：
@@ -5266,10 +5277,10 @@ end
 local features = compiler.features("c")
 
 -- 获取当前c++语言编译器的所有特性，启用c++11标准，否则获取不到新标准的特性
-local features = compiler.features("cxx", {cxxflags = "-std=c++11"})
+local features = compiler.features("cxx", {cofnig = {cxxflags = "-std=c++11"}})
 
 -- 获取当前c++语言编译器的所有特性，传递工程target的所有配置信息
-local features = compiler.features("cxx", {target = target, defines = "..", includedirs = ".."})
+local features = compiler.features("cxx", {target = target, config = {defines = "..", includedirs = ".."}})
 ```
 
 所有c编译器特性列表：
@@ -6449,10 +6460,10 @@ local ok = has_cfuncs({"sigsetjmp((void*)0, 0)", "setjmp"}, {includes = "setjmp.
 在最后的可选参数中，除了可以指定`includes`外，还可以指定其他的一些参数用于控制编译检测的选项条件：
 
 ```lua
-{ verbose = false, target = [target|option], linkdirs = .., links = .., includes = .., defines = .., .. }
+{ verbose = false, target = [target|option], includes = .., config = {linkdirs = .., links = .., defines = ..}}
 ```
 
-其中verbose用于回显检测信息，target用于在检测前追加target中的配置信息。
+其中verbose用于回显检测信息，target用于在检测前追加target中的配置信息, 而config用于自定义配置跟target相关的编译选项。
 
 ###### detect.has_cxxfuncs
 
@@ -6464,14 +6475,14 @@ local ok = has_cfuncs({"sigsetjmp((void*)0, 0)", "setjmp"}, {includes = "setjmp.
 
 - 判断指定c头文件是否存在
 
-此接口是[lib.detect.check_cxsnippets](#detect-check_cxsnippets)的简化版本，仅用于检测函数。
+此接口是[lib.detect.check_cxsnippets](#detect-check_cxsnippets)的简化版本，仅用于检测头文件。
 
 ```lua
 import("lib.detect.has_cincludes")
 
 local ok = has_cincludes("stdio.h")
 local ok = has_cincludes({"stdio.h", "stdlib.h"}, {target = target})
-local ok = has_cincludes({"stdio.h", "stdlib.h"}, {defines = "_GNU_SOURCE=1", languages = "cxx11"})
+local ok = has_cincludes({"stdio.h", "stdlib.h"}, {config = {defines = "_GNU_SOURCE=1", languages = "cxx11"}})
 ```
 
 ###### detect.has_cxxincludes
@@ -6491,7 +6502,7 @@ import("lib.detect.has_ctypes")
 
 local ok = has_ctypes("wchar_t")
 local ok = has_ctypes({"char", "wchar_t"}, {includes = "stdio.h"})
-local ok = has_ctypes("wchar_t", {includes = {"stdio.h", "stdlib.h"}, "defines = "_GNU_SOURCE=1", languages = "cxx11"})
+local ok = has_ctypes("wchar_t", {includes = {"stdio.h", "stdlib.h"}, config = {"defines = "_GNU_SOURCE=1", languages = "cxx11"}})
 ```
 
 ###### detect.has_cxxtypes
