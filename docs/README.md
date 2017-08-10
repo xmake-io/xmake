@@ -57,19 +57,19 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 ##### via curl
 
 ```bash
-$ bash <(curl -fsSL http://xmake.io/get.sh)
+bash <(curl -fsSL http://xmake.io/get.sh)
 ```
 
 ##### via wget
 
 ```bash
-$ bash <(wget http://xmake.io/get.sh -O -)
+bash <(wget http://xmake.io/get.sh -O -)
 ```
 
 ##### via powershell
 
 ```bash
-$ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
+Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
 
 #### Windows
