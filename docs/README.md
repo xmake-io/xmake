@@ -57,13 +57,13 @@ so that any developer can quickly pick it up and enjoy the productivity boost wh
 ##### via curl
 
 ```bash
-bash <(curl -fsSL http://xmake.io/get.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
 ##### via wget
 
 ```bash
-bash <(wget http://xmake.io/get.sh -O -)
+bash <(wget https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh -O -)
 ```
 
 ##### via powershell
@@ -95,8 +95,8 @@ On Ubuntu:
 
 ```bash
 $ sudo add-apt-repository ppa:tboox/xmake
-$ sudo apt-get update
-$ sudo apt-get install xmake
+$ sudo apt update
+$ sudo apt install xmake
 ```
 
 Or add xmake package source manually:
@@ -109,8 +109,8 @@ deb-src http://ppa.launchpad.net/tboox/xmake/ubuntu yakkety main
 Then we run:
 
 ```bash
-$ sudo apt-get update
-$ sudo apt-get install xmake
+$ sudo apt update
+$ sudo apt install xmake
 ```
 
 Or download deb package to install it:
