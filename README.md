@@ -53,22 +53,22 @@ If you want to known more, please refer to:
 
 ## Installation
 
-##### via curl
+#### via curl
 
 ```bash
-$ bash <(curl -fsSL http://xmake.io/get.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
 ```
 
-##### via wget
+#### via wget
 
 ```bash
-$ bash <(wget http://xmake.io/get.sh -O -)
+bash <(wget https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh -O -)
 ```
 
-##### via powershell
+#### via powershell
 
 ```bash
-$ Invoke-Expression (Invoke-Webrequest 'http://xmake.io/get.ps1' -UseBasicParsing).Content
+Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
 ```
 
 ## Simple description
