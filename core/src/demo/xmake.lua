@@ -13,6 +13,9 @@ target("demo")
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
 
+    -- add packages
+    add_packages("tbox")
+
     -- set the object files directory
     set_objectdir("$(buildir)/.objs")
 
