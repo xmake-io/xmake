@@ -316,7 +316,7 @@ function builder:_addflags_from_language(flags, target, getters)
                 
                 -- add the flags 
                 for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
-                
+
                     -- map and check flag
                     local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
                     if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then

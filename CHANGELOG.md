@@ -10,6 +10,7 @@
 ### Bugs fixed
 
 * Fix target deps
+* Fix `target:add` and `option:add` bug
 
 ## v2.1.5
 
@@ -339,6 +340,7 @@
 ### Bugs修复
 
 * 修复目标级联依赖问题
+* 修复`target:add`和`option:add`问题
 
 ## v2.1.5
 
