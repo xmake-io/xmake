@@ -20,7 +20,7 @@ target("xmake")
     add_includedirs("$(projectdir)", "$(buildir)/luajit")
 
     -- add packages
-    add_packages("tbox", "base")
+    add_packages("tbox")
 
     -- add the common source files
     add_files("**.c") 

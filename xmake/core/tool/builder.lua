@@ -209,11 +209,9 @@ function builder:_addflags_from_target(flags, target)
     local targetflags = cache[key]
     if not targetflags then
     
-        -- add the target flags 
+        -- add flags (named) and inherited flags from language
         targetflags = {}
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            table.join2(targetflags, self:_mapflags(target:get(flagkind)))
-        end
+        self:_addflags_from_language(targetflags, target)
 
         -- add the flags for the target options
         if target.options then
@@ -222,8 +220,10 @@ function builder:_addflags_from_target(flags, target)
             end
         end
 
-        -- add flags (named) from language
-        self:_addflags_from_language(targetflags, target)
+        -- add the target flags 
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            table.join2(targetflags, self:_mapflags(target:get(flagkind)))
+        end
 
         -- cache it
         cache[key] = targetflags
