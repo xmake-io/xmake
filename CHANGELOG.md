@@ -5,6 +5,7 @@
 ### Changes
 
 * Improve `add_files` to configure the compile option of the given files
+* Inherit links and linkdirs from the dependent targets and options
 
 ### Bugs fixed
 
@@ -333,6 +334,7 @@
 ### 改进
 
 * 改进`add_files`，支持对files粒度进行编译选项的各种配置，更加灵活。
+* 从依赖的target和option中继承links和linkdirs。
 
 ### Bugs修复
 

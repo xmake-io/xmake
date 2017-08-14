@@ -21,7 +21,7 @@ target("demo")
 
     -- link readline
     if not is_plat("windows") then
-        add_links("readline")
+--        add_links("readline")
     end
 
     -- add packages

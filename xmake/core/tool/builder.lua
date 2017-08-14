@@ -112,9 +112,70 @@ end
 
 -- get the flag kinds
 function builder:_flagkinds()
-
-    -- get it
     return self._FLAGKINDS
+end
+
+-- inherts from target deps
+function builder:_inherit_from_target(values, target, name)
+    table.join2(values, target:get(name))
+    if target.options then
+        for _, opt in ipairs(target:options()) do
+            table.join2(values, opt:get(name))
+        end
+    end
+end
+
+-- inherts from target deps
+function builder:_inherit_from_targetdeps(results, target, flagname)
+
+    -- for all target deps
+    local orderdeps = target:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+
+        -- reverse deps order for links
+        local dep = orderdeps[total + 1 - idx]
+
+        -- is static or shared target library? link it
+        local depkind = dep:get("kind")
+        local targetkind = target:get("kind")
+        if depkind == "static" or depkind == "shared" then
+            if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
+
+                -- add dependent link
+                table.insert(results, dep:name())
+
+                -- inherit links from the depdent target
+                self:_inherit_from_target(results, dep, "links")
+
+            elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
+
+                -- add dependent linkdirs
+                table.insert(results, path.directory(dep:targetfile()))
+
+                -- inherit linkdirs from the depdent target
+                self:_inherit_from_target(results, dep, "linkdirs")
+
+            elseif flagname == "rpathdirs" and targetkind == "binary" then
+
+                -- add dependent rpathdirs (need absolute path)
+                table.insert(results, path.directory(path.absolute(dep:targetfile(), os.projectdir())))
+
+            elseif flagname == "includedirs" then
+
+                -- add dependent headerdir
+                if dep:get("headers") and os.isdir(dep:headerdir()) then
+                    table.insert(results, dep:headerdir())
+                end
+                
+                -- add dependent configheader directory
+                local configheader = dep:configheader()
+                if configheader and os.isfile(configheader) then
+                    table.insert(results, path.directory(configheader))
+                end
+            end
+        end
+    end
 end
 
 -- add flags from the configure 
@@ -172,53 +233,6 @@ function builder:_addflags_from_target(flags, target)
     table.join2(flags, targetflags)
 end
 
--- add flags from target deps
-function builder:_addflags_from_targetdeps(results, target, flagname)
-
-    -- for all target deps
-    local orderdeps = target:orderdeps()
-    local total = #orderdeps
-    for idx, _ in ipairs(orderdeps) do
-
-        -- reverse deps order for links
-        local dep = orderdeps[total + 1 - idx]
-
-        -- is static or shared target library? link it
-        local depkind = dep:get("kind")
-        local targetkind = target:get("kind")
-        if depkind == "static" or depkind == "shared" then
-            if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
-
-                -- add dependent link
-                table.insert(results, dep:name())
-
-            elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
-
-                -- add dependent linkdirs
-                table.insert(results, path.directory(dep:targetfile()))
-
-            elseif flagname == "rpathdirs" and targetkind == "binary" then
-
-                -- add dependent rpathdirs (need absolute path)
-                table.insert(results, path.directory(path.absolute(dep:targetfile(), os.projectdir())))
-
-            elseif flagname == "includedirs" then
-
-                -- add dependent headerdir
-                if dep:get("headers") and os.isdir(dep:headerdir()) then
-                    table.insert(results, dep:headerdir())
-                end
-                
-                -- add dependent configheader directory
-                local configheader = dep:configheader()
-                if configheader and os.isfile(configheader) then
-                    table.insert(results, path.directory(configheader))
-                end
-            end
-        end
-    end
-end
-
 -- add flags from the argument option 
 function builder:_addflags_from_argument(flags, target, args)
 
@@ -249,7 +263,7 @@ function builder:_addflags_from_language(flags, target, getters)
 
                             -- link? add includes and links of all dependent targets
                             if name == "links" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
-                                self:_addflags_from_targetdeps(results, target, name)
+                                self:_inherit_from_targetdeps(results, target, name)
                             end
 
                             -- ok?

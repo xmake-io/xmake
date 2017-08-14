@@ -26,5 +26,5 @@ target("xmake")
     add_files("**.c") 
        
     -- add cfunc
-    add_cfunc("API", "readline", nil, {"readline/readline.h"}, "readline")
+    add_cfunc("API", "readline", "readline", {"readline/readline.h"}, "readline")
 
