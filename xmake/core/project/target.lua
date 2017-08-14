@@ -164,6 +164,11 @@ function target:deps()
     return self._DEPS
 end
 
+-- get target order deps
+function target:orderdeps()
+    return self._ORDERDEPS
+end
+
 -- is phony target?
 function target:isphony()
     

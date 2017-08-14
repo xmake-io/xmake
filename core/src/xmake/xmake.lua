@@ -28,6 +28,3 @@ target("xmake")
     -- add cfunc
     add_cfunc("API", "readline", nil, {"readline/readline.h"}, "readline")
 
-    if is_mode("coverage") then
-        add_cxflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
-    end

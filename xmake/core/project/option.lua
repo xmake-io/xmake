@@ -294,6 +294,11 @@ function option:deps()
     return self._DEPS
 end
 
+-- get option order deps
+function option:orderdeps()
+    return self._ORDERDEPS
+end
+
 -- get the option name
 function option:name()
     return self._NAME

@@ -2,7 +2,7 @@
 target("demo")
 
     -- add deps
-    add_deps("sv", "luajit", "xmake")
+    add_deps("xmake")
 
     -- make as a binary 
     set_kind("binary")

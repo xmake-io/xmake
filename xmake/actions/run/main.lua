@@ -74,7 +74,7 @@ end
 function _run_deps(target)
 
     -- run target deps
-    for _, dep in pairs(target:deps()) do
+    for _, dep in ipairs(target:orderdeps()) do
         _run(dep)
     end
 end

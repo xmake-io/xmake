@@ -51,12 +51,12 @@ function _is_modified(target, depfile, buildinfo, linker_instance)
     end
 
     -- the program has been modified?
-    if linker_instance:program() ~= depinfo.program then
+    if program ~= depinfo.program then
         return true
     end
 
     -- the flags has been modified?
-    return os.args(linker_instance:linkflags({target = target})) ~= os.args(depinfo.flags)
+    return os.args(linkflags) ~= os.args(depinfo.flags)
 end
 
 -- build target from objects
@@ -68,9 +68,15 @@ function _build_from_objects(target, buildinfo)
     -- load linker instance
     local linker_instance = linker.load(target:targetkind(), target:sourcekinds())
 
+    -- get program
+    local program = linker_instance:program()
+
+    -- get link flags
+    local linkflags = linker_instance:linkflags({target = target})
+
     -- this target and it's deps are not modified?
     local depfile = target:depfile()
-    local modified = _is_modified(target, depfile, buildinfo, linker_instance)
+    local modified = _is_modified(target, depfile, buildinfo, program, linkflags)
     if not modified then
         return
     end
@@ -117,14 +123,14 @@ function _build_from_objects(target, buildinfo)
 
     -- trace verbose info
     if verbose then
-        print(linker_instance:linkcmd(objectfiles, targetfile, {target = target}))
+        print(linker_instance:linkcmd(objectfiles, targetfile, {linkflags = linkflags}))
     end
 
     -- link it
-    assert(linker_instance:link(objectfiles, targetfile, {target = target}))
+    assert(linker_instance:link(objectfiles, targetfile, {linkflags = linkflags}))
 
     -- save program and flags to the dependent file
-    io.save(depfile, {program = linker_instance:program(), flags = linker_instance:linkflags({target = target})})
+    io.save(depfile, {program = program, flags = linkflags})
 end
 
 -- build target from sources

@@ -6,6 +6,10 @@
 
 * Improve `add_files` to configure the compile option of the given files
 
+### Bugs fixed
+
+* Fix target deps
+
 ## v2.1.5
 
 ### New features
@@ -317,7 +321,7 @@
 ### Bugs fixed
 
 * Fix api bug for `set_installscript`
-* Fix install bug for windows x86_64
+* Fix install bug for windows `x86_64`
 * Fix relative path bug
 
 <h1 id="中文"></h1>
@@ -329,6 +333,10 @@
 ### 改进
 
 * 改进`add_files`，支持对files粒度进行编译选项的各种配置，更加灵活。
+
+### Bugs修复
+
+* 修复目标级联依赖问题
 
 ## v2.1.5
 

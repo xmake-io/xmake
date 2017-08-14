@@ -176,7 +176,12 @@ end
 function builder:_addflags_from_targetdeps(results, target, flagname)
 
     -- for all target deps
-    for _, dep in pairs(target:deps()) do
+    local orderdeps = target:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+
+        -- reverse deps order for links
+        local dep = orderdeps[total + 1 - idx]
 
         -- is static or shared target library? link it
         local depkind = dep:get("kind")

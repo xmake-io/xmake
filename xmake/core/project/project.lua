@@ -401,6 +401,22 @@ function project.get(name)
     end
 end
 
+-- load deps for option and target
+function project._load_deps(target, targets, deps, orderdeps)
+
+    -- get dep targets
+    for _, dep in ipairs(table.wrap(target:get("deps"))) do
+        local deptarget = targets[dep]
+        if deptarget then
+            project._load_deps(deptarget, targets, deps, orderdeps)
+            if not deps[dep] then
+                deps[dep] = deptarget
+                table.insert(orderdeps, deptarget)
+            end
+        end
+    end
+end
+
 -- load targets 
 function project._load_targets()
 
@@ -434,10 +450,9 @@ function project._load_targets()
 
     -- load and attach target deps
     for _, target in pairs(targets) do
-        target._DEPS = {}
-        for _, dep in ipairs(table.wrap(target:get("deps"))) do
-            target._DEPS[dep] = targets[dep]
-        end
+        target._DEPS      = target._DEPS or {}
+        target._ORDERDEPS = target._ORDERDEPS or {}
+        project._load_deps(target, targets, target._DEPS, target._ORDERDEPS)
     end
 
     -- enter toolchains environment
@@ -517,10 +532,9 @@ function project._load_options(disable_filter)
 
     -- load and attach options deps
     for _, opt in pairs(options) do
-        opt._DEPS = {}
-        for _, dep in ipairs(table.wrap(opt:get("deps"))) do
-            opt._DEPS[dep] = options[dep]
-        end
+        opt._DEPS      = opt._DEPS or {}
+        opt._ORDERDEPS = opt._ORDERDEPS or {}
+        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS)
     end
 
     -- ok?
