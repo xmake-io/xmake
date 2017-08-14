@@ -20,7 +20,7 @@ target("demo")
     set_objectdir("$(buildir)/.objs")
 
     -- add includes directory
-    add_includedirs("$(projectdir)", "$(projectdir)/src", "$(buildir)/luajit")
+    add_includedirs("$(projectdir)", "$(projectdir)/src")
 
     -- add the common source files
     add_files("**.c") 

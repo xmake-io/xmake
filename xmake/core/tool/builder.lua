@@ -258,13 +258,14 @@ function builder:_addflags_from_language(flags, target, getters)
     ,   platform    =   platform.get
     ,   target      =   function (name) 
 
-                            -- get flagvalues of target with given flagname
-                            local results = table.wrap(target:get(name))
-
-                            -- link? add includes and links of all dependent targets
+                            -- link? add includes and links of all dependent targets first
+                            local results = {}
                             if name == "links" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
                                 self:_inherit_from_targetdeps(results, target, name)
                             end
+
+                            -- get flagvalues of target with given flagname
+                            table.join2(results, target:get(name))
 
                             -- ok?
                             return results
