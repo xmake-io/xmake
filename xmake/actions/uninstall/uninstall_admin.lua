@@ -41,9 +41,6 @@ function main(targetname, installdir)
     -- load platform
     platform.load(config.plat())
 
-    -- laod project
-    project.load()
-
     -- save the current option and push a new option context
     option.save()
 

@@ -209,6 +209,9 @@ function project.interpreter()
             "set_project"
         ,   "set_version"
         ,   "set_modes"
+            -- add_xxx
+        ,   "add_requires"
+        ,   "add_repositories"
             -- target.set_xxx
         ,   "target.set_kind"
         ,   "target.set_strip"
@@ -235,8 +238,8 @@ function project.interpreter()
             -- option.add_xxx
         ,   "option.add_deps"
         ,   "option.add_vectorexts"
-        ,   "option.add_bindings"  -- deprecated
-        ,   "option.add_rbindings" -- deprecated
+        ,   "option.add_bindings"   -- deprecated
+        ,   "option.add_rbindings"  -- deprecated
         }
     ,   pathes = 
         {
@@ -628,6 +631,36 @@ function project.tasks()
     if not results then
         return nil, errors
     end
+
+    -- ok?
+    return results, interp
+end
+
+-- get packages
+function project.packages()
+
+    -- get it from cache first
+    if project._PACKAGES then
+        return project._PACKAGES, interp
+    end
+
+    -- get interpreter
+    local interp = project.interpreter()
+    assert(interp) 
+
+    -- the project file is not found?
+    if not os.isfile(os.projectfile()) then
+        return {}, nil
+    end
+
+    -- load the tasks from the the project file and disable filter, we will process filter after a while
+    local results, errors = interp:load(os.projectfile(), "package", true, false)
+    if not results then
+        return nil, errors
+    end
+
+    -- save results to cache
+    project._PACKAGES = results
 
     -- ok?
     return results, interp

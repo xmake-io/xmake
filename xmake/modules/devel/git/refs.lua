@@ -30,13 +30,13 @@ import("ls_remote")
 --
 -- @param url       the remote url, optional
 --
--- @return          the refs
+-- @return          the tags, branches
 --
 -- @code
 --
 -- import("devel.git")
 -- 
--- local refs = git.refs(url)
+-- local tags, branches = git.refs(url)
 --
 -- @endcode
 --
@@ -45,7 +45,7 @@ function main(url)
     -- get refs
     local refs = ls_remote("refs", url)
     if not refs or #refs == 0 then
-        return {}
+        return {}, {}
     end
 
     -- get tags and branches
@@ -60,5 +60,5 @@ function main(url)
     end
 
     -- ok
-    return {tags = tags, branches = branches}
+    return tags, branches
 end

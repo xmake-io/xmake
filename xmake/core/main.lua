@@ -36,6 +36,7 @@ local privilege     = require("base/privilege")
 local task          = require("base/task")
 local project       = require("project/project")
 local history       = require("project/history")
+local package       = require("package/package")
 
 -- init the option menu
 local menu =
@@ -51,7 +52,6 @@ local menu =
 
 }
 
-
 -- show logo
 function main._show_logo()
 
@@ -62,6 +62,7 @@ function main._show_logo()
     \ \/ / |  \/  |/ _  | |/ / __ \
      >  <  | \__/ | /_| |   <  ___/
     /_/\_\_|_|  |_|\__ \|_|\_\____| 
+
                          by ruki, ${underline}tboox.org${clear}
 
     ${point_right}  ${bright}Manual${clear}: ${underline}http://xmake.io/#/home${clear}
@@ -162,6 +163,7 @@ function main._init()
 
     -- define task and package apis first before loading project's xmake.lua - calling option.init()
     project.define_apis(task.apis())
+    project.define_apis(package.apis())
 end
 
 -- the main function

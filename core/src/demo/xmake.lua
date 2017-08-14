@@ -2,7 +2,7 @@
 target("demo")
 
     -- add deps
-    add_deps("xmake")
+    add_deps("sv", "luajit", "xmake")
 
     -- make as a binary 
     set_kind("binary")
@@ -19,10 +19,6 @@ target("demo")
     -- add includes directory
     add_includedirs("$(projectdir)", "$(projectdir)/src", "$(buildir)/luajit")
 
-    -- add links and directory
-    add_links("xmake", "luajit")
-    add_linkdirs("$(buildir)")
-
     -- link readline
     if not is_plat("windows") then
         add_links("readline")
@@ -33,9 +29,14 @@ target("demo")
 
     -- add the common source files
     add_files("**.c") 
+           
+    -- for macosx
+    if is_plat("macosx") then
+        add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
+    end
 
     -- add the resource files (it will be enabled after publishing new version)
     if is_plat("windows") then
         add_files("*.rc")
     end
-       
+

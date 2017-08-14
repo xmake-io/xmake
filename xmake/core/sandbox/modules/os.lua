@@ -443,17 +443,6 @@ function sandbox_os.exists(file_or_dir)
     return os.exists(file_or_dir)
 end
 
--- make a new uuid
-function sandbox_os.uuid(name)
-
-    -- make it
-    local uuid = os.uuid(name)
-    assert(uuid)
-
-    -- ok?
-    return uuid
-end
-
 -- return module
 return sandbox_os
 

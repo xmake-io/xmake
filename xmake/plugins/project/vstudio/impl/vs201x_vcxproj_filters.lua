@@ -75,7 +75,7 @@ function _make_filters(filtersfile, vsinfo, target, vcxprojdir)
             while filter and filter ~= '.' do
                 if not exists[filter] then
                     filtersfile:enter("<Filter Include=\"%s\">", filter)
-                    filtersfile:print("<UniqueIdentifier>{%s}</UniqueIdentifier>", os.uuid(filter))
+                    filtersfile:print("<UniqueIdentifier>{%s}</UniqueIdentifier>", hash.uuid(filter))
                     filtersfile:leave("</Filter>")
                     exists[filter] = true
                 end

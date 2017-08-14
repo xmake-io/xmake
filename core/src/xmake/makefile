@@ -16,13 +16,13 @@ xmake_C_FILES 			+= \
 						machine \
 						os/argv \
 						os/find \
-						os/uuid \
 						os/isdir \
 						os/rmdir \
 						os/mkdir \
 						os/cpdir \
 						os/chdir \
 						os/mtime \
+						os/sleep \
 						os/mclock \
 						os/curdir \
 						os/tmpdir \
@@ -44,6 +44,8 @@ xmake_C_FILES 			+= \
 						path/absolute \
 						path/translate \
 						path/is_absolute \
+						hash/uuid \
+						hash/sha256 \
 						winreg/query \
 						string/endswith \
 						string/startswith \
@@ -53,6 +55,10 @@ xmake_C_FILES 			+= \
 						process/waitlist \
 						process/close \
 						sandbox/interactive \
+						semver/parse \
+						semver/satisfies \
+						semver/select \
+						semver/semver \
 						readline/readline \
 						readline/history_list \
 						readline/add_history \
@@ -65,7 +71,8 @@ xmake_CXFLAGS 			+= $(if $(findstring readline,$(base_LIBNAMES)),-DXM_CONFIG_API
 	
 # includes
 xmake_INC_DIRS 		    += \
-						../luajit/src
+						../luajit/src \
+                        ../sv/include
 
 						
 # suffix

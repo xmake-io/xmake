@@ -73,9 +73,6 @@ function main(argv)
         -- load configure
         config.load()
 
-        -- load project
-        project.load()
-
         -- enter the project directory
         os.cd(project.directory())
 

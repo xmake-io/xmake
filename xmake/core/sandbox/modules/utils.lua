@@ -26,6 +26,7 @@
 local io        = require("base/io")
 local utils     = require("base/utils")
 local colors    = require("base/colors")
+local option    = require("base/option")
 local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
@@ -72,7 +73,7 @@ function sandbox_utils.print(format, ...)
         {
             function ()
                 -- attempt to print format string first
-                utils._iowrite(vformat(format, unpack(args)) .. "\n")
+                utils._print(vformat(format, unpack(args)))
             end,
             catch 
             {
@@ -100,7 +101,7 @@ end
 function sandbox_utils.cprint(format, ...)
 
     -- done
-    utils._iowrite(colors(vformat(format, ...)) .. "\n")
+    utils._print(colors(vformat(format, ...)))
 end
 
 -- print format string, the builtin variables and colors without newline
@@ -108,6 +109,20 @@ function sandbox_utils.cprintf(format, ...)
 
     -- done
     utils._iowrite(colors(vformat(format, ...)))
+end
+
+-- print() if enable verbose
+function sandbox_utils.vprint(format, ...)
+    if option.get("verbose") then
+        sandbox_utils.print(format, ...)
+    end
+end
+
+-- vprintf() if enable verbose
+function sandbox_utils.vprintf(format, ...)
+    if option.get("verbose") then
+        sandbox_utils.printf(format, ...)
+    end
 end
 
 -- assert
@@ -125,7 +140,6 @@ function sandbox_utils.assert(value, format, ...)
     -- return it 
     return value
 end
-
 
 -- return module
 return sandbox_utils

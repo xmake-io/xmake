@@ -34,6 +34,7 @@ local project     = require("project/project")
 local sandbox     = require("sandbox/sandbox")
 local raise       = require("sandbox/modules/raise")
 local environment = require("platform/environment")
+local package     = require("package/package")
 
 -- load project
 function sandbox_core_project.load()
@@ -159,6 +160,11 @@ end
 -- get the project modes
 function sandbox_core_project.modes()
     return project.get("modes")
+end
+
+-- get the project requires
+function sandbox_core_project.requires()
+    return project.get("requires")
 end
 
 -- return module

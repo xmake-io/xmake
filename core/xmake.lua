@@ -5,7 +5,7 @@ set_project("xmake")
 set_version("2.1.5")
 
 -- set xmake min version
-set_xmakever("2.1.2")
+set_xmakever("2.1.5")
 
 -- set warning all as error
 set_warnings("all", "error")
@@ -14,7 +14,7 @@ set_warnings("all", "error")
 set_languages("c99", "cxx11")
 
 -- disable some compiler errors
-add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
+add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-error=nullability-completeness")
 
 -- add defines
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
@@ -41,11 +41,6 @@ if is_plat("windows") then
     add_ldflags("-nodefaultlib:\"msvcrt.lib\"")
 end
 
--- for macosx
-if is_plat("macosx") then
-    add_ldflags("-all_load", "-pagezero_size 10000", "-image_base 100000000")
-end
-
 -- for mode coverage
 if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
@@ -55,4 +50,4 @@ end
 add_packagedirs("pkg") 
 
 -- add projects
-add_subdirs("src/luajit", "src/xmake", "src/demo") 
+add_subdirs("src/sv","src/luajit", "src/xmake", "src/demo") 

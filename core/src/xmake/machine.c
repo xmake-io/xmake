@@ -60,13 +60,13 @@ typedef struct __xm_machine_impl_t
 // the os functions
 tb_int_t xm_os_argv(lua_State* lua);
 tb_int_t xm_os_find(lua_State* lua);
-tb_int_t xm_os_uuid(lua_State* lua);
 tb_int_t xm_os_isdir(lua_State* lua);
 tb_int_t xm_os_rmdir(lua_State* lua);
 tb_int_t xm_os_mkdir(lua_State* lua);
 tb_int_t xm_os_cpdir(lua_State* lua);
 tb_int_t xm_os_chdir(lua_State* lua);
 tb_int_t xm_os_mtime(lua_State* lua);
+tb_int_t xm_os_sleep(lua_State* lua);
 tb_int_t xm_os_mclock(lua_State* lua);
 tb_int_t xm_os_curdir(lua_State* lua);
 tb_int_t xm_os_tmpdir(lua_State* lua);
@@ -92,6 +92,10 @@ tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
 tb_int_t xm_path_translate(lua_State* lua);
 tb_int_t xm_path_is_absolute(lua_State* lua);
+
+// the hash functions
+tb_int_t xm_hash_uuid(lua_State* lua);
+tb_int_t xm_hash_sha256(lua_State* lua);
 
 // the winreg functions
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -120,6 +124,11 @@ tb_int_t xm_readline_add_history(lua_State* lua);
 tb_int_t xm_readline_clear_history(lua_State* lua);
 #endif
 
+// the semver functions
+tb_int_t xm_semver_parse(lua_State* lua);
+tb_int_t xm_semver_satisfies(lua_State* lua);
+tb_int_t xm_semver_select(lua_State* lua);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -129,13 +138,13 @@ static luaL_Reg const g_os_functions[] =
 {
     { "argv",           xm_os_argv      }
 ,   { "find",           xm_os_find      }
-,   { "uuid",           xm_os_uuid      }
 ,   { "isdir",          xm_os_isdir     }
 ,   { "rmdir",          xm_os_rmdir     }
 ,   { "mkdir",          xm_os_mkdir     }
 ,   { "cpdir",          xm_os_cpdir     }
 ,   { "chdir",          xm_os_chdir     }
 ,   { "mtime",          xm_os_mtime     }
+,   { "sleep",          xm_os_sleep     }
 ,   { "mclock",         xm_os_mclock    }
 ,   { "curdir",         xm_os_curdir    }
 ,   { "tmpdir",         xm_os_tmpdir    }
@@ -166,6 +175,14 @@ static luaL_Reg const g_path_functions[] =
 ,   { "translate",      xm_path_translate   }
 ,   { "is_absolute",    xm_path_is_absolute }
 ,   { tb_null,          tb_null             }
+};
+
+// the hash functions
+static luaL_Reg const g_hash_functions[] = 
+{
+    { "uuid",           xm_hash_uuid   }
+,   { "sha256",         xm_hash_sha256 }
+,   { tb_null,          tb_null        }
 };
 
 // the string functions
@@ -214,6 +231,15 @@ static luaL_Reg const g_readline_functions[] =
 ,   { tb_null,          tb_null                  }
 };
 #endif
+
+// the semver functions
+static luaL_Reg const g_semver_functions[] =
+{
+    { "parse",          xm_semver_parse     }
+,   { "satisfies",      xm_semver_satisfies }
+,   { "select",         xm_semver_select    }
+,   { tb_null,          tb_null             }
+};
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -422,6 +448,9 @@ xm_machine_ref_t xm_machine_init()
         // bind path functions
         luaL_register(impl->lua, "path", g_path_functions);
 
+        // bind hash functions
+        luaL_register(impl->lua, "hash", g_hash_functions);
+
         // bind string functions
         luaL_register(impl->lua, "string", g_string_functions);
 
@@ -440,6 +469,9 @@ xm_machine_ref_t xm_machine_init()
         // bind readline functions
         luaL_register(impl->lua, "readline", g_readline_functions);
 #endif
+
+        // bind semver functions
+        luaL_register(impl->lua, "semver", g_semver_functions);
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)

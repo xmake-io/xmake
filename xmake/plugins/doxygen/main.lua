@@ -44,9 +44,6 @@ function main()
     -- load configure
     config.load()
 
-    -- load project
-    project.load()
-
     -- enable recursive
     --
     -- RECURSIVE = YES
