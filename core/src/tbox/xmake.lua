@@ -32,7 +32,9 @@ if is_mode("debug", "check", "coverage") then
     set_optimize("none")
 
     -- add defines for debug
-    add_defines("__tb_debug__")
+    if not is_mode("coverage") then
+        add_defines("__tb_debug__")
+    end
 
     -- attempt to enable some checkers for pc
     if is_mode("check") and is_arch("i386", "x86_64") then
