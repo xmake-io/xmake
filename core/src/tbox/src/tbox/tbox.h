@@ -30,25 +30,19 @@
  */
 #include "prefix.h"
 #include "zip/zip.h"
-#include "xml/xml.h"
-#include "asio/asio.h"
 #include "libm/libm.h"
 #include "libc/libc.h"
 #include "math/math.h"
 #include "hash/hash.h"
 #include "utils/utils.h"
-#include "regex/regex.h"
-#include "object/object.h"
 #include "memory/memory.h"
 #include "stream/stream.h"
 #include "string/string.h"
 #include "network/network.h"
 #include "charset/charset.h"
 #include "platform/platform.h"
-#include "database/database.h"
 #include "algorithm/algorithm.h"
 #include "container/container.h"
-#include "coroutine/coroutine.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

@@ -30,7 +30,6 @@
 #include "libc/impl/impl.h"
 #include "libm/impl/impl.h"
 #include "math/impl/impl.h"
-#include "object/impl/impl.h"
 #include "memory/impl/impl.h"
 #include "network/impl/impl.h"
 #include "platform/impl/impl.h"
