@@ -17,7 +17,7 @@ This product depends on 'tbox', The Treasure Box Library,
 which can be obtained at:
 
   * LICENSE:
-    * core/pkg/tbox.pkg/LICENSE.md (Apache License 2.0)
+    * core/src/tbox/LICENSE.md (Apache License 2.0)
   * HOMEPAGE:
     * http://www.tboox.org/
 

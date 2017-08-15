@@ -46,8 +46,5 @@ if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
--- add package directories
-add_packagedirs("pkg") 
-
 -- add projects
-add_subdirs("src/sv","src/luajit", "src/xmake", "src/demo") 
+add_subdirs("src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 

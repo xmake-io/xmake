@@ -5,7 +5,7 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    add_deps("sv", "luajit")
+    add_deps("sv", "luajit", "tbox")
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
