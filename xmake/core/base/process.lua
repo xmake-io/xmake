@@ -40,6 +40,7 @@ function process.asyncrun(task, waitchars)
     local waitindex = 0
     local waitchars = waitchars or {'\\', '|', '/', '-'}
     utils.printf(waitchars[waitindex + 1])
+    io.flush()
 
     -- start and wait this task
     local ok, errors = coroutine.resume(task)
@@ -47,6 +48,7 @@ function process.asyncrun(task, waitchars)
 
         -- remove wait charactor
         utils.printf("\b")
+        io.flush()
 
         -- failed
         return false, errors
@@ -58,6 +60,7 @@ function process.asyncrun(task, waitchars)
         -- trace
         waitindex = ((waitindex + 1) % #waitchars)
         utils.printf("\b" .. waitchars[waitindex + 1])
+        io.flush()
 
         -- wait some time
         os.sleep(300)
@@ -68,6 +71,7 @@ function process.asyncrun(task, waitchars)
 
             -- remove wait charactor
             utils.printf("\b")
+            io.flush()
 
             -- failed
             return false, errors
@@ -76,6 +80,7 @@ function process.asyncrun(task, waitchars)
 
     -- remove wait charactor
     utils.printf("\b")
+    io.flush()
 
     -- ok
     return true

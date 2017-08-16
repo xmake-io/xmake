@@ -56,6 +56,7 @@ sandbox_os.programfile  = os.programfile
 sandbox_os.projectdir   = os.projectdir
 sandbox_os.projectfile  = os.projectfile
 sandbox_os.versioninfo  = os.versioninfo
+sandbox_os.getwinsize   = os.getwinsize
 
 -- copy file or directory
 function sandbox_os.cp(...)

@@ -76,6 +76,7 @@ function main(requires)
        
         -- trace
         cprintf("\r${yellow}  => ${clear}downloading %s .. %s", table.concat(downloading, ", "), waitchars[waitindex + 1])
+        io.flush()
     end)
 
     -- install all required packages from repositories

@@ -30,7 +30,16 @@ import("utils.archive")
 
 -- empty chars
 function _emptychars()
-    return "                               "
+
+    -- get left width
+    local width = os.getwinsize()["width"] or 64
+
+    -- make empty chars
+    local emptychars = ""
+    for i = 1, width do
+        emptychars = emptychars .. " "
+    end
+    return emptychars
 end
 
 -- checkout codes from git
@@ -70,7 +79,8 @@ function _checkout(package, url, sourcedir)
     os.mv(sourcedir .. ".tmp", sourcedir)
 
     -- trace
-    cprint("\r${yellow}  => ${clear}clone %s %s .. ${green}ok%s", url, package:version_str(), _emptychars())
+    printf("\r" .. _emptychars())
+    cprint("\r${yellow}  => ${clear}clone %s %s .. ${green}ok", url, package:version_str())
 end
 
 -- download codes from ftp/http/https
@@ -104,7 +114,8 @@ function _download(package, url, sourcedir)
     os.mv(sourcedir .. ".tmp", sourcedir)
 
     -- trace
-    cprint("\r${yellow}  => ${clear}download %s .. ${green}ok%s", url, _emptychars())
+    printf("\r" .. _emptychars())
+    cprint("\r${yellow}  => ${clear}download %s .. ${green}ok", url)
 end
 
 -- get sorted urls

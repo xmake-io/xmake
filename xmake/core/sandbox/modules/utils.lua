@@ -92,22 +92,16 @@ end
 
 -- print format string and the builtin variables without newline
 function sandbox_utils.printf(format, ...)
-
-    -- done
     utils._iowrite(vformat(format, ...))
 end
 
 -- print format string, the builtin variables and colors with newline
 function sandbox_utils.cprint(format, ...)
-
-    -- done
     utils._print(colors(vformat(format, ...)))
 end
 
 -- print format string, the builtin variables and colors without newline
 function sandbox_utils.cprintf(format, ...)
-
-    -- done
     utils._iowrite(colors(vformat(format, ...)))
 end
 
