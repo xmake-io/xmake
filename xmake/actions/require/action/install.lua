@@ -100,7 +100,7 @@ option("%s")
     set_description("The %s package")
 
     -- add defines to config.h if checking ok
-    add_defines_h_if_ok("$(prefix)_PACKAGE_HAVE_%s")
+    add_defines_h("$(prefix)_PACKAGE_HAVE_%s")
 
     -- add links for checking
     add_links("%s")

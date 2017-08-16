@@ -8,11 +8,13 @@
 * Inherit links and linkdirs from the dependent targets and options
 * Improve `target.add_deps` and add inherit config, .e.g `add_deps("test", {inherit = false})`
 * Remove the binary files of `tbox.pkg`
+* Use `/Zi` instead of `/ZI` for msvc
 
 ### Bugs fixed
 
 * Fix target deps
 * Fix `target:add` and `option:add` bug
+* Fix compilation and installation bug on archlinux
 
 ## v2.1.5
 
@@ -339,12 +341,14 @@
 * 改进`add_files`，支持对files粒度进行编译选项的各种配置，更加灵活。
 * 从依赖的target和option中继承links和linkdirs。
 * 改进`target.add_deps`接口，添加继承配置，允许手动禁止依赖继承，例如：`add_deps("test", {inherit = false})`
-* 移除`tbox.pkg`二进制依赖
+* 移除`tbox.pkg`二进制依赖，直接集成tbox源码进行编译
 
 ### Bugs修复
 
 * 修复目标级联依赖问题
 * 修复`target:add`和`option:add`问题
+* 修复在archlinux上的编译和安装问题
+* 修复`/ZI`的兼容性问题，用`/Zi`替代
 
 ## v2.1.5
 
