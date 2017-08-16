@@ -151,7 +151,7 @@ function target:linkflags()
     return self:linker():linkflags({target = self})
 end
 
--- get the given dependent option
+-- get the given dependent target
 function target:dep(name)
     local deps = self:deps()
     if deps then
@@ -167,6 +167,24 @@ end
 -- get target order deps
 function target:orderdeps()
     return self._ORDERDEPS
+end
+
+-- get the given dependent config
+function target:depconfig(name)
+
+    -- get deps config
+    --
+    -- .e.g {inherit = false}
+    --
+    local depsconfig = self._DEPSCONFIG
+    if not depsconfig then
+        depsconfig = {}
+        for depname, depconfig in pairs(table.wrap(self:get("__extra_deps"))) do
+            depsconfig[depname] = depconfig
+        end
+        self._DEPSCONFIG = depsconfig
+    end
+    return depsconfig[name]
 end
 
 -- is phony target?

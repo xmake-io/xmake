@@ -1483,6 +1483,14 @@ target("test")
     add_deps("library2")
 ```
 
+如果我们还是想以前那样，并不想继承依赖target的任何配置，如何操作呢？这个在2.1.6版本中也对其进行了支持，通过：
+
+```lua
+add_deps("dep1", "dep2", {inherit = false})
+```
+
+通过显示设置inherit配置，来告诉xmake，这两个依赖的配置是否需要被继承，如果不设置，默认就是启用继承的。
+
 ##### target:add_links
 
 ###### 添加链接库名

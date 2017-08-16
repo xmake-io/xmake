@@ -6,6 +6,7 @@
 
 * Improve `add_files` to configure the compile option of the given files
 * Inherit links and linkdirs from the dependent targets and options
+* Improve `target.add_deps` and add inherit config, .e.g `add_deps("test", {inherit = false})`
 
 ### Bugs fixed
 
@@ -336,6 +337,7 @@
 
 * 改进`add_files`，支持对files粒度进行编译选项的各种配置，更加灵活。
 * 从依赖的target和option中继承links和linkdirs。
+* 改进`target.add_deps`接口，添加继承配置，允许手动禁止依赖继承，例如：`add_deps("test", {inherit = false})`
 
 ### Bugs修复
 
