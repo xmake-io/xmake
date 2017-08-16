@@ -220,8 +220,10 @@ function table._dump(self, exclude, level)
             io.write("    ")
         end
         io.write("}\n")  
-    else
+    elseif self ~= nil then
         io.write("<" .. tostring(self) .. ">")
+    else
+        io.write("nil")
     end
 end
 
@@ -235,6 +237,9 @@ function table.dump(self, exclude, prefix)
   
     -- dump it
     table._dump(self, exclude, 0)
+
+    -- end
+    print("")
 
     -- return it
     return self
