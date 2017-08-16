@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.6
+
 ### Changes
 
 * Improve `add_files` to configure the compile option of the given files
@@ -335,6 +337,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.6
 
 ### 改进
 
