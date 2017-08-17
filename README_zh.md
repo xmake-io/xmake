@@ -145,7 +145,7 @@ $ xmake run -d console
 
 ## 简单例子
 
-<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
+[![asciicast](https://asciinema.org/a/133693.png)](https://asciinema.org/a/133693)
 
 创建一个c++ console项目：
 
