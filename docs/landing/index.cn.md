@@ -91,7 +91,7 @@ $ xmake run -d console
 
 ## 使用演示
 
-[![usage_demo](http://tboox.org/static/img/xmake/build_demo.gif)](https://github.com/tboox/xmake)
+<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
 
 ## 联系方式
 

@@ -139,7 +139,7 @@ Please download and install from the plugins repository [xmake-plugins](https://
 
 ## Examples
 
-[![usage_demo](http://tboox.org/static/img/xmake/build_demo.gif)](http://www.xmake.io)
+<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
 
 Create a c++ console project:
 

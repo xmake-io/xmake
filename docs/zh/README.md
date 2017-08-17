@@ -156,7 +156,7 @@ $ ./scripts/get.sh __local__
 
 ## 快速开始
 
-![UsageDemo](http://tboox.org/static/img/xmake/build_demo.gif)
+<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
 
 #### 创建工程
 

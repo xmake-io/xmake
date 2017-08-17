@@ -91,7 +91,7 @@ Please download and install from the plugins repository [xmake-plugins](https://
 
 ## Examples
 
-[![usage_demo](http://tboox.org/static/img/xmake/build_demo.gif)](https://github.com/tboox/xmake)
+<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
 
 ## Contacts
 

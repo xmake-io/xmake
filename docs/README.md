@@ -128,7 +128,7 @@ $ ./scripts/get.sh __local__
 
 ## Quick Start
 
-![UsageDemo](http://tboox.org/static/img/xmake/build_demo.gif)
+<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
 
 #### Create Project
 
