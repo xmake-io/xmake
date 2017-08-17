@@ -156,7 +156,7 @@ $ ./scripts/get.sh __local__
 
 ## 快速开始
 
-<script type="text/javascript" src="https://asciinema.org/a/133693.js" id="asciicast-133693" async></script>
+[![asciicast](https://asciinema.org/a/133693.png)](https://asciinema.org/a/133693)
 
 #### 创建工程
 
