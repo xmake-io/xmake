@@ -62,11 +62,6 @@ function _need_check(changed)
         changed = option.get("clean")
     end
 
-    -- rebuild?
-    if changed then
-        cache.set("rebuild", true)
-    end
-
     -- get the current mtimes 
     local mtimes = project.mtimes()
 
