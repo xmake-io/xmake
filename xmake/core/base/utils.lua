@@ -91,7 +91,7 @@ function utils.cprint(format, ...)
     assert(format)
 
     -- trace
-    utils._print(colors(string.tryformat(format, ...)))
+    utils._print(colors.translate(string.tryformat(format, ...)))
 end
 
 -- print format string and colors without newline
@@ -101,7 +101,7 @@ function utils.cprintf(format, ...)
     assert(format)
 
     -- trace
-    utils._iowrite(colors(string.tryformat(format, ...)))
+    utils._iowrite(colors.translate(string.tryformat(format, ...)))
 end
 
 -- the verbose function

@@ -97,12 +97,12 @@ end
 
 -- print format string, the builtin variables and colors with newline
 function sandbox_utils.cprint(format, ...)
-    utils._print(colors(vformat(format, ...)))
+    utils._print(colors.translate(vformat(format, ...)))
 end
 
 -- print format string, the builtin variables and colors without newline
 function sandbox_utils.cprintf(format, ...)
-    utils._iowrite(colors(vformat(format, ...)))
+    utils._iowrite(colors.translate(vformat(format, ...)))
 end
 
 -- print() if enable verbose

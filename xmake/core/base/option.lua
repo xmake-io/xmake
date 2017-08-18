@@ -898,13 +898,13 @@ function option.show_menu(task)
 
     -- print copyright
     if menu.copyright then
-        print(colors(menu.copyright))
+        print(colors.translate(menu.copyright))
     end
 
     -- print usage
     if taskmenu.usage then
         print("")
-        print(colors("${bright}Usage: $${default cyan}" .. taskmenu.usage))
+        print(colors.translate("${bright}Usage: $${default cyan}" .. taskmenu.usage))
     end
 
     -- print description
@@ -937,13 +937,13 @@ function option.show_main()
 
     -- print copyright
     if menu.copyright then
-        print(colors(menu.copyright))
+        print(colors.translate(menu.copyright))
     end
 
     -- print usage
     if main.usage then
         print("")
-        print(colors("${bright}Usage: $${default cyan}" .. main.usage))
+        print(colors.translate("${bright}Usage: $${default cyan}" .. main.usage))
     end
 
     -- print description
@@ -993,7 +993,7 @@ function option.show_main()
 
             -- print category name
             print("")
-            print(colors(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
+            print(colors.translate(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
             
             -- the padding spaces
             local padding = 42
@@ -1029,7 +1029,7 @@ function option.show_main()
                 end
 
                 -- print task line
-                print(colors(taskline))
+                print(colors.translate(taskline))
             end
         end
     end
@@ -1048,7 +1048,7 @@ function option.show_options(options)
 
     -- print header
     print("")
-    print(colors("${bright}Options: "))
+    print(colors.translate("${bright}Options: "))
     
     -- the padding spaces
     local padding = 42
@@ -1116,7 +1116,7 @@ function option.show_options(options)
         end
 
         -- print option info
-        print(colors(option_info))
+        print(colors.translate(option_info))
 
         -- print more description if exists
         for i = 6, 64 do

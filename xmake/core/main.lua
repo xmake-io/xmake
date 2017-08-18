@@ -34,6 +34,7 @@ local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
+local colors        = require("base/colors")
 local project       = require("project/project")
 local history       = require("project/history")
 local package       = require("package/package")
@@ -63,14 +64,37 @@ function main._show_logo()
      >  <  | \__/ | /_| |   <  ___/
     /_/\_\_|_|  |_|\__ \|_|\_\____| 
 
-                         by ruki, ${underline}tboox.org${clear}
+                         by ruki, tboox.org
+    ]]
 
-    ${point_right}  ${bright}Manual${clear}: ${underline}http://xmake.io/#/home${clear}
-    ${pray}  ${bright}Donate${clear}: ${underline}http://xmake.io/pages/donation.html#donate${clear}
-                                      ]]
+    -- make rainbow for logo
+    if colors.truecolor() then
+        local lines = {} 
+        local seed  = 236
+        for _, line in ipairs(logo:split("\n")) do
+            local i = 0
+            local line2 = ""
+            line:gsub(".", function (c)
+                local code = colors.rainbow(i, seed)
+                line2 = string.format("%s${%s}%s", line2, code, c)
+                i = i + 1
+            end)
+            table.insert(lines, line2)
+        end
+        logo = table.concat(lines, "\n")
+    end
 
     -- show logo
     utils.cprint(logo)
+
+    -- define footer
+    local footer = [[
+    ${point_right}  ${bright}Manual${clear}: ${underline}http://xmake.io/#/home${clear}
+    ${pray}  ${bright}Donate${clear}: ${underline}http://xmake.io/pages/donation.html#donate${clear}
+    ]]
+
+    -- show footer
+    utils.cprint(footer)
 end
 
 -- show help and version info

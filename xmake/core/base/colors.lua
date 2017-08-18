@@ -119,13 +119,38 @@ function colors.has256()
     return os.getenv("ANSICON") 
 end
 
--- support true 24bits colors
+-- support 24bits true colors
 function colors.truecolor()
 
     -- this is supported if be not windows
     if os.host() ~= "windows" then
 --        return true
     end
+end
+
+-- make rainbow color code by the index of characters
+--
+-- @param index     the index of characters
+-- @param seed      the seed, 0-255, default: random
+-- @param freq      the frequency, default: 0.1
+-- @param spread    the spread, default: 3.0 
+--
+--
+function colors.rainbow(index, seed, freq, spread)
+
+    -- init values
+    seed   = seed
+    freq   = freq or 0.1
+    spread = spread or 3.0
+    index  = seed + index / spread
+
+    -- make colors
+    local red   = math.sin(freq * index + 0) * 127 + 128
+    local green = math.sin(freq * index + 2 * math.pi / 3) * 127 + 128
+    local blue  = math.sin(freq * index + 4 * math.pi / 3) * 127 + 128
+
+    -- make code
+    return string.format("%d;%d;%d", red, green, blue)
 end
 
 -- translate colors from the string
@@ -208,4 +233,4 @@ function colors.translate(str)
 end
 
 -- return module
-return colors.translate
+return colors
