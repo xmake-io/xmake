@@ -159,8 +159,8 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
 
             elseif flagname == "rpathdirs" and targetkind == "binary" then
 
-                -- add dependent rpathdirs (need absolute path)
-                table.insert(results, path.directory(path.absolute(dep:targetfile(), os.projectdir())))
+                -- add dependent rpathdirs 
+                table.insert(results, "@loader_path")
 
             elseif flagname == "includedirs" then
 
