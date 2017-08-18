@@ -4007,6 +4007,15 @@ if colors.truecolor() then
 end
 ```
 
+xmake对于truecolor的检测支持，是通过`$COLORTERM`环境变量来实现的，如果你的终端支持truecolor，可以手动设置此环境变量，来告诉xmake启用truecolor支持。
+
+可以通过下面的命令来启用和测试：
+
+```bash
+$ export COLORTERM=truecolor
+$ xmake --version
+```
+
 ##### cprintf
 
 ###### 无换行彩色打印终端日志
