@@ -234,9 +234,12 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    local flag = "-Wl,-rpath=" .. dir
-    if self:has_flags(flag) then
-        return flag
+    local flag_elf   = "-Wl,-rpath=" .. dir
+    local flag_macho = "-Xlinker -rpath -Xlinker " .. dir
+    if self:has_flags(flag_elf) then
+        return flag_elf
+    elseif self:has_flags(flag_macho) then
+        return flag_macho
     end
 end
 
@@ -274,6 +277,12 @@ end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
+
+    -- add rpath for dylib (macho), .e.g -install_name @rpath/file.dylib
+    if targetkind == "shared" and targetfile:endswith(".dylib") then
+        table.insert(flags, "-install_name")
+        table.insert(flags, "@rpath/" .. path.filename(targetfile))
+    end
     return self:program(), table.join("-o", targetfile, objectfiles, flags)
 end
 
