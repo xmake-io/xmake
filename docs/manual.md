@@ -1608,6 +1608,19 @@ target("test")
 
 而在为dlang程序进行动态库链接时，xmake会自动处理成`-L-rpath=xxx`来传入dlang的链接器，这样就避免了直接使用`add_ldflags`需要自己判断和处理不同平台和编译器问题。
 
+2.1.7版本对这个接口进行了改进，支持：`@loader_path`, `@executable_path` 和 `$ORIGIN`的内置变量，来指定程序的加载目录，它们的效果基本上是一样的，主要是为了同时兼容macho, elf。
+
+例如：
+
+```lua
+target("test")
+    set_kind("binary")
+    add_linkdirs("$(buildir)/lib")
+    add_rpathdirs("@loader_path/lib")
+```
+
+指定test程序加载当前执行目录下`lib/*.[so|dylib]`的动态库文件，这将有助于提升程序的可移植性，不用写死绝对路径和相对路径，导致程序和目录切换引起程序加载动态库失败。
+
 ##### target:add_includedirs
 
 ###### 添加头文件搜索目录

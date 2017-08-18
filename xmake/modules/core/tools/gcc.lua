@@ -234,16 +234,13 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    if self:has_flags(flag_elf) then
+    if self:has_flags("-Wl,-rpath=" .. dir) then
         return "-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
         end))
     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir) then
-        return "-Xlinker -rpath -Xlinker " .. (dir:gsub("%$[%w_]+", function (name)
-            local maps = {["$ORIGIN"] = "@loader_path"}
-            return maps[name]
-        end))
+        return "-Xlinker -rpath -Xlinker " .. (dir:gsub("%$ORIGIN", "@loader_path"))
     end
 end
 
