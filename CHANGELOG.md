@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Support 24bits truecolors for `cprint()`
+
 ## v2.1.6
 
 ### Changes
@@ -337,6 +341,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 改进`cprint()`，支持24位真彩色输出
 
 ## v2.1.6
 

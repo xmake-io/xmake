@@ -28,11 +28,11 @@ local colors = colors or {}
 -- load modules
 local emoji = emoji or require("base/emoji")
 
--- the color keys
+-- the 256 color keys
 --
 -- from https://github.com/hoelzro/ansicolors
 --
-colors.keys = 
+colors._keys256 = 
 {
     -- attributes
     reset       = 0
@@ -66,19 +66,66 @@ colors.keys =
 ,   onwhite     = 47
 }
 
--- the escape string
-colors.escape = string.char(27) .. '[%sm'
+-- the 24bits color keys
+--
+-- from https://github.com/hoelzro/ansicolors
+--
+colors._keys24 = 
+{
+    -- attributes
+    reset       = 0
+,   clear       = 0
+,   default     = 0
+,   bright      = 1
+,   dim         = 2
+,   underline   = 4
+,   blink       = 5
+,   reverse     = 7
+,   hidden      = 8
 
--- is supported?
-function colors.supported()
+    -- foreground 
+,   black       = "38;2;0;0;0"
+,   red         = "38;2;255;0;0"
+,   green       = "38;2;0;255;0"
+,   yellow      = "38;2;255;255;0"
+,   blue        = "38;2;0;0;255"
+,   magenta     = "38;2;255;0;255"
+,   cyan        = "38;2;0;255;255"
+,   white       = "38;2;255;255;255"
+
+    -- background 
+,   onblack     = "48;2;0;0;0"
+,   onred       = "48;2;255;0;0"
+,   ongreen     = "48;2;0;255;0"
+,   onyellow    = "48;2;255;255;0"
+,   onblue      = "48;2;0;0;255"
+,   onmagenta   = "48;2;255;0;255"
+,   oncyan      = "48;2;0;255;255"
+,   onwhite     = "48;2;255;255;255"
+}
+
+-- the escape string
+colors._escape = string.char(27) .. '[%sm'
+
+-- support 256 colors?
+function colors.has256()
 
     -- this is supported if be not windows
-    if xmake._HOST ~= "windows" then
+    if os.host() ~= "windows" then
         return true
     end
 
     -- this is supported if exists ANSICON envirnoment variable on windows
     return os.getenv("ANSICON") 
+end
+
+-- support true 24bits colors
+function colors.truecolor()
+
+    -- this is supported if be not windows
+    if os.host() ~= "windows" then
+--        return true
+    end
 end
 
 -- translate colors from the string
@@ -91,6 +138,13 @@ end
 -- "${dim red}hello"
 -- "${blink red}hello"
 -- "${reverse red}hello xmake"
+--
+-- true colors:
+--
+-- "${255;0;0}hello"
+-- "${on;255;0;0}hello${clear} xmake"
+-- "${bright 255;0;0 underline}hello"
+-- "${bright on;255;0;0 0;255;0}hello${clear} xmake"
 --
 -- emoji:
 --
@@ -110,7 +164,7 @@ function colors.translate(str)
     str = string.gsub(str, "(%${(.-)})", function(_, word) 
 
         -- not supported? ignore it
-        if not colors.supported() then
+        if not colors.has256() and not colors.truecolor() then
             return ""
         end
 
@@ -120,20 +174,33 @@ function colors.translate(str)
             return emoji_str
         end
 
+        -- get keys
+        local keys = colors._keys256
+        if colors.truecolor() then
+            keys = colors._keys24
+        end
+
         -- make color buffer
         local buffer = {}
-        for key in word:gmatch("%w+") do
-            
-            -- key to number
-            local number = colors.keys[key]
-            assert(number, "unknown color: " .. key)
+        for _, key in ipairs(word:split("%s+")) do
 
-            -- save this number
-            table.insert(buffer, number)
+            -- get the color code
+            local code = keys[key]
+            if not code and key:find(";", 1, true) and colors.truecolor() then
+                if key:startswith("on;") then
+                    code = key:gsub("on;", "48;2;")
+                else
+                    code = "38;2;" .. key
+                end
+            end
+            assert(code, "unknown color: " .. key)
+
+            -- save this code
+            table.insert(buffer, code)
         end
 
         -- format the color buffer
-        return colors.escape:format(table.concat(buffer, ";"))
+        return colors._escape:format(table.concat(buffer, ";"))
     end)
 
     -- ok

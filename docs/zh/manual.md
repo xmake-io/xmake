@@ -3995,6 +3995,18 @@ xmake会同时支持这两种写法，内部会去自动智能检测，选择输
 
 所有的emoji表情，以及xmake里面对应的key，都可以通过[emoji符号](http://www.emoji-cheat-sheet.com/)里面找到。。
 
+2.1.7版本支持24位真彩色输出，如果终端支持的话：
+
+```lua
+import("core.base.colors")
+if colors.truecolor() then
+    cprint("${255;0;0}hello")
+    cprint("${on;255;0;0}hello${clear} xmake")
+    cprint("${bright 255;0;0 underline}hello")
+    cprint("${bright on;255;0;0 0;255;0}hello${clear} xmake")
+end
+```
+
 ##### cprintf
 
 ###### 无换行彩色打印终端日志

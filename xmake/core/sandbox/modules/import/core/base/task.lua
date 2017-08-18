@@ -23,7 +23,7 @@
 --
 
 -- define module
-local sandbox_core_project_task = sandbox_core_project_task or {}
+local sandbox_core_base_task = sandbox_core_base_task or {}
 
 -- load modules
 local os        = require("base/os")
@@ -35,7 +35,7 @@ local task      = require("base/task")
 local raise     = require("sandbox/modules/raise")
 
 -- run the given task
-function sandbox_core_project_task.run(taskname, options, ...)
+function sandbox_core_base_task.run(taskname, options, ...)
 
     -- init options
     options = table.wrap(options)
@@ -66,4 +66,4 @@ function sandbox_core_project_task.run(taskname, options, ...)
 end
 
 -- return module
-return sandbox_core_project_task
+return sandbox_core_base_task
