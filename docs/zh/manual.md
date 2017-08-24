@@ -334,6 +334,12 @@ set_version("1.5.1")
 #define TB_CONFIG_VERSION_BUILD 201510220917
 ```
 
+2.1.7版本支持buildversion的配置：
+
+```lua
+set_version("1.5.1", {build = "%Y%m%d%H%M"})
+```
+
 ##### set_xmakever
 
 ###### 设置最小xmake版本

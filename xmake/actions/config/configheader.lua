@@ -47,7 +47,7 @@ function _make_for_target(files, target)
     file:print("")
 
     -- make version
-    local version = project.version()
+    local version, version_build = project.version()
     if version then
         file:print("// version")
         file:print("#define %s_VERSION \"%s\"", configprefix, version)
@@ -58,7 +58,9 @@ function _make_for_target(files, target)
             i = i + 1
             if i > 3 then break end
         end
-        file:print("#define %s_VERSION_BUILD %s", configprefix, os.date("%Y%m%d%H%M", os.time()))
+        if version_build then
+            file:print("#define %s_VERSION_BUILD %s", configprefix, version_build)
+        end
         file:print("")
     end
 

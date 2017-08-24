@@ -320,6 +320,12 @@ For example:
 #define TB_CONFIG_VERSION_BUILD 201510220917
 ```
 
+We can set build version in v2.1.7 version:
+
+```lua
+set_version("1.5.1", {build = "%Y%m%d%H%M"})
+```
+
 ##### set_xmakever
 
 ###### Set minimal xmake version

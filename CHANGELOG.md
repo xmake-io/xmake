@@ -6,6 +6,7 @@
 
 * Support 24bits truecolors for `cprint()`
 * Support `@loader_path` and `$ORIGIN` for `add_rpathdirs()`
+* Improve `set_version("x.x.x", {build = "%Y%m%d%H%M"})` and add build version
 
 ## v2.1.6
 
@@ -347,6 +348,7 @@
 
 * 改进`cprint()`，支持24位真彩色输出
 * 对`add_rpathdirs()`增加对`@loader_path`和`$ORIGIN`的内置变量支持，提供可迁移动态库加载
+* 改进`set_version("x.x.x", {build = "%Y%m%d%H%M"})` 支持buildversion设置
 
 ## v2.1.6
 
