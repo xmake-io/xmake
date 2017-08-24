@@ -159,8 +159,15 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
 
             elseif flagname == "rpathdirs" and targetkind == "binary" then
 
+                -- make rpathdir 
+                local rpathdir = "@loader_path"
+                local subdir = path.relative(path.directory(dep:targetfile()), path.directory(target:targetfile()))
+                if subdir and subdir ~= '.' then
+                    rpathdir = path.join(rpathdir, subdir)
+                end
+
                 -- add dependent rpathdirs 
-                table.insert(results, "@loader_path")
+                table.insert(results, rpathdir)
 
             elseif flagname == "includedirs" then
 
