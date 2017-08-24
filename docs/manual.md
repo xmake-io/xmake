@@ -307,7 +307,7 @@ Set the whole project version, we can set it at the beginning of `xmake.lua`.
 set_version("1.5.1")
 ```
 
-It will add project version info to this file automatically if we call [set_config_h](#targetset_config_h) to set `config.h`.`
+It will add project version info to this file automatically if we call [set_config_header](#targetset_config_header) to set `config.h`.`
 
 For example:
 
