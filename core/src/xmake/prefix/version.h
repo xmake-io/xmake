@@ -44,12 +44,12 @@
 #define XM_VERSION_ALTER            XM_CONFIG_VERSION_ALTER
 
 /// the build version
-#define XM_VERSION_BUILD            XM_CONFIG_VERSION_BUILD
-
-/// the build version string
 #ifndef XM_CONFIG_VERSION_BUILD
 #   define XM_CONFIG_VERSION_BUILD  0
 #endif
+#define XM_VERSION_BUILD            XM_CONFIG_VERSION_BUILD
+
+/// the build version string
 #define XM_VERSION_BUILD_STRING     __tb_mstring_ex__(XM_CONFIG_VERSION_BUILD)
 
 /// the version string
