@@ -344,8 +344,10 @@ function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
     local pchflags = {}
     local include = false
     for _, flag in ipairs(flags) do
-        if not include and not flag:find("-include", 1, true) then
-            table.insert(pchflags, flag)
+        if not flag:find("-include", 1, true) then
+            if not include then
+                table.insert(pchflags, flag)
+            end
             include = false
         else
             include = true
