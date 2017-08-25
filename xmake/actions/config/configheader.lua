@@ -28,7 +28,7 @@ import("core.project.config")
 import("core.project.project")
 
 -- make configure for the given target name
-function _make_for_target(files, target)
+function _make_for_target(target)
 
     -- get the target configure file 
     local configheader = target:configheader()
@@ -38,10 +38,10 @@ function _make_for_target(files, target)
     local configprefix = target:configprefix()
 
     -- open the file
-    local file = files[configheader] or io.open(configheader, "w")
+    local file = _g.configfiles[configheader] or io.open(path.join(os.tmpdir(), hash.uuid(configheader)), "w")
 
     -- make the head
-    if files[configheader] then file:print("") end
+    if _g.configfiles[configheader] then file:print("") end
     file:print("#ifndef %s_H", configprefix)
     file:print("#define %s_H", configprefix)
     file:print("")
@@ -108,23 +108,22 @@ function _make_for_target(files, target)
     file:print("#endif")
 
     -- cache the file
-    files[configheader] = file
+    _g.configfiles[configheader] = file
 end
 
 -- make the configure file for the given target and dependents
-function _make_for_target_with_deps(files, targetname)
+function _make_for_target_with_deps(targetname)
 
     -- the target
     local target = project.target(targetname)
 
     -- make configure for the target
-    _make_for_target(files, target)
+    _make_for_target(target)
      
     -- make configure for the dependent targets?
     for _, dep in ipairs(target:get("deps")) do
-        _make_for_target_with_deps(files, dep)
+        _make_for_target_with_deps(dep)
     end
-
 end
 
 -- make the config.h
@@ -136,22 +135,35 @@ function make()
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- init files
-    local files = {}
-
     -- make configure for the given target name
+    _g.configfiles  = {}
+    _g.configpathes = {}
     if targetname then
-        _make_for_target_with_deps(files, targetname)
+        _make_for_target_with_deps(targetname)
     else
         -- make configure for all targets
         for _, target in pairs(project.targets()) do
-            _make_for_target(files, target)
+            _make_for_target(target)
         end
     end
 
-    -- exit files
-    for _, file in pairs(files) do
-        file:close()
+    -- close and update files
+    for configpath, configfile_tmp in pairs(_g.configfiles) do
+
+        -- close the temporary file first
+        configfile_tmp:close()
+
+        -- update file if the content is changed
+        local configpath_tmp = path.join(os.tmpdir(), hash.uuid(configpath))
+        if os.isfile(configpath_tmp) then
+            if os.isfile(configpath) then
+                if io.readfile(configpath_tmp) ~= io.readfile(configpath) then
+                    os.cp(configpath_tmp, configpath)
+                end
+            else
+                os.cp(configpath_tmp, configpath)
+            end
+        end
     end
  
     -- leave project directory
