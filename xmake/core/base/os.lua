@@ -454,8 +454,19 @@ end
 -- get the temporary directory
 function os.tmpdir()
 
+    -- is in fakeroot? @note: uid always be 0 in root and fakeroot
+    if os._FAKEROOT == nil then
+        local ldpath = os.getenv("LD_LIBRARY_PATH")
+        if ldpath and ldpath:find("libfakeroot", 1, true) then
+            os._FAKEROOT = true
+        end
+    end
+
+    -- make sub-directory name
+    local subdir = utils.ifelse(os._FAKEROOT, ".xmakefake", ".xmake")
+
     -- get a temporary directory for each user
-    local tmpdir = path.join(os._tmpdir(), ".xmake" .. (os.uid().euid or ""))
+    local tmpdir = path.join(os._tmpdir(), subdir .. (os.uid().euid or ""))
 
     -- ensure this directory exist
     if not os.isdir(tmpdir) then
