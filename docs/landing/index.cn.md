@@ -56,6 +56,7 @@ $ xmake run -d console
 * Actions
 * Options
 * Plugins
+* Modules
 * Templates
 
 ## 支持平台
@@ -89,7 +90,60 @@ $ xmake run -d console
 
 请到插件仓库进行下载安装: [xmake-plugins](https://github.com/tboox/xmake-plugins).
 
-## 使用演示
+## 更多例子
+
+Debug和Release模式：
+
+```lua
+if is_mode("debug") then
+    set_symbols("debug")
+    set_optimize("none")
+end
+
+if is_mode("release") then
+    set_symbols("hidden")
+    set_optimize("fastest")
+    set_strip("all")
+end
+
+target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
+
+自定义脚本：
+
+```lua
+target("test")
+    set_kind("static")
+    add_files("src/*.cpp")
+    after_build(function (target)
+        print("build %s ok!", target:targetfile())
+    end)
+```
+
+使用扩展模块：
+
+```lua
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    on_load(function (target)
+        import("lib.detect.find_package")
+        target:add(find_package("zlib"))
+    end)
+```
+
+## 项目例子
+
+一些使用xmake的项目：
+
+* [tbox](https://github.com/tboox/tbox)
+* [gbox](https://github.com/tboox/gbox)
+* [vm86](https://github.com/tboox/vm86)
+* [更多](https://github.com/vm86/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
+
+## 演示视频
 
 [![asciicast](https://asciinema.org/a/133693.png)](https://asciinema.org/a/133693)
 

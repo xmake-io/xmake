@@ -103,6 +103,7 @@
   <li>Actions</li>
   <li>Options</li>
   <li>Plugins</li>
+  <li>Modules</li>
   <li>Templates</li>
 </ul>
 
@@ -143,11 +144,66 @@
 
 <p>请到插件仓库进行下载安装: <a href="https://github.com/tboox/xmake-plugins">xmake-plugins</a>.</p>
 
-<h2 id="section-10">使用演示</h2>
+<h2 id="section-10">更多例子</h2>
+
+<p>Debug和Release模式：</p>
+
+<div class="language-lua highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="n">is_mode</span><span class="p">(</span><span class="s2">"debug"</span><span class="p">)</span> <span class="k">then</span>
+    <span class="n">set_symbols</span><span class="p">(</span><span class="s2">"debug"</span><span class="p">)</span>
+    <span class="n">set_optimize</span><span class="p">(</span><span class="s2">"none"</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">if</span> <span class="n">is_mode</span><span class="p">(</span><span class="s2">"release"</span><span class="p">)</span> <span class="k">then</span>
+    <span class="n">set_symbols</span><span class="p">(</span><span class="s2">"hidden"</span><span class="p">)</span>
+    <span class="n">set_optimize</span><span class="p">(</span><span class="s2">"fastest"</span><span class="p">)</span>
+    <span class="n">set_strip</span><span class="p">(</span><span class="s2">"all"</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="n">target</span><span class="p">(</span><span class="s2">"console"</span><span class="p">)</span>
+    <span class="n">set_kind</span><span class="p">(</span><span class="s2">"binary"</span><span class="p">)</span>
+    <span class="n">add_files</span><span class="p">(</span><span class="s2">"src/*.c"</span><span class="p">)</span> 
+</code></pre>
+</div>
+
+<p>自定义脚本：</p>
+
+<div class="language-lua highlighter-rouge"><pre class="highlight"><code><span class="n">target</span><span class="p">(</span><span class="s2">"test"</span><span class="p">)</span>
+    <span class="n">set_kind</span><span class="p">(</span><span class="s2">"static"</span><span class="p">)</span>
+    <span class="n">add_files</span><span class="p">(</span><span class="s2">"src/*.cpp"</span><span class="p">)</span>
+    <span class="n">after_build</span><span class="p">(</span><span class="k">function</span> <span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"build %s ok!"</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span><span class="n">targetfile</span><span class="p">())</span>
+    <span class="k">end</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>使用扩展模块：</p>
+
+<div class="language-lua highlighter-rouge"><pre class="highlight"><code><span class="n">target</span><span class="p">(</span><span class="s2">"test"</span><span class="p">)</span>
+    <span class="n">set_kind</span><span class="p">(</span><span class="s2">"shared"</span><span class="p">)</span>
+    <span class="n">add_files</span><span class="p">(</span><span class="s2">"src/*.c"</span><span class="p">)</span>
+    <span class="n">on_load</span><span class="p">(</span><span class="k">function</span> <span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="n">import</span><span class="p">(</span><span class="s2">"lib.detect.find_package"</span><span class="p">)</span>
+        <span class="n">target</span><span class="p">:</span><span class="n">add</span><span class="p">(</span><span class="n">find_package</span><span class="p">(</span><span class="s2">"zlib"</span><span class="p">))</span>
+    <span class="k">end</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<h2 id="section-11">项目例子</h2>
+
+<p>一些使用xmake的项目：</p>
+
+<ul>
+  <li><a href="https://github.com/tboox/tbox">tbox</a></li>
+  <li><a href="https://github.com/tboox/gbox">gbox</a></li>
+  <li><a href="https://github.com/tboox/vm86">vm86</a></li>
+  <li><a href="https://github.com/vm86/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93">更多</a></li>
+</ul>
+
+<h2 id="section-12">演示视频</h2>
 
 <p><a href="https://asciinema.org/a/133693"><img src="https://asciinema.org/a/133693.png" alt="asciicast" /></a></p>
 
-<h2 id="section-11">联系方式</h2>
+<h2 id="section-13">联系方式</h2>
 
 <ul>
   <li>邮箱：<a href="mailto:waruqi@gmail.com">waruqi@gmail.com</a></li>

@@ -1,4 +1,4 @@
-The Make-like Build Utility based on Lua
+A cross-platform build utility based on Lua
 Copyright 2015-2017 The TBOOX Open Source Group
 
 This product includes software developed by The TBOOX Open Source Group (http://www.tboox.org/).

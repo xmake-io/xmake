@@ -56,6 +56,7 @@ $ xmake run -d console
 * Actions
 * Options
 * Plugins
+* Modules
 * Templates
 
 ## Support platforms
@@ -89,7 +90,60 @@ $ xmake run -d console
 
 Please download and install from the plugins repository [xmake-plugins](https://github.com/tboox/xmake-plugins).
 
-## Examples
+## More Examples
+
+Debug and release modes:
+
+```lua
+if is_mode("debug") then
+    set_symbols("debug")
+    set_optimize("none")
+end
+
+if is_mode("release") then
+    set_symbols("hidden")
+    set_optimize("fastest")
+    set_strip("all")
+end
+
+target("console")
+    set_kind("binary")
+    add_files("src/*.c") 
+```
+
+Custom script:
+
+```lua
+target("test")
+    set_kind("static")
+    add_files("src/*.cpp")
+    after_build(function (target)
+        print("build %s ok!", target:targetfile())
+    end)
+```
+
+Extension Modules:
+
+```lua
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    on_load(function (target)
+        import("lib.detect.find_package")
+        target:add(find_package("zlib"))
+    end)
+```
+
+## Project Examples
+
+Some projects using xmake:
+
+* [tbox](https://github.com/tboox/tbox)
+* [gbox](https://github.com/tboox/gbox)
+* [vm86](https://github.com/tboox/vm86)
+* [more](https://github.com/tboox/xmake/wiki/xmake-projects)
+
+## Example Video
 
 [![asciicast](https://asciinema.org/a/133693.png)](https://asciinema.org/a/133693)
 

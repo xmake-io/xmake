@@ -1,4 +1,4 @@
---!The Make-like Build Utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed to the Apache Software Foundation (ASF) under one
 -- or more contributor license agreements.  See the NOTICE file
@@ -43,7 +43,7 @@ local package       = require("package/package")
 local menu =
 {
     -- title
-    title = "${bright}xmake v" .. xmake._VERSION .. ", A make-like build utility based on Lua${clear}"
+    title = "${bright}xmake v" .. xmake._VERSION .. ", A cross-platform build utility based on Lua${clear}"
 
     -- copyright
 ,   copyright = "Copyright (C) 2015-2017 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"

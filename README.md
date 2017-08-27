@@ -34,7 +34,7 @@
     </a>
   </div>
 
-  <p>A make-like build utility based on Lua</p>
+  <p>A cross-platform build utility based on Lua</p>
 </div>
 
 ## Introduction ([中文](/README_zh.md))

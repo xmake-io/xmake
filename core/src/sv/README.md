@@ -34,7 +34,7 @@ See the [UNLICENSE](https://github.com/uael/sv/blob/master/UNLICENSE) file.
 
 ### xmake
 
-[Install xmake build system (A make-like build utility based on Lua)](http://xmake.io)
+[Install xmake build system (A cross-platform build utility based on Lua)](http://xmake.io)
 
 ```bash
 $ xmake

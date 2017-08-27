@@ -39,7 +39,7 @@ search: en
     </a>
   </div>
 
-  <p>A make-like build utility based on Lua</p>
+  <p>A cross-platform build utility based on Lua</p>
 </div>
 </p>
 
