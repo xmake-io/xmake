@@ -459,6 +459,8 @@ function os.tmpdir()
         local ldpath = os.getenv("LD_LIBRARY_PATH")
         if ldpath and ldpath:find("libfakeroot", 1, true) then
             os._FAKEROOT = true
+        else
+            os._FAKEROOT = false
         end
     end
 
