@@ -23,8 +23,8 @@ search: en
     <a href="https://github.com/tboox/xmake/releases">
       <img src="https://img.shields.io/github/release/tboox/xmake.svg?style=flat-square" alt="Github All Releases" />
     </a>
-    <a href="https://github.com/tboox/xmake/releases">
-      <img src="https://img.shields.io/github/downloads/tboox/xmake/total.svg?style=flat-square" alt="Downloads" />
+    <a href="https://aur.archlinux.org/packages/xmake">
+      <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
     </a>
   </div>
   <div>
