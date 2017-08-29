@@ -12,7 +12,7 @@ package_end()
 
 -- requires
 add_requires("zlib-mbedtls")
-add_requires("xmake-repo@tboox.tbox >=1.5.1 <1.6.1 optional")
+add_requires("xmake-repo@tboox.tbox ~1.6.0 optional")
 
 -- the debug mode
 if is_mode("debug") then

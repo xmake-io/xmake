@@ -187,10 +187,11 @@ function main(package)
                     end
 
                     -- trace
+                    printf("\r" .. _emptychars())
                     if git.checkurl(url) then
-                        cprint("\r${yellow}  => ${clear}clone %s %s .. ${red}failed%s", url, package:version_str(), _emptychars())
+                        cprint("\r${yellow}  => ${clear}clone %s %s .. ${red}failed", url, package:version_str())
                     else
-                        cprint("\r${yellow}  => ${clear}download %s .. ${red}failed%s", url, _emptychars())
+                        cprint("\r${yellow}  => ${clear}download %s .. ${red}failed", url)
                     end
 
                     -- failed? break it
