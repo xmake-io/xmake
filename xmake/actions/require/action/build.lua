@@ -148,7 +148,7 @@ function _on_build_package(package)
     end
 
     -- failed
-    raise("attempt to build package %s failed!", package:name())
+    raise("attempt to build package %s failed!", package:fullname())
 end
 
 -- run script

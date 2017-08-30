@@ -46,7 +46,7 @@ end
 function _checkout(package, url, sourcedir)
 
     -- use previous source directory if exists
-    local packagedir = path.join(sourcedir, package:name())
+    local packagedir = path.join(sourcedir, package:fullname())
     if os.isdir(packagedir) and not option.get("force") then
 
         -- clean the previous build files
@@ -58,7 +58,7 @@ function _checkout(package, url, sourcedir)
     os.rm(sourcedir .. ".tmp")
 
     -- download package from branches?
-    packagedir = path.join(sourcedir .. ".tmp", package:name())
+    packagedir = path.join(sourcedir .. ".tmp", package:fullname())
     if package:version_from("branches") then
 
         -- only shadow clone this branch 
@@ -139,11 +139,6 @@ end
 
 -- download the given package
 function main(package)
-
-    -- skip phony package without urls
-    if #package:urls() == 0 then
-        return
-    end
 
     -- get working directory of this package
     local workdir = package:cachedir()

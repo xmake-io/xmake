@@ -251,9 +251,9 @@ function _load_packages_gitrefs(packages)
         if package then
 
             -- attempt to get refs from cache first
-            local refs = gitrefs[package:name()]
+            local refs = gitrefs[package:fullname()]
             if refs then
-                results[package:name()] = {tags = refs.tags, branches = refs.branches}
+                results[package:fullname()] = {tags = refs.tags, branches = refs.branches}
             else
                 -- attempt to get refs from the git url
                 local tags = {}
@@ -265,10 +265,10 @@ function _load_packages_gitrefs(packages)
                         tags, branches = git.refs(url) 
 
                         -- save result
-                        results[package:name()] = {tags = tags, branches = branches}
+                        results[package:fullname()] = {tags = tags, branches = branches}
 
                         -- cache result
-                        gitrefs[package:name()] = {tags = tags, branches = branches}
+                        gitrefs[package:fullname()] = {tags = tags, branches = branches}
                         break
                     end
                 end
@@ -293,7 +293,7 @@ function _select_package_version(package, required_ver, gitrefs)
     -- attempt to get tags and branches from the git url
     local refs = {}
     if gitrefs then
-        refs = gitrefs[package:name()] or {}
+        refs = gitrefs[package:fullname()] or {}
     end
 
     -- select required version

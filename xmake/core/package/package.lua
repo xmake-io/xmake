@@ -39,6 +39,7 @@ local sandbox     = require("sandbox/sandbox")
 local config      = require("project/config")
 local project     = require("project/project")
 local platform    = require("platform/platform")
+local import      = require("sandbox/modules/import")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -46,8 +47,13 @@ function _instance.new(name, info, rootdir)
     -- new an instance
     local instance = table.inherit(_instance)
 
+    -- parse name .e.g vendor.name
+    local nameinfo = name:split("%.")
+
     -- init instance
-    instance._NAME      = name
+    instance._FULLNAME  = name
+    instance._NAME      = nameinfo[2] or name
+    instance._VENDOR    = nameinfo[1]
     instance._INFO      = info
     instance._ROOTDIR   = rootdir
     instance._FILTER    = filter.new()
@@ -82,9 +88,19 @@ function _instance:get(name)
     end
 end
 
--- get the package name
+-- get the package full name with vendor
+function _instance:fullname()
+    return self._FULLNAME
+end
+
+-- get the package name without vendor
 function _instance:name()
     return self._NAME
+end
+
+-- get the package vendor 
+function _instance:vendor()
+    return self._VENDOR
 end
 
 -- get the package filter 
@@ -100,6 +116,11 @@ end
 -- get urls
 function _instance:urls_set(urls)
     self._URLS = urls
+end
+
+-- phony package?
+function _instance:phony()
+    return #self:urls() == 0
 end
 
 -- get sha256
@@ -134,32 +155,26 @@ end
 
 -- is optional package?
 function _instance:optional()
-
-    -- optional?
     return self._REQUIREINFO.mode == "optional"
 end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    return path.join(package.cachedir(), self:name() .. "-" .. (self:version_str() or "group"))
+    return path.join(package.cachedir(), self:fullname() .. "-" .. (self:version_str() or "group"))
 end
 
 -- get the installed directory of this package
 function _instance:installdir()
-    return path.join(package.installdir(self:global()), self:name() .. "-" .. (self:version_str() or "group"))
+    return path.join(package.installdir(self:global()), self:fullname() .. "-" .. (self:version_str() or "group"))
 end
 
 -- get the version  
 function _instance:version()
-
-    -- get it
     return self._VERSION or {}
 end
 
 -- get the version string 
 function _instance:version_str()
-
-    -- get it
     return self:version().raw or self:version().version
 end
 
@@ -227,6 +242,20 @@ function _instance:script(name, generic)
 
     -- only generic script
     return generic
+end
+
+-- fetch package info from the local packages
+function _instance:fetch()
+
+    -- find package
+    self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
+    self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir(), force = true}) 
+    return self._FETCHINFO
+end
+
+-- exists this package in local
+function _instance:exists()
+    return self._FETCHINFO
 end
 
 -- the interpreter

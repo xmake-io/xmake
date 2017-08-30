@@ -171,16 +171,11 @@ function _on_install_package(package)
     end
 
     -- failed
-    raise("attempt to install package %s failed!", package:name())
+    raise("attempt to install package %s failed!", package:fullname())
 end
 
 -- install the given package
 function main(package)
-
-    -- skip phony package without urls
-    if #package:urls() == 0 then
-        return
-    end
 
     -- get working directory of this package
     local workdir = package:cachedir()
@@ -193,7 +188,7 @@ function main(package)
     end
 
     -- trace
-    cprintf("${yellow}  => ${clear}installing %s-%s .. ", package:name(), package:version_str())
+    cprintf("${yellow}  => ${clear}installing %s-%s .. ", package:fullname(), package:version_str())
     if option.get("verbose") then
         print("")
     end
@@ -232,6 +227,9 @@ function main(package)
             else
                 process.asyncrun(installtask)
             end
+
+            -- fetch package 
+            assert(package:fetch(), "fetch %s-%s failed!", package:fullname(), package:version_str())
 
             -- trace
             cprint("${green}ok")

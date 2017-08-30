@@ -43,19 +43,34 @@ function main(requires)
     -- load packages
     local packages = package.load_packages(requires or project.requires())
 
-    -- download packages
+    -- fetch packages from local first
+    local packages_remote = {}
+    if option.get("force") then 
+        for _, instance in ipairs(packages) do
+            if instance and not instance:phony() then
+                table.insert(packages_remote, instance)
+            end
+        end
+    else
+        process.runjobs(function (index)
+            local instance = packages[index]
+            if instance and not instance:phony() and not instance:fetch() then
+                table.insert(packages_remote, instance)
+            end
+        end, #packages)
+    end
+
+    -- download remote packages
     local waitindex = 0
     local waitchars = {'\\', '|', '/', '-'}
     process.runjobs(function (index)
 
-        local instance = packages[index]
+        local instance = packages_remote[index]
         if instance then
-
-            -- download package
             action.download(instance)
         end
 
-    end, #packages, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
+    end, #packages_remote, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
 
         -- do not print progress info if be verbose 
         if option.get("verbose") then
@@ -68,9 +83,9 @@ function main(requires)
         -- make downloading packages list
         local downloading = {}
         for _, index in ipairs(indices) do
-            local instance = packages[index]
+            local instance = packages_remote[index]
             if instance then
-                table.insert(downloading, instance:name())
+                table.insert(downloading, instance:fullname())
             end
         end
        
@@ -80,7 +95,7 @@ function main(requires)
     end)
 
     -- install all required packages from repositories
-    for _, instance in ipairs(packages) do
+    for _, instance in ipairs(packages_remote) do
         action.install(instance)
     end
 
