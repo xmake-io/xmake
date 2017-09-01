@@ -48,16 +48,16 @@ task("install")
                     {'o', "installdir", "kv", nil,      "Set the install directory.",
                                                         ".e.g",
                                                         "    $ xmake install -o /usr/local",
-                                                        "or  $ export DESTDIR=/usr/local; xmake install",
-                                                        "or  $ export INSTALLDIR=/usr/local; xmake install" }
-                ,   {'p', "prefix", "kv", nil,          "Set the prefix directory.",
+                                                        "or  $ DESTDIR=/usr/local xmake install",
+                                                        "or  $ INSTALLDIR=/usr/local xmake install" }
+                ,   {'p', "prefix",     "kv", nil,      "Set the prefix directory.",
                                                         ".e.g",
                                                         "    $ xmake install --prefix=local",
-                                                        "or  $ export PREFIX=local; xmake install"          }
-                ,   {'a', "all",        "k",  nil,      "Install all targets."                              }
+                                                        "or  $ PREFIX=local xmake install"          }
+                ,   {'a', "all",        "k",  nil,      "Install all targets."                      }
 
-                ,   {                                                                                       }
-                ,   {nil, "target",     "v",  nil,      "Install the given target."                         }
+                ,   {                                                                               }
+                ,   {nil, "target",     "v",  nil,      "Install the given target."                 }
                 }
             }
 
