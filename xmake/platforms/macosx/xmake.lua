@@ -43,12 +43,6 @@ platform("macosx")
     -- on check
     on_check("check")
 
-    -- on install
-    on_install("install")
-
-    -- on uninstall
-    on_uninstall("uninstall")
-
     -- on load
     on_load("load")
 

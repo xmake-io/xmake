@@ -25,7 +25,69 @@
 -- imports
 import("core.base.task")
 import("core.project.project")
-import("core.platform.platform")
+
+-- uninstall binary
+function _uninstall_binary(target)
+
+    -- is phony target?
+    if target:isphony() then
+        return 
+    end
+
+    -- the binary directory
+    local binarydir = path.join(_g.installdir, "bin")
+
+    -- remove the target file
+    os.rm(path.join(binarydir, path.filename(target:targetfile())))
+end
+
+-- uninstall library
+function _uninstall_library(target)
+
+    -- is phony target?
+    if target:isphony() then
+        return 
+    end
+
+    -- the library directory
+    local librarydir = path.join(_g.installdir, "lib")
+
+    -- the include directory
+    local includedir = path.join(_g.installdir, "include")
+
+    -- remove the target file
+    os.rm(path.join(librarydir, path.filename(target:targetfile())))
+
+    -- reove the config.h from the include directory
+    local _, configheader = target:configheader(includedir)
+    if configheader then
+        os.rm(configheader) 
+    end
+
+    -- remove headers from the include directory
+    local _, dstheaders = target:headerfiles(includedir)
+    for _, dstheader in ipairs(dstheaders) do
+        os.rm(dstheader)
+    end
+end
+
+-- uninstall target
+function _on_uninstall(target)
+
+    -- the scripts
+    local scripts =
+    {
+        binary = _uninstall_binary
+    ,   static = _uninstall_library
+    ,   shared = _uninstall_library
+    }
+
+    -- call script
+    local script = scripts[target:get("kind")]
+    if script then
+        script(target)
+    end
+end
 
 -- uninstall the given target 
 function _uninstall_target(target)
@@ -37,7 +99,7 @@ function _uninstall_target(target)
     local scripts =
     {
         target:script("uninstall_before")
-    ,   target:script("uninstall", platform.get("uninstall"))
+    ,   target:script("uninstall", _on_uninstall)
     ,   target:script("uninstall_after")
     }
 
@@ -74,10 +136,13 @@ function _uninstall_target_and_deps(target)
 end
 
 -- uninstall
-function main(targetname)
+function main(targetname, installdir)
 
     -- init finished states
     _g.finished = {}
+
+    -- init install directory
+    _g.installdir = installdir
 
     -- uninstall given target?
     if targetname then

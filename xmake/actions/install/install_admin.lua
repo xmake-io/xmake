@@ -44,13 +44,8 @@ function main(targetname, installdir)
     -- save the current option and push a new option context
     option.save()
 
-    -- pass installdir to option
-    if installdir then
-        option.set("installdir", installdir)
-    end
-
     -- install target
-    install(targetname)
+    install(targetname, installdir)
 
     -- restore the previous option context
     option.restore()

@@ -30,6 +30,26 @@ import("core.base.privilege")
 import("privilege.sudo")
 import("uninstall")
 
+-- get install directory
+function _installdir()
+
+    -- the install directory
+    --
+    -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
+    --
+    local installdir = option.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("DESTDIR") or platform.get("installdir")
+    assert(installdir, "unknown install directory!")
+
+    -- append prefix
+    local prefix = option.get("prefix") or os.getenv("PREFIX")
+    if prefix then
+        installdir = path.join(installdir, prefix)
+    end
+
+    -- ok
+    return installdir
+end
+
 -- main
 function main()
 
@@ -39,8 +59,11 @@ function main()
     -- config it first
     task.run("config", {target = targetname})
 
+    -- get install directory
+    local installdir = _installdir()
+
     -- trace
-    print("uninstalling from %s ...", option.get("installdir") or platform.get("installdir"))
+    print("uninstalling from %s ...", installdir)
 
     -- attempt to uninstall directly
     try
@@ -48,7 +71,7 @@ function main()
         function ()
 
             -- uninstall target
-            uninstall(targetname)
+            uninstall(targetname, installdir)
 
             -- trace
             cprint("${bright}uninstall ok!${clear}${ok_hand}")
@@ -66,7 +89,7 @@ function main()
                         function ()
 
                             -- uninstall target
-                            uninstall(targetname)
+                            uninstall(targetname, installdir)
 
                             -- trace
                             cprint("${bright}uninstall ok!${clear}${ok_hand}")
@@ -99,7 +122,7 @@ function main()
                     if answer == 'y' or answer == '' then
 
                         -- uninstall target with administrator permission
-                        sudo.runl(path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", option.get("installdir")})
+                        sudo.runl(path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", installdir})
 
                         -- trace
                         cprint("${bright}uninstall ok!${clear}${ok_hand}")

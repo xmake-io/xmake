@@ -40,12 +40,6 @@ platform("linux")
     -- set installdir
     set_installdir("/usr/local")
 
-    -- on install
-    on_install("install")
-
-    -- on uninstall
-    on_uninstall("uninstall")
-
     -- on check
     on_check("check")
 

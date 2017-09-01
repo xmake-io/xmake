@@ -25,7 +25,85 @@
 -- imports
 import("core.base.task")
 import("core.project.project")
-import("core.platform.platform")
+
+-- install binary
+function _install_binary(target)
+
+    -- is phony target?
+    if target:isphony() then
+        return 
+    end
+
+    -- the binary directory
+    local binarydir = path.join(_g.installdir, "bin")
+
+    -- make the binary directory
+    os.mkdir(binarydir)
+
+    -- copy the target file
+    os.cp(target:targetfile(), binarydir)
+end
+
+-- install library
+function _install_library(target)
+
+    -- is phony target?
+    if target:isphony() then
+        return 
+    end
+
+    -- the library directory
+    local librarydir = path.join(_g.installdir, "lib")
+
+    -- the include directory
+    local includedir = path.join(_g.installdir, "include")
+
+    -- make the library directory
+    os.mkdir(librarydir)
+
+    -- make the include directory
+    os.mkdir(includedir)
+
+    -- copy the target file
+    os.cp(target:targetfile(), librarydir)
+
+    -- copy the config.h to the include directory
+    local configheader, configoutput = target:configheader(includedir)
+    if configheader and configoutput then
+        os.cp(configheader, configoutput) 
+    end
+
+    -- copy headers to the include directory
+    local srcheaders, dstheaders = target:headerfiles(includedir)
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                os.cp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+end
+
+-- on install
+function _on_install(target)
+
+    -- the scripts
+    local scripts =
+    {
+        binary = _install_binary
+    ,   static = _install_library
+    ,   shared = _install_library
+    }
+
+    -- call script
+    local script = scripts[target:get("kind")]
+    if script then
+        script(target)
+    end
+end
 
 -- install the given target 
 function _install_target(target)
@@ -37,7 +115,7 @@ function _install_target(target)
     local scripts =
     {
         target:script("install_before")
-    ,   target:script("install", platform.get("install"))
+    ,   target:script("install", _on_install)
     ,   target:script("install_after")
     }
 
@@ -74,10 +152,13 @@ function _install_target_and_deps(target)
 end
 
 -- install targets
-function main(targetname)
+function main(targetname, installdir)
 
     -- init finished states
     _g.finished = {}
+
+    -- init install directory
+    _g.installdir = installdir
 
     -- install the given target?
     if targetname and not targetname:startswith("__") then

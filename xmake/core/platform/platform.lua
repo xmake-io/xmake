@@ -138,8 +138,6 @@ function platform._interpreter()
             -- platform.on_xxx
             "platform.on_load"
         ,   "platform.on_check"
-        ,   "platform.on_install"
-        ,   "platform.on_uninstall"
         }
     ,   module =
         {
@@ -165,7 +163,7 @@ end
 function platform.load(plat)
 
     -- get platform name
-    plat = plat or config.get("plat") or xmake._HOST
+    plat = plat or config.get("plat") or os.host()
     if not plat then
         return nil, string.format("unknown platform!")
     end
