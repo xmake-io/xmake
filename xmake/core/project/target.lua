@@ -245,12 +245,8 @@ function target:depfile()
     local targetdir = self:get("targetdir") or config.get("buildir")
     assert(targetdir and type(targetdir) == "string")
 
-    -- the symbol file name
-    local filename = (self:basename() or self:name()) .. ".d"
-    assert(filename)
-
     -- make the dependent file path
-    return path.join(targetdir, filename)
+    return path.join(targetdir, self:name() .. ".d")
 end
 
 -- get the target kind
