@@ -140,9 +140,8 @@ end
 function main()
 
     -- avoid to run this task repeatly
-    if _g.finished then
-        return 
-    end
+    if _g.configured then return end
+   _g.configured = true
 
     -- scan project and generate it if xmake.lua not exists
     if not os.isfile(project.file()) then
@@ -284,7 +283,4 @@ function main()
     if option.get("verbose") then
         config.dump()
     end
-
-    -- finished 
-    _g.finished = true
 end

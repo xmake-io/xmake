@@ -65,6 +65,62 @@ function _remove(name, is_global)
     cprint("${bright}remove %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
 end
 
+-- update repositories
+function _update()
+
+    -- trace
+    printf("updating repositories .. ")
+    if option.get("verbose") then
+        print("")
+    end
+
+    -- create a pull task
+    local task = function ()
+
+        -- get all repositories (local first)
+        local repos = table.join(repository.repositories(false), repository.repositories(true))
+
+        -- pull all repositories 
+        local pulled = {}
+        for _, repo in ipairs(repos) do
+
+            -- the repository directory
+            local repodir = path.join(repository.directory(repo.global), repo.name)
+
+            -- remove repeat and only pull the first repository
+            if not pulled[repodir] then
+                if os.isdir(repodir) then
+
+                    -- trace
+                    vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+
+                    -- pull it
+                    git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                else
+                    -- trace
+                    vprint("cloning repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+
+                    -- clone it
+                    git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+                end
+
+                -- pull this repository ok
+                pulled[repodir] = true
+            end
+        end
+    end
+ 
+    -- pull repositories
+    if option.get("verbose") then
+        task()
+    else
+        process.asyncrun(task)
+    end
+
+    -- trace
+    cprint("${green}ok")
+end
+
 -- clear all repositories
 function _clear(is_global)
 
@@ -82,7 +138,7 @@ function _clear(is_global)
 end
 
 -- list all repositories
-function _list(is_global)
+function _list()
 
     -- list all repositories
     local count = 0
@@ -140,6 +196,11 @@ function main()
 
         _remove(option.get("name"), option.get("global"))
 
+    -- update repository url
+    elseif option.get("update") then
+
+        _update()
+
     -- clear all repositories
     elseif option.get("clear") then
 
@@ -148,7 +209,7 @@ function main()
     -- list all repositories
     elseif option.get("list") then
 
-        _list(option.get("global"))
+        _list()
 
     -- show help
     else

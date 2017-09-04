@@ -23,9 +23,7 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.package.repository")
-import("devel.git")
 
 -- get all repositories
 function repositories()
@@ -45,57 +43,15 @@ function repositories()
     return repos
 end
 
--- pull repositories
-function pull(position)
-
-    -- trace
-    printf("updating repositories .. ")
-    if option.get("verbose") then
-        print("")
-    end
-
-    -- create a pull task
-    local task = function ()
-
-        -- pull all repositories 
-        local pulled = {}
-        for _, repo in ipairs(repositories()) do
-
-            -- the repository directory
-            local repodir = path.join(repository.directory(repo.global), repo.name)
-
-            -- remove repeat and only pull the first repository
-            if not pulled[repodir] then
-                if os.isdir(repodir) then
-
-                    -- trace
-                    vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
-
-                    -- pull it
-                    git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
-                else
-                    -- trace
-                    vprint("cloning repository(%s): %s to %s ..", repo.name, repo.url, repodir)
-
-                    -- clone it
-                    git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
-                end
-
-                -- pull this repository ok
-                pulled[repodir] = true
-            end
+-- exists repositories
+function exists()
+    for _, repo in ipairs(repositories()) do
+        local repodir = path.join(repository.directory(repo.global), repo.name)
+        if not os.isdir(repodir) then
+            return false
         end
     end
- 
-    -- pull repositories
-    if option.get("verbose") then
-        task()
-    else
-        process.asyncrun(task)
-    end
-
-    -- trace
-    cprint("${green}ok")
+    return true
 end
 
 -- get package directory from repositories

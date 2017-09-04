@@ -42,13 +42,15 @@ task("repo")
                 -- options
             ,   options = 
                 {
-                    {'a', "add",    "k",  nil,       "Add the given remote repository url."        }
-                ,   {'r', "remove", "k",  nil,       "Remove the given remote repository url."     }
-                ,   {'l', "list",   "k",  nil,       "List all added repositories."                }
-                ,   {'g', "global", "k",  nil,       "Save repository to global. (default: local)" }
-                ,   {'c', "clear",  "k",  nil,       "Clear all added repositories."               }
-                ,   {                                                                              }
-                ,   {nil, "name",   "v", nil,        "The repository name."                        }
-                ,   {nil, "url",    "v", nil,        "The repository url"                          }
-                }
-            } 
+                    {'a', "add",    "k",  nil,       "Add the given remote repository url."           }
+                ,   {'r', "remove", "k",  nil,       "Remove the given remote repository url."        }
+                ,   {'u', "update", "k",  nil,       "Update all local repositories from the remote." }
+                ,   {'c', "clear",  "k",  nil,       "Clear all added repositories."                  }
+                ,   {                                                                                 }
+                ,   {'l', "list",   "k",  nil,       "List all added repositories."                   }
+                ,   {'g', "global", "k",  nil,       "Save repository to global. (default: local)"    }
+                ,   {                                                                                 }
+                ,   {nil, "name",   "v", nil,        "The repository name."                           }
+                ,   {nil, "url",    "v", nil,        "The repository url"                             }
+                                                                                                      }
+                                                                                                      }

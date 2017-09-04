@@ -23,24 +23,34 @@
 --
 
 -- imports
+import("lib.detect.cache")
 import("detect.tools.find_ping")
 
 -- send ping to hosts
 --
--- @param ...   the hosts
+-- @param hosts     the hosts
+-- @param opt       the options
 --
--- @return      the time or -1
+-- @return          the time or -1
 --
-function main(...)
+function main(hosts, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- find ping
-    local ping = find_ping()
+    local ping = find_ping(opt)
     if not ping then
         return {}
     end
 
+    -- do not force ping? enable cache
+    local cacheinfo = nil
+    if not opt.force then
+        cacheinfo = cache.load("net.ping") 
+    end
+
     -- run tasks
-    local hosts = {...}
     local results = {}
     process.runjobs(function (index)
         local host = hosts[index]
@@ -49,23 +59,41 @@ function main(...)
             {
                 function ()
 
-                    -- ping it
-                    local data = nil
-                    if os.host() == "windows" then
-                        data = os.iorun("%s -n 1 %s", ping, host)
-                    else
-                        data = os.iorun("%s -c 1 %s", ping, host)
+                    -- get time value from cache first
+                    local timeval = nil
+                    if cacheinfo then
+                        timeval = cacheinfo[host]
                     end
+                    if timeval then
+                        results[host] = timeval
+                    else
+                        -- ping it
+                        local data = nil
+                        if os.host() == "windows" then
+                            data = os.iorun("%s -n 1 %s", ping, host)
+                        else
+                            data = os.iorun("%s -c 1 %s", ping, host)
+                        end
 
-                    -- find time
-                    local time = data:match("time=(.-)ms", 1, true)
-                    if time then
-                        results[host] = tonumber(time:trim())
+                        -- find time
+                        local time = data:match("time=(.-)ms", 1, true)
+                        if time then
+                            local timeval = tonumber(time:trim())
+                            results[host] = timeval
+                            if cacheinfo then
+                                cacheinfo[host] = timeval
+                            end
+                        end
                     end
                 end
             }
         end
     end, #hosts)
+
+    -- save cache
+    if cacheinfo then
+        cache.save("net.ping", cacheinfo)
+    end
 
     -- ok?
     return results

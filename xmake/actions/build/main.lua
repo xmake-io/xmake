@@ -39,6 +39,9 @@ function main()
     -- config it first
     task.run("config", {target = targetname})
 
+    -- require all dependences
+    task.run("require")
+
     -- enter project directory
     local oldir = os.cd(project.directory())
 

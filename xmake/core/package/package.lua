@@ -249,7 +249,7 @@ function _instance:fetch()
 
     -- find package
     self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
-    self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir(), force = true}) 
+    self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir()}) 
     return self._FETCHINFO
 end
 

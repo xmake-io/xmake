@@ -68,8 +68,8 @@ function sort(urls)
     local pinghosts = table.unique(_g._PINGHOSTS or {})
     if pinghosts and #pinghosts > 0 then
  
-        -- ping them and test speed
-        local pinginfo = ping(unpack(pinghosts))
+        -- ping them and test speed, enable cache by default
+        local pinginfo = ping(pinghosts)
         
         -- merge to ping info
         _g._PINGINFO = table.join(_g._PINGINFO or {}, pinginfo) 

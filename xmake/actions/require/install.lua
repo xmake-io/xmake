@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.task")
 import("core.project.project")
 import("action")
 import("package")
@@ -33,15 +34,22 @@ import("environment")
 -- install packages
 function main(requires)
 
+    -- init requires
+    requires = requires or project.requires()
+    if not requires or #requires == 0 then
+        return 
+    end
+
     -- enter environment 
     environment.enter()
 
-    -- TODO need optimization
-    -- pull all repositories first
-    repository.pull()
+    -- pull all repositories first if not exists
+    if not repository.exists() then
+        task.run("repo", {update = true})
+    end
 
     -- load packages
-    local packages = package.load_packages(requires or project.requires())
+    local packages = package.load_packages(requires)
 
     -- fetch packages from local first
     local packages_remote = {}
