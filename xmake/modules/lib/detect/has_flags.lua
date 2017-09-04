@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("lib.detect.cache")
 import("lib.detect.find_tool")
 
 -- has the given flags for the current tool?
@@ -82,10 +83,8 @@ function main(name, flags, opt)
     --
     local arch = config.get("arch") or os.arch()
 
-    -- init cache and key
-    local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ") .. "_" .. arch
-    _g._RESULTS = _g._RESULTS or {}
-    local results = _g._RESULTS
+    -- init cache key
+    local key = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ") .. "_" .. arch
     
     -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
     local coroutine_running = coroutine.running()
@@ -95,8 +94,9 @@ function main(name, flags, opt)
         end
     end
 
-    -- get result from the cache first
-    local result = results[key]
+    -- attempt to get result from cache first
+    local cacheinfo = cache.load("lib.detect.has_flags") 
+    local result = cacheinfo[key]
     if result ~= nil then
         return result
     end
@@ -117,7 +117,8 @@ function main(name, flags, opt)
     end
 
     -- save result to cache
-    results[key] = ifelse(result, result, false)
+    cacheinfo[key] = ifelse(result, result, false)
+    cache.save("lib.detect.has_flags", cacheinfo)
 
     -- ok?
     return result

@@ -9,6 +9,7 @@
 * Improve `set_version("x.x.x", {build = "%Y%m%d%H%M"})` and add build version
 * Move docs directory to xmake-docs repo
 * Improve install and uninstall actions and support DESTDIR and PREFIX envirnoment variables
+* Optimize to detect flags
 
 ### Bugs fixed
 
@@ -358,6 +359,7 @@
 * 改进`set_version("x.x.x", {build = "%Y%m%d%H%M"})` 支持buildversion设置
 * 移除docs目录，将其放置到独立xmake-docs仓库中，减少xmake.zip的大小，优化下载安装的效率
 * 改进安装和卸载脚本，支持DESTDIR和PREFIX环境变量设置
+* 通过缓存优化flags探测，加速编译效率
 
 ### Bugs修复
 
