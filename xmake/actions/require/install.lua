@@ -40,6 +40,7 @@ function main(requires)
         return 
     end
 
+    -- TODO
     -- enter environment 
     environment.enter()
 
@@ -106,6 +107,9 @@ function main(requires)
     for _, instance in ipairs(packages_remote) do
         action.install(instance)
     end
+
+    -- TODO add installed package infos to the given targets
+    -- ...
 
     -- leave environment
     environment.leave()

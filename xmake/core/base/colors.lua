@@ -110,6 +110,14 @@ colors._escape = string.char(27) .. '[%sm'
 -- support 256 colors?
 function colors.has256()
 
+    -- get $COLORTERM
+    colors._COLORTERM = colors._COLORTERM or os.getenv("COLORTERM") or ""
+
+    -- no color?
+    if colors._COLORTERM == "nocolor" then
+        return false
+    end
+
     -- this is supported if be not windows
     if os.host() ~= "windows" then
         return true
