@@ -238,8 +238,6 @@ function project.interpreter()
             -- option.add_xxx
         ,   "option.add_deps"
         ,   "option.add_vectorexts"
-        ,   "option.add_bindings"   -- deprecated
-        ,   "option.add_rbindings"  -- deprecated
         }
     ,   pathes = 
         {
@@ -505,6 +503,27 @@ function project._load_options(disable_filter)
     if not ok then
         return nil, errors
     end
+    
+    -- load the options from the project requires
+    for _, require_str in ipairs(table.wrap(project.get("requires"))) do
+
+        -- get the package name
+        local splitinfo = require_str:split('%s+')
+        local packageinfo = splitinfo[1]
+        local packagename = nil
+        local pos = packageinfo:find_last('@', true)
+        if pos then
+            packagename = packageinfo:sub(pos + 1)
+        else 
+            packagename = packageinfo
+        end
+
+        -- check
+        assert(not results[packagename], "requires(\"" .. packagename .. "\") and option(\"" .. packagename .. "\") conflicts!")
+
+        -- add option
+        results[packagename] = {category = "requires", default = true, showmenu = true, description = "The " .. packagename .. " package"}
+    end
 
     -- check options
     local options = {}
@@ -741,22 +760,8 @@ function project.menu()
                     first = false
                 end
 
-                -- deprecated: make bindings
-                local bindings = nil
-                if opt:get("bindings") then
-                    bindings = string.join(table.wrap(opt:get("bindings")), ',')
-                end
-                if opt:get("rbindings") then
-                    bindings = "!" .. string.join(table.wrap(opt:get("rbindings")), ",!")
-                end
-
-                -- make longname
-                local longname = name
-                if bindings ~= nil then
-                    longname = longname .. ":" .. bindings
-                end
-
                 -- append it
+                local longname = name
                 local descriptions = opt:get("description")
                 if descriptions then
 

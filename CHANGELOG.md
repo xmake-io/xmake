@@ -11,6 +11,7 @@
 * Improve install and uninstall actions and support DESTDIR and PREFIX envirnoment variables
 * Optimize to detect flags
 * Add `COLORTERM=nocolor` to disable color output
+* Remove `and_bindings` and `add_rbindings` api
 
 ### Bugs fixed
 
@@ -362,6 +363,7 @@
 * 改进安装和卸载脚本，支持DESTDIR和PREFIX环境变量设置
 * 通过缓存优化flags探测，加速编译效率
 * 添加`COLORTERM=nocolor`环境变量开关，禁用彩色输出
+* 移除`add_rbindings`和`add_bindings`接口
 
 ### Bugs修复
 

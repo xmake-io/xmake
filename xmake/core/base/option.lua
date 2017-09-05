@@ -96,41 +96,6 @@ function option._context()
     end
 end
 
--- get longname
-function option._longname(name)
-
-    -- the long name and bindings
-    --
-    -- .e.g test:xxx1,xxx2,xxx3
-    --
-    -- longname: test
-    -- bindings: xxx1 xxx2 xxx3
-    --
-    if name ~= nil then
-        return name:split(':')[1]
-    end
-end
-
--- get bindings
-function option._bindings(name)
-
-    -- the long name and bindings
-    --
-    -- .e.g test:xxx1,xxx2,xxx3
-    --
-    -- longname: test
-    -- bindings: xxx1 xxx2 xxx3
-    --
-    if name ~= nil then
-        local names = name:split(':')
-        if names then
-            if names[2] then
-                return names[2]:split(',')
-            end
-        end
-    end
-end
-
 -- get line length
 function option._get_linelen(st)
     local poss = st:reverse():find("\n")
@@ -305,14 +270,8 @@ function option.init(menu)
                 -- the short name
                 local shortname = o[1]
 
-                -- the long name and bindings
-                --
-                -- .e.g test:xxx1,xxx2,xxx3
-                --
-                -- longname: test
-                -- bindings: xxx1 xxx2 xxx3
-                --
-                longname = option._longname(o[2])
+                -- the long name 
+                longname = o[2]
 
                 -- --key?
                 if prefix == 2 and key == longname then
@@ -376,20 +335,6 @@ function option.init(menu)
             -- save option
             context.options[longname] = value
 
-            -- save bindings 
-            local bindings = option._bindings(opt[2])
-            if bindings then
-                for _, bindname in ipairs(bindings) do
-                    if bindname:startswith("!") then
-                        if type(value) == "boolean" then
-                            context.options[bindname:sub(2, -1)] = not value
-                        end
-                    else
-                        context.options[bindname] = value
-                    end
-                end
-            end
-
         -- task?
         elseif idx == 1 then
 
@@ -428,7 +373,7 @@ function option.init(menu)
                 local mode = o[3]
 
                 -- the name
-                local name = option._longname(o[2])
+                local name = o[2]
 
                 -- check
                 assert(o and ((mode ~= "v" and mode ~= "vs") or name))
@@ -451,7 +396,7 @@ function option.init(menu)
                 local mode = opt[3]
 
                 -- the name
-                local name = option._longname(opt[2])
+                local name = opt[2]
 
                 -- save value
                 if mode == "v" then
@@ -482,7 +427,7 @@ function option.init(menu)
     for _, o in ipairs(table.wrap(option._taskmenu().options)) do
 
         -- the long name
-        local longname = option._longname(o[2])
+        local longname = o[2]
 
         -- key=value?
         if o[3] == "kv" then
@@ -600,14 +545,8 @@ function option.parse(argv, options)
                 -- the short name
                 local shortname = o[1]
 
-                -- the long name and bindings
-                --
-                -- .e.g test:xxx1,xxx2,xxx3
-                --
-                -- longname: test
-                -- bindings: xxx1 xxx2 xxx3
-                --
-                longname = option._longname(o[2])
+                -- the long name
+                longname = o[2]
 
                 -- --key?
                 if prefix == 2 and key == longname then
@@ -662,20 +601,6 @@ function option.parse(argv, options)
             -- save option
             results[longname] = value
 
-            -- save bindings 
-            local bindings = option._bindings(opt[2])
-            if bindings then
-                for _, bindname in ipairs(bindings) do
-                    if bindname:startswith("!") then
-                        if type(value) == "boolean" then
-                            results[bindname:sub(2, -1)] = not value
-                        end
-                    else
-                        results[bindname] = value
-                    end
-                end
-            end
-
         -- value?
         else 
 
@@ -690,7 +615,7 @@ function option.parse(argv, options)
                 local mode = o[3]
 
                 -- the name
-                local name = option._longname(o[2])
+                local name = o[2]
 
                 -- check
                 assert(o and ((mode ~= "v" and mode ~= "vs") or name))
@@ -713,7 +638,7 @@ function option.parse(argv, options)
                 local mode = opt[3]
 
                 -- the name
-                local name = option._longname(opt[2])
+                local name = opt[2]
 
                 -- save value
                 if mode == "v" then
@@ -742,7 +667,7 @@ function option.parse(argv, options)
     for _, o in ipairs(options) do
 
         -- the long name
-        local longname = option._longname(o[2])
+        local longname = o[2]
 
         -- key=value?
         if o[3] == "kv" then
@@ -849,7 +774,7 @@ function option.defaults(task)
         for _, o in ipairs(taskmenu.options) do
 
             -- the long name
-            local longname = option._longname(o[2])
+            local longname = o[2]
 
             -- key=value?
             if o[3] == "kv" then
@@ -1061,7 +986,7 @@ function option.show_options(options)
 
         -- append the shortname
         local shortname = opt[1]
-        local name      = option._longname(opt[2])
+        local name      = opt[2]
         local mode      = opt[3]
         if shortname then
             option_info = option_info .. "    -" .. shortname
