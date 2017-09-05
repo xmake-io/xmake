@@ -280,11 +280,11 @@ end
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- add rpath for dylib (macho), .e.g -install_name @rpath/file.dylib
+    local flags_rpath = nil
     if targetkind == "shared" and targetfile:endswith(".dylib") then
-        table.insert(flags, "-install_name")
-        table.insert(flags, "@rpath/" .. path.filename(targetfile))
+        flags_rpath = {"-install_name", "@rpath/" .. path.filename(targetfile)}
     end
-    return self:program(), table.join("-o", targetfile, objectfiles, flags)
+    return self:program(), table.join("-o", targetfile, objectfiles, flags, flags_rpath)
 end
 
 -- link the target file

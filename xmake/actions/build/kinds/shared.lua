@@ -29,7 +29,7 @@ import("core.tool.compiler")
 import("object")
 
 -- is modified?
-function _is_modified(target, depfile, buildinfo, linker_instance)
+function _is_modified(target, depfile, buildinfo, program, linkflags)
 
     -- this target and it's deps are not modified?
     local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
