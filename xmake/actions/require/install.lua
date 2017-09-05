@@ -108,8 +108,25 @@ function main(requires)
         action.install(instance)
     end
 
+    -- fetch all local paclages
+    local packages_local = {}
+    for _, instance in ipairs(packages) do
+        if instance:phony() then
+            -- TODO
+            print(instance:fullname())
+        else
+            packages_local[instance:fullname()] = instance:fetch()
+        end
+    end
+
     -- TODO add installed package infos to the given targets
-    -- ...
+    for _, target in pairs(project.targets()) do
+        for _, opt in ipairs(target:options()) do
+            if opt:enabled() then
+                target:add(packages_local[opt:name()])
+            end
+        end
+    end
 
     -- leave environment
     environment.leave()

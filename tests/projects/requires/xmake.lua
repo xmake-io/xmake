@@ -46,3 +46,6 @@ target("console_c")
     -- add files
     add_files("src/*.c") 
 
+    -- add packages
+    add_packages("tboox.tbox", "zlib-mbedtls")
+
