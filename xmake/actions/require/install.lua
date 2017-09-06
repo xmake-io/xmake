@@ -31,6 +31,41 @@ import("package")
 import("repository")
 import("environment")
 
+-- attach package to target
+function _attach_to_target(instance, target)
+    target:add(instance:fetch())
+    local orderdeps = instance:orderdeps()
+    if orderdeps then
+        local total = #orderdeps
+        for idx, _ in ipairs(orderdeps) do
+            local dep = orderdeps[total + 1 - idx]
+            target:add(dep:fetch())
+        end
+    end
+end
+
+-- attach all packages to targets
+function _attach_to_targets(packages)
+
+    -- get all local paclages
+    local packages_local = {}
+    for _, instance in ipairs(packages) do
+        packages_local[instance:fullname()] = instance
+    end
+
+    -- add all local packages to targets
+    for _, target in pairs(project.targets()) do
+        for _, opt in ipairs(target:options()) do
+            if opt:enabled() then
+                local instance = packages_local[opt:name()] 
+                if instance then
+                    _attach_to_target(instance, target)
+                end
+            end
+        end
+    end
+end
+
 -- install packages
 function main(requires)
 
@@ -108,25 +143,8 @@ function main(requires)
         action.install(instance)
     end
 
-    -- fetch all local paclages
-    local packages_local = {}
-    for _, instance in ipairs(packages) do
-        if instance:phony() then
-            -- TODO
-            print(instance:fullname())
-        else
-            packages_local[instance:fullname()] = instance:fetch()
-        end
-    end
-
-    -- TODO add installed package infos to the given targets
-    for _, target in pairs(project.targets()) do
-        for _, opt in ipairs(target:options()) do
-            if opt:enabled() then
-                target:add(packages_local[opt:name()])
-            end
-        end
-    end
+    -- attach required local package to targets
+    _attach_to_targets(packages)
 
     -- leave environment
     environment.leave()

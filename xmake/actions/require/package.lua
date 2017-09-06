@@ -201,6 +201,16 @@ function _load_package(packagename, requireinfo)
     return instance
 end
 
+-- sort package deps 
+function _sort_packagedeps(package)
+    local orderdeps = {}
+    for _, dep in pairs(package:deps()) do
+        table.join2(orderdeps, _sort_packagedeps(dep))
+        table.insert(orderdeps, dep)
+    end
+    return orderdeps
+end
+
 -- load all required packages
 function _load_packages(requires)
 
@@ -216,10 +226,16 @@ function _load_packages(requires)
         -- load package instance
         local package = _load_package(packagename, requireinfo)
 
-        -- load required packages and save them first of this package
-        requires = package:get("requires")
-        if requires then
-            table.join2(packages, _load_packages(requires))
+        -- load dependent packages and save them first of this package
+        local deps = package:get("deps")
+        if deps then
+            local packagedeps = {}
+            for _, dep in ipairs(_load_packages(deps)) do
+                table.insert(packages, dep)
+                packagedeps[dep:name()] = dep
+            end
+            package._DEPS = packagedeps
+            package._ORDERDEPS = table.unique(_sort_packagedeps(package))
         end
 
         -- save this package instance

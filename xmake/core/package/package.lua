@@ -118,6 +118,16 @@ function _instance:urls_set(urls)
     self._URLS = urls
 end
 
+-- get deps
+function _instance:deps()
+    return self._DEPS
+end
+
+-- get order deps
+function _instance:orderdeps()
+    return self._ORDERDEPS
+end
+
 -- phony package?
 function _instance:phony()
     return #self:urls() == 0
@@ -248,9 +258,11 @@ end
 function _instance:fetch()
 
     -- find package
-    self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
-    self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir()}) 
-    return self._FETCHINFO
+    if not self:phony() then
+        self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
+        self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir()}) 
+        return self._FETCHINFO
+    end
 end
 
 -- exists this package in local
@@ -294,7 +306,7 @@ function package.apis()
         ,   "package.set_homepage"
         ,   "package.set_description"
             -- package.add_xxx
-        ,   "package.add_requires"
+        ,   "package.add_deps"
         }
     ,   script =
         {
