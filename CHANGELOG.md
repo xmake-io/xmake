@@ -17,6 +17,7 @@
 
 * Fix `set_pcxxheader` bug
 * [#140](https://github.com/tboox/xmake/issues/140): Fix `os.tmpdir()` in fakeroot
+* [#142](https://github.com/tboox/xmake/issues/142): Fix `os.getenv` charset bug on windows
 
 ## v2.1.6
 
@@ -369,6 +370,7 @@
 
 * 修复`set_pcxxheader`编译没有继承flags配置问题
 * [#140](https://github.com/tboox/xmake/issues/140): 修复`os.tmpdir()`在fakeroot下的冲突问题
+* [#142](https://github.com/tboox/xmake/issues/142): 修复`os.getenv` 在windows上的中文编码问题
 
 ## v2.1.6
 
