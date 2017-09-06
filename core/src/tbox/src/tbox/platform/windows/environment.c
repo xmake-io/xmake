@@ -83,11 +83,12 @@ static tb_char_t* tb_environment_get_impl(tb_char_t const* name, tb_size_t* psiz
         }
 
         // make value
-        value = (tb_char_t*)tb_malloc0(sizeof(tb_char_t) * (size + 1));
+        maxn = (size << 2) + 1;
+        value = (tb_char_t*)tb_malloc0(sizeof(tb_char_t) * (maxn + 1));
         tb_assert_and_check_break(value);
 
         // save value
-        if ((size = tb_wtoa(value, value_w, size)) == -1) break;
+        if ((size = tb_wtoa(value, value_w, maxn)) == -1) break;
 
         // save size
         if (psize) *psize = size;
