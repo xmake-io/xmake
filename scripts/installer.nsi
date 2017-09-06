@@ -32,7 +32,7 @@ RequestExecutionLevel admin
 
 ;--------------------------------
 ; Icon
-!define MUI_ICON "..\docs\favicon.ico"
+!define MUI_ICON "..\core\src\demo\xmake.ico"
  
 ;--------------------------------
 ; Pages
