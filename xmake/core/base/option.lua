@@ -988,6 +988,7 @@ function option.show_options(options)
         local shortname = opt[1]
         local name      = opt[2]
         local mode      = opt[3]
+        local default   = opt[4]
         if shortname then
             option_info = option_info .. "    -" .. shortname
             if mode == "kv" then
@@ -1005,7 +1006,7 @@ function option.show_options(options)
                 option_info = option_info .. option._ifelse(shortname, ", --", "        --") .. name
             end
             if mode == "kv" then
-                option_info = option_info .. "=" .. name:upper()
+                option_info = option_info .. "=" .. option._ifelse(type(default) == "boolean", "[y|n]", name:upper())
             end
         elseif mode == "v" or mode == "vs" then
             option_info = option_info .. "    ..."
@@ -1029,13 +1030,16 @@ function option.show_options(options)
         end
 
         -- append the default value
-        local default = opt[4]
         if default then
+            local defaultval = tostring(default)
+            if type(default) == "boolean" then
+                defaultval = option._ifelse(default, "y", "n")
+            end
             option_info  = option._inwidth_append(option_info, " (default: ", padding + 1, console_width)
             local origin_width = option._get_linelen(option_info)
             option_info  = option_info .. "${bright}"
-            option_info  = option._inwidth_append(option_info, tostring(default), padding + 1, console_width, console_width - origin_width)
-            origin_width = option._ifelse(origin_width + (#(tostring(default))) > console_width, option._get_linelen(option_info), origin_width + (#(tostring(default))))
+            option_info  = option._inwidth_append(option_info, defaultval, padding + 1, console_width, console_width - origin_width)
+            origin_width = option._ifelse(origin_width + #defaultval > console_width, option._get_linelen(option_info), origin_width + (#(tostring(default))))
             option_info  = option_info .. "${clear}"
             option_info  = option._inwidth_append(option_info, ")", padding + 1, console_width, console_width - origin_width)
         end
