@@ -87,6 +87,9 @@ tb_int_t xm_os_gid(lua_State* lua);
 tb_int_t xm_os_getown(lua_State* lua);
 #endif
 
+// the io functions
+tb_int_t xm_io_isatty(lua_State* lua);
+
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
@@ -165,6 +168,12 @@ static luaL_Reg const g_os_functions[] =
 ,   { "getown",         xm_os_getown    }
 #endif
 ,   { tb_null,          tb_null         }
+};
+
+// the io functions
+static luaL_Reg const g_io_functions[] = 
+{
+    { "isatty",         xm_io_isatty    }
 };
 
 // the path functions
@@ -444,6 +453,9 @@ xm_machine_ref_t xm_machine_init()
 
         // bind os functions
         luaL_register(impl->lua, "os", g_os_functions);
+
+        // bind io functions
+        luaL_register(impl->lua, "io", g_io_functions);
 
         // bind path functions
         luaL_register(impl->lua, "path", g_path_functions);

@@ -178,6 +178,9 @@ function colors.rainbow(index, seed, freq, spread)
 end
 
 -- translate colors from the string
+--
+-- @param str       the string with colors
+-- @param force     force to translate all colors? 
 -- 
 -- colors:
 --
@@ -199,7 +202,7 @@ end
 --
 -- "${beer}hello${beer}world"
 --
-function colors.translate(str)
+function colors.translate(str, force)
 
     -- check string
     if not str then
@@ -211,6 +214,11 @@ function colors.translate(str)
 
     -- translate it
     str = string.gsub(str, "(%${(.-)})", function(_, word) 
+
+        -- ignore all colors if no tty (redirect ..)
+        if not force and not io.isatty() then
+            return ""
+        end
 
         -- not supported? ignore it
         if not colors.has256() and not colors.truecolor() then

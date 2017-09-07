@@ -40,6 +40,7 @@ xmake_C_FILES 			+= \
 						os/uid \
 						os/gid \
 						os/getown \
+						io/isatty \
 						path/relative \
 						path/absolute \
 						path/translate \

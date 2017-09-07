@@ -31,8 +31,9 @@ local path  = require("base/path")
 local table = require("base/table")
 local utils = require("base/utils")
 
--- save original open
-io._open = io._open or io.open
+-- save original apis
+io._open   = io._open or io.open
+io._isatty = io._isatty or io.isatty
 
 -- read file
 function _file:read(...)
@@ -237,6 +238,14 @@ function io.writefile(filepath, data)
 
     -- ok?
     return true
+end
+
+-- replace the original isatty interface
+function io.isatty(fd)
+    if io._ISATTY == nil then
+        io._ISATTY = io._isatty(fd or io.stdout)
+    end
+    return io._ISATTY
 end
 
 -- replace the original open interface
