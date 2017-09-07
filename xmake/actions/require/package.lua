@@ -223,23 +223,28 @@ function _load_packages(requires)
     local packages = {}
     for packagename, requireinfo in pairs(load_requires(requires)) do
 
-        -- load package instance
-        local package = _load_package(packagename, requireinfo)
+        -- attempt to get project option about this package
+        local packageopt = project.option(packagename)
+        if packageopt == nil or packageopt:enabled() then -- this package is enabled?
 
-        -- load dependent packages and save them first of this package
-        local deps = package:get("deps")
-        if deps then
-            local packagedeps = {}
-            for _, dep in ipairs(_load_packages(deps)) do
-                table.insert(packages, dep)
-                packagedeps[dep:name()] = dep
+            -- load package instance
+            local package = _load_package(packagename, requireinfo)
+
+            -- load dependent packages and save them first of this package
+            local deps = package:get("deps")
+            if deps then
+                local packagedeps = {}
+                for _, dep in ipairs(_load_packages(deps)) do
+                    table.insert(packages, dep)
+                    packagedeps[dep:name()] = dep
+                end
+                package._DEPS = packagedeps
+                package._ORDERDEPS = table.unique(_sort_packagedeps(package))
             end
-            package._DEPS = packagedeps
-            package._ORDERDEPS = table.unique(_sort_packagedeps(package))
-        end
 
-        -- save this package instance
-        table.insert(packages, package)
+            -- save this package instance
+            table.insert(packages, package)
+        end
     end
 
     -- ok?
