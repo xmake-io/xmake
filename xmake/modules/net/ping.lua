@@ -67,25 +67,37 @@ function main(hosts, opt)
                     if timeval then
                         results[host] = timeval
                     else
-                        -- ping it
+                        -- ping it, timeout: 1s
                         local data = nil
                         if os.host() == "windows" then
-                            data = os.iorun("%s -n 1 %s", ping, host)
+                            data = os.iorun("%s -n 1 -w 1000 %s", ping, host)
                         else
-                            data = os.iorun("%s -c 1 %s", ping, host)
+                            data = os.iorun("%s -c 1 -t 1 %s", ping, host)
                         end
 
                         -- find time
-                        local time = data:match("time=(.-)ms", 1, true)
-                        if time then
-                            local timeval = tonumber(time:trim())
-                            results[host] = timeval
-                            if cacheinfo then
-                                cacheinfo[host] = timeval
-                            end
+                        local timeval = data:match("time=(.-)ms", 1, true) or "65535"
+                        if timeval then
+                            timeval = tonumber(timeval:trim())
+                        end
+                        results[host] = timeval
+                        if cacheinfo then
+                            cacheinfo[host] = timeval
                         end
                     end
-                end
+                end, 
+                catch 
+                {
+                    function (errors)
+
+                        -- no network
+                        local timeval = 65535
+                        results[host] = timeval
+                        if cacheinfo then
+                            cacheinfo[host] = timeval
+                        end
+                    end
+                }
             }
         end
     end, #hosts)
