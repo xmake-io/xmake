@@ -28,4 +28,4 @@ target("sv")
     add_includedirs("$(buildir)", "include")
     add_files("src/*.c")
 
-add_subdirs("test")
+includes("test")
