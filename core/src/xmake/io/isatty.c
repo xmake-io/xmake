@@ -33,7 +33,9 @@
  * includes
  */
 #include "prefix.h"
-#ifndef TB_CONFIG_OS_WINDOWS
+#ifdef TB_CONFIG_OS_WINDOWS
+#   include <io.h>
+#else
 #   include <unistd.h>
 #endif
 
@@ -50,16 +52,15 @@ tb_int_t xm_io_isatty(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // get file pointer
+    FILE** fp = (FILE**)luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+
     // no arguments? default: stdout
     tb_int_t answer = 1;
-#ifndef TB_CONFIG_OS_WINDOWS
-	if (lua_gettop(lua) == 0)
-		answer = isatty(1);
-	else 
-    {
-		FILE** fp = (FILE**)luaL_checkudata(lua, 1, LUA_FILEHANDLE);
-        if (fp) answer = isatty(fileno(*fp));
-	}
+#ifdef TB_CONFIG_OS_WINDOWS
+    if (fp) answer = _isatty(_fileno(*fp));
+#else
+    if (fp) answer = isatty(fileno(*fp));
 #endif
 
     // return answer

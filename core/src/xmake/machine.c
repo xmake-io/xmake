@@ -174,6 +174,7 @@ static luaL_Reg const g_os_functions[] =
 static luaL_Reg const g_io_functions[] = 
 {
     { "isatty",         xm_io_isatty    }
+,   { tb_null,          tb_null         }
 };
 
 // the path functions
