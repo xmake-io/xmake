@@ -505,6 +505,7 @@ function project._load_options(disable_filter)
     end
     
     -- load the options from the project requires
+    local requires_extra = project.get("__extra_requires") or {}
     for _, require_str in ipairs(table.wrap(project.get("requires"))) do
 
         -- get the package name
@@ -521,8 +522,19 @@ function project._load_options(disable_filter)
         -- check
         assert(not results[packagename], "requires(\"" .. packagename .. "\") and option(\"" .. packagename .. "\") conflicts!")
 
+        -- define package option
+        local packageopt = {category = "requires", default = true, showmenu = true, description = "The " .. packagename .. " package"}
+
+        -- inherit extra option settings and override the default values
+        local require_extra = requires_extra[require_str]
+        if require_extra then
+            for name, value in pairs(table.wrap(require_extra.option)) do
+                packageopt[name] = value
+            end
+        end
+
         -- add option
-        results[packagename] = {category = "requires", default = true, showmenu = true, description = "The " .. packagename .. " package"}
+        results[packagename] = packageopt
     end
 
     -- check options

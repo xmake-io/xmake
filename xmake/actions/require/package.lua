@@ -108,7 +108,7 @@ function _parse_require(require_str, requires_extra)
     -- init required item
     local required = {}
     required.packagename = packagename
-    required.requireinfo = {reponame = reponame, packageurl = packageurl, version = version, optional = require_extra.optional, option = require_extra.option}
+    required.requireinfo = {originstr = require_str, reponame = reponame, packageurl = packageurl, version = version, optional = require_extra.optional, option = require_extra.option}
 
     -- save this required item to cache
     requires[require_str] = required
