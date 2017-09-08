@@ -89,27 +89,20 @@ function interpreter._merge_root_scope(root, root_prev, override)
     -- merge it
     root_prev = root_prev or {}
     for scope_kind_and_name, _ in pairs(root or {}) do
-        
-        -- is scope_kind.scope_name?
-        scope_kind_and_name = scope_kind_and_name:split('%.')
-        if #scope_kind_and_name == 2 then
-            local scope_kind = scope_kind_and_name[1] 
-            local scope_name = scope_kind_and_name[2]
-            local scope_values = root_prev[scope_kind .. "." .. scope_name] or {}
-            local scope_root = root[scope_kind .. "." .. scope_name] or {}
-            for name, values in pairs(scope_root) do
-                if not name:startswith("__") then
-                    if scope_root["__override_" .. name] then
-                        if override or scope_values[name] == nil then
-                            scope_values[name] = values
-                        end
-                    else
-                        scope_values[name] = table.join(values, scope_values[name] or {})
+        local scope_values = root_prev[scope_kind_and_name] or {}
+        local scope_root   = root[scope_kind_and_name] or {}
+        for name, values in pairs(scope_root) do
+            if not name:startswith("__") then
+                if scope_root["__override_" .. name] then
+                    if override or scope_values[name] == nil then
+                        scope_values[name] = values
                     end
+                else
+                    scope_values[name] = table.join(values, scope_values[name] or {})
                 end
             end
-            root_prev[scope_kind .. "." .. scope_name] = scope_values
         end
+        root_prev[scope_kind_and_name] = scope_values
     end
 
     -- ok?
@@ -346,113 +339,6 @@ function interpreter:_api_translate_pathes(values)
 
     -- ok?
     return results
-end
-
--- the builtin api: add_subdirs() or add_subfiles()
-function interpreter:_api_builtin_add_subdirfiles(...)
-
-    -- check
-    assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
-
-    -- the current file 
-    local curfile = self._PRIVATE._CURFILE
-    assert(curfile)
-
-    -- the scopes
-    local scopes = self._PRIVATE._SCOPES
-    assert(scopes)
-
-    -- get all subpathes 
-    local subpathes = table.join(...)
-
-    -- match all subpathes
-    local subpathes_matched = {}
-    for _, subpath in ipairs(subpathes) do
-        local files = os.match(subpath, not subpath:endswith(".lua"))
-        if files then
-            table.join2(subpathes_matched, files) 
-        end
-    end
-
-    -- done
-    for _, subpath in ipairs(subpathes_matched) do
-        if subpath and type(subpath) == "string" then
-
-            -- the file path
-            local file = subpath
-            if not subpath:endswith(".lua") then
-                file = path.join(subpath, path.filename(curfile))
-            end
-
-            -- get the absolute file path
-            if not path.is_absolute(file) then
-                file = path.absolute(file)
-            end
-
-            -- update the current file
-            self._PRIVATE._CURFILE = file
-
-            -- load the file script
-            local script, errors = loadfile(file)
-            if script then
-
-                -- bind public scope
-                setfenv(script, self._PUBLIC)
-
-                -- save the previous root scope
-                local root_prev = scopes._ROOT
-
-                -- save the previous scope
-                local scope_prev = scopes._CURRENT
-
-                -- save the previous scope kind
-                local scope_kind_prev = scopes._CURRENT_KIND
-
-                -- clear the current root scope 
-                scopes._ROOT = nil
-
-                -- clear the current scope, force to enter root scope
-                scopes._CURRENT = nil
-
-                -- save the current directory
-                local oldir = os.curdir()
-
-                -- enter the script directory
-                os.cd(path.directory(file))
-
-                -- done interpreter
-                local ok, errors = xpcall(script, interpreter._traceback)
-                if not ok then
-                    os.raise(errors)
-                end
-
-                -- leave the script directory
-                os.cd(oldir)
-
-                -- restore the previous scope kind
-                scopes._CURRENT_KIND = scope_kind_prev
-
-                -- restore the previous scope
-                scopes._CURRENT = scope_prev
-
-                -- fetch the root values in root scopes first
-                interpreter._fetch_root_scope(scopes._ROOT)
-
-                -- restore the previous root scope and merge current root scope
-                -- it will override the previous values if the current values are override mode 
-                -- so we priority use the values in subdirs scope
-                scopes._ROOT = interpreter._merge_root_scope(scopes._ROOT, root_prev, true)
-
-                -- get mtime of the file
-                self._PRIVATE._MTIMES[path.relative(file, self._PRIVATE._ROOTDIR)] = os.mtime(file)
-            else
-                os.raise(errors)
-            end
-        end
-    end
-
-    -- restore the current file 
-    self._PRIVATE._CURFILE = curfile
 end
 
 -- get api function within scope
