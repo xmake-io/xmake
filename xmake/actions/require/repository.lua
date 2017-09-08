@@ -100,9 +100,9 @@ function packagedir(packagename, reponame)
 
         -- update cache
         _g._PACKAGEDIRS = packagedirs
-    end
 
-    -- ok
-    return foundir[1], foundir[2]
+        -- ok
+        return foundir[1], foundir[2]
+    end
 end
 
