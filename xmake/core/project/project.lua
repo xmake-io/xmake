@@ -528,6 +528,13 @@ function project._load_options(disable_filter)
         -- inherit extra option settings and override the default values
         local require_extra = requires_extra[require_str]
         if require_extra then
+
+            -- disable it if be optional
+            if require_extra.optional then
+                packageopt.default = false
+            end
+
+            -- override values from the extra option
             for name, value in pairs(table.wrap(require_extra.option)) do
                 packageopt[name] = value
             end
