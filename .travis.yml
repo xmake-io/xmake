@@ -26,12 +26,12 @@ script:
   - xmake f -m coverage -P core 
   - xmake -v -P core 
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
-  - core/build/xmake lua versioninfo
+  - `find ./core/build/coverage -name xmake` lua versioninfo
   - echo "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})" > tmp
   - cat xmake/core/_xmake_main.lua >> tmp
   - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
   - mv tmp "$XMAKE_PROGRAM_DIR/core/_xmake_main.lua"
-  - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
+  - cp `find ./core/build/coverage -name xmake` "$XMAKE_PROGRAM_DIR" || sudo cp `find ./core/build/coverage -name xmake` "$XMAKE_PROGRAM_DIR"
   - xmake lua versioninfo
   - xmake lua --backtrace tests/test.lua
 
