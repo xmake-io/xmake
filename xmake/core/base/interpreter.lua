@@ -92,7 +92,7 @@ function interpreter._merge_root_scope(root, root_prev, override)
         local scope_values = root_prev[scope_kind_and_name] or {}
         local scope_root   = root[scope_kind_and_name] or {}
         for name, values in pairs(scope_root) do
-            if not name:startswith("__") then
+            if not name:startswith("__override_") then
                 if scope_root["__override_" .. name] then
                     if override or scope_values[name] == nil then
                         scope_values[name] = values
@@ -124,7 +124,7 @@ function interpreter._fetch_root_scope(root)
             local scope_values = root[scope_kind .. "." .. scope_name] or {}
             local scope_root = root[scope_kind] or {}
             for name, values in pairs(scope_root) do
-                if not name:startswith("__") then
+                if not name:startswith("__override_") then
                     if scope_root["__override_" .. name] then
                         if scope_values[name] == nil then
                             scope_values[name] = values

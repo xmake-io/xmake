@@ -70,7 +70,10 @@ end
 function main(requires)
 
     -- init requires
-    requires = requires or project.requires()
+    local requires_extra = nil
+    if not requires then
+        requires, requires_extra = project.requires()
+    end
     if not requires or #requires == 0 then
         return 
     end
@@ -85,7 +88,7 @@ function main(requires)
     end
 
     -- load packages
-    local packages = package.load_packages(requires)
+    local packages = package.load_packages(requires, requires_extra)
 
     -- fetch packages from local first
     local packages_remote = {}

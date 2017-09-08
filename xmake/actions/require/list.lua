@@ -32,7 +32,7 @@ function main()
     -- list all requires
     print("Tha package dependencies:")
     for packagename, requireinfo in pairs(package.load_requires(project.requires())) do
-        print("    %s %s %s", packagename, requireinfo.version, requireinfo.mode)
+        print("    %s %s %s", packagename, requireinfo.version, ifelse(requireinfo.optional, "optional", ""))
     end
 end
 

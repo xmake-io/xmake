@@ -180,7 +180,7 @@ end
 
 -- get the project requires
 function sandbox_core_project.requires()
-    return project.get("requires")
+    return project.get("requires"), project.get("__extra_requires")
 end
 
 -- return module

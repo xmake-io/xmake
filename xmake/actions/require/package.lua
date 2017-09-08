@@ -42,7 +42,7 @@ import("repository")
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1")
 -- add_requires("tboox.tbox >=1.5.1 <1.6.0 optional")
 --
-function _parse_require(require_str)
+function _parse_require(require_str, requires_extra)
 
     -- get it from cache first
     local requires = _g._REQUIRES or {}
@@ -57,25 +57,6 @@ function _parse_require(require_str)
 
     -- get package info
     local packageinfo = splitinfo[1]
-
-    -- get mode at last position
-    --
-    -- .e.g
-    --
-    -- must
-    -- optional
-    --
-    local mode = "must"
-    if #splitinfo > 1 then
-
-        -- get mode
-        local modes = {must = true, optional = true}
-        local value = splitinfo[#splitinfo]:lower()
-        if modes[value] then
-            mode = value
-            table.remove(splitinfo)
-        end
-    end
 
     -- get version
     --
@@ -118,10 +99,16 @@ function _parse_require(require_str)
     -- check package name
     assert(packagename, "require(\"%s\"): the package name not found!", require_str)
 
+    -- get require extra
+    local require_extra = {}
+    if requires_extra then
+        require_extra = requires_extra[require_str] or {}
+    end
+
     -- init required item
     local required = {}
     required.packagename = packagename
-    required.requireinfo = {reponame = reponame, packageurl = packageurl, version = version, mode = mode}
+    required.requireinfo = {reponame = reponame, packageurl = packageurl, version = version, optional = require_extra.optional, option = require_extra.option}
 
     -- save this required item to cache
     requires[require_str] = required
@@ -187,6 +174,11 @@ function _load_package(packagename, requireinfo)
         end
     end
 
+    -- no this package and optional?
+    if not instance and requireinfo.optional then
+        return 
+    end
+
     -- check
     assert(instance, "package(%s) not found!", packagename)
 
@@ -212,7 +204,7 @@ function _sort_packagedeps(package)
 end
 
 -- load all required packages
-function _load_packages(requires)
+function _load_packages(requires, requires_extra)
 
     -- no requires?
     if not requires or #requires == 0 then
@@ -221,7 +213,7 @@ function _load_packages(requires)
 
     -- load packages
     local packages = {}
-    for packagename, requireinfo in pairs(load_requires(requires)) do
+    for packagename, requireinfo in pairs(load_requires(requires, requires_extra)) do
 
         -- attempt to get project option about this package
         local packageopt = project.option(packagename)
@@ -230,20 +222,24 @@ function _load_packages(requires)
             -- load package instance
             local package = _load_package(packagename, requireinfo)
 
-            -- load dependent packages and save them first of this package
-            local deps = package:get("deps")
-            if deps then
-                local packagedeps = {}
-                for _, dep in ipairs(_load_packages(deps)) do
-                    table.insert(packages, dep)
-                    packagedeps[dep:name()] = dep
-                end
-                package._DEPS = packagedeps
-                package._ORDERDEPS = table.unique(_sort_packagedeps(package))
-            end
+            -- maybe package not found and optional
+            if package then
 
-            -- save this package instance
-            table.insert(packages, package)
+                -- load dependent packages and save them first of this package
+                local deps = package:get("deps")
+                if deps then
+                    local packagedeps = {}
+                    for _, dep in ipairs(_load_packages(deps, package:get("__extra_deps"))) do
+                        table.insert(packages, dep)
+                        packagedeps[dep:name()] = dep
+                    end
+                    package._DEPS = packagedeps
+                    package._ORDERDEPS = table.unique(_sort_packagedeps(package))
+                end
+
+                -- save this package instance
+                table.insert(packages, package)
+            end
         end
     end
 
@@ -327,14 +323,14 @@ function cachedir()
 end
 
 -- load requires
-function load_requires(requires)
+function load_requires(requires, requires_extra)
 
     -- parse requires
     local requireinfos = {}
     for _, require_str in ipairs(requires) do
 
         -- parse require info
-        local packagename, requireinfo = _parse_require(require_str)
+        local packagename, requireinfo = _parse_require(require_str, requires_extra)
 
         -- save this required package
         requireinfos[packagename] = requireinfo
@@ -345,10 +341,10 @@ function load_requires(requires)
 end
 
 -- load all required packages
-function load_packages(requires)
+function load_packages(requires, requires_extra)
 
     -- laod all required packages recursively
-    local packages = _load_packages(requires)
+    local packages = _load_packages(requires, requires_extra)
 
     -- add all urls to fasturl and prepare to sort them together
     for _, package in ipairs(packages) do
