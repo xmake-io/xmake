@@ -372,6 +372,31 @@ function package.load_from_url(packagename, packageurl)
     return instance, errors
 end
 
+-- load the package from the system directories
+function package.load_from_system(packagename)
+
+    -- get it directly from cache first
+    package._PACKAGES = package._PACKAGES or {}
+    if package._PACKAGES[packagename] then
+        return package._PACKAGES[packagename]
+    end
+
+    -- new an empty instance
+    local instance, errors = _instance.new(packagename, {}, package._interpreter():rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- mark as local package
+    instance._ISGLOBAL = false
+
+    -- save instance to the cache
+    package._PACKAGES[packagename] = instance
+
+    -- ok
+    return instance
+end
+
 -- load the package from the project file
 function package.load_from_project(packagename)
 
@@ -401,7 +426,7 @@ function package.load_from_project(packagename)
         return nil, errors
     end
 
-    -- mark as loval package
+    -- mark as local package
     instance._ISGLOBAL = false
 
     -- save instance to the cache

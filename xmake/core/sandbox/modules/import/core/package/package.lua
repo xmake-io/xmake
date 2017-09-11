@@ -52,6 +52,19 @@ function sandbox_core_package_package.load_from_project(packagename)
     return instance
 end
 
+-- load the package from the system 
+function sandbox_core_package_package.load_from_system(packagename)
+
+    -- load package instance 
+    local instance, errors = package.load_from_system(packagename) 
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return instance
+end
+
 -- load the package from repositories
 function sandbox_core_package_package.load_from_repository(packagename, is_global, packagedir, packagefile)
 

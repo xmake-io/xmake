@@ -120,15 +120,16 @@ end
 
 -- load package instance from the given package url
 function _load_package_from_url(packagename, packageurl)
-
-    -- load it
     return core_package.load_from_url(packagename, packageurl)
+end
+
+-- load package instance from system
+function _load_package_from_system(packagename)
+    return core_package.load_from_system(packagename)
 end
 
 -- load package instance from project
 function _load_package_from_project(packagename)
-
-    -- load it
     return core_package.load_from_project(packagename)
 end
 
@@ -168,9 +169,15 @@ function _load_package(packagename, requireinfo)
     else
         -- load package from project first
         instance = _load_package_from_project(packagename)
+            
+        -- load package from repositories
         if not instance then
-            -- load package from repositories
             instance = _load_package_from_repository(packagename, requireinfo.reponame)
+        end
+
+        -- load package from system
+        if not instance then
+            instance = _load_package_from_system(packagename)
         end
     end
 
