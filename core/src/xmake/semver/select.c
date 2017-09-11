@@ -32,129 +32,226 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include <stdlib.h>
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * private implementation
  */
-
-// satisfies wrapper
-tb_int_t xm_semver_select(lua_State* lua)
+static tb_bool_t xm_semver_select_from_versions_tags(lua_State* lua, tb_int_t fromidx, semver_t* semver, semver_range_t const* range, semvers_t* matches)
 {
-    semver_t semver = {0};
-    semvers_t matches = {0};
-    semver_range_t range = {0};
-    lua_Integer i;
-    size_t range_len = 0, source_len;
-    tb_char_t const* source_str;
-    tb_char_t const* source;
-    tb_bool_t is_range;
+    // clear matches
+    semvers_pclear(matches);
 
-    lua_settop(lua, 4);
+    // select all matches
+    tb_int_t i = 0;
+    luaL_checktype(lua, fromidx, LUA_TTABLE);
+    for (i = lua_objlen(lua, fromidx); i > 0; --i) 
+    {
+        lua_pushinteger(lua, i);
+        lua_gettable(lua, fromidx);
 
-    // check
-    tb_assert_and_check_return_val(lua, 0);
-
-    // get the version string
-    tb_char_t const* range_str = luaL_checkstring(lua, 1);
-    tb_check_return_val(range_str, 0);
-    range_len = tb_strlen(range_str);
-
-    is_range = semver_rangen(&range, range_str, range_len) == 0;
-    if (is_range) {
-        source = "versions";
-        luaL_checktype(lua, 2, LUA_TTABLE);
-        for (i = lua_objlen(lua, 2); i > 0; --i) {
-            lua_pushinteger(lua, i);
-            lua_gettable(lua, 2);
-
-            source_str = luaL_checkstring(lua, -1);
-            tb_check_return_val(source_str, 0);
-
-            if (semver_tryn(&semver, source_str, tb_strlen(source_str)) == 0) {
-                if (semver_range_match(semver, range)) {
-                    semvers_push(matches, semver);
-                } else {
-                    semver_dtor(&semver);
-                }
-            }
+        tb_char_t const* source_str = luaL_checkstring(lua, -1);
+        if (source_str && semver_tryn(semver, source_str, tb_strlen(source_str)) == 0) 
+        {
+            if (semver_range_pmatch(semver, range)) semvers_ppush(matches, *semver);
+            else semver_dtor(semver);
         }
-        if (matches.length) {
-            goto match;
-        }
-        semvers_clear(matches);
-        source = "tags";
-        luaL_checktype(lua, 3, LUA_TTABLE);
-        for (i = lua_objlen(lua, 3); i > 0; --i) {
-            lua_pushinteger(lua, i);
-            lua_gettable(lua, 3);
-
-            source_str = luaL_checkstring(lua, -1);
-            tb_check_return_val(source_str, 0);
-
-            if (semver_tryn(&semver, source_str, tb_strlen(source_str)) == 0) {
-                if (semver_range_match(semver, range)) {
-                    semvers_push(matches, semver);
-                } else {
-                    semver_dtor(&semver);
-                }
-            }
-        }
-        if (matches.length) {
-            goto match;
-        }
-        semvers_dtor(matches);
-        semver_range_dtor(&range);
     }
 
-    source = "branches";
-    luaL_checktype(lua, 4, LUA_TTABLE);
-    for (i = lua_objlen(lua, 4); i > 0; --i) {
+    // no matches?
+    tb_check_return_val(matches->length, tb_false);
+
+    // sort matches
+    semvers_psort(matches);
+
+    // get the newest version 
+    semver_t top = semvers_ppop(matches);
+    lua_createtable(lua, 0, 2);
+
+    // return results
+    lua_pushstring(lua, top.raw);
+    lua_setfield(lua, -2, "version");
+
+    lua_pushstring(lua, fromidx == 2? "versions" : "tags");
+    lua_setfield(lua, -2, "source");
+
+    // exit the popped semver 
+    semver_dtor(&top);
+
+    // ok
+    return tb_true;
+}
+static tb_bool_t xm_semver_select_from_branches(lua_State* lua, tb_int_t fromidx, tb_char_t const* range_str, tb_size_t range_len)
+{
+    tb_int_t i = 0;
+    luaL_checktype(lua, fromidx, LUA_TTABLE);
+    for (i = lua_objlen(lua, fromidx); i > 0; --i) 
+    {
         lua_pushinteger(lua, i);
-        lua_gettable(lua, 4);
+        lua_gettable(lua, fromidx);
 
-        source_str = luaL_checkstring(lua, -1);
-        tb_check_return_val(source_str, 0);
-        source_len = tb_strlen(source_str);
+        tb_char_t const* source_str = luaL_checkstring(lua, -1);
+        tb_check_continue(source_str);
 
-        if (source_len == range_len && tb_memcmp(source_str, range_str, source_len) == 0) {
+        tb_size_t source_len = tb_strlen(source_str);
+        if (source_len == range_len && tb_memcmp(source_str, range_str, source_len) == 0) 
+        {
             lua_createtable(lua, 0, 2);
 
             lua_pushlstring(lua, source_str, source_len);
             lua_setfield(lua, -2, "version");
 
-            lua_pushstring(lua, source);
+            lua_pushstring(lua, "branches");
             lua_setfield(lua, -2, "source");
 
-            return 1;
+            // ok
+            return tb_true;
         }
     }
 
-    if (!is_range)  {
-        lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver range '%s'", range_str);
+    // no matches
+    return tb_false;
+}
+static tb_bool_t xm_semver_select_master_from_versions_tags(lua_State* lua, tb_int_t fromidx, semver_t* semver, semvers_t* matches)
+{
+    // clear matches
+    semvers_pclear(matches);
 
-        return 2;
+    // push all versions to matches
+    tb_int_t i = 0;
+    luaL_checktype(lua, fromidx, LUA_TTABLE);
+    for (i = lua_objlen(lua, fromidx); i > 0; --i) 
+    {
+        lua_pushinteger(lua, i);
+        lua_gettable(lua, fromidx);
+
+        tb_char_t const* source_str = luaL_checkstring(lua, -1);
+        if (source_str && semver_tryn(semver, source_str, tb_strlen(source_str)) == 0) 
+            semvers_ppush(matches, *semver);
     }
-    lua_pushnil(lua);
-    lua_pushfstring(lua, "Unable to select version for range '%s'", range_str);
 
-    return 2;
-    match:
-    semvers_sort(matches);
-    semver = semvers_pop(matches);
+    // no matches?
+    tb_check_return_val(matches->length, tb_false);
+
+    // sort matches
+    semvers_psort(matches);
+
+    // get the newest match
+    semver_t top = semvers_ppop(matches);
     lua_createtable(lua, 0, 2);
 
-    lua_pushstring(lua, semver.raw);
+    // return results
+    lua_pushstring(lua, top.raw);
     lua_setfield(lua, -2, "version");
 
-    lua_pushstring(lua, source);
+    lua_pushstring(lua, fromidx == 2? "versions" : "tags");
     lua_setfield(lua, -2, "source");
 
+    // exit the popped semver 
+    semver_dtor(&top);
+
+    // ok
+    return tb_true;
+}
+
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * implementation
+ */
+
+/* select version
+ *
+ * local versioninfo, errors = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"master", "dev"})
+ */
+tb_int_t xm_semver_select(lua_State* lua)
+{
+//    lua_settop(lua, 4);
+
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
+    // select version
+    tb_bool_t ok               = tb_false;
+    tb_bool_t is_range         = tb_false;
+    tb_char_t const* range_str = tb_null;
+    semver_t semver            = {0};
+    semvers_t matches          = {0};
+    semver_range_t range       = {0};
+    do
+    {
+        // get the version range string
+        range_str = luaL_checkstring(lua, 1);
+        tb_check_break(range_str);
+
+        // get the range string length
+        tb_size_t range_len = tb_strlen(range_str);
+
+        // parse the version range string
+        is_range = semver_rangen(&range, range_str, range_len) == 0;
+        if (is_range) 
+        {
+            // attempt to select version from the versions list first
+            if (xm_semver_select_from_versions_tags(lua, 2, &semver, &range, &matches)) 
+            {
+                ok = tb_true;
+                break;
+            }
+
+            // attempt to select version from the tags list
+            if (xm_semver_select_from_versions_tags(lua, 3, &semver, &range, &matches)) 
+            {
+                ok = tb_true;
+                break;
+            }
+        }
+
+        // attempt to select version from the branches
+        if (xm_semver_select_from_branches(lua, 4, range_str, range_len))
+        {
+            ok = tb_true;
+            break;
+        }
+
+        // select the lastest version from the tags and versions if be master
+        if (!tb_strcmp(range_str, "master"))
+        {
+            // attempt to select master version from the versions list
+            if (xm_semver_select_master_from_versions_tags(lua, 2, &semver, &matches)) 
+            {
+                ok = tb_true;
+                break;
+            }
+
+            // attempt to select master version from the tags list
+            if (xm_semver_select_master_from_versions_tags(lua, 3, &semver, &matches)) 
+            {
+                ok = tb_true;
+                break;
+            }
+        }
+
+    } while (0);
+
+    // exit matches
     semvers_dtor(matches);
-    semver_dtor(&semver);
+
+    // exit range
     semver_range_dtor(&range);
 
+    // failed?
+    if (!ok) 
+    {
+        if (!is_range) 
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "unable to parse semver range '%s'", range_str);
+        }
+
+        lua_pushnil(lua);
+        lua_pushfstring(lua, "unable to select version for range '%s'", range_str);
+        return 2;
+    }
+    
+    // ok
     return 1;
 }

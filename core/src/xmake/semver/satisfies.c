@@ -38,37 +38,40 @@
  * implementation
  */
 
-// satisfies wrapper
+/* satisfies the given version range?
+ *
+ * semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
+ */
 tb_int_t xm_semver_satisfies(lua_State* lua)
 {
-    semver_t semver = {0};
-    semver_range_t range = {0};
-
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the version string
-    tb_char_t const* str = luaL_checkstring(lua, 1);
-    tb_char_t const* range_str = luaL_checkstring(lua, 2);
+    tb_char_t const* version_str = luaL_checkstring(lua, 1);
+    tb_char_t const* range_str   = luaL_checkstring(lua, 2);
+    tb_assert_and_check_return_val(version_str && range_str, 0);
 
-    tb_check_return_val(str, 0);
-    tb_check_return_val(range_str, 0);
-
-    if (semvern(&semver, str, tb_strlen(str))) {
+    // parse the version string
+    semver_t semver = {0};
+    if (semvern(&semver, version_str, tb_strlen(version_str))) 
+    {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver '%s'", str);
-
+        lua_pushfstring(lua, "unable to parse semver '%s'", version_str);
         return 2;
     }
 
-    if (semver_rangen(&range, range_str, tb_strlen(range_str))) {
+    // parse the version range string
+    semver_range_t range = {0};
+    if (semver_rangen(&range, range_str, tb_strlen(range_str))) 
+    {
         semver_dtor(&semver);
         lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver range '%s'", range_str);
-
+        lua_pushfstring(lua, "unable to parse semver range '%s'", range_str);
         return 2;
     }
 
+    // satisfies this range?
     lua_pushboolean(lua, semver_range_match(semver, range));
     semver_dtor(&semver);
     semver_range_dtor(&range);

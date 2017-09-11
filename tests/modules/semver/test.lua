@@ -33,6 +33,10 @@ function _test_semver_select()
                         , {"v1.2.0", "v1.6.0"}
                         , {"master", "dev"})
 
+    _check_semver_select({"1.5.1", "versions"}
+                        , "master"
+                        , {"1.4.0", "1.5.0", "1.5.1"})
+
     print("semver.select: ok!")
 end
 

@@ -29,9 +29,28 @@
  * includes
  */
 #include "../prefix.h"
-
 #include "semver.h"
 
-void lua_pushsemver(lua_State *lua, semver_t semver);
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/* push struct semver 
+ *
+ * @param lua       the lua context
+ * @param semver    the semver struct
+ *
+ */
+tb_void_t lua_pushsemver(lua_State *lua, semver_t const* semver);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * leave
+ */
+__tb_extern_c_leave__
 
 #endif

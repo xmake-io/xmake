@@ -38,28 +38,46 @@
  * implementation
  */
 
-// parse wrapper
+/* version = semver.parse("v1.0.1-beta")
+ *
+ *
+    {
+        patch = 1
+    ,   raw = v1.0.1-beta
+    ,   version = v1.0.1-beta
+    ,   major = 1
+    ,   build = 
+        {
+        }
+
+    ,   minor = 0
+    ,   prerelease = 
+        {
+            beta
+        }
+    }
+ *
+ */
 tb_int_t xm_semver_parse(lua_State* lua)
 {
-    semver_t semver = {0};
-
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get the version string
-    tb_char_t const* str = luaL_checkstring(lua, 1);
-    tb_check_return_val(str, 0);
+    tb_char_t const* version_str = luaL_checkstring(lua, 1);
+    tb_check_return_val(version_str, 0);
 
-    if (semvern(&semver, str, tb_strlen(str))) {
+    // parse version string
+    semver_t semver = {0};
+    if (semvern(&semver, version_str, tb_strlen(version_str))) 
+    {
         lua_pushnil(lua);
-        lua_pushfstring(lua, "Unable to parse semver '%s'", str);
-
+        lua_pushfstring(lua, "unable to parse semver '%s'", version_str);
         return 2;
     }
 
-    lua_pushsemver(lua, semver);
-    semver_dtor(&semver);
-
     // ok
+    lua_pushsemver(lua, &semver);
+    semver_dtor(&semver);
     return 1;
 }

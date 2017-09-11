@@ -198,8 +198,11 @@ SV_API void semvers_pclear(semvers_t *self);
 #define semvers_growth(s, n) \
   semvers_pgrowth(&(s),n)
 
+#define semvers_pgrow(s, n) \
+  semvers_pgrowth((s),(s)->length+(n))
+
 #define semvers_grow(s, n) \
-  semvers_pgrowth(&(s),(s).length+(n))
+  semvers_pgrow(&(s), n)
 
 #define semvers_resize(s, n) \
   ((s).length=semvers_growth(s, n))
@@ -207,11 +210,17 @@ SV_API void semvers_pclear(semvers_t *self);
 #define semvers_erase(s, i) \
   semvers_perase(&(s), i)
 
+#define semvers_ppush(s, x) \
+  (semvers_pgrow(s,1),(s)->data[(s)->length++]=(x))
+
 #define semvers_push(s, x) \
-  (semvers_grow(s,1),(s).data[(s).length++]=(x))
+  semvers_ppush(&(s), x)
+
+#define semvers_ppop(s) \
+  (s)->data[--(s)->length]
 
 #define semvers_pop(s) \
-  (s).data[--(s).length]
+  semvers_ppop(&(s))
 
 #define semvers_unshift(s, x) \
   (semvers_grow(s,1),memmove((s).data+1,(s).data,(s).length++*sizeof(semver_t)),(s).data[0]=(x))

@@ -19,7 +19,7 @@
  * Copyright (C) 2015 - 2017, TBOOX Open Source Group.
  *
  * @author      uael
- * @file        semver.c
+ * @file        semver->c
  *
  */
 
@@ -37,53 +37,53 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-
-void lua_pushsemver(lua_State *lua, const semver_t semver)
+tb_void_t lua_pushsemver(lua_State *lua, semver_t const* semver)
 {
-    semver_id_t const *id;
-    tb_uchar_t i = 0;
+    // check
+    tb_assert(lua && semver);
 
+    // return a semver table
     lua_createtable(lua, 0, 7);
 
-    lua_pushstring(lua, semver.raw);
+    lua_pushstring(lua, semver->raw);
     lua_setfield(lua, -2, "raw");
 
-    lua_pushlstring(lua, semver.raw, semver.len);
+    lua_pushlstring(lua, semver->raw, semver->len);
     lua_setfield(lua, -2, "version");
 
-    lua_pushinteger(lua, semver.major);
+    lua_pushinteger(lua, semver->major);
     lua_setfield(lua, -2, "major");
 
-    lua_pushinteger(lua, semver.minor);
+    lua_pushinteger(lua, semver->minor);
     lua_setfield(lua, -2, "minor");
 
-    lua_pushinteger(lua, semver.patch);
+    lua_pushinteger(lua, semver->patch);
     lua_setfield(lua, -2, "patch");
 
+    // push prelease table
     lua_pushstring(lua, "prerelease");
     lua_newtable(lua);
-    id = &semver.prerelease;
-    while (id && id->len) {
-        if (id->numeric) {
-            lua_pushinteger(lua, id->num);
-        } else {
-            lua_pushlstring(lua, id->raw, id->len);
-        }
+
+    tb_uchar_t i = 0;
+    semver_id_t const* id = &semver->prerelease;
+    while (id && id->len) 
+    {
+        if (id->numeric) lua_pushinteger(lua, id->num);
+        else lua_pushlstring(lua, id->raw, id->len);
         id = id->next;
         lua_rawseti(lua, -2, ++i);
     }
     lua_settable(lua, -3);
 
+    // push the build table
     i = 0;
     lua_pushstring(lua, "build");
     lua_newtable(lua);
-    id = &semver.build;
-    while (id && id->len) {
-        if (id->numeric) {
-            lua_pushinteger(lua, id->num);
-        } else {
-            lua_pushlstring(lua, id->raw, id->len);
-        }
+    id = &semver->build;
+    while (id && id->len) 
+    {
+        if (id->numeric) lua_pushinteger(lua, id->num);
+        else lua_pushlstring(lua, id->raw, id->len);
         id = id->next;
         lua_rawseti(lua, -2, ++i);
     }
