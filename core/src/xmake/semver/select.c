@@ -43,7 +43,7 @@ static tb_bool_t xm_semver_select_from_versions_tags(lua_State* lua, tb_int_t fr
     semvers_pclear(matches);
 
     // select all matches
-    tb_int_t i = 0;
+    lua_Integer i = 0;
     luaL_checktype(lua, fromidx, LUA_TTABLE);
     for (i = lua_objlen(lua, fromidx); i > 0; --i) 
     {
@@ -83,7 +83,7 @@ static tb_bool_t xm_semver_select_from_versions_tags(lua_State* lua, tb_int_t fr
 }
 static tb_bool_t xm_semver_select_from_branches(lua_State* lua, tb_int_t fromidx, tb_char_t const* range_str, tb_size_t range_len)
 {
-    tb_int_t i = 0;
+    lua_Integer i = 0;
     luaL_checktype(lua, fromidx, LUA_TTABLE);
     for (i = lua_objlen(lua, fromidx); i > 0; --i) 
     {
@@ -118,11 +118,11 @@ static tb_bool_t xm_semver_select_master_from_versions_tags(lua_State* lua, tb_i
     semvers_pclear(matches);
 
     // push all versions to matches
-    tb_int_t i = 0;
+    lua_Integer i = 0;
     luaL_checktype(lua, fromidx, LUA_TTABLE);
     for (i = lua_objlen(lua, fromidx); i > 0; --i) 
     {
-        lua_pushinteger(lua, i);
+        lua_pushinteger(lua, ()i);
         lua_gettable(lua, fromidx);
 
         tb_char_t const* source_str = luaL_checkstring(lua, -1);
