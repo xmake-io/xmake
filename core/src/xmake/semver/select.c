@@ -122,7 +122,7 @@ static tb_bool_t xm_semver_select_master_from_versions_tags(lua_State* lua, tb_i
     luaL_checktype(lua, fromidx, LUA_TTABLE);
     for (i = lua_objlen(lua, fromidx); i > 0; --i) 
     {
-        lua_pushinteger(lua, ()i);
+        lua_pushinteger(lua, i);
         lua_gettable(lua, fromidx);
 
         tb_char_t const* source_str = luaL_checkstring(lua, -1);
