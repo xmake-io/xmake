@@ -131,12 +131,6 @@ function sandbox_lib_detect_find_package._find_from_packagedirs(name, opt)
     return result
 end
 
--- find package from repositories
-function sandbox_lib_detect_find_package._find_from_repositories(name, opt)
-
-    -- TODO in repo branch
-end
-
 -- find package from modules (detect.packages.find_xxx)
 function sandbox_lib_detect_find_package._find_from_modules(name, opt)
 
@@ -242,17 +236,24 @@ end
 function sandbox_lib_detect_find_package._find(name, opt)
 
     -- init find scripts
-    local findscripts = 
-    {
-        sandbox_lib_detect_find_package._find_from_packagedirs
-    ,   sandbox_lib_detect_find_package._find_from_repositories
-    ,   sandbox_lib_detect_find_package._find_from_modules
-    }
+    local findscripts = {}
 
-    -- find package from the current host platform
-    if opt.plat == os.host() and opt.arch == os.arch() then
-        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_pkg_config)
-        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_systemdirs)
+    -- find package from the package directories
+    if opt.packagedirs then
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_packagedirs)
+    end
+
+    -- find system package
+    if opt.system then
+
+        -- find package from modules
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_modules)
+
+        -- find package from the current host platform
+        if opt.plat == os.host() and opt.arch == os.arch() then
+            table.insert(findscripts, sandbox_lib_detect_find_package._find_from_pkg_config)
+            table.insert(findscripts, sandbox_lib_detect_find_package._find_from_systemdirs)
+        end
     end
 
     -- find it
@@ -280,7 +281,7 @@ end
 -- @param opt       the package options. 
 --                  e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.1", 
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
---                     packagedirs = {"/tmp/packages"}}
+--                     packagedirs = {"/tmp/packages"}, system = true}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
@@ -297,10 +298,11 @@ end
 function sandbox_lib_detect_find_package.main(name, opt)
 
     -- init options
-    opt = opt or {}
-    opt.plat = opt.plat or config.get("plat") or os.host()
-    opt.arch = opt.arch or config.get("arch") or os.arch()
-    opt.mode = opt.mode or config.get("mode") 
+    opt        = opt or {}
+    opt.plat   = opt.plat or config.get("plat") or os.host()
+    opt.arch   = opt.arch or config.get("arch") or os.arch()
+    opt.mode   = opt.mode or config.get("mode")
+    opt.system = opt.system or true
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch

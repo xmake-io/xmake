@@ -183,6 +183,13 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir()
+
+    -- only be a system package without urls, no installdir
+    if self:from("system") then
+        return 
+    end
+
+    -- make install directory
     local version_str = self:version_str()
     if version_str then
         version_str = "-" .. version_str
@@ -269,14 +276,35 @@ function _instance:script(name, generic)
 end
 
 -- fetch package info from the local packages
+--
+-- @return {packageinfo}, fetchfrom (.e.g local/global/system)
+--
 function _instance:fetch()
 
     -- import find_package
     self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
 
-    -- fetch the package info in local
-    self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir()}) 
-    return self._FETCHINFO
+    -- fetch it from the package directories first
+    local fetchfrom  = self._FETCHFROM
+    local fetchinfo  = self._FETCHINFO
+    local installdir = self:installdir()
+    if not fetchinfo and installdir then
+        fetchinfo = self._find_package(self:name(), {packagedirs = installdir, system = false, force = true}) -- disable cache and system packages
+        if fetchinfo then fetchfrom = self._FROMKIND end
+    end
+
+    -- fetch it from the system directories
+    if not fetchinfo then
+        fetchinfo = self._find_package(self:name())
+        if fetchinfo then fetchfrom = "system" end
+    end
+
+    -- save to cache
+    self._FETCHINFO = fetchinfo
+    self._FETCHFROM = fetchfrom
+
+    -- ok
+    return fetchinfo, fetchfrom
 end
 
 -- exists this package in local
