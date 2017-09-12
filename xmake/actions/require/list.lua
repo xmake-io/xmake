@@ -35,6 +35,8 @@ function _from(instance)
         return ", ${green}" .. fetchfrom .. "${clear}"
     elseif #instance:urls() > 0 then
         return ", ${yellow}remote${clear}"
+    elseif instance:from("system") then
+        return ", ${red}missing${clear}"
     else
         return ""
     end
@@ -44,7 +46,7 @@ end
 function main()
 
     -- list all requires
-    print("Tha package dependencies:")
+    print("The package dependencies:")
 
     -- get requires 
     local requires, requires_extra = project.requires()

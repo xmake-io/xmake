@@ -531,7 +531,15 @@ function project._load_options(disable_filter)
 
             -- override values from the extra option
             for name, value in pairs(table.wrap(require_extra.option)) do
-                packageopt[name] = value
+                if type(value) == "function" then
+                    local maps = {on_check = "check", before_check = "check_before", after_check = "check_after"}
+                    local scriptname = maps[name]
+                    if scriptname then
+                        packageopt[scriptname] = interp:_script(value)
+                    end
+                else
+                    packageopt[name] = value
+                end
             end
         end
 

@@ -291,7 +291,7 @@ function _instance:fetch()
     -- fetch it from the system directories
     if not fetchinfo then
         local system = self:requireinfo().system
-        if system == nil then -- enable by default
+        if system == nil then -- find system package by default
             system = true
         end
         if system then
