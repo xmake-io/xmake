@@ -81,7 +81,7 @@ function _check_missing_packages(packages)
 
     -- raise tips
     if #packages_missing > 0 then
-        raise("The packages(%s) not found", table.concat(packages_missing, ", "))
+        raise("The packages(%s) not found!", table.concat(packages_missing, ", "))
     end
 end
 
@@ -120,7 +120,7 @@ function main(requires)
     else
         process.runjobs(function (index)
             local instance = packages[index]
-            if instance and #instance:urls() > 0 and not instance:fetch() then
+            if instance and not instance:fetch() and #instance:urls() > 0 then -- @note fetch first for only system packge 
                 table.insert(packages_remote, instance)
             end
         end, #packages)
