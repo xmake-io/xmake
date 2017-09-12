@@ -302,7 +302,11 @@ function sandbox_lib_detect_find_package.main(name, opt)
     opt.plat   = opt.plat or config.get("plat") or os.host()
     opt.arch   = opt.arch or config.get("arch") or os.arch()
     opt.mode   = opt.mode or config.get("mode")
-    opt.system = opt.system or true
+
+    -- enable system package by default
+    if opt.system == nil then
+        opt.system = true
+    end
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
@@ -318,10 +322,10 @@ function sandbox_lib_detect_find_package.main(name, opt)
     result = sandbox_lib_detect_find_package._find(name, opt) 
 
     -- cache result
-    cacheinfo[name] = utils.ifelse(result, result, false)
-
-    -- save cache info
-    cache.save(key, cacheinfo)
+    if not opt.force then
+        cacheinfo[name] = utils.ifelse(result, result, false)
+        cache.save(key, cacheinfo)
+    end
 
     -- trace
     if opt.verbose or option.get("verbose") then

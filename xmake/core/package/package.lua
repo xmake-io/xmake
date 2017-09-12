@@ -165,11 +165,6 @@ function _instance:from(kind)
     return self._FROMKIND == kind
 end
 
--- is optional package?
-function _instance:optional()
-    return self._REQUIREINFO.mode == "optional"
-end
-
 -- get the cached directory of this package
 function _instance:cachedir()
     local version_str = self:version_str()
@@ -295,8 +290,14 @@ function _instance:fetch()
 
     -- fetch it from the system directories
     if not fetchinfo then
-        fetchinfo = self._find_package(self:name())
-        if fetchinfo then fetchfrom = "system" end
+        local system = self:requireinfo().system
+        if system == nil then -- enable by default
+            system = true
+        end
+        if system then
+            fetchinfo = self._find_package(self:name())
+            if fetchinfo then fetchfrom = "system" end
+        end
     end
 
     -- save to cache

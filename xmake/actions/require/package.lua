@@ -40,7 +40,7 @@ import("repository")
 -- add_requires("zlib master")
 -- add_requires("xmake-repo@tboox.tbox >=1.5.1")
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1")
--- add_requires("tboox.tbox >=1.5.1 <1.6.0 optional")
+-- add_requires("tboox.tbox >=1.5.1 <1.6.0")
 --
 function _parse_require(require_str, requires_extra)
 
@@ -114,9 +114,10 @@ function _parse_require(require_str, requires_extra)
         reponame         = reponame,
         packageurl       = packageurl,
         version          = version,
-        optional         = require_extra.optional,
         system           = require_extra.system,
-        option           = require_extra.option
+        option           = require_extra.option,
+        default          = require_extra.default,
+        optional         = require_extra.optional
     }
 
     -- save this required item to cache
@@ -188,11 +189,6 @@ function _load_package(packagename, requireinfo)
         if not instance then
             instance = _load_package_from_system(packagename)
         end
-    end
-
-    -- no this package and optional?
-    if not instance and requireinfo.optional then
-        return 
     end
 
     -- check

@@ -6,13 +6,14 @@ package_end()
 
 -- group packages
 package("zlib-mbedtls")
-    add_deps("zlib >=1.2.11")
-    add_deps("mbedtls", {optional = true})
+    add_deps("zlib >=1.2.11", {system = false})
+    add_deps("mbedtls")
 package_end()
 
 -- requires
 add_requires("zlib-mbedtls")
-add_requires("xmake-repo@tboox.tbox ~1.6.0", {optional = true})
+add_requires("xmake-repo@tboox.tbox ~1.6.0")
+add_requires("unknown", {optional = true})
 
 -- the debug mode
 if is_mode("debug") then

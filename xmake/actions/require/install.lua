@@ -66,6 +66,25 @@ function _attach_to_targets(packages)
     end
 end
 
+-- check missing packages
+function _check_missing_packages(packages)
+
+    -- get all missing packages
+    local packages_missing = {}
+    for _, instance in ipairs(packages) do
+        if not instance:exists() and not instance:requireinfo().optional then
+            if #instance:urls() > 0 or instance:from("system") then
+                table.insert(packages_missing, instance:fullname())
+            end
+        end
+    end
+
+    -- raise tips
+    if #packages_missing > 0 then
+        raise("The packages(%s) not found", table.concat(packages_missing, ", "))
+    end
+end
+
 -- install packages
 function main(requires)
 
@@ -145,6 +164,9 @@ function main(requires)
     for _, instance in ipairs(packages_remote) do
         action.install(instance)
     end
+
+    -- check missing packages
+    _check_missing_packages(packages)
 
     -- attach required local package to targets
     _attach_to_targets(packages)

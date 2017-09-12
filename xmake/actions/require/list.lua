@@ -66,10 +66,10 @@ function main()
         local requireinfo = instance:requireinfo() or {}
         local packageopt  = project.option(instance:fullname())
         if packageopt then
-            cprint("    ${magenta}require${clear}(%s): %s%s%s", requireinfo.originstr, ifelse(instance:version_str(), instance:version_str(), ""), _from(instance), ifelse(requireinfo.optional, ", ${yellow}optional${clear}", ""))
+            cprint("    ${magenta}require${clear}(%s): %s%s%s", requireinfo.originstr, ifelse(instance:version_str(), instance:version_str(), "no version"), _from(instance), ifelse(requireinfo.optional, ", ${yellow}optional${clear}", ""))
             for _, dep in ipairs(instance:orderdeps()) do
                 requireinfo = dep:requireinfo() or {}
-                cprint("      -> ${magenta}dep${clear}(%s): %s%s%s", requireinfo.originstr, ifelse(dep:version_str(), dep:version_str(), ""), _from(dep), ifelse(requireinfo.optional, ", ${yellow}optional${clear}", ""))
+                cprint("      -> ${magenta}dep${clear}(%s): %s%s%s", requireinfo.originstr, ifelse(dep:version_str(), dep:version_str(), "no version"), _from(dep), ifelse(requireinfo.optional, ", ${yellow}optional${clear}", ""))
             end
         end
     end
