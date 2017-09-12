@@ -94,14 +94,14 @@ function main(requires)
     local packages_remote = {}
     if option.get("force") then 
         for _, instance in ipairs(packages) do
-            if instance and not instance:phony() then
+            if instance and #instance:urls() > 0 then
                 table.insert(packages_remote, instance)
             end
         end
     else
         process.runjobs(function (index)
             local instance = packages[index]
-            if instance and not instance:phony() and not instance:fetch() then
+            if instance and #instance:urls() > 0 and not instance:fetch() then
                 table.insert(packages_remote, instance)
             end
         end, #packages)

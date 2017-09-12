@@ -128,11 +128,6 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
--- phony package?
-function _instance:phony()
-    return #self:urls() == 0
-end
-
 -- get sha256
 function _instance:sha256()
 
@@ -158,9 +153,16 @@ function _instance:sha256()
     return self._SHA256
 end
 
--- is global package?
-function _instance:global()
-    return self._ISGLOBAL
+-- this package is from system/local/global?
+--
+-- @param kind  the from kind
+--
+-- system: from the system directories (.e.g /usr/local)
+-- local:  from the local project package directories (.e.g projectdir/.xmake/packages)
+-- global: from the global package directories (.e.g ~/.xmake/packages)
+--
+function _instance:from(kind)
+    return self._FROMKIND == kind
 end
 
 -- is optional package?
@@ -170,12 +172,24 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    return path.join(package.cachedir(), self:fullname() .. "-" .. (self:version_str() or "group"))
+    local version_str = self:version_str()
+    if version_str then
+        version_str = "-" .. version_str
+    else 
+        version_str = ""
+    end
+    return path.join(package.cachedir(), self:fullname() .. version_str)
 end
 
 -- get the installed directory of this package
 function _instance:installdir()
-    return path.join(package.installdir(self:global()), self:fullname() .. "-" .. (self:version_str() or "group"))
+    local version_str = self:version_str()
+    if version_str then
+        version_str = "-" .. version_str
+    else 
+        version_str = ""
+    end
+    return path.join(package.installdir(self:from("global")), self:fullname() .. version_str)
 end
 
 -- get the version  
@@ -257,12 +271,12 @@ end
 -- fetch package info from the local packages
 function _instance:fetch()
 
-    -- find package
-    if not self:phony() then
-        self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
-        self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir()}) 
-        return self._FETCHINFO
-    end
+    -- import find_package
+    self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
+
+    -- fetch the package info in local
+    self._FETCHINFO = self._FETCHINFO or self._find_package(self:name(), {packagedirs = self:installdir()}) 
+    return self._FETCHINFO
 end
 
 -- exists this package in local
@@ -387,8 +401,8 @@ function package.load_from_system(packagename)
         return nil, errors
     end
 
-    -- mark as local package
-    instance._ISGLOBAL = false
+    -- mark as system package
+    instance._FROMKIND = "system"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -427,7 +441,7 @@ function package.load_from_project(packagename)
     end
 
     -- mark as local package
-    instance._ISGLOBAL = false
+    instance._FROMKIND = "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -471,8 +485,8 @@ function package.load_from_repository(packagename, is_global, packagedir, packag
         return nil, errors
     end
 
-    -- mark as global package?
-    instance._ISGLOBAL = is_global
+    -- mark as global/project package?
+    instance._FROMKIND = utils.ifelse(is_global, "global", "local")
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
