@@ -98,6 +98,10 @@ end
 -- install packages
 function main(requires)
 
+    -- avoid to run this task repeatly
+    if _g.installed then return end
+   _g.installed = true
+
     -- init requires
     local requires_extra = nil
     if not requires then
