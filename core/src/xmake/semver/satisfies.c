@@ -52,22 +52,30 @@ tb_int_t xm_semver_satisfies(lua_State* lua)
     tb_char_t const* range_str   = luaL_checkstring(lua, 2);
     tb_assert_and_check_return_val(version_str && range_str, 0);
 
+    // parse the version range string
+    semver_range_t range = {0};
+    if (semver_rangen(&range, range_str, tb_strlen(range_str))) 
+    {
+        // is branch name? try to match it
+        if (!tb_strcmp(version_str, range_str))
+        {
+            lua_pushboolean(lua, tb_true);
+            return 1;
+        }
+        else
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "unable to parse semver range '%s'", range_str);
+            return 2;
+        }
+    }
+
     // parse the version string
     semver_t semver = {0};
     if (semvern(&semver, version_str, tb_strlen(version_str))) 
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "unable to parse semver '%s'", version_str);
-        return 2;
-    }
-
-    // parse the version range string
-    semver_range_t range = {0};
-    if (semver_rangen(&range, range_str, tb_strlen(range_str))) 
-    {
-        semver_dtor(&semver);
-        lua_pushnil(lua);
-        lua_pushfstring(lua, "unable to parse semver range '%s'", range_str);
         return 2;
     }
 

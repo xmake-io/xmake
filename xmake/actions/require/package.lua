@@ -163,8 +163,9 @@ function _load_package(packagename, requireinfo)
     if instance then
 
         -- satisfy required version? 
-        if not semver.satisfies(instance:version(), requireinfo.version) then
-            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, instance:version(), requireinfo.version)
+        local version_str = instance:version_str()
+        if version_str and not semver.satisfies(version_str, requireinfo.version) then
+            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, version_str, requireinfo.version)
         end
 
         -- ok
