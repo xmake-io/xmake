@@ -31,15 +31,15 @@ import("package")
 import("repository")
 import("environment")
 
--- attach package to target
-function _attach_to_target(instance, target)
-    target:add(instance:fetch())
+-- attach package to option
+function _attach_to_option(instance, opt)
+    opt:add((instance:fetch()))
     local orderdeps = instance:orderdeps()
     if orderdeps then
         local total = #orderdeps
         for idx, _ in ipairs(orderdeps) do
             local dep = orderdeps[total + 1 - idx]
-            target:add(dep:fetch())
+            opt:add((dep:fetch()))
         end
     end
 end
@@ -59,7 +59,7 @@ function _attach_to_targets(packages)
             if opt:enabled() then
                 local instance = packages_local[opt:name()] 
                 if instance then
-                    _attach_to_target(instance, target)
+                    _attach_to_option(instance, opt)
                 end
             end
         end
