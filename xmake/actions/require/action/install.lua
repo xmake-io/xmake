@@ -81,6 +81,24 @@ function _install_for_generic(package)
         os.cp(headerfile, dstheaderfile)
     end
 
+    -- get links
+    local links = {}
+    for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "static"))), path.filename) do
+        local link, count = filename:gsub(target.filename("([%w%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
+        if count > 0 then
+            table.insert(links, link)
+        end
+    end
+    if #links == 0 then
+        for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "shared"))), path.filename) do
+            local link, count = filename:gsub(target.filename("([%w%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
+            if count > 0 then
+                table.insert(links, link)
+            end
+        end
+    end
+    assert(#links > 0, "the library files not found in package %s", name)
+
     -- make xmake.lua 
     local file = io.open(path.join(installdir, "xmake.lua"), "w")
     if file then
@@ -113,7 +131,7 @@ option("%s")
 ]]
 
         -- save file
-        file:writef(content, name, name, name, name:upper(), name)
+        file:writef(content, name, name, name, name:upper(), table.concat(links, "\", \""))
 
         -- exit file
         file:close()
