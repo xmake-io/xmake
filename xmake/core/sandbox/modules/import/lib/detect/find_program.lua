@@ -148,7 +148,9 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
     local coroutine_running = coroutine.running()
     if coroutine_running then
         while checking ~= nil and checking == name do
+            local curdir = os.curdir()
             coroutine.yield()
+            os.cd(curdir)
         end
     end
 

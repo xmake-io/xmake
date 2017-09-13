@@ -64,7 +64,9 @@ function main(name, opt)
     local coroutine_running = coroutine.running()
     if coroutine_running then
         while _g._checking ~= nil and _g._checking == key do
+            local curdir = os.curdir()
             coroutine.yield()
+            os.cd(curdir)
         end
     end
 
