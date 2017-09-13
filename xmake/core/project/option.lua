@@ -228,11 +228,18 @@ function option:enabled()
 end
 
 -- enable or disable this option
-function option:enable(enabled)
+--
+-- @param enabled   enable option?
+-- @param opt       the argument options, .e.g {readonly = true, force = false}
+--
+function option:enable(enabled, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- enable or disable this option?
-    if not config.readonly(self:name()) then
-        config.set(self:name(), enabled)
+    if not config.readonly(self:name()) or opt.force then
+        config.set(self:name(), enabled, opt)
     end
 
     -- save or clear this option in cache 

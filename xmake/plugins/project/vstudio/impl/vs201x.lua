@@ -33,7 +33,7 @@ import("core.tool.linker")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
-import("actions.config.configheader", {rootdir = os.programdir()})
+import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 
 -- make target info
 function _make_targetinfo(mode, arch, target)
@@ -181,8 +181,8 @@ function make(outputdir, vsinfo)
                 -- reload platform
                 platform.load(config.plat())
 
-                -- remake configheader
-                configheader.make()
+                -- re-generate configheader
+                generate_configheader()
             end
 
             -- ensure to enter project directory

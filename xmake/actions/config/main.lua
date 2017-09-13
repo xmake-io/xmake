@@ -31,7 +31,8 @@ import("core.platform.platform")
 import("core.project.cache", {nocache = true})
 import("lib.detect.cache", {alias = "detectcache"})
 import("scanner")
-import("configheader")
+import("configheader", {alias = "generate_configheader"})
+import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 
 -- filter option 
 function _option_filter(name)
@@ -259,6 +260,21 @@ function main()
     -- check target
     _check_target(targetname)
 
+    -- install and update requires and config header
+    if recheck then
+
+        -- install requires
+        install_requires()
+
+        -- generate config header
+        generate_configheader()
+    end
+
+    -- dump config
+    if option.get("verbose") then
+        config.dump()
+    end
+
     -- save options and configure for the given target
     config.save(targetname)
     cache.set("options_" .. targetname, options)
@@ -273,14 +289,4 @@ function main()
 
     -- flush cache
     cache.flush()
-
-    -- make the config.h
-    if recheck then
-        configheader.make()
-    end
-
-    -- dump config
-    if option.get("verbose") then
-        config.dump()
-    end
 end

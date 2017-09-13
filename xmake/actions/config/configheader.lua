@@ -126,8 +126,8 @@ function _make_for_target_with_deps(targetname)
     end
 end
 
--- make the config.h
-function make()
+-- the main entry function
+function main()
 
     -- the target name
     local targetname = option.get("target")

@@ -33,35 +33,39 @@ import("environment")
 
 -- attach package to option
 function _attach_to_option(instance, opt)
-    opt:add((instance:fetch()))
-    local orderdeps = instance:orderdeps()
-    if orderdeps then
-        local total = #orderdeps
-        for idx, _ in ipairs(orderdeps) do
-            local dep = orderdeps[total + 1 - idx]
-            opt:add((dep:fetch()))
+
+    -- disable this option if this package is optional and missing
+    if _g.optional_missing[instance:fullname()] then
+        opt:enable(false)
+    else
+
+        -- add this package info to option
+        opt:add(instance:fetch())
+
+        -- add all dependent packages info to option
+        local orderdeps = instance:orderdeps()
+        if orderdeps then
+            local total = #orderdeps
+            for idx, _ in ipairs(orderdeps) do
+                local dep = orderdeps[total + 1 - idx]
+                if dep then
+                    opt:add((dep:fetch()))
+                end
+            end
         end
     end
+
+    -- update option info to the cache file
+    opt:save()
 end
 
 -- attach all packages to targets
 function _attach_to_targets(packages)
 
-    -- get all local paclages
-    local packages_local = {}
     for _, instance in ipairs(packages) do
-        packages_local[instance:fullname()] = instance
-    end
-
-    -- add all local packages to targets
-    for _, target in pairs(project.targets()) do
-        for _, opt in ipairs(target:options()) do
-            if opt:enabled() then
-                local instance = packages_local[opt:name()] 
-                if instance then
-                    _attach_to_option(instance, opt)
-                end
-            end
+        local opt = project.option(instance:fullname())
+        if opt and opt:enabled() then
+            _attach_to_option(instance, opt)
         end
     end
 end
@@ -71,9 +75,12 @@ function _check_missing_packages(packages)
 
     -- get all missing packages
     local packages_missing = {}
+    local optional_missing = {}
     for _, instance in ipairs(packages) do
-        if not instance:exists() and not instance:requireinfo().optional then
-            if #instance:urls() > 0 or instance:from("system") then
+        if not instance:exists() and (#instance:urls() > 0 or instance:from("system")) then
+            if instance:requireinfo().optional then
+                optional_missing[instance:fullname()] = instance
+            else
                 table.insert(packages_missing, instance:fullname())
             end
         end
@@ -83,6 +90,9 @@ function _check_missing_packages(packages)
     if #packages_missing > 0 then
         raise("The packages(%s) not found!", table.concat(packages_missing, ", "))
     end
+
+    -- save the optional missing packages
+    _g.optional_missing = optional_missing
 end
 
 -- install packages
