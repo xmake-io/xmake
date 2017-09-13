@@ -165,8 +165,6 @@ static tb_bool_t xm_semver_select_master_from_versions_tags(lua_State* lua, tb_i
  */
 tb_int_t xm_semver_select(lua_State* lua)
 {
-//    lua_settop(lua, 4);
-
     // check
     tb_assert_and_check_return_val(lua, 0);
 

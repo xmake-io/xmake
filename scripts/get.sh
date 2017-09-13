@@ -104,25 +104,26 @@ then
     fi
     echo "Branch: $branch"
 fi
+projectdir=$tmpdir
 if [ 'x__local__' != "x$branch" ]
 then
-    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" $tmpdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     if [ x != "x$2" ]
     then
-        cd $tmpdir || my_exit 'Chdir Error'
+        cd $projectdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
     fi
 else
-    tmpdir=`pwd`
+    projectdir=`pwd`
 fi
 if [ 'x__install_only__' != "x$2" ]
 then
-    make -C $tmpdir --no-print-directory build 
+    make -C $projectdir --no-print-directory build 
     rv=$?
     if [ $rv -ne 0 ]
     then
-        make -C $tmpdir/core --no-print-directory error
+        make -C $projectdir/core --no-print-directory error
         my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
     fi
 fi
@@ -134,9 +135,9 @@ fi
 
 if [ "x$prefix" != x ]
 then
-    make -C $tmpdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
+    make -C $projectdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
-    $sudoprefix make -C $tmpdir --no-print-directory install || my_exit 'Install Fail'
+    $sudoprefix make -C $projectdir --no-print-directory install || my_exit 'Install Fail'
 fi
 write_profile()
 {
