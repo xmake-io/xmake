@@ -36,7 +36,7 @@ function _attach_to_option(instance, opt)
 
     -- disable this option if this package is optional and missing
     if _g.optional_missing[instance:fullname()] then
-        opt:enable(false, {force = true})
+        opt:enable(false)
     else
 
         -- add this package info to option
