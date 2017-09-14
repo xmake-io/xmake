@@ -118,7 +118,7 @@ end
 -- inherts from target deps
 function builder:_inherit_from_target(values, target, name)
     table.join2(values, target:get(name))
-    if target.options then
+    if target:type() == "target" then
         for _, opt in ipairs(target:options()) do
             table.join2(values, opt:get(name))
         end
@@ -222,7 +222,7 @@ function builder:_addflags_from_target(flags, target)
         self:_addflags_from_language(targetflags, target)
 
         -- add the flags for the target options
-        if target.options then
+        if target:type() == "target" then
             for _, opt in ipairs(target:options()) do
                 self:_addflags_from_option(targetflags, opt)
             end
@@ -251,7 +251,7 @@ function builder:_addflags_from_argument(flags, target, args)
 
     -- add flags (named) from the language 
     if target then
-        local key = utils.ifelse(target.options, "target", "option")
+        local key = target:type()
         self:_addflags_from_language(flags, target, {[key] = function (name) return args[name] end})
     end
 end
@@ -266,28 +266,37 @@ function builder:_addflags_from_language(flags, target, getters)
     ,   platform    =   platform.get
     ,   target      =   function (name) 
 
-                            -- link? add includes and links of all dependent targets first
+                            -- only for target
                             local results = {}
-                            if name == "links" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
-                                self:_inherit_from_targetdeps(results, target, name)
-                            end
+                            if target:type() == "target" then
 
-                            -- get flagvalues of target with given flagname
-                            table.join2(results, target:get(name))
+                                -- link? add includes and links of all dependent targets first
+                                if name == "links" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
+                                    self:_inherit_from_targetdeps(results, target, name)
+                                end
+
+                                -- get flagvalues of target with given flagname
+                                table.join2(results, target:get(name))
+                            end
 
                             -- ok?
                             return results
                         end
     ,   option      =   function (name)
 
-                            -- only for target (exclude option)
-                            if target.options then
-                                local results = {}
+                            -- is target? get flagvalues of the attached options 
+                            local results = {}
+                            if target:type() == "target" then
+
                                 for _, opt in ipairs(target:options()) do
                                     table.join2(results, table.wrap(opt:get(name)))
                                 end
-                                return results
+
+                            -- is option? get flagvalues of option with given flagname
+                            elseif target:type() == "option" then
+                                table.join2(results, target:get(name))
                             end
+                            return results
                         end
     }
 

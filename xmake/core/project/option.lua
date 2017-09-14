@@ -79,7 +79,6 @@ function option:_cx_check()
     self._check_cxsnippets = self._check_cxsnippets or import("lib.detect.check_cxsnippets")
 
     -- check for c and c++
-    local checked = false
     for _, kind in ipairs({"c", "cxx"}) do
 
         -- get conditions
@@ -100,12 +99,12 @@ function option:_cx_check()
 
             -- check it
             local ok, results_or_errors = sandbox.load(self._check_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
+    if self:name() == "zlib" then
+    print("zlib", ok, results_or_errors)
+    end
             if not ok then
                 return false, results_or_errors
             end
-
-            -- mark as checked
-            checked = true
 
             -- passed?
             if results_or_errors then
@@ -253,6 +252,11 @@ end
 -- dump this option
 function option:dump()
     table.dump(self._INFO)
+end
+
+-- get the type: option
+function option:type()
+    return "option"
 end
 
 -- get the option info

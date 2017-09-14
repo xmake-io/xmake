@@ -105,6 +105,11 @@ function target:dump()
     table.dump(self._INFO)
 end
 
+-- get the type: option
+function target:type()
+    return "target"
+end
+
 -- get the target name
 function target:name()
     return self._NAME
