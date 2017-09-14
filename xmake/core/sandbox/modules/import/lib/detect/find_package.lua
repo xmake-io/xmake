@@ -173,6 +173,8 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
         if opt.plat == "linux" and opt.arch == "x86_64" then
             table.insert(linkdirs, "/usr/local/lib/x86_64-linux-gnu")
             table.insert(linkdirs, "/usr/lib/x86_64-linux-gnu")
+            table.insert(linkdirs, "/usr/lib64")
+            table.insert(linkdirs, "/opt/lib64")
         end
     end
 
