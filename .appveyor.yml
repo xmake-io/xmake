@@ -24,9 +24,10 @@ install:
 build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
   - cmd: xmake lua versioninfo
-  - cmd: if %platform%==Win64 xmake f -a x64 -P core
-  - cmd: xmake -P core
-  - cmd: xmake install -P core -o core\build --prefix=
+  - cmd: cd core
+  - cmd: if %platform%==Win64 xmake f -a x64 
+  - cmd: xmake install -o build --prefix=
+  - cmd: cd ..
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
   - cmd: core\build\bin\xmake lua versioninfo
   - ps: Write-Output "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})".replace('\','/') | Out-File tmp
