@@ -1,0 +1,85 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed to the Apache Software Foundation (ASF) under one
+-- or more contributor license agreements.  See the NOTICE file
+-- distributed with this work for additional information
+-- regarding copyright ownership.  The ASF licenses this file
+-- to you under the Apache License, Version 2.0 (the
+-- "License"); you may not use this file except in compliance
+-- with the License.  You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        statistics.lua
+--
+
+-- imports
+import("core.base.option")
+
+-- post statistics info and only post once everyday when building each project
+--
+-- clone the xmake-stats repo to update the traffic(git clones) info in github
+--
+-- the traffic info in github (just be approximate numbers):
+--
+-- Clones:          the number of projects which build using xmake everyday
+-- Unique cloners:  the number of users everyday
+--
+function post()
+
+    -- get the project directory name
+    local projectname = path.basename(os.projectdir())
+
+    -- has been posted today or statistics is disable?
+    local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
+    if os.isdir(outputdir) or os.getenv("XMAKE_STATS") == "disable" then
+        return 
+    end
+
+    -- init argument list
+    local argv = {"lua", path.join(os.scriptdir(), "statistics.lua")}
+    for _, name in ipairs({"root", "file", "project", "backtrace", "verbose", "quiet"}) do
+        local value = option.get(name)
+        if type(value) == "string" then
+            table.insert(argv, "--" .. name .. "=" .. value)
+        elseif value then
+            table.insert(argv, "--" .. name)
+        end
+    end
+
+    -- post it in background
+    local proc = process.openv("xmake", argv, os.tmpfile() .. ".stats.log")
+    if proc ~= nil then
+        process.close(proc)
+    end
+end
+
+-- the main function
+function main()
+
+    -- in project?
+    if not os.isfile(os.projectfile()) then
+        return 
+    end
+
+    -- get the project directory name
+    local projectname = path.basename(os.projectdir())
+
+    -- TODO git on windows 
+    -- clone the xmake-stats repo to update the traffic(git clones) info in github
+    local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
+    if not os.isdir(outputdir) then
+        import("devel.git.clone")
+        clone("https://github.com/tboox/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
+        print("post ok!")
+    end
+end

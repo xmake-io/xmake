@@ -61,10 +61,13 @@ function sandbox_process.open(command, outfile, errfile)
 end
 
 -- open process with arguments
-function sandbox_process.openv(argv, outfile, errfile) 
+function sandbox_process.openv(filename, argv, outfile, errfile) 
 
     -- check
     assert(argv)
+
+    -- format filename first
+    filename = vformat(filename)
 
     -- format output file if exists
     if outfile then
@@ -77,9 +80,9 @@ function sandbox_process.openv(argv, outfile, errfile)
     end
 
     -- open process
-    local proc = process.openv(argv, outfile, errfile)
+    local proc = process.openv(filename, argv, outfile, errfile)
     if not proc then
-        raise("openv process(%s) failed!", table.concat(argv, " "))
+        raise("openv process(%s, %s) failed!", filename, table.concat(argv, " "))
     end
 
     -- ok

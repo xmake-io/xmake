@@ -29,6 +29,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("builder")
+import("statistics")
 
 -- main
 function main()
@@ -41,6 +42,9 @@ function main()
 
     -- enter project directory
     local oldir = os.cd(project.directory())
+
+    -- post statistics
+    statistics.post()
 
     -- build it
     try

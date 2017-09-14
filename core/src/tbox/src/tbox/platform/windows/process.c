@@ -311,19 +311,6 @@ tb_void_t tb_process_exit(tb_process_ref_t self)
     tb_process_t* process = (tb_process_t*)self;
     tb_assert_and_check_return(process);
 
-    // the process has not exited?
-    if (process->pi.hProcess != INVALID_HANDLE_VALUE)
-    {
-        // trace
-        tb_trace_e("kill: %u ..", process->pi.dwProcessId);
-
-        // kill it first
-        tb_process_kill(self);
-
-        // wait it again
-        tb_process_wait(self, tb_null, -1);
-    }
-
     // close thread handle
     if (process->pi.hThread != INVALID_HANDLE_VALUE)
         tb_kernel32()->CloseHandle(process->pi.hThread);

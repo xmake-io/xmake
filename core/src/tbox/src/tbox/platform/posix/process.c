@@ -480,19 +480,6 @@ tb_void_t tb_process_exit(tb_process_ref_t self)
     tb_process_t* process = (tb_process_t*)self;
     tb_assert_and_check_return(process);
 
-    // the process has not exited?
-    if (process->pid > 0)
-    {
-        // trace
-        tb_trace_e("kill: %ld ..", process->pid);
-
-        // kill it first
-        tb_process_kill(self);
-
-        // wait it again
-        tb_process_wait(self, tb_null, -1);
-    }
-
 #ifdef TB_CONFIG_POSIX_HAVE_POSIX_SPAWNP
 
     // close the stdout
