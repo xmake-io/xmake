@@ -41,9 +41,13 @@ function post()
 
     -- has been posted today or statistics is disable?
     local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
-    if os.isdir(outputdir) or os.getenv("XMAKE_STATS") == "disable" then
+    local markfile  = outputdir .. ".mark"
+    if os.isdir(outputdir) or os.isfile(markfile) or os.getenv("XMAKE_STATS") == "disable" then
         return 
     end
+
+    -- mark as posted first, avoid to post it repeatly
+    io.writefile(markfile, "ok")
 
     -- init argument list
     local argv = {"lua", path.join(os.scriptdir(), "statistics.lua")}
