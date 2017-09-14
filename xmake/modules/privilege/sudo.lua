@@ -26,6 +26,20 @@
 import("core.base.option")
 import("detect.tools.find_sudo")
 
+-- some inherited environment variables
+function _envars(escape)
+    local names  = {"PATH", "XMAKE_STATS", "COLORTERM"}
+    local envars = {"env"}
+    for _, name in ipairs(names) do
+        local value = os.getenv(name)
+        if escape and value then
+            value = "\"" .. (value:gsub("\"", "\\\"")) .. "\""
+        end
+        table.insert(envars, name .. "=" .. (value or ""))
+    end
+    return envars
+end
+
 -- sudo run command with administrator permission
 --
 -- .e.g
@@ -37,19 +51,8 @@ function _sudo(runner, cmd, ...)
     local sudo = find_sudo()
     assert(sudo, "sudo not found!")
 
-    -- get current path environment
-    local pathenv = os.getenv("PATH") 
-    if pathenv and #pathenv > 0 then
-
-        -- handle double quote
-        pathenv = pathenv:gsub("\"", "\\\"")
-
-        -- run it with administrator permission and preserve parent environment
-        runner(sudo .. " env PATH=\"" .. pathenv .. "\" " .. cmd, ...)
-    else
-        -- run it with administrator permission
-        runner(sudo .. " " .. cmd, ...)
-    end
+    -- run it with administrator permission and preserve parent environment
+    runner(sudo .. " " .. table.concat(_envars(true), " ") .. " " .. cmd, ...)
 end
 
 -- sudo run command with administrator permission and arguments list
@@ -64,7 +67,7 @@ function _sudov(runner, program, argv)
     assert(sudo, "sudo not found!")
 
     -- run it with administrator permission and preserve parent environment
-    runner(sudo, table.join("env", "PATH=" .. os.getenv("PATH"), program, argv))
+    runner(sudo, table.join(_envars(), program, argv))
 end
 
 -- sudo run lua script with administrator permission and arguments list
