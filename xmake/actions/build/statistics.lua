@@ -27,7 +27,7 @@ import("core.base.option")
 
 -- post statistics info and only post once everyday when building each project
 --
--- clone the xmake-stats repo to update the traffic(git clones) info in github
+-- clone the xmake-stats(only an empty repo) to update the traffic(git clones) info in github
 --
 -- the traffic info in github (just be approximate numbers):
 --
@@ -56,11 +56,16 @@ function post()
         end
     end
 
-    -- post it in background
-    local proc = process.openv("xmake", argv, os.tmpfile() .. ".stats.log")
-    if proc ~= nil then
-        process.close(proc)
-    end
+    -- try to post it in background
+    try
+    {
+        function ()
+            local proc = process.openv("xmake", argv, path.join(os.tmpdir(), projectname .. ".stats.log"))
+            if proc ~= nil then
+                process.close(proc)
+            end
+        end
+    }
 end
 
 -- the main function

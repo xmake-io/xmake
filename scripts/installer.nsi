@@ -79,7 +79,7 @@ Section "xmake (required)" Installer
   SetOutPath $INSTDIR
   
   ; Put file there
-  File /r /x ".DS_Store" "..\xmake\*.*"
+  File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
   File "..\*.md"
   File "..\core\build\xmake.exe"
   File /r /x ".DS_Store" "..\winenv" ; put bin\unzip, bin\curl
