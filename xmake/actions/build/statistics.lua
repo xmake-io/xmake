@@ -25,6 +25,26 @@
 -- imports
 import("core.base.option")
 
+-- statistics is enabled?
+function _is_enabled()
+
+    -- disable statistics? need not post it
+    local stats = (os.getenv("XMAKE_STATS") or ""):lower()
+    if stats == "false" then
+        return false
+    end
+
+    -- is in ci(travis/appveyor/...)? need not post it
+    local ci = (os.getenv("CI") or ""):lower()
+    if ci == "true" then
+        os.setenv("XMAKE_STATS", "false")
+        return false
+    end
+
+    -- ok
+    return true
+end
+
 -- post statistics info and only post once everyday when building each project
 --
 -- clone the xmake-stats(only an empty repo) to update the traffic(git clones) info in github
@@ -42,7 +62,7 @@ function post()
     -- has been posted today or statistics is disable?
     local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
     local markfile  = outputdir .. ".mark"
-    if os.isdir(outputdir) or os.isfile(markfile) or os.getenv("XMAKE_STATS") == "false" or os.getenv("CI") == "true" then
+    if os.isdir(outputdir) or os.isfile(markfile) or not _is_enabled() then
         return 
     end
 
