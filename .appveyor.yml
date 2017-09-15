@@ -20,6 +20,7 @@ install:
   - ps: Remove-Item luarocks.zip
   - cmd: luarocks install luacov
   - ps: Copy-Item -Recurse C:\lua\share\lua\5.1 $HOME\xmake\lua
+  - cmd: echo %CI%
 
 build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)

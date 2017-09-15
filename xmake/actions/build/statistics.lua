@@ -42,7 +42,7 @@ function post()
     -- has been posted today or statistics is disable?
     local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
     local markfile  = outputdir .. ".mark"
-    if os.isdir(outputdir) or os.isfile(markfile) or os.getenv("XMAKE_STATS") == "disable" then
+    if os.isdir(outputdir) or os.isfile(markfile) or os.getenv("XMAKE_STATS") == "false" or os.getenv("CI") == "true" then
         return 
     end
 

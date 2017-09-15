@@ -18,6 +18,7 @@ matrix:
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install dmd rust lua51; fi
   - sudo luarocks install luacov || sudo luarocks-5.1 install luacov
+  - echo $CI
 
 script:
   - scripts/get.sh __local__
