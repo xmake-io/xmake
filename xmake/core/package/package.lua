@@ -167,13 +167,7 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    local version_str = self:version_str()
-    if version_str then
-        version_str = "-" .. version_str
-    else 
-        version_str = ""
-    end
-    return path.join(package.cachedir(), self:fullname() .. version_str)
+    return path.join(package.cachedir(), self:fullname(), self:version_str())
 end
 
 -- get the installed directory of this package
@@ -185,13 +179,7 @@ function _instance:installdir()
     end
 
     -- make install directory
-    local version_str = self:version_str()
-    if version_str then
-        version_str = "-" .. version_str
-    else 
-        version_str = ""
-    end
-    return path.join(package.installdir(self:from("global")), self:fullname() .. version_str)
+    return path.join(package.installdir(self:from("global")), self:fullname(), self:version_str())
 end
 
 -- get the version  

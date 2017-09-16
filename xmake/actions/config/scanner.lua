@@ -71,8 +71,6 @@ function make()
         
     -- project not found
     if #sourcefiles == 0 and #sourcefiles_main == 0 then
-
-        -- error
         raise("project not found!")
     end
 
