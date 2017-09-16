@@ -13,6 +13,7 @@
 * Add `COLORTERM=nocolor` to disable color output
 * Remove `and_bindings` and `add_rbindings` api
 * Disable to output colors code to file
+* Update project templates with tbox
 
 ### Bugs fixed
 
@@ -367,6 +368,7 @@
 * 添加`COLORTERM=nocolor`环境变量开关，禁用彩色输出
 * 移除`add_rbindings`和`add_bindings`接口
 * 禁止在重定向的时候进行彩色输出，避免输出文件中带有色彩代码干扰
+* 更新tbox工程模板
 
 ### Bugs修复
 

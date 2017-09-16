@@ -10,9 +10,3 @@ add_macros("targetname", "$(targetname)")
 -- add macro files
 add_macrofiles("src/xmake.lua")
 
--- set create script
-on_create(function ()
-
-    -- show tips
-    print("please put tbox.pkg into pkg before building it!")
-end)

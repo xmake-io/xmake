@@ -1,5 +1,5 @@
 -- version
-set_version("1.0.0")
+set_xmakever("2.1.6")
 
 -- set warning all as error
 set_warnings("all", "error")
@@ -8,14 +8,15 @@ set_warnings("all", "error")
 set_languages("c99", "cxx11")
 
 -- disable some compiler errors
-add_cxflags("-Wno-error=deprecated-declarations")
-add_mxflags("-Wno-error=deprecated-declarations")
- 
--- add defines for c files
-add_defines("_GNU_SOURCE=1", "_REENTRANT")
+add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
+add_mxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
 
--- the debug or check or coverage mode
-if is_mode("debug", "check", "coverage") then
+-- set the object files directory
+set_objectdir("$(buildir)/$(mode)/$(arch)/.objs")
+set_targetdir("$(buildir)/$(mode)/$(arch)")
+
+-- the debug mode
+if is_mode("debug") then
     
     -- enable the debug symbols
     set_symbols("debug")
@@ -25,61 +26,26 @@ if is_mode("debug", "check", "coverage") then
 
     -- add defines for debug
     add_defines("__tb_debug__")
-
-    -- attempt to enable some checkers for pc
-    if is_mode("check") and is_arch("i386", "x86_64") then
-        add_cxflags("-fsanitize=address", "-ftrapv")
-        add_mxflags("-fsanitize=address", "-ftrapv")
-        add_ldflags("-fsanitize=address")
-    end
-
-    -- enable coverage
-    if is_mode("coverage") then
-        add_cxflags("--coverage")
-        add_mxflags("--coverage")
-        add_ldflags("--coverage")
-    end
 end
 
--- the release or profile mode
-if is_mode("release", "profile") then
+-- the release mode
+if is_mode("release") then
 
-    -- the release mode
-    if is_mode("release") then
-        
-        -- set the symbols visibility: hidden
-        set_symbols("hidden")
+    -- set the symbols visibility: hidden
+    set_symbols("hidden")
 
-        -- strip all symbols
-        set_strip("all")
+    -- strip all symbols
+    set_strip("all")
 
-        -- fomit the frame pointer
-        add_cxflags("-fomit-frame-pointer")
-        add_mxflags("-fomit-frame-pointer")
-
-    -- the profile mode
-    else
-    
-        -- enable the debug symbols
-        set_symbols("debug")
-
-        -- enable gprof
-        add_cxflags("-pg")
-        add_ldflags("-pg")
-    end
+    -- fomit the frame pointer
+    add_cxflags("-fomit-frame-pointer")
 
     -- enable fastest optimization
     set_optimize("fastest")
-
-    -- attempt to add vector extensions 
-    add_vectorexts("sse2", "sse3", "ssse3", "mmx")
 end
 
 -- for the windows platform (msvc)
 if is_plat("windows") then 
-
-    -- add some defines only for windows
-    add_defines("NOCRYPT", "NOGDI")
 
     -- the release mode
     if is_mode("release") then
@@ -90,9 +56,6 @@ if is_plat("windows") then
     -- the debug mode
     elseif is_mode("debug") then
 
-        -- enable some checkers
-        add_cxflags("-Gs", "-RTC1") 
-
         -- link libcmtd.lib
         add_cxflags("-MTd") 
     end
@@ -101,16 +64,15 @@ if is_plat("windows") then
     add_ldflags("-nodefaultlib:\"msvcrt.lib\"")
 end
 
--- add option: demo
-option("demo")
-    set_enable(true)
-    set_showmenu(true)
-    set_category("option")
-    set_description("Enable or disable the demo module")
+-- the base package
+option("base")
+    set_default(true)
+    if is_os("windows") then add_links("ws2_32") 
+    elseif is_os("android") then add_links("m", "c") 
+    else add_links("pthread", "dl", "m", "c") end
 
--- add packages
-add_packagedirs("pkg") 
+-- add requires
+add_requires("tboox.tbox")
 
--- add projects
-add_subdirs("src/[targetname]") 
-if is_option("demo") then add_subdirs("src/demo") end
+-- include project sources
+includes("src/[targetname]", "src/[targetname]_demo") 

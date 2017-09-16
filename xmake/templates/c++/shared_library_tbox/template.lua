@@ -9,7 +9,7 @@ add_macros("targetname", "$(targetname)")
 
 -- add macro files
 add_macrofiles("xmake.lua")
-add_macrofiles("src/_demo/main.c")
+add_macrofiles("src/_demo/main.cpp")
 add_macrofiles("src/_demo/xmake.lua")
 add_macrofiles("src/_library/xmake.lua")
 
@@ -19,9 +19,4 @@ on_create(function ()
     -- rename target directory
     os.mv("src/_library", "src/$(targetname)")
     os.mv("src/_demo", "src/$(targetname)_demo")
-
-    -- copy packages
-    os.cp("$(packagesdir)/tbox.pkg", "pkg/tbox.pkg")
-    os.cp("$(packagesdir)/base.pkg", "pkg/base.pkg")
-
 end)

@@ -19,8 +19,4 @@ on_create(function ()
     -- rename target directory
     os.mv("src/_library", "src/$(targetname)")
     os.mv("src/_demo", "src/$(targetname)_demo")
-
-    -- show tips
-    print("please put tbox.pkg into pkg before building it!")
-
 end)
