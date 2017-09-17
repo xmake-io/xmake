@@ -291,6 +291,9 @@ function _load_packages_gitrefs(packages)
                 for _, url in ipairs(package:urls()) do
                     if git.checkurl(url) then
                         
+                        -- trace
+                        vprint("fetching refs for the git url ... %s", url)
+
                         -- fetch refs
                         tags, branches = git.refs(url) 
 
@@ -314,20 +317,45 @@ function _load_packages_gitrefs(packages)
     return results
 end
 
--- select package version
-function _select_package_version(package, required_ver, gitrefs)
+-- sort packages urls
+function _sort_packages_urls(packages)
 
-    -- get versions
-    local versions = package:get("versions") 
-
-    -- attempt to get tags and branches from the git url
-    local refs = {}
-    if gitrefs then
-        refs = gitrefs[package:fullname()] or {}
+    -- add all urls to fasturl and prepare to sort them together
+    for _, package in ipairs(packages) do
+        fasturl.add(package:urls())
     end
 
-    -- select required version
-    return semver.select(required_ver, versions, refs.tags, refs.branches)
+    -- sort and update urls
+    for _, package in ipairs(packages) do
+        package:urls_set(fasturl.sort(package:urls()))
+    end
+end
+
+-- select packages version
+function _select_packages_version(packages)
+
+    -- load git refs from packages
+    local gitrefs = _load_packages_gitrefs(packages)
+
+    -- sort and update urls
+    for _, package in ipairs(packages) do
+
+        -- exists urls? otherwise be phony package (only as package group)
+        if #package:urls() > 0 then
+
+            -- attempt to get tags and branches from the git url
+            local refs = {}
+            if gitrefs then
+                refs = gitrefs[package:fullname()] or {}
+            end
+
+            -- select package version
+            local version, source = semver.select(package:requireinfo().version, package:get("versions"), refs.tags, refs.branches)
+
+            -- save version to package
+            package:version_set(version, source)
+        end
+    end
 end
 
 -- the cache directory
@@ -359,30 +387,11 @@ function load_packages(requires, requires_extra)
     -- laod all required packages recursively
     local packages = _load_packages(requires, requires_extra)
 
-    -- add all urls to fasturl and prepare to sort them together
-    for _, package in ipairs(packages) do
-        fasturl.add(package:urls())
-    end
+    -- sort package urls
+    _sort_packages_urls(packages)
 
-    -- load git refs from packages
-    local gitrefs = _load_packages_gitrefs(packages)
-
-    -- sort and update urls
-    for _, package in ipairs(packages) do
-
-        -- sort package urls
-        package:urls_set(fasturl.sort(package:urls()))
-
-        -- exists urls? otherwise be phony package (only as package group)
-        if #package:urls() > 0 then
-
-            -- select package version
-            local version, source = _select_package_version(package, package:requireinfo().version, gitrefs)
-
-            -- save version to package
-            package:version_set(version, source)
-        end
-    end
+    -- select packages version
+    _select_packages_version(packages)
 
     -- ok
     return packages

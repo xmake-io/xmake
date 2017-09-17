@@ -84,6 +84,9 @@ function main(hosts, opt)
                         if cacheinfo then
                             cacheinfo[host] = timeval
                         end
+
+                        -- trace
+                        vprint("pinging for the host(%s) ... %d ms", host, timeval)
                     end
                 end, 
                 catch 
