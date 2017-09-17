@@ -13,3 +13,6 @@ target("demo")
     -- add files
     add_files("*.c") 
 
+    -- add packages
+    add_packages("tboox.tbox", "base")
+
