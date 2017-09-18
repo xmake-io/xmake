@@ -238,10 +238,10 @@ function sandbox:fork(script, rootdir)
     return instance
 end
 
--- load script and import module 
-function sandbox:import()
+-- load script and module 
+function sandbox:module()
 
-    -- this module has been imported?
+    -- this module has been loaded?
     if self._PRIVATE._MODULE then
         return self._PRIVATE._MODULE
     end

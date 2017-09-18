@@ -1079,8 +1079,8 @@ function interpreter:api_register_set_module(scope_kind, ...)
             os.raise("set_%s(): %s", name, errors)
         end
 
-        -- import the module
-        local module, errors = instance:import()
+        -- load the module
+        local module, errors = instance:module()
         if not module then
             os.raise("set_%s(): %s", name, errors)
         end

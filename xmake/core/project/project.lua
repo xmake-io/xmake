@@ -225,6 +225,7 @@ function project.interpreter()
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_options"
+        ,   "target.add_imports"
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
             -- option.set_xxx
@@ -237,6 +238,7 @@ function project.interpreter()
         ,   "option.set_description"
             -- option.add_xxx
         ,   "option.add_deps"
+        ,   "option.add_imports"
         ,   "option.add_vectorexts"
         }
     ,   pathes = 

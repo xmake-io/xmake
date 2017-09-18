@@ -27,19 +27,20 @@ local package   = package or {}
 local _instance = _instance or {}
 
 -- load modules
-local os          = require("base/os")
-local io          = require("base/io")
-local path        = require("base/path")
-local utils       = require("base/utils")
-local table       = require("base/table")
-local filter      = require("base/filter")
-local global      = require("base/global")
-local interpreter = require("base/interpreter")
-local sandbox     = require("sandbox/sandbox")
-local config      = require("project/config")
-local project     = require("project/project")
-local platform    = require("platform/platform")
-local import      = require("sandbox/modules/import")
+local os             = require("base/os")
+local io             = require("base/io")
+local path           = require("base/path")
+local utils          = require("base/utils")
+local table          = require("base/table")
+local filter         = require("base/filter")
+local global         = require("base/global")
+local interpreter    = require("base/interpreter")
+local sandbox        = require("sandbox/sandbox")
+local config         = require("project/config")
+local project        = require("project/project")
+local platform       = require("platform/platform")
+local sandbox        = require("sandbox/sandbox")
+local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -230,8 +231,9 @@ function _instance:script(name, generic)
 
     -- get script
     local script = self:get(name)
+    local result = nil
     if type(script) == "function" then
-        return script
+        result = script
     elseif type(script) == "table" then
 
         -- match script for special plat and arch
@@ -239,23 +241,40 @@ function _instance:script(name, generic)
         local pattern = plat .. '|' .. (config.get("arch") or "")
         for _pattern, _script in pairs(script) do
             if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') then
-                return _script
+                result = _script
+                break
             end
         end
 
         -- match script for special plat
-        for _pattern, _script in pairs(script) do
-            if not _pattern:startswith("__") and plat:find('^' .. _pattern .. '$') then
-                return _script
+        if result == nil then
+            for _pattern, _script in pairs(script) do
+                if not _pattern:startswith("__") and plat:find('^' .. _pattern .. '$') then
+                    result = _script
+                    break
+                end
             end
         end
 
         -- get generic script
-        return script["__generic__"] or generic
+        result = result or script["__generic__"] or generic
     end
 
     -- only generic script
-    return generic
+    result = result or generic
+
+    -- imports some modules first
+    if result then
+        local scope = getfenv(result)
+        if scope then
+            for _, modulename in ipairs(table.wrap(self:get("imports"))) do
+                scope[sandbox_module.name(modulename)] = sandbox_module.import(modulename, {anonymous = true})
+            end
+        end
+    end
+
+    -- ok
+    return result
 end
 
 -- fetch package info from the local packages
@@ -265,7 +284,7 @@ end
 function _instance:fetch()
 
     -- import find_package
-    self._find_package = self._find_package or import("lib.detect.find_package", {anonymous = true})
+    self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
 
     -- fetch it from the package directories first
     local fetchfrom  = self._FETCHFROM
@@ -338,6 +357,7 @@ function package.apis()
         ,   "package.set_description"
             -- package.add_xxx
         ,   "package.add_deps"
+        ,   "package.add_imports"
         }
     ,   script =
         {

@@ -35,22 +35,6 @@ local global    = require("base/global")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
--- get module name
-function core_sandbox_module._modulename(name)
-
-    -- check
-    assert(name)
-
-    -- find modulename
-    local i = name:find_last(".", true)
-    if i then
-        name = name:sub(i + 1)
-    end
-
-    -- get it
-    return name
-end
-
 -- get module path from name
 function core_sandbox_module._modulepath(name)
 
@@ -98,8 +82,8 @@ function core_sandbox_module._loadfile(filepath, instance)
             return nil, errors
         end
 
-        -- import module
-        local result, errors = instance:import()
+        -- load module
+        local result, errors = instance:module()
         if not result then
             return nil, errors
         end
@@ -237,6 +221,22 @@ function core_sandbox_module._load(dir, name, instance, module)
     return module, script
 end
 
+-- get module name
+function core_sandbox_module.name(name)
+
+    -- check
+    assert(name)
+
+    -- find modulename
+    local i = name:find_last(".", true)
+    if i then
+        name = name:sub(i + 1)
+    end
+
+    -- get it
+    return name
+end
+
 -- get module directories
 function core_sandbox_module.directories()
 
@@ -326,7 +326,7 @@ function core_sandbox_module.import(name, opt)
     assert(scope_parent)
 
     -- get module name
-    local modulename = core_sandbox_module._modulename(name)
+    local modulename = core_sandbox_module.name(name)
     if not modulename then
         raise("cannot get module name for %s", name)
     end

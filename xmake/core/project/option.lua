@@ -26,19 +26,20 @@
 local option = option or {}
 
 -- load modules
-local io       = require("base/io")
-local os       = require("base/os")
-local path     = require("base/path")
-local table    = require("base/table")
-local utils    = require("base/utils")
-local option_  = require("base/option")
-local config   = require("project/config")
-local cache    = require("project/cache")
-local linker   = require("tool/linker")
-local compiler = require("tool/compiler")
-local sandbox  = require("sandbox/sandbox")
-local language = require("language/language")
-local import   = require("sandbox/modules/import")
+local io             = require("base/io")
+local os             = require("base/os")
+local path           = require("base/path")
+local table          = require("base/table")
+local utils          = require("base/utils")
+local option_        = require("base/option")
+local config         = require("project/config")
+local cache          = require("project/cache")
+local linker         = require("tool/linker")
+local compiler       = require("tool/compiler")
+local sandbox        = require("sandbox/sandbox")
+local language       = require("language/language")
+local sandbox        = require("sandbox/sandbox")
+local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- get cache
 function option._cache()
@@ -76,7 +77,7 @@ end
 function option:_cx_check()
 
     -- import check_cxsnippets()
-    self._check_cxsnippets = self._check_cxsnippets or import("lib.detect.check_cxsnippets")
+    self._check_cxsnippets = self._check_cxsnippets or sandbox_module.import("lib.detect.check_cxsnippets", {anonymous = true})
 
     -- check for c and c++
     for _, kind in ipairs({"c", "cxx"}) do
@@ -122,7 +123,7 @@ end
 function option:_on_check()
 
     -- get check script
-    local check = self:get("check")
+    local check = self:script("check")
     if check then
         return sandbox.load(check, self)
     else
@@ -165,8 +166,8 @@ function option:check()
     end
 
     -- before and after check
-    local check_before = self:get("check_before")
-    local check_after  = self:get("check_after")
+    local check_before = self:script("check_before")
+    local check_after  = self:script("check_after")
     if check_before then
         check_before(self)
     end
@@ -339,6 +340,26 @@ end
 -- save all options to the cache file
 function option.save()
     option._cache():flush()
+end
+
+-- get xxx_script
+function option:script(name)
+
+    -- get script
+    local script = self:get(name)
+
+    -- imports some modules first
+    if script then
+        local scope = getfenv(script)
+        if scope then
+            for _, modulename in ipairs(table.wrap(self:get("imports"))) do
+                scope[sandbox_module.name(modulename)] = sandbox_module.import(modulename, {anonymous = true})
+            end
+        end
+    end
+
+    -- ok
+    return script
 end
 
 -- return module

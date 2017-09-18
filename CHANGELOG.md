@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add `add_imports` to bulk import modules for the target, option and package script
+
 ### Changes
 
 * Support 24bits truecolors for `cprint()`
@@ -356,6 +360,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加`add_imports`去为target，option和package的自定义脚本批量导入模块，简化自定义脚本
 
 ### 改进
 
