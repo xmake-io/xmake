@@ -1,0 +1,16 @@
+target("test")
+
+    add_imports("core.base.option", "core.base.task")
+    before_build(function (target)
+        assert(option)
+        assert(task)
+    end)
+    on_build(function (target)
+        assert(option)
+        assert(task)
+    end)
+    after_build(function (target)
+        assert(option)
+        assert(task)
+    end)
+
