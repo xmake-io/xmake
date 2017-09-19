@@ -198,12 +198,16 @@ function main(package)
     -- get working directory of this package
     local workdir = package:cachedir()
 
-    -- TODO
-    -- enter source files directory
+    -- enter the working directory
     local oldir = nil
-    for _, srcdir in ipairs(os.dirs(path.join(workdir, "source", "*"))) do
-        oldir = os.cd(srcdir)
-        break
+    if #package:urls() > 0 then
+        for _, srcdir in ipairs(os.dirs(path.join(workdir, "source", "*"))) do
+            oldir = os.cd(srcdir)
+            break
+        end
+    else
+        os.mkdir(workdir)
+        oldir = os.cd(workdir) 
     end
 
     -- init tipname 

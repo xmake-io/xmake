@@ -9,7 +9,6 @@ package("git")
     end)
 
     on_install(function (package)
-        print("install git")
 --        package_manager.install("git")
     end)
 
