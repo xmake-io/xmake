@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.target")
 import("build")
+import("test")
 
 -- install for xmake file
 function _install_for_xmakefile(package)
@@ -248,6 +249,9 @@ function main(package)
                         script(package)
                     end
                 end
+
+                -- test it
+                test(package)
             end
 
             -- install package
