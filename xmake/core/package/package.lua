@@ -166,6 +166,11 @@ function _instance:from(kind)
     return self._FROMKIND == kind
 end
 
+-- get the package kind, binary or nil(static, shared)
+function _instance:kind()
+    return self:get("kind")
+end
+
 -- get the cached directory of this package
 function _instance:cachedir()
     return path.join(package.cachedir(), self:fullname(), self:version_str())
@@ -264,7 +269,7 @@ function _instance:script(name, generic)
     result = result or generic
 
     -- imports some modules first
-    if result then
+    if result and result ~= generic then
         local scope = getfenv(result)
         if scope then
             for _, modulename in ipairs(table.wrap(self:get("imports"))) do
@@ -283,27 +288,41 @@ end
 --
 function _instance:fetch()
 
-    -- import find_package
-    self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
-
-    -- fetch it from the package directories first
+    -- fetch binary tool?
     local fetchfrom  = self._FETCHFROM
     local fetchinfo  = self._FETCHINFO
-    local installdir = self:installdir()
-    if not fetchinfo and installdir then
-        fetchinfo = self._find_package(self:name(), {packagedirs = installdir, system = false, force = true}) -- disable cache and system packages
-        if fetchinfo then fetchfrom = self._FROMKIND end
-    end
+    if self:kind() == "binary" then
+    
+        -- import find_tool
+        self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
-    -- fetch it from the system directories
-    if not fetchinfo then
-        local system = self:requireinfo().system
-        if system == nil then -- find system package by default
-            system = true
+        -- fetch it from the system directories
+        fetchinfo = self._find_tool(self:name())
+        if fetchinfo then
+            fetchfrom = "system" -- ignore self:requireinfo().system
         end
-        if system then
-            fetchinfo = self._find_package(self:name())
-            if fetchinfo then fetchfrom = "system" end
+    else
+
+        -- import find_package
+        self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
+
+        -- fetch it from the package directories first
+        local installdir = self:installdir()
+        if not fetchinfo and installdir then
+            fetchinfo = self._find_package(self:name(), {packagedirs = installdir, system = false, force = true}) -- disable cache and system packages
+            if fetchinfo then fetchfrom = self._FROMKIND end
+        end
+
+        -- fetch it from the system directories
+        if not fetchinfo then
+            local system = self:requireinfo().system
+            if system == nil then -- find system package by default
+                system = true
+            end
+            if system then
+                fetchinfo = self._find_package(self:name())
+                if fetchinfo then fetchfrom = "system" end
+            end
         end
     end
 
@@ -351,6 +370,7 @@ function package.apis()
         {
             -- package.set_xxx
             "package.set_urls"
+        ,   "package.set_kind"
         ,   "package.set_sha256s"
         ,   "package.set_versions"
         ,   "package.set_homepage"

@@ -43,8 +43,8 @@ function repositories()
     return repos
 end
 
--- exists repositories
-function exists()
+-- the remote repositories have been pulled?
+function pulled()
     for _, repo in ipairs(repositories()) do
         local repodir = path.join(repository.directory(repo.global), repo.name)
         if not os.isdir(repodir) then
@@ -89,6 +89,14 @@ function packagedir(packagename, reponame)
                 foundir = {dir, repo.global}
                 break
             end
+        end
+    end
+
+    -- not found? find this package from the builtin packages directory
+    if not foundir then
+        local dir = path.join(os.programdir(), "packages", (packagename:gsub('%.', path.seperator())))
+        if os.isdir(dir) then
+            foundir = {dir, true}
         end
     end
 

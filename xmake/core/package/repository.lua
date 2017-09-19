@@ -125,8 +125,6 @@ end
 
 -- get all repositories from global or local directory
 function repository.repositories(is_global)
-
-    -- get repositories
     return repository._cache(is_global):get("repositories")
 end
 

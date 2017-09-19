@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.base.task")
 import("core.project.project")
+import("detect.tools.find_git")
 import("action")
 import("package")
 import("repository")
@@ -63,9 +64,11 @@ end
 function _attach_to_targets(packages)
 
     for _, instance in ipairs(packages) do
-        local opt = project.option(instance:fullname())
-        if opt and opt:enabled() then
-            _attach_to_option(instance, opt)
+        if instance:kind() ~= "binary" then
+            local opt = project.option(instance:fullname())
+            if opt and opt:enabled() then
+                _attach_to_option(instance, opt)
+            end
         end
     end
 end
@@ -96,11 +99,7 @@ function _check_missing_packages(packages)
 end
 
 -- install packages
-function main(requires)
-
-    -- avoid to run this task repeatly
-    if _g.installed then return end
-    _g.installed = true
+function _install_packages(requires)
 
     -- init requires
     local requires_extra = nil
@@ -111,12 +110,11 @@ function main(requires)
         return 
     end
 
-    -- TODO
-    -- enter environment 
-    environment.enter()
-
     -- pull all repositories first if not exists
-    if not repository.exists() then
+    --
+    -- attempt to install git from the builtin-packages first if git not found
+    --
+    if find_git() and not repository.pulled() then
         task.run("repo", {update = true})
     end
 
@@ -175,9 +173,31 @@ function main(requires)
     end)
 
     -- install all required packages from repositories
-    for _, instance in ipairs(packages_remote) do
-        action.install(instance)
+    for _, instance in ipairs(packages) do
+        if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
+            action.install(instance)
+        end
     end
+end
+
+-- install packages
+function main(requires)
+
+    -- avoid to run this task repeatly
+    if _g.installed then return end
+    _g.installed = true
+
+    -- TODO move the global modules
+    -- enter environment 
+    environment.enter()
+
+    -- git not found? install it first
+    if not find_git() then
+        _install_packages("git")
+    end
+
+    -- install packages
+    _install_packages(requires)
 
     -- check missing packages
     _check_missing_packages(packages)

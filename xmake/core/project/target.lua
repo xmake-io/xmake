@@ -729,7 +729,7 @@ function target:script(name, generic)
     result = result or generic
 
     -- imports some modules first
-    if result then
+    if result and result ~= generic then
         local scope = getfenv(result)
         if scope then
             for _, modulename in ipairs(table.wrap(self:get("imports"))) do

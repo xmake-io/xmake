@@ -198,6 +198,7 @@ function main(package)
     -- get working directory of this package
     local workdir = package:cachedir()
 
+    -- TODO
     -- enter source files directory
     local oldir = nil
     for _, srcdir in ipairs(os.dirs(path.join(workdir, "source", "*"))) do
@@ -205,8 +206,14 @@ function main(package)
         break
     end
 
+    -- init tipname 
+    local tipname = package:fullname()
+    if package:version_str() then
+        tipname = tipname .. "-" .. package:version_str()
+    end
+
     -- trace
-    cprintf("${yellow}  => ${clear}installing %s-%s .. ", package:fullname(), package:version_str())
+    cprintf("${yellow}  => ${clear}installing %s .. ", tipname)
     if option.get("verbose") then
         print("")
     end
@@ -247,7 +254,7 @@ function main(package)
             end
 
             -- fetch package 
-            assert(package:fetch(), "fetch %s-%s failed!", package:fullname(), package:version_str())
+            assert(package:fetch(), "fetch %s failed!", tipname)
 
             -- trace
             cprint("${green}ok")
