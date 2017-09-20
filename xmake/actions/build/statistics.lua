@@ -71,7 +71,7 @@ function post()
 
     -- init argument list
     local argv = {"lua", path.join(os.scriptdir(), "statistics.lua")}
-    for _, name in ipairs({"root", "file", "project", "backtrace", "verbose", "quiet"}) do
+    for _, name in ipairs({"root", "file", "project", "backtrace", "verbose", "quiet", "yes"}) do
         local value = option.get(name)
         if type(value) == "string" then
             table.insert(argv, "--" .. name .. "=" .. value)

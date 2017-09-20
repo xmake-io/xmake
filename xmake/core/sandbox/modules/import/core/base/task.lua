@@ -41,7 +41,7 @@ function sandbox_core_base_task.run(taskname, options, ...)
     options = table.wrap(options)
 
     -- inherit some parent options
-    for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet", "root", "profile"}) do
+    for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet", "yes", "root", "profile"}) do
         if not options[name] and option.get(name) then
             options[name] = option.get(name)
         end

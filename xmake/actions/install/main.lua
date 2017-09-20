@@ -112,14 +112,24 @@ function main()
                 -- continue to install with administrator permission?
                 if sudo.has() then
 
-                    -- show tips
-                    cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
-                    cprint("please input: y (y/n)")
+                    -- get confirm
+                    local confirm = option.get("yes")
+                    if confirm == nil then
 
-                    -- get answer
-                    io.flush()
-                    local answer = io.read()
-                    if answer == 'y' or answer == '' then
+                        -- show tips
+                        cprint("${bright yellow}note: ${default yellow}try continue to install with administrator permission again?")
+                        cprint("please input: y (y/n)")
+
+                        -- get answer
+                        io.flush()
+                        local answer = io.read()
+                        if answer == 'y' or answer == '' then
+                            confirm = true
+                        end
+                    end
+
+                    -- confirm to install?
+                    if confirm then
 
                         -- install target with administrator permission
                         sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), installdir})

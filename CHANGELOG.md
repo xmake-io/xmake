@@ -5,6 +5,7 @@
 ### New features
 
 * Add `add_imports` to bulk import modules for the target, option and package script
+* Add `xmake -y/--yes` to confirm the user input by default
 
 ### Changes
 
@@ -364,6 +365,7 @@
 ### 新特性
 
 * 添加`add_imports`去为target，option和package的自定义脚本批量导入模块，简化自定义脚本
+* 添加`xmake -y/--yes`去确认用户输入
 
 ### 改进
 

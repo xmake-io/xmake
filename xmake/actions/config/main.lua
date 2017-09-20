@@ -149,7 +149,7 @@ function main()
 
         -- need some tips?
         local autogen = true
-        if not option.get("quiet") then
+        if not option.get("quiet") and not option.get("yes") then
 
             -- show tips
             cprint("${bright yellow}note: ${default yellow}xmake.lua not found, try generating it?")

@@ -50,6 +50,7 @@ function install(name, opt)
         table.insert(argv, "--verbose")
     end
 
+    -- TODO sudo
     -- install package
     os.vrunv(pacman.program, argv)
 

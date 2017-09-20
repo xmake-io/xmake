@@ -50,6 +50,7 @@ function install(name, opt)
         table.insert(argv, "--verbose")
     end
 
+    -- TOOD sudo
     -- install package
     os.vrunv(apt.program, argv)
 

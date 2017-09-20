@@ -31,7 +31,7 @@ import("pacman")
 -- install package using third-party package manager
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx"}
+-- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx", yum = "xxx"}
 --
 --
 function install(name, opt)
