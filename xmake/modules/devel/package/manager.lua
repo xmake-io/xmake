@@ -23,8 +23,36 @@
 --
 
 -- imports
-import("core.base.option")
+import("apt")
+import("yum")
+import("brew")
+import("pacman")
 
 -- install package using third-party package manager
+--
+-- @param name  the package name
+-- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx"}
+--
+--
 function install(name, opt)
+
+    -- init scripts
+    local scripts = {}
+    local host = os.host()
+    if host == "macosx" then
+        table.insert(scripts, brew.install)
+    elseif host == "linux" then
+        table.insert(scripts, apt.install)
+        table.insert(scripts, yum.install)
+        table.insert(scripts, pacman.install)
+        table.insert(scripts, brew.install)
+    end
+    assert(#scripts > 0, "package manager not found!")
+
+    -- run install script
+    for _, script in ipairs(scripts) do
+        if script(name, opt) then
+            break
+        end
+    end
 end

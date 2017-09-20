@@ -26,7 +26,7 @@
 import("core.base.option")
 import("core.base.task")
 import("core.project.project")
-import("detect.tools.find_git")
+import("lib.detect.find_tool")
 import("action")
 import("package")
 import("repository")
@@ -114,7 +114,7 @@ function _install_packages(requires)
     --
     -- attempt to install git from the builtin-packages first if git not found
     --
-    if find_git() and not repository.pulled() then
+    if find_tool("git") and not repository.pulled() then
         task.run("repo", {update = true})
     end
 
@@ -192,7 +192,7 @@ function main(requires)
     environment.enter()
 
     -- git not found? install it first
-    if not find_git() then
+    if not find_tool("git") then
         _install_packages("git")
     end
 

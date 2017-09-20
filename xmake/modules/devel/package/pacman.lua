@@ -19,49 +19,40 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        checkout.lua
+-- @file        pacman.lua
 --
 
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
 
--- checkout to given branch, tag or commit
+-- install package
 --
--- @param commit    the commit, tag or branch
--- @param opt       the argument options
+-- @param name  the package name
+-- @param opt   the options, .e.g {verbose = true, pacman = "the package name"}
 --
--- @code
+-- @return      true or false
 --
--- import("devel.git")
--- 
--- git.checkout("master", {repodir = "/tmp/xmake"})
--- git.checkout("v1.0.1", {repodir = "/tmp/xmake"})
---
--- @endcode
---
-function main(commit, opt)
+function install(name, opt)
 
-    -- find git
-    local git = find_tool("git")
-    if not git then
-        return 
+    -- init options
+    opt = opt or {}
+
+    -- find pacman
+    local pacman = find_tool("pacman")
+    if not pacman then
+        return false
     end
 
     -- init argv
-    local argv = {"checkout", commit}
-
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
+    local argv = {"-S", "--noconfirm", "--needed", opt.pacman or name}
+    if opt.verbose or option.get("verbose") then
+        table.insert(argv, "--verbose")
     end
 
-    -- checkout it
-    os.vrunv(git.program, argv)
+    -- install package
+    os.vrunv(pacman.program, argv)
 
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
-    end
+    -- ok
+    return true
 end

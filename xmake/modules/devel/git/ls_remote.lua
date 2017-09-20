@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.tools.find_git")
+import("lib.detect.find_tool")
 
 -- ls_remote to given branch, tag or commit
 --
@@ -46,16 +46,16 @@ import("detect.tools.find_git")
 function main(reftype, url)
 
     -- find git
-    local program = find_git()
-    if not program then
-        return {}
+    local git = find_tool("git")
+    if not git then
+        return 
     end
 
     -- init reference type
     reftype = reftype or "refs"
 
     -- get refs
-    local data = os.iorunv(program, {"ls-remote", "--" .. reftype, url or "."})
+    local data = os.iorunv(git.program, {"ls-remote", "--" .. reftype, url or "."})
 
     -- get commmits and tags
     local refs = {}

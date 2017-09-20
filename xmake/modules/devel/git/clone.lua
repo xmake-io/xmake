@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.tools.find_git")
+import("lib.detect.find_tool")
 
 -- clone url
 --
@@ -43,8 +43,8 @@ import("detect.tools.find_git")
 function main(url, opt)
 
     -- find git
-    local program = find_git()
-    if not program then
+    local git = find_tool("git")
+    if not git then
         return 
     end
 
@@ -70,5 +70,5 @@ function main(url, opt)
     end
 
     -- clone it
-    os.vrunv(program, argv)
+    os.vrunv(git.program, argv)
 end

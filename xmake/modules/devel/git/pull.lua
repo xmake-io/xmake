@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.tools.find_git")
+import("lib.detect.find_tool")
 
 -- pull remote commits
 --
@@ -42,8 +42,8 @@ import("detect.tools.find_git")
 function main(opt)
 
     -- find git
-    local program = find_git()
-    if not program then
+    local git = find_tool("git")
+    if not git then
         return 
     end
 
@@ -68,7 +68,7 @@ function main(opt)
     end
 
     -- pull it
-    os.vrunv(program, argv)
+    os.vrunv(git.program, argv)
 
     -- leave repository directory
     if oldir then
