@@ -33,7 +33,7 @@ import("lib.detect.find_tool")
 --
 -- @return      true or false
 --
-function install(name, opt)
+function main(name, opt)
 
     -- init options
     opt = opt or {}
