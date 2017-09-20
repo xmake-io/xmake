@@ -46,7 +46,7 @@ function main(name, opt)
     end
 
     -- init argv
-    local argv = {"-S", "--noconfirm", "--needed", opt.pacman or name}
+    local argv = {"-Sy", "--noconfirm", "--needed", opt.pacman or name}
     if opt.verbose or option.get("verbose") then
         table.insert(argv, "--verbose")
     end

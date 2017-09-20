@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("privilege.sudo")
 
 -- install package
 --
@@ -46,13 +47,36 @@ function main(name, opt)
 
     -- init argv
     local argv = {"install", "-y", opt.apt or name}
-    if opt.verbose or option.get("verbose") then
-        table.insert(argv, "--verbose")
-    end
 
-    -- TOOD sudo
-    -- install package
-    os.vrunv(apt.program, argv)
+    -- install package directly if the current user is root
+    if os.isroot() then
+        os.vrunv(apt.program, argv)
+    -- install with administrator permission?
+    elseif sudo.has() then
+
+        -- get confirm
+        local confirm = option.get("yes")
+        if confirm == nil then
+
+            -- show tips
+            cprint("${bright yellow}note: ${default yellow}try to install %s with administrator permission?", name)
+            cprint("please input: y (y/n)")
+
+            -- get answer
+            io.flush()
+            local answer = io.read()
+            if answer == 'y' or answer == '' then
+                confirm = true
+            end
+        end
+
+        -- install it if be confirmed
+        if confirm then
+            sudo.vrunv(apt.program, argv)
+        end
+    else
+        return false
+    end
 
     -- ok
     return true
