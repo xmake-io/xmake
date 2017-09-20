@@ -19,40 +19,34 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        brew.lua
+-- @file        install.lua
 --
 
--- imports
-import("core.base.option")
-import("lib.detect.find_tool")
-
--- install package
+-- install package using third-party package manager
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, brew = "the package name"}
+-- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx", yum = "xxx"}
 --
--- @return      true or false
 --
-function install(name, opt)
+function main(name, opt)
 
-    -- init options
-    opt = opt or {}
-
-    -- find brew
-    local brew = find_tool("brew")
-    if not brew then
-        return false
+    -- init scripts
+    local scripts = {}
+    local host = os.host()
+    if host == "macosx" then
+        table.insert(scripts, import("brew.install",   {anonymous = true}))
+    elseif host == "linux" then
+        table.insert(scripts, import("apt.install",    {anonymous = true}))
+        table.insert(scripts, import("yum.install",    {anonymous = true}))
+        table.insert(scripts, import("pacman.install", {anonymous = true}))
+        table.insert(scripts, import("brew.install",   {anonymous = true}))
     end
+    assert(#scripts > 0, "package manager not found!")
 
-    -- init argv
-    local argv = {"install", opt.brew or name}
-    if opt.verbose or option.get("verbose") then
-        table.insert(argv, "--verbose")
+    -- run install script
+    for _, script in ipairs(scripts) do
+        if script(name, opt) then
+            break
+        end
     end
-
-    -- install package
-    os.vrunv(brew.program, argv)
-
-    -- ok
-    return true
 end

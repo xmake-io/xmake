@@ -6,6 +6,7 @@
 
 * Add `add_imports` to bulk import modules for the target, option and package script
 * Add `xmake -y/--yes` to confirm the user input by default
+* Add `xmake l package.manager.install xxx` to install software package
 
 ### Changes
 
@@ -366,6 +367,7 @@
 
 * 添加`add_imports`去为target，option和package的自定义脚本批量导入模块，简化自定义脚本
 * 添加`xmake -y/--yes`去确认用户输入
+* 添加`xmake l package.manager.install xxx`模块，进行跨平台一致性安装软件包
 
 ### 改进
 

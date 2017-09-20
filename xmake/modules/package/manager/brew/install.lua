@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        yum.lua
+-- @file        install.lua
 --
 
 -- imports
@@ -29,30 +29,29 @@ import("lib.detect.find_tool")
 -- install package
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, yum = "the package name"}
+-- @param opt   the options, .e.g {verbose = true, brew = "the package name"}
 --
 -- @return      true or false
 --
-function install(name, opt)
+function main(name, opt)
 
     -- init options
     opt = opt or {}
 
-    -- find yum
-    local yum = find_tool("yum")
-    if not yum then
+    -- find brew
+    local brew = find_tool("brew")
+    if not brew then
         return false
     end
 
     -- init argv
-    local argv = {"install", "-y", opt.yum or name}
+    local argv = {"install", opt.brew or name}
     if opt.verbose or option.get("verbose") then
         table.insert(argv, "--verbose")
     end
 
-    -- TODO sudo
     -- install package
-    os.vrunv(yum.program, argv)
+    os.vrunv(brew.program, argv)
 
     -- ok
     return true

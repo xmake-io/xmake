@@ -19,40 +19,41 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        manager.lua
+-- @file        install.lua
 --
 
 -- imports
-import("apt")
-import("yum")
-import("brew")
-import("pacman")
+import("core.base.option")
+import("lib.detect.find_tool")
 
--- install package using third-party package manager
+-- install package
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx", yum = "xxx"}
+-- @param opt   the options, .e.g {verbose = true, yum = "the package name"}
 --
+-- @return      true or false
 --
 function install(name, opt)
 
-    -- init scripts
-    local scripts = {}
-    local host = os.host()
-    if host == "macosx" then
-        table.insert(scripts, brew.install)
-    elseif host == "linux" then
-        table.insert(scripts, apt.install)
-        table.insert(scripts, yum.install)
-        table.insert(scripts, pacman.install)
-        table.insert(scripts, brew.install)
-    end
-    assert(#scripts > 0, "package manager not found!")
+    -- init options
+    opt = opt or {}
 
-    -- run install script
-    for _, script in ipairs(scripts) do
-        if script(name, opt) then
-            break
-        end
+    -- find yum
+    local yum = find_tool("yum")
+    if not yum then
+        return false
     end
+
+    -- init argv
+    local argv = {"install", "-y", opt.yum or name}
+    if opt.verbose or option.get("verbose") then
+        table.insert(argv, "--verbose")
+    end
+
+    -- TODO sudo
+    -- install package
+    os.vrunv(yum.program, argv)
+
+    -- ok
+    return true
 end

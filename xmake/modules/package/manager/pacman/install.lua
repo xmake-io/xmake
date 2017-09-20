@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        pacman.lua
+-- @file        install.lua
 --
 
 -- imports
@@ -33,7 +33,7 @@ import("lib.detect.find_tool")
 --
 -- @return      true or false
 --
-function install(name, opt)
+function main(name, opt)
 
     -- init options
     opt = opt or {}
