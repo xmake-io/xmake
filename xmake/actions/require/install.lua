@@ -101,16 +101,25 @@ end
 -- get user confirm
 function _get_confirm(packages)
 
+    -- init confirmed packages
+    local confirmed_packages = {}
+    for _, instance in ipairs(packages) do
+        if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
+            table.insert(confirmed_packages, instance)
+        end
+    end
+    if #confirmed_packages == 0 then
+        return true
+    end
+
     -- get confirm
     local confirm = option.get("yes")
     if confirm == nil then
     
         -- show tips
         cprint("${bright yellow}note: ${default yellow}try installing all required packages (pass -y to skip confirm)?")
-        for _, instance in ipairs(packages) do
-            if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
-                print("  -> %s %s", instance:fullname(), instance:version_str() or "")
-            end
+        for _, instance in ipairs(confirmed_packages) do
+            print("  -> %s %s", instance:fullname(), instance:version_str() or "")
         end
         cprint("please input: y (y/n)")
 
@@ -211,6 +220,9 @@ function _install_packages(requires)
             action.install(instance)
         end
     end
+
+    -- ok
+    return packages
 end
 
 -- install packages
@@ -230,13 +242,15 @@ function main(requires)
     end
 
     -- install packages
-    _install_packages(requires)
+    local packages = _install_packages(requires)
+    if packages then
 
-    -- check missing packages
-    _check_missing_packages(packages)
+        -- check missing packages
+        _check_missing_packages(packages)
 
-    -- attach required local package to targets
-    _attach_to_targets(packages)
+        -- attach required local package to targets
+        _attach_to_targets(packages)
+    end
 
     -- leave environment
     environment.leave()
