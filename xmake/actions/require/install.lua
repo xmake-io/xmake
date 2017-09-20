@@ -98,6 +98,34 @@ function _check_missing_packages(packages)
     _g.optional_missing = optional_missing
 end
 
+-- get user confirm
+function _get_confirm(packages)
+
+    -- get confirm
+    local confirm = option.get("yes")
+    if confirm == nil then
+    
+        -- show tips
+        cprint("${bright yellow}note: ${default yellow}try to install all required packages?")
+        for _, instance in ipairs(packages) do
+            if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
+                print("  -> %s %s", instance:fullname(), instance:version_str() or "")
+            end
+        end
+        cprint("please input: y (y/n)")
+
+        -- get answer
+        io.flush()
+        local answer = io.read()
+        if answer == 'y' or answer == '' then
+            confirm = true
+        end
+    end
+
+    -- ok?
+    return confirm
+end
+
 -- install packages
 function _install_packages(requires)
 
@@ -136,6 +164,11 @@ function _install_packages(requires)
                 table.insert(packages_remote, instance)
             end
         end, #packages)
+    end
+
+    -- get user confirm
+    if not _get_confirm(packages) then
+        return 
     end
 
     -- download remote packages
