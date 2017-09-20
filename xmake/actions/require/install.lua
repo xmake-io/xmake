@@ -106,7 +106,7 @@ function _get_confirm(packages)
     if confirm == nil then
     
         -- show tips
-        cprint("${bright yellow}note: ${default yellow}try to install all required packages?")
+        cprint("${bright yellow}note: ${default yellow}try installing all required packages (pass -y to skip confirm)?")
         for _, instance in ipairs(packages) do
             if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
                 print("  -> %s %s", instance:fullname(), instance:version_str() or "")
