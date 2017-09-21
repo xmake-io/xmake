@@ -20,6 +20,7 @@
 * Remove `and_bindings` and `add_rbindings` api
 * Disable to output colors code to file
 * Update project templates with tbox
+* Improve `lib.detect.find_program` interface
 
 ### Bugs fixed
 
@@ -381,6 +382,7 @@
 * 移除`add_rbindings`和`add_bindings`接口
 * 禁止在重定向的时候进行彩色输出，避免输出文件中带有色彩代码干扰
 * 更新tbox工程模板
+* 改进`lib.detect.find_program`模块接口
 
 ### Bugs修复
 
