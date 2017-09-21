@@ -54,12 +54,11 @@ function main()
         return 
     end
 
-    -- TODO
     -- enter environment 
     environment.enter()
 
     -- pull all repositories first if not exists
-    if not repository.exists() then
+    if not repository.pulled() then
         task.run("repo", {update = true})
     end
 

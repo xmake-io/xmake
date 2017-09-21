@@ -46,6 +46,9 @@ task("config")
             ,   options = 
                 {
                     {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
+                ,   {nil, "require",    "kv", nil,        "Require all dependent packages?",
+                                                          "  - y: force to enable",
+                                                          "  - n: disable"                                                }
 
                 ,   {}
                 ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               

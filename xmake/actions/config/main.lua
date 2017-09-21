@@ -261,12 +261,13 @@ function main()
     _check_target(targetname)
 
     -- install and update requires and config header
-    if recheck then
-
-        -- install requires
+    local require_enable = option.boolean(option.get("require"))
+    if (recheck or require_enable) and require_enable ~= false then
         install_requires()
+    end
 
-        -- generate config header
+    -- update the config header
+    if recheck then
         generate_configheader()
     end
 

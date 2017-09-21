@@ -73,8 +73,16 @@ end
 --
 function sandbox_core_base_semver.select(range, versions, tags, branches)
 
+    -- only master? 
+    versions = table.wrap(versions)
+    tags     = table.wrap(tags)
+    branches = table.wrap(branches)
+    if #versions == 0 and #tags == 0 and #branches == 0 and range == "master" then
+        return "master", "versions"
+    end
+
     -- select version
-    local verinfo, errors = semver.select(range, versions or {}, tags or {}, branches or {})
+    local verinfo, errors = semver.select(range, table.wrap(versions), table.wrap(tags), table.wrap(branches))
     if not verinfo then
         raise(errors)
     end

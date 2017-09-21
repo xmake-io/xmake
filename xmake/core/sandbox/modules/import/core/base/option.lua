@@ -32,36 +32,26 @@ local raise  = require("sandbox/modules/raise")
 
 -- get the option value
 function sandbox_core_base_option.get(name)
-
-    -- get it
     return option.get(name)
 end
 
 -- set the option value
 function sandbox_core_base_option.set(name, value)
-
-    -- set it
     option.set(name, value)
 end
 
 -- get the default option value
 function sandbox_core_base_option.default(name)
-
-    -- get it
     return option.default(name)
 end
 
 -- get the options
 function sandbox_core_base_option.options()
-
-    -- get it
     return assert(option.options())
 end
 
 -- get the defaults
 function sandbox_core_base_option.defaults()
-
-    -- get it
     return option.defaults() or {}
 end
 
@@ -119,6 +109,11 @@ end
 -- restore context
 function sandbox_core_base_option.restore()
     option.restore()
+end
+
+-- get the boolean value
+function sandbox_core_base_option.boolean(value)
+    return option.boolean(value)
 end
 
 -- return module

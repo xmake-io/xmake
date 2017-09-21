@@ -69,25 +69,36 @@ function _leave(name, old)
     end
 end
 
--- enter the toolchains environment (vs)
+-- enter the toolchains environment
 function _enter_toolchains()
 
+    -- enter vs toolchains
     _g.pathes    = _enter("path")
     _g.libs      = _enter("lib")
     _g.includes  = _enter("include")
     _g.libpathes = _enter("libpath")
+
+    -- add $programdir/winenv/bin to $path
+    os.addenv("path", path.join(os.programdir(), "winenv", "bin"))
+
+    -- attempt to load winenv 
+    local winenv_dir = path.translate("~/.xmake/winenv")
+    if os.isdir(winenv_dir) then
+        import("winenv", {rootdir = winenv_dir, try = true, anonymous = true})(winenv_dir)
+    end
 end
 
--- leave the toolchains environment (vs)
+-- leave the toolchains environment
 function _leave_toolchains()
 
+    -- leave vs toolchains
     _leave("path",      _g.pathes)
     _leave("lib",       _g.libs)
     _leave("include",   _g.includes)
     _leave("libpath",   _g.libpathes)
 end
 
--- enter the toolchains environment (vs)
+-- enter the toolchains environment
 function enter(name)
 
     -- the maps
@@ -100,7 +111,7 @@ function enter(name)
     end
 end
 
--- leave the toolchains environment (vs)
+-- leave the toolchains environment
 function leave(name)
 
     -- the maps

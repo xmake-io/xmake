@@ -377,7 +377,10 @@ function package.apis()
         ,   "package.set_description"
             -- package.add_xxx
         ,   "package.add_deps"
+        ,   "package.add_urls"
+        ,   "package.add_sha256s"
         ,   "package.add_imports"
+        ,   "package.add_versions"
         }
     ,   script =
         {

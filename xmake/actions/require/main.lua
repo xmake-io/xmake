@@ -60,7 +60,7 @@ import("install")
 function _load_project()
 
     -- config it first
-    task.run("config")
+    task.run("config", {require = false})
 
     -- enter project directory
     os.cd(project.directory())

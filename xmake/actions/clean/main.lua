@@ -159,7 +159,7 @@ function main()
     local targetname = option.get("target")
 
     -- config it first
-    task.run("config", {target = targetname})
+    task.run("config", {target = targetname, require = false})
 
     -- init finished states
     _g.finished = {}

@@ -232,7 +232,6 @@ function main(requires)
     if _g.installed then return end
     _g.installed = true
 
-    -- TODO move the global modules
     -- enter environment 
     environment.enter()
 

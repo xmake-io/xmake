@@ -124,7 +124,7 @@ end
 function project._api_is_host(interp, ...)
 
     -- get the current host
-    local host = xmake._HOST
+    local host = os.host()
     if not host then return false end
 
     -- exists this host? and escape '-'

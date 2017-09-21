@@ -326,11 +326,7 @@ function option.init(menu)
             end
 
             -- value is "true" or "false", translate it
-            if type(value) == "string" then
-                if value == "true" or value == "yes" or value == "y" then value = true
-                elseif value == "false" or value == "no" or value == "n" then value = false
-                end
-            end
+            value = option.boolean(value)
 
             -- save option
             context.options[longname] = value
@@ -592,11 +588,7 @@ function option.parse(argv, options)
             end
 
             -- value is "true" or "false", translate it
-            if type(value) == "string" then
-                if value == "true" or value == "yes" or value == "y" then value = true
-                elseif value == "false" or value == "no" or value == "n" then value = false
-                end
-            end
+            value = option.boolean(value)
 
             -- save option
             results[longname] = value
@@ -712,7 +704,11 @@ function option.get(name)
     -- the options
     local options = option.options()
     if options then
-        return options[name] or option.default(name)
+        local value = options[name]
+        if value == nil then
+            value = option.default(name)
+        end
+        return value
     end
 end
 
@@ -731,6 +727,17 @@ function option.set(name, value)
 
     -- set it
     options[name] = value
+end
+
+-- get the boolean value
+function option.boolean(value)
+
+    if type(value) == "string" then
+        if value == "true" or value == "yes" or value == "y" then value = true
+        elseif value == "false" or value == "no" or value == "n" then value = false
+        end
+    end
+    return value
 end
 
 -- get the given default option value for the current task
