@@ -45,15 +45,15 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "apt", opt.pathes, opt.check)
+    local program = find_program(opt.program or "apt", opt)
     if not program and not opt.program then
-        program = find_program("apt-get", opt.pathes, opt.check)
+        program = find_program("apt-get", opt)
     end
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program)
+        version = find_programver(program, opt)
     end
 
     -- ok?

@@ -261,8 +261,8 @@ function main(package)
                 process.asyncrun(installtask)
             end
 
-            -- fetch package 
-            assert(package:fetch(), "fetch %s failed!", tipname)
+            -- fetch package and force to flush the cache
+            assert(package:fetch(true), "fetch %s failed!", tipname)
 
             -- trace
             cprint("${green}ok")

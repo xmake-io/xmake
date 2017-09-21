@@ -40,12 +40,12 @@ import("lib.detect.find_programver")
 --
 function main(opt)
 
+    -- init version info first
+    local version = nil
+
     -- init options
-    opt = opt or {}
-    
-    -- find program
-    local verinfo = nil
-    local program = find_program(opt.program or "link.exe", opt.pathes, opt.check or function (program) 
+    opt       = opt or {}
+    opt.check = opt.check or function (program)
        
         -- make an stub source file
         local binaryfile = os.tmpfile() .. ".exe"
@@ -63,13 +63,17 @@ function main(opt)
         os.rm(objectfile)
         os.rm(sourcefile)
         os.rm(binaryfile)
-    end)
+    end
+    opt.command = opt.command or function () return verinfo end
+    opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
+    
+    -- find program
+    local verinfo = nil
+    local program = find_program(opt.program or "link.exe", opt)
 
     -- find program version
-    local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, function () return verinfo end,
-                                           function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end)
+        version = find_programver(program, opt)
     end
 
     -- ok?

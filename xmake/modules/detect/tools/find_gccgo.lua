@@ -41,15 +41,17 @@ import("lib.detect.find_programver")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt         = opt or {}
+    opt.command = opt.command or "--version"
+    opt.parse   = opt.parse or function (output) return output:match("%s(%d+%.?%d+%.?%d+)%s") end
     
     -- find program
-    local program = find_program(opt.program or "gccgo", opt.pathes, opt.check)
+    local program = find_program(opt.program or "gccgo", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, "--version", function (output) return output:match("%s(%d+%.?%d+%.?%d+)%s") end)
+        version = find_programver(program, opt)
     end
 
     -- ok?

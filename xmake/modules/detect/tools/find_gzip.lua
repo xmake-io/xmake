@@ -45,15 +45,16 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "gzip", opt.pathes, opt.check)
+    local program = find_program(opt.program or "gzip", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, function()
-                local outdata, errdata = os.iorunv(program, {"--version"}) 
-                return (outdata or "") .. (errdata or "")
-            end)
+        opt.command = opt.command or function()
+            local outdata, errdata = os.iorunv(program, {"--version"}) 
+            return (outdata or "") .. (errdata or "")
+        end
+        version = find_programver(program, opt)
     end
 
     -- ok?

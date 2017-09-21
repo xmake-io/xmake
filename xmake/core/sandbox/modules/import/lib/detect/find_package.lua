@@ -283,7 +283,7 @@ end
 -- @param opt       the package options. 
 --                  e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.1", 
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
---                     packagedirs = {"/tmp/packages"}, system = true}
+--                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"}
 --
 -- @return          {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
@@ -312,6 +312,9 @@ function sandbox_lib_detect_find_package.main(name, opt)
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
+    if opt.cachekey then
+        key = key .. "_" .. opt.cachekey
+    end
 
     -- attempt to get result from cache first
     local cacheinfo = cache.load(key) 
@@ -324,10 +327,8 @@ function sandbox_lib_detect_find_package.main(name, opt)
     result = sandbox_lib_detect_find_package._find(name, opt) 
 
     -- cache result
-    if not opt.force then
-        cacheinfo[name] = utils.ifelse(result, result, false)
-        cache.save(key, cacheinfo)
-    end
+    cacheinfo[name] = utils.ifelse(result, result, false)
+    cache.save(key, cacheinfo)
 
     -- trace
     if opt.verbose or option.get("verbose") then

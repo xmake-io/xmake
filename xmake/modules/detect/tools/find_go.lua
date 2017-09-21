@@ -41,15 +41,17 @@ import("lib.detect.find_programver")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt         = opt or {}
+    opt.check   = opt.check or "version"
+    opt.command = opt.command or "version"
     
     -- find program
-    local program = find_program(opt.program or "go", opt.pathes, opt.check or "version")
+    local program = find_program(opt.program or "go", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, "version")
+        version = find_programver(program, opt)
     end
 
     -- ok?

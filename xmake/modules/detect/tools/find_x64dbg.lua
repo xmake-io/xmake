@@ -46,15 +46,16 @@ function main(opt)
     if os.host() ~= "windows" then
         return 
     end
-
+ 
     -- init options
-    opt = opt or {}
-    
+    opt        = opt or {}
+    opt.pathes = opt.pathes or function ()
+        for _, reg in ipairs({"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"}) do
+            return (val("reg " .. reg) or ""):match("\"(.-)\"")
+        end
+    end
+    opt.check  = opt.check or function (program) if not os.isfile(program) then raise() end end
+
     -- find program
-    return find_program(opt.program or "x64dbg", {function () 
-                                                    for _, reg in ipairs({"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"}) do
-                                                        return (val("reg " .. reg) or ""):match("\"(.-)\"")
-                                                    end
-                                                 end}
-                                              , function (program) if not os.isfile(program) then raise() end end)
+    return find_program(opt.program or "x64dbg", opt)
 end

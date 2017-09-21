@@ -43,7 +43,9 @@ end
 -- find tool
 --
 -- @param name      the tool name
--- @param opt       the options, .e.g {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"}, check = function (tool) os.run("%s -h", tool) end, version = true}
+-- @param opt       the options, .e.g {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"}, 
+--                                     check = function (tool) os.run("%s -h", tool) end, version = true
+--                                     force = true, cachekey = "xxx"}
 --
 -- @return          {name = "", program = "", version = ""} or nil
 --
@@ -81,7 +83,7 @@ function main(name, opt)
     end
  
     -- find tool
-    local program = find_program(opt.program, opt.pathes, opt.check)
+    local program = find_program(opt.program, opt.pathes, opt.check, opt)
     if not program then
         return 
     end
@@ -89,7 +91,7 @@ function main(name, opt)
     -- find tool version
     local version = nil
     if program and opt.version then
-        version = find_programver(program)
+        version = find_programver(program, opt)
     end
 
     -- ok?

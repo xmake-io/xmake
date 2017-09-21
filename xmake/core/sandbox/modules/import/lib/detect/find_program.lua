@@ -126,23 +126,24 @@ end
 -- find program
 --
 -- @param name      the program name
--- @param pathes    the program pathes (.e.g dirs, pathes, winreg pathes, script pathes)
--- @param check     the check script or command 
+-- @param opt       the options, .e.g {pathes = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
+--                    - opt.pathes    the program pathes (.e.g dirs, pathes, winreg pathes, script pathes)
+--                    - opt.check     the check script or command 
 --
 -- @return          the program name or path
 --
 -- @code
 --
 -- local program = find_program("ccache")
--- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"})
--- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, "--help") -- simple check command: ccache --help
--- local program = find_program("ccache", {"/usr/bin", "/usr/local/bin"}, function (program) os.run("%s -h", program) end)
--- local program = find_program("ccache", {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"})
--- local program = find_program("ccache", {"$(env PATH)", function () return "/usr/local/bin" end})
+-- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}})
+-- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}, check = "--help"}) -- simple check command: ccache --help
+-- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}, check = function (program) os.run("%s -h", program) end})
+-- local program = find_program("ccache", {pathes = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
+-- local program = find_program("ccache", {pathes = {"$(env PATH)", function () return "/usr/local/bin" end}})
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_program.main(name, pathes, check)
+function sandbox_lib_detect_find_program.main(name, opt)
 
     -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (.e.g ccache)
     local coroutine_running = coroutine.running()
@@ -154,21 +155,31 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
         end
     end
 
+    -- init options
+    opt = opt or {}
+
+    -- init cachekey
+    local cachekey = "find_program"
+    if opt.cachekey then
+        cachekey = cachekey .. "_" .. opt.cachekey
+    end
+
     -- attempt to get result from cache first
-    local cacheinfo = cache.load("find_program") 
+    local cacheinfo = cache.load(cachekey) 
     local result = cacheinfo[name]
-    if result ~= nil then
+    if result ~= nil and not opt.force then
         return utils.ifelse(result, result, nil)
     end
 
     -- add default search pathes 
+    local pathes = opt.pathes
     if os.host() ~= "windows" then
         pathes = table.join(table.wrap(pathes), "/usr/local/bin", "/usr/bin")
     end
 
     -- find executable program
     checking = utils.ifelse(coroutine_running, name, nil)
-    result = sandbox_lib_detect_find_program._find(name, pathes, check) 
+    result = sandbox_lib_detect_find_program._find(name, pathes, opt.check) 
     checking = nil
 
     -- cache result
@@ -178,7 +189,7 @@ function sandbox_lib_detect_find_program.main(name, pathes, check)
     cache.save("find_program", cacheinfo)
 
     -- trace
-    if option.get("verbose") then
+    if option.get("verbose") or opt.verbose then
         if result then
             utils.cprint("checking for the %s ... ${green}%s", name, result)
         else

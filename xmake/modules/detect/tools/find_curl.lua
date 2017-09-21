@@ -45,12 +45,12 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "curl", opt.pathes, opt.check)
+    local program = find_program(opt.program or "curl", opt)
 
     -- find program version
     local version = nil
     if opt and opt.version then
-        version = find_programver(program)
+        version = find_programver(program, opt)
     end
 
     -- ok?

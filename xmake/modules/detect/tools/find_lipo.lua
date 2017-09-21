@@ -41,8 +41,9 @@ import("lib.detect.find_programver")
 function main(opt)
     
     -- init options
-    opt = opt or {}
+    opt       = opt or {}
+    opt.check = opt.check or function (program) os.run("%s -info %s", program, os.programfile()) end
     
     -- find program
-    return find_program(opt.program or "lipo", opt.pathes, opt.check or function (program) os.run("%s -info %s", program, os.programfile()) end)
+    return find_program(opt.program or "lipo", opt)
 end

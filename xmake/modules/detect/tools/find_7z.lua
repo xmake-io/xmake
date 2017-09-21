@@ -42,15 +42,18 @@ import("lib.detect.find_programver")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt         = opt or {}
+    opt.check   = opt.check or "--help"
+    opt.command = opt.command or "--help"
+    opt.parse   = "(%d+%.?%d*)%s"
     
     -- find program
-    local program = find_program(opt.program or "7z", opt.pathes, opt.check or "--help")
+    local program = find_program(opt.program or "7z", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, "--help", "(%d+%.?%d*)%s")
+        version = find_programver(program, opt)
     end
 
     -- ok?

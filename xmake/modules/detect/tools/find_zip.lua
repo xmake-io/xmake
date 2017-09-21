@@ -42,15 +42,17 @@ import("lib.detect.find_programver")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt         = opt or {}
+    opt.check   = opt.check or "-v"
+    opt.command = opt.command or "-v"
     
     -- find program
-    local program = find_program(opt.program or "zip", opt.pathes, opt.check or "-v")
+    local program = find_program(opt.program or "zip", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        version = find_programver(program, "-v")
+        version = find_programver(program, opt)
     end
 
     -- ok?

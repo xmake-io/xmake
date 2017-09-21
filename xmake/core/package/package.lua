@@ -286,18 +286,25 @@ end
 --
 -- @return {packageinfo}, fetchfrom (.e.g local/global/system)
 --
-function _instance:fetch()
+function _instance:fetch(force)
+
+    -- attempt to get it from cache
+    local fetchfrom = self._FETCHFROM
+    local fetchinfo = self._FETCHINFO
+    if not force and fetchinfo then
+        return fetchinfo, fetchfrom
+    end
 
     -- fetch binary tool?
-    local fetchfrom  = self._FETCHFROM
-    local fetchinfo  = self._FETCHINFO
+    fetchinfo = nil
+    fetchfrom = nil
     if self:kind() == "binary" then
     
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
         -- fetch it from the system directories
-        fetchinfo = self._find_tool(self:name())
+        fetchinfo = self._find_tool(self:name(), {force = force})
         if fetchinfo then
             fetchfrom = "system" -- ignore self:requireinfo().system
         end
@@ -309,7 +316,7 @@ function _instance:fetch()
         -- fetch it from the package directories first
         local installdir = self:installdir()
         if not fetchinfo and installdir then
-            fetchinfo = self._find_package(self:name(), {packagedirs = installdir, system = false, force = true}) -- disable cache and system packages
+            fetchinfo = self._find_package(self:name(), {packagedirs = installdir, system = false, cachekey = "package:fetch", force = force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
@@ -320,7 +327,7 @@ function _instance:fetch()
                 system = true
             end
             if system then
-                fetchinfo = self._find_package(self:name())
+                fetchinfo = self._find_package(self:name(), {force = force})
                 if fetchinfo then fetchfrom = "system" end
             end
         end

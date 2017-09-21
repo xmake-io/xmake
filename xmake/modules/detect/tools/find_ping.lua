@@ -35,14 +35,15 @@ import("lib.detect.find_program")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt       = opt or {}
+    opt.check = opt.check or function (program)
+        if os.host() == "windows" then
+            os.run("%s -n 1 127.0.0.1", program)
+        else
+            os.run("%s -c 1 127.0.0.1", program)
+        end
+    end
 
     -- find program
-    return find_program(opt.program or "ping", opt.pathes, opt.check or function (program) 
-                                                                            if os.host() == "windows" then
-                                                                                os.run("%s -n 1 127.0.0.1", program)
-                                                                            else
-                                                                                os.run("%s -c 1 127.0.0.1", program)
-                                                                            end
-                                                                        end)
+    return find_program(opt.program or "ping", opt)
 end
