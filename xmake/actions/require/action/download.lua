@@ -84,13 +84,13 @@ function _checkout(package, url, sourcedir)
 end
 
 -- download codes from ftp/http/https
-function _download(package, url, sourcedir)
+function _download(package, url, sourcedir, url_alias)
 
     -- get package file
     local packagefile = path.filename(url)
 
     -- the package file have been downloaded?
-    local sha256 = package:sha256()
+    local sha256 = package:sha256(url_alias)
     if option.get("force") or not os.isfile(packagefile) or (sha256 and sha256 ~= hash.sha256(packagefile)) then
 
         -- attempt to remove package file first
@@ -153,6 +153,9 @@ function main(package)
     local urls = _urls(package)
     for idx, url in ipairs(urls) do
 
+        -- get url alias
+        local url_alias = package:url_alias(url)
+
         -- filter url
         url = package:filter():handle(url)
 
@@ -166,7 +169,7 @@ function main(package)
                 if git.checkurl(url) then
                     _checkout(package, url, sourcedir)
                 else
-                    _download(package, url, sourcedir)
+                    _download(package, url, sourcedir, url_alias)
                 end
 
                 -- ok

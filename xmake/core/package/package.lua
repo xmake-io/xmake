@@ -119,6 +119,17 @@ function _instance:urls_set(urls)
     self._URLS = urls
 end
 
+-- get the alias of url, @note need raw url
+function _instance:url_alias(url)
+    local urls_extra = self:get("__extra_urls")
+    if urls_extra then
+        local urlextra = urls_extra[url]
+        if urlextra then
+            return urlextra.alias
+        end
+    end
+end
+
 -- get deps
 function _instance:deps()
     return self._DEPS
@@ -129,29 +140,25 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
--- get sha256
-function _instance:sha256()
+-- get sha256 of the url_alias@version_str
+function _instance:sha256(url_alias)
 
-    -- get it from cache first
-    if self._SHA256 then
-        return self._SHA256
-    end
+    -- get sha256
+    local sha256s     = self:get("sha256s")
+    local version_str = self:version_str()
+    if sha256s and version_str then
 
-    -- find sha256
-    local version  = self:version()
-    local sha256s  = table.wrap(self:get("sha256s"))
-    local versions = table.wrap(self:get("versions"))
-    if version then
-        for idx, ver in ipairs(versions) do
-            if ver == version then
-                self._SHA256 = sha256s[idx]
-                break
-            end
+        local sha256 = nil
+        if url_alias then
+            sha256 = sha256s[url_alias .. "@" ..version_str]
         end
-    end
+        if not sha256 then
+            sha256 = sha256s[version_str]
+        end
 
-    -- get it
-    return self._SHA256
+        -- ok?
+        return sha256
+    end
 end
 
 -- this package is from system/local/global?
@@ -378,14 +385,12 @@ function package.apis()
             -- package.set_xxx
             "package.set_urls"
         ,   "package.set_kind"
-        ,   "package.set_sha256s"
         ,   "package.set_versions"
         ,   "package.set_homepage"
         ,   "package.set_description"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"
-        ,   "package.add_sha256s"
         ,   "package.add_imports"
         ,   "package.add_versions"
         }
@@ -405,6 +410,13 @@ function package.apis()
         ,   "package.after_build"
         ,   "package.after_install"
         ,   "package.after_test"
+        }
+    ,   dictionary = 
+        {
+            -- package.set_xxx
+            "package.set_sha256s"
+            -- package.add_xxx
+        ,   "package.add_sha256s"
         }
     }
 end
