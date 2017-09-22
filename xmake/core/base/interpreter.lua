@@ -117,11 +117,11 @@ function interpreter._fetch_root_scope(root)
     for scope_kind_and_name, _ in pairs(root or {}) do
         
         -- is scope_kind.scope_name?
-        scope_kind_and_name = scope_kind_and_name:split('%.')
+        scope_kind_and_name = scope_kind_and_name:split("@@")
         if #scope_kind_and_name == 2 then
             local scope_kind = scope_kind_and_name[1] 
             local scope_name = scope_kind_and_name[2]
-            local scope_values = root[scope_kind .. "." .. scope_name] or {}
+            local scope_values = root[scope_kind .. "@@" .. scope_name] or {}
             local scope_root = root[scope_kind] or {}
             for name, values in pairs(scope_root) do
                 if not name:startswith("__override_") then
@@ -134,7 +134,7 @@ function interpreter._fetch_root_scope(root)
                     end
                 end
             end
-            root[scope_kind .. "." .. scope_name] = scope_values
+            root[scope_kind .. "@@" .. scope_name] = scope_values
         end
     end
 end
@@ -500,7 +500,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             end
 
             -- merge root values with the given scope name
-            local scope_root = scopes._ROOT[scope_kind .. "." .. scope_name]
+            local scope_root = scopes._ROOT[scope_kind .. "@@" .. scope_name]
             if scope_root then
                 for name, values in pairs(scope_root) do
                     if not scope["__override_" .. name] then
@@ -888,7 +888,7 @@ function interpreter:api_register_scope(...)
         -- init scope_kind.scope_name for the current root scope
         scopes._ROOT = scopes._ROOT or {}
         if scope_name ~= nil then
-            scopes._ROOT[scope_kind .. "." .. scope_name] = {}
+            scopes._ROOT[scope_kind .. "@@" .. scope_name] = {}
         end
 
         -- translate scope info 
