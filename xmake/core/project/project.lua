@@ -528,6 +528,7 @@ function project._load_options(disable_filter)
         local packageopt = {category = "requires", default = true, showmenu = true, description = "The " .. packagename .. " package"}
 
         -- inherit extra option settings and override the default values
+        local alias = nil
         local require_extra = requires_extra[require_str]
         if require_extra then
 
@@ -543,10 +544,13 @@ function project._load_options(disable_filter)
                     packageopt[name] = value
                 end
             end
+
+            -- get alias
+            alias = require_extra.alias
         end
 
         -- add option
-        results[packagename] = packageopt
+        results[alias or packagename] = packageopt
     end
 
     -- check options

@@ -99,6 +99,14 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the package alias  
+function _instance:alias()
+    local requireinfo = self:requireinfo()
+    if requireinfo then
+        return requireinfo.alias 
+    end
+end
+
 -- get the package vendor 
 function _instance:vendor()
     return self._VENDOR

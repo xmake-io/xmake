@@ -65,7 +65,7 @@ function _attach_to_targets(packages)
 
     for _, instance in ipairs(packages) do
         if instance:kind() ~= "binary" then
-            local opt = project.option(instance:fullname())
+            local opt = project.option(instance:alias() or instance:fullname())
             if opt and opt:enabled() then
                 _attach_to_option(instance, opt)
             end

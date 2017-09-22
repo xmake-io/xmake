@@ -40,7 +40,7 @@ import("repository")
 -- add_requires("zlib master")
 -- add_requires("xmake-repo@tboox.tbox >=1.5.1") 
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1") 
--- add_requires("tboox.tbox >=1.5.1 <1.6.0", {optional = true})
+-- add_requires("tboox.tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
 --
 function _parse_require(require_str, requires_extra)
 
@@ -114,6 +114,7 @@ function _parse_require(require_str, requires_extra)
         reponame         = reponame,
         packageurl       = packageurl,
         version          = version,
+        alias            = require_extra.alias,
         system           = require_extra.system,
         option           = require_extra.option,
         default          = require_extra.default,

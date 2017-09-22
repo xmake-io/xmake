@@ -12,7 +12,7 @@ package_end()
 
 -- requires
 add_requires("zlib-mbedtls")
-add_requires("xmake-repo@tboox.tbox ~1.6.0")
+add_requires("xmake-repo@tboox.tbox ~1.6.0", {alias = "tbox"})
 add_requires("unknown", {optional = true})
 
 -- the debug mode
@@ -48,5 +48,5 @@ target("console_c")
     add_files("src/*.c") 
 
     -- add packages
-    add_packages("tboox.tbox", "zlib-mbedtls")
+    add_packages("tbox", "zlib-mbedtls")
 
