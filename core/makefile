@@ -216,18 +216,8 @@ TOOL_DIR 	:= $(PRO_DIR)/tool
 CXFLAG		:= $(if $(CXFLAG),$(CXFLAG),)
 
 # ccache
-ifeq ($(CCACHE),n)
 CCACHE		:= 
-else
-CCACHE		:=$(shell if [ -f "/usr/bin/ccache" ]; then echo "ccache"; elif [ -f "/usr/local/bin/ccache" ]; then echo "ccache"; else echo ""; fi )
-endif
-
-# distcc
-ifeq ($(DISTCC),y)
-DISTCC		:=$(shell if [ -f "/usr/bin/distcc" ]; then echo "distcc"; elif [ -f "/usr/local/bin/distcc" ]; then echo "distcc"; else echo ""; fi )
-else
 DISTCC		:= 
-endif
 
 # sed
 ifeq ($(HOST),macosx)
