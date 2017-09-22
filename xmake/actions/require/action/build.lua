@@ -34,7 +34,7 @@ function _build_for_xmakefile(package, buildfile)
     os.vrun("xmake f -p $(plat) -a $(arch) -m $(mode) -c")
 
     -- build it
-    os.vrun("xmake -r")
+    os.vrun("xmake")
 end
 
 -- build for makefile
