@@ -41,11 +41,13 @@ function _option_filter(name)
         target      = true
     ,   file        = true
     ,   root        = true
+    ,   yes         = true
     ,   quiet       = true
     ,   profile     = true
     ,   project     = true
     ,   verbose     = true
     ,   backtrace   = true
+    ,   require     = true
     }
     return not options[name]
 end
