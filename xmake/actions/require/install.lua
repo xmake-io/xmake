@@ -138,15 +138,6 @@ end
 -- install packages
 function _install_packages(requires)
 
-    -- init requires
-    local requires_extra = nil
-    if not requires then
-        requires, requires_extra = project.requires()
-    end
-    if not requires or #requires == 0 then
-        return 
-    end
-
     -- pull all repositories first if not exists
     --
     -- attempt to install git from the builtin-packages first if git not found
@@ -231,6 +222,15 @@ function main(requires)
     -- avoid to run this task repeatly
     if _g.installed then return end
     _g.installed = true
+
+    -- init requires
+    local requires_extra = nil
+    if not requires then
+        requires, requires_extra = project.requires()
+    end
+    if not requires or #requires == 0 then
+        return 
+    end
 
     -- enter environment 
     environment.enter()
