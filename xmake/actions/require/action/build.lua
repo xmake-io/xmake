@@ -35,23 +35,23 @@ function _build_for_xmakefile(package, buildfile)
 
     -- build it
     os.vrun("xmake -r")
-
-    -- ok
-    return true
 end
 
 -- build for makefile
 function _build_for_makefile(package, buildfile)
 
+    -- only for host platform now
+    assert(os.host() == config.plat() and os.arch() == config.arch())
+
     -- build it
     os.vrun("make")
-
-    -- ok
-    return true
 end
 
 -- build for configure
 function _build_for_configure(package, buildfile)
+
+    -- only for host platform now
+    assert(os.host() == config.plat() and os.arch() == config.arch())
 
     -- make prefix directory
     os.mkdir(".prefix")
@@ -64,15 +64,18 @@ function _build_for_configure(package, buildfile)
 
     -- install to .prefix
     os.vrun("make install")
-
-    -- ok
-    return true
 end
 
 -- build for cmakelist
 function _build_for_cmakelists(package, buildfile)
 
+    -- only for host platform now
+    assert(os.host() == config.plat() and os.arch() == config.arch())
+
     -- make makefile first
+    --
+    -- @note it will only attempt to build, so we need install cmake manually first if we want to build it successfully
+    --
     os.vrun("cmake -DCMAKE_INSTALL_PREFIX=%s .", path.absolute(".prefix"))
 
     -- build it
@@ -80,20 +83,23 @@ function _build_for_cmakelists(package, buildfile)
 
     -- install to .prefix
     os.vrun("make install")
-
-    -- ok
-    return true
 end
 
 -- build for *.sln
 function _build_for_sln(package, buildfile)
 
+    -- only for host platform now
+    assert(os.host() == config.plat())
+
+    -- TODO handle arch and mode
     -- build it for windows
     if config.plat() == "windows" then
         os.vrun("msbuild %s -nologo -t:Rebuild -p:Configuration=Release", buildfile)
-        return true
+        return 
     end
-    return false
+
+    -- continue to attempt to build using other tools
+    raise()
 end
 
 -- on build the given package
@@ -124,7 +130,8 @@ function _on_build_package(package)
                 -- attempt to build it if file exists
                 local files = os.files(buildscript[1])
                 if #files > 0 then
-                    return buildscript[2](package, files[1])
+                    buildscript[2](package, files[1])
+                    return true
                 end
             end,
 
