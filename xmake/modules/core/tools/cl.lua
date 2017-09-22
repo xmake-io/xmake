@@ -177,10 +177,23 @@ function nf_language(self, stdname)
     ,   gnu11 = "-TP"
     }
 
+    -- the stdc++ maps
+    local cxxmaps = 
+    {
+        cxx11       = "-std=c++11"
+    ,   gnuxx11     = "-std=c++11"
+    ,   cxx14       = "-std:c++14"
+    ,   gnuxx14     = "-std:c++14"
+    ,   cxx1z       = "-std=c++latest"
+    ,   gnuxx1z     = "-std=c++latest"
+    ,   cxx17       = "-std=c++17"
+    ,   gnuxx17     = "-std=c++17"
+    }
+
     -- select maps
     local maps = cmaps
     if self:kind() == "cxx" or self:kind() == "mxx" then
-        maps = {}
+        maps = cxxmaps
     end
 
     -- make it
