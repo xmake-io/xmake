@@ -32,10 +32,7 @@ import("test")
 function _install_for_xmakefile(package)
 
     -- package to install directory
-    os.vrun("xmake p -o %s", package:installdir())
-
-    -- ok
-    return true
+    os.vrunv("xmake", {"p", "-o", package:installdir()})
 end
 
 -- install for generic
@@ -137,9 +134,6 @@ option("%s")
         -- exit file
         file:close()
     end
-
-    -- ok
-    return true
 end
 
 -- on install the given package
@@ -166,7 +160,8 @@ function _on_install_package(package)
                 -- attempt to install it if file exists
                 local files = os.files(installscript[1])
                 if #files > 0 then
-                    return installscript[2](package)
+                    installscript[2](package)
+                    return true
                 end
             end,
 
