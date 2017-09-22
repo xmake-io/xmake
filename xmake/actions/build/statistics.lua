@@ -24,6 +24,9 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
+import("core.platform.platform")
+import("core.platform.environment")
 
 -- statistics is enabled?
 function _is_enabled()
@@ -86,6 +89,7 @@ function post()
         function ()
             local proc = process.openv("xmake", argv, path.join(os.tmpdir(), projectname .. ".stats.log"))
             if proc ~= nil then
+                process.wait(proc, -1)
                 process.close(proc)
             end
         end
@@ -100,10 +104,18 @@ function main()
         return 
     end
 
+    -- load config
+    config.load()
+
+    -- load platform
+    platform.load(config.plat())
+
+    -- enter environment
+    environment.enter("toolchains")
+
     -- get the project directory name
     local projectname = path.basename(os.projectdir())
 
-    -- TODO git on windows 
     -- clone the xmake-stats repo to update the traffic(git clones) info in github
     local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
     if not os.isdir(outputdir) then
@@ -111,4 +123,7 @@ function main()
         clone("https://github.com/tboox/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
         print("post ok!")
     end
+
+    -- leave environment
+    environment.leave("toolchains")
 end
