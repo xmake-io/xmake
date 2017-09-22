@@ -25,12 +25,10 @@ install:
 build_script:
   - ps: Invoke-Expression (Get-Content scripts\get.ps1 | Out-String)
   - cmd: xmake lua versioninfo
-  - cmd: cd core
-  - cmd: if %platform%==Win64 xmake f -a x64 
-  - cmd: xmake install -o build --prefix=
-  - cmd: cd ..
+  - cmd: if %platform%==Win64 xmake f -a x64 -P core 
+  - cmd: xmake -P core 
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
-  - cmd: core\build\bin\xmake lua versioninfo
+  - cmd: core\build\xmake lua versioninfo
   - ps: Write-Output "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})".replace('\','/') | Out-File tmp
   - ps: Write-Output (Get-Content xmake\core\_xmake_main.lua | Out-String) | Out-File tmp -Append
   - ps: Invoke-Webrequest 'https://svwh.dl.sourceforge.net/project/dos2unix/dos2unix/7.3.4/dos2unix-7.3.4-win32.zip' -OutFile dos2unix.zip
@@ -38,7 +36,7 @@ build_script:
   - cmd: dos2unix\bin\dos2unix tmp
   - ps: Remove-Item -Recurse dos2unix,dos2unix.zip
   - ps: Move-Item -Force tmp xmake\core\_xmake_main.lua
-  - ps: Copy-Item -Force core\build\bin\xmake.exe $HOME\xmake
+  - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
   - cmd: xmake lua --backtrace tests\test.lua
 
 on_success:
@@ -49,7 +47,7 @@ on_success:
   - ps: Invoke-Expression (Get-Content scripts\getpb.ps1 | Out-String)
 
 after_build:
-  - ps: Copy-Item core\build\bin\xmake.exe .
+  - ps: Copy-Item core\build\xmake.exe .
 
 artifacts:
   - path: xmake.exe
