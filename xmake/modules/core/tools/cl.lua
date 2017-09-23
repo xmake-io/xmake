@@ -270,7 +270,7 @@ function _include_note(self, line)
     _g.notes = _g.notes or 
     {
         "Note: including file: "
-    ,   "\215\162\210\226\58\32\176\252\186\172\206\196\188\254\58\32" -- zh-cn
+    ,   "\215\162\210\226\58\32\176\252\186\172\206\196\188\254\58\32" -- zh-cn: "注意: 包含文件: "
     }
 
     -- contain notes?
