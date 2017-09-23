@@ -184,10 +184,10 @@ function nf_language(self, stdname)
     ,   gnuxx11     = "-std=c++11"
     ,   cxx14       = "-std:c++14"
     ,   gnuxx14     = "-std:c++14"
-    ,   cxx1z       = "-std:c++latest"
-    ,   gnuxx1z     = "-std:c++latest"
     ,   cxx17       = "-std:c++17"
     ,   gnuxx17     = "-std:c++17"
+    ,   cxx1z       = "-std:c++latest"
+    ,   gnuxx1z     = "-std:c++latest"
     }
 
     -- select maps
@@ -196,8 +196,16 @@ function nf_language(self, stdname)
         maps = cxxmaps
     end
 
-    -- make it
-    return maps[stdname]
+    -- map it
+    local flag = maps[stdname]
+
+    -- not support it?
+    if flag and flag:find("std:c++", 1, true) and not self:has_flags(flag) then
+        return 
+    end
+
+    -- ok
+    return flag
 end
 
 -- make the define flag
@@ -249,27 +257,53 @@ function nf_pcxxheader(self, pcheaderfile, target)
     end
 end
 
+-- contain: "Note: including file: "?
+--
+-- we cannot get better solution to distinguish between `includes` and `error infos`
+--
+function _include_note(self, line)
+
+    -- init notes
+    _g.notes = _g.notes or 
+    {
+        "Note: including file: "
+    }
+
+    -- contain notes?
+    for idx, note in ipairs(_g.notes) do
+        if line:startswith(note) then
+            -- optimization: move this note to head
+            if idx ~= 1 then
+                table.insert(_g.notes, 1, note)
+            end
+            return line:sub(#note):trim()
+        end
+    end
+end
+
 -- get include deps
 function _include_deps(self, outdata)
 
     -- translate it
     local results = {}
     local uniques = {}
-    for includefile in string.gmatch(outdata, ".-: .-:%s*(.-)\r*\n") do
+    for _, line in ipairs(outdata:split("\r\n")) do
 
-        -- slower, only for debuging
-        -- assert(os.isfile(includefile), "invalid include file: %s for %s", includefile, depinfo)
+        -- get includefile
+        local includefile = _include_note(self, line)
+        if includefile then
 
-        -- get the relative
-        includefile = path.relative(includefile, project.directory())
+            -- get the relative
+            includefile = path.relative(includefile, project.directory())
 
-        -- save it if belong to the project
-        if not path.is_absolute(includefile) then
+            -- save it if belong to the project
+            if not path.is_absolute(includefile) then
 
-            -- insert it and filter repeat
-            if not uniques[includefile] then
-                table.insert(results, includefile)
-                uniques[includefile] = true
+                -- insert it and filter repeat
+                if not uniques[includefile] then
+                    table.insert(results, includefile)
+                    uniques[includefile] = true
+                end
             end
         end
     end
@@ -337,14 +371,14 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
 
-                -- get prefix: "Note: including file:", @note maybe not english language
-                local including_file = errors:match("\n(.-: .-:)%s*.-\r*\n")
-
-                -- filter includes notes
-                if errors and #errors:split("\n") > 10 and including_file then
-                    errors = errors:gsub((including_file or "") .. ".-\r*\n", "") 
+                -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
+                local results = ""
+                for _, line in ipairs(errors:split("\r\n")) do
+                    if not _include_note(self, line) then 
+                        results = results .. line .. "\r\n"
+                    end
                 end
-                os.raise(errors)
+                os.raise(results)
             end
         }
     }
