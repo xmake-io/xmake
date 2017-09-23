@@ -259,18 +259,29 @@ end
 
 -- contain: "Note: including file: "?
 --
--- we cannot get better solution to distinguish between `includes` and `error infos`
+-- @note we cannot get better solution to distinguish between `includes` and `error infos`
 --
 function _include_note(self, line)
 
     -- init notes
+    --
+    -- TODO zh-tw, zh-hk, jp, ...
+    --
     _g.notes = _g.notes or 
     {
         "Note: including file: "
+    ,   "\215\162\210\226\58\32\176\252\186\172\206\196\188\254\58\32" -- zh-cn
     }
 
     -- contain notes?
     for idx, note in ipairs(_g.notes) do
+        
+        -- dump line bytes
+        --[[
+        print(line)
+        line:gsub(".", function (ch) print(string.byte(ch)) end)
+        --]]
+
         if line:startswith(note) then
             -- optimization: move this note to head
             if idx ~= 1 then
