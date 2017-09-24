@@ -38,8 +38,4 @@ target("demo")
         add_links("pthread", "dl", "m", "c") 
     end
 
-    -- copy target file to 'build\xmake'
-    after_build(function (target)
-        os.cp(target:targetfile(), "$(buildir)")
-    end)
 
