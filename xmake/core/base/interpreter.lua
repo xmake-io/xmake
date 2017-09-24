@@ -89,20 +89,25 @@ function interpreter._merge_root_scope(root, root_prev, override)
     -- merge it
     root_prev = root_prev or {}
     for scope_kind_and_name, _ in pairs(root or {}) do
-        local scope_values = root_prev[scope_kind_and_name] or {}
-        local scope_root   = root[scope_kind_and_name] or {}
-        for name, values in pairs(scope_root) do
-            if not name:startswith("__override_") then
-                if scope_root["__override_" .. name] then
-                    if override or scope_values[name] == nil then
-                        scope_values[name] = values
+        -- only merge sub-scope for each kind("target@@xxxx") or __rootkind 
+        -- we need ignore the sub-root scope .e.g target{} after fetching root scope
+        --
+        if scope_kind_and_name:find("@@", 1, true) or scope_kind_and_name == "__rootkind" then
+            local scope_values = root_prev[scope_kind_and_name] or {}
+            local scope_root   = root[scope_kind_and_name] or {}
+            for name, values in pairs(scope_root) do
+                if not name:startswith("__override_") then
+                    if scope_root["__override_" .. name] then
+                        if override or scope_values[name] == nil then
+                            scope_values[name] = values
+                        end
+                    else
+                        scope_values[name] = table.join(values, scope_values[name] or {})
                     end
-                else
-                    scope_values[name] = table.join(values, scope_values[name] or {})
                 end
             end
+            root_prev[scope_kind_and_name] = scope_values
         end
-        root_prev[scope_kind_and_name] = scope_values
     end
 
     -- ok?
@@ -116,7 +121,7 @@ function interpreter._fetch_root_scope(root)
     -- fetch it
     for scope_kind_and_name, _ in pairs(root or {}) do
         
-        -- is scope_kind.scope_name?
+        -- is scope_kind@@scope_name?
         scope_kind_and_name = scope_kind_and_name:split("@@")
         if #scope_kind_and_name == 2 then
             local scope_kind = scope_kind_and_name[1] 
@@ -128,6 +133,7 @@ function interpreter._fetch_root_scope(root)
                     if scope_root["__override_" .. name] then
                         if scope_values[name] == nil then
                             scope_values[name] = values
+                            scope_values["__override_" .. name] = true
                         end
                     else
                         scope_values[name] = table.join(values, scope_values[name] or {})
