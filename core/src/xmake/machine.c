@@ -549,6 +549,21 @@ xm_machine_ref_t xm_machine_init()
         lua_newtable(impl->lua);
         lua_setglobal(impl->lua, "xmake");
 
+#ifdef TB_CONFIG_OS_WINDOWS
+        // enable terminal colors output for windows cmd
+        HANDLE output =  GetStdHandle(STD_OUTPUT_HANDLE);
+        if (output != INVALID_HANDLE_VALUE)
+        {
+            DWORD mode;
+            if (GetConsoleMode(output, &mode))
+            {
+                // attempt to enable 0x4: ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                if (SetConsoleMode(output, mode | 0x4))
+                    tb_environment_set("COLORTERM", "color256");
+            }
+        }
+#endif
+
         // ok
         ok = tb_true;
 

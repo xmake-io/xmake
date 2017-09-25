@@ -21,6 +21,7 @@
 * Disable to output colors code to file
 * Update project templates with tbox
 * Improve `lib.detect.find_program` interface
+* Enable colors output for windows cmd
 
 ### Bugs fixed
 
@@ -383,6 +384,7 @@
 * 禁止在重定向的时候进行彩色输出，避免输出文件中带有色彩代码干扰
 * 更新tbox工程模板
 * 改进`lib.detect.find_program`模块接口
+* 为windows cmd终端增加彩色输出
 
 ### Bugs修复
 

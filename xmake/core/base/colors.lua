@@ -108,6 +108,9 @@ colors._keys24 =
 colors._escape = string.char(27) .. '[%sm'
 
 -- support 256 colors?
+--
+-- COLORTERM: color256, truecolor, nocolor
+--
 function colors.has256()
 
     -- get $COLORTERM
@@ -118,8 +121,8 @@ function colors.has256()
         return false
     end
 
-    -- this is supported if be not windows
-    if os.host() ~= "windows" then
+    -- has 256 color?
+    if colors._COLORTERM == "color256" or os.host() ~= "windows" then
         return true
     end
 
