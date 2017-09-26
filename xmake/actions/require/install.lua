@@ -136,7 +136,7 @@ function _get_confirm(packages)
 end
 
 -- install packages
-function _install_packages(requires)
+function _install_packages(requires, requires_extra)
 
     -- pull all repositories first if not exists
     --
@@ -241,7 +241,7 @@ function main(requires)
     end
 
     -- install packages
-    local packages = _install_packages(requires)
+    local packages = _install_packages(requires, requires_extra)
     if packages then
 
         -- check missing packages
