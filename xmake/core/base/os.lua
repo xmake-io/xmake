@@ -703,7 +703,16 @@ function os.user_agent()
         if os.host() == "macosx" then
             local ok, osver = os.iorun("/usr/bin/sw_vers -productVersion")
             if ok then
-                os_user_agent = "Intel Mac OS X " .. (osver or ""):trim()
+                os_user_agent = ("Intel Mac OS X " .. (osver or "")):trim()
+            end
+        elseif os.host() == "linux" then
+            local ok, osarch = os.iorun("uname -m")
+            if ok then
+                os_user_agent = (os_user_agent .. " " .. (osarch or "")):trim()
+            end
+            ok, osver = os.iorun("uname -r")
+            if ok then
+                os_user_agent = (os_user_agent .. " " .. (osver or "")):trim()
             end
         end
 
