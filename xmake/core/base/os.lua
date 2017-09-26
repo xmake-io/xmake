@@ -689,6 +689,32 @@ function os.nuldev()
     return xmake._NULDEV
 end
 
+-- get user agent
+function os.user_agent()
+
+    -- init user agent
+    if os._USER_AGENT == nil then
+        
+        -- init systems
+        local systems = {macosx = "Macintosh", linux = "Linux", windows = "Windows"}
+
+        -- os user agent
+        local os_user_agent = ""
+        if os.host() == "macosx" then
+            local ok, osver = os.iorun("/usr/bin/sw_vers -productVersion")
+            if ok then
+                os_user_agent = "Intel Mac OS X " .. (osver or ""):trim()
+            end
+        end
+
+        -- make user agent
+        os._USER_AGENT = string.format("Xmake/%s (%s;%s)", xmake._VERSION_SHORT, systems[os.host()] or os.host(), os_user_agent)
+    end
+
+    -- ok?
+    return os._USER_AGENT
+end
+
 -- get uid
 function os.uid(...)
     -- get uid

@@ -24,11 +24,10 @@
 
 -- imports
 import("core.base.option")
-import("detect.tools.find_curl")
-import("detect.tools.find_wget")
+import("lib.detect.find_tool")
 
 -- download url using curl
-function _curl_download(program, url, outputfile)
+function _curl_download(tool, url, outputfile)
 
     -- set basic arguments
     local argv = {}
@@ -37,6 +36,17 @@ function _curl_download(program, url, outputfile)
     else
         table.insert(argv, "-fsSL")
     end
+
+    -- set user-agent
+    local user_agent = os.user_agent()
+    if user_agent then
+        if tool.version then
+            user_agent = user_agent .. " curl/" .. tool.version
+        end
+        table.insert(argv, "-A")
+        table.insert(argv, user_agent)
+    end
+    print(user_agent)
 
     -- set url
     table.insert(argv, url)
@@ -51,12 +61,12 @@ function _curl_download(program, url, outputfile)
     table.insert(argv, "-o")
     table.insert(argv, outputfile)
 
-    -- clone it
-    os.vrunv(program, argv)
+    -- download it
+    os.vrunv(tool.program, argv)
 end
 
 -- download url using wget
-function _wget_download(program, url, outputfile)
+function _wget_download(tool, url, outputfile)
 
     -- ensure output directory
     local argv = {url}
@@ -65,12 +75,22 @@ function _wget_download(program, url, outputfile)
         os.mkdir(outputdir)
     end
 
+    -- set user-agent
+    local user_agent = os.user_agent()
+    if user_agent then
+        if tool.version then
+            user_agent = user_agent .. " wget/" .. tool.version
+        end
+        table.insert(argv, "-U")
+        table.insert(argv, user_agent)
+    end
+
     -- set outputfile
     table.insert(argv, "-O")
     table.insert(argv, outputfile)
 
-    -- clone it
-    os.vrunv(program, argv)
+    -- download it
+    os.vrunv(tool.program, argv)
 end
 
 -- download url
@@ -85,14 +105,14 @@ function main(url, outputfile)
     outputfile = outputfile or path.filename(url)
     
     -- attempt to download url using curl first
-    local program = find_curl()
-    if program then
-        return _curl_download(program, url, outputfile)
+    local tool = find_tool("curl", {version = true})
+    if tool then
+        return _curl_download(tool, url, outputfile)
     end
 
     -- download url using wget
-    program = find_wget()
-    if program then
-        return _wget_download(program, url, outputfile)
+    tool = find_tool("wget", {version = true})
+    if tool then
+        return _wget_download(tool, url, outputfile)
     end
 end
