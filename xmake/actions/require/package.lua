@@ -379,7 +379,7 @@ function _get_confirm(packages)
     if confirm == nil then
     
         -- show tips
-        cprint("${bright yellow}note: ${default yellow}try installing all required packages (pass -y to skip confirm)?")
+        cprint("${bright yellow}note: ${default yellow}try installing these packages (pass -y to skip confirm)?")
         for _, package in ipairs(confirmed_packages) do
             print("  -> %s %s", package:fullname(), package:version_str() or "")
         end
