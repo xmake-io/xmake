@@ -29,6 +29,7 @@ import("core.base.global")
 import("core.project.cache")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
+import("action")
 import("devel.git")
 import("net.fasturl")
 import("repository")
@@ -129,22 +130,22 @@ function _parse_require(require_str, requires_extra)
     return required.packagename, required.requireinfo
 end
 
--- load package instance from the given package url
+-- load package package from the given package url
 function _load_package_from_url(packagename, packageurl)
     return core_package.load_from_url(packagename, packageurl)
 end
 
--- load package instance from system
+-- load package package from system
 function _load_package_from_system(packagename)
     return core_package.load_from_system(packagename)
 end
 
--- load package instance from project
+-- load package package from project
 function _load_package_from_project(packagename)
     return core_package.load_from_project(packagename)
 end
 
--- load package instance from repositories
+-- load package package from repositories
 function _load_package_from_repository(packagename, reponame)
 
     -- get package directory from the given package name
@@ -160,51 +161,51 @@ function _load_package(packagename, requireinfo)
 
     -- attempt to get it from cache first
     local packages = _g._PACKAGES or {}
-    local instance = packages[packagename]
-    if instance then
+    local package = packages[packagename]
+    if package then
 
         -- satisfy required version? 
-        local version_str = instance:version_str()
+        local version_str = package:version_str()
         if version_str and not semver.satisfies(version_str, requireinfo.version) then
             raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, version_str, requireinfo.version)
         end
 
         -- ok
-        return instance
+        return package
     end
 
-    -- load package instance
-    instance = nil
+    -- load package package
+    package = nil
     if requireinfo.packageurl then
         -- load package from the given package url
-        instance = _load_package_from_url(packagename, requireinfo.packageurl)
+        package = _load_package_from_url(packagename, requireinfo.packageurl)
     else
         -- load package from project first
-        instance = _load_package_from_project(packagename)
+        package = _load_package_from_project(packagename)
             
         -- load package from repositories
-        if not instance then
-            instance = _load_package_from_repository(packagename, requireinfo.reponame)
+        if not package then
+            package = _load_package_from_repository(packagename, requireinfo.reponame)
         end
 
         -- load package from system
-        if not instance then
-            instance = _load_package_from_system(packagename)
+        if not package then
+            package = _load_package_from_system(packagename)
         end
     end
 
     -- check
-    assert(instance, "package(%s) not found!", packagename)
+    assert(package, "package(%s) not found!", packagename)
 
     -- save require info to package
-    instance:requireinfo_set(requireinfo)
+    package:requireinfo_set(requireinfo)
 
-    -- save this package instance to cache
-    packages[packagename] = instance
+    -- save this package package to cache
+    packages[packagename] = package
     _g._PACKAGES = packages
 
     -- ok
-    return instance
+    return package
 end
 
 -- sort package deps 
@@ -233,7 +234,7 @@ function _load_packages(requires, requires_extra)
         local packageopt = project.option(packagename)
         if packageopt == nil or packageopt:enabled() then -- this package is enabled?
 
-            -- load package instance
+            -- load package package
             local package = _load_package(packagename, requireinfo)
 
             -- maybe package not found and optional
@@ -251,7 +252,7 @@ function _load_packages(requires, requires_extra)
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
                 end
 
-                -- save this package instance
+                -- save this package package
                 table.insert(packages, package)
             end
         end
@@ -359,6 +360,43 @@ function _select_packages_version(packages)
     end
 end
 
+-- get user confirm
+function _get_confirm(packages)
+
+    -- init confirmed packages
+    local confirmed_packages = {}
+    for _, package in ipairs(packages) do
+        if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then 
+            table.insert(confirmed_packages, package)
+        end
+    end
+    if #confirmed_packages == 0 then
+        return true
+    end
+
+    -- get confirm
+    local confirm = option.get("yes")
+    if confirm == nil then
+    
+        -- show tips
+        cprint("${bright yellow}note: ${default yellow}try installing all required packages (pass -y to skip confirm)?")
+        for _, package in ipairs(confirmed_packages) do
+            print("  -> %s %s", package:fullname(), package:version_str() or "")
+        end
+        cprint("please input: y (y/n)")
+
+        -- get answer
+        io.flush()
+        local answer = io.read()
+        if answer == 'y' or answer == '' then
+            confirm = true
+        end
+    end
+
+    -- ok?
+    return confirm
+end
+
 -- the cache directory
 function cachedir()
     return path.join(global.directory(), "cache", "packages")
@@ -398,3 +436,75 @@ function load_packages(requires, requires_extra)
     return packages
 end
 
+-- install packages
+function install_packages(requires, requires_extra)
+
+    -- load packages
+    local packages = load_packages(requires, requires_extra)
+
+    -- fetch packages from local first
+    local packages_remote = {}
+    if option.get("force") then 
+        for _, package in ipairs(packages) do
+            if package and #package:urls() > 0 then
+                table.insert(packages_remote, package)
+            end
+        end
+    else
+        process.runjobs(function (index)
+            local package = packages[index]
+            if package and not package:fetch() and #package:urls() > 0 then -- @note fetch first for only system packge 
+                table.insert(packages_remote, package)
+            end
+        end, #packages)
+    end
+
+    -- get user confirm
+    if not _get_confirm(packages) then
+        return 
+    end
+
+    -- download remote packages
+    local waitindex = 0
+    local waitchars = {'\\', '|', '/', '-'}
+    process.runjobs(function (index)
+
+        local package = packages_remote[index]
+        if package then
+            action.download(package)
+        end
+
+    end, #packages_remote, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
+
+        -- do not print progress info if be verbose 
+        if option.get("verbose") then
+            return 
+        end
+ 
+        -- update waitchar index
+        waitindex = ((waitindex + 1) % #waitchars)
+
+        -- make downloading packages list
+        local downloading = {}
+        for _, index in ipairs(indices) do
+            local package = packages_remote[index]
+            if package then
+                table.insert(downloading, package:fullname())
+            end
+        end
+       
+        -- trace
+        cprintf("\r${yellow}  => ${clear}downloading %s .. %s", table.concat(downloading, ", "), waitchars[waitindex + 1])
+        io.flush()
+    end)
+
+    -- install all required packages from repositories
+    for _, package in ipairs(packages) do
+        if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then 
+            action.install(package)
+        end
+    end
+
+    -- ok
+    return packages
+end

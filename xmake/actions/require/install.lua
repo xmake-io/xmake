@@ -27,7 +27,6 @@ import("core.base.option")
 import("core.base.task")
 import("core.project.project")
 import("lib.detect.find_tool")
-import("action")
 import("package")
 import("repository")
 import("environment")
@@ -98,124 +97,6 @@ function _check_missing_packages(packages)
     _g.optional_missing = optional_missing
 end
 
--- get user confirm
-function _get_confirm(packages)
-
-    -- init confirmed packages
-    local confirmed_packages = {}
-    for _, instance in ipairs(packages) do
-        if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
-            table.insert(confirmed_packages, instance)
-        end
-    end
-    if #confirmed_packages == 0 then
-        return true
-    end
-
-    -- get confirm
-    local confirm = option.get("yes")
-    if confirm == nil then
-    
-        -- show tips
-        cprint("${bright yellow}note: ${default yellow}try installing all required packages (pass -y to skip confirm)?")
-        for _, instance in ipairs(confirmed_packages) do
-            print("  -> %s %s", instance:fullname(), instance:version_str() or "")
-        end
-        cprint("please input: y (y/n)")
-
-        -- get answer
-        io.flush()
-        local answer = io.read()
-        if answer == 'y' or answer == '' then
-            confirm = true
-        end
-    end
-
-    -- ok?
-    return confirm
-end
-
--- install packages
-function _install_packages(requires, requires_extra)
-
-    -- pull all repositories first if not exists
-    --
-    -- attempt to install git from the builtin-packages first if git not found
-    --
-    if find_tool("git") and not repository.pulled() then
-        task.run("repo", {update = true})
-    end
-
-    -- load packages
-    local packages = package.load_packages(requires, requires_extra)
-
-    -- fetch packages from local first
-    local packages_remote = {}
-    if option.get("force") then 
-        for _, instance in ipairs(packages) do
-            if instance and #instance:urls() > 0 then
-                table.insert(packages_remote, instance)
-            end
-        end
-    else
-        process.runjobs(function (index)
-            local instance = packages[index]
-            if instance and not instance:fetch() and #instance:urls() > 0 then -- @note fetch first for only system packge 
-                table.insert(packages_remote, instance)
-            end
-        end, #packages)
-    end
-
-    -- get user confirm
-    if not _get_confirm(packages) then
-        return 
-    end
-
-    -- download remote packages
-    local waitindex = 0
-    local waitchars = {'\\', '|', '/', '-'}
-    process.runjobs(function (index)
-
-        local instance = packages_remote[index]
-        if instance then
-            action.download(instance)
-        end
-
-    end, #packages_remote, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
-
-        -- do not print progress info if be verbose 
-        if option.get("verbose") then
-            return 
-        end
- 
-        -- update waitchar index
-        waitindex = ((waitindex + 1) % #waitchars)
-
-        -- make downloading packages list
-        local downloading = {}
-        for _, index in ipairs(indices) do
-            local instance = packages_remote[index]
-            if instance then
-                table.insert(downloading, instance:fullname())
-            end
-        end
-       
-        -- trace
-        cprintf("\r${yellow}  => ${clear}downloading %s .. %s", table.concat(downloading, ", "), waitchars[waitindex + 1])
-        io.flush()
-    end)
-
-    -- install all required packages from repositories
-    for _, instance in ipairs(packages) do
-        if (option.get("force") or not instance:exists()) and (#instance:urls() > 0 or instance:script("install")) then 
-            action.install(instance)
-        end
-    end
-
-    -- ok
-    return packages
-end
-
 -- install packages
 function main(requires)
 
@@ -235,13 +116,16 @@ function main(requires)
     -- enter environment 
     environment.enter()
 
-    -- git not found? install it first
-    if not find_tool("git") then
-        _install_packages("git")
+    -- pull all repositories first if not exists
+    --
+    -- attempt to install git from the builtin-packages first if git not found
+    --
+    if find_tool("git") and not repository.pulled() then
+        task.run("repo", {update = true})
     end
 
     -- install packages
-    local packages = _install_packages(requires, requires_extra)
+    local packages = package.install_packages(requires, requires_extra)
     if packages then
 
         -- check missing packages

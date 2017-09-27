@@ -29,6 +29,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.package.repository")
 import("devel.git")
+import("actions.require.environment", {rootdir = os.programdir()})
 
 -- add repository url
 function _add(name, url, is_global)
@@ -42,11 +43,17 @@ function _add(name, url, is_global)
         os.rmdir(repodir)
     end
 
+    -- enter environment 
+    environment.enter()
+
     -- clone repository
     git.clone(url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
 
     -- trace
     cprint("${bright}add %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
+
+    -- leave environment 
+    environment.leave()
 end
 
 -- remove repository url
@@ -67,6 +74,9 @@ end
 
 -- update repositories
 function _update()
+
+    -- enter environment 
+    environment.enter()
 
     -- trace
     printf("updating repositories .. ")
@@ -116,6 +126,9 @@ function _update()
     else
         process.asyncrun(task)
     end
+
+    -- leave environment 
+    environment.leave()
 
     -- trace
     cprint("${green}ok")

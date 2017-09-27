@@ -24,6 +24,8 @@
 
 -- imports
 import("core.platform.environment")
+import("lib.detect.find_tool")
+import("package")
 
 -- enter environment
 --
@@ -35,6 +37,11 @@ function enter()
 
     -- set search pathes of toolchains 
     environment.enter("toolchains")
+
+    -- git not found? install it first
+    if not find_tool("git") then
+        package.install_packages("git")
+    end
 
     -- TODO set toolchains for CC, LD, ..
 
