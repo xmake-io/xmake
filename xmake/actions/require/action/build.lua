@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.sandbox.sandbox")
+import("filter")
 
 -- build for xmake file
 function _build_for_xmakefile(package, buildfile)
@@ -158,21 +159,6 @@ function _on_build_package(package)
     raise("attempt to build package %s failed!", package:fullname())
 end
 
--- run script
-function _run_script(script, package)
-
-    -- TODO
-    -- register filter handler before building
---    sandbox.filter_register(script, "package.build", function (var) 
---    end)
-
-    -- run it
-    script(package)
-
-    -- cancel filter handler before building
---    sandbox.filter_register(script, "package.build", nil)
-end
-
 -- build the given package
 function main(package)
 
@@ -191,7 +177,7 @@ function main(package)
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            _run_script(script, package)
+            filter.call(script, package)
         end
     end
 

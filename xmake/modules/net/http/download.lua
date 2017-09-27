@@ -46,7 +46,6 @@ function _curl_download(tool, url, outputfile)
         table.insert(argv, "-A")
         table.insert(argv, user_agent)
     end
-    print(user_agent)
 
     -- set url
     table.insert(argv, url)

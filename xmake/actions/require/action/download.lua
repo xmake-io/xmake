@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("filter")
 import("net.http")
 import("devel.git")
 import("utils.archive")
@@ -157,7 +158,7 @@ function main(package)
         local url_alias = package:url_alias(url)
 
         -- filter url
-        url = package:filter():handle(url)
+        url = filter.handle(url, package)
 
         -- download url
         local ok = try

@@ -303,10 +303,27 @@ function sandbox:rootdir()
 end
 
 -- get current instance in the sandbox modules
-function sandbox.instance()
+function sandbox.instance(script)
+
+    -- get the sandbox instance from the given script
+    local instance = nil
+    if script then
+        local scope = getfenv(script)
+        if scope then
+
+            -- enable to read _SANDBOX
+            rawset(scope, "_SANDBOX_READABLE", true)
+            
+            -- attempt to get it
+            instance = scope._SANDBOX
+
+            -- disable to read _SANDBOX
+            rawset(scope, "_SANDBOX_READABLE", nil)
+        end
+        if instance then return instance end
+    end
 
     -- find self instance for the current sandbox
-    local instance = nil
     local level = 2
     while level < 32 do
 

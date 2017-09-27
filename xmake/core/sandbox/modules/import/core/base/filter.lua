@@ -19,35 +19,20 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        test.lua
+-- @file        filter.lua
 --
 
--- imports
-import("core.base.option")
-import("filter")
+-- define module
+local sandbox_core_base_filter = sandbox_core_base_filter or {}
 
--- test the given package
-function main(package)
+-- load modules
+local filter    = require("base/filter")
+local raise     = require("sandbox/modules/raise")
 
-    -- the package scripts
-    local scripts =
-    {
-        package:script("test_before") 
-    ,   package:script("test")
-    ,   package:script("test_after") 
-    }
-
-    -- save the current directory
-    local oldir = os.curdir()
-
-    -- build it
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            filter.call(script, package)
-        end
-    end
-
-    -- restore the current directory
-    os.cd(oldir)
+-- new filter instance
+function sandbox_core_base_filter.new()
+    return filter.new()
 end
+
+-- return module
+return sandbox_core_base_filter

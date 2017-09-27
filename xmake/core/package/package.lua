@@ -32,7 +32,6 @@ local io             = require("base/io")
 local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
-local filter         = require("base/filter")
 local global         = require("base/global")
 local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
@@ -40,6 +39,7 @@ local config         = require("project/config")
 local project        = require("project/project")
 local platform       = require("platform/platform")
 local sandbox        = require("sandbox/sandbox")
+local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
@@ -57,20 +57,6 @@ function _instance.new(name, info, rootdir)
     instance._VENDOR    = nameinfo[1]
     instance._INFO      = info
     instance._ROOTDIR   = rootdir
-    instance._FILTER    = filter.new()
-
-    -- register filter handler
-    instance._FILTER:register("package", function (variable)
-
-        -- init maps
-        local maps = 
-        {
-            version = instance:version_str()
-        }
-
-        -- map it
-        return maps[variable]
-    end)
 
     -- ok
     return instance
@@ -110,11 +96,6 @@ end
 -- get the package vendor 
 function _instance:vendor()
     return self._VENDOR
-end
-
--- get the package filter 
-function _instance:filter()
-    return self._FILTER
 end
 
 -- get urls
@@ -184,6 +165,11 @@ end
 -- get the package kind, binary or nil(static, shared)
 function _instance:kind()
     return self:get("kind")
+end
+
+-- get the build directory of this package
+function _instance:buildir()
+    return path.join(self:cachedir(), "build")
 end
 
 -- get the cached directory of this package

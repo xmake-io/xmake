@@ -79,5 +79,18 @@ function sandbox_core_sandbox.interactive()
     end
 end
 
+-- get the filter of the current sandbox for the given script
+function sandbox_core_sandbox.filter(script)
+
+    -- get the current sandbox instance
+    local instance = sandbox.instance(script)
+    if not instance then
+        raise("cannot get sandbox instance!")
+    end
+
+    -- get it
+    return instance:filter()
+end
+
 -- return module
 return sandbox_core_sandbox

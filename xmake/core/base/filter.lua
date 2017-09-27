@@ -94,10 +94,18 @@ function filter.reg(path)
     return (winreg.query(path)) 
 end
 
+-- set handlers
+function filter:set_handlers(handlers)
+    self._HANDLERS = handlers
+end
+
+-- get handlers
+function filter:handlers()
+    return self._HANDLERS
+end
+
 -- register handler
 function filter:register(name, handler)
-
-    -- set handler
     self._HANDLERS[name] = handler
 end
 

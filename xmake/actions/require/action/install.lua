@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.project.target")
 import("build")
 import("test")
+import("filter")
 
 -- install for xmake file
 function _install_for_xmakefile(package)
@@ -241,7 +242,7 @@ function main(package)
                 for i = 1, 3 do
                     local script = scripts[i]
                     if script ~= nil then
-                        script(package)
+                        filter.call(script, package)
                     end
                 end
 
