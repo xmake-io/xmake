@@ -22,8 +22,33 @@
 -- @file        search.lua
 --
 
--- search for the given packages from repositories
-function main(packages)
-    -- TODO
+-- imports
+import("core.base.task")
+import("action.filter")
+import("package")
+import("repository")
+import("environment")
+
+-- search the given packages
+function main(names)
+
+    -- no names?
+    if not names then
+        return 
+    end
+
+    -- enter environment 
+    environment.enter()
+
+    -- pull all repositories first if not exists
+    if not repository.pulled() then
+        task.run("repo", {update = true})
+    end
+
+    -- show title
+    print("The package names:")
+
+    -- leave environment
+    environment.leave()
 end
 

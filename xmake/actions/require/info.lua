@@ -46,7 +46,7 @@ function main(requires)
     end
 
     -- show title
-    print("The package info:")
+    print("The package infos:")
 
     -- list all packages
     for _, instance in ipairs(package.load_packages(requires)) do
@@ -68,21 +68,33 @@ function main(requires)
         end
 
         -- show urls
-        cprint("      -> ${magenta}urls${clear}:")
-        for _, url in ipairs(instance:urls()) do
-            print("         -> %s", filter.handle(url, instance))
-            local sha256 = instance:sha256(instance:url_alias(url))
-            if sha256 then
-                cprint("            -> ${yellow}%s${clear}", sha256)
+        local urls = instance:urls()
+        if urls and #urls > 0 then
+            cprint("      -> ${magenta}urls${clear}:")
+            for _, url in ipairs(urls) do
+                print("         -> %s", filter.handle(url, instance))
+                local sha256 = instance:sha256(instance:url_alias(url))
+                if sha256 then
+                    cprint("            -> ${yellow}%s${clear}", sha256)
+                end
             end
         end
 
         -- show deps
-        cprint("      -> ${magenta}deps${clear}:")
-        for _, dep in ipairs(instance:orderdeps()) do
-            requireinfo = dep:requireinfo() or {}
-            cprint("         -> %s", requireinfo.originstr)
+        local deps = instance:orderdeps()
+        if deps and #deps > 0 then
+            cprint("      -> ${magenta}deps${clear}:")
+            for _, dep in ipairs(deps) do
+                requireinfo = dep:requireinfo() or {}
+                cprint("         -> %s", requireinfo.originstr)
+            end
         end
+
+        -- show cache directory
+        cprint("      -> ${magenta}cachedir${clear}: %s", instance:cachedir())
+
+        -- show install directory
+        cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
     end
 
     -- leave environment
