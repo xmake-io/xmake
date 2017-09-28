@@ -91,7 +91,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-libpath:" .. dir
+    return "-libpath:" .. os.args(dir)
 end
 
 -- make the link arguments list

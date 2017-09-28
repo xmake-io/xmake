@@ -53,7 +53,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. dir
+    return "-I" .. os.args(dir)
 end
 
 -- make the complie arguments list

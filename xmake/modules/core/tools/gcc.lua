@@ -219,7 +219,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. dir
+    return "-I" .. os.args(dir)
 end
 
 -- make the link flag
@@ -229,18 +229,18 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. dir
+    return "-L" .. os.args(dir)
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     if self:has_flags("-Wl,-rpath=" .. dir) then
-        return "-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+        return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
         end))
     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir) then
-        return "-Xlinker -rpath -Xlinker " .. (dir:gsub("%$ORIGIN", "@loader_path"))
+        return "-Xlinker -rpath -Xlinker " .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
     end
 end
 
@@ -251,16 +251,16 @@ end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return "-F " .. frameworkdir
+    return "-F " .. os.args(frameworkdir)
 end
 
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then
         if self:name() == "clang" then
-            return "-include " .. pcheaderfile .. " -include-pch " .. target:pcoutputfile("c")
+            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(target:pcoutputfile("c"))
         else
-            return "-include " .. pcheaderfile 
+            return "-include " .. os.args(pcheaderfile)
         end
     end
 end
@@ -269,9 +269,9 @@ end
 function nf_pcxxheader(self, pcheaderfile, target)
     if self:kind() == "cxx" then
         if self:name() == "clang" then
-            return "-include " .. pcheaderfile .. " -include-pch " .. target:pcoutputfile("cxx")
+            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(target:pcoutputfile("cxx"))
         else
-            return "-include " .. pcheaderfile 
+            return "-include " .. os.args(pcheaderfile)
         end
     end
 end

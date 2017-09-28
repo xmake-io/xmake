@@ -220,7 +220,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. dir
+    return "-I" .. os.args(dir)
 end
 
 -- make the c precompiled header flag
@@ -236,7 +236,7 @@ function nf_pcheader(self, pcheaderfile, target)
         end
 
         -- make flag
-        return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. target:pcoutputfile("c")
+        return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. os.args(target:pcoutputfile("c"))
     end
 end
 
@@ -253,7 +253,7 @@ function nf_pcxxheader(self, pcheaderfile, target)
         end
 
         -- make flag
-        return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. target:pcoutputfile("cxx")
+        return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. os.args(target:pcoutputfile("cxx"))
     end
 end
 

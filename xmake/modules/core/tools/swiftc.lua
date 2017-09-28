@@ -152,7 +152,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-Xcc -I" .. dir
+    return "-Xcc -I" .. os.args(dir)
 end
 
 -- make the define flag
@@ -172,7 +172,7 @@ end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return "-F " .. frameworkdir
+    return "-F " .. os.args(frameworkdir)
 end
 
 -- make the link flag
@@ -182,7 +182,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. dir
+    return "-L" .. os.args(dir)
 end
 
 -- make the link arguments list

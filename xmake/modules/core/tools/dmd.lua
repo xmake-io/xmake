@@ -129,7 +129,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. dir
+    return "-I" .. os.args(dir)
 end
 
 -- make the link flag
@@ -139,12 +139,12 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L-L" .. dir
+    return "-L-L" .. os.args(dir)
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    local flag = "-L-rpath=" .. dir
+    local flag = "-L-rpath=" .. os.args(dir)
     if self:has_flags(flag) then
         return flag
     end

@@ -91,7 +91,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. dir
+    return "-L" .. os.args(dir)
 end
 
 -- make the build arguments list
