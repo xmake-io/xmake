@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.project")
+import("core.base.task")
 import("package")
 import("repository")
 import("environment")

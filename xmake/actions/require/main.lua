@@ -80,12 +80,12 @@ function main()
     -- search for the given packages from repositories
     elseif option.get("search") then
 
-        search(option.get("packages"))
+        search(option.get("requires"))
 
     -- show the given package info
     elseif option.get("info") then
 
-        info(option.get("packages"))
+        info(option.get("requires"))
 
     -- list all package dependencies
     elseif option.get("list") then

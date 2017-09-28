@@ -22,8 +22,70 @@
 -- @file        info.lua
 --
 
+-- imports
+import("core.base.task")
+import("action.filter")
+import("package")
+import("repository")
+import("environment")
+
 -- show the given package info
-function main(packages)
-    -- TODO
+function main(requires)
+
+    -- no requires?
+    if not requires then
+        return 
+    end
+
+    -- enter environment 
+    environment.enter()
+
+    -- pull all repositories first if not exists
+    if not repository.pulled() then
+        task.run("repo", {update = true})
+    end
+
+    -- show title
+    print("The package info:")
+
+    -- list all packages
+    for _, instance in ipairs(package.load_packages(requires)) do
+
+        -- show package name
+        local requireinfo = instance:requireinfo() or {}
+        cprint("    ${magenta}require${clear}(%s):", requireinfo.originstr)
+
+        -- show description
+        local description = instance:get("description")
+        if description then
+            cprint("      -> ${magenta}description${clear}: %s", description)
+        end
+
+        -- show version
+        local version = instance:version_str()
+        if version then
+            cprint("      -> ${magenta}version${clear}: %s", version)
+        end
+
+        -- show urls
+        cprint("      -> ${magenta}urls${clear}:")
+        for _, url in ipairs(instance:urls()) do
+            print("         -> %s", filter.handle(url, instance))
+            local sha256 = instance:sha256(instance:url_alias(url))
+            if sha256 then
+                cprint("            -> ${yellow}%s${clear}", sha256)
+            end
+        end
+
+        -- show deps
+        cprint("      -> ${magenta}deps${clear}:")
+        for _, dep in ipairs(instance:orderdeps()) do
+            requireinfo = dep:requireinfo() or {}
+            cprint("         -> %s", requireinfo.originstr)
+        end
+    end
+
+    -- leave environment
+    environment.leave()
 end
 
