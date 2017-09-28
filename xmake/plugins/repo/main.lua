@@ -178,6 +178,11 @@ function _list()
     print("%d repositories were found!", count)
 end
 
+-- get the repository directory
+function _directory(is_global)
+    print(repository.directory(is_global))
+end
+
 -- load project
 function _load_project()
 
@@ -224,9 +229,9 @@ function main()
 
         _list()
 
-    -- show help
+    -- show repo directory
     else
-        option.show_help()
+        _directory(option.get("global"))
     end
 end
 
