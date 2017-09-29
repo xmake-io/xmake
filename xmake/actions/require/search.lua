@@ -48,6 +48,20 @@ function main(names)
     -- show title
     print("The package names:")
 
+    -- search packages
+    for name, packages in pairs(package.search_packages(names)) do
+        if #packages > 0 then
+
+            -- show name
+            print("    %s: ", name)
+
+            -- show packages
+            for _, instance in ipairs(packages) do
+                cprint("      -> ${magenta}%s${clear}: %s", instance:fullname(), instance:get("description") or "")
+            end
+        end
+    end
+
     -- leave environment
     environment.leave()
 end

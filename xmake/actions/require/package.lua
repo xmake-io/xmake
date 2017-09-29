@@ -208,6 +208,42 @@ function _load_package(packagename, requireinfo)
     return package
 end
 
+-- search package package from project
+function _search_package_from_project(name)
+--    return core_package.search_from_project(name)
+end
+
+-- search package package from repositories
+function _search_package_from_repository(name)
+
+    -- search package directories from the given package name
+    local packages = {}
+    for packagename, packageinfo in pairs(repository.searchdirs(name)) do
+        local package = core_package.load_from_repository(packagename, packageinfo.is_global, packageinfo.packagedir)
+        if package then
+            table.insert(packages, package)
+        end
+    end
+
+    -- ok?
+    return packages
+end
+
+-- search package from the project and repositories
+function _search_package(name)
+
+    -- search package from project first
+    local packages = _search_package_from_project(name)
+        
+    -- search package from repositories
+    if not packages or #packages == 0 then
+        packages = _search_package_from_repository(name)
+    end
+
+    -- ok?
+    return packages
+end
+
 -- sort package deps 
 function _sort_packagedeps(package)
     local orderdeps = {}
@@ -507,4 +543,18 @@ function install_packages(requires, requires_extra)
 
     -- ok
     return packages
+end
+
+-- search packages
+function search_packages(names)
+
+    -- search all names
+    local results = {}
+    for _, name in ipairs(names) do
+        local packages = _search_package(name)
+        if packages then
+            results[name] = packages
+        end
+    end
+    return results
 end

@@ -49,7 +49,11 @@ function main(requires)
     print("The package infos:")
 
     -- list all packages
-    for _, instance in ipairs(package.load_packages(requires)) do
+    local packages = package.load_packages(requires)
+    if packages and #packages > 0 then
+
+        -- get tis package
+        local instance = packages[#packages]
 
         -- show package name
         local requireinfo = instance:requireinfo() or {}

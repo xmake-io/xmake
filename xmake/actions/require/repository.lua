@@ -114,3 +114,28 @@ function packagedir(packagename, reponame)
     end
 end
 
+-- search package directories from repositories
+function searchdirs(name)
+
+    -- split name by '.'
+    local subdirs = "**" .. table.concat(name:split('%.'), "*" .. path.seperator() .. "*") .. "*"
+
+    -- find the package directories from all repositories
+    local packageinfos = {}
+    for _, repo in ipairs(repositories()) do
+
+        -- the package directory pattern
+        for _, file in ipairs(os.files(path.join(repository.directory(repo.global), repo.name, "packages", subdirs, "xmake.lua"))) do
+            packageinfos[path.basename(path.directory(file))] = {is_global = repo.global, packagedir = path.directory(file)}
+        end
+    end
+
+    -- search the package directories from the builtin packages directory
+    for _, file in ipairs(os.files(path.join(os.programdir(), "packages", subdirs, "xmake.lua"))) do
+        packageinfos[path.basename(path.directory(file))] = {is_global = repo.global, packagedir = path.directory(file)}
+    end
+
+    -- ok?
+    return packageinfos
+end
+

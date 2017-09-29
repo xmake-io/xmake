@@ -547,13 +547,21 @@ function package.load_from_repository(packagename, is_global, packagedir, packag
         return nil, errors
     end
 
-    -- check the package name
-    if not results[packagename] then
-        return nil, string.format("the package %s not found!", name)
+    -- get the package info
+    local packageinfo = nil
+    for name, info in pairs(results) do
+        packagename = name -- use the real package name in package() definition
+        packageinfo = info
+        break
+    end
+
+    -- check this package 
+    if not packageinfo then
+        return nil, string.format("%s: the package %s not found!", scriptpath, packagename)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, results[packagename], package._interpreter():rootdir())
+    local instance, errors = _instance.new(packagename, packageinfo, package._interpreter():rootdir())
     if not instance then
         return nil, errors
     end
