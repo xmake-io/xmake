@@ -29,6 +29,7 @@
 * [#140](https://github.com/tboox/xmake/issues/140): Fix `os.tmpdir()` in fakeroot
 * [#142](https://github.com/tboox/xmake/issues/142): Fix `os.getenv` charset bug on windows
 * Fix compile error with spaces path
+* Fix setenv empty value bug
 
 ## v2.1.6
 
@@ -393,6 +394,7 @@
 * [#140](https://github.com/tboox/xmake/issues/140): 修复`os.tmpdir()`在fakeroot下的冲突问题
 * [#142](https://github.com/tboox/xmake/issues/142): 修复`os.getenv` 在windows上的中文编码问题
 * 修复在带有空格路径的情况下，编译错误问题
+* 修复setenv空值的崩溃问题
 
 ## v2.1.6
 

@@ -35,6 +35,11 @@ function _build_for_xmakefile(package, buildfile)
     local plat = config.plat()
     local argv = {"f", "-c", "-p", plat, "-a", config.arch(), "-m", config.mode()}
 
+    -- verbose?
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+
     -- init config keys
     local keys =
     {
@@ -59,7 +64,11 @@ function _build_for_xmakefile(package, buildfile)
     os.vrunv("xmake", argv)
 
     -- build it
-    os.vrun("xmake")
+    if option.get("verbose") then
+        os.vrun("xmake -v")
+    else
+        os.vrun("xmake")
+    end
 end
 
 -- build for makefile

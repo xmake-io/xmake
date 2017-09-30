@@ -40,7 +40,7 @@ function main(name, opt)
         table.insert(scripts, import("yum.install",    {anonymous = true}))
         table.insert(scripts, import("pacman.install", {anonymous = true}))
         table.insert(scripts, import("brew.install",   {anonymous = true}))
-    elseif host = "windows" then
+    elseif host == "windows" then
         table.insert(scripts, import("pacman.install", {anonymous = true})) -- msys/mingw
     end
     assert(#scripts > 0, "package manager not found!")

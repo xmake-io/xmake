@@ -108,7 +108,10 @@ tb_bool_t tb_environment_save(tb_environment_ref_t environment, tb_char_t const*
     tb_string_strip(&values, tb_string_size(&values) - 1);
 
     // save variable
-    tb_bool_t ok = !setenv(name, tb_string_cstr(&values), 1);
+    tb_bool_t ok;
+    tb_char_t const* value_cstr = tb_string_cstr(&values);
+    if (value_cstr) ok = !setenv(name, value_cstr, 1);
+    else ok = !unsetenv(name);
 
     // exit values string
     tb_string_exit(&values);

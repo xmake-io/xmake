@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.project.config")
 import("core.platform.environment")
 import("lib.detect.find_tool")
 import("package")
@@ -43,19 +44,29 @@ function enter()
         package.install_packages("git")
     end
 
-    -- TODO set toolchains for CC, LD, ..
-
-    -- TODO set flags of toolchains
+    -- set the environment variables of toolchains 
+    _g.toolenvs = {}
+    for _, name in ipairs("cc", "cxx", "mm", "mxx", "ld", "ar", "sh") do
+        local value = config.get(name)
+        if value then
+            _g.toolenvs[name] = os.getenv(name:upper()) or ""
+            os.setenv(name:upper(), value)
+        end
+    end
 end
 
 -- leave environment
 function leave()
 
+    -- restore the environment variables of toolchains 
+    for _, name in ipairs("cc", "cxx", "mm", "mxx", "ld", "ar", "sh") do
+        local value = _g.toolenvs[name]
+        if value then
+        print(name, #value)
+            os.setenv(name:upper(), value)
+        end
+    end
+
     -- restore search pathes of toolchains
     environment.leave("toolchains")
-
-    -- TODO restore toolchains for CC, LD
-    
-    -- TODO set flags of toolchains
-
 end
