@@ -204,7 +204,9 @@ function _instance:version_from(...)
 
     -- from source?
     for _, source in ipairs({...}) do
-        return self:version().source == source
+        if self:version().source == source then
+            return true
+        end
     end
 end
 
