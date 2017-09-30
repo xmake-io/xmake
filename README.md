@@ -302,6 +302,11 @@ Some projects using xmake:
 * Homepage：[tboox.org](http://www.tboox.org)
 * Community：[tboox@community](https://github.com/tboox/community/issues)
 
+## Thanks
+
+* [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
+* [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)
+
 ## Backers
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/xmake#backer)]
