@@ -237,24 +237,8 @@ function linker:linkflags(opt)
     -- add flags from the linker 
     self:_addflags_from_linker(flags)
 
-    -- remove repeat
-    flags = table.unique(flags)
-
-    -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
-    local results = {}
-    for _, flag in ipairs(flags) do
-        flag = flag:trim()
-        if #flag > 0 then
-            if flag:find(" ", 1, true) then
-                table.join2(results, os.argv(flag))
-            else
-                table.insert(results, flag)
-            end
-        end
-    end
-
-    -- get it
-    return results
+    -- preprocess flags
+    return self:_preprocess_flags(flags)
 end
 
 -- return module

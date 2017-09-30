@@ -345,6 +345,29 @@ function builder:_addflags_from_language(flags, target, getters)
     end
 end
 
+-- preprocess flags
+function builder:_preprocess_flags(flags)
+
+    -- remove repeat
+    flags = table.unique(flags)
+
+    -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
+    local results = {}
+    for _, flag in ipairs(flags) do
+        flag = flag:trim()
+        if #flag > 0 then
+            if flag:find(" ", 1, true) then
+                table.join2(results, os.argv(flag))
+            else
+                table.insert(results, flag)
+            end
+        end
+    end
+
+    -- get it
+    return results 
+end
+
 -- get tool name
 function builder:name()
     return self:_tool():name()

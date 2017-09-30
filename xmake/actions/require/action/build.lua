@@ -31,8 +31,32 @@ import("filter")
 -- build for xmake file
 function _build_for_xmakefile(package, buildfile)
 
+    -- init argv
+    local plat = config.plat()
+    local argv = {"f", "-c", "-p", plat, "-a", config.arch(), "-m", config.mode()}
+
+    -- init config keys
+    local keys =
+    {
+        android  = {"ndk", "ndk_sdkver"},
+        linux    = {"sdk", "cross", "toolchains"},
+        cross    = {"sdk", "cross", "toolchains"},
+        mingw    = {"sdk", "cross", "toolchains"},
+        macosx   = {"xcode_dir", "xcode_sdkver"},
+        iphoneos = {"xcode_dir", "xcode_sdkver"},
+        windows  = {"vs"}
+    }
+
+    -- inherit some configs 
+    for _, key in ipairs(keys[plat]) do
+        local val = config.get(key)
+        if val ~= nil then
+            table.insert(argv, "--" .. key .. "=" .. tostring(val))
+        end
+    end
+
     -- configure it first
-    os.vrun("xmake f -p $(plat) -a $(arch) -m $(mode) -c")
+    os.vrunv("xmake", argv)
 
     -- build it
     os.vrun("xmake")
