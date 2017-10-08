@@ -447,7 +447,7 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
             function (ok, warnings)
 
                 -- print some warnings
-                if warnings and #warnings > 0 and option.get("verbose") then
+                if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning")) then
                     cprint("${yellow}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end

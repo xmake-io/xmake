@@ -22,6 +22,7 @@
 * Update project templates with tbox
 * Improve `lib.detect.find_program` interface
 * Enable colors output for windows cmd
+* Add `-w|--warning` arguments to enable the warnings output
 
 ### Bugs fixed
 
@@ -387,6 +388,7 @@
 * 更新tbox工程模板
 * 改进`lib.detect.find_program`模块接口
 * 为windows cmd终端增加彩色输出
+* 增加`-w|--warning`参数来启用实时警告输出
 
 ### Bugs修复
 

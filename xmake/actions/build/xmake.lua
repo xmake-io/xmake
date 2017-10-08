@@ -48,6 +48,7 @@ task("build")
 
                 ,   {}
                 ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously."         }
+                ,   {'w', "warning",    "k",  false,        "Enable the warnings output."                                   }
                
                 ,   {}
                 ,   {nil, "target",     "v",  nil,          "Build the given target."                                       } 
