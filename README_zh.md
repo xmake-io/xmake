@@ -154,7 +154,7 @@ $ xmake run -d console
 
 ## IDE插件
 
-* [xmake-vscode](https://github.com/tboox/xmake-vscode): [![xmake-vscode](https://img.shields.io/vscode-marketplace/v/tboox.xmake-vscode.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
+* [![xmake-vscode](https://img.shields.io/vscode-marketplace/v/tboox.xmake-vscode.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
 
 ## 简单例子
 

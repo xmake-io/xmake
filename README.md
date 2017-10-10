@@ -148,7 +148,7 @@ Please download and install from the plugins repository [xmake-plugins](https://
 
 ## IDE Integration
 
-* [xmake-vscode](https://github.com/tboox/xmake-vscode): [![xmake-vscode](https://img.shields.io/vscode-marketplace/v/tboox.xmake-vscode.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
+* [![xmake-vscode](https://img.shields.io/vscode-marketplace/v/tboox.xmake-vscode.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
 
 ## Examples
 
