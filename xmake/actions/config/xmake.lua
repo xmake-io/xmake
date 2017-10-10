@@ -79,9 +79,12 @@ task("config")
                                                                 -- make description
                                                                 local description = {}
                                                                 for i, plat in ipairs(platform.plats()) do
-                                                                    description[i] = "    - " .. plat .. ":"
-                                                                    for _, arch in ipairs(platform.archs(plat)) do
-                                                                        description[i] = description[i] .. " " .. arch
+                                                                    local archs = platform.archs(plat)
+                                                                    if archs then
+                                                                        description[i] = "    - " .. plat .. ":"
+                                                                        for _, arch in ipairs(archs) do
+                                                                            description[i] = description[i] .. " " .. arch
+                                                                        end
                                                                     end
                                                                 end
 

@@ -52,13 +52,7 @@ end
 
 -- get the all architectures for the given platform
 function sandbox_core_platform.archs(plat)
-
-    -- get it 
-    local archs = platform.archs(plat)
-    assert(archs)
-
-    -- ok
-    return archs
+    return platform.archs(plat)
 end
 
 -- get the current platform configure
