@@ -256,7 +256,7 @@ function main()
     -- translate the build directory
     local buildir = config.get("buildir")
     if buildir and path.is_absolute(buildir) then
-        config.set("buildir", path.relative(buildir, project.directory()))
+        config.set("buildir", path.relative(buildir, project.directory()), {readonly = true, force = true})
     end
 
     -- check target
