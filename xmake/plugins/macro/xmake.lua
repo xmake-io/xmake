@@ -73,7 +73,8 @@ task("macro")
                 ,   {nil, "name",       "v",  ".",  "Set the macro name."
                                                 ,   ".e.g"
                                                 ,   "   Run the given macro:     xmake macro test"        
-                                                ,   "   Run the anonymous macro: xmake macro ."     }
+                                                ,   "   Run the anonymous macro: xmake macro ."     
+                                                ,   "   Run the last command:    xmake macro .."    }
                 ,   {nil, "arguments",  "vs", nil,  "Set the macro arguments."                      }
                 }
             }

@@ -8,6 +8,7 @@
 * Add `xmake -y/--yes` to confirm the user input by default
 * Add `xmake l package.manager.install xxx` to install software package
 * Add xmake plugin for vscode editor, [xmake-vscode](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
+* Add `xmake macro ..` to run the last command
 
 ### Changes
 
@@ -375,6 +376,7 @@
 * 添加`xmake -y/--yes`去确认用户输入
 * 添加`xmake l package.manager.install xxx`模块，进行跨平台一致性安装软件包
 * 添加vscode编辑器插件支持，更加方便的使用xmake，[xmake-vscode](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
+* 添加`xmake macro ..`快速运行最近一次命令
 
 ### 改进
 

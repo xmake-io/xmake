@@ -288,16 +288,48 @@ end
 -- run macro
 function _run(macroname)
 
+    -- run last command?
+    if macroname == ".." then
+
+        -- enter local history    
+        history.enter("local.history")
+
+        -- load the history: cmdlines
+        local cmdlines = history.load("cmdlines")
+
+        -- get the last command
+        local lastcmd = nil
+        if cmdlines then
+            local total = #cmdlines
+            local index = total
+            while index ~= 0 do
+
+                -- ignore "xmake m .." and "xmake macro .."
+                local cmdline = cmdlines[index]
+                if not cmdline:startswith("__macro_") and not cmdline:find("xmake%s+macro%s*") and not cmdline:find("xmake%s+m%s*") then
+                    lastcmd = cmdline
+                    break
+                end
+
+                -- the previous line
+                index = index - 1
+            end
+        end
+
+        -- run the last command
+        if lastcmd then
+            os.exec(lastcmd) 
+        end
+        return
+    end
+
     -- is anonymous?
     if macroname == '.' then
         macroname = "anonymous"
     end
 
-    -- load macro
-    local macro = import(macroname, {rootdir = _directory(macroname)})
-
     -- run macro
-    macro.main(option.get("arguments") or {})
+    import(macroname, {rootdir = _directory(macroname), anonymous = true})(option.get("arguments") or {})
 end
 
 -- main
