@@ -2,7 +2,7 @@
 # PKGBuild Create By: lumpyzhu <lumpy.zhu@gmail.com>
 
 pkgname=xmake
-pkgver=2.1.6
+pkgver=2.1.7
 pkgrel=1
 pkgdesc="A make-like build utility based on Lua"
 arch=('i686' 'x86_64')
@@ -10,7 +10,7 @@ url="https://github.com/tboox/xmake"
 license=('Apache')
 makedepends=()
 source=("$pkgname.zip::https://github.com/tboox/xmake/archive/v${pkgver}.zip")
-sha256sums=('48409388e05a1f40bd1fc500c9ee775a45fc36044a8c25d26f18a55f44e4d8c4')
+sha256sums=('c25436672668df3f8db6615fb97b7cd94c47fa9267a774265897ae318837c41f')
 
 build() {
     cd "$srcdir/${pkgname}-${pkgver}"
