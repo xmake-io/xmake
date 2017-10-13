@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.7
+
 ### New features
 
 * Add `add_imports` to bulk import modules for the target, option and package script
@@ -369,6 +371,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.7
 
 ### 新特性
 
