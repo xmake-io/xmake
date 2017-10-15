@@ -30,6 +30,7 @@ local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
 local table  = require("base/table")
+local log    = require("base/log")
 
 -- print string with newline
 function utils._print(...)
@@ -70,8 +71,14 @@ function utils.print(format, ...)
     -- check
     assert(format)
 
+    -- init message
+    local message = string.tryformat(format, ...)
+
     -- trace
-    utils._print(string.tryformat(format, ...))
+    utils._print(message)
+
+    -- write to the log file
+    log.printv(message)
 end
 
 -- print format string without newline
@@ -80,8 +87,14 @@ function utils.printf(format, ...)
     -- check
     assert(format)
 
+    -- init message
+    local message = string.tryformat(format, ...)
+
     -- trace
-    utils._iowrite(string.tryformat(format, ...))
+    utils._iowrite(message)
+
+    -- write to the log file
+    log.write(message)
 end
 
 -- print format string and colors with newline
@@ -90,8 +103,16 @@ function utils.cprint(format, ...)
     -- check
     assert(format)
 
+    -- init message
+    local message = string.tryformat(format, ...)
+
     -- trace
-    utils._print(colors.translate(string.tryformat(format, ...)))
+    utils._print(colors.translate(message))
+
+    -- write to the log file
+    if log.file() then
+        log.printv(colors.ignore(message))
+    end
 end
 
 -- print format string and colors without newline
@@ -100,8 +121,16 @@ function utils.cprintf(format, ...)
     -- check
     assert(format)
 
+    -- init message
+    local message = string.tryformat(format, ...)
+
     -- trace
-    utils._iowrite(colors.translate(string.tryformat(format, ...)))
+    utils._iowrite(colors.translate(message))
+
+    -- write to the log file
+    if log.file() then
+        log.write(colors.ignore(message))
+    end
 end
 
 -- the verbose function
@@ -109,9 +138,7 @@ function utils.verbose(format, ...)
 
     -- enable verbose?
     if option.get("verbose") and format ~= nil then
-        
-        -- trace
-        utils._print(string.tryformat(format, ...))
+        utils.print(format, ...)
     end
 end
 

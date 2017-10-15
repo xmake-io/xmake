@@ -267,5 +267,17 @@ function colors.translate(str, force)
     return str
 end
 
+-- ignore all colors
+function colors.ignore(str)
+
+    -- check string
+    if not str then
+        return nil
+    end
+
+    -- ignore it
+    return (string.gsub(str, "(%${(.-)})", ""))
+end
+
 -- return module
 return colors

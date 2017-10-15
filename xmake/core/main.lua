@@ -27,6 +27,7 @@ local main = main or {}
 
 -- load modules
 local os            = require("base/os")
+local log           = require("base/log")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
@@ -246,6 +247,9 @@ Or you can add `--root` option to allow run as root temporarily.
     if option.get("profile") then
         profiler:stop()
     end
+
+    -- close log
+    log.close()
 
     -- ok
     return 0

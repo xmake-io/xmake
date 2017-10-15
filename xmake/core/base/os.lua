@@ -27,6 +27,7 @@ local os = os or {}
 
 -- load modules
 local io        = require("base/io")
+local log       = require("base/log")
 local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")

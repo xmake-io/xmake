@@ -27,6 +27,7 @@ local io        = require("base/io")
 local utils     = require("base/utils")
 local colors    = require("base/colors")
 local option    = require("base/option")
+local log       = require("base/log")
 local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
@@ -57,6 +58,9 @@ function sandbox_utils._print(...)
 
     -- print multi-variables with raw lua action
     utils._print(unpack(args))
+
+    -- write to the log file
+    log.printv(unpack(args))
 end
 
 -- print format string with newline
@@ -72,8 +76,14 @@ function sandbox_utils.print(format, ...)
         try
         {
             function ()
-                -- attempt to print format string first
-                utils._print(vformat(format, unpack(args)))
+                -- attempt to format message
+                local message = vformat(format, unpack(args))
+
+                -- trace 
+                utils._print(message)
+
+                -- write to the log file
+                log.printv(message)
             end,
             catch 
             {
@@ -92,17 +102,45 @@ end
 
 -- print format string and the builtin variables without newline
 function sandbox_utils.printf(format, ...)
-    utils._iowrite(vformat(format, ...))
+
+    -- init message
+    local message = vformat(format, ...)
+
+    -- trace
+    utils._iowrite(message)
+
+    -- write log to the log file
+    log.write(message)
 end
 
 -- print format string, the builtin variables and colors with newline
 function sandbox_utils.cprint(format, ...)
-    utils._print(colors.translate(vformat(format, ...)))
+    
+    -- init message
+    local message = vformat(format, ...)
+
+    -- trace
+    utils._print(colors.translate(message))
+
+    -- write log to the log file
+    if log.file() then
+        log.printv(colors.ignore(message))
+    end
 end
 
 -- print format string, the builtin variables and colors without newline
 function sandbox_utils.cprintf(format, ...)
-    utils._iowrite(colors.translate(vformat(format, ...)))
+
+    -- init message
+    local message = vformat(format, ...)
+
+    -- trace
+    utils._iowrite(colors.translate(message))
+
+    -- write log to the log file
+    if log.file() then
+        log.write(colors.ignore(message))
+    end
 end
 
 -- print() if enable verbose

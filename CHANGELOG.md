@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add `XMAKE_LOGFILE` environment variable to dump the output info to file
+
 ## v2.1.7
 
 ### New features
@@ -371,6 +375,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加`XMAKE_LOGFILE`环境变量，启用输出到日志文件
 
 ## v2.1.7
 

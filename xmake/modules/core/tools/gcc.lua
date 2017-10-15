@@ -439,7 +439,7 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
                 end
 
                 -- raise compiling errors
-                os.raise(errors)
+                raise(errors)
             end
         },
         finally
