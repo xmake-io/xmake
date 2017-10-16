@@ -649,6 +649,9 @@ end
 --
 function os.raise(msg, ...)
 
+    -- flush log
+    log.flush()
+
     -- raise it
     if msg then
         error(string.tryformat(msg, ...))

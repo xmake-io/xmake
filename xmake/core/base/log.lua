@@ -27,9 +27,27 @@ local log = log or {}
 
 -- get the log file
 function log.file()
+
+    -- get the output file 
     if log._FILE == nil then
         local outputfile = log.outputfile()
-        if outputfile and os.isfile(outputfile) then
+        if outputfile then
+
+            -- get directory
+            local i = outputfile:find_last("[/\\]")
+            if i then
+                if i > 1 then i = i - 1 end
+                dir = outputfile:sub(1, i)
+            else
+                dir = "."
+            end
+
+            -- ensure the directory
+            if not os.isdir(dir) then
+                os.mkdir(dir) 
+            end
+
+            -- open the log file
             log._FILE = io.open(outputfile, 'w')
         end
         log._FILE = log._FILE or false
@@ -49,7 +67,7 @@ end
 function log.flush()
     local file = log.file()
     if file then
-        file:flush()
+        io.flush(file)
     end
 end
 
