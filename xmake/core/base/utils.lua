@@ -147,9 +147,8 @@ function utils.verror(format, ...)
 
     -- enable verbose?
     if option.get("verbose") and format ~= nil then
-        
-        -- trace
         utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
+        log.flush()
     end
 end
 
@@ -159,6 +158,7 @@ function utils.error(format, ...)
     -- trace
     if format ~= nil then
         utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
+        log.flush()
     end
 end
 
@@ -180,6 +180,9 @@ function utils.warning(format, ...)
         utils.cprint(msg)
         warnings[msg] = true
     end
+
+    -- flush
+    log.flush()
 end
 
 -- ifelse, a? b : c

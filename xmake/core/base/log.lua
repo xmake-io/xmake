@@ -48,7 +48,7 @@ function log.file()
             end
 
             -- open the log file
-            log._FILE = io.open(outputfile, 'w')
+            log._FILE = io.open(outputfile, 'w+')
         end
         log._FILE = log._FILE or false
     end
