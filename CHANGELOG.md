@@ -5,6 +5,7 @@
 ### New features
 
 * Add `XMAKE_LOGFILE` environment variable to dump the output info to file
+* Support tinyc compiler
 
 ## v2.1.7
 
@@ -379,6 +380,7 @@
 ### 新特性
 
 * 添加`XMAKE_LOGFILE`环境变量，启用输出到日志文件
+* 添加对tinyc编译器的支持
 
 ## v2.1.7
 
