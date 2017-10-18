@@ -1,13 +1,13 @@
 -- define package
 package("mbedtls")
     set_urls("https://github.com/ARMmbed/mbedtls.git")
-    add_deps("https://github.com/glennrp/libpng.git@libpng >=1.6.28")
+    add_deps("https://github.com/glennrp/libpng.git@libpng >=1.6.28", {optional = true})
 package_end()
 
 -- group packages
 package("zlib-mbedtls")
     add_deps("zlib >=1.2.11", {system = false})
-    add_deps("mbedtls")
+    add_deps("mbedtls", {optional = true})
 package_end()
 
 -- requires

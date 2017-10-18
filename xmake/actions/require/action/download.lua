@@ -194,7 +194,7 @@ function main(package)
                     end
 
                     -- failed? break it
-                    if idx == #urls then
+                    if idx == #urls and not package:requireinfo().optional then
                         raise("download failed!")
                     end
                 end

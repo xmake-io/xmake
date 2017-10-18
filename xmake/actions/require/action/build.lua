@@ -112,6 +112,15 @@ function _build_for_cmakelists(package, buildfile)
     --
     os.vrun("cmake -DCMAKE_INSTALL_PREFIX=%s .", path.absolute(".prefix"))
 
+    -- build on windows
+    if os.host() == "windows" then
+        local slnfiles = os.files("*.sln")
+        if slnfiles and #slnfiles > 0 then
+            _build_for_sln(package, slnfiles[1])
+            return 
+        end
+    end
+
     -- build it
     os.vrun("make")
 

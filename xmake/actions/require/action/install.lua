@@ -277,7 +277,9 @@ function main(package)
                 cprint("${red}failed")
 
                 -- failed
-                raise("install failed!")
+                if not package:requireinfo().optional then
+                    raise("install failed!")
+                end
             end
         }
     }
