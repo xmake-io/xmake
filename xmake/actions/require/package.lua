@@ -43,7 +43,7 @@ import("repository")
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1") 
 -- add_requires("tboox.tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
 --
-function _parse_require(require_str, requires_extra)
+function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get it from cache first
     local requires = _g._REQUIRES or {}
@@ -108,6 +108,7 @@ function _parse_require(require_str, requires_extra)
 
     -- init required item
     local required = {}
+    parentinfo = parentinfo or {}
     required.packagename = packagename
     required.requireinfo =
     {
@@ -119,7 +120,7 @@ function _parse_require(require_str, requires_extra)
         system           = require_extra.system,
         option           = require_extra.option,
         default          = require_extra.default,
-        optional         = require_extra.optional
+        optional         = parentinfo.optional or require_extra.optional -- inherit parentinfo.optional
     }
 
     -- save this required item to cache
@@ -255,7 +256,7 @@ function _sort_packagedeps(package)
 end
 
 -- load all required packages
-function _load_packages(requires, requires_extra)
+function _load_packages(requires, requires_extra, parentinfo)
 
     -- no requires?
     if not requires or #requires == 0 then
@@ -264,7 +265,7 @@ function _load_packages(requires, requires_extra)
 
     -- load packages
     local packages = {}
-    for packagename, requireinfo in pairs(load_requires(requires, requires_extra)) do
+    for packagename, requireinfo in pairs(load_requires(requires, requires_extra, parentinfo)) do
 
         -- attempt to get project option about this package
         local packageopt = project.option(packagename)
@@ -280,7 +281,7 @@ function _load_packages(requires, requires_extra)
                 local deps = package:get("deps")
                 if deps then
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, package:get("__extra_deps"))) do
+                    for _, dep in ipairs(_load_packages(deps, package:get("__extra_deps"), requireinfo)) do
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
                     end
@@ -439,14 +440,14 @@ function cachedir()
 end
 
 -- load requires
-function load_requires(requires, requires_extra)
+function load_requires(requires, requires_extra, parentinfo)
 
     -- parse requires
     local requireinfos = {}
     for _, require_str in ipairs(requires) do
 
         -- parse require info
-        local packagename, requireinfo = _parse_require(require_str, requires_extra)
+        local packagename, requireinfo = _parse_require(require_str, requires_extra, parentinfo)
 
         -- save this required package
         requireinfos[packagename] = requireinfo
