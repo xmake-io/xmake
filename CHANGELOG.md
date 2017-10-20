@@ -7,6 +7,10 @@
 * Add `XMAKE_LOGFILE` environment variable to dump the output info to file
 * Support tinyc compiler
 
+### Bugs fixed
+
+* [#145](https://github.com/tboox/xmake/issues/145): Fix the current directory when running target
+
 ## v2.1.7
 
 ### New features
@@ -381,6 +385,10 @@
 
 * 添加`XMAKE_LOGFILE`环境变量，启用输出到日志文件
 * 添加对tinyc编译器的支持
+
+### Bugs修复
+
+* [#145](https://github.com/tboox/xmake/issues/145): 修复运行target的当前目录环境
 
 ## v2.1.7
 

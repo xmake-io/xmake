@@ -1,7 +1,7 @@
 -- define package
 package("mbedtls")
     set_urls("https://github.com/ARMmbed/mbedtls.git")
-    add_deps("https://github.com/glennrp/libpng.git@libpng >=1.6.28", {optional = true})
+    add_deps("https://github.com/glennrp/libpng.git@libpng >=1.6.28")
 package_end()
 
 -- group packages

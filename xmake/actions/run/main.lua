@@ -37,16 +37,25 @@ function _on_run_target(target)
     -- get kind
     if target:targetkind() == "binary" then
 
+        -- get the absolute target file path
+        local targetfile = path.absolute(target:targetfile())
+
+        -- enter the target directory
+        local oldir = os.cd(path.directory(target:targetfile()))
+
         -- debugging?
         if option.get("debug") then
 
             -- debug it
-            debugger.run(target:targetfile(), option.get("arguments"))
+            debugger.run(targetfile, option.get("arguments"))
         else
 
             -- run it
-            os.execv(target:targetfile(), option.get("arguments"))
+            os.execv(targetfile, option.get("arguments"))
         end
+
+        -- restore the previous directory
+        os.cd(oldir)
     end
 end
 
