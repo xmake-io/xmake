@@ -355,6 +355,20 @@ function sandbox_os.execv(program, argv)
     -- make program
     program = vformat(program)
 
+    -- flush io buffer first for fixing redirect io output order
+    --
+    -- .e.g 
+    --
+    -- xmake run > /tmp/a
+    --   print("xxx1")
+    --   os.exec("echo xxx2")
+    --
+    -- cat /tmp/a
+    --   xxx2
+    --   xxx1
+    -- 
+    io.flush()
+
     -- run it
     local ok = os.execv(program, argv)
     if ok ~= 0 then
