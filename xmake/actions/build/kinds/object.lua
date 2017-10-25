@@ -98,6 +98,9 @@ function _build_from_object(target, sourcefile, objectfile, percent)
         print("cp %s %s", sourcefile, objectfile)
     end
 
+    -- flush io buffer to update progress info
+    io.flush()
+
     -- insert this object file
     os.cp(sourcefile, objectfile)
 end
@@ -119,6 +122,9 @@ function _build_from_static(target, sourcefile, objectfile, percent)
     if verbose then
         print("ex %s %s", sourcefile, objectfile)
     end
+
+    -- flush io buffer to update progress info
+    io.flush()
 
     -- extract the static library to object directory
     extractor.extract(sourcefile, path.directory(objectfile))
@@ -182,6 +188,9 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     if verbose then
         print(compiler_instance:compcmd(sourcefile, objectfile, {compflags = compflags}))
     end
+
+    -- flush io buffer to update progress info
+    io.flush()
 
     -- complie it 
     assert(compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, compflags = compflags}))

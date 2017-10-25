@@ -151,6 +151,9 @@ function option:_check()
     if not ok then
         os.raise(errors)
     end
+
+    -- flush io buffer to update progress info
+    io.flush()
 end
 
 -- attempt to check option 

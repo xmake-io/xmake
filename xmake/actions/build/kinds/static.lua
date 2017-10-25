@@ -126,6 +126,9 @@ function _build_from_objects(target, buildinfo)
         print(linker_instance:linkcmd(objectfiles, targetfile, {linkflags = linkflags}))
     end
 
+    -- flush io buffer to update progress info
+    io.flush()
+
     -- link it
     assert(linker_instance:link(objectfiles, targetfile, {linkflags = linkflags}))
 
@@ -154,6 +157,9 @@ function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     if verbose then
         print(compiler.buildcmd(sourcebatch.sourcefiles, targetfile, {target = target, sourcekind = sourcekind}))
     end
+
+    -- flush io buffer to update progress info
+    io.flush()
 
     -- build it
     compiler.build(sourcebatch.sourcefiles, targetfile, {target = target, sourcekind = sourcekind})

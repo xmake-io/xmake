@@ -652,6 +652,9 @@ function os.raise(msg, ...)
     -- flush log
     log.flush()
 
+    -- flush io buffer 
+    io.flush()
+
     -- raise it
     if msg then
         error(string.tryformat(msg, ...))
