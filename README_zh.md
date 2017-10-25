@@ -152,9 +152,10 @@ $ xmake run -d console
 
 请到插件仓库进行下载安装: [xmake-plugins](https://github.com/tboox/xmake-plugins).
 
-## IDE插件
+## IDE和编辑器插件
 
-* [![xmake-vscode](https://img.shields.io/vscode-marketplace/v/tboox.xmake-vscode.svg?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
+* [xmake-vscode](https://github.com/tboox/xmake-vscode)
+* [xmake-sublime](https://github.com/tboox/xmake-sublime)
 
 ## 简单例子
 
