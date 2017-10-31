@@ -205,7 +205,7 @@ end
 --
 -- "${beer}hello${beer}world"
 --
-function colors.translate(str, force)
+function colors.translate(str)
 
     -- check string
     if not str then
@@ -217,11 +217,6 @@ function colors.translate(str, force)
 
     -- translate it
     str = string.gsub(str, "(%${(.-)})", function(_, word) 
-
-        -- ignore all colors if no tty (redirect ..)
-        if not force and not io.isatty() then
-            return ""
-        end
 
         -- not supported? ignore it
         if not colors.has256() and not colors.truecolor() then
