@@ -7,6 +7,10 @@
 * Add `XMAKE_LOGFILE` environment variable to dump the output info to file
 * Support tinyc compiler
 
+### Changes
+
+* Improve support for IDE/editor plugins (.e.g vscode, sublime, intellij-idea)
+
 ### Bugs fixed
 
 * [#145](https://github.com/tboox/xmake/issues/145): Fix the current directory when running target
@@ -385,6 +389,10 @@
 
 * 添加`XMAKE_LOGFILE`环境变量，启用输出到日志文件
 * 添加对tinyc编译器的支持
+
+### 改进
+
+* 改进对IDE和编辑器插件的集成支持，例如：Visual Studio Code, Sublime Text 以及 IntelliJ IDEA
 
 ### Bugs修复
 
