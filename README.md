@@ -150,6 +150,8 @@ Please download and install from the plugins repository [xmake-plugins](https://
 
 * [xmake-vscode](https://github.com/tboox/xmake-vscode)
 * [xmake-sublime](https://github.com/tboox/xmake-sublime)
+* [xmake-idea](https://github.com/tboox/xmake-idea)
+* [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
 ## Examples
 
