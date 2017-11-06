@@ -145,6 +145,11 @@ function make()
         file:close()
     end
 
+    -- generate .gitignore if not exists
+    if not os.isfile(".gitignore") then
+        os.cp("$(programdir)/scripts/gitignore", ".gitignore")
+    end
+
     -- trace
     cprint("${bright}xmake.lua generated, scan ok!${clear}${ok_hand}")
 end
