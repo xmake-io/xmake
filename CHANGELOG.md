@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.8
+
 ### New features
 
 * Add `XMAKE_LOGFILE` environment variable to dump the output info to file
@@ -387,6 +389,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.8
 
 ### 新特性
 
