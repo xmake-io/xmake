@@ -1,3 +1,6 @@
+-- set name
+set_name("console")
+
 -- set description
 set_description("The Console Program")
 

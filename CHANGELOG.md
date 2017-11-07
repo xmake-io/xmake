@@ -11,6 +11,7 @@
 
 * Improve support for IDE/editor plugins (.e.g vscode, sublime, intellij-idea)
 * Add `.gitignore` file when creating new projects
+* Improve to create template project
 
 ### Bugs fixed
 
@@ -395,6 +396,7 @@
 
 * 改进对IDE和编辑器插件的集成支持，例如：Visual Studio Code, Sublime Text 以及 IntelliJ IDEA
 * 当生成新工程的时候，自动生成一个`.gitignore`文件，忽略一些xmake的临时文件和目录
+* 改进创建模板工程，使用模板名代替模板id作为参数
 
 ### Bugs修复
 

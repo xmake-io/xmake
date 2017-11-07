@@ -1,3 +1,6 @@
+-- set name
+set_name("console_tbox")
+
 -- set description
 set_description("The Console Program (tbox)")
 

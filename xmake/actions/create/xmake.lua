@@ -60,7 +60,7 @@ task("create")
                                                                 -- get it
                                                                 return description
                                                             end                                                             }
-                ,   {'t', "template",   "kv", "1",          "Select the project template id of the given language."
+                ,   {'t', "template",   "kv", "console",    "Select the project template id or name of the given language."
 
                                                             -- show the description of all templates
                                                           , function ()
@@ -69,12 +69,16 @@ task("create")
                                                                 import("core.project.template")
 
                                                                 -- make description
+                                                                local templates = {}
                                                                 local description = {}
-                                                                for _, language in ipairs(template.languages()) do
-                                                                    table.insert(description, format("    - language: %s", language))
-                                                                    for i, t in ipairs(template.templates(language)) do
-                                                                        table.insert(description, format("      %d. %s", i, ifelse(t.description, t.description, "The Unknown Project")))
+                                                                for _, l in ipairs(template.languages()) do
+                                                                    for _, t in ipairs(template.templates(l)) do
+                                                                        templates[t.name] = templates[t.name] or {}
+                                                                        table.insert(templates[t.name], l)
                                                                     end
+                                                                end
+                                                                for name, languages in pairs(templates) do
+                                                                    table.insert(description, "    - " .. name .. ": " .. table.concat(languages, ", "))
                                                                 end
 
                                                                 -- get it

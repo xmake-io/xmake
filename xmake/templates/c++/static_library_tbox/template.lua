@@ -1,3 +1,6 @@
+-- set name
+set_name("static_tbox")
+
 -- set description
 set_description("The Static Library (tbox)")
 

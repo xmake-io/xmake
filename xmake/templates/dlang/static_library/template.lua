@@ -1,3 +1,6 @@
+-- set name
+set_name("static")
+
 -- set description
 set_description("The Static Library")
 

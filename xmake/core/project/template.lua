@@ -55,7 +55,8 @@ function template._interpreter()
         values =
         {
             -- set_xxx
-            "set_description"
+            "set_name"
+        ,   "set_description"
         ,   "set_projectdir"
             -- add_xxx
         ,   "add_macrofiles"
@@ -178,10 +179,6 @@ function template.create(language, templateid, targetname)
         return false, "no template id!"
     end
 
-    templateid = tonumber(templateid)
-    if type(templateid) ~= "number" then
-        return false, "invalid template id!"
-    end
 
     -- get interpreter
     local interp = template._interpreter()
@@ -214,16 +211,30 @@ function template.create(language, templateid, targetname)
     -- load all templates for the given language
     local templates = template.templates(language)
 
-    -- load the template module
+    -- get the given template module
     local module = nil
-    if templates then module = templates[templateid] end
+    if templates then 
+        local id = tonumber(templateid)
+        if type(id) == "number" then
+            module = templates[id] 
+        else
+            for _, t in ipairs(templates) do
+                if t.name == templateid then
+                    module = t
+                    break
+                end
+            end
+        end
+    end
+
+    -- load the template module
     if not module then
-        return false, string.format("invalid template id: %d!", templateid)
+        return false, string.format("invalid template id: %s!", templateid)
     end
 
     -- enter the template directory
     if not module._DIRECTORY or not os.cd(module._DIRECTORY) then
-        return false, string.format("not found template id: %d!", templateid)
+        return false, string.format("not found template id: %s!", templateid)
     end
 
     -- check the template project

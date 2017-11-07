@@ -1,3 +1,6 @@
+-- set name
+set_name("shared")
+
 -- set description
 set_description("The Shared Library")
 
