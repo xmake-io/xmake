@@ -116,7 +116,7 @@ function check_arch(config, default)
 end
 
 -- check the xcode application directory
-function check_xcode_dir(config)
+function check_xcode_dir(config, optional)
 
     -- get the xcode directory
     local xcode_dir = config.get("xcode_dir")
@@ -131,7 +131,9 @@ function check_xcode_dir(config)
 
             -- trace
             cprint("checking for the Xcode application directory ... ${green}%s", xcode_dir)
-        else
+
+        elseif not optional then
+
             -- failed
             cprint("checking for the Xcode application directory ... ${red}no")
             cprint("${bright red}please run:")
@@ -143,10 +145,10 @@ function check_xcode_dir(config)
 end
 
 -- check the xcode sdk version
-function check_xcode_sdkver(config)
+function check_xcode_sdkver(config, optional)
 
     -- get the xcode sdk version
-    local xcode_sdkver  = config.get("xcode_sdkver")
+    local xcode_sdkver = config.get("xcode_sdkver")
     if not xcode_sdkver then
 
         -- check ok? update it
@@ -158,7 +160,9 @@ function check_xcode_sdkver(config)
 
             -- trace
             cprint("checking for the Xcode SDK version for %s ... ${green}%s", config.get("plat"), xcode_sdkver)
-        else
+
+        elseif not optional then
+
             -- failed
             cprint("checking for the Xcode SDK version for %s ... ${red}no", config.get("plat"))
             cprint("${bright red}please run:")

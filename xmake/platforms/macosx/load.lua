@@ -35,23 +35,48 @@ function main()
     -- init flags for the xcode sdk directory
     local xcode_dir     = config.get("xcode_dir")
     local xcode_sdkver  = config.get("xcode_sdkver")
-    local xcode_sdkdir  = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
+    local xcode_sdkdir  = nil
+    if xcode_dir and xcode_sdkver then
+        xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
+    end
 
     -- init flags for c/c++
-    _g.cxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot " .. xcode_sdkdir, "-I/usr/local/include", "-I/usr/include" }
-    _g.ldflags = { "-arch " .. arch, "-mmacosx-version-min=" .. target_minver, "-isysroot " .. xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
-    _g.shflags = { "-arch " .. arch, "-mmacosx-version-min=" .. target_minver, "-isysroot " .. xcode_sdkdir, "-L/usr/local/lib", "-L/usr/lib", "-stdlib=libc++", "-lz" }
+    _g.cxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0" }
+    _g.ldflags = { "-arch " .. arch }
+    if target_minver then
+        table.insert(_g.ldflags, "-mmacosx-version-min=" .. target_minver)
+    end
+    if xcode_sdkdir then
+        table.insert(_g.cxflags, "-isysroot " .. xcode_sdkdir)
+        table.insert(_g.ldflags, "-isysroot " .. xcode_sdkdir)
+    else
+        table.insert(_g.cxflags, "-I/usr/local/include")
+        table.insert(_g.cxflags, "-I/usr/include")
+        table.insert(_g.ldflags, "-L/usr/local/lib")
+        table.insert(_g.ldflags, "-L/usr/lib")
+    end
+    table.insert(_g.ldflags, "-stdlib=libc++")
+    table.insert(_g.ldflags, "-lz")
+    _g.shflags = table.copy(_g.ldflags)
 
     -- init flags for objc/c++ (with _g.ldflags and _g.shflags)
-    _g.mxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0", "-isysroot " .. xcode_sdkdir }
+    _g.mxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0" }
+    if xcode_sdkdir then
+        table.insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
+    end
 
     -- init flags for asm (with _g.ldflags and _g.shflags)
-    _g.asflags = { "-arch " .. arch, "-isysroot " .. xcode_sdkdir }
+    _g.asflags = { "-arch " .. arch }
+    if xcode_sdkdir then
+        table.insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
+    end
 
     -- init flags for swift
-    _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-shflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-ldflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+    if target_minver and xcode_sdkdir then
+        _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+        _g["sc-shflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+        _g["sc-ldflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+    end
 
     -- init flags for golang
     _g["gc-ldflags"] = {}

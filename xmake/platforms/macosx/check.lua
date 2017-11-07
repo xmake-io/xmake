@@ -130,8 +130,8 @@ function main(kind, toolkind)
     _g.config = 
     {
         checker.check_arch
-    ,   checker.check_xcode_dir
-    ,   checker.check_xcode_sdkver
+    ,   { checker.check_xcode_dir, true }
+    ,   { checker.check_xcode_sdkver, true }
     }
 
     -- init the check list of global
