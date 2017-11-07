@@ -742,6 +742,23 @@ function target:script(name, generic)
     return result
 end
 
+-- get the config header version
+function target:configversion()
+
+    -- get the config version and build version
+    local version = nil
+    local buildversion = nil
+    local configheader = self:get("config_header")
+    local configheader_extra = self:get("__extra_config_header")
+    if type(configheader_extra) == "table" then
+        version      = table.wrap(configheader_extra[configheader]).version
+        buildversion = table.wrap(configheader_extra[configheader]).buildversion
+    end
+
+    -- ok?
+    return version, buildversion
+end
+
 -- get the config header prefix
 function target:configprefix()
 

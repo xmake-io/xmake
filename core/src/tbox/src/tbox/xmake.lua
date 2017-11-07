@@ -8,7 +8,7 @@ target("tbox")
     add_defines("__tb_prefix__=\"tbox\"")
 
     -- set the auto-generated config.h
-    set_config_header("$(buildir)/tbox/tbox.config.h", {prefix = "TB_CONFIG"})
+    set_config_header("$(buildir)/tbox/tbox.config.h", {prefix = "TB_CONFIG", version = "1.6.2", build = "%Y%m%d%H%M"})
 
     -- add includes directory
     add_includedirs("$(buildir)")

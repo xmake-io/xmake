@@ -47,7 +47,10 @@ function _make_for_target(target)
     file:print("")
 
     -- make version
-    local version, version_build = project.version()
+    local version, version_build = target:configversion()
+    if not version then 
+        version, version_build = project.version()
+    end
     if version then
         file:print("// version")
         file:print("#define %s_VERSION \"%s\"", configprefix, version)
