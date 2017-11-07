@@ -15,6 +15,7 @@
 * Add `.gitignore` file when creating new projects
 * Improve to create template project
 * Improve to detect toolchains on macosx without xcode
+* Improve `set_config_header` to support `set_config_header("config", {version = "2.1.8", build = "%Y%m%d%H%M"})`
 
 ### Bugs fixed
 
@@ -403,6 +404,7 @@
 * 当生成新工程的时候，自动生成一个`.gitignore`文件，忽略一些xmake的临时文件和目录
 * 改进创建模板工程，使用模板名代替模板id作为参数
 * 改进macOS编译平台的探测，如果没有安装xcode也能够进行编译构建，如果有编译器的话
+* 改进`set_config_header`接口，支持局部版本号设置，优先于全局`set_version`，例如：`set_config_header("config", {version = "2.1.8", build = "%Y%m%d%H%M"})`
 
 ### Bugs修复
 
