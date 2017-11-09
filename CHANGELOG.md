@@ -2,6 +2,12 @@
 
 ## master (unreleased)
 
+## v2.1.9
+
+### Changes
+
+* Improve to configure cross-toolchains, add tool alias to support unknown tool name, .e.g `xmake f --cc=gcc@ccmips.exe`
+
 ## v2.1.8
 
 ### New features
@@ -390,6 +396,12 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.9
+
+### 改进
+
+* 改进交叉工具链配置，通过指定工具别名定向到已知的工具链来支持未知编译工具名配置, 例如: `xmake f --cc=gcc@ccmips.exe`
 
 ## v2.1.8
 

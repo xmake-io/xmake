@@ -243,9 +243,7 @@ function platform.tool(toolkind)
 
     -- attempt to get program from config first
     local program = config.get(toolkind)
-    if program then 
-        return program
-    else
+    if program == nil then 
         
         -- check it first
         local check = platform.get("check")
@@ -254,8 +252,21 @@ function platform.tool(toolkind)
         end
 
         -- get it again
-        return config.get(toolkind)
+        program = config.get(toolkind)
     end
+
+    -- contain toolname? parse it, .e.g 'gcc@xxxx.exe'
+    local toolname = nil
+    if program then
+        local pos = program:find('@', 1, true)
+        if pos then
+            toolname = program:sub(1, pos - 1)
+            program = program:sub(pos + 1)
+        end
+    end
+
+    -- ok
+    return program, toolname
 end
 
 -- get the all platforms

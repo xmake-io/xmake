@@ -191,7 +191,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
     -- trace
     if option.get("verbose") or opt.verbose then
         if result then
-            utils.cprint("checking for the %s ... ${green}%s", name, result)
+            utils.cprint("checking for the %s ... ${green}%s", name, utils.ifelse(name == result, "ok", result))
         else
             utils.cprint("checking for the %s ... ${red}no", name)
         end

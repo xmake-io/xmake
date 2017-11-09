@@ -109,8 +109,8 @@ function tool.load(kind)
         return tool._TOOLS[kind]
     end
 
-    -- get the tool program
-    local program = platform.tool(kind)
+    -- get the tool program and name
+    local program, toolname = platform.tool(kind)
     if not program then
         return nil, string.format("cannot get tool for %s", kind)
     end
@@ -119,7 +119,7 @@ function tool.load(kind)
     tool._find_toolname = tool._find_toolname or import("lib.detect.find_toolname")
 
     -- get the tool name from the program
-    local ok, name_or_errors = sandbox.load(tool._find_toolname, program)
+    local ok, name_or_errors = sandbox.load(tool._find_toolname, toolname or program, {program = program})
     if not ok then
         return nil, name_or_errors
     end
