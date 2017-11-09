@@ -68,6 +68,9 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
+    -- @note remove the previous archived file first to force recreating a new file
+    os.tryrm(targetfile)
+
     -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end

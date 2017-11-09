@@ -280,7 +280,7 @@ function table.wrap(object)
 end
 
 -- remove repeat from the given array
-function table.unique(array)
+function table.unique(array, barrier)
 
     -- remove repeat
     if type(array) == "table" then
@@ -292,6 +292,13 @@ function table.unique(array)
             local exists = {}
             local unique = {}
             for _, v in ipairs(array) do
+
+                -- exists barrier? clear the current existed items
+                if barrier and barrier(v) then
+                    exists = {}
+                end
+
+                -- add unique item
                 if type(v) == "string" then
                     if not exists[v] then
                         exists[v] = true

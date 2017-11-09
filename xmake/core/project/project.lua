@@ -248,6 +248,8 @@ function project.interpreter()
         ,   "target.set_objectdir"
             -- target.add_xxx
         ,   "target.add_files"
+            -- target.del_xxx
+        ,   "target.del_files"
         }
     ,   script =
         {

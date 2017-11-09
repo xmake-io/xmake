@@ -4,9 +4,17 @@
 
 ## v2.1.9
 
+### New features
+
+* Add `del_files()` api to delete files in the files list
+
 ### Changes
 
 * Improve to configure cross-toolchains, add tool alias to support unknown tool name, .e.g `xmake f --cc=gcc@ccmips.exe`
+
+### Bugs fixed
+
+* Fix complation dependence
 
 ## v2.1.8
 
@@ -399,9 +407,17 @@
 
 ## v2.1.9
 
+### 新特性
+
+* 添加`del_files()`接口去从已添加的文件列表中移除一些文件
+
 ### 改进
 
 * 改进交叉工具链配置，通过指定工具别名定向到已知的工具链来支持未知编译工具名配置, 例如: `xmake f --cc=gcc@ccmips.exe`
+
+## Bugs修复
+
+* 修复依赖修改编译和链接问题
 
 ## v2.1.8
 

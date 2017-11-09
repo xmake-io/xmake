@@ -31,6 +31,11 @@ import("object")
 -- is modified?
 function _is_modified(target, depfile, buildinfo, program, linkflags)
 
+    -- the target file not exists?
+    if not os.isfile(target:targetfile()) then
+        return true
+    end
+
     -- this target and it's deps are not modified?
     local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
     if modified then
@@ -56,7 +61,20 @@ function _is_modified(target, depfile, buildinfo, program, linkflags)
     end
 
     -- the flags has been modified?
-    return os.args(linkflags) ~= os.args(depinfo.flags)
+    if os.args(linkflags) ~= os.args(depinfo.flags) then
+        return true
+    end
+
+    -- the object files list has been modified?
+    local objectfiles = target:objectfiles()
+    if #(objectfiles or {}) ~= #(depinfo.objectfiles or {}) then
+        return true
+    end
+    for idx, objectfile in ipairs(depinfo.objectfiles) do
+        if objectfile ~= objectfiles[idx] then
+            return true
+        end
+    end
 end
 
 -- build target from objects
@@ -80,6 +98,12 @@ function _build_from_objects(target, buildinfo)
     if not modified then
         return
     end
+
+    -- mark this target as modified
+    buildinfo.modified[target:name()] = true
+
+    -- clear the previous dependent info first
+    io.save(depfile, {})
 
     -- make headers
     local srcheaders, dstheaders = target:headerfiles()
@@ -133,7 +157,7 @@ function _build_from_objects(target, buildinfo)
     assert(linker_instance:link(objectfiles, targetfile, {linkflags = linkflags}))
 
     -- save program and flags to the dependent file
-    io.save(depfile, {program = program, flags = linkflags})
+    io.save(depfile, {program = program, flags = linkflags, objectfiles = target:objectfiles()})
 end
 
 -- build target from sources

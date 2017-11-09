@@ -374,6 +374,13 @@ function target:sourcefiles()
     local sourcefiles = {}
     for _, file in ipairs(table.wrap(files)) do
 
+        -- mark as deleted files?
+        local deleted = false
+        if file:startswith("__del_") then
+            file = file:sub(7)
+            deleted = true
+        end
+
         -- normalize *.[o|obj] and [lib]*.[a|lib] filename
         for _, pattern in ipairs(patterns) do
             file, count = file:gsub(pattern[1], target.filename(pattern[2], pattern[3]))
@@ -386,7 +393,7 @@ function target:sourcefiles()
         -- match source files
         local results = os.match(file)
         if #results == 0 then
-            utils.warning("cannot match add_files(\"%s\")", file)
+            utils.warning("cannot match %s_files(\"%s\")", utils.ifelse(deleted, "del", "add"), file)
         end
 
         -- process source files
@@ -397,22 +404,28 @@ function target:sourcefiles()
                 sourcefile = path.relative(sourcefile, os.projectdir())
             end
 
-            -- save it
-            sourcefiles[i] = sourcefile
-            i = i + 1
+            -- add or delete it
+            if deleted then
+                sourcefiles[sourcefile] = nil
+            else
+                sourcefiles[sourcefile] = true
+            end
         end
     end
 
-    -- remove repeat files
-    sourcefiles = table.unique(sourcefiles)
+    -- make last source files
+    local sourcefiles_last = {}
+    for sourcefile, _ in pairs(sourcefiles) do
+        table.insert(sourcefiles_last, sourcefile)
+    end
 
     -- cache it
     if cache then
-        self._SOURCEFILES = sourcefiles
+        self._SOURCEFILES = sourcefiles_last
     end
 
     -- ok? modified?
-    return sourcefiles, not cache
+    return sourcefiles_last, not cache
 end
 
 -- get object file from source file

@@ -242,8 +242,8 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         local scope = scopes._CURRENT or root
         assert(scope)
 
-        -- set values? mark as "override"
-        if apiname and action ~= "add" then
+        -- set values (set, on, before, after ...)? mark as "override"
+        if apiname and (action ~= "add" or action ~= "del") then
             scope["__override_" .. apiname] = true
         end
 
@@ -446,9 +446,9 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
     local results = {}
     for name, values in pairs(scope) do
 
-        -- remove repeat first
+        -- remove repeat first for each slice with deleted item (__del_xxx)
         if remove_repeat and not table.is_dictionary(values) then
-            values = table.unique(values)
+            values = table.unique(values, function (v) return v:startswith("__del_") end)
         end
 
         -- filter values
@@ -1206,6 +1206,33 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
+-- register api for del_pathes
+function interpreter:api_register_del_pathes(scope_kind, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- translate pathes
+        local values = {...}
+        local pathes = self:_api_translate_pathes(values)
+
+        -- mark these pathes as deleted
+        local pathes_deleted = {}
+        for _, pathname in ipairs(pathes) do
+            table.insert(pathes_deleted, "__del_" .. pathname)
+        end
+
+        -- save values
+        scope[name] = table.join2(scope[name] or {}, pathes_deleted)
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "del", implementation, ...)
+end
+
 -- register api for add_pathes
 function interpreter:api_register_add_pathes(scope_kind, ...)
 
@@ -1317,7 +1344,7 @@ function interpreter:api_define(apis)
 
                 -- get function prefix
                 local prefix = nil
-                for _, name in ipairs({"set", "add", "on", "before", "after"}) do
+                for _, name in ipairs({"set", "add", "del", "on", "before", "after"}) do
                     if funcname:startswith(name .. "_") then
                         prefix = name
                         break
