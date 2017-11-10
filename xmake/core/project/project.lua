@@ -197,10 +197,21 @@ function project.interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
+    -- define apis for target
+    interp:api_define(target.apis())
+
+    -- define apis for option
+    interp:api_define(option.apis())
+
     -- define apis for language
     interp:api_define(language.apis())
 
-    -- define apis for target, option
+    -- define registered apis
+    for _, apis in ipairs(project._APIS or {}) do
+        interp:api_define(apis)
+    end
+
+    -- define apis for project
     interp:api_define
     {
         values =
@@ -212,75 +223,6 @@ function project.interpreter()
             -- add_xxx
         ,   "add_requires"
         ,   "add_repositories"
-            -- target.set_xxx
-        ,   "target.set_kind"
-        ,   "target.set_strip"
-        ,   "target.set_default"
-        ,   "target.set_options"
-        ,   "target.set_symbols"
-        ,   "target.set_basename"
-        ,   "target.set_warnings"
-        ,   "target.set_optimize"
-        ,   "target.set_languages"
-            -- target.add_xxx
-        ,   "target.add_deps"
-        ,   "target.add_options"
-        ,   "target.add_imports"
-        ,   "target.add_languages"
-        ,   "target.add_vectorexts"
-            -- option.set_xxx
-        ,   "option.set_default"
-        ,   "option.set_showmenu"
-        ,   "option.set_category"
-        ,   "option.set_warnings"
-        ,   "option.set_optimize"
-        ,   "option.set_languages"
-        ,   "option.set_description"
-            -- option.add_xxx
-        ,   "option.add_deps"
-        ,   "option.add_imports"
-        ,   "option.add_vectorexts"
-        }
-    ,   pathes = 
-        {
-            -- target.set_xxx
-            "target.set_targetdir"
-        ,   "target.set_objectdir"
-            -- target.add_xxx
-        ,   "target.add_files"
-            -- target.del_xxx
-        ,   "target.del_files"
-        }
-    ,   script =
-        {
-            -- target.on_xxx
-            "target.on_run"
-        ,   "target.on_load"
-        ,   "target.on_build"
-        ,   "target.on_clean"
-        ,   "target.on_package"
-        ,   "target.on_install"
-        ,   "target.on_uninstall"
-            -- target.before_xxx
-        ,   "target.before_run"
-        ,   "target.before_build"
-        ,   "target.before_clean"
-        ,   "target.before_package"
-        ,   "target.before_install"
-        ,   "target.before_uninstall"
-            -- target.after_xxx
-        ,   "target.after_run"
-        ,   "target.after_build"
-        ,   "target.after_clean"
-        ,   "target.after_package"
-        ,   "target.after_install"
-        ,   "target.after_uninstall"
-            -- option.before_xxx
-        ,   "option.before_check"
-            -- option.on_xxx
-        ,   "option.on_check"
-            -- option.after_xxx
-        ,   "option.after_check"
         }
     ,   custom = 
         {
@@ -299,12 +241,6 @@ function project.interpreter()
         }
     }
 
-    -- define registered apis
-    for _, apis in ipairs(project._APIS or {}) do
-        interp:api_define(apis)
-    end
-
-    -- TODO 
     -- register api: add_packages() to target
     interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
 

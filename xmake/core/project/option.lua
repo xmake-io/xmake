@@ -56,6 +56,38 @@ function option._cache()
     return option._CACHE
 end
 
+-- get option apis
+function option.apis()
+
+    return 
+    {
+        values =
+        {
+            -- option.set_xxx
+            "option.set_default"
+        ,   "option.set_showmenu"
+        ,   "option.set_category"
+        ,   "option.set_warnings"
+        ,   "option.set_optimize"
+        ,   "option.set_languages"
+        ,   "option.set_description"
+            -- option.add_xxx
+        ,   "option.add_deps"
+        ,   "option.add_imports"
+        ,   "option.add_vectorexts"
+        }
+    ,   script =
+        {
+            -- option.before_xxx
+            "option.before_check"
+            -- option.on_xxx
+        ,   "option.on_check"
+            -- option.after_xxx
+        ,   "option.after_check"
+        }
+    }
+end
+
 -- save the option info to the cache
 function option:_save()
 

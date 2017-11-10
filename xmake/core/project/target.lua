@@ -41,6 +41,68 @@ local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
+-- get target apis
+function target.apis()
+
+    return 
+    {
+        values =
+        {
+            -- target.set_xxx
+            "target.set_kind"
+        ,   "target.set_strip"
+        ,   "target.set_default"
+        ,   "target.set_options"
+        ,   "target.set_symbols"
+        ,   "target.set_basename"
+        ,   "target.set_warnings"
+        ,   "target.set_optimize"
+        ,   "target.set_languages"
+            -- target.add_xxx
+        ,   "target.add_deps"
+        ,   "target.add_options"
+        ,   "target.add_imports"
+        ,   "target.add_languages"
+        ,   "target.add_vectorexts"
+        }
+    ,   pathes = 
+        {
+            -- target.set_xxx
+            "target.set_targetdir"
+        ,   "target.set_objectdir"
+            -- target.add_xxx
+        ,   "target.add_files"
+            -- target.del_xxx
+        ,   "target.del_files"
+        }
+    ,   script =
+        {
+            -- target.on_xxx
+            "target.on_run"
+        ,   "target.on_load"
+        ,   "target.on_build"
+        ,   "target.on_clean"
+        ,   "target.on_package"
+        ,   "target.on_install"
+        ,   "target.on_uninstall"
+            -- target.before_xxx
+        ,   "target.before_run"
+        ,   "target.before_build"
+        ,   "target.before_clean"
+        ,   "target.before_package"
+        ,   "target.before_install"
+        ,   "target.before_uninstall"
+            -- target.after_xxx
+        ,   "target.after_run"
+        ,   "target.after_build"
+        ,   "target.after_clean"
+        ,   "target.after_package"
+        ,   "target.after_install"
+        ,   "target.after_uninstall"
+        }
+    }
+end
+
 -- get the filename from the given target name and kind
 function target.filename(targetname, targetkind, targetformat)
 
