@@ -243,7 +243,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         assert(scope)
 
         -- set values (set, on, before, after ...)? mark as "override"
-        if apiname and (action ~= "add" or action ~= "del") then
+        if apiname and (action ~= "add" and action ~= "del") then
             scope["__override_" .. apiname] = true
         end
 
