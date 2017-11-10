@@ -35,6 +35,7 @@ local global                = require("base/global")
 local process               = require("base/process")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
+local rule                  = require("project/rule")
 local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
@@ -197,6 +198,9 @@ function project.interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
+    -- define apis for rule
+    interp:api_define(rule.apis())
+
     -- define apis for target
     interp:api_define(target.apis())
 
@@ -351,6 +355,41 @@ function project._load_deps(target, targets, deps, orderdeps)
             end
         end
     end
+end
+
+-- load rules 
+function project._load_rules()
+
+    -- get interpreter
+    local interp = project.interpreter()
+    assert(interp) 
+
+    -- enter the project directory
+    local oldir, errors = os.cd(os.projectdir())
+    if not oldir then
+        return nil, errors
+    end
+
+    -- load rules
+    local results, errors = interp:load(project.file(), "rule", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- leave the project directory
+    local ok, errors = os.cd(oldir)
+    if not ok then
+        return nil, errors
+    end
+
+    -- make rules
+    local rules = {}
+    for rulename, ruleinfo in pairs(results) do
+        rules[rulename] = rule.new(rulename, ruleinfo)
+    end
+
+    -- ok
+    return rules
 end
 
 -- load targets 
@@ -564,9 +603,31 @@ function project.clear()
         opt:clear()
     end
 
-    -- clear targets and options
+    -- clear rules, targets and options
+    project._RULES   = nil
     project._TARGETS = nil
     project._OPTIONS = nil
+end
+
+-- get the given rule
+function project.rule(name)
+    return project.rules()[name]
+end
+
+-- get the current configure for rules
+function project.rules()
+
+    -- load rules
+    if not project._RULES then
+        local rules, errors = project._load_RULES()
+        if not rules then
+            os.raise(errors)
+        end
+        project._RULES = rules
+    end
+
+    -- ok
+    return project._RULES
 end
 
 -- get the given target
