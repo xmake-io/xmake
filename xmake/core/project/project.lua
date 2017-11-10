@@ -281,8 +281,6 @@ function project.interpreter()
         ,   "option.on_check"
             -- option.after_xxx
         ,   "option.after_check"
-            -- target.on_xxx
-        ,   "task.on_run"
         }
     ,   custom = 
         {
