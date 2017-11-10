@@ -10,10 +10,8 @@ rule("markdown")
 rule("man")
     add_imports("core.project.rule")
     on_build_all(function (target, sourcefiles)
-        local vars = {name = "xmake"}
         for _, sourcefile in ipairs(sourcefiles) do
             print("generating %s", sourcefile)
-            io.gsub(sourcefile, "%[(.+)%]", function (name) return vars[name] end)
         end
         rule.build_all("markdown", target, sourcefiles)
     end)

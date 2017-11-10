@@ -619,7 +619,7 @@ function project.rules()
 
     -- load rules
     if not project._RULES then
-        local rules, errors = project._load_RULES()
+        local rules, errors = project._load_rules()
         if not rules then
             os.raise(errors)
         end

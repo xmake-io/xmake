@@ -30,6 +30,8 @@ local os             = require("base/os")
 local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
+local sandbox        = require("sandbox/sandbox")
+local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- get rule apis
 function rule.apis()
@@ -103,6 +105,56 @@ function rule:get(name)
     return self._INFO[name]
 end
 
+-- get xxx_script
+function rule:script(name, generic)
+
+    -- get script
+    local script = self:get(name)
+    local result = nil
+    if type(script) == "function" then
+        result = script
+    elseif type(script) == "table" then
+
+        -- match script for special plat and arch
+        local plat = (config.get("plat") or "")
+        local pattern = plat .. '|' .. (config.get("arch") or "")
+        for _pattern, _script in pairs(script) do
+            if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') then
+                result = _script
+                break
+            end
+        end
+
+        -- match script for special plat
+        if result == nil then
+            for _pattern, _script in pairs(script) do
+                if not _pattern:startswith("__") and plat:find('^' .. _pattern .. '$') then
+                    result = _script
+                    break
+                end
+            end
+        end
+
+        -- get generic script
+        result = result or script["__generic__"] or generic
+    end
+
+    -- only generic script
+    result = result or generic
+
+    -- imports some modules first
+    if result and result ~= generic then
+        local scope = getfenv(result)
+        if scope then
+            for _, modulename in ipairs(table.wrap(self:get("imports"))) do
+                scope[sandbox_module.name(modulename)] = sandbox_module.import(modulename, {anonymous = true})
+            end
+        end
+    end
+
+    -- ok
+    return result
+end
 
 -- return module
 return rule

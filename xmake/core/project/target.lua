@@ -699,8 +699,17 @@ function target:sourcebatches()
     local sourcebatches = {}
     for _, sourcefile in ipairs(sourcefiles) do
 
+        -- get file config
+        local fileconfig = self:fileconfig(sourcefile)
+
         -- get source kind
-        local sourcekind = language.sourcekind_of(sourcefile)
+        local sourcekind = nil
+        if fileconfig and fileconfig.rule then
+            sourcekind = "__rule_" .. fileconfig.rule
+        end
+        if not sourcekind then
+            sourcekind = language.sourcekind_of(sourcefile)
+        end
         if not sourcekind then
             local sourcekind_ext = sourcekinds_ext[path.extension(sourcefile):lower()]
             if sourcekind_ext then
@@ -720,6 +729,11 @@ function target:sourcebatches()
         -- add source kind to this batch
         sourcebatch.sourcekind = sourcekind
 
+        -- add source rule to this batch
+        if fileconfig and fileconfig.rule then
+            sourcebatch.rulename = fileconfig.rule
+        end
+
         -- add source file to this batch
         table.insert(sourcebatch.sourcefiles, sourcefile)
     end
@@ -727,34 +741,38 @@ function target:sourcebatches()
     -- insert object files to source batches
     for sourcekind, sourcebatch in pairs(sourcebatches) do
 
-        -- this batch support to compile multiple objects at the same time?
-        local instance = compiler.load(sourcekind)
-        if instance and instance:buildmode("object:sources") then
+        -- skip source files with the custom rule
+        if not sourcekind:startswith("__rule_") then
 
-            -- get the first source file
-            local sourcefile = sourcebatch.sourcefiles[1]
+            -- this batch support to compile multiple objects at the same time?
+            local instance = compiler.load(sourcekind)
+            if instance and instance:buildmode("object:sources") then
 
-            -- insert single object file for all source files
-            sourcebatch.objectfiles = self:objectfile(path.join(path.directory(sourcefile), "__" .. sourcekind))
+                -- get the first source file
+                local sourcefile = sourcebatch.sourcefiles[1]
 
-            -- insert single incdep file for all source files
-            sourcebatch.incdepfiles = self:incdepfile(sourcebatch.objectfiles)
+                -- insert single object file for all source files
+                sourcebatch.objectfiles = self:objectfile(path.join(path.directory(sourcefile), "__" .. sourcekind))
 
-        else
+                -- insert single incdep file for all source files
+                sourcebatch.incdepfiles = self:incdepfile(sourcebatch.objectfiles)
 
-            -- insert object files for each source files
-            sourcebatch.objectfiles = {}
-            sourcebatch.incdepfiles = {}
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            else
 
-                -- get object file from this source file
-                local objectfile = self:objectfile(sourcefile)
+                -- insert object files for each source files
+                sourcebatch.objectfiles = {}
+                sourcebatch.incdepfiles = {}
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
-                -- add object file to this batch
-                table.insert(sourcebatch.objectfiles, objectfile)
+                    -- get object file from this source file
+                    local objectfile = self:objectfile(sourcefile)
 
-                -- add incdep file to this batch
-                table.insert(sourcebatch.incdepfiles, self:incdepfile(objectfile))
+                    -- add object file to this batch
+                    table.insert(sourcebatch.objectfiles, objectfile)
+
+                    -- add incdep file to this batch
+                    table.insert(sourcebatch.incdepfiles, self:incdepfile(objectfile))
+                end
             end
         end
     end
