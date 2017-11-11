@@ -29,8 +29,8 @@ local sandbox_core_project_rule = sandbox_core_project_rule or {}
 local rule      = require("project/rule")
 local raise     = require("sandbox/modules/raise")
 
--- build all source files
-function sandbox_core_project_rule.build_all(rulename, target, sourcefiles)
+-- build source files
+function sandbox_core_project_rule.build(rulename, target, sourcefiles)
 
 end
 

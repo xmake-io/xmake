@@ -63,24 +63,6 @@ function rule.apis()
         ,   "rule.after_package"
         ,   "rule.after_install"
         ,   "rule.after_uninstall"
-            -- rule.on_xxx_all
-        ,   "rule.on_build_all"
-        ,   "rule.on_clean_all"
-        ,   "rule.on_package_all"
-        ,   "rule.on_install_all"
-        ,   "rule.on_uninstall_all"
-            -- rule.before_xxx_all
-        ,   "rule.before_build_all"
-        ,   "rule.before_clean_all"
-        ,   "rule.before_package_all"
-        ,   "rule.before_install_all"
-        ,   "rule.before_uninstall_all"
-            -- rule.after_xxx_all
-        ,   "rule.after_build_all"
-        ,   "rule.after_clean_all"
-        ,   "rule.after_package_all"
-        ,   "rule.after_install_all"
-        ,   "rule.after_uninstall_all"
         }
     }
 end

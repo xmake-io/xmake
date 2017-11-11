@@ -293,48 +293,31 @@ function _build_pcheaderfiles(target, buildinfo)
     end
 end
 
--- build each objects from the given source batch with the custom rule
-function _build_each_objects_with_rule(target, buildinfo, sourcebatch, jobs, rule)
-    print("each", sourcebatch.rulename)
-end
+-- build source files with the custom rule
+function _build_rule(target, buildinfo, sourcebatch, jobs)
 
--- compile source files to single object at the same time with the custom rule
-function _build_single_object_with_rule(target, buildinfo, sourcebatch, jobs, rule)
+    -- get rule
+    local rule = project.rule(sourcebatch.rulename)
+    assert(rule, "unknown rule: %s", sourcebatch.rule)
     
     -- the rule scripts
     local scripts =
     {
-        rule:script("build_all_before")
-    ,   rule:script("build_all")
-    ,   rule:script("build_all_after")
+        rule:script("build_before")
+    ,   rule:script("build")
+    ,   rule:script("build_after")
     }
 
     -- run the rule scripts
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, sourcebatch.sourcefiles)
+            script(target, table.unwrap(sourcebatch.sourcefiles))
         end
     end
-end
-    
--- build objects with the custom rule
-function _build_objects_with_rule(target, buildinfo, sourcebatch, jobs)
 
-    -- get rule
-    local rule = project.rule(sourcebatch.rulename)
-    assert(rule, "unknown rule: %s", sourcebatch.rule)
-    
-    -- build all source files at once
-    if rule:get("build_all") then
-
-        -- build single object
-        _build_single_object_with_rule(target, buildinfo, sourcebatch, jobs, rule)
-    else
-
-        -- build each objects
-        _build_each_objects_with_rule(target, buildinfo, sourcebatch, jobs, rule)
-    end
+    -- update object index
+    _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
 end
 
 -- build objects for the given target
@@ -362,8 +345,8 @@ function build(target, buildinfo)
         -- compile source files using the custom rule
         if sourcebatch.rulename then
 
-            -- build objects with the custom rule
-            _build_objects_with_rule(target, buildinfo, sourcebatch, jobs)
+            -- build source files with the custom rule
+            _build_rule(target, buildinfo, sourcebatch, jobs)
 
         -- compile source files to single object at once
         elseif type(sourcebatch.objectfiles) == "string" then

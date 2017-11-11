@@ -1,19 +1,21 @@
 
 -- define rule: markdown
 rule("markdown")
-    on_build(function (target, sourcefile)
-        print("compiling %s", sourcefile)
-        os.cp(sourcefile, path.join(target:objectdir(), path.basename(sourcefile) .. ".html"))
+    on_build(function (target, sourcefiles)
+        for _, sourcefile in ipairs(sourcefiles) do
+            print("compiling %s", sourcefile)
+            os.cp(sourcefile, path.join(target:objectdir(), path.basename(sourcefile) .. ".html"))
+        end
     end)
 
 -- define rule: man
 rule("man")
     add_imports("core.project.rule")
-    on_build_all(function (target, sourcefiles)
+    on_build(function (target, sourcefiles)
         for _, sourcefile in ipairs(sourcefiles) do
             print("generating %s", sourcefile)
         end
-        rule.build_all("markdown", target, sourcefiles)
+        rule.build("markdown", target, sourcefiles)
     end)
 
 -- define rule: c code
@@ -21,9 +23,11 @@ rule("c code")
     add_imports("core.tool.compiler")
     on_build(function (target, sourcefile)
         print("compiling %s", sourcefile)
-        local objectfile = os.tmpfile() .. ".o"
-        compiler.compile(sourcefile, objectfile, {sourcekind = "cc"})
-        table.insert(target:objectfiles(), objectfile)
+        local objectfile_o = os.tmpfile() .. ".o"
+        local sourcefile_c = os.tmpfile() .. ".c"
+        os.cp(sourcefile, sourcefile_c)
+        compiler.compile(sourcefile_c, objectfile_o)
+        table.insert(target:objectfiles(), objectfile_o)
     end)
 
 -- define rule: stub
