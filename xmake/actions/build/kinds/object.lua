@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.tool.compiler")
 import("core.tool.extractor")
+import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -296,24 +297,46 @@ end
 -- build source files with the custom rule
 function _build_rule(target, buildinfo, sourcebatch, jobs)
 
-    -- get rule
-    local rule = project.rule(sourcebatch.rulename)
-    assert(rule, "unknown rule: %s", sourcebatch.rule)
-    
-    -- the rule scripts
-    local scripts =
-    {
-        rule:script("build_before")
-    ,   rule:script("build")
-    ,   rule:script("build_after")
-    }
+    -- the rule name
+    local rulename = sourcebatch.rulename
 
-    -- run the rule scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(target, table.unwrap(sourcebatch.sourcefiles))
-        end
+    -- get rule
+    local rule = project.rule(rulename)
+    assert(rule, "unknown rule: %s", rulename)
+
+    -- build all?
+    local build_all = rule:script("build_all")
+    if build_all then
+        build_all(target, sourcebatch.sourcefiles)
+    else
+        -- get the build script
+        local build = rule:script("build")
+        assert(build, "rule(%s): build script not found!", rulename)
+
+        -- run build jobs for each source file 
+        local curdir = os.curdir()
+        process.runjobs(function (index)
+
+            -- force to set the current directory first because the other jobs maybe changed it
+            os.cd(curdir)
+
+            -- calculate percent
+            local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+
+            -- the source file
+            local sourcefile = sourcebatch.sourcefiles[index]
+
+            -- trace percent info
+            if option.get("verbose") then
+                cprint("${green}[%02d%%]:${dim} compiling.%s %s", percent, rulename, sourcefile)
+            else
+                cprint("${green}[%02d%%]:${clear} compiling.%s %s", percent, rulename, sourcefile)
+            end
+
+            -- do build 
+            build(target, sourcefile)
+
+        end, #sourcebatch.sourcefiles, jobs)
     end
 
     -- update object index

@@ -51,18 +51,11 @@ function rule.apis()
         ,   "rule.on_package"
         ,   "rule.on_install"
         ,   "rule.on_uninstall"
-            -- rule.before_xxx
-        ,   "rule.before_build"
-        ,   "rule.before_clean"
-        ,   "rule.before_package"
-        ,   "rule.before_install"
-        ,   "rule.before_uninstall"
-            -- rule.after_xxx
-        ,   "rule.after_build"
-        ,   "rule.after_clean"
-        ,   "rule.after_package"
-        ,   "rule.after_install"
-        ,   "rule.after_uninstall"
+        ,   "rule.on_build_all"
+        ,   "rule.on_clean_all"
+        ,   "rule.on_package_all"
+        ,   "rule.on_install_all"
+        ,   "rule.on_uninstall_all"
         }
     }
 end
@@ -85,6 +78,35 @@ end
 -- get the rule info
 function rule:get(name)
     return self._INFO[name]
+end
+
+-- get the rule name
+function rule:name()
+    return self._NAME
+end
+
+-- build source files
+function rule:build(target, sourcefiles)
+
+    -- build all?
+    local build_all = self:script("build_all")
+    if build_all then
+        return sandbox.load(build_all, target, sourcefiles)
+    else
+        local build = self:script("build")
+        if not build then
+            return false, string.format("rule(%s): build script not found!", self:name())
+        end
+        for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
+            local ok, errors = sandbox.load(build, target, sourcefile)
+            if not ok then
+                return false, errors
+            end
+        end
+    end
+
+    -- ok
+    return true
 end
 
 -- get xxx_script

@@ -26,12 +26,26 @@
 local sandbox_core_project_rule = sandbox_core_project_rule or {}
 
 -- load modules
+local table     = require("base/table")
 local rule      = require("project/rule")
+local project   = require("project/project")
+local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
 -- build source files
 function sandbox_core_project_rule.build(rulename, target, sourcefiles)
 
+    -- get rule
+    local rule = project.rule(rulename)
+    if not rule then
+        raise("unknown rule: %s", rulename)
+    end
+
+    -- do build 
+    local ok, errors = rule:build(target, sourcefiles)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- return module

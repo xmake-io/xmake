@@ -323,12 +323,22 @@ function target:targetkind()
     return self:get("kind")
 end
 
--- get the target file 
-function target:targetfile()
+-- get the target directory
+function target:targetdir()
 
     -- the target directory
     local targetdir = self:get("targetdir") or config.get("buildir")
     assert(targetdir and type(targetdir) == "string")
+
+    -- ok?
+    return targetdir
+end
+
+-- get the target file 
+function target:targetfile()
+
+    -- the target directory
+    local targetdir = self:targetdir()
 
     -- get target kind
     local targetkind = self:targetkind()
