@@ -7,6 +7,7 @@
 ### New features
 
 * Add `del_files()` api to delete files in the files list
+* Add `rule()`, `add_rules()` api to implement the custom build rule and improve `add_files("src/*.md", {rule = "markdown"})`
 
 ### Changes
 
@@ -410,6 +411,7 @@
 ### 新特性
 
 * 添加`del_files()`接口去从已添加的文件列表中移除一些文件
+* 添加`rule()`, `add_rules()`接口实现自定义构建规则，并且改进`add_files("src/*.md", {rule = "markdown"})`
 
 ### 改进
 

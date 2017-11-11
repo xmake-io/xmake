@@ -423,11 +423,19 @@ function project._load_targets()
         targets[targetname] = target.new(targetname, targetinfo)
     end
 
-    -- load and attach target deps
+    -- load and attach target deps and rules
     for _, target in pairs(targets) do
+
+        -- load deps
         target._DEPS      = target._DEPS or {}
         target._ORDERDEPS = target._ORDERDEPS or {}
         project._load_deps(target, targets, target._DEPS, target._ORDERDEPS)
+
+        -- load rules
+        target._RULES     = target._RULES or {}
+        for _, rulename in ipairs(table.wrap(target:get("rules"))) do
+            target._RULES[rulename] = project.rule(rulename)
+        end
     end
 
     -- enter toolchains environment

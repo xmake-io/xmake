@@ -60,6 +60,7 @@ function target.apis()
         ,   "target.set_languages"
             -- target.add_xxx
         ,   "target.add_deps"
+        ,   "target.add_rules"
         ,   "target.add_options"
         ,   "target.add_imports"
         ,   "target.add_languages"
@@ -256,6 +257,34 @@ function target:depconfig(name)
     return depsconfig[name]
 end
 
+-- get target rules
+function target:rules()
+    return self._RULES
+end
+
+-- get target rule from the given source extension
+function target:rule(extension)
+
+    -- get it from cache first
+    local extension2rules = self._EXTENSION2RULES
+    if not extension2rules then
+
+        -- make extension to rules
+        extension2rules = {}
+        for _, rule in pairs(table.wrap(self:rules())) do
+            for _, extension in ipairs(table.wrap(rule:get("extensions"))) do
+                extension2rules[extension] = rule
+            end
+        end
+    end
+
+    -- cache it
+    self._EXTENSION2RULES = extension2rules
+
+    -- ok?
+    return extension2rules[extension]
+end
+
 -- is phony target?
 function target:isphony()
     
@@ -374,6 +403,23 @@ end
 -- get header directory
 function target:headerdir()
     return self:get("headerdir") or config.get("buildir")
+end
+
+-- get the source file rule name
+function target:filerule(sourcefile)
+
+    -- get file config
+    local fileconfig = self:fileconfig(sourcefile)
+
+    -- get rule name
+    if fileconfig and fileconfig.rule then
+        return fileconfig.rule
+    else
+        local rule = self:rule(path.extension(sourcefile))
+        if rule then
+            return rule:name()
+        end
+    end
 end
 
 -- get the config info of the given source file
@@ -713,13 +759,13 @@ function target:sourcebatches()
     local sourcebatches = {}
     for _, sourcefile in ipairs(sourcefiles) do
 
-        -- get file config
-        local fileconfig = self:fileconfig(sourcefile)
+        -- get file rule
+        local filerule = self:filerule(sourcefile)
 
         -- get source kind
         local sourcekind = nil
-        if fileconfig and fileconfig.rule then
-            sourcekind = "__rule_" .. fileconfig.rule
+        if filerule then
+            sourcekind = "__rule_" .. filerule
         end
         if not sourcekind then
             sourcekind = language.sourcekind_of(sourcefile)
@@ -744,8 +790,8 @@ function target:sourcebatches()
         sourcebatch.sourcekind = sourcekind
 
         -- add source rule to this batch
-        if fileconfig and fileconfig.rule then
-            sourcebatch.rulename = fileconfig.rule
+        if filerule then
+            sourcebatch.rulename = filerule
         end
 
         -- add source file to this batch

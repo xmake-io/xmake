@@ -40,8 +40,10 @@ function rule.apis()
     {
         values =
         {
+            -- rule.set_xxx
+            "rule.set_extensions"
             -- rule.add_xxx
-            "rule.add_imports"
+        ,   "rule.add_imports"
         }
     ,   script =
         {
