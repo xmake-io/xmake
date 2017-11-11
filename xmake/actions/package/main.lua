@@ -25,8 +25,9 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
-import("core.project.config")
 import("core.base.global")
+import("core.project.rule")
+import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 
@@ -113,7 +114,7 @@ option("[targetname]")
 end
 
 -- package target 
-function _on_package_target(target)
+function _on_package(target)
 
     -- is phony target?
     if target:isphony() then
@@ -136,6 +137,13 @@ function _on_package_target(target)
 
     -- package it
     scripts[kind](target) 
+
+    -- package files with the custom
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename then
+            rule.package(sourcebatch.rulename, target, sourcebatch.sourcefiles)
+        end
+    end
 end
 
 -- package the given target 
@@ -148,7 +156,7 @@ function _package(target)
     local scripts =
     {
         target:script("package_before")
-    ,   target:script("package", _on_package_target)
+    ,   target:script("package", _on_package)
     ,   target:script("package_after")
     }
 

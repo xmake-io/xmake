@@ -109,6 +109,98 @@ function rule:build(target, sourcefiles)
     return true
 end
 
+-- clean files
+function rule:clean(target, sourcefiles)
+
+    -- clean all?
+    local clean_all = self:script("clean_all")
+    if clean_all then
+        return sandbox.load(clean_all, target, sourcefiles)
+    else
+        local clean = self:script("clean")
+        if clean then
+            for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
+                local ok, errors = sandbox.load(clean, target, sourcefile)
+                if not ok then
+                    return false, errors
+                end
+            end
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- install files
+function rule:install(target, sourcefiles)
+
+    -- install all?
+    local install_all = self:script("install_all")
+    if install_all then
+        return sandbox.load(install_all, target, sourcefiles)
+    else
+        local install = self:script("install")
+        if install then
+            for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
+                local ok, errors = sandbox.load(install, target, sourcefile)
+                if not ok then
+                    return false, errors
+                end
+            end
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- uninstall files
+function rule:uninstall(target, sourcefiles)
+
+    -- uninstall all?
+    local uninstall_all = self:script("uninstall_all")
+    if uninstall_all then
+        return sandbox.load(uninstall_all, target, sourcefiles)
+    else
+        local uninstall = self:script("uninstall")
+        if uninstall then
+            for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
+                local ok, errors = sandbox.load(uninstall, target, sourcefile)
+                if not ok then
+                    return false, errors
+                end
+            end
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- package files
+function rule:package(target, sourcefiles)
+
+    -- package all?
+    local package_all = self:script("package_all")
+    if package_all then
+        return sandbox.load(package_all, target, sourcefiles)
+    else
+        local package = self:script("package")
+        if package then
+            for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
+                local ok, errors = sandbox.load(package, target, sourcefile)
+                if not ok then
+                    return false, errors
+                end
+            end
+        end
+    end
+
+    -- ok
+    return true
+end
+
 -- get xxx_script
 function rule:script(name, generic)
 

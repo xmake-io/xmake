@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.task")
+import("core.project.rule")
 import("core.project.project")
 
 -- install binary
@@ -102,6 +103,13 @@ function _on_install(target)
     local script = scripts[target:get("kind")]
     if script then
         script(target)
+    end
+
+    -- install files with the custom
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename then
+            rule.install(sourcebatch.rulename, target, sourcebatch.sourcefiles)
+        end
     end
 end
 

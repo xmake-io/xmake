@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.project.rule")
 import("core.project.config")
 import("core.base.global")
 import("core.project.project")
@@ -87,6 +88,13 @@ function _on_clean_target(target)
 
         -- remove the config.h file
         _remove(target:configheader()) 
+    end
+
+    -- clean files with the custom
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename then
+            rule.clean(sourcebatch.rulename, target, sourcebatch.sourcefiles)
+        end
     end
 end
 

@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.task")
+import("core.project.rule")
 import("core.project.project")
 
 -- uninstall binary
@@ -86,6 +87,13 @@ function _on_uninstall(target)
     local script = scripts[target:get("kind")]
     if script then
         script(target)
+    end
+
+    -- uninstall files with the custom
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename then
+            rule.uninstall(sourcebatch.rulename, target, sourcebatch.sourcefiles)
+        end
     end
 end
 
