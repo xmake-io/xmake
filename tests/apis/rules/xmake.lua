@@ -44,6 +44,8 @@ rule("stub")
 -- define target
 target("test")
 
+    add_cxflags("-DTEST=\"D:/asdasd/adasd/adsad\"")
+
     -- set kind
     set_kind("binary")
 

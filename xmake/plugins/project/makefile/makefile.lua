@@ -306,16 +306,13 @@ function _make_target(makefile, target)
 
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-
-        -- compile source files to single object at the same time?
-        if type(sourcebatch.objectfiles) == "string" then
-        
-            -- make single object
-            _make_single_object(makefile, target, sourcekind, sourcebatch)
-        else
-
-            -- make each objects
-            _make_each_objects(makefile, target, sourcekind, sourcebatch)
+        if not sourcebatch.rulename then
+            -- compile source files to single object at once
+            if type(sourcebatch.objectfiles) == "string" then
+                _make_single_object(makefile, target, sourcekind, sourcebatch)
+            else
+                _make_each_objects(makefile, target, sourcekind, sourcebatch)
+            end
         end
     end
 end
@@ -359,7 +356,9 @@ function _make_all(makefile)
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
             for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-                makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind})))
+                if not sourcebatch.rulename then
+                    makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind})))
+                end
             end
             makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), os.args(target:linkflags()))
         end

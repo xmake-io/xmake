@@ -85,10 +85,12 @@ function _make_target(jsonfile, target)
 
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if type(sourcebatch.objectfiles) == "string" then
-            _make_single_object(jsonfile, target, sourcekind, sourcebatch)
-        else
-            _make_each_objects(jsonfile, target, sourcekind, sourcebatch)
+        if not sourcebatch.rulename then
+            if type(sourcebatch.objectfiles) == "string" then
+                _make_single_object(jsonfile, target, sourcekind, sourcebatch)
+            else
+                _make_each_objects(jsonfile, target, sourcekind, sourcebatch)
+            end
         end
     end
 end

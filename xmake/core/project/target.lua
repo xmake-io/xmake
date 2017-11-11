@@ -543,7 +543,9 @@ function target:objectfiles()
     -- get object files from source batches
     local objectfiles = {}
     for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
-        table.join2(objectfiles, sourcebatch.objectfiles)
+        if not sourcebatch.rulename then
+            table.join2(objectfiles, sourcebatch.objectfiles)
+        end
     end
 
     -- cache it
@@ -638,7 +640,9 @@ function target:incdepfiles()
     -- get incdep files from source batches
     local incdepfiles = {}
     for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
-        table.join2(incdepfiles, sourcebatch.incdepfiles)
+        if not sourcebatch.rulename then
+            table.join2(incdepfiles, sourcebatch.incdepfiles)
+        end
     end
 
     -- cache it
@@ -752,7 +756,7 @@ function target:sourcebatches()
     for sourcekind, sourcebatch in pairs(sourcebatches) do
 
         -- skip source files with the custom rule
-        if not sourcekind:startswith("__rule_") then
+        if not sourcebatch.rulename then
 
             -- this batch support to compile multiple objects at the same time?
             local instance = compiler.load(sourcekind)
