@@ -9,8 +9,11 @@ rule("markdown")
 -- define rule: man
 rule("man")
     add_imports("core.project.rule")
-    on_build(function (target, sourcefile)
-        rule.build("markdown", target, sourcefile)
+    on_build_all(function (target, sourcefiles)
+        for _, sourcefile in ipairs(sourcefiles) do
+            print("generating man: %s", sourcefile)
+        end
+        rule.build("markdown", target, sourcefiles)
     end)
 
 -- define rule: c code
