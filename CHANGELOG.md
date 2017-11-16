@@ -16,6 +16,7 @@
 ### Bugs fixed
 
 * Fix complation dependence
+* [#151](https://github.com/tboox/xmake/issues/151): Fix `os.nuldev()` for gcc on mingw
 
 ## v2.1.8
 
@@ -420,6 +421,7 @@
 ## Bugs修复
 
 * 修复依赖修改编译和链接问题
+* [#151](https://github.com/tboox/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
 
 ## v2.1.8
 
