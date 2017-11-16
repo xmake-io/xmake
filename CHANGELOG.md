@@ -12,6 +12,7 @@
 ### Changes
 
 * Improve to configure cross-toolchains, add tool alias to support unknown tool name, .e.g `xmake f --cc=gcc@ccmips.exe`
+* [#151](https://github.com/tboox/xmake/issues/151): Improve to build the share library for the mingw platform
 
 ### Bugs fixed
 
@@ -417,6 +418,7 @@
 ### 改进
 
 * 改进交叉工具链配置，通过指定工具别名定向到已知的工具链来支持未知编译工具名配置, 例如: `xmake f --cc=gcc@ccmips.exe`
+* [#151](https://github.com/tboox/xmake/issues/151): 改进mingw平台下动态库生成
 
 ## Bugs修复
 

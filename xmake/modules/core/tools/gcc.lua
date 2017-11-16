@@ -280,11 +280,19 @@ end
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- add rpath for dylib (macho), .e.g -install_name @rpath/file.dylib
-    local flags_rpath = nil
+    local flags_extra = {}
     if targetkind == "shared" and targetfile:endswith(".dylib") then
-        flags_rpath = {"-install_name", "@rpath/" .. path.filename(targetfile)}
+        table.insert(flags_extra, "-install_name")
+        table.insert(flags_extra, "@rpath/" .. path.filename(targetfile))
     end
-    return self:program(), table.join("-o", targetfile, objectfiles, flags, flags_rpath)
+
+    -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
+    if targetkind == "shared" and config.plat() == "mingw" then
+        table.insert(flags_extra, "-Wl,--out-implib," .. os.args(path.join(path.directory(targetfile), path.basename(targetfile) .. ".a")))
+    end
+
+    -- make link args
+    return self:program(), table.join("-o", targetfile, objectfiles, flags, flags_extra)
 end
 
 -- link the target file
