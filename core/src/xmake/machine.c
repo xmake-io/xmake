@@ -522,14 +522,6 @@ xm_machine_ref_t xm_machine_init()
 #endif
         lua_setglobal(impl->lua, "_ARCH");
 
-        // init redirect to null
-#if defined(TB_CONFIG_OS_WINDOWS)
-        lua_pushstring(impl->lua, "nul");
-#else
-        lua_pushstring(impl->lua, "/dev/null");
-#endif
-        lua_setglobal(impl->lua, "_NULDEV");
-
         // get version
         tb_version_t const* version = xm_version();
         tb_assert_and_check_break(version);

@@ -691,9 +691,41 @@ function os.arch()
     return xmake._ARCH
 end
 
--- get the system null device
-function os.nuldev()
-    return xmake._NULDEV
+-- get the system null device 
+function os.nuldev(input)
+
+    -- init the output nuldev
+    if xmake._NULDEV_OUTPUT == nil then
+        if os.host() == "windows" then
+            xmake._NULDEV_OUTPUT = "nul"
+        else
+            xmake._NULDEV_OUTPUT = "/dev/null"
+        end
+    end
+
+    -- init the input nuldev
+    if xmake._NULDEV_INPUT == nil then
+        if os.host() == "windows" then
+            -- create an empty file
+            --
+            -- for fix issue on mingw:
+            -- $ gcc -fopenmp -S -o nul -xc nul
+            -- gcc: fatal error：input file ‘nul’ is the same as output file
+            -- 
+            local inputfile = os.tmpfile()
+            io.writefile(inputfile, "")
+            xmake._NULDEV_INPUT = inputfile
+        else
+            xmake._NULDEV_INPUT = "/dev/null"
+        end
+    end
+
+    -- get nuldev
+    if input then
+        return xmake._NULDEV_INPUT
+    else
+        return xmake._NULDEV_OUTPUT
+    end
 end
 
 -- get user agent

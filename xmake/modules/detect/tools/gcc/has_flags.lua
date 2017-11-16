@@ -105,7 +105,7 @@ function _check_try_running(flags, opt, islinker)
     end
     
     -- check flags for compiler
-    return try { function () os.runv(opt.program, table.join(flags, "-S", "-o", os.nuldev(), "-x" .. lang, os.nuldev())); return true end }
+    return try { function () os.runv(opt.program, table.join(flags, "-S", "-o", os.nuldev(), "-x" .. lang, os.nuldev(true))); return true end }
 end
 
 -- has_flags(flags)?

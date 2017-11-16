@@ -27,7 +27,6 @@ xmake                   = xmake or {}
 xmake._ARGV             = _ARGV
 xmake._HOST             = _HOST
 xmake._ARCH             = _ARCH
-xmake._NULDEV           = _NULDEV
 xmake._VERSION          = _VERSION
 xmake._VERSION_SHORT    = _VERSION_SHORT
 xmake._PROGRAM_DIR      = _PROGRAM_DIR
