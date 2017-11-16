@@ -41,11 +41,17 @@ function init(self)
                 ,   "-DIBAction=void)__attribute__((ibaction)"}
 
     -- init shflags
-    _g.shflags = { "-shared", "-fPIC" }
+    _g.shflags = { "-shared" }
 
     -- init cxflags for the kind: shared
     _g.shared          = {}
-    _g.shared.cxflags  = {"-fPIC"}
+    _g.shared.cxflags  = {}
+
+    -- add -fPIC (need not it on mingw/windows)
+    if self:has_flags("-fPIC") then
+        table.insert(_g.shflags, "-fPIC")
+        table.insert(_g.shared.cxflags, "-fPIC")
+    end
 
     -- suppress warning for clang (gcc -> clang on macosx) 
     if self:has_flags("-Qunused-arguments") then
