@@ -568,7 +568,11 @@ function target:objectfile(sourcefile)
     --
     -- we need replace '..' to '__' in this case
     --
-    local sourcedir = path.directory(sourcefile):gsub("%.%.", "__")
+    local sourcedir = path.directory(sourcefile)
+    if path.is_absolute(sourcedir) then
+        sourcedir = path.relative(sourcedir, objectdir)
+    end
+    sourcedir = sourcedir:gsub("%.%.", "__")
 
     -- make object file
     -- full file name(not base) to avoid name-clash of object file
