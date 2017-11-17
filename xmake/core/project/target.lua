@@ -569,14 +569,14 @@ function target:objectfile(sourcefile)
     -- we need replace '..' to '__' in this case
     --
     local sourcedir = path.directory(sourcefile)
-    if path.is_absolute(sourcedir) then
-        sourcedir = path.relative(sourcedir, objectdir)
+    if path.is_absolute(sourcedir) and os.host() == "windows" then
+        sourcedir = sourcedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
     end
     sourcedir = sourcedir:gsub("%.%.", "__")
 
     -- make object file
     -- full file name(not base) to avoid name-clash of object file
-    return string.format("%s/%s/%s/%s", objectdir, self:name(), sourcedir, target.filename(path.filename(sourcefile), "object"))
+    return path.join(objectdir, self:name(), sourcedir, target.filename(path.filename(sourcefile), "object"))
 end
 
 -- get the object files
