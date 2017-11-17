@@ -57,6 +57,58 @@ function _cp(makefile, sourcefile, targetfile)
     end
 end
 
+-- make common flags
+function _make_common_flags(target, sourcekind, sourcebatch)
+
+    -- make source flags
+    local sourceflags = {}
+    local flags_stats = {}
+    local files_count = 0
+    local first_flags = nil
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+
+        -- make compiler flags
+        local flags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
+        for _, flag in ipairs(flags) do
+            flags_stats[flag] = (flags_stats[flag] or 0) + 1
+        end
+
+        -- update files count
+        files_count = files_count + 1
+
+        -- save first flags
+        if first_flags == nil then
+            first_flags = flags
+        end
+
+        -- save source flags
+        sourceflags[sourcefile] = flags
+    end
+
+    -- make common flags
+    local commonflags = {}
+    for _, flag in ipairs(first_flags) do
+        if flags_stats[flag] == files_count then
+            table.insert(commonflags, flag)
+        end
+    end
+
+    -- remove common flags from source flags
+    local sourceflags_ = {}
+    for sourcefile, flags in pairs(sourceflags) do
+        local otherflags = {}
+        for _, flag in ipairs(flags) do
+            if flags_stats[flag] ~= files_count then
+                table.insert(otherflags, flag)
+            end
+        end
+        sourceflags_[sourcefile] = otherflags
+    end
+
+    -- ok?
+    return commonflags, sourceflags_
+end
+
 -- make the object for the *.[o|obj] source file
 function _make_object_for_object(makefile, target, sourcefile, objectfile)
 
@@ -86,7 +138,7 @@ function _make_object_for_static(makefile, target, sourcefile, objectfile)
 end
 
 -- make the object
-function _make_object(makefile, target, sourcefile, objectfile)
+function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
 
     -- get the source file kind
     local sourcekind = language.sourcekind_of(sourcefile)
@@ -103,19 +155,14 @@ function _make_object(makefile, target, sourcefile, objectfile)
     local program = platform.tool(sourcekind)
 
     -- get complier flags
-    local compflags = os.args(compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind}))
+    local compflags = sourceflags[sourcefile]
 
     -- make command
-    local command = compiler.compcmd(sourcefile, objectfile, {target = target})
-
-    -- replace compflags to $(XX)
-    local p, e = command:find(compflags, 1, true)
-    if p then
-        command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
-    end
+    local macro = "$(" .. target:name() .. '_' .. sourcekind:upper() .. ")"
+    local command = compiler.compcmd(sourcefile, objectfile, {compflags = table.join(macro, compflags)})
 
     -- replace program to $(XX)
-    p, e = command:find("\"" .. program .. "\"", 1, true)
+    local p, e = command:find("\"" .. program .. "\"", 1, true)
     if not p then
         p, e = command:find(program, 1, true)
     end
@@ -147,16 +194,16 @@ function _make_object(makefile, target, sourcefile, objectfile)
 end
  
 -- make each objects
-function _make_each_objects(makefile, target, sourcekind, sourcebatch)
+function _make_each_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
 
     -- make them
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
-        _make_object(makefile, target, sourcebatch.sourcefiles[index], objectfile)
+        _make_object(makefile, target, sourcebatch.sourcefiles[index], objectfile, sourceflags)
     end
 end
  
 -- make single object
-function _make_single_object(makefile, target, sourcekind, sourcebatch)
+function _make_single_object(makefile, target, sourcekind, sourcebatch, sourceflags)
 
     -- get source and object files
     local sourcefiles = sourcebatch.sourcefiles
@@ -166,20 +213,12 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch)
     -- get program
     local program = platform.tool(sourcekind)
 
-    -- get complier flags
-    local compflags = os.args(compiler.compflags(sourcefiles, {target = target, sourcekind = sourcekind}))
-
     -- make command
-    local command = compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind})
-
-    -- replace compflags to $(XX)
-    local p, e = command:find(compflags, 1, true)
-    if p then
-        command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
-    end
+    local macro = "$(" .. target:name() .. '_' .. sourcekind:upper() .. ")"
+    local command = compiler.compcmd(sourcefiles, objectfiles, {compflags = macro})
 
     -- replace program to $(XX)
-    p, e = command:find(program, 1, true)
+    local p, e = command:find(program, 1, true)
     if p then
         command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
     end
@@ -224,7 +263,7 @@ function _make_phony(makefile, target)
 end
 
 -- make target
-function _make_target(makefile, target)
+function _make_target(makefile, target, targetflags)
 
     -- is phony target?
     if target:isphony() then
@@ -308,10 +347,11 @@ function _make_target(makefile, target)
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
         if not sourcebatch.rulename then
             -- compile source files to single object at once
+            local sourceflags = targetflags[target:name() .. '_' .. sourcekind:upper()]
             if type(sourcebatch.objectfiles) == "string" then
-                _make_single_object(makefile, target, sourcekind, sourcebatch)
+                _make_single_object(makefile, target, sourcekind, sourcebatch, sourceflags)
             else
-                _make_each_objects(makefile, target, sourcekind, sourcebatch)
+                _make_each_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
             end
         end
     end
@@ -353,11 +393,14 @@ function _make_all(makefile)
     end
 
     -- make variables for target flags
+    local targetflags = {}
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
             for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
                 if not sourcebatch.rulename then
-                    makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(compiler.compflags(sourcebatch.sourcefiles, {target = target, sourcekind = sourcekind})))
+                    local commonflags, sourceflags = _make_common_flags(target, sourcekind, sourcebatch)
+                    makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(commonflags))
+                    targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
                 end
             end
             makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), os.args(target:linkflags()))
@@ -385,7 +428,7 @@ function _make_all(makefile)
     for _, target in pairs(project.targets()) do
 
         -- make target
-        _make_target(makefile, target)
+        _make_target(makefile, target, targetflags)
     end
 end
 
