@@ -23,13 +23,16 @@
 --
 
 -- load modules
-local os        = require("base/os")
-local string    = require("base/string")
+local os            = require("base/os")
+local string        = require("base/string")
+local interpreter   = require("base/interpreter")
 
 -- define module
 local sandbox_os = sandbox_os or {}
 
 -- export some readonly interfaces
+sandbox_os.host        = os.host
+sandbox_os.arch        = os.arch
 sandbox_os.date        = os.date
 sandbox_os.time        = os.time
 sandbox_os.mtime       = os.mtime
@@ -61,14 +64,15 @@ function sandbox_os.filedirs(pattern, ...)
     return os.filedirs(string.format(pattern, ...))
 end
 
--- get the system host
-function sandbox_os.host()
-    return xmake._HOST
-end
+-- get the script directory
+function sandbox_os.scriptdir()
+  
+    -- get the current interpreter instance
+    local instance = interpreter.instance()
+    assert(instance)
 
--- get the system architecture
-function sandbox_os.arch()
-    return xmake._ARCH
+    -- get the script directory
+    return instance:scriptdir()
 end
 
 -- return module

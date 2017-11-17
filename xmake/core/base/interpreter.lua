@@ -567,7 +567,12 @@ function interpreter.new()
     table.inherit2(instance, interpreter)
 
     -- dispatch the api calling for scope
-    setmetatable(instance._PUBLIC, {    __index = function (tbl, key)
+    setmetatable(instance._PUBLIC, { __index = function (tbl, key)
+
+                                            -- get interpreter instance
+                                            if type(key) == "string" and key == "_INTERPRETER" and rawget(tbl, "_INTERPRETER_READABLE") then
+                                                return instance
+                                            end
 
                                             -- get the scope kind
                                             local priv          = instance._PRIVATE
@@ -584,6 +589,12 @@ function interpreter.new()
 
                                             -- ok?
                                             return apifunc
+                                    end
+                                ,   __newindex = function (tbl, key, val)
+                                        if type(key) == "string" and (key == "_INTERPRETER" or key == "_INTERPRETER_READABLE") then
+                                            return 
+                                        end
+                                        rawset(tbl, key, val)
                                     end}) 
 
     -- register the builtin interfaces
@@ -1568,7 +1579,58 @@ function interpreter:scope_restore(scope)
     -- restore it
     scopes._CURRENT      = scope._CURRENT
     scopes._CURRENT_KIND = scope._CURRENT_KIND
+end
 
+-- get current instance in the interpreter modules
+function interpreter.instance(script)
+
+    -- get the sandbox instance from the given script
+    local instance = nil
+    if script then
+        local scope = getfenv(script)
+        if scope then
+
+            -- enable to read _INTERPRETER
+            rawset(scope, "_INTERPRETER_READABLE", true)
+            
+            -- attempt to get it
+            instance = scope._INTERPRETER
+
+            -- disable to read _INTERPRETER
+            rawset(scope, "_INTERPRETER_READABLE", nil)
+        end
+        if instance then return instance end
+    end
+
+    -- find self instance for the current sandbox
+    local level = 2
+    while level < 32 do
+
+        -- get scope
+        local scope = getfenv(level)
+        if scope then
+
+            -- enable to read _INTERPRETER
+            rawset(scope, "_INTERPRETER_READABLE", true)
+            
+            -- attempt to get it
+            instance = scope._INTERPRETER
+
+            -- disable to read _INTERPRETER
+            rawset(scope, "_INTERPRETER_READABLE", nil)
+        end
+
+        -- found?
+        if instance then
+            break
+        end
+
+        -- next
+        level = level + 1
+    end
+
+    -- ok?
+    return instance 
 end
 
 -- return module: interpreter
