@@ -283,18 +283,21 @@ function os.match(pattern, mode)
 end
 
 -- match directories
+--
+-- @note only return {} without count to simplify code, .e.g unpack(os.dirs(""))
+--
 function os.dirs(pattern, ...)
-    return os.match(pattern, 'd')
+    return (os.match(pattern, 'd'))
 end
 
 -- match files
 function os.files(pattern)
-    return os.match(pattern, 'f')
+    return (os.match(pattern, 'f'))
 end
 
 -- match files and directories
 function os.filedirs(pattern)
-    return os.match(pattern, 'a')
+    return (os.match(pattern, 'a'))
 end
 
 -- copy files or directories
