@@ -15,6 +15,8 @@
 * [#151](https://github.com/tboox/xmake/issues/151): Improve to build the share library for the mingw platform
 * Improve to generate makefile plugin
 * Improve the checking errors tips
+* Improve `add_cxflags` .., force to set flags without auto checking: `add_cxflags("-DTEST", {force = true})`
+* Improve `add_files`, add force block to force to set flags without auto checking: `add_files("src/*.c", {force = {cxflags = "-DTEST"}})`
 
 ### Bugs fixed
 
@@ -424,6 +426,8 @@
 * [#151](https://github.com/tboox/xmake/issues/151): 改进mingw平台下动态库生成
 * 改进生成makefile插件
 * 改进检测错误提示
+* 改进`add_cxflags`等flags api的设置，添加force参数，来禁用自动检测和映射，强制设置选项：`add_cxflags("-DTEST", {force = true})`
+* 改进`add_files`的flags设置，添加force域，用于设置不带自动检测和映射的原始flags：`add_files("src/*.c", {force = {cxflags = "-DTEST"}})`
 
 ## Bugs修复
 

@@ -230,7 +230,21 @@ function builder:_addflags_from_target(flags, target)
 
         -- add the target flags 
         for _, flagkind in ipairs(self:_flagkinds()) do
-            table.join2(targetflags, self:_mapflags(target:get(flagkind)))
+            
+            -- get flag and extra info
+            local flag = target:get(flagkind)
+            local flagextra = target:get("__extra_" .. flagkind)
+            local force = false
+            if flagextra then
+                force = (flagextra[flag] or {}).force
+            end
+
+            -- add original or auto mapping flag?
+            if force then
+                table.join2(targetflags, flag)
+            else
+                table.join2(targetflags, self:_mapflags(flag))
+            end
         end
 
         -- cache it
@@ -246,7 +260,15 @@ function builder:_addflags_from_argument(flags, target, args)
 
     -- add flags from the flag kinds (cxflags, ..)
     for _, flagkind in ipairs(self:_flagkinds()) do
+
+        -- add auto mapping flags
         table.join2(flags, self:_mapflags(args[flagkind]))
+
+        -- add original flags
+        local original_flags = (args.force or {})[flagkind]
+        if original_flags then
+            table.join2(flags, original_flags)
+        end
     end
 
     -- add flags (named) from the language 
