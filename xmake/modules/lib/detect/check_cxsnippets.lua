@@ -178,6 +178,7 @@ function main(snippets, opt)
 
     -- @note cannot cache result, all conditions will be changed
     -- attempt to compile it
+    local errors = nil
     local ok = try
     {
         function () 
@@ -187,14 +188,7 @@ function main(snippets, opt)
             end
             return true
         end,
-        catch 
-        {
-            function (errors)
-                if option.get("verbose") then
-                    cprint("${red}%s", errors)
-                end
-            end
-        }
+        catch { function (errs) errors = errs end }
     }
 
     -- remove some files
@@ -219,6 +213,9 @@ function main(snippets, opt)
         end
         for _, snippet in ipairs(snippets) do
             cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))
+        end
+        if errors and #errors > 0 then
+            cprint("${dim red}check error:${clear}${dim} %s", errors)
         end
     end
 

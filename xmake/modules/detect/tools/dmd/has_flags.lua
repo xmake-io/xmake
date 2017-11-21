@@ -39,6 +39,14 @@ function _islinker(flags, opt)
     return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("-ld") or toolkind:endswith("-sh")
 end
 
+-- try running 
+function _try_running(...)
+
+    local argv = {...}
+    local errors = nil
+    return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
+end
+
 -- attempt to check it from the argument list 
 function _check_from_arglist(flags, opt, islinker)
 
@@ -94,7 +102,7 @@ function _check_try_running(flags, opt, islinker)
     end
 
     -- check it
-    return try { function () os.runv(opt.program, argv); return true end }
+    return _try_running(opt.program, argv)
 end
 
 -- has_flags(flags)?

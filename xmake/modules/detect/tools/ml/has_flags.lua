@@ -74,14 +74,16 @@ function _check_try_running(flags, opt)
     end
 
     -- check it
+    local errors = nil
     return try  {   function () 
-                        local _, errors = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. os.nuldev(), sourcefile))
-                        if errors and #errors:trim() > 0 then
-                            return false
+                        local _, errs = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. os.nuldev(), sourcefile))
+                        if errs and #errs:trim() > 0 then
+                            return false, errs
                         end
                         return true 
-                    end 
-                }
+                    end,
+                    catch { function (errs) errors = errs end }
+                }, errors
 end
 
 -- has_flags(flags)?

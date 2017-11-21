@@ -106,16 +106,20 @@ function main(name, flags, opt)
     -- detect.tools.xxx.has_flags(flags, opt)?
     _g._checking = ifelse(coroutine_running, key, nil)
     local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
+    local errors = nil
     if hasflags then
-        result = hasflags(flags, opt)
+        result, errors = hasflags(flags, opt)
     else
-        result = try { function () os.runv(tool.program, flags); return true end }
+        result = try { function () os.runv(tool.program, flags); return true end, catch { function (errs) errors = errs end }}
     end
     _g._checking = nil
 
     -- trace
     if option.get("verbose") or opt.verbose then
         cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), table.concat(flags, " "), ifelse(result, "${green}ok", "${red}no"))
+        if errors and #errors > 0 then
+            cprint("${dim red}check error:${clear}${dim} %s", errors:trim())
+        end
     end
 
     -- save result to cache

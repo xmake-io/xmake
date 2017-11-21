@@ -25,6 +25,14 @@
 -- imports
 import("lib.detect.cache")
 
+-- try running 
+function _try_running(...)
+
+    local argv = {...}
+    local errors = nil
+    return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
+end
+
 -- attempt to check it from the argument list 
 function _check_from_arglist(flags, opt)
 
@@ -75,13 +83,13 @@ function _check_try_running(flags, opt)
 
     -- check it
     local objectfile = os.tmpfile() .. ".o"
-    local ok = try { function () os.runv(opt.program, table.join("--emit", "obj", flags, "-o", objectfile, sourcefile)); return true end }
+    local ok, errors = _try_running(opt.program, table.join("--emit", "obj", flags, "-o", objectfile, sourcefile))
 
     -- remove files
     os.tryrm(objectfile)
 
     -- ok?
-    return ok
+    return ok, errors
 end
 
 -- has_flags(flags)?

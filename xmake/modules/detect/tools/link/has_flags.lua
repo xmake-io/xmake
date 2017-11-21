@@ -25,6 +25,14 @@
 -- imports
 import("lib.detect.cache")
 
+-- try running 
+function _try_running(...)
+
+    local argv = {...}
+    local errors = nil
+    return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
+end
+
 -- attempt to check it from the argument list 
 function _check_from_arglist(flags, opt)
 
@@ -90,17 +98,17 @@ function _check_try_running(flags, opt)
     -- compile the source file
     local objectfile = os.tmpfile() .. ".obj"
     local binaryfile = os.tmpfile() .. ".exe"
-    os.iorunv("cl", {"-c", "-nologo", "-Fo" .. objectfile, sourcefile})
+    os.runv("cl", {"-c", "-nologo", "-Fo" .. objectfile, sourcefile})
 
     -- try link it
-    local ok = try { function () os.execv(opt.program, table.join(flags, "-nologo", "-out:" .. binaryfile, objectfile)); return true end }
+    local ok, errors = _try_running(opt.program, table.join(flags, "-nologo", "-out:" .. binaryfile, objectfile))
 
     -- remove files
     os.tryrm(objectfile)
     os.tryrm(binaryfile)
 
     -- ok?
-    return ok
+    return ok, errors
 end
 
 -- ignore some flags
