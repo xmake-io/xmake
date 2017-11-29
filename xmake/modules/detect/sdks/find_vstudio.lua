@@ -30,7 +30,7 @@ function _load_vcvarsall(vcvarsall, arch)
 
     -- make the genvcvars.bat 
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
-    local genvcvars_dat = os.tmpfile() .. "_genvcvars.dat"
+    local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
     file:print("call \"%s\" %s > nul", vcvarsall, arch)

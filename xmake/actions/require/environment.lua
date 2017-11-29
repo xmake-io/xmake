@@ -62,7 +62,6 @@ function leave()
     for _, name in ipairs("cc", "cxx", "mm", "mxx", "ld", "ar", "sh") do
         local value = _g.toolenvs[name]
         if value then
-        print(name, #value)
             os.setenv(name:upper(), value)
         end
     end
