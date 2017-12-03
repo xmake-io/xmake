@@ -389,7 +389,7 @@ function _select_packages_version(packages)
             end
 
             -- select package version
-            local version, source = semver.select(package:requireinfo().version, package:get("versions"), refs.tags, refs.branches)
+            local version, source = semver.select(package:requireinfo().version, package:versions(), refs.tags, refs.branches)
 
             -- save version to package
             package:version_set(version, source)

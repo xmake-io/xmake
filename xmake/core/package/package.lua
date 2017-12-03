@@ -133,16 +133,16 @@ end
 function _instance:sha256(url_alias)
 
     -- get sha256
-    local sha256s     = self:get("sha256s")
+    local versions    = self:get("versions")
     local version_str = self:version_str()
-    if sha256s and version_str then
+    if versions and version_str then
 
         local sha256 = nil
         if url_alias then
-            sha256 = sha256s[url_alias .. "@" ..version_str]
+            sha256 = versions[url_alias .. ":" ..version_str]
         end
         if not sha256 then
-            sha256 = sha256s[version_str]
+            sha256 = versions[version_str]
         end
 
         -- ok?
@@ -187,6 +187,30 @@ function _instance:installdir()
 
     -- make install directory
     return path.join(package.installdir(self:from("global")), self:fullname(), self:version_str())
+end
+
+-- get versions
+function _instance:versions()
+
+    -- make versions 
+    if self._VERSIONS == nil then
+
+        -- get versions
+        local versions = {}
+        for version, _ in pairs(table.wrap(self:get("versions"))) do
+
+            -- remove the url alias prefix if exists
+            local pos = version:find(':', 1, true)
+            if pos then
+                version = version:sub(pos + 1, -1)
+            end
+            table.insert(versions, version)
+        end
+
+        -- remove repeat
+        self._VERSIONS = table.unique(versions)
+    end
+    return self._VERSIONS
 end
 
 -- get the version  
@@ -381,14 +405,12 @@ function package.apis()
             -- package.set_xxx
             "package.set_urls"
         ,   "package.set_kind"
-        ,   "package.set_versions"
         ,   "package.set_homepage"
         ,   "package.set_description"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"
         ,   "package.add_imports"
-        ,   "package.add_versions"
         }
     ,   script =
         {
@@ -409,10 +431,8 @@ function package.apis()
         }
     ,   dictionary = 
         {
-            -- package.set_xxx
-            "package.set_sha256s"
             -- package.add_xxx
-        ,   "package.add_sha256s"
+            "package.add_versions"
         }
     }
 end

@@ -90,9 +90,12 @@ function _download(package, url, sourcedir, url_alias)
     -- get package file
     local packagefile = path.filename(url)
 
-    -- the package file have been downloaded?
+    -- get sha256
     local sha256 = package:sha256(url_alias)
-    if option.get("force") or not os.isfile(packagefile) or (sha256 and sha256 ~= hash.sha256(packagefile)) then
+    assert(sha256, "cannot get sha256 of %s in package(%s)", url, package:fullname())
+
+    -- the package file have been downloaded?
+    if option.get("force") or not os.isfile(packagefile) or sha256 ~= hash.sha256(packagefile) then
 
         -- attempt to remove package file first
         os.rm(packagefile)
