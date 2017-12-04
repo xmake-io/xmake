@@ -47,4 +47,4 @@ if is_mode("coverage") then
 end
 
 -- add projects
-includes("src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 
+includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 
