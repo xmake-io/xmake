@@ -6,6 +6,9 @@ target("lcurses")
 
     -- add deps
     add_deps("luajit")
+    if is_plat("windows") then
+        add_deps("pdcurses")
+    end
 
     -- set the object files directory
     set_objectdir("$(buildir)/.objs")

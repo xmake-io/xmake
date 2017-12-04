@@ -25,6 +25,7 @@ target("xmake")
     -- add the common source files
     add_files("**.c") 
   
-    -- add options
+    -- add readline
     add_options("curses", "readline")      
+ 
 

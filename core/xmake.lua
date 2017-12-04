@@ -56,11 +56,17 @@ option_end()
 
 -- the curses option
 option("curses")
-    add_links("curses")
-    add_cincludes("curses.h")
-    add_cfuncs("initscr")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
+    if is_plat("windows") then
+        add_defines("PDCURSES")
+    else
+        add_links("curses")
+        add_cincludes("curses.h")
+    end
 option_end()
 
 -- add projects
 includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 
+if is_plat("windows") then
+    includes("src/pdcurses")
+end
