@@ -10,9 +10,12 @@ lcurses_TYPE 			= LIB
 # config
 lcurses_CONFIG 			= n
 
-# core files
+# curses files
 lcurses_C_FILES 		+= lcurses
-										
+						
+# curses flags
+lcurses_CXFLAGS 		+= $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG_API_HAVE_CURSES,)
+
 # includes
 lcurses_INC_DIRS  		+= ../luajit/src
 

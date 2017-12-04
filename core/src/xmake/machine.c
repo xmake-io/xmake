@@ -132,6 +132,11 @@ tb_int_t xm_semver_parse(lua_State* lua);
 tb_int_t xm_semver_satisfies(lua_State* lua);
 tb_int_t xm_semver_select(lua_State* lua);
 
+#ifdef XM_CONFIG_API_HAVE_CURSES
+// register curses
+tb_int_t xm_curses_register(lua_State* lua);
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -485,6 +490,12 @@ xm_machine_ref_t xm_machine_init()
 
         // bind semver functions
         luaL_register(impl->lua, "semver", g_semver_functions);
+
+#ifdef XM_CONFIG_API_HAVE_CURSES
+        // bind curses 
+        xm_curses_register(impl->lua);
+        lua_setglobal(impl->lua, "curses");
+#endif
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)

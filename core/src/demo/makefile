@@ -14,9 +14,9 @@ demo_C_FILES 									+= xmake
 demo_PKGS-$(BASE)  								+= base 
 
 # others
-demo_LIBS 										+= xmake$(DTYPE) tbox$(DTYPE) luajit$(DTYPE) sv$(DTYPE)
-demo_INC_DIRS 									+= ../ ../tbox/src ../tbox/inc/$(PLAT) ../luajit/src ../sv/include
-demo_LIB_DIRS 									+= ../xmake ../tbox ../luajit ../sv 
+demo_LIBS 										+= xmake$(DTYPE) lcurses$(DTYPE) tbox$(DTYPE) luajit$(DTYPE) sv$(DTYPE)
+demo_INC_DIRS 									+= ../ ../tbox/src ../tbox/inc/$(PLAT) ../luajit/src ../sv/include 
+demo_LIB_DIRS 									+= ../xmake ../tbox ../luajit ../sv ../lcurses 
 demo_CXFLAGS 									+= -D__tb_prefix__=\"xmake\"
 
 # suffix

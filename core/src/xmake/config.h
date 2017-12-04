@@ -22,8 +22,8 @@
  * @file        config.h
  *
  */
-#ifndef XM_GBOX_CONFIG_H
-#define XM_GBOX_CONFIG_H
+#ifndef XM_CORE_CONFIG_H
+#define XM_CORE_CONFIG_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes

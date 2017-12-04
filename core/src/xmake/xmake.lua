@@ -5,7 +5,7 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    add_deps("sv", "luajit", "tbox")
+    add_deps("lcurses", "sv", "luajit", "tbox")
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
@@ -24,7 +24,7 @@ target("xmake")
 
     -- add the common source files
     add_files("**.c") 
-       
-    -- add cfunc
-    add_cfunc("API", "readline", "readline", {"readline/readline.h"}, "readline")
+  
+    -- add options
+    add_options("curses", "readline")      
 

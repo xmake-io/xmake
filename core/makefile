@@ -250,7 +250,7 @@ endif
 # config base
 ifeq ($(PLAT),macosx)
 base_LIBPATH 	:= /usr/local/lib
-base_LIBNAMES 	:= readline m dl pthread
+base_LIBNAMES 	:= curses readline m dl pthread
 endif
 
 ifeq ($(PLAT),windows)
@@ -260,7 +260,10 @@ endif
 
 ifeq ($(PLAT),linux)
 base_LIBPATH 	:=
-base_LIBNAMES 	:= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) m dl pthread
+base_LIBNAMES 	:= 
+base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -o /dev/null 2>/dev/null; }; then echo curses; fi ) 
+base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) 
+base_LIBNAMES 	+= m dl pthread
 endif
 
 # check jit compiler

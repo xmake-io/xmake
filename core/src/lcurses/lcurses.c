@@ -59,6 +59,8 @@ Notes:
   mostly for cui usage.
 ************************************************************************/
 
+#ifdef XM_CONFIG_API_HAVE_CURSES
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2305,7 +2307,7 @@ static const luaL_reg curseslib[] =
 };
 
 
-int luaopen_cui_curses (lua_State *L)
+int xm_curses_register (lua_State *L)
 {
     /*
     ** create new metatable for window objects
@@ -2415,3 +2417,4 @@ static void init_ascii_map()
     ascii_map[252] = 110;           ascii_map[253] = 50;            ascii_map[254] = ACS_BULLET;    ascii_map[255] = 32;
 }
 
+#endif

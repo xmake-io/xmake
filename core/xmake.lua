@@ -46,5 +46,21 @@ if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
+-- the readline option
+option("readline")
+    add_links("readline")
+    add_cincludes("readline/readline.h")
+    add_cfuncs("readline")
+    add_defines("XM_CONFIG_API_HAVE_READLINE")
+option_end()
+
+-- the curses option
+option("curses")
+    add_links("curses")
+    add_cincludes("curses.h")
+    add_cfuncs("initscr")
+    add_defines("XM_CONFIG_API_HAVE_CURSES")
+option_end()
+
 -- add projects
 includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 

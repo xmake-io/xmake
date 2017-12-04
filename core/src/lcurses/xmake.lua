@@ -15,5 +15,6 @@ target("lcurses")
 
     -- add the common source files
     add_files("*.c") 
-       
-
+  
+    -- add options
+    add_options("curses")
