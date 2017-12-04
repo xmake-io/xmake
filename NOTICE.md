@@ -5,6 +5,14 @@ This product includes software developed by The TBOOX Open Source Group (http://
 
 -------------------------------------------------------------------------------
 
+This product depends on 'lcurses', The Treasure Box Library,
+which can be obtained at:
+
+  * LICENSE:
+    * core/src/lcurses/LICENSE (MIT License)
+  * HOMEPAGE:
+    * http://lua-cui.sourceforge.net/
+
 This product depends on 'LuaJIT', a Just-In-Time Compiler for Lua,
 which can be obtained at:
 
