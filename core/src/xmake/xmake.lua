@@ -26,6 +26,11 @@ target("xmake")
     add_files("**.c") 
   
     -- add readline
-    add_options("curses", "readline")      
+    add_options("readline")      
+    if is_plat("windows") then
+        add_defines("XM_CONFIG_API_HAVE_CURSES")
+    else
+        add_options("curses")
+    end
  
 

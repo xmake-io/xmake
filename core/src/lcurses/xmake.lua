@@ -20,4 +20,9 @@ target("lcurses")
     add_files("*.c") 
   
     -- add options
-    add_options("curses")
+    if is_plat("windows") then
+        add_defines("PDCURSES", "XM_CONFIG_API_HAVE_CURSES")
+        add_includedirs("../pdcurses")
+    else
+        add_options("curses")
+    end

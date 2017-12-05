@@ -276,7 +276,7 @@ static void lcw_new(lua_State *L, WINDOW *nw)
 {
     if (nw)
     {
-        WINDOW **w = lua_newuserdata(L, sizeof(WINDOW*));
+        WINDOW **w = (WINDOW**)lua_newuserdata(L, sizeof(WINDOW*));
         luaL_getmetatable(L, WINDOWMETA);
         lua_setmetatable(L, -2);
         *w = nw;
@@ -363,7 +363,7 @@ static chstr* chstr_new(lua_State *L, int len)
         lua_error(L);
     }
     {
-        chstr *cs = lua_newuserdata(L, CHSTR_SIZE(len));
+        chstr *cs = (chstr*)lua_newuserdata(L, CHSTR_SIZE(len));
         luaL_getmetatable(L, CHSTRMETA);
         lua_setmetatable(L, -2);
         cs->len = len;
@@ -410,9 +410,9 @@ static int chstr_set_str(lua_State *L)
     if (index < 0)
         return 0;
 
-    while (rep-- > 0 && index <= cs->len)
+    while (rep-- > 0 && index <= (int)cs->len)
     {
-        if (index + len - 1 > cs->len)
+        if (index + len - 1 > (int)cs->len)
             len = cs->len - index + 1;
 
         if (map_output)
@@ -457,7 +457,7 @@ static int chstr_set_ch(lua_State *L)
 
     while (rep-- > 0)
     {
-        if (index < 0 || index >= cs->len)
+        if (index < 0 || index >= (int)cs->len)
             return 0;
 
         if (map_output && ch <= 255)
@@ -477,7 +477,7 @@ static int chstr_get(lua_State *L)
     int index = luaL_checkint(L, 2);
     chtype ch;
 
-    if (index < 0 || index >= cs->len)
+    if (index < 0 || index >= (int)cs->len)
         return 0;
 
     ch = cs->str[index];
@@ -669,7 +669,9 @@ static int lc_initscr(lua_State *L)
     init_ascii_map();
 
     /* install cleanup handler to help in debugging and screen trashing */
+#ifndef PDCURSES
     atexit(cleanup);
+#endif
     /* disable interrupt signal
     signal(SIGINT, SIG_IGN);
     signal(SIGBREAK, SIG_IGN);
@@ -1318,7 +1320,7 @@ static int lcw_waddchnstr(lua_State *L)
     int n = luaL_optint(L, 3, -1);
     chstr *cs = lc_checkchstr(L, 2);
 
-    if (n < 0 || n > cs->len)
+    if (n < 0 || n > (int)cs->len)
         n = cs->len;
 
     lua_pushboolean(L, B(waddchnstr(w, cs->str, n)));
@@ -1333,7 +1335,7 @@ static int lcw_mvwaddchnstr(lua_State *L)
     int n = luaL_optint(L, 5, -1);
     chstr *cs = lc_checkchstr(L, 4);
 
-    if (n < 0 || n > cs->len)
+    if (n < 0 || n > (int)cs->len)
         n = cs->len;
 
     lua_pushboolean(L, B(mvwaddchnstr(w, y, x, cs->str, n)));
