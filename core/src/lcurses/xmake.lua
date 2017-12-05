@@ -17,7 +17,7 @@ target("lcurses")
     add_includedirs("$(buildir)/luajit")
 
     -- add the common source files
-    add_files("*.c") 
+    add_files("lcurses.c") 
   
     -- add options
     if is_plat("windows") then
