@@ -13,7 +13,7 @@ which can be obtained at:
   * HOMEPAGE:
     * http://pdcurses.org/
 
-This product depends on 'lcurses', Lua Console User Interface,
+This product depends on 'lcurses/cui', Lua Console User Interface,
 which can be obtained at:
 
   * LICENSE:
