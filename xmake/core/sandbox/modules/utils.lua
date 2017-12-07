@@ -60,7 +60,7 @@ function sandbox_utils._print(...)
     utils._print(unpack(args))
 
     -- write to the log file
-    log.printv(unpack(args))
+    log:printv(unpack(args))
 end
 
 -- print format string with newline
@@ -83,7 +83,7 @@ function sandbox_utils.print(format, ...)
                 utils._print(message)
 
                 -- write to the log file
-                log.printv(message)
+                log:printv(message)
             end,
             catch 
             {
@@ -110,7 +110,7 @@ function sandbox_utils.printf(format, ...)
     utils._iowrite(message)
 
     -- write log to the log file
-    log.write(message)
+    log:write(message)
 end
 
 -- print format string, the builtin variables and colors with newline
@@ -123,8 +123,8 @@ function sandbox_utils.cprint(format, ...)
     utils._print(colors.translate(message))
 
     -- write log to the log file
-    if log.file() then
-        log.printv(colors.ignore(message))
+    if log:file() then
+        log:printv(colors.ignore(message))
     end
 end
 
@@ -138,8 +138,8 @@ function sandbox_utils.cprintf(format, ...)
     utils._iowrite(colors.translate(message))
 
     -- write log to the log file
-    if log.file() then
-        log.write(colors.ignore(message))
+    if log:file() then
+        log:write(colors.ignore(message))
     end
 end
 

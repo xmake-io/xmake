@@ -78,7 +78,7 @@ function utils.print(format, ...)
     utils._print(message)
 
     -- write to the log file
-    log.printv(message)
+    log:printv(message)
 end
 
 -- print format string without newline
@@ -94,7 +94,7 @@ function utils.printf(format, ...)
     utils._iowrite(message)
 
     -- write to the log file
-    log.write(message)
+    log:write(message)
 end
 
 -- print format string and colors with newline
@@ -110,8 +110,8 @@ function utils.cprint(format, ...)
     utils._print(colors.translate(message))
 
     -- write to the log file
-    if log.file() then
-        log.printv(colors.ignore(message))
+    if log:file() then
+        log:printv(colors.ignore(message))
     end
 end
 
@@ -128,8 +128,8 @@ function utils.cprintf(format, ...)
     utils._iowrite(colors.translate(message))
 
     -- write to the log file
-    if log.file() then
-        log.write(colors.ignore(message))
+    if log:file() then
+        log:write(colors.ignore(message))
     end
 end
 
@@ -148,7 +148,7 @@ function utils.verror(format, ...)
     -- enable verbose?
     if option.get("verbose") and format ~= nil then
         utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
-        log.flush()
+        log:flush()
     end
 end
 
@@ -158,7 +158,7 @@ function utils.error(format, ...)
     -- trace
     if format ~= nil then
         utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
-        log.flush()
+        log:flush()
     end
 end
 
@@ -182,7 +182,7 @@ function utils.warning(format, ...)
     end
 
     -- flush
-    log.flush()
+    log:flush()
 end
 
 -- ifelse, a? b : c

@@ -26,11 +26,11 @@
 local log = log or {}
 
 -- get the log file
-function log.file()
+function log:file()
 
     -- get the output file 
-    if log._FILE == nil then
-        local outputfile = log.outputfile()
+    if self._FILE == nil then
+        local outputfile = self:outputfile()
         if outputfile then
 
             -- get directory
@@ -48,48 +48,48 @@ function log.file()
             end
 
             -- open the log file
-            log._FILE = io.open(outputfile, 'w+')
+            self._FILE = io.open(outputfile, 'w+')
         end
-        log._FILE = log._FILE or false
+        self._FILE = self._FILE or false
     end
-    return log._FILE
+    return self._FILE
 end
 
 -- get the output file
-function log.outputfile()
-    if log._LOGFILE == nil then
-        log._LOGFILE = os.getenv("XMAKE_LOGFILE") or false
+function log:outputfile()
+    if self._LOGFILE == nil then
+        self._LOGFILE = os.getenv("XMAKE_LOGFILE") or false
     end
-    return log._LOGFILE
+    return self._LOGFILE
 end
 
 -- flush log to file
-function log.flush()
-    local file = log.file()
+function log:flush()
+    local file = log:file()
     if file then
         io.flush(file)
     end
 end
 
 -- close the log file
-function log.close()
-    local file = log.file()
+function log:close()
+    local file = log:file()
     if file then
         file:close()
     end
 end
 
 -- print log to the log file
-function log.print(...)
-    local file = log.file()
+function log:print(...)
+    local file = log:file()
     if file then
         file:write(string.format(...) .. "\n")
     end
 end
 
 -- print variables to the log file
-function log.printv(...)
-    local file = log.file()
+function log:printv(...)
+    local file = log:file()
     if file then
         local values = {...}
         for i, v in ipairs(values) do
@@ -108,8 +108,8 @@ function log.printv(...)
 end
 
 -- printf log to the log file
-function log.printf(...)
-    local file = log.file()
+function log:printf(...)
+    local file = self:file()
     if file then
         file:write(string.format(...))
     end
@@ -117,7 +117,7 @@ end
 
 -- write log the log file
 function log:write(...)
-    local file = log.file()
+    local file = self:file()
     if file then
         file:write(...)
     end

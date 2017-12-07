@@ -271,7 +271,7 @@ Or you can add `--root` option to allow run as root temporarily.
     end
 
     -- close log
-    log.close()
+    log:close()
 
     -- ok
     return 0

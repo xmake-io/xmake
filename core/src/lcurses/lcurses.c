@@ -1436,14 +1436,12 @@ static int lc_raw(lua_State *L)
     return 1;
 }
 
-#if 0 // disable it because need link libtinfo.so on linux
 static int lc_halfdelay(lua_State *L)
 {
     int tenths = luaL_checkint(L, 1);
     lua_pushboolean(L, B(halfdelay(tenths)));
     return 1;
 }
-#endif
 
 static int lcw_intrflush(lua_State *L)
 {
@@ -2265,7 +2263,7 @@ static const luaL_reg curseslib[] =
     { "cbreak",         lc_cbreak       },
     { "echo",           lc_echo         },
     { "raw",            lc_raw          },
-//    { "halfdelay",      lc_halfdelay    },
+    { "halfdelay",      lc_halfdelay    },
 
     /* util */
     { "unctrl",         lc_unctrl       },

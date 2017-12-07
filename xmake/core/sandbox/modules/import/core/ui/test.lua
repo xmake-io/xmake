@@ -26,10 +26,17 @@
 local sandbox_core_ui_test = sandbox_core_ui_test or {}
 
 -- load modules
+local log       = require("ui/log")
+local curses    = require("ui/curses")
 local raise     = require("sandbox/modules/raise")
 
 function test()
 
+    log:flush()
+    curses.init()
+    print(curses.color_pair("yellow", "red"))
+
+    --[[
     curses.init()
     local blines = 5
     local olines = 10
@@ -70,7 +77,7 @@ function test()
         if (cmd == 'exit' or string.byte(cmd, 1, 1) == 4) then 
             break
         end
-    end
+    end]]
 end
 
 function sandbox_core_ui_test.main()

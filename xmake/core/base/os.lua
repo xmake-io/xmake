@@ -653,7 +653,7 @@ end
 function os.raise(msg, ...)
 
     -- flush log
-    log.flush()
+    log:flush()
 
     -- flush io buffer 
     io.flush()

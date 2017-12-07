@@ -28,20 +28,10 @@ local object = object or {}
 -- taken from 'std' library: http://luaforge.net/projects/stdlib/
 -- and http://lua-cui.sourceforge.net/
 --
--- create an object/class:
---  > object/class = parent {value, ...; field = value ...}
---  > An object's metatable is itself.
---  >   In the initialiser, unnamed values are assigned to the fields
---  >   given by _init (assuming the default _clone).
---  >   Private fields and methods start with "_"
---  >
--- 
--- Access an object field: object.field
---  > Call an object method: object:method (...)
---  > Call a class method: class.method (self, ...)
---  >
---  > Add a field: object.field = x
---  > Add a method: function object:method (...) ... end
+-- local point = object { _init = {"x", "y"} }
+--
+-- local p1 = point {1, 2}
+--  > p1 {x = 1, y = 2}
 --
 
 -- permute some indices of a table
