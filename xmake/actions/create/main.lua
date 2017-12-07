@@ -30,6 +30,9 @@ import("core.project.template")
 -- main
 function main()
 
+    -- enter the original working directory, because the default directory is in the project directory 
+    os.cd(os.workingdir())
+
     -- the target name
     local targetname = option.get("target") or option.get("name") or path.basename(project.directory()) or "demo"
 

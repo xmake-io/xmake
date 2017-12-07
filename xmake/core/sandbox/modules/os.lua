@@ -52,6 +52,7 @@ sandbox_os.getenv       = os.getenv
 sandbox_os.setenv       = os.setenv
 sandbox_os.addenv       = os.addenv
 sandbox_os.emptydir     = os.emptydir
+sandbox_os.workingdir   = os.workingdir
 sandbox_os.programdir   = os.programdir
 sandbox_os.programfile  = os.programfile
 sandbox_os.projectdir   = os.projectdir

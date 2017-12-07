@@ -827,6 +827,11 @@ function os.programfile()
     return xmake._PROGRAM_FILE
 end
 
+-- get the working directory
+function os.workingdir()
+    return xmake._WORKING_DIR
+end
+
 -- get the project directory
 function os.projectdir()
     return xmake._PROJECT_DIR
