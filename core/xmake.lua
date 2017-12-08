@@ -51,9 +51,6 @@ option_end()
 -- the curses option
 option("curses")
     add_links("curses")
-    if is_plat("linux") then
-        add_links("tinfo")
-    end
     add_cincludes("curses.h")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
 option_end()
