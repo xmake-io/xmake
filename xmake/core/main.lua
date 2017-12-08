@@ -192,7 +192,13 @@ function main._init()
     -- update and enter project
     xmake._PROJECT_DIR  = path.directory(projectfile)
     xmake._PROJECT_FILE = projectfile
-    xmake._WORKING_DIR  = os.cd(xmake._PROJECT_DIR)
+
+    -- enter the project directory
+    if os.isdir(os.projectdir()) then
+        xmake._WORKING_DIR = os.cd(os.projectdir())
+    else
+        xmake._WORKING_DIR = os.curdir()
+    end
 
     -- add the directory of the program file (xmake) to $PATH environment
     local programfile = os.programfile()

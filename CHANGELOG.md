@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Improve to search the root project directory
+* Improve to detect vs environment
+
 ## v2.1.9
 
 ### New features
@@ -412,6 +417,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 改进搜索工程根目录策略
+* 改进vs环境探测，支持加密文件系统下vs环境的探测
 
 ## v2.1.9
 
