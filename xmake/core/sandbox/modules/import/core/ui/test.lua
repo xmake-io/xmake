@@ -34,7 +34,15 @@ function test()
 
     log:flush()
     curses.init()
-    print(curses.color_pair("yellow", "red"))
+    curses.echo(false)
+    curses.cbreak(true)
+    curses.nl(false)
+    curses.map_output(true)
+    curses.map_keyboard(true)
+    if (curses.has_colors()) then curses.start_color() end
+    local attr = curses.calc_attr{ curses.color_pair("yellow", "green"), 'bold' }
+    log:printv(attr)
+    log:flush()
 
     --[[
     curses.init()

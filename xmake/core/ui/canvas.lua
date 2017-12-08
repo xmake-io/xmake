@@ -45,8 +45,10 @@ function canvas:new(view, window)
     self._window = window
     assert(view and window, "cannot new canvas instance without view and window!")
 
-    -- TODO
+    -- set the default attributes
     self:attr()
+
+    -- done
     return self
 end
 
@@ -89,21 +91,23 @@ function canvas:write(str, len)
     return self
 end
 
+-- set canvas attributes
+--
+-- set attr:    canvas:attr("bold")
+-- add attr:    canvas:attr("bold", true)
+-- remove attr: canvas:attr("bold", false)
+--
 function canvas:attr(attrs, modify)
-    local w = self._window
-    local apply = w.attron
+
+    -- calculate the attributes
     local attr = curses.calc_attr(attrs)
-
     if modify == nil then
-        w:attrset(attr)
+        self._window:attrset(attr)
     elseif modify == false then
-        w:attroff(attr)
+        self._window:attroff(attr)
     else
-        w:attron(attr)
+        self._window:attron(attr)
     end
-
-    apply(w, attr)
-
     return self
 end
 

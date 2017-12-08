@@ -123,7 +123,7 @@ function curses.calc_attr(attrs)
     elseif atype == 'table' then
         local v = 0
         local set = {}
-        for _, a in pairs(attrs) do --TODO ipairs?
+        for _, a in ipairs(attrs) do 
             if not set[a] and a then
                 set[a] = true
                 if type(a) == 'number' then
@@ -140,6 +140,7 @@ function curses.calc_attr(attrs)
 end
 
 -- get attr from the color pair
+curses._color_pair = curses._color_pair or curses.color_pair
 function curses.color_pair(fg, bg)
 
     -- get foreground and backround color
@@ -166,8 +167,9 @@ function curses.color_pair(fg, bg)
         os.raise("failed to initialize color pair (%d, %s, %s)", curses._NCOLORS, fg, bg)
     end
 
+    -- TODO rename
     -- get the color attr
-    local attr = curses.color_pair(curses._NCOLORS)
+    local attr = curses._color_pair(curses._NCOLORS)
 
     -- save to cache
     colors[key] = attr
