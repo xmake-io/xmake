@@ -28,6 +28,14 @@ ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(ARCH))
 ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
 
+# for arm linux? 
+ifeq ($(PLAT),linux)
+ARCHSTR 	:= $(shell uname -m)
+ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
+ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
+ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
+endif
+
 endif
 
 xmake_dir_install   :=$(prefix)/share/xmake
