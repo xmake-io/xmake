@@ -1,6 +1,6 @@
 /*
 ** Garbage collector.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_GC_H
@@ -107,8 +107,8 @@ static LJ_AINLINE void lj_gc_barrierback(global_State *g, GCtab *t)
       lj_gc_barrierf(G(L), obj2gco(p), obj2gco(o)); }
 
 /* Allocator. */
-LJ_FUNC void *lj_mem_realloc(lua_State *L, void *p, MSize osz, MSize nsz);
-LJ_FUNC void * LJ_FASTCALL lj_mem_newgco(lua_State *L, MSize size);
+LJ_FUNC void *lj_mem_realloc(lua_State *L, void *p, GCSize osz, GCSize nsz);
+LJ_FUNC void * LJ_FASTCALL lj_mem_newgco(lua_State *L, GCSize size);
 LJ_FUNC void *lj_mem_grow(lua_State *L, void *p,
 			  MSize *szp, MSize lim, MSize esz);
 
@@ -116,13 +116,13 @@ LJ_FUNC void *lj_mem_grow(lua_State *L, void *p,
 
 static LJ_AINLINE void lj_mem_free(global_State *g, void *p, size_t osize)
 {
-  g->gc.total -= (MSize)osize;
+  g->gc.total -= (GCSize)osize;
   g->allocf(g->allocd, p, osize, 0);
 }
 
-#define lj_mem_newvec(L, n, t)	((t *)lj_mem_new(L, (MSize)((n)*sizeof(t))))
+#define lj_mem_newvec(L, n, t)	((t *)lj_mem_new(L, (GCSize)((n)*sizeof(t))))
 #define lj_mem_reallocvec(L, p, on, n, t) \
-  ((p) = (t *)lj_mem_realloc(L, p, (on)*sizeof(t), (MSize)((n)*sizeof(t))))
+  ((p) = (t *)lj_mem_realloc(L, p, (on)*sizeof(t), (GCSize)((n)*sizeof(t))))
 #define lj_mem_growvec(L, p, n, m, t) \
   ((p) = (t *)lj_mem_grow(L, (p), &(n), (m), (MSize)sizeof(t)))
 #define lj_mem_freevec(g, p, n, t)	lj_mem_free(g, (p), (n)*sizeof(t))

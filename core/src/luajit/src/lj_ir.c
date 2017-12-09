@@ -1,6 +1,6 @@
 /*
 ** SSA IR (Intermediate Representation) emitter.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_ir_c
@@ -15,6 +15,7 @@
 #if LJ_HASJIT
 
 #include "lj_gc.h"
+#include "lj_buf.h"
 #include "lj_str.h"
 #include "lj_tab.h"
 #include "lj_ir.h"
@@ -29,6 +30,7 @@
 #endif
 #include "lj_vm.h"
 #include "lj_strscan.h"
+#include "lj_strfmt.h"
 #include "lj_lib.h"
 
 /* Some local macros to save typing. Undef'd at the end. */
@@ -89,7 +91,7 @@ static void lj_ir_growbot(jit_State *J)
   IRIns *baseir = J->irbuf + J->irbotlim;
   MSize szins = J->irtoplim - J->irbotlim;
   lua_assert(szins != 0);
-  lua_assert(J->cur.nk == J->irbotlim);
+  lua_assert(J->cur.nk == J->irbotlim || J->cur.nk-1 == J->irbotlim);
   if (J->cur.nins + (szins >> 1) < J->irtoplim) {
     /* More than half of the buffer is free on top: shift up by a quarter. */
     MSize ofs = szins >> 2;
@@ -143,6 +145,16 @@ TRef lj_ir_call(jit_State *J, IRCallID id, ...)
   return emitir(CCI_OPTYPE(ci), tr, id);
 }
 
+/* Load field of type t from GG_State + offset. Must be 32 bit aligned. */
+LJ_FUNC TRef lj_ir_ggfload(jit_State *J, IRType t, uintptr_t ofs)
+{
+  lua_assert((ofs & 3) == 0);
+  ofs >>= 2;
+  lua_assert(ofs >= IRFL__MAX && ofs <= 0x3ff);  /* 10 bit FOLD key limit. */
+  lj_ir_set(J, IRT(IR_FLOAD, t), REF_NIL, ofs);
+  return lj_opt_fold(J);
+}
+
 /* -- Interning of constants ---------------------------------------------- */
 
 /*
@@ -163,6 +175,24 @@ static LJ_AINLINE IRRef ir_nextk(jit_State *J)
   return ref;
 }
 
+/* Get ref of next 64 bit IR constant and optionally grow IR.
+** Note: this may invalidate all IRIns *!
+*/
+static LJ_AINLINE IRRef ir_nextk64(jit_State *J)
+{
+  IRRef ref = J->cur.nk - 2;
+  lua_assert(J->state != LJ_TRACE_ASM);
+  if (LJ_UNLIKELY(ref < J->irbotlim)) lj_ir_growbot(J);
+  J->cur.nk = ref;
+  return ref;
+}
+
+#if LJ_GC64
+#define ir_nextkgc ir_nextk64
+#else
+#define ir_nextkgc ir_nextk
+#endif
+
 /* Intern int32_t constant. */
 TRef LJ_FASTCALL lj_ir_kint(jit_State *J, int32_t k)
 {
@@ -182,79 +212,21 @@ found:
   return TREF(ref, IRT_INT);
 }
 
-/* The MRef inside the KNUM/KINT64 IR instructions holds the address of the
-** 64 bit constant. The constants themselves are stored in a chained array
-** and shared across traces.
-**
-** Rationale for choosing this data structure:
-** - The address of the constants is embedded in the generated machine code
-**   and must never move. A resizable array or hash table wouldn't work.
-** - Most apps need very few non-32 bit integer constants (less than a dozen).
-** - Linear search is hard to beat in terms of speed and low complexity.
-*/
-typedef struct K64Array {
-  MRef next;			/* Pointer to next list. */
-  MSize numk;			/* Number of used elements in this array. */
-  TValue k[LJ_MIN_K64SZ];	/* Array of constants. */
-} K64Array;
-
-/* Free all chained arrays. */
-void lj_ir_k64_freeall(jit_State *J)
-{
-  K64Array *k;
-  for (k = mref(J->k64, K64Array); k; ) {
-    K64Array *next = mref(k->next, K64Array);
-    lj_mem_free(J2G(J), k, sizeof(K64Array));
-    k = next;
-  }
-}
-
-/* Find 64 bit constant in chained array or add it. */
-cTValue *lj_ir_k64_find(jit_State *J, uint64_t u64)
-{
-  K64Array *k, *kp = NULL;
-  TValue *ntv;
-  MSize idx;
-  /* Search for the constant in the whole chain of arrays. */
-  for (k = mref(J->k64, K64Array); k; k = mref(k->next, K64Array)) {
-    kp = k;  /* Remember previous element in list. */
-    for (idx = 0; idx < k->numk; idx++) {  /* Search one array. */
-      TValue *tv = &k->k[idx];
-      if (tv->u64 == u64)  /* Needed for +-0/NaN/absmask. */
-	return tv;
-    }
-  }
-  /* Constant was not found, need to add it. */
-  if (!(kp && kp->numk < LJ_MIN_K64SZ)) {  /* Allocate a new array. */
-    K64Array *kn = lj_mem_newt(J->L, sizeof(K64Array), K64Array);
-    setmref(kn->next, NULL);
-    kn->numk = 0;
-    if (kp)
-      setmref(kp->next, kn);  /* Chain to the end of the list. */
-    else
-      setmref(J->k64, kn);  /* Link first array. */
-    kp = kn;
-  }
-  ntv = &kp->k[kp->numk++];  /* Add to current array. */
-  ntv->u64 = u64;
-  return ntv;
-}
-
-/* Intern 64 bit constant, given by its address. */
-TRef lj_ir_k64(jit_State *J, IROp op, cTValue *tv)
+/* Intern 64 bit constant, given by its 64 bit pattern. */
+TRef lj_ir_k64(jit_State *J, IROp op, uint64_t u64)
 {
   IRIns *ir, *cir = J->cur.ir;
   IRRef ref;
   IRType t = op == IR_KNUM ? IRT_NUM : IRT_I64;
   for (ref = J->chain[op]; ref; ref = cir[ref].prev)
-    if (ir_k64(&cir[ref]) == tv)
+    if (ir_k64(&cir[ref])->u64 == u64)
       goto found;
-  ref = ir_nextk(J);
+  ref = ir_nextk64(J);
   ir = IR(ref);
-  lua_assert(checkptr32(tv));
-  setmref(ir->ptr, tv);
+  ir[1].tv.u64 = u64;
   ir->t.irt = t;
   ir->o = op;
+  ir->op12 = 0;
   ir->prev = J->chain[op];
   J->chain[op] = (IRRef1)ref;
 found:
@@ -264,13 +236,13 @@ found:
 /* Intern FP constant, given by its 64 bit pattern. */
 TRef lj_ir_knum_u64(jit_State *J, uint64_t u64)
 {
-  return lj_ir_k64(J, IR_KNUM, lj_ir_k64_find(J, u64));
+  return lj_ir_k64(J, IR_KNUM, u64);
 }
 
 /* Intern 64 bit integer constant. */
 TRef lj_ir_kint64(jit_State *J, uint64_t u64)
 {
-  return lj_ir_k64(J, IR_KINT64, lj_ir_k64_find(J, u64));
+  return lj_ir_k64(J, IR_KINT64, u64);
 }
 
 /* Check whether a number is int and return it. -0 is NOT considered an int. */
@@ -309,10 +281,11 @@ TRef lj_ir_kgc(jit_State *J, GCobj *o, IRType t)
   for (ref = J->chain[IR_KGC]; ref; ref = cir[ref].prev)
     if (ir_kgc(&cir[ref]) == o)
       goto found;
-  ref = ir_nextk(J);
+  ref = ir_nextkgc(J);
   ir = IR(ref);
   /* NOBARRIER: Current trace is a GC root. */
-  setgcref(ir->gcr, o);
+  ir->op12 = 0;
+  setgcref(ir[LJ_GC64].gcr, o);
   ir->t.irt = (uint8_t)t;
   ir->o = IR_KGC;
   ir->prev = J->chain[IR_KGC];
@@ -321,24 +294,44 @@ found:
   return TREF(ref, t);
 }
 
-/* Intern 32 bit pointer constant. */
+/* Allocate GCtrace constant placeholder (no interning). */
+TRef lj_ir_ktrace(jit_State *J)
+{
+  IRRef ref = ir_nextkgc(J);
+  IRIns *ir = IR(ref);
+  lua_assert(irt_toitype_(IRT_P64) == LJ_TTRACE);
+  ir->t.irt = IRT_P64;
+  ir->o = LJ_GC64 ? IR_KNUM : IR_KNULL;  /* Not IR_KGC yet, but same size. */
+  ir->op12 = 0;
+  ir->prev = 0;
+  return TREF(ref, IRT_P64);
+}
+
+/* Intern pointer constant. */
 TRef lj_ir_kptr_(jit_State *J, IROp op, void *ptr)
 {
   IRIns *ir, *cir = J->cur.ir;
   IRRef ref;
-  lua_assert((void *)(intptr_t)i32ptr(ptr) == ptr);
+#if LJ_64 && !LJ_GC64
+  lua_assert((void *)(uintptr_t)u32ptr(ptr) == ptr);
+#endif
   for (ref = J->chain[op]; ref; ref = cir[ref].prev)
-    if (mref(cir[ref].ptr, void) == ptr)
+    if (ir_kptr(&cir[ref]) == ptr)
       goto found;
+#if LJ_GC64
+  ref = ir_nextk64(J);
+#else
   ref = ir_nextk(J);
+#endif
   ir = IR(ref);
-  setmref(ir->ptr, ptr);
-  ir->t.irt = IRT_P32;
+  ir->op12 = 0;
+  setmref(ir[LJ_GC64].ptr, ptr);
+  ir->t.irt = IRT_PGC;
   ir->o = op;
   ir->prev = J->chain[op];
   J->chain[op] = (IRRef1)ref;
 found:
-  return TREF(ref, IRT_P32);
+  return TREF(ref, IRT_PGC);
 }
 
 /* Intern typed NULL constant. */
@@ -390,12 +383,11 @@ void lj_ir_kvalue(lua_State *L, TValue *tv, const IRIns *ir)
   UNUSED(L);
   lua_assert(ir->o != IR_KSLOT);  /* Common mistake. */
   switch (ir->o) {
-  case IR_KPRI: setitype(tv, irt_toitype(ir->t)); break;
+  case IR_KPRI: setpriV(tv, irt_toitype(ir->t)); break;
   case IR_KINT: setintV(tv, ir->i); break;
   case IR_KGC: setgcV(L, tv, ir_kgc(ir), irt_toitype(ir->t)); break;
-  case IR_KPTR: case IR_KKPTR: case IR_KNULL:
-    setlightudV(tv, mref(ir->ptr, void));
-    break;
+  case IR_KPTR: case IR_KKPTR: setlightudV(tv, ir_kptr(ir)); break;
+  case IR_KNULL: setlightudV(tv, NULL); break;
   case IR_KNUM: setnumV(tv, ir_knum(ir)->n); break;
 #if LJ_HASFFI
   case IR_KINT64: {
@@ -443,7 +435,8 @@ TRef LJ_FASTCALL lj_ir_tostr(jit_State *J, TRef tr)
   if (!tref_isstr(tr)) {
     if (!tref_isnumber(tr))
       lj_trace_err(J, LJ_TRERR_BADTYPE);
-    tr = emitir(IRT(IR_TOSTR, IRT_STR), tr, 0);
+    tr = emitir(IRT(IR_TOSTR, IRT_STR), tr,
+		tref_isnum(tr) ? IRTOSTR_NUM : IRTOSTR_INT);
   }
   return tr;
 }

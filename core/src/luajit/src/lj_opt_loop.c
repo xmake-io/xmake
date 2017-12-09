@@ -1,6 +1,6 @@
 /*
 ** LOOP: Loop Optimizations.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_opt_loop_c
@@ -11,7 +11,7 @@
 #if LJ_HASJIT
 
 #include "lj_err.h"
-#include "lj_str.h"
+#include "lj_buf.h"
 #include "lj_ir.h"
 #include "lj_jit.h"
 #include "lj_iropt.h"
@@ -254,9 +254,16 @@ static void loop_subst_snap(jit_State *J, SnapShot *osnap,
   J->cur.nsnapmap = (uint16_t)(nmap - J->cur.snapmap);
 }
 
+typedef struct LoopState {
+  jit_State *J;
+  IRRef1 *subst;
+  MSize sizesubst;
+} LoopState;
+
 /* Unroll loop. */
-static void loop_unroll(jit_State *J)
+static void loop_unroll(LoopState *lps)
 {
+  jit_State *J = lps->J;
   IRRef1 phi[LJ_MAX_PHI];
   uint32_t nphi = 0;
   IRRef1 *subst;
@@ -265,13 +272,13 @@ static void loop_unroll(jit_State *J)
   SnapEntry *loopmap, *psentinel;
   IRRef ins, invar;
 
-  /* Use temp buffer for substitution table.
+  /* Allocate substitution table.
   ** Only non-constant refs in [REF_BIAS,invar) are valid indexes.
-  ** Caveat: don't call into the VM or run the GC or the buffer may be gone.
   */
   invar = J->cur.nins;
-  subst = (IRRef1 *)lj_str_needbuf(J->L, &G(J->L)->tmpbuf,
-				   (invar-REF_BIAS)*sizeof(IRRef1)) - REF_BIAS;
+  lps->sizesubst = invar - REF_BIAS;
+  lps->subst = lj_mem_newvec(J->L, lps->sizesubst, IRRef1);
+  subst = lps->subst - REF_BIAS;
   subst[REF_BASE] = REF_BASE;
 
   /* LOOP separates the pre-roll from the loop body. */
@@ -396,7 +403,7 @@ static void loop_undo(jit_State *J, IRRef ins, SnapNo nsnap, MSize nsnapmap)
 static TValue *cploop_opt(lua_State *L, lua_CFunction dummy, void *ud)
 {
   UNUSED(L); UNUSED(dummy);
-  loop_unroll((jit_State *)ud);
+  loop_unroll((LoopState *)ud);
   return NULL;
 }
 
@@ -406,7 +413,13 @@ int lj_opt_loop(jit_State *J)
   IRRef nins = J->cur.nins;
   SnapNo nsnap = J->cur.nsnap;
   MSize nsnapmap = J->cur.nsnapmap;
-  int errcode = lj_vm_cpcall(J->L, NULL, J, cploop_opt);
+  LoopState lps;
+  int errcode;
+  lps.J = J;
+  lps.subst = NULL;
+  lps.sizesubst = 0;
+  errcode = lj_vm_cpcall(J->L, NULL, &lps, cploop_opt);
+  lj_mem_freevec(J2G(J), lps.subst, lps.sizesubst, IRRef1);
   if (LJ_UNLIKELY(errcode)) {
     lua_State *L = J->L;
     if (errcode == LUA_ERRRUN && tvisnumber(L->top-1)) {  /* Trace error? */

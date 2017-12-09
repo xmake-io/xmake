@@ -1,6 +1,6 @@
 /*
 ** Instruction dispatch handling.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_dispatch_c
@@ -8,6 +8,7 @@
 
 #include "lj_obj.h"
 #include "lj_err.h"
+#include "lj_buf.h"
 #include "lj_func.h"
 #include "lj_str.h"
 #include "lj_tab.h"
@@ -17,6 +18,7 @@
 #include "lj_frame.h"
 #include "lj_bc.h"
 #include "lj_ff.h"
+#include "lj_strfmt.h"
 #if LJ_HASJIT
 #include "lj_jit.h"
 #endif
@@ -25,6 +27,9 @@
 #endif
 #include "lj_trace.h"
 #include "lj_dispatch.h"
+#if LJ_HASPROFILE
+#include "lj_profile.h"
+#endif
 #include "lj_vm.h"
 #include "luajit.h"
 
@@ -37,6 +42,12 @@ LJ_STATIC_ASSERT(GG_NUM_ASMFF == FF_NUM_ASMFUNC);
 #include <math.h>
 LJ_FUNCA_NORET void LJ_FASTCALL lj_ffh_coroutine_wrap_err(lua_State *L,
 							  lua_State *co);
+#if !LJ_HASJIT
+#define lj_dispatch_stitch	lj_dispatch_ins
+#endif
+#if !LJ_HASPROFILE
+#define lj_dispatch_profile	lj_dispatch_ins
+#endif
 
 #define GOTFUNC(name)	(ASMFunction)name,
 static const ASMFunction dispatch_got[] = {
@@ -64,7 +75,7 @@ void lj_dispatch_init(GG_State *GG)
   for (i = 0; i < GG_NUM_ASMFF; i++)
     GG->bcff[i] = BCINS_AD(BC__MAX+i, 0, 0);
 #if LJ_TARGET_MIPS
-  memcpy(GG->got, dispatch_got, LJ_GOT__MAX*4);
+  memcpy(GG->got, dispatch_got, LJ_GOT__MAX*sizeof(ASMFunction *));
 #endif
 }
 
@@ -82,11 +93,12 @@ void lj_dispatch_init_hotcount(global_State *g)
 #endif
 
 /* Internal dispatch mode bits. */
-#define DISPMODE_JIT	0x01	/* JIT compiler on. */
-#define DISPMODE_REC	0x02	/* Recording active. */
+#define DISPMODE_CALL	0x01	/* Override call dispatch. */
+#define DISPMODE_RET	0x02	/* Override return dispatch. */
 #define DISPMODE_INS	0x04	/* Override instruction dispatch. */
-#define DISPMODE_CALL	0x08	/* Override call dispatch. */
-#define DISPMODE_RET	0x10	/* Override return dispatch. */
+#define DISPMODE_JIT	0x10	/* JIT compiler on. */
+#define DISPMODE_REC	0x20	/* Recording active. */
+#define DISPMODE_PROF	0x40	/* Profiling active. */
 
 /* Update dispatch table depending on various flags. */
 void lj_dispatch_update(global_State *g)
@@ -97,6 +109,9 @@ void lj_dispatch_update(global_State *g)
   mode |= (G2J(g)->flags & JIT_F_ON) ? DISPMODE_JIT : 0;
   mode |= G2J(g)->state != LJ_TRACE_IDLE ?
 	    (DISPMODE_REC|DISPMODE_INS|DISPMODE_CALL) : 0;
+#endif
+#if LJ_HASPROFILE
+  mode |= (g->hookmask & HOOK_PROFILE) ? (DISPMODE_PROF|DISPMODE_INS) : 0;
 #endif
   mode |= (g->hookmask & (LUA_MASKLINE|LUA_MASKCOUNT)) ? DISPMODE_INS : 0;
   mode |= (g->hookmask & LUA_MASKCALL) ? DISPMODE_CALL : 0;
@@ -126,9 +141,9 @@ void lj_dispatch_update(global_State *g)
     disp[GG_LEN_DDISP+BC_LOOP] = f_loop;
 
     /* Set dynamic instruction dispatch. */
-    if ((oldmode ^ mode) & (DISPMODE_REC|DISPMODE_INS)) {
+    if ((oldmode ^ mode) & (DISPMODE_PROF|DISPMODE_REC|DISPMODE_INS)) {
       /* Need to update the whole table. */
-      if (!(mode & (DISPMODE_REC|DISPMODE_INS))) {  /* No ins dispatch? */
+      if (!(mode & DISPMODE_INS)) {  /* No ins dispatch? */
 	/* Copy static dispatch table to dynamic dispatch table. */
 	memcpy(&disp[0], &disp[GG_LEN_DDISP], GG_LEN_SDISP*sizeof(ASMFunction));
 	/* Overwrite with dynamic return dispatch. */
@@ -140,12 +155,13 @@ void lj_dispatch_update(global_State *g)
 	}
       } else {
 	/* The recording dispatch also checks for hooks. */
-	ASMFunction f = (mode & DISPMODE_REC) ? lj_vm_record : lj_vm_inshook;
+	ASMFunction f = (mode & DISPMODE_PROF) ? lj_vm_profhook :
+			(mode & DISPMODE_REC) ? lj_vm_record : lj_vm_inshook;
 	uint32_t i;
 	for (i = 0; i < GG_LEN_SDISP; i++)
 	  disp[i] = f;
       }
-    } else if (!(mode & (DISPMODE_REC|DISPMODE_INS))) {
+    } else if (!(mode & DISPMODE_INS)) {
       /* Otherwise set dynamic counting ins. */
       disp[BC_FORL] = f_forl;
       disp[BC_ITERL] = f_iterl;
@@ -251,7 +267,7 @@ int luaJIT_setmode(lua_State *L, int idx, int mode)
   case LUAJIT_MODE_FUNC:
   case LUAJIT_MODE_ALLFUNC:
   case LUAJIT_MODE_ALLSUBFUNC: {
-    cTValue *tv = idx == 0 ? frame_prev(L->base-1) :
+    cTValue *tv = idx == 0 ? frame_prev(L->base-1)-LJ_FR2 :
 		  idx > 0 ? L->base + (idx-1) : L->top + idx;
     GCproto *pt;
     if ((idx == 0 || tvisfunc(tv)) && isluafunc(&gcval(tv)->fn))
@@ -352,10 +368,19 @@ static void callhook(lua_State *L, int event, BCLine line)
     /* Top frame, nextframe = NULL. */
     ar.i_ci = (int)((L->base-1) - tvref(L->stack));
     lj_state_checkstack(L, 1+LUA_MINSTACK);
+#if LJ_HASPROFILE && !LJ_PROFILE_SIGPROF
+    lj_profile_hook_enter(g);
+#else
     hook_enter(g);
+#endif
     hookf(L, &ar);
     lua_assert(hook_active(g));
+    setgcref(g->cur_L, obj2gco(L));
+#if LJ_HASPROFILE && !LJ_PROFILE_SIGPROF
+    lj_profile_hook_leave(g);
+#else
     hook_leave(g);
+#endif
   }
 }
 
@@ -368,7 +393,7 @@ static BCReg cur_topslot(GCproto *pt, const BCIns *pc, uint32_t nres)
   if (bc_op(ins) == BC_UCLO)
     ins = pc[bc_j(ins)];
   switch (bc_op(ins)) {
-  case BC_CALLM: case BC_CALLMT: return bc_a(ins) + bc_c(ins) + nres-1+1;
+  case BC_CALLM: case BC_CALLMT: return bc_a(ins) + bc_c(ins) + nres-1+1+LJ_FR2;
   case BC_RETM: return bc_a(ins) + bc_d(ins) + nres-1;
   case BC_TSETM: return bc_a(ins) + nres-1;
   default: return pt->framesize;
@@ -491,4 +516,42 @@ out:
   ERRNO_RESTORE
   return makeasmfunc(lj_bc_ofs[op]);  /* Return static dispatch target. */
 }
+
+#if LJ_HASJIT
+/* Stitch a new trace. */
+void LJ_FASTCALL lj_dispatch_stitch(jit_State *J, const BCIns *pc)
+{
+  ERRNO_SAVE
+  lua_State *L = J->L;
+  void *cf = cframe_raw(L->cframe);
+  const BCIns *oldpc = cframe_pc(cf);
+  setcframe_pc(cf, pc);
+  /* Before dispatch, have to bias PC by 1. */
+  L->top = L->base + cur_topslot(curr_proto(L), pc+1, cframe_multres_n(cf));
+  lj_trace_stitch(J, pc-1);  /* Point to the CALL instruction. */
+  setcframe_pc(cf, oldpc);
+  ERRNO_RESTORE
+}
+#endif
+
+#if LJ_HASPROFILE
+/* Profile dispatch. */
+void LJ_FASTCALL lj_dispatch_profile(lua_State *L, const BCIns *pc)
+{
+  ERRNO_SAVE
+  GCfunc *fn = curr_func(L);
+  GCproto *pt = funcproto(fn);
+  void *cf = cframe_raw(L->cframe);
+  const BCIns *oldpc = cframe_pc(cf);
+  global_State *g;
+  setcframe_pc(cf, pc);
+  L->top = L->base + cur_topslot(pt, pc, cframe_multres_n(cf));
+  lj_profile_interpreter(L);
+  setcframe_pc(cf, oldpc);
+  g = G(L);
+  setgcref(g->cur_L, obj2gco(L));
+  setvmstate(g, INTERP);
+  ERRNO_RESTORE
+}
+#endif
 

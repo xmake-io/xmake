@@ -1,6 +1,6 @@
 /*
 ** Assembler VM interface definitions.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_VM_H
@@ -17,6 +17,10 @@ LJ_ASMF int lj_vm_cpcall(lua_State *L, lua_CFunction func, void *ud,
 LJ_ASMF int lj_vm_resume(lua_State *L, TValue *base, int nres1, ptrdiff_t ef);
 LJ_ASMF_NORET void LJ_FASTCALL lj_vm_unwind_c(void *cframe, int errcode);
 LJ_ASMF_NORET void LJ_FASTCALL lj_vm_unwind_ff(void *cframe);
+#if LJ_ABI_WIN && LJ_TARGET_X86
+LJ_ASMF_NORET void LJ_FASTCALL lj_vm_rtlunwind(void *cframe, void *excptrec,
+					       void *unwinder, int errcode);
+#endif
 LJ_ASMF void lj_vm_unwind_c_eh(void);
 LJ_ASMF void lj_vm_unwind_ff_eh(void);
 #if LJ_TARGET_X86ORX64
@@ -43,13 +47,14 @@ LJ_ASMF void lj_vm_record(void);
 LJ_ASMF void lj_vm_inshook(void);
 LJ_ASMF void lj_vm_rethook(void);
 LJ_ASMF void lj_vm_callhook(void);
+LJ_ASMF void lj_vm_profhook(void);
 
 /* Trace exit handling. */
 LJ_ASMF void lj_vm_exit_handler(void);
 LJ_ASMF void lj_vm_exit_interp(void);
 
 /* Internal math helper functions. */
-#if LJ_TARGET_X86ORX64 || LJ_TARGET_PPC
+#if LJ_TARGET_PPC || LJ_TARGET_ARM64 || (LJ_TARGET_MIPS && LJ_ABI_SOFTFP)
 #define lj_vm_floor	floor
 #define lj_vm_ceil	ceil
 #else
@@ -60,10 +65,13 @@ LJ_ASMF double lj_vm_floor_sf(double);
 LJ_ASMF double lj_vm_ceil_sf(double);
 #endif
 #endif
-#if defined(LUAJIT_NO_LOG2) || LJ_TARGET_X86ORX64
+#ifdef LUAJIT_NO_LOG2
 LJ_ASMF double lj_vm_log2(double);
 #else
 #define lj_vm_log2	log2
+#endif
+#if !(defined(_LJ_DISPATCH_H) && LJ_TARGET_MIPS)
+LJ_ASMF int32_t LJ_FASTCALL lj_vm_modi(int32_t, int32_t);
 #endif
 
 #if LJ_HASJIT
@@ -71,12 +79,12 @@ LJ_ASMF double lj_vm_log2(double);
 LJ_ASMF void lj_vm_floor_sse(void);
 LJ_ASMF void lj_vm_ceil_sse(void);
 LJ_ASMF void lj_vm_trunc_sse(void);
-LJ_ASMF void lj_vm_exp_x87(void);
-LJ_ASMF void lj_vm_exp2_x87(void);
-LJ_ASMF void lj_vm_pow_sse(void);
 LJ_ASMF void lj_vm_powi_sse(void);
+#define lj_vm_powi	NULL
 #else
-#if LJ_TARGET_PPC
+LJ_ASMF double lj_vm_powi(double, int32_t);
+#endif
+#if LJ_TARGET_PPC || LJ_TARGET_ARM64
 #define lj_vm_trunc	trunc
 #else
 LJ_ASMF double lj_vm_trunc(double);
@@ -84,14 +92,11 @@ LJ_ASMF double lj_vm_trunc(double);
 LJ_ASMF double lj_vm_trunc_sf(double);
 #endif
 #endif
-LJ_ASMF double lj_vm_powi(double, int32_t);
 #ifdef LUAJIT_NO_EXP2
 LJ_ASMF double lj_vm_exp2(double);
 #else
 #define lj_vm_exp2	exp2
 #endif
-#endif
-LJ_ASMF int32_t LJ_FASTCALL lj_vm_modi(int32_t, int32_t);
 #if LJ_HASFFI
 LJ_ASMF int lj_vm_errno(void);
 #endif
@@ -104,8 +109,7 @@ LJ_ASMF void lj_cont_nop(void);  /* Do nothing, just continue execution. */
 LJ_ASMF void lj_cont_condt(void);  /* Branch if result is true. */
 LJ_ASMF void lj_cont_condf(void);  /* Branch if result is false. */
 LJ_ASMF void lj_cont_hook(void);  /* Continue from hook yield. */
-
-enum { LJ_CONT_TAILCALL, LJ_CONT_FFI_CALLBACK };  /* Special continuations. */
+LJ_ASMF void lj_cont_stitch(void);  /* Trace stitching. */
 
 /* Start of the ASM code. */
 LJ_ASMF char lj_vm_asm_begin[];

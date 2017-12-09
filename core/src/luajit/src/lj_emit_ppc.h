@@ -1,6 +1,6 @@
 /*
 ** PPC instruction emitter.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 /* -- Emit basic instructions --------------------------------------------- */
@@ -98,7 +98,7 @@ static void emit_loadi(ASMState *as, Reg r, int32_t i)
 
 #define emit_loada(as, r, addr)		emit_loadi(as, (r), i32ptr((addr)))
 
-static Reg ra_allock(ASMState *as, int32_t k, RegSet allow);
+static Reg ra_allock(ASMState *as, intptr_t k, RegSet allow);
 
 /* Get/set from constant pointer. */
 static void emit_lsptr(ASMState *as, PPCIns pi, Reg r, void *p, RegSet allow)
@@ -115,8 +115,8 @@ static void emit_lsptr(ASMState *as, PPCIns pi, Reg r, void *p, RegSet allow)
   emit_tai(as, pi, r, base, i);
 }
 
-#define emit_loadn(as, r, tv) \
-  emit_lsptr(as, PPCI_LFD, ((r) & 31), (void *)(tv), RSET_GPR)
+#define emit_loadk64(as, r, ir) \
+  emit_lsptr(as, PPCI_LFD, ((r) & 31), (void *)&ir_knum((ir))->u64, RSET_GPR)
 
 /* Get/set global_State fields. */
 static void emit_lsglptr(ASMState *as, PPCIns pi, Reg r, int32_t ofs)
@@ -186,22 +186,22 @@ static void emit_movrr(ASMState *as, IRIns *ir, Reg dst, Reg src)
     emit_fb(as, PPCI_FMR, dst, src);
 }
 
-/* Generic load of register from stack slot. */
-static void emit_spload(ASMState *as, IRIns *ir, Reg r, int32_t ofs)
+/* Generic load of register with base and (small) offset address. */
+static void emit_loadofs(ASMState *as, IRIns *ir, Reg r, Reg base, int32_t ofs)
 {
   if (r < RID_MAX_GPR)
-    emit_tai(as, PPCI_LWZ, r, RID_SP, ofs);
+    emit_tai(as, PPCI_LWZ, r, base, ofs);
   else
-    emit_fai(as, irt_isnum(ir->t) ? PPCI_LFD : PPCI_LFS, r, RID_SP, ofs);
+    emit_fai(as, irt_isnum(ir->t) ? PPCI_LFD : PPCI_LFS, r, base, ofs);
 }
 
-/* Generic store of register to stack slot. */
-static void emit_spstore(ASMState *as, IRIns *ir, Reg r, int32_t ofs)
+/* Generic store of register with base and (small) offset address. */
+static void emit_storeofs(ASMState *as, IRIns *ir, Reg r, Reg base, int32_t ofs)
 {
   if (r < RID_MAX_GPR)
-    emit_tai(as, PPCI_STW, r, RID_SP, ofs);
+    emit_tai(as, PPCI_STW, r, base, ofs);
   else
-    emit_fai(as, irt_isnum(ir->t) ? PPCI_STFD : PPCI_STFS, r, RID_SP, ofs);
+    emit_fai(as, irt_isnum(ir->t) ? PPCI_STFD : PPCI_STFS, r, base, ofs);
 }
 
 /* Emit a compare (for equality) with a constant operand. */

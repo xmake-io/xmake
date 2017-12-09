@@ -1,6 +1,6 @@
 /*
 ** Load and dump code.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #include <errno.h>
@@ -15,7 +15,7 @@
 #include "lj_obj.h"
 #include "lj_gc.h"
 #include "lj_err.h"
-#include "lj_str.h"
+#include "lj_buf.h"
 #include "lj_func.h"
 #include "lj_frame.h"
 #include "lj_vm.h"
@@ -54,7 +54,7 @@ LUA_API int lua_loadx(lua_State *L, lua_Reader reader, void *data,
   ls.rdata = data;
   ls.chunkarg = chunkname ? chunkname : "?";
   ls.mode = mode;
-  lj_str_initbuf(&ls.sb);
+  lj_buf_init(L, &ls.sb);
   status = lj_vm_cpcall(L, NULL, &ls, cpparser);
   lj_lex_cleanup(L, &ls);
   lj_gc_check(L);

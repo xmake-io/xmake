@@ -1,6 +1,6 @@
 |// Low-level VM code for x86 CPUs.
 |// Bytecode interpreter, fast functions and helper functions.
-|// Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+|// Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 |
 |.if P64
 |.arch x64
@@ -18,7 +18,6 @@
 |
 |.if P64
 |.define X64, 1
-|.define SSE, 1
 |.if WIN
 |.define X64WIN, 1
 |.endif
@@ -116,24 +115,74 @@
 |.type NODE,		Node
 |.type NARGS,		int
 |.type TRACE,		GCtrace
+|.type SBUF,		SBuf
 |
 |// Stack layout while in interpreter. Must match with lj_frame.h.
 |//-----------------------------------------------------------------------
 |.if not X64		// x86 stack layout.
+|
+|.if WIN
+|
+|.define CFRAME_SPACE,	aword*9			// Delta for esp (see <--).
+|.macro saveregs_
+|  push edi; push esi; push ebx
+|  push extern lj_err_unwind_win
+|  fs; push dword [0]
+|  fs; mov [0], esp
+|  sub esp, CFRAME_SPACE
+|.endmacro
+|.macro restoreregs
+|  add esp, CFRAME_SPACE
+|  fs; pop dword [0]
+|  pop edi	// Short for esp += 4.
+|  pop ebx; pop esi; pop edi; pop ebp
+|.endmacro
+|
+|.else
 |
 |.define CFRAME_SPACE,	aword*7			// Delta for esp (see <--).
 |.macro saveregs_
 |  push edi; push esi; push ebx
 |  sub esp, CFRAME_SPACE
 |.endmacro
-|.macro saveregs
-|  push ebp; saveregs_
-|.endmacro
 |.macro restoreregs
 |  add esp, CFRAME_SPACE
 |  pop ebx; pop esi; pop edi; pop ebp
 |.endmacro
 |
+|.endif
+|
+|.macro saveregs
+|  push ebp; saveregs_
+|.endmacro
+|
+|.if WIN
+|.define SAVE_ERRF,	aword [esp+aword*19]	// vm_pcall/vm_cpcall only.
+|.define SAVE_NRES,	aword [esp+aword*18]
+|.define SAVE_CFRAME,	aword [esp+aword*17]
+|.define SAVE_L,	aword [esp+aword*16]
+|//----- 16 byte aligned, ^^^ arguments from C caller
+|.define SAVE_RET,	aword [esp+aword*15]	//<-- esp entering interpreter.
+|.define SAVE_R4,	aword [esp+aword*14]
+|.define SAVE_R3,	aword [esp+aword*13]
+|.define SAVE_R2,	aword [esp+aword*12]
+|//----- 16 byte aligned
+|.define SAVE_R1,	aword [esp+aword*11]
+|.define SEH_FUNC,	aword [esp+aword*10]
+|.define SEH_NEXT,	aword [esp+aword*9]	//<-- esp after register saves.
+|.define UNUSED2,	aword [esp+aword*8]
+|//----- 16 byte aligned
+|.define UNUSED1,	aword [esp+aword*7]
+|.define SAVE_PC,	aword [esp+aword*6]
+|.define TMP2,		aword [esp+aword*5]
+|.define TMP1,		aword [esp+aword*4]
+|//----- 16 byte aligned
+|.define ARG4,		aword [esp+aword*3]
+|.define ARG3,		aword [esp+aword*2]
+|.define ARG2,		aword [esp+aword*1]
+|.define ARG1,		aword [esp]		//<-- esp while in interpreter.
+|//----- 16 byte aligned, ^^^ arguments for C callee
+|.else
 |.define SAVE_ERRF,	aword [esp+aword*15]	// vm_pcall/vm_cpcall only.
 |.define SAVE_NRES,	aword [esp+aword*14]
 |.define SAVE_CFRAME,	aword [esp+aword*13]
@@ -154,6 +203,7 @@
 |.define ARG2,		aword [esp+aword*1]
 |.define ARG1,		aword [esp]		//<-- esp while in interpreter.
 |//----- 16 byte aligned, ^^^ arguments for C callee
+|.endif
 |
 |// FPARGx overlaps ARGx and ARG(x+1) on x86.
 |.define FPARG3,	qword [esp+qword*1]
@@ -222,6 +272,9 @@
 |.define CFRAME_SPACE,	aword*5			// Delta for rsp (see <--).
 |.macro saveregs_
 |  push rbx; push r15; push r14
+|.if NO_UNWIND
+|  push r13; push r12
+|.endif
 |  sub rsp, CFRAME_SPACE
 |.endmacro
 |.macro saveregs
@@ -229,15 +282,28 @@
 |.endmacro
 |.macro restoreregs
 |  add rsp, CFRAME_SPACE
+|.if NO_UNWIND
+|  pop r12; pop r13
+|.endif
 |  pop r14; pop r15; pop rbx; pop rbp
 |.endmacro
 |
 |//----- 16 byte aligned,
+|.if NO_UNWIND
+|.define SAVE_RET,	aword [rsp+aword*11]	//<-- rsp entering interpreter.
+|.define SAVE_R4,	aword [rsp+aword*10]
+|.define SAVE_R3,	aword [rsp+aword*9]
+|.define SAVE_R2,	aword [rsp+aword*8]
+|.define SAVE_R1,	aword [rsp+aword*7]
+|.define SAVE_RU2,	aword [rsp+aword*6]
+|.define SAVE_RU1,	aword [rsp+aword*5]	//<-- rsp after register saves.
+|.else
 |.define SAVE_RET,	aword [rsp+aword*9]	//<-- rsp entering interpreter.
 |.define SAVE_R4,	aword [rsp+aword*8]
 |.define SAVE_R3,	aword [rsp+aword*7]
 |.define SAVE_R2,	aword [rsp+aword*6]
 |.define SAVE_R1,	aword [rsp+aword*5]	//<-- rsp after register saves.
+|.endif
 |.define SAVE_CFRAME,	aword [rsp+aword*4]
 |.define SAVE_PC,	dword [rsp+dword*7]
 |.define SAVE_L,	dword [rsp+dword*6]
@@ -373,7 +439,6 @@
 |  fpop
 |.endmacro
 |
-|.macro fdup; fld st0; .endmacro
 |.macro fpop1; fstp st1; .endmacro
 |
 |// Synthesize SSE FP constants.
@@ -539,6 +604,10 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  mov eax, FCARG2			// Error return status for vm_pcall.
   |  mov esp, FCARG1
+  |.if WIN
+  |  lea FCARG1, SEH_NEXT
+  |  fs; mov [0], FCARG1
+  |.endif
   |.endif
   |->vm_unwind_c_eh:			// Landing pad for external unwinder.
   |  mov L:RB, SAVE_L
@@ -562,6 +631,10 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  and FCARG1, CFRAME_RAWMASK
   |  mov esp, FCARG1
+  |.if WIN
+  |  lea FCARG1, SEH_NEXT
+  |  fs; mov [0], FCARG1
+  |.endif
   |.endif
   |->vm_unwind_ff_eh:			// Landing pad for external unwinder.
   |  mov L:RB, SAVE_L
@@ -574,6 +647,19 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov dword [BASE-4], LJ_TFALSE	// Prepend false to error message.
   |  set_vmstate INTERP
   |  jmp ->vm_returnc			// Increments RD/MULTRES and returns.
+  |
+  |.if WIN and not X64
+  |->vm_rtlunwind@16:			// Thin layer around RtlUnwind.
+  |  // (void *cframe, void *excptrec, void *unwinder, int errcode)
+  |  mov [esp], FCARG1			// Return value for RtlUnwind.
+  |  push FCARG2			// Exception record for RtlUnwind.
+  |  push 0				// Ignored by RtlUnwind.
+  |  push dword [FCARG1+CFRAME_OFS_SEH]
+  |  call extern RtlUnwind@16		// Violates ABI (clobbers too much).
+  |  mov FCARG1, eax
+  |  mov FCARG2, [esp+4]		// errcode (for vm_unwind_c).
+  |  ret				// Jump to unwinder.
+  |.endif
   |
   |//-----------------------------------------------------------------------
   |//-- Grow stack for calls -----------------------------------------------
@@ -630,17 +716,18 @@ static void build_subroutines(BuildCtx *ctx)
   |  lea KBASEa, [esp+CFRAME_RESUME]
   |  mov DISPATCH, L:RB->glref		// Setup pointer to dispatch table.
   |  add DISPATCH, GG_G2DISP
-  |  mov L:RB->cframe, KBASEa
   |  mov SAVE_PC, RD			// Any value outside of bytecode is ok.
   |  mov SAVE_CFRAME, RDa
   |.if X64
   |  mov SAVE_NRES, RD
   |  mov SAVE_ERRF, RD
   |.endif
+  |  mov L:RB->cframe, KBASEa
   |  cmp byte L:RB->status, RDL
-  |  je >3				// Initial resume (like a call).
+  |  je >2				// Initial resume (like a call).
   |
   |  // Resume after yield (like a return).
+  |  mov [DISPATCH+DISPATCH_GL(cur_L)], L:RB
   |  set_vmstate INTERP
   |  mov byte L:RB->status, RDL
   |  mov BASE, L:RB->base
@@ -680,20 +767,19 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov RA, INARG_BASE			// Caveat: overlaps SAVE_CFRAME!
   |.endif
   |
+  |  mov DISPATCH, L:RB->glref		// Setup pointer to dispatch table.
   |  mov KBASEa, L:RB->cframe		// Add our C frame to cframe chain.
   |  mov SAVE_CFRAME, KBASEa
   |  mov SAVE_PC, L:RB			// Any value outside of bytecode is ok.
+  |  add DISPATCH, GG_G2DISP
   |.if X64
   |  mov L:RB->cframe, rsp
   |.else
   |  mov L:RB->cframe, esp
   |.endif
   |
-  |2:  // Entry point for vm_cpcall below (RA = base, RB = L, PC = ftype).
-  |  mov DISPATCH, L:RB->glref		// Setup pointer to dispatch table.
-  |  add DISPATCH, GG_G2DISP
-  |
-  |3:  // Entry point for vm_resume above (RA = base, RB = L, PC = ftype).
+  |2:  // Entry point for vm_resume/vm_cpcall (RA = base, RB = L, PC = ftype).
+  |  mov [DISPATCH+DISPATCH_GL(cur_L)], L:RB
   |  set_vmstate INTERP
   |  mov BASE, L:RB->base		// BASE = old base (used in vmeta_call).
   |  add PC, RA
@@ -731,14 +817,17 @@ static void build_subroutines(BuildCtx *ctx)
   |
   |  mov KBASE, L:RB->stack		// Compute -savestack(L, L->top).
   |  sub KBASE, L:RB->top
+  |   mov DISPATCH, L:RB->glref		// Setup pointer to dispatch table.
   |  mov SAVE_ERRF, 0			// No error function.
   |  mov SAVE_NRES, KBASE		// Neg. delta means cframe w/o frame.
+  |   add DISPATCH, GG_G2DISP
   |  // Handler may change cframe_nres(L->cframe) or cframe_errfunc(L->cframe).
   |
   |.if X64
   |  mov KBASEa, L:RB->cframe		// Add our C frame to cframe chain.
   |  mov SAVE_CFRAME, KBASEa
   |  mov L:RB->cframe, rsp
+  |  mov [DISPATCH+DISPATCH_GL(cur_L)], L:RB
   |
   |  call CARG4			// (lua_State *L, lua_CFunction func, void *ud)
   |.else
@@ -749,6 +838,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov KBASE, L:RB->cframe		// Add our C frame to cframe chain.
   |  mov SAVE_CFRAME, KBASE
   |  mov L:RB->cframe, esp
+  |  mov [DISPATCH+DISPATCH_GL(cur_L)], L:RB
   |
   |  call BASE			// (lua_State *L, lua_CFunction func, void *ud)
   |.endif
@@ -856,13 +946,9 @@ static void build_subroutines(BuildCtx *ctx)
   |.if DUALNUM
   |  mov TMP2, LJ_TISNUM
   |  mov TMP1, RC
-  |.elif SSE
+  |.else
   |  cvtsi2sd xmm0, RC
   |  movsd TMPQ, xmm0
-  |.else
-  |  mov ARG4, RC
-  |  fild ARG4
-  |  fstp TMPQ
   |.endif
   |  lea RCa, TMPQ			// Store temp. TValue in TMPQ.
   |  jmp >1
@@ -916,6 +1002,19 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov NARGS:RD, 2+1			// 2 args for func(t, k).
   |  jmp ->vm_call_dispatch_f
   |
+  |->vmeta_tgetr:
+  |  mov FCARG1, TAB:RB
+  |  mov RB, BASE			// Save BASE.
+  |  mov FCARG2, RC			// Caveat: FCARG2 == BASE
+  |  call extern lj_tab_getinth@8	// (GCtab *t, int32_t key)
+  |  // cTValue * or NULL returned in eax (RC).
+  |  movzx RA, PC_RA
+  |  mov BASE, RB			// Restore BASE.
+  |  test RC, RC
+  |  jnz ->BC_TGETR_Z
+  |  mov dword [BASE+RA*8+4], LJ_TNIL
+  |  jmp ->BC_TGETR2_Z
+  |
   |//-----------------------------------------------------------------------
   |
   |->vmeta_tsets:
@@ -935,13 +1034,9 @@ static void build_subroutines(BuildCtx *ctx)
   |.if DUALNUM
   |  mov TMP2, LJ_TISNUM
   |  mov TMP1, RC
-  |.elif SSE
+  |.else
   |  cvtsi2sd xmm0, RC
   |  movsd TMPQ, xmm0
-  |.else
-  |  mov ARG4, RC
-  |  fild ARG4
-  |  fstp TMPQ
   |.endif
   |  lea RCa, TMPQ			// Store temp. TValue in TMPQ.
   |  jmp >1
@@ -1006,6 +1101,33 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov LFUNC:RB, [RA-8]		// Guaranteed to be a function here.
   |  mov NARGS:RD, 3+1			// 3 args for func(t, k, v).
   |  jmp ->vm_call_dispatch_f
+  |
+  |->vmeta_tsetr:
+  |.if X64WIN
+  |  mov L:CARG1d, SAVE_L
+  |  mov CARG3d, RC
+  |  mov L:CARG1d->base, BASE
+  |  xchg CARG2d, TAB:RB		// Caveat: CARG2d == BASE.
+  |.elif X64
+  |  mov L:CARG1d, SAVE_L
+  |  mov CARG2d, TAB:RB
+  |  mov L:CARG1d->base, BASE
+  |  mov RB, BASE			// Save BASE.
+  |  mov CARG3d, RC			// Caveat: CARG3d == BASE.
+  |.else
+  |  mov L:RA, SAVE_L
+  |  mov ARG2, TAB:RB
+  |  mov RB, BASE			// Save BASE.
+  |  mov ARG3, RC
+  |  mov ARG1, L:RA
+  |  mov L:RA->base, BASE
+  |.endif
+  |  mov SAVE_PC, PC
+  |  call extern lj_tab_setinth  // (lua_State *L, GCtab *t, int32_t key)
+  |  // TValue * returned in eax (RC).
+  |  movzx RA, PC_RA
+  |  mov BASE, RB			// Restore BASE.
+  |  jmp ->BC_TSETR_Z
   |
   |//-- Comparison metamethods ---------------------------------------------
   |
@@ -1100,6 +1222,26 @@ static void build_subroutines(BuildCtx *ctx)
   |  // 0/1 or TValue * (metamethod) returned in eax (RC).
   |  jmp <3
   |.endif
+  |
+  |->vmeta_istype:
+  |.if X64
+  |  mov L:RB, SAVE_L
+  |  mov L:RB->base, BASE		// Caveat: CARG2d/CARG3d may be BASE.
+  |  mov CARG2d, RA
+  |  movzx CARG3d, PC_RD
+  |  mov L:CARG1d, L:RB
+  |.else
+  |  movzx RD, PC_RD
+  |  mov ARG2, RA
+  |  mov L:RB, SAVE_L
+  |  mov ARG3, RD
+  |  mov ARG1, L:RB
+  |  mov L:RB->base, BASE
+  |.endif
+  |  mov SAVE_PC, PC
+  |  call extern lj_meta_istype  // (lua_State *L, BCReg ra, BCReg tp)
+  |  mov BASE, L:RB->base
+  |  jmp <6
   |
   |//-- Arithmetic metamethods ---------------------------------------------
   |
@@ -1273,19 +1415,6 @@ static void build_subroutines(BuildCtx *ctx)
   |  cmp NARGS:RD, 2+1;  jb ->fff_fallback
   |.endmacro
   |
-  |.macro .ffunc_n, name
-  |  .ffunc_1 name
-  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
-  |  fld qword [BASE]
-  |.endmacro
-  |
-  |.macro .ffunc_n, name, op
-  |  .ffunc_1 name
-  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
-  |  op
-  |  fld qword [BASE]
-  |.endmacro
-  |
   |.macro .ffunc_nsse, name, op
   |  .ffunc_1 name
   |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
@@ -1294,14 +1423,6 @@ static void build_subroutines(BuildCtx *ctx)
   |
   |.macro .ffunc_nsse, name
   |  .ffunc_nsse name, movsd
-  |.endmacro
-  |
-  |.macro .ffunc_nn, name
-  |  .ffunc_2 name
-  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
-  |  cmp dword [BASE+12], LJ_TISNUM;  jae ->fff_fallback
-  |  fld qword [BASE]
-  |  fld qword [BASE+8]
   |.endmacro
   |
   |.macro .ffunc_nnsse, name
@@ -1509,11 +1630,7 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  jae ->fff_fallback
   |.endif
-  |.if SSE
   |  movsd xmm0, qword [BASE]; jmp ->fff_resxmm0
-  |.else
-  |  fld qword [BASE]; jmp ->fff_resn
-  |.endif
   |
   |.ffunc_1 tostring
   |  // Only handles the string or number case inline.
@@ -1538,9 +1655,9 @@ static void build_subroutines(BuildCtx *ctx)
   |.endif
   |  mov L:FCARG1, L:RB
   |.if DUALNUM
-  |  call extern lj_str_fromnumber@8	// (lua_State *L, cTValue *o)
+  |  call extern lj_strfmt_number@8	// (lua_State *L, cTValue *o)
   |.else
-  |  call extern lj_str_fromnum@8	// (lua_State *L, lua_Number *np)
+  |  call extern lj_strfmt_num@8	// (lua_State *L, lua_Number *np)
   |.endif
   |  // GCstr returned in eax (RD).
   |  mov BASE, L:RB->base
@@ -1631,19 +1748,12 @@ static void build_subroutines(BuildCtx *ctx)
   |  add RD, 1
   |  mov dword [BASE-4], LJ_TISNUM
   |  mov dword [BASE-8], RD
-  |.elif SSE
+  |.else
   |  movsd xmm0, qword [BASE+8]
   |  sseconst_1 xmm1, RBa
   |  addsd xmm0, xmm1
-  |  cvtsd2si RD, xmm0
+  |  cvttsd2si RD, xmm0
   |  movsd qword [BASE-8], xmm0
-  |.else
-  |  fld qword [BASE+8]
-  |  fld1
-  |  faddp st1
-  |  fist ARG1
-  |  fstp qword [BASE-8]
-  |  mov RD, ARG1
   |.endif
   |  mov TAB:RB, [BASE]
   |  cmp RD, TAB:RB->asize;  jae >2	// Not in array part?
@@ -1690,12 +1800,9 @@ static void build_subroutines(BuildCtx *ctx)
   |.if DUALNUM
   |  mov dword [BASE+12], LJ_TISNUM
   |  mov dword [BASE+8], 0
-  |.elif SSE
+  |.else
   |  xorps xmm0, xmm0
   |  movsd qword [BASE+8], xmm0
-  |.else
-  |  fldz
-  |  fstp qword [BASE+8]
   |.endif
   |  mov RD, 1+3
   |  jmp ->fff_res
@@ -1802,7 +1909,6 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov ARG3, RA
   |.endif
   |  call ->vm_resume			// (lua_State *L, TValue *base, 0, 0)
-  |  set_vmstate INTERP
   |
   |  mov L:RB, SAVE_L
   |.if X64
@@ -1811,6 +1917,9 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov L:PC, ARG1			// The callee doesn't modify SAVE_L.
   |.endif
   |  mov BASE, L:RB->base
+  |  mov [DISPATCH+DISPATCH_GL(cur_L)], L:RB
+  |  set_vmstate INTERP
+  |
   |  cmp eax, LUA_YIELD
   |  ja >8
   |4:
@@ -1925,12 +2034,10 @@ static void build_subroutines(BuildCtx *ctx)
   |->fff_resi:  // Dummy.
   |.endif
   |
-  |.if SSE
   |->fff_resn:
   |  mov PC, [BASE-4]
   |  fstp qword [BASE-8]
   |  jmp ->fff_res1
-  |.endif
   |
   |  .ffunc_1 math_abs
   |.if DUALNUM
@@ -1954,8 +2061,6 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  cmp dword [BASE+4], LJ_TISNUM; jae ->fff_fallback
   |.endif
-  |
-  |.if SSE
   |  movsd xmm0, qword [BASE]
   |  sseconst_abs xmm1, RDa
   |  andps xmm0, xmm1
@@ -1963,15 +2068,6 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov PC, [BASE-4]
   |  movsd qword [BASE-8], xmm0
   |  // fallthrough
-  |.else
-  |  fld qword [BASE]
-  |  fabs
-  |  // fallthrough
-  |->fff_resxmm0:  // Dummy.
-  |->fff_resn:
-  |  mov PC, [BASE-4]
-  |  fstp qword [BASE-8]
-  |.endif
   |
   |->fff_res1:
   |  mov RD, 1+1
@@ -1998,6 +2094,12 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov RAa, -8			// Results start at BASE+RA = BASE-8.
   |  jmp ->vm_return
   |
+  |.if X64
+  |.define fff_resfp, fff_resxmm0
+  |.else
+  |.define fff_resfp, fff_resn
+  |.endif
+  |
   |.macro math_round, func
   |  .ffunc math_ .. func
   |.if DUALNUM
@@ -2008,107 +2110,75 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  cmp dword [BASE+4], LJ_TISNUM; jae ->fff_fallback
   |.endif
-  |.if SSE
   |  movsd xmm0, qword [BASE]
-  |  call ->vm_ .. func
-  |  .if DUALNUM
-  |    cvtsd2si RB, xmm0
-  |    cmp RB, 0x80000000
-  |    jne ->fff_resi
-  |    cvtsi2sd xmm1, RB
-  |    ucomisd xmm0, xmm1
-  |    jp ->fff_resxmm0
-  |    je ->fff_resi
-  |  .endif
-  |  jmp ->fff_resxmm0
-  |.else
-  |  fld qword [BASE]
-  |  call ->vm_ .. func
-  |  .if DUALNUM
-  |    fist ARG1
-  |    mov RB, ARG1
-  |    cmp RB, 0x80000000; jne >2
-  |    fdup
-  |    fild ARG1
-  |    fcomparepp
-  |    jp ->fff_resn
-  |    jne ->fff_resn
-  |2:
-  |    fpop
-  |    jmp ->fff_resi
-  | .else
-  |    jmp ->fff_resn
-  | .endif
+  |  call ->vm_ .. func .. _sse
+  |.if DUALNUM
+  |  cvttsd2si RB, xmm0
+  |  cmp RB, 0x80000000
+  |  jne ->fff_resi
+  |  cvtsi2sd xmm1, RB
+  |  ucomisd xmm0, xmm1
+  |  jp ->fff_resxmm0
+  |  je ->fff_resi
   |.endif
+  |  jmp ->fff_resxmm0
   |.endmacro
   |
   |  math_round floor
   |  math_round ceil
   |
-  |.if SSE
   |.ffunc_nsse math_sqrt, sqrtsd; jmp ->fff_resxmm0
-  |.else
-  |.ffunc_n math_sqrt; fsqrt; jmp ->fff_resn
-  |.endif
   |
   |.ffunc math_log
   |  cmp NARGS:RD, 1+1; jne ->fff_fallback	// Exactly one argument.
   |  cmp dword [BASE+4], LJ_TISNUM; jae ->fff_fallback
-  |  fldln2; fld qword [BASE]; fyl2x; jmp ->fff_resn
-  |
-  |.ffunc_n math_log10, fldlg2;	fyl2x;		jmp ->fff_resn
-  |.ffunc_n math_exp;	call ->vm_exp_x87;	jmp ->fff_resn
-  |
-  |.ffunc_n math_sin;	fsin;			jmp ->fff_resn
-  |.ffunc_n math_cos;	fcos;			jmp ->fff_resn
-  |.ffunc_n math_tan;	fptan; fpop;		jmp ->fff_resn
-  |
-  |.ffunc_n math_asin
-  |  fdup; fmul st0; fld1; fsubrp st1; fsqrt; fpatan
-  |  jmp ->fff_resn
-  |.ffunc_n math_acos
-  |  fdup; fmul st0; fld1; fsubrp st1; fsqrt; fxch; fpatan
-  |  jmp ->fff_resn
-  |.ffunc_n math_atan;	fld1; fpatan;		jmp ->fff_resn
-  |
-  |.macro math_extern, func
-  |.if SSE
-  |  .ffunc_nsse math_ .. func
-  |  .if not X64
-  |    movsd FPARG1, xmm0
-  |  .endif
-  |.else
-  |  .ffunc_n math_ .. func
-  |  fstp FPARG1
+  |  movsd xmm0, qword [BASE]
+  |.if not X64
+  |  movsd FPARG1, xmm0
   |.endif
   |  mov RB, BASE
-  |  call extern lj_vm_ .. func
+  |  call extern log
   |  mov BASE, RB
-  |  .if X64
-  |    jmp ->fff_resxmm0
-  |  .else
-  |    jmp ->fff_resn
-  |  .endif
+  |  jmp ->fff_resfp
+  |
+  |.macro math_extern, func
+  |  .ffunc_nsse math_ .. func
+  |.if not X64
+  |  movsd FPARG1, xmm0
+  |.endif
+  |  mov RB, BASE
+  |  call extern func
+  |  mov BASE, RB
+  |  jmp ->fff_resfp
   |.endmacro
   |
+  |.macro math_extern2, func
+  |  .ffunc_nnsse math_ .. func
+  |.if not X64
+  |  movsd FPARG1, xmm0
+  |  movsd FPARG3, xmm1
+  |.endif
+  |  mov RB, BASE
+  |  call extern func
+  |  mov BASE, RB
+  |  jmp ->fff_resfp
+  |.endmacro
+  |
+  |  math_extern log10
+  |  math_extern exp
+  |  math_extern sin
+  |  math_extern cos
+  |  math_extern tan
+  |  math_extern asin
+  |  math_extern acos
+  |  math_extern atan
   |  math_extern sinh
   |  math_extern cosh
   |  math_extern tanh
+  |  math_extern2 pow
+  |  math_extern2 atan2
+  |  math_extern2 fmod
   |
-  |->ff_math_deg:
-  |.if SSE
-  |.ffunc_nsse math_rad
-  |  mov CFUNC:RB, [BASE-8]
-  |  mulsd xmm0, qword CFUNC:RB->upvalue[0]
-  |  jmp ->fff_resxmm0
-  |.else
-  |.ffunc_n math_rad
-  |  mov CFUNC:RB, [BASE-8]
-  |  fmul qword CFUNC:RB->upvalue[0]
-  |  jmp ->fff_resn
-  |.endif
-  |
-  |.ffunc_nn math_atan2;	fpatan;		jmp ->fff_resn
   |.ffunc_nnr math_ldexp;	fscale; fpop1;	jmp ->fff_resn
   |
   |.ffunc_1 math_frexp
@@ -2123,65 +2193,34 @@ static void build_subroutines(BuildCtx *ctx)
   |  cmp RB, 0x00200000; jb >4
   |1:
   |  shr RB, 21; sub RB, RC		// Extract and unbias exponent.
-  |.if SSE
   |  cvtsi2sd xmm0, RB
-  |.else
-  |  mov TMP1, RB; fild TMP1
-  |.endif
   |  mov RB, [BASE-4]
   |  and RB, 0x800fffff			// Mask off exponent.
   |  or RB, 0x3fe00000			// Put mantissa in range [0.5,1) or 0.
   |  mov [BASE-4], RB
   |2:
-  |.if SSE
   |  movsd qword [BASE], xmm0
-  |.else
-  |  fstp qword [BASE]
-  |.endif
   |  mov RD, 1+2
   |  jmp ->fff_res
   |3:  // Return +-0, +-Inf, NaN unmodified and an exponent of 0.
-  |.if SSE
   |  xorps xmm0, xmm0; jmp <2
-  |.else
-  |  fldz; jmp <2
-  |.endif
   |4:  // Handle denormals by multiplying with 2^54 and adjusting the bias.
-  |.if SSE
   |  movsd xmm0, qword [BASE]
   |  sseconst_hi xmm1, RBa, 43500000  // 2^54.
   |  mulsd xmm0, xmm1
   |  movsd qword [BASE-8], xmm0
-  |.else
-  |  fld qword [BASE]
-  |  mov TMP1, 0x5a800000; fmul TMP1	// x = x*2^54
-  |  fstp qword [BASE-8]
-  |.endif
   |  mov RB, [BASE-4]; mov RC, 1076; shl RB, 1; jmp <1
   |
-  |.if SSE
   |.ffunc_nsse math_modf
-  |.else
-  |.ffunc_n math_modf
-  |.endif
   |  mov RB, [BASE+4]
   |  mov PC, [BASE-4]
   |  shl RB, 1; cmp RB, 0xffe00000; je >4	// +-Inf?
-  |.if SSE
   |  movaps xmm4, xmm0
-  |  call ->vm_trunc
+  |  call ->vm_trunc_sse
   |  subsd xmm4, xmm0
   |1:
   |  movsd qword [BASE-8], xmm0
   |  movsd qword [BASE], xmm4
-  |.else
-  |  fdup
-  |  call ->vm_trunc
-  |  fsub st1, st0
-  |1:
-  |  fstp qword [BASE-8]
-  |  fstp qword [BASE]
-  |.endif
   |  mov RC, [BASE-4]; mov RB, [BASE+4]
   |  xor RC, RB; js >3				// Need to adjust sign?
   |2:
@@ -2191,24 +2230,9 @@ static void build_subroutines(BuildCtx *ctx)
   |  xor RB, 0x80000000; mov [BASE+4], RB	// Flip sign of fraction.
   |  jmp <2
   |4:
-  |.if SSE
   |  xorps xmm4, xmm4; jmp <1			// Return +-Inf and +-0.
-  |.else
-  |  fldz; fxch; jmp <1				// Return +-Inf and +-0.
-  |.endif
   |
-  |.ffunc_nnr math_fmod
-  |1: ; fprem; fnstsw ax; and ax, 0x400; jnz <1
-  |  fpop1
-  |  jmp ->fff_resn
-  |
-  |.if SSE
-  |.ffunc_nnsse math_pow;	call ->vm_pow;	jmp ->fff_resxmm0
-  |.else
-  |.ffunc_nn math_pow;		call ->vm_pow;	jmp ->fff_resn
-  |.endif
-  |
-  |.macro math_minmax, name, cmovop, fcmovop, sseop
+  |.macro math_minmax, name, cmovop, sseop
   |  .ffunc name
   |  mov RA, 2
   |  cmp dword [BASE+4], LJ_TISNUM
@@ -2225,12 +2249,7 @@ static void build_subroutines(BuildCtx *ctx)
   |3:
   |  ja ->fff_fallback
   |  // Convert intermediate result to number and continue below.
-  |.if SSE
   |  cvtsi2sd xmm0, RB
-  |.else
-  |  mov TMP1, RB
-  |  fild TMP1
-  |.endif
   |  jmp >6
   |4:
   |  ja ->fff_fallback
@@ -2238,7 +2257,6 @@ static void build_subroutines(BuildCtx *ctx)
   |  jae ->fff_fallback
   |.endif
   |
-  |.if SSE
   |  movsd xmm0, qword [BASE]
   |5:  // Handle numbers or integers.
   |  cmp RA, RD; jae ->fff_resxmm0
@@ -2257,47 +2275,12 @@ static void build_subroutines(BuildCtx *ctx)
   |  sseop xmm0, xmm1
   |  add RA, 1
   |  jmp <5
-  |.else
-  |  fld qword [BASE]
-  |5:  // Handle numbers or integers.
-  |  cmp RA, RD; jae ->fff_resn
-  |  cmp dword [BASE+RA*8-4], LJ_TISNUM
-  |.if DUALNUM
-  |  jb >6
-  |  ja >9
-  |  fild dword [BASE+RA*8-8]
-  |  jmp >7
-  |.else
-  |  jae >9
-  |.endif
-  |6:
-  |  fld qword [BASE+RA*8-8]
-  |7:
-  |  fucomi st1; fcmovop st1; fpop1
-  |  add RA, 1
-  |  jmp <5
-  |.endif
   |.endmacro
   |
-  |  math_minmax math_min, cmovg, fcmovnbe, minsd
-  |  math_minmax math_max, cmovl, fcmovbe, maxsd
-  |.if not SSE
-  |9:
-  |  fpop; jmp ->fff_fallback
-  |.endif
+  |  math_minmax math_min, cmovg, minsd
+  |  math_minmax math_max, cmovl, maxsd
   |
   |//-- String library -----------------------------------------------------
-  |
-  |.ffunc_1 string_len
-  |  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
-  |  mov STR:RB, [BASE]
-  |.if DUALNUM
-  |  mov RB, dword STR:RB->len; jmp ->fff_resi
-  |.elif SSE
-  |  cvtsi2sd xmm0, dword STR:RB->len; jmp ->fff_resxmm0
-  |.else
-  |  fild dword STR:RB->len; jmp ->fff_resn
-  |.endif
   |
   |.ffunc string_byte			// Only handle the 1-arg case here.
   |  cmp NARGS:RD, 1+1;  jne ->fff_fallback
@@ -2309,10 +2292,8 @@ static void build_subroutines(BuildCtx *ctx)
   |  movzx RB, byte STR:RB[1]
   |.if DUALNUM
   |  jmp ->fff_resi
-  |.elif SSE
-  |  cvtsi2sd xmm0, RB; jmp ->fff_resxmm0
   |.else
-  |  mov TMP1, RB; fild TMP1; jmp ->fff_resn
+  |  cvtsi2sd xmm0, RB; jmp ->fff_resxmm0
   |.endif
   |
   |.ffunc string_char			// Only handle the 1-arg case here.
@@ -2324,16 +2305,11 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov RB, dword [BASE]
   |  cmp RB, 255;  ja ->fff_fallback
   |  mov TMP2, RB
-  |.elif SSE
+  |.else
   |  jae ->fff_fallback
   |  cvttsd2si RB, qword [BASE]
   |  cmp RB, 255;  ja ->fff_fallback
   |  mov TMP2, RB
-  |.else
-  |  jae ->fff_fallback
-  |  fld qword [BASE]
-  |  fistp TMP2
-  |  cmp TMP2, 255;  ja ->fff_fallback
   |.endif
   |.if X64
   |  mov TMP3, 1
@@ -2354,6 +2330,7 @@ static void build_subroutines(BuildCtx *ctx)
   |.endif
   |  mov SAVE_PC, PC
   |  call extern lj_str_new		// (lua_State *L, char *str, size_t l)
+  |->fff_resstr:
   |  // GCstr * returned in eax (RD).
   |  mov BASE, L:RB->base
   |  mov PC, [BASE-4]
@@ -2371,14 +2348,10 @@ static void build_subroutines(BuildCtx *ctx)
   |  jne ->fff_fallback
   |  mov RB, dword [BASE+16]
   |  mov TMP2, RB
-  |.elif SSE
+  |.else
   |  jae ->fff_fallback
   |  cvttsd2si RB, qword [BASE+16]
   |  mov TMP2, RB
-  |.else
-  |  jae ->fff_fallback
-  |  fld qword [BASE+16]
-  |  fistp TMP2
   |.endif
   |1:
   |  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
@@ -2393,12 +2366,8 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov RB, STR:RB->len
   |.if DUALNUM
   |  mov RA, dword [BASE+8]
-  |.elif SSE
-  |  cvttsd2si RA, qword [BASE+8]
   |.else
-  |  fld qword [BASE+8]
-  |  fistp ARG3
-  |  mov RA, ARG3
+  |  cvttsd2si RA, qword [BASE+8]
   |.endif
   |  mov RC, TMP2
   |  cmp RB, RC				// len < end? (unsigned compare)
@@ -2442,136 +2411,34 @@ static void build_subroutines(BuildCtx *ctx)
   |  xor RC, RC				// Zero length. Any ptr in RB is ok.
   |  jmp <4
   |
-  |.ffunc string_rep			// Only handle the 1-char case inline.
-  |  ffgccheck
-  |  cmp NARGS:RD, 2+1; jne ->fff_fallback	// Exactly 2 arguments.
-  |  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
-  |  cmp dword [BASE+12], LJ_TISNUM
-  |  mov STR:RB, [BASE]
-  |.if DUALNUM
-  |  jne ->fff_fallback
-  |  mov RC, dword [BASE+8]
-  |.elif SSE
-  |  jae ->fff_fallback
-  |  cvttsd2si RC, qword [BASE+8]
-  |.else
-  |  jae ->fff_fallback
-  |  fld qword [BASE+8]
-  |  fistp TMP2
-  |  mov RC, TMP2
-  |.endif
-  |  test RC, RC
-  |  jle ->fff_emptystr			// Count <= 0? (or non-int)
-  |  cmp dword STR:RB->len, 1
-  |  jb ->fff_emptystr			// Zero length string?
-  |  jne ->fff_fallback_2		// Fallback for > 1-char strings.
-  |  cmp [DISPATCH+DISPATCH_GL(tmpbuf.sz)], RC;  jb ->fff_fallback_2
-  |  movzx RA, byte STR:RB[1]
-  |  mov RB, [DISPATCH+DISPATCH_GL(tmpbuf.buf)]
-  |.if X64
-  |  mov TMP3, RC
-  |.else
-  |  mov ARG3, RC
-  |.endif
-  |1:  // Fill buffer with char. Yes, this is suboptimal code (do you care?).
-  |  mov [RB], RAL
-  |  add RB, 1
-  |  sub RC, 1
-  |  jnz <1
-  |  mov RD, [DISPATCH+DISPATCH_GL(tmpbuf.buf)]
-  |  jmp ->fff_newstr
-  |
-  |.ffunc_1 string_reverse
+  |.macro ffstring_op, name
+  |  .ffunc_1 string_ .. name
   |  ffgccheck
   |  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
-  |  mov STR:RB, [BASE]
-  |  mov RC, STR:RB->len
-  |  test RC, RC
-  |  jz ->fff_emptystr			// Zero length string?
-  |  cmp [DISPATCH+DISPATCH_GL(tmpbuf.sz)], RC;  jb ->fff_fallback_1
-  |  add RB, #STR
-  |  mov TMP2, PC			// Need another temp register.
-  |.if X64
-  |  mov TMP3, RC
-  |.else
-  |  mov ARG3, RC
-  |.endif
-  |  mov PC, [DISPATCH+DISPATCH_GL(tmpbuf.buf)]
-  |1:
-  |  movzx RA, byte [RB]
-  |  add RB, 1
-  |  sub RC, 1
-  |  mov [PC+RC], RAL
-  |  jnz <1
-  |  mov RD, PC
-  |  mov PC, TMP2
-  |  jmp ->fff_newstr
-  |
-  |.macro ffstring_case, name, lo, hi
-  |  .ffunc_1 name
-  |  ffgccheck
-  |  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
-  |  mov STR:RB, [BASE]
-  |  mov RC, STR:RB->len
-  |  cmp [DISPATCH+DISPATCH_GL(tmpbuf.sz)], RC;  jb ->fff_fallback_1
-  |  add RB, #STR
-  |  mov TMP2, PC			// Need another temp register.
-  |.if X64
-  |  mov TMP3, RC
-  |.else
-  |  mov ARG3, RC
-  |.endif
-  |  mov PC, [DISPATCH+DISPATCH_GL(tmpbuf.buf)]
-  |  jmp >3
-  |1:  // ASCII case conversion. Yes, this is suboptimal code (do you care?).
-  |  movzx RA, byte [RB+RC]
-  |  cmp RA, lo
-  |  jb >2
-  |  cmp RA, hi
-  |  ja >2
-  |  xor RA, 0x20
-  |2:
-  |  mov [PC+RC], RAL
-  |3:
-  |  sub RC, 1
-  |  jns <1
-  |  mov RD, PC
-  |  mov PC, TMP2
-  |  jmp ->fff_newstr
+  |  mov L:RB, SAVE_L
+  |   lea SBUF:FCARG1, [DISPATCH+DISPATCH_GL(tmpbuf)]
+  |  mov L:RB->base, BASE
+  |  mov STR:FCARG2, [BASE]		// Caveat: FCARG2 == BASE
+  |   mov RC, SBUF:FCARG1->b
+  |   mov SBUF:FCARG1->L, L:RB
+  |   mov SBUF:FCARG1->p, RC
+  |  mov SAVE_PC, PC
+  |  call extern lj_buf_putstr_ .. name .. @8
+  |  mov FCARG1, eax
+  |  call extern lj_buf_tostr@4
+  |  jmp ->fff_resstr
   |.endmacro
   |
-  |ffstring_case string_lower, 0x41, 0x5a
-  |ffstring_case string_upper, 0x61, 0x7a
-  |
-  |//-- Table library ------------------------------------------------------
-  |
-  |.ffunc_1 table_getn
-  |  cmp dword [BASE+4], LJ_TTAB;  jne ->fff_fallback
-  |  mov RB, BASE			// Save BASE.
-  |  mov TAB:FCARG1, [BASE]
-  |  call extern lj_tab_len@4		// LJ_FASTCALL (GCtab *t)
-  |  // Length of table returned in eax (RD).
-  |  mov BASE, RB			// Restore BASE.
-  |.if DUALNUM
-  |  mov RB, RD; jmp ->fff_resi
-  |.elif SSE
-  |  cvtsi2sd xmm0, RD; jmp ->fff_resxmm0
-  |.else
-  |  mov ARG1, RD; fild ARG1; jmp ->fff_resn
-  |.endif
+  |ffstring_op reverse
+  |ffstring_op lower
+  |ffstring_op upper
   |
   |//-- Bit library --------------------------------------------------------
-  |
-  |.define TOBIT_BIAS, 0x59c00000	// 2^52 + 2^51 (float, not double!).
   |
   |.macro .ffunc_bit, name, kind, fdef
   |  fdef name
   |.if kind == 2
-  |.if SSE
   |  sseconst_tobit xmm1, RBa
-  |.else
-  |  mov TMP1, TOBIT_BIAS
-  |.endif
   |.endif
   |  cmp dword [BASE+4], LJ_TISNUM
   |.if DUALNUM
@@ -2587,24 +2454,12 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  jae ->fff_fallback
   |.endif
-  |.if SSE
   |  movsd xmm0, qword [BASE]
   |.if kind < 2
   |  sseconst_tobit xmm1, RBa
   |.endif
   |  addsd xmm0, xmm1
   |  movd RB, xmm0
-  |.else
-  |  fld qword [BASE]
-  |.if kind < 2
-  |  mov TMP1, TOBIT_BIAS
-  |.endif
-  |  fadd TMP1
-  |  fstp FPARG1
-  |.if kind > 0
-  |  mov RB, ARG1
-  |.endif
-  |.endif
   |2:
   |.endmacro
   |
@@ -2613,15 +2468,7 @@ static void build_subroutines(BuildCtx *ctx)
   |.endmacro
   |
   |.ffunc_bit bit_tobit, 0
-  |.if DUALNUM or SSE
-  |.if not SSE
-  |  mov RB, ARG1
-  |.endif
   |  jmp ->fff_resbit
-  |.else
-  |  fild ARG1
-  |  jmp ->fff_resn
-  |.endif
   |
   |.macro .ffunc_bit_op, name, ins
   |  .ffunc_bit name, 2
@@ -2641,17 +2488,10 @@ static void build_subroutines(BuildCtx *ctx)
   |.else
   |  jae ->fff_fallback_bit_op
   |.endif
-  |.if SSE
   |  movsd xmm0, qword [RD]
   |  addsd xmm0, xmm1
   |  movd RA, xmm0
   |  ins RB, RA
-  |.else
-  |  fld qword [RD]
-  |  fadd TMP1
-  |  fstp FPARG1
-  |  ins RB, ARG1
-  |.endif
   |  sub RD, 8
   |  jmp <1
   |.endmacro
@@ -2668,15 +2508,10 @@ static void build_subroutines(BuildCtx *ctx)
   |  not RB
   |.if DUALNUM
   |  jmp ->fff_resbit
-  |.elif SSE
+  |.else
   |->fff_resbit:
   |  cvtsi2sd xmm0, RB
   |  jmp ->fff_resxmm0
-  |.else
-  |->fff_resbit:
-  |  mov ARG1, RB
-  |  fild ARG1
-  |  jmp ->fff_resn
   |.endif
   |
   |->fff_fallback_bit_op:
@@ -2689,22 +2524,13 @@ static void build_subroutines(BuildCtx *ctx)
   |  // Note: no inline conversion from number for 2nd argument!
   |  cmp dword [BASE+12], LJ_TISNUM; jne ->fff_fallback
   |  mov RA, dword [BASE+8]
-  |.elif SSE
+  |.else
   |  .ffunc_nnsse name
   |  sseconst_tobit xmm2, RBa
   |  addsd xmm0, xmm2
   |  addsd xmm1, xmm2
   |  movd RB, xmm0
   |  movd RA, xmm1
-  |.else
-  |  .ffunc_nn name
-  |  mov TMP1, TOBIT_BIAS
-  |  fadd TMP1
-  |  fstp FPARG3
-  |  fadd TMP1
-  |  fstp FPARG1
-  |  mov RA, ARG3
-  |  mov RB, ARG1
   |.endif
   |  ins RB, cl				// Assumes RA is ecx.
   |  jmp ->fff_resbit
@@ -2838,7 +2664,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov FCARG2, PC			// Caveat: FCARG2 == BASE
   |  mov FCARG1, L:RB
   |  // SAVE_PC must hold the _previous_ PC. The callee updates it with PC.
-  |  call extern lj_dispatch_ins@8	// (lua_State *L, BCIns *pc)
+  |  call extern lj_dispatch_ins@8	// (lua_State *L, const BCIns *pc)
   |3:
   |  mov BASE, L:RB->base
   |4:
@@ -2909,6 +2735,79 @@ static void build_subroutines(BuildCtx *ctx)
   |  add NARGS:RD, 1
   |  jmp RBa
   |
+  |->cont_stitch:			// Trace stitching.
+  |.if JIT
+  |  // BASE = base, RC = result, RB = mbase
+  |  mov TRACE:RA, [RB-24]		// Save previous trace.
+  |  mov TMP1, TRACE:RA
+  |  mov TMP3, DISPATCH			// Need one more register.
+  |  mov DISPATCH, MULTRES
+  |  movzx RA, PC_RA
+  |  lea RA, [BASE+RA*8]		// Call base.
+  |  sub DISPATCH, 1
+  |  jz >2
+  |1:  // Move results down.
+  |.if X64
+  |  mov RBa, [RC]
+  |  mov [RA], RBa
+  |.else
+  |  mov RB, [RC]
+  |  mov [RA], RB
+  |  mov RB, [RC+4]
+  |  mov [RA+4], RB
+  |.endif
+  |  add RC, 8
+  |  add RA, 8
+  |  sub DISPATCH, 1
+  |  jnz <1
+  |2:
+  |  movzx RC, PC_RA
+  |  movzx RB, PC_RB
+  |  add RC, RB
+  |  lea RC, [BASE+RC*8-8]
+  |3:
+  |  cmp RC, RA
+  |  ja >9				// More results wanted?
+  |
+  |  mov DISPATCH, TMP3
+  |  mov TRACE:RD, TMP1			// Get previous trace.
+  |  movzx RB, word TRACE:RD->traceno
+  |  movzx RD, word TRACE:RD->link
+  |  cmp RD, RB
+  |  je ->cont_nop			// Blacklisted.
+  |  test RD, RD
+  |  jne =>BC_JLOOP			// Jump to stitched trace.
+  |
+  |  // Stitch a new trace to the previous trace.
+  |  mov [DISPATCH+DISPATCH_J(exitno)], RB
+  |  mov L:RB, SAVE_L
+  |  mov L:RB->base, BASE
+  |  mov FCARG2, PC
+  |  lea FCARG1, [DISPATCH+GG_DISP2J]
+  |  mov aword [DISPATCH+DISPATCH_J(L)], L:RBa
+  |  call extern lj_dispatch_stitch@8	// (jit_State *J, const BCIns *pc)
+  |  mov BASE, L:RB->base
+  |  jmp ->cont_nop
+  |
+  |9:  // Fill up results with nil.
+  |  mov dword [RA+4], LJ_TNIL
+  |  add RA, 8
+  |  jmp <3
+  |.endif
+  |
+  |->vm_profhook:			// Dispatch target for profiler hook.
+#if LJ_HASPROFILE
+  |  mov L:RB, SAVE_L
+  |  mov L:RB->base, BASE
+  |  mov FCARG2, PC			// Caveat: FCARG2 == BASE
+  |  mov FCARG1, L:RB
+  |  call extern lj_dispatch_profile@8	// (lua_State *L, const BCIns *pc)
+  |  mov BASE, L:RB->base
+  |  // HOOK_PROFILE is off again, so re-dispatch to dynamic instruction.
+  |  sub PC, 4
+  |  jmp ->cont_nop
+#endif
+  |
   |//-----------------------------------------------------------------------
   |//-- Trace exit handler -------------------------------------------------
   |//-----------------------------------------------------------------------
@@ -2961,10 +2860,9 @@ static void build_subroutines(BuildCtx *ctx)
   |  movsd qword [ebp-88], xmm1; movsd qword [ebp-96], xmm0
   |.endif
   |  // Caveat: RB is ebp.
-  |  mov L:RB, [DISPATCH+DISPATCH_GL(jit_L)]
+  |  mov L:RB, [DISPATCH+DISPATCH_GL(cur_L)]
   |  mov BASE, [DISPATCH+DISPATCH_GL(jit_base)]
   |  mov aword [DISPATCH+DISPATCH_J(L)], L:RBa
-  |  mov dword [DISPATCH+DISPATCH_GL(jit_L)], 0
   |  mov L:RB->base, BASE
   |.if X64WIN
   |  lea CARG2, [rsp+4*8]
@@ -2974,6 +2872,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  lea FCARG2, [esp+16]
   |.endif
   |  lea FCARG1, [DISPATCH+GG_DISP2J]
+  |  mov dword [DISPATCH+DISPATCH_GL(jit_base)], 0
   |  call extern lj_trace_exit@8	// (jit_State *J, ExitState *ex)
   |  // MULTRES or negated error code returned in eax (RD).
   |  mov RAa, L:RB->cframe
@@ -3020,12 +2919,14 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov r13, TMPa
   |  mov r12, TMPQ
   |.endif
-  |  test RD, RD; js >3			// Check for error from exit.
+  |  test RD, RD; js >9			// Check for error from exit.
+  |  mov L:RB, SAVE_L
   |  mov MULTRES, RD
   |  mov LFUNC:KBASE, [BASE-8]
   |  mov KBASE, LFUNC:KBASE->pc
   |  mov KBASE, [KBASE+PC2PROTO(k)]
-  |  mov dword [DISPATCH+DISPATCH_GL(jit_L)], 0
+  |  mov L:RB->base, BASE
+  |  mov dword [DISPATCH+DISPATCH_GL(jit_base)], 0
   |  set_vmstate INTERP
   |  // Modified copy of ins_next which handles function header dispatch, too.
   |  mov RC, [PC]
@@ -3034,16 +2935,31 @@ static void build_subroutines(BuildCtx *ctx)
   |  add PC, 4
   |  shr RC, 16
   |  cmp OP, BC_FUNCF			// Function header?
-  |  jb >2
-  |  mov RC, MULTRES			// RC/RD holds nres+1.
+  |  jb >3
+  |  cmp OP, BC_FUNCC+2			// Fast function?
+  |  jae >4
   |2:
+  |  mov RC, MULTRES			// RC/RD holds nres+1.
+  |3:
   |.if X64
   |  jmp aword [DISPATCH+OP*8]
   |.else
   |  jmp aword [DISPATCH+OP*4]
   |.endif
   |
-  |3:  // Rethrow error from the right C frame.
+  |4:  // Check frame below fast function.
+  |  mov RC, [BASE-4]
+  |  test RC, FRAME_TYPE
+  |  jnz <2				// Trace stitching continuation?
+  |  // Otherwise set KBASE for Lua function below fast function.
+  |  movzx RC, byte [RC-3]
+  |  not RCa
+  |  mov LFUNC:KBASE, [BASE+RC*8-8]
+  |  mov KBASE, LFUNC:KBASE->pc
+  |  mov KBASE, [KBASE+PC2PROTO(k)]
+  |  jmp <2
+  |
+  |9:  // Rethrow error from the right C frame.
   |  neg RD
   |  mov FCARG1, L:RB
   |  mov FCARG2, RD
@@ -3055,27 +2971,18 @@ static void build_subroutines(BuildCtx *ctx)
   |//-----------------------------------------------------------------------
   |
   |// FP value rounding. Called by math.floor/math.ceil fast functions
-  |// and from JIT code.
-  |
-  |// x87 variant: Arg/ret on x87 stack. No int/xmm registers modified.
-  |.macro vm_round_x87, mode1, mode2
-  |  fnstcw word [esp+4]		// Caveat: overwrites ARG1 and ARG2.
-  |  mov [esp+8], eax
-  |  mov ax, mode1
-  |  or ax, [esp+4]
-  |.if mode2 ~= 0xffff
-  |  and ax, mode2
-  |.endif
-  |  mov [esp+6], ax
-  |  fldcw word [esp+6]
-  |  frndint
-  |  fldcw word [esp+4]
-  |  mov eax, [esp+8]
+  |// and from JIT code. arg/ret is xmm0. xmm0-xmm3 and RD (eax) modified.
+  |.macro vm_round, name, mode, cond
+  |->name:
+  |.if not X64 and cond
+  |  movsd xmm0, qword [esp+4]
+  |  call ->name .. _sse
+  |  movsd qword [esp+4], xmm0  // Overwrite callee-owned arg.
+  |  fld qword [esp+4]
   |  ret
-  |.endmacro
+  |.endif
   |
-  |// SSE variant: arg/ret is xmm0. xmm0-xmm3 and RD (eax) modified.
-  |.macro vm_round_sse, mode
+  |->name .. _sse:
   |  sseconst_abs xmm2, RDa
   |  sseconst_2p52 xmm3, RDa
   |  movaps xmm1, xmm0
@@ -3111,22 +3018,12 @@ static void build_subroutines(BuildCtx *ctx)
   |  ret
   |.endmacro
   |
-  |.macro vm_round, name, ssemode, mode1, mode2
-  |->name:
-  |.if not SSE
-  |  vm_round_x87 mode1, mode2
-  |.endif
-  |->name .. _sse:
-  |  vm_round_sse ssemode
-  |.endmacro
-  |
-  |  vm_round vm_floor, 0, 0x0400, 0xf7ff
-  |  vm_round vm_ceil,  1, 0x0800, 0xfbff
-  |  vm_round vm_trunc, 2, 0x0c00, 0xffff
+  |  vm_round vm_floor, 0, 1
+  |  vm_round vm_ceil,  1, JIT
+  |  vm_round vm_trunc, 2, JIT
   |
   |// FP modulo x%y. Called by BC_MOD* and vm_arith.
   |->vm_mod:
-  |.if SSE
   |// Args in xmm0/xmm1, return value in xmm0.
   |// Caveat: xmm0-xmm5 and RC (eax) modified!
   |  movaps xmm5, xmm0
@@ -3154,172 +3051,6 @@ static void build_subroutines(BuildCtx *ctx)
   |  movaps xmm0, xmm5
   |  subsd xmm0, xmm1
   |  ret
-  |.else
-  |// Args/ret on x87 stack (y on top). No xmm registers modified.
-  |// Caveat: needs 3 slots on x87 stack! RC (eax) modified!
-  |  fld st1
-  |  fdiv st1
-  |  fnstcw word [esp+4]
-  |  mov ax, 0x0400
-  |  or ax, [esp+4]
-  |  and ax, 0xf7ff
-  |  mov [esp+6], ax
-  |  fldcw word [esp+6]
-  |  frndint
-  |  fldcw word [esp+4]
-  |  fmulp st1
-  |  fsubp st1
-  |  ret
-  |.endif
-  |
-  |// FP log2(x). Called by math.log(x, base).
-  |->vm_log2:
-  |.if X64WIN
-  |  movsd qword [rsp+8], xmm0		// Use scratch area.
-  |  fld1
-  |  fld qword [rsp+8]
-  |  fyl2x
-  |  fstp qword [rsp+8]
-  |  movsd xmm0, qword [rsp+8]
-  |.elif X64
-  |  movsd qword [rsp-8], xmm0		// Use red zone.
-  |  fld1
-  |  fld qword [rsp-8]
-  |  fyl2x
-  |  fstp qword [rsp-8]
-  |  movsd xmm0, qword [rsp-8]
-  |.else
-  |  fld1
-  |  fld qword [esp+4]
-  |  fyl2x
-  |.endif
-  |  ret
-  |
-  |// FP exponentiation e^x and 2^x. Called by math.exp fast function and
-  |// from JIT code. Arg/ret on x87 stack. No int/xmm regs modified.
-  |// Caveat: needs 3 slots on x87 stack!
-  |->vm_exp_x87:
-  |  fldl2e; fmulp st1				// e^x ==> 2^(x*log2(e))
-  |->vm_exp2_x87:
-  |  .if X64WIN
-  |    .define expscratch, dword [rsp+8]	// Use scratch area.
-  |  .elif X64
-  |    .define expscratch, dword [rsp-8]	// Use red zone.
-  |  .else
-  |    .define expscratch, dword [esp+4]	// Needs 4 byte scratch area.
-  |  .endif
-  |  fst expscratch				// Caveat: overwrites ARG1.
-  |  cmp expscratch, 0x7f800000; je >1		// Special case: e^+Inf = +Inf
-  |  cmp expscratch, 0xff800000; je >2		// Special case: e^-Inf = 0
-  |->vm_exp2raw:  // Entry point for vm_pow. Without +-Inf check.
-  |  fdup; frndint; fsub st1, st0; fxch		// Split into frac/int part.
-  |  f2xm1; fld1; faddp st1; fscale; fpop1	// ==> (2^frac-1 +1) << int
-  |1:
-  |  ret
-  |2:
-  |  fpop; fldz; ret
-  |
-  |// Generic power function x^y. Called by BC_POW, math.pow fast function,
-  |// and vm_arith.
-  |// Args/ret on x87 stack (y on top). RC (eax) modified.
-  |// Caveat: needs 3 slots on x87 stack!
-  |->vm_pow:
-  |.if not SSE
-  |  fist dword [esp+4]			// Store/reload int before comparison.
-  |  fild dword [esp+4]			// Integral exponent used in vm_powi.
-  |  fucomip st1
-  |  jnz >8				// Branch for FP exponents.
-  |  jp >9				// Branch for NaN exponent.
-  |  fpop				// Pop y and fallthrough to vm_powi.
-  |
-  |// FP/int power function x^i. Arg1/ret on x87 stack.
-  |// Arg2 (int) on C stack. RC (eax) modified.
-  |// Caveat: needs 2 slots on x87 stack!
-  |  mov eax, [esp+4]
-  |  cmp eax, 1; jle >6			// i<=1?
-  |  // Now 1 < (unsigned)i <= 0x80000000.
-  |1:  // Handle leading zeros.
-  |  test eax, 1; jnz >2
-  |  fmul st0
-  |  shr eax, 1
-  |  jmp <1
-  |2:
-  |  shr eax, 1; jz >5
-  |  fdup
-  |3:  // Handle trailing bits.
-  |  fmul st0
-  |  shr eax, 1; jz >4
-  |  jnc <3
-  |  fmul st1, st0
-  |  jmp <3
-  |4:
-  |  fmulp st1
-  |5:
-  |  ret
-  |6:
-  |  je <5				// x^1 ==> x
-  |  jb >7
-  |  fld1; fdivrp st1
-  |  neg eax
-  |  cmp eax, 1; je <5			// x^-1 ==> 1/x
-  |  jmp <1				// x^-i ==> (1/x)^i
-  |7:
-  |  fpop; fld1				// x^0 ==> 1
-  |  ret
-  |
-  |8:  // FP/FP power function x^y.
-  |  fst dword [esp+4]
-  |  fxch
-  |  fst dword [esp+8]
-  |  mov eax, [esp+4]; shl eax, 1
-  |  cmp eax, 0xff000000; je >2			// x^+-Inf?
-  |  mov eax, [esp+8]; shl eax, 1; je >4	// +-0^y?
-  |  cmp eax, 0xff000000; je >4			// +-Inf^y?
-  |  fyl2x
-  |  jmp ->vm_exp2raw
-  |
-  |9:  // Handle x^NaN.
-  |  fld1
-  |  fucomip st2
-  |  je >1				// 1^NaN ==> 1
-  |  fxch				// x^NaN ==> NaN
-  |1:
-  |  fpop
-  |  ret
-  |
-  |2:  // Handle x^+-Inf.
-  |  fabs
-  |  fld1
-  |  fucomip st1
-  |  je >3					// +-1^+-Inf ==> 1
-  |  fpop; fabs; fldz; mov eax, 0; setc al
-  |  ror eax, 1; xor eax, [esp+4]; jns >3	// |x|<>1, x^+-Inf ==> +Inf/0
-  |  fxch
-  |3:
-  |  fpop1; fabs
-  |  ret
-  |
-  |4:  // Handle +-0^y or +-Inf^y.
-  |  cmp dword [esp+4], 0; jge <3		// y >= 0, x^y ==> |x|
-  |  fpop; fpop
-  |  test eax, eax; jz >5			// y < 0, +-0^y ==> +Inf
-  |  fldz					// y < 0, +-Inf^y ==> 0
-  |  ret
-  |5:
-  |  mov dword [esp+4], 0x7f800000		// Return +Inf.
-  |  fld dword [esp+4]
-  |  ret
-  |.endif
-  |
-  |// Args in xmm0/xmm1. Ret in xmm0. xmm0-xmm2 and RC (eax) modified.
-  |// Needs 16 byte scratch area for x86. Also called from JIT code.
-  |->vm_pow_sse:
-  |  cvtsd2si eax, xmm1
-  |  cvtsi2sd xmm2, eax
-  |  ucomisd xmm1, xmm2
-  |  jnz >8				// Branch for FP exponents.
-  |  jp >9				// Branch for NaN exponent.
-  |  // Fallthrough to vm_powi_sse.
   |
   |// Args in xmm0/eax. Ret in xmm0. xmm0-xmm1 and eax modified.
   |->vm_powi_sse:
@@ -3356,287 +3087,6 @@ static void build_subroutines(BuildCtx *ctx)
   |  sseconst_1 xmm0, RDa
   |  ret
   |
-  |8:  // FP/FP power function x^y.
-  |.if X64
-  |  movd rax, xmm1; shl rax, 1
-  |  rol rax, 12; cmp rax, 0xffe; je >2		// x^+-Inf?
-  |  movd rax, xmm0; shl rax, 1; je >4		// +-0^y?
-  |  rol rax, 12; cmp rax, 0xffe; je >5		// +-Inf^y?
-  |  .if X64WIN
-  |    movsd qword [rsp+16], xmm1		// Use scratch area.
-  |    movsd qword [rsp+8], xmm0
-  |    fld qword [rsp+16]
-  |    fld qword [rsp+8]
-  |  .else
-  |    movsd qword [rsp-16], xmm1		// Use red zone.
-  |    movsd qword [rsp-8], xmm0
-  |    fld qword [rsp-16]
-  |    fld qword [rsp-8]
-  |  .endif
-  |.else
-  |  movsd qword [esp+12], xmm1			// Needs 16 byte scratch area.
-  |  movsd qword [esp+4], xmm0
-  |  cmp dword [esp+12], 0; jne >1
-  |  mov eax, [esp+16]; shl eax, 1
-  |  cmp eax, 0xffe00000; je >2			// x^+-Inf?
-  |1:
-  |  cmp dword [esp+4], 0; jne >1
-  |  mov eax, [esp+8]; shl eax, 1; je >4	// +-0^y?
-  |  cmp eax, 0xffe00000; je >5			// +-Inf^y?
-  |1:
-  |  fld qword [esp+12]
-  |  fld qword [esp+4]
-  |.endif
-  |  fyl2x					// y*log2(x)
-  |  fdup; frndint; fsub st1, st0; fxch		// Split into frac/int part.
-  |  f2xm1; fld1; faddp st1; fscale; fpop1	// ==> (2^frac-1 +1) << int
-  |.if X64WIN
-  |  fstp qword [rsp+8]				// Use scratch area.
-  |  movsd xmm0, qword [rsp+8]
-  |.elif X64
-  |  fstp qword [rsp-8]				// Use red zone.
-  |  movsd xmm0, qword [rsp-8]
-  |.else
-  |  fstp qword [esp+4]				// Needs 8 byte scratch area.
-  |  movsd xmm0, qword [esp+4]
-  |.endif
-  |  ret
-  |
-  |9:  // Handle x^NaN.
-  |  sseconst_1 xmm2, RDa
-  |  ucomisd xmm0, xmm2; je >1			// 1^NaN ==> 1
-  |  movaps xmm0, xmm1				// x^NaN ==> NaN
-  |1:
-  |  ret
-  |
-  |2:  // Handle x^+-Inf.
-  |  sseconst_abs xmm2, RDa
-  |  andpd xmm0, xmm2				// |x|
-  |  sseconst_1 xmm2, RDa
-  |  ucomisd xmm0, xmm2; je <1			// +-1^+-Inf ==> 1
-  |  movmskpd eax, xmm1
-  |  xorps xmm0, xmm0
-  |  mov ah, al; setc al; xor al, ah; jne <1	// |x|<>1, x^+-Inf ==> +Inf/0
-  |3:
-  |  sseconst_hi xmm0, RDa, 7ff00000  // +Inf
-  |  ret
-  |
-  |4:  // Handle +-0^y.
-  |  movmskpd eax, xmm1; test eax, eax; jnz <3	// y < 0, +-0^y ==> +Inf
-  |  xorps xmm0, xmm0				// y >= 0, +-0^y ==> 0
-  |  ret
-  |
-  |5:  // Handle +-Inf^y.
-  |  movmskpd eax, xmm1; test eax, eax; jz <3	// y >= 0, +-Inf^y ==> +Inf
-  |  xorps xmm0, xmm0				// y < 0, +-Inf^y ==> 0
-  |  ret
-  |
-  |// Callable from C: double lj_vm_foldfpm(double x, int fpm)
-  |// Computes fpm(x) for extended math functions. ORDER FPM.
-  |->vm_foldfpm:
-  |.if JIT
-  |.if X64
-  |  .if X64WIN
-  |    .define fpmop, CARG2d
-  |  .else
-  |    .define fpmop, CARG1d
-  |  .endif
-  |  cmp fpmop, 1; jb ->vm_floor; je ->vm_ceil
-  |  cmp fpmop, 3; jb ->vm_trunc; ja >2
-  |  sqrtsd xmm0, xmm0; ret
-  |2:
-  |  .if X64WIN
-  |    movsd qword [rsp+8], xmm0	// Use scratch area.
-  |    fld qword [rsp+8]
-  |  .else
-  |    movsd qword [rsp-8], xmm0	// Use red zone.
-  |    fld qword [rsp-8]
-  |  .endif
-  |  cmp fpmop, 5; ja >2
-  |  .if X64WIN; pop rax; .endif
-  |  je >1
-  |  call ->vm_exp_x87
-  |  .if X64WIN; push rax; .endif
-  |  jmp >7
-  |1:
-  |  call ->vm_exp2_x87
-  |  .if X64WIN; push rax; .endif
-  |  jmp >7
-  |2: ; cmp fpmop, 7; je >1; ja >2
-  |  fldln2; fxch; fyl2x; jmp >7
-  |1: ; fld1; fxch; fyl2x; jmp >7
-  |2: ; cmp fpmop, 9; je >1; ja >2
-  |  fldlg2; fxch; fyl2x; jmp >7
-  |1: ; fsin; jmp >7
-  |2: ; cmp fpmop, 11; je >1; ja >9
-  |   fcos; jmp >7
-  |1: ; fptan; fpop
-  |7:
-  |  .if X64WIN
-  |    fstp qword [rsp+8]		// Use scratch area.
-  |    movsd xmm0, qword [rsp+8]
-  |  .else
-  |    fstp qword [rsp-8]		// Use red zone.
-  |    movsd xmm0, qword [rsp-8]
-  |  .endif
-  |  ret
-  |.else  // x86 calling convention.
-  |  .define fpmop, eax
-  |.if SSE
-  |  mov fpmop, [esp+12]
-  |  movsd xmm0, qword [esp+4]
-  |  cmp fpmop, 1; je >1; ja >2
-  |  call ->vm_floor; jmp >7
-  |1: ; call ->vm_ceil; jmp >7
-  |2: ; cmp fpmop, 3; je >1; ja >2
-  |  call ->vm_trunc; jmp >7
-  |1:
-  |  sqrtsd xmm0, xmm0
-  |7:
-  |  movsd qword [esp+4], xmm0	// Overwrite callee-owned args.
-  |  fld qword [esp+4]
-  |  ret
-  |2: ; fld qword [esp+4]
-  |  cmp fpmop, 5; jb ->vm_exp_x87; je ->vm_exp2_x87
-  |2: ; cmp fpmop, 7; je >1; ja >2
-  |  fldln2; fxch; fyl2x; ret
-  |1: ; fld1; fxch; fyl2x; ret
-  |2: ; cmp fpmop, 9; je >1; ja >2
-  |  fldlg2; fxch; fyl2x; ret
-  |1: ; fsin; ret
-  |2: ; cmp fpmop, 11; je >1; ja >9
-  |   fcos; ret
-  |1: ; fptan; fpop; ret
-  |.else
-  |  mov fpmop, [esp+12]
-  |  fld qword [esp+4]
-  |  cmp fpmop, 1; jb ->vm_floor; je ->vm_ceil
-  |  cmp fpmop, 3; jb ->vm_trunc; ja >2
-  |  fsqrt; ret
-  |2: ; cmp fpmop, 5; jb ->vm_exp_x87; je ->vm_exp2_x87
-  |  cmp fpmop, 7; je >1; ja >2
-  |  fldln2; fxch; fyl2x; ret
-  |1: ; fld1; fxch; fyl2x; ret
-  |2: ; cmp fpmop, 9; je >1; ja >2
-  |  fldlg2; fxch; fyl2x; ret
-  |1: ; fsin; ret
-  |2: ; cmp fpmop, 11; je >1; ja >9
-  |   fcos; ret
-  |1: ; fptan; fpop; ret
-  |.endif
-  |.endif
-  |9: ; int3					// Bad fpm.
-  |.endif
-  |
-  |// Callable from C: double lj_vm_foldarith(double x, double y, int op)
-  |// Compute x op y for basic arithmetic operators (+ - * / % ^ and unary -)
-  |// and basic math functions. ORDER ARITH
-  |->vm_foldarith:
-  |.if X64
-  |
-  |  .if X64WIN
-  |    .define foldop, CARG3d
-  |  .else
-  |    .define foldop, CARG1d
-  |  .endif
-  |  cmp foldop, 1; je >1; ja >2
-  |  addsd xmm0, xmm1; ret
-  |1: ; subsd xmm0, xmm1; ret
-  |2: ; cmp foldop, 3; je >1; ja >2
-  |  mulsd xmm0, xmm1; ret
-  |1: ; divsd xmm0, xmm1; ret
-  |2: ; cmp foldop, 5; jb ->vm_mod; je ->vm_pow
-  |  cmp foldop, 7; je >1; ja >2
-  |  sseconst_sign xmm1, RDa; xorps xmm0, xmm1; ret
-  |1: ; sseconst_abs xmm1, RDa; andps xmm0, xmm1; ret
-  |2: ; cmp foldop, 9; ja >2
-  |.if X64WIN
-  |  movsd qword [rsp+8], xmm0	// Use scratch area.
-  |  movsd qword [rsp+16], xmm1
-  |  fld qword [rsp+8]
-  |  fld qword [rsp+16]
-  |.else
-  |  movsd qword [rsp-8], xmm0	// Use red zone.
-  |  movsd qword [rsp-16], xmm1
-  |  fld qword [rsp-8]
-  |  fld qword [rsp-16]
-  |.endif
-  |  je >1
-  |  fpatan
-  |7:
-  |.if X64WIN
-  |  fstp qword [rsp+8]		// Use scratch area.
-  |  movsd xmm0, qword [rsp+8]
-  |.else
-  |  fstp qword [rsp-8]		// Use red zone.
-  |  movsd xmm0, qword [rsp-8]
-  |.endif
-  |  ret
-  |1: ; fxch; fscale; fpop1; jmp <7
-  |2: ; cmp foldop, 11; je >1; ja >9
-  |  minsd xmm0, xmm1; ret
-  |1: ; maxsd xmm0, xmm1; ret
-  |9: ; int3				// Bad op.
-  |
-  |.elif SSE  // x86 calling convention with SSE ops.
-  |
-  |  .define foldop, eax
-  |  mov foldop, [esp+20]
-  |  movsd xmm0, qword [esp+4]
-  |  movsd xmm1, qword [esp+12]
-  |  cmp foldop, 1; je >1; ja >2
-  |  addsd xmm0, xmm1
-  |7:
-  |  movsd qword [esp+4], xmm0	// Overwrite callee-owned args.
-  |  fld qword [esp+4]
-  |  ret
-  |1: ; subsd xmm0, xmm1; jmp <7
-  |2: ; cmp foldop, 3; je >1; ja >2
-  |  mulsd xmm0, xmm1; jmp <7
-  |1: ; divsd xmm0, xmm1; jmp <7
-  |2: ; cmp foldop, 5
-  |  je >1; ja >2
-  |  call ->vm_mod; jmp <7
-  |1: ; pop edx; call ->vm_pow; push edx; jmp <7  // Writes to scratch area.
-  |2: ; cmp foldop, 7; je >1; ja >2
-  |  sseconst_sign xmm1, RDa; xorps xmm0, xmm1; jmp <7
-  |1: ; sseconst_abs xmm1, RDa; andps xmm0, xmm1; jmp <7
-  |2: ; cmp foldop, 9; ja >2
-  |  fld qword [esp+4]		// Reload from stack
-  |  fld qword [esp+12]
-  |  je >1
-  |  fpatan; ret
-  |1: ; fxch; fscale; fpop1; ret
-  |2: ; cmp foldop, 11; je >1; ja >9
-  |  minsd xmm0, xmm1; jmp <7
-  |1: ; maxsd xmm0, xmm1; jmp <7
-  |9: ; int3				// Bad op.
-  |
-  |.else  // x86 calling convention with x87 ops.
-  |
-  |  mov eax, [esp+20]
-  |  fld qword [esp+4]
-  |  fld qword [esp+12]
-  |  cmp eax, 1; je >1; ja >2
-  |  faddp st1; ret
-  |1: ; fsubp st1; ret
-  |2: ; cmp eax, 3; je >1; ja >2
-  |  fmulp st1; ret
-  |1: ; fdivp st1; ret
-  |2: ; cmp eax, 5; jb ->vm_mod; je ->vm_pow
-  |  cmp eax, 7; je >1; ja >2
-  |  fpop; fchs; ret
-  |1: ; fpop; fabs; ret
-  |2: ; cmp eax, 9; je >1; ja >2
-  |  fpatan; ret
-  |1: ; fxch; fscale; fpop1; ret
-  |2: ; cmp eax, 11; je >1; ja >9
-  |  fucomi st1; fcmovnbe st1; fpop1; ret
-  |1: ; fucomi st1; fcmovbe st1; fpop1; ret
-  |9: ; int3				// Bad op.
-  |
-  |.endif
-  |
   |//-----------------------------------------------------------------------
   |//-- Miscellaneous functions --------------------------------------------
   |//-----------------------------------------------------------------------
@@ -3647,6 +3097,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov eax, CARG1d
   |  .if X64WIN; push rsi; mov rsi, CARG2; .endif
   |  push rbx
+  |  xor ecx, ecx
   |  cpuid
   |  mov [rsi], eax
   |  mov [rsi+4], ebx
@@ -3670,6 +3121,7 @@ static void build_subroutines(BuildCtx *ctx)
   |  mov eax, [esp+4]			// Argument 1 is function number.
   |  push edi
   |  push ebx
+  |  xor ecx, ecx
   |  cpuid
   |  mov edi, [esp+16]			// Argument 2 is result area.
   |  mov [edi], eax
@@ -3947,19 +3399,12 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // RA is a number.
     |  cmp dword [BASE+RD*8+4], LJ_TISNUM; jb >1; jne ->vmeta_comp
     |  // RA is a number, RD is an integer.
-    |.if SSE
     |  cvtsi2sd xmm0, dword [BASE+RD*8]
     |  jmp >2
-    |.else
-    |  fld qword [BASE+RA*8]
-    |  fild dword [BASE+RD*8]
-    |  jmp >3
-    |.endif
     |
     |8:  // RA is an integer, RD is not an integer.
     |  ja ->vmeta_comp
     |  // RA is an integer, RD is a number.
-    |.if SSE
     |  cvtsi2sd xmm1, dword [BASE+RA*8]
     |  movsd xmm0, qword [BASE+RD*8]
     |  add PC, 4
@@ -3967,29 +3412,15 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  jmp_comp jbe, ja, jb, jae, <9
     |  jmp <6
     |.else
-    |  fild dword [BASE+RA*8]
-    |  jmp >2
-    |.endif
-    |.else
     |  checknum RA, ->vmeta_comp
     |  checknum RD, ->vmeta_comp
     |.endif
-    |.if SSE
     |1:
     |  movsd xmm0, qword [BASE+RD*8]
     |2:
     |  add PC, 4
     |  ucomisd xmm0, qword [BASE+RA*8]
     |3:
-    |.else
-    |1:
-    |  fld qword [BASE+RA*8]		// Reverse order, i.e like cmp D, A.
-    |2:
-    |  fld qword [BASE+RD*8]
-    |3:
-    |  add PC, 4
-    |  fcomparepp
-    |.endif
     |  // Unordered: all of ZF CF PF set, ordered: PF clear.
     |  // To preserve NaN semantics GE/GT branch on unordered, but LT/LE don't.
     |.if DUALNUM
@@ -4029,43 +3460,25 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // RD is a number.
     |  cmp dword [BASE+RA*8+4], LJ_TISNUM; jb >1; jne >5
     |  // RD is a number, RA is an integer.
-    |.if SSE
     |  cvtsi2sd xmm0, dword [BASE+RA*8]
-    |.else
-    |  fild dword [BASE+RA*8]
-    |.endif
     |  jmp >2
     |
     |8:  // RD is an integer, RA is not an integer.
     |  ja >5
     |  // RD is an integer, RA is a number.
-    |.if SSE
     |  cvtsi2sd xmm0, dword [BASE+RD*8]
     |  ucomisd xmm0, qword [BASE+RA*8]
-    |.else
-    |  fild dword [BASE+RD*8]
-    |  fld qword [BASE+RA*8]
-    |.endif
     |  jmp >4
     |
     |.else
     |  cmp RB, LJ_TISNUM; jae >5
     |  checknum RA, >5
     |.endif
-    |.if SSE
     |1:
     |  movsd xmm0, qword [BASE+RA*8]
     |2:
     |  ucomisd xmm0, qword [BASE+RD*8]
     |4:
-    |.else
-    |1:
-    |  fld qword [BASE+RA*8]
-    |2:
-    |  fld qword [BASE+RD*8]
-    |4:
-    |  fcomparepp
-    |.endif
   iseqne_fp:
     if (vk) {
       |  jp >2				// Unordered means not equal.
@@ -4188,39 +3601,21 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // RA is a number.
     |  cmp dword [KBASE+RD*8+4], LJ_TISNUM; jb >1
     |  // RA is a number, RD is an integer.
-    |.if SSE
     |  cvtsi2sd xmm0, dword [KBASE+RD*8]
-    |.else
-    |  fild dword [KBASE+RD*8]
-    |.endif
     |  jmp >2
     |
     |8:  // RA is an integer, RD is a number.
-    |.if SSE
     |  cvtsi2sd xmm0, dword [BASE+RA*8]
     |  ucomisd xmm0, qword [KBASE+RD*8]
-    |.else
-    |  fild dword [BASE+RA*8]
-    |  fld qword [KBASE+RD*8]
-    |.endif
     |  jmp >4
     |.else
     |  cmp RB, LJ_TISNUM; jae >3
     |.endif
-    |.if SSE
     |1:
     |  movsd xmm0, qword [KBASE+RD*8]
     |2:
     |  ucomisd xmm0, qword [BASE+RA*8]
     |4:
-    |.else
-    |1:
-    |  fld qword [KBASE+RD*8]
-    |2:
-    |  fld qword [BASE+RA*8]
-    |4:
-    |  fcomparepp
-    |.endif
     goto iseqne_fp;
   case BC_ISEQP: case BC_ISNEP:
     vk = op == BC_ISEQP;
@@ -4271,6 +3666,18 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  ins_next
     break;
 
+  case BC_ISTYPE:
+    |  ins_AD	// RA = src, RD = -type
+    |  add RD, [BASE+RA*8+4]
+    |  jne ->vmeta_istype
+    |  ins_next
+    break;
+  case BC_ISNUM:
+    |  ins_AD	// RA = src, RD = -(TISNUM-1)
+    |  checknum RA, ->vmeta_istype
+    |  ins_next
+    break;
+
   /* -- Unary ops --------------------------------------------------------- */
 
   case BC_MOV:
@@ -4314,16 +3721,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |.else
     |  checknum RD, ->vmeta_unm
     |.endif
-    |.if SSE
     |  movsd xmm0, qword [BASE+RD*8]
     |  sseconst_sign xmm1, RDa
     |  xorps xmm0, xmm1
     |  movsd qword [BASE+RA*8], xmm0
-    |.else
-    |  fld qword [BASE+RD*8]
-    |  fchs
-    |  fstp qword [BASE+RA*8]
-    |.endif
     |.if DUALNUM
     |  jmp <9
     |.else
@@ -4339,15 +3740,11 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |1:
     |  mov dword [BASE+RA*8+4], LJ_TISNUM
     |  mov dword [BASE+RA*8], RD
-    |.elif SSE
+    |.else
     |  xorps xmm0, xmm0
     |  cvtsi2sd xmm0, dword STR:RD->len
     |1:
     |  movsd qword [BASE+RA*8], xmm0
-    |.else
-    |  fild dword STR:RD->len
-    |1:
-    |  fstp qword [BASE+RA*8]
     |.endif
     |  ins_next
     |2:
@@ -4365,11 +3762,8 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // Length of table returned in eax (RD).
     |.if DUALNUM
     |  // Nothing to do.
-    |.elif SSE
-    |  cvtsi2sd xmm0, RD
     |.else
-    |  mov ARG1, RD
-    |  fild ARG1
+    |  cvtsi2sd xmm0, RD
     |.endif
     |  mov BASE, RB			// Restore BASE.
     |  movzx RA, PC_RA
@@ -4384,7 +3778,7 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
 
   /* -- Binary ops -------------------------------------------------------- */
 
-    |.macro ins_arithpre, x87ins, sseins, ssereg
+    |.macro ins_arithpre, sseins, ssereg
     |  ins_ABC
     ||vk = ((int)op - BC_ADDVN) / (BC_ADDNV-BC_ADDVN);
     ||switch (vk) {
@@ -4393,37 +3787,22 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |   .if DUALNUM
     |     cmp dword [KBASE+RC*8+4], LJ_TISNUM; jae ->vmeta_arith_vn
     |   .endif
-    |   .if SSE
-    |     movsd xmm0, qword [BASE+RB*8]
-    |     sseins ssereg, qword [KBASE+RC*8]
-    |   .else
-    |     fld qword [BASE+RB*8]
-    |     x87ins qword [KBASE+RC*8]
-    |   .endif
+    |   movsd xmm0, qword [BASE+RB*8]
+    |   sseins ssereg, qword [KBASE+RC*8]
     ||  break;
     ||case 1:
     |   checknum RB, ->vmeta_arith_nv
     |   .if DUALNUM
     |     cmp dword [KBASE+RC*8+4], LJ_TISNUM; jae ->vmeta_arith_nv
     |   .endif
-    |   .if SSE
-    |     movsd xmm0, qword [KBASE+RC*8]
-    |     sseins ssereg, qword [BASE+RB*8]
-    |   .else
-    |     fld qword [KBASE+RC*8]
-    |     x87ins qword [BASE+RB*8]
-    |   .endif
+    |   movsd xmm0, qword [KBASE+RC*8]
+    |   sseins ssereg, qword [BASE+RB*8]
     ||  break;
     ||default:
     |   checknum RB, ->vmeta_arith_vv
     |   checknum RC, ->vmeta_arith_vv
-    |   .if SSE
-    |     movsd xmm0, qword [BASE+RB*8]
-    |     sseins ssereg, qword [BASE+RC*8]
-    |   .else
-    |     fld qword [BASE+RB*8]
-    |     x87ins qword [BASE+RC*8]
-    |   .endif
+    |   movsd xmm0, qword [BASE+RB*8]
+    |   sseins ssereg, qword [BASE+RC*8]
     ||  break;
     ||}
     |.endmacro
@@ -4461,55 +3840,62 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |.endmacro
     |
     |.macro ins_arithpost
-    |.if SSE
     |  movsd qword [BASE+RA*8], xmm0
-    |.else
-    |  fstp qword [BASE+RA*8]
-    |.endif
     |.endmacro
     |
-    |.macro ins_arith, x87ins, sseins
-    |  ins_arithpre x87ins, sseins, xmm0
+    |.macro ins_arith, sseins
+    |  ins_arithpre sseins, xmm0
     |  ins_arithpost
     |  ins_next
     |.endmacro
     |
-    |.macro ins_arith, intins, x87ins, sseins
+    |.macro ins_arith, intins, sseins
     |.if DUALNUM
     |  ins_arithdn intins
     |.else
-    |  ins_arith, x87ins, sseins
+    |  ins_arith, sseins
     |.endif
     |.endmacro
 
     |  // RA = dst, RB = src1 or num const, RC = src2 or num const
   case BC_ADDVN: case BC_ADDNV: case BC_ADDVV:
-    |  ins_arith add, fadd, addsd
+    |  ins_arith add, addsd
     break;
   case BC_SUBVN: case BC_SUBNV: case BC_SUBVV:
-    |  ins_arith sub, fsub, subsd
+    |  ins_arith sub, subsd
     break;
   case BC_MULVN: case BC_MULNV: case BC_MULVV:
-    |  ins_arith imul, fmul, mulsd
+    |  ins_arith imul, mulsd
     break;
   case BC_DIVVN: case BC_DIVNV: case BC_DIVVV:
-    |  ins_arith fdiv, divsd
+    |  ins_arith divsd
     break;
   case BC_MODVN:
-    |  ins_arithpre fld, movsd, xmm1
+    |  ins_arithpre movsd, xmm1
     |->BC_MODVN_Z:
     |  call ->vm_mod
     |  ins_arithpost
     |  ins_next
     break;
   case BC_MODNV: case BC_MODVV:
-    |  ins_arithpre fld, movsd, xmm1
+    |  ins_arithpre movsd, xmm1
     |  jmp ->BC_MODVN_Z			// Avoid 3 copies. It's slow anyway.
     break;
   case BC_POW:
-    |  ins_arithpre fld, movsd, xmm1
-    |  call ->vm_pow
+    |  ins_arithpre movsd, xmm1
+    |  mov RB, BASE
+    |.if not X64
+    |  movsd FPARG1, xmm0
+    |  movsd FPARG3, xmm1
+    |.endif
+    |  call extern pow
+    |  movzx RA, PC_RA
+    |  mov BASE, RB
+    |.if X64
     |  ins_arithpost
+    |.else
+    |  fstp qword [BASE+RA*8]
+    |.endif
     |  ins_next
     break;
 
@@ -4577,25 +3963,17 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  movsx RD, RDW
     |  mov dword [BASE+RA*8+4], LJ_TISNUM
     |  mov dword [BASE+RA*8], RD
-    |.elif SSE
+    |.else
     |  movsx RD, RDW			// Sign-extend literal.
     |  cvtsi2sd xmm0, RD
     |  movsd qword [BASE+RA*8], xmm0
-    |.else
-    |  fild PC_RD			// Refetch signed RD from instruction.
-    |  fstp qword [BASE+RA*8]
     |.endif
     |  ins_next
     break;
   case BC_KNUM:
     |  ins_AD	// RA = dst, RD = num const
-    |.if SSE
     |  movsd xmm0, qword [KBASE+RD*8]
     |  movsd qword [BASE+RA*8], xmm0
-    |.else
-    |  fld qword [KBASE+RD*8]
-    |  fstp qword [BASE+RA*8]
-    |.endif
     |  ins_next
     break;
   case BC_KPRI:
@@ -4702,18 +4080,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
   case BC_USETN:
     |  ins_AD	// RA = upvalue #, RD = num const
     |  mov LFUNC:RB, [BASE-8]
-    |.if SSE
     |  movsd xmm0, qword [KBASE+RD*8]
-    |.else
-    |  fld qword [KBASE+RD*8]
-    |.endif
     |  mov UPVAL:RB, [LFUNC:RB+RA*4+offsetof(GCfuncL, uvptr)]
     |  mov RA, UPVAL:RB->v
-    |.if SSE
     |  movsd qword [RA], xmm0
-    |.else
-    |  fstp qword [RA]
-    |.endif
     |  ins_next
     break;
   case BC_USETP:
@@ -4867,18 +4237,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |.else
     |  // Convert number to int and back and compare.
     |  checknum RC, >5
-    |.if SSE
     |  movsd xmm0, qword [BASE+RC*8]
-    |  cvtsd2si RC, xmm0
+    |  cvttsd2si RC, xmm0
     |  cvtsi2sd xmm1, RC
     |  ucomisd xmm0, xmm1
-    |.else
-    |  fld qword [BASE+RC*8]
-    |  fist ARG1
-    |  fild ARG1
-    |  fcomparepp
-    |  mov RC, ARG1
-    |.endif
     |  jne ->vmeta_tgetv		// Generic numeric key? Use fallback.
     |.endif
     |  cmp RC, TAB:RB->asize	// Takes care of unordered, too.
@@ -5002,6 +4364,32 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  mov dword [BASE+RA*8+4], LJ_TNIL
     |  jmp <1
     break;
+  case BC_TGETR:
+    |  ins_ABC	// RA = dst, RB = table, RC = key
+    |  mov TAB:RB, [BASE+RB*8]
+    |.if DUALNUM
+    |  mov RC, dword [BASE+RC*8]
+    |.else
+    |  cvttsd2si RC, qword [BASE+RC*8]
+    |.endif
+    |  cmp RC, TAB:RB->asize
+    |  jae ->vmeta_tgetr		// Not in array part? Use fallback.
+    |  shl RC, 3
+    |  add RC, TAB:RB->array
+    |  // Get array slot.
+    |->BC_TGETR_Z:
+    |.if X64
+    |  mov RBa, [RC]
+    |  mov [BASE+RA*8], RBa
+    |.else
+    |  mov RB, [RC]
+    |  mov RC, [RC+4]
+    |  mov [BASE+RA*8], RB
+    |  mov [BASE+RA*8+4], RC
+    |.endif
+    |->BC_TGETR2_Z:
+    |  ins_next
+    break;
 
   case BC_TSETV:
     |  ins_ABC	// RA = src, RB = table, RC = key
@@ -5015,18 +4403,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |.else
     |  // Convert number to int and back and compare.
     |  checknum RC, >5
-    |.if SSE
     |  movsd xmm0, qword [BASE+RC*8]
-    |  cvtsd2si RC, xmm0
+    |  cvttsd2si RC, xmm0
     |  cvtsi2sd xmm1, RC
     |  ucomisd xmm0, xmm1
-    |.else
-    |  fld qword [BASE+RC*8]
-    |  fist ARG1
-    |  fild ARG1
-    |  fcomparepp
-    |  mov RC, ARG1
-    |.endif
     |  jne ->vmeta_tsetv		// Generic numeric key? Use fallback.
     |.endif
     |  cmp RC, TAB:RB->asize		// Takes care of unordered, too.
@@ -5190,6 +4570,39 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  jz ->vmeta_tsetb			// 'no __newindex' flag NOT set: check.
     |  movzx RA, PC_RA			// Restore RA.
     |  jmp <1
+    |
+    |7:  // Possible table write barrier for the value. Skip valiswhite check.
+    |  barrierback TAB:RB, RA
+    |  movzx RA, PC_RA			// Restore RA.
+    |  jmp <2
+    break;
+  case BC_TSETR:
+    |  ins_ABC	// RA = src, RB = table, RC = key
+    |  mov TAB:RB, [BASE+RB*8]
+    |.if DUALNUM
+    |  mov RC, dword [BASE+RC*8]
+    |.else
+    |  cvttsd2si RC, qword [BASE+RC*8]
+    |.endif
+    |  test byte TAB:RB->marked, LJ_GC_BLACK	// isblack(table)
+    |  jnz >7
+    |2:
+    |  cmp RC, TAB:RB->asize
+    |  jae ->vmeta_tsetr
+    |  shl RC, 3
+    |  add RC, TAB:RB->array
+    |  // Set array slot.
+    |->BC_TSETR_Z:
+    |.if X64
+    |  mov RBa, [BASE+RA*8]
+    |  mov [RC], RBa
+    |.else
+    |  mov RB, [BASE+RA*8+4]
+    |  mov RA, [BASE+RA*8]
+    |  mov [RC+4], RB
+    |  mov [RC], RA
+    |.endif
+    |  ins_next
     |
     |7:  // Possible table write barrier for the value. Skip valiswhite check.
     |  barrierback TAB:RB, RA
@@ -5389,10 +4802,8 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |.if DUALNUM
     |  mov dword [BASE+RA*8+4], LJ_TISNUM
     |  mov dword [BASE+RA*8], RC
-    |.elif SSE
-    |  cvtsi2sd xmm0, RC
     |.else
-    |  fild dword [BASE+RA*8-8]
+    |  cvtsi2sd xmm0, RC
     |.endif
     |  // Copy array slot to returned value.
     |.if X64
@@ -5408,10 +4819,8 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  // Return array index as a numeric key.
     |.if DUALNUM
     |  // See above.
-    |.elif SSE
-    |  movsd qword [BASE+RA*8], xmm0
     |.else
-    |  fstp qword [BASE+RA*8]
+    |  movsd qword [BASE+RA*8], xmm0
     |.endif
     |  mov [BASE+RA*8-8], RC		// Update control var.
     |2:
@@ -5424,9 +4833,6 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |
     |4:  // Skip holes in array part.
     |  add RC, 1
-    |.if not (DUALNUM or SSE)
-    |  mov [BASE+RA*8-8], RC
-    |.endif
     |  jmp <1
     |
     |5:  // Traverse hash part.
@@ -5760,7 +5166,6 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     if (!vk) {
       |  cmp RB, LJ_TISNUM; jae ->vmeta_for
     }
-    |.if SSE
     |  movsd xmm0, qword FOR_IDX
     |  movsd xmm1, qword FOR_STOP
     if (vk) {
@@ -5773,22 +5178,6 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  ucomisd xmm1, xmm0
     |1:
     |  movsd qword FOR_EXT, xmm0
-    |.else
-    |  fld qword FOR_STOP
-    |  fld qword FOR_IDX
-    if (vk) {
-      |  fadd qword FOR_STEP		// nidx = idx + step
-      |  fst qword FOR_IDX
-      |  fst qword FOR_EXT
-      |  test RB, RB; js >1
-    } else {
-      |  fst qword FOR_EXT
-      |  jl >1
-    }
-    |  fxch				// Swap lim/(n)idx if step non-negative.
-    |1:
-    |  fcomparepp
-    |.endif
     if (op == BC_FORI) {
       |.if DUALNUM
       |  jnb <7
@@ -5816,11 +5205,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |2:
     |  ins_next
     |.endif
-    |.if SSE
+    |
     |3:  // Invert comparison if step is negative.
     |  ucomisd xmm0, xmm1
     |  jmp <1
-    |.endif
     break;
 
   case BC_ITERL:
@@ -5858,7 +5246,7 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  ins_A	// RA = base, RD = target (loop extent)
     |  // Note: RA/RD is only used by trace recorder to determine scope/extent
     |  // This opcode does NOT jump, it's only purpose is to detect a hot loop.
-  |.if JIT
+    |.if JIT
     |  hotloop RB
     |.endif
     | // Fall through. Assumes BC_ILOOP follows and ins_A is a no-op.
@@ -5877,7 +5265,7 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
     |  mov RDa, TRACE:RD->mcode
     |  mov L:RB, SAVE_L
     |  mov [DISPATCH+DISPATCH_GL(jit_base)], BASE
-    |  mov [DISPATCH+DISPATCH_GL(jit_L)], L:RB
+    |  mov [DISPATCH+DISPATCH_GL(tmpbuf.L)], L:RB
     |  // Save additional callee-save registers only used in compiled code.
     |.if X64WIN
     |  mov TMPQ, r12
@@ -6044,9 +5432,10 @@ static void build_ins(BuildCtx *ctx, BCOp op, int defop)
       |  // (lua_State *L, lua_CFunction f)
       |  call aword [DISPATCH+DISPATCH_GL(wrapf)]
     }
-    |  set_vmstate INTERP
     |  // nresults returned in eax (RD).
     |  mov BASE, L:RB->base
+    |  mov [DISPATCH+DISPATCH_GL(cur_L)], L:RB
+    |  set_vmstate INTERP
     |  lea RA, [BASE+RD*8]
     |  neg RA
     |  add RA, L:RB->top		// RA = (L->top-(L->base+nresults))*8
@@ -6119,6 +5508,10 @@ static void emit_asm_debug(BuildCtx *ctx)
 	"\t.byte 0x83\n\t.uleb128 0x3\n"	/* offset rbx */
 	"\t.byte 0x8f\n\t.uleb128 0x4\n"	/* offset r15 */
 	"\t.byte 0x8e\n\t.uleb128 0x5\n"	/* offset r14 */
+#if LJ_NO_UNWIND
+	"\t.byte 0x8d\n\t.uleb128 0x6\n"	/* offset r13 */
+	"\t.byte 0x8c\n\t.uleb128 0x7\n"	/* offset r12 */
+#endif
 #else
 	"\t.long .Lbegin\n"
 	"\t.long %d\n"
@@ -6154,6 +5547,7 @@ static void emit_asm_debug(BuildCtx *ctx)
 	"\t.align " SZPTR "\n"
 	".LEFDE1:\n\n", (int)ctx->codesz - fcofs);
 #endif
+#if !LJ_NO_UNWIND
 #if (defined(__sun__) && defined(__svr4__))
 #if LJ_64
     fprintf(ctx->fp, "\t.section .eh_frame,\"a\",@unwind\n");
@@ -6242,7 +5636,9 @@ static void emit_asm_debug(BuildCtx *ctx)
 	"\t.align " SZPTR "\n"
 	".LEFDE3:\n\n", (int)ctx->codesz - fcofs);
 #endif
+#endif
     break;
+#if !LJ_NO_UNWIND
   /* Mental note: never let Apple design an assembler.
   ** Or a linker. Or a plastic case. But I digress.
   */
@@ -6359,17 +5755,24 @@ static void emit_asm_debug(BuildCtx *ctx)
 	  "LEFDEY:\n\n", fcsize);
     }
 #endif
-#if LJ_64
-    fprintf(ctx->fp, "\t.subsections_via_symbols\n");
-#else
+#if !LJ_64
     fprintf(ctx->fp,
       "\t.non_lazy_symbol_pointer\n"
       "L_lj_err_unwind_dwarf$non_lazy_ptr:\n"
       ".indirect_symbol _lj_err_unwind_dwarf\n"
-      ".long 0\n");
+      ".long 0\n\n");
+    fprintf(ctx->fp, "\t.section __IMPORT,__jump_table,symbol_stubs,pure_instructions+self_modifying_code,5\n");
+    {
+      const char *const *xn;
+      for (xn = ctx->extnames; *xn; xn++)
+	if (strncmp(*xn, LABEL_PREFIX, sizeof(LABEL_PREFIX)-1))
+	  fprintf(ctx->fp, "L_%s$stub:\n\t.indirect_symbol _%s\n\t.ascii \"\\364\\364\\364\\364\\364\"\n", *xn, *xn);
+    }
 #endif
+    fprintf(ctx->fp, ".subsections_via_symbols\n");
     }
     break;
+#endif
   default:  /* Difficult for other modes. */
     break;
   }

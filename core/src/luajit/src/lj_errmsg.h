@@ -1,6 +1,6 @@
 /*
 ** VM error messages.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 /* This file may be included multiple times with different ERRDEF macros. */
@@ -96,9 +96,7 @@ ERRDEF(STRPATX,	"pattern too complex")
 ERRDEF(STRCAPI,	"invalid capture index")
 ERRDEF(STRCAPN,	"too many captures")
 ERRDEF(STRCAPU,	"unfinished capture")
-ERRDEF(STRFMTO,	"invalid option " LUA_QL("%%%c") " to " LUA_QL("format"))
-ERRDEF(STRFMTR,	"invalid format (repeated flags)")
-ERRDEF(STRFMTW,	"invalid format (width or precision too long)")
+ERRDEF(STRFMT,	"invalid option " LUA_QS " to " LUA_QL("format"))
 ERRDEF(STRGSRV,	"invalid replacement value (a %s)")
 ERRDEF(BADMODN,	"name conflict for module " LUA_QS)
 #if LJ_HASJIT
@@ -118,7 +116,6 @@ ERRDEF(JITOPT,	"unknown or malformed optimization flag " LUA_QS)
 /* Lexer/parser errors. */
 ERRDEF(XMODE,	"attempt to load chunk with wrong mode")
 ERRDEF(XNEAR,	"%s near " LUA_QS)
-ERRDEF(XELEM,	"lexical element too long")
 ERRDEF(XLINES,	"chunk has too many lines")
 ERRDEF(XLEVELS,	"chunk has too many syntax levels")
 ERRDEF(XNUMBER,	"malformed number")

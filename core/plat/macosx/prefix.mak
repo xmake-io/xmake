@@ -13,7 +13,7 @@ LIB_SUFFIX			= .a
 DLL_PREFIX			= 
 DLL_SUFFIX			= .dylib
 
-ASM_SUFFIX			= .s
+ASM_SUFFIX			= .S
 
 # cpu bits
 BITS				:= $(if $(findstring x86_64,$(ARCH)),64,)

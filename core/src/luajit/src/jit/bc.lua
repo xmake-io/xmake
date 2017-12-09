@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------------
 -- LuaJIT bytecode listing module.
 --
--- Copyright (C) 2005-2015 Mike Pall. All rights reserved.
+-- Copyright (C) 2005-2017 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
 ----------------------------------------------------------------------------
 --
@@ -41,7 +41,7 @@
 
 -- Cache some library functions and objects.
 local jit = require("jit")
-assert(jit.version_num == 20004, "LuaJIT core/library version mismatch")
+assert(jit.version_num == 20100, "LuaJIT core/library version mismatch")
 local jutil = require("jit.util")
 local vmdef = require("jit.vmdef")
 local bit = require("bit")
@@ -179,13 +179,12 @@ local function bcliston(outfile)
 end
 
 -- Public module functions.
-module(...)
-
-line = bcline
-dump = bcdump
-targets = bctargets
-
-on = bcliston
-off = bclistoff
-start = bcliston -- For -j command line option.
+return {
+  line = bcline,
+  dump = bcdump,
+  targets = bctargets,
+  on = bcliston,
+  off = bclistoff,
+  start = bcliston -- For -j command line option.
+}
 

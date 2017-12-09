@@ -1,6 +1,6 @@
 /*
 ** String scanning.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #include <math.h>
@@ -140,7 +140,7 @@ static StrScanFmt strscan_hex(const uint8_t *p, TValue *o,
     break;
   }
 
-  /* Reduce range then convert to double. */
+  /* Reduce range, then convert to double. */
   if ((x & U64x(c0000000,0000000))) { x = (x >> 2) | (x & 3); ex2 += 2; }
   strscan_double(x, o, ex2, neg);
   return fmt;
@@ -326,6 +326,49 @@ static StrScanFmt strscan_dec(const uint8_t *p, TValue *o,
   return fmt;
 }
 
+/* Parse binary number. */
+static StrScanFmt strscan_bin(const uint8_t *p, TValue *o,
+			      StrScanFmt fmt, uint32_t opt,
+			      int32_t ex2, int32_t neg, uint32_t dig)
+{
+  uint64_t x = 0;
+  uint32_t i;
+
+  if (ex2 || dig > 64) return STRSCAN_ERROR;
+
+  /* Scan binary digits. */
+  for (i = dig; i; i--, p++) {
+    if ((*p & ~1) != '0') return STRSCAN_ERROR;
+    x = (x << 1) | (*p & 1);
+  }
+
+  /* Format-specific handling. */
+  switch (fmt) {
+  case STRSCAN_INT:
+    if (!(opt & STRSCAN_OPT_TONUM) && x < 0x80000000u+neg) {
+      o->i = neg ? -(int32_t)x : (int32_t)x;
+      return STRSCAN_INT;  /* Fast path for 32 bit integers. */
+    }
+    if (!(opt & STRSCAN_OPT_C)) { fmt = STRSCAN_NUM; break; }
+    /* fallthrough */
+  case STRSCAN_U32:
+    if (dig > 32) return STRSCAN_ERROR;
+    o->i = neg ? -(int32_t)x : (int32_t)x;
+    return STRSCAN_U32;
+  case STRSCAN_I64:
+  case STRSCAN_U64:
+    o->u64 = neg ? (uint64_t)-(int64_t)x : x;
+    return fmt;
+  default:
+    break;
+  }
+
+  /* Reduce range, then convert to double. */
+  if ((x & U64x(c0000000,0000000))) { x = (x >> 2) | (x & 3); ex2 += 2; }
+  strscan_double(x, o, ex2, neg);
+  return fmt;
+}
+
 /* Scan string containing a number. Returns format. Returns value in o. */
 StrScanFmt lj_strscan_scan(const uint8_t *p, TValue *o, uint32_t opt)
 {
@@ -364,8 +407,12 @@ StrScanFmt lj_strscan_scan(const uint8_t *p, TValue *o, uint32_t opt)
 
     /* Determine base and skip leading zeros. */
     if (LJ_UNLIKELY(*p <= '0')) {
-      if (*p == '0' && casecmp(p[1], 'x'))
-	base = 16, cmask = LJ_CHAR_XDIGIT, p += 2;
+      if (*p == '0') {
+	if (casecmp(p[1], 'x'))
+	  base = 16, cmask = LJ_CHAR_XDIGIT, p += 2;
+	else if (casecmp(p[1], 'b'))
+	  base = 2, cmask = LJ_CHAR_DIGIT, p += 2;
+      }
       for ( ; ; p++) {
 	if (*p == '0') {
 	  hasdig = 1;
@@ -403,7 +450,7 @@ StrScanFmt lj_strscan_scan(const uint8_t *p, TValue *o, uint32_t opt)
     }
 
     /* Parse exponent. */
-    if (casecmp(*p, (uint32_t)(base == 16 ? 'p' : 'e'))) {
+    if (base >= 10 && casecmp(*p, (uint32_t)(base == 16 ? 'p' : 'e'))) {
       uint32_t xx;
       int negx = 0;
       fmt = STRSCAN_NUM; p++;
@@ -460,6 +507,8 @@ StrScanFmt lj_strscan_scan(const uint8_t *p, TValue *o, uint32_t opt)
       return strscan_oct(sp, o, fmt, neg, dig);
     if (base == 16)
       fmt = strscan_hex(sp, o, fmt, opt, ex, neg, dig);
+    else if (base == 2)
+      fmt = strscan_bin(sp, o, fmt, opt, ex, neg, dig);
     else
       fmt = strscan_dec(sp, o, fmt, opt, ex, neg, dig);
 

@@ -1,6 +1,6 @@
 /*
 ** Miscellaneous object handling.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_obj_c
@@ -20,7 +20,7 @@ LJ_DATADEF const char *const lj_obj_itypename[] = {  /* ORDER LJ_T */
 };
 
 /* Compare two objects without calling metamethods. */
-int lj_obj_equal(cTValue *o1, cTValue *o2)
+int LJ_FASTCALL lj_obj_equal(cTValue *o1, cTValue *o2)
 {
   if (itype(o1) == itype(o2)) {
     if (tvispri(o1))
@@ -31,5 +31,20 @@ int lj_obj_equal(cTValue *o1, cTValue *o2)
     return 0;
   }
   return numberVnum(o1) == numberVnum(o2);
+}
+
+/* Return pointer to object or its object data. */
+const void * LJ_FASTCALL lj_obj_ptr(cTValue *o)
+{
+  if (tvisudata(o))
+    return uddata(udataV(o));
+  else if (tvislightud(o))
+    return lightudV(o);
+  else if (LJ_HASFFI && tviscdata(o))
+    return cdataptr(cdataV(o));
+  else if (tvisgcv(o))
+    return gcV(o);
+  else
+    return NULL;
 }
 

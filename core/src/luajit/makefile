@@ -72,7 +72,11 @@ luajit_C_FILES 			+= \
 						src/lj_trace \
 						src/lj_udata \
 						src/lj_vmevent \
-						src/lj_vmmath 
+						src/lj_vmmath \
+						src/lj_buf \
+						src/lj_strfmt \
+						src/lj_strfmt_num \
+						src/lj_profile
 
 # asm files
 ifeq ($(PLAT),windows)
@@ -82,7 +86,7 @@ else
 luajit_ASM_FILES 		+= \
 						src/autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
 endif
-						
+
 # includes
 luajit_INC_DIRS 		+= \
 						src/autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)

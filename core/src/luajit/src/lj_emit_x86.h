@@ -1,6 +1,6 @@
 /*
 ** x86/x64 instruction emitter.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 /* -- Emit basic instructions --------------------------------------------- */
@@ -13,10 +13,17 @@
       if (rex != 0x40) *--(p) = rex; }
 #define FORCE_REX		0x200
 #define REX_64			(FORCE_REX|0x080000)
+#define VEX_64			0x800000
 #else
 #define REXRB(p, rr, rb)	((void)0)
 #define FORCE_REX		0
 #define REX_64			0
+#define VEX_64			0
+#endif
+#if LJ_GC64
+#define REX_GC64		REX_64
+#else
+#define REX_GC64		0
 #endif
 
 #define emit_i8(as, i)		(*--as->mcp = (MCode)(i))
@@ -31,6 +38,13 @@ static LJ_AINLINE MCode *emit_op(x86Op xo, Reg rr, Reg rb, Reg rx,
 				 MCode *p, int delta)
 {
   int n = (int8_t)xo;
+  if (n == -60) {  /* VEX-encoded instruction */
+#if LJ_64
+    xo ^= (((rr>>1)&4)+((rx>>2)&2)+((rb>>3)&1))<<13;
+#endif
+    *(uint32_t *)(p+delta-5) = (uint32_t)xo;
+    return p+delta-5;
+  }
 #if defined(__GNUC__)
   if (__builtin_constant_p(xo) && n == -2)
     p[delta-2] = (MCode)(xo >> 24);
@@ -85,26 +99,17 @@ static int32_t ptr2addr(const void *p)
 #define ptr2addr(p)	(i32ptr((p)))
 #endif
 
-/* op r, [addr] */
-static void emit_rma(ASMState *as, x86Op xo, Reg rr, const void *addr)
-{
-  MCode *p = as->mcp;
-  *(int32_t *)(p-4) = ptr2addr(addr);
-#if LJ_64
-  p[-5] = MODRM(XM_SCALE1, RID_ESP, RID_EBP);
-  as->mcp = emit_opm(xo, XM_OFS0, rr, RID_ESP, p, -5);
-#else
-  as->mcp = emit_opm(xo, XM_OFS0, rr, RID_EBP, p, -4);
-#endif
-}
-
 /* op r, [base+ofs] */
 static void emit_rmro(ASMState *as, x86Op xo, Reg rr, Reg rb, int32_t ofs)
 {
   MCode *p = as->mcp;
   x86Mode mode;
   if (ra_hasreg(rb)) {
-    if (ofs == 0 && (rb&7) != RID_EBP) {
+    if (LJ_GC64 && rb == RID_RIP) {
+      mode = XM_OFS0;
+      p -= 4;
+      *(int32_t *)p = ofs;
+    } else if (ofs == 0 && (rb&7) != RID_EBP) {
       mode = XM_OFS0;
     } else if (checki8(ofs)) {
       *--p = (MCode)ofs;
@@ -202,6 +207,11 @@ static void emit_mrm(ASMState *as, x86Op xo, Reg rr, Reg rb)
       *--p = MODRM(XM_SCALE1, RID_ESP, RID_EBP);
       rb = RID_ESP;
 #endif
+    } else if (LJ_GC64 && rb == RID_RIP) {
+      lua_assert(as->mrm.idx == RID_NONE);
+      mode = XM_OFS0;
+      p -= 4;
+      *(int32_t *)p = as->mrm.ofs;
     } else {
       if (as->mrm.ofs == 0 && (rb&7) != RID_EBP) {
 	mode = XM_OFS0;
@@ -241,10 +251,6 @@ static void emit_gmrmi(ASMState *as, x86Group xg, Reg rb, int32_t i)
 
 /* -- Emit loads/stores --------------------------------------------------- */
 
-/* Instruction selection for XMM moves. */
-#define XMM_MOVRR(as)	((as->flags & JIT_F_SPLIT_XMM) ? XO_MOVSD : XO_MOVAPS)
-#define XMM_MOVRM(as)	((as->flags & JIT_F_SPLIT_XMM) ? XO_MOVLPD : XO_MOVSD)
-
 /* mov [base+ofs], i */
 static void emit_movmroi(ASMState *as, Reg base, int32_t ofs, int32_t i)
 {
@@ -259,8 +265,8 @@ static void emit_movmroi(ASMState *as, Reg base, int32_t ofs, int32_t i)
 /* Get/set global_State fields. */
 #define emit_opgl(as, xo, r, field) \
   emit_rma(as, (xo), (r), (void *)&J2G(as->J)->field)
-#define emit_getgl(as, r, field)	emit_opgl(as, XO_MOV, (r), field)
-#define emit_setgl(as, r, field)	emit_opgl(as, XO_MOVto, (r), field)
+#define emit_getgl(as, r, field) emit_opgl(as, XO_MOV, (r)|REX_GC64, field)
+#define emit_setgl(as, r, field) emit_opgl(as, XO_MOVto, (r)|REX_GC64, field)
 
 #define emit_setvmstate(as, i) \
   (emit_i32(as, i), emit_opgl(as, XO_MOVmi, 0, vmstate))
@@ -283,9 +289,21 @@ static void emit_loadi(ASMState *as, Reg r, int32_t i)
   }
 }
 
+#if LJ_GC64
+#define dispofs(as, k) \
+  ((intptr_t)((uintptr_t)(k) - (uintptr_t)J2GG(as->J)->dispatch))
+#define mcpofs(as, k) \
+  ((intptr_t)((uintptr_t)(k) - (uintptr_t)as->mcp))
+#define mctopofs(as, k) \
+  ((intptr_t)((uintptr_t)(k) - (uintptr_t)as->mctop))
+/* mov r, addr */
+#define emit_loada(as, r, addr) \
+  emit_loadu64(as, (r), (uintptr_t)(addr))
+#else
 /* mov r, addr */
 #define emit_loada(as, r, addr) \
   emit_loadi(as, (r), ptr2addr((addr)))
+#endif
 
 #if LJ_64
 /* mov r, imm64 or shorter 32 bit extended load. */
@@ -297,6 +315,15 @@ static void emit_loadu64(ASMState *as, Reg r, uint64_t u64)
     MCode *p = as->mcp;
     *(int32_t *)(p-4) = (int32_t)u64;
     as->mcp = emit_opm(XO_MOVmi, XM_REG, REX_64, r, p, -4);
+#if LJ_GC64
+  } else if (checki32(dispofs(as, u64))) {
+    emit_rmro(as, XO_LEA, r|REX_64, RID_DISPATCH, (int32_t)dispofs(as, u64));
+  } else if (checki32(mcpofs(as, u64)) && checki32(mctopofs(as, u64))) {
+    /* Since as->realign assumes the code size doesn't change, check
+    ** RIP-relative addressing reachability for both as->mcp and as->mctop.
+    */
+    emit_rmro(as, XO_LEA, r|REX_64, RID_RIP, (int32_t)mcpofs(as, u64));
+#endif
   } else {  /* Full-size 64 bit load. */
     MCode *p = as->mcp;
     *(uint64_t *)(p-8) = u64;
@@ -308,13 +335,71 @@ static void emit_loadu64(ASMState *as, Reg r, uint64_t u64)
 }
 #endif
 
-/* movsd r, [&tv->n] / xorps r, r */
-static void emit_loadn(ASMState *as, Reg r, cTValue *tv)
+/* op r, [addr] */
+static void emit_rma(ASMState *as, x86Op xo, Reg rr, const void *addr)
 {
-  if (tvispzero(tv))  /* Use xor only for +0. */
-    emit_rr(as, XO_XORPS, r, r);
-  else
-    emit_rma(as, XMM_MOVRM(as), r, &tv->n);
+#if LJ_GC64
+  if (checki32(dispofs(as, addr))) {
+    emit_rmro(as, xo, rr, RID_DISPATCH, (int32_t)dispofs(as, addr));
+  } else if (checki32(mcpofs(as, addr)) && checki32(mctopofs(as, addr))) {
+    emit_rmro(as, xo, rr, RID_RIP, (int32_t)mcpofs(as, addr));
+  } else if (!checki32((intptr_t)addr) && (xo == XO_MOV || xo == XO_MOVSD)) {
+    emit_rmro(as, xo, rr, rr, 0);
+    emit_loadu64(as, rr, (uintptr_t)addr);
+  } else
+#endif
+  {
+    MCode *p = as->mcp;
+    *(int32_t *)(p-4) = ptr2addr(addr);
+#if LJ_64
+    p[-5] = MODRM(XM_SCALE1, RID_ESP, RID_EBP);
+    as->mcp = emit_opm(xo, XM_OFS0, rr, RID_ESP, p, -5);
+#else
+    as->mcp = emit_opm(xo, XM_OFS0, rr, RID_EBP, p, -4);
+#endif
+  }
+}
+
+/* Load 64 bit IR constant into register. */
+static void emit_loadk64(ASMState *as, Reg r, IRIns *ir)
+{
+  Reg r64;
+  x86Op xo;
+  const uint64_t *k = &ir_k64(ir)->u64;
+  if (rset_test(RSET_FPR, r)) {
+    r64 = r;
+    xo = XO_MOVSD;
+  } else {
+    r64 = r | REX_64;
+    xo = XO_MOV;
+  }
+  if (*k == 0) {
+    emit_rr(as, rset_test(RSET_FPR, r) ? XO_XORPS : XO_ARITH(XOg_XOR), r, r);
+#if LJ_GC64
+  } else if (checki32((intptr_t)k) || checki32(dispofs(as, k)) ||
+	     (checki32(mcpofs(as, k)) && checki32(mctopofs(as, k)))) {
+    emit_rma(as, xo, r64, k);
+  } else {
+    if (ir->i) {
+      lua_assert(*k == *(uint64_t*)(as->mctop - ir->i));
+    } else if (as->curins <= as->stopins && rset_test(RSET_GPR, r)) {
+      emit_loadu64(as, r, *k);
+      return;
+    } else {
+      /* If all else fails, add the FP constant at the MCode area bottom. */
+      while ((uintptr_t)as->mcbot & 7) *as->mcbot++ = XI_INT3;
+      *(uint64_t *)as->mcbot = *k;
+      ir->i = (int32_t)(as->mctop - as->mcbot);
+      as->mcbot += 8;
+      as->mclim = as->mcbot + MCLIM_REDZONE;
+      lj_mcode_commitbot(as->J, as->mcbot);
+    }
+    emit_rmro(as, xo, r64, RID_RIP, (int32_t)mcpofs(as, as->mctop - ir->i));
+#else
+  } else {
+    emit_rma(as, xo, r64, k);
+#endif
+  }
 }
 
 /* -- Emit control-flow instructions -------------------------------------- */
@@ -416,8 +501,10 @@ static void emit_call_(ASMState *as, MCode *target)
 /* Use 64 bit operations to handle 64 bit IR types. */
 #if LJ_64
 #define REX_64IR(ir, r)		((r) + (irt_is64((ir)->t) ? REX_64 : 0))
+#define VEX_64IR(ir, r)		((r) + (irt_is64((ir)->t) ? VEX_64 : 0))
 #else
 #define REX_64IR(ir, r)		(r)
+#define VEX_64IR(ir, r)		(r)
 #endif
 
 /* Generic move between two regs. */
@@ -427,25 +514,25 @@ static void emit_movrr(ASMState *as, IRIns *ir, Reg dst, Reg src)
   if (dst < RID_MAX_GPR)
     emit_rr(as, XO_MOV, REX_64IR(ir, dst), src);
   else
-    emit_rr(as, XMM_MOVRR(as), dst, src);
+    emit_rr(as, XO_MOVAPS, dst, src);
 }
 
-/* Generic load of register from stack slot. */
-static void emit_spload(ASMState *as, IRIns *ir, Reg r, int32_t ofs)
+/* Generic load of register with base and (small) offset address. */
+static void emit_loadofs(ASMState *as, IRIns *ir, Reg r, Reg base, int32_t ofs)
 {
   if (r < RID_MAX_GPR)
-    emit_rmro(as, XO_MOV, REX_64IR(ir, r), RID_ESP, ofs);
+    emit_rmro(as, XO_MOV, REX_64IR(ir, r), base, ofs);
   else
-    emit_rmro(as, irt_isnum(ir->t) ? XMM_MOVRM(as) : XO_MOVSS, r, RID_ESP, ofs);
+    emit_rmro(as, irt_isnum(ir->t) ? XO_MOVSD : XO_MOVSS, r, base, ofs);
 }
 
-/* Generic store of register to stack slot. */
-static void emit_spstore(ASMState *as, IRIns *ir, Reg r, int32_t ofs)
+/* Generic store of register with base and (small) offset address. */
+static void emit_storeofs(ASMState *as, IRIns *ir, Reg r, Reg base, int32_t ofs)
 {
   if (r < RID_MAX_GPR)
-    emit_rmro(as, XO_MOVto, REX_64IR(ir, r), RID_ESP, ofs);
+    emit_rmro(as, XO_MOVto, REX_64IR(ir, r), base, ofs);
   else
-    emit_rmro(as, irt_isnum(ir->t) ? XO_MOVSDto : XO_MOVSSto, r, RID_ESP, ofs);
+    emit_rmro(as, irt_isnum(ir->t) ? XO_MOVSDto : XO_MOVSSto, r, base, ofs);
 }
 
 /* Add offset to pointer. */
@@ -453,9 +540,9 @@ static void emit_addptr(ASMState *as, Reg r, int32_t ofs)
 {
   if (ofs) {
     if ((as->flags & JIT_F_LEA_AGU))
-      emit_rmro(as, XO_LEA, r, r, ofs);
+      emit_rmro(as, XO_LEA, r|REX_GC64, r, ofs);
     else
-      emit_gri(as, XG_ARITHi(XOg_ADD), r, ofs);
+      emit_gri(as, XG_ARITHi(XOg_ADD), r|REX_GC64, ofs);
   }
 }
 

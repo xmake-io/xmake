@@ -273,7 +273,7 @@ static tb_bool_t xm_machine_save_arguments(xm_machine_impl_t* impl, tb_int_t arg
     {
         // table_new[table.getn(table_new) + 1] = argv[i]
         lua_pushstring(impl->lua, argv[i]);
-        lua_rawseti(impl->lua, -2, luaL_getn(impl->lua, -2) + 1);
+        lua_rawseti(impl->lua, -2, lua_objlen(impl->lua, -2) + 1);
     }
 
     // _ARGV = table_new

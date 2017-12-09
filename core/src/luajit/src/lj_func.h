@@ -1,6 +1,6 @@
 /*
 ** Function handling (prototypes, functions and upvalues).
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_FUNC_H

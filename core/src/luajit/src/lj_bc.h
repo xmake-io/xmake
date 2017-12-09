@@ -1,6 +1,6 @@
 /*
 ** Bytecode instruction format.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_BC_H
@@ -89,6 +89,8 @@
   _(ISFC,	dst,	___,	var,	___) \
   _(IST,	___,	___,	var,	___) \
   _(ISF,	___,	___,	var,	___) \
+  _(ISTYPE,	var,	___,	lit,	___) \
+  _(ISNUM,	var,	___,	lit,	___) \
   \
   /* Unary ops. */ \
   _(MOV,	dst,	___,	var,	___) \
@@ -143,10 +145,12 @@
   _(TGETV,	dst,	var,	var,	index) \
   _(TGETS,	dst,	var,	str,	index) \
   _(TGETB,	dst,	var,	lit,	index) \
+  _(TGETR,	dst,	var,	var,	index) \
   _(TSETV,	var,	var,	var,	newindex) \
   _(TSETS,	var,	var,	str,	newindex) \
   _(TSETB,	var,	var,	lit,	newindex) \
   _(TSETM,	base,	___,	num,	newindex) \
+  _(TSETR,	var,	var,	var,	newindex) \
   \
   /* Calls and vararg handling. T = tail call. */ \
   _(CALLM,	base,	lit,	lit,	call) \

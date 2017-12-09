@@ -2041,7 +2041,7 @@ LCT(isxdigit)
 ** =======================================================
 */
 /* chstr members */
-static const luaL_reg chstrlib[] =
+static const luaL_Reg chstrlib[] =
 {
     { "len",        chstr_len       },
     { "set_ch",     chstr_set_ch    },
@@ -2053,7 +2053,7 @@ static const luaL_reg chstrlib[] =
 };
 
 #define EWF(name) { #name, lcw_ ## name },
-static const luaL_reg windowlib[] =
+static const luaL_Reg windowlib[] =
 {
     /* window */
     { "close", lcw_delwin  },
@@ -2203,7 +2203,7 @@ static const luaL_reg windowlib[] =
 
 #define ECF(name) { #name, lc_ ## name },
 #define ETF(name) { #name, lca_ ## name },
-static const luaL_reg curseslib[] =
+static const luaL_Reg curseslib[] =
 {
     /* chstr helper function */
     { "new_chstr",      lc_new_chstr    },

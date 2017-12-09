@@ -1,11 +1,13 @@
 /*
 ** LuaJIT VM builder: library definition compiler.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #include "buildvm.h"
 #include "lj_obj.h"
+#include "lj_bc.h"
 #include "lj_lib.h"
+#include "buildvm_libbc.h"
 
 /* Context for library definitions. */
 static uint8_t obuf[8192];
@@ -151,6 +153,62 @@ static void libdef_func(BuildCtx *ctx, char *p, int arg)
   regfunc = REGFUNC_OK;
 }
 
+static uint8_t *libdef_uleb128(uint8_t *p, uint32_t *vv)
+{
+  uint32_t v = *p++;
+  if (v >= 0x80) {
+    int sh = 0; v &= 0x7f;
+    do { v |= ((*p & 0x7f) << (sh += 7)); } while (*p++ >= 0x80);
+  }
+  *vv = v;
+  return p;
+}
+
+static void libdef_fixupbc(uint8_t *p)
+{
+  uint32_t i, sizebc;
+  p += 4;
+  p = libdef_uleb128(p, &sizebc);
+  p = libdef_uleb128(p, &sizebc);
+  p = libdef_uleb128(p, &sizebc);
+  for (i = 0; i < sizebc; i++, p += 4) {
+    uint8_t op = p[libbc_endian ? 3 : 0];
+    uint8_t ra = p[libbc_endian ? 2 : 1];
+    uint8_t rc = p[libbc_endian ? 1 : 2];
+    uint8_t rb = p[libbc_endian ? 0 : 3];
+    if (!LJ_DUALNUM && op == BC_ISTYPE && rc == ~LJ_TNUMX+1) {
+      op = BC_ISNUM; rc++;
+    }
+    p[LJ_ENDIAN_SELECT(0, 3)] = op;
+    p[LJ_ENDIAN_SELECT(1, 2)] = ra;
+    p[LJ_ENDIAN_SELECT(2, 1)] = rc;
+    p[LJ_ENDIAN_SELECT(3, 0)] = rb;
+  }
+}
+
+static void libdef_lua(BuildCtx *ctx, char *p, int arg)
+{
+  UNUSED(arg);
+  if (ctx->mode == BUILD_libdef) {
+    int i;
+    for (i = 0; libbc_map[i].name != NULL; i++) {
+      if (!strcmp(libbc_map[i].name, p)) {
+	int ofs = libbc_map[i].ofs;
+	int len = libbc_map[i+1].ofs - ofs;
+	obuf[2]++;  /* Bump hash table size. */
+	*optr++ = LIBINIT_LUA;
+	libdef_name(p, 0);
+	memcpy(optr, libbc_code + ofs, len);
+	libdef_fixupbc(optr);
+	optr += len;
+	return;
+      }
+    }
+    fprintf(stderr, "Error: missing libbc definition for %s\n", p);
+    exit(1);
+  }
+}
+
 static uint32_t find_rec(char *name)
 {
   char *p = (char *)obuf;
@@ -277,6 +335,7 @@ static const LibDefHandler libdef_handlers[] = {
   { "CF(",	")",		libdef_func,		LIBINIT_CF },
   { "ASM(",	")",		libdef_func,		LIBINIT_ASM },
   { "ASM_(",	")",		libdef_func,		LIBINIT_ASM_ },
+  { "LUA(",	")",		libdef_lua,		0 },
   { "REC(",	")",		libdef_rec,		0 },
   { "PUSH(",	")",		libdef_push,		0 },
   { "SET(",	")",		libdef_set,		0 },
@@ -373,7 +432,7 @@ void emit_lib(BuildCtx *ctx)
       "#ifndef FF_NUM_ASMFUNC\n#define FF_NUM_ASMFUNC %d\n#endif\n\n",
       ffasmfunc);
   } else if (ctx->mode == BUILD_vmdef) {
-    fprintf(ctx->fp, "}\n\n");
+    fprintf(ctx->fp, "},\n\n");
   } else if (ctx->mode == BUILD_bcdef) {
     int i;
     fprintf(ctx->fp, "\n};\n\n");

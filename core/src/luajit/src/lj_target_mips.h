@@ -1,6 +1,6 @@
 /*
 ** Definitions for MIPS CPUs.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_TARGET_MIPS_H
@@ -13,11 +13,15 @@
   _(R8) _(R9) _(R10) _(R11) _(R12) _(R13) _(R14) _(R15) \
   _(R16) _(R17) _(R18) _(R19) _(R20) _(R21) _(R22) _(R23) \
   _(R24) _(R25) _(SYS1) _(SYS2) _(R28) _(SP) _(R30) _(RA)
+#if LJ_SOFTFP
+#define FPRDEF(_)
+#else
 #define FPRDEF(_) \
   _(F0) _(F1) _(F2) _(F3) _(F4) _(F5) _(F6) _(F7) \
   _(F8) _(F9) _(F10) _(F11) _(F12) _(F13) _(F14) _(F15) \
   _(F16) _(F17) _(F18) _(F19) _(F20) _(F21) _(F22) _(F23) \
   _(F24) _(F25) _(F26) _(F27) _(F28) _(F29) _(F30) _(F31)
+#endif
 #define VRIDDEF(_)
 
 #define RIDENUM(name)	RID_##name,
@@ -28,6 +32,7 @@ enum {
   RID_MAX,
   RID_ZERO = RID_R0,
   RID_TMP = RID_RA,
+  RID_GP = RID_R28,
 
   /* Calling conventions. */
   RID_RET = RID_R2,
@@ -38,7 +43,11 @@ enum {
   RID_RETHI = RID_R2,
   RID_RETLO = RID_R3,
 #endif
+#if LJ_SOFTFP
+  RID_FPRET = RID_R2,
+#else
   RID_FPRET = RID_F0,
+#endif
   RID_CFUNCADDR = RID_R25,
 
   /* These definitions must match with the *.dasc file(s): */
@@ -51,8 +60,12 @@ enum {
   /* Register ranges [min, max) and number of registers. */
   RID_MIN_GPR = RID_R0,
   RID_MAX_GPR = RID_RA+1,
-  RID_MIN_FPR = RID_F0,
+  RID_MIN_FPR = RID_MAX_GPR,
+#if LJ_SOFTFP
+  RID_MAX_FPR = RID_MIN_FPR,
+#else
   RID_MAX_FPR = RID_F31+1,
+#endif
   RID_NUM_GPR = RID_MAX_GPR - RID_MIN_GPR,
   RID_NUM_FPR = RID_MAX_FPR - RID_MIN_FPR	/* Only even regs are used. */
 };
@@ -62,33 +75,65 @@ enum {
 
 /* -- Register sets ------------------------------------------------------- */
 
-/* Make use of all registers, except ZERO, TMP, SP, SYS1, SYS2 and JGL. */
+/* Make use of all registers, except ZERO, TMP, SP, SYS1, SYS2, JGL and GP. */
 #define RSET_FIXED \
   (RID2RSET(RID_ZERO)|RID2RSET(RID_TMP)|RID2RSET(RID_SP)|\
-   RID2RSET(RID_SYS1)|RID2RSET(RID_SYS2)|RID2RSET(RID_JGL))
+   RID2RSET(RID_SYS1)|RID2RSET(RID_SYS2)|RID2RSET(RID_JGL)|RID2RSET(RID_GP))
 #define RSET_GPR	(RSET_RANGE(RID_MIN_GPR, RID_MAX_GPR) - RSET_FIXED)
+#if LJ_SOFTFP
+#define RSET_FPR		0
+#else
+#if LJ_32
 #define RSET_FPR \
   (RID2RSET(RID_F0)|RID2RSET(RID_F2)|RID2RSET(RID_F4)|RID2RSET(RID_F6)|\
    RID2RSET(RID_F8)|RID2RSET(RID_F10)|RID2RSET(RID_F12)|RID2RSET(RID_F14)|\
    RID2RSET(RID_F16)|RID2RSET(RID_F18)|RID2RSET(RID_F20)|RID2RSET(RID_F22)|\
    RID2RSET(RID_F24)|RID2RSET(RID_F26)|RID2RSET(RID_F28)|RID2RSET(RID_F30))
-#define RSET_ALL	(RSET_GPR|RSET_FPR)
-#define RSET_INIT	RSET_ALL
+#else
+#define RSET_FPR		RSET_RANGE(RID_MIN_FPR, RID_MAX_FPR)
+#endif
+#endif
+#define RSET_ALL		(RSET_GPR|RSET_FPR)
+#define RSET_INIT		RSET_ALL
 
 #define RSET_SCRATCH_GPR \
   (RSET_RANGE(RID_R1, RID_R15+1)|\
-   RID2RSET(RID_R24)|RID2RSET(RID_R25)|RID2RSET(RID_R28))
+   RID2RSET(RID_R24)|RID2RSET(RID_R25))
+#if LJ_SOFTFP
+#define RSET_SCRATCH_FPR	0
+#else
+#if LJ_32
 #define RSET_SCRATCH_FPR \
   (RID2RSET(RID_F0)|RID2RSET(RID_F2)|RID2RSET(RID_F4)|RID2RSET(RID_F6)|\
    RID2RSET(RID_F8)|RID2RSET(RID_F10)|RID2RSET(RID_F12)|RID2RSET(RID_F14)|\
    RID2RSET(RID_F16)|RID2RSET(RID_F18))
+#else
+#define RSET_SCRATCH_FPR	RSET_RANGE(RID_F0, RID_F24)
+#endif
+#endif
 #define RSET_SCRATCH		(RSET_SCRATCH_GPR|RSET_SCRATCH_FPR)
 #define REGARG_FIRSTGPR		RID_R4
+#if LJ_32
 #define REGARG_LASTGPR		RID_R7
 #define REGARG_NUMGPR		4
+#else
+#define REGARG_LASTGPR		RID_R11
+#define REGARG_NUMGPR		8
+#endif
+#if LJ_ABI_SOFTFP
+#define REGARG_FIRSTFPR		0
+#define REGARG_LASTFPR		0
+#define REGARG_NUMFPR		0
+#else
 #define REGARG_FIRSTFPR		RID_F12
+#if LJ_32
 #define REGARG_LASTFPR		RID_F14
 #define REGARG_NUMFPR		2
+#else
+#define REGARG_LASTFPR		RID_F19
+#define REGARG_NUMFPR		8
+#endif
+#endif
 
 /* -- Spill slots --------------------------------------------------------- */
 
@@ -99,7 +144,11 @@ enum {
 **
 ** SPS_FIRST: First spill slot for general use.
 */
+#if LJ_32
 #define SPS_FIXED	5
+#else
+#define SPS_FIXED	4
+#endif
 #define SPS_FIRST	4
 
 #define SPOFS_TMP	0
@@ -111,8 +160,10 @@ enum {
 
 /* This definition must match with the *.dasc file(s). */
 typedef struct {
+#if !LJ_SOFTFP
   lua_Number fpr[RID_NUM_FPR];	/* Floating-point registers. */
-  int32_t gpr[RID_NUM_GPR];	/* General-purpose registers. */
+#endif
+  intptr_t gpr[RID_NUM_GPR];	/* General-purpose registers. */
   int32_t spill[256];		/* Spill slots. */
 } ExitState;
 
@@ -141,51 +192,68 @@ static LJ_AINLINE uint32_t *exitstub_trace_addr_(uint32_t *p)
 #define MIPSF_F(r)	((r) << 6)
 #define MIPSF_A(n)	((n) << 6)
 #define MIPSF_M(n)	((n) << 11)
+#define MIPSF_L(n)	((n) << 6)
 
 typedef enum MIPSIns {
+  MIPSI_D = 0x38,
+  MIPSI_DV = 0x10,
+  MIPSI_D32 = 0x3c,
   /* Integer instructions. */
-  MIPSI_MOVE = 0x00000021,
+  MIPSI_MOVE = 0x00000025,
   MIPSI_NOP = 0x00000000,
 
   MIPSI_LI = 0x24000000,
   MIPSI_LU = 0x34000000,
   MIPSI_LUI = 0x3c000000,
 
-  MIPSI_ADDIU = 0x24000000,
+  MIPSI_AND = 0x00000024,
   MIPSI_ANDI = 0x30000000,
+  MIPSI_OR = 0x00000025,
   MIPSI_ORI = 0x34000000,
+  MIPSI_XOR = 0x00000026,
   MIPSI_XORI = 0x38000000,
+  MIPSI_NOR = 0x00000027,
+
+  MIPSI_SLT = 0x0000002a,
+  MIPSI_SLTU = 0x0000002b,
   MIPSI_SLTI = 0x28000000,
   MIPSI_SLTIU = 0x2c000000,
 
   MIPSI_ADDU = 0x00000021,
+  MIPSI_ADDIU = 0x24000000,
+  MIPSI_SUB = 0x00000022,
   MIPSI_SUBU = 0x00000023,
   MIPSI_MUL = 0x70000002,
-  MIPSI_AND = 0x00000024,
-  MIPSI_OR = 0x00000025,
-  MIPSI_XOR = 0x00000026,
-  MIPSI_NOR = 0x00000027,
-  MIPSI_SLT = 0x0000002a,
-  MIPSI_SLTU = 0x0000002b,
+  MIPSI_DIV = 0x0000001a,
+  MIPSI_DIVU = 0x0000001b,
+
   MIPSI_MOVZ = 0x0000000a,
   MIPSI_MOVN = 0x0000000b,
+  MIPSI_MFHI = 0x00000010,
+  MIPSI_MFLO = 0x00000012,
+  MIPSI_MULT = 0x00000018,
 
   MIPSI_SLL = 0x00000000,
   MIPSI_SRL = 0x00000002,
   MIPSI_SRA = 0x00000003,
-  MIPSI_ROTR = 0x00200002,	/* MIPS32R2 */
+  MIPSI_ROTR = 0x00200002,	/* MIPSXXR2 */
+  MIPSI_DROTR = 0x0020003a,
+  MIPSI_DROTR32 = 0x0020003e,
   MIPSI_SLLV = 0x00000004,
   MIPSI_SRLV = 0x00000006,
   MIPSI_SRAV = 0x00000007,
-  MIPSI_ROTRV = 0x00000046,	/* MIPS32R2 */
+  MIPSI_ROTRV = 0x00000046,	/* MIPSXXR2 */
+  MIPSI_DROTRV = 0x00000056,
 
-  MIPSI_SEB = 0x7c000420,	/* MIPS32R2 */
-  MIPSI_SEH = 0x7c000620,	/* MIPS32R2 */
-  MIPSI_WSBH = 0x7c0000a0,	/* MIPS32R2 */
+  MIPSI_SEB = 0x7c000420,	/* MIPSXXR2 */
+  MIPSI_SEH = 0x7c000620,	/* MIPSXXR2 */
+  MIPSI_WSBH = 0x7c0000a0,	/* MIPSXXR2 */
+  MIPSI_DSBH = 0x7c0000a4,
 
   MIPSI_B = 0x10000000,
   MIPSI_J = 0x08000000,
   MIPSI_JAL = 0x0c000000,
+  MIPSI_JALX = 0x74000000,
   MIPSI_JR = 0x00000008,
   MIPSI_JALR = 0x0000f809,
 
@@ -198,7 +266,9 @@ typedef enum MIPSIns {
 
   /* Load/store instructions. */
   MIPSI_LW = 0x8c000000,
+  MIPSI_LD = 0xdc000000,
   MIPSI_SW = 0xac000000,
+  MIPSI_SD = 0xfc000000,
   MIPSI_LB = 0x80000000,
   MIPSI_SB = 0xa0000000,
   MIPSI_LH = 0x84000000,
@@ -209,6 +279,50 @@ typedef enum MIPSIns {
   MIPSI_SWC1 = 0xe4000000,
   MIPSI_LDC1 = 0xd4000000,
   MIPSI_SDC1 = 0xf4000000,
+
+  /* MIPS64 instructions. */
+  MIPSI_DADD = 0x0000002c,
+  MIPSI_DADDI = 0x60000000,
+  MIPSI_DADDU = 0x0000002d,
+  MIPSI_DADDIU = 0x64000000,
+  MIPSI_DSUB = 0x0000002e,
+  MIPSI_DSUBU = 0x0000002f,
+  MIPSI_DDIV = 0x0000001e,
+  MIPSI_DDIVU = 0x0000001f,
+  MIPSI_DMULT = 0x0000001c,
+  MIPSI_DMULTU = 0x0000001d,
+
+  MIPSI_DSLL = 0x00000038,
+  MIPSI_DSRL = 0x0000003a,
+  MIPSI_DSLLV = 0x00000014,
+  MIPSI_DSRLV = 0x00000016,
+  MIPSI_DSRA = 0x0000003b,
+  MIPSI_DSRAV = 0x00000017,
+  MIPSI_DSRA32 = 0x0000003f,
+  MIPSI_DSLL32 = 0x0000003c,
+  MIPSI_DSRL32 = 0x0000003e,
+  MIPSI_DSHD = 0x7c000164,
+
+  MIPSI_AADDU = LJ_32 ? MIPSI_ADDU : MIPSI_DADDU,
+  MIPSI_AADDIU = LJ_32 ? MIPSI_ADDIU : MIPSI_DADDIU,
+  MIPSI_ASUBU = LJ_32 ? MIPSI_SUBU : MIPSI_DSUBU,
+  MIPSI_AL = LJ_32 ? MIPSI_LW : MIPSI_LD,
+  MIPSI_AS = LJ_32 ? MIPSI_SW : MIPSI_SD,
+
+  /* Extract/insert instructions. */
+  MIPSI_DEXTM = 0x7c000001,
+  MIPSI_DEXTU = 0x7c000002,
+  MIPSI_DEXT = 0x7c000003,
+  MIPSI_DINSM = 0x7c000005,
+  MIPSI_DINSU = 0x7c000006,
+  MIPSI_DINS = 0x7c000007,
+
+  MIPSI_RINT_D = 0x4620001a,
+  MIPSI_RINT_S = 0x4600001a,
+  MIPSI_RINT = 0x4400001a,
+  MIPSI_FLOOR_D = 0x4620000b,
+  MIPSI_CEIL_D = 0x4620000a,
+  MIPSI_ROUND_D = 0x46200008,
 
   /* FP instructions. */
   MIPSI_MOV_S = 0x46000006,
@@ -234,24 +348,30 @@ typedef enum MIPSIns {
   MIPSI_CVT_W_D = 0x46200024,
   MIPSI_CVT_S_W = 0x46800020,
   MIPSI_CVT_D_W = 0x46800021,
+  MIPSI_CVT_S_L = 0x46a00020,
+  MIPSI_CVT_D_L = 0x46a00021,
 
   MIPSI_TRUNC_W_S = 0x4600000d,
   MIPSI_TRUNC_W_D = 0x4620000d,
+  MIPSI_TRUNC_L_S = 0x46000009,
+  MIPSI_TRUNC_L_D = 0x46200009,
   MIPSI_FLOOR_W_S = 0x4600000f,
   MIPSI_FLOOR_W_D = 0x4620000f,
 
   MIPSI_MFC1 = 0x44000000,
   MIPSI_MTC1 = 0x44800000,
+  MIPSI_DMTC1 = 0x44a00000,
+  MIPSI_DMFC1 = 0x44200000,
 
   MIPSI_BC1F = 0x45000000,
   MIPSI_BC1T = 0x45010000,
 
   MIPSI_C_EQ_D = 0x46200032,
+  MIPSI_C_OLT_S = 0x46000034,
   MIPSI_C_OLT_D = 0x46200034,
   MIPSI_C_ULT_D = 0x46200035,
   MIPSI_C_OLE_D = 0x46200036,
   MIPSI_C_ULE_D = 0x46200037,
-
 } MIPSIns;
 
 #endif

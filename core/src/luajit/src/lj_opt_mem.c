@@ -3,7 +3,7 @@
 ** AA: Alias Analysis using high-level semantic disambiguation.
 ** FWD: Load Forwarding (L2L) + Store Forwarding (S2L).
 ** DSE: Dead-Store Elimination.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_opt_mem_c
@@ -17,12 +17,13 @@
 #include "lj_ir.h"
 #include "lj_jit.h"
 #include "lj_iropt.h"
+#include "lj_ircall.h"
 
 /* Some local macros to save typing. Undef'd at the end. */
 #define IR(ref)		(&J->cur.ir[(ref)])
 #define fins		(&J->fold.ins)
-#define fleft		(&J->fold.left)
-#define fright		(&J->fold.right)
+#define fleft		(J->fold.left)
+#define fright		(J->fold.right)
 
 /*
 ** Caveat #1: return value is not always a TRef -- only use with tref_ref().
@@ -308,7 +309,21 @@ int LJ_FASTCALL lj_opt_fwd_href_nokey(jit_State *J)
   return 1;  /* No conflict. Can fold to niltv. */
 }
 
-/* Check whether there's no aliasing NEWREF for the left operand. */
+/* Check whether there's no aliasing table.clear. */
+static int fwd_aa_tab_clear(jit_State *J, IRRef lim, IRRef ta)
+{
+  IRRef ref = J->chain[IR_CALLS];
+  while (ref > lim) {
+    IRIns *calls = IR(ref);
+    if (calls->op2 == IRCALL_lj_tab_clear &&
+	(ta == calls->op1 || aa_table(J, ta, calls->op1) != ALIAS_NO))
+      return 0;  /* Conflict. */
+    ref = calls->prev;
+  }
+  return 1;  /* No conflict. Can safely FOLD/CSE. */
+}
+
+/* Check whether there's no aliasing NEWREF/table.clear for the left operand. */
 int LJ_FASTCALL lj_opt_fwd_tptr(jit_State *J, IRRef lim)
 {
   IRRef ta = fins->op1;
@@ -319,7 +334,7 @@ int LJ_FASTCALL lj_opt_fwd_tptr(jit_State *J, IRRef lim)
       return 0;  /* Conflict. */
     ref = newref->prev;
   }
-  return 1;  /* No conflict. Can safely FOLD/CSE. */
+  return fwd_aa_tab_clear(J, lim, ta);
 }
 
 /* ASTORE/HSTORE elimination. */
@@ -853,6 +868,10 @@ TRef LJ_FASTCALL lj_opt_fwd_tab_len(jit_State *J)
     }
     ref = store->prev;
   }
+
+  /* Search for aliasing table.clear. */
+  if (!fwd_aa_tab_clear(J, lim, tab))
+    return lj_ir_emit(J);
 
   /* Try to find a matching load. Below the conflicting store, if any. */
   return lj_opt_cselim(J, lim);

@@ -1,6 +1,6 @@
 /*
 ** C data management.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_CDATA_H
@@ -58,11 +58,14 @@ static LJ_AINLINE GCcdata *lj_cdata_new_(lua_State *L, CTypeID id, CTSize sz)
 }
 
 LJ_FUNC GCcdata *lj_cdata_newref(CTState *cts, const void *pp, CTypeID id);
-LJ_FUNC GCcdata *lj_cdata_newv(CTState *cts, CTypeID id, CTSize sz,
+LJ_FUNC GCcdata *lj_cdata_newv(lua_State *L, CTypeID id, CTSize sz,
 			       CTSize align);
+LJ_FUNC GCcdata *lj_cdata_newx(CTState *cts, CTypeID id, CTSize sz,
+			       CTInfo info);
 
 LJ_FUNC void LJ_FASTCALL lj_cdata_free(global_State *g, GCcdata *cd);
-LJ_FUNCA TValue * LJ_FASTCALL lj_cdata_setfin(lua_State *L, GCcdata *cd);
+LJ_FUNC void lj_cdata_setfin(lua_State *L, GCcdata *cd, GCobj *obj,
+			     uint32_t it);
 
 LJ_FUNC CType *lj_cdata_index(CTState *cts, GCcdata *cd, cTValue *key,
 			      uint8_t **pp, CTInfo *qual);

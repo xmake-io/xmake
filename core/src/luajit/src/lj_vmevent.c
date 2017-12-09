@@ -1,6 +1,6 @@
 /*
 ** VM event handling.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #include <stdio.h>
@@ -27,6 +27,7 @@ ptrdiff_t lj_vmevent_prepare(lua_State *L, VMEvent ev)
     if (tv && tvisfunc(tv)) {
       lj_state_checkstack(L, LUA_MINSTACK);
       setfuncV(L, L->top++, funcV(tv));
+      if (LJ_FR2) setnilV(L->top++);
       return savestack(L, L->top);
     }
   }

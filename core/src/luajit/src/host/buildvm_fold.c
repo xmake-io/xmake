@@ -1,6 +1,6 @@
 /*
 ** LuaJIT VM builder: IR folding hash table generator.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #include "buildvm.h"
@@ -9,7 +9,7 @@
 
 /* Context for the folding hash table generator. */
 static int lineno;
-static int funcidx;
+static uint32_t funcidx;
 static uint32_t foldkeys[BUILD_MAX_FOLD];
 static uint32_t nkeys;
 

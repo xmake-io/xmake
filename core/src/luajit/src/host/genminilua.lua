@@ -2,7 +2,7 @@
 -- Lua script to generate a customized, minified version of Lua.
 -- The resulting 'minilua' is used for the build process of LuaJIT.
 ----------------------------------------------------------------------------
--- Copyright (C) 2005-2015 Mike Pall. All rights reserved.
+-- Copyright (C) 2005-2017 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
 ----------------------------------------------------------------------------
 
@@ -157,11 +157,11 @@ local function merge_includes(src)
     if includes[name] then return "" end
     includes[name] = true
     local fp = assert(io.open(LUA_SOURCE..name, "r"))
-    local src = fp:read("*a")
+    local inc = fp:read("*a")
     assert(fp:close())
-    src = gsub(src, "#ifndef%s+%w+_h\n#define%s+%w+_h\n", "")
-    src = gsub(src, "#endif%s*$", "")
-    return merge_includes(src)
+    inc = gsub(inc, "#ifndef%s+%w+_h\n#define%s+%w+_h\n", "")
+    inc = gsub(inc, "#endif%s*$", "")
+    return merge_includes(inc)
   end)
 end
 
@@ -300,6 +300,7 @@ local function strip_unused3(src)
   src = gsub(src, "if%([^\n]*hookmask[^\n]*&&\n[^\n]*%b{}\n", "")
   src = gsub(src, "(twoto%b()%()", "%1(size_t)")
   src = gsub(src, "i<sizenode", "i<(int)sizenode")
+  src = gsub(src, "cast%(unsigned int,key%-1%)", "cast(unsigned int,key)-1")
   return gsub(src, "\n\n+", "\n")
 end
 

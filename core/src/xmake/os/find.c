@@ -103,7 +103,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
 
                 // exclude pathes
                 tb_int_t i = 0;
-                tb_int_t count = luaL_getn(lua, 5);
+                tb_int_t count = lua_objlen(lua, 5);
                 for (i = 0; i < count && !excluded; i++)
                 {
                     // get exclude

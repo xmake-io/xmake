@@ -1,6 +1,6 @@
 /*
 ** Metamethod handling.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_META_H
@@ -31,6 +31,7 @@ LJ_FUNCA TValue * LJ_FASTCALL lj_meta_len(lua_State *L, cTValue *o);
 LJ_FUNCA TValue *lj_meta_equal(lua_State *L, GCobj *o1, GCobj *o2, int ne);
 LJ_FUNCA TValue * LJ_FASTCALL lj_meta_equal_cd(lua_State *L, BCIns ins);
 LJ_FUNCA TValue *lj_meta_comp(lua_State *L, cTValue *o1, cTValue *o2, int op);
+LJ_FUNCA void lj_meta_istype(lua_State *L, BCReg ra, BCReg tp);
 LJ_FUNCA void lj_meta_call(lua_State *L, TValue *func, TValue *top);
 LJ_FUNCA void LJ_FASTCALL lj_meta_for(lua_State *L, TValue *o);
 

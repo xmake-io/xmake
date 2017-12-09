@@ -1,6 +1,6 @@
 /*
 ** C declaration parser.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #include "lj_obj.h"
@@ -9,13 +9,14 @@
 
 #include "lj_gc.h"
 #include "lj_err.h"
-#include "lj_str.h"
+#include "lj_buf.h"
 #include "lj_ctype.h"
 #include "lj_cparse.h"
 #include "lj_frame.h"
 #include "lj_vm.h"
 #include "lj_char.h"
 #include "lj_strscan.h"
+#include "lj_strfmt.h"
 
 /*
 ** Important note: this is NOT a validating C parser! This is a minimal
@@ -46,9 +47,9 @@ static const char *cp_tok2str(CPState *cp, CPToken tok)
   if (tok > CTOK_OFS)
     return ctoknames[tok-CTOK_OFS-1];
   else if (!lj_char_iscntrl(tok))
-    return lj_str_pushf(cp->L, "%c", tok);
+    return lj_strfmt_pushf(cp->L, "%c", tok);
   else
-    return lj_str_pushf(cp->L, "char(%d)", tok);
+    return lj_strfmt_pushf(cp->L, "char(%d)", tok);
 }
 
 /* End-of-line? */
@@ -85,24 +86,10 @@ static LJ_NOINLINE CPChar cp_get_bs(CPState *cp)
   return cp_get(cp);
 }
 
-/* Grow save buffer. */
-static LJ_NOINLINE void cp_save_grow(CPState *cp, CPChar c)
-{
-  MSize newsize;
-  if (cp->sb.sz >= CPARSE_MAX_BUF/2)
-    cp_err(cp, LJ_ERR_XELEM);
-  newsize = cp->sb.sz * 2;
-  lj_str_resizebuf(cp->L, &cp->sb, newsize);
-  cp->sb.buf[cp->sb.n++] = (char)c;
-}
-
 /* Save character in buffer. */
 static LJ_AINLINE void cp_save(CPState *cp, CPChar c)
 {
-  if (LJ_UNLIKELY(cp->sb.n + 1 > cp->sb.sz))
-    cp_save_grow(cp, c);
-  else
-    cp->sb.buf[cp->sb.n++] = (char)c;
+  lj_buf_putb(&cp->sb, c);
 }
 
 /* Skip line break. Handles "\n", "\r", "\r\n" or "\n\r". */
@@ -122,20 +109,20 @@ LJ_NORET static void cp_errmsg(CPState *cp, CPToken tok, ErrMsg em, ...)
     tokstr = NULL;
   } else if (tok == CTOK_IDENT || tok == CTOK_INTEGER || tok == CTOK_STRING ||
 	     tok >= CTOK_FIRSTDECL) {
-    if (cp->sb.n == 0) cp_save(cp, '$');
+    if (sbufP(&cp->sb) == sbufB(&cp->sb)) cp_save(cp, '$');
     cp_save(cp, '\0');
-    tokstr = cp->sb.buf;
+    tokstr = sbufB(&cp->sb);
   } else {
     tokstr = cp_tok2str(cp, tok);
   }
   L = cp->L;
   va_start(argp, em);
-  msg = lj_str_pushvf(L, err2msg(em), argp);
+  msg = lj_strfmt_pushvf(L, err2msg(em), argp);
   va_end(argp);
   if (tokstr)
-    msg = lj_str_pushf(L, err2msg(LJ_ERR_XNEAR), msg, tokstr);
+    msg = lj_strfmt_pushf(L, err2msg(LJ_ERR_XNEAR), msg, tokstr);
   if (cp->linenumber > 1)
-    msg = lj_str_pushf(L, "%s at line %d", msg, cp->linenumber);
+    msg = lj_strfmt_pushf(L, "%s at line %d", msg, cp->linenumber);
   lj_err_callermsg(L, msg);
 }
 
@@ -164,7 +151,7 @@ static CPToken cp_number(CPState *cp)
   TValue o;
   do { cp_save(cp, cp->c); } while (lj_char_isident(cp_get(cp)));
   cp_save(cp, '\0');
-  fmt = lj_strscan_scan((const uint8_t *)cp->sb.buf, &o, STRSCAN_OPT_C);
+  fmt = lj_strscan_scan((const uint8_t *)sbufB(&cp->sb), &o, STRSCAN_OPT_C);
   if (fmt == STRSCAN_INT) cp->val.id = CTID_INT32;
   else if (fmt == STRSCAN_U32) cp->val.id = CTID_UINT32;
   else if (!(cp->mode & CPARSE_MODE_SKIP))
@@ -177,7 +164,7 @@ static CPToken cp_number(CPState *cp)
 static CPToken cp_ident(CPState *cp)
 {
   do { cp_save(cp, cp->c); } while (lj_char_isident(cp_get(cp)));
-  cp->str = lj_str_new(cp->L, cp->sb.buf, cp->sb.n);
+  cp->str = lj_buf_str(cp->L, &cp->sb);
   cp->val.id = lj_ctype_getname(cp->cts, &cp->ct, cp->str, cp->tmask);
   if (ctype_type(cp->ct->info) == CT_KW)
     return ctype_cid(cp->ct->info);
@@ -263,11 +250,11 @@ static CPToken cp_string(CPState *cp)
   }
   cp_get(cp);
   if (delim == '"') {
-    cp->str = lj_str_new(cp->L, cp->sb.buf, cp->sb.n);
+    cp->str = lj_buf_str(cp->L, &cp->sb);
     return CTOK_STRING;
   } else {
-    if (cp->sb.n != 1) cp_err_token(cp, '\'');
-    cp->val.i32 = (int32_t)(char)cp->sb.buf[0];
+    if (sbuflen(&cp->sb) != 1) cp_err_token(cp, '\'');
+    cp->val.i32 = (int32_t)(char)*sbufB(&cp->sb);
     cp->val.id = CTID_INT32;
     return CTOK_INTEGER;
   }
@@ -296,7 +283,7 @@ static void cp_comment_cpp(CPState *cp)
 /* Lexical scanner for C. Only a minimal subset is implemented. */
 static CPToken cp_next_(CPState *cp)
 {
-  lj_str_resetbuf(&cp->sb);
+  lj_buf_reset(&cp->sb);
   for (;;) {
     if (lj_char_isident(cp->c))
       return lj_char_isdigit(cp->c) ? cp_number(cp) : cp_ident(cp);
@@ -310,13 +297,17 @@ static CPToken cp_next_(CPState *cp)
       else return '/';
       break;
     case '|':
-      if (cp_get(cp) != '|') return '|'; cp_get(cp); return CTOK_OROR;
+      if (cp_get(cp) != '|') return '|';
+      cp_get(cp); return CTOK_OROR;
     case '&':
-      if (cp_get(cp) != '&') return '&'; cp_get(cp); return CTOK_ANDAND;
+      if (cp_get(cp) != '&') return '&';
+      cp_get(cp); return CTOK_ANDAND;
     case '=':
-      if (cp_get(cp) != '=') return '='; cp_get(cp); return CTOK_EQ;
+      if (cp_get(cp) != '=') return '=';
+      cp_get(cp); return CTOK_EQ;
     case '!':
-      if (cp_get(cp) != '=') return '!'; cp_get(cp); return CTOK_NE;
+      if (cp_get(cp) != '=') return '!';
+      cp_get(cp); return CTOK_NE;
     case '<':
       if (cp_get(cp) == '=') { cp_get(cp); return CTOK_LE; }
       else if (cp->c == '<') { cp_get(cp); return CTOK_SHL; }
@@ -326,7 +317,8 @@ static CPToken cp_next_(CPState *cp)
       else if (cp->c == '>') { cp_get(cp); return CTOK_SHR; }
       return '>';
     case '-':
-      if (cp_get(cp) != '>') return '-'; cp_get(cp); return CTOK_DEREF;
+      if (cp_get(cp) != '>') return '-';
+      cp_get(cp); return CTOK_DEREF;
     case '$':
       return cp_param(cp);
     case '\0': return CTOK_EOF;
@@ -380,8 +372,7 @@ static void cp_init(CPState *cp)
   cp->depth = 0;
   cp->curpack = 0;
   cp->packstack[0] = 255;
-  lj_str_initbuf(&cp->sb);
-  lj_str_resizebuf(cp->L, &cp->sb, LJ_MIN_SBUF);
+  lj_buf_init(cp->L, &cp->sb);
   lua_assert(cp->p != NULL);
   cp_get(cp);  /* Read-ahead first char. */
   cp->tok = 0;
@@ -393,7 +384,7 @@ static void cp_init(CPState *cp)
 static void cp_cleanup(CPState *cp)
 {
   global_State *g = G(cp->L);
-  lj_str_freebuf(g, &cp->sb);
+  lj_buf_free(g, &cp->sb);
 }
 
 /* Check and consume optional token. */
@@ -798,6 +789,10 @@ static void cp_push_type(CPDecl *decl, CTypeID id)
     cp_push(decl, info & ~CTMASK_CID, size);  /* Copy type. */
     break;
   case CT_ARRAY:
+    if ((ct->info & (CTF_VECTOR|CTF_COMPLEX))) {
+      info |= (decl->attr & CTF_QUAL);
+      decl->attr &= ~CTF_QUAL;
+    }
     cp_push_type(decl, ctype_cid(info));  /* Unroll. */
     cp_push(decl, info & ~CTMASK_CID, size);  /* Copy type. */
     decl->stack[decl->pos].sib = 1;  /* Mark as already checked and sized. */
@@ -1012,7 +1007,7 @@ static void cp_decl_asm(CPState *cp, CPDecl *decl)
   if (cp->tok == CTOK_STRING) {
     GCstr *str = cp->str;
     while (cp_next(cp) == CTOK_STRING) {
-      lj_str_pushf(cp->L, "%s%s", strdata(str), strdata(cp->str));
+      lj_strfmt_pushf(cp->L, "%s%s", strdata(str), strdata(cp->str));
       cp->L->top--;
       str = strV(cp->L->top);
     }
@@ -1754,6 +1749,16 @@ static void cp_pragma(CPState *cp, BCLine pragmaline)
   }
 }
 
+/* Handle line number. */
+static void cp_line(CPState *cp, BCLine hashline)
+{
+  BCLine newline = cp->val.u32;
+  /* TODO: Handle file name and include it in error messages. */
+  while (cp->tok != CTOK_EOF && cp->linenumber == hashline)
+    cp_next(cp);
+  cp->linenumber = newline;
+}
+
 /* Parse multiple C declarations of types or extern identifiers. */
 static void cp_decl_multi(CPState *cp)
 {
@@ -1766,12 +1771,23 @@ static void cp_decl_multi(CPState *cp)
       continue;
     }
     if (cp->tok == '#') {  /* Workaround, since we have no preprocessor, yet. */
-      BCLine pragmaline = cp->linenumber;
-      if (!(cp_next(cp) == CTOK_IDENT &&
-	    cp->str->hash == H_(f5e6b4f8,1d509107)))  /* pragma */
+      BCLine hashline = cp->linenumber;
+      CPToken tok = cp_next(cp);
+      if (tok == CTOK_INTEGER) {
+	cp_line(cp, hashline);
+	continue;
+      } else if (tok == CTOK_IDENT &&
+		 cp->str->hash == H_(187aab88,fcb60b42)) { /* line */
+	if (cp_next(cp) != CTOK_INTEGER) cp_err_token(cp, tok);
+	cp_line(cp, hashline);
+	continue;
+      } else if (tok == CTOK_IDENT &&
+	  cp->str->hash == H_(f5e6b4f8,1d509107)) { /* pragma */
+	cp_pragma(cp, hashline);
+	continue;
+      } else {
 	cp_errmsg(cp, cp->tok, LJ_ERR_XSYMBOL);
-      cp_pragma(cp, pragmaline);
-      continue;
+      }
     }
     scl = cp_decl_spec(cp, &decl, CDF_TYPEDEF|CDF_EXTERN|CDF_STATIC);
     if ((cp->tok == ';' || cp->tok == CTOK_EOF) &&

@@ -1,6 +1,6 @@
 /*
 ** PPC IR assembler (SSA IR -> machine code).
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 /* -- Register allocator extensions --------------------------------------- */
@@ -251,7 +251,7 @@ static int asm_fusemadd(ASMState *as, IRIns *ir, PPCIns pi, PPCIns pir)
 /* Generate a call to a C function. */
 static void asm_gencall(ASMState *as, const CCallInfo *ci, IRRef *args)
 {
-  uint32_t n, nargs = CCI_NARGS(ci);
+  uint32_t n, nargs = CCI_XNARGS(ci);
   int32_t ofs = 8;
   Reg gpr = REGARG_FIRSTGPR, fpr = REGARG_FIRSTFPR;
   if ((void *)ci->func)
@@ -298,7 +298,7 @@ static void asm_gencall(ASMState *as, const CCallInfo *ci, IRRef *args)
 static void asm_setupresult(ASMState *as, IRIns *ir, const CCallInfo *ci)
 {
   RegSet drop = RSET_SCRATCH;
-  int hiop = ((ir+1)->o == IR_HIOP);
+  int hiop = ((ir+1)->o == IR_HIOP && !irt_isnil((ir+1)->t));
   if ((ci->flags & CCI_NOFPRCLOBBER))
     drop &= ~RSET_FPR;
   if (ra_hasreg(ir->r))
@@ -323,21 +323,14 @@ static void asm_setupresult(ASMState *as, IRIns *ir, const CCallInfo *ci)
       } else {
 	ra_destreg(as, ir, RID_FPRET);
       }
+#if LJ_32
     } else if (hiop) {
       ra_destpair(as, ir);
+#endif
     } else {
       ra_destreg(as, ir, RID_RET);
     }
   }
-}
-
-static void asm_call(ASMState *as, IRIns *ir)
-{
-  IRRef args[CCI_NARGS_MAX];
-  const CCallInfo *ci = &lj_ir_callinfo[ir->op2];
-  asm_collectargs(as, ir, ci, args);
-  asm_setupresult(as, ir, ci);
-  asm_gencall(as, ci, args);
 }
 
 static void asm_callx(ASMState *as, IRIns *ir)
@@ -352,7 +345,7 @@ static void asm_callx(ASMState *as, IRIns *ir)
   func = ir->op2; irf = IR(func);
   if (irf->o == IR_CARG) { func = irf->op1; irf = IR(func); }
   if (irref_isk(func)) {  /* Call to constant address. */
-    ci.func = (ASMFunction)(void *)(irf->i);
+    ci.func = (ASMFunction)(void *)(intptr_t)(irf->i);
   } else {  /* Need a non-argument register for indirect calls. */
     RegSet allow = RSET_GPR & ~RSET_RANGE(RID_R0, REGARG_LASTGPR+1);
     Reg freg = ra_alloc1(as, func, allow);
@@ -363,16 +356,6 @@ static void asm_callx(ASMState *as, IRIns *ir)
   asm_gencall(as, &ci, args);
 }
 
-static void asm_callid(ASMState *as, IRIns *ir, IRCallID id)
-{
-  const CCallInfo *ci = &lj_ir_callinfo[id];
-  IRRef args[2];
-  args[0] = ir->op1;
-  args[1] = ir->op2;
-  asm_setupresult(as, ir, ci);
-  asm_gencall(as, ci, args);
-}
-
 /* -- Returns ------------------------------------------------------------- */
 
 /* Return to lower frame. Guard that it goes to the right spot. */
@@ -380,7 +363,7 @@ static void asm_retf(ASMState *as, IRIns *ir)
 {
   Reg base = ra_alloc1(as, REF_BASE, RSET_GPR);
   void *pc = ir_kptr(IR(ir->op2));
-  int32_t delta = 1+bc_a(*((const BCIns *)pc - 1));
+  int32_t delta = 1+LJ_FR2+bc_a(*((const BCIns *)pc - 1));
   as->topslot -= (BCReg)delta;
   if ((int32_t)as->topslot < 0) as->topslot = 0;
   irt_setmark(IR(REF_BASE)->t);  /* Children must not coalesce with BASE reg. */
@@ -410,8 +393,7 @@ static void asm_tointg(ASMState *as, IRIns *ir, Reg left)
   emit_asi(as, PPCI_XORIS, RID_TMP, dest, 0x8000);
   emit_tai(as, PPCI_LWZ, dest, RID_SP, SPOFS_TMPLO);
   emit_lsptr(as, PPCI_LFS, (fbias & 31),
-	     (void *)lj_ir_k64_find(as->J, U64x(59800004,59800000)),
-	     RSET_GPR);
+	     (void *)&as->J->k32[LJ_K32_2P52_2P31], RSET_GPR);
   emit_fai(as, PPCI_STFD, tmp, RID_SP, SPOFS_TMP);
   emit_fb(as, PPCI_FCTIWZ, tmp, left);
 }
@@ -450,13 +432,11 @@ static void asm_conv(ASMState *as, IRIns *ir)
       Reg left = ra_alloc1(as, lref, allow);
       Reg hibias = ra_allock(as, 0x43300000, rset_clear(allow, left));
       Reg fbias = ra_scratch(as, rset_exclude(RSET_FPR, dest));
-      const float *kbias;
       if (irt_isfloat(ir->t)) emit_fb(as, PPCI_FRSP, dest, dest);
       emit_fab(as, PPCI_FSUB, dest, dest, fbias);
       emit_fai(as, PPCI_LFD, dest, RID_SP, SPOFS_TMP);
-      kbias = (const float *)lj_ir_k64_find(as->J, U64x(59800004,59800000));
-      if (st == IRT_U32) kbias++;
-      emit_lsptr(as, PPCI_LFS, (fbias & 31), (void *)kbias,
+      emit_lsptr(as, PPCI_LFS, (fbias & 31),
+		 &as->J->k32[st == IRT_U32 ? LJ_K32_2P52 : LJ_K32_2P52_2P31],
 		 rset_clear(allow, hibias));
       emit_tai(as, PPCI_STW, st == IRT_U32 ? left : RID_TMP,
 	       RID_SP, SPOFS_TMPLO);
@@ -489,8 +469,7 @@ static void asm_conv(ASMState *as, IRIns *ir)
 	emit_fb(as, PPCI_FCTIWZ, tmp, tmp);
 	emit_fab(as, PPCI_FSUB, tmp, left, tmp);
 	emit_lsptr(as, PPCI_LFS, (tmp & 31),
-		   (void *)lj_ir_k64_find(as->J, U64x(4f000000,00000000)),
-		   RSET_GPR);
+		   (void *)&as->J->k32[LJ_K32_2P31], RSET_GPR);
       } else {
 	emit_tai(as, PPCI_LWZ, dest, RID_SP, SPOFS_TMPLO);
 	emit_fai(as, PPCI_STFD, tmp, RID_SP, SPOFS_TMP);
@@ -513,28 +492,6 @@ static void asm_conv(ASMState *as, IRIns *ir)
   }
 }
 
-#if LJ_HASFFI
-static void asm_conv64(ASMState *as, IRIns *ir)
-{
-  IRType st = (IRType)((ir-1)->op2 & IRCONV_SRCMASK);
-  IRType dt = (((ir-1)->op2 & IRCONV_DSTMASK) >> IRCONV_DSH);
-  IRCallID id;
-  const CCallInfo *ci;
-  IRRef args[2];
-  args[0] = ir->op1;
-  args[1] = (ir-1)->op1;
-  if (st == IRT_NUM || st == IRT_FLOAT) {
-    id = IRCALL_fp64_d2l + ((st == IRT_FLOAT) ? 2 : 0) + (dt - IRT_I64);
-    ir--;
-  } else {
-    id = IRCALL_fp64_l2d + ((dt == IRT_FLOAT) ? 2 : 0) + (st - IRT_I64);
-  }
-  ci = &lj_ir_callinfo[id];
-  asm_setupresult(as, ir, ci);
-  asm_gencall(as, ci, args);
-}
-#endif
-
 static void asm_strto(ASMState *as, IRIns *ir)
 {
   const CCallInfo *ci = &lj_ir_callinfo[IRCALL_lj_strscan_num];
@@ -553,6 +510,8 @@ static void asm_strto(ASMState *as, IRIns *ir)
   emit_tai(as, PPCI_ADDI, ra_releasetmp(as, ASMREF_TMP1), RID_SP, ofs);
 }
 
+/* -- Memory references --------------------------------------------------- */
+
 /* Get pointer to TValue. */
 static void asm_tvptr(ASMState *as, Reg dest, IRRef ref)
 {
@@ -566,7 +525,7 @@ static void asm_tvptr(ASMState *as, Reg dest, IRRef ref)
     /* Otherwise use g->tmptv to hold the TValue. */
     RegSet allow = rset_exclude(RSET_GPR, dest);
     Reg type;
-    emit_tai(as, PPCI_ADDI, dest, RID_JGL, offsetof(global_State, tmptv)-32768);
+    emit_tai(as, PPCI_ADDI, dest, RID_JGL, (int32_t)offsetof(global_State, tmptv)-32768);
     if (!irt_ispri(ir->t)) {
       Reg src = ra_alloc1(as, ref, allow);
       emit_setgl(as, src, tmptv.gcr);
@@ -575,27 +534,6 @@ static void asm_tvptr(ASMState *as, Reg dest, IRRef ref)
     emit_setgl(as, type, tmptv.it);
   }
 }
-
-static void asm_tostr(ASMState *as, IRIns *ir)
-{
-  IRRef args[2];
-  args[0] = ASMREF_L;
-  as->gcsteps++;
-  if (irt_isnum(IR(ir->op1)->t) || (ir+1)->o == IR_HIOP) {
-    const CCallInfo *ci = &lj_ir_callinfo[IRCALL_lj_str_fromnum];
-    args[1] = ASMREF_TMP1;  /* const lua_Number * */
-    asm_setupresult(as, ir, ci);  /* GCstr * */
-    asm_gencall(as, ci, args);
-    asm_tvptr(as, ra_releasetmp(as, ASMREF_TMP1), ir->op1);
-  } else {
-    const CCallInfo *ci = &lj_ir_callinfo[IRCALL_lj_str_fromint];
-    args[1] = ir->op1;  /* int32_t k */
-    asm_setupresult(as, ir, ci);  /* GCstr * */
-    asm_gencall(as, ci, args);
-  }
-}
-
-/* -- Memory references --------------------------------------------------- */
 
 static void asm_aref(ASMState *as, IRIns *ir)
 {
@@ -773,23 +711,8 @@ static void asm_hrefk(ASMState *as, IRIns *ir)
   }
 }
 
-static void asm_newref(ASMState *as, IRIns *ir)
-{
-  const CCallInfo *ci = &lj_ir_callinfo[IRCALL_lj_tab_newkey];
-  IRRef args[3];
-  if (ir->r == RID_SINK)
-    return;
-  args[0] = ASMREF_L;     /* lua_State *L */
-  args[1] = ir->op1;      /* GCtab *t     */
-  args[2] = ASMREF_TMP1;  /* cTValue *key */
-  asm_setupresult(as, ir, ci);  /* TValue * */
-  asm_gencall(as, ci, args);
-  asm_tvptr(as, ra_releasetmp(as, ASMREF_TMP1), ir->op2);
-}
-
 static void asm_uref(ASMState *as, IRIns *ir)
 {
-  /* NYI: Check that UREFO is still open and not aliasing a slot. */
   Reg dest = ra_dest(as, ir, RSET_GPR);
   if (irref_isk(ir->op1)) {
     GCfunc *fn = ir_kfunc(IR(ir->op1));
@@ -881,17 +804,23 @@ static PPCIns asm_fxstoreins(IRIns *ir)
 static void asm_fload(ASMState *as, IRIns *ir)
 {
   Reg dest = ra_dest(as, ir, RSET_GPR);
-  Reg idx = ra_alloc1(as, ir->op1, RSET_GPR);
   PPCIns pi = asm_fxloadins(ir);
+  Reg idx;
   int32_t ofs;
-  if (ir->op2 == IRFL_TAB_ARRAY) {
-    ofs = asm_fuseabase(as, ir->op1);
-    if (ofs) {  /* Turn the t->array load into an add for colocated arrays. */
-      emit_tai(as, PPCI_ADDI, dest, idx, ofs);
-      return;
+  if (ir->op1 == REF_NIL) {
+    idx = RID_JGL;
+    ofs = (ir->op2 << 2) - 32768;
+  } else {
+    idx = ra_alloc1(as, ir->op1, RSET_GPR);
+    if (ir->op2 == IRFL_TAB_ARRAY) {
+      ofs = asm_fuseabase(as, ir->op1);
+      if (ofs) {  /* Turn the t->array load into an add for colocated arrays. */
+	emit_tai(as, PPCI_ADDI, dest, idx, ofs);
+	return;
+      }
     }
+    ofs = field_ofs[ir->op2];
   }
-  ofs = field_ofs[ir->op2];
   lua_assert(!irt_isi8(ir->t));
   emit_tai(as, pi, dest, idx, ofs);
 }
@@ -917,7 +846,7 @@ static void asm_xload(ASMState *as, IRIns *ir)
   asm_fusexref(as, asm_fxloadins(ir), dest, ir->op1, RSET_GPR, 0);
 }
 
-static void asm_xstore(ASMState *as, IRIns *ir, int32_t ofs)
+static void asm_xstore_(ASMState *as, IRIns *ir, int32_t ofs)
 {
   IRIns *irb;
   if (ir->r == RID_SINK)
@@ -933,6 +862,8 @@ static void asm_xstore(ASMState *as, IRIns *ir, int32_t ofs)
 		 rset_exclude(RSET_GPR, src), ofs);
   }
 }
+
+#define asm_xstore(as, ir)	asm_xstore_(as, ir, 0)
 
 static void asm_ahuvload(ASMState *as, IRIns *ir)
 {
@@ -1045,7 +976,7 @@ static void asm_sload(ASMState *as, IRIns *ir)
 	emit_fab(as, PPCI_FSUB, dest, dest, fbias);
 	emit_fai(as, PPCI_LFD, dest, RID_SP, SPOFS_TMP);
 	emit_lsptr(as, PPCI_LFS, (fbias & 31),
-		   (void *)lj_ir_k64_find(as->J, U64x(59800004,59800000)),
+		   (void *)&as->J->k32[LJ_K32_2P52_2P31],
 		   rset_clear(allow, hibias));
 	emit_tai(as, PPCI_STW, tmp, RID_SP, SPOFS_TMPLO);
 	emit_tai(as, PPCI_STW, hibias, RID_SP, SPOFS_TMPHI);
@@ -1084,19 +1015,15 @@ dotypecheck:
 static void asm_cnew(ASMState *as, IRIns *ir)
 {
   CTState *cts = ctype_ctsG(J2G(as->J));
-  CTypeID ctypeid = (CTypeID)IR(ir->op1)->i;
-  CTSize sz = (ir->o == IR_CNEWI || ir->op2 == REF_NIL) ?
-	      lj_ctype_size(cts, ctypeid) : (CTSize)IR(ir->op2)->i;
+  CTypeID id = (CTypeID)IR(ir->op1)->i;
+  CTSize sz;
+  CTInfo info = lj_ctype_info(cts, id, &sz);
   const CCallInfo *ci = &lj_ir_callinfo[IRCALL_lj_mem_newgco];
-  IRRef args[2];
-  RegSet allow = (RSET_GPR & ~RSET_SCRATCH);
+  IRRef args[4];
   RegSet drop = RSET_SCRATCH;
-  lua_assert(sz != CTSIZE_INVALID);
+  lua_assert(sz != CTSIZE_INVALID || (ir->o == IR_CNEW && ir->op2 != REF_NIL));
 
-  args[0] = ASMREF_L;     /* lua_State *L */
-  args[1] = ASMREF_TMP1;  /* MSize size   */
   as->gcsteps++;
-
   if (ra_hasreg(ir->r))
     rset_clear(drop, ir->r);  /* Dest reg handled below. */
   ra_evictset(as, drop);
@@ -1105,6 +1032,7 @@ static void asm_cnew(ASMState *as, IRIns *ir)
 
   /* Initialize immutable cdata object. */
   if (ir->o == IR_CNEWI) {
+    RegSet allow = (RSET_GPR & ~RSET_SCRATCH);
     int32_t ofs = sizeof(GCcdata);
     lua_assert(sz == 4 || sz == 8);
     if (sz == 8) {
@@ -1118,12 +1046,24 @@ static void asm_cnew(ASMState *as, IRIns *ir)
       if (ofs == sizeof(GCcdata)) break;
       ofs -= 4; ir++;
     }
+  } else if (ir->op2 != REF_NIL) {  /* Create VLA/VLS/aligned cdata. */
+    ci = &lj_ir_callinfo[IRCALL_lj_cdata_newv];
+    args[0] = ASMREF_L;     /* lua_State *L */
+    args[1] = ir->op1;      /* CTypeID id   */
+    args[2] = ir->op2;      /* CTSize sz    */
+    args[3] = ASMREF_TMP1;  /* CTSize align */
+    asm_gencall(as, ci, args);
+    emit_loadi(as, ra_releasetmp(as, ASMREF_TMP1), (int32_t)ctype_align(info));
+    return;
   }
+
   /* Initialize gct and ctypeid. lj_mem_newgco() already sets marked. */
   emit_tai(as, PPCI_STB, RID_RET+1, RID_RET, offsetof(GCcdata, gct));
   emit_tai(as, PPCI_STH, RID_TMP, RID_RET, offsetof(GCcdata, ctypeid));
   emit_ti(as, PPCI_LI, RID_RET+1, ~LJ_TCDATA);
-  emit_ti(as, PPCI_LI, RID_TMP, ctypeid);  /* Lower 16 bit used. Sign-ext ok. */
+  emit_ti(as, PPCI_LI, RID_TMP, id);  /* Lower 16 bit used. Sign-ext ok. */
+  args[0] = ASMREF_L;     /* lua_State *L */
+  args[1] = ASMREF_TMP1;  /* MSize size   */
   asm_gencall(as, ci, args);
   ra_allockreg(as, (int32_t)(sz+sizeof(GCcdata)),
 	       ra_releasetmp(as, ASMREF_TMP1));
@@ -1197,23 +1137,14 @@ static void asm_fpunary(ASMState *as, IRIns *ir, PPCIns pi)
   emit_fb(as, pi, dest, left);
 }
 
-static int asm_fpjoin_pow(ASMState *as, IRIns *ir)
+static void asm_fpmath(ASMState *as, IRIns *ir)
 {
-  IRIns *irp = IR(ir->op1);
-  if (irp == ir-1 && irp->o == IR_MUL && !ra_used(irp)) {
-    IRIns *irpp = IR(irp->op1);
-    if (irpp == ir-2 && irpp->o == IR_FPMATH &&
-	irpp->op2 == IRFPM_LOG2 && !ra_used(irpp)) {
-      const CCallInfo *ci = &lj_ir_callinfo[IRCALL_pow];
-      IRRef args[2];
-      args[0] = irpp->op1;
-      args[1] = irp->op2;
-      asm_setupresult(as, ir, ci);
-      asm_gencall(as, ci, args);
-      return 1;
-    }
-  }
-  return 0;
+  if (ir->op2 == IRFPM_EXP2 && asm_fpjoin_pow(as, ir))
+    return;
+  if (ir->op2 == IRFPM_SQRT && (as->flags & JIT_F_SQRT))
+    asm_fpunary(as, ir, PPCI_FSQRT);
+  else
+    asm_callid(as, ir, IRCALL_lj_vm_floor + ir->op2);
 }
 
 static void asm_add(ASMState *as, IRIns *ir)
@@ -1313,6 +1244,10 @@ static void asm_mul(ASMState *as, IRIns *ir)
   }
 }
 
+#define asm_div(as, ir)		asm_fparith(as, ir, PPCI_FDIV)
+#define asm_mod(as, ir)		asm_callid(as, ir, IRCALL_lj_vm_modi)
+#define asm_pow(as, ir)		asm_callid(as, ir, IRCALL_lj_vm_powi)
+
 static void asm_neg(ASMState *as, IRIns *ir)
 {
   if (irt_isnum(ir->t)) {
@@ -1331,6 +1266,10 @@ static void asm_neg(ASMState *as, IRIns *ir)
   }
 }
 
+#define asm_abs(as, ir)		asm_fpunary(as, ir, PPCI_FABS)
+#define asm_atan2(as, ir)	asm_callid(as, ir, IRCALL_atan2)
+#define asm_ldexp(as, ir)	asm_callid(as, ir, IRCALL_ldexp)
+
 static void asm_arithov(ASMState *as, IRIns *ir, PPCIns pi)
 {
   Reg dest, left, right;
@@ -1345,6 +1284,10 @@ static void asm_arithov(ASMState *as, IRIns *ir, PPCIns pi)
   if (pi == PPCI_SUBFO) { Reg tmp = left; left = right; right = tmp; }
   emit_tab(as, pi|PPCF_DOT, dest, left, right);
 }
+
+#define asm_addov(as, ir)	asm_arithov(as, ir, PPCI_ADDO)
+#define asm_subov(as, ir)	asm_arithov(as, ir, PPCI_SUBFO)
+#define asm_mulov(as, ir)	asm_arithov(as, ir, PPCI_MULLWO)
 
 #if LJ_HASFFI
 static void asm_add64(ASMState *as, IRIns *ir)
@@ -1425,7 +1368,7 @@ static void asm_neg64(ASMState *as, IRIns *ir)
 }
 #endif
 
-static void asm_bitnot(ASMState *as, IRIns *ir)
+static void asm_bnot(ASMState *as, IRIns *ir)
 {
   Reg dest, left, right;
   PPCIns pi = PPCI_NOR;
@@ -1452,7 +1395,7 @@ nofuse:
   emit_asb(as, pi, dest, left, right);
 }
 
-static void asm_bitswap(ASMState *as, IRIns *ir)
+static void asm_bswap(ASMState *as, IRIns *ir)
 {
   Reg dest = ra_dest(as, ir, RSET_GPR);
   IRIns *irx;
@@ -1471,32 +1414,6 @@ static void asm_bitswap(ASMState *as, IRIns *ir)
     emit_rot(as, PPCI_RLWIMI, tmp, left, 24, 0, 7);
     emit_rotlwi(as, tmp, left, 8);
   }
-}
-
-static void asm_bitop(ASMState *as, IRIns *ir, PPCIns pi, PPCIns pik)
-{
-  Reg dest = ra_dest(as, ir, RSET_GPR);
-  Reg right, left = ra_hintalloc(as, ir->op1, dest, RSET_GPR);
-  if (irref_isk(ir->op2)) {
-    int32_t k = IR(ir->op2)->i;
-    Reg tmp = left;
-    if ((checku16(k) || (k & 0xffff) == 0) || (tmp = dest, !as->sectref)) {
-      if (!checku16(k)) {
-	emit_asi(as, pik ^ (PPCI_ORI ^ PPCI_ORIS), dest, tmp, (k >> 16));
-	if ((k & 0xffff) == 0) return;
-      }
-      emit_asi(as, pik, dest, left, k);
-      return;
-    }
-  }
-  /* May fail due to spills/restores above, but simplifies the logic. */
-  if (as->flagmcp == as->mcp) {
-    as->flagmcp = NULL;
-    as->mcp++;
-    pi |= PPCF_DOT;
-  }
-  right = ra_alloc1(as, ir->op2, rset_exclude(RSET_GPR, left));
-  emit_asb(as, pi, dest, left, right);
 }
 
 /* Fuse BAND with contiguous bitmask and a shift to rlwinm. */
@@ -1529,7 +1446,7 @@ nofuse:
   *--as->mcp = pi | PPCF_T(left);
 }
 
-static void asm_bitand(ASMState *as, IRIns *ir)
+static void asm_band(ASMState *as, IRIns *ir)
 {
   Reg dest, left, right;
   IRRef lref = ir->op1;
@@ -1584,6 +1501,35 @@ static void asm_bitand(ASMState *as, IRIns *ir)
   emit_asb(as, PPCI_AND ^ dot, dest, left, right);
 }
 
+static void asm_bitop(ASMState *as, IRIns *ir, PPCIns pi, PPCIns pik)
+{
+  Reg dest = ra_dest(as, ir, RSET_GPR);
+  Reg right, left = ra_hintalloc(as, ir->op1, dest, RSET_GPR);
+  if (irref_isk(ir->op2)) {
+    int32_t k = IR(ir->op2)->i;
+    Reg tmp = left;
+    if ((checku16(k) || (k & 0xffff) == 0) || (tmp = dest, !as->sectref)) {
+      if (!checku16(k)) {
+	emit_asi(as, pik ^ (PPCI_ORI ^ PPCI_ORIS), dest, tmp, (k >> 16));
+	if ((k & 0xffff) == 0) return;
+      }
+      emit_asi(as, pik, dest, left, k);
+      return;
+    }
+  }
+  /* May fail due to spills/restores above, but simplifies the logic. */
+  if (as->flagmcp == as->mcp) {
+    as->flagmcp = NULL;
+    as->mcp++;
+    pi |= PPCF_DOT;
+  }
+  right = ra_alloc1(as, ir->op2, rset_exclude(RSET_GPR, left));
+  emit_asb(as, pi, dest, left, right);
+}
+
+#define asm_bor(as, ir)		asm_bitop(as, ir, PPCI_OR, PPCI_ORI)
+#define asm_bxor(as, ir)	asm_bitop(as, ir, PPCI_XOR, PPCI_XORI)
+
 static void asm_bitshift(ASMState *as, IRIns *ir, PPCIns pi, PPCIns pik)
 {
   Reg dest, left;
@@ -1608,6 +1554,14 @@ static void asm_bitshift(ASMState *as, IRIns *ir, PPCIns pi, PPCIns pik)
     emit_asb(as, pi|dot, dest, left, right);
   }
 }
+
+#define asm_bshl(as, ir)	asm_bitshift(as, ir, PPCI_SLW, 0)
+#define asm_bshr(as, ir)	asm_bitshift(as, ir, PPCI_SRW, 1)
+#define asm_bsar(as, ir)	asm_bitshift(as, ir, PPCI_SRAW, PPCI_SRAWI)
+#define asm_brol(as, ir) \
+  asm_bitshift(as, ir, PPCI_RLWNM|PPCF_MB(0)|PPCF_ME(31), \
+		       PPCI_RLWINM|PPCF_MB(0)|PPCF_ME(31))
+#define asm_bror(as, ir)	lua_assert(0)
 
 static void asm_min_max(ASMState *as, IRIns *ir, int ismax)
 {
@@ -1638,6 +1592,9 @@ static void asm_min_max(ASMState *as, IRIns *ir, int ismax)
     emit_asi(as, PPCI_XORIS, tmp1, left, 0x8000);
   }
 }
+
+#define asm_min(as, ir)		asm_min_max(as, ir, 0)
+#define asm_max(as, ir)		asm_min_max(as, ir, 1)
 
 /* -- Comparisons --------------------------------------------------------- */
 
@@ -1715,6 +1672,8 @@ static void asm_comp(ASMState *as, IRIns *ir)
   }
 }
 
+#define asm_equal(as, ir)	asm_comp(as, ir)
+
 #if LJ_HASFFI
 /* 64 bit integer comparisons. */
 static void asm_comp64(ASMState *as, IRIns *ir)
@@ -1760,8 +1719,8 @@ static void asm_hiop(ASMState *as, IRIns *ir)
   } else if ((ir-1)->o == IR_XSTORE) {
     as->curins--;  /* Handle both stores here. */
     if ((ir-1)->r != RID_SINK) {
-      asm_xstore(as, ir, 0);
-      asm_xstore(as, ir-1, 4);
+      asm_xstore_(as, ir, 0);
+      asm_xstore_(as, ir-1, 4);
     }
     return;
   }
@@ -1785,6 +1744,17 @@ static void asm_hiop(ASMState *as, IRIns *ir)
 #endif
 }
 
+/* -- Profiling ----------------------------------------------------------- */
+
+static void asm_prof(ASMState *as, IRIns *ir)
+{
+  UNUSED(ir);
+  asm_guardcc(as, CC_NE);
+  emit_asi(as, PPCI_ANDIDOT, RID_TMP, RID_TMP, HOOK_PROFILE);
+  emit_lsglptr(as, PPCI_LBZ, RID_TMP,
+	       (int32_t)offsetof(global_State, hookmask));
+}
+
 /* -- Stack handling ------------------------------------------------------ */
 
 /* Check Lua stack size for overflow. Use exit handler as fallback. */
@@ -1806,7 +1776,7 @@ static void asm_stack_check(ASMState *as, BCReg topslot,
   emit_tai(as, PPCI_LWZ, tmp, tmp, offsetof(lua_State, maxstack));
   if (pbase == RID_TMP)
     emit_getgl(as, RID_TMP, jit_base);
-  emit_getgl(as, tmp, jit_L);
+  emit_getgl(as, tmp, cur_L);
   if (allow == RSET_EMPTY)  /* Spill temp. register. */
     emit_tai(as, PPCI_STW, tmp, RID_SP, SPOFS_TMPW);
 }
@@ -1967,136 +1937,13 @@ static void asm_tail_prep(ASMState *as)
   }
 }
 
-/* -- Instruction dispatch ------------------------------------------------ */
-
-/* Assemble a single instruction. */
-static void asm_ir(ASMState *as, IRIns *ir)
-{
-  switch ((IROp)ir->o) {
-  /* Miscellaneous ops. */
-  case IR_LOOP: asm_loop(as); break;
-  case IR_NOP: case IR_XBAR: lua_assert(!ra_used(ir)); break;
-  case IR_USE:
-    ra_alloc1(as, ir->op1, irt_isfp(ir->t) ? RSET_FPR : RSET_GPR); break;
-  case IR_PHI: asm_phi(as, ir); break;
-  case IR_HIOP: asm_hiop(as, ir); break;
-  case IR_GCSTEP: asm_gcstep(as, ir); break;
-
-  /* Guarded assertions. */
-  case IR_EQ: case IR_NE:
-    if ((ir-1)->o == IR_HREF && ir->op1 == as->curins-1) {
-      as->curins--;
-      asm_href(as, ir-1, (IROp)ir->o);
-      break;
-    }
-    /* fallthrough */
-  case IR_LT: case IR_GE: case IR_LE: case IR_GT:
-  case IR_ULT: case IR_UGE: case IR_ULE: case IR_UGT:
-  case IR_ABC:
-    asm_comp(as, ir);
-    break;
-
-  case IR_RETF: asm_retf(as, ir); break;
-
-  /* Bit ops. */
-  case IR_BNOT: asm_bitnot(as, ir); break;
-  case IR_BSWAP: asm_bitswap(as, ir); break;
-
-  case IR_BAND: asm_bitand(as, ir); break;
-  case IR_BOR:  asm_bitop(as, ir, PPCI_OR, PPCI_ORI); break;
-  case IR_BXOR: asm_bitop(as, ir, PPCI_XOR, PPCI_XORI); break;
-
-  case IR_BSHL: asm_bitshift(as, ir, PPCI_SLW, 0); break;
-  case IR_BSHR: asm_bitshift(as, ir, PPCI_SRW, 1); break;
-  case IR_BSAR: asm_bitshift(as, ir, PPCI_SRAW, PPCI_SRAWI); break;
-  case IR_BROL: asm_bitshift(as, ir, PPCI_RLWNM|PPCF_MB(0)|PPCF_ME(31),
-			     PPCI_RLWINM|PPCF_MB(0)|PPCF_ME(31)); break;
-  case IR_BROR: lua_assert(0); break;
-
-  /* Arithmetic ops. */
-  case IR_ADD: asm_add(as, ir); break;
-  case IR_SUB: asm_sub(as, ir); break;
-  case IR_MUL: asm_mul(as, ir); break;
-  case IR_DIV: asm_fparith(as, ir, PPCI_FDIV); break;
-  case IR_MOD: asm_callid(as, ir, IRCALL_lj_vm_modi); break;
-  case IR_POW: asm_callid(as, ir, IRCALL_lj_vm_powi); break;
-  case IR_NEG: asm_neg(as, ir); break;
-
-  case IR_ABS: asm_fpunary(as, ir, PPCI_FABS); break;
-  case IR_ATAN2: asm_callid(as, ir, IRCALL_atan2); break;
-  case IR_LDEXP: asm_callid(as, ir, IRCALL_ldexp); break;
-  case IR_MIN: asm_min_max(as, ir, 0); break;
-  case IR_MAX: asm_min_max(as, ir, 1); break;
-  case IR_FPMATH:
-    if (ir->op2 == IRFPM_EXP2 && asm_fpjoin_pow(as, ir))
-      break;
-    if (ir->op2 == IRFPM_SQRT && (as->flags & JIT_F_SQRT))
-      asm_fpunary(as, ir, PPCI_FSQRT);
-    else
-      asm_callid(as, ir, IRCALL_lj_vm_floor + ir->op2);
-    break;
-
-  /* Overflow-checking arithmetic ops. */
-  case IR_ADDOV: asm_arithov(as, ir, PPCI_ADDO); break;
-  case IR_SUBOV: asm_arithov(as, ir, PPCI_SUBFO); break;
-  case IR_MULOV: asm_arithov(as, ir, PPCI_MULLWO); break;
-
-  /* Memory references. */
-  case IR_AREF: asm_aref(as, ir); break;
-  case IR_HREF: asm_href(as, ir, 0); break;
-  case IR_HREFK: asm_hrefk(as, ir); break;
-  case IR_NEWREF: asm_newref(as, ir); break;
-  case IR_UREFO: case IR_UREFC: asm_uref(as, ir); break;
-  case IR_FREF: asm_fref(as, ir); break;
-  case IR_STRREF: asm_strref(as, ir); break;
-
-  /* Loads and stores. */
-  case IR_ALOAD: case IR_HLOAD: case IR_ULOAD: case IR_VLOAD:
-    asm_ahuvload(as, ir);
-    break;
-  case IR_FLOAD: asm_fload(as, ir); break;
-  case IR_XLOAD: asm_xload(as, ir); break;
-  case IR_SLOAD: asm_sload(as, ir); break;
-
-  case IR_ASTORE: case IR_HSTORE: case IR_USTORE: asm_ahustore(as, ir); break;
-  case IR_FSTORE: asm_fstore(as, ir); break;
-  case IR_XSTORE: asm_xstore(as, ir, 0); break;
-
-  /* Allocations. */
-  case IR_SNEW: case IR_XSNEW: asm_snew(as, ir); break;
-  case IR_TNEW: asm_tnew(as, ir); break;
-  case IR_TDUP: asm_tdup(as, ir); break;
-  case IR_CNEW: case IR_CNEWI: asm_cnew(as, ir); break;
-
-  /* Write barriers. */
-  case IR_TBAR: asm_tbar(as, ir); break;
-  case IR_OBAR: asm_obar(as, ir); break;
-
-  /* Type conversions. */
-  case IR_CONV: asm_conv(as, ir); break;
-  case IR_TOBIT: asm_tobit(as, ir); break;
-  case IR_TOSTR: asm_tostr(as, ir); break;
-  case IR_STRTO: asm_strto(as, ir); break;
-
-  /* Calls. */
-  case IR_CALLN: case IR_CALLL: case IR_CALLS: asm_call(as, ir); break;
-  case IR_CALLXS: asm_callx(as, ir); break;
-  case IR_CARG: break;
-
-  default:
-    setintV(&as->J->errinfo, ir->o);
-    lj_trace_err_info(as->J, LJ_TRERR_NYIIR);
-    break;
-  }
-}
-
 /* -- Trace setup --------------------------------------------------------- */
 
 /* Ensure there are enough stack slots for call arguments. */
 static Reg asm_setup_call_slots(ASMState *as, IRIns *ir, const CCallInfo *ci)
 {
   IRRef args[CCI_NARGS_MAX*2];
-  uint32_t i, nargs = (int)CCI_NARGS(ci);
+  uint32_t i, nargs = CCI_XNARGS(ci);
   int nslots = 2, ngpr = REGARG_NUMGPR, nfpr = REGARG_NUMFPR;
   asm_collectargs(as, ir, ci, args);
   for (i = 0; i < nargs; i++)

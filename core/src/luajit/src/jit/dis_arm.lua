@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------------
 -- LuaJIT ARM disassembler module.
 --
--- Copyright (C) 2005-2015 Mike Pall. All rights reserved.
+-- Copyright (C) 2005-2017 Mike Pall. All rights reserved.
 -- Released under the MIT license. See Copyright Notice in luajit.h
 ----------------------------------------------------------------------------
 -- This is a helper module used by the LuaJIT machine code dumper module.
@@ -12,7 +12,7 @@
 
 local type = type
 local sub, byte, format = string.sub, string.byte, string.format
-local match, gmatch, gsub = string.match, string.gmatch, string.gsub
+local match, gmatch = string.match, string.gmatch
 local concat = table.concat
 local bit = require("bit")
 local band, bor, ror, tohex = bit.band, bit.bor, bit.ror, bit.tohex
@@ -658,7 +658,7 @@ local function disass_block(ctx, ofs, len)
 end
 
 -- Extended API: create a disassembler context. Then call ctx:disass(ofs, len).
-local function create_(code, addr, out)
+local function create(code, addr, out)
   local ctx = {}
   ctx.code = code
   ctx.addr = addr or 0
@@ -670,20 +670,20 @@ local function create_(code, addr, out)
 end
 
 -- Simple API: disassemble code (a string) at address and output via out.
-local function disass_(code, addr, out)
-  create_(code, addr, out):disass()
+local function disass(code, addr, out)
+  create(code, addr, out):disass()
 end
 
 -- Return register name for RID.
-local function regname_(r)
+local function regname(r)
   if r < 16 then return map_gpr[r] end
   return "d"..(r-16)
 end
 
 -- Public module functions.
-module(...)
-
-create = create_
-disass = disass_
-regname = regname_
+return {
+  create = create,
+  disass = disass,
+  regname = regname
+}
 

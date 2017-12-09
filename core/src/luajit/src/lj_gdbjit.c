@@ -1,6 +1,6 @@
 /*
 ** Client for the GDB JIT API.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_gdbjit_c
@@ -14,6 +14,8 @@
 #include "lj_err.h"
 #include "lj_debug.h"
 #include "lj_frame.h"
+#include "lj_buf.h"
+#include "lj_strfmt.h"
 #include "lj_jit.h"
 #include "lj_dispatch.h"
 
@@ -294,6 +296,9 @@ enum {
 #elif LJ_TARGET_ARM
   DW_REG_SP = 13,
   DW_REG_RA = 14,
+#elif LJ_TARGET_ARM64
+  DW_REG_SP = 31,
+  DW_REG_RA = 30,
 #elif LJ_TARGET_PPC
   DW_REG_SP = 1,
   DW_REG_RA = 65,
@@ -372,6 +377,8 @@ static const ELFheader elfhdr_template = {
   .machine = 62,
 #elif LJ_TARGET_ARM
   .machine = 40,
+#elif LJ_TARGET_ARM64
+  .machine = 183,
 #elif LJ_TARGET_PPC
   .machine = 20,
 #elif LJ_TARGET_MIPS
@@ -428,16 +435,6 @@ static void gdbjit_catnum(GDBJITctx *ctx, uint32_t n)
   *ctx->p++ = '0' + n;
 }
 
-/* Add a ULEB128 value. */
-static void gdbjit_uleb128(GDBJITctx *ctx, uint32_t v)
-{
-  uint8_t *p = ctx->p;
-  for (; v >= 0x80; v >>= 7)
-    *p++ = (uint8_t)((v & 0x7f) | 0x80);
-  *p++ = (uint8_t)v;
-  ctx->p = p;
-}
-
 /* Add a SLEB128 value. */
 static void gdbjit_sleb128(GDBJITctx *ctx, int32_t v)
 {
@@ -454,7 +451,7 @@ static void gdbjit_sleb128(GDBJITctx *ctx, int32_t v)
 #define DU16(x)		(*(uint16_t *)p = (x), p += 2)
 #define DU32(x)		(*(uint32_t *)p = (x), p += 4)
 #define DADDR(x)	(*(uintptr_t *)p = (x), p += sizeof(uintptr_t))
-#define DUV(x)		(ctx->p = p, gdbjit_uleb128(ctx, (x)), p = ctx->p)
+#define DUV(x)		(p = (uint8_t *)lj_strfmt_wuleb128((char *)p, (x)))
 #define DSV(x)		(ctx->p = p, gdbjit_sleb128(ctx, (x)), p = ctx->p)
 #define DSTR(str)	(ctx->p = p, gdbjit_strz(ctx, (str)), p = ctx->p)
 #define DALIGNNOP(s)	while ((uintptr_t)p & ((s)-1)) *p++ = DW_CFA_nop
@@ -564,12 +561,19 @@ static void LJ_FASTCALL gdbjit_ehframe(GDBJITctx *ctx)
     DB(DW_CFA_offset|DW_REG_15); DUV(4);
     DB(DW_CFA_offset|DW_REG_14); DUV(5);
     /* Extra registers saved for JIT-compiled code. */
-    DB(DW_CFA_offset|DW_REG_13); DUV(9);
-    DB(DW_CFA_offset|DW_REG_12); DUV(10);
+    DB(DW_CFA_offset|DW_REG_13); DUV(LJ_GC64 ? 10 : 9);
+    DB(DW_CFA_offset|DW_REG_12); DUV(LJ_GC64 ? 11 : 10);
 #elif LJ_TARGET_ARM
     {
       int i;
       for (i = 11; i >= 4; i--) { DB(DW_CFA_offset|i); DUV(2+(11-i)); }
+    }
+#elif LJ_TARGET_ARM64
+    {
+      int i;
+      DB(DW_CFA_offset|31); DUV(2);
+      for (i = 28; i >= 19; i--) { DB(DW_CFA_offset|i); DUV(3+(28-i)); }
+      for (i = 15; i >= 8; i--) { DB(DW_CFA_offset|32|i); DUV(28-i); }
     }
 #elif LJ_TARGET_PPC
     {
@@ -727,6 +731,20 @@ static void gdbjit_buildobj(GDBJITctx *ctx)
 
 /* -- Interface to GDB JIT API -------------------------------------------- */
 
+static int gdbjit_lock;
+
+static void gdbjit_lock_acquire()
+{
+  while (__sync_lock_test_and_set(&gdbjit_lock, 1)) {
+    /* Just spin; futexes or pthreads aren't worth the portability cost. */
+  }
+}
+
+static void gdbjit_lock_release()
+{
+  __sync_lock_release(&gdbjit_lock);
+}
+
 /* Add new entry to GDB JIT symbol chain. */
 static void gdbjit_newentry(lua_State *L, GDBJITctx *ctx)
 {
@@ -738,6 +756,7 @@ static void gdbjit_newentry(lua_State *L, GDBJITctx *ctx)
   ctx->T->gdbjit_entry = (void *)eo;
   /* Link new entry to chain and register it. */
   eo->entry.prev_entry = NULL;
+  gdbjit_lock_acquire();
   eo->entry.next_entry = __jit_debug_descriptor.first_entry;
   if (eo->entry.next_entry)
     eo->entry.next_entry->prev_entry = &eo->entry;
@@ -747,6 +766,7 @@ static void gdbjit_newentry(lua_State *L, GDBJITctx *ctx)
   __jit_debug_descriptor.relevant_entry = &eo->entry;
   __jit_debug_descriptor.action_flag = GDBJIT_REGISTER;
   __jit_debug_register_code();
+  gdbjit_lock_release();
 }
 
 /* Add debug info for newly compiled trace and notify GDB. */
@@ -778,6 +798,7 @@ void lj_gdbjit_deltrace(jit_State *J, GCtrace *T)
 {
   GDBJITentryobj *eo = (GDBJITentryobj *)T->gdbjit_entry;
   if (eo) {
+    gdbjit_lock_acquire();
     if (eo->entry.prev_entry)
       eo->entry.prev_entry->next_entry = eo->entry.next_entry;
     else
@@ -787,6 +808,7 @@ void lj_gdbjit_deltrace(jit_State *J, GCtrace *T)
     __jit_debug_descriptor.relevant_entry = &eo->entry;
     __jit_debug_descriptor.action_flag = GDBJIT_UNREGISTER;
     __jit_debug_register_code();
+    gdbjit_lock_release();
     lj_mem_free(J2G(J), eo, eo->sz);
   }
 }

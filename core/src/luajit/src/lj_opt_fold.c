@@ -2,7 +2,7 @@
 ** FOLD: Constant Folding, Algebraic Simplifications and Reassociation.
 ** ABCelim: Array Bounds Check Elimination.
 ** CSE: Common-Subexpression Elimination.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #define lj_opt_fold_c
@@ -14,18 +14,21 @@
 
 #if LJ_HASJIT
 
+#include "lj_buf.h"
 #include "lj_str.h"
 #include "lj_tab.h"
 #include "lj_ir.h"
 #include "lj_jit.h"
+#include "lj_ircall.h"
 #include "lj_iropt.h"
 #include "lj_trace.h"
 #if LJ_HASFFI
 #include "lj_ctype.h"
-#endif
 #include "lj_carith.h"
+#endif
 #include "lj_vm.h"
 #include "lj_strscan.h"
+#include "lj_strfmt.h"
 
 /* Here's a short description how the FOLD engine processes instructions:
 **
@@ -133,8 +136,8 @@
 /* Some local macros to save typing. Undef'd at the end. */
 #define IR(ref)		(&J->cur.ir[(ref)])
 #define fins		(&J->fold.ins)
-#define fleft		(&J->fold.left)
-#define fright		(&J->fold.right)
+#define fleft		(J->fold.left)
+#define fright		(J->fold.right)
 #define knumleft	(ir_knum(fleft)->n)
 #define knumright	(ir_knum(fright)->n)
 
@@ -155,13 +158,14 @@ typedef IRRef (LJ_FASTCALL *FoldFunc)(jit_State *J);
 
 /* Barrier to prevent folding across a GC step.
 ** GC steps can only happen at the head of a trace and at LOOP.
-** And the GC is only driven forward if there is at least one allocation.
+** And the GC is only driven forward if there's at least one allocation.
 */
 #define gcstep_barrier(J, ref) \
   ((ref) < J->chain[IR_LOOP] && \
    (J->chain[IR_SNEW] || J->chain[IR_XSNEW] || \
     J->chain[IR_TNEW] || J->chain[IR_TDUP] || \
-    J->chain[IR_CNEW] || J->chain[IR_CNEWI] || J->chain[IR_TOSTR]))
+    J->chain[IR_CNEW] || J->chain[IR_CNEWI] || \
+    J->chain[IR_BUFSTR] || J->chain[IR_TOSTR] || J->chain[IR_CALLA]))
 
 /* -- Constant folding for FP numbers ------------------------------------- */
 
@@ -169,8 +173,6 @@ LJFOLD(ADD KNUM KNUM)
 LJFOLD(SUB KNUM KNUM)
 LJFOLD(MUL KNUM KNUM)
 LJFOLD(DIV KNUM KNUM)
-LJFOLD(NEG KNUM KNUM)
-LJFOLD(ABS KNUM KNUM)
 LJFOLD(ATAN2 KNUM KNUM)
 LJFOLD(LDEXP KNUM KNUM)
 LJFOLD(MIN KNUM KNUM)
@@ -180,6 +182,15 @@ LJFOLDF(kfold_numarith)
   lua_Number a = knumleft;
   lua_Number b = knumright;
   lua_Number y = lj_vm_foldarith(a, b, fins->o - IR_ADD);
+  return lj_ir_knum(J, y);
+}
+
+LJFOLD(NEG KNUM FLOAD)
+LJFOLD(ABS KNUM FLOAD)
+LJFOLDF(kfold_numabsneg)
+{
+  lua_Number a = knumleft;
+  lua_Number y = lj_vm_foldarith(a, a, fins->o - IR_ADD);
   return lj_ir_knum(J, y);
 }
 
@@ -336,15 +347,18 @@ LJFOLDF(kfold_intcomp0)
 static uint64_t kfold_int64arith(uint64_t k1, uint64_t k2, IROp op)
 {
   switch (op) {
-#if LJ_64 || LJ_HASFFI
+#if LJ_HASFFI
   case IR_ADD: k1 += k2; break;
   case IR_SUB: k1 -= k2; break;
-#endif
-#if LJ_HASFFI
   case IR_MUL: k1 *= k2; break;
   case IR_BAND: k1 &= k2; break;
   case IR_BOR: k1 |= k2; break;
   case IR_BXOR: k1 ^= k2; break;
+  case IR_BSHL: k1 <<= (k2 & 63); break;
+  case IR_BSHR: k1 = (int32_t)((uint32_t)k1 >> (k2 & 63)); break;
+  case IR_BSAR: k1 >>= (k2 & 63); break;
+  case IR_BROL: k1 = (int32_t)lj_rol((uint32_t)k1, (k2 & 63)); break;
+  case IR_BROR: k1 = (int32_t)lj_ror((uint32_t)k1, (k2 & 63)); break;
 #endif
   default: UNUSED(k2); lua_assert(0); break;
   }
@@ -392,20 +406,10 @@ LJFOLD(BROL KINT64 KINT)
 LJFOLD(BROR KINT64 KINT)
 LJFOLDF(kfold_int64shift)
 {
-#if LJ_HASFFI || LJ_64
+#if LJ_HASFFI
   uint64_t k = ir_k64(fleft)->u64;
   int32_t sh = (fright->i & 63);
-  switch ((IROp)fins->o) {
-  case IR_BSHL: k <<= sh; break;
-#if LJ_HASFFI
-  case IR_BSHR: k >>= sh; break;
-  case IR_BSAR: k = (uint64_t)((int64_t)k >> sh); break;
-  case IR_BROL: k = lj_rol(k, sh); break;
-  case IR_BROR: k = lj_ror(k, sh); break;
-#endif
-  default: lua_assert(0); break;
-  }
-  return INT64FOLD(k);
+  return INT64FOLD(lj_carith_shift64(k, sh, fins->o - IR_BSHL));
 #else
   UNUSED(J); lua_assert(0); return FAILFOLD;
 #endif
@@ -444,14 +448,14 @@ LJFOLDF(kfold_int64comp)
 #if LJ_HASFFI
   uint64_t a = ir_k64(fleft)->u64, b = ir_k64(fright)->u64;
   switch ((IROp)fins->o) {
-  case IR_LT: return CONDFOLD(a < b);
-  case IR_GE: return CONDFOLD(a >= b);
-  case IR_LE: return CONDFOLD(a <= b);
-  case IR_GT: return CONDFOLD(a > b);
-  case IR_ULT: return CONDFOLD((uint64_t)a < (uint64_t)b);
-  case IR_UGE: return CONDFOLD((uint64_t)a >= (uint64_t)b);
-  case IR_ULE: return CONDFOLD((uint64_t)a <= (uint64_t)b);
-  case IR_UGT: return CONDFOLD((uint64_t)a > (uint64_t)b);
+  case IR_LT: return CONDFOLD((int64_t)a < (int64_t)b);
+  case IR_GE: return CONDFOLD((int64_t)a >= (int64_t)b);
+  case IR_LE: return CONDFOLD((int64_t)a <= (int64_t)b);
+  case IR_GT: return CONDFOLD((int64_t)a > (int64_t)b);
+  case IR_ULT: return CONDFOLD(a < b);
+  case IR_UGE: return CONDFOLD(a >= b);
+  case IR_ULE: return CONDFOLD(a <= b);
+  case IR_UGT: return CONDFOLD(a > b);
   default: lua_assert(0); return FAILFOLD;
   }
 #else
@@ -510,7 +514,7 @@ LJFOLDF(kfold_strref_snew)
       PHIBARRIER(ir);
       fins->op2 = emitir(IRTI(IR_ADD), ir->op2, fins->op2); /* Clobbers fins! */
       fins->op1 = str;
-      fins->ot = IRT(IR_STRREF, IRT_P32);
+      fins->ot = IRT(IR_STRREF, IRT_PGC);
       return RETRYFOLD;
     }
   }
@@ -526,6 +530,180 @@ LJFOLDF(kfold_strcmp)
     return INTFOLD(lj_str_cmp(a, b));
   }
   return NEXTFOLD;
+}
+
+/* -- Constant folding and forwarding for buffers ------------------------- */
+
+/*
+** Buffer ops perform stores, but their effect is limited to the buffer
+** itself. Also, buffer ops are chained: a use of an op implies a use of
+** all other ops up the chain. Conversely, if an op is unused, all ops
+** up the chain can go unsed. This largely eliminates the need to treat
+** them as stores.
+**
+** Alas, treating them as normal (IRM_N) ops doesn't work, because they
+** cannot be CSEd in isolation. CSE for IRM_N is implicitly done in LOOP
+** or if FOLD is disabled.
+**
+** The compromise is to declare them as loads, emit them like stores and
+** CSE whole chains manually when the BUFSTR is to be emitted. Any chain
+** fragments left over from CSE are eliminated by DCE.
+*/
+
+/* BUFHDR is emitted like a store, see below. */
+
+LJFOLD(BUFPUT BUFHDR BUFSTR)
+LJFOLDF(bufput_append)
+{
+  /* New buffer, no other buffer op inbetween and same buffer? */
+  if ((J->flags & JIT_F_OPT_FWD) &&
+      !(fleft->op2 & IRBUFHDR_APPEND) &&
+      fleft->prev == fright->op2 &&
+      fleft->op1 == IR(fright->op2)->op1) {
+    IRRef ref = fins->op1;
+    IR(ref)->op2 = (fleft->op2 | IRBUFHDR_APPEND);  /* Modify BUFHDR. */
+    IR(ref)->op1 = fright->op1;
+    return ref;
+  }
+  return EMITFOLD;  /* Always emit, CSE later. */
+}
+
+LJFOLD(BUFPUT any any)
+LJFOLDF(bufput_kgc)
+{
+  if (LJ_LIKELY(J->flags & JIT_F_OPT_FOLD) && fright->o == IR_KGC) {
+    GCstr *s2 = ir_kstr(fright);
+    if (s2->len == 0) {  /* Empty string? */
+      return LEFTFOLD;
+    } else {
+      if (fleft->o == IR_BUFPUT && irref_isk(fleft->op2) &&
+	  !irt_isphi(fleft->t)) {  /* Join two constant string puts in a row. */
+	GCstr *s1 = ir_kstr(IR(fleft->op2));
+	IRRef kref = lj_ir_kstr(J, lj_buf_cat2str(J->L, s1, s2));
+	/* lj_ir_kstr() may realloc the IR and invalidates any IRIns *. */
+	IR(fins->op1)->op2 = kref;  /* Modify previous BUFPUT. */
+	return fins->op1;
+      }
+    }
+  }
+  return EMITFOLD;  /* Always emit, CSE later. */
+}
+
+LJFOLD(BUFSTR any any)
+LJFOLDF(bufstr_kfold_cse)
+{
+  lua_assert(fleft->o == IR_BUFHDR || fleft->o == IR_BUFPUT ||
+	     fleft->o == IR_CALLL);
+  if (LJ_LIKELY(J->flags & JIT_F_OPT_FOLD)) {
+    if (fleft->o == IR_BUFHDR) {  /* No put operations? */
+      if (!(fleft->op2 & IRBUFHDR_APPEND))  /* Empty buffer? */
+	return lj_ir_kstr(J, &J2G(J)->strempty);
+      fins->op1 = fleft->op1;
+      fins->op2 = fleft->prev;  /* Relies on checks in bufput_append. */
+      return CSEFOLD;
+    } else if (fleft->o == IR_BUFPUT) {
+      IRIns *irb = IR(fleft->op1);
+      if (irb->o == IR_BUFHDR && !(irb->op2 & IRBUFHDR_APPEND))
+	return fleft->op2;  /* Shortcut for a single put operation. */
+    }
+  }
+  /* Try to CSE the whole chain. */
+  if (LJ_LIKELY(J->flags & JIT_F_OPT_CSE)) {
+    IRRef ref = J->chain[IR_BUFSTR];
+    while (ref) {
+      IRIns *irs = IR(ref), *ira = fleft, *irb = IR(irs->op1);
+      while (ira->o == irb->o && ira->op2 == irb->op2) {
+	lua_assert(ira->o == IR_BUFHDR || ira->o == IR_BUFPUT ||
+		   ira->o == IR_CALLL || ira->o == IR_CARG);
+	if (ira->o == IR_BUFHDR && !(ira->op2 & IRBUFHDR_APPEND))
+	  return ref;  /* CSE succeeded. */
+	if (ira->o == IR_CALLL && ira->op2 == IRCALL_lj_buf_puttab)
+	  break;
+	ira = IR(ira->op1);
+	irb = IR(irb->op1);
+      }
+      ref = irs->prev;
+    }
+  }
+  return EMITFOLD;  /* No CSE possible. */
+}
+
+LJFOLD(CALLL CARG IRCALL_lj_buf_putstr_reverse)
+LJFOLD(CALLL CARG IRCALL_lj_buf_putstr_upper)
+LJFOLD(CALLL CARG IRCALL_lj_buf_putstr_lower)
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putquoted)
+LJFOLDF(bufput_kfold_op)
+{
+  if (irref_isk(fleft->op2)) {
+    const CCallInfo *ci = &lj_ir_callinfo[fins->op2];
+    SBuf *sb = lj_buf_tmp_(J->L);
+    sb = ((SBuf * (LJ_FASTCALL *)(SBuf *, GCstr *))ci->func)(sb,
+						       ir_kstr(IR(fleft->op2)));
+    fins->o = IR_BUFPUT;
+    fins->op1 = fleft->op1;
+    fins->op2 = lj_ir_kstr(J, lj_buf_tostr(sb));
+    return RETRYFOLD;
+  }
+  return EMITFOLD;  /* Always emit, CSE later. */
+}
+
+LJFOLD(CALLL CARG IRCALL_lj_buf_putstr_rep)
+LJFOLDF(bufput_kfold_rep)
+{
+  if (irref_isk(fleft->op2)) {
+    IRIns *irc = IR(fleft->op1);
+    if (irref_isk(irc->op2)) {
+      SBuf *sb = lj_buf_tmp_(J->L);
+      sb = lj_buf_putstr_rep(sb, ir_kstr(IR(irc->op2)), IR(fleft->op2)->i);
+      fins->o = IR_BUFPUT;
+      fins->op1 = irc->op1;
+      fins->op2 = lj_ir_kstr(J, lj_buf_tostr(sb));
+      return RETRYFOLD;
+    }
+  }
+  return EMITFOLD;  /* Always emit, CSE later. */
+}
+
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putfxint)
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putfnum_int)
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putfnum_uint)
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putfnum)
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putfstr)
+LJFOLD(CALLL CARG IRCALL_lj_strfmt_putfchar)
+LJFOLDF(bufput_kfold_fmt)
+{
+  IRIns *irc = IR(fleft->op1);
+  lua_assert(irref_isk(irc->op2));  /* SFormat must be const. */
+  if (irref_isk(fleft->op2)) {
+    SFormat sf = (SFormat)IR(irc->op2)->i;
+    IRIns *ira = IR(fleft->op2);
+    SBuf *sb = lj_buf_tmp_(J->L);
+    switch (fins->op2) {
+    case IRCALL_lj_strfmt_putfxint:
+      sb = lj_strfmt_putfxint(sb, sf, ir_k64(ira)->u64);
+      break;
+    case IRCALL_lj_strfmt_putfstr:
+      sb = lj_strfmt_putfstr(sb, sf, ir_kstr(ira));
+      break;
+    case IRCALL_lj_strfmt_putfchar:
+      sb = lj_strfmt_putfchar(sb, sf, ira->i);
+      break;
+    case IRCALL_lj_strfmt_putfnum_int:
+    case IRCALL_lj_strfmt_putfnum_uint:
+    case IRCALL_lj_strfmt_putfnum:
+    default: {
+      const CCallInfo *ci = &lj_ir_callinfo[fins->op2];
+      sb = ((SBuf * (*)(SBuf *, SFormat, lua_Number))ci->func)(sb, sf,
+							 ir_knum(ira)->n);
+      break;
+      }
+    }
+    fins->o = IR_BUFPUT;
+    fins->op1 = irc->op1;
+    fins->op2 = lj_ir_kstr(J, lj_buf_tostr(sb));
+    return RETRYFOLD;
+  }
+  return EMITFOLD;  /* Always emit, CSE later. */
 }
 
 /* -- Constant folding of pointer arithmetic ------------------------------ */
@@ -648,27 +826,22 @@ LJFOLD(CONV KNUM IRCONV_INT_NUM)
 LJFOLDF(kfold_conv_knum_int_num)
 {
   lua_Number n = knumleft;
-  if (!(fins->op2 & IRCONV_TRUNC)) {
-    int32_t k = lj_num2int(n);
-    if (irt_isguard(fins->t) && n != (lua_Number)k) {
-      /* We're about to create a guard which always fails, like CONV +1.5.
-      ** Some pathological loops cause this during LICM, e.g.:
-      **   local x,k,t = 0,1.5,{1,[1.5]=2}
-      **   for i=1,200 do x = x+ t[k]; k = k == 1 and 1.5 or 1 end
-      **   assert(x == 300)
-      */
-      return FAILFOLD;
-    }
-    return INTFOLD(k);
-  } else {
-    return INTFOLD((int32_t)n);
+  int32_t k = lj_num2int(n);
+  if (irt_isguard(fins->t) && n != (lua_Number)k) {
+    /* We're about to create a guard which always fails, like CONV +1.5.
+    ** Some pathological loops cause this during LICM, e.g.:
+    **   local x,k,t = 0,1.5,{1,[1.5]=2}
+    **   for i=1,200 do x = x+ t[k]; k = k == 1 and 1.5 or 1 end
+    **   assert(x == 300)
+    */
+    return FAILFOLD;
   }
+  return INTFOLD(k);
 }
 
 LJFOLD(CONV KNUM IRCONV_U32_NUM)
 LJFOLDF(kfold_conv_knum_u32_num)
 {
-  lua_assert((fins->op2 & IRCONV_TRUNC));
 #ifdef _MSC_VER
   {  /* Workaround for MSVC bug. */
     volatile uint32_t u = (uint32_t)knumleft;
@@ -682,27 +855,27 @@ LJFOLDF(kfold_conv_knum_u32_num)
 LJFOLD(CONV KNUM IRCONV_I64_NUM)
 LJFOLDF(kfold_conv_knum_i64_num)
 {
-  lua_assert((fins->op2 & IRCONV_TRUNC));
   return INT64FOLD((uint64_t)(int64_t)knumleft);
 }
 
 LJFOLD(CONV KNUM IRCONV_U64_NUM)
 LJFOLDF(kfold_conv_knum_u64_num)
 {
-  lua_assert((fins->op2 & IRCONV_TRUNC));
   return INT64FOLD(lj_num2u64(knumleft));
 }
 
-LJFOLD(TOSTR KNUM)
+LJFOLD(TOSTR KNUM any)
 LJFOLDF(kfold_tostr_knum)
 {
-  return lj_ir_kstr(J, lj_str_fromnum(J->L, &knumleft));
+  return lj_ir_kstr(J, lj_strfmt_num(J->L, ir_knum(fleft)));
 }
 
-LJFOLD(TOSTR KINT)
+LJFOLD(TOSTR KINT any)
 LJFOLDF(kfold_tostr_kint)
 {
-  return lj_ir_kstr(J, lj_str_fromint(J->L, fleft->i));
+  return lj_ir_kstr(J, fins->op2 == IRTOSTR_INT ?
+		       lj_strfmt_int(J->L, fleft->i) :
+		       lj_strfmt_char(J->L, fleft->i));
 }
 
 LJFOLD(STRTO KGC)
@@ -750,13 +923,13 @@ LJFOLDF(shortcut_round)
   return NEXTFOLD;
 }
 
-LJFOLD(ABS ABS KNUM)
+LJFOLD(ABS ABS FLOAD)
 LJFOLDF(shortcut_left)
 {
   return LEFTFOLD;  /* f(g(x)) ==> g(x) */
 }
 
-LJFOLD(ABS NEG KNUM)
+LJFOLD(ABS NEG FLOAD)
 LJFOLDF(shortcut_dropleft)
 {
   PHIBARRIER(fleft);
@@ -837,8 +1010,10 @@ LJFOLDF(simplify_nummuldiv_k)
   if (n == 1.0) {  /* x o 1 ==> x */
     return LEFTFOLD;
   } else if (n == -1.0) {  /* x o -1 ==> -x */
+    IRRef op1 = fins->op1;
+    fins->op2 = (IRRef1)lj_ir_ksimd(J, LJ_KSIMD_NEG);  /* Modifies fins. */
+    fins->op1 = op1;
     fins->o = IR_NEG;
-    fins->op2 = (IRRef1)lj_ir_knum_neg(J);
     return RETRYFOLD;
   } else if (fins->o == IR_MUL && n == 2.0) {  /* x * 2 ==> x + x */
     fins->o = IR_ADD;
@@ -1205,7 +1380,9 @@ static TRef simplify_intmul_k(jit_State *J, int32_t k)
   ** But this is mainly intended for simple address arithmetic.
   ** Also it's easier for the backend to optimize the original multiplies.
   */
-  if (k == 1) {  /* i * 1 ==> i */
+  if (k == 0) {  /* i * 0 ==> 0 */
+    return RIGHTFOLD;
+  } else if (k == 1) {  /* i * 1 ==> i */
     return LEFTFOLD;
   } else if ((k & (k-1)) == 0) {  /* i * 2^k ==> i << k */
     fins->o = IR_BSHL;
@@ -1218,9 +1395,7 @@ static TRef simplify_intmul_k(jit_State *J, int32_t k)
 LJFOLD(MUL any KINT)
 LJFOLDF(simplify_intmul_k32)
 {
-  if (fright->i == 0)  /* i * 0 ==> 0 */
-    return INTFOLD(0);
-  else if (fright->i > 0)
+  if (fright->i >= 0)
     return simplify_intmul_k(J, fright->i);
   return NEXTFOLD;
 }
@@ -1228,14 +1403,13 @@ LJFOLDF(simplify_intmul_k32)
 LJFOLD(MUL any KINT64)
 LJFOLDF(simplify_intmul_k64)
 {
-  if (ir_kint64(fright)->u64 == 0)  /* i * 0 ==> 0 */
-    return INT64FOLD(0);
-#if LJ_64
-  /* NYI: SPLIT for BSHL and 32 bit backend support. */
-  else if (ir_kint64(fright)->u64 < 0x80000000u)
+#if LJ_HASFFI
+  if (ir_kint64(fright)->u64 < 0x80000000u)
     return simplify_intmul_k(J, (int32_t)ir_kint64(fright)->u64);
-#endif
   return NEXTFOLD;
+#else
+  UNUSED(J); lua_assert(0); return FAILFOLD;
+#endif
 }
 
 LJFOLD(MOD any KINT)
@@ -1491,6 +1665,14 @@ LJFOLDF(simplify_shiftk_andk)
     fins->op2 = (IRRef1)lj_ir_kint(J, k);
     fins->ot = IRTI(IR_BAND);
     return RETRYFOLD;
+  } else if (irk->o == IR_KINT64) {
+    uint64_t k = kfold_int64arith(ir_k64(irk)->u64, fright->i, (IROp)fins->o);
+    IROpT ot = fleft->ot;
+    fins->op1 = fleft->op1;
+    fins->op1 = (IRRef1)lj_opt_fold(J);
+    fins->op2 = (IRRef1)lj_ir_kint64(J, k);
+    fins->ot = ot;
+    return RETRYFOLD;
   }
   return NEXTFOLD;
 }
@@ -1504,6 +1686,47 @@ LJFOLDF(simplify_andk_shiftk)
       kfold_intop(-1, irk->i, (IROp)fleft->o) == fright->i)
     return LEFTFOLD;  /* (i o k1) & k2 ==> i, if (-1 o k1) == k2 */
   return NEXTFOLD;
+}
+
+LJFOLD(BAND BOR KINT)
+LJFOLD(BOR BAND KINT)
+LJFOLDF(simplify_andor_k)
+{
+  IRIns *irk = IR(fleft->op2);
+  PHIBARRIER(fleft);
+  if (irk->o == IR_KINT) {
+    int32_t k = kfold_intop(irk->i, fright->i, (IROp)fins->o);
+    /* (i | k1) & k2 ==> i & k2, if (k1 & k2) == 0. */
+    /* (i & k1) | k2 ==> i | k2, if (k1 | k2) == -1. */
+    if (k == (fins->o == IR_BAND ? 0 : -1)) {
+      fins->op1 = fleft->op1;
+      return RETRYFOLD;
+    }
+  }
+  return NEXTFOLD;
+}
+
+LJFOLD(BAND BOR KINT64)
+LJFOLD(BOR BAND KINT64)
+LJFOLDF(simplify_andor_k64)
+{
+#if LJ_HASFFI
+  IRIns *irk = IR(fleft->op2);
+  PHIBARRIER(fleft);
+  if (irk->o == IR_KINT64) {
+    uint64_t k = kfold_int64arith(ir_k64(irk)->u64,
+				  ir_k64(fright)->u64, (IROp)fins->o);
+    /* (i | k1) & k2 ==> i & k2, if (k1 & k2) == 0. */
+    /* (i & k1) | k2 ==> i | k2, if (k1 | k2) == -1. */
+    if (k == (fins->o == IR_BAND ? (uint64_t)0 : ~(uint64_t)0)) {
+      fins->op1 = fleft->op1;
+      return RETRYFOLD;
+    }
+  }
+  return NEXTFOLD;
+#else
+  UNUSED(J); lua_assert(0); return FAILFOLD;
+#endif
 }
 
 /* -- Reassociation ------------------------------------------------------- */
@@ -1535,7 +1758,7 @@ LJFOLD(BOR BOR KINT64)
 LJFOLD(BXOR BXOR KINT64)
 LJFOLDF(reassoc_intarith_k64)
 {
-#if LJ_HASFFI || LJ_64
+#if LJ_HASFFI
   IRIns *irk = IR(fleft->op2);
   if (irk->o == IR_KINT64) {
     uint64_t k = kfold_int64arith(ir_k64(irk)->u64,
@@ -1953,6 +2176,7 @@ LJFOLDF(fwd_href_tdup)
 ** an aliased table, as it may invalidate all of the pointers and fields.
 ** Only HREF needs the NEWREF check -- AREF and HREFK already depend on
 ** FLOADs. And NEWREF itself is treated like a store (see below).
+** LREF is constant (per trace) since coroutine switches are not inlined.
 */
 LJFOLD(FLOAD TNEW IRFL_TAB_ASIZE)
 LJFOLDF(fload_tab_tnew_asize)
@@ -2016,6 +2240,14 @@ LJFOLDF(fload_str_len_snew)
   return NEXTFOLD;
 }
 
+LJFOLD(FLOAD TOSTR IRFL_STR_LEN)
+LJFOLDF(fload_str_len_tostr)
+{
+  if (LJ_LIKELY(J->flags & JIT_F_OPT_FOLD) && fleft->op2 == IRTOSTR_CHAR)
+    return INTFOLD(1);
+  return NEXTFOLD;
+}
+
 /* The C type ID of cdata objects is immutable. */
 LJFOLD(FLOAD KGC IRFL_CDATA_CTYPEID)
 LJFOLDF(fload_cdata_typeid_kgc)
@@ -2062,6 +2294,8 @@ LJFOLDF(fload_cdata_ptr_int64_cnew)
 }
 
 LJFOLD(FLOAD any IRFL_STR_LEN)
+LJFOLD(FLOAD any IRFL_FUNC_ENV)
+LJFOLD(FLOAD any IRFL_THREAD_ENV)
 LJFOLD(FLOAD any IRFL_CDATA_CTYPEID)
 LJFOLD(FLOAD any IRFL_CDATA_PTR)
 LJFOLD(FLOAD any IRFL_CDATA_INT)
@@ -2127,6 +2361,17 @@ LJFOLDF(barrier_tnew_tdup)
   return DROPFOLD;
 }
 
+/* -- Profiling ----------------------------------------------------------- */
+
+LJFOLD(PROF any any)
+LJFOLDF(prof)
+{
+  IRRef ref = J->chain[IR_PROF];
+  if (ref+1 == J->cur.nins)  /* Drop neighbouring IR_PROF. */
+    return ref;
+  return EMITFOLD;
+}
+
 /* -- Stores and allocations ---------------------------------------------- */
 
 /* Stores and allocations cannot be folded or passed on to CSE in general.
@@ -2149,8 +2394,9 @@ LJFOLD(XSTORE any any)
 LJFOLDX(lj_opt_dse_xstore)
 
 LJFOLD(NEWREF any any)  /* Treated like a store. */
-LJFOLD(CALLS any any)
+LJFOLD(CALLA any any)
 LJFOLD(CALLL any any)  /* Safeguard fallback. */
+LJFOLD(CALLS any any)
 LJFOLD(CALLXS any any)
 LJFOLD(XBAR)
 LJFOLD(RETF any any)  /* Modifies BASE. */
@@ -2158,6 +2404,7 @@ LJFOLD(TNEW any any)
 LJFOLD(TDUP any)
 LJFOLD(CNEW any any)
 LJFOLD(XSNEW any any)
+LJFOLD(BUFHDR any any)
 LJFOLDX(lj_ir_emit)
 
 /* ------------------------------------------------------------------------ */
@@ -2209,10 +2456,14 @@ retry:
   if (fins->op1 >= J->cur.nk) {
     key += (uint32_t)IR(fins->op1)->o << 10;
     *fleft = *IR(fins->op1);
+    if (fins->op1 < REF_TRUE)
+      fleft[1] = IR(fins->op1)[1];
   }
   if (fins->op2 >= J->cur.nk) {
     key += (uint32_t)IR(fins->op2)->o;
     *fright = *IR(fins->op2);
+    if (fins->op2 < REF_TRUE)
+      fright[1] = IR(fins->op2)[1];
   } else {
     key += (fins->op2 & 0x3ffu);  /* Literal mask. Must include IRCONV_*MASK. */
   }

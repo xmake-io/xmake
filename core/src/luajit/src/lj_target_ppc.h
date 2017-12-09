@@ -1,6 +1,6 @@
 /*
 ** Definitions for PPC CPUs.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_TARGET_PPC_H
@@ -104,7 +104,7 @@ enum {
 /* This definition must match with the *.dasc file(s). */
 typedef struct {
   lua_Number fpr[RID_NUM_FPR];	/* Floating-point registers. */
-  int32_t gpr[RID_NUM_GPR];	/* General-purpose registers. */
+  intptr_t gpr[RID_NUM_GPR];	/* General-purpose registers. */
   int32_t spill[256];		/* Spill slots. */
 } ExitState;
 

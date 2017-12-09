@@ -1,6 +1,6 @@
 /*
 ** Common header for IR emitter and optimizations.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef _LJ_IROPT_H
@@ -36,11 +36,11 @@ static LJ_AINLINE IRRef lj_ir_nextins(jit_State *J)
   return ref;
 }
 
+LJ_FUNC TRef lj_ir_ggfload(jit_State *J, IRType t, uintptr_t ofs);
+
 /* Interning of constants. */
 LJ_FUNC TRef LJ_FASTCALL lj_ir_kint(jit_State *J, int32_t k);
-LJ_FUNC void lj_ir_k64_freeall(jit_State *J);
-LJ_FUNC TRef lj_ir_k64(jit_State *J, IROp op, cTValue *tv);
-LJ_FUNC cTValue *lj_ir_k64_find(jit_State *J, uint64_t u64);
+LJ_FUNC TRef lj_ir_k64(jit_State *J, IROp op, uint64_t u64);
 LJ_FUNC TRef lj_ir_knum_u64(jit_State *J, uint64_t u64);
 LJ_FUNC TRef lj_ir_knumint(jit_State *J, lua_Number n);
 LJ_FUNC TRef lj_ir_kint64(jit_State *J, uint64_t u64);
@@ -48,6 +48,7 @@ LJ_FUNC TRef lj_ir_kgc(jit_State *J, GCobj *o, IRType t);
 LJ_FUNC TRef lj_ir_kptr_(jit_State *J, IROp op, void *ptr);
 LJ_FUNC TRef lj_ir_knull(jit_State *J, IRType t);
 LJ_FUNC TRef lj_ir_kslot(jit_State *J, TRef key, IRRef slot);
+LJ_FUNC TRef lj_ir_ktrace(jit_State *J);
 
 #if LJ_64
 #define lj_ir_kintp(J, k)	lj_ir_kint64(J, (uint64_t)(k))
@@ -74,8 +75,8 @@ static LJ_AINLINE TRef lj_ir_knum(jit_State *J, lua_Number n)
 #define lj_ir_knum_tobit(J)	lj_ir_knum_u64(J, U64x(43380000,00000000))
 
 /* Special 128 bit SIMD constants. */
-#define lj_ir_knum_abs(J)	lj_ir_k64(J, IR_KNUM, LJ_KSIMD(J, LJ_KSIMD_ABS))
-#define lj_ir_knum_neg(J)	lj_ir_k64(J, IR_KNUM, LJ_KSIMD(J, LJ_KSIMD_NEG))
+#define lj_ir_ksimd(J, idx) \
+  lj_ir_ggfload(J, IRT_NUM, (uintptr_t)LJ_KSIMD(J, idx) - (uintptr_t)J2GG(J))
 
 /* Access to constants. */
 LJ_FUNC void lj_ir_kvalue(lua_State *L, TValue *tv, const IRIns *ir);
@@ -142,8 +143,8 @@ LJ_FUNC TRef LJ_FASTCALL lj_opt_narrow_cindex(jit_State *J, TRef key);
 LJ_FUNC TRef lj_opt_narrow_arith(jit_State *J, TRef rb, TRef rc,
 				 TValue *vb, TValue *vc, IROp op);
 LJ_FUNC TRef lj_opt_narrow_unm(jit_State *J, TRef rc, TValue *vc);
-LJ_FUNC TRef lj_opt_narrow_mod(jit_State *J, TRef rb, TRef rc, TValue *vc);
-LJ_FUNC TRef lj_opt_narrow_pow(jit_State *J, TRef rb, TRef rc, TValue *vc);
+LJ_FUNC TRef lj_opt_narrow_mod(jit_State *J, TRef rb, TRef rc, TValue *vb, TValue *vc);
+LJ_FUNC TRef lj_opt_narrow_pow(jit_State *J, TRef rb, TRef rc, TValue *vb, TValue *vc);
 LJ_FUNC IRType lj_opt_narrow_forl(jit_State *J, cTValue *forbase);
 
 /* Optimization passes. */

@@ -1,6 +1,6 @@
 /*
 ** Auxiliary library for the Lua/C API.
-** Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2017 Mike Pall. See Copyright Notice in luajit.h
 **
 ** Major parts taken verbatim or adapted from the Lua interpreter.
 ** Copyright (C) 1994-2008 Lua.org, PUC-Rio. See Copyright Notice in lua.h
@@ -107,8 +107,22 @@ LUALIB_API const char *luaL_findtable(lua_State *L, int idx,
 static int libsize(const luaL_Reg *l)
 {
   int size = 0;
-  for (; l->name; l++) size++;
+  for (; l && l->name; l++) size++;
   return size;
+}
+
+LUALIB_API void luaL_pushmodule(lua_State *L, const char *modname, int sizehint)
+{
+  luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 16);
+  lua_getfield(L, -1, modname);
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    if (luaL_findtable(L, LUA_GLOBALSINDEX, modname, sizehint) != NULL)
+      lj_err_callerv(L, LJ_ERR_BADMODN, modname);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -3, modname);  /* _LOADED[modname] = new table. */
+  }
+  lua_remove(L, -2);  /* Remove _LOADED table. */
 }
 
 LUALIB_API void luaL_openlib(lua_State *L, const char *libname,
@@ -116,35 +130,32 @@ LUALIB_API void luaL_openlib(lua_State *L, const char *libname,
 {
   lj_lib_checkfpu(L);
   if (libname) {
-    int size = libsize(l);
-    /* check whether lib already exists */
-    luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 16);
-    lua_getfield(L, -1, libname);  /* get _LOADED[libname] */
-    if (!lua_istable(L, -1)) {  /* not found? */
-      lua_pop(L, 1);  /* remove previous result */
-      /* try global variable (and create one if it does not exist) */
-      if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
-	lj_err_callerv(L, LJ_ERR_BADMODN, libname);
-      lua_pushvalue(L, -1);
-      lua_setfield(L, -3, libname);  /* _LOADED[libname] = new table */
-    }
-    lua_remove(L, -2);  /* remove _LOADED table */
-    lua_insert(L, -(nup+1));  /* move library table to below upvalues */
+    luaL_pushmodule(L, libname, libsize(l));
+    lua_insert(L, -(nup + 1));  /* Move module table below upvalues. */
   }
-  for (; l->name; l++) {
-    int i;
-    for (i = 0; i < nup; i++)  /* copy upvalues to the top */
-      lua_pushvalue(L, -nup);
-    lua_pushcclosure(L, l->func, nup);
-    lua_setfield(L, -(nup+2), l->name);
-  }
-  lua_pop(L, nup);  /* remove upvalues */
+  if (l)
+    luaL_setfuncs(L, l, nup);
+  else
+    lua_pop(L, nup);  /* Remove upvalues. */
 }
 
 LUALIB_API void luaL_register(lua_State *L, const char *libname,
 			      const luaL_Reg *l)
 {
   luaL_openlib(L, libname, l, 0);
+}
+
+LUALIB_API void luaL_setfuncs(lua_State *L, const luaL_Reg *l, int nup)
+{
+  luaL_checkstack(L, nup, "too many upvalues");
+  for (; l->name; l++) {
+    int i;
+    for (i = 0; i < nup; i++)  /* Copy upvalues to the top. */
+      lua_pushvalue(L, -nup);
+    lua_pushcclosure(L, l->func, nup);
+    lua_setfield(L, -(nup + 2), l->name);
+  }
+  lua_pop(L, nup);  /* Remove upvalues. */
 }
 
 LUALIB_API const char *luaL_gsub(lua_State *L, const char *s,
@@ -302,7 +313,7 @@ static int panic(lua_State *L)
 
 #ifdef LUAJIT_USE_SYSMALLOC
 
-#if LJ_64 && !defined(LUAJIT_USE_VALGRIND)
+#if LJ_64 && !LJ_GC64 && !defined(LUAJIT_USE_VALGRIND)
 #error "Must use builtin allocator for 64 bit target"
 #endif
 
@@ -334,7 +345,7 @@ LUALIB_API lua_State *luaL_newstate(void)
   lua_State *L;
   void *ud = lj_alloc_create();
   if (ud == NULL) return NULL;
-#if LJ_64
+#if LJ_64 && !LJ_GC64
   L = lj_state_newstate(lj_alloc_f, ud);
 #else
   L = lua_newstate(lj_alloc_f, ud);
@@ -343,7 +354,7 @@ LUALIB_API lua_State *luaL_newstate(void)
   return L;
 }
 
-#if LJ_64
+#if LJ_64 && !LJ_GC64
 LUA_API lua_State *lua_newstate(lua_Alloc f, void *ud)
 {
   UNUSED(f); UNUSED(ud);
