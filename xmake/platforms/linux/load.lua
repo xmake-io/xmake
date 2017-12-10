@@ -48,7 +48,6 @@ function main()
     if arch then
         if arch == "x86_64" then archflags = "-m64"
         elseif arch == "i386" then archflags = "-m32"
-        else archflags = "-arch " .. arch
         end
     end
 

@@ -112,9 +112,12 @@
 #       define TB_ARCH_ARM_VERSION          __ARM_ARCH
 #       if __ARM_ARCH >= 8
 #           define TB_ARCH_ARM_v8
-#           if defined(__arm64) || defined(__arm64__)
+#           if defined(__arm64) || defined(__arm64__) 
 #               define TB_ARCH_ARM64
 #               define TB_ARCH_STRING       "arm64"
+#           elif (defined(__aarch64__) && __aarch64__)
+#               define TB_ARCH_ARM64
+#               define TB_ARCH_STRING       "arm64-v8a"
 #           else
 #               define TB_ARCH_STRING       "armv7s"
 #           endif
@@ -135,7 +138,7 @@
 #   else 
 #       error unknown arm arch version
 #   endif
-#   if !defined(TB_ARCH_ARM64) && (defined(__arm64) || defined(__arm64__))
+#   if !defined(TB_ARCH_ARM64) && (defined(__arm64) || defined(__arm64__) || (defined(__aarch64__) && __aarch64__))
 #       define TB_ARCH_ARM64
 #       ifndef TB_ARCH_STRING
 #           define TB_ARCH_STRING           "arm64"
