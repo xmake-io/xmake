@@ -37,7 +37,7 @@ target("luajit")
     if is_plat("windows") then
         add_files(autogendir .. "/lj_vm.obj")
     else
-        add_files(autogendir .. "/*.s")
+        add_files(autogendir .. "/*.S")
     end
 
     -- disable jit compiler?

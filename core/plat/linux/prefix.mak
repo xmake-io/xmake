@@ -13,7 +13,7 @@ LIB_SUFFIX			= .a
 DLL_PREFIX			= lib
 DLL_SUFFIX			= .so
 
-ASM_SUFFIX			= .s
+ASM_SUFFIX			= .S
 
 # prefix
 PRE_				:= $(if $(BIN),$(BIN)/$(PRE),)

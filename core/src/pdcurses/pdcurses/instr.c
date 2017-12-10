@@ -74,7 +74,7 @@ int winnstr(WINDOW *win, char *str, int n)
     if (winnwstr(win, wstr, n) == ERR)
         return ERR;
 
-    return PDC_wcstombs(str, wstr, n);
+    return (int)PDC_wcstombs(str, wstr, n);
 #else
     chtype *src;
     int i;

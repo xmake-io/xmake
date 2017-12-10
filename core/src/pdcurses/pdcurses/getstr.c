@@ -80,7 +80,7 @@ int wgetnstr(WINDOW *win, char *str, int n)
     if (wgetn_wstr(win, (wint_t *)wstr, n) == ERR)
         return ERR;
 
-    return PDC_wcstombs(str, wstr, n);
+    return (int)PDC_wcstombs(str, wstr, n);
 #else
     int ch, i, num, x, chars;
     char *p;

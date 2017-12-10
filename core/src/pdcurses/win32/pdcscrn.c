@@ -11,6 +11,10 @@
 # define PDC_OFFSET  8
 #endif
 
+#ifdef _WIN32
+#pragma warning(disable: 4996)
+#endif
+
 /* COLOR_PAIR to attribute encoding table. */
 
 unsigned char *pdc_atrtab = (unsigned char *)NULL;

@@ -81,7 +81,7 @@ int winsnstr(WINDOW *win, const char *str, int n)
     if (!win || !str)
         return ERR;
 
-    len = strlen(str);
+    len = (int)strlen(str);
 
     if (n < 0 || n < len)
         n = len;

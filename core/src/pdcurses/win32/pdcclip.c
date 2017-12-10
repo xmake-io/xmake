@@ -69,7 +69,7 @@ int PDC_getclipboard(char **contents, long *length)
     }
 
 #ifdef PDC_WIDE
-    len = wcslen((wchar_t *)handle) * 3;
+    len = (long)wcslen((wchar_t *)handle) * 3;
 #else
     len = strlen((char *)handle);
 #endif
@@ -82,7 +82,7 @@ int PDC_getclipboard(char **contents, long *length)
     }
 
 #ifdef PDC_WIDE
-    len = PDC_wcstombs((char *)*contents, (wchar_t *)handle, len);
+    len = (long)PDC_wcstombs((char *)*contents, (wchar_t *)handle, len);
 #else
     strcpy((char *)*contents, (char *)handle);
 #endif

@@ -402,7 +402,7 @@ static int chstr_set_str(lua_State *L)
     chstr *cs = lc_checkchstr(L, 1);
     int index = luaL_checkint(L, 2);
     const char *str = luaL_checkstring(L, 3);
-    int len = lua_strlen(L, 3);
+    int len = (int)lua_strlen(L, 3);
     int attr = (chtype)luaL_optnumber(L, 4, A_NORMAL);
     int rep = luaL_optint(L, 5, 1);
     int i;
@@ -1354,7 +1354,7 @@ static int lcw_waddnstr(lua_State *L)
     const char *str = luaL_checkstring(L, 2);
     int n = luaL_optint(L, 3, -1);
 
-    if (n < 0) n = lua_strlen(L, 2);
+    if (n < 0) n = (int)lua_strlen(L, 2);
 
     lua_pushboolean(L, B(waddnstr(w, str, n)));
     return 1;
@@ -1368,7 +1368,7 @@ static int lcw_mvwaddnstr(lua_State *L)
     const char *str = luaL_checkstring(L, 4);
     int n = luaL_optint(L, 5, -1);
 
-    if (n < 0) n = lua_strlen(L, 4);
+    if (n < 0) n = (int)lua_strlen(L, 4);
 
     lua_pushboolean(L, B(mvwaddnstr(w, y, x, str, n)));
     return 1;
@@ -1874,7 +1874,7 @@ static int lcw_winsstr(lua_State *L)
 {
     WINDOW *w = lcw_check(L, 1);
     const char *str = luaL_checkstring(L, 2);
-    lua_pushboolean(L, B(winsnstr(w, str, lua_strlen(L, 2))));
+    lua_pushboolean(L, B(winsnstr(w, str, (int)lua_strlen(L, 2))));
     return 1;
 }
 
@@ -1884,7 +1884,7 @@ static int lcw_mvwinsstr(lua_State *L)
     int y = luaL_checkint(L, 2);
     int x = luaL_checkint(L, 3);
     const char *str = luaL_checkstring(L, 4);
-    lua_pushboolean(L, B(mvwinsnstr(w, y, x, str, lua_strlen(L, 2))));
+    lua_pushboolean(L, B(mvwinsnstr(w, y, x, str, (int)lua_strlen(L, 2))));
     return 1;
 }
 
