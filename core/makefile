@@ -170,6 +170,7 @@ ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
 ifeq ($(PLAT),linux)
 ARCHSTR 	:= $(shell uname -m)
 ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
+ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
 endif
