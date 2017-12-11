@@ -6,6 +6,8 @@
 
 * Improve to search the root project directory
 * Improve to detect vs environment
+* Upgrade luajit to 2.1.0-beta3
+* Support to run xmake on linux (arm, arm64)
 
 ## v2.1.9
 
@@ -422,6 +424,8 @@
 
 * 改进搜索工程根目录策略
 * 改进vs环境探测，支持加密文件系统下vs环境的探测
+* 升级luajit到最新2.1.0-beta3
+* 增加对linux/arm, arm64的支持，可以在arm linux上运行xmake
 
 ## v2.1.9
 
