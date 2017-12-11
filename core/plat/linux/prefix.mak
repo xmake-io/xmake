@@ -109,7 +109,7 @@ endif
 # asflags
 ASFLAGS_RELEASE		= 
 ASFLAGS_DEBUG		= 
-ASFLAGS				= -c -fPIC $(AHFLAGS)
+ASFLAGS				= -c $(AHFLAGS)
 ASFLAGS-I			= -I
 ASFLAGS-o			= -o
 
