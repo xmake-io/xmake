@@ -49,7 +49,7 @@ function main(opt)
     -- get xcode directory
     local xcode_sdkvers = {}
     local xcode_dir = opt.xcode_dir or find_xcode_dir() 
-    if not os.isdir(xcode_dir) then
+    if not xcode_dir or not os.isdir(xcode_dir) then
         return xcode_sdkvers
     end
 
