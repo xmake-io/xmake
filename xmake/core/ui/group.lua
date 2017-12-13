@@ -30,18 +30,41 @@ $Id: group.lua 18 2007-06-21 20:43:52Z tngd $
 -- load modules
 local view   = require("ui/view")
 local curses = require("ui/curses")
+local dlist  = require("base/dlist")
 
 -- define module
 local group = group or view()
 
 -- init group
-function group:init(bounds)
-    view.init(self, bounds)
+function group:init(name, bounds)
+
+    -- init view
+    view.init(self, name, bounds)
+
+    -- init child views
+    self._VIEWS = dlist()
 end
 
 -- exit group
 function group:exit()
+
+    -- exit view
     view.exit(self)
+end
+
+-- get all child views
+function group:views()
+    return self._VIEWS
+end
+
+-- insert view
+function group:insert(v)
+    self:views():push(v)
+end
+
+-- remove view
+function group:remove(v)
+    self:views():remove(v)
 end
 
 -- execute group

@@ -122,9 +122,9 @@ end
 -- tostring(r)
 function rect:__tostring()
     if self:empty() then
-        return '[empty]'
+        return '[]'
     end
-    return '[(' .. self.sx .. ',' .. self.sy .. '),(' .. self.ex .. ',' .. self.ey .. ')]'
+    return string.format("[%d, %d, %d, %d]", self.sx, self.sy, self.ex, self.ey)
 end
 
 -- r1 .. r2

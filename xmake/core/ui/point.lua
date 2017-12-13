@@ -86,7 +86,7 @@ end
 
 -- tostring(p)
 function point:__tostring()
-    return '(' .. self.x .. ',' .. self.y .. ')'
+    return '(' .. self.x .. ', ' .. self.y .. ')'
 end
 
 -- p1 .. p2

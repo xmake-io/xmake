@@ -36,23 +36,23 @@ local curses = require("ui/curses")
 local view = view or object()
 
 -- new view instance
-function view:new(bounds)
+function view:new(name, bounds)
 
     -- create instance
     self = self()
 
     -- init view
-    self:init(bounds)
+    self:init(name, bounds)
 
     -- done
     return self
 end
 
 -- init view
-function view:init(bounds)
+function view:init(name, bounds)
 
     -- check
-    assert(type(bounds) == 'table')
+    assert(name and type(bounds) == 'table')
 
     -- init state
     local state          = object()
@@ -64,6 +64,9 @@ function view:init(bounds)
     state.disabled       = false     -- view disabled
     state.modal          = false     -- is modal view?
     self._STATE          = state
+
+    -- init name
+    self._NAME = name
 
     -- init bounds and window
     self:bounds_set(bounds)
@@ -77,6 +80,11 @@ function view:exit()
         self._window:close()
         self._window = nil
     end
+end
+
+-- get view name
+function view:name()
+    return self._NAME
 end
 
 -- set window bounds
@@ -179,6 +187,11 @@ function view:state_set(name, enable)
     if name == "visible" then
         self:redraw(true)
     end
+end
+
+-- tostring(view)
+function view:__tostring()
+    return string.format("<view: %s %s>", self:name(), tostring(self:bounds()))
 end
 
 -- return module

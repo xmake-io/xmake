@@ -27,5 +27,5 @@ import("core.ui.application")
 
 -- main entry
 function main(...)
-    application.run(...)
+    application.run("hello", ...)
 end

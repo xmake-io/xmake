@@ -29,6 +29,7 @@ $Id: application.lua 18 2007-06-21 20:43:52Z tngd $
 
 -- load modules
 local os        = require("base/os")
+local log       = require("ui/log")
 local curses    = require("ui/curses")
 local program   = require("ui/program")
 
@@ -36,10 +37,20 @@ local program   = require("ui/program")
 local application = application or program()
 
 -- init application
-function application:init()
+function application:init(name)
+
+    -- init log
+    log:clear()
+--    log:enable(false)
+
+    -- trace
+    log:print("<application: %s>: init ..", name)
 
     -- init program
-    program.init(self)
+    program.init(self, name)
+
+    -- trace
+    log:print("<application: %s>: init ok", name)
 end
 
 -- exit application
@@ -47,19 +58,22 @@ function application:exit()
 
     -- exit program
     program.exit(self)
+
+    -- flush log
+    log:flush()
 end
 
 -- run application 
-function application.run(...)
+function application.run(name, ...)
 
     -- init runner
     local argv = {...}
     local runner = function ()
 
         -- new an application
-        local app = application:new()
+        local app = application:new(name)
         if app then
-            app:run(argv)
+            app:loop(argv)
             app:exit()
         end
     end
@@ -72,6 +86,7 @@ function application.run(...)
         if not curses.isdone() then
             curses.done()
         end
+        log:flush()
         os.raise(errors)
     end
 end

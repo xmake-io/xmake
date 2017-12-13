@@ -36,7 +36,7 @@ local curses = require("ui/curses")
 local program = program or group()
 
 -- init program
-function program:init()
+function program:init(name)
 
     -- init main window
     local main_window = self:main_window()
@@ -76,7 +76,7 @@ function program:init()
     main_window:meta(true)
 
     -- init group
-    group.init(self, rect {0, 0, curses.columns(), curses.lines()})
+    group.init(self, name, rect {0, 0, curses.columns(), curses.lines()})
 end
 
 -- exit program
@@ -118,8 +118,8 @@ function program:argv()
     return self._ARGV
 end
 
--- run program
-function program:run(argv)
+-- run program loop
+function program:loop(argv)
 
     -- save the current arguments
     self._ARGV = argv

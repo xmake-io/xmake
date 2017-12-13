@@ -28,6 +28,11 @@ local log = log or {}
 -- get the log file
 function log:file()
 
+    -- disable?
+    if self._ENABLE ~= nil and not self._ENABLE then
+        return 
+    end
+
     -- get the output file 
     if self._FILE == nil then
         local outputfile = self:outputfile()
@@ -63,9 +68,21 @@ function log:outputfile()
     return self._LOGFILE
 end
 
+-- clear log
+function log:clear(state)
+    if os.isfile(self:outputfile()) then
+        io.writefile(self:outputfile(), "")
+    end
+end
+
+-- enable log
+function log:enable(state)
+    self._ENABLE = state
+end
+
 -- flush log to file
 function log:flush()
-    local file = log:file()
+    local file = self:file()
     if file then
         io.flush(file)
     end
@@ -73,7 +90,7 @@ end
 
 -- close the log file
 function log:close()
-    local file = log:file()
+    local file = self:file()
     if file then
         file:close()
     end
@@ -81,7 +98,7 @@ end
 
 -- print log to the log file
 function log:print(...)
-    local file = log:file()
+    local file = self:file()
     if file then
         file:write(string.format(...) .. "\n")
     end
@@ -89,7 +106,7 @@ end
 
 -- print variables to the log file
 function log:printv(...)
-    local file = log:file()
+    local file = self:file()
     if file then
         local values = {...}
         for i, v in ipairs(values) do
