@@ -63,8 +63,6 @@ function program:init()
         curses.start_color() 
     end
 
---    init_keymap()
-
     -- disable main window cursor
     main_window:leaveok(false)
 
@@ -79,11 +77,6 @@ function program:init()
 
     -- init group
     group.init(self, rect {0, 0, curses.columns(), curses.lines()})
-
-    --[[
-    self:set_state('selected', true)
-    self:set_state('focused', true)
-    ]]
 end
 
 -- exit program

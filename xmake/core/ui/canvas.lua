@@ -111,37 +111,5 @@ function canvas:attr(attrs, modify)
     return self
 end
 
---[[
-function canvas:line(length)
-    return Line:create(length)
-end
-
-
-function Line:create(length)
-    self = self()
-    self._length = length
-    self._line = curses.new_chstr(length)
-    return self
-end
-
-function Line:__len()
-    return self._length
-end
-
-function Line:ch(offset, char, attrs, length)
-    self._line:set_ch(offset, char, attrs and calc_attr(attrs), length)
-    return self
-end
-
-function Line:acs(offset, char, attrs, length)
-    return self:ch(offset, acs(char), attrs, length)
-end
-
-function Line:str(offset, str, attrs, rep)
-    self._line:set_str(offset, str, calc_attr(attrs), rep)
-    return self
-end
-]]
-
 -- return module
 return canvas
