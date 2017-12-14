@@ -72,6 +72,11 @@ function rect:grow(dx, dy)
     return self
 end
 
+-- is intersect?
+function rect:is_intersect(r)
+    return not self():intersect(r):empty()
+end
+
 -- set rect with shared area between this rect and a given rect
 function rect:intersect(r)
     self.sx = math.max(self.sx, r.sx)

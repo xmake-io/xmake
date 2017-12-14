@@ -65,6 +65,17 @@ function view:init(name, bounds)
     state.modal          = false     -- is modal view?
     self._STATE          = state
 
+    -- init options
+    local options        = object()
+    options.selectable   = false     -- true if window can be selected
+    options.top_select   = false     -- if true, selecting window will bring it to front
+    options.pre_event    = false     -- receive event before focused window
+    options.post_event   = false     -- receive event after focused window
+    options.centerx      = false     -- center horizontaly when inserting in parent
+    options.centery      = false     -- center verticaly when inserting in parent
+    options.validate     = false     -- validate
+    self._OPTIONS        = options
+
     -- init name
     self._NAME = name
 
@@ -132,6 +143,11 @@ function view:parent()
     return self._PARENT
 end
 
+-- set the parent view
+function view:parent_set(parent)
+    self._PARENT = parent
+end
+
 -- get the view window
 function view:window()
     return self._WINDOW
@@ -145,14 +161,14 @@ function view:canvas()
     return self._CANVAS
 end
 
--- on draw window
-function view:on_draw()
+-- draw view
+function view:draw()
     self:canvas():clear()
 end
 
 -- refresh view in parent window
 function view:refresh()
-    self:on_draw()
+    self:draw()
     self:redraw(true)
 end
 
@@ -164,7 +180,7 @@ function view:redraw(on_parent)
         self:lock()
         local v = self
         while v:parent() do
-            v:parent():draw_child(v)
+            v:parent():_draw_overlap(v)
             v = v:parent()
         end
         self:unlock()
@@ -207,6 +223,24 @@ function view:state_set(name, enable)
     if name == "visible" then
         self:redraw(true)
     end
+end
+
+-- get option
+function view:option(name)
+    return self._OPTIONS[name]
+end
+
+-- set option
+function view:option_set(name, enable)
+
+    -- state is not changed?
+    enable = enable or false
+    if self:option(name) == enable then
+        return 
+    end
+
+    -- set option
+    self._OPTIONS[name] = enable
 end
 
 -- tostring(view)
