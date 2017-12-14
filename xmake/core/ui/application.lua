@@ -30,8 +30,12 @@ $Id: application.lua 18 2007-06-21 20:43:52Z tngd $
 -- load modules
 local os        = require("base/os")
 local log       = require("ui/log")
+local rect      = require("ui/rect")
 local curses    = require("ui/curses")
 local program   = require("ui/program")
+local desktop   = require("ui/desktop")
+local menubar   = require("ui/menubar")
+local statusbar = require("ui/statusbar")
 
 -- define module
 local application = application or program()
@@ -49,6 +53,11 @@ function application:init(name)
     -- init program
     program.init(self, name)
 
+    -- add menubar, statusbar and desktop
+    self:insert(self:statusbar())
+    self:insert(self:menubar())
+    self:insert(self:desktop())
+
     -- trace
     log:print("<application: %s>: init ok", name)
 end
@@ -61,6 +70,30 @@ function application:exit()
 
     -- flush log
     log:flush()
+end
+
+-- get menubar 
+function application:menubar()
+    if not self._MENUBAR then
+        self._MENUBAR = menubar:new("menubar", rect{0, 0, self:width(), 1})
+    end
+    return self._MENUBAR
+end
+
+-- get desktop
+function application:desktop()
+    if not self._DESKTOP then
+        self._DESKTOP = desktop:new("desktop", rect{0, 1, self:width(), self:height() - 1})
+    end
+    return self._DESKTOP
+end
+
+-- get statusbar
+function application:statusbar()
+    if not self._STATUSBAR then
+        return statusbar:new("statusbar", rect{0, self:height() - 1, self:width(), self:height()})
+    end
+    return self._STATUSBAR
 end
 
 -- run application 

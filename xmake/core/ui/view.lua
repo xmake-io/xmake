@@ -76,9 +76,9 @@ end
 function view:exit()
 
     -- close window
-    if self._window then
-        self._window:close()
-        self._window = nil
+    if self:window() then
+        self:window():close()
+        self._WINDOW = nil
     end
 end
 
@@ -91,25 +91,40 @@ end
 function view:bounds_set(bounds)
 
     -- close the previous windows first
-    if self._window then
-        self._window:close()
+    if self:window() then
+        self:window():close()
     end
 
-    -- init bounds
-    self._bounds = bounds()
+    -- init size and bounds
+    self._SIZE = bounds:size()
+    self._BOUNDS = bounds()
 
     -- create a new window
-    local size = bounds:size()
-    self._window = curses.new_pad(size.y > 0 and size.y or 1, size.x > 0 and size.x or 1)
-    assert(self._window, "cannot create window!")
+    self._WINDOW = curses.new_pad(self:height() > 0 and self:height() or 1, self:width() > 0 and self:width() or 1)
+    assert(self._WINDOW, "cannot create window!")
 
     -- disable cursor
-    self._window:leaveok(true)
+    self:window():leaveok(true)
 end
 
--- get window bounds
+-- get view width
+function view:width()
+    return self._SIZE.x
+end
+
+-- get view height
+function view:height()
+    return self._SIZE.y
+end
+
+-- get view size
+function view:size()
+    return self._SIZE
+end
+
+-- get view bounds
 function view:bounds()
-    return self._bounds()
+    return self._BOUNDS
 end
 
 -- get the parent view
@@ -117,10 +132,15 @@ function view:parent()
     return self._PARENT
 end
 
+-- get the view window
+function view:window()
+    return self._WINDOW
+end
+
 -- get the view canvas
 function view:canvas()
     if not self._CANVAS then
-        self._CANVAS = canvas:new(self, self._window)
+        self._CANVAS = canvas:new(self, self:window())
     end
     return self._CANVAS
 end
@@ -191,7 +211,7 @@ end
 
 -- tostring(view)
 function view:__tostring()
-    return string.format("<view: %s %s>", self:name(), tostring(self:bounds()))
+    return string.format("<%s %s>", self:name(), tostring(self:bounds()))
 end
 
 -- return module

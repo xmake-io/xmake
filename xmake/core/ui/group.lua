@@ -71,6 +71,31 @@ end
 function group:execute()
 end
 
+-- tostring(group, level)
+function group:_tostring(level)
+    local str = ""
+    if self.views then  
+        str = str .. string.format("<%s %s>", self:name(), tostring(self:bounds()))
+        if not self:views():empty() then
+            str = str .. "\n"
+        end
+        for v in self:views():items() do  
+            for l = 1, level do
+                str = str .. "    "
+            end
+            str = str .. group._tostring(v, level + 1) .. "\n"
+        end  
+    else
+        str = tostring(self)
+    end
+    return str
+end
+
+-- tostring(group)
+function group:__tostring()
+    return self:_tostring(1)
+end
+
 
 -- return module
 return group
