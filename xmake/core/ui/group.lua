@@ -43,6 +43,9 @@ function group:init(name, bounds)
     -- init view
     view.init(self, name, bounds)
 
+    -- mark as selectable
+    self:option_set("selectable", true)
+
     -- init child views
     self._VIEWS = dlist()
 end
@@ -79,6 +82,16 @@ function group:next(v)
     return self._VIEWS:next(v)
 end
 
+-- get the previous view
+function group:prev(v)
+    return self._VIEWS:prev(v)
+end
+
+-- get the current selected child view
+function group:current()
+    return self._CURRENT
+end
+
 -- insert view
 function group:insert(v)
 
@@ -111,9 +124,12 @@ function group:insert(v)
     -- set it's parent view
     v:parent_set(self)
 
-    -- TODO select this view
+    -- set application
+    v:application_set(self:application())
+
+    -- select this view
     if v:option("selectable") then
---        self:select(v)
+        self:select(v)
     end
 
     -- draw and show this view
@@ -139,10 +155,89 @@ function group:remove(v)
     -- remove view
     self._VIEWS:remove(v)
 
-    -- TODO select next view
+    -- select next view
+    if self:current() == v then
+        self._CURRENT = nil
+        self:select_next()
+    end
 
     -- unlock
     self:unlock()
+end
+
+-- select the child view
+function group:select(v)
+
+    -- check
+    assert(v == nil or (v:parent() == self and v:option("selectable")))
+
+    -- get the current selected view
+    local current = self:current()
+    if v == current then 
+        return 
+    end
+
+    -- undo the previous selected view
+    if current then
+
+        -- undo the current view first
+        if self:state("focused") then
+            current:state_set('focused', false)
+        end
+        current:state_set('selected', false)
+    end
+
+    -- update the current selected view
+    self._CURRENT = v
+
+    -- update the new selected view
+    if v then
+
+        -- modify view order and mark this view as top
+        if v:option("top_select") then
+            self._VIEWS:remove(v)
+            self._VIEWS:push(v)
+        end
+
+        -- select and focus this view
+        v:state_set('selected', true)
+        if self:state("focused") then
+            v:state_set('focused', true)
+        end
+    end
+end
+
+-- select the next view
+function group:select_next(forward, start)
+
+    -- is empty?
+    if self:empty() then
+        return 
+    end
+
+    -- get current view
+    local current = start or self:current() or self:first()
+
+    -- forward?
+    if forward then
+        local next = self:next(current)
+        while next ~= current do
+            if next:option("selectable") and next:state("visible") then
+                self:select(next)
+                break
+            end
+            next = self:next(next)
+        end
+    else
+        local prev = self:prev(current)
+        while prev ~= current do
+            if prev:option("selectable") and prev:state("visible") then
+                self:select(prev)
+                break
+            end
+            prev = self:prev(prev)
+        end
+    end
 end
 
 -- execute group

@@ -53,6 +53,9 @@ function application:init(name)
     -- init program
     program.init(self, name)
 
+    -- save application
+    self:application_set(self)
+
     -- add menubar, statusbar and desktop
     self:insert(self:statusbar())
     self:insert(self:menubar())

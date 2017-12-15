@@ -28,12 +28,16 @@ $Id: view.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
+local log    = require("ui/log")
 local object = require("ui/object")
 local canvas = require("ui/canvas")
 local curses = require("ui/curses")
 
 -- define module
 local view = view or object()
+
+-- the screen lock/update counter
+local screen_lock = 0           
 
 -- new view instance
 function view:new(name, bounds)
@@ -148,6 +152,16 @@ function view:parent_set(parent)
     self._PARENT = parent
 end
 
+-- get the application 
+function view:application()
+    return self._APPLICATION
+end
+
+-- set the application 
+function view:application_set(app)
+    self._APPLICATION = app
+end
+
 -- get the view window
 function view:window()
     return self._WINDOW
@@ -189,10 +203,16 @@ end
 
 -- lock view
 function view:lock()
+    screen_lock = screen_lock + 1
 end
 
 -- unlock view
 function view:unlock()
+    assert(screen_lock > 0)
+    screen_lock = screen_lock - 1
+    if screen_lock == 0 then
+        self:_update_screen()
+    end
 end
 
 -- show view?
@@ -241,6 +261,34 @@ function view:option_set(name, enable)
 
     -- set option
     self._OPTIONS[name] = enable
+end
+
+-- update screen
+function view:_update_screen()
+
+    -- get application
+    local app = self:application()
+    assert(app, "cannot get application from view(" .. self:name() .. ")")
+
+    -- is visible?
+    if not app:state("visible") then
+        return 
+    end
+
+    -- trace
+    log:print("view(%s): update screen ..", self:name())
+
+    -- get main window
+    local main_window = curses.main_window()
+
+    -- update screen
+    app:window():copy(main_window, 0, 0, 0, 0, app:height() - 1, app:width() - 1)
+
+    -- mark as refresh
+    main_window:noutrefresh()
+
+    -- do update
+    curses.doupdate()
 end
 
 -- tostring(view)
