@@ -99,6 +99,12 @@ function application:statusbar()
     return self._STATUSBAR
 end
 
+-- do event
+function application:do_event(e)
+    program.do_event(self, e)
+    -- TODO
+end
+
 -- run application 
 function application.run(name, ...)
 

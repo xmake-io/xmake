@@ -80,6 +80,10 @@ function view:init(name, bounds)
     options.validate     = false     -- validate
     self._OPTIONS        = options
 
+    -- init attributes
+    local attrs         = object()
+    self._ATTRS         = attrs
+
     -- init name
     self._NAME = name
 
@@ -222,6 +226,20 @@ function view:show(visible)
     end
 end
 
+-- do event (abstract)
+function view:do_event(e)
+end
+
+-- get the current event
+function view:event()
+    return self:parent() and self:parent():event()
+end
+
+-- put an event to view
+function view:event_put(e)
+    return self:parent() and self:parent():event_put(e)
+end
+
 -- get state
 function view:state(name)
     return self._STATE[name]
@@ -261,6 +279,16 @@ function view:option_set(name, enable)
 
     -- set option
     self._OPTIONS[name] = enable
+end
+
+-- get attribute
+function view:attr(name)
+    return self._ATTRS[name]
+end
+
+-- set attribute
+function view:attr_set(name, attr)
+    self._ATTRS[name] = attr
 end
 
 -- update screen

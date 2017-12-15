@@ -19,48 +19,44 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        menubar.lua
+-- @file        event.lua
 --
 
 --[[ Console User Interface (cui) ]-----------------------------------------
 Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: menubar.lua 18 2007-06-21 20:43:52Z tngd $
+$Id: event.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
-local log       = require("ui/log")
-local view      = require("ui/view")
-local curses    = require("ui/curses")
+local object = require("ui/object")
 
 -- define module
-local menubar = menubar or view()
+local event = event or object { _init = {"type", "command", "extra"} }
 
--- init menubar
-function menubar:init(name, bounds)
-
-    -- init view
-    view.init(self, name, bounds)
-
-    -- init color
-    self:attr_set("color", curses.color_pair("red", "white"))
+-- register event types
+function event:register(tag, ...)
+    local base = self[tag] or 0
+    local enums = {...}
+    local n = #enums
+    for i = 1, n do
+        self[enums[i]] = i + base
+    end
+    self[tag] = base + n
 end
 
--- exit menubar
-function menubar:exit()
-    view.exit(self)
-end
+-- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 5, event.ev_max = 5
+event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_broadcast", "ev_idle")
 
--- draw view
-function menubar:draw()
-    local c = self:canvas()
-    c:attr(self:attr("color")):move(0, 0):write(string.rep(' ', self:width() * self:height()))
-    c:move(1, 0):write('Menu Bar')
-end
+-- define keyboard event
+--
+-- keyname = key name
+-- keycode = key code
+-- keymeta = ALT key was pressed
+--
+event.keyboard = object {_init = { "key_code", "key_name", "key_meta" }, type = event.ev_keyboard}
 
--- do event
-function menubar:do_event(e)
-    view.do_event(self, e)
-end
+-- define idle event
+event.idle = object {_init = {}, type = event.ev_idle}
 
 -- return module
-return menubar
+return event

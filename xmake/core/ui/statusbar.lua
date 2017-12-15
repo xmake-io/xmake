@@ -28,19 +28,47 @@ $Id: statusbar.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
-local view = require("ui/view")
+local view      = require("ui/view")
+local curses    = require("ui/curses")
 
 -- define module
 local statusbar = statusbar or view()
 
 -- init statusbar
 function statusbar:init(name, bounds)
+
+    -- init view
     view.init(self, name, bounds)
+
+    -- init attributes
+    self:attr_set("key", curses.color_pair("red", "white"))
+    self:attr_set("text", curses.color_pair("black", "white"))
 end
 
 -- exit statusbar
 function statusbar:exit()
     view.exit(self)
+end
+
+-- draw view
+function statusbar:draw()
+
+    -- get canvas
+    local c = self:canvas()
+    c:move(0, 0)
+
+    -- draw status
+    local x = 0
+    local kattr = self:attr("key")
+    local tattr = self:attr("text")
+    if x < self:width() then
+        c:attr(tattr):write(string.rep(' ', self:width() - x))
+    end
+end
+
+-- do event
+function statusbar:do_event(e)
+    view.do_event(self, e)
 end
 
 -- return module

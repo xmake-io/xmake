@@ -30,6 +30,7 @@ $Id: group.lua 18 2007-06-21 20:43:52Z tngd $
 -- load modules
 local view   = require("ui/view")
 local rect   = require("ui/rect")
+local event  = require("ui/event")
 local point  = require("ui/point")
 local curses = require("ui/curses")
 local dlist  = require("base/dlist")
@@ -240,8 +241,43 @@ function group:select_next(forward, start)
     end
 end
 
+-- do event
+function group:do_event(e)
+    -- TODO
+end
+
 -- execute group
 function group:execute()
+
+    -- show this group
+    self:show(true)
+
+    -- do message loop
+    local e = nil
+    local sleep = true
+    local app = self:application()
+    while true do
+
+        -- get the current event
+        e = self:event()
+
+        -- do event
+        if e then
+            self:do_event(e)
+            sleep = false
+        else
+            -- do idle event
+            app:do_event(event.idle())
+        end
+
+        -- wait some time, 50ms
+        if sleep then
+            curses.napms(50)
+        end
+    end
+
+    -- hide this group
+    self:show(false)
 end
 
 -- draw group 
