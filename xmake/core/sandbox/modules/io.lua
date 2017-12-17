@@ -34,6 +34,7 @@ local sandbox_io = sandbox_io or {}
 
 -- inherit some builtin interfaces
 sandbox_io.flush  = io.flush
+sandbox_io.seek   = io.seek
 sandbox_io.read   = io.read
 sandbox_io.write  = io.write
 sandbox_io.stdin  = io.stdin

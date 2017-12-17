@@ -291,6 +291,27 @@ function group:draw()
     end
 end
 
+-- redraw group 
+function group:redraw(on_parent)
+
+    -- lock
+    self:lock()
+
+    -- redraw all child views
+    for v in self:views() do
+        if v:state("visible") then
+            v:redraw(false)
+            self:_draw_child(v)
+        end
+    end
+
+    -- redraw view
+    view.redraw(self, on_parent)
+
+    -- unlock
+    self:unlock()
+end
+
 -- refresh group in parent window
 function group:refresh()
     self:lock()

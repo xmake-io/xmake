@@ -298,7 +298,7 @@ function view:_update_screen()
     local app = self:application()
     assert(app, "cannot get application from view(" .. self:name() .. ")")
 
-    -- is visible?
+    -- is visible? disable to update screen before finishing application initialization
     if not app:state("visible") then
         return 
     end
