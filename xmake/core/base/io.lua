@@ -35,63 +35,38 @@ local utils = require("base/utils")
 io._open   = io._open or io.open
 io._isatty = io._isatty or io.isatty
 
+-- seek file
+function _file:seek(...)
+    return self._FILE:seek(...)
+end
+
 -- read file
 function _file:read(...)
-
-    -- check
-    assert(self._FILE)
-    
-    -- read it
     return self._FILE:read(...)
 end
 
 -- write file
 function _file:write(...)
-
-    -- check
-    assert(self._FILE)
-    
-    -- write it
     return self._FILE:write(...)
 end
 
 -- print file
 function _file:print(...)
-
-    -- check
-    assert(self._FILE)
-    
-    -- print it
     return self._FILE:write(string.format(...) .. "\n")
 end
 
 -- printf file
 function _file:printf(...)
-
-    -- check
-    assert(self._FILE)
-    
-    -- printf it
     return self._FILE:write(string.format(...))
 end
 
 -- get lines
 function _file:lines()
-
-    -- check
-    assert(self._FILE)
-    
-    -- get it
     return self._FILE:lines()
 end
 
 -- close file
 function _file:close()
-
-    -- check
-    assert(self._FILE)
-    
-    -- close it
     return self._FILE:close()
 end
 
@@ -160,8 +135,6 @@ end
 
 -- save object
 function _file:save(object)
-   
-    -- save it
     return self:_save(object, 0)
 end
 
