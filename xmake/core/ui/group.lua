@@ -28,6 +28,7 @@ $Id: group.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
+local log    = require("ui/log")
 local view   = require("ui/view")
 local rect   = require("ui/rect")
 local event  = require("ui/event")
@@ -133,8 +134,7 @@ function group:insert(v)
         self:select(v)
     end
 
-    -- draw and show this view
-    v:draw()
+    -- show this view
     v:show(true)
 
     -- unlock
@@ -252,6 +252,9 @@ function group:execute()
     -- show this group
     self:show(true)
 
+    -- refresh first
+    self:refresh()
+
     -- do message loop
     local e = nil
     local sleep = true
@@ -300,7 +303,11 @@ function group:redraw(on_parent)
     -- redraw all child views
     for v in self:views() do
         if v:state("visible") then
+
+            -- cause groups to redraw
             v:redraw(false)
+
+            -- draw this child view
             self:_draw_child(v)
         end
     end

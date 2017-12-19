@@ -41,8 +41,8 @@ function menubar:init(name, bounds)
     -- init view
     view.init(self, name, bounds)
 
-    -- init color
-    self:attr_set("color", curses.color_pair("red", "white"))
+    -- init title
+    self._TITLE = ""
 end
 
 -- exit menubar
@@ -54,12 +54,22 @@ end
 function menubar:draw()
     local c = self:canvas()
     c:attr(self:attr("color")):move(0, 0):write(string.rep(' ', self:width() * self:height()))
-    c:move(1, 0):write('Menu Bar')
+    c:move(1, 0):write(self:title())
 end
 
 -- do event
 function menubar:do_event(e)
     view.do_event(self, e)
+end
+
+-- get title
+function menubar:title()
+    return self._TITLE
+end
+
+-- set title
+function menubar:title_set(title)
+    self._TITLE = title or ""
 end
 
 -- return module

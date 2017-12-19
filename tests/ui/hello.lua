@@ -25,7 +25,20 @@
 -- imports
 import("core.ui.application")
 
+-- the hello application
+local hello = application()
+
+-- init hello
+function hello:init()
+
+    -- init name 
+    application.init(self, "hello")
+
+    -- init title
+    self:menubar():title_set("xmake")
+end
+
 -- main entry
 function main(...)
-    application.run("hello", ...)
+    hello:run(...)
 end

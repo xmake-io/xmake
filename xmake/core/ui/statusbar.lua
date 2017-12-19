@@ -36,13 +36,7 @@ local statusbar = statusbar or view()
 
 -- init statusbar
 function statusbar:init(name, bounds)
-
-    -- init view
     view.init(self, name, bounds)
-
-    -- init attributes
-    self:attr_set("key", curses.color_pair("red", "white"))
-    self:attr_set("text", curses.color_pair("black", "white"))
 end
 
 -- exit statusbar
@@ -57,12 +51,11 @@ function statusbar:draw()
     local c = self:canvas()
     c:move(0, 0)
 
-    -- draw status
+    -- draw statusbar
     local x = 0
-    local kattr = self:attr("key")
-    local tattr = self:attr("text")
+    local color = self:attr("color")
     if x < self:width() then
-        c:attr(tattr):write(string.rep(' ', self:width() - x))
+        c:attr(color):write(string.rep(' ', self:width() - x))
     end
 end
 

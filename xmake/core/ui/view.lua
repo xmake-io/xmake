@@ -81,8 +81,9 @@ function view:init(name, bounds)
     self._OPTIONS        = options
 
     -- init attributes
-    local attrs         = object()
-    self._ATTRS         = attrs
+    local attrs          = object()
+    attrs.color          = curses.color_pair("blue", "white") 
+    self._ATTRS          = attrs
 
     -- init name
     self._NAME = name
@@ -181,6 +182,7 @@ end
 
 -- draw view
 function view:draw()
+log:print("view draw: %s", self:name())
     self:canvas():clear()
 end
 
@@ -256,11 +258,6 @@ function view:state_set(name, enable)
 
     -- change state
     self._STATE[name] = enable
-
-    -- update visible?
-    if name == "visible" then
-        self:redraw(true)
-    end
 end
 
 -- get option
@@ -287,8 +284,8 @@ function view:attr(name)
 end
 
 -- set attribute
-function view:attr_set(name, attr)
-    self._ATTRS[name] = attr
+function view:attr_set(name, value)
+    self._ATTRS[name] = value
 end
 
 -- update screen

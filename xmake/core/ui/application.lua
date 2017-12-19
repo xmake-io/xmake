@@ -106,14 +106,14 @@ function application:do_event(e)
 end
 
 -- run application 
-function application.run(name, ...)
+function application:run(...)
 
     -- init runner
     local argv = {...}
     local runner = function ()
 
         -- new an application
-        local app = application:new(name)
+        local app = self:new()
         if app then
             app:loop(argv)
             app:exit()
