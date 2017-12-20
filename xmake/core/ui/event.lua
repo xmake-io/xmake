@@ -44,8 +44,11 @@ function event:register(tag, ...)
     self[tag] = base + n
 end
 
--- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 5, event.ev_max = 5
-event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_broadcast", "ev_idle")
+-- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 4, event.ev_max = 4
+event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_idle")
+
+-- register command event types (ev_command)
+event:register("cm_max", "cm_quit")
 
 -- define keyboard event
 --

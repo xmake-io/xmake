@@ -183,9 +183,9 @@ function group:select(v)
 
         -- undo the current view first
         if self:state("focused") then
-            current:state_set('focused', false)
+            current:state_set("focused", false)
         end
-        current:state_set('selected', false)
+        current:state_set("selected", false)
     end
 
     -- update the current selected view
@@ -241,9 +241,20 @@ function group:select_next(forward, start)
     end
 end
 
--- do event
-function group:do_event(e)
-    -- TODO
+-- on event
+function group:event_on(e)
+
+    -- is empty views?
+    if self:empty() then
+        return 
+    end
+
+    -- send event to all child views
+    for v in self:views() do
+        if v:event_need(e) then
+            v:event_on(e)
+        end
+    end
 end
 
 -- execute group
@@ -266,11 +277,11 @@ function group:execute()
 
         -- do event
         if e then
-            self:do_event(e)
+            self:event_on(e)
             sleep = false
         else
             -- do idle event
-            app:do_event(event.idle())
+            app:event_on(event.idle())
         end
 
         -- wait some time, 50ms

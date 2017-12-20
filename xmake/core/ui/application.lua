@@ -31,6 +31,7 @@ $Id: application.lua 18 2007-06-21 20:43:52Z tngd $
 local os        = require("base/os")
 local log       = require("ui/log")
 local rect      = require("ui/rect")
+local event     = require("ui/event")
 local curses    = require("ui/curses")
 local program   = require("ui/program")
 local desktop   = require("ui/desktop")
@@ -60,6 +61,9 @@ function application:init(name)
     self:insert(self:statusbar())
     self:insert(self:menubar())
     self:insert(self:desktop())
+
+    -- register event type
+    self:event_register(event.ev_keyboard)
 
     -- trace
     log:print("<application: %s>: init ok", name)
@@ -99,10 +103,9 @@ function application:statusbar()
     return self._STATUSBAR
 end
 
--- do event
-function application:do_event(e)
-    program.do_event(self, e)
-    -- TODO
+-- on event
+function application:event_on(e)
+    program.event_on(self, e)
 end
 
 -- run application 

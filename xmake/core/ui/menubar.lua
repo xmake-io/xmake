@@ -42,7 +42,10 @@ function menubar:init(name, bounds)
     view.init(self, name, bounds)
 
     -- init title
-    self._TITLE = ""
+    self._TITLE = "Menu Bar"
+
+    -- init color
+    self:attr_set("color", curses.color_pair("red", "white"))
 end
 
 -- exit menubar
@@ -57,9 +60,9 @@ function menubar:draw()
     c:move(1, 0):write(self:title())
 end
 
--- do event
-function menubar:do_event(e)
-    view.do_event(self, e)
+-- en event
+function menubar:event_on(e)
+    view.event_on(self, e)
 end
 
 -- get title

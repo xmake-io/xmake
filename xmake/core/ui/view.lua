@@ -40,13 +40,13 @@ local view = view or object()
 local screen_lock = 0           
 
 -- new view instance
-function view:new(name, bounds)
+function view:new(name, bounds, ...)
 
     -- create instance
     self = self()
 
     -- init view
-    self:init(name, bounds)
+    self:init(name, bounds, ...)
 
     -- done
     return self
@@ -61,29 +61,26 @@ function view:init(name, bounds)
     -- init state
     local state          = object()
     state.visible        = false     -- view visibility
-    state.cursor_visible = false     -- cursor visibility
-    state.block_cursor   = false     -- block cursor
     state.selected       = false     -- current selected window inside group
     state.focused        = false     -- true if parent is also focused
-    state.disabled       = false     -- view disabled
-    state.modal          = false     -- is modal view?
     self._STATE          = state
 
     -- init options
     local options        = object()
     options.selectable   = false     -- true if window can be selected
     options.top_select   = false     -- if true, selecting window will bring it to front
-    options.pre_event    = false     -- receive event before focused window
-    options.post_event   = false     -- receive event after focused window
     options.centerx      = false     -- center horizontaly when inserting in parent
     options.centery      = false     -- center verticaly when inserting in parent
-    options.validate     = false     -- validate
     self._OPTIONS        = options
 
     -- init attributes
     local attrs          = object()
     attrs.color          = curses.color_pair("blue", "white") 
     self._ATTRS          = attrs
+
+    -- init needed events type
+    local events         = object()
+    self._EVENTS         = events
 
     -- init name
     self._NAME = name
@@ -228,8 +225,8 @@ function view:show(visible)
     end
 end
 
--- do event (abstract)
-function view:do_event(e)
+-- on event (abstract)
+function view:event_on(e)
 end
 
 -- get the current event
@@ -240,6 +237,16 @@ end
 -- put an event to view
 function view:event_put(e)
     return self:parent() and self:parent():event_put(e)
+end
+
+-- need this event?
+function view:event_need(e)
+    return self._EVENTS[e.type]
+end
+
+-- register an event type
+function view:event_register(etype)
+    self._EVENTS[etype] = true
 end
 
 -- get state

@@ -23,6 +23,9 @@
 --
 
 -- imports
+import("core.ui.log")
+import("core.ui.view")
+import("core.ui.event")
 import("core.ui.application")
 
 -- the hello application
@@ -35,7 +38,15 @@ function hello:init()
     application.init(self, "hello")
 
     -- init title
-    self:menubar():title_set("xmake")
+    self:menubar():title_set("Menu Bar (Hello)")
+end
+
+-- on event
+function hello:event_on(e)
+    view.event_on(self, e)
+    if e.type == event.ev_keyboard then
+        self:statusbar():info_set(e.key_name)
+    end
 end
 
 -- main entry

@@ -28,15 +28,22 @@ $Id: statusbar.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
+local log       = require("ui/log")
 local view      = require("ui/view")
+local event     = require("ui/event")
 local curses    = require("ui/curses")
 
 -- define module
 local statusbar = statusbar or view()
 
 -- init statusbar
-function statusbar:init(name, bounds)
+function statusbar:init(name, bounds, commands)
+
+    -- init view
     view.init(self, name, bounds)
+
+    -- init info
+    self:info_set("")
 end
 
 -- exit statusbar
@@ -57,11 +64,24 @@ function statusbar:draw()
     if x < self:width() then
         c:attr(color):write(string.rep(' ', self:width() - x))
     end
+
+    -- draw status info
+    c:move(1, 0):write(self:info())
 end
 
--- do event
-function statusbar:do_event(e)
-    view.do_event(self, e)
+-- on event
+function statusbar:event_on(e)
+    view.event_on(self, e)
+end
+
+-- get status info
+function statusbar:info()
+    return self._INFO
+end
+
+-- set status info
+function statusbar:info_set(info)
+    self._INFO = info or ""
 end
 
 -- return module
