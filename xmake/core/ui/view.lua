@@ -212,6 +212,7 @@ end
 function view:show(visible)
     if self:state("visible") ~= visible then
         self:state_set("visible", visible)
+        self:invalidate()
     end
 end
 
@@ -291,6 +292,7 @@ end
 -- set attribute
 function view:attr_set(name, value)
     self._ATTRS[name] = value
+    self:invalidate()
 end
 
 -- need redraw view

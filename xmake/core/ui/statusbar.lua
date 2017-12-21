@@ -85,6 +85,7 @@ end
 -- set status info
 function statusbar:info_set(info)
     self._INFO = info or ""
+    self:invalidate()
 end
 
 -- return module

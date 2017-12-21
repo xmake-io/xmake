@@ -78,6 +78,7 @@ end
 -- set title
 function menubar:title_set(title)
     self._TITLE = title or ""
+    self:invalidate()
 end
 
 -- return module

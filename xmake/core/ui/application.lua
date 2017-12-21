@@ -98,7 +98,7 @@ end
 -- get statusbar
 function application:statusbar()
     if not self._STATUSBAR then
-        return statusbar:new("statusbar", rect{0, self:height() - 1, self:width(), self:height()})
+        self._STATUSBAR = statusbar:new("statusbar", rect{0, self:height() - 1, self:width(), self:height()})
     end
     return self._STATUSBAR
 end
