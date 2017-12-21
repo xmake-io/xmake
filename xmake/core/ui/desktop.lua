@@ -28,6 +28,7 @@ $Id: desktop.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
+local log   = require("ui/log")
 local group = require("ui/group")
 
 -- define module
@@ -35,13 +36,30 @@ local desktop = desktop or group()
 
 -- init desktop
 function desktop:init(name, bounds)
+
+    -- init group
     group.init(self, name, bounds)
+
+    -- init color
+    self:attr_set("color", curses.color_pair("white", "blue"))
 end
 
 -- exit desktop
 function desktop:exit()
     group.exit(self)
 end
+
+-- draw view
+function desktop:draw()
+
+    -- trace
+    log:print("%s: draw ..", self)
+
+    -- draw it
+    local c = self:canvas()
+    c:attr(self:attr("color")):move(0, 0):write(string.rep(' ', self:width() * self:height()))
+end
+
 
 -- return module
 return desktop

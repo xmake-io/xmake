@@ -28,6 +28,7 @@ $Id: program.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
+local log    = require("ui/log")
 local rect   = require("ui/rect")
 local group  = require("ui/group")
 local event  = require("ui/event")
@@ -147,8 +148,61 @@ function program:loop(argv)
     -- save the current arguments
     self._ARGV = argv
 
-    -- execute group
-    self:execute()
+    -- do message loop
+    local e = nil
+    local sleep = true
+    while true do
+
+        -- get the current event
+        e = self:event()
+
+        -- do event
+        if e then
+            self:event_on(e)
+            sleep = false
+        else
+            -- do idle event
+            self:event_on(event.idle())
+        end
+
+        -- draw views
+        self:draw()
+
+        -- refresh views
+        self:refresh()
+
+        -- wait some time, 50ms
+        if sleep then
+            curses.napms(50)
+        end
+    end
+end
+
+-- refresh program
+function program:refresh()
+
+    -- need not refresh? do not refresh it
+    if not self:state("refresh") then
+        return 
+    end
+
+    -- refresh views
+    group.refresh(self)
+
+    -- trace
+    log:print("%s: refresh ..", self)
+
+    -- get main window
+    local main_window = curses.main_window()
+
+    -- refresh main window
+    self:window():copy(main_window, 0, 0, 0, 0, self:height() - 1, self:width() - 1)
+
+    -- mark as refresh
+    main_window:noutrefresh()
+
+    -- do update
+    curses.doupdate()
 end
 
 -- get key map

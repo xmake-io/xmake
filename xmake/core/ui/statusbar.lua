@@ -54,6 +54,9 @@ end
 -- draw view
 function statusbar:draw()
 
+    -- trace
+    log:print("%s: draw ..", self)
+
     -- get canvas
     local c = self:canvas()
     c:move(0, 0)

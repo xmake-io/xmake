@@ -100,9 +100,6 @@ function group:insert(v)
     -- check
     assert(not v:parent() or v:parent() == self)
 
-    -- lock
-    self:lock()
-
     -- this view has been inserted into this group? remove it first
     if v:parent() == self then
         self:remove(v)
@@ -133,12 +130,6 @@ function group:insert(v)
     if v:option("selectable") then
         self:select(v)
     end
-
-    -- show this view
-    v:show(true)
-
-    -- unlock
-    self:unlock()
 end
 
 -- remove view
@@ -257,130 +248,63 @@ function group:event_on(e)
     end
 end
 
--- execute group
-function group:execute()
-
-    -- show this group
-    self:show(true)
-
-    -- refresh first
-    self:refresh()
-
-    -- do message loop
-    local e = nil
-    local sleep = true
-    local app = self:application()
-    while true do
-
-        -- get the current event
-        e = self:event()
-
-        -- do event
-        if e then
-            self:event_on(e)
-            sleep = false
-        else
-            -- do idle event
-            app:event_on(event.idle())
-        end
-
-        -- wait some time, 50ms
-        if sleep then
-            curses.napms(50)
-        end
-    end
-
-    -- hide this group
-    self:show(false)
-end
-
 -- draw group 
 function group:draw()
 
-    -- draw sub views
-    for v in self:views() do
-        if v:state("visible") then
-            v:draw()
+    -- draw it
+    if self:state("redraw") then
+
+        -- draw group background first
+        view.draw(self)
+
+        -- draw all child views
+        for v in self:views() do
+            if v:state("visible") then
+                v:draw()
+                v:state_set("redraw", false)
+            end
+        end
+
+        -- clear mark
+        self:state_set("redraw", false)
+    else
+
+        -- only draw child views
+        for v in self:views() do
+            if v:state("visible") and v:state("redraw") then
+                v:draw()
+                v:state_set("redraw", false)
+            end
         end
     end
 end
 
--- redraw group 
-function group:redraw(on_parent)
-
-    -- lock
-    self:lock()
-
-    -- redraw all child views
-    for v in self:views() do
-        if v:state("visible") then
-
-            -- cause groups to redraw
-            v:redraw(false)
-
-            -- draw this child view
-            self:_draw_child(v)
-        end
-    end
-
-    -- redraw view
-    view.redraw(self, on_parent)
-
-    -- unlock
-    self:unlock()
-end
-
--- refresh group in parent window
+-- refresh group
 function group:refresh()
-    self:lock()
-    self:draw()
-    self:redraw(true)
-    self:unlock()
-end
 
--- draw this child view
-function group:_draw_child(v)
-
-    -- draw it if this child view is in a vaild bounds
-    local bounds = v:bounds()
-    local r = bounds():intersect(rect{0, 0, self:width(), self:height()})
-    if r.ex > r.sx and r.ey > r.sy then
-
-        -- TODO
-        -- copy this child view to group window
-        local sx = bounds.sx; sx = sx > 0 and 0 or -sx
-        local sy = bounds.sy; sy = sy > 0 and 0 or -sy
-        v:window():copy(self:window(), sy, sx, r.sy, r.sx, r.ey - 1, r.ex - 1)
+    -- need not refresh? do not refresh it
+    if not self:state("refresh") then
+        return 
     end
-end
 
--- draw overlapping views about this child view
-function group:_draw_overlap(v)
-
-    -- lock
-    self:lock()
-
-    -- draw all overlapping areas
-    local bounds = v:bounds()
-    while v do
-
-        -- check for overlapping areas
-        if v:state("visible") and v:bounds():is_intersect(bounds) then
-
-            -- draw this child view
-            self:_draw_child(v)
-
-            -- if they overlap, join them. 
-            -- use the resulting rectangle to check for overlapping areas on the following windows
-            bounds:union(v:bounds())
+    -- refresh all child views
+    for v in self:views() do
+        if v:state("refresh") then
+            v:refresh()
+            v:state_set("refresh", false)
         end
-
-        -- get the next view
-        v = self:next(v)
     end
 
-    -- unlock
-    self:unlock()
+    -- refresh it
+    view.refresh(self)
+
+    -- clear mark
+    self:state_set("refresh", false)
+end
+
+-- dump all views
+function group:dump()
+    log:print("%s", self:_tostring(1))
 end
 
 -- tostring(group, level)
@@ -405,7 +329,7 @@ end
 
 -- tostring(group)
 function group:__tostring()
-    return self:_tostring(1)
+    return string.format("<group(%s) %s>", self:name(), tostring(self:bounds()))
 end
 
 

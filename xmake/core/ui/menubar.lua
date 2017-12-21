@@ -55,6 +55,11 @@ end
 
 -- draw view
 function menubar:draw()
+
+    -- trace
+    log:print("%s: draw ..", self)
+
+    -- draw it
     local c = self:canvas()
     c:attr(self:attr("color")):move(0, 0):write(string.rep(' ', self:width() * self:height()))
     c:move(1, 0):write(self:title())

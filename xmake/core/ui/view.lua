@@ -29,15 +29,13 @@ $Id: view.lua 18 2007-06-21 20:43:52Z tngd $
 
 -- load modules
 local log    = require("ui/log")
+local rect   = require("ui/rect")
 local object = require("ui/object")
 local canvas = require("ui/canvas")
 local curses = require("ui/curses")
 
 -- define module
 local view = view or object()
-
--- the screen lock/update counter
-local screen_lock = 0           
 
 -- new view instance
 function view:new(name, bounds, ...)
@@ -60,9 +58,11 @@ function view:init(name, bounds)
 
     -- init state
     local state          = object()
-    state.visible        = false     -- view visibility
+    state.visible        = true      -- view visibility
     state.selected       = false     -- current selected window inside group
     state.focused        = false     -- true if parent is also focused
+    state.redraw         = true      -- need redraw 
+    state.refresh        = true      -- need refresh
     self._STATE          = state
 
     -- init options
@@ -179,42 +179,32 @@ end
 
 -- draw view
 function view:draw()
-log:print("view draw: %s", self:name())
+
+    -- trace
+    log:print("%s: draw ..", self)
+
+    -- clear view
     self:canvas():clear()
 end
 
--- refresh view in parent window
+-- refresh view
 function view:refresh()
-    self:draw()
-    self:redraw(true)
-end
 
--- redraw view
-function view:redraw(on_parent)
+    -- refresh to the parent view
+    local parent = self:parent()
+    if parent then
 
-    -- redraw this child view on parent view (group)
-    if on_parent and self:parent() then
-        self:lock()
-        local v = self
-        while v:parent() do
-            v:parent():_draw_overlap(v)
-            v = v:parent()
+        -- clip bounds with the parent view
+        local bounds = self:bounds()
+        local r = bounds():intersect(rect{0, 0, parent:width(), parent:height()})
+        if not r:empty() then
+
+            -- trace
+            log:print("%s: refresh to %s(%d, %d, %d, %d) ..", self, parent:name(), r.sx, r.sy, r.ex, r.ey)
+
+            -- copy this view to parent view
+            self:window():copy(parent:window(), 0, 0, r.sy, r.sx, r.ey - 1, r.ex - 1)
         end
-        self:unlock()
-    end
-end
-
--- lock view
-function view:lock()
-    screen_lock = screen_lock + 1
-end
-
--- unlock view
-function view:unlock()
-    assert(screen_lock > 0)
-    screen_lock = screen_lock - 1
-    if screen_lock == 0 then
-        self:_update_screen()
     end
 end
 
@@ -223,6 +213,14 @@ function view:show(visible)
     if self:state("visible") ~= visible then
         self:state_set("visible", visible)
     end
+end
+
+-- invalidate view to redraw it
+function view:invalidate()
+
+    -- need redraw and refresh it
+    self:_mark_redraw()
+    self:_mark_refresh()
 end
 
 -- on event (abstract)
@@ -295,37 +293,33 @@ function view:attr_set(name, value)
     self._ATTRS[name] = value
 end
 
--- update screen
-function view:_update_screen()
+-- need redraw view
+function view:_mark_redraw()
 
-    -- get application
-    local app = self:application()
-    assert(app, "cannot get application from view(" .. self:name() .. ")")
+    -- need redraw it
+    self:state_set("redraw", true)
 
-    -- is visible? disable to update screen before finishing application initialization
-    if not app:state("visible") then
-        return 
+    -- need redraw it's parent view if this view is invisible
+    if not self:state("visible") and self:parent() then
+        self:parent():_mark_redraw()
     end
+end
 
-    -- trace
-    log:print("view(%s): update screen ..", self:name())
+-- need refresh view
+function view:_mark_refresh()
 
-    -- get main window
-    local main_window = curses.main_window()
+    -- need refresh it
+    self:state_set("refresh", true)
 
-    -- update screen
-    app:window():copy(main_window, 0, 0, 0, 0, app:height() - 1, app:width() - 1)
-
-    -- mark as refresh
-    main_window:noutrefresh()
-
-    -- do update
-    curses.doupdate()
+    -- need refresh it's parent view 
+    if self:parent() then
+        self:parent():_mark_refresh()
+    end
 end
 
 -- tostring(view)
 function view:__tostring()
-    return string.format("<%s %s>", self:name(), tostring(self:bounds()))
+    return string.format("<view(%s) %s>", self:name(), tostring(self:bounds()))
 end
 
 -- return module
