@@ -52,6 +52,8 @@ function hello:event_on(e)
             self:menubar():show(not self:menubar():state("visible"))
         elseif e.key_name == "d" then
             self:desktop():show(not self:desktop():state("visible"))
+        elseif e.key_name == "q" then
+            self:quit()
         end
     end
 end

@@ -150,6 +150,16 @@ function program:event_put(e)
     table.insert(self._EVENT_QUEUE, e)
 end
 
+-- send command
+function program:send(command, extra)
+    self:event_put(event.command {command, extra})
+end
+
+-- quit program
+function program:quit()
+    self:send("cm_quit")
+end
+
 -- run program loop
 function program:loop(argv)
 
@@ -171,6 +181,11 @@ function program:loop(argv)
         else
             -- do idle event
             self:event_on(event.idle())
+        end
+
+        -- quit?
+        if e and event.is_command(e, "cm_quit") then
+            break
         end
 
         -- draw views

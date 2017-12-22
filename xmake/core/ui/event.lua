@@ -44,6 +44,16 @@ function event:register(tag, ...)
     self[tag] = base + n
 end
 
+-- is key?
+function event:is_key(key_name)
+    return self.type == event.ev_keyboard and self.key_name == key_name
+end
+
+-- is command event: cm_xxx?
+function event:is_command(command)
+    return self.type == event.ev_command and self.command == command
+end
+
 -- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 4, event.ev_max = 4
 event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_idle")
 
@@ -57,6 +67,9 @@ event:register("cm_max", "cm_quit")
 -- keymeta = ALT key was pressed
 --
 event.keyboard = object {_init = { "key_code", "key_name", "key_meta" }, type = event.ev_keyboard}
+
+-- define command event
+event.command = object {_init = { "command", "extra" }, type = event.ev_command}
 
 -- define idle event
 event.idle = object {_init = {}, type = event.ev_idle}
