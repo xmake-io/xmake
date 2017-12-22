@@ -46,6 +46,13 @@ function hello:event_on(e)
     view.event_on(self, e)
     if e.type == event.ev_keyboard then
         self:statusbar():info_set(e.key_name)
+        if e.key_name == "s" then
+            self:statusbar():show(not self:statusbar():state("visible"))
+        elseif e.key_name == "m" then
+            self:menubar():show(not self:menubar():state("visible"))
+        elseif e.key_name == "d" then
+            self:desktop():show(not self:desktop():state("visible"))
+        end
     end
 end
 

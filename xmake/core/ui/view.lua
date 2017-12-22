@@ -22,11 +22,6 @@
 -- @file        view.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: view.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local log    = require("ui/log")
 local rect   = require("ui/rect")
@@ -218,10 +213,7 @@ end
 
 -- invalidate view to redraw it
 function view:invalidate()
-
-    -- need redraw and refresh it
     self:_mark_redraw()
-    self:_mark_refresh()
 end
 
 -- on event (abstract)
@@ -311,7 +303,9 @@ end
 function view:_mark_refresh()
 
     -- need refresh it
-    self:state_set("refresh", true)
+    if self:state("visible") then
+        self:state_set("refresh", true)
+    end
 
     -- need refresh it's parent view 
     if self:parent() then

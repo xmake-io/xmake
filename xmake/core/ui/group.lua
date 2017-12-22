@@ -22,11 +22,6 @@
 -- @file        group.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: group.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local log    = require("ui/log")
 local view   = require("ui/view")
@@ -262,11 +257,13 @@ function group:draw()
             if v:state("visible") then
                 v:draw()
                 v:state_set("redraw", false)
+                v:_mark_refresh()
             end
         end
 
         -- clear mark
         self:state_set("redraw", false)
+        self:_mark_refresh()
     else
 
         -- only draw child views
@@ -274,6 +271,7 @@ function group:draw()
             if v:state("visible") and v:state("redraw") then
                 v:draw()
                 v:state_set("redraw", false)
+                v:_mark_refresh()
             end
         end
     end

@@ -123,23 +123,31 @@ end
 -- get the current event
 function program:event()
 
+    -- get event from the event queue first
+    local event_queue = self._EVENT_QUEUE
+    if event_queue then
+        local e = event_queue[1]
+        if e then
+            table.remove(event_queue, 1)
+            return e
+        end
+    end
+
     -- get input key
     local key_code, key_name, key_meta = self:_input_key()
     if key_code then
-        if key_name == "Resize" or key_name == "CtrlL" then
-            self:change_bounds(Rect{0, 0, curses.columns(), curses.lines()})
-            self:refresh()
-        elseif key_name == "Refresh" then
-            self:refresh()
-        else
-            return event.keyboard{key_code, key_name, key_meta}
-        end
+        return event.keyboard{key_code, key_name, key_meta}
     end
 end
 
 -- put an event to view
 function program:event_put(e)
-    -- TODO
+    
+    -- init event queue
+    self._EVENT_QUEUE = self._EVENT_QUEUE or {}
+
+    -- put event to queue
+    table.insert(self._EVENT_QUEUE, e)
 end
 
 -- run program loop
