@@ -24,7 +24,9 @@
 
 -- imports
 import("core.ui.log")
+import("core.ui.rect")
 import("core.ui.view")
+import("core.ui.label")
 import("core.ui.event")
 import("core.ui.application")
 
@@ -39,6 +41,9 @@ function hello:init()
 
     -- init title
     self:menubar():title_set("Menu Bar (Hello)")
+
+    -- add title label
+    self:desktop():insert(label:new("title", rect {0, 1, 20, 2}, "hello xmake!"))
 end
 
 -- on event
