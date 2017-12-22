@@ -40,7 +40,7 @@ function label:init(name, bounds, text)
     self._TEXT = text or ""
 
     -- init color
-    self:attr_set("color", curses.color_pair("red", "white"))
+    self:attr_set("color", curses.color_pair("white", "blue"))
 end
 
 -- exit label
