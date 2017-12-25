@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        label.lua
+-- @file        button.lua
 --
 
 -- load modules
@@ -28,47 +28,48 @@ local view      = require("ui/view")
 local curses    = require("ui/curses")
 
 -- define module
-local label = label or view()
+local button = button or view()
 
--- init label
-function label:init(name, bounds, text)
+-- init button
+function button:init(name, bounds, text)
 
     -- init view
     view.init(self, name, bounds)
 
     -- init text
-    self:text_set(text)
+    self._TEXT = text or ""
 
-    -- init background
-    self:background_set(curses.color_pair("white", "blue"))
+    -- init color
+    self:attr_set("color", curses.color_pair("white", "blue"))
 end
 
--- exit label
-function label:exit()
+-- exit button
+function button:exit()
     view.exit(self)
 end
 
 -- draw view
-function label:draw()
+function button:draw()
 
-    -- draw background
-    view.draw(self)
+    -- trace
+    log:print("%s: draw ..", self)
 
     -- draw it
+    local c = self:canvas()
     local s = string.sub(self:text(), 1, self:width()) .. string.rep(' ', self:width() - #self:text())
-    self:canvas():move(0, 0):write(s)
+    c:attr(self:attr("color")):move(0, 0):write(s, self:attr("color"))
 end
 
 -- get text
-function label:text()
+function button:text()
     return self._TEXT
 end
 
 -- set text
-function label:text_set(text)
+function button:text_set(text)
     self._TEXT = text or ""
     self:invalidate()
 end
 
 -- return module
-return label
+return button

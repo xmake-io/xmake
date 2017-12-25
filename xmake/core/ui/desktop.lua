@@ -38,8 +38,8 @@ function desktop:init(name, bounds)
     -- init group
     group.init(self, name, bounds)
 
-    -- add background
-    self:insert(self:background())
+    -- init background
+    self:background_set(curses.color_pair("white", "blue"))
 end
 
 -- exit desktop
@@ -47,35 +47,12 @@ function desktop:exit()
     group.exit(self)
 end
 
--- get desktop background
-function desktop:background()
+-- draw desktop
+function desktop:draw()
 
-    -- init background
-    if not self._BACKGROUND then
-
-        -- create background view
-        local background = view:new("desktop.background", rect {0, 0, self:width(), self:height()})
-        self._BACKGROUND = background
-
-        -- init background color
-        background:attr_set("color", curses.color_pair("white", "blue"))
-
-        -- draw background
-        function background:draw()
-
-            -- trace
-            log:print("%s: draw ..", self)
-
-            -- draw it
-            local c = self:canvas()
-            c:attr(self:attr("color")):move(0, 0):write(string.rep(' ', self:width() * self:height()))
-        end
-    end
-
-    -- get background
-    return self._BACKGROUND
+    -- draw background
+    view.draw(self)
 end
-
 
 -- return module
 return desktop

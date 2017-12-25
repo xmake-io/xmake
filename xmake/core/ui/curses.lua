@@ -167,7 +167,6 @@ function curses.color_pair(fg, bg)
         os.raise("failed to initialize color pair (%d, %s, %s)", curses._NCOLORS, fg, bg)
     end
 
-    -- TODO rename
     -- get the color attr
     local attr = curses._color_pair(curses._NCOLORS)
 

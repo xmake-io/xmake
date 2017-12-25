@@ -68,7 +68,6 @@ function view:init(name, bounds)
 
     -- init attributes
     local attrs          = object()
-    attrs.color          = curses.color_pair("blue", "white") 
     self._ATTRS          = attrs
 
     -- init needed events type
@@ -178,6 +177,12 @@ function view:draw()
 
     -- clear view
     self:canvas():clear()
+
+    -- draw background
+    local background = self:background()
+    if background then
+        self:canvas():attr(background):move(0, 0):write(string.rep(' ', self:width() * self:height()))
+    end
 end
 
 -- refresh view
@@ -283,6 +288,16 @@ end
 function view:attr_set(name, value)
     self._ATTRS[name] = value
     self:invalidate()
+end
+
+-- get background
+function view:background()
+    return self:attr("background")
+end
+
+-- set background
+function view:background_set(color)
+    self:attr_set("background", color)
 end
 
 -- need redraw view

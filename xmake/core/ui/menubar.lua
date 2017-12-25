@@ -22,11 +22,6 @@
 -- @file        menubar.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: menubar.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local log       = require("ui/log")
 local view      = require("ui/view")
@@ -42,10 +37,10 @@ function menubar:init(name, bounds)
     view.init(self, name, bounds)
 
     -- init title
-    self._TITLE = "Menu Bar"
+    self:title_set("Menu Bar")
 
-    -- init color
-    self:attr_set("color", curses.color_pair("red", "white"))
+    -- init background
+    self:background_set(curses.color_pair("red", "white"))
 end
 
 -- exit menubar
@@ -56,13 +51,11 @@ end
 -- draw view
 function menubar:draw()
 
-    -- trace
-    log:print("%s: draw ..", self)
+    -- draw background
+    view.draw(self)
 
     -- draw it
-    local c = self:canvas()
-    c:attr(self:attr("color")):move(0, 0):write(string.rep(' ', self:width() * self:height()))
-    c:move(1, 0):write(self:title())
+    self:canvas():move(1, 0):write(self:title())
 end
 
 -- en event

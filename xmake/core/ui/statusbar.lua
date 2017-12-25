@@ -22,11 +22,6 @@
 -- @file        statusbar.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: statusbar.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local log       = require("ui/log")
 local view      = require("ui/view")
@@ -44,6 +39,9 @@ function statusbar:init(name, bounds, commands)
 
     -- init info
     self:info_set("")
+
+    -- init background
+    self:background_set(curses.color_pair("blue", "white"))
 end
 
 -- exit statusbar
@@ -54,22 +52,11 @@ end
 -- draw view
 function statusbar:draw()
 
-    -- trace
-    log:print("%s: draw ..", self)
-
-    -- get canvas
-    local c = self:canvas()
-    c:move(0, 0)
-
-    -- draw statusbar
-    local x = 0
-    local color = self:attr("color")
-    if x < self:width() then
-        c:attr(color):write(string.rep(' ', self:width() - x))
-    end
+    -- draw background
+    view.draw(self)
 
     -- draw status info
-    c:move(1, 0):write(self:info())
+    self:canvas():move(1, 0):write(self:info())
 end
 
 -- on event
