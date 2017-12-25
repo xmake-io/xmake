@@ -64,8 +64,6 @@ function view:init(name, bounds)
     local options        = object()
     options.selectable   = false     -- true if window can be selected
     options.top_select   = false     -- if true, selecting window will bring it to front
-    options.centerx      = false     -- center horizontaly when inserting in parent
-    options.centery      = false     -- center verticaly when inserting in parent
     self._OPTIONS        = options
 
     -- init attributes

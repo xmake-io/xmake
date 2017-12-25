@@ -43,9 +43,7 @@ function hello:init()
     self:menubar():title_set("Menu Bar (Hello)")
 
     -- add title label
-    local title = "hello xmake!"
-    local pos = (self:width() - #title) / 2
-    self:desktop():insert(label:new("title", rect {pos, 0, pos + #title, 1}, title))
+    self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello xmake!"), {centerx = true})
 end
 
 -- on event

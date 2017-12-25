@@ -90,7 +90,7 @@ function group:current()
 end
 
 -- insert view
-function group:insert(v)
+function group:insert(v, opt)
 
     -- check
     assert(not v:parent() or v:parent() == self)
@@ -103,10 +103,10 @@ function group:insert(v)
     -- center this view if centerx or centery are set
     local bounds = v:bounds()
     local org = point {bounds.sx, bounds.sy}
-    if v:option("centerx") then
+    if opt and opt.centerx then
         org.x = math.floor((self:width() - v:width()) / 2)
     end
-    if v:option("centery") then
+    if opt and opt.centery then
         org.y = math.floor((self:height() - v:height()) / 2)
     end
     bounds:move(org.x - bounds.sx, org.y - bounds.sy)
