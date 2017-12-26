@@ -51,7 +51,7 @@ end
 function desktop:draw()
 
     -- draw background
-    view.draw(self)
+    group.draw(self)
 end
 
 -- return module

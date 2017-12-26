@@ -107,26 +107,27 @@ end
 
 -- calculate attr from the attributes list
 --
--- local attr = curses.calc_attr("yellow")
--- local attr = curses.calc_attr{ curses.color_pair("yellow", "green"), 'bold' }
+-- local attr = curses.calc_attr("bold")
+-- local attr = curses.calc_attr{ curses.color_pair("yellow", "green"), "bold" }
 --
 function curses.calc_attr(attrs)
 
     -- curses.calc_attr(curses.A_BOLD)
+    -- curses.calc_attr(curses.color_pair("yellow", "green"))
     local atype = type(attrs)
-    if atype == 'number' then
+    if atype == "number" then
         return attrs
     -- curses.calc_attr("bold")
-    elseif atype == 'string' then
+    elseif atype == "string" then
         return curses.attr(attrs)
-    -- curses.calc_attr{ curses.color_pair("yellow", "green"), 'bold' }
-    elseif atype == 'table' then
+    -- curses.calc_attr{ curses.color_pair("yellow", "green"), "bold" }
+    elseif atype == "table" then
         local v = 0
         local set = {}
         for _, a in ipairs(attrs) do 
             if not set[a] and a then
                 set[a] = true
-                if type(a) == 'number' then
+                if type(a) == "number" then
                     v = v + a
                 else
                     v = v + curses.attr(a)

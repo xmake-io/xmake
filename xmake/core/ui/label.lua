@@ -54,9 +54,12 @@ function label:draw()
     -- draw background
     view.draw(self)
 
-    -- draw it
-    local s = string.sub(self:text(), 1, self:width()) .. string.rep(' ', self:width() - #self:text())
-    self:canvas():move(0, 0):write(s)
+    -- strip text string
+    local str = self:text()
+    if str and #str > 0 then
+        str = string.sub(str, 1, self:width()) 
+        self:canvas():move(0, 0):write(str)
+    end
 end
 
 -- get text
