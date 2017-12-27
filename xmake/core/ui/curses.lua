@@ -48,6 +48,12 @@ function curses.color(name)
     end
 end
 
+-- is color?
+local colors = {black = true, red = true, green = true, yellow = true, blue = true, magenta = true, cyan = true, white = true}
+function curses.iscolor(name)
+    return colors[name] or colors[name:sub(3) or ""]
+end
+
 -- get attr from the given name
 function curses.attr(name)
         if name == 'normal' then    return curses.A_NORMAL
@@ -108,6 +114,9 @@ end
 -- calculate attr from the attributes list
 --
 -- local attr = curses.calc_attr("bold")
+-- local attr = curses.calc_attr("yellow")
+-- local attr = curses.calc_attr{ "yellow", "ongreen" }
+-- local attr = curses.calc_attr{ "yellow", "ongreen", "bold" }
 -- local attr = curses.calc_attr{ curses.color_pair("yellow", "green"), "bold" }
 --
 function curses.calc_attr(attrs)
@@ -118,21 +127,41 @@ function curses.calc_attr(attrs)
     if atype == "number" then
         return attrs
     -- curses.calc_attr("bold")
+    -- curses.calc_attr("yellow")
     elseif atype == "string" then
+        if curses.iscolor(attrs) then
+            local color = attrs
+            if color:startswith("on") then
+                color = color:sub(3)
+            end
+            return curses.color_pair(color, color)
+        end
         return curses.attr(attrs)
+    -- curses.calc_attr{ "yellow", "ongreen", "bold" }
     -- curses.calc_attr{ curses.color_pair("yellow", "green"), "bold" }
     elseif atype == "table" then
         local v = 0
         local set = {}
+        local fg = nil
+        local bg = nil
         for _, a in ipairs(attrs) do 
             if not set[a] and a then
                 set[a] = true
                 if type(a) == "number" then
                     v = v + a
+                elseif curses.iscolor(a) then
+                    if a:startswith("on") then
+                        bg = a:sub(3)
+                    else
+                        fg = a
+                    end
                 else
                     v = v + curses.attr(a)
                 end
             end
+        end
+        if fg or bg then
+            v = v + curses.color_pair(fg or bg, bg or fg)
         end
         return v
     else

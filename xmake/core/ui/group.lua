@@ -246,33 +246,21 @@ end
 -- draw group 
 function group:draw()
 
-    -- draw it
-    if self:state("redraw") then
+    -- redraw group?
+    local redraw = self:state("redraw")
 
-        -- draw group background first
+    -- draw group background first
+    if redraw then
         view.draw(self)
+    end
 
-        -- draw all child views
-        for v in self:views() do
-            if v:state("visible") then
-                v:draw()
-                v:state_set("redraw", false)
-                v:_mark_refresh()
-            end
+    -- draw all child views
+    for v in self:views() do
+        if redraw then
+            v:state_set("redraw", true)
         end
-
-        -- clear mark
-        self:state_set("redraw", false)
-        self:_mark_refresh()
-    else
-
-        -- only draw child views
-        for v in self:views() do
-            if v:state("visible") and v:state("redraw") then
-                v:draw()
-                v:state_set("redraw", false)
-                v:_mark_refresh()
-            end
+        if v:state("visible") and v:state("redraw") then
+            v:draw()
         end
     end
 end

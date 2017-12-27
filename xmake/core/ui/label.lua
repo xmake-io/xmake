@@ -39,13 +39,8 @@ function label:init(name, bounds, text)
     -- init text
     self:text_set(text)
 
-    -- init background
-    self:background_set(curses.color_pair("white", "blue"))
-end
-
--- exit label
-function label:exit()
-    view.exit(self)
+    -- init text attribute
+    self:textattr_set("white")
 end
 
 -- draw view
@@ -54,11 +49,14 @@ function label:draw()
     -- draw background
     view.draw(self)
 
+    -- get the text attribute value
+    local textattr = self:textattr_val()
+
     -- strip text string
     local str = self:text()
-    if str and #str > 0 then
+    if str and #str > 0 and textattr then
         str = string.sub(str, 1, self:width()) 
-        self:canvas():move(0, 0):write(str)
+        self:canvas():attr(textattr):move(0, 0):write(str)
     end
 end
 
@@ -71,6 +69,43 @@ end
 function label:text_set(text)
     self._TEXT = text or ""
     self:invalidate()
+end
+
+-- get text attribute
+function label:textattr()
+    return self:attr("textattr")
+end
+
+-- set text attribute, .e.g textattr_set("yellow onblue bold")
+function label:textattr_set(attr)
+    self:attr_set("textattr", attr)
+end
+
+-- get the current text attribute value
+function label:textattr_val()
+
+    -- get text attribute
+    local textattr = self:textattr()
+    if not textattr then
+        return 
+    end
+
+    -- no text background? use view's background
+    if self:background() and not textattr:find("on") then
+        textattr = textattr .. " on" .. self:background()
+    end
+
+    -- attempt to get the attribute value from the cache first
+    self._TEXTATTR = self._TEXTATTR or {}
+    local value = self._TEXTATTR[textattr]
+    if value then
+        return value
+    end
+
+    -- update the cache
+    value = curses.calc_attr(textattr:split("%s+"))
+    self._TEXTATTR[textattr] = value
+    return value
 end
 
 -- return module

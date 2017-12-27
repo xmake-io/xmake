@@ -28,6 +28,7 @@ $Id: event.lua 18 2007-06-21 20:43:52Z tngd $
 --------------------------------------------------------------------------]]
 
 -- load modules
+local log    = require("ui/log")
 local object = require("ui/object")
 
 -- define module
@@ -52,6 +53,17 @@ end
 -- is command event: cm_xxx?
 function event:is_command(command)
     return self.type == event.ev_command and self.command == command
+end
+
+-- dump event
+function event:dump()
+    if self.type == event.ev_keyboard then
+        log:print("event(key): %s %s ..", self.key_name, self.key_code)
+    elseif self.type == event.ev_command then
+        log:print("event(cmd): %s ..", self.command)
+    else
+        log:print("event(%s): ..", self.type)
+    end
 end
 
 -- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 4, event.ev_max = 4

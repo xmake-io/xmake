@@ -175,14 +175,18 @@ function view:draw()
     -- trace
     log:print("%s: draw ..", self)
 
-    -- clear view
-    self:canvas():clear()
-
     -- draw background
     local background = self:background()
     if background then
+        background = curses.color_pair(background, background)
         self:canvas():attr(background):move(0, 0):write(string.rep(' ', self:width() * self:height()))
+    else
+        self:canvas():clear()
     end
+
+    -- clear mark
+    self:state_set("redraw", false)
+    self:_mark_refresh()
 end
 
 -- refresh view
@@ -292,16 +296,23 @@ end
 
 -- get background
 function view:background()
-    return self:attr("background")
+    local background = self:attr("background")
+    if not background and self:parent() then
+        background = self:parent():background()
+    end
+    return background
 end
 
--- set background
+-- set background, .e.g background_set("blue")
 function view:background_set(color)
     self:attr_set("background", color)
 end
 
 -- need redraw view
 function view:_mark_redraw()
+
+    -- trace
+    log:print("%s: mark as redraw", self)
 
     -- need redraw it
     self:state_set("redraw", true)

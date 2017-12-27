@@ -24,55 +24,34 @@
 
 -- load modules
 local log       = require("ui/log")
-local view      = require("ui/view")
+local rect      = require("ui/rect")
+local group     = require("ui/group")
+local label     = require("ui/label")
 local event     = require("ui/event")
 local curses    = require("ui/curses")
 
 -- define module
-local statusbar = statusbar or view()
+local statusbar = statusbar or group()
 
 -- init statusbar
-function statusbar:init(name, bounds, commands)
+function statusbar:init(name, bounds)
 
-    -- init view
-    view.init(self, name, bounds)
+    -- init group
+    group.init(self, name, bounds)
 
     -- init info
-    self:info_set("")
+    self._INFO = label:new("statusbar.info", rect{0, 0, self:width(), self:height()})
+    self:insert(self:info())
+    self:info():text_set("Status Bar")
+    self:info():textattr_set("blue")
 
     -- init background
-    self:background_set(curses.color_pair("blue", "white"))
-end
-
--- exit statusbar
-function statusbar:exit()
-    view.exit(self)
-end
-
--- draw view
-function statusbar:draw()
-
-    -- draw background
-    view.draw(self)
-
-    -- draw status info
-    self:canvas():move(1, 0):write(self:info())
-end
-
--- on event
-function statusbar:event_on(e)
-    view.event_on(self, e)
+    self:background_set("white")
 end
 
 -- get status info
 function statusbar:info()
     return self._INFO
-end
-
--- set status info
-function statusbar:info_set(info)
-    self._INFO = info or ""
-    self:invalidate()
 end
 
 -- return module

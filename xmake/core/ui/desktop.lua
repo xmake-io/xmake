@@ -39,19 +39,7 @@ function desktop:init(name, bounds)
     group.init(self, name, bounds)
 
     -- init background
-    self:background_set(curses.color_pair("white", "blue"))
-end
-
--- exit desktop
-function desktop:exit()
-    group.exit(self)
-end
-
--- draw desktop
-function desktop:draw()
-
-    -- draw background
-    group.draw(self)
+    self:background_set("blue")
 end
 
 -- return module

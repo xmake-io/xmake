@@ -40,7 +40,7 @@ function hello:init()
     application.init(self, "hello")
 
     -- init title
-    self:menubar():title_set("Menu Bar (Hello)")
+    self:menubar():title():text_set("Menu Bar (Hello)")
 
     -- add title label
     self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello xmake!"), {centerx = true})
@@ -50,7 +50,7 @@ end
 function hello:event_on(e)
     view.event_on(self, e)
     if e.type == event.ev_keyboard then
-        self:statusbar():info_set(e.key_name)
+        self:statusbar():info():text_set(e.key_name)
         if e.key_name == "s" then
             self:statusbar():show(not self:statusbar():state("visible"))
         elseif e.key_name == "m" then

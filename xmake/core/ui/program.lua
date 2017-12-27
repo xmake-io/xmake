@@ -176,6 +176,7 @@ function program:loop(argv)
 
         -- do event
         if e then
+            event.dump(e)
             self:event_on(e)
             sleep = false
         else

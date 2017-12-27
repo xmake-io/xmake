@@ -24,54 +24,33 @@
 
 -- load modules
 local log       = require("ui/log")
-local view      = require("ui/view")
+local rect      = require("ui/rect")
+local label     = require("ui/label")
+local group     = require("ui/group")
 local curses    = require("ui/curses")
 
 -- define module
-local menubar = menubar or view()
+local menubar = menubar or group()
 
 -- init menubar
 function menubar:init(name, bounds)
 
-    -- init view
-    view.init(self, name, bounds)
+    -- init group
+    group.init(self, name, bounds)
 
     -- init title
-    self:title_set("Menu Bar")
+    self._TITLE = label:new("menubar.title", rect{0, 0, self:width(), self:height()})
+    self:insert(self:title())
+    self:title():text_set("Menu Bar")
+    self:title():textattr_set("red")
 
     -- init background
-    self:background_set(curses.color_pair("red", "white"))
-end
-
--- exit menubar
-function menubar:exit()
-    view.exit(self)
-end
-
--- draw view
-function menubar:draw()
-
-    -- draw background
-    view.draw(self)
-
-    -- draw it
-    self:canvas():move(1, 0):write(self:title())
-end
-
--- en event
-function menubar:event_on(e)
-    view.event_on(self, e)
+    self:background_set("white")
 end
 
 -- get title
 function menubar:title()
     return self._TITLE
-end
-
--- set title
-function menubar:title_set(title)
-    self._TITLE = title or ""
-    self:invalidate()
 end
 
 -- return module
