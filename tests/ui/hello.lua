@@ -28,6 +28,7 @@ import("core.ui.rect")
 import("core.ui.view")
 import("core.ui.label")
 import("core.ui.event")
+import("core.ui.button")
 import("core.ui.application")
 
 -- the hello application
@@ -44,6 +45,12 @@ function hello:init()
 
     -- add title label
     self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello xmake!"), {centerx = true})
+
+    -- add yes button
+    self:desktop():insert(button:new("yes", rect {0, 1, 7, 2}, "< Yes >"), {centerx = true})
+
+    -- add no button
+    self:desktop():insert(button:new("no", rect {0, 2, 6, 3}, "< No >"), {centerx = true})
 end
 
 -- on event

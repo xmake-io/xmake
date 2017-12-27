@@ -24,51 +24,17 @@
 
 -- load modules
 local log       = require("ui/log")
-local view      = require("ui/view")
+local label     = require("ui/label")
 local curses    = require("ui/curses")
 
 -- define module
-local button = button or view()
+local button = button or label()
 
 -- init button
 function button:init(name, bounds, text)
 
-    -- init view
-    view.init(self, name, bounds)
-
-    -- init text
-    self._TEXT = text or ""
-
-    -- init color
-    self:attr_set("color", curses.color_pair("white", "blue"))
-end
-
--- exit button
-function button:exit()
-    view.exit(self)
-end
-
--- draw view
-function button:draw()
-
-    -- trace
-    log:print("%s: draw ..", self)
-
-    -- draw it
-    local c = self:canvas()
-    local s = string.sub(self:text(), 1, self:width()) .. string.rep(' ', self:width() - #self:text())
-    c:attr(self:attr("color")):move(0, 0):write(s, self:attr("color"))
-end
-
--- get text
-function button:text()
-    return self._TEXT
-end
-
--- set text
-function button:text_set(text)
-    self._TEXT = text or ""
-    self:invalidate()
+    -- init label
+    label.init(self, name, bounds, text)
 end
 
 -- return module
