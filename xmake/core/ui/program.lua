@@ -30,6 +30,7 @@ $Id: program.lua 18 2007-06-21 20:43:52Z tngd $
 -- load modules
 local log    = require("ui/log")
 local rect   = require("ui/rect")
+local point  = require("ui/point")
 local group  = require("ui/group")
 local event  = require("ui/event")
 local curses = require("ui/curses")
@@ -222,6 +223,9 @@ function program:refresh()
     -- refresh main window
     self:window():copy(main_window, 0, 0, 0, 0, self:height() - 1, self:width() - 1)
 
+    -- refresh cursor
+    self:_refresh_cursor()
+
     -- mark as refresh
     main_window:noutrefresh()
 
@@ -358,6 +362,55 @@ function program:_input_key()
 
     -- return key info
     return ch, key_name, alt
+end
+
+-- refresh cursor
+function program:_refresh_cursor()
+
+    -- get the top focused view
+    local focused_view = self
+    while focused_view:type() == "group" and focused_view:current() do
+        focused_view = focused_view:current()
+    end
+
+    -- get the cursor state of the top focused view
+    local cursor_state = 0
+    if focused_view and focused_view:state("cursor_visible") then
+        cursor_state = focused_view:state("block_cursor") and 2 or 1
+    end
+
+    -- get the cursor position
+    local cursor = focused_view and focused_view:cursor() or point{0, 0}
+    if cursor_state ~= 0 then
+        local v = focused_view
+        while v:parent() do
+
+            -- update the cursor position
+            cursor:addxy(v:bounds().sx, v:bounds().sy)
+
+            -- is cursor visible?
+            if cursor.x < 0 or cursor.y < 0 or cursor.x >= v:parent():width() or cursor.y >= v:parent():height() then
+                cursor_state = 0
+                break
+            end
+
+            -- get the parent view
+            v = v:parent()
+        end
+    end
+
+    -- update the cursor state
+    curses.cursor_set(cursor_state)
+
+    -- get main window
+    local main_window = curses.main_window()
+
+    -- move cursor position
+    if cursor_state ~= 0 then
+        main_window:move(cursor.y, cursor.x)
+    else
+        main_window:move(self:height() - 1, self:width() - 1)
+    end
 end
 
 -- return module

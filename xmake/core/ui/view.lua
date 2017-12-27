@@ -25,6 +25,7 @@
 -- load modules
 local log    = require("ui/log")
 local rect   = require("ui/rect")
+local point  = require("ui/point")
 local object = require("ui/object")
 local canvas = require("ui/canvas")
 local curses = require("ui/curses")
@@ -57,6 +58,8 @@ function view:init(name, bounds)
     -- init state
     local state          = object()
     state.visible        = true      -- view visibility
+    state.cursor_visible = false     -- cursor visibility
+    state.block_cursor   = false     -- block cursor
     state.selected       = false     -- current selected window inside group
     state.focused        = false     -- true if parent is also focused
     state.redraw         = true      -- need redraw 
@@ -78,7 +81,10 @@ function view:init(name, bounds)
     self._EVENTS         = events
 
     -- init name
-    self._NAME = name
+    self._NAME           = name
+
+    -- init cursor
+    self._CURSOR         = point {0, 0}
 
     -- init bounds and window
     self:bounds_set(bounds)
@@ -307,6 +313,23 @@ function view:attr_set(name, value)
     self:invalidate()
 end
 
+-- get cursor position
+function view:cursor()
+    return self._CURSOR
+end
+
+-- move cursor to the given position
+function view:cursor_move(x, y)
+    self._CURSOR = point{ self:_limit(x, 0, self:width() - 1), self:_limit(y, 0, self:height() - 1) }
+end
+
+-- show cursor?
+function view:cursor_show(visible)
+    if self:state("cursor_visible") ~= visible then
+        self:state_set("cursor_visible", visible)
+    end
+end
+
 -- get background
 function view:background()
     local background = self:attr("background")
@@ -319,6 +342,11 @@ end
 -- set background, .e.g background_set("blue")
 function view:background_set(color)
     self:attr_set("background", color)
+end
+
+-- limit value range
+function view:_limit(value, minval, maxval)
+    return math.min(maxval, math.max(value, minval))
 end
 
 -- need redraw view

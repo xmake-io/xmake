@@ -35,6 +35,12 @@ function button:init(name, bounds, text)
 
     -- init label
     label.init(self, name, bounds, text)
+
+    -- mark as selectable
+    self:option_set("selectable", true)
+
+    -- show cursor
+    self:cursor_show(true)
 end
 
 -- return module

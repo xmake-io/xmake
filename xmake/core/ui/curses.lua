@@ -208,5 +208,14 @@ function curses.color_pair(fg, bg)
     return attr
 end
 
+-- set cursor state
+curses._cursor_set = curses._cursor_set or curses.cursor_set
+function curses.cursor_set(state)
+    if curses._CURSOR_STATE ~= state then
+        curses._CURSOR_STATE = state
+        curses._cursor_set(state)
+    end
+end
+
 -- return module: curses
 return curses
