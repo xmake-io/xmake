@@ -43,5 +43,17 @@ function button:init(name, bounds, text)
     self:cursor_show(true)
 end
 
+-- set state
+function button:state_set(name, enable)
+
+    -- set label state
+    label.state_set(self, name, enable)
+
+    -- the focused text and background attribute
+    if name == "focused" then
+        -- TODO
+    end
+end
+
 -- return module
 return button

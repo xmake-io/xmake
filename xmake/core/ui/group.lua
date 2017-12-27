@@ -198,7 +198,7 @@ function group:select(v)
 end
 
 -- select the next view
-function group:select_next(forward, start)
+function group:select_next(start)
 
     -- is empty?
     if self:empty() then
@@ -208,25 +208,36 @@ function group:select_next(forward, start)
     -- get current view
     local current = start or self:current() or self:first()
 
-    -- forward?
-    if forward then
-        local next = self:next(current)
-        while next ~= current do
-            if next:option("selectable") and next:state("visible") then
-                self:select(next)
-                break
-            end
-            next = self:next(next)
+    -- select the next view
+    local next = self:next(current)
+    while next ~= current do
+        if next:option("selectable") and next:state("visible") then
+            self:select(next)
+            break
         end
-    else
-        local prev = self:prev(current)
-        while prev ~= current do
-            if prev:option("selectable") and prev:state("visible") then
-                self:select(prev)
-                break
-            end
-            prev = self:prev(prev)
+        next = self:next(next)
+    end
+end
+
+-- select the previous view
+function group:select_prev(start)
+
+    -- is empty?
+    if self:empty() then
+        return 
+    end
+
+    -- get current view
+    local current = start or self:current() or self:first()
+
+    -- select the previous view
+    local prev = self:prev(current)
+    while prev ~= current do
+        if prev:option("selectable") and prev:state("visible") then
+            self:select(prev)
+            break
         end
+        prev = self:prev(prev)
     end
 end
 
