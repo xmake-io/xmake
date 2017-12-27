@@ -40,6 +40,9 @@ function group:init(name, bounds)
     -- init view
     view.init(self, name, bounds)
 
+    -- mark as group
+    self:type_set("group")
+
     -- mark as selectable
     self:option_set("selectable", true)
 
@@ -259,7 +262,7 @@ function group:draw()
         if redraw then
             v:state_set("redraw", true)
         end
-        if v:state("visible") and v:state("redraw") then
+        if v:state("visible") and (v:state("redraw") or v:type() == "group") then
             v:draw()
         end
     end

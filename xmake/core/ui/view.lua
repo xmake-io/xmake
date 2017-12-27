@@ -51,6 +51,9 @@ function view:init(name, bounds)
     -- check
     assert(name and type(bounds) == 'table')
 
+    -- init type
+    self._TYPE           = "view"
+
     -- init state
     local state          = object()
     state.visible        = true      -- view visibility
@@ -245,6 +248,16 @@ end
 -- register an event type
 function view:event_register(etype)
     self._EVENTS[etype] = true
+end
+
+-- get type
+function view:type()
+    return self._TYPE
+end
+
+-- set type
+function view:type_set(t)
+    self._TYPE = t or "view"
 end
 
 -- get state
