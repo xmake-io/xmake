@@ -31,12 +31,12 @@ $Id: program.lua 18 2007-06-21 20:43:52Z tngd $
 local log    = require("ui/log")
 local rect   = require("ui/rect")
 local point  = require("ui/point")
-local group  = require("ui/group")
+local panel  = require("ui/panel")
 local event  = require("ui/event")
 local curses = require("ui/curses")
 
 -- define module
-local program = program or group()
+local program = program or panel()
 
 -- init program
 function program:init(name)
@@ -78,15 +78,15 @@ function program:init(name)
     -- get 8-bits character for getch()
     main_window:meta(true)
 
-    -- init group
-    group.init(self, name, rect {0, 0, curses.columns(), curses.lines()})
+    -- init panel
+    panel.init(self, name, rect {0, 0, curses.columns(), curses.lines()})
 end
 
 -- exit program
 function program:exit()
 
-    -- exit group
-    group.exit(self)
+    -- exit panel
+    panel.exit(self)
 
     -- (attempt to) make sure the screen will be cleared
     -- if not restored by the curses driver
@@ -212,7 +212,7 @@ function program:refresh()
     end
 
     -- refresh views
-    group.refresh(self)
+    panel.refresh(self)
 
     -- trace
     log:print("%s: refresh ..", self)
@@ -369,7 +369,7 @@ function program:_refresh_cursor()
 
     -- get the top focused view
     local focused_view = self
-    while focused_view:type() == "group" and focused_view:current() do
+    while focused_view:type() == "panel" and focused_view:current() do
         focused_view = focused_view:current()
     end
 

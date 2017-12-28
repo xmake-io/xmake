@@ -26,17 +26,17 @@
 local log       = require("ui/log")
 local rect      = require("ui/rect")
 local label     = require("ui/label")
-local group     = require("ui/group")
+local panel     = require("ui/panel")
 local curses    = require("ui/curses")
 
 -- define module
-local menubar = menubar or group()
+local menubar = menubar or panel()
 
 -- init menubar
 function menubar:init(name, bounds)
 
-    -- init group
-    group.init(self, name, bounds)
+    -- init panel
+    panel.init(self, name, bounds)
 
     -- init title
     self._TITLE = label:new("menubar.title", rect{0, 0, self:width(), self:height()})

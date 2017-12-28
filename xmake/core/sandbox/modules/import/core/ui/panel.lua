@@ -19,8 +19,8 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        group.lua
+-- @file        panel.lua
 --
 
--- return module: group
-return require("ui/group")
+-- return module: panel
+return require("ui/panel")

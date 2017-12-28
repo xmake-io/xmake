@@ -26,17 +26,17 @@
 local log    = require("ui/log")
 local rect   = require("ui/rect")
 local view   = require("ui/view")
-local group  = require("ui/group")
+local panel  = require("ui/panel")
 local curses = require("ui/curses")
 
 -- define module
-local desktop = desktop or group()
+local desktop = desktop or panel()
 
 -- init desktop
 function desktop:init(name, bounds)
 
-    -- init group
-    group.init(self, name, bounds)
+    -- init panel
+    panel.init(self, name, bounds)
 
     -- init background
     self:background_set("blue")

@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2017, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        group.lua
+-- @file        panel.lua
 --
 
 -- load modules
@@ -32,16 +32,16 @@ local curses = require("ui/curses")
 local dlist  = require("base/dlist")
 
 -- define module
-local group = group or view()
+local panel = panel or view()
 
--- init group
-function group:init(name, bounds)
+-- init panel
+function panel:init(name, bounds)
 
     -- init view
     view.init(self, name, bounds)
 
-    -- mark as group
-    self:type_set("group")
+    -- mark as panel
+    self:type_set("panel")
 
     -- mark as selectable
     self:option_set("selectable", true)
@@ -50,55 +50,55 @@ function group:init(name, bounds)
     self._VIEWS = dlist()
 end
 
--- exit group
-function group:exit()
+-- exit panel
+function panel:exit()
 
     -- exit view
     view.exit(self)
 end
 
 -- get all child views
-function group:views()
+function panel:views()
     return self._VIEWS:items()
 end
 
 -- get views count
-function group:count()
+function panel:count()
     return self._VIEWS:size()
 end
 
 -- is empty?
-function group:empty()
+function panel:empty()
     return self._VIEWS:empty()
 end
 
 -- get the first view
-function group:first()
+function panel:first()
     return self._VIEWS:first()
 end
 
 -- get the next view
-function group:next(v)
+function panel:next(v)
     return self._VIEWS:next(v)
 end
 
 -- get the previous view
-function group:prev(v)
+function panel:prev(v)
     return self._VIEWS:prev(v)
 end
 
 -- get the current selected child view
-function group:current()
+function panel:current()
     return self._CURRENT
 end
 
 -- insert view
-function group:insert(v, opt)
+function panel:insert(v, opt)
 
     -- check
     assert(not v:parent() or v:parent() == self)
 
-    -- this view has been inserted into this group? remove it first
+    -- this view has been inserted into this panel? remove it first
     if v:parent() == self then
         self:remove(v)
     end
@@ -131,7 +131,7 @@ function group:insert(v, opt)
 end
 
 -- remove view
-function group:remove(v)
+function panel:remove(v)
 
     -- check
     assert(v:parent() == self)
@@ -156,7 +156,7 @@ function group:remove(v)
 end
 
 -- select the child view
-function group:select(v)
+function panel:select(v)
 
     -- check
     assert(v == nil or (v:parent() == self and v:option("selectable")))
@@ -198,7 +198,7 @@ function group:select(v)
 end
 
 -- select the next view
-function group:select_next(start)
+function panel:select_next(start)
 
     -- is empty?
     if self:empty() then
@@ -220,7 +220,7 @@ function group:select_next(start)
 end
 
 -- select the previous view
-function group:select_prev(start)
+function panel:select_prev(start)
 
     -- is empty?
     if self:empty() then
@@ -242,7 +242,7 @@ function group:select_prev(start)
 end
 
 -- on event
-function group:event_on(e)
+function panel:event_on(e)
 
     -- is empty views?
     if self:empty() then
@@ -257,13 +257,13 @@ function group:event_on(e)
     end
 end
 
--- draw group 
-function group:draw()
+-- draw panel 
+function panel:draw()
 
-    -- redraw group?
+    -- redraw panel?
     local redraw = self:state("redraw")
 
-    -- draw group background first
+    -- draw panel background first
     if redraw then
         view.draw(self)
     end
@@ -273,14 +273,14 @@ function group:draw()
         if redraw then
             v:state_set("redraw", true)
         end
-        if v:state("visible") and (v:state("redraw") or v:type() == "group") then
+        if v:state("visible") and (v:state("redraw") or v:type() == "panel") then
             v:draw()
         end
     end
 end
 
--- refresh group
-function group:refresh()
+-- refresh panel
+function panel:refresh()
 
     -- need not refresh? do not refresh it
     if not self:state("refresh") then
@@ -303,12 +303,12 @@ function group:refresh()
 end
 
 -- dump all views
-function group:dump()
+function panel:dump()
     log:print("%s", self:_tostring(1))
 end
 
--- tostring(group, level)
-function group:_tostring(level)
+-- tostring(panel, level)
+function panel:_tostring(level)
     local str = ""
     if self.views then  
         str = str .. string.format("<%s %s>", self:name(), tostring(self:bounds()))
@@ -319,7 +319,7 @@ function group:_tostring(level)
             for l = 1, level do
                 str = str .. "    "
             end
-            str = str .. group._tostring(v, level + 1) .. "\n"
+            str = str .. panel._tostring(v, level + 1) .. "\n"
         end  
     else
         str = tostring(self)
@@ -327,11 +327,11 @@ function group:_tostring(level)
     return str
 end
 
--- tostring(group)
-function group:__tostring()
-    return string.format("<group(%s) %s>", self:name(), tostring(self:bounds()))
+-- tostring(panel)
+function panel:__tostring()
+    return string.format("<panel(%s) %s>", self:name(), tostring(self:bounds()))
 end
 
 
 -- return module
-return group
+return panel

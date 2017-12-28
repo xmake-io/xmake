@@ -60,7 +60,7 @@ function view:init(name, bounds)
     state.visible        = true      -- view visibility
     state.cursor_visible = false     -- cursor visibility
     state.block_cursor   = false     -- block cursor
-    state.selected       = false     -- current selected window inside group
+    state.selected       = false     -- current selected window inside panel
     state.focused        = false     -- true if parent is also focused
     state.redraw         = true      -- need redraw 
     state.refresh        = true      -- need refresh

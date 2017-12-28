@@ -25,19 +25,19 @@
 -- load modules
 local log       = require("ui/log")
 local rect      = require("ui/rect")
-local group     = require("ui/group")
+local panel     = require("ui/panel")
 local label     = require("ui/label")
 local event     = require("ui/event")
 local curses    = require("ui/curses")
 
 -- define module
-local statusbar = statusbar or group()
+local statusbar = statusbar or panel()
 
 -- init statusbar
 function statusbar:init(name, bounds)
 
-    -- init group
-    group.init(self, name, bounds)
+    -- init panel
+    panel.init(self, name, bounds)
 
     -- init info
     self._INFO = label:new("statusbar.info", rect{0, 0, self:width(), self:height()})
