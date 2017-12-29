@@ -55,7 +55,9 @@ end
 
 -- on event
 function hello:event_on(e)
-    view.event_on(self, e)
+    if view.event_on(self, e) then
+        return true
+    end
     if e.type == event.ev_keyboard then
         self:statusbar():info():text_set(e.key_name)
         if e.key_name == "s" then

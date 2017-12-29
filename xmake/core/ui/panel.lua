@@ -50,13 +50,6 @@ function panel:init(name, bounds)
     self._VIEWS = dlist()
 end
 
--- exit panel
-function panel:exit()
-
-    -- exit view
-    view.exit(self)
-end
-
 -- get all child views
 function panel:views()
     return self._VIEWS:items()
@@ -251,8 +244,8 @@ function panel:event_on(e)
 
     -- send event to all child views
     for v in self:views() do
-        if v:event_need(e) then
-            v:event_on(e)
+        if v:event_on(e) then
+            return true
         end
     end
 end

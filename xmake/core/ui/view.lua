@@ -76,10 +76,6 @@ function view:init(name, bounds)
     local attrs          = object()
     self._ATTRS          = attrs
 
-    -- init needed events type
-    local events         = object()
-    self._EVENTS         = events
-
     -- init name
     self._NAME           = name
 
@@ -233,6 +229,9 @@ function view:invalidate()
 end
 
 -- on event (abstract)
+-- 
+-- @return true: done and break dispatching, false/nil: continous to dispatch to other views
+--
 function view:event_on(e)
 end
 
@@ -244,16 +243,6 @@ end
 -- put an event to view
 function view:event_put(e)
     return self:parent() and self:parent():event_put(e)
-end
-
--- need this event?
-function view:event_need(e)
-    return self._EVENTS[e.type]
-end
-
--- register an event type
-function view:event_register(etype)
-    self._EVENTS[etype] = true
 end
 
 -- get type

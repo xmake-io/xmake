@@ -62,9 +62,6 @@ function application:init(name)
     self:insert(self:menubar())
     self:insert(self:desktop())
 
-    -- register event type
-    self:event_register(event.ev_keyboard)
-
     -- trace
     log:print("<application: %s>: init ok", name)
 end
