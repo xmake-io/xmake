@@ -380,7 +380,7 @@ function program:_refresh_cursor()
     end
 
     -- get the cursor position
-    local cursor = focused_view and focused_view:cursor() or point{0, 0}
+    local cursor = focused_view and focused_view:cursor()() or point{0, 0}
     if cursor_state ~= 0 then
         local v = focused_view
         while v:parent() do
@@ -404,6 +404,9 @@ function program:_refresh_cursor()
 
     -- get main window
     local main_window = curses.main_window()
+
+    -- trace
+    log:print("cursor(%s): %s, %d", focused_view, cursor, cursor_state)
 
     -- move cursor position
     if cursor_state ~= 0 then

@@ -80,7 +80,7 @@ function view:init(name, bounds)
     self._NAME           = name
 
     -- init cursor
-    self._CURSOR         = point {0, 0}
+    self._CURSOR         = point{0, 0}
 
     -- init bounds and window
     self:bounds_set(bounds)
