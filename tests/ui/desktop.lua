@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        hello.lua
+-- @file        desktop.lua
 --
 
 -- imports
@@ -31,14 +31,19 @@ import("core.ui.event")
 import("core.ui.button")
 import("core.ui.application")
 
--- the hello application
-local hello = application()
+-- the demo application
+local demo = application()
 
--- init hello
-function hello:init()
+-- init demo
+function demo:init()
 
     -- init name 
-    application.init(self, "hello")
+    application.init(self, "demo")
+
+    -- show desktop, menubar and statusbar
+    self:insert(self:desktop())
+    self:insert(self:menubar())
+    self:insert(self:statusbar())
 
     -- init title
     self:menubar():title():text_set("Menu Bar (Hello)")
@@ -54,7 +59,7 @@ function hello:init()
 end
 
 -- on event
-function hello:event_on(e)
+function demo:event_on(e)
     if view.event_on(self, e) then
         return true
     end
@@ -74,5 +79,5 @@ end
 
 -- main entry
 function main(...)
-    hello:run(...)
+    demo:run(...)
 end

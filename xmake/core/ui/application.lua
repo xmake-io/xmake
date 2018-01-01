@@ -22,11 +22,6 @@
 -- @file        application.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: application.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local os        = require("base/os")
 local log       = require("ui/log")
@@ -56,11 +51,6 @@ function application:init(name)
 
     -- save application
     self:application_set(self)
-
-    -- add menubar, statusbar and desktop
-    self:insert(self:statusbar())
-    self:insert(self:menubar())
-    self:insert(self:desktop())
 
     -- trace
     log:print("<application: %s>: init ok", name)

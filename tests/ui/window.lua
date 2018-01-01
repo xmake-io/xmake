@@ -19,38 +19,35 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        menubar.lua
+-- @file        window.lua
 --
 
--- load modules
-local log       = require("ui/log")
-local rect      = require("ui/rect")
-local label     = require("ui/label")
-local panel     = require("ui/panel")
-local curses    = require("ui/curses")
+-- imports
+import("core.ui.log")
+import("core.ui.rect")
+import("core.ui.view")
+import("core.ui.label")
+import("core.ui.event")
+import("core.ui.window")
+import("core.ui.application")
 
--- define module
-local menubar = menubar or panel()
+-- the demo application
+local demo = application()
 
--- init menubar
-function menubar:init(name, bounds)
+-- init demo
+function demo:init()
 
-    -- init panel
-    panel.init(self, name, bounds)
-
-    -- init title
-    self._TITLE = label:new("menubar.title", rect{0, 0, self:width(), self:height()}, "Menu Bar")
-    self:insert(self:title())
-    self:title():textattr_set("red")
+    -- init name 
+    application.init(self, "demo")
 
     -- init background
-    self:background_set("white")
+    self:background_set("blue")
+
+    -- init main window
+    self:insert(window:new("window.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main window"))
 end
 
--- get title
-function menubar:title()
-    return self._TITLE
+-- main entry
+function main(...)
+    demo:run(...)
 end
-
--- return module
-return menubar

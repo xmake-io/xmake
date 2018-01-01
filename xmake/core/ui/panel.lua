@@ -129,12 +129,6 @@ function panel:remove(v)
     -- check
     assert(v:parent() == self)
 
-    -- lock
-    self:lock()
-
-    -- hide this view first
-    v:show(false)
-
     -- remove view
     self._VIEWS:remove(v)
 
@@ -143,9 +137,6 @@ function panel:remove(v)
         self._CURRENT = nil
         self:select_next()
     end
-
-    -- unlock
-    self:unlock()
 end
 
 -- select the child view
@@ -203,7 +194,7 @@ function panel:select_next(start)
 
     -- select the next view
     local next = self:next(current)
-    while next ~= current do
+    while next and next ~= current do
         if next:option("selectable") and next:state("visible") then
             self:select(next)
             break
@@ -225,7 +216,7 @@ function panel:select_prev(start)
 
     -- select the previous view
     local prev = self:prev(current)
-    while prev ~= current do
+    while prev and prev ~= current do
         if prev:option("selectable") and prev:state("visible") then
             self:select(prev)
             break
