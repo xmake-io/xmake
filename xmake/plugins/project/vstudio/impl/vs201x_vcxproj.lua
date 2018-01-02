@@ -30,7 +30,7 @@ import("vsfile")
 -- make compiling flags
 function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
-    -- translate path for -Idir or /Idir, -Fdsymbol.pdb or /Fdsymbol.pdb
+    -- translate path for -Idir or /Idir
     local flags = {}
     for _, flag in ipairs(targetinfo.compflags[sourcefile]) do
 
@@ -276,6 +276,17 @@ function _make_source_options(vcxprojfile, flags, condition)
         vcxprojfile:print("<RuntimeLibrary%s>MultiThreaded</RuntimeLibrary>", condition)
     end
 
+    -- make AdditionalIncludeDirectories
+    if flagstr:find("[%-|/]I") then
+        local dirs = {}
+        for _, flag in ipairs(flags) do
+            flag:gsub("[%-|/]I(.*)", function (dir) table.insert(dirs, dir) end)
+        end
+        if #dirs > 0 then
+            vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
+        end
+    end
+
     -- complie as c++ if exists flag: /TP
     if flagstr:find("[%-|/]TP") then
         vcxprojfile:print("<CompileAs%s>CompileAsCpp</CompileAs>", condition)
@@ -283,7 +294,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp"}
+    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I"}
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
