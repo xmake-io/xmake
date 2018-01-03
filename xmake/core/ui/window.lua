@@ -38,15 +38,50 @@ function window:init(name, bounds, title)
     -- init panel
     panel.init(self, name, bounds)
 
-    -- init background
-    self:background_set("white")
+    -- TODO check bounds
 
     -- init title
     if title then
         self._TITLE = label:new("window.title", rect{0, 0, #title, 1}, title)
-        self:insert(self:title(), {centerx = true})
         self:title():textattr_set("blue bold")
     end
+
+    -- insert frame
+    self:insert(self:frame())
+end
+
+-- draw window
+function window:draw()
+
+    -- draw background
+    panel.draw(self)
+
+    -- draw shadow
+    local shadow = curses.color_pair("black", "black")
+    self:canvas():attr(shadow):move(2, self:height() - 1):write(string.rep(' ', self:width() - 2))
+    for y = 1, self:height() - 1 do
+        self:canvas():move(self:width() - 2, y):write('  ')
+    end
+
+    -- TODO draw line
+    -- draw border
+    local border = curses.color_pair("black", "white")
+    self:canvas():attr(border):move(0, self:height() - 2):write(' ')
+    self:canvas():move(1, self:height() - 2):write(string.rep('-', self:width() - 4))
+    self:canvas():move(self:width() - 3, 0):write('-')
+    for y = 1, self:height() - 2 do
+        self:canvas():move(self:width() - 3, y):write('|')
+    end
+end
+
+-- get frame
+function window:frame()
+    if not self._FRAME then
+        self._FRAME = panel:new("window.panel", rect{0, 0, self:width() - 3, self:height() - 2})
+        self._FRAME:background_set("white")
+        self._FRAME:insert(self:title(), {centerx = true})
+    end
+    return self._FRAME
 end
 
 -- get title
