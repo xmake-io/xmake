@@ -22,16 +22,13 @@
 -- @file        canvas.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: canvas.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
+local log    = require("ui/log")
 local object = require("ui/object")
 local curses = require("ui/curses")
 
 -- define module
+local line   = line or object()
 local canvas = canvas or object()
 
 -- new canvas instance
@@ -64,30 +61,42 @@ function canvas:move(x, y)
     return self
 end
 
--- get canvas border
-function canvas:border()
-    self._window:border()
-    return self
+-- get the current position
+function canvas:pos(x, y)
+    local y, x = self._window:getyx()
+    return x, y
 end
 
--- write a character to canvas
-function canvas:write_ch(ch)
-    self._window:addch(ch)
-    return self
-end
-
--- write an acs character
-function canvas:write_acs(ch)
-    return self:write_ch(curses.acs(ch))
-end
-
--- write a string to canvas
-function canvas:write(str, len)
-    if type(str) == 'string' then
-        self._window:addstr(str, len)
-    else
-        self._window:addchstr(str._line, len)
+-- put character to canvas
+function canvas:putchar(ch, n, vertical)
+    
+    -- acs character?
+    if type(ch) == "string" and #ch > 1 then
+        ch = curses.acs(ch)
     end
+
+    -- draw characters
+    n = n or 1
+    if vertical then
+        local x, y = self:pos()
+        while n > 0 do
+            self:move(x, y)
+            self._window:addch(ch)
+            n = n - 1
+            y = y + 1
+        end
+    else
+        while n > 0 do
+            self._window:addch(ch)
+            n = n - 1
+        end
+    end
+    return self
+end
+
+-- put a string to canvas
+function canvas:puts(str, len)
+    self._window:addstr(str, len)
     return self
 end
 

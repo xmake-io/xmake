@@ -72,40 +72,40 @@ end
 
 -- get acs character from the given name
 function curses.acs(name)
-        if char == 'block' then     return curses.ACS_BLOCK
-    elseif char == 'board' then     return curses.ACS_BOARD
-    elseif char == 'btee' then      return curses.ACS_BTEE
-    elseif char == 'bullet' then    return curses.ACS_BULLET
-    elseif char == 'ckboard' then   return curses.ACS_CKBOARD
-    elseif char == 'darrow' then    return curses.ACS_DARROW
-    elseif char == 'degree' then    return curses.ACS_DEGREE
-    elseif char == 'diamond' then   return curses.ACS_DIAMOND
-    elseif char == 'gequal' then    return curses.ACS_GEQUAL
-    elseif char == 'hline' then     return curses.ACS_HLINE
-    elseif char == 'lantern' then   return curses.ACS_LANTERN
-    elseif char == 'larrow' then    return curses.ACS_LARROW
-    elseif char == 'lequal' then    return curses.ACS_LEQUAL
-    elseif char == 'llcorner' then  return curses.ACS_LLCORNER
-    elseif char == 'lrcorner' then  return curses.ACS_LRCORNER
-    elseif char == 'ltee' then      return curses.ACS_LTEE
-    elseif char == 'nequal' then    return curses.ACS_NEQUAL
-    elseif char == 'pi' then        return curses.ACS_PI
-    elseif char == 'plminus' then   return curses.ACS_PLMINUS
-    elseif char == 'plus' then      return curses.ACS_PLUS
-    elseif char == 'rarrow' then    return curses.ACS_RARROW
-    elseif char == 'rtee' then      return curses.ACS_RTEE
-    elseif char == 's1' then        return curses.ACS_S1
-    elseif char == 's3' then        return curses.ACS_S3
-    elseif char == 's7' then        return curses.ACS_S7
-    elseif char == 's9' then        return curses.ACS_S9
-    elseif char == 'sterling' then  return curses.ACS_STERLING
-    elseif char == 'ttee' then      return curses.ACS_TTEE
-    elseif char == 'uarrow' then    return curses.ACS_UARROW
-    elseif char == 'ulcorner' then  return curses.ACS_ULCORNER
-    elseif char == 'urcorner' then  return curses.ACS_URCORNER
-    elseif char == 'vline' then     return curses.ACS_VLINE
-    elseif type(char) == 'string' and #char == 1 then
-        return char
+        if name == 'block' then     return curses.ACS_BLOCK
+    elseif name == 'board' then     return curses.ACS_BOARD
+    elseif name == 'btee' then      return curses.ACS_BTEE
+    elseif name == 'bullet' then    return curses.ACS_BULLET
+    elseif name == 'ckboard' then   return curses.ACS_CKBOARD
+    elseif name == 'darrow' then    return curses.ACS_DARROW
+    elseif name == 'degree' then    return curses.ACS_DEGREE
+    elseif name == 'diamond' then   return curses.ACS_DIAMOND
+    elseif name == 'gequal' then    return curses.ACS_GEQUAL
+    elseif name == 'hline' then     return curses.ACS_HLINE
+    elseif name == 'lantern' then   return curses.ACS_LANTERN
+    elseif name == 'larrow' then    return curses.ACS_LARROW
+    elseif name == 'lequal' then    return curses.ACS_LEQUAL
+    elseif name == 'llcorner' then  return curses.ACS_LLCORNER
+    elseif name == 'lrcorner' then  return curses.ACS_LRCORNER
+    elseif name == 'ltee' then      return curses.ACS_LTEE
+    elseif name == 'nequal' then    return curses.ACS_NEQUAL
+    elseif name == 'pi' then        return curses.ACS_PI
+    elseif name == 'plminus' then   return curses.ACS_PLMINUS
+    elseif name == 'plus' then      return curses.ACS_PLUS
+    elseif name == 'rarrow' then    return curses.ACS_RARROW
+    elseif name == 'rtee' then      return curses.ACS_RTEE
+    elseif name == 's1' then        return curses.ACS_S1
+    elseif name == 's3' then        return curses.ACS_S3
+    elseif name == 's7' then        return curses.ACS_S7
+    elseif name == 's9' then        return curses.ACS_S9
+    elseif name == 'sterling' then  return curses.ACS_STERLING
+    elseif name == 'ttee' then      return curses.ACS_TTEE
+    elseif name == 'uarrow' then    return curses.ACS_UARROW
+    elseif name == 'ulcorner' then  return curses.ACS_ULCORNER
+    elseif name == 'urcorner' then  return curses.ACS_URCORNER
+    elseif name == 'vline' then     return curses.ACS_VLINE
+    elseif type(name) == 'string' and #name == 1 then
+        return name
     else
         return ' '
     end

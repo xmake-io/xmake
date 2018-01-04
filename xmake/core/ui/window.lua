@@ -38,7 +38,8 @@ function window:init(name, bounds, title)
     -- init panel
     panel.init(self, name, bounds)
 
-    -- TODO check bounds
+    -- check bounds
+    assert(self:width() > 4 and self:height() > 3, string.format("%s: too small!", self))
 
     -- init title
     if title then
@@ -48,6 +49,12 @@ function window:init(name, bounds, title)
 
     -- insert frame
     self:insert(self:frame())
+
+    -- init shadow
+    self:shadow_set("black")
+
+    -- init border
+    self:border_set("black")
 end
 
 -- draw window
@@ -57,20 +64,23 @@ function window:draw()
     panel.draw(self)
 
     -- draw shadow
-    local shadow = curses.color_pair("black", "black")
-    self:canvas():attr(shadow):move(2, self:height() - 1):write(string.rep(' ', self:width() - 2))
-    for y = 1, self:height() - 1 do
-        self:canvas():move(self:width() - 2, y):write('  ')
+    local shadow = self:shadow()
+    if shadow then
+        self:canvas():attr(curses.color_pair(shadow, shadow))
+        self:canvas():move(2, self:height() - 1):putchar(' ', self:width() - 2)
+        self:canvas():move(self:width() - 2, 1):putchar(' ', self:height() - 1, true)
+        self:canvas():move(self:width() - 1, 1):putchar(' ', self:height() - 1, true)
     end
 
-    -- TODO draw line
     -- draw border
-    local border = curses.color_pair("black", "white")
-    self:canvas():attr(border):move(0, self:height() - 2):write(' ')
-    self:canvas():move(1, self:height() - 2):write(string.rep('-', self:width() - 4))
-    self:canvas():move(self:width() - 3, 0):write('-')
-    for y = 1, self:height() - 2 do
-        self:canvas():move(self:width() - 3, y):write('|')
+    local border = self:border()
+    if border then
+        self:canvas():attr(curses.color_pair(border, self:frame():background()))
+        self:canvas():move(0, self:height() - 2):putchar(' ')
+        self:canvas():move(1, self:height() - 2):putchar("hline", self:width() - 4)
+        self:canvas():move(self:width() - 3, 0):putchar('urcorner')
+        self:canvas():move(self:width() - 3, 1):putchar('vline', self:height() - 3, true)
+        self:canvas():move(self:width() - 3, self:height() - 2):putchar('lrcorner')
     end
 end
 
@@ -87,6 +97,28 @@ end
 -- get title
 function window:title()
     return self._TITLE
+end
+
+-- get shadow 
+function window:shadow()
+    return self._SHADOW
+end
+
+-- set shadow
+function window:shadow_set(shadow)
+    self._SHADOW = shadow
+    self:invalidate()
+end
+
+-- get border 
+function window:border()
+    return self._BORDER
+end
+
+-- set border
+function window:border_set(border)
+    self._BORDER = border
+    self:invalidate()
 end
 
 -- return module
