@@ -90,7 +90,9 @@ function window:frame()
     if not self._FRAME then
         self._FRAME = panel:new("window.panel", rect{0, 0, self:width(), self:height()})
         self._FRAME:background_set("white")
-        self._FRAME:insert(self:title(), {centerx = true})
+        if self:title() then
+            self._FRAME:insert(self:title(), {centerx = true})
+        end
     end
     return self._FRAME
 end
