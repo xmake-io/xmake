@@ -75,19 +75,20 @@ function window:draw()
     -- draw border
     local border = self:border()
     if border then
+        local fbounds = self:frame():bounds()
         self:canvas():attr(curses.color_pair(border, self:frame():background()))
-        self:canvas():move(0, self:height() - 2):putchar(' ')
-        self:canvas():move(1, self:height() - 2):putchar("hline", self:width() - 4)
-        self:canvas():move(self:width() - 3, 0):putchar('urcorner')
-        self:canvas():move(self:width() - 3, 1):putchar('vline', self:height() - 3, true)
-        self:canvas():move(self:width() - 3, self:height() - 2):putchar('lrcorner')
+        self:canvas():move(0, fbounds.ey):putchar(' ')
+        self:canvas():move(1, fbounds.ey):putchar("hline", fbounds.ex)
+        self:canvas():move(fbounds.ex, 0):putchar('urcorner')
+        self:canvas():move(fbounds.ex, 1):putchar('vline', fbounds.ey, true)
+        self:canvas():move(fbounds.ex, fbounds.ey):putchar('lrcorner')
     end
 end
 
 -- get frame
 function window:frame()
     if not self._FRAME then
-        self._FRAME = panel:new("window.panel", rect{0, 0, self:width() - 3, self:height() - 2})
+        self._FRAME = panel:new("window.panel", rect{0, 0, self:width(), self:height()})
         self._FRAME:background_set("white")
         self._FRAME:insert(self:title(), {centerx = true})
     end
@@ -106,6 +107,11 @@ end
 
 -- set shadow
 function window:shadow_set(shadow)
+    if not self._SHADOW and shadow then
+        self:frame():bounds():movee(-2, -1)
+    elseif self._SHADOW and not shadow then
+        self:frame():bounds():movee(2, 1)
+    end
     self._SHADOW = shadow
     self:invalidate()
 end
@@ -117,6 +123,11 @@ end
 
 -- set border
 function window:border_set(border)
+    if not self._BORDER and border then
+        self:frame():bounds():movee(-1, -1)
+    elseif self._BORDER and not border then
+        self:frame():bounds():movee(1, 1)
+    end
     self._BORDER = border
     self:invalidate()
 end
