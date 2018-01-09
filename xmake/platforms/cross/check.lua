@@ -48,8 +48,8 @@ function _toolchains(config)
     local cross = ""
     for _, toolchain in ipairs(find_cross_toolchains(config.get("sdk") or config.get("toolchains"), {bin = config.get("toolchains"), cross = config.get("cross")})) do
         if toolchain.bin and toolchain.cross then
-            config.set("cross", toolchain.cross)
-            config.set("toolchains", toolchain.bin)
+            config.set("cross", toolchain.cross, {readonly = true, force = true})
+            config.set("toolchains", toolchain.bin, {readonly = true, force = true})
             cross = toolchain.cross
             break
         end

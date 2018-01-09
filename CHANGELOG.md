@@ -10,6 +10,10 @@
 * Support to run xmake on linux (arm, arm64)
 * Improve to generate vs201x project plugin
 
+### Bugs fixed
+
+* Fix `xmake f --cross` error
+
 ## v2.1.9
 
 ### New features
@@ -428,6 +432,10 @@
 * 升级luajit到最新2.1.0-beta3
 * 增加对linux/arm, arm64的支持，可以在arm linux上运行xmake
 * 改进vs201x工程生成插件，更好的includedirs设置支持
+
+## Bugs修复
+
+* 修复`xmake f --cross`无法配置问题
 
 ## v2.1.9
 
