@@ -41,10 +41,14 @@ function window:init(name, bounds, title)
     -- check bounds
     assert(self:width() > 4 and self:height() > 3, string.format("%s: too small!", self))
 
+    -- init background
+    self:background_set("white")
+
     -- init title
     if title then
         self._TITLE = label:new("window.title", rect{0, 0, #title, 1}, title)
         self:title():textattr_set("blue bold")
+        self:insert(self:title(), {centerx = true})
     end
 
     -- insert frame
@@ -54,7 +58,7 @@ function window:init(name, bounds, title)
     self:shadow_set("black")
 
     -- init border
-    self:border_set("black")
+    self:border_set({"white", "black"})
 end
 
 -- draw window
@@ -66,6 +70,10 @@ function window:draw()
     -- draw shadow
     local shadow = self:shadow()
     if shadow then
+        local parent = assert(self:parent())
+        self:canvas():attr(curses.color_pair(parent:background(), parent:background()))
+        self:canvas():move(0, self:height() - 1):putchar(' ', 2)
+        self:canvas():move(self:width() - 2, 0):putchar(' ', 2)
         self:canvas():attr(curses.color_pair(shadow, shadow))
         self:canvas():move(2, self:height() - 1):putchar(' ', self:width() - 2)
         self:canvas():move(self:width() - 2, 1):putchar(' ', self:height() - 1, true)
@@ -76,12 +84,25 @@ function window:draw()
     local border = self:border()
     if border then
         local fbounds = self:frame():bounds()
-        self:canvas():attr(curses.color_pair(border, self:frame():background()))
-        self:canvas():move(0, fbounds.ey):putchar(' ')
+
+        -- draw left and top border
+        self:canvas():attr(curses.color_pair(border[1], self:frame():background()))
+        self:canvas():move(0, 0):putchar("hline", fbounds.ex)
+        self:canvas():move(0, 0):putchar('ulcorner')
+        self:canvas():move(0, 1):putchar('vline', fbounds.ey, true)
+        self:canvas():move(0, fbounds.ey):putchar('llcorner')
+
+        -- draw bottom and right border
+        self:canvas():attr(curses.color_pair(border[2], self:frame():background()))
         self:canvas():move(1, fbounds.ey):putchar("hline", fbounds.ex)
         self:canvas():move(fbounds.ex, 0):putchar('urcorner')
         self:canvas():move(fbounds.ex, 1):putchar('vline', fbounds.ey, true)
         self:canvas():move(fbounds.ex, fbounds.ey):putchar('lrcorner')
+    end
+
+    -- draw title
+    if self:title() then
+        label.draw(self:title())
     end
 end
 
@@ -89,10 +110,6 @@ end
 function window:frame()
     if not self._FRAME then
         self._FRAME = panel:new("window.panel", rect{0, 0, self:width(), self:height()})
-        self._FRAME:background_set("white")
-        if self:title() then
-            self._FRAME:insert(self:title(), {centerx = true})
-        end
     end
     return self._FRAME
 end
@@ -126,9 +143,9 @@ end
 -- set border
 function window:border_set(border)
     if not self._BORDER and border then
-        self:frame():bounds():movee(-1, -1)
+        self:frame():bounds():grow(-1, -1)
     elseif self._BORDER and not border then
-        self:frame():bounds():movee(1, 1)
+        self:frame():bounds():grow(1, 1)
     end
     self._BORDER = border
     self:invalidate()
