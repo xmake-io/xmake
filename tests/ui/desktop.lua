@@ -60,7 +60,7 @@ end
 
 -- on event
 function demo:event_on(e)
-    if view.event_on(self, e) then
+    if application.event_on(self, e) then
         return true
     end
     if e.type == event.ev_keyboard then
@@ -71,8 +71,6 @@ function demo:event_on(e)
             self:menubar():show(not self:menubar():state("visible"))
         elseif e.key_name == "d" then
             self:desktop():show(not self:desktop():state("visible"))
-        elseif e.key_name == "q" then
-            self:quit()
         end
     end
 end

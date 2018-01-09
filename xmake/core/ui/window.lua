@@ -86,18 +86,18 @@ function window:draw()
         local fbounds = self:frame():bounds()
 
         -- draw left and top border
-        self:canvas():attr(curses.color_pair(border[1], self:frame():background()))
+        self:canvas():attr({curses.color_pair(border[1], self:frame():background()), "standout"})
         self:canvas():move(0, 0):putchar("hline", fbounds.ex)
-        self:canvas():move(0, 0):putchar('ulcorner')
-        self:canvas():move(0, 1):putchar('vline', fbounds.ey, true)
-        self:canvas():move(0, fbounds.ey):putchar('llcorner')
+        self:canvas():move(0, 0):putchar("ulcorner")
+        self:canvas():move(0, 1):putchar("vline", fbounds.ey - 1, true)
+        self:canvas():move(0, fbounds.ey):putchar("llcorner")
 
         -- draw bottom and right border
         self:canvas():attr(curses.color_pair(border[2], self:frame():background()))
         self:canvas():move(1, fbounds.ey):putchar("hline", fbounds.ex)
-        self:canvas():move(fbounds.ex, 0):putchar('urcorner')
-        self:canvas():move(fbounds.ex, 1):putchar('vline', fbounds.ey, true)
-        self:canvas():move(fbounds.ex, fbounds.ey):putchar('lrcorner')
+        self:canvas():move(fbounds.ex, 0):putchar("urcorner")
+        self:canvas():move(fbounds.ex, 1):putchar("vline", fbounds.ey - 1, true)
+        self:canvas():move(fbounds.ex, fbounds.ey):putchar("lrcorner")
     end
 
     -- draw title

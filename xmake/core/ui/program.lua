@@ -141,6 +141,17 @@ function program:event()
     end
 end
 
+-- on event
+function program:event_on(e)
+    if panel.event_on(self, e) then
+        return true
+    end
+    if e.type == event.ev_keyboard and (e.key_name == "Esc" or e.key_name == "CtrlC") then
+        self:quit()
+        return true
+    end
+end
+
 -- put an event to view
 function program:event_put(e)
     

@@ -90,7 +90,7 @@ int winnstr(WINDOW *win, char *str, int n)
     src = win->_y[win->_cury] + win->_curx;
 
     for (i = 0; i < n; i++)
-        str[i] = src[i] & A_CHARTEXT;
+        str[i] = (char)(src[i] & A_CHARTEXT);
 
     str[i] = '\0';
 
