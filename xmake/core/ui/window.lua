@@ -142,6 +142,11 @@ end
 
 -- set border
 function window:border_set(border)
+    -- FIXME cannot draw 'hline' and 'vline' correctly on pdcurses
+    -- so we disable border now
+    if os.host() == "windows" then 
+        return 
+    end
     if not self._BORDER and border then
         self:frame():bounds():grow(-1, -1)
     elseif self._BORDER and not border then
