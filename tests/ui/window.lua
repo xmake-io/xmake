@@ -44,7 +44,7 @@ function demo:init()
     self:background_set("blue")
 
     -- init main window
-    self:insert(window:new("window.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main window"))
+    self:insert(window:new("window.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main window", true))
 end
 
 -- main entry

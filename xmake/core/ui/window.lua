@@ -25,6 +25,7 @@
 -- load modules
 local log    = require("ui/log")
 local rect   = require("ui/rect")
+local view   = require("ui/view")
 local label  = require("ui/label")
 local panel  = require("ui/panel")
 local curses = require("ui/curses")
@@ -33,7 +34,7 @@ local curses = require("ui/curses")
 local window = window or panel()
 
 -- init window
-function window:init(name, bounds, title)
+function window:init(name, bounds, title, shadow)
 
     -- init panel
     panel.init(self, name, bounds)
@@ -41,77 +42,44 @@ function window:init(name, bounds, title)
     -- check bounds
     assert(self:width() > 4 and self:height() > 3, string.format("%s: too small!", self))
 
-    -- init background
-    self:background_set("white")
+    -- insert shadow
+    if shadow then
+        self:insert(self:shadow())
+        self:frame():bounds():movee(-2, -1)
+    end
 
-    -- init title
+    -- insert border
+    self:frame():insert(self:border())
+
+    -- insert panel
+    self:frame():insert(self:panel())
+
+    -- insert title
     if title then
         self._TITLE = label:new("window.title", rect{0, 0, #title, 1}, title)
         self:title():textattr_set("blue bold")
-        self:insert(self:title(), {centerx = true})
+        self:frame():insert(self:title(), {centerx = true})
     end
 
     -- insert frame
     self:insert(self:frame())
-
-    -- init shadow
-    self:shadow_set("black")
-
-    -- init border
-    self:border_set({"white", "black"})
-end
-
--- draw window
-function window:draw()
-
-    -- draw background
-    panel.draw(self)
-
-    -- draw shadow
-    local shadow = self:shadow()
-    if shadow then
-        local parent = assert(self:parent())
-        self:canvas():attr(curses.color_pair(parent:background(), parent:background()))
-        self:canvas():move(0, self:height() - 1):putchar(' ', 2)
-        self:canvas():move(self:width() - 2, 0):putchar(' ', 2)
-        self:canvas():attr(curses.color_pair(shadow, shadow))
-        self:canvas():move(2, self:height() - 1):putchar(' ', self:width() - 2)
-        self:canvas():move(self:width() - 2, 1):putchar(' ', self:height() - 1, true)
-        self:canvas():move(self:width() - 1, 1):putchar(' ', self:height() - 1, true)
-    end
-
-    -- draw border
-    local border = self:border()
-    if border then
-        local fbounds = self:frame():bounds()
-
-        -- draw left and top border
-        self:canvas():attr({curses.color_pair(border[1], self:frame():background()), "standout"})
-        self:canvas():move(0, 0):putchar("hline", fbounds.ex)
-        self:canvas():move(0, 0):putchar("ulcorner")
-        self:canvas():move(0, 1):putchar("vline", fbounds.ey - 1, true)
-        self:canvas():move(0, fbounds.ey):putchar("llcorner")
-
-        -- draw bottom and right border
-        self:canvas():attr(curses.color_pair(border[2], self:frame():background()))
-        self:canvas():move(1, fbounds.ey):putchar("hline", fbounds.ex)
-        self:canvas():move(fbounds.ex, 0):putchar("urcorner")
-        self:canvas():move(fbounds.ex, 1):putchar("vline", fbounds.ey - 1, true)
-        self:canvas():move(fbounds.ex, fbounds.ey):putchar("lrcorner")
-    end
-
-    -- draw title
-    if self:title() then
-        label.draw(self:title())
-    end
 end
 
 -- get frame
 function window:frame()
     if not self._FRAME then
-        self._FRAME = panel:new("window.panel", rect{0, 0, self:width(), self:height()})
+        self._FRAME = panel:new("window.frame", rect{0, 0, self:width(), self:height()}):background_set("white")
     end
     return self._FRAME
+end
+
+-- get panel
+function window:panel()
+    if not self._PANEL then
+        self._PANEL = panel:new("window.panel", self:frame():bounds())
+        self._PANEL:bounds():grow(-1, -1)
+    end
+    return self._PANEL
 end
 
 -- get title
@@ -121,39 +89,35 @@ end
 
 -- get shadow 
 function window:shadow()
-    return self._SHADOW
-end
-
--- set shadow
-function window:shadow_set(shadow)
-    if not self._SHADOW and shadow then
-        self:frame():bounds():movee(-2, -1)
-    elseif self._SHADOW and not shadow then
-        self:frame():bounds():movee(2, 1)
+    if not self._SHADOW then
+        self._SHADOW = view:new("window.shadow", rect{2, 1, self:width(), self:height()}):background_set("black")
     end
-    self._SHADOW = shadow
-    self:invalidate()
+    return self._SHADOW
 end
 
 -- get border 
 function window:border()
-    return self._BORDER
-end
+    if not self._BORDER then
+        local border = view:new("window.border", self:frame():bounds())
+        function border:draw()
 
--- set border
-function window:border_set(border)
-    -- FIXME cannot draw 'hline' and 'vline' correctly on pdcurses
-    -- so we disable border now
-    if os.host() == "windows" then 
-        return 
+            -- draw left and top border
+            self:canvas():attr(curses.color_pair("white", self:background()))
+            self:canvas():move(0, 0):putchar("hline", self:width())
+            self:canvas():move(0, 0):putchar("ulcorner")
+            self:canvas():move(0, 1):putchar("vline", self:height() - 1, true)
+            self:canvas():move(0, self:height() - 1):putchar("llcorner")
+
+            -- draw bottom and right border
+            self:canvas():attr(curses.color_pair("black", self:background()))
+            self:canvas():move(1, self:height() - 1):putchar("hline", self:width() - 1)
+            self:canvas():move(self:width() - 1, 0):putchar("urcorner")
+            self:canvas():move(self:width() - 1, 1):putchar("vline", self:height() - 1, true)
+            self:canvas():move(self:width() - 1, self:height() - 1):putchar("lrcorner")
+        end
+        self._BORDER = border
     end
-    if not self._BORDER and border then
-        self:frame():bounds():grow(-1, -1)
-    elseif self._BORDER and not border then
-        self:frame():bounds():grow(1, 1)
-    end
-    self._BORDER = border
-    self:invalidate()
+    return self._BORDER
 end
 
 -- return module

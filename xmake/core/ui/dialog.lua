@@ -27,6 +27,7 @@ local log    = require("ui/log")
 local rect   = require("ui/rect")
 local label  = require("ui/label")
 local panel  = require("ui/panel")
+local button = require("ui/button")
 local window = require("ui/window")
 local curses = require("ui/curses")
 
@@ -37,7 +38,11 @@ local dialog = dialog or window()
 function dialog:init(name, bounds, title)
 
     -- init window
-    window.init(self, name, bounds, title)
+    window.init(self, name, bounds, title, true)
+
+    -- init buttons
+    local button_yes = button:new("dialog.button.yes", rect {0, self:panel():height() - 1, 7, 1}, "< Yes >")
+    self:panel():insert(button_yes, {centerx = true})
 end
 
 -- return module

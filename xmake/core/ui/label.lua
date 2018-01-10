@@ -40,7 +40,7 @@ function label:init(name, bounds, text)
     self:text_set(text)
 
     -- init text attribute
-    self:textattr_set("white")
+    self:textattr_set("black")
 end
 
 -- draw view
@@ -69,6 +69,7 @@ end
 function label:text_set(text)
     self._TEXT = text or ""
     self:invalidate()
+    return self
 end
 
 -- get text attribute
@@ -78,7 +79,7 @@ end
 
 -- set text attribute, .e.g textattr_set("yellow onblue bold")
 function label:textattr_set(attr)
-    self:attr_set("textattr", attr)
+    return self:attr_set("textattr", attr)
 end
 
 -- get the current text attribute value

@@ -253,6 +253,7 @@ end
 -- set type
 function view:type_set(t)
     self._TYPE = t or "view"
+    return self
 end
 
 -- get state
@@ -266,11 +267,12 @@ function view:state_set(name, enable)
     -- state is not changed?
     enable = enable or false
     if self:state(name) == enable then
-        return 
+        return self
     end
 
     -- change state
     self._STATE[name] = enable
+    return self
 end
 
 -- get option
@@ -300,6 +302,7 @@ end
 function view:attr_set(name, value)
     self._ATTRS[name] = value
     self:invalidate()
+    return self
 end
 
 -- get cursor position
@@ -310,6 +313,7 @@ end
 -- move cursor to the given position
 function view:cursor_move(x, y)
     self._CURSOR = point{ self:_limit(x, 0, self:width() - 1), self:_limit(y, 0, self:height() - 1) }
+    return self
 end
 
 -- show cursor?
@@ -317,6 +321,7 @@ function view:cursor_show(visible)
     if self:state("cursor_visible") ~= visible then
         self:state_set("cursor_visible", visible)
     end
+    return self
 end
 
 -- get background
@@ -330,7 +335,7 @@ end
 
 -- set background, .e.g background_set("blue")
 function view:background_set(color)
-    self:attr_set("background", color)
+    return self:attr_set("background", color)
 end
 
 -- limit value range

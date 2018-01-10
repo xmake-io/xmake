@@ -49,13 +49,13 @@ function demo:init()
     self:menubar():title():text_set("Menu Bar (Hello)")
 
     -- add title label
-    self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello xmake!"), {centerx = true})
+    self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello xmake!"):textattr_set("white"), {centerx = true})
 
     -- add yes button
-    self:desktop():insert(button:new("yes", rect {0, 1, 7, 2}, "< Yes >"), {centerx = true})
+    self:desktop():insert(button:new("yes", rect {0, 1, 7, 2}, "< Yes >"):textattr_set("white"), {centerx = true})
 
     -- add no button
-    self:desktop():insert(button:new("no", rect {0, 2, 6, 3}, "< No >"), {centerx = true})
+    self:desktop():insert(button:new("no", rect {0, 2, 6, 3}, "< No >"):textattr_set("white"), {centerx = true})
 end
 
 -- on event
