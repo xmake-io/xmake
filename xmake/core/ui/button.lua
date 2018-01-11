@@ -24,6 +24,7 @@
 
 -- load modules
 local log       = require("ui/log")
+local view      = require("ui/view")
 local label     = require("ui/label")
 local curses    = require("ui/curses")
 
@@ -43,16 +44,31 @@ function button:init(name, bounds, text, command)
     self:cursor_show(true)
 end
 
--- set state
-function button:state_set(name, enable)
+-- draw button
+function button:draw()
 
-    -- set label state
-    label.state_set(self, name, enable)
+    -- draw background
+    view.draw(self)
 
-    -- the focused text and background attribute
-    if name == "focused" then
-        -- TODO
+    -- strip text string
+    local str = self:text()
+    if str and #str > 0 then
+        str = string.sub(str, 1, self:width()) 
     end
+    if not str or #str == 0 then
+        return 
+    end
+
+    -- get the text attribute value
+    local textattr = self:textattr_val()
+
+    -- selected?
+    if self:state("selected") then
+        textattr = {textattr, "reverse"}
+    end
+
+    -- draw text
+    self:canvas():attr(textattr):move(0, 0):puts(str)
 end
 
 -- return module
