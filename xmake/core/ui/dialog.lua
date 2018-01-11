@@ -41,8 +41,11 @@ function dialog:init(name, bounds, title)
     window.init(self, name, bounds, title, true)
 
     -- init buttons
-    local button_yes = button:new("dialog.button.yes", rect {0, self:panel():height() - 1, 7, 1}, "< Yes >")
+    local button_yes = button:new("dialog.button.yes", rect:new(0, self:panel():height() - 1, 7, 1), "< Yes >")
     self:panel():insert(button_yes, {centerx = true})
+
+--    local button_no = button:new("dialog.button.no", rect:new(0, self:panel():height() - 1, 7, 1), "< No >")
+--    self:panel():insert(button_no, {centerx = true})
 end
 
 -- return module

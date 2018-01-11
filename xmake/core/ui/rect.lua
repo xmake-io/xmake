@@ -35,6 +35,11 @@ local object = require("ui/object")
 -- define module
 local rect = rect or object { _init = {"sx", "sy", "ex", "ey"} }
 
+-- make rect
+function rect:new(x, y, w, h)
+    return rect { x, y, x + w, y + h }
+end
+
 -- get rect size
 function rect:size()
     return point { self.ex - self.sx, self.ey - self.sy }
