@@ -51,15 +51,15 @@ function window:init(name, bounds, title, shadow)
     -- insert border
     self:frame():insert(self:border())
 
-    -- insert panel
-    self:frame():insert(self:panel())
-
     -- insert title
     if title then
         self._TITLE = label:new("window.title", rect{0, 0, #title, 1}, title)
         self:title():textattr_set("blue bold")
         self:frame():insert(self:title(), {centerx = true})
     end
+
+    -- insert panel
+    self:frame():insert(self:panel())
 
     -- insert frame
     self:insert(self:frame())
@@ -101,19 +101,38 @@ function window:border()
         local border = view:new("window.border", self:frame():bounds())
         function border:draw()
 
+            -- the left-upper attribute
+            local attr_ul = curses.color_pair("white", self:background())
+            if self:background() == "white" then
+                attr_ul = {attr_ul, "standout"}
+            end
+
+            -- the right-lower attribute
+            local attr_rl = curses.color_pair("black", self:background())
+
+            -- the border characters
+            -- @note acs character will use 2 width on windows (pdcurses), so we use acsii characters instead of them.
+            local iswin = os.host() == "windows"
+            local hline = iswin and '-' or "hline"
+            local vline = iswin and '|' or "vline"
+            local ulcorner = iswin and ' ' or "ulcorner"
+            local llcorner = iswin and ' ' or "llcorner"
+            local urcorner = iswin and ' ' or "urcorner"
+            local lrcorner = iswin and ' ' or "lrcorner"
+
             -- draw left and top border
-            self:canvas():attr(curses.color_pair("white", self:background()))
-            self:canvas():move(0, 0):putchar("hline", self:width())
-            self:canvas():move(0, 0):putchar("ulcorner")
-            self:canvas():move(0, 1):putchar("vline", self:height() - 1, true)
-            self:canvas():move(0, self:height() - 1):putchar("llcorner")
+            self:canvas():attr(attr_ul)
+            self:canvas():move(0, 0):putchar(hline, self:width())
+            self:canvas():move(0, 0):putchar(ulcorner)
+            self:canvas():move(0, 1):putchar(vline, self:height() - 1, true)
+            self:canvas():move(0, self:height() - 1):putchar(llcorner)
 
             -- draw bottom and right border
-            self:canvas():attr(curses.color_pair("black", self:background()))
-            self:canvas():move(1, self:height() - 1):putchar("hline", self:width() - 1)
-            self:canvas():move(self:width() - 1, 0):putchar("urcorner")
-            self:canvas():move(self:width() - 1, 1):putchar("vline", self:height() - 1, true)
-            self:canvas():move(self:width() - 1, self:height() - 1):putchar("lrcorner")
+            self:canvas():attr(attr_rl)
+            self:canvas():move(1, self:height() - 1):putchar(hline, self:width() - 1)
+            self:canvas():move(self:width() - 1, 0):putchar(urcorner)
+            self:canvas():move(self:width() - 1, 1):putchar(vline, self:height() - 1, true)
+            self:canvas():move(self:width() - 1, self:height() - 1):putchar(lrcorner)
         end
         self._BORDER = border
     end
