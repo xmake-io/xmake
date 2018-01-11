@@ -48,6 +48,9 @@ function panel:init(name, bounds)
 
     -- init child views
     self._VIEWS = dlist()
+
+    -- init views cache
+    self._VIEWS_CACHE = {}
 end
 
 -- get all child views
@@ -85,11 +88,17 @@ function panel:current()
     return self._CURRENT
 end
 
+-- get view from the given name
+function panel:view(name)
+    return self._VIEWS_CACHE[name]
+end
+
 -- insert view
 function panel:insert(v, opt)
 
     -- check
     assert(not v:parent() or v:parent() == self)
+    assert(not self:view(v:name()), "%s has been in this panel!", v)
 
     -- this view has been inserted into this panel? remove it first
     if v:parent() == self then
@@ -111,6 +120,9 @@ function panel:insert(v, opt)
     -- insert this view
     self._VIEWS:push(v)
 
+    -- cache this view
+    self._VIEWS_CACHE[v:name()] = v
+
     -- set it's parent view
     v:parent_set(self)
 
@@ -131,6 +143,7 @@ function panel:remove(v)
 
     -- remove view
     self._VIEWS:remove(v)
+    self._VIEWS_CACHE[v:name()] = nil
 
     -- select next view
     if self:current() == v then

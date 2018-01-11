@@ -44,10 +44,19 @@ function demo:init()
     self:background_set("blue")
 
     -- init main dialog
---    self:insert(dialog:new("dialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main dialog"))
+    local dialog_main = dialog:new("dialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main dialog")
+    dialog_main:button_add("ok", "< OK >", "cm_ok")
+    dialog_main:button_add("cancel", "< Cancel >", "cm_cancel")
+    dialog_main:button_add("help", "< Help >", "cm_help")
+    dialog_main:button_add("quit", "< Quit >", "cm_quit")
+    self:insert(dialog_main)
 
     -- init hello dialog
-    self:insert(dialog:new("dialog.hello", rect {0, 0, self:width() / 2, self:height() / 4}), {centerx = true, centery = true})
+    local dialog_hello = dialog:new("dialog.hello", rect {0, 0, self:width() / 2, self:height() / 4}):background_set(dialog_main:frame():background())
+    dialog_hello:frame():background_set("green")
+    dialog_hello:button_add("yes", "< Yes >", "cm_yes")
+    dialog_hello:button_add("no", "< No >", "cm_no")
+    self:insert(dialog_hello, {centerx = true, centery = true})
 end
 
 -- main entry

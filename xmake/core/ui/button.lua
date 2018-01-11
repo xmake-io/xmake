@@ -31,7 +31,7 @@ local curses    = require("ui/curses")
 local button = button or label()
 
 -- init button
-function button:init(name, bounds, text)
+function button:init(name, bounds, text, command)
 
     -- init label
     label.init(self, name, bounds, text)

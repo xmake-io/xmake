@@ -54,6 +54,17 @@ function rect:move(dx, dy)
     return self
 end
 
+-- move rect to the given position
+function rect:move2(x, y)
+    local w = self.ex - self.sx
+    local h = self.ey - self.sy
+    self.sx = x
+    self.sy = y
+    self.ex = x + w
+    self.ey = y + h
+    return self
+end
+
 -- move top right corner of the rect
 function rect:moves(dx, dy)
     self.sx = self.sx + dx

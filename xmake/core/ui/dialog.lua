@@ -40,12 +40,58 @@ function dialog:init(name, bounds, title)
     -- init window
     window.init(self, name, bounds, title, true)
 
+    -- insert buttons
+    self:panel():insert(self:buttons())
+
     -- init buttons
-    local button_yes = button:new("dialog.button.yes", rect:new(0, self:panel():height() - 1, 7, 1), "< Yes >")
-    self:panel():insert(button_yes, {centerx = true})
+--    local button_yes = button:new("dialog.button.yes", rect:new(0, self:panel():height() - 1, 7, 1), "< Yes >")
+--    self:panel():insert(button_yes, {centerx = true})
 
 --    local button_no = button:new("dialog.button.no", rect:new(0, self:panel():height() - 1, 7, 1), "< No >")
 --    self:panel():insert(button_no, {centerx = true})
+end
+
+-- get buttons
+function dialog:buttons()
+    if not self._BUTTONS then
+        self._BUTTONS = panel:new("dialog.buttons", rect:new(0, self:panel():height() - 1, self:panel():width(), 1))
+    end
+    return self._BUTTONS
+end
+
+-- get button from the given button name
+function dialog:button(name)
+    return self:buttons():view(name)
+end
+
+-- add button
+function dialog:button_add(name, text, command)
+
+    -- init button
+    local btn = button:new(name, rect:new(0, 0, #text, 1), text, command)
+
+    -- insert button
+    self:buttons():insert(btn)
+
+    -- update the position of all buttons 
+    local index = 1
+    local width = self:buttons():width()
+    local count = self:buttons():count()
+    local padding = math.floor(width / 6)
+    for v in self:buttons():views() do
+        local x = padding + index * math.floor((width - padding * 2) / (count + 1)) - math.floor(v:width() / 2)
+        if x + v:width() > width then
+            x = math.max(0, width - v:width())
+        end
+        v:bounds():move2(x, 0)
+        index = index + 1
+    end
+
+    -- invalidate
+    self:invalidate()
+
+    -- ok
+    return btn
 end
 
 -- return module
