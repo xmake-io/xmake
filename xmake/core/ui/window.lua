@@ -101,14 +101,20 @@ function window:border()
         local border = view:new("window.border", self:frame():bounds())
         function border:draw()
 
+            -- get corner attribute
+            local cornerattr = self:cornerattr()
+
             -- the left-upper attribute
-            local attr_ul = curses.color_pair("white", self:background())
-            if self:background() == "white" then
+            local attr_ul = curses.color_pair(cornerattr[1], self:background())
+            if self:background() == cornerattr[1] then
                 attr_ul = {attr_ul, "standout"}
             end
 
             -- the right-lower attribute
-            local attr_rl = curses.color_pair("black", self:background())
+            local attr_rl = curses.color_pair(cornerattr[2], self:background())
+            if self:background() == cornerattr[2] then
+                attr_rl = {attr_rl, "standout"}
+            end
 
             -- the border characters
             -- @note acs character will use 2 width on windows (pdcurses), so we use acsii characters instead of them.
@@ -133,6 +139,12 @@ function window:border()
             self:canvas():move(self:width() - 1, 0):putchar(urcorner)
             self:canvas():move(self:width() - 1, 1):putchar(vline, self:height() - 1, true)
             self:canvas():move(self:width() - 1, self:height() - 1):putchar(lrcorner)
+        end
+        function border:cornerattr()
+            return self._CORNERATTR or {"white", "black"}
+        end
+        function border:cornerattr_set(attr_ul, attr_rl)
+            self._CORNERATTR = {attr_ul or "white", attr_rl or attr_ul or "black"}
         end
         self._BORDER = border
     end

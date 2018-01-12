@@ -45,6 +45,12 @@ function rect:size()
     return point { self.ex - self.sx, self.ey - self.sy }
 end
 
+-- resize rect
+function rect:resize(w, h)
+    self.ex = self.sx + w
+    self.ey = self.sy + h
+end
+
 -- move rect
 function rect:move(dx, dy)
     self.sx = self.sx + dx
