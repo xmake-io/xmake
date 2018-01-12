@@ -95,8 +95,18 @@ function canvas:putchar(ch, n, vertical)
 end
 
 -- put a string to canvas
-function canvas:puts(str, len)
-    self._window:addstr(str, len)
+function canvas:puts(str)
+    local sy, sx = self._window:getyx()
+    local ey, _ = self._window:getmaxyx()
+    for _, line in ipairs(str:split('\n')) do
+        self._window:addstr(line) 
+        local _, y = self:pos()
+        if y + 1 < ey then
+            self:move(sx, y + 1)
+        else
+            break
+        end
+    end
     return self
 end
 

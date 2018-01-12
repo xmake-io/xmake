@@ -52,7 +52,7 @@ function label:draw()
     -- get the text attribute value
     local textattr = self:textattr_val()
 
-    -- strip text string
+    -- draw text string
     local str = self:text()
     if str and #str > 0 and textattr then
         self:canvas():attr(textattr):move(0, 0):puts(str)
