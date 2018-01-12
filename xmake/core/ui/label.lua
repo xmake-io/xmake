@@ -55,7 +55,6 @@ function label:draw()
     -- strip text string
     local str = self:text()
     if str and #str > 0 and textattr then
-        str = string.sub(str, 1, self:width()) 
         self:canvas():attr(textattr):move(0, 0):puts(str)
     end
 end
