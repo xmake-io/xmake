@@ -201,6 +201,9 @@ function program:loop(argv)
             break
         end
 
+        -- resize views
+        self:resize()
+
         -- draw views
         self:draw()
 

@@ -64,6 +64,7 @@ function view:init(name, bounds)
     state.focused        = false     -- true if parent is also focused
     state.redraw         = true      -- need redraw 
     state.refresh        = true      -- need refresh
+    state.resize         = true      -- need resize
     self._STATE          = state
 
     -- init options
@@ -101,6 +102,11 @@ function view:name()
     return self._NAME
 end
 
+-- get view bounds
+function view:bounds()
+    return self._BOUNDS
+end
+
 -- set window bounds
 function view:bounds_set(bounds)
 
@@ -134,11 +140,6 @@ end
 -- get view size
 function view:size()
     return self._SIZE
-end
-
--- get view bounds
-function view:bounds()
-    return self._BOUNDS
 end
 
 -- get the parent view
@@ -215,6 +216,16 @@ function view:refresh()
     end
 end
 
+-- resize bounds of inner child views (abstract)
+function view:resize()
+
+    -- trace
+    log:print("%s: resize ..", self)
+
+    -- clear mark
+    self:state_set("resize", false)
+end
+
 -- show view?
 function view:show(visible)
     if self:state("visible") ~= visible then
@@ -224,7 +235,10 @@ function view:show(visible)
 end
 
 -- invalidate view to redraw it
-function view:invalidate()
+function view:invalidate(bounds)
+    if bounds then
+        self:_mark_resize()
+    end
     self:_mark_redraw()
 end
 
@@ -341,6 +355,16 @@ end
 -- limit value range
 function view:_limit(value, minval, maxval)
     return math.min(maxval, math.max(value, minval))
+end
+
+-- need resize view
+function view:_mark_resize()
+
+    -- trace
+    log:print("%s: mark as resize", self)
+
+    -- need resize it
+    self:state_set("resize", true)
 end
 
 -- need redraw view

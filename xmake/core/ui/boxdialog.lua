@@ -41,14 +41,14 @@ function boxdialog:init(name, bounds, title)
     -- insert box
     self:panel():insert(self:box())
 
-    -- resize text bounds
-    self:text():bounds():resize(self:panel():width(), math.floor(self:panel():height() / 4))
+    -- resize text
+    self:text():bounds().ey = 3
 end
 
 -- get box
 function boxdialog:box()
     if not self._BOX then
-        self._BOX = window:new("boxdialog.box", rect{0, math.floor(self:panel():height() / 4), self:panel():width(), self:panel():height() - 1})
+        self._BOX = window:new("boxdialog.box", rect{0, 3, self:panel():width(), self:panel():height() - 1})
         self._BOX:border():cornerattr_set("black", "white")
     end
     return self._BOX

@@ -46,9 +46,7 @@ function demo:init()
 
     -- init main dialog
     local dialog_main = boxdialog:new("dialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main dialog")
-    dialog_main:text():text_set([[xmake is a cross-platform build utility based on lua.
-
-The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.]])
+    dialog_main:text():text_set("The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.")
     dialog_main:button_add("ok", "< OK >", "cm_ok")
     dialog_main:button_add("cancel", "< Cancel >", "cm_cancel")
     dialog_main:button_add("help", "< Help >", "cm_help")
@@ -56,7 +54,7 @@ The project focuses on making development and building easier and provides many 
     self:insert(dialog_main)
 
     -- init hello dialog
-    local dialog_hello = textdialog:new("dialog.hello", rect {0, 0, self:width() / 2, self:height() / 4}):background_set(dialog_main:frame():background())
+    local dialog_hello = textdialog:new("dialog.hello", rect {0, 0, 50, 8}):background_set(dialog_main:frame():background())
     dialog_hello:frame():background_set("cyan")
     dialog_hello:text():text_set("hello xmake! (http://xmake.io)\nA cross-platform build utility based on Lua"):textattr_set("red")
     dialog_hello:button_add("yes", "< Yes >", "cm_yes")

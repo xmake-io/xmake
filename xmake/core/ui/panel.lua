@@ -276,6 +276,26 @@ function panel:draw()
     end
 end
 
+-- resize panel 
+function panel:resize()
+
+    -- resize panel?
+    local resize = self:state("resize")
+    if resize then
+        view.resize(self)
+    end
+
+    -- resize all child views
+    for v in self:views() do
+        if resize then
+            v:state_set("resize", true)
+        end
+        if v:state("visible") and (v:state("resize") or v:type() == "panel") then
+            v:resize()
+        end
+    end
+end
+
 -- refresh panel
 function panel:refresh()
 
