@@ -40,15 +40,19 @@ function dialog:init(name, bounds, title)
     -- init window
     window.init(self, name, bounds, title, true)
 
+    -- insert text
+    self:panel():insert(self:text())
+
     -- insert buttons
     self:panel():insert(self:buttons())
+end
 
-    -- init buttons
---    local button_yes = button:new("dialog.button.yes", rect:new(0, self:panel():height() - 1, 7, 1), "< Yes >")
---    self:panel():insert(button_yes, {centerx = true})
-
---    local button_no = button:new("dialog.button.no", rect:new(0, self:panel():height() - 1, 7, 1), "< No >")
---    self:panel():insert(button_no, {centerx = true})
+-- get text
+function dialog:text()
+    if not self._TEXT then
+        self._TEXT = label:new("dialog.text", rect:new(0, 0, self:panel():width(), self:panel():height() - 1))
+    end
+    return self._TEXT
 end
 
 -- get buttons
