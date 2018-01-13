@@ -126,9 +126,6 @@ function panel:insert(v, opt)
     -- set it's parent view
     v:parent_set(self)
 
-    -- set application
-    v:application_set(self:application())
-
     -- select this view
     if v:option("selectable") then
         self:select(v)

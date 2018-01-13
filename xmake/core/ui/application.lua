@@ -49,9 +49,6 @@ function application:init(name)
     -- init program
     program.init(self, name)
 
-    -- save application
-    self:application_set(self)
-
     -- trace
     log:print("<application: %s>: init ok", name)
 end

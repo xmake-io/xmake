@@ -74,8 +74,10 @@ function view:init(name, bounds)
     self._OPTIONS        = options
 
     -- init attributes
-    local attrs          = object()
-    self._ATTRS          = attrs
+    self._ATTRS          = object()
+
+    -- init actions
+    self._ACTIONS       = object()
 
     -- init name
     self._NAME           = name
@@ -154,12 +156,14 @@ end
 
 -- get the application 
 function view:application()
+    if not self._APPLICATION then
+        local app = self
+        while app:parent() do
+            app = app:parent()
+        end
+        self._APPLICATION = app
+    end
     return self._APPLICATION
-end
-
--- set the application 
-function view:application_set(app)
-    self._APPLICATION = app
 end
 
 -- get the view window
@@ -316,6 +320,17 @@ end
 function view:attr_set(name, value)
     self._ATTRS[name] = value
     self:invalidate()
+    return self
+end
+
+-- get action
+function view:action(name)
+    return self._ACTIONS[name]
+end
+
+-- set action
+function view:action_set(name, action)
+    self._ACTIONS[name] = action
     return self
 end
 
