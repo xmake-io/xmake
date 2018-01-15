@@ -201,8 +201,8 @@ function panel:select_next(start)
 
     -- select the next view
     local next = self:next(current)
-    while next and next ~= current do
-        if next:option("selectable") and next:state("visible") then
+    while next ~= current do
+        if next and next:option("selectable") and next:state("visible") then
             return self:select(next)
         end
         next = self:next(next)
@@ -222,8 +222,8 @@ function panel:select_prev(start)
 
     -- select the previous view
     local prev = self:prev(current)
-    while prev and prev ~= current do
-        if prev:option("selectable") and prev:state("visible") then
+    while prev ~= current do
+        if prev and prev:option("selectable") and prev:state("visible") then
             return self:select(prev)
         end
         prev = self:prev(prev)
