@@ -57,8 +57,8 @@ function demo:init()
     local dialog_hello = textdialog:new("dialog.hello", rect {0, 0, 50, 8}):background_set(dialog_main:frame():background())
     dialog_hello:frame():background_set("cyan")
     dialog_hello:text():text_set("hello xmake! (http://xmake.io)\nA cross-platform build utility based on Lua"):textattr_set("red")
-    dialog_hello:button_add("yes", "< Yes >", "cm_yes")
-    dialog_hello:button_add("no", "< No >", "cm_no")
+    dialog_hello:button_add("yes", "< Yes >", function (v, e) self:remove(dialog_hello) end)
+    dialog_hello:button_add("no", "< No >", function (v, e) self:remove(dialog_hello) end)
     self:insert(dialog_hello, {centerx = true, centery = true})
 end
 

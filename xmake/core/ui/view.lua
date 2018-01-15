@@ -179,18 +179,20 @@ function view:canvas()
 end
 
 -- draw view
-function view:draw()
+function view:draw(transparent)
 
     -- trace
     log:print("%s: draw ..", self)
 
     -- draw background
-    local background = self:background()
-    if background then
-        background = curses.color_pair(background, background)
-        self:canvas():attr(background):move(0, 0):putchar(' ', self:width() * self:height())
-    else
-        self:canvas():clear()
+    if not transparent then
+        local background = self:background()
+        if background then
+            background = curses.color_pair(background, background)
+            self:canvas():attr(background):move(0, 0):putchar(' ', self:width() * self:height())
+        else
+            self:canvas():clear()
+        end
     end
 
     -- clear mark

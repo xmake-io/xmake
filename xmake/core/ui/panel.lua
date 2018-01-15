@@ -130,6 +130,9 @@ function panel:insert(v, opt)
     if v:option("selectable") then
         self:select(v)
     end
+
+    -- invalidate it
+    self:invalidate()
 end
 
 -- remove view
@@ -147,6 +150,9 @@ function panel:remove(v)
         self._CURRENT = nil
         self:select_next()
     end
+
+    -- invalidate it
+    self:invalidate()
 end
 
 -- select the child view

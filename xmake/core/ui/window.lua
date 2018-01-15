@@ -101,6 +101,9 @@ function window:border()
         local border = view:new("window.border", self:frame():bounds())
         function border:draw()
 
+            -- draw background (transparent)
+            view.draw(self, true)
+
             -- get corner attribute
             local cornerattr = self:cornerattr()
 
