@@ -45,7 +45,7 @@ function button:init(name, bounds, text, action)
     self:cursor_show(true)
 
     -- init action
-    self:action_set("on_enter", action)
+    self:action_set("keyboard.Enter", action)
 end
 
 -- draw button
@@ -85,20 +85,26 @@ function button:event_on(e)
 
     -- enter this button?
     if e.type == event.ev_keyboard then
-        if e.key_name == "Enter" then
-            local on_enter = self:action("on_enter")
-            if on_enter then
-                if type(on_enter) == "string" then
-                    -- send command
-                    self:application():send(on_enter)
-                elseif type(on_enter) == "function" then
-                    -- do enter script
-                    on_enter(self)
-                end
+        local action = self:action("keyboard." .. e.key_name)
+        if action then
+            if type(action) == "string" then
+                -- send command
+                self:application():send(action)
+            elseif type(action) == "function" then
+                -- do action script
+                action(self, e)
             end
             return true
         end
     end
+end
+
+-- set state
+function button:state_set(name, enable)
+    if name == "focused" and self:state(name) ~= enable then
+        self:invalidate()
+    end
+    return view.state_set(self, name, enable)
 end
 
 -- return module

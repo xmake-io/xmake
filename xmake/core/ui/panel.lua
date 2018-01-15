@@ -177,18 +177,15 @@ function panel:select(v)
     -- update the new selected view
     if v then
 
-        -- modify view order and mark this view as top
-        if v:option("top_select") then
-            self._VIEWS:remove(v)
-            self._VIEWS:push(v)
-        end
-
         -- select and focus this view
         v:state_set('selected', true)
         if self:state("focused") then
             v:state_set('focused', true)
         end
     end
+
+    -- ok
+    return v
 end
 
 -- select the next view
@@ -206,8 +203,7 @@ function panel:select_next(start)
     local next = self:next(current)
     while next and next ~= current do
         if next:option("selectable") and next:state("visible") then
-            self:select(next)
-            break
+            return self:select(next)
         end
         next = self:next(next)
     end
@@ -228,8 +224,7 @@ function panel:select_prev(start)
     local prev = self:prev(current)
     while prev and prev ~= current do
         if prev:option("selectable") and prev:state("visible") then
-            self:select(prev)
-            break
+            return self:select(prev)
         end
         prev = self:prev(prev)
     end
@@ -237,18 +232,24 @@ end
 
 -- on event
 function panel:event_on(e)
-
-    -- is empty views?
-    if self:empty() then
-        return 
-    end
-
-    -- send event to all child views
-    for v in self:views() do
-        if v:event_on(e) then
-            return true
+ 
+    -- select view?
+    if e.type == event.ev_keyboard then
+        if e.key_name == "Right" or e.key_name == "Tab" then
+            return self:select_next()
+        elseif e.key_name == "Left" then
+            return self:select_prev()
         end
+    end   
+end
+
+-- set state
+function panel:state_set(name, enable)
+    view.state_set(self, name, enable)
+    if name == "focused" and self:current() then
+        self:current():state_set(name, enable)
     end
+    return self
 end
 
 -- draw panel 

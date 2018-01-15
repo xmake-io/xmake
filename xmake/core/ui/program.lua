@@ -80,6 +80,10 @@ function program:init(name)
 
     -- init panel
     panel.init(self, name, rect {0, 0, curses.columns(), curses.lines()})
+
+    -- init state
+    self:state_set("focused", true)
+    self:state_set("selected", true)
 end
 
 -- exit program
@@ -143,9 +147,22 @@ end
 
 -- on event
 function program:event_on(e)
-    if panel.event_on(self, e) then
-        return true
+
+    -- get the top focused view
+    local focused_view = self
+    while focused_view:type() == "panel" and focused_view:current() do
+        focused_view = focused_view:current()
     end
+
+    -- do event for focused views
+    while focused_view and focused_view ~= self do
+        if focused_view:event_on(e) then
+            return true
+        end
+        focused_view = focused_view:parent()
+    end
+
+    -- quit program?
     if e.type == event.ev_keyboard and (e.key_name == "Esc" or e.key_name == "CtrlC") then
         self:quit()
         return true

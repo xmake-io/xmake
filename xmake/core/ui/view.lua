@@ -60,8 +60,8 @@ function view:init(name, bounds)
     state.visible        = true      -- view visibility
     state.cursor_visible = false     -- cursor visibility
     state.block_cursor   = false     -- block cursor
-    state.selected       = false     -- current selected window inside panel
-    state.focused        = false     -- true if parent is also focused
+    state.selected       = false     -- is selected?
+    state.focused        = false     -- is focused?
     state.redraw         = true      -- need redraw 
     state.refresh        = true      -- need refresh
     state.resize         = true      -- need resize
@@ -70,14 +70,13 @@ function view:init(name, bounds)
     -- init options
     local options        = object()
     options.selectable   = false     -- true if window can be selected
-    options.top_select   = false     -- if true, selecting window will bring it to front
     self._OPTIONS        = options
 
     -- init attributes
     self._ATTRS          = object()
 
     -- init actions
-    self._ACTIONS       = object()
+    self._ACTIONS        = object()
 
     -- init name
     self._NAME           = name
