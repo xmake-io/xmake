@@ -49,10 +49,10 @@ function button:init(name, bounds, text, action)
 end
 
 -- draw button
-function button:draw()
+function button:draw(transparent)
 
     -- draw background
-    view.draw(self)
+    view.draw(self, transparent)
 
     -- strip text string
     local str = self:text()

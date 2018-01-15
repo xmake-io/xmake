@@ -259,14 +259,14 @@ function panel:state_set(name, enable)
 end
 
 -- draw panel 
-function panel:draw()
+function panel:draw(transparent)
 
     -- redraw panel?
     local redraw = self:state("redraw")
 
     -- draw panel background first
     if redraw then
-        view.draw(self)
+        view.draw(self, transparent)
     end
 
     -- draw all child views
@@ -275,7 +275,7 @@ function panel:draw()
             v:state_set("redraw", true)
         end
         if v:state("visible") and (v:state("redraw") or v:type() == "panel") then
-            v:draw()
+            v:draw(transparent)
         end
     end
 end

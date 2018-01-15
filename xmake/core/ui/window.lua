@@ -99,7 +99,7 @@ end
 function window:border()
     if not self._BORDER then
         local border = view:new("window.border", self:frame():bounds())
-        function border:draw()
+        function border:draw(transparent)
 
             -- draw background (transparent)
             view.draw(self, true)

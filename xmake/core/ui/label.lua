@@ -44,10 +44,10 @@ function label:init(name, bounds, text)
 end
 
 -- draw view
-function label:draw()
+function label:draw(transparent)
 
     -- draw background
-    view.draw(self)
+    view.draw(self, transparent)
 
     -- get the text attribute value
     local textattr = self:textattr_val()
