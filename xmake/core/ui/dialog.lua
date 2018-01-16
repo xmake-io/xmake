@@ -87,5 +87,11 @@ function dialog:button_add(name, text, command)
     return btn
 end
 
+-- select button from the given button name
+function dialog:button_select(name)
+    self:buttons():select(self:button(name))
+    return self
+end
+
 -- return module
 return dialog

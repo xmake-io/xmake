@@ -67,7 +67,7 @@ function button:draw(transparent)
     local textattr = self:textattr_val()
 
     -- selected?
-    if self:state("selected") then
+    if self:state("selected") and self:state("focused") then
         textattr = {textattr, "reverse"}
     end
 

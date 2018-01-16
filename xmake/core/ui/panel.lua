@@ -184,9 +184,9 @@ function panel:select(v)
     if v then
 
         -- select and focus this view
-        v:state_set('selected', true)
+        v:state_set("selected", true)
         if self:state("focused") then
-            v:state_set('focused', true)
+            v:state_set("focused", true)
         end
     end
 
@@ -203,7 +203,7 @@ function panel:select_next(start)
     end
 
     -- get current view
-    local current = start or self:current() or self:first()
+    local current = start or self:current()
 
     -- select the next view
     local next = self:next(current)
@@ -224,7 +224,7 @@ function panel:select_prev(start)
     end
 
     -- get current view
-    local current = start or self:current() or self:first()
+    local current = start or self:current()
 
     -- select the previous view
     local prev = self:prev(current)
