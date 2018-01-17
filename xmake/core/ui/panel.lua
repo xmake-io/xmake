@@ -147,8 +147,7 @@ function panel:remove(v)
 
     -- select next view
     if self:current() == v then
-        self._CURRENT = nil
-        self:select_next()
+        self:select_next(nil, true)
     end
 
     -- invalidate it
@@ -195,11 +194,16 @@ function panel:select(v)
 end
 
 -- select the next view
-function panel:select_next(start)
+function panel:select_next(start, reset)
 
     -- is empty?
     if self:empty() then
         return 
+    end
+
+    -- reset?
+    if reset then
+        self._CURRENT = nil
     end
 
     -- get current view
@@ -221,6 +225,11 @@ function panel:select_prev(start)
     -- is empty?
     if self:empty() then
         return 
+    end
+
+    -- reset?
+    if reset then
+        self._CURRENT = nil
     end
 
     -- get current view

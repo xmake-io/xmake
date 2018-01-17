@@ -232,8 +232,19 @@ function view:resize()
 end
 
 -- show view?
-function view:show(visible)
+-- 
+-- .e.g
+-- v:show(false)
+-- v:show(true, {focused = true})
+--
+function view:show(visible, opt)
     if self:state("visible") ~= visible then
+        local parent = self:parent()
+        if parent and parent:current() == self and not visible then
+            parent:select_next(nil, true)
+        elseif parent and visible and opt and opt.focused then
+            parent:select(self)
+        end
         self:state_set("visible", visible)
         self:invalidate()
     end
