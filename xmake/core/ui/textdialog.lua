@@ -23,11 +23,11 @@
 --
 
 -- load modules
-local log    = require("ui/log")
-local rect   = require("ui/rect")
-local label  = require("ui/label")
-local dialog = require("ui/dialog")
-local curses = require("ui/curses")
+local log      = require("ui/log")
+local rect     = require("ui/rect")
+local dialog   = require("ui/dialog")
+local curses   = require("ui/curses")
+local textarea = require("ui/textarea")
 
 -- define module
 local textdialog = textdialog or dialog()
@@ -40,14 +40,25 @@ function textdialog:init(name, bounds, title)
 
     -- insert text
     self:panel():insert(self:text())
+
+    -- select buttons by default
+    self:panel():select(self:buttons())
 end
 
 -- get text
 function textdialog:text()
     if not self._TEXT then
-        self._TEXT = label:new("textdialog.text", rect:new(0, 0, self:panel():width(), self:panel():height() - 1))
+        self._TEXT = textarea:new("textdialog.text", rect:new(0, 0, self:panel():width(), self:panel():height() - 1))
     end
     return self._TEXT
+end
+
+-- on event
+function textdialog:event_on(e)
+    -- pass keyboard event to text area to scroll
+    if e.type == event.ev_keyboard then
+        return self:text():event_on(e)
+    end
 end
 
 -- return module

@@ -62,8 +62,14 @@ function canvas:move(x, y)
 end
 
 -- get the current position
-function canvas:pos(x, y)
+function canvas:pos()
     local y, x = self._window:getyx()
+    return x, y
+end
+
+-- get the max position
+function canvas:maxpos()
+    local y, x = self._window:getmaxyx()
     return x, y
 end
 
@@ -95,11 +101,18 @@ function canvas:putchar(ch, n, vertical)
 end
 
 -- put a string to canvas
-function canvas:puts(str)
+function canvas:puts(str, startline)
+    
+    -- split string first
+    if type(str) == "string" then
+        str = str:split('\n', true)
+    end
+
+    -- draw string
     local sy, sx = self._window:getyx()
     local ey, _ = self._window:getmaxyx()
-    for _, line in ipairs(str:split('\n')) do
-        self._window:addstr(line) 
+    for idx = startline or 1, #str do
+        self._window:addstr(str[idx]) 
         local _, y = self:pos()
         if y + 1 < ey then
             self:move(sx, y + 1)

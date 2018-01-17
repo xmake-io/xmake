@@ -44,12 +44,20 @@ function string:find_last(pattern, plain)
 end
 
 -- split string with the given characters
-function string:split(chars)
-
-    -- split it
-    local list = {}
-    self:gsub("[^" .. chars .."]+", function(v) table.insert(list, v) end )
-    return list
+--
+-- ("1\n\n2\n3"):split('\n') => 1, 2, 3
+-- ("1\n\n2\n3"):split('\n', true) => 1, , 2, 3
+--
+function string:split(delimiter, strict)
+    local result = {}
+    if strict then
+        for match in (self .. delimiter):gmatch("(.-)" .. delimiter) do
+            table.insert(result, match)
+        end
+    else
+        self:gsub("[^" .. delimiter .."]+", function(v) table.insert(result, v) end)
+    end
+    return result
 end
 
 -- trim the spaces
