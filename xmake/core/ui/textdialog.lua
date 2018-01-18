@@ -25,6 +25,7 @@
 -- load modules
 local log      = require("ui/log")
 local rect     = require("ui/rect")
+local event    = require("ui/event")
 local dialog   = require("ui/dialog")
 local curses   = require("ui/curses")
 local textarea = require("ui/textarea")

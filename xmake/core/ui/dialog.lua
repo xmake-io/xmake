@@ -77,6 +77,7 @@ function dialog:button_add(name, text, command)
             x = math.max(0, width - v:width())
         end
         v:bounds():move2(x, 0)
+        v:invalidate(true)
         index = index + 1
     end
 

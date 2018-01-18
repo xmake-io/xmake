@@ -110,37 +110,25 @@ end
 
 -- set window bounds
 function view:bounds_set(bounds)
-
-    -- close the previous windows first
-    if self:window() then
-        self:window():close()
+    if bounds and self:bounds() ~= bounds then
+        self._BOUNDS = bounds() 
+        self:invalidate(true)
     end
-
-    -- init size and bounds
-    self._SIZE = bounds:size()
-    self._BOUNDS = bounds()
-
-    -- create a new window
-    self._WINDOW = curses.new_pad(self:height() > 0 and self:height() or 1, self:width() > 0 and self:width() or 1)
-    assert(self._WINDOW, "cannot create window!")
-
-    -- disable cursor
-    self:window():leaveok(true)
 end
 
 -- get view width
 function view:width()
-    return self._SIZE.x
+    return self:bounds():width()
 end
 
 -- get view height
 function view:height()
-    return self._SIZE.y
+    return self:bounds():height()
 end
 
 -- get view size
 function view:size()
-    return self._SIZE
+    return self:bounds():size()
 end
 
 -- get the parent view
@@ -392,6 +380,19 @@ function view:_mark_resize()
 
     -- need resize it
     self:state_set("resize", true)
+
+    -- close the previous windows first
+    if self:window() then
+        self:window():close()
+        self._WINDOW = nil
+    end
+
+    -- create a new window
+    self._WINDOW = curses.new_pad(self:height() > 0 and self:height() or 1, self:width() > 0 and self:width() or 1)
+    assert(self._WINDOW, "cannot create window!")
+
+    -- disable cursor
+    self:window():leaveok(true)
 end
 
 -- need redraw view

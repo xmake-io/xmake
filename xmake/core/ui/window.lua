@@ -46,6 +46,7 @@ function window:init(name, bounds, title, shadow)
     if shadow then
         self:insert(self:shadow())
         self:frame():bounds():movee(-2, -1)
+        self:frame():invalidate(true)
     end
 
     -- insert border
@@ -78,6 +79,7 @@ function window:panel()
     if not self._PANEL then
         self._PANEL = panel:new("window.panel", self:frame():bounds())
         self._PANEL:bounds():grow(-1, -1)
+        self._PANEL:invalidate(true)
     end
     return self._PANEL
 end

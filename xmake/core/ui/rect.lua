@@ -45,6 +45,16 @@ function rect:size()
     return point { self.ex - self.sx, self.ey - self.sy }
 end
 
+-- get width
+function rect:width()
+    return self.ex - self.sx
+end
+
+-- get height
+function rect:height()
+    return self.ey - self.sy
+end
+
 -- resize rect
 function rect:resize(w, h)
     self.ex = self.sx + w

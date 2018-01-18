@@ -156,10 +156,11 @@ function program:event_on(e)
 
     -- do event for focused views
     while focused_view and focused_view ~= self do
+        local parent = focused_view:parent()
         if focused_view:event_on(e) then
             return true
         end
-        focused_view = focused_view:parent()
+        focused_view = parent
     end
 
     -- quit program?

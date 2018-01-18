@@ -107,15 +107,20 @@ function panel:insert(v, opt)
 
     -- center this view if centerx or centery are set
     local bounds = v:bounds()
+    local center = false
     local org = point {bounds.sx, bounds.sy}
     if opt and opt.centerx then
         org.x = math.floor((self:width() - v:width()) / 2)
+        center = true
     end
     if opt and opt.centery then
         org.y = math.floor((self:height() - v:height()) / 2)
+        center = true
     end
-    bounds:move(org.x - bounds.sx, org.y - bounds.sy)
-    v:bounds_set(bounds)
+    if center then
+        bounds:move(org.x - bounds.sx, org.y - bounds.sy)
+        v:invalidate(true)
+    end
 
     -- insert this view
     self._VIEWS:push(v)
@@ -144,6 +149,9 @@ function panel:remove(v)
     -- remove view
     self._VIEWS:remove(v)
     self._VIEWS_CACHE[v:name()] = nil
+
+    -- clear parent
+    v:parent_set(nil)
 
     -- select next view
     if self:current() == v then
