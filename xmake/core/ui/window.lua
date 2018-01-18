@@ -28,6 +28,7 @@ local rect   = require("ui/rect")
 local view   = require("ui/view")
 local label  = require("ui/label")
 local panel  = require("ui/panel")
+local border = require("ui/border")
 local curses = require("ui/curses")
 
 -- define module
@@ -100,58 +101,7 @@ end
 -- get border 
 function window:border()
     if not self._BORDER then
-        local border = view:new("window.border", self:frame():bounds())
-        function border:draw(transparent)
-
-            -- draw background (transparent)
-            view.draw(self, true)
-
-            -- get corner attribute
-            local cornerattr = self:cornerattr()
-
-            -- the left-upper attribute
-            local attr_ul = curses.color_pair(cornerattr[1], self:background())
-            if self:background() == cornerattr[1] then
-                attr_ul = {attr_ul, "standout"}
-            end
-
-            -- the right-lower attribute
-            local attr_rl = curses.color_pair(cornerattr[2], self:background())
-            if self:background() == cornerattr[2] then
-                attr_rl = {attr_rl, "standout"}
-            end
-
-            -- the border characters
-            -- @note acs character will use 2 width on windows (pdcurses), so we use acsii characters instead of them.
-            local iswin = os.host() == "windows"
-            local hline = iswin and '-' or "hline"
-            local vline = iswin and '|' or "vline"
-            local ulcorner = iswin and ' ' or "ulcorner"
-            local llcorner = iswin and ' ' or "llcorner"
-            local urcorner = iswin and ' ' or "urcorner"
-            local lrcorner = iswin and ' ' or "lrcorner"
-
-            -- draw left and top border
-            self:canvas():attr(attr_ul)
-            self:canvas():move(0, 0):putchar(hline, self:width())
-            self:canvas():move(0, 0):putchar(ulcorner)
-            self:canvas():move(0, 1):putchar(vline, self:height() - 1, true)
-            self:canvas():move(0, self:height() - 1):putchar(llcorner)
-
-            -- draw bottom and right border
-            self:canvas():attr(attr_rl)
-            self:canvas():move(1, self:height() - 1):putchar(hline, self:width() - 1)
-            self:canvas():move(self:width() - 1, 0):putchar(urcorner)
-            self:canvas():move(self:width() - 1, 1):putchar(vline, self:height() - 1, true)
-            self:canvas():move(self:width() - 1, self:height() - 1):putchar(lrcorner)
-        end
-        function border:cornerattr()
-            return self._CORNERATTR or {"white", "black"}
-        end
-        function border:cornerattr_set(attr_ul, attr_rl)
-            self._CORNERATTR = {attr_ul or "white", attr_rl or attr_ul or "black"}
-        end
-        self._BORDER = border
+        self._BORDER = border:new("window.border", self:frame():bounds())
     end
     return self._BORDER
 end

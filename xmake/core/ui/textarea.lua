@@ -83,14 +83,17 @@ function textarea:event_on(e)
             if self._STARTLINE < 0 then
                 self._STARTLINE = 0
             end
+            self:invalidate()
+            return true
         elseif e.key_name == "Down" then
             self._STARTLINE = self._STARTLINE + 5
             if self._LINECOUNT - self._STARTLINE < self:height() then
                 self._STARTLINE = self._LINECOUNT - self:height() 
             end
+            self:invalidate()
+            return true
         end
     end
-    self:invalidate()
 end
 
 -- return module
