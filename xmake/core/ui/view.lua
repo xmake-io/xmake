@@ -215,6 +215,19 @@ function view:resize()
     -- trace
     log:print("%s: resize ..", self)
 
+    -- close the previous windows first
+    if self:window() then
+        self:window():close()
+        self._WINDOW = nil
+    end
+
+    -- create a new window
+    self._WINDOW = curses.new_pad(self:height() > 0 and self:height() or 1, self:width() > 0 and self:width() or 1)
+    assert(self._WINDOW, "cannot create window!")
+
+    -- disable cursor
+    self:window():leaveok(true)
+
     -- clear mark
     self:state_set("resize", false)
 end
@@ -380,19 +393,6 @@ function view:_mark_resize()
 
     -- need resize it
     self:state_set("resize", true)
-
-    -- close the previous windows first
-    if self:window() then
-        self:window():close()
-        self._WINDOW = nil
-    end
-
-    -- create a new window
-    self._WINDOW = curses.new_pad(self:height() > 0 and self:height() or 1, self:width() > 0 and self:width() or 1)
-    assert(self._WINDOW, "cannot create window!")
-
-    -- disable cursor
-    self:window():leaveok(true)
 end
 
 -- need redraw view
