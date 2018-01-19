@@ -29,33 +29,46 @@ local label     = require("ui/label")
 local event     = require("ui/event")
 local border    = require("ui/border")
 local curses    = require("ui/curses")
+local textarea  = require("ui/textarea")
 
 -- define module
-local textedit = textedit or label()
+local textedit = textedit or textarea()
 
 -- init textedit
 function textedit:init(name, bounds, text)
 
     -- init label
-    label.init(self, name, bounds, text)
+    textarea.init(self, name, bounds, text)
 
     -- show cursor
     self:cursor_show(true)
 
     -- mark as selectable
     self:option_set("selectable", true)
+
+    -- disable progress
+    self:option_set("progress", false)
 end
 
 -- draw textedit
 function textedit:draw(transparent)
 
     -- draw label
-    label.draw(self, transparent)
+    textarea.draw(self, transparent)
 
-    -- TODO
     -- move cursor
-    local x, y = self:canvas():pos()
-    self:cursor_move(x, y)
+    if not self:text() or #self:text() == 0 then
+        self:cursor_move(0, 0)
+    else
+        self:cursor_move(self:canvas():pos())
+    end
+end
+
+-- set text
+function textedit:text_set(text)
+    textarea.text_set(self, text)
+    self:scroll_to_end()
+    return self
 end
 
 -- on event
@@ -65,15 +78,21 @@ function textedit:event_on(e)
     if e.type == event.ev_keyboard then
         if e.key_code > 0x1f and e.key_code < 0x7f then
             self:text_set(self:text() .. e.key_name)
+            return true
         elseif e.key_name == "Enter" then
             self:text_set(self:text() .. '\n')
+            return true
         elseif e.key_name == "Backspace" then
             local text = self:text()
             if #text > 0 then
                 self:text_set(text:sub(1, #text - 1))
             end
+            return true
         end
     end
+
+    -- do textarea event
+    return textarea.event_on(self, e) 
 end
 
 -- return module

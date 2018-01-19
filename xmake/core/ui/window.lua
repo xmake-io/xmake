@@ -28,6 +28,7 @@ local rect   = require("ui/rect")
 local view   = require("ui/view")
 local label  = require("ui/label")
 local panel  = require("ui/panel")
+local event  = require("ui/event")
 local border = require("ui/border")
 local curses = require("ui/curses")
 
@@ -104,6 +105,17 @@ function window:border()
         self._BORDER = border:new("window.border", self:frame():bounds())
     end
     return self._BORDER
+end
+
+-- on event
+function window:event_on(e)
+ 
+    -- select panel?
+    if e.type == event.ev_keyboard then
+        if e.key_name == "Tab" then
+            return self:panel():select_next()
+        end
+    end   
 end
 
 -- return module

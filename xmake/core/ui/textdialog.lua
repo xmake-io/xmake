@@ -56,6 +56,12 @@ end
 
 -- on event
 function textdialog:event_on(e)
+    
+    -- pass event to dialog
+    if dialog.event_on(self, e) then
+        return true
+    end
+
     -- pass keyboard event to text area to scroll
     if e.type == event.ev_keyboard then
         return self:text():event_on(e)

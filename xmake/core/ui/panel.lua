@@ -258,7 +258,7 @@ function panel:event_on(e)
  
     -- select view?
     if e.type == event.ev_keyboard then
-        if e.key_name == "Right" or e.key_name == "Tab" then
+        if e.key_name == "Right" then
             return self:select_next()
         elseif e.key_name == "Left" then
             return self:select_prev()

@@ -26,6 +26,7 @@
 local log        = require("ui/log")
 local rect       = require("ui/rect")
 local view       = require("ui/view")
+local event      = require("ui/event")
 local curses     = require("ui/curses")
 local window     = require("ui/window")
 local textedit   = require("ui/textedit")
@@ -46,6 +47,7 @@ function inputdialog:init(name, bounds, title)
     -- resize text
     self:text():bounds().ey = 1
     self:text():invalidate(true)
+    self:text():option_set("selectable", false)
 end
 
 -- get textedit

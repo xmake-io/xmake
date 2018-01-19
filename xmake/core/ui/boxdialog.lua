@@ -44,6 +44,7 @@ function boxdialog:init(name, bounds, title)
     -- resize text
     self:text():bounds().ey = 3
     self:text():invalidate(true)
+    self:text():option_set("selectable", false)
 
     -- select buttons by default
     self:panel():select(self:buttons())

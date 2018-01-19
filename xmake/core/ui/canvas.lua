@@ -114,7 +114,7 @@ function canvas:puts(str, startline)
     for idx = startline or 1, #str do
         self._window:addstr(str[idx]) 
         local _, y = self:pos()
-        if y + 1 < ey then
+        if y + 1 < ey and idx < #str then
             self:move(sx, y + 1)
         else
             break

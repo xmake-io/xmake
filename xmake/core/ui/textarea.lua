@@ -41,6 +41,9 @@ function textarea:init(name, bounds, text)
     -- mark as selectable
     self:option_set("selectable", true)
 
+    -- enable progress
+    self:option_set("progress", true)
+
     -- init start line
     self._STARTLINE = 0
     self._LINECOUNT = 0
@@ -62,9 +65,11 @@ function textarea:draw(transparent)
     end
 
     -- draw progress
-    local progress = (self._STARTLINE + math.min(self:height(), self._LINECOUNT)) * 100 / self._LINECOUNT
-    if (self._STARTLINE > 0 or progress < 100) and self:width() > 20 then
-        self:canvas():move(self:width() - 10, self:height() - 1):puts(string.format("(%%%d)", progress))
+    if self:option("progress") then
+        local progress = (self._STARTLINE + math.min(self:height(), self._LINECOUNT)) * 100 / self._LINECOUNT
+        if (self._STARTLINE > 0 or progress < 100) and self:width() > 20 then
+            self:canvas():move(self:width() - 10, self:height() - 1):puts(string.format("(%%%d)", progress))
+        end
     end
 end
 
@@ -75,22 +80,36 @@ function textarea:text_set(text)
     return label.text_set(self, text)
 end
 
+-- scroll
+function textarea:scroll(lines)
+    if self._LINECOUNT > self:height() then
+        self._STARTLINE = self._STARTLINE + lines
+        if self._STARTLINE < 0 then
+            self._STARTLINE = 0
+        end
+        if self._STARTLINE > self._LINECOUNT - self:height() then
+            self._STARTLINE = self._LINECOUNT - self:height() 
+        end
+        self:invalidate()
+    end
+end
+
+-- scroll to end
+function textarea:scroll_to_end()
+    if self._LINECOUNT > self:height() then
+        self._STARTLINE = self._LINECOUNT - self:height() 
+        self:invalidate()
+    end
+end
+
 -- on event
 function textarea:event_on(e)
     if e.type == event.ev_keyboard then
         if e.key_name == "Up" then
-            self._STARTLINE = self._STARTLINE - 5
-            if self._STARTLINE < 0 then
-                self._STARTLINE = 0
-            end
-            self:invalidate()
+            self:scroll(-5)
             return true
         elseif e.key_name == "Down" then
-            self._STARTLINE = self._STARTLINE + 5
-            if self._LINECOUNT - self._STARTLINE < self:height() then
-                self._STARTLINE = self._LINECOUNT - self:height() 
-            end
-            self:invalidate()
+            self:scroll(5)
             return true
         end
     end
