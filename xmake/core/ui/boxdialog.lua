@@ -45,6 +45,20 @@ function boxdialog:init(name, bounds, title)
     self:text():bounds().ey = 3
     self:text():invalidate(true)
     self:text():option_set("selectable", false)
+    self:text():option_set("progress", false)
+
+    -- text changed
+    self:text():action_set("text.changed", function (v, e)
+        if e.text then
+            local lines = #e.text:split('\n', true)
+            if lines > 0 and lines < self:height() then
+                self:box():bounds().sy = lines
+                self:text():bounds().ey = lines
+                self:box():invalidate(true)
+                self:text():invalidate(true)
+            end
+        end
+    end)
 
     -- select buttons by default
     self:panel():select(self:buttons())

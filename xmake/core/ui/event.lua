@@ -66,8 +66,8 @@ function event:dump()
     end
 end
 
--- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 4, event.ev_max = 4
-event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_idle")
+-- register event types, event.ev_keyboard = 1, event.ev_mouse = 2, ... , event.ev_idle = 5, event.ev_max = 5
+event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_text", "ev_idle")
 
 -- register command event types (ev_command)
 event:register("cm_max", "cm_quit", "cm_ok", "cm_cancel", "cm_yes", "cm_no", "cm_help")
@@ -82,6 +82,9 @@ event.keyboard = object {_init = { "key_code", "key_name", "key_meta" }, type = 
 
 -- define command event
 event.command = object {_init = { "command", "extra" }, type = event.ev_command}
+
+-- define text event
+event.text = object {_init = { "text" }, type = event.ev_text}
 
 -- define idle event
 event.idle = object {_init = {}, type = event.ev_idle}

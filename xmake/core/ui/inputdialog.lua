@@ -48,6 +48,20 @@ function inputdialog:init(name, bounds, title)
     self:text():bounds().ey = 1
     self:text():invalidate(true)
     self:text():option_set("selectable", false)
+    self:text():option_set("progress", false)
+
+    -- text changed
+    self:text():action_set("text.changed", function (v, e)
+        if e.text then
+            local lines = #e.text:split('\n', true)
+            if lines > 0 and lines < self:height() then
+                self:text():bounds().ey = lines
+                self:textedit():bounds().sy = lines
+                self:text():invalidate(true)
+                self:textedit():invalidate(true)
+            end
+        end
+    end)
 end
 
 -- get textedit
