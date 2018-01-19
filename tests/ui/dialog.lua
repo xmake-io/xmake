@@ -59,14 +59,6 @@ function demo:init()
     dialog_main:button_add("quit", "< Quit >", "cm_quit")
     self:insert(dialog_main)
 
-    -- init tips dialog
-    local dialog_tips = textdialog:new("dialog.tips", rect {0, 0, 50, 8}):background_set(dialog_main:frame():background())
-    dialog_tips:frame():background_set("cyan")
-    dialog_tips:text():text_set("hello xmake! (http://xmake.io)\nA cross-platform build utility based on Lua"):textattr_set("red")
-    dialog_tips:button_add("yes", "< Yes >", function (v, e) dialog_tips:show(false) end)
-    dialog_tips:button_add("no", "< No >", function (v, e) dialog_tips:show(false) end)
-    self:insert(dialog_tips, {centerx = true, centery = true})
-
     -- init input dialog
     local dialog_input = inputdialog:new("dialog.input", rect {0, 0, 50, 8}):background_set(dialog_main:frame():background())
     dialog_input:frame():background_set("cyan")
@@ -78,6 +70,14 @@ function demo:init()
                                               end)
     self:insert(dialog_input, {centerx = true, centery = true})
     dialog_input:show(false)
+
+    -- init tips dialog
+    local dialog_tips = textdialog:new("dialog.tips", rect {0, 0, 50, 8}):background_set(dialog_main:frame():background())
+    dialog_tips:frame():background_set("cyan")
+    dialog_tips:text():text_set("hello xmake! (http://xmake.io)\nA cross-platform build utility based on Lua"):textattr_set("red")
+    dialog_tips:button_add("yes", "< Yes >", function (v, e) dialog_tips:show(false) end)
+    dialog_tips:button_add("no", "< No >", function (v, e) dialog_tips:show(false) end)
+    self:insert(dialog_tips, {centerx = true, centery = true})
 end
 
 -- main entry
