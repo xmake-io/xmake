@@ -321,7 +321,7 @@ end
 function panel:refresh()
 
     -- need not refresh? do not refresh it
-    if not self:state("refresh") then
+    if not self:state("refresh") or not self:state("visible") then
         return 
     end
 

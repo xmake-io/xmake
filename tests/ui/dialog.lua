@@ -77,9 +77,7 @@ function demo:init()
                                                   dialog_input:show(false) 
                                               end)
     self:insert(dialog_input, {centerx = true, centery = true})
-
-    -- TODO
---    dialog_input:show(false)
+    dialog_input:show(false)
 end
 
 -- main entry

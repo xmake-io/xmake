@@ -193,7 +193,7 @@ function view:refresh()
 
     -- refresh to the parent view
     local parent = self:parent()
-    if parent then
+    if parent and self:state("visible") then
 
         -- clip bounds with the parent view
         local bounds = self:bounds()
