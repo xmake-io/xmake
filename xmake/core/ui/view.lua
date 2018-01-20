@@ -221,6 +221,9 @@ function view:resize()
         self._WINDOW = nil
     end
 
+    -- need renew canvas
+    self._CANVAS = nil
+
     -- create a new window
     self._WINDOW = curses.new_pad(self:height() > 0 and self:height() or 1, self:width() > 0 and self:width() or 1)
     assert(self._WINDOW, "cannot create window!")
