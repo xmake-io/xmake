@@ -24,6 +24,7 @@
 
 -- load modules
 local log    = require("ui/log")
+local point  = require("ui/point")
 local object = require("ui/object")
 local curses = require("ui/curses")
 
@@ -67,10 +68,22 @@ function canvas:pos()
     return x, y
 end
 
--- get the max position
-function canvas:maxpos()
+-- get the canvas size
+function canvas:size()
     local y, x = self._window:getmaxyx()
-    return x, y
+    return point {x + 1, y + 1}
+end
+
+-- get the canvas width
+function canvas:width()
+    local _, x = self._window:getmaxyx()
+    return x + 1
+end
+
+-- get the canvas height
+function canvas:height()
+    local y, _ = self._window:getmaxyx()
+    return y + 1
 end
 
 -- put character to canvas
@@ -101,20 +114,21 @@ function canvas:putchar(ch, n, vertical)
 end
 
 -- put a string to canvas
-function canvas:puts(str, startline)
-    
-    -- split string first
-    if type(str) == "string" then
-        str = str:split('\n', true)
-    end
+function canvas:putstr(str)
+    self._window:addstr(str) 
+    return self
+end
 
-    -- draw string
+-- put strings to canvas
+function canvas:putstrs(strs, startline)
+    
+    -- draw strings
     local sy, sx = self._window:getyx()
     local ey, _ = self._window:getmaxyx()
-    for idx = startline or 1, #str do
-        self._window:addstr(str[idx]) 
+    for idx = startline or 1, #strs do
         local _, y = self:pos()
-        if y + 1 < ey and idx < #str then
+        self._window:addstr(strs[idx]) 
+        if y + 1 < ey and idx < #strs then
             self:move(sx, y + 1)
         else
             break

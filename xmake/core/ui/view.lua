@@ -388,6 +388,11 @@ end
 -- need resize view
 function view:_mark_resize()
 
+    -- have been marked?
+    if self:state("resize") then
+        return
+    end
+
     -- trace
     log:print("%s: mark as resize", self)
 
@@ -397,6 +402,11 @@ end
 
 -- need redraw view
 function view:_mark_redraw()
+
+    -- have been marked?
+    if self:state("redraw") then
+        return
+    end
 
     -- trace
     log:print("%s: mark as redraw", self)
@@ -412,6 +422,11 @@ end
 
 -- need refresh view
 function view:_mark_refresh()
+
+    -- have been marked?
+    if self:state("refresh") then
+        return
+    end
 
     -- need refresh it
     if self:state("visible") then

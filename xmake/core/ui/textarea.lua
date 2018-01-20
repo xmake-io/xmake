@@ -59,16 +59,16 @@ function textarea:draw(transparent)
     local textattr = self:textattr_val()
 
     -- draw text string
-    local str = self:text()
-    if str and #str > 0 and textattr then
-        self:canvas():attr(textattr):move(0, 0):puts(str, self._STARTLINE + 1)
+    local strs = self._SPLITTEXT
+    if strs and #strs > 0 and textattr then
+        self:canvas():attr(textattr):move(0, 0):putstrs(strs, self._STARTLINE + 1)
     end
 
     -- draw progress
     if self:option("progress") then
         local progress = (self._STARTLINE + math.min(self:height(), self._LINECOUNT)) * 100 / self._LINECOUNT
         if (self._STARTLINE > 0 or progress < 100) and self:width() > 20 then
-            self:canvas():move(self:width() - 10, self:height() - 1):puts(string.format("(%%%d)", progress))
+            self:canvas():move(self:width() - 10, self:height() - 1):putstr(string.format("(%%%d)", progress))
         end
     end
 end
@@ -76,7 +76,8 @@ end
 -- set text
 function textarea:text_set(text)
     self._STARTLINE = 0
-    self._LINECOUNT = text and #text:split('\n', true) or 0
+    self._SPLITTEXT = text and self:splitext(text) or {}
+    self._LINECOUNT = #self._SPLITTEXT
     return label.text_set(self, text)
 end
 

@@ -72,7 +72,7 @@ function button:draw(transparent)
     end
 
     -- draw text
-    self:canvas():attr(textattr):move(0, 0):puts(str)
+    self:canvas():attr(textattr):move(0, 0):putstr(str)
 end
 
 -- on event

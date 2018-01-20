@@ -53,7 +53,7 @@ function inputdialog:init(name, bounds, title)
     -- text changed
     self:text():action_set("text.changed", function (v, e)
         if e.text then
-            local lines = #e.text:split('\n', true)
+            local lines = #self:text():splitext(e.text)
             if lines > 0 and lines < self:height() then
                 self:text():bounds().ey = lines
                 self:textedit():bounds().sy = lines

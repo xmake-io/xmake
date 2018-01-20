@@ -56,7 +56,7 @@ function label:draw(transparent)
     -- draw text string
     local str = self:text()
     if str and #str > 0 and textattr then
-        self:canvas():attr(textattr):move(0, 0):puts(str)
+        self:canvas():attr(textattr):move(0, 0):putstrs(self:splitext(str))
     end
 end
 
@@ -114,6 +114,26 @@ function label:textattr_val()
     value = curses.calc_attr(textattr:split("%s+"))
     self._TEXTATTR[textattr] = value
     return value
+end
+
+-- split text by width
+function label:splitext(text, width)
+    
+    -- get width
+    width = width or self:width()
+
+    -- split text first
+    local result = {}
+    local lines = text:split('\n', true)
+    for idx = 1, #lines do
+        local line = lines[idx]
+        while #line > width do
+            table.insert(result, line:sub(1, width))
+            line = line:sub(width + 1)
+        end
+        table.insert(result, line)
+    end
+    return result
 end
 
 -- return module
