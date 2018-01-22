@@ -164,7 +164,10 @@ function program:event_on(e)
     end
 
     -- quit program?
-    if e.type == event.ev_keyboard and (e.key_name == "Esc" or e.key_name == "CtrlC") then
+    if e.type == event.ev_keyboard and e.key_name == "CtrlC" then
+        self:send("cm_exit")
+        return true
+    elseif event.is_command(e, "cm_exit") then
         self:quit()
         return true
     end

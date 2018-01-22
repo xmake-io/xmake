@@ -25,6 +25,7 @@
 -- load modules
 local log        = require("ui/log")
 local rect       = require("ui/rect")
+local event      = require("ui/event")
 local curses     = require("ui/curses")
 local window     = require("ui/window")
 local menuconf   = require("ui/menuconf")
@@ -46,7 +47,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) end)
-    self:button_add("exit", "< Exit >", function (v, e) end)
+    self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
     self:button_add("help", "< Help >", function (v, e) end)
     self:button_add("save", "< Save >", function (v, e) end)
     self:button_add("load", "< Load >", function (v, e) end)
@@ -62,6 +63,12 @@ function mconfdialog:menuconf()
         self._MENUCONF = menuconf:new("mconfdialog.menuconf", self:box():bounds())
     end
     return self._MENUCONF
+end
+
+-- on event
+function mconfdialog:event_on(e)
+    -- TODO
+    return boxdialog.event_on(self, e) 
 end
 
 -- return module

@@ -25,6 +25,7 @@
 -- load modules
 local log    = require("ui/log")
 local rect   = require("ui/rect")
+local event  = require("ui/event")
 local label  = require("ui/label")
 local panel  = require("ui/panel")
 local button = require("ui/button")
@@ -92,6 +93,26 @@ end
 function dialog:button_select(name)
     self:buttons():select(self:button(name))
     return self
+end
+
+-- quit dialog
+function dialog:quit()
+    local parent = self:parent()
+    if parent then
+        local action = self:action("command.exit")
+        if action then
+            action(self, event.command {"cm_exit"})
+        end
+        parent:remove(self)
+    end
+end
+
+-- on event
+function dialog:event_on(e)
+    if e.type == event.ev_keyboard and e.key_name == "Esc" then
+        self:quit()
+        return true
+    end
 end
 
 -- return module
