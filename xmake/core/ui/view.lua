@@ -78,6 +78,9 @@ function view:init(name, bounds)
     -- init actions
     self._ACTIONS        = object()
 
+    -- init extras
+    self._EXTRAS         = object()
+
     -- init name
     self._NAME           = name
 
@@ -336,6 +339,17 @@ end
 function view:attr_set(name, value)
     self._ATTRS[name] = value
     self:invalidate()
+    return self
+end
+
+-- get extra data
+function view:extra(name)
+    return self._EXTRAS[name]
+end
+
+-- set extra data
+function view:extra_set(name, value)
+    self._EXTRAS[name] = value
     return self
 end
 

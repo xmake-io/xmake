@@ -61,7 +61,8 @@ end
 -- get menu config
 function mconfdialog:menuconf()
     if not self._MENUCONF then
-        self._MENUCONF = menuconf:new("mconfdialog.menuconf", self:box():bounds())
+        local bounds = self:box():panel():bounds()
+        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(math.floor(bounds:width() / 3), 0, bounds:width(), bounds:height()))
     end
     return self._MENUCONF
 end

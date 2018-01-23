@@ -162,6 +162,25 @@ function panel:remove(v)
     self:invalidate()
 end
 
+-- clear views
+function panel:clear()
+
+    -- clear parents
+    for v in self:views() do
+        v:parent_set(nil)
+    end
+
+    -- clear views and cache
+    self._VIEWS:clear()
+    self._VIEWS_CACHE = {}
+
+    -- reset the current view
+    self._CURRENT = nil
+
+    -- invalidate
+    self:invalidate()
+end
+
 -- select the child view
 function panel:select(v)
 

@@ -25,10 +25,11 @@
 -- load modules
 local log       = require("ui/log")
 local view      = require("ui/view")
-local label     = require("ui/label")
+local rect      = require("ui/rect")
 local panel     = require("ui/panel")
 local event     = require("ui/event")
 local curses    = require("ui/curses")
+local button    = require("ui/button")
 
 -- define module
 local menuconf = menuconf or panel()
@@ -39,14 +40,55 @@ function menuconf:init(name, bounds)
     -- init panel
     panel.init(self, name, bounds)
 
+    self:insert({default = false, description = "bool config item"})
+    self:insert({default = true, new = true, description = {"bool config item2", "more"}})
 end
 
--- draw menuconf
-function menuconf:draw(transparent)
+-- insert a config item
+--
+-- description
+--  - {description = "config item description"}
+--  - {description = {"config item description", "line2", "line3", "more description ..."}}
+--
+-- bool config
+--  - {default = true/false, description = "bool config item", new = true/false}
+--
+function menuconf:insert(config)
 
-    -- draw background
-    panel.draw(self, transparent)
+    -- init a config item view
+    local item = button:new("menuconf.config." .. self:count(), rect:new(0, self:count(), self:width(), 1), self:_text(config))
 
+    -- attach this config
+    item:extra_set("config", config)
+
+    -- insert this config item
+    panel.insert(self, item)
+
+    -- invalidate
+    self:invalidate()
+end
+
+-- get text from the given config
+function menuconf:_text(config)
+
+    -- get text (first line in description)
+    local text = config.description or ""
+    if type(text) == "table" then
+        text = text[1] or ""
+    end
+
+    -- update text
+    if type(config.default) == "boolean" then
+        text = (config.default and "[*] " or "[ ] ") .. text
+    end
+
+    -- new config?
+    if config.new then
+        text = text .. " (NEW)"
+    end
+
+    -- ok
+    return text
 end
 
 -- return module
