@@ -19,38 +19,32 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        mconfdialog.lua
+-- @file        action.lua
 --
 
--- imports
-import("core.ui.log")
-import("core.ui.rect")
-import("core.ui.view")
-import("core.ui.label")
-import("core.ui.event")
-import("core.ui.action")
-import("core.ui.mconfdialog")
-import("core.ui.application")
+-- load modules
+local log    = require("ui/log")
+local object = require("ui/object")
 
--- the demo application
-local demo = application()
+-- define module
+local action = action or object { }
 
--- init demo
-function demo:init()
-
-    -- init name 
-    application.init(self, "demo")
-
-    -- init background
-    self:background_set("blue")
-
-    -- init menu config dialog
-    local mconfdialog = mconfdialog:new("mconfdialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
-    mconfdialog:action_set(action.ac_on_exit, function (v, e) self:quit() end)
-    self:insert(mconfdialog)
+-- register action types
+function action:register(tag, ...)
+    local base = self[tag] or 0
+    local enums = {...}
+    local n = #enums
+    for i = 1, n do
+        self[enums[i]] = i + base
+    end
+    self[tag] = base + n
 end
 
--- main entry
-function main(...)
-    demo:run(...)
-end
+-- register action enums
+action:register("ac_max", 
+                "ac_on_text_changed",
+                "ac_on_enter",
+                "ac_on_exit")
+
+-- return module
+return action

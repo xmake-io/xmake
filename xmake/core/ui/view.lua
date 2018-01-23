@@ -345,8 +345,8 @@ function view:action(name)
 end
 
 -- set action
-function view:action_set(name, action)
-    self._ACTIONS[name] = action
+function view:action_set(name, on_action)
+    self._ACTIONS[name] = on_action
     return self
 end
 

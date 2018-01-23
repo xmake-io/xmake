@@ -25,6 +25,7 @@
 -- load modules
 local log        = require("ui/log")
 local rect       = require("ui/rect")
+local action     = require("ui/action")
 local curses     = require("ui/curses")
 local window     = require("ui/window")
 local textdialog = require("ui/textdialog")
@@ -48,7 +49,7 @@ function boxdialog:init(name, bounds, title)
     self:text():option_set("progress", false)
 
     -- text changed
-    self:text():action_set("text.changed", function (v, e)
+    self:text():action_set(action.ac_on_text_changed, function (v, e)
         if e.text then
             local lines = #self:text():splitext(e.text)
             if lines > 0 and lines < self:height() then

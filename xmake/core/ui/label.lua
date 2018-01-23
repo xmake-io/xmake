@@ -26,6 +26,7 @@
 local log       = require("ui/log")
 local view      = require("ui/view")
 local event     = require("ui/event")
+local action    = require("ui/action")
 local curses    = require("ui/curses")
 
 -- define module
@@ -69,9 +70,9 @@ end
 function label:text_set(text)
     text = text or ""
     if self._TEXT ~= text then
-        local action = self:action("text.changed")
-        if action then
-            action(self, event.text {text})
+        local on_action = self:action(action.ac_on_text_changed)
+        if on_action then
+            on_action(self, event.text {text})
         end
     end
     self._TEXT = text 

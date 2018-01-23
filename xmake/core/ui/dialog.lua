@@ -28,6 +28,7 @@ local rect   = require("ui/rect")
 local event  = require("ui/event")
 local label  = require("ui/label")
 local panel  = require("ui/panel")
+local action = require("ui/action")
 local button = require("ui/button")
 local window = require("ui/window")
 local curses = require("ui/curses")
@@ -99,9 +100,9 @@ end
 function dialog:quit()
     local parent = self:parent()
     if parent then
-        local action = self:action("command.exit")
-        if action then
-            action(self, event.command {"cm_exit"})
+        local on_action = self:action(action.ac_on_exit)
+        if on_action then
+            on_action(self, event.command {"cm_exit"})
         end
         parent:remove(self)
     end

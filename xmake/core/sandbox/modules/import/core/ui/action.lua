@@ -19,38 +19,8 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        mconfdialog.lua
+-- @file        action.lua
 --
 
--- imports
-import("core.ui.log")
-import("core.ui.rect")
-import("core.ui.view")
-import("core.ui.label")
-import("core.ui.event")
-import("core.ui.action")
-import("core.ui.mconfdialog")
-import("core.ui.application")
-
--- the demo application
-local demo = application()
-
--- init demo
-function demo:init()
-
-    -- init name 
-    application.init(self, "demo")
-
-    -- init background
-    self:background_set("blue")
-
-    -- init menu config dialog
-    local mconfdialog = mconfdialog:new("mconfdialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
-    mconfdialog:action_set(action.ac_on_exit, function (v, e) self:quit() end)
-    self:insert(mconfdialog)
-end
-
--- main entry
-function main(...)
-    demo:run(...)
-end
+-- return module: action
+return require("ui/action")

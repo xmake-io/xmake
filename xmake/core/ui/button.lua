@@ -27,13 +27,14 @@ local log       = require("ui/log")
 local view      = require("ui/view")
 local event     = require("ui/event")
 local label     = require("ui/label")
+local action    = require("ui/action")
 local curses    = require("ui/curses")
 
 -- define module
 local button = button or label()
 
 -- init button
-function button:init(name, bounds, text, action)
+function button:init(name, bounds, text, on_action)
 
     -- init label
     label.init(self, name, bounds, text)
@@ -45,7 +46,7 @@ function button:init(name, bounds, text, action)
     self:cursor_show(true)
 
     -- init action
-    self:action_set("keyboard.Enter", action)
+    self:action_set(action.ac_on_enter, on_action)
 end
 
 -- draw button
@@ -85,14 +86,16 @@ function button:event_on(e)
 
     -- enter this button?
     if e.type == event.ev_keyboard then
-        local action = self:action("keyboard." .. e.key_name)
-        if action then
-            if type(action) == "string" then
-                -- send command
-                self:application():send(action)
-            elseif type(action) == "function" then
-                -- do action script
-                action(self, e)
+        if e.key_name == "Enter" then
+            local on_action = self:action(action.ac_on_enter)
+            if on_action then
+                if type(on_action) == "string" then
+                    -- send command
+                    self:application():send(on_action)
+                elseif type(on_action) == "function" then
+                    -- do action script
+                    on_action(self, e)
+                end
             end
             return true
         end
