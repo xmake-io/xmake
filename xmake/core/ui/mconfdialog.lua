@@ -56,9 +56,6 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
     -- insert menu config
     self:box():panel():insert(self:menuconf())
-
-    -- load config first
-    self:action_on(action.ac_on_load)
 end
 
 -- get menu config
@@ -71,6 +68,15 @@ end
 
 -- on event
 function mconfdialog:event_on(e)
+
+    -- load config first
+    if e.type == event.ev_idle then
+        if not self._LOADED then
+            self:action_on(action.ac_on_load)
+            self._LOADED = true
+        end
+    end
+
     -- TODO
     return boxdialog.event_on(self, e) 
 end
