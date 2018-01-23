@@ -83,9 +83,6 @@ event.keyboard = object {_init = { "key_code", "key_name", "key_meta" }, type = 
 -- define command event
 event.command = object {_init = { "command", "extra" }, type = event.ev_command}
 
--- define text event
-event.text = object {_init = { "text" }, type = event.ev_text}
-
 -- define idle event
 event.idle = object {_init = {}, type = event.ev_idle}
 

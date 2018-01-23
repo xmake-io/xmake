@@ -94,7 +94,7 @@ function button:event_on(e)
                     self:application():send(on_action)
                 elseif type(on_action) == "function" then
                     -- do action script
-                    on_action(self, e)
+                    on_action(self)
                 end
             end
             return true

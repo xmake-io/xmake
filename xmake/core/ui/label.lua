@@ -68,14 +68,19 @@ end
 
 -- set text
 function label:text_set(text)
+
+    -- set text
     text = text or ""
-    if self._TEXT ~= text then
+    local changed = self._TEXT ~= text
+    self._TEXT = text 
+
+    -- do action
+    if changed then
         local on_action = self:action(action.ac_on_text_changed)
         if on_action then
-            on_action(self, event.text {text})
+            on_action(self)
         end
     end
-    self._TEXT = text 
     self:invalidate()
     return self
 end

@@ -49,9 +49,9 @@ function boxdialog:init(name, bounds, title)
     self:text():option_set("progress", false)
 
     -- text changed
-    self:text():action_set(action.ac_on_text_changed, function (v, e)
-        if e.text then
-            local lines = #self:text():splitext(e.text)
+    self:text():action_set(action.ac_on_text_changed, function (v)
+        if v:text() then
+            local lines = #self:text():splitext(v:text())
             if lines > 0 and lines < self:height() then
                 self:box():bounds().sy = lines
                 self:text():bounds().ey = lines
