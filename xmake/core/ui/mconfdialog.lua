@@ -26,6 +26,7 @@
 local log        = require("ui/log")
 local rect       = require("ui/rect")
 local event      = require("ui/event")
+local action     = require("ui/action")
 local curses     = require("ui/curses")
 local window     = require("ui/window")
 local menuconf   = require("ui/menuconf")
@@ -49,8 +50,8 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     self:button_add("select", "< Select >", function (v, e) end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
     self:button_add("help", "< Help >", function (v, e) end)
-    self:button_add("save", "< Save >", function (v, e) end)
-    self:button_add("load", "< Load >", function (v, e) end)
+    self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
+    self:button_add("load", "< Load >", function (v, e) self:action_on(action.ac_on_load) end)
     self:buttons():select(self:button("select"))
 
     -- insert menu config

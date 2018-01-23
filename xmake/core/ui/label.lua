@@ -76,10 +76,7 @@ function label:text_set(text)
 
     -- do action
     if changed then
-        local on_action = self:action(action.ac_on_text_changed)
-        if on_action then
-            on_action(self)
-        end
+        self:action_on(action.ac_on_text_changed)
     end
     self:invalidate()
     return self

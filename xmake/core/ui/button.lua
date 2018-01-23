@@ -87,16 +87,7 @@ function button:event_on(e)
     -- enter this button?
     if e.type == event.ev_keyboard then
         if e.key_name == "Enter" then
-            local on_action = self:action(action.ac_on_enter)
-            if on_action then
-                if type(on_action) == "string" then
-                    -- send command
-                    self:application():send(on_action)
-                elseif type(on_action) == "function" then
-                    -- do action script
-                    on_action(self)
-                end
-            end
+            self:action_on(action.ac_on_enter)
             return true
         end
     end

@@ -100,10 +100,7 @@ end
 function dialog:quit()
     local parent = self:parent()
     if parent then
-        local on_action = self:action(action.ac_on_exit)
-        if on_action then
-            on_action(self, event.command {"cm_exit"})
-        end
+        self:action_on(action.ac_on_exit)
         parent:remove(self)
     end
 end
