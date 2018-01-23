@@ -56,6 +56,9 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
     -- insert menu config
     self:box():panel():insert(self:menuconf())
+
+    -- load config first
+    self:action_on(action.ac_on_load)
 end
 
 -- get menu config

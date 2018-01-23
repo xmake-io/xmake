@@ -46,7 +46,9 @@ function demo:init()
 
     -- init menu config dialog
     local mconfdialog = mconfdialog:new("mconfdialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
-    mconfdialog:action_set(action.ac_on_exit, function (v, e) self:quit() end)
+    mconfdialog:action_set(action.ac_on_exit, function (v) self:quit() end)
+    mconfdialog:action_set(action.ac_on_load, function (v) log:print("load") end)
+    mconfdialog:action_set(action.ac_on_save, function (v) log:print("save") end)
     self:insert(mconfdialog)
 end
 
