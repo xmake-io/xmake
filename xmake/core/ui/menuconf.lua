@@ -40,18 +40,26 @@ function menuconf:init(name, bounds)
     -- init panel
     panel.init(self, name, bounds)
 
-    self:insert({default = false, description = "bool config item"})
-    self:insert({default = true, new = true, description = {"bool config item2", "more"}})
+    self:insert({default = false, description = "boolean config item"})
+    self:insert({default = true, new = true, description = {"boolean config item2", "more"}})
+    self:insert({kind = "number", value = 6, default = 10, description = "number config item"})
 end
 
 -- insert a config item
+--
+-- kind
+--  - {kind = "number/boolean/choice/menu"}
 --
 -- description
 --  - {description = "config item description"}
 --  - {description = {"config item description", "line2", "line3", "more description ..."}}
 --
 -- bool config
---  - {default = true/false, description = "bool config item", new = true/false}
+--  - {kind = "boolean", value = true, default = true, description = "bool config item", new = true/false}
+--
+-- int config
+--  - {kind = "number", value = 10, default = 0, description = "int config item", new = true/false}
+--
 --
 function menuconf:insert(config)
 
@@ -77,9 +85,14 @@ function menuconf:_text(config)
         text = text[1] or ""
     end
 
+    -- get value
+    local value = config.value or config.default
+
     -- update text
-    if type(config.default) == "boolean" then
-        text = (config.default and "[*] " or "[ ] ") .. text
+    if config.kind == "boolean" or (not config.kind and type(value) == "boolean") then -- boolean config?
+        text = (value and "[*] " or "[ ] ") .. text
+    elseif config.kind == "number" or (not config.kind and type(value) == "number") then -- number config?
+        text = "(" .. tostring(value or 0) .. ") " .. text
     end
 
     -- new config?
