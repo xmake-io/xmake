@@ -39,27 +39,31 @@ function menuconf:init(name, bounds)
 
     -- init panel
     panel.init(self, name, bounds)
-
-    self:insert({default = false, description = "boolean config item"})
-    self:insert({default = true, new = true, description = {"boolean config item2", "more"}})
-    self:insert({kind = "number", value = 6, default = 10, description = "number config item"})
 end
 
 -- insert a config item
 --
 -- kind
---  - {kind = "number/boolean/choice/menu"}
+--  - {kind = "number/boolean/string/choice/menu"}
 --
 -- description
 --  - {description = "config item description"}
 --  - {description = {"config item description", "line2", "line3", "more description ..."}}
 --
--- bool config
---  - {kind = "boolean", value = true, default = true, description = "bool config item", new = true/false}
+-- boolean config
+--  - {name = "...", kind = "boolean", value = true, default = true, description = "boolean config item", new = true/false}
 --
--- int config
---  - {kind = "number", value = 10, default = 0, description = "int config item", new = true/false}
+-- number config
+--  - {name = "...", kind = "number", value = 10, default = 0, description = "number config item", new = true/false}
 --
+-- string config
+--  - {name = "...", kind = "string", value = "xmake", default = "", description = "string config item", new = true/false}
+--
+-- choice config
+--  - {name = "...", kind = "choice", value = "...", default = "...", description = "choice config item", values = {1, 2, 3, 4, 5}}
+--
+-- menu config
+--  - {name = "...", kind = "menu", description = "menu config item", configs = {...}}
 --
 function menuconf:insert(config)
 
@@ -93,6 +97,12 @@ function menuconf:_text(config)
         text = (value and "[*] " or "[ ] ") .. text
     elseif config.kind == "number" or (not config.kind and type(value) == "number") then -- number config?
         text = "(" .. tostring(value or 0) .. ") " .. text
+    elseif config.kind == "string" or (not config.kind and type(value) == "string") then -- string config?
+        text = "(" .. tostring(value or "") .. ") " .. text
+    elseif config.kind == "choice" then -- choice config?
+        text = "    " .. text .. " (" .. tostring(value or "") .. ")" .. "  --->"
+    elseif config.kind == "menu" then -- menu config?
+        text = "    " .. text .. "  --->"
     end
 
     -- new config?
