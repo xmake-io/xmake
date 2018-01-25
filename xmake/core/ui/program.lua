@@ -39,7 +39,7 @@ local curses = require("ui/curses")
 local program = program or panel()
 
 -- init program
-function program:init(name)
+function program:init(name, argv)
 
     -- init main window
     local main_window = self:main_window()
@@ -77,6 +77,9 @@ function program:init(name)
 
     -- get 8-bits character for getch()
     main_window:meta(true)
+
+    -- save the current arguments
+    self._ARGV = argv
 
     -- init panel
     panel.init(self, name, rect {0, 0, curses.columns(), curses.lines()})
@@ -195,9 +198,6 @@ end
 
 -- run program loop
 function program:loop(argv)
-
-    -- save the current arguments
-    self._ARGV = argv
 
     -- do message loop
     local e = nil

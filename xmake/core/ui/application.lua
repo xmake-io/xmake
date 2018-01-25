@@ -37,7 +37,7 @@ local statusbar = require("ui/statusbar")
 local application = application or program()
 
 -- init application
-function application:init(name)
+function application:init(name, argv)
 
     -- init log
     log:clear()
@@ -47,7 +47,7 @@ function application:init(name)
     log:print("<application: %s>: init ..", name)
 
     -- init program
-    program.init(self, name)
+    program.init(self, name, argv)
 
     -- trace
     log:print("<application: %s>: init ok", name)
@@ -100,9 +100,9 @@ function application:run(...)
     local runner = function ()
 
         -- new an application
-        local app = self:new()
+        local app = self:new(argv)
         if app then
-            app:loop(argv)
+            app:loop()
             app:exit()
         end
     end
