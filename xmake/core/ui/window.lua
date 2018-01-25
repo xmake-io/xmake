@@ -109,7 +109,7 @@ end
 
 -- on event
 function window:event_on(e)
- 
+
     -- select panel?
     if e.type == event.ev_keyboard then
         if e.key_name == "Tab" then

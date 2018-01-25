@@ -111,6 +111,7 @@ function dialog:event_on(e)
         self:quit()
         return true
     end
+    return window.event_on(self, e)
 end
 
 -- return module

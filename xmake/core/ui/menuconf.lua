@@ -39,6 +39,22 @@ function menuconf:init(name, bounds)
 
     -- init panel
     panel.init(self, name, bounds)
+
+    -- init configs
+    self._CONFIGS = {}
+end
+
+-- on event
+function menuconf:event_on(e)
+ 
+    -- select config
+    if e.type == event.ev_keyboard then
+        if e.key_name == "Down" then
+            return self:select_next()
+        elseif e.key_name == "Up" then
+            return self:select_prev()
+        end
+    end   
 end
 
 -- insert a config item
@@ -76,8 +92,29 @@ function menuconf:insert(config)
     -- insert this config item
     panel.insert(self, item)
 
+    -- select the first item
+    self:select(self:first())
+
     -- invalidate
     self:invalidate()
+end
+
+-- load configs
+function menuconf:load(configs)
+
+    -- clear the views first
+    self:clear()
+
+    -- save configs
+    self._CONFIGS = configs
+
+    -- invalidate
+    self:invalidate()
+end
+
+-- get configs
+function menuconf:configs()
+    return self._CONFIGS
 end
 
 -- get text from the given config
