@@ -31,6 +31,7 @@ local event     = require("ui/event")
 local action    = require("ui/action")
 local curses    = require("ui/curses")
 local button    = require("ui/button")
+local object    = require("ui/object")
 
 -- define module
 local menuconf = menuconf or panel()
@@ -64,7 +65,54 @@ function menuconf:event_on(e)
     end   
 end
 
--- insert a config item
+-- load configs
+function menuconf:load(configs)
+
+    -- clear the views first
+    self:clear()
+
+    -- insert configs
+    self._CONFIGS = configs
+    for _, config in ipairs(configs) do
+        self:_do_insert(config)
+    end
+
+    -- select the first item
+    self:select(self:first())
+
+    -- invalidate
+    self:invalidate()
+end
+
+-- do insert a config item
+function menuconf:_do_insert(config)
+
+    -- init a config item view
+    local item = button:new("menuconf.config." .. self:count(), rect:new(0, self:count(), self:width(), 1), tostring(config))
+
+    -- attach this config
+    item:extra_set("config", config)
+
+    -- insert this config item
+    self:insert(item)
+end
+
+-- do select the current config
+function menuconf:_do_select()
+
+    -- TODO
+
+    -- get the current config
+    local config = self:current()
+    if self:current() then
+        config = self:current():extra("config")
+    end
+
+    -- do action: on selected
+    self:action_on(action.ac_on_selected)
+end
+
+-- init config object
 --
 -- kind
 --  - {kind = "number/boolean/string/choice/menu"}
@@ -88,79 +136,35 @@ end
 -- menu config
 --  - {name = "...", kind = "menu", description = "menu config item", configs = {...}}
 --
-function menuconf:config_insert(config)
+local config = config or object {new = true}
 
-    -- init a config item view
-    local item = button:new("menuconf.config." .. self:count(), rect:new(0, self:count(), self:width(), 1), self:_config_text(config))
-
-    -- attach this config
-    item:extra_set("config", config)
-
-    -- insert this config item
-    self:insert(item)
-
-    -- select the first item
-    self:select(self:first())
-
-    -- invalidate
-    self:invalidate()
-end
-
--- get the current config
-function menuconf:config_current()
-
-    -- get the current view item
-    local item = panel.current(self)
-    if item then
-        return item:extra("config")
-    end
-end
-
--- load configs
-function menuconf:configs_load(configs)
-
-    -- clear the views first
-    self:clear()
-
-    -- save configs
-    self._CONFIGS = configs
-
-    -- invalidate
-    self:invalidate()
-end
-
--- get configs
-function menuconf:configs()
-    return self._CONFIGS
-end
-
--- get text from the given config
-function menuconf:_config_text(config)
+-- to string
+function config:__tostring()
 
     -- get text (first line in description)
-    local text = config.description or ""
+    local text = self.description or ""
     if type(text) == "table" then
         text = text[1] or ""
     end
 
     -- get value
-    local value = config.value or config.default
+    local value = self.value or self.default
 
     -- update text
-    if config.kind == "boolean" or (not config.kind and type(value) == "boolean") then -- boolean config?
+    if self.kind == "boolean" or (not self.kind and type(value) == "boolean") then -- boolean config?
         text = (value and "[*] " or "[ ] ") .. text
-    elseif config.kind == "number" or (not config.kind and type(value) == "number") then -- number config?
+    elseif self.kind == "number" or (not self.kind and type(value) == "number") then -- number config?
         text = "(" .. tostring(value or 0) .. ") " .. text
-    elseif config.kind == "string" or (not config.kind and type(value) == "string") then -- string config?
+    elseif self.kind == "string" or (not self.kind and type(value) == "string") then -- string config?
         text = "(" .. tostring(value or "") .. ") " .. text
-    elseif config.kind == "choice" then -- choice config?
+    elseif self.kind == "choice" then -- choice config?
         text = "    " .. text .. " (" .. tostring(value or "") .. ")" .. "  --->"
-    elseif config.kind == "menu" then -- menu config?
+    elseif self.kind == "menu" then -- menu config?
         text = "    " .. text .. "  --->"
     end
 
     -- new config?
-    if config.new then
+    if self.new and self.kind ~= "choice" and self.kind ~= "menu" then
         text = text .. " (NEW)"
     end
 
@@ -168,14 +172,13 @@ function menuconf:_config_text(config)
     return text
 end
 
--- do select the current config
-function menuconf:_do_select()
-
-    -- TODO
-
-    -- do action: on selected
-    self:action_on(action.ac_on_selected)
-end
+-- save config objects
+menuconf.config  = menuconf.config or config
+menuconf.menu    = menuconf.menu or config { kind = "menu", configs = {} }
+menuconf.number  = menuconf.number or config { kind = "number", default = 0 }
+menuconf.string  = menuconf.string or config { kind = "string", default = "" }
+menuconf.choice  = menuconf.choice or config { kind = "choice", values = {} }
+menuconf.boolean = menuconf.boolean or config { kind = "boolean", default = false }
 
 -- return module
 return menuconf

@@ -62,7 +62,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
     -- on selected
     self:menuconf():action_set(action.ac_on_selected, function (v)
-        log:print("on_selected: %s", v:config_current() and v:_config_text(v:config_current()) or "null")
+        -- TODO
     end)
 end
 
