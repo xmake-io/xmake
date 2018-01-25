@@ -149,8 +149,17 @@ Please download and install from the plugins repository [xmake-plugins](https://
 ## IDE/Editor Integration
 
 * [xmake-vscode](https://github.com/tboox/xmake-vscode)
+
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="60%" />
+
 * [xmake-sublime](https://github.com/tboox/xmake-sublime)
+
+<img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="60%" />
+
 * [xmake-idea](https://github.com/tboox/xmake-idea)
+
+<img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="60%" />
+
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
 ## Examples

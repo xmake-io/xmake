@@ -106,6 +106,16 @@ function menuconf:config_insert(config)
     self:invalidate()
 end
 
+-- get the current config
+function menuconf:config_current()
+
+    -- get the current view item
+    local item = panel.current(self)
+    if item then
+        return item:extra("config")
+    end
+end
+
 -- load configs
 function menuconf:configs_load(configs)
 
@@ -122,16 +132,6 @@ end
 -- get configs
 function menuconf:configs()
     return self._CONFIGS
-end
-
--- get the current config
-function menuconf:config_current()
-
-    -- get the current view item
-    local item = panel.current(self)
-    if item then
-        return item:extra("config")
-    end
 end
 
 -- get text from the given config
