@@ -137,10 +137,29 @@ $ xmake run -d console
 
 ## Builtin Plugins
 
-* Macros script plugin
-* Run the custom lua script plugin
-* Generate IDE project file plugin（makefile, vs2002 - vs2017 .. ）
-* Generate doxygen document plugin
+#### Macros script plugin
+
+```bash
+$ xmake m -b                        # start to record
+$ xmake f -p iphoneos -m debug
+$ xmake
+$ xmake m -e                        # stop to record
+$ xmake m .                         # palyback commands
+```
+
+#### Run the custom lua script plugin
+
+```bash
+$ xmake l ./test.lua
+$ xmake l -c "print('hello xmake!')"
+$ xmake l lib.detect.find_tool gcc
+```
+
+#### Generate IDE project file plugin（makefile, vs2002 - vs2017 .. ）
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+```
 
 ## More Plugins
 

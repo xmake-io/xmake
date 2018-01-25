@@ -143,10 +143,35 @@ $ xmake run -d console
 
 ## 内置插件
 
-* 宏记录脚本和回放插件
-* 加载自定义lua脚本插件
-* 生成IDE工程文件插件（makefile, vs2002 - vs2017, ...）
-* 生成doxygen文档插件
+#### 宏记录脚本和回放插件
+
+```bash
+$ xmake m -b                        # 开始记录
+$ xmake f -p iphoneos -m debug
+$ xmake
+$ xmake m -e                        # 结束记录
+$ xmake m .                         # 回放命令
+```
+
+#### 加载自定义lua脚本插件
+
+```bash
+$ xmake l ./test.lua
+$ xmake l -c "print('hello xmake!')"
+$ xmake l lib.detect.find_tool gcc
+```
+
+#### 生成IDE工程文件插件（makefile, vs2002 - vs2017, ...）
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+```
+
+#### 生成doxygen文档插件
+
+```bash
+$ xmake doxygen [srcdir]
+```
 
 ## 更多插件
 
