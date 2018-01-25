@@ -28,6 +28,7 @@ local view      = require("ui/view")
 local rect      = require("ui/rect")
 local panel     = require("ui/panel")
 local event     = require("ui/event")
+local action    = require("ui/action")
 local curses    = require("ui/curses")
 local button    = require("ui/button")
 
@@ -53,7 +54,13 @@ function menuconf:event_on(e)
             return self:select_next()
         elseif e.key_name == "Up" then
             return self:select_prev()
+        elseif e.key_name == "Enter" or e.key_name == " " then
+            self:_do_select()
+            return true
         end
+    elseif e.type == event.ev_command and e.command == "cm_enter" then
+        self:_do_select()
+        return true
     end   
 end
 
@@ -81,16 +88,16 @@ end
 -- menu config
 --  - {name = "...", kind = "menu", description = "menu config item", configs = {...}}
 --
-function menuconf:insert(config)
+function menuconf:config_insert(config)
 
     -- init a config item view
-    local item = button:new("menuconf.config." .. self:count(), rect:new(0, self:count(), self:width(), 1), self:_text(config))
+    local item = button:new("menuconf.config." .. self:count(), rect:new(0, self:count(), self:width(), 1), self:_config_text(config))
 
     -- attach this config
     item:extra_set("config", config)
 
     -- insert this config item
-    panel.insert(self, item)
+    self:insert(item)
 
     -- select the first item
     self:select(self:first())
@@ -100,7 +107,7 @@ function menuconf:insert(config)
 end
 
 -- load configs
-function menuconf:load(configs)
+function menuconf:configs_load(configs)
 
     -- clear the views first
     self:clear()
@@ -117,8 +124,18 @@ function menuconf:configs()
     return self._CONFIGS
 end
 
+-- get the current config
+function menuconf:config_current()
+
+    -- get the current view item
+    local item = panel.current(self)
+    if item then
+        return item:extra("config")
+    end
+end
+
 -- get text from the given config
-function menuconf:_text(config)
+function menuconf:_config_text(config)
 
     -- get text (first line in description)
     local text = config.description or ""
@@ -149,6 +166,15 @@ function menuconf:_text(config)
 
     -- ok
     return text
+end
+
+-- do select the current config
+function menuconf:_do_select()
+
+    -- TODO
+
+    -- do action: on selected
+    self:action_on(action.ac_on_selected)
 end
 
 -- return module

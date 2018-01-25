@@ -47,7 +47,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 ]])
 
     -- init buttons
-    self:button_add("select", "< Select >", function (v, e) end)
+    self:button_add("select", "< Select >", function (v, e) self:menuconf():event_on(event.command {"cm_enter"}) end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
     self:button_add("help", "< Help >", function (v, e) end)
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
@@ -56,6 +56,14 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
     -- insert menu config
     self:box():panel():insert(self:menuconf())
+
+    -- disable to select to box (disable Tab switch and only response to buttons)
+    self:box():option_set("selectable", false)
+
+    -- on selected
+    self:menuconf():action_set(action.ac_on_selected, function (v)
+        log:print("on_selected: %s", v:config_current() and v:_config_text(v:config_current()) or "null")
+    end)
 end
 
 -- get menu config
@@ -63,6 +71,7 @@ function mconfdialog:menuconf()
     if not self._MENUCONF then
         local bounds = self:box():panel():bounds()
         self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(math.floor(bounds:width() / 3), 0, bounds:width(), bounds:height()))
+        self._MENUCONF:state_set("focused", true) -- we can select and highlight selected item
     end
     return self._MENUCONF
 end
@@ -75,6 +84,11 @@ function mconfdialog:event_on(e)
         if not self._LOADED then
             self:action_on(action.ac_on_load)
             self._LOADED = true
+        end
+    -- select config
+    elseif e.type == event.ev_keyboard then
+        if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " then
+            return self:menuconf():event_on(e)
         end
     end
 

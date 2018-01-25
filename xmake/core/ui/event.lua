@@ -70,7 +70,7 @@ end
 event:register("ev_max", "ev_keyboard", "ev_mouse", "ev_command", "ev_text", "ev_idle")
 
 -- register command event types (ev_command)
-event:register("cm_max", "cm_quit", "cm_exit")
+event:register("cm_max", "cm_quit", "cm_exit", "cm_enter")
 
 -- define keyboard event
 --
