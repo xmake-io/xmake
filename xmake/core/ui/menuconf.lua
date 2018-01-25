@@ -100,12 +100,23 @@ end
 -- do select the current config
 function menuconf:_do_select()
 
-    -- TODO
-
+    -- get the current item
+    local item = self:current()
+    
     -- get the current config
-    local config = self:current()
-    if self:current() then
-        config = self:current():extra("config")
+    local config = item:extra("config")
+
+    -- get value
+    local value = config.value
+    if value == nil then
+        value = config.default
+    end
+
+    -- select the boolean config 
+    if config.kind == "boolean" then
+        config.new = false
+        config.value = not value
+        item:text_set(tostring(config))
     end
 
     -- do action: on selected
@@ -148,8 +159,11 @@ function config:__tostring()
     end
 
     -- get value
-    local value = self.value or self.default
-
+    local value = self.value
+    if value == nil then
+        value = self.default
+    end
+    
     -- update text
     if self.kind == "boolean" or (not self.kind and type(value) == "boolean") then -- boolean config?
         text = (value and "[*] " or "[ ] ") .. text
