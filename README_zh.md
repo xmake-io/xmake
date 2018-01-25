@@ -112,6 +112,13 @@ $ xmake run console
 $ xmake run -d console
 ```
 
+## 配置平台
+
+```bash
+$ xmake f -p [windows|linux|macosx|android|iphoneos ..] -a [x86|arm64 ..] -m [debug|release]
+$ xmake
+```
+
 ## 支持特性
 
 * Tasks

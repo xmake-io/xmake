@@ -106,6 +106,13 @@ $ xmake run console
 $ xmake run -d console
 ```
 
+## Configure platform
+
+```bash
+$ xmake f -p [windows|linux|macosx|android|iphoneos ..] -a [x86|arm64 ..] -m [debug|release]
+$ xmake
+```
+
 ## Support features
 
 * Tasks
