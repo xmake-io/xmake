@@ -89,6 +89,9 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     dialog_choice:background_set(self:frame():background())
     dialog_choice:frame():background_set("cyan")
     dialog_choice:box():frame():background_set("cyan")
+    dialog_choice:choicebox():action_set(action.ac_on_selected, function (v, value)
+        -- TODO
+    end)
 
     -- on selected
     self:menuconf():action_set(action.ac_on_selected, function (v, config)
@@ -108,7 +111,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
         -- show choice dialog
         elseif config.kind == "choice" then
             dialog_choice:title():text_set(config:prompt())
-            dialog_choice:choicebox():load(config.values, 1)
+            dialog_choice:choicebox():load(config.values, config.value)
             self:insert(dialog_choice, {centerx = true, centery = true})
         end
     end)

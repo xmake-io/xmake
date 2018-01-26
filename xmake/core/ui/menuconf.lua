@@ -142,8 +142,8 @@ end
 -- string config
 --  - {name = "...", kind = "string", value = "xmake", default = "", description = "string config item", new = true/false}
 --
--- choice config
---  - {name = "...", kind = "choice", value = "...", default = "...", description = "choice config item", values = {1, 2, 3, 4, 5}}
+-- choice config (value is index)
+--  - {name = "...", kind = "choice", value = 1, default = 1, description = "choice config item", values = {2, 2, 3, 4, 5}}
 --
 -- menu config
 --  - {name = "...", kind = "menu", description = "menu config item", configs = {...}}
@@ -200,7 +200,7 @@ function config:__tostring()
     elseif self.kind == "string" or (not self.kind and type(value) == "string") then -- string config?
         text = "(" .. tostring(value or "") .. ") " .. text
     elseif self.kind == "choice" then -- choice config?
-        text = "    " .. text .. " (" .. tostring(value or "") .. ")" .. "  --->"
+        text = "    " .. text .. " (" .. tostring(self.values[value or 1]) .. ")" .. "  --->"
     elseif self.kind == "menu" then -- menu config?
         text = "    " .. text .. "  --->"
     end
@@ -219,7 +219,7 @@ menuconf.config  = menuconf.config or config
 menuconf.menu    = menuconf.menu or config { kind = "menu", configs = {} }
 menuconf.number  = menuconf.number or config { kind = "number", default = 0 }
 menuconf.string  = menuconf.string or config { kind = "string", default = "" }
-menuconf.choice  = menuconf.choice or config { kind = "choice", values = {} }
+menuconf.choice  = menuconf.choice or config { kind = "choice", default = 1, values = {} }
 menuconf.boolean = menuconf.boolean or config { kind = "boolean", default = false }
 
 -- return module
