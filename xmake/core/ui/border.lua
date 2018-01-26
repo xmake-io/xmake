@@ -99,6 +99,11 @@ function border:cornerattr_set(attr_ul, attr_rl)
     self:invalidate()
 end
 
+-- swap border corner attribute
+function border:cornerattr_swap()
+    local cornerattr = self:cornerattr()
+    self:cornerattr_set(cornerattr[2], cornerattr[1])
+end
 
 -- return module
 return border

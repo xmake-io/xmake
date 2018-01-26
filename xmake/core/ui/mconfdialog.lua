@@ -70,6 +70,8 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
         local config = dialog_input:extra("config")
         if config.kind == "string" then
             config.value = dialog_input:textedit():text()
+        elseif config.kind == "number" then
+            config.value = tonumber(dialog_input:textedit():text())
         end
         dialog_input:quit() 
     end)
@@ -80,11 +82,15 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
     -- on selected
     self:menuconf():action_set(action.ac_on_selected, function (v, config)
-        if config.kind == "string" then
+        if config.kind == "string" or config.kind == "number" then
             dialog_input:extra_set("config", config)
             dialog_input:title():text_set(config:prompt())
-            dialog_input:textedit():text_set(config.value)
-            dialog_input:text():text_set("Please enter a string value. Use the <TAB> key to move from the input fields to buttons below it.")
+            dialog_input:textedit():text_set(tostring(config.value))
+            if config.kind == "string" then
+                dialog_input:text():text_set("Please enter a string value. Use the <TAB> key to move from the input fields to buttons below it.")
+            else
+                dialog_input:text():text_set("Please enter a decimal value. Fractions will not be accepted.  Use the <TAB> key to move from the input field to the buttons below it.")
+            end
             self:insert(dialog_input, {centerx = true, centery = true})
         end
     end)
