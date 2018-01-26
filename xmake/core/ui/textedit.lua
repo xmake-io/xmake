@@ -48,6 +48,9 @@ function textedit:init(name, bounds, text)
 
     -- disable progress
     self:option_set("progress", false)
+
+    -- enable multiple line
+    self:option_set("multiline", true)
 end
 
 -- draw textedit
@@ -79,7 +82,7 @@ function textedit:event_on(e)
         if e.key_code > 0x1f and e.key_code < 0x7f then
             self:text_set(self:text() .. e.key_name)
             return true
-        elseif e.key_name == "Enter" then
+        elseif e.key_name == "Enter" and self:option("multiline") then
             self:text_set(self:text() .. '\n')
             return true
         elseif e.key_name == "Backspace" then

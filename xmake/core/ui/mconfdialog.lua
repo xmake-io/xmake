@@ -65,6 +65,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     local dialog_input = inputdialog:new("dialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
     dialog_input:background_set(self:frame():background())
     dialog_input:frame():background_set("cyan")
+    dialog_input:textedit():option_set("multiline", false)
     dialog_input:button_add("ok", "< Ok >", function (v) 
         local config = dialog_input:extra("config")
         if config.kind == "string" then

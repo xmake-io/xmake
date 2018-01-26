@@ -54,7 +54,7 @@ function inputdialog:init(name, bounds, title)
     -- text changed
     self:text():action_set(action.ac_on_text_changed, function (v)
         if v:text() then
-            local lines = #self:text():splitext(v:text())
+            local lines = #self:text():splitext(v:text()) + 1
             if lines > 0 and lines < self:height() then
                 self:text():bounds().ey = lines
                 self:textedit():bounds().sy = lines
