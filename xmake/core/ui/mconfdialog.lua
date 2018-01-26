@@ -23,15 +23,16 @@
 --
 
 -- load modules
-local log         = require("ui/log")
-local rect        = require("ui/rect")
-local event       = require("ui/event")
-local action      = require("ui/action")
-local curses      = require("ui/curses")
-local window      = require("ui/window")
-local menuconf    = require("ui/menuconf")
-local boxdialog   = require("ui/boxdialog")
-local inputdialog = require("ui/inputdialog")
+local log          = require("ui/log")
+local rect         = require("ui/rect")
+local event        = require("ui/event")
+local action       = require("ui/action")
+local curses       = require("ui/curses")
+local window       = require("ui/window")
+local menuconf     = require("ui/menuconf")
+local boxdialog    = require("ui/boxdialog")
+local inputdialog  = require("ui/inputdialog")
+local choicedialog = require("ui/choicedialog")
 
 -- define module
 local mconfdialog = mconfdialog or boxdialog()
@@ -62,7 +63,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     self:box():option_set("selectable", false)
 
     -- init input dialog
-    local dialog_input = inputdialog:new("dialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
+    local dialog_input = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
     dialog_input:background_set(self:frame():background())
     dialog_input:frame():background_set("cyan")
     dialog_input:textedit():option_set("multiline", false)
@@ -71,7 +72,10 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
         if config.kind == "string" then
             config.value = dialog_input:textedit():text()
         elseif config.kind == "number" then
-            config.value = tonumber(dialog_input:textedit():text())
+            local value = tonumber(dialog_input:textedit():text())
+            if value ~= nil then
+                config.value = value
+            end
         end
         dialog_input:quit() 
     end)
@@ -80,8 +84,16 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     end)
     dialog_input:button_select("ok")
 
+    -- init choice dialog
+    local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width()), math.min(16, self:height())}, "input dialog")
+    dialog_choice:background_set(self:frame():background())
+    dialog_choice:frame():background_set("cyan")
+    dialog_choice:box():frame():background_set("cyan")
+
     -- on selected
     self:menuconf():action_set(action.ac_on_selected, function (v, config)
+
+        -- show input dialog
         if config.kind == "string" or config.kind == "number" then
             dialog_input:extra_set("config", config)
             dialog_input:title():text_set(config:prompt())
@@ -92,6 +104,12 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
                 dialog_input:text():text_set("Please enter a decimal value. Fractions will not be accepted.  Use the <TAB> key to move from the input field to the buttons below it.")
             end
             self:insert(dialog_input, {centerx = true, centery = true})
+
+        -- show choice dialog
+        elseif config.kind == "choice" then
+            dialog_choice:title():text_set(config:prompt())
+            dialog_choice:choicebox():load(config.values, 1)
+            self:insert(dialog_choice, {centerx = true, centery = true})
         end
     end)
 end
@@ -121,8 +139,6 @@ function mconfdialog:event_on(e)
             return self:menuconf():event_on(e)
         end
     end
-
-    -- TODO
     return boxdialog.event_on(self, e) 
 end
 
