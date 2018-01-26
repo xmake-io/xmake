@@ -365,7 +365,7 @@ function view:action_set(name, on_action)
 end
 
 -- do action
-function view:action_on(name)
+function view:action_on(name, ...)
     local on_action = self:action(name)
     if on_action then
         if type(on_action) == "string" then
@@ -375,7 +375,7 @@ function view:action_on(name)
             end
         elseif type(on_action) == "function" then
             -- do action script
-            on_action(self)
+            on_action(self, ...)
         end
     end
 end

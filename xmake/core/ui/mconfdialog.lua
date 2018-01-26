@@ -23,14 +23,15 @@
 --
 
 -- load modules
-local log        = require("ui/log")
-local rect       = require("ui/rect")
-local event      = require("ui/event")
-local action     = require("ui/action")
-local curses     = require("ui/curses")
-local window     = require("ui/window")
-local menuconf   = require("ui/menuconf")
-local boxdialog  = require("ui/boxdialog")
+local log         = require("ui/log")
+local rect        = require("ui/rect")
+local event       = require("ui/event")
+local action      = require("ui/action")
+local curses      = require("ui/curses")
+local window      = require("ui/window")
+local menuconf    = require("ui/menuconf")
+local boxdialog   = require("ui/boxdialog")
+local inputdialog = require("ui/inputdialog")
 
 -- define module
 local mconfdialog = mconfdialog or boxdialog()
@@ -60,9 +61,31 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     -- disable to select to box (disable Tab switch and only response to buttons)
     self:box():option_set("selectable", false)
 
-    -- on selected
-    self:menuconf():action_set(action.ac_on_selected, function (v)
+    -- init input dialog
+    local dialog_input = inputdialog:new("dialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
+    dialog_input:background_set(self:frame():background())
+    dialog_input:frame():background_set("cyan")
+    dialog_input:button_add("ok", "< Ok >", function (v) 
+        local config = dialog_input:extra("config")
+        if config.kind == "string" then
+            config.value = dialog_input:textedit():text()
+        end
+        dialog_input:quit() 
+    end)
+    dialog_input:button_add("help", "< Help >", function (v) 
         -- TODO
+    end)
+    dialog_input:button_select("ok")
+
+    -- on selected
+    self:menuconf():action_set(action.ac_on_selected, function (v, config)
+        if config.kind == "string" then
+            dialog_input:extra_set("config", config)
+            dialog_input:title():text_set(config:prompt())
+            dialog_input:textedit():text_set(config.value)
+            dialog_input:text():text_set("Please enter a string value. Use the <TAB> key to move from the input fields to buttons below it.")
+            self:insert(dialog_input, {centerx = true, centery = true})
+        end
     end)
 end
 

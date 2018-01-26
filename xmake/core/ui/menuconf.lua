@@ -93,6 +93,9 @@ function menuconf:_do_insert(config)
     -- attach this config
     item:extra_set("config", config)
 
+    -- attach this view
+    config._view = item
+
     -- insert this config item
     self:insert(item)
 end
@@ -108,19 +111,17 @@ function menuconf:_do_select()
 
     -- get value
     local value = config.value
-    if value == nil then
-        value = config.default
-    end
 
     -- select the boolean config 
     if config.kind == "boolean" then
-        config.new = false
         config.value = not value
-        item:text_set(tostring(config))
     end
 
     -- do action: on selected
-    self:action_on(action.ac_on_selected)
+    self:action_on(action.ac_on_selected, config)
+
+    -- clear new state    
+    config.new = false
 end
 
 -- init config object
@@ -147,22 +148,49 @@ end
 -- menu config
 --  - {name = "...", kind = "menu", description = "menu config item", configs = {...}}
 --
-local config = config or object {new = true}
+local config = config or object{new = true, 
+                                __index = function (tbl, key)
+                                    if key == "value" then
+                                        local val = rawget(tbl, "_value")
+                                        if val == nil then
+                                            val = rawget(tbl, "default")
+                                        end
+                                        return val
+                                    end
+                                    return rawget(tbl, key)
+                                end,
+                                __newindex = function (tbl, key, val)
+                                    if key == "value" then
+                                        key = "_value"
+                                    end
+                                    rawset(tbl, key, val)
+                                    if key == "_value" then
+                                        local v = rawget(tbl, "_view") -- update the config item text in view
+                                        if v then
+                                            v:text_set(tostring(tbl))
+                                        end
+                                    end
+                                end} 
 
--- to string
-function config:__tostring()
+-- the prompt info
+function config:prompt()
 
     -- get text (first line in description)
     local text = self.description or ""
     if type(text) == "table" then
         text = text[1] or ""
     end
+    return text
+end
+
+-- to string
+function config:__tostring()
+
+    -- get text (first line in description)
+    local text = self:prompt()
 
     -- get value
     local value = self.value
-    if value == nil then
-        value = self.default
-    end
     
     -- update text
     if self.kind == "boolean" or (not self.kind and type(value) == "boolean") then -- boolean config?
