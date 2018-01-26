@@ -158,6 +158,30 @@ end
 -- show help dialog
 function mconfdialog:show_help()
     if self:parent() then
+
+        -- get the current config item
+        local item = self:menuconf():current()
+        
+        -- get the current config
+        local config = item:extra("config")
+
+        -- set help title
+        self:helpdialog():title():text_set(config:prompt())
+
+        -- set help text
+        local text = config.description
+        if type(text) == "table" then
+            text = table.concat(text, '\n')
+        end
+        if config.kind then
+            text = text .. "\ntype: " .. config.kind
+        end
+        if config.default then
+            text = text .. "\ndefault: " .. tostring(config.default)
+        end
+        self:helpdialog():text():text_set(text)
+
+        -- show help
         self:parent():insert(self:helpdialog())
     end
 end

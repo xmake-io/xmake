@@ -65,7 +65,10 @@ function demo:init()
 
         local configs = {}
         table.insert(configs, menuconf.boolean {description = "boolean config item"})
-        table.insert(configs, menuconf.boolean {default = true, new = false, description = {"boolean config item2", "more"}})
+        table.insert(configs, menuconf.boolean {default = true, new = false, description = {"boolean config item2",
+                                                                                            "  - more description info",
+                                                                                            "  - more description info",
+                                                                                            "  - more description info"}})
         table.insert(configs, menuconf.number {value = 6, default = 10, description = "number config item"})
         table.insert(configs, menuconf.string {value = "x86_64", description = "string config item"})
         table.insert(configs, menuconf.menu {description = "menu config item", configs = configs_sub})
