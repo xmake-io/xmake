@@ -31,6 +31,7 @@ local curses       = require("ui/curses")
 local window       = require("ui/window")
 local menuconf     = require("ui/menuconf")
 local boxdialog    = require("ui/boxdialog")
+local textdialog   = require("ui/textdialog")
 local inputdialog  = require("ui/inputdialog")
 local choicedialog = require("ui/choicedialog")
 
@@ -51,7 +52,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) self:menuconf():event_on(event.command {"cm_enter"}) end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
-    self:button_add("help", "< Help >", function (v, e) end)
+    self:button_add("help", "< Help >", function (v, e) self:help_show() end) 
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
     self:button_add("load", "< Load >", function (v, e) self:action_on(action.ac_on_load) end)
     self:buttons():select(self:button("select"))
@@ -79,8 +80,8 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
         end
         dialog_input:quit() 
     end)
-    dialog_input:button_add("help", "< Help >", function (v) 
-        -- TODO
+    dialog_input:button_add("cancel", "< Cancel >", function (v) 
+        dialog_input:quit()
     end)
     dialog_input:button_select("ok")
 
@@ -130,6 +131,23 @@ function mconfdialog:menuconf()
     return self._MENUCONF
 end
 
+-- get help dialog
+function mconfdialog:help_dialog()
+    if not self._DIALOG_HELP then
+        local help_dialog = textdialog:new("mconfdialog.help", self:bounds(), "help")
+        help_dialog:button_add("exit", "< Exit >", function (v) help_dialog:quit() end)
+        self._DIALOG_HELP = help_dialog
+    end
+    return self._DIALOG_HELP
+end
+
+-- show help dialog
+function mconfdialog:help_show()
+    if self:parent() then
+        self:parent():insert(self:help_dialog())
+    end
+end
+
 -- on event
 function mconfdialog:event_on(e)
 
@@ -143,6 +161,9 @@ function mconfdialog:event_on(e)
     elseif e.type == event.ev_keyboard then
         if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " or e.key_name == "Esc" then
             return self:menuconf():event_on(e)
+        elseif e.key_name == "?" then
+            self:help_show()
+            return true
         end
     end
     return boxdialog.event_on(self, e) 

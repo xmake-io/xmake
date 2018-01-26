@@ -49,6 +49,9 @@ function choicedialog:init(name, bounds, title)
         self:choicebox():event_on(event.command {"cm_enter"}) 
         self:quit()
     end)
+    self:button_add("cancel", "< Cancel >", function (v, e) 
+        self:quit()
+    end)
     self:buttons():select(self:button("select"))
 
     -- insert choice box
