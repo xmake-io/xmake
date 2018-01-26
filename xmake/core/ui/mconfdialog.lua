@@ -52,7 +52,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) self:menuconf():event_on(event.command {"cm_enter"}) end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
-    self:button_add("help", "< Help >", function (v, e) self:help_show() end) 
+    self:button_add("help", "< Help >", function (v, e) self:show_help() end) 
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
     self:button_add("load", "< Load >", function (v, e) self:action_on(action.ac_on_load) end)
     self:buttons():select(self:button("select"))
@@ -63,39 +63,12 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     -- disable to select to box (disable Tab switch and only response to buttons)
     self:box():option_set("selectable", false)
 
-    -- init input dialog
-    local dialog_input = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
-    dialog_input:background_set(self:frame():background())
-    dialog_input:frame():background_set("cyan")
-    dialog_input:textedit():option_set("multiline", false)
-    dialog_input:button_add("ok", "< Ok >", function (v) 
-        local config = dialog_input:extra("config")
-        if config.kind == "string" then
-            config.value = dialog_input:textedit():text()
-        elseif config.kind == "number" then
-            local value = tonumber(dialog_input:textedit():text())
-            if value ~= nil then
-                config.value = value
-            end
-        end
-        dialog_input:quit() 
-    end)
-    dialog_input:button_add("cancel", "< Cancel >", function (v) 
-        dialog_input:quit()
-    end)
-    dialog_input:button_select("ok")
-
-    -- init choice dialog
-    local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width()), math.min(16, self:height())}, "input dialog")
-    dialog_choice:background_set(self:frame():background())
-    dialog_choice:frame():background_set("cyan")
-    dialog_choice:box():frame():background_set("cyan")
-
     -- on selected
     self:menuconf():action_set(action.ac_on_selected, function (v, config)
 
         -- show input dialog
         if config.kind == "string" or config.kind == "number" then
+            local dialog_input = self:inputdialog()
             dialog_input:extra_set("config", config)
             dialog_input:title():text_set(config:prompt())
             dialog_input:textedit():text_set(tostring(config.value))
@@ -110,6 +83,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
 
         -- show choice dialog
         elseif config.kind == "choice" and config.values and #config.values > 0 then
+            local dialog_choice = self:choicedialog()
             dialog_choice:title():text_set(config:prompt())
             dialog_choice:choicebox():load(config.values, config.value)
             dialog_choice:choicebox():action_set(action.ac_on_selected, function (v, index, value)
@@ -132,19 +106,59 @@ function mconfdialog:menuconf()
 end
 
 -- get help dialog
-function mconfdialog:help_dialog()
-    if not self._DIALOG_HELP then
-        local help_dialog = textdialog:new("mconfdialog.help", self:bounds(), "help")
-        help_dialog:button_add("exit", "< Exit >", function (v) help_dialog:quit() end)
-        self._DIALOG_HELP = help_dialog
+function mconfdialog:helpdialog()
+    if not self._HELPDIALOG then
+        local helpdialog = textdialog:new("mconfdialog.help", self:bounds(), "help")
+        helpdialog:button_add("exit", "< Exit >", function (v) helpdialog:quit() end)
+        self._HELPDIALOG = helpdialog
     end
-    return self._DIALOG_HELP
+    return self._HELPDIALOG
+end
+
+-- get input dialog
+function mconfdialog:inputdialog()
+    if not self._INPUTDIALOG then
+        local dialog_input = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
+        dialog_input:background_set(self:frame():background())
+        dialog_input:frame():background_set("cyan")
+        dialog_input:textedit():option_set("multiline", false)
+        dialog_input:button_add("ok", "< Ok >", function (v) 
+            local config = dialog_input:extra("config")
+            if config.kind == "string" then
+                config.value = dialog_input:textedit():text()
+            elseif config.kind == "number" then
+                local value = tonumber(dialog_input:textedit():text())
+                if value ~= nil then
+                    config.value = value
+                end
+            end
+            dialog_input:quit() 
+        end)
+        dialog_input:button_add("cancel", "< Cancel >", function (v) 
+            dialog_input:quit()
+        end)
+        dialog_input:button_select("ok")
+        self._INPUTDIALOG = dialog_input
+    end
+    return self._INPUTDIALOG
+end
+
+-- get choice dialog
+function mconfdialog:choicedialog()
+    if not self._CHOICEDIALOG then
+        local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width()), math.min(16, self:height())}, "input dialog")
+        dialog_choice:background_set(self:frame():background())
+        dialog_choice:frame():background_set("cyan")
+        dialog_choice:box():frame():background_set("cyan")
+        self._CHOICEDIALOG = dialog_choice
+    end
+    return self._CHOICEDIALOG
 end
 
 -- show help dialog
-function mconfdialog:help_show()
+function mconfdialog:show_help()
     if self:parent() then
-        self:parent():insert(self:help_dialog())
+        self:parent():insert(self:helpdialog())
     end
 end
 
@@ -162,7 +176,7 @@ function mconfdialog:event_on(e)
         if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " or e.key_name == "Esc" then
             return self:menuconf():event_on(e)
         elseif e.key_name == "?" then
-            self:help_show()
+            self:show_help()
             return true
         end
     end
