@@ -74,7 +74,7 @@ function choicebox:load(values, selected)
     -- insert values
     self._VALUES = values
     for idx, value in ipairs(values) do
-        self:_do_insert(value, idx == selected)
+        self:_do_insert(value, idx, idx == selected)
     end
 
     -- select the first item
@@ -85,7 +85,7 @@ function choicebox:load(values, selected)
 end
 
 -- do insert a value item
-function choicebox:_do_insert(value, selected)
+function choicebox:_do_insert(value, index, selected)
 
     -- init text
     local text = (selected and "(X) " or "( ) ") .. tostring(value)
@@ -93,8 +93,8 @@ function choicebox:_do_insert(value, selected)
     -- init a value item view
     local item = button:new("choicebox.value." .. self:count(), rect:new(0, self:count(), self:width(), 1), text)
 
-    -- attach this value
-    item:extra_set("value", value)
+    -- attach this index
+    item:extra_set("index", index)
 
     -- insert this config item
     self:insert(item)
@@ -106,11 +106,14 @@ function choicebox:_do_select()
     -- get the current item
     local item = self:current()
     
+    -- get the current index
+    local index = item:extra("index")
+
     -- get the current value
-    local value = item:extra("value")
+    local value = self._VALUES[index]
 
     -- do action: on selected
-    self:action_on(action.ac_on_selected, value)
+    self:action_on(action.ac_on_selected, index, value)
 
     -- update text
     item:text_set("(X) " .. tostring(value))
