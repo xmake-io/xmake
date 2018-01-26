@@ -98,21 +98,24 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
             dialog_input:extra_set("config", config)
             dialog_input:title():text_set(config:prompt())
             dialog_input:textedit():text_set(tostring(config.value))
+            dialog_input:panel():select(dialog_input:textedit())
             if config.kind == "string" then
                 dialog_input:text():text_set("Please enter a string value. Use the <TAB> key to move from the input fields to buttons below it.")
             else
                 dialog_input:text():text_set("Please enter a decimal value. Fractions will not be accepted.  Use the <TAB> key to move from the input field to the buttons below it.")
             end
             self:insert(dialog_input, {centerx = true, centery = true})
+            return true
 
         -- show choice dialog
-        elseif config.kind == "choice" then
+        elseif config.kind == "choice" and config.values and #config.values > 0 then
             dialog_choice:title():text_set(config:prompt())
             dialog_choice:choicebox():load(config.values, config.value)
             dialog_choice:choicebox():action_set(action.ac_on_selected, function (v, index, value)
                 config.value = index
             end)
             self:insert(dialog_choice, {centerx = true, centery = true})
+            return true
         end
     end)
 end
@@ -138,7 +141,7 @@ function mconfdialog:event_on(e)
         end
     -- select config
     elseif e.type == event.ev_keyboard then
-        if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " then
+        if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " or e.key_name == "Esc" then
             return self:menuconf():event_on(e)
         end
     end

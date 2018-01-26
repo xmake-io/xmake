@@ -58,6 +58,14 @@ function menuconf:event_on(e)
         elseif e.key_name == "Enter" or e.key_name == " " then
             self:_do_select()
             return true
+        elseif e.key_name == "Esc" then
+            -- load the previous menu configs
+            local configs_prev = self._CONFIGS._PREV
+            if configs_prev then
+                self._CONFIGS._PREV = configs_prev._PREV
+                self:load(configs_prev)
+                return true
+            end
         end
     elseif e.type == event.ev_command and e.command == "cm_enter" then
         self:_do_select()
@@ -71,10 +79,20 @@ function menuconf:load(configs)
     -- clear the views first
     self:clear()
 
+    -- detach the previous config and view
+    local configs_prev = self._CONFIGS._PREV
+    if configs_prev then
+        for _, config in ipairs(configs_prev) do
+            config._view = nil
+        end
+    end
+
     -- insert configs
     self._CONFIGS = configs
     for _, config in ipairs(configs) do
-        self:_do_insert(config)
+        if self:count() < self:height() then
+            self:_do_insert(config)
+        end
     end
 
     -- select the first item
@@ -109,19 +127,23 @@ function menuconf:_do_select()
     -- get the current config
     local config = item:extra("config")
 
-    -- get value
-    local value = config.value
+    -- clear new state    
+    config.new = false
+
+    -- do action: on selected
+    if self:action_on(action.ac_on_selected, config) then
+        return 
+    end
 
     -- select the boolean config 
     if config.kind == "boolean" then
-        config.value = not value
+        config.value = not config.value
+    -- show sub-menu configs
+    elseif config.kind == "menu" and config.configs and #config.configs > 0 then
+        local configs_prev = self._CONFIGS
+        self:load(config.configs)
+        self._CONFIGS._PREV = configs_prev
     end
-
-    -- do action: on selected
-    self:action_on(action.ac_on_selected, config)
-
-    -- clear new state    
-    config.new = false
 end
 
 -- init config object
@@ -200,9 +222,13 @@ function config:__tostring()
     elseif self.kind == "string" or (not self.kind and type(value) == "string") then -- string config?
         text = "(" .. tostring(value or "") .. ") " .. text
     elseif self.kind == "choice" then -- choice config?
-        text = "    " .. text .. " (" .. tostring(self.values[value or 1]) .. ")" .. "  --->"
+        if self.values and #self.values > 0 then
+            text = "    " .. text .. " (" .. tostring(self.values[value or 1]) .. ")" .. "  --->"
+        else
+            text = "    " .. text .. " ()  ----"
+        end
     elseif self.kind == "menu" then -- menu config?
-        text = "    " .. text .. "  --->"
+        text = "    " .. text .. (self.configs and #self.configs > 0 and "  --->" or "  ----")
     end
 
     -- new config?

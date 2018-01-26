@@ -375,7 +375,7 @@ function view:action_on(name, ...)
             end
         elseif type(on_action) == "function" then
             -- do action script
-            on_action(self, ...)
+            return on_action(self, ...)
         end
     end
 end
