@@ -31,6 +31,7 @@ local panel  = require("ui/panel")
 local event  = require("ui/event")
 local border = require("ui/border")
 local curses = require("ui/curses")
+local action = require("ui/action")
 
 -- define module
 local window = window or panel()
@@ -58,6 +59,14 @@ function window:init(name, bounds, title, shadow)
     if title then
         self._TITLE = label:new("window.title", rect{0, 0, #title, 1}, title)
         self:title():textattr_set("blue bold")
+        self:title():action_set(action.ac_on_text_changed, function (v)
+            if v:text() then
+                local bounds = v:bounds()
+                v:bounds():resize(#v:text(), v:height())
+                bounds:move2(math.max(0, math.floor((self:frame():width() - v:width()) / 2)), bounds.sy)
+                v:invalidate(true)
+            end
+        end)
         self:frame():insert(self:title(), {centerx = true})
     end
 
