@@ -825,7 +825,7 @@ function option.show_menu(task)
 
     -- print title
     if menu.title then
-        print(menu.title)
+        print(colors.translate(menu.title))
     end
 
     -- print copyright
@@ -864,7 +864,7 @@ function option.show_main()
 
     -- print title
     if menu.title then
-        print(menu.title)
+        print(colors.translate(menu.title))
     end
 
     -- print copyright
