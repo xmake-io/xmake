@@ -43,6 +43,7 @@ sandbox_os.isfile      = os.isfile
 sandbox_os.exists      = os.exists
 sandbox_os.curdir      = os.curdir
 sandbox_os.tmpdir      = os.tmpdir
+sandbox_os.filesize    = os.filesize
 sandbox_os.programdir  = os.programdir
 sandbox_os.programfile = os.programfile
 sandbox_os.projectdir  = os.projectdir

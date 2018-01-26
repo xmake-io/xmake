@@ -35,6 +35,7 @@ xmake_C_FILES 			+= \
 						os/getenv \
 						os/emptydir \
 						os/strerror \
+						os/filesize \
 						os/getwinsize \
 						os/versioninfo \
 						os/uid \

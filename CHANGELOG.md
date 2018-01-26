@@ -2,24 +2,12 @@
 
 ## master (unreleased)
 
-### Changes
-
-* Improve to search the root project directory
-* Improve to detect vs environment
-* Upgrade luajit to 2.1.0-beta3
-* Support to run xmake on linux (arm, arm64)
-* Improve to generate vs201x project plugin
-
-### Bugs fixed
-
-* Fix `xmake f --cross` error
-
-## v2.1.9
-
 ### New features
 
 * Add `del_files()` api to delete files in the files list
 * Add `rule()`, `add_rules()` api to implement the custom build rule and improve `add_files("src/*.md", {rule = "markdown"})`
+* Add `os.filesize()` api
+* Add `core.ui.xxx` cui components
 
 ### Changes
 
@@ -29,12 +17,18 @@
 * Improve the checking errors tips
 * Improve `add_cxflags` .., force to set flags without auto checking: `add_cxflags("-DTEST", {force = true})`
 * Improve `add_files`, add force block to force to set flags without auto checking: `add_files("src/*.c", {force = {cxflags = "-DTEST"}})`
+* Improve to search the root project directory
+* Improve to detect vs environment
+* Upgrade luajit to 2.1.0-beta3
+* Support to run xmake on linux (arm, arm64)
+* Improve to generate vs201x project plugin
 
 ### Bugs fixed
 
 * Fix complation dependence
 * [#151](https://github.com/tboox/xmake/issues/151): Fix `os.nuldev()` for gcc on mingw
 * [#150](https://github.com/tboox/xmake/issues/150): Fix the command line string limitation for `ar.exe`
+* Fix `xmake f --cross` error
 
 ## v2.1.8
 
@@ -425,24 +419,12 @@
 
 ## master (开发中)
 
-### 改进
-
-* 改进搜索工程根目录策略
-* 改进vs环境探测，支持加密文件系统下vs环境的探测
-* 升级luajit到最新2.1.0-beta3
-* 增加对linux/arm, arm64的支持，可以在arm linux上运行xmake
-* 改进vs201x工程生成插件，更好的includedirs设置支持
-
-## Bugs修复
-
-* 修复`xmake f --cross`无法配置问题
-
-## v2.1.9
-
 ### 新特性
 
 * 添加`del_files()`接口去从已添加的文件列表中移除一些文件
 * 添加`rule()`, `add_rules()`接口实现自定义构建规则，并且改进`add_files("src/*.md", {rule = "markdown"})`
+* 添加`os.filesize()`接口
+* 添加`core.ui.xxx`等cui组件模块，实现终端可视化界面，用于实现跟用户进行短暂的交互
 
 ### 改进
 
@@ -452,12 +434,18 @@
 * 改进检测错误提示
 * 改进`add_cxflags`等flags api的设置，添加force参数，来禁用自动检测和映射，强制设置选项：`add_cxflags("-DTEST", {force = true})`
 * 改进`add_files`的flags设置，添加force域，用于设置不带自动检测和映射的原始flags：`add_files("src/*.c", {force = {cxflags = "-DTEST"}})`
+* 改进搜索工程根目录策略
+* 改进vs环境探测，支持加密文件系统下vs环境的探测
+* 升级luajit到最新2.1.0-beta3
+* 增加对linux/arm, arm64的支持，可以在arm linux上运行xmake
+* 改进vs201x工程生成插件，更好的includedirs设置支持
 
 ## Bugs修复
 
 * 修复依赖修改编译和链接问题
 * [#151](https://github.com/tboox/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
 * [#150](https://github.com/tboox/xmake/issues/150): 修复windows下ar.exe打包过长obj列表参数，导致失败问题
+* 修复`xmake f --cross`无法配置问题
 
 ## v2.1.8
 

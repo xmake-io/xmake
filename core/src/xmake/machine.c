@@ -77,6 +77,7 @@ tb_int_t xm_os_rename(lua_State* lua);
 tb_int_t xm_os_exists(lua_State* lua);
 tb_int_t xm_os_setenv(lua_State* lua);
 tb_int_t xm_os_getenv(lua_State* lua);
+tb_int_t xm_os_filesize(lua_State* lua);
 tb_int_t xm_os_emptydir(lua_State* lua);
 tb_int_t xm_os_strerror(lua_State* lua);
 tb_int_t xm_os_getwinsize(lua_State* lua);
@@ -165,6 +166,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "getenv",         xm_os_getenv    }
 ,   { "emptydir",       xm_os_emptydir  }
 ,   { "strerror",       xm_os_strerror  }
+,   { "filesize",       xm_os_filesize  }
 ,   { "getwinsize",     xm_os_getwinsize}
 ,   { "versioninfo",    xm_os_versioninfo}
 #ifndef TB_CONFIG_OS_WINDOWS
