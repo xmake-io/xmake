@@ -58,6 +58,12 @@ function menuconf:event_on(e)
         elseif e.key_name == "Enter" or e.key_name == " " then
             self:_do_select()
             return true
+        elseif e.key_name:lower() == "y" then
+            self:_do_include(true)
+            return true
+        elseif e.key_name:lower() == "n" then
+            self:_do_include(false)
+            return true
         elseif e.key_name == "Esc" then
             -- load the previous menu configs
             local configs_prev = self._CONFIGS._PREV
@@ -143,6 +149,24 @@ function menuconf:_do_select()
         local configs_prev = self._CONFIGS
         self:load(config.configs)
         self._CONFIGS._PREV = configs_prev
+    end
+end
+
+-- do include
+function menuconf:_do_include(enabled)
+
+    -- get the current item
+    local item = self:current()
+    
+    -- get the current config
+    local config = item:extra("config")
+
+    -- clear new state    
+    config.new = false
+
+    -- select the boolean config 
+    if config.kind == "boolean" then
+        config.value = enabled
     end
 end
 

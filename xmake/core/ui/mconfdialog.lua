@@ -155,6 +155,16 @@ function mconfdialog:choicedialog()
     return self._CHOICEDIALOG
 end
 
+-- get search dialog
+function mconfdialog:searchdialog()
+    if not self._SEARCHDIALOG then
+        -- TODO
+        local dialog_search = nil
+        self._SEARCHDIALOG = dialog_search
+    end
+    return self._SEARCHDIALOG
+end
+
 -- show help dialog
 function mconfdialog:show_help()
     if self:parent() then
@@ -186,6 +196,11 @@ function mconfdialog:show_help()
     end
 end
 
+-- show search dialog
+function mconfdialog:show_search()
+    -- TODO
+end
+
 -- on event
 function mconfdialog:event_on(e)
 
@@ -197,10 +212,13 @@ function mconfdialog:event_on(e)
         end
     -- select config
     elseif e.type == event.ev_keyboard then
-        if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " or e.key_name == "Esc" then
+        if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " or e.key_name == "Esc" or e.key_name:lower() == "y" or e.key_name:lower() == "n" then
             return self:menuconf():event_on(e)
         elseif e.key_name == "?" then
             self:show_help()
+            return true
+        elseif e.key_name == "/" then
+            self:show_search()
             return true
         end
     end
