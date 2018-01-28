@@ -158,8 +158,19 @@ end
 -- get search dialog
 function mconfdialog:searchdialog()
     if not self._SEARCHDIALOG then
-        -- TODO
-        local dialog_search = nil
+        local dialog_search = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "Search Configuration Parameter")
+        dialog_search:background_set(self:frame():background())
+        dialog_search:frame():background_set("cyan")
+        dialog_search:textedit():option_set("multiline", false)
+        dialog_search:text():text_set("Enter (sub)string or lua pattern string to search for configuration")
+        dialog_search:button_add("ok", "< Ok >", function (v) 
+            -- TODO
+            dialog_search:quit() 
+        end)
+        dialog_search:button_add("cancel", "< Cancel >", function (v) 
+            dialog_search:quit()
+        end)
+        dialog_search:button_select("ok")
         self._SEARCHDIALOG = dialog_search
     end
     return self._SEARCHDIALOG
@@ -198,7 +209,9 @@ end
 
 -- show search dialog
 function mconfdialog:show_search()
-    -- TODO
+    local dialog_search = self:searchdialog()
+    dialog_search:panel():select(dialog_search:textedit())
+    self:insert(dialog_search, {centerx = true, centery = true})
 end
 
 -- on event
