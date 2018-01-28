@@ -29,6 +29,7 @@
 * [#151](https://github.com/tboox/xmake/issues/151): Fix `os.nuldev()` for gcc on mingw
 * [#150](https://github.com/tboox/xmake/issues/150): Fix the command line string limitation for `ar.exe`
 * Fix `xmake f --cross` error
+* Fix `os.cd` to the windows root path bug
 
 ## v2.1.8
 
@@ -446,6 +447,7 @@
 * [#151](https://github.com/tboox/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
 * [#150](https://github.com/tboox/xmake/issues/150): 修复windows下ar.exe打包过长obj列表参数，导致失败问题
 * 修复`xmake f --cross`无法配置问题
+* 修复`os.cd`到windows根路径问题
 
 ## v2.1.8
 
