@@ -45,6 +45,11 @@ function sandbox_core_base_option.default(name)
     return option.default(name)
 end
 
+-- get the given task menu 
+function sandbox_core_base_option.taskmenu(taskname)
+    return option.taskmenu(taskname)
+end
+
 -- get the options
 function sandbox_core_base_option.options()
     return assert(option.options())

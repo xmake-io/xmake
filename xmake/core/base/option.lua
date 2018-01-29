@@ -62,30 +62,6 @@ function option._translate(menu)
     return true
 end
 
--- get the task menu
-function option._taskmenu(task)
-
-    -- check
-    assert(option._MENU)
-   
-    -- the current task
-    task = task or option.taskname() or "main"
-
-    -- get the task menu
-    local taskmenu = option._MENU[task]
-    if type(taskmenu) == "function" then
-
-        -- load this task menu
-        taskmenu = taskmenu()
-
-        -- save this task menu
-        option._MENU[task] = taskmenu
-    end
-
-    -- get it
-    return taskmenu
-end
-
 -- get the top context
 function option._context()
 
@@ -201,7 +177,7 @@ function option.init(menu)
     end
 
     -- the main menu
-    local main = option._taskmenu("main")
+    local main = option.taskmenu("main")
     assert(main)
 
     -- new top context
@@ -262,7 +238,7 @@ function option.init(menu)
             -- find this option
             local opt = nil
             local longname = nil
-            for _, o in ipairs(option._taskmenu().options) do
+            for _, o in ipairs(option.taskmenu().options) do
 
                 -- check
                 assert(o)
@@ -363,7 +339,7 @@ function option.init(menu)
 
             -- find a value option with name
             local opt = nil
-            for _, o in ipairs(option._taskmenu().options) do
+            for _, o in ipairs(option.taskmenu().options) do
 
                 -- the mode
                 local mode = o[3]
@@ -420,7 +396,7 @@ function option.init(menu)
     end
 
     -- init the default value
-    for _, o in ipairs(table.wrap(option._taskmenu().options)) do
+    for _, o in ipairs(table.wrap(option.taskmenu().options)) do
 
         -- the long name
         local longname = o[2]
@@ -690,9 +666,31 @@ end
 
 -- get the current task name
 function option.taskname()
+    return option._context().taskname
+end
+
+-- get the task menu
+function option.taskmenu(task)
+
+    -- check
+    assert(option._MENU)
+   
+    -- the current task
+    task = task or option.taskname() or "main"
+
+    -- get the task menu
+    local taskmenu = option._MENU[task]
+    if type(taskmenu) == "function" then
+
+        -- load this task menu
+        taskmenu = taskmenu()
+
+        -- save this task menu
+        option._MENU[task] = taskmenu
+    end
 
     -- get it
-    return option._context().taskname
+    return taskmenu
 end
 
 -- get the given option value for the current task
@@ -773,7 +771,7 @@ function option.defaults(task)
     end
 
     -- the task menu
-    local taskmenu = option._taskmenu(task)
+    local taskmenu = option.taskmenu(task)
 
     -- get the default options for the given task
     local defaults = {}
@@ -820,7 +818,7 @@ function option.show_menu(task)
     assert(menu)
 
     -- the task menu
-    local taskmenu = option._taskmenu(task)
+    local taskmenu = option.taskmenu(task)
     assert(taskmenu)
 
     -- print title
@@ -859,7 +857,7 @@ function option.show_main()
     assert(menu)
 
     -- the main menu
-    local main = option._taskmenu("main")
+    local main = option.taskmenu("main")
     assert(main)
 
     -- print title

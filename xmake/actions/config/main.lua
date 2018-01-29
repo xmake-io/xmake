@@ -31,6 +31,7 @@ import("core.platform.platform")
 import("core.project.cache", {nocache = true})
 import("lib.detect.cache", {alias = "detectcache"})
 import("scanner")
+import("menuconf", {alias = "menuconf_show"})
 import("configheader", {alias = "generate_configheader"})
 import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 
@@ -144,7 +145,12 @@ function main()
 
     -- avoid to run this task repeatly
     if _g.configured then return end
-   _g.configured = true
+    _g.configured = true
+
+    -- enter menu config
+    if option.get("menu") then
+        menuconf_show()
+    end
 
     -- scan project and generate it if xmake.lua not exists
     if not os.isfile(project.file()) then

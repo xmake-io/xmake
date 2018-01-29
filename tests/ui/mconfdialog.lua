@@ -74,7 +74,7 @@ function demo:init()
     local mconfdialog = mconfdialog:new("mconfdialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
     mconfdialog:action_set(action.ac_on_exit, function (v) self:quit() end)
     mconfdialog:action_set(action.ac_on_load, function (v) 
-        v:menuconf():load(configs)
+        v:load(configs)
     end)
     mconfdialog:action_set(action.ac_on_save, function (v) 
         for _, config in ipairs(configs) do

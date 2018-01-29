@@ -95,6 +95,11 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     end)
 end
 
+-- load configs
+function mconfdialog:load(configs)
+    return self:menuconf():load(configs)
+end
+
 -- get menu config
 function mconfdialog:menuconf()
     if not self._MENUCONF then
