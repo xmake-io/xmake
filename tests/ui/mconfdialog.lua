@@ -45,37 +45,43 @@ function demo:init()
     -- init background
     self:background_set("blue")
 
+    -- init configs
+    local configs_sub2 = {}
+    table.insert(configs_sub2, menuconf.boolean {description = "boolean config sub-item2"})
+    table.insert(configs_sub2, menuconf.number {value = 10, default = 10, description = "number config sub-item2"})
+    table.insert(configs_sub2, menuconf.string {value = "armv7", description = "string config sub-item2"})
+    table.insert(configs_sub2, menuconf.menu {description = "menu config sub-item2"})
+
+    local configs_sub = {}
+    table.insert(configs_sub, menuconf.boolean {description = "boolean config sub-item"})
+    table.insert(configs_sub, menuconf.number {value = 90, default = 10, description = "number config sub-item"})
+    table.insert(configs_sub, menuconf.string {value = "arm64", description = "string config sub-item"})
+    table.insert(configs_sub, menuconf.menu {description = "menu config sub-item", configs = configs_sub2})
+    table.insert(configs_sub, menuconf.choice {value = 2, values = {2, 5, 16, 87}, description = "choice config sub-item"})
+
+    local configs = {}
+    table.insert(configs, menuconf.boolean {description = "boolean config item"})
+    table.insert(configs, menuconf.boolean {default = true, new = false, description = {"boolean config item2",
+                                                                                        "  - more description info",
+                                                                                        "  - more description info",
+                                                                                        "  - more description info"}})
+    table.insert(configs, menuconf.number {value = 6, default = 10, description = "number config item"})
+    table.insert(configs, menuconf.string {value = "x86_64", description = "string config item"})
+    table.insert(configs, menuconf.menu {description = "menu config item", configs = configs_sub})
+    table.insert(configs, menuconf.choice {value = 3, values = {1, 5, 6, 7}, description = "choice config item"})
+
     -- init menu config dialog
     local mconfdialog = mconfdialog:new("mconfdialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
     mconfdialog:action_set(action.ac_on_exit, function (v) self:quit() end)
     mconfdialog:action_set(action.ac_on_load, function (v) 
-
-        local configs_sub2 = {}
-        table.insert(configs_sub2, menuconf.boolean {description = "boolean config sub-item2"})
-        table.insert(configs_sub2, menuconf.number {value = 10, default = 10, description = "number config sub-item2"})
-        table.insert(configs_sub2, menuconf.string {value = "armv7", description = "string config sub-item2"})
-        table.insert(configs_sub2, menuconf.menu {description = "menu config sub-item2"})
-
-        local configs_sub = {}
-        table.insert(configs_sub, menuconf.boolean {description = "boolean config sub-item"})
-        table.insert(configs_sub, menuconf.number {value = 90, default = 10, description = "number config sub-item"})
-        table.insert(configs_sub, menuconf.string {value = "arm64", description = "string config sub-item"})
-        table.insert(configs_sub, menuconf.menu {description = "menu config sub-item", configs = configs_sub2})
-        table.insert(configs_sub, menuconf.choice {value = 2, values = {2, 5, 16, 87}, description = "choice config sub-item"})
-
-        local configs = {}
-        table.insert(configs, menuconf.boolean {description = "boolean config item"})
-        table.insert(configs, menuconf.boolean {default = true, new = false, description = {"boolean config item2",
-                                                                                            "  - more description info",
-                                                                                            "  - more description info",
-                                                                                            "  - more description info"}})
-        table.insert(configs, menuconf.number {value = 6, default = 10, description = "number config item"})
-        table.insert(configs, menuconf.string {value = "x86_64", description = "string config item"})
-        table.insert(configs, menuconf.menu {description = "menu config item", configs = configs_sub})
-        table.insert(configs, menuconf.choice {value = 3, values = {1, 5, 6, 7}, description = "choice config item"})
         v:menuconf():load(configs)
     end)
-    mconfdialog:action_set(action.ac_on_save, function (v) log:print("save") end)
+    mconfdialog:action_set(action.ac_on_save, function (v) 
+        for _, config in ipairs(configs) do
+            log:print("%s", config)
+        end
+        mconfdialog:quit()
+    end)
     self:insert(mconfdialog)
 end
 
