@@ -145,8 +145,9 @@ function app:project_configs()
         for name, opt in pairs(opts) do
             if opt:get("showmenu") then
 
+                -- TODO
                 -- the default value
-                local default = nil
+                local default = "auto"
                 if opt:get("default") ~= nil then
                     default = opt:get("default")
                 end
@@ -185,8 +186,24 @@ function app:load()
     self:mconfdialog():load(configs)
 end
 
+-- save the given configs
+function app:save_configs(configs)
+    local options = option.options()
+    for _, conf in pairs(configs) do
+        if conf.kind == "menu" then
+            self:save_configs(conf.configs)
+        elseif not conf.new and (conf.kind == "boolean" or conf.kind == "string") then
+            options[conf.name] = conf.value
+        elseif not conf.new and (conf.kind == "choice") then
+            options[conf.name] = conf.values[conf.value]
+        end
+    end
+end
+
 -- save configs to options
 function app:save()
+    self:save_configs(self:basic_configs())    
+    self:save_configs(self:project_configs())    
 end
 
 -- main entry
