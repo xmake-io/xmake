@@ -85,24 +85,25 @@ function app:basic_configs()
     local configs = {}
     local options = menu and menu.options or {}
     for _, opt in ipairs(options) do
-
-        -- get name
         local name = opt[2] or opt[1]
+        if not project.option(name) then
 
-        -- get kind
-        local kind = opt[3]
+            -- get kind
+            local kind = opt[3]
 
-        -- get default
-        local default = opt[4]
+            -- get default
+            local default = opt[4]
 
-        -- get description
-        local description = opt[5]
+            -- get description
+            local description = opt[5]
 
-        -- key=value?
-        if kind == "kv" then
-            table.insert(configs, menuconf.string {name = name, default = default, description = description})
-        elseif kind == "k" then
-            table.insert(configs, menuconf.boolean {name = name, default = default, description = description})
+            -- key=value?
+            if kind == "kv" then
+                table.insert(configs, menuconf.string {name = name, default = default, description = description})
+            -- --key?
+            elseif kind == "k" then
+                table.insert(configs, menuconf.boolean {name = name, default = default, description = description})
+            end
         end
     end
 
@@ -120,7 +121,54 @@ function app:project_configs()
         return configs
     end
 
-    -- TODO
+    -- merge options by category
+    local options = project.options()
+    local options_by_category = {}
+    for _, opt in pairs(options) do
+
+        -- make the category
+        local category = "default"
+        if opt:get("category") then category = table.unwrap(opt:get("category")) end
+        options_by_category[category] = options_by_category[category] or {}
+
+        -- append option to the current category
+        options_by_category[category][opt:name()] = opt
+    end
+
+    -- make configs from options
+    local configs = {}
+    for category, opts in pairs(options_by_category) do
+
+        -- insert configs
+        local first = true
+        local submenu = nil
+        for name, opt in pairs(opts) do
+            if opt:get("showmenu") then
+
+                -- the default value
+                local default = nil
+                if opt:get("default") ~= nil then
+                    default = opt:get("default")
+                end
+
+                -- is first? init a sub-menu
+                if first then
+                    if name ~= "default" then
+                        submenu = menuconf.menu {name = category, description = category, configs = {}}
+                        table.insert(configs, submenu)
+                    end
+                    first = false
+                end
+
+                -- insert config
+                if type(default) == "string" then
+                    table.insert(submenu and submenu.configs or configs, menuconf.string {name = name, default = default, description = opt:get("description")})
+                else
+                    table.insert(submenu and submenu.configs or configs, menuconf.boolean {name = name, default = default, description = opt:get("description")})
+                end
+            end
+        end
+    end
 
     -- cache configs
     self._PROJECT_CONFIGS = configs
