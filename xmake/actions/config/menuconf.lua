@@ -73,6 +73,28 @@ function app:mconfdialog()
     return self._MCONFDIALOG
 end
 
+-- filter option
+function app:filter_option(name)
+    local options = 
+    {
+        target      = true
+    ,   file        = true
+    ,   root        = true
+    ,   yes         = true
+    ,   quiet       = true
+    ,   profile     = true
+    ,   project     = true
+    ,   verbose     = true
+    ,   backtrace   = true
+    ,   require     = true
+    ,   version     = true
+    ,   help        = true
+    ,   clean       = true
+    ,   menu        = true
+    }
+    return not options[name] and not project.option(name)
+end
+
 -- get basic configs 
 function app:basic_configs(cache)
     
@@ -85,12 +107,40 @@ function app:basic_configs(cache)
     -- get config menu
     local menu = option.taskmenu("config")
 
+    -- merge options by category
+    local category = "Root Configuration"
+    local options = menu and menu.options or {}
+    local options_by_category = {}
+    for _, opt in pairs(options) do
+        local name = opt[2] or opt[1]
+        if name and self:filter_option(name) then
+            options_by_category[category] = options_by_category[category] or {}
+            table.insert(options_by_category[category], opt)
+        elseif opt.category then
+            category = opt.category
+        end
+    end
+
     -- make configs from options
     local configs = {}
-    local options = menu and menu.options or {}
-    for _, opt in ipairs(options) do
-        local name = opt[2] or opt[1]
-        if not project.option(name) then
+    for category, opts in pairs(options_by_category) do
+
+        -- insert configs
+        local first = true
+        local submenu = nil
+        for _, opt in ipairs(opts) do
+
+            -- is first? init a sub-menu
+            if first then
+                if category ~= "Root Configuration" then
+                    submenu = menuconf.menu {name = category, description = category, configs = {}}
+                    table.insert(configs, submenu)
+                end
+                first = false
+            end
+
+            -- get name
+            local name = opt[2] or opt[1]
 
             -- get kind
             local kind = opt[3]
@@ -98,6 +148,7 @@ function app:basic_configs(cache)
             -- get default
             local default = opt[4]
 
+            -- TODO
             -- get description
             local description = opt[5]
 
@@ -109,10 +160,10 @@ function app:basic_configs(cache)
 
             -- key=value?
             if kind == "kv" then
-                table.insert(configs, menuconf.string {name = name, value = value, default = default, description = description})
+                table.insert(submenu and submenu.configs or configs, menuconf.string {name = name, value = value, default = default, description = description})
             -- --key?
             elseif kind == "k" then
-                table.insert(configs, menuconf.boolean {name = name, value = value, default = default, description = description})
+                table.insert(submenu and submenu.configs or configs, menuconf.boolean {name = name, value = value, default = default, description = description})
             end
         end
     end
@@ -137,7 +188,7 @@ function app:project_configs(cache)
     for _, opt in pairs(options) do
 
         -- make the category
-        local category = "default"
+        local category = "__root__"
         if opt:get("category") then category = table.unwrap(opt:get("category")) end
         options_by_category[category] = options_by_category[category] or {}
 
@@ -164,7 +215,7 @@ function app:project_configs(cache)
 
                 -- is first? init a sub-menu
                 if first then
-                    if name ~= "default" then
+                    if category ~= "__root__" then
                         submenu = menuconf.menu {name = category, description = category, configs = {}}
                         table.insert(configs, submenu)
                     end

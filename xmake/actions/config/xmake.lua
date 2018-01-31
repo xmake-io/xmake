@@ -51,7 +51,7 @@ task("config")
                                                           "  - y: force to enable",
                                                           "  - n: disable"                                                }
 
-                ,   {}
+                ,   {category = "Root Configuration"}
                 ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
 
                                                             -- show the description of all platforms
@@ -112,10 +112,7 @@ task("config")
                         return menu.options() 
                     end
 
-                ,   {}
-                ,   {nil, "ccache",     "kv", true,         "Enable or disable the c/c++ compiler cache."                   }
-
-                ,   {}
+                ,   {category = "Cross Complation Configuration"}
                 ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
                                                           , ".e.g"
                                                           , "    - i386-mingw32-"
@@ -129,10 +126,8 @@ task("config")
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
 
-                ,   {}
-                ,   {nil, "debugger",   "kv", "auto",       "The Debugger"                                                  }
-
                     -- show language menu options
+                ,   {category = "Language Options Configuration"}
                 ,   function () 
 
                         -- import language menu
@@ -143,6 +138,7 @@ task("config")
                     end
 
                     -- show platform menu options
+                ,   {category = "Platform Options Configuration"}
                 ,   function () 
 
                         -- import platform menu
@@ -152,6 +148,9 @@ task("config")
                         return menu.options("config")
                     end
 
+                ,   {category = "Other Configuration"}
+                ,   {nil, "debugger",   "kv", "auto",       "The Debugger"                                                  }
+                ,   {nil, "ccache",     "kv", true,         "Enable or disable the c/c++ compiler cache."                   }
                 ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
 
                 ,   {}
