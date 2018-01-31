@@ -62,14 +62,14 @@ function menu.options(action)
                 for _, option in ipairs(options) do
 
                     -- merge it and remove repeat 
-                    local name = option[2]
+                    local name = option[2] or option[1]
                     if name then
                         if not exist[name] then
                             table.insert(results, option)
                             exist[name] = true
                             newline = false
                         end
-                    elseif not newline then
+                    elseif option.category or not newline then
                         table.insert(results, option)
                         newline = true
                     end

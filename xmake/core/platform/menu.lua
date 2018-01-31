@@ -73,7 +73,7 @@ function menu.options(action)
                             exist[name] = true
                             newline = false
                         end
-                    elseif not newline then
+                    elseif option.category or not newline then
                         table.insert(results, option)
                         newline = true
                     end

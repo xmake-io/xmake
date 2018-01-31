@@ -65,14 +65,14 @@ platform("windows")
     set_menu {
                 config = 
                 {   
-                    {}   
+                    {category = "Visual Studio SDK Configuration"             }
                 ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
                 }
 
             ,   global = 
                 {   
-                    {}
-                ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
+                    {                                                       }
+                ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio" }
                 }
             }
 

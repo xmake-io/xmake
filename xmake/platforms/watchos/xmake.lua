@@ -47,24 +47,24 @@ platform("watchos")
     set_menu {
                 config = 
                 {   
-                    {}   
-                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
-                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
-                ,   {}
-                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
-                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
-                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                    {category = "XCode SDK Configuration"                                         }
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory" }
+                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"       }
+                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"      }
+                ,   {                                                                             }
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"   }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"      }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"   }
                 }
 
             ,   global = 
                 {   
-                    {}
-                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                ,   {}
-                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
-                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
-                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"     }
+                    {                                                                             }
+                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory" }
+                ,   {                                                                             }
+                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"   }
+                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"      }
+                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"   }
                 }
             }
 

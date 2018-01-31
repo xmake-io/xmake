@@ -137,7 +137,6 @@ task("config")
                     end
 
                     -- show platform menu options
-                ,   {category = "Platform Options Configuration"}
                 ,   function () 
 
                         -- import platform menu

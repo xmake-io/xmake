@@ -50,7 +50,7 @@ platform("macosx")
     set_menu {
                 config = 
                 {   
-                    {}   
+                    {category = "XCode SDK Configuration"                                           }
                 ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
                 ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
                 ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
