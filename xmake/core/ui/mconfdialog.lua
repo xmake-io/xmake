@@ -222,14 +222,8 @@ end
 -- on event
 function mconfdialog:event_on(e)
 
-    -- load config first
-    if e.type == event.ev_idle then
-        if not self._LOADED then
-            self:action_on(action.ac_on_load)
-            self._LOADED = true
-        end
     -- select config
-    elseif e.type == event.ev_keyboard then
+    if e.type == event.ev_keyboard then
         if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " or e.key_name == "Esc" or e.key_name:lower() == "y" or e.key_name:lower() == "n" then
             return self:menuconf():event_on(e)
         elseif e.key_name == "?" then

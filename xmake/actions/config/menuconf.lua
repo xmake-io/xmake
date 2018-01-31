@@ -50,6 +50,10 @@ function app:init()
 
     -- insert menu config dialog
     self:insert(self:mconfdialog())
+
+    -- TODO
+    -- load configs
+    self:load(not option.get("clean"))
 end
 
 -- get menu config dialog
@@ -58,7 +62,7 @@ function app:mconfdialog()
         local mconfdialog = mconfdialog:new("app.config.mconfdialog", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
         mconfdialog:action_set(action.ac_on_exit, function (v) self:quit() end)
         mconfdialog:action_set(action.ac_on_load, function (v) 
-            self:load()
+            self:load(true)
         end)
         mconfdialog:action_set(action.ac_on_save, function (v) 
             self:save()
@@ -70,7 +74,7 @@ function app:mconfdialog()
 end
 
 -- get basic configs 
-function app:basic_configs()
+function app:basic_configs(cache)
     
     -- get configs from the cache first 
     local configs = self._BASIC_CONFIGS
@@ -97,12 +101,18 @@ function app:basic_configs()
             -- get description
             local description = opt[5]
 
+            -- load value
+            local value = nil
+            if cache then
+                value = config.get(value)
+            end
+
             -- key=value?
             if kind == "kv" then
-                table.insert(configs, menuconf.string {name = name, default = default, description = description})
+                table.insert(configs, menuconf.string {name = name, value = value, default = default, description = description})
             -- --key?
             elseif kind == "k" then
-                table.insert(configs, menuconf.boolean {name = name, default = default, description = description})
+                table.insert(configs, menuconf.boolean {name = name, value = value, default = default, description = description})
             end
         end
     end
@@ -113,7 +123,7 @@ function app:basic_configs()
 end
 
 -- get project configs 
-function app:project_configs()
+function app:project_configs(cache)
  
     -- get configs from the cache first 
     local configs = self._PROJECT_CONFIGS
@@ -161,11 +171,17 @@ function app:project_configs()
                     first = false
                 end
 
+                -- load value
+                local value = nil
+                if cache then
+                    value = config.get(value)
+                end
+
                 -- insert config
                 if type(default) == "string" then
-                    table.insert(submenu and submenu.configs or configs, menuconf.string {name = name, default = default, description = opt:get("description")})
+                    table.insert(submenu and submenu.configs or configs, menuconf.string {name = name, value = value, default = default, description = opt:get("description")})
                 else
-                    table.insert(submenu and submenu.configs or configs, menuconf.boolean {name = name, default = default, description = opt:get("description")})
+                    table.insert(submenu and submenu.configs or configs, menuconf.boolean {name = name, value = value, default = default, description = opt:get("description")})
                 end
             end
         end
@@ -177,12 +193,17 @@ function app:project_configs()
 end
 
 -- load configs from options
-function app:load()
+function app:load(cache)
+
+    -- load config from cache
+    if cache then
+        cache = config.load(option.get("target") or "all")
+    end
 
     -- load configs
     local configs = {}
-    table.insert(configs, menuconf.menu {description = "Basic Configuration", configs = self:basic_configs()})
-    table.insert(configs, menuconf.menu {description = "Project Configuration", configs = self:project_configs()})
+    table.insert(configs, menuconf.menu {description = "Basic Configuration", configs = self:basic_configs(cache)})
+    table.insert(configs, menuconf.menu {description = "Project Configuration", configs = self:project_configs(cache)})
     self:mconfdialog():load(configs)
 end
 
