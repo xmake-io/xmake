@@ -63,8 +63,10 @@ language("msrc")
     set_menu {
                 config = 
                 {   
-                    {                                                                         }
+                    {category = "Compiler and Linker Configuration"                           }
                 ,   {nil, "mrc",        "kv", nil,          "The Microsoft Resource Compiler" }
+
+                ,   {category = "Compiler and Linker Flags Configuration"                     }
                 ,   {nil, "mrcflags",   "kv", nil,          "The Microsoft Resource Flags"    }
 
                 ,   {                                                                         }

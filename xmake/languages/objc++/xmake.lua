@@ -147,23 +147,21 @@ language("objc++")
     set_menu {
                 config = 
                 {   
-                    {                                                                                               }
+                    {category = "Compiler and Linker Configuration"                                                 }
                 ,   {nil, "mm",            "kv", nil,          "The Objc Compiler"                                  }
                 ,   {nil, "mxx",           "kv", nil,          "The Objc++ Compiler"                                }
+                ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
+                ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
+                ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
+
+                ,   {category = "Compiler and Linker Flags Configuration"                                           }
                 ,   {nil, "mflags",        "kv", nil,          "The Objc Compiler Flags"                            }
                 ,   {nil, "mxflags",       "kv", nil,          "The Objc/c++ Compiler Flags"                        }
                 ,   {nil, "mxxflags",      "kv", nil,          "The Objc++ Compiler Flags"                          }
 
                 ,   {                                                                                               }
-                ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
                 ,   {nil, "ldflags",       "kv", nil,          "The Binary Linker Flags"                            }
-
-                ,   {                                                                                               }
-                ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
                 ,   {nil, "arflags",       "kv", nil,          "The Static Library Linker Flags"                    }
-
-                ,   {                                                                                               }
-                ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
                 ,   {nil, "shflags",       "kv", nil,          "The Shared Library Linker Flags"                    }
 
                 ,   {                                                                                               }

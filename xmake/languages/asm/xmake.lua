@@ -118,27 +118,23 @@ language("asm")
     set_menu {
                 config = 
                 {   
-                    {}
-                ,   {nil, "as",         "kv", nil,          "The Assembler"                         }
-                ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"                   }
+                    {category = "Compiler and Linker Configuration"                           }
+                ,   {nil, "as",         "kv", nil,          "The Assembler"                   }
+                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"       }
+                ,   {nil, "ld",         "kv", nil,          "The Linker"                      }
+                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"       }
 
-                ,   {}
-                ,   {nil, "ld",         "kv", nil,          "The Linker"                            }
-                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"               }
+                ,   {category = "Compiler and Linker Flags Configuration"                     }
+                ,   {nil, "asflags",    "kv", nil,          "The Assembler Flags"             }
+                ,   {nil, "ldflags",    "kv", nil,          "The Binary Linker Flags"         }
+                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags" }
+                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags" }
 
-                ,   {}
-                ,   {nil, "ar",         "kv", nil,          "The Static Library Linker"             }
-                ,   {nil, "arflags",    "kv", nil,          "The Static Library Linker Flags"       }
-
-                ,   {}
-                ,   {nil, "sh",         "kv", nil,          "The Shared Library Linker"             }
-                ,   {nil, "shflags",    "kv", nil,          "The Shared Library Linker Flags"       }
-
-                ,   {}
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                    }
-                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"           }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"        }
-                }
+                ,   {                                                                         }
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"              }
+                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"     }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"  }
+                                                                                              }
             }
 
 

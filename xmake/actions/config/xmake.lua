@@ -127,7 +127,6 @@ task("config")
                                                           , "    - sdk/include"                                             }
 
                     -- show language menu options
-                ,   {category = "Language Options Configuration"}
                 ,   function () 
 
                         -- import language menu

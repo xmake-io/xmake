@@ -91,13 +91,13 @@ language("rust")
     set_menu {
                 config = 
                 {   
-                    {                                                                          }
+                    {category = "Compiler and Linker Configuration"                            }
                 ,   {nil, "rc",         "kv", nil,          "The Rust Compiler"                }
                 ,   {nil, "rc-ld",      "kv", nil,          "The Rust Linker"                  }
                 ,   {nil, "rc-ar",      "kv", nil,          "The Rust Static Library Archiver" }
                 ,   {nil, "rc-sh",      "kv", nil,          "The Rust Shared Library Linker"   }
 
-                ,   {                                                                          }
+                ,   {category = "Compiler and Linker Flags Configuration"                      }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"      }
                 }
             } 
