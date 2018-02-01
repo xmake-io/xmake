@@ -119,7 +119,7 @@ function app:_menu_by_category(configs, menus, category)
 end
 
 -- make configs by category
-function app:_make_configs_by_category(options_by_category)
+function app:_make_configs_by_category(options_by_category, get_option_info)
 
     -- make configs category 
     --
@@ -139,18 +139,8 @@ function app:_make_configs_by_category(options_by_category)
         -- insert options to sub-configs
         for _, opt in ipairs(options) do
 
-            -- get name
-            local name = opt[2] or opt[1]
-
-            -- get kind
-            local kind = opt[3]
-
-            -- get default
-            local default = opt[4]
-
-            -- TODO
-            -- get description
-            local description = opt[5]
+            -- get option info
+            local info = get_option_info(opt)
 
             -- load value
             local value = nil
@@ -168,12 +158,10 @@ function app:_make_configs_by_category(options_by_category)
             end
 
             -- insert config before all sub-menus
-            -- key=value?
-            if kind == "kv" then
-                table.insert(subconfigs, menu_index, menuconf.string {name = name, value = value, default = default, description = description})
-            -- --key?
-            elseif kind == "k" then
-                table.insert(subconfigs, menu_index, menuconf.boolean {name = name, value = value, default = default, description = description})
+            if info.kind == "string" then
+                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, description = info.description})
+            elseif info.kind == "boolean" then
+                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, description = info.description})
             end
         end
     end
@@ -209,7 +197,9 @@ function app:_basic_configs(cache)
     end
 
     -- make configs by category
-    self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category)
+    self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category, function (opt) 
+        return {name = opt[2] or opt[1], kind = (opt[3] == "k") and "boolean" or "string", default = opt[4], description = opt[5]}
+    end)
     return self._BASIC_CONFIGS
 end
 
@@ -226,61 +216,26 @@ function app:_project_configs(cache)
     local options = project.options()
     local options_by_category = {}
     for _, opt in pairs(options) do
-
-        -- make the category
-        local category = "__root__"
-        if opt:get("category") then category = table.unwrap(opt:get("category")) end
-        options_by_category[category] = options_by_category[category] or {}
-
-        -- append option to the current category
-        options_by_category[category][opt:name()] = opt
-    end
-
-    -- make configs from options
-    local configs = {}
-    for category, opts in pairs(options_by_category) do
-
-        -- insert configs
-        local first = true
-        local submenu = nil
-        for name, opt in pairs(opts) do
-            if opt:get("showmenu") then
-
-                -- TODO
-                -- the default value
-                local default = "auto"
-                if opt:get("default") ~= nil then
-                    default = opt:get("default")
-                end
-
-                -- is first? init a sub-menu
-                if first then
-                    if category ~= "__root__" then
-                        submenu = menuconf.menu {name = category, description = category, configs = {}}
-                        table.insert(configs, submenu)
-                    end
-                    first = false
-                end
-
-                -- load value
-                local value = nil
-                if cache then
-                    value = config.get(value)
-                end
-
-                -- insert config
-                if type(default) == "string" then
-                    table.insert(submenu and submenu.configs or configs, menuconf.string {name = name, value = value, default = default, description = opt:get("description")})
-                else
-                    table.insert(submenu and submenu.configs or configs, menuconf.boolean {name = name, value = value, default = default, description = opt:get("description")})
-                end
-            end
+        if opt:get("showmenu") then
+            local category = "."
+            if opt:get("category") then category = table.unwrap(opt:get("category")) end
+            options_by_category[category] = options_by_category[category] or {}
+            table.insert(options_by_category[category], opt)
         end
     end
 
-    -- cache configs
-    self._PROJECT_CONFIGS = configs
-    return configs
+    -- make configs by category
+    self._PROJECT_CONFIGS = self:_make_configs_by_category(options_by_category, function (opt) 
+
+        -- TODO
+        -- the default value
+        local default = "auto"
+        if opt:get("default") ~= nil then
+            default = opt:get("default")
+        end
+        return {name = opt:name(), kind = (type(default) == "string") and "string" or "boolean", default = default, description = opt:get("description")}
+    end)
+    return self._PROJECT_CONFIGS
 end
 
 -- save the given configs
