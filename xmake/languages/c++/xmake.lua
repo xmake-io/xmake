@@ -170,8 +170,8 @@ language("c++")
                 ,   {nil, "links",         "kv", nil,          "The Link Libraries"                                 }
                 ,   {nil, "linkdirs",      "kv", nil,          "The Link Search Directories"                        }
                 ,   {nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }
-                ,   {nil, "frameworks",    "kv", nil,          "The Include and Link Frameworks"                    }
-                ,   {nil, "frameworkdirs", "kv", nil,          "The Include and Link Frameworks Search Directories" }
+                ,   {nil, "frameworks",    "kv", nil,          "The Frameworks"                                     }
+                ,   {nil, "frameworkdirs", "kv", nil,          "The Frameworks Search Directories"                  }
                 }
             }
 

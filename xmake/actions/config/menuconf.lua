@@ -198,7 +198,21 @@ function app:_basic_configs(cache)
 
     -- make configs by category
     self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category, function (opt) 
-        return {name = opt[2] or opt[1], kind = (opt[3] == "k") and "boolean" or "string", default = opt[4], description = opt[5]}
+        local description = {}
+        for i = 5, 64 do
+            local desc = opt[i] 
+            if type(desc) == "function" then
+                desc = desc()
+            end
+            if type(desc) == "string" then
+                table.insert(description, desc)
+            elseif type(desc) == "table" then
+                table.join2(description, desc)
+            else
+                break
+            end
+        end
+        return {name = opt[2] or opt[1], kind = (opt[3] == "k") and "boolean" or "string", default = opt[4], description = description}
     end)
     return self._BASIC_CONFIGS
 end
