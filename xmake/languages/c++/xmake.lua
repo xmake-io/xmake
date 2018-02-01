@@ -147,29 +147,32 @@ language("c++")
     set_menu {
                 config = 
                 {   
-                    {category = "Cross Complation Configuration/Compiler and Linker Configuration/C++"              }
+                    {category = "Cross Complation Configuration/Compiler Configuration"                             }
                 ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
                 ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }
+
+                ,   {category = "Cross Complation Configuration/Linker Configuration"                               }
                 ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
                 ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
                 ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
 
-                ,   {category = "Cross Complation Configuration/Compiler and Linker Flags Configuration/C++"        }
+                ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"                       }
                 ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }
                 ,   {nil, "cxflags",       "kv", nil,          "The C/C++ compiler Flags"                           }
                 ,   {nil, "cxxflags",      "kv", nil,          "The C++ Compiler Flags"                             }
 
-                ,   {                                                                                               }
+                ,   {category = "Cross Complation Configuration/Linker Flags Configuration"                         }
                 ,   {nil, "ldflags",       "kv", nil,          "The Binary Linker Flags"                            }
                 ,   {nil, "arflags",       "kv", nil,          "The Static Library Linker Flags"                    }
                 ,   {nil, "shflags",       "kv", nil,          "The Shared Library Linker Flags"                    }
-                ,   {                                                                                               }
+
+                ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"                        }
                 ,   {nil, "links",         "kv", nil,          "The Link Libraries"                                 }
                 ,   {nil, "linkdirs",      "kv", nil,          "The Link Search Directories"                        }
                 ,   {nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }
                 ,   {nil, "frameworks",    "kv", nil,          "The Include and Link Frameworks"                    }
                 ,   {nil, "frameworkdirs", "kv", nil,          "The Include and Link Frameworks Search Directories" }
-                                                                                                                    }
+                }
             }
 
 

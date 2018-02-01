@@ -102,16 +102,18 @@ language("dlang")
     set_menu {
                 config = 
                 {   
-                    {category = "Cross Complation Configuration/Compiler and Linker Configuration/D"       }
-                ,   {nil, "dc",         "kv", nil,          "The Dlang Compiler"                           }
-                ,   {nil, "dc-ld",      "kv", nil,          "The Dlang Linker"                             }
-                ,   {nil, "dc-ar",      "kv", nil,          "The Dlang Static Library Archiver"            }
-                ,   {nil, "dc-sh",      "kv", nil,          "The Dlang Shared Library Linker"              }
+                    {category = "Cross Complation Configuration/Compiler Configuration"         }
+                ,   {nil, "dc",         "kv", nil,          "The Dlang Compiler"                }
 
-                ,   {category = "Cross Complation Configuration/Compiler and Linker Flags Configuration/D" }
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                           }
-                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"                  }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"               }
+                ,   {category = "Cross Complation Configuration/Linker Configuration"           }
+                ,   {nil, "dc-ld",      "kv", nil,          "The Dlang Linker"                  }
+                ,   {nil, "dc-ar",      "kv", nil,          "The Dlang Static Library Archiver" }
+                ,   {nil, "dc-sh",      "kv", nil,          "The Dlang Shared Library Linker"   }
+
+                ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"    }
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                }
+                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"       }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"    }
                 }
             } 
 
