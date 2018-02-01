@@ -210,7 +210,23 @@ function task._interpreter()
     return interp
 end
 
--- bind tasks for menu with an sandbox instance
+-- bind script with a sandbox instance
+function task._bind_script(interp, script)
+
+    -- make sandbox instance with the given script
+    local instance, errors = sandbox.new(script, interp:filter(), interp:rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- check
+    assert(instance:script())
+
+    -- update option script
+    return instance:script()
+end
+
+-- bind tasks for menu with a sandbox instance
 function task._bind(tasks, interp)
 
     -- check
@@ -231,20 +247,16 @@ function task._bind(tasks, interp)
             if options then
             
                 -- make full options 
+                local errors = nil
                 local options_full = {}
                 for _, opt in ipairs(options) do
 
                     -- this option is function? translate it
                     if type(opt) == "function" then
-
-                        -- make sandbox instance with the given script
-                        local instance, errors = sandbox.new(opt, interp:filter(), interp:rootdir())
-                        if not instance then
+                        opt, errors = task._bind_script(interp, opt)
+                        if not opt then
                             return false, errors
                         end
-
-                        -- update option script
-                        opt = instance:script()
                     end
 
                     -- insert option
@@ -255,11 +267,13 @@ function task._bind(tasks, interp)
                 options = options_full
                 taskinfo.menu.options = options_full
 
-                -- bind sandbox for option description
+                -- bind sandbox for scripts in option 
                 for _, opt in ipairs(options) do
 
-                    -- bind description
+                    -- bind description and values
                     if type(opt) == "table" then
+
+                        -- bind description
                         for i = 5, 64 do
 
                             -- the description, @note some option may be nil
@@ -268,19 +282,21 @@ function task._bind(tasks, interp)
 
                             -- the description is function? wrap it for calling it in the sandbox
                             if type(description) == "function" then
-
-                                -- make sandbox instance with the given script
-                                local instance, errors = sandbox.new(description, interp:filter(), interp:rootdir())
-                                if not instance then
+                                description, errors = task._bind_script(interp, description)
+                                if not description then
                                     return false, errors
                                 end
-
-                                -- check
-                                assert(instance:script())
-
-                                -- update option script
-                                opt[i] = instance:script()
+                                opt[i] = description
                             end
+                        end
+
+                        -- bind values
+                        if type(opt.values) == "function" then
+                            local values, errors = task._bind_script(interp, opt.values)
+                            if not values then
+                                return false, errors
+                            end
+                            opt.values = values
                         end
                     end
                 end

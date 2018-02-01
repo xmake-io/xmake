@@ -200,6 +200,29 @@ function app:_basic_configs(cache)
 
     -- make configs by category
     self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category, function (opt) 
+
+        -- get default
+        local default = opt[4]
+
+        -- get kind
+        local kind = (opt[3] == "k" or type(default) == "boolean") and "boolean" or "string"
+
+        -- choice option? 
+        local values = opt.values
+        if values then
+            kind = "choice"
+            if type(values) == "function" then
+                values = values()
+            end
+            for idx, value in ipairs(values) do
+                if default == value then
+                    default = idx 
+                    break
+                end
+            end
+        end
+
+        -- get description
         local description = {}
         for i = 5, 64 do
             local desc = opt[i] 
@@ -214,7 +237,9 @@ function app:_basic_configs(cache)
                 break
             end
         end
-        return {name = opt[2] or opt[1], kind = (opt[3] == "k") and "boolean" or "string", default = opt[4], description = description}
+
+        -- make option info
+        return {name = opt[2] or opt[1], kind = kind, default = default, values = values, description = description}
     end)
     return self._BASIC_CONFIGS
 end

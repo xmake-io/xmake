@@ -68,7 +68,10 @@ task("config")
 
                                                                 -- get it
                                                                 return description
-                                                            end                                                            }
+                                                            end
+                                                          , values = function ()
+                                                                return import("core.platform.platform").plats()
+                                                            end                                                           }
                 ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                               
 
                                                             -- show the description of all architectures
@@ -99,7 +102,10 @@ task("config")
                 ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
                                                           , "    - static"
                                                           , "    - shared"
-                                                          , "    - binary"                                                 }
+                                                          , "    - binary"                                                 
+                                                          , values = function () 
+                                                                return {"static", "shared", "binary"}
+                                                            end                                                            }
                 ,   {nil, "host",       "kv", "$(host)",    "The Current Host Environment."                                }
 
                     -- show project menu options
