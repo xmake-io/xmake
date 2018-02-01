@@ -45,7 +45,6 @@ function menu.options(action)
     -- load and merge all platform options
     local exist     = {}
     local results   = {}
-    local newline   = false
     for _, plat in ipairs(plats) do
 
         -- load platform
@@ -71,20 +70,13 @@ function menu.options(action)
                         if not exist[name] then
                             table.insert(results, option)
                             exist[name] = true
-                            newline = false
                         end
-                    elseif option.category or not newline then
+                    else
                         table.insert(results, option)
-                        newline = true
                     end
                 end
             end
         end
-    end
-
-    -- remove the last empty option
-    if results[#results][2] == nil then
-        table.remove(results)
     end
 
     -- ok?

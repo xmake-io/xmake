@@ -983,7 +983,22 @@ function option.show_options(options)
     -- the padding spaces
     local padding = 42
 
+    -- remove repeat empty lines
+    local emptyline_count = 0
+    local printed_options = {}
+    for _, opt in ipairs(options) do
+        if not opt[1] and not opt[2] then
+            emptyline_count = emptyline_count + 1
+        else 
+            emptyline_count = 0
+        end
+        if emptyline_count < 2 then
+            table.insert(printed_options, opt)
+        end
+    end
+
     -- print options
+    options = printed_options
     for _, opt in ipairs(options) do
         
         -- init the option info

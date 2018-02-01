@@ -162,6 +162,8 @@ function app:_make_configs_by_category(options_by_category, get_option_info)
                 table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, description = info.description})
             elseif info.kind == "boolean" then
                 table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, description = info.description})
+            elseif info.kind == "choice" then
+                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, default = info.default, values = info.values, description = info.description})
             end
         end
     end
