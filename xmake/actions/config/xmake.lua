@@ -100,7 +100,7 @@ task("config")
                                                           , "    - static"
                                                           , "    - shared"
                                                           , "    - binary"                                                 }
-                ,   {nil, "host",       "kv", "$(host)",    "The current host environment."                                }
+                ,   {nil, "host",       "kv", "$(host)",    "The Current Host Environment."                                }
 
                     -- show project menu options
                 ,   function () 
@@ -113,14 +113,14 @@ task("config")
                     end
 
                 ,   {category = "Cross Complation Configuration"}
-                ,   {nil, "cross",      "kv", nil,          "The cross toolchains prefix"   
+                ,   {nil, "cross",      "kv", nil,          "The Cross Toolchains Prefix"   
                                                           , ".e.g"
                                                           , "    - i386-mingw32-"
                                                           , "    - arm-linux-androideabi-"                                  }
-                ,   {nil, "toolchains", "kv", nil,          "The cross toolchains directory" 
+                ,   {nil, "toolchains", "kv", nil,          "The Cross Toolchains Directory" 
                                                           , ".e.g"
                                                           , "    - sdk/bin (/arm-linux-gcc ..)"                             }
-                ,   {nil, "sdk",        "kv", nil,          "The cross sdk directory" 
+                ,   {nil, "sdk",        "kv", nil,          "The Cross SDK Directory" 
                                                           , ".e.g"
                                                           , "    - sdk/bin (toolchains)"
                                                           , "    - sdk/lib"

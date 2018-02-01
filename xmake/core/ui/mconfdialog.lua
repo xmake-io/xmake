@@ -104,7 +104,7 @@ end
 function mconfdialog:menuconf()
     if not self._MENUCONF then
         local bounds = self:box():panel():bounds()
-        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(math.floor(bounds:width() / 3), 0, bounds:width(), bounds:height()))
+        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(math.floor(bounds:width() / 4), 0, bounds:width(), bounds:height()))
         self._MENUCONF:state_set("focused", true) -- we can select and highlight selected item
     end
     return self._MENUCONF

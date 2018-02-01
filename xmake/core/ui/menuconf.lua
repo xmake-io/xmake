@@ -242,9 +242,9 @@ function config:__tostring()
     if self.kind == "boolean" or (not self.kind and type(value) == "boolean") then -- boolean config?
         text = (value and "[*] " or "[ ] ") .. text
     elseif self.kind == "number" or (not self.kind and type(value) == "number") then -- number config?
-        text = "(" .. tostring(value or 0) .. ") " .. text
+        text = "    " .. text .. " (" .. tostring(value or 0) .. ")" 
     elseif self.kind == "string" or (not self.kind and type(value) == "string") then -- string config?
-        text = "(" .. tostring(value or "") .. ") " .. text
+        text = "    " .. text .. " (" .. tostring(value or "") .. ")"
     elseif self.kind == "choice" then -- choice config?
         if self.values and #self.values > 0 then
             text = "    " .. text .. " (" .. tostring(self.values[value or 1]) .. ")" .. "  --->"
