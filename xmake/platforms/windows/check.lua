@@ -66,7 +66,7 @@ function _check_vsenv(config)
                 -- check compiler
                 environment.enter("toolchains")
                 local program = nil
-                local tool = find_tool("cl.exe")
+                local tool = find_tool("cl.exe", {force = true})
                 if tool then
                     program = tool.program
                 end

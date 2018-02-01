@@ -142,12 +142,12 @@ language("swift")
     set_menu {
                 config = 
                 {
-                    { category = "Compiler and Linker Configuration"                                                 }
+                    {category = "Cross Complation Configuration/Compiler and Linker Configuration"                   }
                 ,   { nil, "sc",            "kv", nil,          "The Swift Compiler"                                 }
                 ,   { nil, "sc-ld",         "kv", nil,          "The Swift Linker"                                   }
                 ,   { nil, "sc-sh",         "kv", nil,          "The Swift Shared Library Linker"                    }
 
-                ,   { category = "Compiler and Linker Flags Configuration"                                           }
+                ,   { category = "Cross Complation Configuration/Compiler and Linker Flags Configuration"            }
                 ,   { nil, "links",         "kv", nil,          "The Link Libraries"                                 }
                 ,   { nil, "linkdirs",      "kv", nil,          "The Link Search Directories"                        }
                 ,   { nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }

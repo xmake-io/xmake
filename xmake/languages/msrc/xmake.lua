@@ -63,14 +63,14 @@ language("msrc")
     set_menu {
                 config = 
                 {   
-                    {category = "Compiler and Linker Configuration"                           }
-                ,   {nil, "mrc",        "kv", nil,          "The Microsoft Resource Compiler" }
+                    {category = "Cross Complation Configuration/Compiler and Linker Configuration"       }
+                ,   {nil, "mrc",        "kv", nil,          "The Microsoft Resource Compiler"            }
 
-                ,   {category = "Compiler and Linker Flags Configuration"                     }
-                ,   {nil, "mrcflags",   "kv", nil,          "The Microsoft Resource Flags"    }
+                ,   {category = "Cross Complation Configuration/Compiler and Linker Flags Configuration" }
+                ,   {nil, "mrcflags",   "kv", nil,          "The Microsoft Resource Flags"               }
 
-                ,   {                                                                         }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"  }
+                ,   {                                                                                    }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"             }
                 }
             } 
 

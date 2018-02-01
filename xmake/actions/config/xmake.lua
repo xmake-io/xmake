@@ -51,7 +51,7 @@ task("config")
                                                           "  - y: force to enable",
                                                           "  - n: disable"                                                }
 
-                ,   {category = "Root Configuration"}
+                ,   {category = "."}
                 ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
 
                                                             -- show the description of all platforms

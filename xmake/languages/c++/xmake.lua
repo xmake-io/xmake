@@ -147,14 +147,14 @@ language("c++")
     set_menu {
                 config = 
                 {   
-                    {category = "Compiler and Linker Configuration"                                                 }
+                    {category = "Cross Complation Configuration/Compiler and Linker Configuration"                  }
                 ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
                 ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }
                 ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
                 ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
                 ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
 
-                ,   {category = "Compiler and Linker Flags Configuration"                                           }
+                ,   {category = "Cross Complation Configuration/Compiler and Linker Flags Configuration"            }
                 ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }
                 ,   {nil, "cxflags",       "kv", nil,          "The C/C++ compiler Flags"                           }
                 ,   {nil, "cxxflags",      "kv", nil,          "The C++ Compiler Flags"                             }
@@ -169,7 +169,7 @@ language("c++")
                 ,   {nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }
                 ,   {nil, "frameworks",    "kv", nil,          "The Include and Link Frameworks"                    }
                 ,   {nil, "frameworkdirs", "kv", nil,          "The Include and Link Frameworks Search Directories" }
-                }
+                                                                                                                    }
             }
 
 

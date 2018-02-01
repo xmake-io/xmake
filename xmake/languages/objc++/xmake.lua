@@ -147,14 +147,14 @@ language("objc++")
     set_menu {
                 config = 
                 {   
-                    {category = "Compiler and Linker Configuration"                                                 }
+                    {category = "Cross Complation Configuration/Compiler and Linker Configuration"                  }
                 ,   {nil, "mm",            "kv", nil,          "The Objc Compiler"                                  }
                 ,   {nil, "mxx",           "kv", nil,          "The Objc++ Compiler"                                }
                 ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
                 ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
                 ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
 
-                ,   {category = "Compiler and Linker Flags Configuration"                                           }
+                ,   {category = "Cross Complation Configuration/Compiler and Linker Flags Configuration"            }
                 ,   {nil, "mflags",        "kv", nil,          "The Objc Compiler Flags"                            }
                 ,   {nil, "mxflags",       "kv", nil,          "The Objc/c++ Compiler Flags"                        }
                 ,   {nil, "mxxflags",      "kv", nil,          "The Objc++ Compiler Flags"                          }

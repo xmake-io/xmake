@@ -98,15 +98,15 @@ language("golang")
     set_menu {
                 config = 
                 {   
-                    {category = "Compiler and Linker Configuration"                            }
-                ,   {nil, "go",         "kv", nil,          "The Golang Compiler"              }
-                ,   {nil, "gc-ld",      "kv", nil,          "The Golang Linker"                }
-                ,   {nil, "go-ar",      "kv", nil,          "The Golang Static Library Linker" }
+                    {category = "Cross Complation Configuration/Compiler and Linker Configuration"       }
+                ,   {nil, "go",         "kv", nil,          "The Golang Compiler"                        }
+                ,   {nil, "gc-ld",      "kv", nil,          "The Golang Linker"                          }
+                ,   {nil, "go-ar",      "kv", nil,          "The Golang Static Library Linker"           }
 
-                ,   {category = "Compiler and Linker Flags Configuration"                      }
-                ,   {nil, "links",      "kv", nil,          "The Link Libraries"               }
-                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"      }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"   }
-                                                                                               }
-                                                                                               }
+                ,   {category = "Cross Complation Configuration/Compiler and Linker Flags Configuration" }
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"                         }
+                ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"                }
+                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"             }
+                }
+            }
 
