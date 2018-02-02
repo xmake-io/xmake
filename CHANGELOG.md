@@ -8,6 +8,9 @@
 * Add `rule()`, `add_rules()` api to implement the custom build rule and improve `add_files("src/*.md", {rule = "markdown"})`
 * Add `os.filesize()` api
 * Add `core.ui.xxx` cui components
+* Add `xmake f --menu` to configure project with a menu configuration interface
+* Add `set_values` api to `option()`
+* Support to generate a menu configuration interface from user custom project options
 
 ### Changes
 
@@ -426,6 +429,9 @@
 * 添加`rule()`, `add_rules()`接口实现自定义构建规则，并且改进`add_files("src/*.md", {rule = "markdown"})`
 * 添加`os.filesize()`接口
 * 添加`core.ui.xxx`等cui组件模块，实现终端可视化界面，用于实现跟用户进行短暂的交互
+* 通过`xmake f --menu`实现可视化菜单交互配置，简化工程的编译配置
+* 添加`set_values`接口到option
+* 改进option，支持根据工程中用户自定义的option，自动生成可视化配置菜单
 
 ### 改进
 
