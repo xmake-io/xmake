@@ -210,6 +210,9 @@ function mconfdialog:show_help()
                 text = text .. "\n    - " .. value
             end
         end
+        if config.path then
+            text = text .. "\npath: " .. config.path
+        end
         self:helpdialog():text():text_set(text)
 
         -- show help

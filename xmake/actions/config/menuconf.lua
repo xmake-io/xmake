@@ -92,7 +92,7 @@ function app:_filter_option(name)
 end
 
 -- get or make menu by category
-function app:_menu_by_category(configs, menus, category)
+function app:_menu_by_category(root, configs, menus, category)
 
     -- is root? 
     if category == "." or category == "" then
@@ -103,19 +103,23 @@ function app:_menu_by_category(configs, menus, category)
     local menu = menus[category]
     if not menu then
 
+        -- get config path
+        local parentdir = path.directory(category)
+        local config_path = path.join(root, parentdir == "." and "" or parentdir)
+
         -- make a new menu
-        menu = menuconf.menu {name = category, description = path.basename(category), configs = {}}
+        menu = menuconf.menu {name = category, path = config_path, description = path.basename(category), configs = {}}
         menus[category] = menu
 
         -- insert to the parent or root configs
-        local parent = self:_menu_by_category(configs, menus, path.directory(category))
+        local parent = self:_menu_by_category(root, configs, menus, parentdir)
         table.insert(parent and parent.configs or configs, menu)
     end
     return menu
 end
 
 -- make configs by category
-function app:_make_configs_by_category(options_by_category, cache, get_option_info)
+function app:_make_configs_by_category(root, options_by_category, cache, get_option_info)
 
     -- make configs category 
     --
@@ -127,7 +131,7 @@ function app:_make_configs_by_category(options_by_category, cache, get_option_in
     for category, options in pairs(options_by_category) do
 
         -- get or make menu by category
-        local menu = self:_menu_by_category(configs, menus, category)
+        local menu = self:_menu_by_category(root, configs, menus, category)
 
         -- get sub-configs
         local subconfigs = menu and menu.configs or configs
@@ -161,13 +165,16 @@ function app:_make_configs_by_category(options_by_category, cache, get_option_in
                 end
             end
 
+            -- get config path
+            local config_path = path.join(root, category == "." and "" or category)
+
             -- insert config before all sub-menus
             if info.kind == "string" then
-                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, description = info.description})
+                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, path = config_path, description = info.description})
             elseif info.kind == "boolean" then
-                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, description = info.description})
+                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, path = config_path, description = info.description})
             elseif info.kind == "choice" then
-                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, default = info.default, values = info.values, description = info.description})
+                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, default = info.default, path = config_path, values = info.values, description = info.description})
             end
         end
     end
@@ -203,7 +210,7 @@ function app:_basic_configs(cache)
     end
 
     -- make configs by category
-    self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category, cache, function (opt) 
+    self._BASIC_CONFIGS = self:_make_configs_by_category("Basic Configuration", options_by_category, cache, function (opt) 
 
         -- get default
         local default = opt[4]
@@ -270,7 +277,7 @@ function app:_project_configs(cache)
     end
 
     -- make configs by category
-    self._PROJECT_CONFIGS = self:_make_configs_by_category(options_by_category, cache, function (opt) 
+    self._PROJECT_CONFIGS = self:_make_configs_by_category("Project Configuration", options_by_category, cache, function (opt) 
 
         -- the default value
         local default = "auto"
