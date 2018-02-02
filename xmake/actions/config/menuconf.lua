@@ -271,12 +271,28 @@ function app:_project_configs(cache)
 
     -- make configs by category
     self._PROJECT_CONFIGS = self:_make_configs_by_category(options_by_category, cache, function (opt) 
+
         -- the default value
         local default = "auto"
         if opt:get("default") ~= nil then
             default = opt:get("default")
         end
-        return {name = opt:name(), kind = (type(default) == "string") and "string" or "boolean", default = default, description = opt:get("description")}
+
+        -- get kind
+        local kind = (type(default) == "string") and "string" or "boolean"
+
+        -- choice option? 
+        local values = opt:get("values")
+        if values then
+            kind = "choice"
+            for idx, value in ipairs(values) do
+                if default == value then
+                    default = idx 
+                    break
+                end
+            end
+        end
+        return {name = opt:name(), kind = kind, default = default, values = values, description = opt:get("description")}
     end)
     return self._PROJECT_CONFIGS
 end

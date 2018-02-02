@@ -64,7 +64,8 @@ function option.apis()
         values =
         {
             -- option.set_xxx
-            "option.set_default"
+            "option.set_values"
+        ,   "option.set_default"
         ,   "option.set_showmenu"
         ,   "option.set_category"
         ,   "option.set_warnings"
