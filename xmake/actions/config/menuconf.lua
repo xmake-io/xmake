@@ -51,7 +51,6 @@ function app:init()
     -- insert menu config dialog
     self:insert(self:mconfdialog())
 
-    -- TODO
     -- load configs
     self:load(not option.get("clean"))
 end
@@ -119,7 +118,7 @@ function app:_menu_by_category(configs, menus, category)
 end
 
 -- make configs by category
-function app:_make_configs_by_category(options_by_category, get_option_info)
+function app:_make_configs_by_category(options_by_category, cache, get_option_info)
 
     -- make configs category 
     --
@@ -145,7 +144,15 @@ function app:_make_configs_by_category(options_by_category, get_option_info)
             -- load value
             local value = nil
             if cache then
-                value = config.get(value)
+                value = config.get(info.name)
+                if value ~= nil and info.kind == "choice" and info.values then
+                    for idx, val in ipairs(info.values) do
+                        if value == val then
+                            value = idx 
+                            break
+                        end
+                    end
+                end
             end
 
             -- find the menu index in subconfigs
@@ -199,7 +206,7 @@ function app:_basic_configs(cache)
     end
 
     -- make configs by category
-    self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category, function (opt) 
+    self._BASIC_CONFIGS = self:_make_configs_by_category(options_by_category, cache, function (opt) 
 
         -- get default
         local default = opt[4]
@@ -266,9 +273,7 @@ function app:_project_configs(cache)
     end
 
     -- make configs by category
-    self._PROJECT_CONFIGS = self:_make_configs_by_category(options_by_category, function (opt) 
-
-        -- TODO
+    self._PROJECT_CONFIGS = self:_make_configs_by_category(options_by_category, cache, function (opt) 
         -- the default value
         local default = "auto"
         if opt:get("default") ~= nil then
@@ -301,11 +306,20 @@ function app:load(cache)
         cache = config.load(option.get("target") or "all")
     end
 
+    -- clear configs first
+    self._BASIC_CONFIGS = nil
+    self._PROJECT_CONFIGS = nil
+
     -- load configs
     local configs = {}
     table.insert(configs, menuconf.menu {description = "Basic Configuration", configs = self:_basic_configs(cache)})
     table.insert(configs, menuconf.menu {description = "Project Configuration", configs = self:_project_configs(cache)})
     self:mconfdialog():load(configs)
+
+    -- the previous config is only for loading menuconf, so clear config now
+    if cache then
+        config.clear()
+    end
 end
 
 -- save configs to options

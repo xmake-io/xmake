@@ -151,7 +151,7 @@ end
 -- get choice dialog
 function mconfdialog:choicedialog()
     if not self._CHOICEDIALOG then
-        local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width()), math.min(16, self:height())}, "input dialog")
+        local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width()), math.min(20, self:height())}, "input dialog")
         dialog_choice:background_set(self:frame():background())
         dialog_choice:frame():background_set("cyan")
         dialog_choice:box():frame():background_set("cyan")

@@ -231,6 +231,12 @@ function config.read(name, targetname)
     return value
 end
 
+-- clear config
+function config.clear()
+    config._MODES = nil
+    config._CONFIGS = nil
+end
+
 -- dump the configure
 function config.dump()
    

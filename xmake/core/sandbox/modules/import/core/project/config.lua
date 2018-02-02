@@ -55,7 +55,7 @@ function sandbox_core_project_config.host()
     return config.get("host")
 end
 
--- get the configure directory
+-- get the configuration directory
 function sandbox_core_project_config.directory()
 
     -- get it
@@ -66,12 +66,12 @@ function sandbox_core_project_config.directory()
     return dir
 end
 
--- get the given configure from the current 
+-- get the given configuration from the current 
 function sandbox_core_project_config.get(name)
     return config.get(name)
 end
 
--- set the given configure to the current 
+-- set the given configuration to the current 
 --
 -- @param name  the name
 -- @param value the value
@@ -86,12 +86,12 @@ function sandbox_core_project_config.readonly(name)
     return config.readonly(name)
 end
 
--- load the configure
+-- load the configuration
 function sandbox_core_project_config.load(targetname)
     return config.load(targetname)
 end
 
--- save the configure
+-- save the configuration
 function sandbox_core_project_config.save(targetname)
 
     -- save it
@@ -101,12 +101,17 @@ function sandbox_core_project_config.save(targetname)
     end
 end
 
--- read the value from the configure file directly
+-- read the value from the configuration file directly
 function sandbox_core_project_config.read(name, targetname)
     return config.read(name, targetname)
 end
 
--- check the configure
+-- clear the configuration
+function sandbox_core_project_config.clear()
+    config.clear()
+end
+
+-- check the configuration
 function sandbox_core_project_config.check()
 
     -- get the check script
@@ -116,7 +121,7 @@ function sandbox_core_project_config.check()
     end
 end
 
--- dump the configure
+-- dump the configuration
 function sandbox_core_project_config.dump()
     config.dump()
 end
