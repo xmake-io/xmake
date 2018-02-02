@@ -53,22 +53,6 @@ task("config")
 
                 ,   {category = "."}
                 ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
-
-                                                            -- show the description of all platforms
-                                                          , function () 
-
-                                                                -- import platform 
-                                                                import("core.platform.platform")
-
-                                                                -- make description
-                                                                local description = {}
-                                                                for i, plat in ipairs(platform.plats()) do
-                                                                    description[i] = "    - " .. plat
-                                                                end
-
-                                                                -- get it
-                                                                return description
-                                                            end
                                                           , values = function ()
                                                                 return import("core.platform.platform").plats()
                                                             end                                                           }
@@ -100,9 +84,6 @@ task("config")
                                                           , "    - release"
                                                           , "    - ... (custom)"                                           } 
                 ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
-                                                          , "    - static"
-                                                          , "    - shared"
-                                                          , "    - binary"                                                 
                                                           , values = function () 
                                                                 return {"static", "shared", "binary"}
                                                             end                                                            }

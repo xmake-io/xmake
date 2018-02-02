@@ -204,6 +204,12 @@ function mconfdialog:show_help()
         if config.default then
             text = text .. "\ndefault: " .. tostring(config.default)
         end
+        if config.kind == "choice" then
+            text = text .. "\nvalues: "
+            for _, value in ipairs(config.values) do
+                text = text .. "\n    - " .. value
+            end
+        end
         self:helpdialog():text():text_set(text)
 
         -- show help

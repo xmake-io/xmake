@@ -1108,6 +1108,26 @@ function option.show_options(options)
                 end
             end
         end
+
+        -- print values
+        local values = opt.values
+        if type(values) == "function" then
+            values = values()
+        end
+        if values then
+            
+            for _, value in ipairs(table.wrap(values)) do
+
+                -- make spaces 
+                local spaces = ""
+                for i = 0, padding do
+                    spaces = spaces .. " "
+                end
+
+                -- print this value
+                print(option._inwidth_append(spaces, "    - " .. tostring(value), padding + 1, console_width))
+            end
+        end
     end
 end  
 
