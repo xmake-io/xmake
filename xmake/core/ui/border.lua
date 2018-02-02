@@ -65,7 +65,7 @@ function border:draw(transparent)
 
     -- the border characters
     -- @note acs character will use 2 width on borders (pdcurses), so we use acsii characters instead of them.
-    local iswin = os.host() == "borders"
+    local iswin = os.host() == "windows"
     local hline = iswin and '-' or "hline"
     local vline = iswin and '|' or "vline"
     local ulcorner = iswin and ' ' or "ulcorner"

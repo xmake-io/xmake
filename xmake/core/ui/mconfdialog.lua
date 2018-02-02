@@ -54,7 +54,6 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Hel
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
     self:button_add("help", "< Help >", function (v, e) self:show_help() end) 
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
-    self:button_add("load", "< Load >", function (v, e) self:action_on(action.ac_on_load) end)
     self:buttons():select(self:button("select"))
 
     -- insert menu config
@@ -104,7 +103,7 @@ end
 function mconfdialog:menuconf()
     if not self._MENUCONF then
         local bounds = self:box():panel():bounds()
-        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(math.floor(bounds:width() / 4), 0, bounds:width(), bounds:height()))
+        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(0, 0, bounds:width(), bounds:height()))
         self._MENUCONF:state_set("focused", true) -- we can select and highlight selected item
     end
     return self._MENUCONF
@@ -123,7 +122,7 @@ end
 -- get input dialog
 function mconfdialog:inputdialog()
     if not self._INPUTDIALOG then
-        local dialog_input = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "input dialog")
+        local dialog_input = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width() - 8), math.min(8, self:height())}, "input dialog")
         dialog_input:background_set(self:frame():background())
         dialog_input:frame():background_set("cyan")
         dialog_input:textedit():option_set("multiline", false)
@@ -151,7 +150,7 @@ end
 -- get choice dialog
 function mconfdialog:choicedialog()
     if not self._CHOICEDIALOG then
-        local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width()), math.min(20, self:height())}, "input dialog")
+        local dialog_choice = choicedialog:new("mconfdialog.choice", rect {0, 0, math.min(80, self:width() - 8), math.min(20, self:height())}, "input dialog")
         dialog_choice:background_set(self:frame():background())
         dialog_choice:frame():background_set("cyan")
         dialog_choice:box():frame():background_set("cyan")
@@ -163,7 +162,7 @@ end
 -- get search dialog
 function mconfdialog:searchdialog()
     if not self._SEARCHDIALOG then
-        local dialog_search = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width()), math.min(8, self:height())}, "Search Configuration Parameter")
+        local dialog_search = inputdialog:new("mconfdialog.input", rect {0, 0, math.min(80, self:width() - 8), math.min(8, self:height())}, "Search Configuration Parameter")
         dialog_search:background_set(self:frame():background())
         dialog_search:frame():background_set("cyan")
         dialog_search:textedit():option_set("multiline", false)

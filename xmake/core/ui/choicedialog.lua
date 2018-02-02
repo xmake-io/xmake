@@ -65,7 +65,7 @@ end
 function choicedialog:choicebox()
     if not self._CHOICEBOX then
         local bounds = self:box():panel():bounds()
-        self._CHOICEBOX = choicebox:new("choicedialog.choicebox", rect:new(math.floor(bounds:width() / 3), 0, bounds:width(), bounds:height()))
+        self._CHOICEBOX = choicebox:new("choicedialog.choicebox", rect:new(0, 0, bounds:width(), bounds:height()))
         self._CHOICEBOX:state_set("focused", true) -- we can select and highlight selected item
     end
     return self._CHOICEBOX
