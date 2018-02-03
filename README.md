@@ -113,6 +113,14 @@ $ xmake f -p [windows|linux|macosx|android|iphoneos ..] -a [x86|arm64 ..] -m [de
 $ xmake
 ```
 
+## Menu configuration
+
+```bash
+$ xmake f --menu
+```
+
+<img src="http://xmake.io/assets/img/index/menuconf.gif" width="60%" />
+
 ## Support features
 
 * Tasks

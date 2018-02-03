@@ -119,6 +119,14 @@ $ xmake f -p [windows|linux|macosx|android|iphoneos ..] -a [x86|arm64 ..] -m [de
 $ xmake
 ```
 
+## 图形化菜单配置
+
+```bash
+$ xmake f --menu
+```
+
+<img src="http://xmake.io/assets/img/index/menuconf.gif" width="60%" />
+
 ## 支持特性
 
 * Tasks
