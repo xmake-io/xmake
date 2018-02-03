@@ -170,11 +170,11 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
 
             -- insert config before all sub-menus
             if info.kind == "string" then
-                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, path = config_path, description = info.description})
+                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, path = config_path, description = info.description, sourceinfo = info.sourceinfo})
             elseif info.kind == "boolean" then
-                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, path = config_path, description = info.description})
+                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, path = config_path, description = info.description, sourceinfo = info.sourceinfo})
             elseif info.kind == "choice" then
-                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, default = info.default, path = config_path, values = info.values, description = info.description})
+                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, default = info.default, path = config_path, values = info.values, description = info.description, sourceinfo = info.sourceinfo})
             end
         end
     end
@@ -288,6 +288,12 @@ function app:_project_configs(cache)
         -- get kind
         local kind = (type(default) == "string") and "string" or "boolean"
 
+        -- get description
+        local description = opt:get("description")
+
+        -- get source info
+        local sourceinfo = (opt:get("__sourceinfo_description") or {})[type(description) == "table" and description[1] or description]
+
         -- choice option? 
         local values = opt:get("values")
         if values then
@@ -299,7 +305,7 @@ function app:_project_configs(cache)
                 end
             end
         end
-        return {name = opt:name(), kind = kind, default = default, values = values, description = opt:get("description")}
+        return {name = opt:name(), kind = kind, default = default, values = values, description = description, sourceinfo = sourceinfo}
     end)
     return self._PROJECT_CONFIGS
 end

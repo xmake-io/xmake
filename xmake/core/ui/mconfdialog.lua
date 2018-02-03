@@ -197,6 +197,9 @@ function mconfdialog:searchdialog()
                 if config.path then
                     results = results .. "\npath: " .. config.path
                 end
+                if config.sourceinfo then
+                    results = results .. "\nposition: " .. (config.sourceinfo.file or "") .. ":" .. (config.sourceinfo.line or "-1")
+                end
                 results = results .. "\n"
             end
             self:show_result(results)
@@ -258,6 +261,9 @@ function mconfdialog:show_help()
         end
         if config.path then
             text = text .. "\npath: " .. config.path
+        end
+        if config.sourceinfo then
+            text = text .. "\nposition: " .. (config.sourceinfo.file or "") .. ":" .. (config.sourceinfo.line or "-1")
         end
         self:helpdialog():text():text_set(text)
 
