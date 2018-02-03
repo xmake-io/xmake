@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.1.9
+
 ### New features
 
 * Add `del_files()` api to delete files in the files list
@@ -423,6 +425,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.1.9
 
 ### 新特性
 
