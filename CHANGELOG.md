@@ -11,6 +11,7 @@
 * Add `xmake f --menu` to configure project with a menu configuration interface
 * Add `set_values` api to `option()`
 * Support to generate a menu configuration interface from user custom project options
+* Add source file position to interpreter and search results in menu
 
 ### Changes
 
@@ -432,6 +433,7 @@
 * 通过`xmake f --menu`实现可视化菜单交互配置，简化工程的编译配置
 * 添加`set_values`接口到option
 * 改进option，支持根据工程中用户自定义的option，自动生成可视化配置菜单
+* 在调用api设置工程配置时以及在配置菜单中添加源文件位置信息
 
 ### 改进
 

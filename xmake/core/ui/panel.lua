@@ -98,7 +98,7 @@ function panel:insert(v, opt)
 
     -- check
     assert(not v:parent() or v:parent() == self)
-    assert(not self:view(v:name()), "%s has been in this panel!", v)
+    assert(not self:view(v:name()), v:name() .. " has been in this panel!")
 
     -- this view has been inserted into this panel? remove it first
     if v:parent() == self then

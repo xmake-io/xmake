@@ -283,7 +283,11 @@ end
 function mconfdialog:show_result(text)
     local dialog_result = self:resultdialog()
     dialog_result:text():text_set(text)
-    self:insert(dialog_result, {centerx = true, centery = true})
+    if not self:view("mconfdialog.result") then
+        self:insert(dialog_result, {centerx = true, centery = true})
+    else
+        self:select(dialog_result)
+    end
 end
 
 -- on event
