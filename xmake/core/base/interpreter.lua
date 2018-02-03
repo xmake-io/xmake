@@ -247,6 +247,19 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
             scope["__override_" .. apiname] = true
         end
 
+        -- save api source info, .e.g call api() in sourcefile:linenumber
+        local sourceinfo = debug.getinfo(2, "Sl")
+        if sourceinfo then
+            scope["__sourceinfo_" .. apiname] = scope["__sourceinfo_" .. apiname] or {}
+            local values = {...}
+            local sourcescope = scope["__sourceinfo_" .. apiname]
+            for _, value in ipairs(values) do
+                if type(value) == "string" then
+                    sourcescope[value] = {file = sourceinfo.short_src or sourceinfo.source, line = sourceinfo.currentline}
+                end
+            end
+        end
+
         -- call function
         return apifunc(self, scope, apiname, ...) 
     end
@@ -783,7 +796,9 @@ function interpreter:api_register(scope_kind, name, func)
         local scope = apis[scope_kind]
 
         -- register api
-        scope[name] = function (...) return func(self, ...) end
+        scope[name] = function (...) 
+            return func(self, ...) 
+        end
     else
 
         -- get root apis
@@ -791,7 +806,9 @@ function interpreter:api_register(scope_kind, name, func)
         local apis = self._PRIVATE._ROOTAPIS
 
         -- register api to the root scope
-        apis[name] = function (...) return func(self, ...) end
+        apis[name] = function (...) 
+            return func(self, ...) 
+        end
     end
 end
 

@@ -434,7 +434,8 @@ function target:fileconfig(sourcefile)
             -- match source files
             local results = os.match(filepath)
             if #results == 0 then
-                utils.warning("cannot match add_files(\"%s\")", filepath)
+                local sourceinfo = (self:get("__sourceinfo_files") or {})[filepath]
+                utils.warning("cannot match add_files(\"%s\") at %s:%d", filepath, sourceinfo.file or "", sourceinfo.line or -1)
             end
 
             -- process source files
@@ -511,7 +512,8 @@ function target:sourcefiles()
         -- match source files
         local results = os.match(file)
         if #results == 0 then
-            utils.warning("cannot match %s_files(\"%s\")", utils.ifelse(deleted, "del", "add"), file)
+            local sourceinfo = (self:get("__sourceinfo_files") or {})[file]
+            utils.warning("cannot match %s_files(\"%s\") at %s:%d", utils.ifelse(deleted, "del", "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
         end
 
         -- process source files
