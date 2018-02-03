@@ -96,7 +96,13 @@ end
 
 -- load configs
 function mconfdialog:load(configs)
+    self._CONFIGS = configs
     return self:menuconf():load(configs)
+end
+
+-- get configs
+function mconfdialog:configs()
+    return self._CONFIGS
 end
 
 -- get menu config
@@ -117,6 +123,16 @@ function mconfdialog:helpdialog()
         self._HELPDIALOG = helpdialog
     end
     return self._HELPDIALOG
+end
+
+-- get result dialog
+function mconfdialog:resultdialog()
+    if not self._RESULTDIALOG then
+        local resultdialog = textdialog:new("mconfdialog.result", self:bounds(), "result")
+        resultdialog:button_add("exit", "< Exit >", function (v) resultdialog:quit() end)
+        self._RESULTDIALOG = resultdialog
+    end
+    return self._RESULTDIALOG
 end
 
 -- get input dialog
@@ -168,7 +184,22 @@ function mconfdialog:searchdialog()
         dialog_search:textedit():option_set("multiline", false)
         dialog_search:text():text_set("Enter (sub)string or lua pattern string to search for configuration")
         dialog_search:button_add("ok", "< Ok >", function (v) 
-            -- TODO
+            local configs = self:search(self:configs(), dialog_search:textedit():text())
+            local results = "Search('" .. dialog_search:textedit():text() .. "') results:"
+            for _, config in ipairs(configs) do
+                results = results .. "\n" .. config:prompt()
+                if config.kind then
+                    results = results .. "\nkind: " .. config.kind
+                end
+                if config.default then
+                    results = results .. "\ndefault: " .. config.default
+                end
+                if config.path then
+                    results = results .. "\npath: " .. config.path
+                end
+                results = results .. "\n"
+            end
+            self:show_result(results)
             dialog_search:quit() 
         end)
         dialog_search:button_add("cancel", "< Cancel >", function (v) 
@@ -178,6 +209,21 @@ function mconfdialog:searchdialog()
         self._SEARCHDIALOG = dialog_search
     end
     return self._SEARCHDIALOG
+end
+
+-- search configs via the given text
+function mconfdialog:search(configs, text)
+    local results = {}
+    for _, config in ipairs(configs) do
+        local prompt = config:prompt()
+        if prompt and prompt:find(text) then
+            table.insert(results, config)
+        end
+        if config.kind == "menu" then
+            table.join2(results, self:search(config.configs, text))
+        end
+    end
+    return results
 end
 
 -- show help dialog
@@ -225,6 +271,13 @@ function mconfdialog:show_search()
     local dialog_search = self:searchdialog()
     dialog_search:panel():select(dialog_search:textedit())
     self:insert(dialog_search, {centerx = true, centery = true})
+end
+
+-- show result dialog
+function mconfdialog:show_result(text)
+    local dialog_result = self:resultdialog()
+    dialog_result:text():text_set(text)
+    self:insert(dialog_result, {centerx = true, centery = true})
 end
 
 -- on event
