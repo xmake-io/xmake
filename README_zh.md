@@ -202,7 +202,9 @@ $ xmake doxygen [srcdir]
 
 ## 简单例子
 
-[![asciicast](https://asciinema.org/a/133693.png)](https://asciinema.org/a/133693)
+<a href="https://asciinema.org/a/133693">
+<img src="https://asciinema.org/a/133693.png" width="60%" />
+</a>
 
 创建一个c++ console项目：
 
