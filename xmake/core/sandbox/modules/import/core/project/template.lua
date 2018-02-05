@@ -61,5 +61,10 @@ function sandbox_core_project_template.create(language, templateid, targetname)
     end
 end
 
+-- get FAQ
+function sandbox_core_project_template.faq()
+    return template.faq()
+end
+
 -- return module
 return sandbox_core_project_template

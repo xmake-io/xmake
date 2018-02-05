@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Add FAQ to the auto-generated xmake.lua
+
 ### Bugs fixed
 
 * Fix force to add flags bug
@@ -430,7 +434,11 @@
 
 ## master (开发中)
 
-## Bugs修复
+### 改进
+
+* 添加FAQ到自动生成的xmake.lua文件，方便用户快速上手
+
+### Bugs修复
 
 * 修复无法通过`add_ldflags("xx", "xx", {force = true})`强制设置多个flags的问题
 
@@ -461,7 +469,7 @@
 * 增加对linux/arm, arm64的支持，可以在arm linux上运行xmake
 * 改进vs201x工程生成插件，更好的includedirs设置支持
 
-## Bugs修复
+### Bugs修复
 
 * 修复依赖修改编译和链接问题
 * [#151](https://github.com/tboox/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
