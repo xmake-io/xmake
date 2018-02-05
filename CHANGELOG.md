@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* Fix force to add flags bug
+
 ## v2.1.9
 
 ### New features
@@ -425,6 +429,10 @@
 # 更新日志
 
 ## master (开发中)
+
+## Bugs修复
+
+* 修复无法通过`add_ldflags("xx", "xx", {force = true})`强制设置多个flags的问题
 
 ## v2.1.9
 

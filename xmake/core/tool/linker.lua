@@ -115,16 +115,19 @@ function linker.load(targetkind, sourcekinds)
     -- select the linker
     local linkerinfo = nil
     local linkertool = nil
+    local firsterror = nil
     for _, _linkerinfo in ipairs(linkerinfos) do
         -- load the linker tool from the linker kind
         linkertool, errors = tool.load(_linkerinfo.linkerkind)
         if linkertool then 
             linkerinfo = _linkerinfo
             break
+        else
+            firsterror = firsterror or errors
         end
     end
     if not linkerinfo then
-        return nil, errors
+        return nil, firsterror
     end
 
     -- get it directly from cache dirst

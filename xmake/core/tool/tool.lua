@@ -127,7 +127,7 @@ function tool.load(kind)
     -- get name
     local name = name_or_errors
     if not name then
-        return nil, string.format("cannot find tool name for %s", program)
+        return nil, string.format("cannot find known tool script for %s", toolname or program)
     end
 
     -- new an instance
