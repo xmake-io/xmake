@@ -817,6 +817,27 @@ function os.addenv(name, ...)
     return os.setenv(name, table.concat({...}, seperator) .. seperator ..  (os.getenv(name) or ""))
 end
 
+-- read string data from pasteboard
+function os.pbpaste()
+    if os.host() == "macosx" then
+        local ok, result = os.iorun("pbpaste")
+        if ok then
+            return result
+        end
+    else
+        -- TODO
+    end
+end
+
+-- copy string data to pasteboard
+function os.pbcopy(data)
+    if os.host() == "macosx" then
+        os.run("bash -c \"echo '" .. data .. "' | pbcopy\"")
+    else
+        -- TODO
+    end
+end
+
 -- get the program directory
 function os.programdir()
     return xmake._PROGRAM_DIR
