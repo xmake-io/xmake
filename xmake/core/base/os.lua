@@ -824,6 +824,11 @@ function os.pbpaste()
         if ok then
             return result
         end
+    elseif os.host() == "linux" then
+        local ok, result = os.iorun("xsel --clipboard --output")
+        if ok then
+            return result
+        end
     else
         -- TODO
     end
@@ -833,6 +838,8 @@ end
 function os.pbcopy(data)
     if os.host() == "macosx" then
         os.run("bash -c \"echo '" .. data .. "' | pbcopy\"")
+    elseif os.host() == "linux" then
+        os.run("bash -c \"echo '" .. data .. "' | xsel --clipboard --input\"")
     else
         -- TODO
     end

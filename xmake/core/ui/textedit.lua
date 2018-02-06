@@ -91,6 +91,12 @@ function textedit:event_on(e)
                 self:text_set(text:sub(1, #text - 1))
             end
             return true
+        elseif e.key_name == "CtrlV" then
+            local pastetext = os.pbpaste()
+            if pastetext then
+                self:text_set(self:text() .. pastetext)
+            end
+            return true
         end
     end
 
