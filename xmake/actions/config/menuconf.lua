@@ -142,6 +142,9 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
             -- get option info
             local info = get_option_info(opt)
 
+            -- new value?
+            local newvalue = true
+
             -- load value
             local value = nil
             if cache then
@@ -153,6 +156,9 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
                             break
                         end
                     end
+                end
+                if value ~= nil then
+                    newvalue = false
                 end
             end
 
@@ -170,11 +176,11 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
 
             -- insert config before all sub-menus
             if info.kind == "string" then
-                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, default = info.default, path = config_path, description = info.description, sourceinfo = info.sourceinfo})
+                table.insert(subconfigs, menu_index, menuconf.string {name = info.name, value = value, new = newvalue, default = info.default, path = config_path, description = info.description, sourceinfo = info.sourceinfo})
             elseif info.kind == "boolean" then
-                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, default = info.default, path = config_path, description = info.description, sourceinfo = info.sourceinfo})
+                table.insert(subconfigs, menu_index, menuconf.boolean {name = info.name, value = value, new = newvalue, default = info.default, path = config_path, description = info.description, sourceinfo = info.sourceinfo})
             elseif info.kind == "choice" then
-                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, default = info.default, path = config_path, values = info.values, description = info.description, sourceinfo = info.sourceinfo})
+                table.insert(subconfigs, menu_index, menuconf.choice {name = info.name, value = value, new = newvalue, default = info.default, path = config_path, values = info.values, description = info.description, sourceinfo = info.sourceinfo})
             end
         end
     end

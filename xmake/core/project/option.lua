@@ -133,9 +133,6 @@ function option:_cx_check()
 
             -- check it
             local ok, results_or_errors = sandbox.load(self._check_cxsnippets, snippets, {target = self, sourcekind = sourcekind, types = types, funcs = funcs, includes = includes})
-    if self:name() == "zlib" then
-    print("zlib", ok, results_or_errors)
-    end
             if not ok then
                 return false, results_or_errors
             end
