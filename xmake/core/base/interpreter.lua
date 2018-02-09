@@ -145,6 +145,22 @@ function interpreter._fetch_root_scope(root)
     end
 end
 
+-- save api source info, .e.g call api() in sourcefile:linenumber
+function interpreter:_save_sourceinfo_to_scope(scope, apiname, values)
+
+    -- save api source info, .e.g call api() in sourcefile:linenumber
+    local sourceinfo = debug.getinfo(3, "Sl")
+    if sourceinfo then
+        scope["__sourceinfo_" .. apiname] = scope["__sourceinfo_" .. apiname] or {}
+        local sourcescope = scope["__sourceinfo_" .. apiname]
+        for _, value in ipairs(values) do
+            if type(value) == "string" then
+                sourcescope[value] = {file = sourceinfo.short_src or sourceinfo.source, line = sourceinfo.currentline}
+            end
+        end
+    end
+end
+
 -- register scope end: scopename_end()
 function interpreter:_api_register_scope_end(...)
 
@@ -248,17 +264,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         end
 
         -- save api source info, .e.g call api() in sourcefile:linenumber
-        local sourceinfo = debug.getinfo(2, "Sl")
-        if sourceinfo then
-            scope["__sourceinfo_" .. apiname] = scope["__sourceinfo_" .. apiname] or {}
-            local values = {...}
-            local sourcescope = scope["__sourceinfo_" .. apiname]
-            for _, value in ipairs(values) do
-                if type(value) == "string" then
-                    sourcescope[value] = {file = sourceinfo.short_src or sourceinfo.source, line = sourceinfo.currentline}
-                end
-            end
-        end
+        self:_save_sourceinfo_to_scope(scope, apiname, {...})
 
         -- call function
         return apifunc(self, scope, apiname, ...) 
@@ -1228,6 +1234,9 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
                 extrascope[value] = extra_config
             end
         end
+
+        -- save api source info, .e.g call api() in sourcefile:linenumber
+        self:_save_sourceinfo_to_scope(scope, name, pathes)
     end
 
     -- register implementation
@@ -1255,6 +1264,9 @@ function interpreter:api_register_del_pathes(scope_kind, ...)
 
         -- save values
         scope[name] = table.join2(scope[name] or {}, pathes_deleted)
+
+        -- save api source info, .e.g call api() in sourcefile:linenumber
+        self:_save_sourceinfo_to_scope(scope, name, pathes)
     end
 
     -- register implementation
@@ -1293,6 +1305,9 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
                 extrascope[value] = extra_config
             end
         end
+
+        -- save api source info, .e.g call api() in sourcefile:linenumber
+        self:_save_sourceinfo_to_scope(scope, name, pathes)
     end
 
     -- register implementation
