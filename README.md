@@ -121,15 +121,6 @@ $ xmake f --menu
 
 <img src="http://xmake.io/assets/img/index/menuconf.gif" width="60%" />
 
-## Support features
-
-* Tasks
-* Macros
-* Actions
-* Options
-* Plugins
-* Templates
-
 ## Support platforms
 
 * Windows (x86, x64, amd64, x86_amd64)
