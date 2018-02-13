@@ -9,6 +9,7 @@
 ### Bugs fixed
 
 * Fix force to add flags bug
+* [#157](https://github.com/tboox/xmake/issues/157): Fix generate pdb file error if it's output directory does not exists
 
 ## v2.1.9
 
@@ -441,6 +442,7 @@
 ### Bugs修复
 
 * 修复无法通过`add_ldflags("xx", "xx", {force = true})`强制设置多个flags的问题
+* [#157](https://github.com/tboox/xmake/issues/157): 修复pdb符号输出目录不存在情况下编译失败问题
 
 ## v2.1.9
 

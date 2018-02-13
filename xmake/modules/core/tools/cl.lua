@@ -97,7 +97,19 @@ function nf_symbol(self, level, target)
     -- debug? generate *.pdb file
     local flags = nil
     if level == "debug" then
+        local symbolfile = nil
         if target and target.symbolfile then
+            symbolfile = target:symbolfile()
+        end
+        if symbolfile then
+
+            -- ensure the object directory
+            local symboldir = path.directory(symbolfile)
+            if not os.isdir(symboldir) then
+                os.mkdir(symboldir)
+            end
+            
+            -- check and add symbol output file
             flags = "-Zi -Fd" .. target:symbolfile()
             if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}) then
                 flags = "-FS " .. flags
@@ -360,7 +372,10 @@ end
 function _compile1(self, sourcefile, objectfile, depinfo, flags)
 
     -- ensure the object directory
-    os.mkdir(path.directory(objectfile))
+    local objectdir = path.directory(objectfile)
+    if not os.isdir(objectdir) then
+        os.mkdir(objectdir)
+    end
 
     -- compile it
     local outdata = try
