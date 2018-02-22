@@ -35,22 +35,4 @@ function init(self)
     _super._g.cxflags = {"-Qunused-arguments"}
     _super._g.mxflags = {"-Qunused-arguments"}
     _super._g.asflags = {"-Qunused-arguments"}
-
-    -- init flags map
-    _super._g.mapflags["-s"] = "-Wl,-S"
-    _super._g.mapflags["-S"] = "-Wl,-S"
-end
-
--- make the strip flag
-function nf_strip(self, level)
-
-    -- the maps
-    local maps =
-    {   
-        debug  = "-Wl,-S"
-    ,   all    = "-Wl,-S"
-    }
-
-    -- make it
-    return maps[level] 
 end

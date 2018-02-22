@@ -67,6 +67,13 @@ function init(self)
     ,   ["-S"]  = "-S"
     }
 
+    -- for macho target
+    local plat = config.plat()
+    if plat == "macosx" or plat == "iphoneos" then
+        _g.mapflags["-s"] = "-Wl,-x"
+        _g.mapflags["-S"] = "-Wl,-S"
+    end
+
     -- init buildmodes
     _g.buildmodes = 
     {
@@ -90,6 +97,13 @@ function nf_strip(self, level)
         debug = "-S"
     ,   all   = "-s"
     }
+
+    -- for macho target
+    local plat = config.plat()
+    if plat == "macosx" or plat == "iphoneos" then
+        maps.all   = "-Wl,-x"
+        maps.debug = "-Wl,-S"
+    end
 
     -- make it
     return maps[level]
