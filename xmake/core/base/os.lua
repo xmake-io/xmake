@@ -58,7 +58,7 @@ function os._cp(src, dst)
 
         -- copy file
         if not os.cpfile(src, dst) then
-            return false, string.format("cannot copy file %s to %s %s", src, dst, os.strerror())
+            return false, string.format("cannot copy file %s to %s, error: %s", src, dst, os.strerror())
         end
     -- is directory?
     elseif os.isdir(src) then
@@ -70,12 +70,12 @@ function os._cp(src, dst)
 
         -- copy directory
         if not os.cpdir(src, dst) then
-            return false, string.format("cannot copy directory %s to %s %s", src, dst, os.strerror())
+            return false, string.format("cannot copy directory %s to %s, error:  %s", src, dst, os.strerror())
         end
 
     -- not exists?
     else
-        return false, string.format("cannot copy file %s, not found this file %s", src, os.strerror())
+        return false, string.format("cannot copy file %s, error: not found this file", src)
     end
     
     -- ok
