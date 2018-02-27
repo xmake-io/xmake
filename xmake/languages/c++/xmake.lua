@@ -26,10 +26,10 @@
 language("c++")
 
     -- set source file kinds
-    set_sourcekinds {cc = ".c", cxx = {".cc", ".cpp", ".cxx"}}   
+    set_sourcekinds {cc = ".c", cxx = {".cc", ".cpp", ".cxx"}, cu = ".cu"}   
 
     -- set source file flags
-    set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}   
+    set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}, cu = {"cuflags"}}   
 
     -- set target kinds
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
@@ -38,10 +38,10 @@ language("c++")
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
 
     -- set language kinds
-    set_langkinds {c = "cc", cxx = "cxx"}
+    set_langkinds {c = "cc", cxx = "cxx", cu = "cu"}
 
     -- set mixing kinds
-    set_mixingkinds("cc", "cxx", "as", "mrc")
+    set_mixingkinds("cc", "cxx", "cu", "as", "mrc")
 
     -- on load
     on_load("load")
@@ -150,6 +150,7 @@ language("c++")
                     {category = "Cross Complation Configuration/Compiler Configuration"                             }
                 ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
                 ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }
+                ,   {nil, "cu",            "kv", nil,          "The Cuda Compiler"                                  }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"                               }
                 ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
@@ -160,6 +161,7 @@ language("c++")
                 ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }
                 ,   {nil, "cxflags",       "kv", nil,          "The C/C++ compiler Flags"                           }
                 ,   {nil, "cxxflags",      "kv", nil,          "The C++ Compiler Flags"                             }
+                ,   {nil, "cuflags",       "kv", nil,          "The Cuda Compiler Flags"                            }
 
                 ,   {category = "Cross Complation Configuration/Linker Flags Configuration"                         }
                 ,   {nil, "ldflags",       "kv", nil,          "The Binary Linker Flags"                            }
