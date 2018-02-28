@@ -26,6 +26,7 @@
 import("core.base.option")
 import("detect.sdks.find_xcode_dir")
 import("detect.sdks.find_xcode_sdkvers")
+import("detect.sdks.find_cuda_toolchains")
 import("lib.detect.find_tool")
 
 -- find the given tool
@@ -176,6 +177,26 @@ function check_xcode_sdkver(config, optional)
     local target_minver = config.get("target_minver")
     if not target_minver then
         config.set("target_minver", xcode_sdkver)
+    end
+end
+
+-- check the cuda sdk toolchains
+function check_cuda_toolchains(config)
+
+    -- get the cuda directory
+    local cuda_dir = config.get("cuda_dir")
+    if not cuda_dir then
+
+        -- check ok? update it
+        local toolchains = find_cuda_toolchains()
+        if toolchains then
+
+            -- save it
+            config.set("cuda_dir", toolchains.cudadir)
+
+            -- trace
+            cprint("checking for the Cuda SDK directory ... ${green}%s", toolchains.cudadir)
+        end
     end
 end
 

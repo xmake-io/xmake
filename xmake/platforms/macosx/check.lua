@@ -133,12 +133,14 @@ function main(kind, toolkind)
         checker.check_arch
     ,   { checker.check_xcode_dir, true }
     ,   { checker.check_xcode_sdkver, true }
+    ,   checker.check_cuda_toolchains
     }
 
     -- init the check list of global
     _g.global = 
     {
         checker.check_xcode_dir
+    ,   checker.check_cuda_toolchains
     }
 
     -- check it
