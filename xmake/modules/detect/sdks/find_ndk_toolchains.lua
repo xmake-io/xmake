@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_ndk_toolchains.lua
+-- @file        find_toolchains.lua
 --
 
 -- imports
@@ -27,7 +27,7 @@ import("core.project.config")
 
 -- find ndk toolchains
 --
--- @param ndk_dir   the ndk directory
+-- @param ndkdir    the ndk directory
 -- @param opt       the argument options 
 --                  .e.g {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]"}
 --
@@ -35,18 +35,18 @@ import("core.project.config")
 --
 -- @code 
 --
--- local ndk_toolchains = find_ndk_toolchains("/xxx/android-ndk-r10e")
--- local ndk_toolchains = find_ndk_toolchains("/xxx/android-ndk-r10e", {arch = "arm64-v8a"})
+-- local toolchains = find_toolchains("/xxx/android-ndk-r10e")
+-- local toolchains = find_toolchains("/xxx/android-ndk-r10e", {arch = "arm64-v8a"})
 -- 
 -- @endcode
 --
-function main(ndk_dir, opt)
+function main(ndkdir, opt)
 
     -- init arguments
     opt = opt or {}
 
     -- get ndk directory
-    if not ndk_dir or not os.isdir(ndk_dir) then
+    if not ndkdir or not os.isdir(ndkdir) then
         return {}
     end
 
@@ -60,14 +60,14 @@ function main(ndk_dir, opt)
     local cross = ifelse(arm64, "aarch64-linux-android-", "arm-linux-androideabi-")
 
     -- save the toolchains directory
-    local ndk_toolchains = {}
-    for _, bindir in ipairs(os.dirs(path.join(ndk_dir, "toolchains", cross .. "**", "prebuilt/*/bin"))) do
+    local toolchains = {}
+    for _, bindir in ipairs(os.dirs(path.join(ndkdir, "toolchains", cross .. "**", "prebuilt/*/bin"))) do
         local binfiles = os.files(path.join(bindir, cross .. "*"))
         if binfiles and #binfiles > 0 then
-            table.insert(ndk_toolchains, {bin = bindir, cross = cross})
+            table.insert(toolchains, {bin = bindir, cross = cross})
         end
     end
 
     -- ok?    
-    return ndk_toolchains
+    return toolchains
 end

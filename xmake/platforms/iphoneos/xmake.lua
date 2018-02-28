@@ -48,9 +48,9 @@ platform("iphoneos")
                 config = 
                 {   
                     {category = "XCode SDK Configuration"                                           }
-                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
-                ,   {nil, "xcode_sdkver",   "kv", "auto",       "the sdk version for xcode"         }
-                ,   {nil, "target_minver",  "kv", "auto",       "the target minimal version"        }
+                ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
+                ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
+                ,   {nil, "target_minver",  "kv", "auto",       "The Target Minimal Version"        }
                 ,   {}
                 ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
                 ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
@@ -60,7 +60,7 @@ platform("iphoneos")
             ,   global = 
                 {   
                     {}
-                ,   {nil, "xcode_dir",      "kv", "auto",       "the xcode application directory"   }
+                ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {}
                 ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"     }
                 ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"        }
