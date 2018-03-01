@@ -37,23 +37,6 @@ function init(self)
     _g.ldflags = {}
     _g.shflags = { "-shared", "-fPIC" }
 
-    -- add link and include directories
-    local cuda_dir = config.get("cuda_dir")
-    if cuda_dir then
-        table.insert(_g.cuflags, "-I" .. path.join(cuda_dir, "include"))
-        table.insert(_g.ldflags, "-L" .. path.join(cuda_dir, "lib"))
-        table.insert(_g.ldflags, "-lcudart")
-        table.insert(_g.ldflags, "-lcublas")
-        table.insert(_g.ldflags, "-lcurand")
-        table.insert(_g.shflags, "-L" .. path.join(cuda_dir, "lib"))
-        table.insert(_g.shflags, "-lcudart")
-        table.insert(_g.shflags, "-lcublas")
-        table.insert(_g.shflags, "-lcurand")
-    end
-
-    -- TODO
---    _g.rpathdirs = {path.join(cuda_dir, "lib")}
-
     -- init cuflags for the kind: shared
     _g.shared          = {}
     _g.shared.cuflags  = {"-fPIC"}
@@ -65,6 +48,10 @@ function init(self)
         ["-W1"] = "-Wall"
     ,   ["-W2"] = "-Wall"
     ,   ["-W3"] = "-Wall"
+
+         -- strip
+    ,   ["-s"]  = "-s"
+    ,   ["-S"]  = "-S"
     }
 
     -- init buildmodes
@@ -77,6 +64,27 @@ end
 -- get the property
 function get(self, name)
     return _g[name]
+end
+
+-- make the strip flag
+function nf_strip(self, level)
+
+    -- the maps
+    local maps = 
+    {   
+        debug = "-S"
+    ,   all   = "-s"
+    }
+
+    -- for macho target
+    local plat = config.plat()
+    if plat == "macosx" or plat == "iphoneos" then
+        maps.all   = "-Wl,-x"
+        maps.debug = "-Wl,-S"
+    end
+
+    -- make it
+    return maps[level]
 end
 
 -- make the symbol flag
@@ -143,6 +151,28 @@ function nf_includedir(self, dir)
     return "-I" .. os.args(dir)
 end
 
+-- make the link flag
+function nf_link(self, lib)
+    return "-l" .. lib
+end
+
+-- make the linkdir flag
+function nf_linkdir(self, dir)
+    return "-L" .. os.args(dir)
+end
+
+-- make the rpathdir flag
+function nf_rpathdir(self, dir)
+    if self:has_flags("-Wl,-rpath=" .. dir) then
+        return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
+            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+            return maps[name]
+        end))
+    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir) then
+        return "-Xlinker -rpath -Xlinker " .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
+    end
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     return "-include " .. os.args(pcheaderfile)
@@ -151,6 +181,35 @@ end
 -- make the c++ precompiled header flag
 function nf_pcxxheader(self, pcheaderfile, target)
     return "-include " .. os.args(pcheaderfile)
+end
+
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
+
+    -- add rpath for dylib (macho), .e.g -install_name @rpath/file.dylib
+    local flags_extra = {}
+    if targetkind == "shared" and targetfile:endswith(".dylib") then
+        table.insert(flags_extra, "-install_name")
+        table.insert(flags_extra, "@rpath/" .. path.filename(targetfile))
+    end
+
+    -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
+    if targetkind == "shared" and config.plat() == "mingw" then
+        table.insert(flags_extra, "-Wl,--out-implib," .. os.args(path.join(path.directory(targetfile), path.basename(targetfile) .. ".a")))
+    end
+
+    -- make link args
+    return self:program(), table.join("-o", targetfile, objectfiles, flags, flags_extra)
+end
+
+-- link the target file
+function link(self, objectfiles, targetkind, targetfile, flags)
+
+    -- ensure the target directory
+    os.mkdir(path.directory(targetfile))
+
+    -- link it
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the complie arguments list

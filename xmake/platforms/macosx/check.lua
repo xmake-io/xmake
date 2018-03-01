@@ -46,7 +46,6 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "cc",    "xcrun -sdk macosx ", "clang",      "the c compiler")
     checker.toolchain_insert(toolchains, "cxx",   "xcrun -sdk macosx ", "clang",      "the c++ compiler")
     checker.toolchain_insert(toolchains, "cxx",   "xcrun -sdk macosx ", "clang++",    "the c++ compiler")
-    checker.toolchain_insert(toolchains, "cu",    "",                   "nvcc",       "the cuda compiler")
     checker.toolchain_insert(toolchains, "ld",    "xcrun -sdk macosx ", "clang++",    "the linker")
     checker.toolchain_insert(toolchains, "ld",    "xcrun -sdk macosx ", "clang",      "the linker")
     checker.toolchain_insert(toolchains, "ar",    "xcrun -sdk macosx ", "ar",         "the static library archiver")
@@ -111,6 +110,11 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-ar", "",                   "rustc",      "the rust static library archiver")
     checker.toolchain_insert(toolchains, "rc-sh", "",                   "rustc",      "the rust shared library linker")
     checker.toolchain_insert(toolchains, "rc-ld", "",                   "rustc",      "the rust linker")
+
+    -- insert cuda tools to toolchains
+    checker.toolchain_insert(toolchains, "cu",    "",                   "nvcc",       "the cuda compiler")
+    checker.toolchain_insert(toolchains, "cu-sh", "",                   "nvcc",       "the cuda shared library linker")
+    checker.toolchain_insert(toolchains, "cu-ld", "",                   "nvcc",       "the cuda linker")
 
     -- save toolchains
     _g.TOOLCHAINS = toolchains
