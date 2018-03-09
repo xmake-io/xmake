@@ -43,6 +43,12 @@ platform("windows")
     -- on load
     on_load(function ()
 
+        -- imports
+        import("core.project.config")
+
+        -- init flags for architecture
+        local arch          = config.get("arch")
+
         -- init the file formats
         _g.formats          = {}
         _g.formats.static   = {"", ".lib"}
@@ -56,6 +62,18 @@ platform("windows")
         _g.dcflags       = { dc_archs[arch] }
         _g["dc-shflags"] = { dc_archs[arch] }
         _g["dc-ldflags"] = { dc_archs[arch] }
+
+        -- init flags for cuda
+        local cu_archs = { x86 = "-m32 -Xcompiler -m32", x64 = "-m64 -Xcompiler -m64" }
+        _g.cuflags = {cu_archs[arch] or ""}
+        _g["cu-shflags"] = {cu_archs[arch] or ""}
+        _g["cu-ldflags"] = {cu_archs[arch] or ""}
+        local cuda_dir = config.get("cuda_dir")
+        if cuda_dir then
+            table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
+            table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+            table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+        end
 
         -- ok
         return _g

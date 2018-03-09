@@ -98,10 +98,10 @@ function main()
     _g["cu-ldflags"] = {"-ccbin", "clang++", cu_archs[arch] or ""}
     local cuda_dir = config.get("cuda_dir")
     if cuda_dir then
-        table.insert(_g.cuflags, "-I" .. path.join(cuda_dir, "include"))
-        table.insert(_g["cu-ldflags"], "-L" .. path.join(cuda_dir, "lib"))
-        table.insert(_g["cu-shflags"], "-L" .. path.join(cuda_dir, "lib"))
-        table.insert(_g["cu-ldflags"], "-Xlinker -rpath -Xlinker " .. path.join(cuda_dir, "lib"))
+        table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
+        table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+        table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+        table.insert(_g["cu-ldflags"], "-Xlinker -rpath -Xlinker " .. os.args(path.join(cuda_dir, "lib")))
     end
 
     -- ok

@@ -33,12 +33,13 @@ function _find_cudadir()
     if os.host() == "macosx" then
         table.insert(pathes, "/Developer/NVIDIA/CUDA**/bin")
     elseif os.host() == "windows" then
+        table.insert(pathes, "$(env CUDA_PATH)/bin")
     else
         table.insert(pathes, "/usr/local/cuda/bin")
     end
 
     -- attempt to find nvcc
-    local nvcc = find_file("nvcc", pathes)
+    local nvcc = find_file(os.host() == "windows" and "nvcc.exe" or "nvcc", pathes)
     if nvcc then
         return path.directory(path.directory(nvcc))
     end
@@ -69,13 +70,13 @@ function main(cudadir, opt)
 
     -- not found?
     if not cudadir or not os.isdir(cudadir) then
-        return {}
+        return nil
     end
 
     -- get the bin directory 
     local bindir = path.join(cudadir, "bin")
-    if not os.isfile(path.join(bindir, "nvcc")) then
-        return {}
+    if not os.isexec(path.join(bindir, "nvcc")) then
+        return nil
     end
 
     -- get linkdirs

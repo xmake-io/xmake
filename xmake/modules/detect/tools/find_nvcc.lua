@@ -54,7 +54,7 @@ function main(opt)
         local cudadir = config.get("cuda_dir")
         if cudadir then
             local toolchains = find_cuda_toolchains(cudadir)
-            if toolchains then
+            if toolchains and toolchains.bindir then
                 program = find_program(path.join(toolchains.bindir, "nvcc"), opt)
             end
         end

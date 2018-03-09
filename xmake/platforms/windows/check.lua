@@ -166,6 +166,11 @@ function _toolchains(config)
         checker.toolchain_insert(toolchains, "as", "", "ml.exe",   "the assember")
     end
 
+    -- insert cuda tools to toolchains
+    checker.toolchain_insert(toolchains, "cu",    "", "nvcc",          "the cuda compiler")
+    checker.toolchain_insert(toolchains, "cu-sh", "", "nvcc",          "the cuda shared library linker")
+    checker.toolchain_insert(toolchains, "cu-ld", "", "nvcc",          "the cuda linker")
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
@@ -197,6 +202,7 @@ function main(kind, toolkind)
     {
         { checker.check_arch, "x86" }
     ,   _check_vs
+    ,   checker.check_cuda_toolchains
     }
 
     -- init the check list of global
@@ -204,6 +210,7 @@ function main(kind, toolkind)
     {
         { checker.check_arch, "x86" }
     ,   _check_vs
+    ,   checker.check_cuda_toolchains
     ,   _clean_global
     }
 
