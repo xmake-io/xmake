@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#158](https://github.com/tboox/xmake/issues/158): Support CUDA Toolkit and Compiler
+
 ### Changes
 
 * Add FAQ to the auto-generated xmake.lua
@@ -435,6 +439,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#158](https://github.com/tboox/xmake/issues/158): 增加对Cuda编译环境的支持
 
 ### 改进
 
