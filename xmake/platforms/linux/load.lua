@@ -76,7 +76,7 @@ function main()
     _g["rc-ldflags"] = {}
 
     -- init flags for cuda
-    local cu_archs = { i386 = "-m32 -Xcompiler -arch -Xcompiler -m32", x86_64 = "-m64 -Xcompiler -arch -Xcompiler -m64" }
+    local cu_archs = { i386 = "-m32 -Xcompiler -m32", x86_64 = "-m64 -Xcompiler -m64" }
     _g.cuflags = {cu_archs[arch] or ""}
     _g["cu-shflags"] = {cu_archs[arch] or ""}
     _g["cu-ldflags"] = {cu_archs[arch] or ""}
@@ -85,7 +85,7 @@ function main()
         table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
         table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
         table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
-        table.insert(_g["cu-ldflags"], "-Wl,-rpath=" .. os.args(path.join(cuda_dir, "lib")))
+        table.insert(_g["cu-ldflags"], "-Xlinker -rpath=" .. os.args(path.join(cuda_dir, "lib")))
     end
 
     -- ok
