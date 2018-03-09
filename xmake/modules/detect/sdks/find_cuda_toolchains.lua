@@ -35,7 +35,7 @@ function _find_cudadir()
     elseif os.host() == "windows" then
         table.insert(pathes, "$(env CUDA_PATH)/bin")
     else
-        table.insert(pathes, "/usr/local/cuda/bin")
+        table.insert(pathes, "/usr/local/cuda**/bin")
     end
 
     -- attempt to find nvcc
