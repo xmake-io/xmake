@@ -44,19 +44,17 @@ import("detect.sdks.find_cuda_toolchains")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt       = opt or {}
+    opt.parse = opt.parse or "V(%d+%.?%d*%.?%d*.-)%s"
 
     -- find program
     local program = find_program(opt.program or "nvcc", opt)
 
     -- not found? attempt to find program from cuda toolchains
     if not program then
-        local cudadir = config.get("cuda_dir")
-        if cudadir then
-            local toolchains = find_cuda_toolchains(cudadir)
-            if toolchains and toolchains.bindir then
-                program = find_program(path.join(toolchains.bindir, "nvcc"), opt)
-            end
+        local toolchains = find_cuda_toolchains(config.get("cuda_dir"))
+        if toolchains and toolchains.bindir then
+            program = find_program(path.join(toolchains.bindir, "nvcc"), opt)
         end
     end
 
