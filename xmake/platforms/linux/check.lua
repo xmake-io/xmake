@@ -145,6 +145,11 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "rc-sh", "",    "rustc",     "the rust shared library linker")
     checker.toolchain_insert(toolchains, "rc-ld", "",    "rustc",     "the rust linker")
 
+    -- insert cuda tools to toolchains
+    checker.toolchain_insert(toolchains, "cu",    "",    "nvcc",      "the cuda compiler")
+    checker.toolchain_insert(toolchains, "cu-sh", "",    "nvcc",      "the cuda shared library linker")
+    checker.toolchain_insert(toolchains, "cu-ld", "",    "nvcc",      "the cuda linker")
+
     -- save toolchains
     _g.TOOLCHAINS = toolchains
 
@@ -164,12 +169,14 @@ function main(kind, toolkind)
     _g.config = 
     {
         __check_arch
+    ,   checker.check_cuda_toolchains
     }
 
     -- init the check list of global
     _g.global = 
     {
         _check_ndk_sdkver
+    ,   checker.check_cuda_toolchains
     }
 
     -- check it

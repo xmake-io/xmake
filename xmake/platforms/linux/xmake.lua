@@ -46,5 +46,19 @@ platform("linux")
     -- on load
     on_load("load")
 
+    -- set menu
+    set_menu {
+                config = 
+                {   
+                    {category = "Cuda SDK Configuration"                                            }
+                ,   {nil, "cuda_dir",       "kv", "auto",       "The Cuda SDK Directory"            }
+                }
+
+            ,   global = 
+                {   
+                    {}
+                ,   {nil, "cuda_dir",       "kv", "auto",       "The Cuda SDK Directory"            }
+                }
+            }
 
 

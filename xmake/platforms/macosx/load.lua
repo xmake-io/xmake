@@ -94,8 +94,8 @@ function main()
     -- init flags for cuda
     local cu_archs = { i386 = "-m32 -Xcompiler -arch -Xcompiler i386", x86_64 = "-m64 -Xcompiler -arch -Xcompiler x86_64" }
     _g.cuflags = {cu_archs[arch] or ""}
-    _g["cu-shflags"] = {"-ccbin", "clang++", cu_archs[arch] or ""}
-    _g["cu-ldflags"] = {"-ccbin", "clang++", cu_archs[arch] or ""}
+    _g["cu-shflags"] = {cu_archs[arch] or ""}
+    _g["cu-ldflags"] = {cu_archs[arch] or ""}
     local cuda_dir = config.get("cuda_dir")
     if cuda_dir then
         table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))

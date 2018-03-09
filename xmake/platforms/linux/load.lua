@@ -75,6 +75,19 @@ function main()
     _g["rc-shflags"] = {}
     _g["rc-ldflags"] = {}
 
+    -- init flags for cuda
+    local cu_archs = { i386 = "-m32 -Xcompiler -arch -Xcompiler -m32", x86_64 = "-m64 -Xcompiler -arch -Xcompiler -m64" }
+    _g.cuflags = {cu_archs[arch] or ""}
+    _g["cu-shflags"] = {cu_archs[arch] or ""}
+    _g["cu-ldflags"] = {cu_archs[arch] or ""}
+    local cuda_dir = config.get("cuda_dir")
+    if cuda_dir then
+        table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
+        table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+        table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+        table.insert(_g["cu-ldflags"], "-Wl,-rpath=" .. os.args(path.join(cuda_dir, "lib")))
+    end
+
     -- ok
     return _g
 end

@@ -83,14 +83,17 @@ platform("windows")
     set_menu {
                 config = 
                 {   
-                    {category = "Visual Studio SDK Configuration"             }
-                ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio"   }
+                    {category = "Visual Studio SDK Configuration"                  }
+                ,   {nil, "vs",       "kv", "auto", "The Microsoft Visual Studio"  }
+                ,   {category = "Cuda SDK Configuration"                           }
+                ,   {nil, "cuda_dir", "kv", "auto", "The Cuda SDK Directory"       }
                 }
 
             ,   global = 
                 {   
-                    {                                                       }
-                ,   {nil, "vs", "kv", "auto", "The Microsoft Visual Studio" }
+                    {                                                              }
+                ,   {nil, "vs",       "kv", "auto", "The Microsoft Visual Studio"  }
+                ,   {nil, "cuda_dir", "kv", "auto", "The Cuda SDK Directory"       }
                 }
             }
 
