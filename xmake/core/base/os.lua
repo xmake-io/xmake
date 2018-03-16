@@ -469,22 +469,24 @@ function os.tmpdir()
     end
 
     -- make sub-directory name
-    local subdir = utils.ifelse(os._FAKEROOT, ".xmakefake", ".xmake")
+    local subdir = (os._FAKEROOT and ".xmakefake" or ".xmake") .. (os.uid().euid or "")
 
     -- get a temporary directory for each user
-    local tmpdir = path.join(os._tmpdir(), subdir .. (os.uid().euid or ""))
+    local tmpdir = path.join(os._tmpdir(), subdir, os.date("%y%m%d"))
 
-    -- ensure this directory exist
+    -- ensure this directory exist and remove the previous directory
     if not os.isdir(tmpdir) then
         os.mkdir(tmpdir)
+        local predir = path.join(os._tmpdir(), subdir, os.date("%y%m%d", os.time() - 24 * 60 * 60))
+        if os.isdir(predir) then
+            os.rmdir(predir)
+        end
     end
     return tmpdir
 end
 
 -- generate the temporary file path
 function os.tmpfile()
-
-    -- make it
     return path.join(os.tmpdir(), "_" .. (hash.uuid():gsub("-", "")))
 end
 

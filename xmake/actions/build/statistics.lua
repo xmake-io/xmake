@@ -121,7 +121,16 @@ function main()
     if not os.isdir(outputdir) then
         import("devel.git.clone")
         clone("https://github.com/tboox/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
-        print("post ok!")
+        print("post to traffic ok!")
+    end
+
+    -- download the xmake-stats releases to update the release stats info in github
+    local releasefile = outputdir .. ".release"
+    if not os.isfile(releasefile) then
+        import("net.http.download")
+        local version = os.versioninfo().version
+        download(format("https://github.com/tboox/xmake-stats/releases/download/v%d.%d.%d/%s", version.major, version.minor, version.alter, os.host()), releasefile)
+        print("post to releases ok!")
     end
 
     -- leave environment
