@@ -353,6 +353,9 @@ target("test")
 
 ## 感谢
 
+感谢所有对xmake有所[贡献](CONTRIBUTING.md)的人:
+<a href="https://github.com/tboox/xmake/graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890&button=false" /></a>
+
 * [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本
 * [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)
 

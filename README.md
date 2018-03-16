@@ -348,6 +348,9 @@ Some projects using xmake:
 
 ## Thanks
 
+This project exists thanks to all the people who have [contributed](CONTRIBUTING.md):
+<a href="https://github.com/tboox/xmake/graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890&button=false" /></a>
+
 * [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
 * [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)
 
