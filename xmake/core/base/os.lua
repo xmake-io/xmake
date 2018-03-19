@@ -477,10 +477,6 @@ function os.tmpdir()
     -- ensure this directory exist and remove the previous directory
     if not os.isdir(tmpdir) then
         os.mkdir(tmpdir)
-        local predir = path.join(os._tmpdir(), subdir, os.date("%y%m%d", os.time() - 24 * 60 * 60))
-        if os.isdir(predir) then
-            os.rmdir(predir)
-        end
     end
     return tmpdir
 end
