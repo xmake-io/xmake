@@ -26,7 +26,7 @@
 import("core.project.config")
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
-import("detect.sdks.find_cuda_toolchains")
+import("detect.sdks.find_cuda")
 
 -- find nvcc 
 --
@@ -52,7 +52,7 @@ function main(opt)
 
     -- not found? attempt to find program from cuda toolchains
     if not program then
-        local toolchains = find_cuda_toolchains(config.get("cuda_dir"))
+        local toolchains = find_cuda(config.get("cuda_dir"))
         if toolchains and toolchains.bindir then
             program = find_program(path.join(toolchains.bindir, "nvcc"), opt)
         end

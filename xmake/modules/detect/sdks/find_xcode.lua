@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_xcode_dir.lua
+-- @file        find_xcode.lua
 --
 
 -- imports
@@ -31,7 +31,7 @@ import("lib.detect.find_directory")
 --
 -- @code 
 --
--- local xcode_dir = find_xcode_dir()
+-- local xcode_dir = find_xcode()
 -- 
 -- @endcode
 --

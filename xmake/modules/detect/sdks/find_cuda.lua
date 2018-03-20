@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_cuda_toolchains.lua
+-- @file        find_cuda.lua
 --
 
 -- imports
@@ -54,7 +54,7 @@ end
 --
 -- @code 
 --
--- local toolchains = find_cuda_toolchains("/Developer/NVIDIA/CUDA-9.1")
+-- local toolchains = find_cuda("/Developer/NVIDIA/CUDA-9.1")
 -- 
 -- @endcode
 --

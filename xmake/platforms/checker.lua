@@ -24,9 +24,9 @@
 
 -- imports
 import("core.base.option")
-import("detect.sdks.find_xcode_dir")
+import("detect.sdks.find_xcode")
 import("detect.sdks.find_xcode_sdkvers")
-import("detect.sdks.find_cuda_toolchains")
+import("detect.sdks.find_cuda")
 import("lib.detect.find_tool")
 
 -- find the given tool
@@ -117,14 +117,14 @@ function check_arch(config, default)
 end
 
 -- check the xcode application directory
-function check_xcode_dir(config, optional)
+function check_xcode(config, optional)
 
     -- get the xcode directory
     local xcode_dir = config.get("xcode_dir")
     if not xcode_dir then
 
         -- check ok? update it
-        xcode_dir = find_xcode_dir()
+        xcode_dir = find_xcode()
         if xcode_dir then
 
             -- save it
@@ -181,14 +181,14 @@ function check_xcode_sdkver(config, optional)
 end
 
 -- check the cuda sdk toolchains
-function check_cuda_toolchains(config)
+function check_cuda(config)
 
     -- get the cuda directory
     local cuda_dir = config.get("cuda_dir")
     if not cuda_dir then
 
         -- check ok? update it
-        local toolchains = find_cuda_toolchains()
+        local toolchains = find_cuda()
         if toolchains then
 
             -- save it

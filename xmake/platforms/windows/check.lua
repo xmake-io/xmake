@@ -202,7 +202,7 @@ function main(kind, toolkind)
     {
         { checker.check_arch, "x86" }
     ,   _check_vs
-    ,   checker.check_cuda_toolchains
+    ,   checker.check_cuda
     }
 
     -- init the check list of global
@@ -210,7 +210,7 @@ function main(kind, toolkind)
     {
         { checker.check_arch, "x86" }
     ,   _check_vs
-    ,   checker.check_cuda_toolchains
+    ,   checker.check_cuda
     ,   _clean_global
     }
 

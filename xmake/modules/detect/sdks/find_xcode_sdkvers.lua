@@ -24,7 +24,7 @@
 
 -- imports
 import("core.project.config")
-import("detect.sdks.find_xcode_dir")
+import("detect.sdks.find_xcode")
 
 -- find xcode sdk versions for the given platform 
 --
@@ -48,7 +48,7 @@ function main(opt)
 
     -- get xcode directory
     local xcode_sdkvers = {}
-    local xcode_dir = opt.xcode_dir or find_xcode_dir() 
+    local xcode_dir = opt.xcode_dir or find_xcode() 
     if not xcode_dir or not os.isdir(xcode_dir) then
         return xcode_sdkvers
     end

@@ -135,16 +135,16 @@ function main(kind, toolkind)
     _g.config = 
     {
         checker.check_arch
-    ,   { checker.check_xcode_dir, true }
+    ,   { checker.check_xcode, true }
     ,   { checker.check_xcode_sdkver, true }
-    ,   checker.check_cuda_toolchains
+    ,   checker.check_cuda
     }
 
     -- init the check list of global
     _g.global = 
     {
-        checker.check_xcode_dir
-    ,   checker.check_cuda_toolchains
+        checker.check_xcode
+    ,   checker.check_cuda
     }
 
     -- check it

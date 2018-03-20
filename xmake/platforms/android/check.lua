@@ -25,7 +25,7 @@
 -- imports
 import(".checker")
 import("detect.sdks.find_ndk_sdkvers")
-import("detect.sdks.find_ndk_toolchains")
+import("detect.sdks.find_ndk")
 
 -- check the sdk version for ndk
 function _check_ndk_sdkver(config)
@@ -72,7 +72,7 @@ function _check_toolchains(config)
     if not toolchains then
 
         -- find first toolchains 
-        for _, toolchains in ipairs(find_ndk_toolchains(config.get("ndk"), config.get("arch"))) do
+        for _, toolchains in ipairs(find_ndk(config.get("ndk"), config.get("arch"))) do
             config.set("toolchains", toolchains.bin)
             config.set("cross", toolchains.cross)
             break

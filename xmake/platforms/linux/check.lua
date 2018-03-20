@@ -169,14 +169,14 @@ function main(kind, toolkind)
     _g.config = 
     {
         __check_arch
-    ,   checker.check_cuda_toolchains
+    ,   checker.check_cuda
     }
 
     -- init the check list of global
     _g.global = 
     {
         _check_ndk_sdkver
-    ,   checker.check_cuda_toolchains
+    ,   checker.check_cuda
     }
 
     -- check it
