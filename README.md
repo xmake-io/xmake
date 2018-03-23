@@ -341,7 +341,7 @@ Some projects using xmake:
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * Homepage：[tboox.org](http://www.tboox.org)
-* Community：[tboox@community](https://github.com/tboox/community/issues)
+* Community：[/r/tboox on Reddit](https://www.reddit.com/r/tboox/)
 
 ## Thanks
 

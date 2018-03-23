@@ -344,7 +344,7 @@ target("test")
 
 * 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * 主页：[tboox.org](http://www.tboox.org/cn)
-* 社区：[TBOOX开源社区](https://github.com/tboox/community/issues)
+* 社区：[reddit论坛](https://www.reddit.com/r/tboox/)
 * QQ群：343118190
 * 微信公众号：tboox-os
 
