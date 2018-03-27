@@ -133,7 +133,7 @@ function main()
             local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64")
 
             -- save results
-            results[vsvers[version]] = {version = version, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
+            results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
         end
     end
 
