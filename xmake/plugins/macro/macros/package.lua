@@ -32,6 +32,7 @@ import("core.platform.platform")
 local options =
 {
     {'p', "plat",       "kv",  os.host(),   "Set the platform."                                    }
+,   {'a', "arch",       "kv",  nil,         "Set the architectures. .e.g 'armv7, arm64'"           }
 ,   {'f', "config",     "kv",  nil,         "Pass the config arguments to \"xmake config\" .."     }
 ,   {'o', "outputdir",  "kv",  nil,         "Set the output directory of the package."             }
 }
@@ -52,9 +53,14 @@ function main(argv)
                                            , ""
                                            , "Usage: xmake macro package [options]")
 
-    -- package all archs
+    -- get platform
     local plat = args.plat
-    for _, arch in ipairs(platform.archs(plat)) do
+
+    -- get archs
+    local archs = args.arch and args.arch:split(',') or platform.archs(plat)
+
+    -- package all archs
+    for _, arch in ipairs(archs) do
 
         -- config it
         os.exec("xmake f -p %s -a %s %s -c %s", plat, arch, args.config or "", ifelse(option.get("verbose"), "-v", ""))
@@ -91,8 +97,8 @@ function main(argv)
 
                 -- make lipo arguments
                 local lipoargs = nil
-                for _, arch in ipairs(platform.archs(plat)) do
-                    local archfile = format("%s/%s.pkg/lib/%s/%s/%s/%s", outputdir, target:name(), mode, plat, arch, path.filename(target:targetfile())) 
+                for _, arch in ipairs(archs) do
+                    local archfile = format("%s/%s.pkg/lib/%s/%s/%s/%s", outputdir, target:name(), mode, plat, arch:trim(), path.filename(target:targetfile())) 
                     if os.isfile(archfile) then
                         lipoargs = format("%s -arch %s %s", lipoargs or "", arch, archfile) 
                     end
