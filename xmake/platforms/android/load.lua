@@ -52,18 +52,56 @@ function main()
     local ndk_sdkver = config.get("ndk_sdkver")
     if ndk and ndk_sdkver then
 
-        -- get ndk sdk directory
-        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver)) 
-
         -- add sysroot
+        --
+        -- @see https://android.googlesource.com/platform/ndk/+/master/docs/UnifiedHeaders.md
+        --
+        -- Before NDK r14, we had a set of libc headers for each API version. 
+        -- In many cases these headers were incorrect. Many exposed APIs that didn‘t exist, and others didn’t expose APIs that did.
+        -- 
+        -- In NDK r14 (as an opt in feature) we unified these into a single set of headers, called unified headers. 
+        -- This single header path is used for every platform level. API level guards are handled with #ifdef. 
+        -- These headers can be found in prebuilts/ndk/headers.
+        --
+        -- Unified headers are built directly from the Android platform, so they are up to date and correct (or at the very least, 
+        -- any bugs in the NDK headers will also be a bug in the platform headers, which means we're much more likely to find them).
+        --
+        -- In r15 unified headers are used by default. In r16, the old headers have been removed.
+        --
+        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver)) 
+        local ndk_sysroot_be_r14 = path.join(ndk, "sysroot")
+        if os.isdir(ndk_sysroot_be_r14) then
+
+            -- the triples
+            local triples = 
+            {
+                ["armv5te"]     = "arm-linux-androideabi"
+            ,   ["armv6"]       = "arm-linux-androideabi"
+            ,   ["armv7-a"]     = "arm-linux-androideabi"
+            ,   ["armv8-a"]     = "arm-linux-androideabi"
+            ,   ["arm64-v8a"]   = "aarch64-linux-android"
+            ,   ["i386"]        = "i686-linux-android"
+            ,   ["x86_64"]      = "x86_64-linux-android"
+            }
+            insert(_g.cxflags, "-D__ANDROID_API__=" .. ndk_sdkver)
+            insert(_g.asflags, "-D__ANDROID_API__=" .. ndk_sdkver)
+            insert(_g.cxflags, "--sysroot=" .. ndk_sysroot_be_r14)
+            insert(_g.asflags, "--sysroot=" .. ndk_sysroot_be_r14)
+            insert(_g.cxflags, "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            insert(_g.asflags, "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+        else
+            if arch:startswith("arm64") then
+                insert(_g.cxflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+                insert(_g.asflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+            else
+                insert(_g.cxflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
+                insert(_g.asflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            end
+        end
         if arch:startswith("arm64") then
-            insert(_g.cxflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-            insert(_g.asflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
             insert(_g.ldflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
             insert(_g.shflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
         else
-            insert(_g.cxflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
-            insert(_g.asflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
             insert(_g.ldflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
             insert(_g.shflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
         end
