@@ -97,22 +97,36 @@ end
 
 -- load the given tool from the given kind
 --
--- the kinds:
--- 
--- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+-- @param kind      the tool kind .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+-- @param program   the tool program, .e.g /xxx/arm-linux-gcc, gcc@mipscc.exe
 --
-function tool.load(kind)
+function tool.load(kind, program)
+
+    -- init key
+    local key = kind .. (program or "") 
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[kind] then
-        return tool._TOOLS[kind]
+    if tool._TOOLS[key] then
+        return tool._TOOLS[key]
+    end
+
+    -- contain toolname? parse it, .e.g 'gcc@xxxx.exe'
+    local toolname = nil
+    if program then
+        local pos = program:find('@', 1, true)
+        if pos then
+            toolname = program:sub(1, pos - 1)
+            program = program:sub(pos + 1)
+        end
     end
 
     -- get the tool program and name
-    local program, toolname = platform.tool(kind)
     if not program then
-        return nil, string.format("cannot get tool for %s", kind)
+        program, toolname = platform.tool(kind)
+    end
+    if not program then
+        return nil, string.format("cannot get program for %s", kind)
     end
 
     -- import find_toolname()
@@ -137,7 +151,7 @@ function tool.load(kind)
     end
 
     -- save instance to the cache
-    tool._TOOLS[kind] = instance
+    tool._TOOLS[key] = instance
 
     -- ok
     return instance

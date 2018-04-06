@@ -31,10 +31,10 @@ local linker    = require("tool/linker")
 local raise     = require("sandbox/modules/raise")
 
 -- load the linker from the given target kind
-function sandbox_core_tool_linker.load(targetkind, sourcekinds)
- 
+function sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
+
     -- get the linker instance
-    local instance, errors = linker.load(targetkind, sourcekinds)
+    local instance, errors = linker.load(targetkind, sourcekinds, opt and opt.target or nil)
     if not instance then
         raise(errors)
     end
@@ -50,12 +50,12 @@ end
  
 -- make arguments list for linking target file
 function sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)
- 
+
+    -- init options
+    opt = opt or {}
+
     -- get the linker instance
-    local instance, errors = linker.load(targetkind, sourcekinds)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
 
     -- make arguments list
     return instance:linkargv(objectfiles, targetfile, opt)
@@ -70,11 +70,11 @@ end
 --
 function sandbox_core_tool_linker.linkflags(targetkind, sourcekinds, opt)
 
+    -- init options
+    opt = opt or {}
+
     -- get the linker instance
-    local instance, errors = linker.load(targetkind, sourcekinds)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
 
     -- make flags
     return instance:linkflags(opt)
@@ -82,12 +82,12 @@ end
 
 -- link target file
 function sandbox_core_tool_linker.link(targetkind, sourcekinds, objectfiles, targetfile, opt)
- 
+
+    -- init options
+    opt = opt or {}
+
     -- get the linker instance
-    local instance, errors = linker.load(targetkind, sourcekinds)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
 
     -- link it
     local ok, errors = instance:link(objectfiles, targetfile, opt)
@@ -101,16 +101,17 @@ end
 -- @param targetkind    the target kind
 -- @param sourcekinds   the source kinds
 -- @param flags         the flags
+-- @param opt           the options
 --
 -- @return              the supported flags or nil
 --
-function sandbox_core_tool_linker.has_flags(targetkind, sourcekinds, flags)
-  
+function sandbox_core_tool_linker.has_flags(targetkind, sourcekinds, flags, opt)
+
+    -- init options
+    opt = opt or {}
+ 
     -- get the linker instance
-    local instance, errors = linker.load(targetkind, sourcekinds)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
 
     -- has flags?
     return instance:has_flags(flags)

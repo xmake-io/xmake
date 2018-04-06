@@ -159,7 +159,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     end
     
     -- load compiler instance
-    local compiler_instance = compiler.load(sourcekind)
+    local compiler_instance = compiler.load(sourcekind, {target = target})
 
     -- get compiler program
     local program = compiler_instance:program()

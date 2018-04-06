@@ -5,6 +5,7 @@
 ### New features
 
 * [#158](https://github.com/tboox/xmake/issues/158): Support CUDA Toolkit and Compiler
+* Add `set_tools` and `add_tools` apis to change the toolchains for special target
 
 ### Changes
 
@@ -444,6 +445,7 @@
 ### 新特性
 
 * [#158](https://github.com/tboox/xmake/issues/158): 增加对Cuda编译环境的支持
+* 添加`set_tools`和`add_tools`接口为指定target目标设置编译工具链
 
 ### 改进
 

@@ -84,7 +84,7 @@ function _build_from_objects(target, buildinfo)
     object.build(target, buildinfo)
 
     -- load linker instance
-    local linker_instance = linker.load(target:targetkind(), target:sourcekinds())
+    local linker_instance = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
 
     -- get program
     local program = linker_instance:program()
@@ -206,7 +206,7 @@ function build(target, buildinfo)
     end
 
     -- build target
-    if kindcount == 1 and sourcekind and compiler.buildmode(sourcekind, "shared:sources") then
+    if kindcount == 1 and sourcekind and compiler.buildmode(sourcekind, "shared:sources", {target = target}) then
         _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     else
         _build_from_objects(target, buildinfo)

@@ -78,22 +78,31 @@ function compiler:_addflags_from_compiler(flags, targetkind)
 end
 
 -- load the compiler from the given source kind
-function compiler.load(sourcekind)
+function compiler.load(sourcekind, target)
 
-    -- check
-    assert(sourcekind)
+    -- get program from target
+    local program = nil
+    if target then
+        local tools = target:get("tools")
+        if tools then
+            program = tools[sourcekind]
+        end
+    end
+
+    -- init key
+    local key = sourcekind .. (program or "")
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}
-    if compiler._INSTANCES[sourcekind] then
-        return compiler._INSTANCES[sourcekind]
+    if compiler._INSTANCES[key] then
+        return compiler._INSTANCES[key]
     end
 
     -- new instance
     local instance = table.inherit(compiler, builder)
 
     -- load the compiler tool from the source kind
-    local result, errors = tool.load(sourcekind)
+    local result, errors = tool.load(sourcekind, program)
     if not result then 
         return nil, errors
     end
@@ -116,7 +125,7 @@ function compiler.load(sourcekind)
     instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
 
     -- save this instance
-    compiler._INSTANCES[sourcekind] = instance
+    compiler._INSTANCES[key] = instance
 
     -- ok
     return instance

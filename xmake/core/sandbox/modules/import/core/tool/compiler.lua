@@ -35,10 +35,10 @@ local import   = require("sandbox/modules/import")
 local sandbox  = require("sandbox/sandbox")
 
 -- load the compiler from the given source kind
-function sandbox_core_tool_compiler.load(sourcekind)
- 
+function sandbox_core_tool_compiler.load(sourcekind, opt)
+
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
+    local instance, errors = compiler.load(sourcekind, opt and opt.target or nil)
     if not instance then
         raise(errors)
     end
@@ -48,13 +48,10 @@ function sandbox_core_tool_compiler.load(sourcekind)
 end
 
 -- get the build mode of compiler
-function sandbox_core_tool_compiler.buildmode(sourcekind, name)
+function sandbox_core_tool_compiler.buildmode(sourcekind, name, opt)
  
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- get build mode
     return instance:buildmode(name)
@@ -78,10 +75,7 @@ function sandbox_core_tool_compiler.compargv(sourcefiles, objectfile, opt)
     end
  
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
  
     -- make arguments list
     return instance:compargv(sourcefiles, objectfile, opt)
@@ -100,10 +94,7 @@ function sandbox_core_tool_compiler.compile(sourcefiles, objectfile, opt)
     end
  
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- compile it
     local ok, errors = instance:compile(sourcefiles, objectfile, opt)
@@ -135,12 +126,9 @@ function sandbox_core_tool_compiler.compflags(sourcefiles, opt)
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
- 
+
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- make flags
     return instance:compflags(opt)
@@ -154,17 +142,17 @@ end
 -- make arguments list for building source file
 function sandbox_core_tool_compiler.buildargv(sourcefiles, targetfile, opt)
 
+    -- init options
+    opt = opt or {}
+
     -- get source kind if only one source file
     local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
- 
+
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- make arguments list
     return instance:buildargv(sourcefiles, targetfile, opt)
@@ -173,17 +161,17 @@ end
 -- build source files
 function sandbox_core_tool_compiler.build(sourcefiles, targetfile, opt)
 
+    -- init options
+    opt = opt or {}
+
     -- get source kind if only one source file
     local sourcekind = opt.sourcekind
     if not sourcekind and type(sourcefiles) == "string" then
         sourcekind = language.sourcekind_of(sourcefiles)
     end
- 
+
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- build it
     local ok, errors = instance:build(sourcefiles, targetfile, opt)
@@ -202,15 +190,15 @@ end
 --
 function sandbox_core_tool_compiler.features(langkind, opt)
 
+    -- init options
+    opt = opt or {}
+
     -- get sourcekind from the language kind
     local sourcekind = language.langkinds()[langkind]
     assert(sourcekind, "unknown language kind: " .. langkind)
- 
+
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- import "lib.detect.features"
     sandbox_core_tool_compiler._features = sandbox_core_tool_compiler._features or import("lib.detect.features")
@@ -249,6 +237,9 @@ function sandbox_core_tool_compiler.has_features(features, opt)
         return 
     end
 
+    -- init options
+    opt = opt or {}
+
     -- get the language kinds
     local langkinds = language.langkinds()
  
@@ -272,12 +263,9 @@ function sandbox_core_tool_compiler.has_features(features, opt)
     -- has features for each compiler?
     local results = nil
     for sourcekind, features in pairs(features_by_kind) do
- 
+
         -- get the compiler instance
-        local instance, errors = compiler.load(sourcekind)
-        if not instance then
-            raise(errors)
-        end
+        local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
         -- get flags
         local flags = instance:compflags(opt)
@@ -302,20 +290,21 @@ end
 --
 -- @param langkind      the language kind, .e.g c, cxx, mm, mxx, swift, go, rust, d, as
 -- @param flags         the flags
+-- @param options       the options
 --
 -- @return              the supported flags or nil
 --
-function sandbox_core_tool_compiler.has_flags(langkind, flags)
+function sandbox_core_tool_compiler.has_flags(langkind, flags, opt)
+
+    -- init options
+    opt = opt or {}
   
     -- get sourcekind from the language kind
     local sourcekind = language.langkinds()[langkind]
     assert(sourcekind, "unknown language kind: " .. langkind)
- 
+
     -- get the compiler instance
-    local instance, errors = compiler.load(sourcekind)
-    if not instance then
-        raise(errors)
-    end
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
 
     -- has flags?
     return instance:has_flags(flags)

@@ -59,7 +59,7 @@ function linker:_addflags_from_platform(flags, targetkind)
 end
 
 -- add flags from the compiler 
-function linker:_addflags_from_compiler(flags, targetkind)
+function linker:_addflags_from_compiler(flags, target, targetkind)
 
     -- make flags 
     local flags_of_compiler = {}
@@ -67,7 +67,7 @@ function linker:_addflags_from_compiler(flags, targetkind)
     for _, sourcekind in ipairs(self._SOURCEKINDS) do
 
         -- load compiler
-        local instance, errors = compiler.load(sourcekind)
+        local instance, errors = compiler.load(sourcekind, target)
         if instance then
             for _, flagkind in ipairs(self:_flagkinds()) do
 
@@ -98,7 +98,7 @@ function linker:_addflags_from_linker(flags)
 end
 
 -- load the linker from the given target kind
-function linker.load(targetkind, sourcekinds)
+function linker.load(targetkind, sourcekinds, target)
 
     -- check
     assert(sourcekinds)
@@ -112,13 +112,22 @@ function linker.load(targetkind, sourcekinds)
         return nil, errors
     end
 
+    -- get program from target
+    local program = nil
+    if target then
+        local tools = target:get("tools")
+        if tools then
+            program = tools[sourcekind]
+        end
+    end
+
     -- select the linker
     local linkerinfo = nil
     local linkertool = nil
     local firsterror = nil
     for _, _linkerinfo in ipairs(linkerinfos) do
         -- load the linker tool from the linker kind
-        linkertool, errors = tool.load(_linkerinfo.linkerkind)
+        linkertool, errors = tool.load(_linkerinfo.linkerkind, program)
         if linkertool then 
             linkerinfo = _linkerinfo
             break
@@ -234,7 +243,7 @@ function linker:linkflags(opt)
 
     -- add flags from the compiler 
     if target then
-        self:_addflags_from_compiler(flags, targetkind)
+        self:_addflags_from_compiler(flags, target, targetkind)
     end
 
     -- add flags from the linker 

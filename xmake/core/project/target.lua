@@ -76,6 +76,12 @@ function target.apis()
             -- target.del_xxx
         ,   "target.del_files"
         }
+    ,   dictionary =
+        {
+            -- target.set_xxx
+            "target.set_tools"
+        ,   "target.add_tools"
+        }
     ,   script =
         {
             -- target.on_xxx
@@ -194,7 +200,7 @@ function target:linker()
     end
 
     -- get the linker instance
-    local instance, errors = linker.load(self:targetkind(), self:sourcekinds())
+    local instance, errors = linker.load(self:targetkind(), self:sourcekinds(), self)
     if not instance then
         os.raise(errors)
     end
@@ -811,7 +817,7 @@ function target:sourcebatches()
         if not sourcebatch.rulename then
 
             -- this batch support to compile multiple objects at the same time?
-            local instance = compiler.load(sourcekind)
+            local instance = compiler.load(sourcekind, self)
             if instance and instance:buildmode("object:sources") then
 
                 -- get the first source file
