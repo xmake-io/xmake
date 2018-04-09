@@ -11,6 +11,7 @@
 
 * Add FAQ to the auto-generated xmake.lua
 * Support android NDK >= r14
+* Improve warning flags for swiftc
 
 ### Bugs fixed
 
@@ -451,6 +452,7 @@
 
 * 添加FAQ到自动生成的xmake.lua文件，方便用户快速上手
 * 支持Android NDK >= r14的版本
+* 改进swiftc对warning flags的支持
 
 ### Bugs修复
 
