@@ -112,16 +112,6 @@ function sandbox_core_project.check()
     end
 end
 
--- get the given rule
-function sandbox_core_project.rule(name)
-    return project.rule(name)
-end
-
--- get the all rules
-function sandbox_core_project.rules()
-    return project.rules()
-end
-
 -- get the given target
 function sandbox_core_project.target(name)
     return project.target(name)

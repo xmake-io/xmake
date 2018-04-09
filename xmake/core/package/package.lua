@@ -522,7 +522,7 @@ function package.load_from_project(packagename)
     end
 
     -- get interpreter
-    local interp = errors or package._interpreter()
+    local interp = project.interpreter() or package._interpreter()
 
     -- not found?
     if not packages[packagename] then

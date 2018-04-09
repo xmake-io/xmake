@@ -372,10 +372,10 @@ function task.tasks()
         if files then
             for _, filepath in ipairs(files) do
 
-                -- load tasks
+                -- load task
                 local results, errors = task._load(filepath)
 
-                -- save tasks
+                -- save task
                 if results then
                     table.join2(tasks, results)
                 else
@@ -389,11 +389,8 @@ function task.tasks()
     local projectasks, errors = project.tasks()
     if projectasks then
 
-        -- the project interpreter
-        local interp = errors
-
         -- bind tasks for menu with an sandbox instance
-        local ok, errors = task._bind(projectasks, interp)
+        local ok, errors = task._bind(projectasks, project.interpreter())
         if not ok then
             return nil, errors
         end

@@ -30,8 +30,102 @@ local os             = require("base/os")
 local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
+local project        = require("project/project")
+local global         = require("base/global")
+local interpreter    = require("base/interpreter")
+local config         = require("project/config")
 local sandbox        = require("sandbox/sandbox")
+local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
+
+-- the directories of rule
+function rule._directories()
+
+    -- the directories
+    return  {   path.join(config.directory(), "rules")
+            ,   path.join(global.directory(), "rules")
+            ,   path.join(os.programdir(), "rules")
+            }
+end
+
+-- the interpreter
+function rule._interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if rule._INTERPRETER then
+        return rule._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+  
+    -- define apis
+    interp:api_define(rule.apis())
+
+    -- set filter
+    interp:filter():register("rule", function (variable)
+
+        -- check
+        assert(variable)
+
+        -- attempt to get it directly from the configure
+        local result = config.get(variable)
+        if not result or type(result) ~= "string" then 
+
+            -- init maps
+            local maps = 
+            {
+                host        = os.host()
+            ,   tmpdir      = function () return os.tmpdir() end
+            ,   curdir      = function () return os.curdir() end
+            ,   scriptdir   = function () return sandbox_os.scriptdir() end
+            ,   globaldir   = global.directory()
+            ,   configdir   = config.directory()
+            ,   projectdir  = os.projectdir()
+            ,   programdir  = os.programdir()
+            }
+
+            -- map it
+            result = maps[variable]
+            if type(result) == "function" then
+                result = result()
+            end
+        end 
+
+        -- ok?
+        return result
+    end)
+
+    -- save interpreter
+    rule._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- load rule
+function rule._load(filepath)
+
+    -- get interpreter
+    local interp = rule._interpreter()
+    assert(interp) 
+
+    -- load rules
+    local results, errors = interp:load(filepath, "rule", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- make rules
+    local rules = {}
+    for rulename, ruleinfo in pairs(results) do
+        rules[rulename] = rule.new(rulename, ruleinfo)
+    end
+
+    -- ok
+    return rules
+end
 
 -- get rule apis
 function rule.apis()
@@ -252,6 +346,60 @@ function rule:script(name, generic)
 
     -- ok
     return result
+end
+
+-- get all rules
+function rule.rules()
+ 
+    -- return it directly if exists
+    if rule._RULES then
+        return rule._RULES 
+    end
+
+    -- load rules
+    local rules = {}
+    local dirs = rule._directories()
+    for _, dir in ipairs(dirs) do
+
+        -- get files
+        local files = os.match(path.join(dir, "**/xmake.lua"))
+        if files then
+            for _, filepath in ipairs(files) do
+
+                -- load rule
+                local results, errors = rule._load(filepath)
+
+                -- save rule
+                if results then
+                    table.join2(rules, results)
+                else
+                    return nil, errors
+                end
+            end
+        end
+    end
+
+    -- merge project rules if exists
+    local project_rules, errors = project.rules()
+    if project_rules then
+
+        -- save rules
+        for rulename, ruleinfo in pairs(project_rules) do
+            if rules[rulename] == nil then
+                rules[rulename] = ruleinfo
+            else
+                utils.warning("rule(\"%s\") has been defined!", rulename)
+            end
+        end
+    else
+        return nil, errors
+    end
+
+    -- save it
+    rule._RULES = rules
+
+    -- ok?
+    return rules
 end
 
 -- return module

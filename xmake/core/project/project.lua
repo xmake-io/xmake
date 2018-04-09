@@ -35,7 +35,6 @@ local global                = require("base/global")
 local process               = require("base/process")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
-local rule                  = require("project/rule")
 local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
@@ -198,9 +197,6 @@ function project.interpreter()
     -- set root scope
     interp:rootscope_set("target")
 
-    -- define apis for rule
-    interp:api_define(rule.apis())
-
     -- define apis for target
     interp:api_define(target.apis())
 
@@ -326,12 +322,8 @@ function project.get(name)
     local infos = project._INFOS 
     if not infos then
 
-        -- get interpreter
-        local interp = project.interpreter()
-        assert(interp) 
-
         -- load infos
-        infos = interp:load(project.file(), nil, true, true)
+        infos = project._load_scope(nil, true, true)
         project._INFOS = infos
     end
 
@@ -357,43 +349,8 @@ function project._load_deps(target, targets, deps, orderdeps)
     end
 end
 
--- load rules 
-function project._load_rules()
-
-    -- get interpreter
-    local interp = project.interpreter()
-    assert(interp) 
-
-    -- enter the project directory
-    local oldir, errors = os.cd(os.projectdir())
-    if not oldir then
-        return nil, errors
-    end
-
-    -- load rules
-    local results, errors = interp:load(project.file(), "rule", true, true)
-    if not results then
-        return nil, errors
-    end
-
-    -- leave the project directory
-    local ok, errors = os.cd(oldir)
-    if not ok then
-        return nil, errors
-    end
-
-    -- make rules
-    local rules = {}
-    for rulename, ruleinfo in pairs(results) do
-        rules[rulename] = rule.new(rulename, ruleinfo)
-    end
-
-    -- ok
-    return rules
-end
-
--- load targets 
-function project._load_targets()
+-- load scope from the project file
+function project._load_scope(scope_kind, remove_repeat, enable_filter)
 
     -- get interpreter
     local interp = project.interpreter()
@@ -406,7 +363,7 @@ function project._load_targets()
     end
 
     -- load targets
-    local results, errors = interp:load(project.file(), "target", true, true)
+    local results, errors = interp:load(project.file(), scope_kind, remove_repeat, enable_filter)
     if not results then
         return nil, errors
     end
@@ -417,31 +374,37 @@ function project._load_targets()
         return nil, errors
     end
 
+    -- ok
+    return results
+end
+
+-- load targets 
+function project._load_targets()
+
+    -- load targets
+    local results, errors = project._load_scope("target", true, true)
+    if not results then
+        return nil, errors
+    end
+
     -- make targets
     local targets = {}
     for targetname, targetinfo in pairs(results) do
         targets[targetname] = target.new(targetname, targetinfo)
     end
 
-    -- load and attach target deps and rules
+    -- load and attach target deps
     for _, target in pairs(targets) do
-
-        -- load deps
         target._DEPS      = target._DEPS or {}
         target._ORDERDEPS = target._ORDERDEPS or {}
         project._load_deps(target, targets, target._DEPS, target._ORDERDEPS)
-
-        -- load rules
-        target._RULES     = target._RULES or {}
-        for _, rulename in ipairs(table.wrap(target:get("rules"))) do
-            target._RULES[rulename] = project.rule(rulename)
-        end
     end
 
     -- enter toolchains environment
     environment.enter("toolchains")
 
     -- on load for each target
+    local ok = true
     for _, target in pairs(targets) do
         local on_load = target:script("load")
         if on_load then
@@ -467,28 +430,12 @@ end
 -- load options
 function project._load_options(disable_filter)
 
-    -- get interpreter
-    local interp = project.interpreter()
-    assert(interp) 
-
-    -- enter the project directory
-    local oldir, errors = os.cd(os.projectdir())
-    if not oldir then
-        return nil, errors
-    end
-
     -- load the options from the the project file
-    local results, errors = interp:load(project.file(), "option", true, not disable_filter)
+    local results, errors = project._load_scope("option", true, not disable_filter)
     if not results then
         return nil, errors
     end
 
-    -- leave the project directory
-    local ok, errors = os.cd(oldir)
-    if not ok then
-        return nil, errors
-    end
-    
     -- load the options from the project requires
     local requires_extra = project.get("__extra_requires") or {}
     for _, require_str in ipairs(table.wrap(project.get("requires"))) do
@@ -588,12 +535,8 @@ function project.get(name)
     local infos = project._INFOS 
     if not infos then
 
-        -- get interpreter
-        local interp = project.interpreter()
-        assert(interp) 
-
         -- load infos
-        infos = interp:load(project.file(), nil, true, true)
+        infos = project._load_scope(nil, true, true)
         project._INFOS = infos
     end
 
@@ -611,31 +554,9 @@ function project.clear()
         opt:clear()
     end
 
-    -- clear rules, targets and options
-    project._RULES   = nil
+    -- clear targets and options
     project._TARGETS = nil
     project._OPTIONS = nil
-end
-
--- get the given rule
-function project.rule(name)
-    return project.rules()[name]
-end
-
--- get the current configure for rules
-function project.rules()
-
-    -- load rules
-    if not project._RULES then
-        local rules, errors = project._load_rules()
-        if not rules then
-            os.raise(errors)
-        end
-        project._RULES = rules
-    end
-
-    -- ok
-    return project._RULES
 end
 
 -- get the given target
@@ -680,12 +601,26 @@ function project.options()
     return project._OPTIONS
 end
 
+-- get rules
+function project.rules()
+
+    -- the project file is not found?
+    if not os.isfile(project.file()) then
+        return {}, nil
+    end
+
+    -- load the rules from the the project file
+    local results, errors = project._load_scope("rule", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- ok
+    return results
+end
+
 -- get tasks
 function project.tasks()
-
-    -- get interpreter
-    local interp = project.interpreter()
-    assert(interp) 
 
     -- the project file is not found?
     if not os.isfile(project.file()) then
@@ -693,13 +628,13 @@ function project.tasks()
     end
 
     -- load the tasks from the the project file
-    local results, errors = interp:load(project.file(), "task", true, true)
+    local results, errors = project._load_scope("task", true, true)
     if not results then
         return nil, errors
     end
 
     -- ok?
-    return results, interp
+    return results
 end
 
 -- get packages
@@ -707,20 +642,16 @@ function project.packages()
 
     -- get it from cache first
     if project._PACKAGES then
-        return project._PACKAGES, interp
+        return project._PACKAGES
     end
-
-    -- get interpreter
-    local interp = project.interpreter()
-    assert(interp) 
 
     -- the project file is not found?
     if not os.isfile(os.projectfile()) then
         return {}, nil
     end
 
-    -- load the tasks from the the project file and disable filter, we will process filter after a while
-    local results, errors = interp:load(os.projectfile(), "package", true, false)
+    -- load the packages from the the project file and disable filter, we will process filter after a while
+    local results, errors = project._load_scope("package", true, false)
     if not results then
         return nil, errors
     end
@@ -729,7 +660,7 @@ function project.packages()
     project._PACKAGES = results
 
     -- ok?
-    return results, interp
+    return results
 end
 
 -- get the mtimes

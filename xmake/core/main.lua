@@ -36,6 +36,7 @@ local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
 local colors        = require("base/colors")
+local rule          = require("project/rule")
 local project       = require("project/project")
 local history       = require("project/history")
 local package       = require("package/package")
@@ -212,8 +213,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         os.addenv("PATH", os.programdir())
     end
 
-    -- define task and package apis first before loading project's xmake.lua - calling option.init()
+    -- define task, rule and package apis first before loading project's xmake.lua 
     project.define_apis(task.apis())
+    project.define_apis(rule.apis())
     project.define_apis(package.apis())
 end
 
