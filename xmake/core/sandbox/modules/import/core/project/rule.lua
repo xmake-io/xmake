@@ -45,6 +45,19 @@ end
 -- build source files
 function sandbox_core_project_rule.build(rulename, target, sourcefiles)
 
+    -- TODO
+    --
+    -- sperate task and packages
+    -- private project._define_apis
+    -- rule.deps
+    -- on_build
+    -- on_build_file
+    -- on_build_files
+    -- after_build
+    -- on_install
+    --
+    -- rule -> mode: debug, release
+
     -- get rule
     local rule = project.rule(rulename)
     if not rule then
