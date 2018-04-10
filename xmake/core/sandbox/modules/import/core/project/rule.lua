@@ -32,6 +32,16 @@ local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
+-- get the given global rule
+function sandbox_core_project_rule.rule(name)
+    return rule.rule(name)
+end
+
+-- get the all global rules
+function sandbox_core_project_rule.rules()
+    return rule.rules()
+end
+
 -- build source files
 function sandbox_core_project_rule.build(rulename, target, sourcefiles)
 

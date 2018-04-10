@@ -31,6 +31,7 @@ local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
 local deprecated     = require("base/deprecated")
+local rule           = require("project/rule")
 local option         = require("project/option")
 local config         = require("project/config")
 local tool           = require("tool/tool")
@@ -51,6 +52,7 @@ function target.apis()
             -- target.set_xxx
             "target.set_kind"
         ,   "target.set_strip"
+        ,   "target.set_rules"
         ,   "target.set_default"
         ,   "target.set_options"
         ,   "target.set_symbols"

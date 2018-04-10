@@ -35,6 +35,7 @@ local global                = require("base/global")
 local process               = require("base/process")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
+local rule                  = require("project/rule")
 local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
@@ -196,6 +197,9 @@ function project.interpreter()
 
     -- set root scope
     interp:rootscope_set("target")
+
+    -- define apis for rule
+    interp:api_define(rule.apis())
 
     -- define apis for target
     interp:api_define(target.apis())
@@ -393,11 +397,19 @@ function project._load_targets()
         targets[targetname] = target.new(targetname, targetinfo)
     end
 
-    -- load and attach target deps
+    -- load and attach target deps and rules
     for _, target in pairs(targets) do
+
+        -- load deps
         target._DEPS      = target._DEPS or {}
         target._ORDERDEPS = target._ORDERDEPS or {}
         project._load_deps(target, targets, target._DEPS, target._ORDERDEPS)
+
+        -- load rules
+        target._RULES     = target._RULES or {}
+        for _, rulename in ipairs(table.wrap(target:get("rules"))) do
+            target._RULES[rulename] = project.rule(rulename) or rule.rule(name)
+        end
     end
 
     -- enter toolchains environment
@@ -601,22 +613,41 @@ function project.options()
     return project._OPTIONS
 end
 
--- get rules
+-- get the given rule
+function project.rule(name)
+    return project.rules()[name]
+end
+
+-- get project rules
 function project.rules()
+ 
+    -- return it directly if exists
+    if project._RULES then
+        return project._RULES 
+    end
 
     -- the project file is not found?
     if not os.isfile(project.file()) then
-        return {}, nil
+        return {}
     end
 
     -- load the rules from the the project file
     local results, errors = project._load_scope("rule", true, true)
     if not results then
-        return nil, errors
+        os.raise(errors)
     end
 
-    -- ok
-    return results
+    -- make rule instances
+    local rules = {}
+    for rulename, ruleinfo in pairs(results) do
+        rules[rulename] = rule.new(rulename, ruleinfo)
+    end
+
+    -- save it
+    project._RULES = rules
+
+    -- ok?
+    return project._RULES
 end
 
 -- get tasks

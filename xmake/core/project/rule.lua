@@ -30,7 +30,6 @@ local os             = require("base/os")
 local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
-local project        = require("project/project")
 local global         = require("base/global")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
@@ -42,8 +41,7 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 function rule._directories()
 
     -- the directories
-    return  {   path.join(config.directory(), "rules")
-            ,   path.join(global.directory(), "rules")
+    return  {   path.join(global.directory(), "rules")
             ,   path.join(os.programdir(), "rules")
             }
 end
@@ -348,7 +346,12 @@ function rule:script(name, generic)
     return result
 end
 
--- get all rules
+-- get the given global rule
+function rule.rule(name)
+    return rule.rules()[name]
+end
+
+-- get global rules
 function rule.rules()
  
     -- return it directly if exists
@@ -373,33 +376,23 @@ function rule.rules()
                 if results then
                     table.join2(rules, results)
                 else
-                    return nil, errors
+                    os.raise(errors)
                 end
             end
         end
     end
 
-    -- merge project rules if exists
-    local project_rules, errors = project.rules()
-    if project_rules then
-
-        -- save rules
-        for rulename, ruleinfo in pairs(project_rules) do
-            if rules[rulename] == nil then
-                rules[rulename] = ruleinfo
-            else
-                utils.warning("rule(\"%s\") has been defined!", rulename)
-            end
-        end
-    else
-        return nil, errors
+    -- make rule instances
+    local instances = {}
+    for rulename, ruleinfo in pairs(rules) do
+        instances[rulename] = rule.new(rulename, ruleinfo)
     end
 
     -- save it
-    rule._RULES = rules
+    rule._RULES = instances
 
     -- ok?
-    return rules
+    return rule._RULES
 end
 
 -- return module
