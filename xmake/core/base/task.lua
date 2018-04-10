@@ -34,7 +34,6 @@ local global        = require("base/global")
 local interpreter   = require("base/interpreter")
 local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
-local project       = require("project/project")
 local sandbox_os    = require("sandbox/modules/os")
 
 -- the directories of tasks
@@ -354,7 +353,22 @@ function task.apis()
     }
 end
 
--- get all tasks
+-- new a task instance
+function task.new(name, info)
+
+    -- init a task instance
+    local instance = table.inherit(task)
+    assert(instance)
+
+    -- save name and info
+    instance._NAME = name
+    instance._INFO = info
+
+    -- ok?
+    return instance
+end
+
+-- get global tasks
 function task.tasks()
  
     -- return it directly if exists
@@ -379,119 +393,63 @@ function task.tasks()
                 if results then
                     table.join2(tasks, results)
                 else
-                    return nil, errors
+                    os.raise(errors)
                 end
             end
         end
     end
 
-    -- merge project tasks if exists
-    local projectasks, errors = project.tasks()
-    if projectasks then
-
-        -- bind tasks for menu with an sandbox instance
-        local ok, errors = task._bind(projectasks, project.interpreter())
-        if not ok then
-            return nil, errors
-        end
-
-        -- save tasks
-        for taskname, taskinfo in pairs(projectasks) do
-            if tasks[taskname] == nil then
-                tasks[taskname] = taskinfo
-            else
-                utils.warning("task(\"%s\") has been defined!", taskname)
-            end
-        end
-    else
-        return nil, errors
+    -- make task instances
+    local instances = {}
+    for taskname, taskinfo in pairs(tasks) do
+        instances[taskname] = task.new(taskname, taskinfo)
     end
 
     -- save it
-    task._TASKS = tasks
+    task._TASKS = instances
 
     -- ok?
-    return tasks
+    return instances
 end
 
--- run task with given name
-function task.run(name, ...)
-
-    -- check
-    assert(name)
-
-    -- load tasks
-    local tasks, errors = task.tasks()
-    if not tasks then
-        return false, errors
-    end
-
-    -- the interpreter
-    local interp = task._interpreter()
-    assert(interp)
-
-    -- get the task info
-    local taskinfo = tasks[name]
-    if not taskinfo then
-        return false, string.format("task(\"%s\"): unknown task", name)
-    end
-
-    -- check
-    if not taskinfo.run then
-        return false, string.format("task(\"%s\"): no run script, please call on_task_run() first!", name)
-    end
-
-    -- save the current directory
-    local curdir = os.curdir()
-
-    -- run task
-    local ok, errors = sandbox.load(taskinfo.run, ...)
-
-    -- restore the current directory
-    os.cd(curdir)
-
-    -- ok?
-    return ok, errors
+-- get the given global task
+function task.task(name)
+    return task.tasks()[name]
 end
 
 -- the menu
-function task.menu()
-
-    -- load tasks
-    local tasks, errors = task.tasks()
-    if not tasks then
-        return nil, errors
-    end
+function task.menu(tasks)
 
     -- make menu
     local menu = {}
-    for taskname, taskinfo in pairs(tasks) do
+    for taskname, taskinst in pairs(tasks) do
 
         -- has menu?
-        if taskinfo.menu then
+        if taskinst:get("menu") then
 
             -- main?
-            if taskinfo.category == "main" then
+            if taskinst:get("category") == "main" then
 
                 -- delay to load main menu
                 menu.main = function ()
 
                     -- translate main menu
-                    local mainmenu = task._translate_menu(taskinfo.menu)
+                    local mainmenu = task._translate_menu(taskinst:get("menu"))
 
                     -- make tasks for the main menu
                     mainmenu.tasks = {}
-                    for name, info in pairs(tasks) do
+                    for name, inst in pairs(tasks) do
 
                         -- has menu?
-                        if info.menu then
+                        local m = inst:get("menu")
+                        if m then
 
                             -- add task
                             mainmenu.tasks[name] = 
                             {
-                                category    = info.category
-                            ,   shortname   = info.menu.shortname
-                            ,   description = info.menu.description
+                                category    = inst:get("category")
+                            ,   shortname   = m.shortname
+                            ,   description = m.description
                             }
                         end
                     end
@@ -503,13 +461,45 @@ function task.menu()
 
             -- delay to load task menu
             menu[taskname] = function ()
-                return task._translate_menu(taskinfo.menu)
+                return task._translate_menu(taskinst:get("menu"))
             end
         end
     end
 
     -- ok?
     return menu
+end
+
+-- get the task info
+function task:get(name)
+    return self._INFO[name]
+end
+
+-- get the task name
+function task:name()
+    return self._NAME
+end
+
+-- run given task 
+function task:run(...)
+
+    -- check
+    local on_run = self:get("run")
+    if not on_run then
+        return false, string.format("task(\"%s\"): no run script, please call on_run() first!", self:name())
+    end
+
+    -- save the current directory
+    local curdir = os.curdir()
+
+    -- run task
+    local ok, errors = sandbox.load(on_run, ...)
+
+    -- restore the current directory
+    os.cd(curdir)
+
+    -- ok?
+    return ok, errors
 end
 
 -- return module: task

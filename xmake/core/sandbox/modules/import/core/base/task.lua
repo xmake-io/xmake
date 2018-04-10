@@ -32,6 +32,7 @@ local table     = require("base/table")
 local option    = require("base/option")
 local string    = require("base/string")
 local task      = require("base/task")
+local project   = require("project/project")
 local raise     = require("sandbox/modules/raise")
 
 -- run the given task
@@ -55,8 +56,15 @@ function sandbox_core_base_task.run(taskname, options, ...)
         option.set(name, value)
     end
 
+    -- get task instance
+    local taskname = option.taskname() or "build"
+    local taskinst = project.task(taskname) or task.task(taskname) 
+    if not taskinst then
+        raise("do unknown task(%s)!", taskname)
+    end
+
     -- run the task
-    local ok, errors = task.run(taskname, ...)
+    local ok, errors = taskinst:run(...)
     if not ok then
         raise(errors)
     end

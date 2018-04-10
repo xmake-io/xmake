@@ -50,7 +50,9 @@ local menu =
 ,   copyright = "Copyright (C) 2015-2018 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
 
     -- the tasks: xmake [task]
-,   task.menu
+,   function () 
+        return task.menu(table.join(task.tasks(), project.tasks())) 
+    end
 
 }
 
@@ -212,8 +214,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         os.addenv("PATH", os.programdir())
     end
 
-    -- define task, rule and package apis first before loading project's xmake.lua 
-    project.define_apis(task.apis())
+    -- define package apis first before loading project's xmake.lua 
     project.define_apis(package.apis())
 end
 
@@ -259,8 +260,16 @@ Or you can add `--root` option to allow run as root temporarily.
         history("local.history"):save("cmdlines", option.cmdline())
     end
 
+    -- get task instance
+    local taskname = option.taskname() or "build"
+    local taskinst = project.task(taskname) or task.task(taskname) 
+    if not taskinst then
+        utils.error("do unknown task(%s)!", taskname)
+        return -1
+    end
+
     -- run task    
-    ok, errors = task.run(option.taskname() or "build")
+    ok, errors = taskinst:run()
     if not ok then
         utils.error(errors)
         return -1

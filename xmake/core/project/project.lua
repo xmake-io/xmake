@@ -29,6 +29,7 @@ local project = project or {}
 local os                    = require("base/os")
 local io                    = require("base/io")
 local path                  = require("base/path")
+local task                  = require("base/task")
 local utils                 = require("base/utils")
 local table                 = require("base/table")
 local global                = require("base/global")
@@ -200,6 +201,9 @@ function project.interpreter()
 
     -- define apis for rule
     interp:api_define(rule.apis())
+
+    -- define apis for task
+    interp:api_define(task.apis())
 
     -- define apis for target
     interp:api_define(target.apis())
@@ -647,11 +651,21 @@ function project.rules()
     project._RULES = rules
 
     -- ok?
-    return project._RULES
+    return rules
+end
+
+-- get the given task
+function project.task(name)
+    return project.tasks()[name]
 end
 
 -- get tasks
 function project.tasks()
+ 
+    -- return it directly if exists
+    if project._TASKS then
+        return project._TASKS 
+    end
 
     -- the project file is not found?
     if not os.isfile(project.file()) then
@@ -661,11 +675,26 @@ function project.tasks()
     -- load the tasks from the the project file
     local results, errors = project._load_scope("task", true, true)
     if not results then
-        return nil, errors
+       os.raise(errors)
     end
 
+    -- bind tasks for menu with an sandbox instance
+    local ok, errors = task._bind(results, project.interpreter())
+    if not ok then
+        os.raise(errors)
+    end
+
+    -- make task instances
+    local tasks = {}
+    for taskname, taskinfo in pairs(results) do
+        tasks[taskname] = task.new(taskname, taskinfo)
+    end
+
+    -- save it
+    project._TASKS = tasks
+
     -- ok?
-    return results
+    return tasks
 end
 
 -- get packages
