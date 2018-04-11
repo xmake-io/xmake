@@ -23,8 +23,16 @@
 --
 
 -- define rule
+rule("qt_console_super")
+    set_kind("binary")
+    on_build(function (target, sourcefile)
+        print("TODO")
+    end)
+
+-- define rule
 rule("qt_console")
     set_kind("binary")
+    add_deps("qt_console_super")
     on_build(function (target, sourcefile)
         print("TODO")
     end)

@@ -115,14 +115,24 @@ function rule._load(filepath)
         return nil, errors
     end
 
-    -- make rules
-    local rules = {}
-    for rulename, ruleinfo in pairs(results) do
-        rules[rulename] = rule.new(rulename, ruleinfo)
-    end
-
     -- ok
-    return rules
+    return results
+end
+
+-- load deps 
+function rule._load_deps(self, rules, deps, orderdeps)
+
+    -- get dep rules
+    for _, dep in ipairs(table.wrap(self:get("deps"))) do
+        local deprule = rules[dep]
+        if deprule then
+            rule._load_deps(deprule, rules, deps, orderdeps)
+            if not deps[dep] then
+                deps[dep] = deprule
+                table.insert(orderdeps, deprule)
+            end
+        end
+    end
 end
 
 -- get rule apis
@@ -134,22 +144,50 @@ function rule.apis()
         {
             -- rule.set_xxx
             "rule.set_extensions"
+        ,   "rule.set_kind"
+        ,   "rule.set_strip"
+        ,   "rule.set_symbols"
+        ,   "rule.set_warnings"
+        ,   "rule.set_optimize"
+        ,   "rule.set_languages"
             -- rule.add_xxx
+        ,   "rule.add_deps"
         ,   "rule.add_imports"
+        ,   "rule.add_languages"
+        ,   "rule.add_vectorexts"
+        }
+    ,   dictionary =
+        {
+            -- rule.set_xxx
+            "rule.set_tools"
+        ,   "rule.add_tools"
         }
     ,   script =
         {
             -- rule.on_xxx
-            "rule.on_build"
+            "rule.on_run"
+        ,   "rule.on_load"
+        ,   "rule.on_build"
+        ,   "rule.on_build_file"
+        ,   "rule.on_build_files"
         ,   "rule.on_clean"
         ,   "rule.on_package"
         ,   "rule.on_install"
         ,   "rule.on_uninstall"
-        ,   "rule.on_build_all"
-        ,   "rule.on_clean_all"
-        ,   "rule.on_package_all"
-        ,   "rule.on_install_all"
-        ,   "rule.on_uninstall_all"
+            -- rule.before_xxx
+        ,   "rule.before_run"
+        ,   "rule.before_build"
+        ,   "rule.before_clean"
+        ,   "rule.before_package"
+        ,   "rule.before_install"
+        ,   "rule.before_uninstall"
+            -- rule.after_xxx
+        ,   "rule.after_run"
+        ,   "rule.after_build"
+        ,   "rule.after_clean"
+        ,   "rule.after_package"
+        ,   "rule.after_install"
+        ,   "rule.after_uninstall"
         }
     }
 end
@@ -179,15 +217,33 @@ function rule:name()
     return self._NAME
 end
 
+-- get the given dependent rule
+function rule:dep(name)
+    local deps = self:deps()
+    if deps then
+        return deps[name]
+    end
+end
+
+-- get rule deps
+function rule:deps()
+    return self._DEPS
+end
+
+-- get rule order deps
+function rule:orderdeps()
+    return self._ORDERDEPS
+end
+
 -- build source files
 function rule:build(target, sourcefiles)
 
     -- build all?
-    local build_all = self:script("build_all")
+    local build_all = self:script("build_files")
     if build_all then
         return sandbox.load(build_all, target, sourcefiles)
     else
-        local build = self:script("build")
+        local build = self:script("build_file")
         if not build then
             return false, string.format("rule(%s): build script not found!", self:name())
         end
@@ -206,6 +262,7 @@ end
 -- clean files
 function rule:clean(target, sourcefiles)
 
+--[[
     -- clean all?
     local clean_all = self:script("clean_all")
     if clean_all then
@@ -221,7 +278,7 @@ function rule:clean(target, sourcefiles)
             end
         end
     end
-
+]]
     -- ok
     return true
 end
@@ -229,6 +286,7 @@ end
 -- install files
 function rule:install(target, sourcefiles)
 
+--[[
     -- install all?
     local install_all = self:script("install_all")
     if install_all then
@@ -244,6 +302,7 @@ function rule:install(target, sourcefiles)
             end
         end
     end
+    ]]
 
     -- ok
     return true
@@ -252,6 +311,7 @@ end
 -- uninstall files
 function rule:uninstall(target, sourcefiles)
 
+--[[
     -- uninstall all?
     local uninstall_all = self:script("uninstall_all")
     if uninstall_all then
@@ -267,6 +327,7 @@ function rule:uninstall(target, sourcefiles)
             end
         end
     end
+    ]]
 
     -- ok
     return true
@@ -275,6 +336,7 @@ end
 -- package files
 function rule:package(target, sourcefiles)
 
+--[[
     -- package all?
     local package_all = self:script("package_all")
     if package_all then
@@ -289,7 +351,7 @@ function rule:package(target, sourcefiles)
                 end
             end
         end
-    end
+    end]]
 
     -- ok
     return true
@@ -385,7 +447,15 @@ function rule.rules()
     -- make rule instances
     local instances = {}
     for rulename, ruleinfo in pairs(rules) do
-        instances[rulename] = rule.new(rulename, ruleinfo)
+        local instance = rule.new(rulename, ruleinfo)
+        instances[rulename] = instance
+    end
+
+    -- load rule deps
+    for _, instance in pairs(instances)  do
+        instance._DEPS      = instance._DEPS or {}
+        instance._ORDERDEPS = instance._ORDERDEPS or {}
+        rule._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
     end
 
     -- save it

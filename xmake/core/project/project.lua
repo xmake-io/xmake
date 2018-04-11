@@ -636,6 +636,14 @@ function project.rules()
         rules[rulename] = rule.new(rulename, ruleinfo)
     end
 
+    -- load rule deps
+    local instances = table.join(rule.rules(), rules)
+    for _, instance in pairs(instances)  do
+        instance._DEPS      = instance._DEPS or {}
+        instance._ORDERDEPS = instance._ORDERDEPS or {}
+        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
+    end
+
     -- save it
     project._RULES = rules
 
