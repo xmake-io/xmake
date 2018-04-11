@@ -38,7 +38,6 @@ local task          = require("base/task")
 local colors        = require("base/colors")
 local project       = require("project/project")
 local history       = require("project/history")
-local package       = require("package/package")
 
 -- init the option menu
 local menu =
@@ -213,9 +212,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     else
         os.addenv("PATH", os.programdir())
     end
-
-    -- define package apis first before loading project's xmake.lua 
-    project.define_apis(package.apis())
 end
 
 -- the main function

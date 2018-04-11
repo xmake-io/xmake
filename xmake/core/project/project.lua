@@ -41,6 +41,7 @@ local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
 local deprecated_project    = require("project/deprecated/project")
+local package               = require("package/package")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
 local language              = require("language/language")
@@ -211,13 +212,11 @@ function project.interpreter()
     -- define apis for option
     interp:api_define(option.apis())
 
+    -- define apis for package
+    interp:api_define(package.apis())
+
     -- define apis for language
     interp:api_define(language.apis())
-
-    -- define registered apis
-    for _, apis in ipairs(project._APIS or {}) do
-        interp:api_define(apis)
-    end
 
     -- define apis for project
     interp:api_define
@@ -301,16 +300,6 @@ function project.interpreter()
 
     -- ok?
     return interp
-end
-
--- define apis
-function project.define_apis(apis)
-
-    -- init apis
-    project._APIS = project._APIS or {}
-
-    -- define these apis
-    table.insert(project._APIS, apis)
 end
 
 -- get the project file

@@ -26,6 +26,7 @@
 local sandbox_core_package_package = sandbox_core_package_package or {}
 
 -- load modules
+local project    = require("project/project")
 local package    = require("package/package")
 local raise      = require("sandbox/modules/raise")
 
@@ -43,7 +44,7 @@ end
 function sandbox_core_package_package.load_from_project(packagename)
 
     -- load package instance 
-    local instance, errors = package.load_from_project(packagename) 
+    local instance, errors = package.load_from_project(packagename, project) 
     if errors then
         raise(errors)
     end

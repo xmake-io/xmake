@@ -36,7 +36,6 @@ local global         = require("base/global")
 local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
-local project        = require("project/project")
 local platform       = require("platform/platform")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
@@ -507,7 +506,7 @@ function package.load_from_system(packagename)
 end
 
 -- load the package from the project file
-function package.load_from_project(packagename)
+function package.load_from_project(packagename, project)
 
     -- get it directly from cache first
     package._PACKAGES = package._PACKAGES or {}
