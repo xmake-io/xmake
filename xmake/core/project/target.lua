@@ -173,6 +173,17 @@ function target:add(name_or_info, ...)
     end
 end
 
+-- get user data
+function target:data(name)
+    return self._DATA[name]
+end
+
+-- set user data
+function target:data_set(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = data
+end
+
 -- dump this target
 function target:dump()
     table.dump(self._INFO)
