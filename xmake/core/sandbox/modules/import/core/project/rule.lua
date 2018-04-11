@@ -52,7 +52,7 @@ function sandbox_core_project_rule.build_files(rulename, target, sourcefiles)
     end
 
     -- do build 
-    local ok, errors = rule:build_files(target, sourcefiles)
+    local ok, errors = rule:do_build_files(target, sourcefiles)
     if not ok then
         raise(errors)
     end

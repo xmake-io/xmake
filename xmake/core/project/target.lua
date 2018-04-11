@@ -281,6 +281,11 @@ function target:rules()
     return self._RULES
 end
 
+-- get target order rules
+function target:orderules()
+    return self._ORDERULES
+end
+
 -- get target rule from the given source extension
 function target:rule(extension)
 

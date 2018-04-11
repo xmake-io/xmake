@@ -245,12 +245,20 @@ function _search_package(name)
     return packages
 end
 
--- sort package deps 
+-- sort package deps
+--
+-- .e.g 
+--
+-- a.deps = b
+-- b.deps = c
+--
+-- orderdeps: c -> b -> a
+--
 function _sort_packagedeps(package)
     local orderdeps = {}
     for _, dep in pairs(package:deps()) do
         table.join2(orderdeps, _sort_packagedeps(dep))
-        table.insert(orderdeps, dep)
+        table.insert(orderdeps, dep) 
     end
     return orderdeps
 end

@@ -330,17 +330,25 @@ function project.get(name)
     end
 end
 
--- load deps for option and target
-function project._load_deps(target, targets, deps, orderdeps)
+-- load deps for instance: .e.g option, target and rule
+--
+-- .e.g 
+--
+-- a.deps = b
+-- b.deps = c
+--
+-- orderdeps: c -> b -> a
+--
+function project._load_deps(instance, instances, deps, orderdeps)
 
-    -- get dep targets
-    for _, dep in ipairs(table.wrap(target:get("deps"))) do
-        local deptarget = targets[dep]
-        if deptarget then
-            project._load_deps(deptarget, targets, deps, orderdeps)
+    -- get dep instances
+    for _, dep in ipairs(table.wrap(instance:get("deps"))) do
+        local depinst = instances[dep]
+        if depinst then
+            project._load_deps(depinst, instances, deps, orderdeps)
             if not deps[dep] then
-                deps[dep] = deptarget
-                table.insert(orderdeps, deptarget)
+                deps[dep] = depinst
+                table.insert(orderdeps, depinst) 
             end
         end
     end
@@ -391,17 +399,37 @@ function project._load_targets()
     end
 
     -- load and attach target deps and rules
-    for _, target in pairs(targets) do
+    for _, t in pairs(targets) do
 
         -- load deps
-        target._DEPS      = target._DEPS or {}
-        target._ORDERDEPS = target._ORDERDEPS or {}
-        project._load_deps(target, targets, target._DEPS, target._ORDERDEPS)
+        t._DEPS      = t._DEPS or {}
+        t._ORDERDEPS = t._ORDERDEPS or {}
+        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS)
 
         -- load rules
-        target._RULES     = target._RULES or {}
-        for _, rulename in ipairs(table.wrap(target:get("rules"))) do
-            target._RULES[rulename] = project.rule(rulename) or rule.rule(name)
+        --
+        -- .e.g 
+        --
+        -- a.deps = b
+        -- b.deps = c
+        --
+        -- orderules: c -> b -> a
+        --
+        t._RULES      = t._RULES or {}
+        t._ORDERULES  = t._ORDERULES or {}
+        for _, rulename in ipairs(table.wrap(t:get("rules"))) do
+            local r = project.rule(rulename) or rule.rule(name)
+            if r then
+                t._RULES[rulename] = r
+                for _, deprule in ipairs(r:orderdeps()) do
+                    local name = deprule:name()
+                    if not t._RULES[name] then
+                        t._RULES[name] = deprule
+                        table.insert(t._ORDERULES, deprule) 
+                    end
+                end
+                table.insert(t._ORDERULES, r)
+            end
         end
     end
 
@@ -410,12 +438,27 @@ function project._load_targets()
 
     -- on load for each target
     local ok = true
-    for _, target in pairs(targets) do
-        local on_load = target:script("load")
+    for _, t in pairs(targets) do
+
+        -- do load for target
+        local on_load = t:script("load")
         if on_load then
-            ok, errors = sandbox.load(on_load, target)
+            ok, errors = sandbox.load(on_load, t)
             if not ok then
                 break
+            end
+        end
+
+        -- do load with target rules
+        if ok then
+            for _, r in pairs(t:orderules()) do
+                ok, errors = r:do_load(t)
+                if not ok then
+                    break
+                end
+            end
+            if not ok then 
+                break 
             end
         end
     end

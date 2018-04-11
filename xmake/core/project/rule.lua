@@ -120,6 +120,14 @@ function rule._load(filepath)
 end
 
 -- load deps 
+--
+-- .e.g 
+--
+-- a.deps = b
+-- b.deps = c
+--
+-- orderdeps: c -> b -> a
+--
 function rule._load_deps(self, rules, deps, orderdeps)
 
     -- get dep rules
@@ -235,20 +243,33 @@ function rule:orderdeps()
     return self._ORDERDEPS
 end
 
--- build source files
-function rule:build_files(target, sourcefiles)
+-- do load
+function rule:do_load(target)
 
-    -- build files?
-    local build_files = self:script("build_files")
-    if build_files then
-        return sandbox.load(build_files, target, sourcefiles)
+    -- on_load?
+    local on_load = self:script("load")
+    if on_load then
+        return sandbox.load(on_load, target)
+    end
+
+    -- ok
+    return true
+end
+
+-- do build source files
+function rule:do_build_files(target, sourcefiles)
+
+    -- on_build_files?
+    local on_build_files = self:script("build_files")
+    if on_build_files then
+        return sandbox.load(on_build_files, target, sourcefiles)
     else
-        local build_file = self:script("build_file")
-        if not build_file then
+        local on_build_file = self:script("build_file")
+        if not on_build_file then
             return false, string.format("rule(%s): on_build_file() script not found!", self:name())
         end
         for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
-            local ok, errors = sandbox.load(build_file, target, sourcefile)
+            local ok, errors = sandbox.load(on_build_file, target, sourcefile)
             if not ok then
                 return false, errors
             end

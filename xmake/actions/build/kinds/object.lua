@@ -304,14 +304,14 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
     local ruleinst = project.rule(rulename) or rule.rule(rulename)
     assert(ruleinst, "unknown rule: %s", rulename)
 
-    -- build files?
-    local build_files = ruleinst:script("build_files")
-    if build_files then
-        build_files(target, sourcebatch.sourcefiles)
+    -- on_build_files?
+    local on_build_files = ruleinst:script("build_files")
+    if on_build_files then
+        on_build_files(target, sourcebatch.sourcefiles)
     else
         -- get the build file script
-        local build_file = ruleinst:script("build_file")
-        assert(build_file, "rule(%s): on_build_file() script not found!", rulename)
+        local on_build_file = ruleinst:script("build_file")
+        assert(on_build_file, "rule(%s): on_build_file() script not found!", rulename)
 
         -- run build jobs for each source file 
         local curdir = os.curdir()
@@ -334,7 +334,7 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
             end
 
             -- do build file
-            build_file(target, sourcefile)
+            on_build_file(target, sourcefile)
 
         end, #sourcebatch.sourcefiles, jobs)
     end
