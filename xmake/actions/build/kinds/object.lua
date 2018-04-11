@@ -295,23 +295,23 @@ function _build_pcheaderfiles(target, buildinfo)
 end
 
 -- build source files with the custom rule
-function _build_rule(target, buildinfo, sourcebatch, jobs)
+function _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
 
     -- the rule name
     local rulename = sourcebatch.rulename
 
-    -- get rule
-    local rule = project.rule(rulename)
-    assert(rule, "unknown rule: %s", rulename)
+    -- get rule instance
+    local ruleinst = project.rule(rulename) or rule.rule(rulename)
+    assert(ruleinst, "unknown rule: %s", rulename)
 
-    -- build all?
-    local build_all = rule:script("build_all")
-    if build_all then
-        build_all(target, sourcebatch.sourcefiles)
+    -- build files?
+    local build_files = ruleinst:script("build_files")
+    if build_files then
+        build_files(target, sourcebatch.sourcefiles)
     else
-        -- get the build script
-        local build = rule:script("build")
-        assert(build, "rule(%s): build script not found!", rulename)
+        -- get the build file script
+        local build_file = ruleinst:script("build_file")
+        assert(build_file, "rule(%s): on_build_file() script not found!", rulename)
 
         -- run build jobs for each source file 
         local curdir = os.curdir()
@@ -333,8 +333,8 @@ function _build_rule(target, buildinfo, sourcebatch, jobs)
                 cprint("${green}[%02d%%]:${clear} compiling.%s %s", percent, rulename, sourcefile)
             end
 
-            -- do build 
-            build(target, sourcefile)
+            -- do build file
+            build_file(target, sourcefile)
 
         end, #sourcebatch.sourcefiles, jobs)
     end
@@ -369,7 +369,7 @@ function build(target, buildinfo)
         if sourcebatch.rulename then
 
             -- build source files with the custom rule
-            _build_rule(target, buildinfo, sourcebatch, jobs)
+            _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
 
         -- compile source files to single object at once
         elseif type(sourcebatch.objectfiles) == "string" then
