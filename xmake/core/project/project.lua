@@ -362,7 +362,7 @@ function project._load_scope(scope_kind, remove_repeat, enable_filter)
     -- load targets
     local results, errors = interp:load(project.file(), scope_kind, remove_repeat, enable_filter)
     if not results then
-        return nil, errors
+        return nil, (errors or "load project file failed!")
     end
 
     -- leave the project directory
@@ -664,7 +664,7 @@ function project.tasks()
     -- load the tasks from the the project file
     local results, errors = project._load_scope("task", true, true)
     if not results then
-       os.raise(errors)
+       os.raise(errors or "load project tasks failed!")
     end
 
     -- bind tasks for menu with an sandbox instance

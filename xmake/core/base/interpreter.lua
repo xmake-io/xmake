@@ -497,7 +497,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
     -- empty scope?
     if not scopes or not scopes._ROOT then
-        return nil, string.format("the scope %s() is empty!", scope_kind)
+        os.raise("the scope %s() is empty!", scope_kind)
     end
 
     -- make results
@@ -682,7 +682,7 @@ function interpreter:load(file, scope_kind, remove_repeat, enable_filter)
     -- bind public scope
     setfenv(script, self._PUBLIC)
 
-    -- done interpreter
+    -- do interpreter
     local ok, errors = xpcall(script, interpreter._traceback)
     if not ok then
         return nil, errors

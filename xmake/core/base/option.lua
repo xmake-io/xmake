@@ -41,13 +41,13 @@ function option._translate(menu)
     local submenus_all = {}
     for k, submenu in pairs(menu) do
         if type(submenu) == "function" then
-            local _submenus, errors = submenu()
-            if _submenus then
-                for k, m in pairs(_submenus) do
+            local ok, _submenus_or_errors = pcall(submenu)
+            if ok and _submenus_or_errors then
+                for k, m in pairs(_submenus_or_errors) do
                     submenus_all[k] = m
                 end
             else 
-                return false, errors
+                return false, (_submenus_or_errors or "translate option menu failed!")
             end
         else
             submenus_all[k] = submenu
