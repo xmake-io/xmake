@@ -13,7 +13,7 @@ rule("man")
         for _, sourcefile in ipairs(sourcefiles) do
             print("generating man: %s", sourcefile)
         end
-        rule.build("markdown", target, sourcefiles)
+        rule.build_files("markdown", target, sourcefiles)
     end)
 
 -- define rule: c code

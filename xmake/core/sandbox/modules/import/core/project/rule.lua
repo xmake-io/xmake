@@ -43,6 +43,23 @@ function sandbox_core_project_rule.rules()
 end
 
 -- build source files
+function sandbox_core_project_rule.build_files(rulename, target, sourcefiles)
+
+    -- get rule
+    local rule = project.rule(rulename) or rule.rule(rulename)
+    if not rule then
+        raise("unknown rule: %s", rulename)
+    end
+
+    -- do build 
+    local ok, errors = rule:build_files(target, sourcefiles)
+    if not ok then
+        raise(errors)
+    end
+end
+
+--[[
+-- build source files
 function sandbox_core_project_rule.build(rulename, target, sourcefiles)
 
     -- get rule
@@ -121,6 +138,7 @@ function sandbox_core_project_rule.package(rulename, target, sourcefiles)
         raise(errors)
     end
 end
+]]
 
 -- return module
 return sandbox_core_project_rule

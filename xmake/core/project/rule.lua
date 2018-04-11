@@ -236,19 +236,19 @@ function rule:orderdeps()
 end
 
 -- build source files
-function rule:build(target, sourcefiles)
+function rule:build_files(target, sourcefiles)
 
-    -- build all?
-    local build_all = self:script("build_files")
-    if build_all then
-        return sandbox.load(build_all, target, sourcefiles)
+    -- build files?
+    local build_files = self:script("build_files")
+    if build_files then
+        return sandbox.load(build_files, target, sourcefiles)
     else
-        local build = self:script("build_file")
-        if not build then
-            return false, string.format("rule(%s): build script not found!", self:name())
+        local build_file = self:script("build_file")
+        if not build_file then
+            return false, string.format("rule(%s): on_build_file() script not found!", self:name())
         end
         for _, sourcefile in ipairs(table.wrap(sourcefiles)) do
-            local ok, errors = sandbox.load(build, target, sourcefile)
+            local ok, errors = sandbox.load(build_file, target, sourcefile)
             if not ok then
                 return false, errors
             end
