@@ -303,7 +303,7 @@ function option:set(name_or_info, ...)
     if type(name_or_info) == "string" then
         local args = ...
         if args ~= nil then
-            self._INFO[name_or_info] = table.unique(table.join(...))
+            self._INFO[name_or_info] = table.unwrap(table.unique(table.join(...)))
         else
             self._INFO[name_or_info] = nil
         end
@@ -318,7 +318,7 @@ end
 function option:add(name_or_info, ...)
     if type(name_or_info) == "string" then
         local info = table.wrap(self._INFO[name_or_info])
-        self._INFO[name_or_info] = table.unique(table.join(info, ...))
+        self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
     elseif table.is_dictionary(name_or_info) then
         for name, info in pairs(table.join(name_or_info, ...)) do
             self:add(name, info)

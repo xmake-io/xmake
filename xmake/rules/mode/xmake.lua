@@ -55,3 +55,64 @@ rule("mode:release")
         end
     end)
 
+-- define rule: profile mode
+rule("mode:profile")
+    on_load(function (target)
+
+        -- is profile mode now? xmake f -m profile
+        if is_mode("profile") then
+ 
+            -- set the symbols visibility: debug
+            target:set("symbols", "debug")
+
+            -- enable fastest optimization
+            target:set("optimize", "fastest")
+
+            -- enable gprof 
+            target:add("cxflags", "-pg")
+            target:add("mxflags", "-pg")
+            target:add("ldflags", "-pg")
+        end
+    end)
+
+-- define rule: check mode
+rule("mode:check")
+    on_load(function (target)
+
+        -- is check mode now? xmake f -m check
+        if is_mode("check") then
+ 
+            -- enable the debug symbols
+            target:set("symbols", "debug")
+
+            -- disable optimization
+            target:set("optimize", "none")
+
+            -- attempt to enable some checkers for pc
+            if is_mode("check") and is_arch("i386", "x86_64") then
+                target:add("cxflags", "-fsanitize=address", "-ftrapv")
+                target:add("mxflags", "-fsanitize=address", "-ftrapv")
+                target:add("ldflags", "-fsanitize=address")
+            end
+        end
+    end)
+
+-- define rule: coverage mode
+rule("mode:coverage")
+    on_load(function (target)
+
+        -- is coverage mode now? xmake f -m coverage
+        if is_mode("coverage") then
+ 
+            -- enable the debug symbols
+            target:set("symbols", "debug")
+
+            -- disable optimization
+            target:set("optimize", "none")
+
+            -- enable coverage
+            target:add("cxflags", "--coverage")
+            target:add("mxflags", "--coverage")
+            target:add("ldflags", "--coverage")
+        end
+    end)
