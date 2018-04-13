@@ -2,7 +2,11 @@
 -- define rule: markdown
 rule("markdown")
     set_extensions(".md", ".markdown")
+    on_load(function (target)
+        print("markdown: on_load")
+    end)
     on_build_file(function (target, sourcefile)
+        print("compile %s", sourcefile)
         os.cp(sourcefile, path.join(target:targetdir(), path.basename(sourcefile) .. ".html"))
     end)
 
@@ -28,12 +32,14 @@ rule("c code")
 
 -- define rule: stub3
 rule("stub3")
+    add_deps("markdown")
     on_load(function (target)
         print("rule(stub3): on_load")
     end)
 
 -- define rule: stub2
 rule("stub2")
+    add_deps("stub3")
     on_load(function (target)
         print("rule(stub2): on_load")
     end)
@@ -112,7 +118,7 @@ target("test")
     set_kind("binary")
 
     -- add rules
-    add_rules("markdown", "stub1")
+    add_rules("stub1")
 
     -- add files
     add_files("src/*.c") 
