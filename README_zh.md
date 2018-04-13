@@ -66,6 +66,16 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 * [Github](https://github.com/tboox/xmake)
 * [Gitee](https://gitee.com/tboox/xmake)
 
+```
+                         _        
+    __  ___ __  __  __ _| | ______ 
+    \ \/ / |  \/  |/ _  | |/ / __ \
+     >  <  | \__/ | /_| |   <  ___/
+    /_/\_\_|_|  |_|\__ \|_|\_\____| 
+
+                         by ruki, tboox.org
+```
+
 ## 安装
 
 #### 使用curl

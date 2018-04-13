@@ -60,6 +60,16 @@ If you want to known more, please refer to:
 * [Github](https://github.com/tboox/xmake)
 * [Gitee](https://gitee.com/tboox/xmake)
 
+```
+                         _        
+    __  ___ __  __  __ _| | ______ 
+    \ \/ / |  \/  |/ _  | |/ / __ \
+     >  <  | \__/ | /_| |   <  ___/
+    /_/\_\_|_|  |_|\__ \|_|\_\____| 
+
+                         by ruki, tboox.org
+```
+
 ## Installation
 
 #### via curl

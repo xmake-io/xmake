@@ -26,6 +26,7 @@
 rule("mode:debug")
     on_load(function (target)
 
+        -- TODO if is_mode("debug")
         -- is debug mode now? xmake f -m debug
         if val("mode") == "debug" then
  
