@@ -19,39 +19,9 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        is_mode.lua
 --
 
--- define rule: debug mode
-rule("mode:debug")
-    on_load(function (target)
-
-        -- is debug mode now? xmake f -m debug
-        if is_mode("debug") then
- 
-            -- enable the debug symbols
-            target:set("symbols", "debug")
-
-            -- disable optimization
-            target:set("optimize", "none")
-        end
-    end)
-
--- define rule: release mode
-rule("mode:release")
-    on_load(function (target)
-
-        -- is release mode now? xmake f -m release
-        if is_mode("release") then
- 
-            -- set the symbols visibility: hidden
-            target:set("symbols", "hidden")
-
-            -- enable fastest optimization
-            target:set("optimize", "fastest")
-
-            -- strip all symbols
-            target:set("strip", "all")
-        end
-    end)
+-- return module
+return require("project/config").is_mode
 

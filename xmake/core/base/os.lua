@@ -692,6 +692,36 @@ function os.arch()
     return xmake._ARCH
 end
 
+-- the current host is belong to the given hosts?
+function os.is_host(...)
+
+    -- get the current host
+    local host = os.host()
+    if not host then return false end
+
+    -- exists this host? and escape '-'
+    for _, h in ipairs(table.join(...)) do
+        if h and type(h) == "string" and host:find(h:gsub("%-", "%%-")) then
+            return true
+        end
+    end
+end
+
+-- the current platform is belong to the given architectures?
+function os.is_arch(...)
+
+    -- get the host architecture
+    local arch = os.arch()
+    if not arch then return false end
+
+    -- exists this architecture? and escape '-'
+    for _, a in ipairs(table.join(...)) do
+        if a and type(a) == "string" and arch:find("^" .. a:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
 -- get the system null device 
 function os.nuldev(input)
 

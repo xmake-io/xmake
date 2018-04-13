@@ -65,47 +65,17 @@ end
 
 -- the current mode is belong to the given modes?
 function project._api_is_mode(interp, ...)
-
-    -- get the current mode
-    local mode = config.get("mode")
-    if not mode then return false end
-
-    -- exists this mode?
-    for _, m in ipairs(table.join(...)) do
-        if m and type(m) == "string" and m == mode then
-            return true
-        end
-    end
+    return config.is_mode(...)
 end
 
 -- the current platform is belong to the given platforms?
 function project._api_is_plat(interp, ...)
-
-    -- get the current platform
-    local plat = config.get("plat")
-    if not plat then return false end
-
-    -- exists this platform? and escape '-'
-    for _, p in ipairs(table.join(...)) do
-        if p and type(p) == "string" and plat:find("^" .. p:gsub("%-", "%%-") .. "$") then
-            return true
-        end
-    end
+    return config.is_plat(...)
 end
 
 -- the current platform is belong to the given architectures?
 function project._api_is_arch(interp, ...)
-
-    -- get the current architecture
-    local arch = config.get("arch")
-    if not arch then return false end
-
-    -- exists this architecture? and escape '-'
-    for _, a in ipairs(table.join(...)) do
-        if a and type(a) == "string" and arch:find("^" .. a:gsub("%-", "%%-") .. "$") then
-            return true
-        end
-    end
+    return config.is_arch(...)
 end
 
 -- the current kind is belong to the given kinds?
@@ -125,17 +95,7 @@ end
 
 -- the current host is belong to the given hosts?
 function project._api_is_host(interp, ...)
-
-    -- get the current host
-    local host = os.host()
-    if not host then return false end
-
-    -- exists this host? and escape '-'
-    for _, h in ipairs(table.join(...)) do
-        if h and type(h) == "string" and host:find(h:gsub("%-", "%%-")) then
-            return true
-        end
-    end
+    return os.is_host(...)
 end
 
 -- enable options?
