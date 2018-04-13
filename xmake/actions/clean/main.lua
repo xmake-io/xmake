@@ -52,6 +52,17 @@ end
 -- on clean target 
 function _on_clean_target(target)
 
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_clean = r:script("clean")
+        if on_clean then
+            on_clean(target)
+            done = true
+        end
+    end
+    if done then return end
+
     -- is phony target?
     if target:isphony() then
         return 
@@ -89,13 +100,6 @@ function _on_clean_target(target)
         -- remove the config.h file
         _remove(target:configheader()) 
     end
-
-    -- clean files with the custom
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.rulename then
-            rule.clean(sourcebatch.rulename, target, sourcebatch.sourcefiles)
-        end
-    end
 end
 
 -- clean the given target files
@@ -105,12 +109,28 @@ function _clean_target(target)
     local scripts =
     {
         target:script("clean_before")
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_clean = r:script("clean_before")
+                if before_clean then
+                    before_clean(target)
+                end
+            end
+        end
     ,   target:script("clean", _on_clean_target)
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_clean = r:script("clean_after")
+                if after_clean then
+                    after_clean(target)
+                end
+            end
+        end
     ,   target:script("clean_after")
     }
 
     -- run the target scripts
-    for i = 1, 3 do
+    for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
             script(target)

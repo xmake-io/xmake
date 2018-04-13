@@ -116,6 +116,17 @@ end
 -- package target 
 function _on_package(target)
 
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_package = r:script("package")
+        if on_package then
+            on_package(target)
+            done = true
+        end
+    end
+    if done then return end
+
     -- is phony target?
     if target:isphony() then
         return 
@@ -137,13 +148,6 @@ function _on_package(target)
 
     -- package it
     scripts[kind](target) 
-
-    -- package files with the custom
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.rulename then
-            rule.package(sourcebatch.rulename, target, sourcebatch.sourcefiles)
-        end
-    end
 end
 
 -- package the given target 
@@ -156,12 +160,28 @@ function _package(target)
     local scripts =
     {
         target:script("package_before")
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_package = r:script("package_before")
+                if before_package then
+                    before_package(target)
+                end
+            end
+        end
     ,   target:script("package", _on_package)
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_package = r:script("package_after")
+                if after_package then
+                    after_package(target)
+                end
+            end
+        end
     ,   target:script("package_after")
     }
 
     -- package the target scripts
-    for i = 1, 3 do
+    for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
             script(target)

@@ -91,6 +91,17 @@ end
 -- on install
 function _on_install(target)
 
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_install = r:script("install")
+        if on_install then
+            on_install(target)
+            done = true
+        end
+    end
+    if done then return end
+
     -- the scripts
     local scripts =
     {
@@ -104,13 +115,6 @@ function _on_install(target)
     if script then
         script(target)
     end
-
-    -- install files with the custom
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.rulename then
-            rule.install(sourcebatch.rulename, target, sourcebatch.sourcefiles)
-        end
-    end
 end
 
 -- install the given target 
@@ -123,12 +127,28 @@ function _install_target(target)
     local scripts =
     {
         target:script("install_before")
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_install = r:script("install_before")
+                if before_install then
+                    before_install(target)
+                end
+            end
+        end
     ,   target:script("install", _on_install)
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_install = r:script("install_after")
+                if after_install then
+                    after_install(target)
+                end
+            end
+        end
     ,   target:script("install_after")
     }
 
     -- install the target scripts
-    for i = 1, 3 do
+    for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
             script(target)

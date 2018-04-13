@@ -153,22 +153,9 @@ function rule.apis()
             -- rule.set_xxx
             "rule.set_extensions"
         ,   "rule.set_kind"
-        ,   "rule.set_strip"
-        ,   "rule.set_symbols"
-        ,   "rule.set_warnings"
-        ,   "rule.set_optimize"
-        ,   "rule.set_languages"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"
-        ,   "rule.add_languages"
-        ,   "rule.add_vectorexts"
-        }
-    ,   dictionary =
-        {
-            -- rule.set_xxx
-            "rule.set_tools"
-        ,   "rule.add_tools"
         }
     ,   script =
         {

@@ -75,6 +75,17 @@ end
 -- uninstall target
 function _on_uninstall(target)
 
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_uninstall = r:script("uninstall")
+        if on_uninstall then
+            on_uninstall(target)
+            done = true
+        end
+    end
+    if done then return end
+
     -- the scripts
     local scripts =
     {
@@ -88,13 +99,6 @@ function _on_uninstall(target)
     if script then
         script(target)
     end
-
-    -- uninstall files with the custom
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.rulename then
-            rule.uninstall(sourcebatch.rulename, target, sourcebatch.sourcefiles)
-        end
-    end
 end
 
 -- uninstall the given target 
@@ -107,12 +111,28 @@ function _uninstall_target(target)
     local scripts =
     {
         target:script("uninstall_before")
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_uninstall = r:script("uninstall_before")
+                if before_uninstall then
+                    before_uninstall(target)
+                end
+            end
+        end
     ,   target:script("uninstall", _on_uninstall)
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_uninstall = r:script("uninstall_after")
+                if after_uninstall then
+                    after_uninstall(target)
+                end
+            end
+        end
     ,   target:script("uninstall_after")
     }
 
     -- uninstall the target scripts
-    for i = 1, 3 do
+    for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
             script(target)

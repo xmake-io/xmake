@@ -39,6 +39,17 @@ end
 -- on build the given target
 function _on_build_target(target)
 
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_build = r:script("build")
+        if on_build then
+            on_build(target)
+            done = true
+        end
+    end
+    if done then return end
+
     -- build target
     if not target:isphony() then
         import("kinds." .. target:targetkind()).build(target, _g)
@@ -52,7 +63,23 @@ function _build_target(target)
     local scripts =
     {
         target:script("build_before")
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_build = r:script("build_before")
+                if before_build then
+                    before_build(target)
+                end
+            end
+        end
     ,   target:script("build", _on_build_target)
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_build = r:script("build_after")
+                if after_build then
+                    after_build(target)
+                end
+            end
+        end
     ,   target:script("build_after")
     }
 
@@ -62,7 +89,7 @@ function _build_target(target)
     end
 
     -- run the target scripts
-    for i = 1, 3 do
+    for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
             script(target)

@@ -34,6 +34,17 @@ import("devel.debugger")
 -- run target 
 function _on_run_target(target)
 
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_run = r:script("run")
+        if on_run then
+            on_run(target)
+            done = true
+        end
+    end
+    if done then return end
+
     -- get kind
     if target:targetkind() == "binary" then
 
@@ -66,12 +77,28 @@ function _run(target)
     local scripts =
     {
         target:script("run_before")
-    ,   target:script("run") or _on_run_target
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local before_run = r:script("run_before")
+                if before_run then
+                    before_run(target)
+                end
+            end
+        end
+    ,   target:script("run", _on_run_target)
+    ,   function (target)
+            for _, r in ipairs(target:orderules()) do
+                local after_run = r:script("run_after")
+                if after_run then
+                    after_run(target)
+                end
+            end
+        end
     ,   target:script("run_after")
     }
 
     -- run the target scripts
-    for i = 1, 3 do
+    for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
             script(target)
