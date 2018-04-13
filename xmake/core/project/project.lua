@@ -418,7 +418,7 @@ function project._load_targets()
         t._RULES      = t._RULES or {}
         t._ORDERULES  = t._ORDERULES or {}
         for _, rulename in ipairs(table.wrap(t:get("rules"))) do
-            local r = project.rule(rulename) or rule.rule(name)
+            local r = project.rule(rulename) or rule.rule(rulename)
             if r then
                 t._RULES[rulename] = r
                 for _, deprule in ipairs(r:orderdeps()) do

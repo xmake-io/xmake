@@ -6,12 +6,14 @@
 
 * [#158](https://github.com/tboox/xmake/issues/158): Support CUDA Toolkit and Compiler
 * Add `set_tools` and `add_tools` apis to change the toolchains for special target
+* Add builtin rules: `mode:debug` and `mode:release`
 
 ### Changes
 
 * Add FAQ to the auto-generated xmake.lua
 * Support android NDK >= r14
 * Improve warning flags for swiftc
+* Improve custom rules
 
 ### Bugs fixed
 
@@ -447,12 +449,14 @@
 
 * [#158](https://github.com/tboox/xmake/issues/158): 增加对Cuda编译环境的支持
 * 添加`set_tools`和`add_tools`接口为指定target目标设置编译工具链
+* 添加内建规则：`mode:debug`和`mode:release`
 
 ### 改进
 
 * 添加FAQ到自动生成的xmake.lua文件，方便用户快速上手
 * 支持Android NDK >= r14的版本
 * 改进swiftc对warning flags的支持
+* 改进自定义规则：`rule()`
 
 ### Bugs修复
 
