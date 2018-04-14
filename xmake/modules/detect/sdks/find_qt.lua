@@ -31,12 +31,17 @@ function _find_sdkdir()
     -- init the search directories
     local pathes = {}
     if os.host() == "macosx" then
-        table.insert(pathes, "~/Qt")
+        table.insert(pathes, "~/Qt/**/bin")
     elseif os.host() == "windows" then
     else
-        table.insert(pathes, "~/Qt")
+        table.insert(pathes, "~/Qt/**/bin")
     end
 
+    -- attempt to find qmake
+    local qmake = find_file(os.host() == "windows" and "qmake.exe" or "qmake", pathes)
+    if qmake then
+        return path.directory(path.directory(qmake))
+    end
 end
 
 -- find qt sdk toolchains
@@ -48,7 +53,7 @@ end
 --
 -- @code 
 --
--- local toolchains = find_qt("/Developer/NVIDIA/qt-9.1")
+-- local toolchains = find_qt("~/Qt/5.10.1/clang_64")
 -- 
 -- @endcode
 --
@@ -67,6 +72,18 @@ function main(sdkdir, opt)
         return nil
     end
 
+    -- get the bin directory 
+    local bindir = path.join(sdkdir, "bin")
+    if not os.isexec(path.join(bindir, "qmake")) then
+        return nil
+    end
+
+    -- get linkdirs
+    local linkdirs = {path.join(sdkdir, "lib")}
+
+    -- get includedirs
+    local includedirs = {path.join(sdkdir, "include")}
+
     -- get toolchains
-    return {}
+    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs}
 end

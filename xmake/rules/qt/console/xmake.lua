@@ -26,27 +26,5 @@
 rule("qt:console")
 
     -- on load
-    on_load(function (target)
-        
-        -- set kind: binary
-        target:set("kind", "binary")
-
-        -- add defines for using core lib
-        target:add("defines", "QT_CORE_LIB")
-
-        -- add defines for the compile mode
-        if is_mode("debug") then
-            target:add("defines", "QT_QML_DEBUG")
-        elseif is_mode("release") then
-            target:add("defines", "QT_NO_DEBUG")
-        elseif is_mode("profile") then
-            target:add("defines", "QT_QML_DEBUG", "QT_NO_DEBUG")
-        end
-
-        -- The following define makes your compiler emit warnings if you use
-        -- any feature of Qt which as been marked deprecated (the exact warnings
-        -- depend on your compiler). Please consult the documentation of the
-        -- deprecated API in order to know how to port your code away from it.
-        target:add("defines", "QT_DEPRECATED_WARNINGS")
-    end)
+    on_load("load")
 
