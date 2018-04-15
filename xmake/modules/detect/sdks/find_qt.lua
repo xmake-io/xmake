@@ -33,7 +33,10 @@ import("core.project.config")
 function _find_sdkdir(sdkdir)
 
     -- init the search directories
-    local pathes = {path.join(sdkdir, "**", "bin")}
+    local pathes = {}
+    if sdkdir then
+        table.insert(pathes, path.join(sdkdir, "**", "bin"))
+    end
     if os.host() == "macosx" then
         table.insert(pathes, "~/Qt/**/bin")
     elseif os.host() == "windows" then
