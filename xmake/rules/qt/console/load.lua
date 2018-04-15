@@ -38,6 +38,9 @@ function main(target)
     -- add defines for using core lib
     target:add("defines", "QT_CORE_LIB")
 
+    -- need c++11
+    target:set("languages", "cxx11")
+
     -- add defines for the compile mode
     if is_mode("debug") then
         target:add("defines", "QT_QML_DEBUG")
@@ -53,6 +56,11 @@ function main(target)
     -- deprecated API in order to know how to port your code away from it.
     target:add("defines", "QT_DEPRECATED_WARNINGS")
 
-    -- add framework directories
-    target:add("frameworkdirs", qt.libdir)
+    -- add frameworks
+    if is_plat("macosx") then
+        target:add("frameworkdirs", qt.linkdirs)
+        target:add("frameworks", "QtCore", "DiskArbitration", "IOKit")
+        target:add("includedirs", path.join(qt.sdkdir, "lib/QtCore.framework/Headers"))
+        target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
+    end
 end

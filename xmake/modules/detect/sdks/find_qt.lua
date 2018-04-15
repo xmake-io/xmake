@@ -26,13 +26,14 @@
 import("lib.detect.cache")
 import("lib.detect.find_file")
 import("core.base.option")
+import("core.base.global")
 import("core.project.config")
 
 -- find qt sdk directory
-function _find_sdkdir()
+function _find_sdkdir(sdkdir)
 
     -- init the search directories
-    local pathes = {}
+    local pathes = {path.join(sdkdir, "**", "bin")}
     if os.host() == "macosx" then
         table.insert(pathes, "~/Qt/**/bin")
     elseif os.host() == "windows" then
@@ -51,11 +52,7 @@ end
 function _find_qt(sdkdir)
 
     -- find qt directory
-    if not sdkdir or not os.isdir(sdkdir) then
-        sdkdir = _find_sdkdir()
-    end
-
-    -- not found?
+    sdkdir = _find_sdkdir(sdkdir)
     if not sdkdir or not os.isdir(sdkdir) then
         return nil
     end
@@ -102,11 +99,11 @@ function main(sdkdir, opt)
     end
        
     -- find qt
-    local qt = _find_qt(sdkdir or config.get("qt_dir"))
+    local qt = _find_qt(sdkdir or config.get("qt_dir") or global.get("qt_dir"))
     if qt then
 
         -- save sdk directory to config
-        config.set("qt_dir", qt.sdkdir)
+        config.set("qt_dir", qt.sdkdir, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
