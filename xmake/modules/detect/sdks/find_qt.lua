@@ -23,7 +23,10 @@
 --
 
 -- imports
+import("lib.detect.cache")
 import("lib.detect.find_file")
+import("core.base.option")
+import("core.project.config")
 
 -- find qt sdk directory
 function _find_sdkdir()
@@ -45,22 +48,7 @@ function _find_sdkdir()
 end
 
 -- find qt sdk toolchains
---
--- @param sdkdir    the qt sdk directory
--- @param opt       the argument options 
---
--- @return          the qt sdk toolchains. .e.g {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
---
--- @code 
---
--- local toolchains = find_qt("~/Qt/5.10.1/clang_64")
--- 
--- @endcode
---
-function main(sdkdir, opt)
-
-    -- init arguments
-    opt = opt or {}
+function _find_qt(sdkdir)
 
     -- find qt directory
     if not sdkdir or not os.isdir(sdkdir) then
@@ -86,4 +74,56 @@ function main(sdkdir, opt)
 
     -- get toolchains
     return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs}
+end
+
+-- find qt sdk toolchains
+--
+-- @param sdkdir    the qt sdk directory
+-- @param opt       the argument options, .e.g {verbose = true, force = false} 
+--
+-- @return          the qt sdk toolchains. .e.g {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+--
+-- @code 
+--
+-- local toolchains = find_qt("~/Qt/5.10.1/clang_64")
+-- 
+-- @endcode
+--
+function main(sdkdir, opt)
+
+    -- init arguments
+    opt = opt or {}
+
+    -- attempt to load cache first
+    local key = "detect.sdks.find_qt." .. (sdkdir or "")
+    local cacheinfo = cache.load(key)
+    if not opt.force and cacheinfo.qt then
+        return cacheinfo.qt
+    end
+       
+    -- find qt
+    local qt = _find_qt(sdkdir or config.get("qt_dir"))
+    if qt then
+
+        -- save sdk directory to config
+        config.set("qt_dir", qt.sdkdir)
+
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for the Qt SDK directory ... ${green}%s", qt.sdkdir)
+        end
+    else
+
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for the Qt SDK directory ... ${red}no")
+        end
+    end
+
+    -- save to cache
+    cacheinfo.qt = qt or false
+    cache.save(key, cacheinfo)
+
+    -- ok?
+    return qt
 end

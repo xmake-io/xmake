@@ -26,35 +26,11 @@
 import("core.project.config")
 import("detect.sdks.find_qt")
 
--- check the qt sdk directory
-function check_qt()
-
-    -- get the qt sdk
-    local qt_sdkdir = config.get("qt_sdkdir")
-    if not qt_sdkdir then
-
-        -- check ok? update it
-        local qt = find_qt()
-        if qt then
-
-            -- save it
-            config.set("qt_sdkdir", qt.sdkdir)
-
-            -- trace
-            cprint("checking for the Qt SDK directory ... ${green}%s", qt.sdkdir)
-        else
-
-            -- trace
-            cprint("checking for the Qt SDK directory ... ${red}no")
-        end
-    end
-end
-
 -- the main entry
 function main(target)
 
     -- check qt sdk
-    check_qt()
+    local qt = assert(find_qt(nil, {verbose = true}), "Qt SDK not found!")
 
     -- set kind: binary
     target:set("kind", "binary")
@@ -76,4 +52,7 @@ function main(target)
     -- depend on your compiler). Please consult the documentation of the
     -- deprecated API in order to know how to port your code away from it.
     target:add("defines", "QT_DEPRECATED_WARNINGS")
+
+    -- add framework directories
+    target:add("frameworkdirs", qt.libdir)
 end
