@@ -56,11 +56,12 @@ function main(target)
     -- deprecated API in order to know how to port your code away from it.
     target:add("defines", "QT_DEPRECATED_WARNINGS")
 
-    -- add frameworks
+    -- add includedirs and linkdirs for macosx
     if is_plat("macosx") then
         target:add("frameworkdirs", qt.linkdirs)
         target:add("frameworks", "QtCore", "DiskArbitration", "IOKit")
         target:add("includedirs", path.join(qt.sdkdir, "lib/QtCore.framework/Headers"))
+        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
         target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
     end
 end
