@@ -6,11 +6,14 @@ add_rules("mode:debug", "mode:release")
 target("qt_demo")
 
     -- add rules
-    add_rules("qt:static")
+    add_rules("qt:shared")
 
     -- add headers
     add_headers("src/*.h")
 
     -- add files
     add_files("src/*.cpp") 
+
+    -- add defines
+    add_defines("QT_DEMO_LIBRARY")
 
