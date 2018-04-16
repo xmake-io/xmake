@@ -14,3 +14,5 @@ target("qt_demo")
     -- add files
     add_files("src/*.cpp") 
 
+    -- add frameworks
+    add_frameworks("QtGui", "QtCore")

@@ -17,3 +17,5 @@ target("qt_demo")
     -- add defines
     add_defines("QT_DEMO_LIBRARY")
 
+    -- add frameworks
+    add_frameworks("QtGui", "QtCore")
