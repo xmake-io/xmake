@@ -22,7 +22,7 @@
 -- @file        xmake.lua
 --
 
--- define base rule
+-- define rule: base
 rule("qt:base")
 
     -- on load
@@ -56,6 +56,9 @@ rule("qt:base")
         -- deprecated API in order to know how to port your code away from it.
         target:add("defines", "QT_DEPRECATED_WARNINGS")
 
+        -- add frameworks: QtCore
+        target:add("frameworks", "QtCore")
+
         -- do frameworks for qt
         for _, framework in ipairs(target:get("frameworks")) do
 
@@ -81,15 +84,11 @@ rule("qt:base")
         end
     end)
 
--- define rule: qt console
-rule("qt:console")
-
-    -- add base rule
-    add_deps("qt:base")
-
-    -- on load
-    on_load(function (target)
-        target:set("kind", "binary")
+-- define rule: *.qrc
+rule("qt:qrc")
+    set_extensions(".qrc")
+    on_build_file(function (target, sourcefile)
+        print(sourcefile)
     end)
 
 -- define rule: qt static library
@@ -114,3 +113,45 @@ rule("qt:shared")
         target:set("kind", "shared")
     end)
 
+-- define rule: qt console
+rule("qt:console")
+
+    -- add base rule
+    add_deps("qt:base")
+
+    -- on load
+    on_load(function (target)
+        target:set("kind", "binary")
+    end)
+
+-- define rule: qt widget application
+rule("qt:widgetapp")
+
+    -- add base rule
+    add_deps("qt:base")
+
+    -- on load
+    on_load(function (target)
+
+        -- set kind: binary
+        target:set("kind", "binary")
+    end)
+
+-- define rule: qt quick application
+rule("qt:quickapp")
+
+    -- add rules
+    add_deps("qt:qrc", "qt:base")
+
+    -- on load
+    on_load(function (target)
+
+        -- set kind: binary
+        target:set("kind", "binary")
+
+        -- add frameworks
+        target:add("frameworks", "QtQuick", "QtGui")
+
+        -- TODO
+        -- import("load")(target, {kind = "binary", frameworks = {"QtQuick", "QtGui", "QtCore"}})
+    end)

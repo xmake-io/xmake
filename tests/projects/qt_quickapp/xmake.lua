@@ -6,13 +6,12 @@ add_rules("mode:debug", "mode:release")
 target("qt_demo")
 
     -- add rules
-    add_rules("qt:static")
+    add_rules("qt:quickapp")
 
     -- add headers
     add_headers("src/*.h")
 
     -- add files
     add_files("src/*.cpp") 
+    add_files("src/qml.qrc")
 
-    -- add frameworks
-    add_frameworks("QtGui")

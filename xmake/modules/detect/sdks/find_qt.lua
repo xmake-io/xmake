@@ -72,8 +72,11 @@ function _find_qt(sdkdir)
     -- get includedirs
     local includedirs = {path.join(sdkdir, "include")}
 
+    -- get version
+    local version = sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+
     -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs}
+    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, version = version}
 end
 
 -- find qt sdk toolchains

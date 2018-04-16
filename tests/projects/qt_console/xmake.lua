@@ -11,5 +11,3 @@ target("qt_console")
     -- add files
     add_files("src/*.cpp") 
 
-    -- add frameworks
-    add_frameworks("QtCore")
