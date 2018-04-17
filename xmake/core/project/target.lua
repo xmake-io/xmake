@@ -184,6 +184,12 @@ function target:data_set(name, data)
     self._DATA[name] = data
 end
 
+-- add user data
+function target:data_add(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
 -- dump this target
 function target:dump()
     table.dump(self._INFO)

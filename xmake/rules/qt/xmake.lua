@@ -66,15 +66,47 @@ rule("qt.console")
         import("load")(target, {kind = "binary", frameworks = {"QtCore"}})
     end)
 
--- define rule: qt widget application
-rule("qt.widgetapp")
+-- define rule: *.ui
+rule("qt.ui")
 
     -- add rule: qt environment
     add_deps("qt.env")
 
+    -- set extensions
+    set_extensions(".ui")
+
     -- on load
     on_load(function (target)
-        import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtCore"}})
+        
+        -- get uic
+        local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")
+        assert(uic and os.isexec(uic), "uic not found!")
+        
+        -- save uic
+        target:data_set("qt.uic", uic)
+    end)
+
+    -- on build file
+    on_build_file(function (target, sourcefile_ui)
+
+        -- imports
+        import("core.project.config")
+
+        -- get uic
+        local uic = target:data("qt.uic")
+
+        -- get c++ header file for ui
+        local headerfile_ui = path.join(config.buildir(), ".qt", "ui", target:name(), "ui_" .. path.basename(sourcefile_ui) .. ".h")
+        local headerfile_dir = path.directory(headerfile_ui)
+        if not os.isdir(headerfile_dir) then
+            os.mkdir(headerfile_dir)
+        end
+
+        -- compile ui 
+        os.vrunv(ui, {sourcefile_ui, "-o", headerfile_ui})
+
+        -- add clean files
+        target:data_add("qt.cleanfiles", headerfile_ui)
     end)
 
 -- define rule: *.qrc
@@ -115,13 +147,8 @@ rule("qt.qrc")
             os.mkdir(sourcefile_dir)
         end
 
-        -- trace
-        if option.get("verbose") then
-            print("%s -name qml %s -o %s", rcc, sourcefile_qrc, sourcefile_cpp)
-        end
-
         -- compile qrc 
-        os.runv(rcc, {"-name", "qml", sourcefile_qrc, "-o", sourcefile_cpp})
+        os.vrunv(rcc, {"-name", "qml", sourcefile_qrc, "-o", sourcefile_cpp})
 
         -- get object file
         local objectfile = target:objectfile(sourcefile_cpp)
@@ -138,24 +165,24 @@ rule("qt.qrc")
         table.insert(target:objectfiles(), objectfile)
 
         -- add clean files
-        target:data_set("qt.qrc.cleanfiles", {sourcefile_cpp, objectfile})
+        target:data_add("qt.cleanfiles", {sourcefile_cpp, objectfile})
+    end)
+
+-- define rule: qt application
+rule("qt.application")
+
+    -- add rules
+    add_deps("qt.qrc", "qt.ui")
+
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtQml", "QtNetwork", "QtCore"}})
     end)
 
     -- clean files
     after_clean(function (target)
-        for _, file in ipairs(target:data("qt.qrc.cleanfiles")) do
+        for _, file in ipairs(target:data("qt.cleanfiles")) do
             os.rm(file)
         end
-        target:data_set("qt.qrc.cleanfiles", nil)
-    end)
-
--- define rule: qt quick application
-rule("qt.quickapp")
-
-    -- add rules
-    add_deps("qt.qrc")
-
-    -- on load
-    on_load(function (target)
-        import("load")(target, {kind = "binary", frameworks = {"QtQuick", "QtGui", "QtQml", "QtNetwork", "QtCore"}})
+        target:data_set("qt.cleanfiles", nil)
     end)
