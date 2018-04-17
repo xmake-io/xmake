@@ -23,7 +23,7 @@
 --
 
 -- define rule: debug mode
-rule("mode:debug")
+rule("mode.debug")
     on_load(function (target)
 
         -- is debug mode now? xmake f -m debug
@@ -38,7 +38,7 @@ rule("mode:debug")
     end)
 
 -- define rule: release mode
-rule("mode:release")
+rule("mode.release")
     on_load(function (target)
 
         -- is release mode now? xmake f -m release
@@ -56,7 +56,7 @@ rule("mode:release")
     end)
 
 -- define rule: profile mode
-rule("mode:profile")
+rule("mode.profile")
     on_load(function (target)
 
         -- is profile mode now? xmake f -m profile
@@ -76,7 +76,7 @@ rule("mode:profile")
     end)
 
 -- define rule: check mode
-rule("mode:check")
+rule("mode.check")
     on_load(function (target)
 
         -- is check mode now? xmake f -m check
@@ -98,7 +98,7 @@ rule("mode:check")
     end)
 
 -- define rule: coverage mode
-rule("mode:coverage")
+rule("mode.coverage")
     on_load(function (target)
 
         -- is coverage mode now? xmake f -m coverage

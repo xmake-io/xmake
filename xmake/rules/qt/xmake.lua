@@ -23,7 +23,7 @@
 --
 
 -- define rule: environment
-rule("qt:env")
+rule("qt.env")
 
     -- on load
     on_load(function (target)
@@ -32,10 +32,10 @@ rule("qt:env")
     end)
 
 -- define rule: qt static library
-rule("qt:static")
+rule("qt.static")
 
     -- add rule: qt environment
-    add_deps("qt:env")
+    add_deps("qt.env")
 
     -- on load
     on_load(function (target)
@@ -43,10 +43,10 @@ rule("qt:static")
     end)
 
 -- define rule: qt shared library
-rule("qt:shared")
+rule("qt.shared")
 
     -- add rule: qt environment
-    add_deps("qt:env")
+    add_deps("qt.env")
 
     -- on load
     on_load(function (target)
@@ -54,10 +54,10 @@ rule("qt:shared")
     end)
 
 -- define rule: qt console
-rule("qt:console")
+rule("qt.console")
 
     -- add rule: qt environment
-    add_deps("qt:env")
+    add_deps("qt.env")
 
     -- on load
     on_load(function (target)
@@ -65,10 +65,10 @@ rule("qt:console")
     end)
 
 -- define rule: qt widget application
-rule("qt:widgetapp")
+rule("qt.widgetapp")
 
     -- add rule: qt environment
-    add_deps("qt:env")
+    add_deps("qt.env")
 
     -- on load
     on_load(function (target)
@@ -76,10 +76,10 @@ rule("qt:widgetapp")
     end)
 
 -- define rule: *.qrc
-rule("qt:qrc")
+rule("qt.qrc")
 
     -- add rule: qt environment
-    add_deps("qt:env")
+    add_deps("qt.env")
 
     -- set extensions
     set_extensions(".qrc")
@@ -101,11 +101,12 @@ rule("qt:qrc")
         -- imports
         import("core.base.option")
         import("core.project.config")
+        import("core.tool.compiler")
 
         -- get rcc
         local rcc = target:data("rcc")
 
-        -- get c++ sourcefile for qrc
+        -- get c++ source file for qrc
         local sourcefile_cpp = path.join(config.buildir(), ".qt", "qrc", target:name(), path.basename(sourcefile_qrc) .. ".cpp")
         local sourcefile_dir = path.directory(sourcefile_cpp)
         if not os.isdir(sourcefile_dir) then
@@ -119,13 +120,27 @@ rule("qt:qrc")
 
         -- compile qrc 
         os.runv(rcc, {"-name", "qml", sourcefile_qrc, "-o", sourcefile_cpp})
+
+        -- get object file
+        local objectfile = target:objectfile(sourcefile_cpp)
+
+        -- trace
+        if option.get("verbose") then
+            print(compiler.compcmd(sourcefile_cpp, objectfile, {target = target}))
+        end
+
+        -- compile c++ source file for qrc
+        compiler.compile(sourcefile_cpp, objectfile, {target = target})
+
+        -- add objectfile
+        table.insert(target:objectfiles(), objectfile)
     end)
 
 -- define rule: qt quick application
-rule("qt:quickapp")
+rule("qt.quickapp")
 
     -- add rules
-    add_deps("qt:qrc")
+    add_deps("qt.qrc")
 
     -- on load
     on_load(function (target)
