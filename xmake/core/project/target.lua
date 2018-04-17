@@ -351,9 +351,7 @@ function target:objectdir()
     -- the object directory
     local objectdir = self:get("objectdir")
     if not objectdir then
-
-        -- make the default object directory
-        objectdir = path.join(config.get("buildir"), ".objs")
+        objectdir = path.join(config.buildir(), ".objs")
     end
   
     -- ok?
@@ -364,7 +362,7 @@ end
 function target:depfile()
 
     -- the target directory
-    local targetdir = self:get("targetdir") or config.get("buildir")
+    local targetdir = self:get("targetdir") or config.buildir()
     assert(targetdir and type(targetdir) == "string")
 
     -- make the dependent file path
@@ -380,7 +378,7 @@ end
 function target:targetdir()
 
     -- the target directory
-    local targetdir = self:get("targetdir") or config.get("buildir")
+    local targetdir = self:get("targetdir") or config.buildir()
     assert(targetdir and type(targetdir) == "string")
 
     -- ok?
@@ -408,7 +406,7 @@ end
 function target:symbolfile()
 
     -- the target directory
-    local targetdir = self:get("targetdir") or config.get("buildir")
+    local targetdir = self:get("targetdir") or config.buildir()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
@@ -426,7 +424,7 @@ end
 
 -- get header directory
 function target:headerdir()
-    return self:get("headerdir") or config.get("buildir")
+    return self:get("headerdir") or config.buildir()
 end
 
 -- get the source file rule name

@@ -22,136 +22,112 @@
 -- @file        xmake.lua
 --
 
--- define rule: base
-rule("qt:base")
+-- define rule: environment
+rule("qt:env")
 
     -- on load
     on_load(function (target)
-
-        -- imports
-        import("core.project.config")
         import("detect.sdks.find_qt")
-
-        -- check qt sdk
-        local qt = assert(find_qt(nil, {verbose = true}), "Qt SDK not found!")
-
-        -- set kind: binary
-        target:set("kind", "binary")
-
-        -- need c++11
-        target:set("languages", "cxx11")
-
-        -- add defines for the compile mode
-        if is_mode("debug") then
-            target:add("defines", "QT_QML_DEBUG")
-        elseif is_mode("release") then
-            target:add("defines", "QT_NO_DEBUG")
-        elseif is_mode("profile") then
-            target:add("defines", "QT_QML_DEBUG", "QT_NO_DEBUG")
-        end
-
-        -- The following define makes your compiler emit warnings if you use
-        -- any feature of Qt which as been marked deprecated (the exact warnings
-        -- depend on your compiler). Please consult the documentation of the
-        -- deprecated API in order to know how to port your code away from it.
-        target:add("defines", "QT_DEPRECATED_WARNINGS")
-
-        -- add frameworks: QtCore
-        target:add("frameworks", "QtCore")
-
-        -- do frameworks for qt
-        for _, framework in ipairs(target:get("frameworks")) do
-
-            -- translate qt frameworks
-            if framework:startswith("Qt") then
-
-                -- add defines
-                target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
-                
-                -- add includedirs for macosx
-                if is_plat("macosx") then
-                    target:add("includedirs", path.join(qt.sdkdir, "lib/" .. framework .. ".framework/Headers"))
-                end
-            end
-        end
-
-        -- add includedirs, linkdirs for macosx
-        if is_plat("macosx") then
-            target:add("frameworkdirs", qt.linkdirs)
-            target:add("frameworks", "DiskArbitration", "IOKit")
-            target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
-            target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
-        end
-    end)
-
--- define rule: *.qrc
-rule("qt:qrc")
-    set_extensions(".qrc")
-    on_build_file(function (target, sourcefile)
-        print(sourcefile)
+        target:data_set("qt", assert(find_qt(nil, {verbose = true}), "Qt SDK not found!"))
     end)
 
 -- define rule: qt static library
 rule("qt:static")
 
-    -- add base rule
-    add_deps("qt:base")
+    -- add rule: qt environment
+    add_deps("qt:env")
 
     -- on load
     on_load(function (target)
-        target:set("kind", "static")
+        import("load")(target, {kind = "static", frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt shared library
 rule("qt:shared")
 
-    -- add base rule
-    add_deps("qt:base")
+    -- add rule: qt environment
+    add_deps("qt:env")
 
     -- on load
     on_load(function (target)
-        target:set("kind", "shared")
+        import("load")(target, {kind = "shared", frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt console
 rule("qt:console")
 
-    -- add base rule
-    add_deps("qt:base")
+    -- add rule: qt environment
+    add_deps("qt:env")
 
     -- on load
     on_load(function (target)
-        target:set("kind", "binary")
+        import("load")(target, {kind = "binary", frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt widget application
 rule("qt:widgetapp")
 
-    -- add base rule
-    add_deps("qt:base")
+    -- add rule: qt environment
+    add_deps("qt:env")
 
     -- on load
     on_load(function (target)
+        import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtCore"}})
+    end)
 
-        -- set kind: binary
-        target:set("kind", "binary")
+-- define rule: *.qrc
+rule("qt:qrc")
+
+    -- add rule: qt environment
+    add_deps("qt:env")
+
+    -- set extensions
+    set_extensions(".qrc")
+
+    -- on load
+    on_load(function (target)
+        
+        -- get rcc
+        local rcc = path.join(target:data("qt").bindir, is_host("windows") and "rcc.exe" or "rcc")
+        assert(rcc and os.isexec(rcc), "rcc not found!")
+        
+        -- save rcc
+        target:data_set("rcc", rcc)
+    end)
+
+    -- on build file
+    on_build_file(function (target, sourcefile_qrc)
+
+        -- imports
+        import("core.base.option")
+        import("core.project.config")
+
+        -- get rcc
+        local rcc = target:data("rcc")
+
+        -- get c++ sourcefile for qrc
+        local sourcefile_cpp = path.join(config.buildir(), ".qt", "qrc", target:name(), path.basename(sourcefile_qrc) .. ".cpp")
+        local sourcefile_dir = path.directory(sourcefile_cpp)
+        if not os.isdir(sourcefile_dir) then
+            os.mkdir(sourcefile_dir)
+        end
+
+        -- trace
+        if option.get("verbose") then
+            print("%s -name qml %s -o %s", rcc, sourcefile_qrc, sourcefile_cpp)
+        end
+
+        -- compile qrc 
+        os.runv(rcc, {"-name", "qml", sourcefile_qrc, "-o", sourcefile_cpp})
     end)
 
 -- define rule: qt quick application
 rule("qt:quickapp")
 
     -- add rules
-    add_deps("qt:qrc", "qt:base")
+    add_deps("qt:qrc")
 
     -- on load
     on_load(function (target)
-
-        -- set kind: binary
-        target:set("kind", "binary")
-
-        -- add frameworks
-        target:add("frameworks", "QtQuick", "QtGui")
-
-        -- TODO
-        -- import("load")(target, {kind = "binary", frameworks = {"QtQuick", "QtGui", "QtCore"}})
+        import("load")(target, {kind = "binary", frameworks = {"QtQuick", "QtGui", "QtQml", "QtNetwork", "QtCore"}})
     end)

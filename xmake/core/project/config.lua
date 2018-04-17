@@ -140,7 +140,7 @@ function config.buildir()
 
         -- get the absolute path first
         if not path.is_absolute(buildir) then
-            buildir = path.absolute(buildir, xmake._PROJECT_DIR)
+            buildir = path.absolute(buildir, os.projectdir())
         end
 
         -- adjust path for the current directory
