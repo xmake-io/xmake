@@ -28,7 +28,9 @@ rule("qt.env")
     -- on load
     on_load(function (target)
         import("detect.sdks.find_qt")
-        target:data_set("qt", assert(find_qt(nil, {verbose = true}), "Qt SDK not found!"))
+        if not target:data("qt") then
+            target:data_set("qt", assert(find_qt(nil, {verbose = true}), "Qt SDK not found!"))
+        end
     end)
 
 -- define rule: qt static library
@@ -92,7 +94,7 @@ rule("qt.qrc")
         assert(rcc and os.isexec(rcc), "rcc not found!")
         
         -- save rcc
-        target:data_set("rcc", rcc)
+        target:data_set("qt.rcc", rcc)
     end)
 
     -- on build file
@@ -104,7 +106,7 @@ rule("qt.qrc")
         import("core.tool.compiler")
 
         -- get rcc
-        local rcc = target:data("rcc")
+        local rcc = target:data("qt.rcc")
 
         -- get c++ source file for qrc
         local sourcefile_cpp = path.join(config.buildir(), ".qt", "qrc", target:name(), path.basename(sourcefile_qrc) .. ".cpp")
@@ -134,6 +136,17 @@ rule("qt.qrc")
 
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
+
+        -- add clean files
+        target:data_set("qt.qrc.cleanfiles", {sourcefile_cpp, objectfile})
+    end)
+
+    -- clean files
+    after_clean(function (target)
+        for _, file in ipairs(target:data("qt.qrc.cleanfiles")) do
+            os.rm(file)
+        end
+        target:data_set("qt.qrc.cleanfiles", nil)
     end)
 
 -- define rule: qt quick application

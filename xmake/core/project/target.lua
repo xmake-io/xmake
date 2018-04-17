@@ -175,7 +175,7 @@ end
 
 -- get user data
 function target:data(name)
-    return self._DATA[name]
+    return self._DATA and self._DATA[name] or nil
 end
 
 -- set user data
