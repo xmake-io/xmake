@@ -295,7 +295,7 @@ function _build_pcheaderfiles(target, buildinfo)
 end
 
 -- build source files with the custom rule
-function _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
+function _build_files_with_rule(target, buildinfo, sourcebatch, jobs, suffix)
 
     -- the rule name
     local rulename = sourcebatch.rulename
@@ -305,42 +305,48 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
     assert(ruleinst, "unknown rule: %s", rulename)
 
     -- on_build_files?
-    local on_build_files = ruleinst:script("build_files")
+    local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
     if on_build_files then
         on_build_files(target, sourcebatch.sourcefiles)
     else
         -- get the build file script
-        local on_build_file = ruleinst:script("build_file")
-        assert(on_build_file, "rule(%s): on_build_file() script not found!", rulename)
+        local on_build_file = ruleinst:script("build_file" .. (suffix and ("_" .. suffix) or ""))
+        if on_build_file then
 
-        -- run build jobs for each source file 
-        local curdir = os.curdir()
-        process.runjobs(function (index)
+            -- run build jobs for each source file 
+            local curdir = os.curdir()
+            process.runjobs(function (index)
 
-            -- force to set the current directory first because the other jobs maybe changed it
-            os.cd(curdir)
+                -- force to set the current directory first because the other jobs maybe changed it
+                os.cd(curdir)
 
-            -- calculate percent
-            local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                -- calculate percent
+                local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                if suffix then
+                    percent = ((buildinfo.targetindex + (suffix == "before" and _g.sourceindex or _g.sourcecount) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                end
 
-            -- the source file
-            local sourcefile = sourcebatch.sourcefiles[index]
+                -- the source file
+                local sourcefile = sourcebatch.sourcefiles[index]
 
-            -- trace percent info
-            if option.get("verbose") then
-                cprint("${green}[%02d%%]:${dim} compiling.%s %s", percent, rulename, sourcefile)
-            else
-                cprint("${green}[%02d%%]:${clear} compiling.%s %s", percent, rulename, sourcefile)
-            end
+                -- trace percent info
+                if option.get("verbose") then
+                    cprint("${green}[%02d%%]:${dim} compiling.%s %s", percent, rulename, sourcefile)
+                else
+                    cprint("${green}[%02d%%]:${clear} compiling.%s %s", percent, rulename, sourcefile)
+                end
 
-            -- do build file
-            on_build_file(target, sourcefile)
+                -- do build file
+                on_build_file(target, sourcefile)
 
-        end, #sourcebatch.sourcefiles, jobs)
+            end, #sourcebatch.sourcefiles, jobs)
+        end
     end
 
     -- update object index
-    _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+    if not suffix then
+        _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+    end
 end
 
 -- build objects for the given target
@@ -360,26 +366,33 @@ function build(target, buildinfo)
     end
 
     -- build precompiled headers
-   _build_pcheaderfiles(target, buildinfo)
+    _build_pcheaderfiles(target, buildinfo)
+
+    -- build source batches with custom rules before building other sources
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename then
+            _build_files_with_rule(target, buildinfo, sourcebatch, jobs, "before")
+        end
+    end
 
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
 
-        -- compile source files using the custom rule
+        -- compile source files with custom rule
         if sourcebatch.rulename then
-
-            -- build source files with the custom rule
             _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
-
         -- compile source files to single object at once
         elseif type(sourcebatch.objectfiles) == "string" then
-        
-            -- build single object
             _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
         else
-
-            -- build each objects
             _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
+        end
+    end
+
+    -- build source batches with custom rules after building other sources
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename then
+            _build_files_with_rule(target, buildinfo, sourcebatch, jobs, "after")
         end
     end
 end

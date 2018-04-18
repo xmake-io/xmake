@@ -86,8 +86,8 @@ rule("qt.ui")
         target:data_set("qt.uic", uic)
     end)
 
-    -- on build file
-    on_build_file(function (target, sourcefile_ui)
+    -- before build file
+    before_build_file(function (target, sourcefile_ui)
 
         -- imports
         import("core.project.config")
@@ -103,7 +103,10 @@ rule("qt.ui")
         end
 
         -- compile ui 
-        os.vrunv(ui, {sourcefile_ui, "-o", headerfile_ui})
+        os.vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
+
+        -- add includedirs
+        target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
 
         -- add clean files
         target:data_add("qt.cleanfiles", headerfile_ui)

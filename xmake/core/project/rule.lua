@@ -172,6 +172,8 @@ function rule.apis()
             -- rule.before_xxx
         ,   "rule.before_run"
         ,   "rule.before_build"
+        ,   "rule.before_build_file"
+        ,   "rule.before_build_files"
         ,   "rule.before_clean"
         ,   "rule.before_package"
         ,   "rule.before_install"
@@ -179,6 +181,8 @@ function rule.apis()
             -- rule.after_xxx
         ,   "rule.after_run"
         ,   "rule.after_build"
+        ,   "rule.after_build_file"
+        ,   "rule.after_build_files"
         ,   "rule.after_clean"
         ,   "rule.after_package"
         ,   "rule.after_install"

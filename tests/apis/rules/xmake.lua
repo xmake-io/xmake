@@ -22,12 +22,18 @@ rule("man")
 -- define rule: c code
 rule("c code")
     add_imports("core.tool.compiler")
+    before_build_file(function (target, sourcefile)
+        print("before_build_file: ", sourcefile)
+    end)
     on_build_file(function (target, sourcefile)
         local objectfile_o = os.tmpfile() .. ".o"
         local sourcefile_c = os.tmpfile() .. ".c"
         os.cp(sourcefile, sourcefile_c)
         compiler.compile(sourcefile_c, objectfile_o)
         table.insert(target:objectfiles(), objectfile_o)
+    end)
+    after_build_file(function (target, sourcefile)
+        print("after_build_file: ", sourcefile)
     end)
 
 -- define rule: stub3
