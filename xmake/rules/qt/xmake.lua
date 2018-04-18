@@ -112,6 +112,65 @@ rule("qt.ui")
         target:data_add("qt.cleanfiles", headerfile_ui)
     end)
 
+-- define rule: moc
+rule("qt.moc")
+
+    -- add rule: qt environment
+    add_deps("qt.env")
+
+    -- set extensions
+    set_extensions(".h")
+
+    -- on load
+    on_load(function (target)
+        
+        -- get moc
+        local moc = path.join(target:data("qt").bindir, is_host("windows") and "moc.exe" or "moc")
+        assert(moc and os.isexec(moc), "moc not found!")
+        
+        -- save moc
+        target:data_set("qt.moc", moc)
+    end)
+
+    -- on build file
+    on_build_file(function (target, headerfile_moc)
+
+        -- imports
+        import("core.base.option")
+        import("core.project.config")
+        import("core.tool.compiler")
+
+        -- get moc
+        local moc = target:data("qt.moc")
+
+        -- get c++ source file for moc
+        local sourcefile_moc = path.join(config.buildir(), ".qt", "moc", target:name(), "moc_" .. path.basename(headerfile_moc) .. ".cpp")
+        local sourcefile_dir = path.directory(sourcefile_moc)
+        if not os.isdir(sourcefile_dir) then
+            os.mkdir(sourcefile_dir)
+        end
+
+        -- generate c++ source file for moc
+        os.vrunv(moc, {headerfile_moc, "-o", sourcefile_moc})
+
+        -- get object file
+        local objectfile = target:objectfile(sourcefile_moc)
+
+        -- trace
+        if option.get("verbose") then
+            print(compiler.compcmd(sourcefile_moc, objectfile, {target = target}))
+        end
+
+        -- compile c++ source file for moc
+        compiler.compile(sourcefile_moc, objectfile, {target = target})
+
+        -- add objectfile
+        table.insert(target:objectfiles(), objectfile)
+
+        -- add clean files
+        target:data_add("qt.cleanfiles", {sourcefile_moc, objectfile})
+    end)
+
 -- define rule: *.qrc
 rule("qt.qrc")
 
@@ -175,7 +234,7 @@ rule("qt.qrc")
 rule("qt.application")
 
     -- add rules
-    add_deps("qt.qrc", "qt.ui")
+    add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- on load
     on_load(function (target)
