@@ -136,22 +136,16 @@ rule("qt.moc")
     on_build_file(function (target, headerfile_moc)
 
         -- imports
+        import("moc")
         import("core.base.option")
         import("core.project.config")
         import("core.tool.compiler")
 
-        -- get moc
-        local moc = target:data("qt.moc")
-
         -- get c++ source file for moc
         local sourcefile_moc = path.join(config.buildir(), ".qt", "moc", target:name(), "moc_" .. path.basename(headerfile_moc) .. ".cpp")
-        local sourcefile_dir = path.directory(sourcefile_moc)
-        if not os.isdir(sourcefile_dir) then
-            os.mkdir(sourcefile_dir)
-        end
 
         -- generate c++ source file for moc
-        os.vrunv(moc, {headerfile_moc, "-o", sourcefile_moc})
+        moc.generate(target, headerfile_moc, sourcefile_moc)
 
         -- get object file
         local objectfile = target:objectfile(sourcefile_moc)
