@@ -33,39 +33,6 @@ rule("qt.env")
         end
     end)
 
--- define rule: qt static library
-rule("qt.static")
-
-    -- add rule: qt environment
-    add_deps("qt.env")
-
-    -- on load
-    on_load(function (target)
-        import("load")(target, {kind = "static", frameworks = {"QtCore"}})
-    end)
-
--- define rule: qt shared library
-rule("qt.shared")
-
-    -- add rule: qt environment
-    add_deps("qt.env")
-
-    -- on load
-    on_load(function (target)
-        import("load")(target, {kind = "shared", frameworks = {"QtCore"}})
-    end)
-
--- define rule: qt console
-rule("qt.console")
-
-    -- add rule: qt environment
-    add_deps("qt.env")
-
-    -- on load
-    on_load(function (target)
-        import("load")(target, {kind = "binary", frameworks = {"QtCore"}})
-    end)
-
 -- define rule: *.ui
 rule("qt.ui")
 
@@ -222,6 +189,39 @@ rule("qt.qrc")
 
         -- add clean files
         target:data_add("qt.cleanfiles", {sourcefile_cpp, objectfile})
+    end)
+
+-- define rule: qt static library
+rule("qt.static")
+
+    -- add rule: moc with qt environment
+    add_deps("qt.moc")
+
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "static", frameworks = {"QtCore"}})
+    end)
+
+-- define rule: qt shared library
+rule("qt.shared")
+
+    -- add rule: moc with qt environment
+    add_deps("qt.moc")
+
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "shared", frameworks = {"QtCore"}})
+    end)
+
+-- define rule: qt console
+rule("qt.console")
+
+    -- add rule: moc with qt environment
+    add_deps("qt.moc")
+
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "binary", frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt application
