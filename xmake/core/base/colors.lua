@@ -28,11 +28,11 @@ local colors = colors or {}
 -- load modules
 local emoji = emoji or require("base/emoji")
 
--- the 256 color keys
+-- the color8 keys
 --
 -- from https://github.com/hoelzro/ansicolors
 --
-colors._keys256 = 
+colors._keys8 = 
 {
     -- attributes
     reset       = 0
@@ -64,6 +64,44 @@ colors._keys256 =
 ,   onmagenta   = 45
 ,   oncyan      = 46
 ,   onwhite     = 47
+}
+
+-- the color256 keys
+--
+-- from https://github.com/hoelzro/ansicolors
+--
+colors._keys256 = 
+{
+    -- attributes
+    reset       = 0
+,   clear       = 0
+,   default     = 0
+,   bright      = 1
+,   dim         = 2
+,   underline   = 4
+,   blink       = 5
+,   reverse     = 7
+,   hidden      = 8
+
+    -- foreground 
+,   black       = "38;5;0"
+,   red         = "38;5;1"
+,   green       = "38;5;2"
+,   yellow      = "38;5;3"
+,   blue        = "38;5;4"
+,   magenta     = "38;5;5"
+,   cyan        = "38;5;6"
+,   white       = "38;5;7"
+
+    -- background 
+,   onblack     = "48;5;0"
+,   onred       = "48;5;1"
+,   ongreen     = "48;5;2"
+,   onyellow    = "48;5;3"
+,   onblue      = "48;5;4"
+,   onmagenta   = "48;5;5"
+,   oncyan      = "48;5;6"
+,   onwhite     = "48;5;7"
 }
 
 -- the 24bits color keys
@@ -107,11 +145,11 @@ colors._keys24 =
 -- the escape string
 colors._escape = string.char(27) .. '[%sm'
 
--- support 256 colors?
+-- support 8 colors?
 --
--- COLORTERM: color256, truecolor, nocolor
+-- COLORTERM: color8, color256, truecolor, nocolor
 --
-function colors.has256()
+function colors.color8()
 
     -- get $COLORTERM
     colors._COLORTERM = colors._COLORTERM or os.getenv("COLORTERM") or ""
@@ -121,14 +159,32 @@ function colors.has256()
         return false
     end
 
-    -- has 256 color?
-    if colors._COLORTERM == "color256" or os.host() ~= "windows" then
+    -- has 8 colors?
+    if colors._COLORTERM == "color8" or os.host() ~= "windows" then
         return true
     end
 
     -- this is supported if exists ANSICON envirnoment variable on windows
     colors._ANSICON = colors._ANSICON or os.getenv("ANSICON")
     return colors._ANSICON
+end
+
+-- support 256 colors?
+--
+-- COLORTERM: color8, color256, truecolor, nocolor
+--
+function colors.color256()
+
+    -- get $COLORTERM
+    colors._COLORTERM = colors._COLORTERM or os.getenv("COLORTERM") or ""
+
+    -- no color?
+    if colors._COLORTERM == "nocolor" then
+        return false
+    end
+
+    -- has 256 colors?
+    return colors._COLORTERM == "color256" or os.host() ~= "windows"
 end
 
 -- support 24bits true color
@@ -155,7 +211,7 @@ function colors.truecolor()
     return colors._COLORTERM:find("truecolor", 1, true) or colors._COLORTERM:find("24bit", 1, true)
 end
 
--- make rainbow color code by the index of characters
+-- make rainbow truecolor code by the index of characters
 --
 -- @param index     the index of characters
 -- @param seed      the seed, 0-255, default: random
@@ -163,7 +219,7 @@ end
 -- @param spread    the spread, default: 3.0 
 --
 --
-function colors.rainbow(index, seed, freq, spread)
+function colors.rainbow24(index, seed, freq, spread)
 
     -- init values
     seed   = seed
@@ -180,12 +236,35 @@ function colors.rainbow(index, seed, freq, spread)
     return string.format("%d;%d;%d", red, green, blue)
 end
 
+-- make rainbow color256 code by the index of characters (16-256)
+--
+-- @param index     the index of characters
+-- @param seed      the seed, 0-255, default: random
+-- @param freq      the frequency, default: 0.1
+-- @param spread    the spread, default: 3.0 
+--
+--
+function colors.rainbow256(index, seed, freq, spread)
+
+    -- init values
+    seed   = seed
+    freq   = freq or 0.1
+    spread = spread or 3.0
+    index  = seed + index / spread
+
+    -- make color code
+    local code = (freq * index) % 240 + 18
+
+    -- make code
+    return string.format("#%d", code)
+end
+
 -- translate colors from the string
 --
 -- @param str       the string with colors
 -- @param force     force to translate all colors? 
 -- 
--- colors:
+-- 8 colors:
 --
 -- "${red}hello"
 -- "${onred}hello${clear} xmake"
@@ -193,6 +272,13 @@ end
 -- "${dim red}hello"
 -- "${blink red}hello"
 -- "${reverse red}hello xmake"
+--
+-- 256 colors:
+--
+-- "${#255}hello"
+-- "${on#255}hello${clear} xmake"
+-- "${bright #255; underline}hello"
+-- "${bright on#255 #10}hello${clear} xmake"
 --
 -- true colors:
 --
@@ -219,7 +305,7 @@ function colors.translate(str)
     str = string.gsub(str, "(%${(.-)})", function(_, word) 
 
         -- not supported? ignore it
-        if not colors.has256() and not colors.truecolor() then
+        if not colors.color8() and not colors.color256() and not colors.truecolor() then
             return ""
         end
 
@@ -230,7 +316,7 @@ function colors.translate(str)
         end
 
         -- get keys
-        local keys = colors._keys256
+        local keys = colors.color256() and colors._keys256 or colors._keys8
         if colors.truecolor() then
             keys = colors._keys24
         end
@@ -241,11 +327,20 @@ function colors.translate(str)
 
             -- get the color code
             local code = keys[key]
-            if not code and key:find(";", 1, true) and colors.truecolor() then
-                if key:startswith("on;") then
-                    code = key:gsub("on;", "48;2;")
+            if not code then
+                if colors.truecolor() and key:find(";", 1, true) then
+                    if key:startswith("on;") then
+                        code = key:gsub("on;", "48;2;")
+                    else
+                        code = "38;2;" .. key
+                    end
+                elseif colors.color256() and key:find("#", 1, true) then
+                    if key:startswith("on#") then
+                        code = key:gsub("on#", "48;5;")
+                    else
+                        code = key:gsub("#", "38;5;")
+                    end
                 else
-                    code = "38;2;" .. key
                 end
             end
             assert(code, "unknown color: " .. key)

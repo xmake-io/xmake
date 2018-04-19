@@ -8,6 +8,7 @@
 * Add `set_tools` and `add_tools` apis to change the toolchains for special target
 * Add builtin rules: `mode:debug`, `mode:release`, `mode:profile` and `mode:check`
 * Add `is_mode`, `is_arch` and `is_plat` builtin apis in the custom scripts
+* Add color256 codes
 
 ### Changes
 
@@ -452,6 +453,7 @@
 * 添加`set_tools`和`add_tools`接口为指定target目标设置编译工具链
 * 添加内建规则：`mode:debug`, `mode:release`, `mode:profile`和`mode:check`
 * 添加`is_mode`, `is_arch` 和`is_plat`内置接口到自定义脚本域
+* 添加color256代码
 
 ### 改进
 

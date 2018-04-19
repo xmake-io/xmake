@@ -70,14 +70,14 @@ function main._show_logo()
     ]]
 
     -- make rainbow for logo
-    if colors.truecolor() then
+    if colors.truecolor() or colors.color256() then
         local lines = {} 
         local seed  = 236
         for _, line in ipairs(logo:split("\n")) do
             local i = 0
             local line2 = ""
             line:gsub(".", function (c)
-                local code = colors.rainbow(i, seed)
+                local code = colors.truecolor() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
                 line2 = string.format("%s${%s}%s", line2, code, c)
                 i = i + 1
             end)
