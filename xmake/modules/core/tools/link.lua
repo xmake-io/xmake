@@ -27,26 +27,15 @@ import("core.project.config")
 
 -- init it
 function init(self)
-    
-    -- the architecture
-    local arch = config.get("arch")
-
-    -- init flags for architecture
-    local flags_arch = ""
-    if arch == "x86" then 
-        flags_arch = "-machine:x86"
-    elseif arch == "x64" then
-        flags_arch = "-machine:x64"
-    end
-
+   
     -- init ldflags
-    _g.ldflags = { "-nologo", "-dynamicbase", "-nxcompat", flags_arch}
+    _g.ldflags = { "-nologo", "-dynamicbase", "-nxcompat"}
 
     -- init arflags
-    _g.arflags = {"-nologo", flags_arch}
+    _g.arflags = {"-nologo"}
 
     -- init shflags
-    _g.shflags = {"-nologo", flags_arch}
+    _g.shflags = {"-nologo"}
 
     -- init flags map
     _g.mapflags = 
@@ -63,6 +52,11 @@ end
 
 -- get the property
 function get(self, name)
+    local values = _g[name]
+    if name == "ldflags" or name == "arflags" or name == "shflags" then
+        -- switch architecture, @note does cache it in init() 
+        values = table.join(values, "-machine:" .. (config.arch() or "x86"))
+    end
     return _g[name]
 end
 

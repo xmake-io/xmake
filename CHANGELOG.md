@@ -9,19 +9,21 @@
 * Add builtin rules: `mode:debug`, `mode:release`, `mode:profile` and `mode:check`
 * Add `is_mode`, `is_arch` and `is_plat` builtin apis in the custom scripts
 * Add color256 codes
+* [#160](https://github.com/tboox/xmake/issues/160): Add Qt compilation environment support and add `qt.console`, `qt.application` rules
 
 ### Changes
 
 * Add FAQ to the auto-generated xmake.lua
 * Support android NDK >= r14
 * Improve warning flags for swiftc
-* Improve custom rules
+* [#167](https://github.com/tboox/xmake/issues/167): Improve custom rules
 
 ### Bugs fixed
 
 * Fix force to add flags bug
 * [#157](https://github.com/tboox/xmake/issues/157): Fix generate pdb file error if it's output directory does not exists
 * Fix strip all symbols bug for macho target file
+* [#168](https://github.com/tboox/xmake/issues/168): Fix generate vs201x project bug with x86/x64 architectures
 
 ## v2.1.9
 
@@ -454,19 +456,21 @@
 * 添加内建规则：`mode:debug`, `mode:release`, `mode:profile`和`mode:check`
 * 添加`is_mode`, `is_arch` 和`is_plat`内置接口到自定义脚本域
 * 添加color256代码
+* [#160](https://github.com/tboox/xmake/issues/160): 增加对Qt SDK编译环境的跨平台支持，并且增加`qt.console`, `qt.application`等规则
 
 ### 改进
 
 * 添加FAQ到自动生成的xmake.lua文件，方便用户快速上手
 * 支持Android NDK >= r14的版本
 * 改进swiftc对warning flags的支持
-* 改进自定义规则：`rule()`
+* [#167](https://github.com/tboox/xmake/issues/167): 改进自定义规则：`rule()`
 
 ### Bugs修复
 
 * 修复无法通过`add_ldflags("xx", "xx", {force = true})`强制设置多个flags的问题
 * [#157](https://github.com/tboox/xmake/issues/157): 修复pdb符号输出目录不存在情况下编译失败问题
 * 修复对macho格式目标strip all符号失效问题
+* [#168](https://github.com/tboox/xmake/issues/168): 修复生成vs201x工程插件，在x64下失败的问题
 
 ## v2.1.9
 
