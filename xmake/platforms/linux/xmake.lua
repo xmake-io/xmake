@@ -51,7 +51,7 @@ platform("linux")
                 config = 
                 {   
                     {category = "Cuda SDK Configuration"                                            }
-                ,   {nil, "cuda_dir",       "kv", "auto",       "The Cuda SDK Directory"            }
+                ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 ,   {nil, "qt_sdkver",      "kv", "auto",       "The Qt SDK Version"                }
@@ -60,7 +60,7 @@ platform("linux")
             ,   global = 
                 {   
                     {}
-                ,   {nil, "cuda_dir",       "kv", "auto",       "The Cuda SDK Directory"            }
+                ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 }
             }

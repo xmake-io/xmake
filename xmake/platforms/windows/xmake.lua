@@ -68,7 +68,7 @@ platform("windows")
         _g.cuflags = {cu_archs[arch] or ""}
         _g["cu-shflags"] = {cu_archs[arch] or ""}
         _g["cu-ldflags"] = {cu_archs[arch] or ""}
-        local cuda_dir = config.get("cuda_dir")
+        local cuda_dir = config.get("cuda")
         if cuda_dir then
             table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
             table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
@@ -86,14 +86,14 @@ platform("windows")
                     {category = "Visual Studio SDK Configuration"                  }
                 ,   {nil, "vs",       "kv", "auto", "The Microsoft Visual Studio"  }
                 ,   {category = "Cuda SDK Configuration"                           }
-                ,   {nil, "cuda_dir", "kv", "auto", "The Cuda SDK Directory"       }
+                ,   {nil, "cuda",     "kv", "auto", "The Cuda SDK Directory"       }
                 }
 
             ,   global = 
                 {   
                     {                                                              }
                 ,   {nil, "vs",       "kv", "auto", "The Microsoft Visual Studio"  }
-                ,   {nil, "cuda_dir", "kv", "auto", "The Cuda SDK Directory"       }
+                ,   {nil, "cuda",     "kv", "auto", "The Cuda SDK Directory"       }
                 }
             }
 

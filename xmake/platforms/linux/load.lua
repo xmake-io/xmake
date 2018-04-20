@@ -80,7 +80,7 @@ function main()
     _g.cuflags = {cu_archs[arch] or ""}
     _g["cu-shflags"] = {cu_archs[arch] or ""}
     _g["cu-ldflags"] = {cu_archs[arch] or ""}
-    local cuda_dir = config.get("cuda_dir")
+    local cuda_dir = config.get("cuda")
     if cuda_dir then
         table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
         table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))

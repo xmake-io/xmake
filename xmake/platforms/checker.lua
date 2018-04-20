@@ -184,7 +184,7 @@ end
 function check_cuda(config)
 
     -- get the cuda directory
-    local cuda_dir = config.get("cuda_dir")
+    local cuda_dir = config.get("cuda")
     if not cuda_dir then
 
         -- check ok? update it
