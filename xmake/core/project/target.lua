@@ -351,7 +351,7 @@ function target:options()
     return self._OPTIONS
 end
 
--- get the object file directory
+-- get the object files directory
 function target:objectdir()
 
     -- the object directory
@@ -361,18 +361,17 @@ function target:objectdir()
     end
   
     -- ok?
-    return objectdir
+    return path.join(objectdir, config.get("mode") or "generic", config.get("arch") or os.arch())
+end
+
+-- get the dependent files directory
+function target:dependir()
+    return path.join(config.buildir(), ".deps", config.get("mode") or "generic", config.get("arch") or os.arch(), self:name())
 end
 
 -- get the target dependent file 
 function target:depfile()
-
-    -- the target directory
-    local targetdir = self:get("targetdir") or config.buildir()
-    assert(targetdir and type(targetdir) == "string")
-
-    -- make the dependent file path
-    return path.join(targetdir, self:name() .. ".d")
+    return path.join(self:dependir(), self:name() .. ".d")
 end
 
 -- get the target kind
