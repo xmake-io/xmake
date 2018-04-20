@@ -81,6 +81,8 @@ function main(target, opt)
         target:add("frameworks", "DiskArbitration", "IOKit")
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
         target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
+    else
+        target:set("frameworks", nil)
     end
 end
 
