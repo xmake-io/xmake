@@ -22,6 +22,14 @@
 -- @file        load.lua
 --
 
+-- make link for framework
+function _link(framework, major)
+    if major and framework:startswith("Qt") then
+        framework = "Qt" .. major .. framework:sub(3)
+    end
+    return framework
+end
+
 -- the main entry
 function main(target, opt)
 
@@ -31,10 +39,21 @@ function main(target, opt)
     -- check qt sdk
     local qt = target:data("qt")
 
+    -- get major version
+    local major = nil
+    if qt.sdkver then
+        major = qt.sdkver:split('%.')[1]
+    end
+
     -- set kind
     if opt.kind then
         target:set("kind", opt.kind)
     end
+
+    -- add -fPIC
+    target:add("cxflags", "-fPIC")
+    target:add("mxflags", "-fPIC")
+    target:add("asflags", "-fPIC")
 
     -- need c++11
     target:set("languages", "cxx11")
@@ -68,21 +87,29 @@ function main(target, opt)
             -- add defines
             target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
             
-            -- add includedirs for macosx
+            -- add includedirs 
             if is_plat("macosx") then
                 target:add("includedirs", path.join(qt.sdkdir, "lib/" .. framework .. ".framework/Headers"))
+            elseif is_plat("linux") then
+                target:add("links", _link(framework, major))
+                target:add("includedirs", path.join(qt.sdkdir, "include/" .. framework))
             end
         end
     end
 
-    -- add includedirs, linkdirs for macosx
+    -- add includedirs, linkdirs 
     if is_plat("macosx") then
-        target:add("frameworkdirs", qt.linkdirs)
         target:add("frameworks", "DiskArbitration", "IOKit")
+        target:add("frameworkdirs", qt.linkdirs)
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
+        target:add("linkdirs", qt.linkdirs)
         target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
-    else
+    elseif is_plat("linux") then
         target:set("frameworks", nil)
+        target:add("includedirs", path.join(qt.sdkdir, "include"))
+        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/linux-g++"))
+        target:add("rpathdirs", qt.linkdirs)
+        target:add("linkdirs", qt.linkdirs)
     end
 end
 

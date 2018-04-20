@@ -89,11 +89,11 @@ function _find_qt(sdkdir, sdkver)
     -- get includedirs
     local includedirs = {path.join(sdkdir, "include")}
 
-    -- get version
-    local version = sdkver or sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+    -- get sdk version
+    sdkver = sdkver or sdkdir:match("(%d+%.?%d*%.?%d*.-)")
 
     -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, version = version}
+    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, sdkver = sdkver}
 end
 
 -- find qt sdk toolchains
@@ -101,7 +101,7 @@ end
 -- @param sdkdir    the qt sdk directory
 -- @param opt       the argument options, .e.g {verbose = true, force = false, version = "5.9.1"} 
 --
--- @return          the qt sdk toolchains. .e.g {version = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+-- @return          the qt sdk toolchains. .e.g {sdkver = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
 -- @code 
 --
@@ -125,12 +125,14 @@ function main(sdkdir, opt)
     local qt = _find_qt(sdkdir or config.get("qt") or global.get("qt"), opt.version or config.get("qt_sdkver"))
     if qt then
 
-        -- save sdk directory to config
+        -- save to config
         config.set("qt_dir", qt.sdkdir, {force = true, readonly = true})
+        config.set("qt_sdkver", qt.sdkver, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for the Qt SDK directory ... ${green}%s", qt.sdkdir)
+            cprint("checking for the Qt SDK version ... ${green}%s", qt.sdkver)
         end
     else
 
