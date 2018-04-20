@@ -47,8 +47,8 @@ function _build_for_xmakefile(package, buildfile)
         linux    = {"sdk", "cross", "toolchains"},
         cross    = {"sdk", "cross", "toolchains"},
         mingw    = {"sdk", "cross", "toolchains"},
-        macosx   = {"xcode_dir", "xcode_sdkver"},
-        iphoneos = {"xcode_dir", "xcode_sdkver"},
+        macosx   = {"xcode", "xcode_sdkver"},
+        iphoneos = {"xcode", "xcode_sdkver"},
         windows  = {"vs"}
     }
 

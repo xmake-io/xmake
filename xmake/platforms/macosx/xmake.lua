@@ -51,7 +51,7 @@ platform("macosx")
                 config = 
                 {   
                     {category = "XCode SDK Configuration"                                           }
-                ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
+                ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
                 ,   {nil, "target_minver",  "kv", "auto",       "The Target Minimal Version"        }
                 ,   {category = "Cuda SDK Configuration"                                            }
@@ -64,7 +64,7 @@ platform("macosx")
             ,   global = 
                 {   
                     {}
-                ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
+                ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 }

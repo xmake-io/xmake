@@ -33,7 +33,7 @@ function main()
     local target_minver = config.get("target_minver")
 
     -- init flags for the xcode sdk directory
-    local xcode_dir     = config.get("xcode_dir")
+    local xcode_dir     = config.get("xcode")
     local xcode_sdkver  = config.get("xcode_sdkver")
     local xcode_sdkdir  = nil
     if xcode_dir and xcode_sdkver then

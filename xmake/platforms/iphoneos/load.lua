@@ -43,7 +43,7 @@ function main()
     local target_minver_flags = ifelse(simulator, "-mios-simulator-version-min=", "-miphoneos-version-min=") .. target_minver
 
     -- init the xcode sdk directory
-    local xcode_dir     = config.get("xcode_dir")
+    local xcode_dir     = config.get("xcode")
     local xcode_sdkver  = config.get("xcode_sdkver")
     local xcode_sdkdir  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode_dir, platname, platname, xcode_sdkver)
 

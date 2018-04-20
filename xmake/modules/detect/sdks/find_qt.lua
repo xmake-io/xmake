@@ -126,7 +126,7 @@ function main(sdkdir, opt)
     if qt then
 
         -- save to config
-        config.set("qt_dir", qt.sdkdir, {force = true, readonly = true})
+        config.set("qt", qt.sdkdir, {force = true, readonly = true})
         config.set("qt_sdkver", qt.sdkver, {force = true, readonly = true})
 
         -- trace

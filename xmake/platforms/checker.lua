@@ -120,7 +120,7 @@ end
 function check_xcode(config, optional)
 
     -- get the xcode directory
-    local xcode_dir = config.get("xcode_dir")
+    local xcode_dir = config.get("xcode")
     if not xcode_dir then
 
         -- check ok? update it
@@ -128,7 +128,7 @@ function check_xcode(config, optional)
         if xcode_dir then
 
             -- save it
-            config.set("xcode_dir", xcode_dir)
+            config.set("xcode", xcode_dir)
 
             -- trace
             cprint("checking for the Xcode application directory ... ${green}%s", xcode_dir)
@@ -153,7 +153,7 @@ function check_xcode_sdkver(config, optional)
     if not xcode_sdkver then
 
         -- check ok? update it
-        xcode_sdkver = find_xcode_sdkvers({xcode_dir = config.get("xcode_dir"), plat = config.get("plat"), arch = config.get("arch")})[1]
+        xcode_sdkver = find_xcode_sdkvers({xcode_dir = config.get("xcode"), plat = config.get("plat"), arch = config.get("arch")})[1]
         if xcode_sdkver then
             
             -- save it
@@ -192,7 +192,7 @@ function check_cuda(config)
         if toolchains then
 
             -- save it
-            config.set("cuda_dir", toolchains.cudadir)
+            config.set("cuda", toolchains.cudadir)
 
             -- trace
             cprint("checking for the Cuda SDK directory ... ${green}%s", toolchains.cudadir)
