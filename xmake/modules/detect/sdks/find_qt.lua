@@ -30,32 +30,49 @@ import("core.base.global")
 import("core.project.config")
 
 -- find qt sdk directory
-function _find_sdkdir(sdkdir)
+function _find_sdkdir(sdkdir, sdkver)
+
+    -- init sub-directory
+    local subdir = sdkver or "**"
+
+    -- append target sub-directory
+    local targetdir = nil
+    if is_plat("linux") then
+        targetdir = is_arch("x86_64") and "gcc_64" or "gcc_32"
+    elseif is_plat("macosx") then
+        targetdir = is_arch("x86_64") and "clang_64" or "clang_32"
+    elseif is_plat("android") then
+        targetdir = "android_*" -- TODO android_armv7 and ..?
+    end
+    if targetdir then
+        subdir = path.join(subdir, targetdir)
+    else
+        subdir = path.join(subdir, "**")
+    end
+    subdir = path.join(subdir, "bin")
 
     -- init the search directories
     local pathes = {}
     if sdkdir then
-        table.insert(pathes, path.join(sdkdir, "**", "bin"))
+        table.insert(pathes, sdkdir)
     end
-    if os.host() == "macosx" then
-        table.insert(pathes, "~/Qt/**/bin")
-    elseif os.host() == "windows" then
+    if os.host() == "windows" then
     else
-        table.insert(pathes, "~/Qt/**/bin")
+        table.insert(pathes, "~/Qt")
     end
 
     -- attempt to find qmake
-    local qmake = find_file(os.host() == "windows" and "qmake.exe" or "qmake", pathes)
+    local qmake = find_file(os.host() == "windows" and "qmake.exe" or "qmake", pathes, {suffixes = subdir})
     if qmake then
         return path.directory(path.directory(qmake))
     end
 end
 
 -- find qt sdk toolchains
-function _find_qt(sdkdir)
+function _find_qt(sdkdir, sdkver)
 
     -- find qt directory
-    sdkdir = _find_sdkdir(sdkdir)
+    sdkdir = _find_sdkdir(sdkdir, sdkver)
     if not sdkdir or not os.isdir(sdkdir) then
         return nil
     end
@@ -73,7 +90,7 @@ function _find_qt(sdkdir)
     local includedirs = {path.join(sdkdir, "include")}
 
     -- get version
-    local version = sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+    local version = sdkver or sdkdir:match("(%d+%.?%d*%.?%d*.-)")
 
     -- get toolchains
     return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, version = version}
@@ -82,13 +99,13 @@ end
 -- find qt sdk toolchains
 --
 -- @param sdkdir    the qt sdk directory
--- @param opt       the argument options, .e.g {verbose = true, force = false} 
+-- @param opt       the argument options, .e.g {verbose = true, force = false, version = "5.9.1"} 
 --
--- @return          the qt sdk toolchains. .e.g {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+-- @return          the qt sdk toolchains. .e.g {version = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
 -- @code 
 --
--- local toolchains = find_qt("~/Qt/5.10.1/clang_64")
+-- local toolchains = find_qt("~/Qt")
 -- 
 -- @endcode
 --
@@ -105,7 +122,7 @@ function main(sdkdir, opt)
     end
        
     -- find qt
-    local qt = _find_qt(sdkdir or config.get("qt_dir") or global.get("qt_dir"))
+    local qt = _find_qt(sdkdir or config.get("qt") or global.get("qt"), opt.version or config.get("qt_sdkver"))
     if qt then
 
         -- save sdk directory to config

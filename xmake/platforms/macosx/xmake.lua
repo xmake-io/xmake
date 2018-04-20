@@ -57,7 +57,8 @@ platform("macosx")
                 ,   {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda_dir",       "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {category = "Qt SDK Configuration"                                              }
-                ,   {nil, "qt_dir",         "kv", "auto",       "The Qt SDK Directory"              }
+                ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
+                ,   {nil, "qt_sdkver",      "kv", "auto",       "The Qt SDK Version"                }
                 }
 
             ,   global = 
@@ -65,7 +66,7 @@ platform("macosx")
                     {}
                 ,   {nil, "xcode_dir",      "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "cuda_dir",       "kv", "auto",       "The Cuda SDK Directory"            }
-                ,   {nil, "qt_dir",         "kv", "auto",       "The Qt SDK Directory"              }
+                ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 }
             }
 
