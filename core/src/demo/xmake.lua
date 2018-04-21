@@ -38,4 +38,8 @@ target("demo")
         add_links("pthread", "dl", "m", "c") 
     end
 
+    -- copy target to the build directory
+    after_build(function (target)
+        os.cp(target:targetfile(), "$(buildir)")
+    end)
 
