@@ -55,8 +55,24 @@ function sandbox_lib_detect_find_file.main(name, pathes, opt)
     -- init options
     opt = opt or {}
 
-    -- init pathes
-    pathes = table.wrap(pathes)
+    -- translate pathes
+    local pathes_translated = {}
+    for _, _path in ipairs(table.wrap(pathes)) do
+
+        -- format path for builtin variables
+        if type(_path) == "function" then
+            local ok, results = sandbox.load(_path) 
+            if ok then
+                _path = results or ""
+            else 
+                raise(results)
+            end
+        else
+            _path = vformat(_path)
+        end
+        table.insert(pathes_translated, _path)
+    end
+    pathes = pathes_translated
     
     -- append suffixes to pathes
     local suffixes = table.wrap(opt.suffixes)
@@ -73,18 +89,6 @@ function sandbox_lib_detect_find_file.main(name, pathes, opt)
     -- find file
     local result = nil
     for _, _path in ipairs(pathes) do
-
-        -- format path for builtin variables
-        if type(_path) == "function" then
-            local ok, results = sandbox.load(_path) 
-            if ok then
-                _path = results or ""
-            else 
-                raise(results)
-            end
-        else
-            _path = vformat(_path)
-        end
 
         -- get file path
         local filepath = nil

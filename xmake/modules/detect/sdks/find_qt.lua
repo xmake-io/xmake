@@ -57,6 +57,24 @@ function _find_sdkdir(sdkdir, sdkver)
         table.insert(pathes, sdkdir)
     end
     if os.host() == "windows" then
+        local regs = 
+        {
+            "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.c\\shell\\Open\\Command",
+            "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command",
+            "HKEY_CURRENT_USER\\SOFTWARE\\Classes\\Applications\\QtProject.QtCreator.c\\shell\\Open\\Command",
+            "HKEY_CURRENT_USER\\SOFTWARE\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command"
+        }
+        for _, reg in ipairs(regs) do
+            table.insert(pathes, function () 
+                local value = val("reg " .. reg)
+                if value then
+                    local p = value:find("\\Tools\\QtCreator", 1, true)
+                    if p then
+                        return path.translate(value:sub(1, p - 1))
+                    end
+                end
+            end)
+        end
     else
         table.insert(pathes, "~/Qt")
     end

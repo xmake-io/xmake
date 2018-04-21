@@ -104,15 +104,9 @@ tb_int_t xm_winreg_query(lua_State* lua)
             valuename = p + 1;
             *p = '\0';
         }
-        if (!valuename)
-        {
-            lua_pushnil(lua);
-            lua_pushfstring(lua, "parse value name failed: %s", path);
-            break;
-        }
 
         // trace
-        tb_trace_d("key: %s, subkey: %s, name: %s", pathkey, pathsubkey, valuename);
+        tb_trace_d("key: %s, subkey: %s, name: %s", pathkey, pathsubkey, valuename? valuename : "(default)");
 
         // get registry key
         if (!tb_strcmp(pathkey, "HKEY_CLASSES_ROOT"))         key = HKEY_CLASSES_ROOT;
