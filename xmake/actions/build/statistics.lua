@@ -89,7 +89,6 @@ function post()
         function ()
             local proc = process.openv("xmake", argv, path.join(os.tmpdir(), projectname .. ".stats.log"))
             if proc ~= nil then
-                process.wait(proc, -1)
                 process.close(proc)
             end
         end
