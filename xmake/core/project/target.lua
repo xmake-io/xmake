@@ -359,9 +359,21 @@ function target:objectdir()
     if not objectdir then
         objectdir = path.join(config.buildir(), ".objs")
     end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        objectdir = path.join(objectdir, mode)
+    end
+
+    -- append arch sub-directory
+    local arch = config.get("arch")
+    if arch then
+        objectdir = path.join(objectdir, arch)
+    end
   
     -- ok?
-    return path.join(objectdir, config.get("mode") or "generic", config.get("arch") or os.arch())
+    return objectdir
 end
 
 -- get the dependent files directory
@@ -383,8 +395,24 @@ end
 function target:targetdir()
 
     -- the target directory
-    local targetdir = self:get("targetdir") or config.buildir()
-    assert(targetdir and type(targetdir) == "string")
+    local targetdir = self:get("targetdir") 
+    if not targetdir then
+
+        -- get build directory
+        targetdir = config.buildir()
+
+        -- append mode sub-directory
+        local mode = config.get("mode")
+        if mode then
+            targetdir = path.join(targetdir, mode)
+        end
+
+        -- append arch sub-directory
+        local arch = config.get("arch")
+        if arch then
+            targetdir = path.join(targetdir, arch)
+        end
+    end
 
     -- ok?
     return targetdir
