@@ -33,6 +33,23 @@ local table     = require("base/table")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
+-- find the given file path or directory
+function sandbox_lib_detect_find_file._find(filedir, name)
+
+    -- get file path 
+    local filepath = nil
+    if os.isfile(filedir) then
+        filepath = filedir
+    else
+        filepath = path.join(filedir, name)
+    end
+
+    -- file exists?
+    for _, file in ipairs(os.files(filepath)) do
+        return file
+    end
+end
+
 -- find file
 --
 -- @param name      the file name
@@ -55,8 +72,8 @@ function sandbox_lib_detect_find_file.main(name, pathes, opt)
     -- init options
     opt = opt or {}
 
-    -- translate pathes
-    local pathes_translated = {}
+    -- find file
+    local suffixes = table.wrap(opt.suffixes)
     for _, _path in ipairs(table.wrap(pathes)) do
 
         -- format path for builtin variables
@@ -70,48 +87,24 @@ function sandbox_lib_detect_find_file.main(name, pathes, opt)
         else
             _path = vformat(_path)
         end
-        table.insert(pathes_translated, _path)
-    end
-    pathes = pathes_translated
-    
-    -- append suffixes to pathes
-    local suffixes = table.wrap(opt.suffixes)
-    if #suffixes > 0 then
-        local pathes_new = {}
-        for _, parent in ipairs(pathes) do
-            for _, suffix in ipairs(suffixes) do
-                table.insert(pathes_new, path.join(parent, suffix))
+
+        -- find file with suffixes
+        if #suffixes > 0 then
+            for _, suffix in ipairs(table.wrap(opt.suffixes)) do
+                local filedir = path.join(_path, suffix)
+                local results = sandbox_lib_detect_find_file._find(filedir, name)
+                if results then
+                    return results
+                end
+            end
+        else
+            -- find file in the given path
+            local results = sandbox_lib_detect_find_file._find(_path, name)
+            if results then
+                return results
             end
         end
-        pathes = pathes_new
     end
-
-    -- find file
-    local result = nil
-    for _, _path in ipairs(pathes) do
-
-        -- get file path
-        local filepath = nil
-        if os.isfile(_path) then
-            filepath = _path
-        else
-            filepath = path.join(_path, name)
-        end
-
-        -- file exists?
-        for _, file in ipairs(os.files(filepath)) do
-            result = file
-            break
-        end
-
-        -- found?
-        if result then
-            break
-        end
-    end
-
-    -- ok?
-    return result
 end
 
 -- return module

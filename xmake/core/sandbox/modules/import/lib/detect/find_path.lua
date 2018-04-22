@@ -32,6 +32,15 @@ local table     = require("base/table")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
+-- find the given file path or directory
+function sandbox_lib_detect_find_path._find(filedir, name)
+
+    -- path exists?
+    for _, p in ipairs(os.filedirs(path.join(filedir, name))) do
+        return filedir
+    end
+end
+
 -- find path
 --
 -- @param name      the path name
@@ -56,24 +65,9 @@ function sandbox_lib_detect_find_path.main(name, pathes, opt)
     -- init options
     opt = opt or {}
 
-    -- init pathes
-    pathes = table.wrap(pathes)
-    
-    -- append suffixes to pathes
+    -- find path
     local suffixes = table.wrap(opt.suffixes)
-    if #suffixes > 0 then
-        local pathes_new = {}
-        for _, parent in ipairs(pathes) do
-            for _, suffix in ipairs(suffixes) do
-                table.insert(pathes_new, path.join(parent, suffix))
-            end
-        end
-        pathes = pathes_new
-    end
-
-    -- find file
-    local result = nil
-    for _, _path in ipairs(pathes) do
+    for _, _path in ipairs(table.wrap(pathes)) do
 
         -- format path for builtin variables
         if type(_path) == "function" then
@@ -87,20 +81,23 @@ function sandbox_lib_detect_find_path.main(name, pathes, opt)
             _path = vformat(_path)
         end
 
-        -- path exists?
-        for _, p in ipairs(os.filedirs(path.join(_path, name))) do
-            result = _path
-            break
-        end
-
-        -- found?
-        if result then
-            break
+        -- find file with suffixes
+        if #suffixes > 0 then
+            for _, suffix in ipairs(table.wrap(opt.suffixes)) do
+                local filedir = path.join(_path, suffix)
+                local results = sandbox_lib_detect_find_path._find(filedir, name)
+                if results then
+                    return results
+                end
+            end
+        else
+            -- find file in the given path
+            local results = sandbox_lib_detect_find_path._find(_path, name)
+            if results then
+                return results
+            end
         end
     end
-
-    -- ok?
-    return result
 end
 
 -- return module
