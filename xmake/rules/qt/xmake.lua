@@ -33,6 +33,14 @@ rule("qt.env")
         end
     end)
 
+    -- before run
+    before_run(function (target)
+        local qt = target:data("qt")
+        if qt and (is_plat("windows") or (is_plat("mingw") and is_host("windows"))) then
+            os.addenv("PATH", qt.bindir)
+        end
+    end)
+
 -- define rule: *.ui
 rule("qt.ui")
 
