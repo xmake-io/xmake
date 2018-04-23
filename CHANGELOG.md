@@ -10,6 +10,7 @@
 * Add `is_mode`, `is_arch` and `is_plat` builtin apis in the custom scripts
 * Add color256 codes
 * [#160](https://github.com/tboox/xmake/issues/160): Add Qt compilation environment support and add `qt.console`, `qt.application` rules
+* Add some Qt project templates
 
 ### Changes
 
@@ -457,6 +458,7 @@
 * 添加`is_mode`, `is_arch` 和`is_plat`内置接口到自定义脚本域
 * 添加color256代码
 * [#160](https://github.com/tboox/xmake/issues/160): 增加对Qt SDK编译环境的跨平台支持，并且增加`qt.console`, `qt.application`等规则
+* 添加一些Qt工程模板
 
 ### 改进
 
