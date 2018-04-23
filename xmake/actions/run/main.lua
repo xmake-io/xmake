@@ -58,7 +58,6 @@ function _on_run_target(target)
         if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
             local searchdirs = {}
             for _, linkdir in ipairs(target:get("linkdirs")) do
-                print(1, linkdir)
                 if not searchdirs[linkdir] then
                     searchdirs[linkdir] = true
                     os.addenv("PATH", linkdir)
