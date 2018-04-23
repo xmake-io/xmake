@@ -41,6 +41,15 @@ function _find_sdkdir(sdkdir, sdkver)
         targetdir = is_arch("x86_64") and "gcc_64" or "gcc_32"
     elseif is_plat("macosx") then
         targetdir = is_arch("x86_64") and "clang_64" or "clang_32"
+    elseif is_plat("windows") then
+        local vs = config.get("vs")
+        if vs then
+            targetdir = is_arch("x64") and "msvc" .. vs .. "_64" or "msvc" .. vs .. "_32"
+        else 
+            targetdir = is_arch("x64") and "msvc*_64" or "msvc*_32"
+        end
+    elseif is_plat("mingw") then
+        targetdir = is_arch("x64") and "mingw*_64" or "mingw*_32"
     elseif is_plat("android") then
         targetdir = "android_*" -- TODO android_armv7 and ..?
     end

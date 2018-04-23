@@ -192,8 +192,8 @@ function nf_language(self, stdname)
     -- the stdc++ maps
     local cxxmaps = 
     {
-        cxx11       = "-std=c++11"
-    ,   gnuxx11     = "-std=c++11"
+        cxx11       = "-std:c++11"
+    ,   gnuxx11     = "-std:c++11"
     ,   cxx14       = "-std:c++14"
     ,   gnuxx14     = "-std:c++14"
     ,   cxx17       = "-std:c++17"

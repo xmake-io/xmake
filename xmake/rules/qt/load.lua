@@ -90,7 +90,7 @@ function main(target, opt)
             -- add includedirs 
             if is_plat("macosx") then
                 target:add("includedirs", path.join(qt.sdkdir, "lib/" .. framework .. ".framework/Headers"))
-            elseif is_plat("linux") then
+            else 
                 target:add("links", _link(framework, major))
                 target:add("includedirs", path.join(qt.sdkdir, "include/" .. framework))
             end
@@ -109,6 +109,16 @@ function main(target, opt)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/linux-g++"))
         target:add("rpathdirs", qt.linkdirs)
+        target:add("linkdirs", qt.linkdirs)
+    elseif is_plat("windows") then
+        target:set("frameworks", nil)
+        target:add("includedirs", path.join(qt.sdkdir, "include"))
+        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-msvc"))
+        target:add("linkdirs", qt.linkdirs)
+    elseif is_plat("mingw") then
+        target:set("frameworks", nil)
+        target:add("includedirs", path.join(qt.sdkdir, "include"))
+        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-g++"))
         target:add("linkdirs", qt.linkdirs)
     end
 end
