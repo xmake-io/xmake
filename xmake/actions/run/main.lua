@@ -54,14 +54,34 @@ function _on_run_target(target)
         -- enter the target directory
         local oldir = os.cd(path.directory(target:targetfile()))
 
+        -- add search directories for all dependent shared libraries on windows
+        if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
+            local searchdirs = {}
+            for _, linkdir in ipairs(target:get("linkdirs")) do
+                print(1, linkdir)
+                if not searchdirs[linkdir] then
+                    searchdirs[linkdir] = true
+                    os.addenv("PATH", linkdir)
+                end
+            end
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:targetkind() == "shared" then
+                    local depdir = dep:targetdir()
+                    if not path.is_absolute(depdir) then
+                        depdir = path.absolute(depdir, os.projectdir())
+                    end
+                    if not searchdirs[depdir] then
+                        searchdirs[depdir] = true
+                        os.addenv("PATH", depdir)
+                    end
+                end
+            end
+        end
+
         -- debugging?
         if option.get("debug") then
-
-            -- debug it
             debugger.run(targetfile, option.get("arguments"))
         else
-
-            -- run it
             os.execv(targetfile, option.get("arguments"))
         end
 
@@ -145,3 +165,4 @@ function main()
     -- leave project directory
     os.cd(oldir)
 end
+
