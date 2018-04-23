@@ -49,7 +49,7 @@ function _find_sdkdir(sdkdir, sdkver)
             targetdir = is_arch("x64") and "msvc*_64" or "msvc*_32"
         end
     elseif is_plat("mingw") then
-        targetdir = is_arch("x64") and "mingw*_64" or "mingw*_32"
+        targetdir = is_arch("x86_64") and "mingw*_64" or "mingw*_32"
     elseif is_plat("android") then
         targetdir = "android_*" -- TODO android_armv7 and ..?
     end
