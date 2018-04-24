@@ -59,8 +59,13 @@ function main()
     -- init flags for objc/c++  (with _g.ldflags and _g.shflags)
     _g.mxflags       = { archflags }
 
-    -- init flags for asm  (with _g.ldflags and _g.shflags)
-    _g.asflags       = { archflags }
+    -- init flags for asm
+    local as = config.get("as")
+    if as == "yasm" then
+        _g.asflags = { "-f", "elf" }
+    else
+        _g.asflags = { archflags }
+    end
 
     -- init flags for golang
     _g["gc-ldflags"] = {}

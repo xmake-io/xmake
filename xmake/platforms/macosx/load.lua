@@ -65,10 +65,15 @@ function main()
         table.insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
     end
 
-    -- init flags for asm (with _g.ldflags and _g.shflags)
-    _g.asflags = { "-arch " .. arch }
-    if xcode_sdkdir then
-        table.insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
+    -- init flags for asm 
+    local as = config.get("as")
+    if as == "yasm" then
+        _g.asflags = { "-f", "macho64" }
+    else
+        _g.asflags = { "-arch " .. arch }
+        if xcode_sdkdir then
+            table.insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
+        end
     end
 
     -- init flags for swift

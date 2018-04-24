@@ -54,7 +54,7 @@ end
 function get(self, name)
     local values = _g[name]
     if name == "ldflags" or name == "arflags" or name == "shflags" then
-        -- switch architecture, @note does cache it in init() 
+        -- switch architecture, @note does cache it in init() for generating vs201x project 
         values = table.join(values, "-machine:" .. (config.arch() or "x86"))
     end
     return _g[name]
