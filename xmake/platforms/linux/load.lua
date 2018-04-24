@@ -62,7 +62,7 @@ function main()
     -- init flags for asm
     local as = config.get("as")
     if as == "yasm" then
-        _g.asflags = { "-f", "elf" }
+        _g.asflags = { "-f", arch == "x86_64" and "elf64" or "elf32" }
     else
         _g.asflags = { archflags }
     end

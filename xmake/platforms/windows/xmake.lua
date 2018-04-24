@@ -57,6 +57,12 @@ platform("windows")
         _g.formats.binary   = {"", ".exe"}
         _g.formats.symbol   = {"", ".pdb"}
 
+        -- init flags for asm
+        local as = config.get("as")
+        if as:find("yasm", 1, true) then
+            _g.asflags = { "-f", arch == "x64" and "win64" or "win32" }
+        end
+
         -- init flags for dlang
         local dc_archs = { x86 = "-m32", x64 = "-m64" }
         _g.dcflags       = { dc_archs[arch] }

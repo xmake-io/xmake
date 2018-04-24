@@ -11,6 +11,7 @@
 * Add color256 codes
 * [#160](https://github.com/tboox/xmake/issues/160): Add Qt compilation environment support and add `qt.console`, `qt.application` rules
 * Add some Qt project templates
+* [#169](https://github.com/tboox/xmake/issues/169): support yasm for linux, macosx and windows
 
 ### Changes
 
@@ -459,6 +460,7 @@
 * 添加color256代码
 * [#160](https://github.com/tboox/xmake/issues/160): 增加对Qt SDK编译环境的跨平台支持，并且增加`qt.console`, `qt.application`等规则
 * 添加一些Qt工程模板
+* [#169](https://github.com/tboox/xmake/issues/169): 支持yasm汇编器
 
 ### 改进
 
