@@ -59,7 +59,7 @@ platform("windows")
 
         -- init flags for asm
         local as = config.get("as")
-        if as:find("yasm", 1, true) then
+        if as and as:find("yasm", 1, true) then
             _g.asflags = { "-f", arch == "x64" and "win64" or "win32" }
         end
 
