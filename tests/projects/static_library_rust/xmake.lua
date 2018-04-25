@@ -43,6 +43,6 @@ target("test")
     add_files("src/main.rs") 
 
     -- add link directory
-    add_linkdirs("$(buildir)")
+    add_linkdirs("$(buildir)/$(mode)/$(arch)")
 
 
