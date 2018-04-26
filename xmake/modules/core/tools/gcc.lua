@@ -322,6 +322,14 @@ end
 -- get include deps
 function _include_deps(self, sourcefile, flags)
 
+    -- support -E -MM? some old gcc does not support it at same time
+    if _g._HAS_EMM == nil then
+        _g._HAS_EMM = self:has_flags("-E -MM")
+    end
+    if not _g._HAS_EMM then
+        return {}
+    end
+
     -- the temporary file
     local tmpfile = os.tmpfile()
 
