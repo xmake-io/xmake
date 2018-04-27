@@ -55,50 +55,6 @@ local menu =
 
 }
 
--- show logo
-function main._show_logo()
-
-    -- define logo
-    local logo = [[
-                         _        
-    __  ___ __  __  __ _| | ______ 
-    \ \/ / |  \/  |/ _  | |/ / __ \
-     >  <  | \__/ | /_| |   <  ___/
-    /_/\_\_|_|  |_|\__ \|_|\_\____| 
-
-                         by ruki, tboox.org
-    ]]
-
-    -- make rainbow for logo
-    if colors.truecolor() or colors.color256() then
-        local lines = {} 
-        local seed  = 236
-        for _, line in ipairs(logo:split("\n")) do
-            local i = 0
-            local line2 = ""
-            line:gsub(".", function (c)
-                local code = colors.truecolor() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
-                line2 = string.format("%s${%s}%s", line2, code, c)
-                i = i + 1
-            end)
-            table.insert(lines, line2)
-        end
-        logo = table.concat(lines, "\n")
-    end
-
-    -- show logo
-    utils.cprint(logo)
-
-    -- define footer
-    local footer = [[
-    ${point_right}  ${bright}Manual${clear}: ${underline}http://xmake.io/#/home${clear}
-    ${pray}  ${bright}Donate${clear}: ${underline}http://xmake.io/pages/donation.html#donate${clear}
-    ]]
-
-    -- show footer
-    utils.cprint(footer)
-end
-
 -- show help and version info
 function main._show_help()
 
@@ -125,7 +81,7 @@ function main._show_help()
         end
 
         -- show logo
-        main._show_logo()
+        option.show_logo()
 
         -- ok
         return true

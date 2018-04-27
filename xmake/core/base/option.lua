@@ -804,6 +804,50 @@ function option.defaults(task)
     return defaults
 end
 
+-- show logo
+function option.show_logo()
+
+    -- define logo
+    local logo = [[
+                         _        
+    __  ___ __  __  __ _| | ______ 
+    \ \/ / |  \/  |/ _  | |/ / __ \
+     >  <  | \__/ | /_| |   <  ___/
+    /_/\_\_|_|  |_|\__ \|_|\_\____| 
+
+                         by ruki, tboox.org
+    ]]
+
+    -- make rainbow for logo
+    if colors.truecolor() or colors.color256() then
+        local lines = {} 
+        local seed  = 236
+        for _, line in ipairs(logo:split("\n")) do
+            local i = 0
+            local line2 = ""
+            line:gsub(".", function (c)
+                local code = colors.truecolor() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
+                line2 = string.format("%s${%s}%s", line2, code, c)
+                i = i + 1
+            end)
+            table.insert(lines, line2)
+        end
+        logo = table.concat(lines, "\n")
+    end
+
+    -- show logo
+    print(colors.translate(logo))
+
+    -- define footer
+    local footer = [[
+    ${point_right}  ${bright}Manual${clear}: ${underline}http://xmake.io/#/home${clear}
+    ${pray}  ${bright}Donate${clear}: ${underline}http://xmake.io/pages/donation.html#donate${clear}
+    ]]
+
+    -- show footer
+    print(colors.translate(footer))
+end
+
 -- show the menu 
 function option.show_menu(task)
 
@@ -830,6 +874,9 @@ function option.show_menu(task)
     if menu.copyright then
         print(colors.translate(menu.copyright))
     end
+
+    -- show logo
+    option.show_logo()
 
     -- print usage
     if taskmenu.usage then
@@ -869,6 +916,9 @@ function option.show_main()
     if menu.copyright then
         print(colors.translate(menu.copyright))
     end
+
+    -- show logo
+    option.show_logo()
 
     -- print usage
     if main.usage then
