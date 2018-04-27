@@ -1,5 +1,5 @@
 -- imports
-import("..build")
+import("...build")
 
 -- main entry
 function main()
