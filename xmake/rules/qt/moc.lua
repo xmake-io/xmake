@@ -71,9 +71,5 @@ function generate(target, headerfile_moc, sourcefile_moc)
     end
 
     -- generate c++ source file for moc
-    local argv = _make_flags(target)
-    table.insert(argv, headerfile_moc)
-    table.insert(argv, "-o")
-    table.insert(argv, sourcefile_moc)
-    os.vrunv(moc, argv)
+    os.vrunv(moc, table.join(_make_flags(target), headerfile_moc, "-o", sourcefile_moc))
 end
