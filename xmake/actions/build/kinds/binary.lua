@@ -190,7 +190,7 @@ function build(target, buildinfo)
     end
 
     -- build target
-    if kindcount == 1 and sourcekind and compiler.buildmode(sourcekind, "binary:sources", {target = target}) then
+    if kindcount == 1 and sourcekind and not sourcekind:startswith("__rule_") and compiler.buildmode(sourcekind, "binary:sources", {target = target}) then
         _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     else
         _build_from_objects(target, buildinfo)
