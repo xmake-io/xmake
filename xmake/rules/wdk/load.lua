@@ -35,7 +35,7 @@ function _load_for_umdf(target, wdk, arch, kind)
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
     end
 
-    -- add include directories
+    -- add link and include directories
     target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", arch))
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
 
@@ -63,7 +63,39 @@ function _load_for_umdf(target, wdk, arch, kind)
 end
 
 -- load for kmdf
-function _load_for_kmdf(target, opt)
+function _load_for_kmdf(target, wdk, arch, kind)
+
+    -- add defines
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    end
+
+    -- add link and include directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "km", arch))
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+
+    -- add link and include directories for kmdf driver
+    if kind == "shared" then
+
+        -- check kmdf version
+        assert(wdk.kmdfver, "kmdf version not found!")
+
+        -- add include directories
+        target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
+
+        -- add link directories
+        target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
+
+        -- add links
+        target:add("links", "WdfDriverStubUm")
+
+        -- add defines
+        local kmdfver = wdk.kmdfver:split('%.')
+        target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
+    end
+    target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
+    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
 end
 
 -- the main entry

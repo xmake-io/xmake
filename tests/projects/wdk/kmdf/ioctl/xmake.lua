@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("nonpnp")
 
     -- add rules
-    add_rules("wdk.driver.kmdf")
+    add_rules("wdk.kmdf.driver")
 
     -- add files
     add_files("driver/*.c") 
@@ -18,7 +18,7 @@ target("app")
     add_deps("nonpnp")
 
     -- add rules
-    add_rules("wdk.binary")
+    add_rules("wdk.kmdf.binary")
 
     -- add files
     add_files("exe/*.c") 
