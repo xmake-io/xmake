@@ -31,28 +31,32 @@ function _load_for_umdf(target, wdk, arch, kind)
 
     -- add defines
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
-    target:add("defines", "UMDF_VERSION_MINOR=15", "UMDF_VERSION_MAJOR=2", "UMDF_USING_NTSTATUS")
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
     end
 
     -- add include directories
-    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
-    local includedir = find_path("wdf.h", path.join(wdk.includedir, "wdf", "umdf", "**"))
-    if includedir then
-        target:add("includedirs", includedir)
-    end
-
-    -- add link directories
     target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", arch))
-    for _, dir in ipairs(os.dirs(path.join(wdk.libdir, "wdf", "umdf", arch, "*"))) do
-        target:add("linkdirs", dir)
-        break
-    end
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
 
-    -- add links
+    -- add link and include directories for umdf driver
     if kind == "shared" then
+
+        -- check umdf version
+        assert(wdk.umdfver, "umdf version not found!")
+
+        -- add include directories
+        target:add("includedirs", path.join(wdk.includedir, "wdf", "umdf", wdk.umdfver))
+
+        -- add link directories
+        target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", arch, wdk.umdfver))
+
+        -- add links
         target:add("links", "WdfDriverStubUm")
+
+        -- add defines
+        local umdfver = wdk.umdfver:split('%.')
+        target:add("defines", "UMDF_VERSION_MAJOR=" .. umdfver[1], "UMDF_VERSION_MINOR=" .. umdfver[2], "UMDF_USING_NTSTATUS")
     end
     target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
     target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})

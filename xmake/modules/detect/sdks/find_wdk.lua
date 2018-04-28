@@ -43,6 +43,46 @@ function _find_sdkdir(sdkdir)
     return sdkdir
 end
 
+-- find umdf version
+function _find_umdfver(libdir, includedir)
+
+    -- find versions
+    local versions = {}
+    for _, p in ipairs(os.files(path.join(includedir, "wdf", "umdf", "**", "wdf.h"))) do
+        table.insert(versions, path.filename(path.directory(p)))
+    end
+
+    -- find version
+    local arch = config.arch()
+    if arch then
+        for _, ver in ipairs(versions) do
+            if os.isfile(path.join(libdir, "wdf", "umdf", arch, ver, "WdfDriverStubUm.lib")) then
+                return ver
+            end
+        end
+    end
+end
+
+-- find kmdf version
+function _find_kmdfver(libdir, includedir)
+
+    -- find versions
+    local versions = {}
+    for _, p in ipairs(os.files(path.join(includedir, "wdf", "kmdf", "**", "wdf.h"))) do
+        table.insert(versions, path.filename(path.directory(p)))
+    end
+
+    -- find version
+    local arch = config.arch()
+    if arch then
+        for _, ver in ipairs(versions) do
+            if os.isfile(path.join(libdir, "wdf", "kmdf", arch, ver, "wdfdriverentry.lib")) then
+                return ver
+            end
+        end
+    end
+end
+
 -- find WDK toolchains
 function _find_wdk(sdkdir, sdkver)
 
@@ -78,8 +118,14 @@ function _find_wdk(sdkdir, sdkver)
     -- get the include directory
     local includedir = path.join(sdkdir, "Include")
 
+    -- get umdf version
+    local umdfver = _find_umdfver(libdir, includedir)
+
+    -- get kmdf version
+    local kmdfver = _find_kmdfver(libdir, includedir)
+
     -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, libdir = libdir, includedir = includedir, sdkver = sdkver}
+    return {sdkdir = sdkdir, bindir = bindir, libdir = libdir, includedir = includedir, sdkver = sdkver, umdfver = umdfver, kmdfver = kmdfver}
 end
 
 -- find WDK toolchains
