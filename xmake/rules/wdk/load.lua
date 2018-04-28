@@ -55,7 +55,7 @@ function _load_for_umdf(target, wdk, arch, kind)
         target:add("links", "WdfDriverStubUm")
     end
     target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
-    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib")
+    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
 end
 
 -- load for kmdf
@@ -81,11 +81,11 @@ function main(target, opt)
 
     -- load for umdf
     if opt.mode == "umdf" then
-        _load_for_umdf(target, wdk, arch, kind)
+        _load_for_umdf(target, wdk, arch, opt.kind)
     end
 
     -- load for kmdf
     if opt.mode == "kmdf" then
-        _load_for_kmdf(target, wdk, arch, kind)
+        _load_for_kmdf(target, wdk, arch, opt.kind)
     end
 end

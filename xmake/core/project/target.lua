@@ -147,13 +147,37 @@ end
 
 -- set the value to the target info
 function target:set(name_or_info, ...)
+
+    -- set values to the given key?
     if type(name_or_info) == "string" then
-        local args = ...
-        if args ~= nil then
-            self._INFO[name_or_info] = table.unwrap(table.unique(table.join(...)))
+
+        -- get extra config
+        local values = {...}
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
+            table.remove(values)
         else
-            self._INFO[name_or_info] = nil
+            extra_config = nil
         end
+
+        -- set values
+        local name = name_or_info
+        if #values > 0 then
+            self._INFO[name] = table.unwrap(table.unique(values))
+        else
+            self._INFO[name] = nil
+        end
+
+        -- save extra config
+        if extra_config then
+            self._INFO["__extra_" .. name] = self._INFO["__extra_" .. name] or {}
+            local extrascope = self._INFO["__extra_" .. name]
+            for _, value in ipairs(values) do
+                extrascope[value] = extra_config
+            end
+        end
+
+    -- set a dictionary values
     elseif table.is_dictionary(name_or_info) then
         for name, info in pairs(table.join(name_or_info, ...)) do
             self:set(name, info)
@@ -163,9 +187,34 @@ end
 
 -- add the value to the target info
 function target:add(name_or_info, ...)
+
+    -- add values to the given key?
     if type(name_or_info) == "string" then
-        local info = table.wrap(self._INFO[name_or_info])
-        self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
+
+        -- get extra config
+        local values = {...}
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
+            table.remove(values)
+        else
+            extra_config = nil
+        end
+
+        -- add values
+        local name = name_or_info
+        local info = table.wrap(self._INFO[name])
+        self._INFO[name] = table.unwrap(table.unique(table.join(info, values)))
+
+        -- save extra config
+        if extra_config then
+            self._INFO["__extra_" .. name] = self._INFO["__extra_" .. name] or {}
+            local extrascope = self._INFO["__extra_" .. name]
+            for _, value in ipairs(values) do
+                extrascope[value] = extra_config
+            end
+        end
+
+    -- add a dictionary values
     elseif table.is_dictionary(name_or_info) then
         for name, info in pairs(table.join(name_or_info, ...)) do
             self:add(name, info)

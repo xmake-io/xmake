@@ -7,7 +7,6 @@ add_defines("_UNICODE", "UNICODE")
 
 -- add target
 target("echo")
-    set_default(false)
 
     -- add rules
     add_rules("wdk.umdf.driver")
