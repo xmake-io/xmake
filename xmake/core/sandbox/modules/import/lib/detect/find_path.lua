@@ -37,7 +37,7 @@ function sandbox_lib_detect_find_path._find(filedir, name)
 
     -- path exists?
     for _, p in ipairs(os.filedirs(path.join(filedir, name))) do
-        return filedir
+        return path.directory(p)
     end
 end
 

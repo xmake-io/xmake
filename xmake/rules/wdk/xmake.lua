@@ -42,41 +42,45 @@ rule("wdk.env")
     end)
 
 -- define rule: umdf driver
-rule("wdk.driver.umdf")
+rule("wdk.umdf.driver")
 
     -- add rules
     add_deps("wdk.env")
 
     -- on load
     on_load(function (target)
+        import("load")(target, {kind = "shared", mode = "umdf"})
+    end)
 
-        -- imports
-        import("core.project.config")
+-- define rule: umdf binary
+rule("wdk.umdf.binary")
 
-        -- get wdk
-        local wdk = target:data("wdk")
+    -- add rules
+    add_deps("wdk.env")
 
-        -- set kind: shared library
-        target:set("kind", "shared")
-
-        -- add link directories
-        target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", config.arch()))
-        target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", config.arch(), "2.0"))
- 
-        -- add include directories
-        target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
-        target:add("includedirs", path.join(wdk.includedir, "wdf", "umdf", "2.0"))
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "binary", mode = "umdf"})
     end)
 
 -- define rule: kmdf driver
-rule("wdk.driver.kmdf")
+rule("wdk.kmdf.driver")
 
     -- add rules
     add_deps("wdk.env")
 
--- define rule: binary
-rule("wdk.binary")
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "shared", mode = "kmdf"})
+    end)
+
+-- define rule: kmdf binary
+rule("wdk.kmdf.binary")
 
     -- add rules
     add_deps("wdk.env")
 
+    -- on load
+    on_load(function (target)
+        import("load")(target, {kind = "binary", mode = "kmdf"})
+    end)
