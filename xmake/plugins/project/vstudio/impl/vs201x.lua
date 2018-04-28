@@ -44,7 +44,7 @@ function _make_targetinfo(mode, arch, target)
     -- get sdk version
     local vcvarsall = config.get("__vcvarsall")
     if vcvarsall then
-        targetinfo.sdkver = (vcvarsall[arch] or {}).sdkver
+        targetinfo.sdkver = (vcvarsall[arch] or {}).WindowsSDKVersion
     end
 
     -- save c/c++ precompiled output file (.pch)

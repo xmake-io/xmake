@@ -25,6 +25,21 @@
 -- imports
 import("lib.detect.find_file")
 
+-- init vc variables
+local vcvars = {"path", 
+                "lib", 
+                "libpath", 
+                "include", 
+                "DevEnvdir", 
+                "VSInstallDir", 
+                "VCInstallDir", 
+                "WindowsSdkDir", 
+                "WindowsLibPath", 
+                "WindowsSDKVersion", 
+                "WindowsSdkBinPath",
+                "UniversalCRTSdkDir",
+                "UCRTVersion"}
+
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, arch)
 
@@ -35,13 +50,9 @@ function _load_vcvarsall(vcvarsall, arch)
     file:print("@echo off")
     file:print("call \"%s\" %s > nul", vcvarsall, arch)
     file:print("echo { > %s", genvcvars_dat)
-    file:print("echo     path = \"%%path%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   lib = \"%%lib%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   libpath = \"%%libpath%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   include = \"%%include%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   devenvdir = \"%%devenvdir%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   vsinstalldir = \"%%vsinstalldir%%\" >> %s", genvcvars_dat)
-    file:print("echo ,   vcinstalldir = \"%%vcinstalldir%%\" >> %s", genvcvars_dat)
+    for idx, var in ipairs(vcvars) do
+        file:print("echo " .. (idx == 1 and "" or ",") .. "    " .. var .. " = \"%%" .. var .. "%%\" >> %s", genvcvars_dat)
+    end
     file:print("echo } >> %s", genvcvars_dat)
     file:close()
 
@@ -58,16 +69,37 @@ function _load_vcvarsall(vcvarsall, arch)
     end
 
     -- remove some empty entries
-    for _, name in ipairs({"path", "lib", "libpath", "include", "devenvdir", "vsinstalldir", "vcinstalldir"}) do
+    for _, name in ipairs(vcvars) do
         if variables[name] and #variables[name]:trim() == 0 then
             variables[name] = nil
         end
     end
 
-    -- get sdk version
-    local include = variables["include"]
-    if include then
-        variables["sdkver"] = include:match("Windows Kits\\%d+\\include\\(%d+%.%d+%.%d+%.%d+)\\")
+    -- fix WindowsSDKVersion
+    local WindowsSDKVersion = variables["WindowsSDKVersion"]
+    if WindowsSDKVersion then
+        WindowsSDKVersion = WindowsSDKVersion:gsub("\\", ""):trim()
+        variables["WindowsSDKVersion"] = WindowsSDKVersion
+    end
+
+    -- fix UCRTVersion 
+    --
+    -- @note vcvarsall.bat maybe detect error if install WDK and SDK at same time (multi-sdk version exists in include directory).
+    --
+    local UCRTVersion = variables["UCRTVersion"]
+    if UCRTVersion and UCRTVersion ~= WindowsSDKVersion then
+        local lib = variables["lib"]
+        if lib then
+            lib = lib:gsub(UCRTVersion, WindowsSDKVersion)
+            variables["lib"] = lib
+        end
+        local include = variables["include"]
+        if include then
+            include = include:gsub(UCRTVersion, WindowsSDKVersion)
+            variables["include"] = include
+        end
+        UCRTVersion = WindowsSDKVersion
+        variables["UCRTVersion"] = UCRTVersion
     end
 
     -- ok

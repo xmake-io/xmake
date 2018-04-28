@@ -41,6 +41,14 @@ rule("qt.env")
         end
     end)
 
+    -- clean files
+    after_clean(function (target)
+        for _, file in ipairs(target:data("qt.cleanfiles")) do
+            os.rm(file)
+        end
+        target:data_set("qt.cleanfiles", nil)
+    end)
+
 -- define rule: *.ui
 rule("qt.ui")
 
@@ -243,10 +251,3 @@ rule("qt.application")
         import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtQml", "QtNetwork", "QtCore"}})
     end)
 
-    -- clean files
-    after_clean(function (target)
-        for _, file in ipairs(target:data("qt.cleanfiles")) do
-            os.rm(file)
-        end
-        target:data_set("qt.cleanfiles", nil)
-    end)
