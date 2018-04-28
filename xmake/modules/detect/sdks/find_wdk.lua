@@ -30,16 +30,42 @@ import("core.base.global")
 import("core.project.config")
 
 -- find WDK directory
-function _find_sdkdir(sdkdir, sdkver)
+function _find_sdkdir(sdkdir)
 
+    -- get sdk directory from vsvars
+    if not sdkdir then
+        local arch = config.arch()
+        local vcvarsall = config.get("__vcvarsall")
+        if vcvarsall then
+            sdkdir = (vcvarsall[arch] or {}).WindowsSdkDir
+        end
+    end
+    return sdkdir
 end
 
 -- find WDK toolchains
 function _find_wdk(sdkdir, sdkver)
 
     -- find wdk directory
-    sdkdir = _find_sdkdir(sdkdir, sdkver)
+    sdkdir = _find_sdkdir(sdkdir)
     if not sdkdir or not os.isdir(sdkdir) then
+        return nil
+    end
+
+    -- get sdk version
+    if not sdkver then
+        local vers = {}
+        for _, dir in ipairs(os.dirs(path.join(sdkdir, "Include", "**", "km"))) do
+            table.insert(vers, path.filename(path.directory(dir)))
+        end
+        for _, ver in ipairs(vers) do
+            if os.isdir(path.join(sdkdir, "Lib", ver, "km")) and os.isdir(path.join(sdkdir, "Lib", ver, "um")) and os.isdir(path.join(sdkdir, "Include", ver, "um"))  then
+                sdkver = ver
+                break
+            end
+        end
+    end
+    if not sdkver then
         return nil
     end
 
@@ -47,13 +73,10 @@ function _find_wdk(sdkdir, sdkver)
     local bindir = path.join(sdkdir, "bin")
 
     -- get linkdirs
-    local linkdirs = {path.join(sdkdir, "lib")}
+    local linkdirs = {path.join(sdkdir, "Lib", sdkver)}
 
     -- get includedirs
-    local includedirs = {path.join(sdkdir, "include")}
-
-    -- get sdk version
-    sdkver = sdkver or sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+    local includedirs = {path.join(sdkdir, "Include", sdkver)}
 
     -- get toolchains
     return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, sdkver = sdkver}
