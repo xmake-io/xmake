@@ -36,7 +36,7 @@ function main(target, opt)
     -- init options
     opt = opt or {}
 
-    -- check qt sdk
+    -- get qt sdk
     local qt = target:data("qt")
 
     -- get major version

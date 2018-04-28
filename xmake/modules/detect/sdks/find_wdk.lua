@@ -72,14 +72,14 @@ function _find_wdk(sdkdir, sdkver)
     -- get the bin directory 
     local bindir = path.join(sdkdir, "bin")
 
-    -- get linkdirs
-    local linkdirs = {path.join(sdkdir, "Lib", sdkver)}
+    -- get the lib directory
+    local libdir = path.join(sdkdir, "Lib")
 
-    -- get includedirs
-    local includedirs = {path.join(sdkdir, "Include", sdkver)}
+    -- get the include directory
+    local includedir = path.join(sdkdir, "Include")
 
     -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, sdkver = sdkver}
+    return {sdkdir = sdkdir, bindir = bindir, libdir = libdir, includedir = includedir, sdkver = sdkver}
 end
 
 -- find WDK toolchains
@@ -87,7 +87,7 @@ end
 -- @param sdkdir    the WDK directory
 -- @param opt       the argument options, .e.g {verbose = true, force = false, version = "5.9.1"} 
 --
--- @return          the WDK toolchains. .e.g {sdkver = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+-- @return          the WDK toolchains. .e.g {sdkver = ..., sdkdir = ..., bindir = .., libdir = ..., includedir = ..., .. }
 --
 -- @code 
 --

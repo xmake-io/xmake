@@ -47,6 +47,27 @@ rule("wdk.driver.umdf")
     -- add rules
     add_deps("wdk.env")
 
+    -- on load
+    on_load(function (target)
+
+        -- imports
+        import("core.project.config")
+
+        -- get wdk
+        local wdk = target:data("wdk")
+
+        -- set kind: shared library
+        target:set("kind", "shared")
+
+        -- add link directories
+        target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", config.arch()))
+        target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", config.arch(), "2.0"))
+ 
+        -- add include directories
+        target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
+        target:add("includedirs", path.join(wdk.includedir, "wdf", "umdf", "2.0"))
+    end)
+
 -- define rule: kmdf driver
 rule("wdk.driver.kmdf")
 
