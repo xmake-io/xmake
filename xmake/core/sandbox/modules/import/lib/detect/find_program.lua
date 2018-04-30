@@ -45,7 +45,7 @@ function sandbox_lib_detect_find_program._check(program, check)
 
     -- no check script? attempt to run it directly
     if not check then
-        return 0 == os.execv(program, {"--version"}, os.nuldev(), os.nuldev())
+        return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev()})
     end
 
     -- check it

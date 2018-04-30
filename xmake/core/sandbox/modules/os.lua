@@ -264,13 +264,13 @@ function sandbox_os.run(cmd, ...)
 end
 
 -- quietly run command with arguments list
-function sandbox_os.runv(program, argv)
+function sandbox_os.runv(program, argv, opt)
 
     -- make program
     program = vformat(program)
 
     -- run it
-    local ok, errors = os.runv(program, argv)
+    local ok, errors = os.runv(program, argv, opt)
     if not ok then
         os.raise(errors)
     end
@@ -289,7 +289,7 @@ function sandbox_os.vrun(cmd, ...)
 end
 
 -- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
-function sandbox_os.vrunv(program, argv)
+function sandbox_os.vrunv(program, argv, opt)
 
     -- echo command
     if option.get("verbose") then
@@ -297,7 +297,7 @@ function sandbox_os.vrunv(program, argv)
     end
 
     -- run it
-    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(program, argv)  
+    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(program, argv, opt)  
 end
 
 -- run command and return output and error data
@@ -321,13 +321,13 @@ function sandbox_os.iorun(cmd, ...)
 end
 
 -- run command and return output and error data
-function sandbox_os.iorunv(program, argv)
+function sandbox_os.iorunv(program, argv, opt)
 
     -- make program
     program = vformat(program)
 
     -- run it
-    local ok, outdata, errdata = os.iorunv(program, argv)
+    local ok, outdata, errdata = os.iorunv(program, argv, opt)
     if not ok then
         local errors = errdata or ""
         if #errors:trim() == 0 then
@@ -354,7 +354,7 @@ function sandbox_os.exec(cmd, ...)
 end
 
 -- execute command with arguments list
-function sandbox_os.execv(program, argv)
+function sandbox_os.execv(program, argv, opt)
 
     -- make program
     program = vformat(program)
@@ -374,7 +374,7 @@ function sandbox_os.execv(program, argv)
     io.flush()
 
     -- run it
-    local ok = os.execv(program, argv)
+    local ok = os.execv(program, argv, opt)
     if ok ~= 0 then
         if argv ~= nil then
             os.raise("execv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)

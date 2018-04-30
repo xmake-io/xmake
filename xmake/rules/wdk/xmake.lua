@@ -41,11 +41,54 @@ rule("wdk.env")
         target:data_set("wdk.cleanfiles", nil)
     end)
 
+-- define rule: *.inf
+rule("wdk.inf")
+
+    -- add rule: wdk environment
+    add_deps("wdk.env")
+
+    -- set extensions
+    set_extensions(".inf", ".inx")
+
+    -- on load
+    on_load(function (target)
+
+        -- imports
+        import("core.project.config")
+
+        -- get arch
+        local arch = assert(config.arch(), "arch not found!")
+        
+        -- get stampinf
+        local stampinf = path.join(target:data("wdk").bindir, arch, is_host("windows") and "stampinf.exe" or "stampinf")
+        assert(stampinf and os.isexec(stampinf), "stampinf not found!")
+        
+        -- save uic
+        target:data_set("wdk.stampinf", stampinf)
+    end)
+
+    -- on build file
+    on_build_file(function (target, sourcefile)
+
+        -- copy file to target directory
+        local targetfile = path.join(target:targetdir(), path.basename(sourcefile) .. ".inf")
+        os.cp(sourcefile, targetfile)
+
+        -- get stampinf
+        local stampinf = target:data("wdk.stampinf")
+
+        -- update the timestamp
+        os.vrunv(stampinf, {"-d", "*", "-a", "arm64", "-v", "*", "-f", targetfile}, {wildcards = false})
+
+        -- add clean files
+        target:data_add("wdk.cleanfiles", targetfile)
+    end)
+
 -- define rule: umdf driver
 rule("wdk.umdf.driver")
 
     -- add rules
-    add_deps("wdk.env")
+    add_deps("wdk.inf")
 
     -- on load
     on_load(function (target)
@@ -56,7 +99,7 @@ rule("wdk.umdf.driver")
 rule("wdk.umdf.binary")
 
     -- add rules
-    add_deps("wdk.env")
+    add_deps("wdk.inf")
 
     -- on load
     on_load(function (target)
@@ -67,7 +110,7 @@ rule("wdk.umdf.binary")
 rule("wdk.kmdf.driver")
 
     -- add rules
-    add_deps("wdk.env")
+    add_deps("wdk.inf")
 
     -- on load
     on_load(function (target)
@@ -78,7 +121,7 @@ rule("wdk.kmdf.driver")
 rule("wdk.kmdf.binary")
 
     -- add rules
-    add_deps("wdk.env")
+    add_deps("wdk.inf")
 
     -- on load
     on_load(function (target)

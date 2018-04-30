@@ -22,4 +22,5 @@ target("app")
 
     -- add files
     add_files("exe/*.c") 
+    add_files("exe/*.inf")
 

@@ -13,6 +13,7 @@ target("echo")
 
     -- add files
     add_files("driver/*.c") 
+    add_files("driver/*.inx")
 
     -- add includedirs
     add_includedirs("exe")

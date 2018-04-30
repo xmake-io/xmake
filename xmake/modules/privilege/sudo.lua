@@ -60,14 +60,14 @@ end
 -- .e.g
 -- _sudov(os.runv, {"echo", "hello xmake!"})
 --
-function _sudov(runner, program, argv)
+function _sudov(runner, program, argv, opt)
 
     -- find sudo
     local sudo = find_sudo()
     assert(sudo, "sudo not found!")
 
     -- run it with administrator permission and preserve parent environment
-    runner(sudo, table.join(_envars(), program, argv))
+    runner(sudo, table.join(_envars(), program, argv), opt)
 end
 
 -- sudo run lua script with administrator permission and arguments list
@@ -103,8 +103,8 @@ function run(cmd, ...)
 end
 
 -- sudo run command with arguments list
-function runv(program, argv)
-    return _sudov(os.run, program, argv)
+function runv(program, argv, opt)
+    return _sudov(os.run, program, argv, opt)
 end
 
 -- sudo quietly run command and echo verbose info if [-v|--verbose] option is enabled
@@ -113,8 +113,8 @@ function vrun(cmd, ...)
 end
 
 -- sudo quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
-function vrunv(program, argv)
-    return _sudov(os.vrunv, program, argv)
+function vrunv(program, argv, opt)
+    return _sudov(os.vrunv, program, argv, opt)
 end
 
 -- sudo run command and return output and error data
@@ -123,8 +123,8 @@ function iorun(cmd, ...)
 end
 
 -- sudo run command and return output and error data
-function iorunv(program, argv)
-    return _sudov(os.iorunv, program, argv)
+function iorunv(program, argv, opt)
+    return _sudov(os.iorunv, program, argv, opt)
 end
 
 -- sudo execute command 
@@ -133,13 +133,13 @@ function exec(cmd, ...)
 end
 
 -- sudo execute command with arguments list
-function execv(program, argv)
-    return _sudov(os.execv, program, argv)
+function execv(program, argv, opt)
+    return _sudov(os.execv, program, argv, opt)
 end
 
 -- sudo run lua script
-function runl(luafile, luaargv)
-    return _lua(os.runv, luafile, luaargv)
+function runl(luafile, luaargv, opt)
+    return _lua(os.runv, luafile, luaargv, opt)
 end
 
 -- sudo quietly run lua script and echo verbose info if [-v|--verbose] option is enabled
