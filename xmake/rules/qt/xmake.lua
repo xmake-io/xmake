@@ -210,8 +210,8 @@ rule("qt.qrc")
 -- define rule: qt static library
 rule("qt.static")
 
-    -- add rule: moc with qt environment
-    add_deps("qt.moc")
+    -- add rules
+    add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- on load
     on_load(function (target)
@@ -221,8 +221,8 @@ rule("qt.static")
 -- define rule: qt shared library
 rule("qt.shared")
 
-    -- add rule: moc with qt environment
-    add_deps("qt.moc")
+    -- add rules
+    add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- on load
     on_load(function (target)
@@ -232,8 +232,8 @@ rule("qt.shared")
 -- define rule: qt console
 rule("qt.console")
 
-    -- add rule: moc with qt environment
-    add_deps("qt.moc")
+    -- add rules
+    add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- on load
     on_load(function (target)
