@@ -473,7 +473,7 @@ end
 function target:symbolfile()
 
     -- the target directory
-    local targetdir = self:get("targetdir") or config.buildir()
+    local targetdir = self:targetdir() or config.buildir()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
