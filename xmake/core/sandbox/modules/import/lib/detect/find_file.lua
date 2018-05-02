@@ -44,9 +44,10 @@ function sandbox_lib_detect_find_file._find(filedir, name)
         filepath = path.join(filedir, name)
     end
 
-    -- file exists?
-    for _, file in ipairs(os.files(filepath)) do
-        return file
+    -- find the first file
+    local results = os.files(filepath, function (file, isdir) return false end)
+    if results and #results > 0 then
+        return results[1]
     end
 end
 

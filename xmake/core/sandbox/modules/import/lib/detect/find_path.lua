@@ -35,9 +35,10 @@ local vformat   = require("sandbox/modules/vformat")
 -- find the given file path or directory
 function sandbox_lib_detect_find_path._find(filedir, name)
 
-    -- path exists?
-    for _, p in ipairs(os.filedirs(path.join(filedir, name))) do
-        return path.directory(p)
+    -- find the first path
+    local results = os.filedirs(path.join(filedir, name), function (file, isdir) return false end)
+    if results and #results > 0 then
+        return path.directory(results[1])
     end
 end
 

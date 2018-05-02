@@ -133,8 +133,27 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                 }
             }
 
-            // save this path
-            if (!excluded) lua_rawseti(lua, -3, (tb_int_t)(++*pcount));
+            // does not exclude this path?
+            if (!excluded)
+            {
+                // save it
+                lua_rawseti(lua, -3, (tb_int_t)(++*pcount));
+
+                // do callback function
+                if (lua_isfunction(lua, 6))
+                {
+                    // do callback(path, isdir)
+                    lua_pushvalue(lua, 6);
+                    lua_pushstring(lua, path);
+                    lua_pushboolean(lua, info->type == TB_FILE_TYPE_DIRECTORY);
+                    lua_call(lua, 2, 1);
+
+                    // is continue?
+                    tb_bool_t is_continue = lua_toboolean(lua, -1);
+                    lua_pop(lua, 1);
+                    if (!is_continue) return tb_false;
+                }
+            }
             // pop this return value
             else lua_pop(lua, 1);
         }

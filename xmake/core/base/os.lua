@@ -201,10 +201,13 @@ end
 -- @code
 -- local dirs, count = os.match("./src/*", true)
 -- local files, count = os.match("./src/**.c")
--- local file = os.match("./src/test.c")
+-- local file = os.match("./src/test.c", 'f', function (filepath, isdir) 
+--                  return true   -- continue it
+--                  return false  -- break it
+--              end)
 -- @endcode
 --
-function os.match(pattern, mode)
+function os.match(pattern, mode, callback)
 
     -- get the excludes
     local excludes = pattern:match("|.*$")
@@ -279,25 +282,25 @@ function os.match(pattern, mode)
     pattern = pattern:gsub("\002", "[^/]*")
 
     -- find it
-    return os.find(rootdir, pattern, recurse, mode, excludes)
+    return os.find(rootdir, pattern, recurse, mode, excludes, callback)
 end
 
 -- match directories
 --
 -- @note only return {} without count to simplify code, .e.g unpack(os.dirs(""))
 --
-function os.dirs(pattern)
-    return (os.match(pattern, 'd'))
+function os.dirs(pattern, callback)
+    return (os.match(pattern, 'd', callback))
 end
 
 -- match files
-function os.files(pattern)
-    return (os.match(pattern, 'f'))
+function os.files(pattern, callback)
+    return (os.match(pattern, 'f', callback))
 end
 
 -- match files and directories
-function os.filedirs(pattern)
-    return (os.match(pattern, 'a'))
+function os.filedirs(pattern, callback)
+    return (os.match(pattern, 'a', callback))
 end
 
 -- copy files or directories
