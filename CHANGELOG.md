@@ -19,6 +19,7 @@
 * Support android NDK >= r14
 * Improve warning flags for swiftc
 * [#167](https://github.com/tboox/xmake/issues/167): Improve custom rules
+* Improve `os.files` and `os.dirs` api
 
 ### Bugs fixed
 
@@ -468,6 +469,7 @@
 * 支持Android NDK >= r14的版本
 * 改进swiftc对warning flags的支持
 * [#167](https://github.com/tboox/xmake/issues/167): 改进自定义规则：`rule()`
+* 改进`os.files`和`os.dirs`接口，加速文件模式匹配
 
 ### Bugs修复
 
