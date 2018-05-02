@@ -248,6 +248,17 @@ rule("qt.application")
 
     -- on load
     on_load(function (target)
+
+        -- load common flags to target
         import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtQml", "QtNetwork", "QtCore"}})
+
+        -- add -subsystem:windows for windows platform
+        if is_plat("windows") then
+            target:add("defines", "_WINDOWS")
+            target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
+        elseif is_plat("mingw") then
+            target:add("defines", "_WINDOWS")
+            target:add("ldflags", "-Wl,-subsystem:windows", "-Wl,-entry:mainCRTStartup", {force = true})
+        end
     end)
 
