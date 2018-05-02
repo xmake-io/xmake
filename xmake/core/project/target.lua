@@ -877,7 +877,8 @@ function target:sourcebatches()
 
         -- add file rules
         local builtin_rule = true
-        for _, filerule in ipairs(self:filerules(sourcefile)) do
+        local filerules = self:filerules(sourcefile)
+        for _, filerule in ipairs(filerules) do
 
             -- get source kind
             local sourcekind = "__rule_" .. filerule:name()
@@ -912,21 +913,21 @@ function target:sourcebatches()
                     sourcekind = sourcekind_ext
                 end
             end
+            if sourcekind then
 
-            -- unknown source kind
-            if not sourcekind then
+                -- make this batch
+                local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
+                sourcebatches[sourcekind] = sourcebatch
+
+                -- add source kind to this batch
+                sourcebatch.sourcekind = sourcekind
+
+                -- add source file to this batch
+                table.insert(sourcebatch.sourcefiles, sourcefile)
+
+            elseif #filerules == 0 then
                 os.raise("unknown source file: %s", sourcefile)
             end
-
-            -- make this batch
-            local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
-            sourcebatches[sourcekind] = sourcebatch
-
-            -- add source kind to this batch
-            sourcebatch.sourcekind = sourcekind
-
-            -- add source file to this batch
-            table.insert(sourcebatch.sourcefiles, sourcefile)
         end
     end
 
