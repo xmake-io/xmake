@@ -385,31 +385,23 @@ function sandbox_os.execv(program, argv, opt)
 end
 
 -- match files or directories
-function sandbox_os.match(pattern, mode, ...)
-
-    -- check
-    assert(pattern)
-
-    -- format it first
-    pattern = vformat(pattern, ...)
-
-    -- match it
-    return os.match(pattern, mode)
+function sandbox_os.match(pattern, mode)
+    return os.match(vformat(pattern), mode)
 end
 
 -- match directories
-function sandbox_os.dirs(pattern, ...)
-    return sandbox_os.match(pattern, 'd', ...)
+function sandbox_os.dirs(pattern)
+    return sandbox_os.match(pattern, 'd')
 end
 
 -- match files
-function sandbox_os.files(pattern, ...)
-    return sandbox_os.match(pattern, 'f', ...)
+function sandbox_os.files(pattern)
+    return sandbox_os.match(pattern, 'f')
 end
 
 -- match files and directories
-function sandbox_os.filedirs(pattern, ...)
-    return sandbox_os.match(pattern, 'a', ...)
+function sandbox_os.filedirs(pattern)
+    return sandbox_os.match(pattern, 'a')
 end
 
 -- is directory?

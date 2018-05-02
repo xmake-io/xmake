@@ -286,7 +286,7 @@ end
 --
 -- @note only return {} without count to simplify code, .e.g unpack(os.dirs(""))
 --
-function os.dirs(pattern, ...)
+function os.dirs(pattern)
     return (os.match(pattern, 'd'))
 end
 
