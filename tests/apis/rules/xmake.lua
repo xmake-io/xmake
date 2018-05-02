@@ -117,6 +117,18 @@ rule("stub1")
         print("rule(stub1): after_run")
     end)
 
+-- define rule: stub0b
+rule("stub0b")
+    before_build_file(function (target, sourcefile)
+        print("rule(stub0b): before_build_file", sourcefile)
+    end)
+
+-- define rule: stub0a
+rule("stub0a")
+    after_build_file(function (target, sourcefile)
+        print("rule(stub0a): after_build_file", sourcefile)
+    end)
+
 -- define target
 target("test")
 
@@ -127,7 +139,7 @@ target("test")
     add_rules("stub1")
 
     -- add files
-    add_files("src/*.c") 
+    add_files("src/*.c", {rules = {"stub0a", "stub0b"}}) 
     add_files("src/man/*.in",   {rule = "man"})
     add_files("src/index.md")
     add_files("src/test.c.in",  {rule = "c code"})
