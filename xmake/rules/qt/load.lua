@@ -25,7 +25,7 @@
 -- make link for framework
 function _link(framework, major)
     if major and framework:startswith("Qt") then
-        framework = "Qt" .. major .. framework:sub(3)
+        framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and "d" or "")
     end
     return framework
 end
