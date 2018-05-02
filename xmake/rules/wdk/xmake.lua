@@ -78,10 +78,48 @@ rule("wdk.inf")
         local stampinf = target:data("wdk.stampinf")
 
         -- update the timestamp
-        os.vrunv(stampinf, {"-d", "*", "-a", "arm64", "-v", "*", "-f", targetfile}, {wildcards = false})
+        os.vrunv(stampinf, {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*", "-f", targetfile}, {wildcards = false})
 
         -- add clean files
         target:data_add("wdk.cleanfiles", targetfile)
+    end)
+
+-- define rule: tracewpp
+rule("wdk.tracewpp")
+
+    -- add rule: wdk environment
+    add_deps("wdk.env")
+
+    -- on load
+    on_load(function (target)
+
+        -- imports
+        import("core.project.config")
+
+        -- get arch
+        local arch = assert(config.arch(), "arch not found!")
+        
+        -- get tracewpp
+        local tracewpp = path.join(target:data("wdk").bindir, arch, is_host("windows") and "tracewpp.exe" or "tracewpp")
+        assert(tracewpp and os.isexec(tracewpp), "tracewpp not found!")
+        
+        -- save uic
+        target:data_set("wdk.tracewpp", tracewpp)
+    end)
+
+    -- before build file
+    before_build_file(function (target, sourcefile)
+
+        -- get tracewpp
+        local tracewpp = target:data("wdk.tracewpp")
+
+        print(tracewpp, sourcefile)
+
+        -- update the timestamp
+--        os.vrunv(tracewpp, {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*", "-f", targetfile}, {wildcards = false})
+
+        -- add clean files
+--        target:data_add("wdk.cleanfiles", targetfile)
     end)
 
 -- define rule: umdf driver

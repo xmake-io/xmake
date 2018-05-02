@@ -355,7 +355,7 @@ function project._load_targets()
     -- make targets
     local targets = {}
     for targetname, targetinfo in pairs(results) do
-        targets[targetname] = target.new(targetname, targetinfo)
+        targets[targetname] = target.new(targetname, targetinfo, project)
     end
 
     -- load and attach target deps and rules

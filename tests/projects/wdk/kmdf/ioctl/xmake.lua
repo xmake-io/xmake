@@ -9,7 +9,7 @@ target("nonpnp")
     add_rules("wdk.kmdf.driver")
 
     -- add files
-    add_files("driver/*.c") 
+    add_files("driver/*.c", {rule = "wdk.tracewpp"}) 
 
 -- add target
 target("app")

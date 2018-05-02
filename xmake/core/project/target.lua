@@ -126,7 +126,7 @@ function target.filename(targetname, targetkind, targetformat)
 end
 
 -- new a target instance
-function target.new(name, info)
+function target.new(name, info, project)
 
     -- init a target instance
     local instance = table.inherit(target)
@@ -135,6 +135,7 @@ function target.new(name, info)
     -- save name and info
     instance._NAME = name
     instance._INFO = info
+    instance._PROJECT = project
 
     -- ok?
     return instance
@@ -163,7 +164,7 @@ function target:set(name_or_info, ...)
         -- set values
         local name = name_or_info
         if #values > 0 then
-            self._INFO[name] = table.unwrap(table.unique(values))
+            self._INFO[name] = table.unwrap(table.unique(table.join(unpack(values))))
         else
             self._INFO[name] = nil
         end
@@ -203,7 +204,7 @@ function target:add(name_or_info, ...)
         -- add values
         local name = name_or_info
         local info = table.wrap(self._INFO[name])
-        self._INFO[name] = table.unwrap(table.unique(table.join(info, values)))
+        self._INFO[name] = table.unwrap(table.unique(table.join(info, unpack(values))))
 
         -- save extra config
         if extra_config then
@@ -341,27 +342,11 @@ function target:orderules()
     return self._ORDERULES
 end
 
--- get target rule from the given source extension
-function target:rule(extension)
-
-    -- get it from cache first
-    local extension2rules = self._EXTENSION2RULES
-    if not extension2rules then
-
-        -- make extension to rules
-        extension2rules = {}
-        for _, rule in pairs(table.wrap(self:rules())) do
-            for _, extension in ipairs(table.wrap(rule:get("extensions"))) do
-                extension2rules[extension] = rule
-            end
-        end
+-- get target rule from the given rule name
+function target:rule(name)
+    if self._RULES then
+        return self._RULES[name]
     end
-
-    -- cache it
-    self._EXTENSION2RULES = extension2rules
-
-    -- ok?
-    return extension2rules[extension]
 end
 
 -- is phony target?
@@ -509,21 +494,42 @@ function target:headerdir()
     return self:get("headerdir") or config.buildir()
 end
 
--- get the source file rule name
-function target:filerule(sourcefile)
+-- get rules of the source file 
+function target:filerules(sourcefile)
 
-    -- get file config
+    -- add rules from file config
+    local rules = {}
     local fileconfig = self:fileconfig(sourcefile)
-
-    -- get rule name
-    if fileconfig and fileconfig.rule then
-        return fileconfig.rule
-    else
-        local rule = self:rule(path.extension(sourcefile))
-        if rule then
-            return rule:name()
+    if fileconfig then
+        local filerules = fileconfig.rules or fileconfig.rule 
+        if filerules then
+            for _, rulename in ipairs(table.wrap(filerules)) do
+                local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
+                if r then
+                    table.insert(rules, r)
+                end
+            end
         end
     end
+
+    -- get target rule from the given source extension
+    local extension2rules = self._EXTENSION2RULES
+    if not extension2rules then
+        extension2rules = {}
+        for _, r in pairs(table.wrap(self:rules())) do
+            for _, extension in ipairs(table.wrap(r:get("extensions"))) do
+                extension2rules[extension] = extension2rules[extension] or {}
+                table.insert(extension2rules[extension], r)
+            end
+        end
+        self._EXTENSION2RULES = extension2rules
+    end
+    for _, r in ipairs(table.wrap(extension2rules[path.extension(sourcefile)])) do
+        table.insert(rules, r)
+    end
+
+    -- done
+    return rules 
 end
 
 -- get the config info of the given source file
@@ -869,43 +875,59 @@ function target:sourcebatches()
     local sourcebatches = {}
     for _, sourcefile in ipairs(sourcefiles) do
 
-        -- get file rule
-        local filerule = self:filerule(sourcefile)
+        -- add file rules
+        local builtin_rule = true
+        for _, filerule in ipairs(self:filerules(sourcefile)) do
 
-        -- get source kind
-        local sourcekind = nil
-        if filerule then
-            sourcekind = "__rule_" .. filerule
-        end
-        if not sourcekind then
-            sourcekind = language.sourcekind_of(sourcefile)
-        end
-        if not sourcekind then
-            local sourcekind_ext = sourcekinds_ext[path.extension(sourcefile):lower()]
-            if sourcekind_ext then
-                sourcekind = sourcekind_ext
+            -- get source kind
+            local sourcekind = "__rule_" .. filerule:name()
+
+            -- make this batch
+            local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
+            sourcebatches[sourcekind] = sourcebatch
+
+            -- add source kind to this batch
+            sourcebatch.sourcekind = sourcekind
+
+            -- add source rule to this batch
+            sourcebatch.rulename = filerule:name()
+
+            -- add source file to this batch
+            table.insert(sourcebatch.sourcefiles, sourcefile)
+
+            -- override `on_build_xxx` in filerules? disable the builtin-rule
+            if filerule:get("build_file") or filerule:get("build_files") or filerule:get("build") then
+                builtin_rule = false
             end
         end
 
-        -- unknown source kind
-        if not sourcekind then
-            os.raise("unknown source file: %s", sourcefile)
+        -- add builtin rule
+        if builtin_rule then
+
+            -- get source kind
+            sourcekind = language.sourcekind_of(sourcefile)
+            if not sourcekind then
+                local sourcekind_ext = sourcekinds_ext[path.extension(sourcefile):lower()]
+                if sourcekind_ext then
+                    sourcekind = sourcekind_ext
+                end
+            end
+
+            -- unknown source kind
+            if not sourcekind then
+                os.raise("unknown source file: %s", sourcefile)
+            end
+
+            -- make this batch
+            local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
+            sourcebatches[sourcekind] = sourcebatch
+
+            -- add source kind to this batch
+            sourcebatch.sourcekind = sourcekind
+
+            -- add source file to this batch
+            table.insert(sourcebatch.sourcefiles, sourcefile)
         end
-
-        -- make this batch
-        local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
-        sourcebatches[sourcekind] = sourcebatch
-
-        -- add source kind to this batch
-        sourcebatch.sourcekind = sourcekind
-
-        -- add source rule to this batch
-        if filerule then
-            sourcebatch.rulename = filerule
-        end
-
-        -- add source file to this batch
-        table.insert(sourcebatch.sourcefiles, sourcefile)
     end
 
     -- insert object files to source batches
