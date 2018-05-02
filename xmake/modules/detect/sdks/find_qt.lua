@@ -33,7 +33,7 @@ import("core.project.config")
 function _find_sdkdir(sdkdir, sdkver)
 
     -- init sub-directory
-    local subdir = sdkver or "**"
+    local subdir = sdkver or "*"
 
     -- append target sub-directory
     local targetdir = nil
@@ -56,7 +56,7 @@ function _find_sdkdir(sdkdir, sdkver)
     if targetdir then
         subdir = path.join(subdir, targetdir)
     else
-        subdir = path.join(subdir, "**")
+        subdir = path.join(subdir, "*")
     end
     subdir = path.join(subdir, "bin")
 

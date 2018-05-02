@@ -265,14 +265,30 @@ function os.match(pattern, mode, callback)
 
     -- get the root directory
     local rootdir = pattern
-    local starpos = pattern:find("%*")
-    if starpos then
-        rootdir = rootdir:sub(1, starpos - 1)
+    local startpos = pattern:find("*", 1, true)
+    if startpos then
+        rootdir = rootdir:sub(1, startpos - 1)
     end
     rootdir = path.directory(rootdir)
 
-    -- is recurse?
-    local recurse = pattern:find("**", nil, true)
+    -- compute the recursion level
+    --
+    -- infinite recursion: src/**.c
+    -- limit recursion level: src/*/*.c
+    local recursion = 0
+    if pattern:find("**", 1, true) then
+        recursion = -1
+    else
+        -- "src/*/*.c" -> "*/" -> recursion level: 1
+        -- "src/*/main.c" -> "*/" -> recursion level: 1
+        -- "src/*/subdir/main.c" -> "*//" -> recursion level: 2
+        if startpos then
+            local _, seps = pattern:sub(startpos):gsub("[/\\]", "")
+            if seps > 0 then
+                recursion = seps
+            end
+        end
+    end
 
     -- convert pattern to a lua pattern
     pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
@@ -282,7 +298,7 @@ function os.match(pattern, mode, callback)
     pattern = pattern:gsub("\002", "[^/]*")
 
     -- find it
-    return os.find(rootdir, pattern, recurse, mode, excludes, callback)
+    return os.find(rootdir, pattern, recursion, mode, excludes, callback)
 end
 
 -- match directories

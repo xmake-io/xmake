@@ -61,7 +61,7 @@ function main(ndkdir, opt)
 
     -- save the toolchains directory
     local toolchains = {}
-    for _, bindir in ipairs(os.dirs(path.join(ndkdir, "toolchains", cross .. "**", "prebuilt/*/bin"))) do
+    for _, bindir in ipairs(os.dirs(path.join(ndkdir, "toolchains", cross .. "*", "prebuilt/*/bin"))) do
         local binfiles = os.files(path.join(bindir, cross .. "*"))
         if binfiles and #binfiles > 0 then
             table.insert(toolchains, {bin = bindir, cross = cross})

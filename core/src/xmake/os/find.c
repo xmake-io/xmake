@@ -180,8 +180,8 @@ tb_int_t xm_os_find(lua_State* lua)
     tb_char_t const* pattern = luaL_checkstring(lua, 2);
     tb_check_return_val(pattern, 0);
 
-    // is recurse?
-    tb_bool_t recurse = lua_toboolean(lua, 3);
+    // the recursion level
+    tb_long_t recursion = lua_tointeger(lua, 3);
 
     // the match mode
     tb_long_t mode = lua_tointeger(lua, 4);
@@ -198,7 +198,7 @@ tb_int_t xm_os_find(lua_State* lua)
     tuple[1].cstr   = pattern;
     tuple[2].l      = mode;
     tuple[3].ul     = 0;
-    tb_directory_walk(rootdir, recurse, tb_true, xm_os_find_walk, tuple);
+    tb_directory_walk(rootdir, recursion, tb_true, xm_os_find_walk, tuple);
 
     // pop string package
     lua_pop(lua, 1);

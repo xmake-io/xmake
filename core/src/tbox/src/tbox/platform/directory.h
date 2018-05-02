@@ -109,13 +109,13 @@ tb_size_t               tb_directory_temporary(tb_char_t* path, tb_size_t maxn);
 /*! the directory walk
  *
  * @param path          the directory path
- * @param recursion     is recursion?
+ * @param recursion     the recursion level, 0, 1, 2 or -1 (infinite)
  * @param prefix        is prefix recursion? directory is the first item
  * @param func          the callback func
  * @param data          the callback data
  * 
  */
-tb_void_t               tb_directory_walk(tb_char_t const* path, tb_bool_t recursion, tb_bool_t prefix, tb_directory_walk_func_t func, tb_cpointer_t priv);
+tb_void_t               tb_directory_walk(tb_char_t const* path, tb_long_t recursion, tb_bool_t prefix, tb_directory_walk_func_t func, tb_cpointer_t priv);
 
 /*! copy directory
  * 

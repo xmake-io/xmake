@@ -96,7 +96,7 @@ static tb_bool_t tb_directory_walk_copy(tb_char_t const* path, tb_file_info_t co
     // continue
     return tb_true;
 }
-static tb_bool_t tb_directory_walk_impl(tb_char_t const* path, tb_bool_t recursion, tb_bool_t prefix, tb_directory_walk_func_t func, tb_cpointer_t priv)
+static tb_bool_t tb_directory_walk_impl(tb_char_t const* path, tb_long_t recursion, tb_bool_t prefix, tb_directory_walk_func_t func, tb_cpointer_t priv)
 {
     // check
     tb_assert_and_check_return_val(path && func, tb_false);
@@ -136,7 +136,7 @@ static tb_bool_t tb_directory_walk_impl(tb_char_t const* path, tb_bool_t recursi
                 tb_check_break(ok);
 
                 // walk to the next directory
-                if (info.type == TB_FILE_TYPE_DIRECTORY && recursion) ok = tb_directory_walk_impl(temp, recursion, prefix, func, priv);
+                if (info.type == TB_FILE_TYPE_DIRECTORY && recursion) ok = tb_directory_walk_impl(temp, recursion > 0? recursion - 1 : recursion, prefix, func, priv);
                 tb_check_break(ok);
 
                 // do callback
@@ -203,7 +203,7 @@ tb_bool_t tb_directory_remove(tb_char_t const* path)
     tb_assert_and_check_return_val(path, tb_false);
 
     // walk remove
-    tb_directory_walk_impl(path, tb_true, tb_false, tb_directory_walk_remove, tb_null);
+    tb_directory_walk_impl(path, -1, tb_false, tb_directory_walk_remove, tb_null);
 
     // remove it
     return !remove(path)? tb_true : tb_false;
@@ -253,7 +253,7 @@ tb_size_t tb_directory_temporary(tb_char_t* path, tb_size_t maxn)
     return tb_strlcpy(path, "/tmp", maxn);
 }
 #endif
-tb_void_t tb_directory_walk(tb_char_t const* path, tb_bool_t recursion, tb_bool_t prefix, tb_directory_walk_func_t func, tb_cpointer_t priv)
+tb_void_t tb_directory_walk(tb_char_t const* path, tb_long_t recursion, tb_bool_t prefix, tb_directory_walk_func_t func, tb_cpointer_t priv)
 {
     // check
     tb_assert_and_check_return(path && func);
@@ -290,7 +290,7 @@ tb_bool_t tb_directory_copy(tb_char_t const* path, tb_char_t const* dest)
     tuple[0].cstr = dest;
     tuple[1].ul = tb_strlen(path);
     tuple[2].b = tb_true;
-    tb_directory_walk_impl(path, tb_true, tb_true, tb_directory_walk_copy, tuple);
+    tb_directory_walk_impl(path, -1, tb_true, tb_directory_walk_copy, tuple);
 
     // ok?
     tb_bool_t ok = tuple[2].b;

@@ -31,11 +31,11 @@ function _find_cudadir()
     -- init the search directories
     local pathes = {}
     if os.host() == "macosx" then
-        table.insert(pathes, "/Developer/NVIDIA/CUDA**/bin")
+        table.insert(pathes, "/Developer/NVIDIA/CUDA*/bin")
     elseif os.host() == "windows" then
         table.insert(pathes, "$(env CUDA_PATH)/bin")
     else
-        table.insert(pathes, "/usr/local/cuda**/bin")
+        table.insert(pathes, "/usr/local/cuda*/bin")
     end
 
     -- attempt to find nvcc

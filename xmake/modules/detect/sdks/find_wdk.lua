@@ -48,7 +48,7 @@ function _find_umdfver(libdir, includedir)
 
     -- find versions
     local versions = {}
-    for _, p in ipairs(os.files(path.join(includedir, "wdf", "umdf", "**", "wdf.h"))) do
+    for _, p in ipairs(os.files(path.join(includedir, "wdf", "umdf", "*", "wdf.h"))) do
         table.insert(versions, path.filename(path.directory(p)))
     end
 
@@ -68,7 +68,7 @@ function _find_kmdfver(libdir, includedir)
 
     -- find versions
     local versions = {}
-    for _, p in ipairs(os.files(path.join(includedir, "wdf", "kmdf", "**", "wdf.h"))) do
+    for _, p in ipairs(os.files(path.join(includedir, "wdf", "kmdf", "*", "wdf.h"))) do
         table.insert(versions, path.filename(path.directory(p)))
     end
 
@@ -95,7 +95,7 @@ function _find_wdk(sdkdir, sdkver)
     -- get sdk version
     if not sdkver then
         local vers = {}
-        for _, dir in ipairs(os.dirs(path.join(sdkdir, "Include", "**", "km"))) do
+        for _, dir in ipairs(os.dirs(path.join(sdkdir, "Include", "*", "km"))) do
             table.insert(vers, path.filename(path.directory(dir)))
         end
         for _, ver in ipairs(vers) do
