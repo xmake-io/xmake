@@ -284,6 +284,32 @@ function rule:script(name, generic)
     return result
 end
 
+-- do load
+function rule:do_load(target)
+
+    -- init cache
+    local key = target:name()
+    local cache = self._LOADED or {}
+
+    -- do load
+    if cache[key] == nil then
+        local on_load = self:script("load")
+        if on_load then
+            local ok, errors = sandbox.load(on_load, target)
+            cache[key] = {ok, errors}
+        end
+    end
+
+    -- save cache
+    self._LOADED = cache
+
+    -- return results
+    local results = cache[key]
+    if results then
+        return results[1], results[2]
+    end
+end
+
 -- get the given global rule
 function rule.rule(name)
     return rule.rules()[name]

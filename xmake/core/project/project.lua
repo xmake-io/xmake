@@ -412,12 +412,9 @@ function project._load_targets()
         -- do load with target rules
         if ok then
             for _, r in pairs(t:orderules()) do
-                local on_load = r:script("load")
-                if on_load then
-                    ok, errors = sandbox.load(on_load, t)
-                    if not ok then
-                        break
-                    end
+                ok, errors = r:do_load(t)
+                if not ok then
+                    break
                 end
             end
             if not ok then 

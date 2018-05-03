@@ -96,15 +96,24 @@ rule("wdk.tracewpp")
         -- imports
         import("core.project.config")
 
+        -- get wdk
+        local wdk = target:data("wdk")
+
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
         
         -- get tracewpp
-        local tracewpp = path.join(target:data("wdk").bindir, arch, is_host("windows") and "tracewpp.exe" or "tracewpp")
+        local tracewpp = path.join(wdk.bindir, arch, is_host("windows") and "tracewpp.exe" or "tracewpp")
         assert(tracewpp and os.isexec(tracewpp), "tracewpp not found!")
         
-        -- save uic
+        -- save tracewpp
         target:data_set("wdk.tracewpp", tracewpp)
+
+        -- save output directory
+        target:data_set("wdk.tracewpp.outputdir", path.join(config.buildir(), ".wpp", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
+        
+        -- save config directory
+        target:data_set("wdk.tracewpp.configdir", path.join(wdk.bindir, wdk.sdkver, "WppConfig", "Rev1"))
     end)
 
     -- before build file
@@ -113,13 +122,23 @@ rule("wdk.tracewpp")
         -- get tracewpp
         local tracewpp = target:data("wdk.tracewpp")
 
-        print(tracewpp, sourcefile)
+        -- get outputdir
+        local outputdir = target:data("wdk.tracewpp.outputdir")
+        if not os.isdir(outputdir) then
+            os.mkdir(outputdir)
+        end
+
+        -- get configdir
+        local configdir = target:data("wdk.tracewpp.configdir")
 
         -- update the timestamp
---        os.vrunv(tracewpp, {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*", "-f", targetfile}, {wildcards = false})
+        os.vrunv(tracewpp, {"-cfgdir:" .. configdir, "-odir:" .. outputdir, sourcefile})
+
+        -- add includedirs
+        target:add("includedirs", outputdir)
 
         -- add clean files
---        target:data_add("wdk.cleanfiles", targetfile)
+        target:data_add("wdk.cleanfiles", outputdir)
     end)
 
 -- define rule: umdf driver

@@ -506,6 +506,22 @@ function target:filerules(sourcefile)
             for _, rulename in ipairs(table.wrap(filerules)) do
                 local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
                 if r then
+
+                    -- load dependent rules if these rules have been not loaded
+                    for _, deprule in pairs(r:orderdeps()) do
+                        local ok, errors = deprule:do_load(self)
+                        if not ok then
+                            os.raise(errors)
+                        end
+                    end
+
+                    -- load file rule if this rule have been not loaded
+                    local ok, errors = r:do_load(self)
+                    if not ok then
+                        os.raise(errors)
+                    end
+
+                    -- add this rule
                     table.insert(rules, r)
                 end
             end
