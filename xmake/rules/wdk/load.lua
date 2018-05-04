@@ -87,9 +87,6 @@ function _load_for_kmdf(target, wdk, arch, kind)
         -- add link directories
         target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
 
-        -- add links
-        target:add("links", "WdfDriverStubUm")
-
         -- add defines
         local kmdfver = wdk.kmdfver:split('%.')
         target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")

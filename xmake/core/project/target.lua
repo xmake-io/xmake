@@ -68,6 +68,13 @@ function target.apis()
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
         }
+    ,   keyvalues =
+        {
+            -- target.set_xxx
+            "target.set_values"
+            -- target.add_xxx
+        ,   "target.add_values"
+        }
     ,   pathes = 
         {
             -- target.set_xxx
@@ -238,6 +245,21 @@ end
 function target:data_add(name, data)
     self._DATA = self._DATA or {}
     self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
+-- get values
+function target:values(name)
+    return self:get("values." .. name)
+end
+
+-- set values
+function target:values_set(name, ...)
+    self:set("values." .. name, ...)
+end
+
+-- add values
+function target:values_add(name, ...)
+    self:add("values." .. name, ...)
 end
 
 -- dump this target

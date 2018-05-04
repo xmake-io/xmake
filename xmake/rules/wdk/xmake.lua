@@ -136,10 +136,10 @@ rule("wdk.tracewpp")
         if target:rule("wdk.kmdf.driver") then
             table.insert(args, "-km")
             table.insert(args, "-gen:{km-WdfDefault.tpl}*.tmh")
-
-            -- TODO
-            table.insert(args, "-func:TraceEvents(LEVEL,FLAGS,MSG,...)")
-            table.insert(args, "-func:Hexdump((LEVEL,FLAGS,MSG,...))")
+        end
+        local flags = target:values("wdk.tracewpp.flags")
+        if flags then
+            table.join2(args, flags)
         end
         table.insert(args, "-cfgdir:" .. configdir)
         table.insert(args, "-odir:" .. outputdir)

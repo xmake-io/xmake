@@ -989,9 +989,6 @@ end
 --
 function interpreter:api_register_set_values(scope_kind, ...)
 
-    -- check
-    assert(self)
-
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
@@ -1024,9 +1021,6 @@ end
 -- register api for add_values
 function interpreter:api_register_add_values(scope_kind, ...)
 
-    -- check
-    assert(self)
-
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
@@ -1040,6 +1034,82 @@ function interpreter:api_register_add_values(scope_kind, ...)
         end
 
         -- save values
+        scope[name] = table.join2(scope[name] or {}, values)
+
+        -- save extra config
+        if extra_config then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            for _, value in ipairs(values) do
+                extrascope[value] = extra_config
+            end
+        end
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
+end
+
+-- register api for set_keyvalues
+--
+-- interp:api_register_set_keyvalues("scope_kind", "name1", "name2", ...)
+--
+-- api:
+--   set_$(name1)("key", "value1")
+--   set_$(name2)("key", "value1", "value2", ...)
+--
+function interpreter:api_register_set_keyvalues(scope_kind, ...)
+
+    -- define implementation
+    local implementation = function (self, scope, name, key, ...)
+
+        -- get extra config
+        local values = {...}
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
+            table.remove(values)
+        else
+            extra_config = nil
+        end
+
+        -- save values
+        name = name .. "." .. key
+        scope[name] = values
+
+        -- save extra config
+        if extra_config then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            for _, value in ipairs(values) do
+                extrascope[value] = extra_config
+            end
+        end
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
+end
+
+-- register api for add_keyvalues
+--
+-- interp:api_register_add_keyvalues("scope_kind", "name1", "name2", ...)
+--
+function interpreter:api_register_add_keyvalues(scope_kind, ...)
+
+    -- define implementation
+    local implementation = function (self, scope, name, key, ...)
+
+        -- get extra config
+        local values = {...}
+        local extra_config = values[#values]
+        if table.is_dictionary(extra_config) then 
+            table.remove(values)
+        else
+            extra_config = nil
+        end
+
+        -- save values
+        name = name .. "." .. key
         scope[name] = table.join2(scope[name] or {}, values)
 
         -- save extra config
@@ -1086,7 +1156,6 @@ function interpreter:api_register_add_array(scope_kind, ...)
         -- append array?
         scope[name] = scope[name] or {}
         table.insert(scope[name], {...})
-
     end
 
     -- register implementation
