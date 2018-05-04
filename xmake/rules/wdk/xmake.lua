@@ -131,8 +131,22 @@ rule("wdk.tracewpp")
         -- get configdir
         local configdir = target:data("wdk.tracewpp.configdir")
 
+        -- init args
+        local args = {}
+        if target:rule("wdk.kmdf.driver") then
+            table.insert(args, "-km")
+            table.insert(args, "-gen:{km-WdfDefault.tpl}*.tmh")
+
+            -- TODO
+            table.insert(args, "-func:TraceEvents(LEVEL,FLAGS,MSG,...)")
+            table.insert(args, "-func:Hexdump((LEVEL,FLAGS,MSG,...))")
+        end
+        table.insert(args, "-cfgdir:" .. configdir)
+        table.insert(args, "-odir:" .. outputdir)
+        table.insert(args, sourcefile)
+
         -- update the timestamp
-        os.vrunv(tracewpp, {"-cfgdir:" .. configdir, "-odir:" .. outputdir, sourcefile})
+        os.vrunv(tracewpp, args, {wildcards = false})
 
         -- add includedirs
         target:add("includedirs", outputdir)
