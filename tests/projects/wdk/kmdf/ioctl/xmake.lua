@@ -21,9 +21,6 @@ target("nonpnp")
 -- add target
 target("app")
 
-    -- add deps
-    add_deps("nonpnp")
-
     -- add rules
     add_rules("wdk.kmdf.binary")
 

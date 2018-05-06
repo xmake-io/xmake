@@ -198,3 +198,20 @@ rule("wdk.kmdf.binary")
     on_load(function (target)
         import("load").kmdf_binary(target)
     end)
+
+    -- after build
+    after_build(function (target)
+
+        -- imports
+        import("core.project.config")
+
+        -- get wdk
+        local wdk = target:data("wdk")
+
+        -- copy wdf redist dll libraries (WdfCoInstaller01011.dll, ..) to the target directory
+        os.cp(path.join(wdk.sdkdir, "Redist", "wdf", config.arch(), "*.dll"), target:targetdir())
+
+        -- add clean files
+        target:data_add("wdk.cleanfiles", os.files(path.join(target:targetdir(), "*.dll")))
+    end)
+
