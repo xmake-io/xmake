@@ -94,6 +94,9 @@ function kmdf_driver(target)
     -- set kind
     target:set("kind", "binary")
 
+    -- set filename: xxx.sys
+    target:set("filename", target:basename() .. ".sys")
+
     -- add defines
     local arch = config.arch()
     local kmdfver = wdk.kmdfver:split('%.')

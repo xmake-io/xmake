@@ -56,6 +56,7 @@ function target.apis()
         ,   "target.set_default"
         ,   "target.set_options"
         ,   "target.set_symbols"
+        ,   "target.set_filename"
         ,   "target.set_basename"
         ,   "target.set_warnings"
         ,   "target.set_optimize"
@@ -279,7 +280,11 @@ end
 
 -- get the base name of target file
 function target:basename()
-    return self:get("basename")
+    local filename = self:get("filename")
+    if filename then
+        return path.basename(filename)
+    end
+    return self:get("basename") or self:name()
 end
 
 -- get the target linker
@@ -484,7 +489,7 @@ function target:targetfile()
     local targetkind = self:targetkind()
 
     -- make the target file name and attempt to use the format of linker first
-    local filename = target.filename(self:basename() or self:name(), targetkind, self:linker():format(targetkind))
+    local filename = self:get("filename") or target.filename(self:basename(), targetkind, self:linker():format(targetkind))
     assert(filename)
 
     -- make the target file path
@@ -499,7 +504,7 @@ function target:symbolfile()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
-    local filename = target.filename(self:basename() or self:name(), "symbol")
+    local filename = target.filename(self:basename(), "symbol")
     assert(filename)
 
     -- make the symbol file path

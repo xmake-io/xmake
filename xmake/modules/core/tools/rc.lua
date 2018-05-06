@@ -28,6 +28,9 @@ import("core.project.project")
 
 -- init it
 function init(self)
+
+    -- init mrcflags
+    _g.mrcflags = {"-nologo"}
     
     -- init buildmodes
     _g.buildmodes = 
@@ -43,12 +46,12 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-d" .. macro
+    return "-D" .. macro
 end
 
 -- make the undefine flag
 function nf_undefine(self, macro)
-    return "-u" .. macro
+    return "-U" .. macro
 end
 
 -- make the includedir flag

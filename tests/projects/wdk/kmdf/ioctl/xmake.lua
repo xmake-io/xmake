@@ -16,9 +16,7 @@ target("nonpnp")
 
     -- add files
     add_files("driver/*.c", {rule = "wdk.tracewpp"}) 
-
-    add_links("BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "WdfDriverEntry", "ntstrsafe", "wdmsec")
-    add_ldflags("-ENTRY:FxDriverEntry", "-SUBSYSTEM:NATIVE,10.00", "-Driver", "-kernel", {force = true})
+    add_files("driver/*.rc")
 
 -- add target
 target("app")
