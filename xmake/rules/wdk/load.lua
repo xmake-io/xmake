@@ -24,101 +24,125 @@
 
 -- imports
 import("core.project.config")
-import("lib.detect.find_path")
 
--- load for umdf
-function _load_for_umdf(target, wdk, arch, kind)
-
-    -- add defines
-    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
-    if arch == "x64" then
-        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
-    end
-
-    -- add link and include directories
-    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", arch))
-    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
-
-    -- add link and include directories for umdf driver
-    if kind == "shared" then
-
-        -- check umdf version
-        assert(wdk.umdfver, "umdf version not found!")
-
-        -- add include directories
-        target:add("includedirs", path.join(wdk.includedir, "wdf", "umdf", wdk.umdfver))
-
-        -- add link directories
-        target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", arch, wdk.umdfver))
-
-        -- add links
-        target:add("links", "WdfDriverStubUm")
-
-        -- add defines
-        local umdfver = wdk.umdfver:split('%.')
-        target:add("defines", "UMDF_VERSION_MAJOR=" .. umdfver[1], "UMDF_VERSION_MINOR=" .. umdfver[2], "UMDF_USING_NTSTATUS")
-    end
-    target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
-    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
-end
-
--- load for kmdf
-function _load_for_kmdf(target, wdk, arch, kind)
-
-    -- add defines
-    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
-    if arch == "x64" then
-        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
-    end
-
-    -- add link and include directories
-    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "km", arch))
-    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
-
-    -- add link and include directories for kmdf driver
-    if kind == "shared" then
-
-        -- check kmdf version
-        assert(wdk.kmdfver, "kmdf version not found!")
-
-        -- add include directories
-        target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
-
-        -- add link directories
-        target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
-
-        -- add defines
-        local kmdfver = wdk.kmdfver:split('%.')
-        target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
-    end
-    target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
-    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
-end
-
--- the main entry
-function main(target, opt)
-
-    -- init options
-    opt = opt or {}
+-- load for umdf driver
+function umdf_driver(target)
 
     -- get wdk
     local wdk = target:data("wdk")
 
-    -- get arch
+    -- set kind
+    target:set("kind", "shared")
+
+    -- add defines
     local arch = config.arch()
+    local umdfver = wdk.umdfver:split('%.')
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    end
+    target:add("defines", "UMDF_VERSION_MAJOR=" .. umdfver[1], "UMDF_VERSION_MINOR=" .. umdfver[2], "UMDF_USING_NTSTATUS")
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
+
+    -- add include directories
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
+    target:add("includedirs", path.join(wdk.includedir, "wdf", "umdf", wdk.umdfver))
+
+    -- add link directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", arch))
+    target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", arch, wdk.umdfver))
+
+    -- add links
+    target:add("links", "WdfDriverStubUm", "ntdll", "OneCoreUAP", "mincore", "ucrt")
+    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
+end
+
+-- load for umdf binary
+function umdf_binary(target)
+
+    -- get wdk
+    local wdk = target:data("wdk")
 
     -- set kind
-    if opt.kind then
-        target:set("kind", opt.kind)
-    end
+    target:set("kind", "binary")
 
-    -- load for umdf
-    if opt.mode == "umdf" then
-        _load_for_umdf(target, wdk, arch, opt.kind)
+    -- add defines
+    local arch = config.arch()
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
     end
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
 
-    -- load for kmdf
-    if opt.mode == "kmdf" then
-        _load_for_kmdf(target, wdk, arch, opt.kind)
+    -- add include directories
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
+    target:add("includedirs", path.join(wdk.includedir, "wdf", "umdf", wdk.umdfver))
+
+    -- add link directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "um", arch))
+    target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", arch, wdk.umdfver))
+
+    -- add links
+    target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
+    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
+end
+
+-- load for kmdf driver
+function kmdf_driver(target)
+
+    -- get wdk
+    local wdk = target:data("wdk")
+
+    -- set kind
+    target:set("kind", "binary")
+
+    -- add defines
+    local arch = config.arch()
+    local kmdfver = wdk.kmdfver:split('%.')
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
     end
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
+    target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
+
+    -- add include directories
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+    target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
+
+    -- add link directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "km", arch))
+    target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
+
+    -- add links
+    target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "WdfDriverEntry", "ntstrsafe", "wdmsec")
+    target:add("ldflags", "-entry:FxDriverEntry", "-subsystem:native,10.00", "-driver", "-kernel", {force = true})
+end
+
+-- load for kmdf binary
+function kmdf_binary(target)
+
+    -- get wdk
+    local wdk = target:data("wdk")
+
+    -- set kind
+    target:set("kind", "binary")
+
+    -- add defines
+    local arch = config.arch()
+    local kmdfver = wdk.kmdfver:split('%.')
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    end
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
+    target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2])
+
+    -- add include directories
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+    target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
+
+    -- add link directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "km", arch))
+    target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
+
+    -- add links
+    target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32")
+    target:add("links", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "setupapi")
 end

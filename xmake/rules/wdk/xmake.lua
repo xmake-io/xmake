@@ -163,7 +163,7 @@ rule("wdk.umdf.driver")
 
     -- on load
     on_load(function (target)
-        import("load")(target, {kind = "shared", mode = "umdf"})
+        import("load").umdf_driver(target)
     end)
 
 -- define rule: umdf binary
@@ -174,7 +174,7 @@ rule("wdk.umdf.binary")
 
     -- on load
     on_load(function (target)
-        import("load")(target, {kind = "binary", mode = "umdf"})
+        import("load").umdf_binary(target)
     end)
 
 -- define rule: kmdf driver
@@ -185,7 +185,7 @@ rule("wdk.kmdf.driver")
 
     -- on load
     on_load(function (target)
-        import("load")(target, {kind = "shared", mode = "kmdf"})
+        import("load").kmdf_driver(target)
     end)
 
 -- define rule: kmdf binary
@@ -196,5 +196,5 @@ rule("wdk.kmdf.binary")
 
     -- on load
     on_load(function (target)
-        import("load")(target, {kind = "binary", mode = "kmdf"})
+        import("load").kmdf_binary(target)
     end)

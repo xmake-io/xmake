@@ -2,6 +2,9 @@
 -- add modes: debug and release 
 add_rules("mode.debug", "mode.release")
 
+-- add include directories
+add_includedirs(".")
+
 -- add target
 target("nonpnp")
 
@@ -13,6 +16,9 @@ target("nonpnp")
 
     -- add files
     add_files("driver/*.c", {rule = "wdk.tracewpp"}) 
+
+    add_links("BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "WdfDriverEntry", "ntstrsafe", "wdmsec")
+    add_ldflags("-ENTRY:FxDriverEntry", "-SUBSYSTEM:NATIVE,10.00", "-Driver", "-kernel", {force = true})
 
 -- add target
 target("app")
