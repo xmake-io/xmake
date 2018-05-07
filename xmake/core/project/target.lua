@@ -459,11 +459,6 @@ function target:dependir()
     return dependir
 end
 
--- get the target dependent file 
-function target:depfile()
-    return path.join(self:dependir(), self:name() .. ".d")
-end
-
 -- get the target kind
 function target:targetkind()
     return self:get("kind")
@@ -841,6 +836,13 @@ end
 
 -- get depend file from object file
 function target:dependfile(objectfile)
+
+    -- get target dependent file?
+    if not objectfile then
+        return path.join(self:dependir(), self:name() .. ".d")
+    end
+
+    -- get object depend file
     local depentfile = path.join(self:dependir(), path.relative(objectfile, self:objectdir()))
     return path.join(path.directory(depentfile), path.basename(depentfile) .. ".d")
 end

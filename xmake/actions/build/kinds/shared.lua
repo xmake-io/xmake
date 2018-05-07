@@ -93,7 +93,7 @@ function _build_from_objects(target, buildinfo)
     local linkflags = linker_instance:linkflags({target = target})
 
     -- this target and it's deps are not modified?
-    local depfile = target:depfile()
+    local depfile = target:dependfile()
     local modified = _is_modified(target, depfile, buildinfo, program, linkflags)
     if not modified then
         return
