@@ -138,7 +138,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     -- get the object and source with the given index
     local sourcefile = sourcebatch.sourcefiles[index]
     local objectfile = sourcebatch.objectfiles[index]
-    local incdepfile = sourcebatch.incdepfiles[index]
+    local dependfile = sourcebatch.dependfiles[index]
     local sourcekind = sourcebatch.sourcekind
 
     -- calculate percent
@@ -154,8 +154,8 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- get dependent info 
     local depinfo = {}
-    if not buildinfo.rebuild and os.isfile(incdepfile) then
-        depinfo = io.load(incdepfile) or {}
+    if not buildinfo.rebuild and os.isfile(dependfile) then
+        depinfo = io.load(dependfile) or {}
     end
     
     -- load compiler instance
@@ -207,7 +207,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     depinfo.flags = compflags
 
     -- save the dependent info
-    io.save(incdepfile, depinfo)
+    io.save(dependfile, depinfo)
 end
 
 -- build each objects from the given source batch
@@ -238,7 +238,7 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
     -- get source and object files
     local sourcefiles = sourcebatch.sourcefiles
     local objectfiles = sourcebatch.objectfiles
-    local incdepfiles = sourcebatch.incdepfiles
+    local dependfiles = sourcebatch.dependfiles
 
     -- trace percent info
     for index, sourcefile in ipairs(sourcefiles) do
@@ -263,7 +263,7 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
     buildinfo.modified[target:name()] = true
 
     -- complie them
-    compiler.compile(sourcefiles, objectfiles, {incdepfiles = incdepfiles, target = target, sourcekind = sourcekind})
+    compiler.compile(sourcefiles, objectfiles, {dependfiles = dependfiles, target = target, sourcekind = sourcekind})
 
     -- update object index
     _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
@@ -279,14 +279,14 @@ function _build_pcheaderfiles(target, buildinfo)
         local pcheaderfile = target:pcheaderfile(langkind)
         if pcheaderfile then
 
-            -- init sourcefile, objectfile and incdepfile
+            -- init sourcefile, objectfile and dependfile
             local sourcefile = pcheaderfile
             local objectfile = target:pcoutputfile(langkind)
-            local incdepfile = objectfile .. ".d"
+            local dependfile = objectfile .. ".d"
             local sourcekind = language.langkinds()[langkind]
 
             -- init source batch
-            local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, incdepfiles = {incdepfile}}
+            local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
 
             -- build this precompiled header
             _build_object(target, buildinfo, 1, sourcebatch, false)

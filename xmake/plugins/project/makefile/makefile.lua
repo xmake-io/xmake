@@ -208,7 +208,7 @@ function _make_single_object(makefile, target, sourcekind, sourcebatch, sourcefl
     -- get source and object files
     local sourcefiles = sourcebatch.sourcefiles
     local objectfiles = sourcebatch.objectfiles
-    local incdepfiles = sourcebatch.incdepfiles
+    local dependfiles = sourcebatch.dependfiles
 
     -- get program
     local program = platform.tool(sourcekind)

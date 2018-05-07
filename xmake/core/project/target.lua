@@ -418,7 +418,7 @@ function target:objectdir()
     -- the object directory
     local objectdir = self:get("objectdir")
     if not objectdir then
-        objectdir = path.join(config.buildir(), ".objs")
+        objectdir = path.join(config.buildir(), ".objs", self:name())
     end
 
     -- append mode sub-directory
@@ -439,7 +439,24 @@ end
 
 -- get the dependent files directory
 function target:dependir()
-    return path.join(config.buildir(), ".deps", config.get("mode") or "generic", config.get("arch") or os.arch(), self:name())
+
+    -- init the dependent directory
+    local dependir = path.join(config.buildir(), ".deps", self:name())
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        dependir = path.join(dependir, mode)
+    end
+
+    -- append arch sub-directory
+    local arch = config.get("arch")
+    if arch then
+        dependir = path.join(dependir, arch)
+    end
+  
+    -- ok?
+    return dependir
 end
 
 -- get the target dependent file 
@@ -707,10 +724,6 @@ function target:objectfile(sourcefile)
     -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
     sourcefile = sourcefile:gsub(target.filename("([%w%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
-    -- get the object directory
-    local objectdir = self:objectdir()
-    assert(objectdir and type(objectdir) == "string")
-
     -- translate path
     --
     -- .e.g 
@@ -731,7 +744,7 @@ function target:objectfile(sourcefile)
 
     -- make object file
     -- full file name(not base) to avoid name-clash of object file
-    return path.join(objectdir, self:name(), sourcedir, target.filename(path.filename(sourcefile), "object"))
+    return path.join(self:objectdir(), sourcedir, target.filename(path.filename(sourcefile), "object"))
 end
 
 -- get the object files
@@ -826,35 +839,36 @@ function target:headerfiles(outputdir)
     return srcheaders, dstheaders
 end
 
--- get incdep file from object file
-function target:incdepfile(objectfile)
-    return path.join(path.directory(objectfile), path.basename(objectfile) .. ".d")
+-- get depend file from object file
+function target:dependfile(objectfile)
+    local depentfile = path.join(self:dependir(), path.relative(objectfile, self:objectdir()))
+    return path.join(path.directory(depentfile), path.basename(depentfile) .. ".d")
 end
 
 -- get the dependent include files
-function target:incdepfiles()
+function target:dependfiles()
 
     -- get source batches
     local sourcebatches, modified = self:sourcebatches()
 
     -- cached? return it directly
-    if self._INCDEPFILES and not modified then
-        return self._INCDEPFILES
+    if self._DEPENDFILES and not modified then
+        return self._DEPENDFILES
     end
 
-    -- get incdep files from source batches
-    local incdepfiles = {}
+    -- get dependent files from source batches
+    local dependfiles = {}
     for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
         if not sourcebatch.rulename then
-            table.join2(incdepfiles, sourcebatch.incdepfiles)
+            table.join2(dependfiles, sourcebatch.dependfiles)
         end
     end
 
     -- cache it
-    self._INCDEPFILES = incdepfiles
+    self._DEPENDFILES = dependfiles
 
     -- ok?
-    return incdepfiles
+    return dependfiles
 end
 
 -- get the kinds of sourcefiles
@@ -990,24 +1004,18 @@ function target:sourcebatches()
                 -- insert single object file for all source files
                 sourcebatch.objectfiles = self:objectfile(path.join(path.directory(sourcefile), "__" .. sourcekind))
 
-                -- insert single incdep file for all source files
-                sourcebatch.incdepfiles = self:incdepfile(sourcebatch.objectfiles)
+                -- insert single dependent file for all source files
+                sourcebatch.dependfiles = self:dependfile(sourcebatch.objectfiles)
 
             else
 
                 -- insert object files for each source files
                 sourcebatch.objectfiles = {}
-                sourcebatch.incdepfiles = {}
+                sourcebatch.dependfiles = {}
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-
-                    -- get object file from this source file
                     local objectfile = self:objectfile(sourcefile)
-
-                    -- add object file to this batch
                     table.insert(sourcebatch.objectfiles, objectfile)
-
-                    -- add incdep file to this batch
-                    table.insert(sourcebatch.incdepfiles, self:incdepfile(objectfile))
+                    table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
                 end
             end
         end

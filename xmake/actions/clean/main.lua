@@ -87,8 +87,8 @@ function _on_clean_target(target)
     -- remove the object files 
     _remove(target:objectfiles())
 
-    -- remove the incdep files 
-    _remove(target:incdepfiles())
+    -- remove the depend files 
+    _remove(target:dependfiles())
 
     -- remove the header files 
     local _, dstheaders = target:headerfiles()
