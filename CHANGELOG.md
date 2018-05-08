@@ -11,7 +11,7 @@
 * Add color256 codes
 * [#160](https://github.com/tboox/xmake/issues/160): Add Qt compilation environment support and add `qt.console`, `qt.application` rules
 * Add some Qt project templates
-* [#169](https://github.com/tboox/xmake/issues/169): support yasm for linux, macosx and windows
+* [#169](https://github.com/tboox/xmake/issues/169): Support yasm for linux, macosx and windows
 
 ### Changes
 
@@ -20,6 +20,7 @@
 * Improve warning flags for swiftc
 * [#167](https://github.com/tboox/xmake/issues/167): Improve custom rules
 * Improve `os.files` and `os.dirs` api
+* [#171](https://github.com/tboox/xmake/issues/171): Improve build dependence for qt rule
 
 ### Bugs fixed
 
@@ -470,6 +471,7 @@
 * 改进swiftc对warning flags的支持
 * [#167](https://github.com/tboox/xmake/issues/167): 改进自定义规则：`rule()`
 * 改进`os.files`和`os.dirs`接口，加速文件模式匹配
+* [#171](https://github.com/tboox/xmake/issues/171): 改进Qt环境的构建依赖
 
 ### Bugs修复
 
