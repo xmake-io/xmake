@@ -40,10 +40,17 @@ end
 --
 function is_changed(dependinfo, opt)
 
+    -- empty depend info? always be changed
+    local files = dependinfo.files or {}
+    local values = dependinfo.values or {}
+    if #files == 0 and #values == 0 then
+        return true
+    end
+
     -- check the dependent files are changed?
     local lastmtime = nil
     _g.file_results = _g.file_results or {}
-    for _, file in ipairs(dependinfo.files) do
+    for _, file in ipairs(files) do
 
         -- optimization: this file has been not checked?
         local status = _g.file_results[file]
@@ -70,7 +77,7 @@ function is_changed(dependinfo, opt)
     end
 
     -- check the dependent values are changed?
-    local depvalues = dependinfo.values or {}
+    local depvalues = values
     local optvalues = opt.values or {}
     if #depvalues ~= #optvalues then
         return true

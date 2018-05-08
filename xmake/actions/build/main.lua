@@ -50,7 +50,7 @@ function main()
     try
     {
         function ()
-            builder.build(targetname, option.get("rebuild")) 
+            builder.build(targetname) 
         end,
 
         catch 
@@ -73,7 +73,7 @@ function main()
     os.cd(oldir)
 
     -- trace
-    if rebuild then
+    if option.get("rebuild") then
         cprint("${bright}build ok!${clear}${ok_hand}")
     end
 end

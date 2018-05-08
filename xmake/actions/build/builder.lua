@@ -84,7 +84,7 @@ function _build_target(target)
     }
 
     -- clean target if rebuild
-    if _g.rebuild then
+    if option.get("rebuild") then
         _clean_target(target)
     end
 
@@ -164,16 +164,13 @@ function _stat_target_count(targetname)
 end
 
 -- build
-function build(targetname, rebuild)
+function build(targetname)
 
     -- enter toolchains environment
     environment.enter("toolchains")
 
     -- stat targets count
     _stat_target_count(targetname)
-
-    -- mark as rebuild
-    _g.rebuild = rebuild
 
     -- clear finished states
     _g.finished = {}

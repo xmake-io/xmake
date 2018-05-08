@@ -123,29 +123,52 @@ rule("qt.moc")
         import("core.base.option")
         import("core.project.config")
         import("core.tool.compiler")
+        import("core.project.depend")
 
         -- get c++ source file for moc
         local sourcefile_moc = path.join(config.buildir(), ".qt", "moc", target:name(), "moc_" .. path.basename(headerfile_moc) .. ".cpp")
 
-        -- generate c++ source file for moc
-        moc.generate(target, headerfile_moc, sourcefile_moc)
-
         -- get object file
         local objectfile = target:objectfile(sourcefile_moc)
 
+        -- load compiler 
+        local compinst = compiler.load("cxx", {target = target})
+
+        -- get compile flags
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_moc})
+
+        -- load dependent info 
+        local dependfile = target:dependfile(objectfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+        -- need build this object?
+        local depvalues = {compinst:program(), compflags}
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
+            return 
+        end
+
+        -- generate c++ source file for moc
+        moc.generate(target, headerfile_moc, sourcefile_moc)
+
         -- trace
         if option.get("verbose") then
-            print(compiler.compcmd(sourcefile_moc, objectfile, {target = target}))
+            print(compinst:compcmd(sourcefile_moc, objectfile, {compflags = compflags}))
         end
 
         -- compile c++ source file for moc
-        compiler.compile(sourcefile_moc, objectfile, {target = target})
+        dependinfo.files = {}
+        compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags})
 
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
         -- add clean files
         target:data_add("qt.cleanfiles", {sourcefile_moc, objectfile})
+
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.insert(dependinfo.files, headerfile_moc)
+        depend.save(dependinfo, dependfile)
     end)
 
 -- define rule: *.qrc

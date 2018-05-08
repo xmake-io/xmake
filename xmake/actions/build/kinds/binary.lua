@@ -36,21 +36,18 @@ function _build_from_objects(target, buildinfo)
     object.build(target, buildinfo)
 
     -- load linker instance
-    local linker_instance = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
+    local linkinst = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
 
     -- get link flags
-    local linkflags = linker_instance:linkflags({target = target})
+    local linkflags = linkinst:linkflags({target = target})
 
     -- load dependent info 
-    local dependinfo = {}
     local dependfile = target:dependfile()
-    if not buildinfo.rebuild then
-        dependinfo = depend.load(dependfile) or {}
-    end
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this target?
-    local depvalues = {linker_instance:program(), linkflags}
-    if not buildinfo.rebuild and not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues}) then
+    local depvalues = {linkinst:program(), linkflags}
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues}) then
         return 
     end
 
@@ -83,14 +80,14 @@ function _build_from_objects(target, buildinfo)
 
     -- trace verbose info
     if verbose then
-        print(linker_instance:linkcmd(objectfiles, targetfile, {linkflags = linkflags}))
+        print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags}))
     end
 
     -- flush io buffer to update progress info
     io.flush()
 
     -- link it
-    assert(linker_instance:link(objectfiles, targetfile, {linkflags = linkflags}))
+    assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues

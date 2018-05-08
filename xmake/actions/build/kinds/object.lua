@@ -103,21 +103,18 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
         return _build_from_static(target, sourcefile, objectfile, percent)
     end
 
-    -- load dependent info 
-    local dependinfo = {}
-    if not buildinfo.rebuild then
-        dependinfo = depend.load(dependfile) or {}
-    end
-    
-    -- load compiler instance
-    local compiler_instance = compiler.load(sourcekind, {target = target})
+    -- load compiler 
+    local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
-    local compflags = compiler_instance:compflags({target = target, sourcefile = sourcefile})
+    local compflags = compinst:compflags({target = target, sourcefile = sourcefile})
 
+    -- load dependent info 
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    
     -- need build this object?
-    local depvalues = {compiler_instance:program(), compflags}
-    if not buildinfo.rebuild and not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
+    local depvalues = {compinst:program(), compflags}
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
         return 
     end
 
@@ -133,7 +130,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- trace verbose info
     if verbose then
-        print(compiler_instance:compcmd(sourcefile, objectfile, {compflags = compflags}))
+        print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags}))
     end
 
     -- flush io buffer to update progress info
@@ -141,7 +138,7 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- complie it 
     dependinfo.files = {}
-    assert(compiler_instance:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+    assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues
