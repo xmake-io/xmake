@@ -842,9 +842,21 @@ function target:dependfile(objectfile)
         return path.join(self:dependir(), self:name() .. ".d")
     end
 
-    -- get object depend file
-    local depentfile = path.join(self:dependir(), path.relative(objectfile, self:objectdir()))
-    return path.join(path.directory(depentfile), path.basename(depentfile) .. ".d")
+    -- get the relative object directory
+    local objectdir = path.directory(path.relative(objectfile, self:objectdir()))
+    if path.is_absolute(objectdir) and os.host() == "windows" then
+        objectdir = objectdir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
+    end
+
+    -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
+    --
+    -- we need replace '..' to '__' in this case
+    --
+    objectdir = objectdir:gsub("%.%.", "__")
+
+    -- make dependent file
+    -- full file name(not base) to avoid name-clash of object file
+    return path.join(self:dependir(), objectdir, path.basename(objectfile) .. ".d")
 end
 
 -- get the dependent include files

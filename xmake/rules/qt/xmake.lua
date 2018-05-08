@@ -70,10 +70,12 @@ rule("qt.ui")
     end)
 
     -- before build file
-    before_build_file(function (target, sourcefile_ui)
+    before_build_file(function (target, sourcefile_ui, opt)
 
         -- imports
+        import("core.base.option")
         import("core.project.config")
+        import("core.project.depend")
 
         -- get uic
         local uic = target:data("qt.uic")
@@ -81,6 +83,28 @@ rule("qt.ui")
         -- get c++ header file for ui
         local headerfile_ui = path.join(config.buildir(), ".qt", "ui", target:name(), "ui_" .. path.basename(sourcefile_ui) .. ".h")
         local headerfile_dir = path.directory(headerfile_ui)
+
+        -- add includedirs
+        target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
+
+        -- add clean files
+        target:data_add("qt.cleanfiles", headerfile_ui)
+
+        -- need build this object?
+        local dependfile = target:dependfile(headerfile_ui)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(headerfile_ui)}) then
+            return 
+        end
+
+        -- trace progress info
+        if option.get("verbose") then
+            cprint("${green}[%02d%%]:${dim} compiling.qt.ui %s", opt.progress, sourcefile_ui)
+        else
+            cprint("${green}[%02d%%]:${clear} compiling.qt.ui %s", opt.progress, sourcefile_ui)
+        end
+
+        -- ensure ui header file directory
         if not os.isdir(headerfile_dir) then
             os.mkdir(headerfile_dir)
         end
@@ -88,11 +112,9 @@ rule("qt.ui")
         -- compile ui 
         os.vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
 
-        -- add includedirs
-        target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
-
-        -- add clean files
-        target:data_add("qt.cleanfiles", headerfile_ui)
+        -- update files and values to the dependent file
+        dependinfo.files = {sourcefile_ui}
+        depend.save(dependinfo, dependfile)
     end)
 
 -- define rule: moc
@@ -116,7 +138,7 @@ rule("qt.moc")
     end)
 
     -- on build file
-    on_build_file(function (target, headerfile_moc)
+    on_build_file(function (target, headerfile_moc, opt)
 
         -- imports
         import("moc")
@@ -137,6 +159,12 @@ rule("qt.moc")
         -- get compile flags
         local compflags = compinst:compflags({target = target, sourcefile = sourcefile_moc})
 
+        -- add objectfile
+        table.insert(target:objectfiles(), objectfile)
+
+        -- add clean files
+        target:data_add("qt.cleanfiles", {sourcefile_moc, objectfile})
+
         -- load dependent info 
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
@@ -145,6 +173,13 @@ rule("qt.moc")
         local depvalues = {compinst:program(), compflags}
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
             return 
+        end
+
+        -- trace progress info
+        if option.get("verbose") then
+            cprint("${green}[%02d%%]:${dim} compiling.qt.moc %s", opt.progress, headerfile_moc)
+        else
+            cprint("${green}[%02d%%]:${clear} compiling.qt.moc %s", opt.progress, headerfile_moc)
         end
 
         -- generate c++ source file for moc
@@ -158,12 +193,6 @@ rule("qt.moc")
         -- compile c++ source file for moc
         dependinfo.files = {}
         compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags})
-
-        -- add objectfile
-        table.insert(target:objectfiles(), objectfile)
-
-        -- add clean files
-        target:data_add("qt.cleanfiles", {sourcefile_moc, objectfile})
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues

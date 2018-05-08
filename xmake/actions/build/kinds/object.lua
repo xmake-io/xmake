@@ -34,16 +34,16 @@ import("core.language.language")
 import("detect.tools.find_ccache")
 
 -- build the object from the *.[o|obj] source file
-function _build_from_object(target, sourcefile, objectfile, percent)
+function _build_from_object(target, sourcefile, objectfile, progress)
 
     -- is verbose?
     local verbose = option.get("verbose")
 
-    -- trace percent info
+    -- trace progress info
     if verbose then
-        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", percent, sourcefile)
+        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
     else
-        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", percent, sourcefile)
+        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
     end
 
     -- trace verbose info
@@ -59,16 +59,16 @@ function _build_from_object(target, sourcefile, objectfile, percent)
 end
 
 -- build the object from the *.[a|lib] source file
-function _build_from_static(target, sourcefile, objectfile, percent)
+function _build_from_static(target, sourcefile, objectfile, progress)
 
     -- is verbose?
     local verbose = option.get("verbose")
 
-    -- trace percent info
+    -- trace progress info
     if verbose then
-        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", percent, sourcefile)
+        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
     else
-        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", percent, sourcefile)
+        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
     end
 
     -- trace verbose info
@@ -92,15 +92,15 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     local dependfile = sourcebatch.dependfiles[index]
     local sourcekind = sourcebatch.sourcekind
 
-    -- calculate percent
-    local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+    -- calculate progress
+    local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
     -- build the object for the *.o/obj source makefile
     if sourcekind == "obj" then 
-        return _build_from_object(target, sourcefile, objectfile, percent)
+        return _build_from_object(target, sourcefile, objectfile, progress)
     -- build the object for the *.[a|lib] source file
     elseif sourcekind == "lib" then 
-        return _build_from_static(target, sourcefile, objectfile, percent)
+        return _build_from_static(target, sourcefile, objectfile, progress)
     end
 
     -- load compiler 
@@ -121,11 +121,11 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     -- is verbose?
     local verbose = option.get("verbose")
 
-    -- trace percent info
+    -- trace progress info
     if verbose then
-        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
     else
-        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
+        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
@@ -176,17 +176,17 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
     local objectfiles = sourcebatch.objectfiles
     local dependfiles = sourcebatch.dependfiles
 
-    -- trace percent info
+    -- trace progress info
     for index, sourcefile in ipairs(sourcefiles) do
 
-        -- calculate percent
-        local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+        -- calculate progress
+        local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
-        -- trace percent info
+        -- trace progress info
         if verbose then
-            cprint("${green}[%02d%%]:${clear} ${dim}%scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
+            cprint("${green}[%02d%%]:${clear} ${dim}%scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
         else
-            cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", percent, ifelse(ccache, "ccache ", ""), sourcefile)
+            cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
         end
     end
 
@@ -240,7 +240,12 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs, suffix)
     -- on_build_files?
     local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
     if on_build_files then
-        on_build_files(target, sourcebatch.sourcefiles)
+
+        -- calculate progress
+        local progress = (buildinfo.targetindex + _g.sourceindex / _g.sourcecount) * 100 / buildinfo.targetcount
+
+        -- do build files
+        on_build_files(target, sourcebatch.sourcefiles, {progress = progress})
     else
         -- get the build file script
         local on_build_file = ruleinst:script("build_file" .. (suffix and ("_" .. suffix) or ""))
@@ -253,24 +258,18 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs, suffix)
                 -- force to set the current directory first because the other jobs maybe changed it
                 os.cd(curdir)
 
-                -- calculate percent
-                local percent = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                -- calculate progress
+                local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
                 if suffix then
-                    percent = ((buildinfo.targetindex + (suffix == "before" and _g.sourceindex or _g.sourcecount) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                    progress = ((buildinfo.targetindex + (suffix == "before" and _g.sourceindex or _g.sourcecount) / _g.sourcecount) * 100 / buildinfo.targetcount)
                 end
 
                 -- the source file
                 local sourcefile = sourcebatch.sourcefiles[index]
 
-                -- trace percent info
-                if option.get("verbose") then
-                    cprint("${green}[%02d%%]:${dim} compiling.%s %s", percent, rulename, sourcefile)
-                else
-                    cprint("${green}[%02d%%]:${clear} compiling.%s %s", percent, rulename, sourcefile)
-                end
 
                 -- do build file
-                on_build_file(target, sourcefile)
+                on_build_file(target, sourcefile, {progress = progress})
 
             end, #sourcebatch.sourcefiles, jobs)
         end

@@ -320,7 +320,7 @@ function _include_deps(self, outdata)
             includefile = path.relative(includefile, project.directory())
 
             -- save it if belong to the project
-            if not path.is_absolute(includefile) then
+            if path.absolute(includefile):startswith(os.projectdir()) then
 
                 -- insert it and filter repeat
                 if not uniques[includefile] then

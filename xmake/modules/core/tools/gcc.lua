@@ -351,7 +351,7 @@ function _include_deps(self, sourcefile, flags)
     for includefile in string.gmatch(deps, "%s+([%w/%.%-%+_%$%.]+)") do
 
         -- save it if belong to the project
-        if not path.is_absolute(includefile) then
+        if path.absolute(includefile):startswith(os.projectdir()) then
             table.insert(results, includefile)
         end
     end
