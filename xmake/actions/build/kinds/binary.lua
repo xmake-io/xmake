@@ -26,56 +26,8 @@
 import("core.base.option")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("core.project.depend")
 import("object")
-
--- is modified?
-function _is_modified(target, depfile, buildinfo, program, linkflags)
-
-    -- the target file not exists?
-    if not os.isfile(target:targetfile()) then
-        return true
-    end
-
-    -- this target and it's deps are not modified?
-    local modified = buildinfo.rebuild or buildinfo.modified[target:name()]
-    if modified then
-        return true
-    end
-
-    -- deps modified?
-    for _, depname in ipairs(target:get("deps")) do
-        if buildinfo.modified[depname] then
-            return true
-        end
-    end
-
-    -- get dependent info 
-    local depinfo = {}
-    if os.isfile(depfile) then
-        depinfo = io.load(depfile) or {}
-    end
-
-    -- the program has been modified?
-    if program ~= depinfo.program then
-        return true
-    end
-
-    -- the flags has been modified?
-    if os.args(linkflags) ~= os.args(depinfo.flags) then
-        return true
-    end
-
-    -- the object files list has been modified?
-    local objectfiles = target:objectfiles()
-    if #(objectfiles or {}) ~= #(depinfo.objectfiles or {}) then
-        return true
-    end
-    for idx, objectfile in ipairs(depinfo.objectfiles) do
-        if objectfile ~= objectfiles[idx] then
-            return true
-        end
-    end
-end
 
 -- build target from sources
 function _build_from_objects(target, buildinfo)
@@ -86,21 +38,21 @@ function _build_from_objects(target, buildinfo)
     -- load linker instance
     local linker_instance = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
 
-    -- get program
-    local program = linker_instance:program()
-
     -- get link flags
     local linkflags = linker_instance:linkflags({target = target})
 
-    -- this target and it's deps are not modified?
-    local depfile = target:dependfile()
-    local modified = _is_modified(target, depfile, buildinfo, program, linkflags)
-    if not modified then
-        return
+    -- load dependent info 
+    local dependinfo = {}
+    local dependfile = target:dependfile()
+    if not buildinfo.rebuild then
+        dependinfo = depend.load(dependfile) or {}
     end
 
-    -- clear the previous dependent info first
-    io.save(depfile, {})
+    -- need build this target?
+    local depvalues = {linker_instance:program(), linkflags}
+    if not buildinfo.rebuild and not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues}) then
+        return 
+    end
 
     -- expand object files with *.o/obj
     local objectfiles = {}
@@ -140,8 +92,15 @@ function _build_from_objects(target, buildinfo)
     -- link it
     assert(linker_instance:link(objectfiles, targetfile, {linkflags = linkflags}))
 
-    -- save program and flags to the dependent file
-    io.save(depfile, {program = program, flags = linkflags, objectfiles = target:objectfiles()})
+    -- update files and values to the dependent file
+    dependinfo.values = depvalues
+    dependinfo.files  = target:objectfiles()
+    for _, dep in pairs(target:deps()) do
+        if dep:targetkind() == "static" then
+            table.insert(dependinfo.files, dep:targetfile())
+        end
+    end
+    depend.save(dependinfo, dependfile)
 end
 
 -- build target from sources

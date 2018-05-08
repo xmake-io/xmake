@@ -28,59 +28,10 @@ import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.rule")
 import("core.project.config")
+import("core.project.depend")
 import("core.project.project")
 import("core.language.language")
 import("detect.tools.find_ccache")
-
--- is modified?
-function _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, program, compflags)
-
-    -- rebuild?
-    if buildinfo.rebuild then
-        return true
-    end
-
-    -- get the dependent files
-    local depfiles = table.join(depinfo.sources or {}, depinfo.includes or {})
-
-    -- check the dependent files are modified?
-    local modified      = false
-    local objectmtime   = nil
-    _g.depfile_results  = _g.depfile_results or {}
-    for _, depfile in ipairs(depfiles) do
-
-        -- optimization: this depfile has been not checked?
-        local status = _g.depfile_results[depfile]
-        if status == nil then
-
-            -- optimization: only uses the mtime of first object file
-            objectmtime = objectmtime or os.mtime(objectfile)
-
-            -- source and header files have been modified?
-            if os.mtime(depfile) > objectmtime then
-
-                -- mark this depfile as modified
-                _g.depfile_results[depfile] = true
-                return true
-            end
-
-            -- mark this depfile as not modified
-            _g.depfile_results[depfile] = false
-        
-        -- has been checked and modified?
-        elseif status then
-            return true
-        end
-    end
-
-    -- the program has been modified?
-    if program ~= depinfo.program then
-        return true
-    end
-
-    -- the flags has been modified?
-    return os.args(compflags) ~= os.args(depinfo.flags)
-end
 
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, percent)
@@ -152,29 +103,23 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
         return _build_from_static(target, sourcefile, objectfile, percent)
     end
 
-    -- get dependent info 
-    local depinfo = {}
-    if not buildinfo.rebuild and os.isfile(dependfile) then
-        depinfo = io.load(dependfile) or {}
+    -- load dependent info 
+    local dependinfo = {}
+    if not buildinfo.rebuild then
+        dependinfo = depend.load(dependfile) or {}
     end
     
     -- load compiler instance
     local compiler_instance = compiler.load(sourcekind, {target = target})
 
-    -- get compiler program
-    local program = compiler_instance:program()
-
     -- get compile flags
     local compflags = compiler_instance:compflags({target = target, sourcefile = sourcefile})
 
-    -- is modified?
-    local modified = _is_modified(target, sourcefile, objectfile, depinfo, buildinfo, program, compflags)
-    if not modified then
+    -- need build this object?
+    local depvalues = {compiler_instance:program(), compflags}
+    if not buildinfo.rebuild and not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
         return 
     end
-
-    -- mark this target as modified
-    buildinfo.modified[target:name()] = true
 
     -- is verbose?
     local verbose = option.get("verbose")
@@ -195,19 +140,13 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     io.flush()
 
     -- complie it 
-    assert(compiler_instance:compile(sourcefile, objectfile, {depinfo = depinfo, compflags = compflags}))
+    dependinfo.files = {}
+    assert(compiler_instance:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
-    -- save sources to the dependent info
-    depinfo.sources = table.join(sourcefile, target:pcheaderfile("cxx") or {}, target:pcheaderfile("c"))
-
-    -- save program to the dependent info
-    depinfo.program = program
-
-    -- save flags to the dependent info
-    depinfo.flags = compflags
-
-    -- save the dependent info
-    io.save(dependfile, depinfo)
+    -- update files and values to the dependent file
+    dependinfo.values = depvalues
+    table.join2(dependinfo.files, sourcefile, target:pcheaderfile("cxx") or {}, target:pcheaderfile("c"))
+    depend.save(dependinfo, dependfile)
 end
 
 -- build each objects from the given source batch
@@ -258,9 +197,6 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
     if verbose then
         print(compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind}))
     end
-
-    -- mark this target as modified
-    buildinfo.modified[target:name()] = true
 
     -- complie them
     compiler.compile(sourcefiles, objectfiles, {dependfiles = dependfiles, target = target, sourcekind = sourcekind})

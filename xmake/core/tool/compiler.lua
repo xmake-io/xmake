@@ -217,7 +217,7 @@ function compiler:compile(sourcefiles, objectfile, opt)
     end
 
     -- compile it
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.depinfo, compflags)
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags)
 end
 
 -- get the compile arguments list

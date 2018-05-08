@@ -369,7 +369,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function _compile1(self, sourcefile, objectfile, depinfo, flags)
+function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     local objectdir = path.directory(objectfile)
@@ -384,7 +384,7 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
 
             -- generate includes file
             local compflags = flags
-            if depinfo then
+            if dependinfo then
                 compflags = table.join(flags, "-showIncludes")
             end
             return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
@@ -410,8 +410,9 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
     }
 
     -- generate the dependent includes
-    if depinfo and outdata then
-        depinfo.includes = _include_deps(self, outdata)
+    if dependinfo and outdata then
+        dependinfo.files = dependinfo.files or {}
+        table.join2(dependinfo.files, _include_deps(self, outdata))
     end
 end
 
@@ -426,13 +427,13 @@ function compargv(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(self, sourcefiles, objectfile, depinfo, flags)
+function compile(self, sourcefiles, objectfile, dependinfo, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(self, sourcefiles, objectfile, depinfo, flags)
+    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
 
 

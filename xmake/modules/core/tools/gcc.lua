@@ -433,7 +433,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 end
 
 -- complie the source file
-function _compile1(self, sourcefile, objectfile, depinfo, flags)
+function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -485,8 +485,9 @@ function _compile1(self, sourcefile, objectfile, depinfo, flags)
     }
 
     -- generate the dependent includes
-    if depinfo and self:kind() ~= "as" then
-        depinfo.includes = _include_deps(self, sourcefile, flags)
+    if dependinfo and self:kind() ~= "as" then
+        dependinfo.files = dependinfo.files or {}
+        table.join2(dependinfo.files, _include_deps(self, sourcefile, flags))
     end
 end
 
@@ -501,12 +502,12 @@ function compargv(self, sourcefiles, objectfile, flags)
 end
 
 -- complie the source file
-function compile(self, sourcefiles, objectfile, depinfo, flags)
+function compile(self, sourcefiles, objectfile, dependinfo, flags)
 
     -- only support single source file now
     assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
 
     -- for only single source file
-    _compile1(self, sourcefiles, objectfile, depinfo, flags)
+    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
 
