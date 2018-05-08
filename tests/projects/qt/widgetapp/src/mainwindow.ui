@@ -1,4 +1,4 @@
-<ui version="4.0">
+<ui version="4.0"> 
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow" >
   <property name="geometry" >

@@ -68,20 +68,42 @@ rule("wdk.inf")
     end)
 
     -- on build file
-    on_build_file(function (target, sourcefile)
+    on_build_file(function (target, sourcefile, opt)
 
-        -- copy file to target directory
+        -- imports
+        import("core.base.option")
+        import("core.project.depend")
+
+        -- the target file
         local targetfile = path.join(target:targetdir(), path.basename(sourcefile) .. ".inf")
-        os.cp(sourcefile, targetfile)
+
+        -- add clean files
+        target:data_add("wdk.cleanfiles", targetfile)
+
+        -- need build this object?
+        local dependfile = target:dependfile(targetfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(targetfile)}) then
+            return 
+        end
+
+        -- trace progress info
+        if option.get("verbose") then
+            cprint("${green}[%02d%%]:${dim} compiling.wdk.inf %s", opt.progress, sourcefile)
+        else
+            cprint("${green}[%02d%%]:${clear} compiling.wdk.inf %s", opt.progress, sourcefile)
+        end
 
         -- get stampinf
         local stampinf = target:data("wdk.stampinf")
 
         -- update the timestamp
+        os.cp(sourcefile, targetfile)
         os.vrunv(stampinf, {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*", "-f", targetfile}, {wildcards = false})
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", targetfile)
+        -- update files and values to the dependent file
+        dependinfo.files = {sourcefile}
+        depend.save(dependinfo, dependfile)
     end)
 
 -- define rule: tracewpp
@@ -117,15 +139,22 @@ rule("wdk.tracewpp")
     end)
 
     -- before build file
-    before_build_file(function (target, sourcefile)
+    before_build_file(function (target, sourcefile, opt)
+
+        -- imports
+        import("core.base.option")
 
         -- get tracewpp
         local tracewpp = target:data("wdk.tracewpp")
 
         -- get outputdir
         local outputdir = target:data("wdk.tracewpp.outputdir")
-        if not os.isdir(outputdir) then
-            os.mkdir(outputdir)
+
+        -- trace progress info
+        if option.get("verbose") then
+            cprint("${green}[%02d%%]:${dim} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
+        else
+            cprint("${green}[%02d%%]:${clear} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
         end
 
         -- get configdir
@@ -146,6 +175,9 @@ rule("wdk.tracewpp")
         table.insert(args, sourcefile)
 
         -- update the timestamp
+        if not os.isdir(outputdir) then
+            os.mkdir(outputdir)
+        end
         os.vrunv(tracewpp, args, {wildcards = false})
 
         -- add includedirs

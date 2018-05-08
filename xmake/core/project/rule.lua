@@ -297,6 +297,8 @@ function rule:do_load(target)
         if on_load then
             local ok, errors = sandbox.load(on_load, target)
             cache[key] = {ok, errors}
+        else
+            cache[key] = {true}
         end
     end
 
