@@ -221,11 +221,12 @@ rule("qt.qrc")
     end)
 
     -- on build file
-    on_build_file(function (target, sourcefile_qrc)
+    on_build_file(function (target, sourcefile_qrc, opt)
 
         -- imports
         import("core.base.option")
         import("core.project.config")
+        import("core.project.depend")
         import("core.tool.compiler")
 
         -- get rcc
@@ -234,6 +235,40 @@ rule("qt.qrc")
         -- get c++ source file for qrc
         local sourcefile_cpp = path.join(config.buildir(), ".qt", "qrc", target:name(), path.basename(sourcefile_qrc) .. ".cpp")
         local sourcefile_dir = path.directory(sourcefile_cpp)
+
+        -- get object file
+        local objectfile = target:objectfile(sourcefile_cpp)
+
+        -- load compiler 
+        local compinst = compiler.load("cxx", {target = target})
+
+        -- get compile flags
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cpp})
+
+        -- add objectfile
+        table.insert(target:objectfiles(), objectfile)
+
+        -- add clean files
+        target:data_add("qt.cleanfiles", {sourcefile_cpp, objectfile})
+
+        -- load dependent info 
+        local dependfile = target:dependfile(objectfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+        -- need build this object?
+        local depvalues = {compinst:program(), compflags}
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
+            return 
+        end
+
+        -- trace progress info
+        if option.get("verbose") then
+            cprint("${green}[%02d%%]:${dim} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
+        else
+            cprint("${green}[%02d%%]:${clear} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
+        end
+
+        -- ensure the source file directory
         if not os.isdir(sourcefile_dir) then
             os.mkdir(sourcefile_dir)
         end
@@ -241,22 +276,19 @@ rule("qt.qrc")
         -- compile qrc 
         os.vrunv(rcc, {"-name", "qml", sourcefile_qrc, "-o", sourcefile_cpp})
 
-        -- get object file
-        local objectfile = target:objectfile(sourcefile_cpp)
-
         -- trace
         if option.get("verbose") then
-            print(compiler.compcmd(sourcefile_cpp, objectfile, {target = target}))
+            print(compinst:compcmd(sourcefile_cpp, objectfile, {compflags = compflags}))
         end
 
         -- compile c++ source file for qrc
-        compiler.compile(sourcefile_cpp, objectfile, {target = target})
+        dependinfo.files = {}
+        compinst:compile(sourcefile_cpp, objectfile, {dependinfo = dependinfo, compflags = compflags})
 
-        -- add objectfile
-        table.insert(target:objectfiles(), objectfile)
-
-        -- add clean files
-        target:data_add("qt.cleanfiles", {sourcefile_cpp, objectfile})
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.insert(dependinfo.files, sourcefile_qrc)
+        depend.save(dependinfo, dependfile)
     end)
 
 -- define rule: qt static library
