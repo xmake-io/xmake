@@ -120,12 +120,16 @@ function make()
         for _, sourcefile in ipairs(sourcefiles_main) do
 
             -- trace
-            cprint("target(${magenta}%s${clear}): binary", path.basename(sourcefile))
+            local name = path.basename(sourcefile)
+            if name == targetname then
+                name = name .. "1"
+            end
+            cprint("target(${magenta}%s${clear}): binary", name)
             cprint("    ${green}[+]: ${clear}%s", sourcefile)
 
             -- add target
             file:print("-- define target")
-            file:print("target(\"%s\")", path.basename(sourcefile))
+            file:print("target(\"%s\")", name)
             file:print("")
             file:print("    -- set kind")
             file:print("    set_kind(\"binary\")")
