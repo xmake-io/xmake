@@ -847,7 +847,7 @@ Return Value:
         Hexdump((TRACE_LEVEL_VERBOSE,  DBG_IOCTL, "Data from User : %!HEXDUMP!\n",
                         log_xstr(inBuf, (USHORT)InputBufferLength)));
         PrintChars(inBuf, InputBufferLength  );
-
+ 
 
         status = WdfRequestRetrieveOutputBuffer(Request, 0, &outBuf, &bufSize);
         if(!NT_SUCCESS(status)) {
