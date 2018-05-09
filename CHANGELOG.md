@@ -21,6 +21,7 @@
 * [#167](https://github.com/tboox/xmake/issues/167): Improve custom rules
 * Improve `os.files` and `os.dirs` api
 * [#171](https://github.com/tboox/xmake/issues/171): Improve build dependence for qt rule
+* Implement `make clean` for generating makefile plugin
 
 ### Bugs fixed
 
@@ -472,6 +473,7 @@
 * [#167](https://github.com/tboox/xmake/issues/167): 改进自定义规则：`rule()`
 * 改进`os.files`和`os.dirs`接口，加速文件模式匹配
 * [#171](https://github.com/tboox/xmake/issues/171): 改进Qt环境的构建依赖
+* 在makefile生成插件中实现`make clean`
 
 ### Bugs修复
 

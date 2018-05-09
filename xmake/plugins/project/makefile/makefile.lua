@@ -24,7 +24,6 @@
 
 -- imports
 import("core.tool.compiler")
-import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("core.platform.platform")
@@ -39,7 +38,7 @@ end
 -- mkdir directory
 function _mkdir(makefile, dir)
 
-    if config.get("plat") == "windows" then
+    if is_plat("windows") then
         makefile:print("\t-@mkdir %s > /null 2>&1", dir)
     else
         makefile:print("\t@mkdir -p %s", dir)
@@ -50,10 +49,36 @@ end
 function _cp(makefile, sourcefile, targetfile)
 
     -- copy file
-    if config.get("plat") == "windows" then
+    if is_plat("windows") then
         makefile:print("\t@copy /Y %s %s > /null 2>&1", sourcefile, targetfile)
     else
         makefile:print("\t@cp %s %s", sourcefile, targetfile)
+    end
+end
+
+-- try to remove the given file or directory
+function _tryrm(makefile, filedir)
+
+    -- remove it
+    if is_plat("windows") then
+        if os.isdir(filedir) then
+            makefile:print("\t@rmdir /S /Q %s > /null 2>&1", filedir)
+        elseif os.isfile(filedir) then
+            makefile:print("\t@del /F /Q %s > /null 2>&1", filedir)
+        end
+    else
+        if os.isdir(filedir) then
+            makefile:print("\t@rm -rf %s", filedir)
+        elseif os.isfile(filedir) then
+            makefile:print("\t@rm -f %s", filedir)
+        end
+    end
+end
+
+-- remove the given files or directories
+function _remove(makefile, filedirs)
+    for _, filedir in ipairs(filedirs) do
+        _tryrm(makefile, filedir)
     end
 end
 
@@ -426,9 +451,58 @@ function _make_all(makefile)
 
     -- make it for all targets
     for _, target in pairs(project.targets()) do
-
-        -- make target
         _make_target(makefile, target, targetflags)
+    end
+end
+
+-- clean target
+function _clean_target(makefile, target)
+
+    -- make head
+    makefile:printf("clean_%s: ", target:name())
+
+    -- make dependence for the dependent targets
+    for _, dep in ipairs(target:get("deps")) do
+        makefile:write(" clean_" .. dep)
+    end
+
+    -- make dependence end
+    makefile:print("")
+
+    -- make body
+    if not target:isphony() then
+
+        -- remove the target file 
+        _remove(makefile, target:targetfile()) 
+
+        -- remove the symbol file 
+        _remove(makefile, target:symbolfile()) 
+
+        -- remove the object files 
+        _remove(makefile, target:objectfiles())
+
+        -- remove the header files 
+        local _, dstheaders = target:headerfiles()
+        _remove(makefile, dstheaders) 
+    end
+
+    -- make tail
+    makefile:print("")
+end
+
+-- clean all
+function _clean_all(makefile)
+
+    -- clean all
+    local all = ""
+    for targetname, _ in pairs(project.targets()) do
+        all = all .. " clean_" .. targetname
+    end
+    makefile:print("clean: %s\n", all)
+
+    -- clean targets
+    for _, target in pairs(project.targets()) do
+        _clean_target(makefile, target)
     end
 end
 
@@ -446,6 +520,9 @@ function make(outputdir)
 
     -- make all
     _make_all(makefile)
+    
+    -- clean all
+    _clean_all(makefile)
 
     -- close the makefile
     makefile:close()
