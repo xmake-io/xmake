@@ -1,0 +1,101 @@
+<instrumentationManifest
+    xmlns="http://schemas.microsoft.com/win/2004/08/events"
+    xmlns:trace="http://schemas.microsoft.com/win/2004/08/events/trace"
+    xmlns:win="http://manifests.microsoft.com/win/2004/08/windows/events"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schemas.microsoft.com/win/2004/08/events eventman.xsd"
+    >
+    <instrumentation>
+        <counters
+            xmlns="http://schemas.microsoft.com/win/2005/12/counters"
+            xmlns:auto-ns1="http://schemas.microsoft.com/win/2004/08/events"
+            schemaVersion="1.1"
+            >
+            <provider callback = "custom"
+                      applicationIdentity = "Kcs.sys"
+                      providerType = "kernelMode"
+                      providerName = "KernelCountersSample"
+                      providerGuid = "{d2ffffff-965a-4cf9-9c07-fe25378c2a23}">
+                <counterSet guid        = "{d2ffffff-c923-4794-b696-70577630b5cf}"
+                            uri         = "Microsoft.Wdk.Samples.Kcs.GeometricWave"
+                            name        = "Geometric Waves"
+                            description = "This counter set displays a Triangle and a Square wave"
+  		            symbol       = "GeometricWave"
+                            instances   = "multipleAggregate"
+			    >	
+ 	          <structs>	
+        	    <struct name="GeometricWaveValues" type="GEOMETRIC_WAVE_VALUES"/>
+        	  </structs>
+                    <counter id           = "1"
+                             uri          = "Microsoft.Wdk.Samples.Kcs.GeometricWave.Triangle"
+                             name         = "Triangle"
+	                     struct       = "GeometricWaveValues"	
+		             field        = "Triangle"
+                             description  = "This counter displays triangle wave"
+                             aggregate    = "avg"  
+                             type         = "perf_counter_rawcount"
+                             detailLevel  = "standard">
+                    </counter>
+
+                    <counter id           = "2"
+                             uri          = "Microsoft.Wdk.Samples.Kcs.GeometricWave.Square"
+                             name         = "Square Wave"
+	                     struct       = "GeometricWaveValues"	
+		             field        = "Square"
+                             description  = "This counter displays Square Wave"
+                             aggregate    = "avg"  
+                             type         = "perf_counter_rawcount"
+                             detailLevel  = "standard">
+                    </counter>
+                </counterSet>
+                <counterSet guid        = "{ffffffff-eaa6-45ba-bf6d-4c7cb0d6ef73}"
+                            uri         = "Microsoft.Wdk.Samples.Kcs.TrignometricWave"
+                            name        = "Trignometric Waves"
+                            description = "This counter set displays a sine, cosine and a constant wave"
+			    symbol       = "TrignometricWave"
+                            instances   = "single">
+ 	          <structs>	
+        	    <struct name="TrignometricWaveValues" type="TRIGNOMETRIC_WAVE_VALUES"/>
+        	  </structs>
+                    <counter id           = "1"
+                             uri          = "Microsoft.Wdk.Samples.Kcs.TrignometricWave.Sine"
+                             name         = "Sine Wave"
+                             description  = "This counter displays Sine Wave"
+	                     struct       = "TrignometricWaveValues"
+		             field        = "Sine"	
+                             type         = "perf_counter_rawcount"
+                             detailLevel  = "standard">
+                        <counterAttributes>
+                            <counterAttribute name = "reference" />
+                        </counterAttributes>
+                    </counter>
+                    <counter id           = "2"
+                             uri          = "Microsoft.Wdk.Samples.Kcs.TrignometricWave.Cosine"
+                             name         = "Cosine Wave"
+                             description  = "This counter displays Cosine Wave"
+	                     struct       = "TrignometricWaveValues"
+		             field        = "Cosine"		
+                             type         = "perf_counter_rawcount"
+			     detailLevel  = "standard">
+                        <counterAttributes>
+                            <counterAttribute name = "reference" />
+                        </counterAttributes>
+                    </counter>
+                    <counter id           = "3"
+                             uri          = "Microsoft.Wdk.Samples.Kcs.TrignometricWave.Constant"
+                             name         = "Constant Value"
+                             description  = "This counter displays Constant Value"
+	                     struct       = "TrignometricWaveValues"	
+		             field        = "Constant"		
+                             type         = "perf_counter_rawcount"
+                             detailLevel  = "standard">
+                        <counterAttributes>
+                            <counterAttribute name = "reference" />
+                        </counterAttributes>
+                    </counter>
+                </counterSet>            
+	    </provider>
+        </counters>
+    </instrumentation>
+</instrumentationManifest>
