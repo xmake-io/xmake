@@ -57,7 +57,6 @@ rule("wdk.man")
         -- imports
         import("core.base.option")
         import("core.project.depend")
-        import("core.tool.compiler")
 
         -- get ctrpp
         local ctrpp = target:data("wdk.ctrpp")
@@ -84,6 +83,13 @@ rule("wdk.man")
             target:data_add("wdk.cleanfiles", headerfile)
         else
             raise("please call `set_values(\"wdk.man.header\", \"header.h\")` to set the provider header file name!")
+        end
+
+        -- add prefix
+        local prefix = target:values("wdk.man.prefix")
+        if prefix then
+            table.insert(args, "-prefix")
+            table.insert(args, prefix)
         end
 
         -- add counter header file
@@ -123,31 +129,6 @@ rule("wdk.man")
             os.mkdir(outputdir)
         end
         os.vrunv(ctrpp, args)
-
-        -- has resource file? compile it
-        if resourcefile and os.isfile(resourcefile) then
-
-            -- trace progress info
-            if option.get("verbose") then
-                cprint("${green}[%02d%%]:${dim} compiling.wdk.rc %s", opt.progress, resource)
-            else
-                cprint("${green}[%02d%%]:${clear} compiling.wdk.rc %s", opt.progress, resource)
-            end
-
-            -- get resource object file
-            local objectfile = target:objectfile(resourcefile)
-
-            -- trace
-            if option.get("verbose") then
-                print(compiler.compcmd(resourcefile, objectfile, {target = target}))
-            end
-
-            -- compile resource file 
-            compiler.compile(resourcefile, objectfile, {target = target})
-
-            -- add object file
-            table.insert(target:objectfiles(), objectfile)
-        end
 
         -- update files and values to the dependent file
         dependinfo.files  = {sourcefile}

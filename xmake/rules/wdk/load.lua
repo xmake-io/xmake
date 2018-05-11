@@ -116,7 +116,13 @@ function kmdf_driver(target)
 
     -- add links
     target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "WdfDriverEntry", "ntstrsafe", "wdmsec")
-    target:add("ldflags", "-entry:FxDriverEntry", "-subsystem:native,10.00", "-driver", "-kernel", {force = true})
+
+    -- compile as kernel driver
+    target:add("cxflags", "-kernel", {force = true})
+    target:add("ldflags", "-kernel", "-driver", {force = true})
+
+    -- set driver entry
+    target:add("ldflags", "-entry:FxDriverEntry", "-subsystem:native,10.00", {force = true})
 end
 
 -- load for kmdf binary
