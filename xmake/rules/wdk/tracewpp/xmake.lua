@@ -48,7 +48,7 @@ rule("wdk.tracewpp")
         target:data_set("wdk.tracewpp", tracewpp)
 
         -- save output directory
-        target:data_set("wdk.tracewpp.outputdir", path.join(config.buildir(), ".wpp", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
+        target:data_set("wdk.tracewpp.outputdir", path.join(config.buildir(), ".wdk", "wpp", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
         
         -- save config directory
         target:data_set("wdk.tracewpp.configdir", path.join(wdk.bindir, wdk.sdkver, "WppConfig", "Rev1"))

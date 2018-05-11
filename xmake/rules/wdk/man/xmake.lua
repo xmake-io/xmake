@@ -44,8 +44,11 @@ rule("wdk.man")
         local ctrpp = path.join(target:data("wdk").bindir, arch, is_host("windows") and "ctrpp.exe" or "ctrpp")
         assert(ctrpp and os.isexec(ctrpp), "ctrpp not found!")
         
-        -- save uic
+        -- save ctrpp
         target:data_set("wdk.ctrpp", ctrpp)
+
+        -- save output directory
+        target:data_set("wdk.ctrpp.outputdir", path.join(config.buildir(), ".wdk", "man", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
     end)
 
     -- before build file
@@ -54,6 +57,59 @@ rule("wdk.man")
         -- imports
         import("core.base.option")
         import("core.project.depend")
+        import("core.tool.compiler")
+
+        -- get ctrpp
+        local ctrpp = target:data("wdk.ctrpp")
+
+        -- get output directory
+        local outputdir = target:data("wdk.ctrpp.outputdir")
+
+        -- init args
+        local args = {sourcefile}
+        local flags = target:values("wdk.man.flags")
+        if flags then
+            table.join2(args, flags)
+        end
+
+        -- add includedirs
+        target:add("includedirs", outputdir)
+
+        -- add header file
+        local header = target:values("wdk.man.header")
+        local headerfile = header and path.join(outputdir, header) or nil
+        if headerfile then
+            table.insert(args, "-o")
+            table.insert(args, headerfile)
+            target:data_add("wdk.cleanfiles", headerfile)
+        else
+            raise("please call `set_values(\"wdk.man.header\", \"header.h\")` to set the provider header file name!")
+        end
+
+        -- add counter header file
+        local counter_header = target:values("wdk.man.counter_header")
+        local counter_headerfile = counter_header and path.join(outputdir, counter_header) or nil
+        if counter_headerfile then
+            table.insert(args, "-ch")
+            table.insert(args, counter_headerfile)
+            target:data_add("wdk.cleanfiles", counter_headerfile)
+        end
+
+        -- add resource file
+        local resource = target:values("wdk.man.resource")
+        local resourcefile = resource and path.join(outputdir, resource) or nil
+        if resourcefile then
+            table.insert(args, "-rc")
+            table.insert(args, resourcefile)
+            target:data_add("wdk.cleanfiles", resourcefile)
+        end
+
+        -- need build this object?
+        local dependfile = target:dependfile(headerfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(headerfile), values = args}) then
+            return 
+        end
 
         -- trace progress info
         if option.get("verbose") then
@@ -62,5 +118,40 @@ rule("wdk.man")
             cprint("${green}[%02d%%]:${clear} compiling.wdk.man %s", opt.progress, sourcefile)
         end
 
+        -- generate header and resource file
+        if not os.isdir(outputdir) then
+            os.mkdir(outputdir)
+        end
+        os.vrunv(ctrpp, args)
+
+        -- has resource file? compile it
+        if resourcefile and os.isfile(resourcefile) then
+
+            -- trace progress info
+            if option.get("verbose") then
+                cprint("${green}[%02d%%]:${dim} compiling.wdk.rc %s", opt.progress, resource)
+            else
+                cprint("${green}[%02d%%]:${clear} compiling.wdk.rc %s", opt.progress, resource)
+            end
+
+            -- get resource object file
+            local objectfile = target:objectfile(resourcefile)
+
+            -- trace
+            if option.get("verbose") then
+                print(compiler.compcmd(resourcefile, objectfile, {target = target}))
+            end
+
+            -- compile resource file 
+            compiler.compile(resourcefile, objectfile, {target = target})
+
+            -- add object file
+            table.insert(target:objectfiles(), objectfile)
+        end
+
+        -- update files and values to the dependent file
+        dependinfo.files  = {sourcefile}
+        dependinfo.values = args
+        depend.save(dependinfo, dependfile)
     end)
 
