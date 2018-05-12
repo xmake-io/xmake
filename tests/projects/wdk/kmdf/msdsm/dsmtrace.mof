@@ -1,0 +1,111 @@
+#pragma classflags("forceupdate")
+#pragma namespace("\\\\.\\root\\WMI")
+//
+// Copyright (C) 2004  Microsoft Corporation
+//
+// WPP Generated File
+//
+
+//ModuleName = wppCtlGuid        (Init called in Function DriverEntry)
+[Dynamic,
+ Description("MSDSM Driver Tracing Provider"),
+ guid("{DEDADFF5-F99F-4600-B8C9-2D4D9B806B5B}"),
+ locale("MS\\0x409")]
+class MSDSMGuid : EventTrace
+{
+    [Description ("Enable Flags"),
+        ValueDescriptions{
+             "TRACE_FLAG_GENERAL Flag",
+             "TRACE_FLAG_PNP Flag",
+             "TRACE_FLAG_POWER Flag",
+             "TRACE_FLAG_RW Flag",
+             "TRACE_FLAG_IOCTL Flag",
+             "TRACE_FLAG_QUEUE Flag",
+             "TRACE_FLAG_WMI Flag",
+             "TRACE_FLAG_TIMER Flag",
+             "TRACE_FLAG_INIT Flag",
+             "TRACE_FLAG_LOCK Flag",
+             "TRACE_FLAG_DEBUG1 Flag",
+             "TRACE_FLAG_DEBUG2 Flag",
+             "TRACE_FLAG_MCN Flag",
+             "TRACE_FLAG_ISR Flag",
+             "TRACE_FLAG_ENUM Flag"},
+        DefineValues{
+             "TRACE_FLAG_GENERAL",
+             "TRACE_FLAG_PNP",
+             "TRACE_FLAG_POWER",
+             "TRACE_FLAG_RW",
+             "TRACE_FLAG_IOCTL",
+             "TRACE_FLAG_QUEUE",
+             "TRACE_FLAG_WMI",
+             "TRACE_FLAG_TIMER",
+             "TRACE_FLAG_INIT",
+             "TRACE_FLAG_LOCK",
+             "TRACE_FLAG_DEBUG1",
+             "TRACE_FLAG_DEBUG2",
+             "TRACE_FLAG_MCN",
+             "TRACE_FLAG_ISR",
+             "TRACE_FLAG_ENUM"},
+        Values{
+             "TRACE_FLAG_GENERAL",
+             "TRACE_FLAG_PNP",
+             "TRACE_FLAG_POWER",
+             "TRACE_FLAG_RW",
+             "TRACE_FLAG_IOCTL",
+             "TRACE_FLAG_QUEUE",
+             "TRACE_FLAG_WMI",
+             "TRACE_FLAG_TIMER",
+             "TRACE_FLAG_INIT",
+             "TRACE_FLAG_LOCK",
+             "TRACE_FLAG_DEBUG1",
+             "TRACE_FLAG_DEBUG2",
+             "TRACE_FLAG_MCN",
+             "TRACE_FLAG_ISR",
+             "TRACE_FLAG_ENUM"},
+        ValueMap{
+             "0x00000001",
+             "0x00000002",
+             "0x00000004",
+             "0x00000008",
+             "0x00000010",
+             "0x00000020",
+             "0x00000040",
+             "0x00000080",
+             "0x00000100",
+             "0x00000200",
+             "0x00000400",
+             "0x00000800",
+             "0x00001000",
+             "0x00002000",
+             "0x00004000"}
+    ]
+    uint32 Flags;
+    [Description ("Levels"),
+        ValueDescriptions{
+            "Abnormal exit or termination",
+            "Severe errors that need logging",
+            "Warnings such as allocation failure",
+            "Includes non-error cases",
+            "Detailed traces from intermediate steps" },
+         DefineValues{
+            "TRACE_LEVEL_FATAL",
+            "TRACE_LEVEL_ERROR",
+            "TRACE_LEVEL_WARNING"
+            "TRACE_LEVEL_INFORMATION",
+            "TRACE_LEVEL_VERBOSE" },
+        Values{
+            "Fatal",
+            "Error",
+            "Warning",
+            "Information",
+            "Verbose" },
+        ValueMap{
+            "0x1",
+            "0x2",
+            "0x3",
+            "0x4",
+            "0x5" },
+        ValueType("index")
+    ]
+    uint32 Level;
+};

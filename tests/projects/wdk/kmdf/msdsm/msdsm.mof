@@ -1,0 +1,82 @@
+//
+// Copyright (C) 2004  Microsoft Corporation
+//
+//
+// Microsoft DSM's internal classes
+//
+
+//
+// Perf class.
+//
+[WMI,
+ guid("{a34d03ec-6b0b-46a1-9178-82525f41133f}")]
+class MSDSM_DEVICEPATH_PERF
+{
+    [WmiDataId(1),
+     Description("Path Identifier.") : amended
+    ] uint64 PathId;
+
+    [WmiDataId(2),
+     Description("Number of Read Requests.") : amended
+    ] uint32 NumberReads;
+
+    [WmiDataId(3),
+     Description("Number of Write Requests.") : amended
+    ] uint32 NumberWrites;
+
+    [WmiDataId(4),
+     Description("Total Bytes Read.") : amended
+    ] uint64 BytesRead;
+
+    [WmiDataId(5),
+     Description("Total Bytes Written.") : amended
+    ] uint64 BytesWritten;
+};
+
+[WMI,
+ Dynamic,
+ Provider("WmiProv"),
+ Description("Retrieve MSDSM Performance Information.") : amended,
+ Locale("MS\\0x409"),
+ guid("{875b8871-4889-4114-93f6-cd064c001cea}")]
+class MSDSM_DEVICE_PERF
+{
+    [key, read]
+     string InstanceName;
+    [read] boolean Active;
+
+    [WmiDataId(1),
+     read,
+     Description("Number of paths.") : amended
+    ] uint32 NumberPaths;
+
+    [WmiDataId(2),
+     read,
+     Description("Array of Performance Information per path for the device.") : amended,
+     WmiSizeIs("NumberPaths")
+    ] MSDSM_DEVICEPATH_PERF PerfInfo[];
+};
+
+//
+// Methods
+//     Clear perf counters.
+//
+[Dynamic,
+ Provider("WMIProv"),
+ WMI,
+ Description("MSDSM WMI Methods") : amended,
+ guid("{04517f7e-92bb-4ebe-aed0-54339fa5f544}"),
+ locale("MS\\0x409")
+]
+class MSDSM_WMI_METHODS
+{
+
+    [key, read]
+    string InstanceName;
+    [read] boolean Active;
+
+    [WmiMethodId(1),
+     Implemented,
+     Description("Clear path performance counters for the device.") : amended
+    ] void MSDsmClearCounters();
+};

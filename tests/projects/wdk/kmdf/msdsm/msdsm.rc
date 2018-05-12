@@ -1,0 +1,24 @@
+//+-------------------------------------------------------------------------
+//
+//  Microsoft Windows
+//
+//  Copyright (C) Microsoft Corporation, 2004
+//
+//  File:       msdsm.rc
+//
+//--------------------------------------------------------------------------
+
+#include <windows.h>
+
+#include <ntverp.h>
+
+#define VER_FILETYPE    VFT_DRV
+#define VER_FILESUBTYPE VFT2_DRV_SYSTEM
+#define VER_FILEDESCRIPTION_STR     "Microsoft Device Specific Module"
+#define VER_INTERNALNAME_STR        "msdsm.sys"
+#define VER_ORIGINALFILENAME_STR    "msdsm.sys"
+
+#include "common.ver"
+
+MofResourceName MOFDATA msdsm.bmf
+DsmMofResourceName MOFDATA msdsmdsm.bmf

@@ -2,9 +2,6 @@
 -- add modes: debug and release 
 add_rules("mode.debug", "mode.release")
 
--- add include directories
-add_includedirs(".")
-
 -- add target
 target("serial")
 

@@ -1,0 +1,141 @@
+//
+// Copyright (C) 2004  Microsoft Corporation
+//
+// Microsoft DSM's DSM-specific classes
+//
+
+//
+// Class used for retrieving and setting MSDSM-wide default load balance policy.
+//
+[WMI,
+ Dynamic,
+ Provider("WmiProv"),
+ Description("MSDSM-wide default load balance policies.") : amended,
+ Locale("MS\\0x409"),
+ guid("{c81b5681-f3ca-4c98-9325-707d0d62ffc4}")]
+class MSDSM_DEFAULT_LOAD_BALANCE_POLICY
+{
+    [key, read]
+     string InstanceName;
+    [read] boolean Active;
+
+    [WmiDataId(1),
+     read, write,
+     Description("Load Balance Policy to be applied to devices controlled by MSDSM.") : amended
+    ] uint32 LoadBalancePolicy;
+
+    [WmiDataId(2),
+     read,
+     Description("Reserved.") : amended
+    ] uint32 Reserved;
+
+    //
+    // Preferred path.
+    //
+    [WmiDataId(3),
+     read, write,
+     Description("Preferred Path.") : amended
+    ] uint64 PreferredPath;
+};
+
+//
+// Embedded class that describes a target and the default load balance policy
+// of its LUNs.
+//
+[WMI,
+ guid("{ddb00a72-0fab-418b-a89e-97370ae293a4}")]
+class MSDSM_TARGET_DEFAULT_POLICY_INFO
+{
+    //
+    // VID-PID string as an 8 + 16 character concatenated string.
+    // Spaces should be used to make the VID 8 chars and the PID 16 chars.
+    //
+    [WmiDataId(1),
+     MaxLen(31),
+     Description("Concatenated VendorID (8 characters) and ProductID (16 characters).") : amended
+    ] string HardwareId;
+
+    //
+    // The default load balance policy to be applied to LUNs from the target
+    // whose hardware id matches the VID/PID above.
+    // NOTE: Setting this to 0 will act as removal of default setting for this
+    // target.
+    //
+    [WmiDataId(2)] uint32 LoadBalancePolicy;
+
+    //
+    // Used for alignment reasons.
+    //
+    [WmiDataId(3)] uint32 Reserved;
+
+    //
+    // Preferred path.
+    //
+    [WmiDataId(4)] uint64 PreferredPath;
+};
+
+//
+// Class used for retrieving and setting target-level default load balance policy.
+//
+[WMI,
+ Dynamic,
+ Provider("WmiProv"),
+ Description("Target-level default load balance policies.") : amended,
+ Locale("MS\\0x409"),
+ guid("{5ccbcd91-1b56-4327-a2f3-0960335f8846}")]
+class MSDSM_TARGETS_DEFAULT_LOAD_BALANCE_POLICY
+{
+    [key, read]
+     string InstanceName;
+    [read] boolean Active;
+
+    [WmiDataId(1),
+     read, write,
+     Description("Number of targets specified.") : amended
+    ] uint32 NumberDevices;
+
+    [WmiDataId(2),
+     read,
+     Description("Reserved.") : amended
+    ] uint32 Reserved;
+
+    [WmiDataId(3),
+     read, write,
+     MaxLen(31),
+     Description("Array of target hardware identifiers with policy and preferred path information.") : amended,
+     WmiSizeIs("NumberDevices")
+    ] MSDSM_TARGET_DEFAULT_POLICY_INFO TargetDefaultPolicyInfo[];
+};
+
+//
+// Supported devices list class.
+//
+[WMI,
+ Dynamic,
+ Provider("WmiProv"),
+ Description("Retrieve MSDSM's supported devices list.") : amended,
+ Locale("MS\\0x409"),
+ guid("{c362d67c-371e-44d8-8bba-044619e4f245}")]
+class MSDSM_SUPPORTED_DEVICES_LIST
+{
+    [key, read]
+     string InstanceName;
+    [read] boolean Active;
+
+    [WmiDataId(1),
+     read,
+     Description("Number of supported devices.") : amended
+    ] uint32 NumberDevices;
+
+    [WmiDataId(2),
+     read,
+     Description("Reserved.") : amended
+    ] uint32 Reserved;
+
+    [WmiDataId(3),
+     read,
+     MaxLen(31),
+     Description("Array of device hardware identifiers.") : amended,
+     WmiSizeIs("NumberDevices")
+    ] string DeviceId[];
+};
