@@ -26,7 +26,7 @@
 rule("wdk.umdf.driver")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc")
 
     -- on load
     on_load(function (target)
@@ -37,7 +37,7 @@ rule("wdk.umdf.driver")
 rule("wdk.umdf.binary")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc")
 
     -- on load
     on_load(function (target)
@@ -48,7 +48,7 @@ rule("wdk.umdf.binary")
 rule("wdk.kmdf.driver")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc")
 
     -- on load
     on_load(function (target)
@@ -59,7 +59,7 @@ rule("wdk.kmdf.driver")
 rule("wdk.kmdf.binary")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc")
 
     -- on load
     on_load(function (target)

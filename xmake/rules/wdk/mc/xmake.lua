@@ -74,6 +74,10 @@ rule("wdk.mc")
         table.insert(args, outputdir)
         table.insert(args, "-r")
         table.insert(args, outputdir)
+        table.insert(args, sourcefile)
+
+        -- add includedirs
+        target:add("includedirs", outputdir)
 
         -- add header file
         local header = target:values("wdk.mc.header")
@@ -81,16 +85,12 @@ rule("wdk.mc")
         if headerfile then
             table.insert(args, "-z")
             table.insert(args, path.basename(headerfile))
+            table.insert(args, "-e")
+            table.insert(args, path.extension(headerfile))
             target:data_add("wdk.cleanfiles", headerfile)
         else
             headerfile = path.join(outputdir, path.basename(sourcefile) .. ".h")
         end
-
-        -- add source file
-        table.insert(args, sourcefile)
-
-        -- add includedirs
-        target:add("includedirs", outputdir)
 
         -- need build this object?
         local dependfile = target:dependfile(headerfile)

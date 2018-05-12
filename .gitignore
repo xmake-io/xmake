@@ -26,6 +26,7 @@
 *.zip
 *.gch
 *.gch.d
+*.sys
 cscope.*
 gmon.out
 other
