@@ -22,14 +22,14 @@
 -- @file        xmake.lua
 --
 
--- define rule: *.mc
-rule("wdk.mc")
+-- define rule: *.inf
+rule("wdk.inf")
 
     -- add rule: wdk environment
     add_deps("wdk.env")
 
     -- set extensions
-    set_extensions(".mc")
+    set_extensions(".inf", ".inx")
 
     -- on load
     on_load(function (target)
@@ -40,81 +40,50 @@ rule("wdk.mc")
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
         
-        -- get mc
-        local mc = path.join(target:data("wdk").bindir, arch, is_host("windows") and "mc.exe" or "mc")
-        assert(mc and os.isexec(mc), "mc not found!")
+        -- get stampinf
+        local stampinf = path.join(target:data("wdk").bindir, arch, is_host("windows") and "stampinf.exe" or "stampinf")
+        assert(stampinf and os.isexec(stampinf), "stampinf not found!")
         
-        -- save mc
-        target:data_set("wdk.mc", mc)
-
-        -- save output directory
-        target:data_set("wdk.mc.outputdir", path.join(config.buildir(), ".wdk", "mc", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
+        -- save uic
+        target:data_set("wdk.stampinf", stampinf)
     end)
 
-    -- before build file
-    before_build_file(function (target, sourcefile, opt)
+    -- on build file
+    on_build_file(function (target, sourcefile, opt)
 
         -- imports
         import("core.base.option")
         import("core.project.depend")
 
-        -- get mc
-        local mc = target:data("wdk.mc")
+        -- the target file
+        local targetfile = path.join(target:targetdir(), path.basename(sourcefile) .. ".inf")
 
-        -- get output directory
-        local outputdir = target:data("wdk.mc.outputdir")
-
-        -- init args
-        local args = {}
-        local flags = target:values("wdk.mc.flags")
-        if flags then
-            table.join2(args, flags)
-        end
-        table.insert(args, "-h")
-        table.insert(args, outputdir)
-        table.insert(args, "-r")
-        table.insert(args, outputdir)
-
-        -- add header file
-        local header = target:values("wdk.mc.header")
-        local headerfile = header and path.join(outputdir, header) or nil
-        if headerfile then
-            table.insert(args, "-z")
-            table.insert(args, path.basename(headerfile))
-            target:data_add("wdk.cleanfiles", headerfile)
-        else
-            headerfile = path.join(outputdir, path.basename(sourcefile) .. ".h")
-        end
-
-        -- add source file
-        table.insert(args, sourcefile)
-
-        -- add includedirs
-        target:add("includedirs", outputdir)
+        -- add clean files
+        target:data_add("wdk.cleanfiles", targetfile)
 
         -- need build this object?
-        local dependfile = target:dependfile(headerfile)
+        local dependfile = target:dependfile(targetfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(headerfile), values = args}) then
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(targetfile)}) then
             return 
         end
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%02d%%]:${dim} compiling.wdk.mc %s", opt.progress, sourcefile)
+            cprint("${green}[%02d%%]:${dim} compiling.wdk.inf %s", opt.progress, sourcefile)
         else
-            cprint("${green}[%02d%%]:${clear} compiling.wdk.mc %s", opt.progress, sourcefile)
+            cprint("${green}[%02d%%]:${clear} compiling.wdk.inf %s", opt.progress, sourcefile)
         end
 
-        -- do message compile
-        if not os.isdir(outputdir) then
-            os.mkdir(outputdir)
-        end
-        os.vrunv(mc, args)
+        -- get stampinf
+        local stampinf = target:data("wdk.stampinf")
+
+        -- update the timestamp
+        os.cp(sourcefile, targetfile)
+        os.vrunv(stampinf, {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*", "-f", targetfile}, {wildcards = false})
 
         -- update files and values to the dependent file
-        dependinfo.files  = {sourcefile}
-        dependinfo.values = args
+        dependinfo.files = {sourcefile}
         depend.save(dependinfo, dependfile)
     end)
 
