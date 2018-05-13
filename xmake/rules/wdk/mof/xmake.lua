@@ -36,16 +36,27 @@ rule("wdk.mof")
 
         -- imports
         import("core.project.config")
+        import("lib.detect.find_program")
 
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
-        
+
         -- get mofcomp
-        local mofcomp = path.join(target:data("wdk").bindir, arch, is_host("windows") and "mofcomp.exe" or "mofcomp")
-        assert(mofcomp and os.isexec(mofcomp), "mofcomp not found!")
+        local mofcomp = find_program("mofcomp", {check = function (program) 
+            local tmpmof = os.tmpfile() 
+            io.writefile(tmpmof, "")
+            os.run("%s %s", program, tmpmof)
+            os.tryrm(tmpmof)
+        end})
+        assert(mofcomp, "mofcomp not found!")
         
-        -- save mofcomp
+        -- get wmimofck
+        local wmimofck = path.join(target:data("wdk").bindir, "x86", arch, is_host("windows") and "wmimofck.exe" or "wmimofck")
+        assert(wmimofck and os.isexec(wmimofck), "wmimofck not found!")
+        
+        -- save mofcomp and wmimofck
         target:data_set("wdk.mofcomp", mofcomp)
+        target:data_set("wdk.wmimofck", wmimofck)
 
         -- save output directory
         target:data_set("wdk.mof.outputdir", path.join(config.buildir(), ".wdk", "mof", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
@@ -60,6 +71,9 @@ rule("wdk.mof")
 
         -- get mofcomp
         local mofcomp = target:data("wdk.mofcomp")
+
+        -- get wmimofck
+        local wmimofck = target:data("wdk.wmimofck")
 
         -- get output directory
         local outputdir = target:data("wdk.mof.outputdir")
@@ -90,12 +104,12 @@ rule("wdk.mof")
             cprint("${green}[%02d%%]:${clear} compiling.wdk.mof %s", opt.progress, sourcefile)
         end
 
-        -- do mofcomp 
+        -- do wmimofck 
         --[[
         if not os.isdir(outputdir) then
             os.mkdir(outputdir)
         end
-        os.vrunv(mofcomp, args)
+        os.vrunv(wmimofck, args)
         ]]
 
         -- update files and values to the dependent file
