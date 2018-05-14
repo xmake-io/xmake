@@ -19,3 +19,9 @@ target("msdsm")
     -- add file msdsm.mof and modify default wdk.mof.header for this file
     add_files("msdsm.mof", {values = {wdk_mof_header = "msdsmwmi.h"}}) 
 
+    -- set precompiled header
+    set_pcheader("precomp.h")
+
+    -- add links
+    add_links("mpio")
+

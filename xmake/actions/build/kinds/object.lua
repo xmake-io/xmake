@@ -297,15 +297,15 @@ function build(target, buildinfo)
         ccache = find_ccache()
     end
 
-    -- build precompiled headers
-    _build_pcheaderfiles(target, buildinfo)
-
     -- build source batches with custom rules before building other sources
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
         if sourcebatch.rulename then
             _build_files_with_rule(target, buildinfo, sourcebatch, jobs, "before")
         end
     end
+
+    -- build precompiled headers
+    _build_pcheaderfiles(target, buildinfo)
 
     -- build source batches
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
