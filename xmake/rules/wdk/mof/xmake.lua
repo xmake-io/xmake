@@ -78,24 +78,31 @@ rule("wdk.mof")
         -- get output directory
         local outputdir = target:data("wdk.mof.outputdir")
 
-        -- init args
-        local args = {}
-        local flags = target:values("wdk.mof.flags")
-        if flags then
-            table.join2(args, flags)
-        end
-
         -- add includedirs
         target:add("includedirs", outputdir)
 
+        -- get header file
+        local headerfile = path.join(outputdir, path.basename(sourcefile) .. ".h")
+
+        -- get some temporary file 
+        local sourcefile_mof     = path.join(outputdir, path.filename(sourcefile))
+        local targetfile_mfl     = path.join(outputdir, "." .. path.basename(sourcefile) .. ".mfl")
+        local targetfile_mof     = path.join(outputdir, "." .. path.basename(sourcefile) .. ".mof")
+        local targetfile_mfl_mof = path.join(outputdir, "." .. path.basename(sourcefile) .. ".mfl.mof")
+        local targetfile_bmf     = path.join(outputdir, path.basename(sourcefile) .. ".bmf")
+        local outputdir_htm      = path.join(outputdir, "htm")
+        local targetfile_vbs     = path.join(outputdir, path.basename(sourcefile) .. ".vbs")
+
+        -- add clean files
+        target:data_add("wdk.cleanfiles", {headerfile, sourcefile_mof, targetfile_mfl, targetfile_mof})
+        target:data_add("wdk.cleanfiles", {targetfile_mfl_mof, targetfile_bmf, outputdir_htm, targetfile_vbs})
+
         -- need build this object?
-        --[[
         local dependfile = target:dependfile(headerfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(headerfile), values = args}) then
             return 
         end
-        ]]
 
         -- trace progress info
         if option.get("verbose") then
@@ -104,19 +111,29 @@ rule("wdk.mof")
             cprint("${green}[%02d%%]:${clear} compiling.wdk.mof %s", opt.progress, sourcefile)
         end
 
-        -- do wmimofck 
-        --[[
+        -- ensure the output directory
         if not os.isdir(outputdir) then
             os.mkdir(outputdir)
         end
-        os.vrunv(wmimofck, args)
-        ]]
+
+        -- copy *.mof to output directory
+        os.cp(sourcefile, sourcefile_mof)
+
+        -- do mofcomp
+        os.vrunv(mofcomp, {"-Amendment:ms_409", "-MFL:" .. targetfile_mfl, "-MOF:" .. targetfile_mof, sourcefile_mof})
+
+        -- do wmimofck
+        os.vrunv(wmimofck, {"-y" .. targetfile_mof, "-z" .. targetfile_mfl, targetfile_mfl_mof})
+
+        -- do mofcomp to generate *.bmf
+        os.vrunv(mofcomp, {"-B:" .. targetfile_bmf, targetfile_mfl_mof})
+
+        -- do wmimofck to generate *.h
+        os.vrunv(wmimofck, {"-h" .. headerfile, "-w" .. outputdir_htm, "-m", "-t" .. targetfile_vbs, targetfile_bmf})
 
         -- update files and values to the dependent file
-        --[[
         dependinfo.files  = {sourcefile}
         dependinfo.values = args
         depend.save(dependinfo, dependfile)
-        ]]
     end)
 
