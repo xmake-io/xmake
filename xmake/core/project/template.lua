@@ -280,6 +280,7 @@ function template.create(language, templateid, targetname)
     if os.isfile(projectfile) then
         local file = io.open("xmake.lua", "a+")
         if file then
+            file:print("")
             file:print(template.faq())
             file:close()
         end
@@ -292,6 +293,7 @@ end
 -- get FAQ
 function template.faq()
     return [[
+--
 -- FAQ
 --
 -- You can enter the project directory firstly before building project.

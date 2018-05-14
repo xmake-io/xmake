@@ -66,7 +66,7 @@ rule("wdk.mc")
 
         -- init args
         local args = {}
-        local flags = target:values("wdk.mc.flags")
+        local flags = target:values("wdk.mc.flags", sourcefile)
         if flags then
             table.join2(args, flags)
         end
@@ -80,7 +80,7 @@ rule("wdk.mc")
         target:add("includedirs", outputdir)
 
         -- add header file
-        local header = target:values("wdk.mc.header")
+        local header = target:values("wdk.mc.header", sourcefile)
         local headerfile = header and path.join(outputdir, header) or nil
         if headerfile then
             table.insert(args, "-z")

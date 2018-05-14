@@ -249,8 +249,28 @@ function target:data_add(name, data)
 end
 
 -- get values
-function target:values(name)
-    return self:get("values." .. name)
+function target:values(name, sourcefile)
+
+    -- get values from the source file first
+    local values = {}
+    if sourcefile then
+        local fileconfig = self:fileconfig(sourcefile)
+        if fileconfig then
+            local filevalues = fileconfig.values
+            if filevalues then
+                -- we use '_' to simplify setting, for example:
+                --
+                -- add_files("xxx.mof", {values = {wdk_mof_header = "xxx.h"}}) 
+                -- add_files("xxx.mof", {values = {["wdk.mof.header"] = "xxx.h"}}) 
+                --
+                table.join2(values, filevalues[name] or filevalues[name:gsub("%.", "_")])
+            end
+        end
+    end
+
+    -- get values from target
+    table.join2(values, self:get("values." .. name))
+    return #values > 0 and table.unwrap(values) or nil
 end
 
 -- set values

@@ -76,7 +76,7 @@ rule("wdk.tracewpp")
             table.insert(args, "-km")
             table.insert(args, "-gen:{km-WdfDefault.tpl}*.tmh")
         end
-        local flags = target:values("wdk.tracewpp.flags")
+        local flags = target:values("wdk.tracewpp.flags", sourcefile)
         if flags then
             table.join2(args, flags)
         end

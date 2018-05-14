@@ -13,5 +13,9 @@ target("msdsm")
 
     -- add files
     add_files("*.c", {rule = "wdk.tracewpp"}) 
-    add_files("*.mof", "*.rc", "*.inf")
+    add_files("*.rc", "*.inf")
+    add_files("*.mof|msdsm.mof")
+
+    -- add file msdsm.mof and modify default wdk.mof.header for this file
+    add_files("msdsm.mof", {values = {wdk_mof_header = "msdsmwmi.h"}}) 
 

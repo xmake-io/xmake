@@ -82,7 +82,8 @@ rule("wdk.mof")
         target:add("includedirs", outputdir)
 
         -- get header file
-        local headerfile = path.join(outputdir, path.basename(sourcefile) .. ".h")
+        local header = target:values("wdk.mof.header", sourcefile)
+        local headerfile = path.join(outputdir, header and header or (path.basename(sourcefile) .. ".h"))
 
         -- get some temporary file 
         local sourcefile_mof     = path.join(outputdir, path.filename(sourcefile))

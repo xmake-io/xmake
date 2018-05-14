@@ -66,7 +66,7 @@ rule("wdk.man")
 
         -- init args
         local args = {sourcefile}
-        local flags = target:values("wdk.man.flags")
+        local flags = target:values("wdk.man.flags", sourcefile)
         if flags then
             table.join2(args, flags)
         end
@@ -75,7 +75,7 @@ rule("wdk.man")
         target:add("includedirs", outputdir)
 
         -- add header file
-        local header = target:values("wdk.man.header")
+        local header = target:values("wdk.man.header", sourcefile)
         local headerfile = header and path.join(outputdir, header) or nil
         if headerfile then
             table.insert(args, "-o")
@@ -86,14 +86,14 @@ rule("wdk.man")
         end
 
         -- add prefix
-        local prefix = target:values("wdk.man.prefix")
+        local prefix = target:values("wdk.man.prefix", sourcefile)
         if prefix then
             table.insert(args, "-prefix")
             table.insert(args, prefix)
         end
 
         -- add counter header file
-        local counter_header = target:values("wdk.man.counter_header")
+        local counter_header = target:values("wdk.man.counter_header", sourcefile)
         local counter_headerfile = counter_header and path.join(outputdir, counter_header) or nil
         if counter_headerfile then
             table.insert(args, "-ch")
@@ -102,7 +102,7 @@ rule("wdk.man")
         end
 
         -- add resource file
-        local resource = target:values("wdk.man.resource")
+        local resource = target:values("wdk.man.resource", sourcefile)
         local resourcefile = resource and path.join(outputdir, resource) or nil
         if resourcefile then
             table.insert(args, "-rc")
