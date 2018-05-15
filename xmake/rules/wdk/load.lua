@@ -115,14 +115,28 @@ function kmdf_driver(target)
     target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
 
     -- add links
-    target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "WdfDriverEntry", "ntstrsafe", "wdmsec")
+    target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "ntstrsafe", "wdmsec")
 
     -- compile as kernel driver
     target:add("cxflags", "-kernel", {force = true})
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
-    -- set driver entry
-    target:add("ldflags", "-entry:FxDriverEntry", "-subsystem:native,10.00", {force = true})
+    -- set subsystem: native, TODO 10.00
+    target:add("ldflags", "-subsystem:native,10.00", {force = true})
+
+    -- set default driver entry if does not exist
+    local entry = false
+    for _, ldflag in ipairs(target:get("ldflags")) do
+        ldflag = ldflag:lower()
+        if ldflag:find("[/%-]entry:") then
+            entry = true
+            break
+        end
+    end
+    if not entry then
+        target:add("links", "WdfDriverEntry")
+        target:add("ldflags", "-entry:FxDriverEntry", {force = true})
+    end
 end
 
 -- load for kmdf binary

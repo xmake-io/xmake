@@ -23,5 +23,8 @@ target("msdsm")
     set_pcheader("precomp.h")
 
     -- add links
-    add_links("mpio")
+    add_links("mpio", "ucrt")
+
+    -- set entry
+    add_ldflags("-entry:GsDriverEntry", {force = true})
 

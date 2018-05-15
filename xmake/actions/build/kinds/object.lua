@@ -246,6 +246,11 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs, suffix)
 
         -- do build files
         on_build_files(target, sourcebatch.sourcefiles, {progress = progress})
+
+        -- update source index
+        if not suffix then
+            _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+        end
     else
         -- get the build file script
         local on_build_file = ruleinst:script("build_file" .. (suffix and ("_" .. suffix) or ""))
@@ -264,20 +269,16 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs, suffix)
                     progress = ((buildinfo.targetindex + (suffix == "before" and _g.sourceindex or _g.sourcecount) / _g.sourcecount) * 100 / buildinfo.targetcount)
                 end
 
-                -- the source file
-                local sourcefile = sourcebatch.sourcefiles[index]
-
-
                 -- do build file
-                on_build_file(target, sourcefile, {progress = progress})
+                on_build_file(target, sourcebatch.sourcefiles[index], {progress = progress})
 
             end, #sourcebatch.sourcefiles, jobs)
-        end
-    end
 
-    -- update object index
-    if not suffix then
-        _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+            -- update source index
+            if not suffix then
+                _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+            end
+        end
     end
 end
 
