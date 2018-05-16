@@ -52,8 +52,24 @@ function umdf_driver(target)
     target:add("linkdirs", path.join(wdk.libdir, "wdf", "umdf", arch, wdk.umdfver))
 
     -- add links
-    target:add("links", "WdfDriverStubUm", "ntdll", "OneCoreUAP", "mincore", "ucrt")
-    target:add("ldflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
+    target:add("links", "ntdll", "OneCoreUAP", "mincore", "ucrt")
+    target:add("shflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
+
+    -- set subsystem: windows, TODO 10.00
+    target:add("shflags", "-subsystem:windows,10.00", {force = true})
+
+    -- set default driver entry if does not exist
+    local entry = false
+    for _, ldflag in ipairs(target:get("shflags")) do
+        ldflag = ldflag:lower()
+        if ldflag:find("[/%-]entry:") then
+            entry = true
+            break
+        end
+    end
+    if not entry then
+        target:add("links", "WdfDriverStubUm")
+    end
 end
 
 -- load for umdf binary

@@ -1,0 +1,21 @@
+//---------------------------------------------------------------------------
+// Skeleton.rc
+//
+// Copyright (c) Microsoft Corporation, All Rights Reserved
+//---------------------------------------------------------------------------
+
+
+#include <windows.h>
+#include <ntverp.h>
+
+//
+// TODO: Change the file description and file names to match your binary.
+//
+
+#define VER_FILETYPE                VFT_DLL
+#define VER_FILESUBTYPE             VFT_UNKNOWN
+#define VER_FILEDESCRIPTION_STR     "WDF:UMDF Skeleton User-Mode Driver Sample"
+#define VER_INTERNALNAME_STR        "UMDFSkeleton"
+#define VER_ORIGINALFILENAME_STR    "UMDFSkeleton.dll"
+
+#include "common.ver"

@@ -1,0 +1,10 @@
+; Skeleton.def : Declares the module parameters.
+
+;
+; TODO: Change the library name here to match your binary name.
+;
+
+LIBRARY      "UMDFSkeleton.DLL"
+
+EXPORTS
+    DllGetClassObject   PRIVATE

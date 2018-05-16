@@ -61,10 +61,29 @@ rule("wdk.inf")
         -- add clean files
         target:data_add("wdk.cleanfiles", targetfile)
 
+        -- init args
+        local args = {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*"}
+        local flags = target:values("wdk.inf.flags", sourcefile)
+        if flags then
+            table.join2(args, flags)
+        end
+        local wdk = target:data("wdk")
+        if wdk then
+            if wdk.kmdfver and (target:rule("wdk.kmdf.driver") or target:rule("wdk.kmdf.binary")) then
+                table.insert(args, "-k")
+                table.insert(args, wdk.kmdfver)
+            elseif wdk.umdfver then
+                table.insert(args, "-u")
+                table.insert(args, wdk.umdfver .. ".0")
+            end
+        end
+        table.insert(args, "-f")
+        table.insert(args, targetfile)
+
         -- need build this object?
         local dependfile = target:dependfile(targetfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(targetfile)}) then
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(targetfile), values = args}) then
             return 
         end
 
@@ -80,10 +99,11 @@ rule("wdk.inf")
 
         -- update the timestamp
         os.cp(sourcefile, targetfile)
-        os.vrunv(stampinf, {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*", "-f", targetfile}, {wildcards = false})
+        os.vrunv(stampinf, args, {wildcards = false})
 
         -- update files and values to the dependent file
         dependinfo.files = {sourcefile}
+        dependinfo.values = args
         depend.save(dependinfo, dependfile)
     end)
 

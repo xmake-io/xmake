@@ -27,9 +27,30 @@ rule("wdk.env")
 
     -- on load
     on_load(function (target)
+
+        -- imports
         import("detect.sdks.find_wdk")
+
+        -- load wdk environment
         if not target:data("wdk") then
-            target:data_set("wdk", assert(find_wdk(nil, {verbose = true}), "WDK not found!"))
+
+            -- find wdk
+            local wdk = assert(find_wdk(nil, {verbose = true}), "WDK not found!")
+
+            -- update the umdf sdk version from the xmake.lua
+            local umdfver = target:values("wdk.umdf.sdkver")
+            if umdfver then
+                wdk.umdfver = umdfver
+            end
+
+            -- update the kmdf sdk version from the xmake.lua
+            local kmdfver = target:values("wdk.kmdf.sdkver")
+            if kmdfver then
+                wdk.kmdfver = kmdfver
+            end
+
+            -- save wdk
+            target:data_set("wdk", wdk)
         end
     end)
 
