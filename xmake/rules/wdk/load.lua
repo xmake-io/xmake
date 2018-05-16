@@ -159,7 +159,7 @@ function kmdf_driver(target)
     end
     if not entry then
         target:add("links", "WdfDriverEntry")
-        target:add("ldflags", "-entry:FxDriverEntry", {force = true})
+        target:add("ldflags", "-entry:FxDriverEntry" .. (is_arch("x86") and "@8" or ""), {force = true})
     end
 end
 
