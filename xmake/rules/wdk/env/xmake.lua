@@ -49,6 +49,11 @@ rule("wdk.env")
                 wdk.kmdfver = kmdfver
             end
 
+            -- add defines for debug
+            if is_mode("debug") then
+                target:add("define", "DBG=1")
+            end
+
             -- save wdk
             target:data_set("wdk", wdk)
         end

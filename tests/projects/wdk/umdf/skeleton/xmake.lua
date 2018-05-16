@@ -25,5 +25,9 @@ target("skeleton")
     add_shflags("/DEF:exports.def", {force = true})
 
     -- set entry
-    add_shflags("/ENTRY:_DllMainCRTStartup", {force = true})
+    if is_arch("x64") then
+        add_shflags("/ENTRY:_DllMainCRTStartup", {force = true})
+    else
+        add_shflags("/ENTRY:_DllMainCRTStartup@12", {force = true})
+    end
 

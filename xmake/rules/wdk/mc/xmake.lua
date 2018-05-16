@@ -39,9 +39,12 @@ rule("wdk.mc")
 
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
+
+        -- get wdk
+        local wdk = target:data("wdk")
         
         -- get mc
-        local mc = path.join(target:data("wdk").bindir, arch, is_host("windows") and "mc.exe" or "mc")
+        local mc = path.join(wdk.bindir, arch, is_host("windows") and "mc.exe" or "mc")
         assert(mc and os.isexec(mc), "mc not found!")
         
         -- save mc

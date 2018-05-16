@@ -41,6 +41,9 @@ rule("wdk.mof")
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
 
+        -- get wdk
+        local wdk = target:data("wdk")
+
         -- get mofcomp
         local mofcomp = find_program("mofcomp", {check = function (program) 
             local tmpmof = os.tmpfile() 
@@ -51,7 +54,12 @@ rule("wdk.mof")
         assert(mofcomp, "mofcomp not found!")
         
         -- get wmimofck
-        local wmimofck = path.join(target:data("wdk").bindir, "x86", arch, is_host("windows") and "wmimofck.exe" or "wmimofck")
+        local wmimofck = nil
+        if arch == "x64" then
+            wmimofck = path.join(wdk.bindir, wdk.sdkver, "x86", "x64", is_host("windows") and "wmimofck.exe" or "wmimofck")
+        else
+            wmimofck = path.join(wdk.bindir, wdk.sdkver, "x86", is_host("windows") and "wmimofck.exe" or "wmimofck")
+        end
         assert(wmimofck and os.isexec(wmimofck), "wmimofck not found!")
         
         -- save mofcomp and wmimofck

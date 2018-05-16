@@ -39,9 +39,12 @@ rule("wdk.man")
 
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
+
+        -- get wdk
+        local wdk = target:data("wdk")
         
         -- get ctrpp
-        local ctrpp = path.join(target:data("wdk").bindir, arch, is_host("windows") and "ctrpp.exe" or "ctrpp")
+        local ctrpp = path.join(wdk.bindir, arch, is_host("windows") and "ctrpp.exe" or "ctrpp")
         assert(ctrpp and os.isexec(ctrpp), "ctrpp not found!")
         
         -- save ctrpp

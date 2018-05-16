@@ -39,9 +39,12 @@ rule("wdk.inf")
 
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
+
+        -- get wdk
+        local wdk = target:data("wdk")
         
         -- get stampinf
-        local stampinf = path.join(target:data("wdk").bindir, arch, is_host("windows") and "stampinf.exe" or "stampinf")
+        local stampinf = path.join(wdk.bindir, wdk.sdkver, arch, is_host("windows") and "stampinf.exe" or "stampinf")
         assert(stampinf and os.isexec(stampinf), "stampinf not found!")
         
         -- save uic

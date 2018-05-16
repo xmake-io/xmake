@@ -39,6 +39,9 @@ function umdf_driver(target)
     local umdfver = wdk.umdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    else
+        target:add("defines", "_X86_=1", "i386=1", "STD_CALL")
+        target:add("defines", "DEPRECATE_DDK_FUNCTIONS=1", "MSC_NOOPT", "_ATL_NO_WIN_SUPPORT", "_WINDLL")
     end
     target:add("defines", "UMDF_VERSION_MAJOR=" .. umdfver[1], "UMDF_VERSION_MINOR=" .. umdfver[2], "UMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
@@ -56,7 +59,7 @@ function umdf_driver(target)
     target:add("shflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
 
     -- set subsystem: windows, TODO 10.00
-    target:add("shflags", "-subsystem:windows,10.00", {force = true})
+    target:add("shflags", "-subsystem:windows,10.00", "-MACHINE:X86", {force = true})
 
     -- set default driver entry if does not exist
     local entry = false
@@ -85,6 +88,9 @@ function umdf_binary(target)
     local arch = config.arch()
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    else
+        target:add("defines", "_X86_=1", "i386=1", "STD_CALL")
+        target:add("defines", "_ATL_NO_WIN_SUPPORT", "_CRT_USE_WINAPI_PARTITION_APP")
     end
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
 
@@ -118,6 +124,8 @@ function kmdf_driver(target)
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    else
+        target:add("defines", "_X86_=1", "i386=1", "STD_CALL")
     end
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
@@ -169,6 +177,8 @@ function kmdf_binary(target)
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    else
+        target:add("defines", "_X86_=1", "i386=1", "STD_CALL")
     end
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2])
