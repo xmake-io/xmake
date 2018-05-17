@@ -72,7 +72,7 @@ rule("wdk.tracewpp")
 
         -- init args
         local args = {}
-        if target:rule("wdk.kmdf.driver") then
+        if target:rule("wdk.kmdf.driver") or target:rule("wdk.wdm.driver") then
             table.insert(args, "-km")
             table.insert(args, "-gen:{km-WdfDefault.tpl}*.tmh")
         end

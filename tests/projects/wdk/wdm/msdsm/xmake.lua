@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("msdsm")
 
     -- add rules
-    add_rules("wdk.kmdf.driver")
+    add_rules("wdk.wdm.driver")
 
     -- add flags for rule: wdk.tracewpp
     add_values("wdk.tracewpp.flags", "-func:TracePrint((LEVEL,FLAGS,MSG,...))")
@@ -24,7 +24,4 @@ target("msdsm")
 
     -- add links
     add_links("mpio", "ucrt")
-
-    -- set entry
-    add_ldflags("-entry:GsDriverEntry" .. (is_arch("x86") and "@8" or ""), {force = true})
 

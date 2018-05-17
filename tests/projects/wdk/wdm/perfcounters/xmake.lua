@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("kcs")
 
     -- add rules
-    add_rules("wdk.kmdf.driver")
+    add_rules("wdk.wdm.driver")
 
     -- add flags for rule: wdk.man
     add_values("wdk.man.prefix", "Kcs")

@@ -197,3 +197,92 @@ function kmdf_binary(target)
     target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32")
     target:add("links", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "setupapi")
 end
+
+-- load for wdm driver
+function wdm_driver(target)
+
+    -- get wdk
+    local wdk = target:data("wdk")
+
+    -- set kind
+    target:set("kind", "binary")
+
+    -- set filename: xxx.sys
+    target:set("filename", target:basename() .. ".sys")
+
+    -- add defines
+    local arch = config.arch()
+    local kmdfver = wdk.kmdfver:split('%.')
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    else
+        target:add("cxflags", "-Gz", {force = true})
+        target:add("defines", "_X86_=1", "i386=1", "STD_CALL")
+    end
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
+    target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
+
+    -- add include directories
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+    target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
+
+    -- add link directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "km", arch))
+    target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
+
+    -- add links
+    target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "ntstrsafe")
+
+    -- compile as kernel driver
+    target:add("cxflags", "-kernel", {force = true})
+    target:add("ldflags", "-kernel", "-driver", {force = true})
+
+    -- set subsystem: native, TODO 10.00
+    target:add("ldflags", "-subsystem:native,10.00", {force = true})
+
+    -- set default driver entry if does not exist
+    local entry = false
+    for _, ldflag in ipairs(target:get("ldflags")) do
+        ldflag = ldflag:lower()
+        if ldflag:find("[/%-]entry:") then
+            entry = true
+            break
+        end
+    end
+    if not entry then
+        target:add("ldflags", "-entry:GsDriverEntry" .. (is_arch("x86") and "@8" or ""), {force = true})
+    end
+end
+
+-- load for wdm binary
+function wdm_binary(target)
+
+    -- get wdk
+    local wdk = target:data("wdk")
+
+    -- set kind
+    target:set("kind", "binary")
+
+    -- add defines
+    local arch = config.arch()
+    local kmdfver = wdk.kmdfver:split('%.')
+    if arch == "x64" then
+        target:add("defines", "_WIN64", "_AMD64_", "AMD64")
+    else
+        target:add("defines", "_X86_=1", "i386=1", "STD_CALL")
+    end
+    target:add("defines", "WIN32_LEAN_AND_MEAN=1", "_WIN32_WINNT=0x0A00", "WINVER=0x0A00", "WINNT=1", "NTDDI_VERSION=0x0A000004", "_WINDLL")
+    target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2])
+
+    -- add include directories
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+    target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
+
+    -- add link directories
+    target:add("linkdirs", path.join(wdk.libdir, wdk.sdkver, "km", arch))
+    target:add("linkdirs", path.join(wdk.libdir, "wdf", "kmdf", arch, wdk.kmdfver))
+
+    -- add links
+    target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32")
+    target:add("links", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "setupapi")
+end

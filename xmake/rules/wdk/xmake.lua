@@ -82,3 +82,26 @@ rule("wdk.kmdf.binary")
         target:data_add("wdk.cleanfiles", os.files(path.join(target:targetdir(), "*.dll")))
     end)
 
+
+-- define rule: wdm driver
+rule("wdk.wdm.driver")
+
+    -- add rules
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+
+    -- on load
+    on_load(function (target)
+        import("load").wdm_driver(target)
+    end)
+
+-- define rule: wdm binary
+rule("wdk.wdm.binary")
+
+    -- add rules
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+
+    -- on load
+    on_load(function (target)
+        import("load").wdm_binary(target)
+    end)
+
