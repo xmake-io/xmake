@@ -26,5 +26,5 @@ target("msdsm")
     add_links("mpio", "ucrt")
 
     -- set entry
-    add_ldflags("-entry:GsDriverEntry", {force = true})
+    add_ldflags("-entry:GsDriverEntry" .. (is_arch("x86") and "@8" or ""), {force = true})
 

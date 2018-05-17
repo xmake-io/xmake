@@ -57,7 +57,7 @@ function get(self, name)
         -- switch architecture, @note does cache it in init() for generating vs201x project 
         values = table.join(values, "-machine:" .. (config.arch() or "x86"))
     end
-    return _g[name]
+    return values
 end
 
 -- make the symbol flag

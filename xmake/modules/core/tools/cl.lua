@@ -30,7 +30,7 @@ import("core.language.language")
 function init(self)
     
     -- init cxflags
-    _g.cxflags = { "-nologo", "-Gd", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
+    _g.cxflags = { "-nologo", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
 
     -- init flags map
     _g.mapflags = 
