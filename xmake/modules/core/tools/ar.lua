@@ -55,19 +55,8 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     -- check
     assert(targetkind == "static")
 
-    -- make arguments list
-    local argv = table.join(flags, targetfile, objectfiles)
-
-    -- too long?
-    local args = os.args(argv)
-    if #args > 4096 and os.host() == "windows" then
-        local argfile = targetfile .. ".arg"
-        io.printf(argfile, args)
-        argv = {"@" .. argfile}
-    end
-
-    -- ok?
-    return self:program(), argv
+    -- make it
+    return self:program(), table.join(flags, targetfile, objectfiles)
 end
 
 -- link the library file

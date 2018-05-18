@@ -179,15 +179,11 @@ end
 
 -- print line to file
 function sandbox_io.print(filepath, ...)
-
-    -- print it
     sandbox_io.writefile(filepath, vformat(...) .. "\n")
 end
 
 -- print data to file
 function sandbox_io.printf(filepath, ...)
-
-    -- print it
     sandbox_io.writefile(filepath, vformat(...))
 end
 

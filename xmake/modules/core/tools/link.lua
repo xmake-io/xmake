@@ -90,20 +90,7 @@ end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
-
-    -- make arguments list
-    local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
-
-    -- too long?
-    local args = os.args(argv)
-    if #args > 4096 then
-        local argfile = targetfile .. ".arg"
-        io.printf(argfile, args)
-        argv = {"@" .. argfile}
-    end
-
-    -- ok?
-    return self:program(), argv
+    return self:program(), table.join(flags, "-out:" .. targetfile, objectfiles)
 end
 
 -- link the target file

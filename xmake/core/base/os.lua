@@ -501,8 +501,8 @@ function os.tmpdir()
 end
 
 -- generate the temporary file path
-function os.tmpfile()
-    return path.join(os.tmpdir(), "_" .. (hash.uuid():gsub("-", "")))
+function os.tmpfile(key)
+    return path.join(os.tmpdir(), "_" .. (hash.uuid(key):gsub("-", "")))
 end
 
 -- run command
@@ -583,8 +583,19 @@ function os.execv(program, argv, opt)
         wildcards = true
     end
 
-    -- init arguments
-    local args = wildcards and os.argw(argv) or argv
+    -- translate arguments for wildcards
+    argv = wildcards and os.argw(argv) or argv
+
+    -- too long arguments for windows? 
+    local argsfile = nil
+    if os.host() == "windows" then
+        local args = os.args(argv)
+        if #args > 256 then
+            argsfile = os.tmpfile(args) .. ".args.txt" 
+            io.writefile(argsfile, args)
+            argv = {"@" .. argsfile}
+        end
+    end
 
     -- is not executable program file?
     local filename = program
@@ -594,13 +605,13 @@ function os.execv(program, argv, opt)
         local splitinfo = program:split("%s")
         filename = splitinfo[1]
         if #splitinfo > 1 then
-            args = table.join(table.slice(splitinfo, 2), args)
+            argv = table.join(table.slice(splitinfo, 2), argv)
         end
     end
 
     -- open command
     local ok = -1
-    local proc = process.openv(filename, args, opt.stdout, opt.stderr)
+    local proc = process.openv(filename, argv, opt.stdout, opt.stderr)
     if proc ~= nil then
 
         -- wait process
@@ -633,6 +644,11 @@ function os.execv(program, argv, opt)
 
         -- close process
         process.close(proc)
+    end
+
+    -- remove arguments file
+    if argsfile and os.isfile(argsfile) then
+        os.rm(argsfile)
     end
 
     -- ok?

@@ -204,35 +204,17 @@ end
 
 -- get the current directory
 function sandbox_os.curdir()
-   
-    -- get it
-    local curdir = os.curdir()
-    assert(curdir)
-
-    -- ok
-    return curdir
+    return assert(os.curdir())
 end
 
 -- get the temporary directory
 function sandbox_os.tmpdir()
-   
-    -- get it
-    local tmpdir = os.tmpdir()
-    assert(tmpdir)
-
-    -- ok
-    return tmpdir
+    return assert(os.tmpdir())
 end
 
 -- get the temporary file
-function sandbox_os.tmpfile()
-   
-    -- get it
-    local tmpfile = os.tmpfile()
-    assert(tmpfile)
-
-    -- ok
-    return tmpfile
+function sandbox_os.tmpfile(key)
+    return assert(os.tmpfile(key))
 end
 
 -- get the script directory
