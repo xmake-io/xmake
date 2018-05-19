@@ -642,6 +642,19 @@ function target:fileconfig(sourcefile)
     return filesconfig[sourcefile]
 end
 
+-- set the config info to the given source file
+function target:fileconfig_set(sourcefile, info)
+
+    -- get files config
+    local filesconfig = self._FILESCONFIG or {}
+
+    -- set config info
+    filesconfig[sourcefile] = info
+    
+    -- update files config
+    self._FILESCONFIG = filesconfig
+end
+
 -- get the source files 
 function target:sourcefiles()
 

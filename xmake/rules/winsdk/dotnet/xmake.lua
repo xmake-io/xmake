@@ -28,5 +28,45 @@ rule("win.sdk.dotnet")
     -- on load
     on_load(function (target)
 
+        -- imports
+        import("core.project.config")
+        import("detect.sdks.find_dotnet")
+
+        -- load dotnet environment
+        if not target:data("win.sdk.dotnet") then
+
+            -- find dotnet
+            local dotnet = assert(find_dotnet(nil, {verbose = true}), "dotnet not found!")
+
+            -- add link directory
+            target:add("linkdirs", path.join(dotnet.libdir, "um", config.arch()))
+
+            -- save dotnet
+            target:data_set("win.sdk.dotnet", dotnet)
+        end
     end)
 
+    -- before build file
+    before_build_file(function (target, sourcefile, opt)
+
+        -- get dotnet
+        local dotnet = target:data("win.sdk.dotnet")
+
+        -- get file config
+        local fileconfig = target:fileconfig(sourcefile) or {}
+
+        -- add cxflags to the given source file
+        --
+        -- add_files(sourcefile, {force = {cxflags = "/clr"}})
+        --
+        fileconfig.force = fileconfig.force or {}
+        fileconfig.force.cxflags = fileconfig.force.cxflags or {}
+        table.insert(fileconfig.force.cxflags, "/clr")
+
+        -- add include directory to given source file
+        fileconfig.includedirs = fileconfig.includedirs or {}
+        table.insert(fileconfig.includedirs, path.join(dotnet.includedir, "um"))
+
+        -- update file config
+        target:fileconfig_set(sourcefile, fileconfig)
+    end)

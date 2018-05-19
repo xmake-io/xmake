@@ -28,13 +28,15 @@ rule("win.sdk.application")
     -- on load
     on_load(function (target)
 
-        -- TODO 
-        -- values: win.sdk.mt/md
+        -- set kind: binary
+        target:set("kind", "binary")
 
-        -- link libcmt[d].lib
- --       target:add("cflags", "-MT" .. (is_mode("debug") and "d" or "")) 
+        -- set subsystem: windows
+        target:add("ldflags", "-subsystem:windows", {force = true})
 
-        -- no msvcrt.lib
---        target:add("ldflags", "-nodefaultlib:\"msvcrt.lib\"")
+        -- add links
+        target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")
+        target:add("links", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "comctl32")
+        target:add("links", "cfgmgr32", "comdlg32", "setupapi", "strsafe", "shlwapi")
     end)
 
