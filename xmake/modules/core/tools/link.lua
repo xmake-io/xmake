@@ -90,7 +90,18 @@ end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join(flags, "-out:" .. targetfile, objectfiles)
+
+    -- init arguments
+    local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
+
+    -- too long arguments for windows? 
+    local args = os.args(argv)
+    if #args > 1024 then
+        local argsfile = os.tmpfile(args) .. ".args.txt" 
+        io.writefile(argsfile, args)
+        argv = {"@" .. argsfile}
+    end
+    return self:program(), argv
 end
 
 -- link the target file

@@ -586,17 +586,6 @@ function os.execv(program, argv, opt)
     -- translate arguments for wildcards
     argv = wildcards and os.argw(argv) or argv
 
-    -- too long arguments for windows? 
-    local argsfile = nil
-    if os.host() == "windows" then
-        local args = os.args(argv)
-        if #args > 256 then
-            argsfile = os.tmpfile(args) .. ".args.txt" 
-            io.writefile(argsfile, args)
-            argv = {"@" .. argsfile}
-        end
-    end
-
     -- is not executable program file?
     local filename = program
     if not os.isexec(program) then
@@ -644,11 +633,6 @@ function os.execv(program, argv, opt)
 
         -- close process
         process.close(proc)
-    end
-
-    -- remove arguments file
-    if argsfile and os.isfile(argsfile) then
-        os.rm(argsfile)
     end
 
     -- ok?
