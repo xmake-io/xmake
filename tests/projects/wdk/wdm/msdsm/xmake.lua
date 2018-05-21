@@ -23,5 +23,5 @@ target("msdsm")
     set_pcheader("precomp.h")
 
     -- add links
-    add_links("mpio", "ucrt")
+    add_links("mpio")
 
