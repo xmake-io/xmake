@@ -45,7 +45,10 @@ rule("wdk.mc")
         
         -- get mc
         local mc = path.join(wdk.bindir, arch, is_host("windows") and "mc.exe" or "mc")
-        assert(mc and os.isexec(mc), "mc not found!")
+        if not os.isexec(mc) then
+            mc = path.join(wdk.bindir, wdk.sdkver, arch, is_host("windows") and "mc.exe" or "mc")
+        end
+        assert(os.isexec(mc), "mc not found!")
         
         -- save mc
         target:data_set("wdk.mc", mc)

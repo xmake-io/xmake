@@ -32,6 +32,11 @@ import("core.project.config")
 -- find WDK directory
 function _find_sdkdir(sdkdir)
 
+    -- get sdk directory from the environment variables first
+    if not sdkdir then
+        sdkdir = os.getenv("WindowsSdkDir")
+    end
+
     -- get sdk directory from vsvars
     if not sdkdir then
         local arch = config.arch()
