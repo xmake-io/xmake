@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("msdsm")
 
     -- add rules
-    add_rules("wdk.wdm.driver")
+    add_rules("wdk.wdm.driver", "wdk.sign.test")
 
     -- add flags for rule: wdk.tracewpp
     add_values("wdk.tracewpp.flags", "-func:TracePrint((LEVEL,FLAGS,MSG,...))")

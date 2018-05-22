@@ -44,9 +44,9 @@ rule("wdk.man")
         local wdk = target:data("wdk")
         
         -- get ctrpp
-        local ctrpp = path.join(wdk.bindir, arch, is_host("windows") and "ctrpp.exe" or "ctrpp")
+        local ctrpp = path.join(wdk.bindir, arch, "ctrpp.exe")
         if not os.isexec(ctrpp) then
-            ctrpp = path.join(wdk.bindir, wdk.sdkver, arch, is_host("windows") and "ctrpp.exe" or "ctrpp")
+            ctrpp = path.join(wdk.bindir, wdk.sdkver, arch, "ctrpp.exe")
         end
         assert(os.isexec(ctrpp), "ctrpp not found!")
         
