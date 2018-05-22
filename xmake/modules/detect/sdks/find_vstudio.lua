@@ -145,19 +145,43 @@ function main()
     ,   ["5.0"]  = "VS50COMNTOOLS"
     ,   ["4.2"]  = "VS42COMNTOOLS"
     }
+
+    -- find vs from environment variables 
+    local VCInstallDir = os.getenv("VCInstallDir")
+    local VisualStudioVersion = os.getenv("VisualStudioVersion")
+    if VCInstallDir and VisualStudioVersion then
+
+        -- find vcvarsall.bat
+        local vcvarsall = path.join(VCInstallDir, "Auxiliary", "Build", "vcvarsall.bat")
+        if os.isfile(vcvarsall) then
+
+            -- load vcvarsall
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86")
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64")
+
+            -- save results
+            local results = {}
+            results[vsvers[VisualStudioVersion]] = {version = VisualStudioVersion, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
+            return results 
+        end
+    end
     
     -- find vs2017 -> vs4.2
     local results = {}
     for _, version in ipairs({"15.0", "14.0", "12.0", "11.0", "10.0", "9.0", "8.0", "7.1", "7.0", "6.0", "5.0", "4.2"}) do
 
-        -- find vcvarsall.bat
-        local vcvarsall = find_file("vcvarsall.bat", {format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
-                                                      format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
-                                                      format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
-                                                      format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
-                                                      format("$(env %s)\\..\\..\\VC", vsenvs[version] or "")})
+        -- init pathes
+        local pathes = 
+        {
+            format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
+            format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
+            format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
+            format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
+            format("$(env %s)\\..\\..\\VC", vsenvs[version] or "")
+        }
 
-        -- found?
+        -- find vcvarsall.bat
+        local vcvarsall = find_file("vcvarsall.bat", pathes)
         if vcvarsall then
 
             -- load vcvarsall
