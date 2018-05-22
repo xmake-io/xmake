@@ -134,6 +134,7 @@ function kmdf_driver(target)
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km", "crt"))
     target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
 
     -- add link directories
@@ -224,6 +225,7 @@ function wdm_driver(target)
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
+    target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km", "crt"))
     target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
 
     -- add link directories
