@@ -34,6 +34,7 @@ rule("wdk.sign.test")
         -- imports
         import("core.base.option")
         import("core.project.config")
+        import("lib.detect.find_file")
 
         -- trace progress info
         cprintf("${green}[%02d%%]:${clear} ", opt.progress)
@@ -56,6 +57,16 @@ rule("wdk.sign.test")
         end
         assert(os.isexec(signtool), "signtool not found!")
 
+        -- get inf2cat
+        local inf2cat = path.join(wdk.bindir, arch, "inf2cat.exe")
+        if not os.isexec(inf2cat) then
+            inf2cat = path.join(wdk.bindir, wdk.sdkver, arch, "inf2cat.exe")
+        end
+        if not os.isexec(inf2cat) then
+            inf2cat = path.join(wdk.bindir, wdk.sdkver, "x86", "inf2cat.exe")
+        end
+        assert(os.isexec(inf2cat), "inf2cat not found!")
+
         -- try to get certificate info
         local certinfo = try 
         {
@@ -71,8 +82,32 @@ rule("wdk.sign.test")
         end
 
         -- get thumbprint from certificate info
-        local thumbprint = certinfo:match("sha1.-: (%w+)")
-        print(thumbprint)
+        local thumbprint = (certinfo:match("sha1.-: (%w+)") or ""):trim()
+        assert(#thumbprint > 0, "cannot get thumbprint of certificate!")
+
+        -- sign the target file
+        os.vrunv(signtool, {"sign", "/ph", "/sha1", thumbprint, target:targetfile()})
+
+        -- get inf file
+        local infile = target:data("wdk.sign.inf")
+        if not infile or not os.isfile(infile) then
+            vprint("Inf2Cat task was skipped as there were no inf files to process")
+            return 
+        end
+
+        -- do inf2cat
+        local inf2cat_dir = path.directory(target:targetfile())
+        local inf2cat_argv = {"/driver:" .. inf2cat_dir}
+        local inf2cat_os = target:values("wdk.inf2cat.os") or {"10_" .. config.arch()} -- TODO 7_, 8_ .. ?
+        table.insert(inf2cat_argv, "/os:" .. table.concat(table.wrap(inf2cat_os), ','))
+        os.vrunv(inf2cat, inf2cat_argv)
+
+        -- get *.cat file path from the output directory
+        local catfile = find_file("*.cat", inf2cat_dir)
+        assert(catfile, "*.cat not found!")
+
+        -- sign *.cat file
+        os.vrunv(signtool, {"sign", "/ph", "/sha1", thumbprint, catfile})
     end)
 
 

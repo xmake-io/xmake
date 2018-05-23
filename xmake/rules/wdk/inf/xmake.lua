@@ -64,8 +64,11 @@ rule("wdk.inf")
         -- add clean files
         target:data_add("wdk.cleanfiles", targetfile)
 
+        -- save this target file for signing (wdk.sign.* rules)
+        target:data_set("wdk.sign.inf", targetfile)
+
         -- init args
-        local args = {"-d", "*", "-a", is_arch("x64") and "arm64" or "x86", "-v", "*"}
+        local args = {"-d", "*", "-a", is_arch("x64") and "amd64" or "x86", "-v", "*"}
         local flags = target:values("wdk.inf.flags", sourcefile)
         if flags then
             table.join2(args, flags)

@@ -9,7 +9,7 @@ add_defines("_UNICODE", "UNICODE")
 target("skeleton")
 
     -- add rules
-    add_rules("wdk.umdf.driver")
+    add_rules("wdk.umdf.driver", "wdk.sign.test")
 
     -- add flags fro tracewpp
     add_values("wdk.tracewpp.flags", "-scan:internal.h")

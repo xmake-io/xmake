@@ -9,7 +9,7 @@ add_defines("_UNICODE", "UNICODE")
 target("echo")
 
     -- add rules
-    add_rules("wdk.umdf.driver")
+    add_rules("wdk.umdf.driver", "wdk.sign.test")
 
     -- add files
     add_files("driver/*.c") 
