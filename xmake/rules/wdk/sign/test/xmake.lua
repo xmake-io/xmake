@@ -34,7 +34,19 @@ rule("wdk.sign.test")
         -- imports
         import("core.base.option")
         import("core.project.config")
+        import("core.project.depend")
         import("lib.detect.find_file")
+
+        -- need build this object?
+        local tempfile = os.tmpfile(target:targetfile())
+        local dependfile = tempfile .. ".d"
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(tempfile)}) then
+            return 
+        end
+
+        -- add clean files
+        target:data_add("wdk.cleanfiles", {tempfile, dependfile})
 
         -- trace progress info
         cprintf("${green}[%02d%%]:${clear} ", opt.progress)
@@ -90,24 +102,30 @@ rule("wdk.sign.test")
 
         -- get inf file
         local infile = target:data("wdk.sign.inf")
-        if not infile or not os.isfile(infile) then
+        if infile and os.isfile(infile) then
+
+            -- do inf2cat
+            local inf2cat_dir = path.directory(target:targetfile())
+            local inf2cat_argv = {"/driver:" .. inf2cat_dir}
+            local inf2cat_os = target:values("wdk.inf2cat.os") or {"XP_" .. arch, "7_" .. arch, "8_" .. arch, "10_" .. arch}
+            table.insert(inf2cat_argv, "/os:" .. table.concat(table.wrap(inf2cat_os), ','))
+            os.vrunv(inf2cat, inf2cat_argv)
+
+            -- get *.cat file path from the output directory
+            local catfile = find_file("*.cat", inf2cat_dir)
+            assert(catfile, "*.cat not found!")
+
+            -- sign *.cat file
+            os.vrunv(signtool, {"sign", "/ph", "/sha1", thumbprint, catfile})
+        else
+            -- trace
             vprint("Inf2Cat task was skipped as there were no inf files to process")
-            return 
         end
 
-        -- do inf2cat
-        local inf2cat_dir = path.directory(target:targetfile())
-        local inf2cat_argv = {"/driver:" .. inf2cat_dir}
-        local inf2cat_os = target:values("wdk.inf2cat.os") or {"XP_" .. arch, "7_" .. arch, "8_" .. arch, "10_" .. arch}
-        table.insert(inf2cat_argv, "/os:" .. table.concat(table.wrap(inf2cat_os), ','))
-        os.vrunv(inf2cat, inf2cat_argv)
-
-        -- get *.cat file path from the output directory
-        local catfile = find_file("*.cat", inf2cat_dir)
-        assert(catfile, "*.cat not found!")
-
-        -- sign *.cat file
-        os.vrunv(signtool, {"sign", "/ph", "/sha1", thumbprint, catfile})
+        -- update files and values to the dependent file
+        dependinfo.files = {target:targetfile()}
+        depend.save(dependinfo, dependfile)
+        io.writefile(tempfile, "")
     end)
 
 
