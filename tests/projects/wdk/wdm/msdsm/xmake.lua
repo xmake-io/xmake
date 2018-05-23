@@ -3,7 +3,7 @@
 add_rules("mode.debug", "mode.release")
 
 -- add target
-target("msdsm")
+target("sampledsm")
 
     -- add rules
     add_rules("wdk.wdm.driver", "wdk.sign.test")

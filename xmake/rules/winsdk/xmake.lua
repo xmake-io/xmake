@@ -32,7 +32,17 @@ rule("win.sdk.application")
         target:set("kind", "binary")
 
         -- set subsystem: windows
-        target:add("ldflags", "-subsystem:windows", {force = true})
+        local subsystem = false
+        for _, ldflag in ipairs(target:get("ldflags")) do
+            ldflag = ldflag:lower()
+            if ldflag:find("[/%-]subsystem:") then
+                subsystem = true
+                break
+            end
+        end
+        if not subsystem then
+            target:add("ldflags", "-subsystem:windows", {force = true})
+        end
 
         -- add links
         target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")

@@ -55,17 +55,6 @@ rule("wdk.kmdf.driver")
         import("load").kmdf_driver(target)
     end)
 
--- define rule: kmdf binary
-rule("wdk.kmdf.binary")
-
-    -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
-
-    -- on load
-    on_load(function (target)
-        import("load").kmdf_binary(target)
-    end)
-
     -- after build
     after_build(function (target)
 
@@ -82,6 +71,16 @@ rule("wdk.kmdf.binary")
         target:data_add("wdk.cleanfiles", os.files(path.join(target:targetdir(), "*.dll")))
     end)
 
+-- define rule: kmdf binary
+rule("wdk.kmdf.binary")
+
+    -- add rules
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+
+    -- on load
+    on_load(function (target)
+        import("load").kmdf_binary(target)
+    end)
 
 -- define rule: wdm driver
 rule("wdk.wdm.driver")

@@ -3,7 +3,7 @@
 add_rules("mode.debug", "mode.release")
 
 -- add target
-target("serial")
+target("wdfserial")
 
     -- add rules
     add_rules("wdk.kmdf.driver", "wdk.sign.test")

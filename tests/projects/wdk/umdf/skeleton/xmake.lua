@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 add_defines("_UNICODE", "UNICODE")
 
 -- add target
-target("skeleton")
+target("UMDFSkeleton")
 
     -- add rules
     add_rules("wdk.umdf.driver", "wdk.sign.test")
