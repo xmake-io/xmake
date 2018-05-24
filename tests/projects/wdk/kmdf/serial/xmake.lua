@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("wdfserial")
 
     -- add rules
-    add_rules("wdk.kmdf.driver", "wdk.sign.test")
+    add_rules("wdk.kmdf.driver")
 
     -- add flags for rule: wdk.tracewpp
     add_values("wdk.tracewpp.flags", "-func:SerialDbgPrintEx(LEVEL,FLAGS,MSG,...)")

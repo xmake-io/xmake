@@ -9,7 +9,7 @@ add_includedirs(".")
 target("nonpnp")
 
     -- add rules
-    add_rules("wdk.kmdf.driver", "wdk.sign.test")
+    add_rules("wdk.kmdf.driver")
 
     -- add flags for rule: wdk.tracewpp
     add_values("wdk.tracewpp.flags", "-func:TraceEvents(LEVEL,FLAGS,MSG,...)", "-func:Hexdump((LEVEL,FLAGS,MSG,...))")
