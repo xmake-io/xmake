@@ -64,7 +64,7 @@ rule("wdk.inf")
         -- add clean files
         target:data_add("wdk.cleanfiles", targetfile)
 
-        -- save this target file for signing (wdk.sign.* rules)
+        -- save this target file for signing (wdk.sign.*, wdk.package.* rules)
         target:data_set("wdk.sign.inf", targetfile)
 
         -- init args
