@@ -27,7 +27,8 @@
 -- values:
 --   - wdk.sign.enabled:   true/false (default: true)
 --   - wdk.sign.mode:      test/release (default: test)
---   - wdk.sign.company:   tboox.org
+--   - wdk.sign.company:   tboox.org (for release signing)
+--   - wdk.sign.certfile:  signcert.cer (for release signing)
 --   - wdk.sign.timestamp: http://timestamp.verisign.com/scripts/timstamp.dll
 --
 rule("wdk.sign")

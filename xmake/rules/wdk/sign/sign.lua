@@ -24,14 +24,18 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("core.project.config")
 
--- get sign tool
-function _get_signtool(target)
+-- get tool
+function _get_tool(target, name)
+
+    -- init cache
+    _g.tools = _g.tools or {}
 
     -- get it from the cache
-    local signtool = _g.signtool
-    if not signtool then
+    local tool = _g.tools[name]
+    if not tool then
 
         -- get wdk
         local wdk = target:data("wdk")
@@ -39,15 +43,15 @@ function _get_signtool(target)
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
 
-        -- get signtool
-        signtool = path.join(wdk.bindir, arch, "signtool.exe")
-        if not os.isexec(signtool) then
-            signtool = path.join(wdk.bindir, wdk.sdkver, arch, "signtool.exe")
+        -- get tool
+        tool = path.join(wdk.bindir, arch, name .. ".exe")
+        if not os.isexec(tool) then
+            tool = path.join(wdk.bindir, wdk.sdkver, arch, name .. ".exe")
         end
-        assert(os.isexec(signtool), "signtool not found!")
-        _g.signtool = signtool
+        assert(os.isexec(tool), name .. " not found!")
+        _g.tools[name] = tool
     end
-    return signtool
+    return tool
 end
 
 -- get thumbprint
@@ -79,6 +83,76 @@ function _get_thumbprint(target)
     return thumbprint
 end
 
+-- do test sign
+function _sign_test(target, filepath)
+
+    -- get signtool
+    local signtool = _get_tool(target, "signtool")
+
+    -- get makecert
+    local makecert = _get_tool(target, "makecert")
+
+    -- get certmgr
+    local certmgr = _get_tool(target, "certmgr")
+
+    -- get a test certificate
+    local testcer = path.join(global.directory(), "sign", "test.cer")
+    local company = "tboox.org(test)"
+    local timestamp = target:values("wdk.sign.timestamp") or "http://timestamp.verisign.com/scripts/timestamp.dll"
+    if not os.isfile(testcer) then
+
+        -- make a new test certificate
+        local signdir = path.directory(testcer)
+        if not os.isdir(signdir)  then
+            os.mkdir(signdir)
+        end
+        os.vrunv(makecert, {"-r", "-pe", "-ss", "PrivateCertStore", "-n", "CN=" .. company, testcer})
+
+        -- register this test certificate
+        try 
+        {
+            function ()
+                os.vrunv(certmgr, {"/add", testcer, "/s", "/r", "localMachine", "root"})
+                os.vrunv(certmgr, {"/add", testcer, "/s", "/r", "localMachine", "trustedpublisher"})
+            end,
+            catch
+            {
+                function (errors)
+                    os.tryrm(testcer)
+                    raise(errors)
+                end
+            }
+        }
+
+        -- TODO enable test signing
+        -- bcdedit.exe /set TESTSIGNING [ON|OFF]
+    end
+
+    -- do sign
+    os.vrunv(signtool, {"sign", "/a", "/v", "/s", "PrivateCertStore", "/n", company, "/t", timestamp, filepath})
+end
+
+-- do release sign
+function _sign_release(target, filepath)
+
+    -- get signtool
+    local signtool = _get_tool(target, "signtool")
+
+    -- get *.cer file
+    local cerfile = target:values("wdk.sign.cerfile") 
+    assert(cerfile, "please call set_values(\"wdk.sign.cerfile\", ...) to set *.cer file for release signing!")
+
+    -- get company
+    local company = target:values("wdk.sign.company") 
+    assert(company, "please call set_values(\"wdk.sign.company\", ...) to set company for release signing!")
+
+    -- get timestamp
+    local timestamp = target:values("wdk.sign.timestamp") or "http://timestamp.verisign.com/scripts/timestamp.dll"
+
+    -- do sign
+    os.vrunv(signtool, {"sign", "/v", "/ac", cerfile, "/n", company, "/t", timestamp, filepath})
+end
+
 -- do sign
 function main(target, filepath, mode)
 
@@ -88,12 +162,10 @@ function main(target, filepath, mode)
         return 
     end
 
-    -- get signtool
-    local signtool = _get_signtool(target)
-
-    -- get thumbprint
-    local thumbprint = _get_thumbprint(target)
-
-    -- sign the target file
-    os.vrunv(signtool, {"sign", "/ph", "/sha1", thumbprint, filepath})
+    -- do sign
+    if mode == "test" then
+        _sign_test(target, filepath)
+    else 
+        _sign_release(target, filepath)
+    end
 end
