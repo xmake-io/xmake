@@ -123,9 +123,6 @@ function _sign_test(target, filepath)
                 end
             }
         }
-
-        -- TODO enable test signing
-        -- bcdedit.exe /set TESTSIGNING [ON|OFF]
     end
 
     -- do sign
@@ -156,16 +153,10 @@ end
 -- do sign
 function main(target, filepath, mode)
 
-    -- sign is disabled?
-    local enabled = target:values("wdk.sign.enabled")
-    if enabled == false then
-        return 
-    end
-
     -- do sign
     if mode == "test" then
         _sign_test(target, filepath)
-    else 
+    elseif mode == "release" then
         _sign_release(target, filepath)
     end
 end

@@ -25,8 +25,7 @@
 -- define rule: sign
 --
 -- values:
---   - wdk.sign.enabled:   true/false (default: true)
---   - wdk.sign.mode:      test/release (default: test)
+--   - wdk.sign.mode:      nosign/test/release (default: nosign)
 --   - wdk.sign.company:   tboox.org (for release signing)
 --   - wdk.sign.certfile:  signcert.cer (for release signing)
 --   - wdk.sign.timestamp: http://timestamp.verisign.com/scripts/timstamp.dll
@@ -79,7 +78,10 @@ rule("wdk.sign")
         end
 
         -- get sign mode
-        local signmode = target:values("wdk.sign.mode") or "test"
+        local signmode = target:values("wdk.sign.mode") 
+        if not signmode then
+            return 
+        end
 
         -- add clean files
         target:data_add("wdk.cleanfiles", {tempfile, dependfile})
