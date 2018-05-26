@@ -11,6 +11,13 @@ target("echo")
     -- add rules
     add_rules("wdk.umdf.driver")
 
+    -- set test sign
+--    set_values("wdk.sign.mode", "test")
+
+    -- set release sign
+--    set_values("wdk.sign.mode", "release")
+--    set_values("wdk.sign.certfile", path.join(os.projectdir(), "xxx.cer"))
+
     -- add files
     add_files("driver/*.c") 
     add_files("driver/*.inx")

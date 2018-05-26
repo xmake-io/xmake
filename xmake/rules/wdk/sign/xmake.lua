@@ -25,10 +25,12 @@
 -- define rule: sign
 --
 -- values:
---   - wdk.sign.mode:      nosign/test/release (default: nosign)
---   - wdk.sign.company:   tboox.org (for release signing)
---   - wdk.sign.certfile:  signcert.cer (for release signing)
---   - wdk.sign.timestamp: http://timestamp.verisign.com/scripts/timstamp.dll
+--   - wdk.sign.mode:       nosign/test/release (default: nosign)
+--   - wdk.sign.store:      PrivateCertStore 
+--   - wdk.sign.thumbprint: 032122545DCAA6167B1ADBE5F7FDF07AE2234AAA
+--   - wdk.sign.company:    tboox.org
+--   - wdk.sign.certfile:   signcert.cer 
+--   - wdk.sign.timestamp:  http://timestamp.verisign.com/scripts/timstamp.dll
 --
 rule("wdk.sign")
 
@@ -57,6 +59,21 @@ rule("wdk.sign")
         end
         assert(os.isexec(inf2cat), "inf2cat not found!")
         target:data_set("wdk.sign.inf2cat", inf2cat)
+
+        -- check
+        local mode = target:values("wdk.sign.mode")
+        local store = target:values("wdk.sign.store")
+        local certfile = target:values("wdk.sign.certfile")
+        local thumbprint = target:values("wdk.sign.thumbprint")
+        if mode and (not certfile and not thumbprint and not store) then
+            if mode == "test" then
+                raise([[please first select one following step for signing:
+1. run `$xmake l utils.wdk.testsign install` as admin in console (only once) or
+2. add set_values(\"wdk.sign.[certfile|store|thumbprint]\", ...) in xmake.lua]], mode)
+            else
+                raise("please add set_values(\"wdk.sign.[certfile|store|thumbprint]\", ...) for %s signing!", mode)
+            end
+        end
     end)
 
     -- after build

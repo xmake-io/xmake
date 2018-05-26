@@ -54,109 +54,53 @@ function _get_tool(target, name)
     return tool
 end
 
--- get thumbprint
-function _get_thumbprint(target)
-
-    -- get it from the cache
-    local thumbprint = _g.thumbprint
-    if not thumbprint then
-
-        -- try to get certificate info
-        local certinfo = try 
-        {
-            function ()
-                return os.iorun("certutil -store -user my")
-            end
-        }
-        assert(certinfo, "cannot get certificate info in local machine!")
-
-        -- trace certificate info
-        if option.get("verbose") then
-            print(certinfo)
-        end
-
-        -- get thumbprint from certificate info
-        thumbprint = (certinfo:match("sha1.-: (%w+)") or ""):trim()
-        assert(#thumbprint > 0, "cannot get thumbprint of certificate!")
-        _g.thumbprint = thumbprint
-    end
-    return thumbprint
-end
-
--- do test sign
-function _sign_test(target, filepath)
+-- do sign
+function main(target, filepath, mode)
 
     -- get signtool
     local signtool = _get_tool(target, "signtool")
-
-    -- get makecert
-    local makecert = _get_tool(target, "makecert")
-
-    -- get certmgr
-    local certmgr = _get_tool(target, "certmgr")
-
-    -- get a test certificate
-    local testcer = path.join(global.directory(), "sign", "test.cer")
-    local company = "tboox.org(test)"
-    local timestamp = target:values("wdk.sign.timestamp") or "http://timestamp.verisign.com/scripts/timestamp.dll"
-    if not os.isfile(testcer) then
-
-        -- make a new test certificate
-        local signdir = path.directory(testcer)
-        if not os.isdir(signdir)  then
-            os.mkdir(signdir)
-        end
-        os.vrunv(makecert, {"-r", "-pe", "-ss", "PrivateCertStore", "-n", "CN=" .. company, testcer})
-
-        -- register this test certificate
-        try 
-        {
-            function ()
-                os.vrunv(certmgr, {"/add", testcer, "/s", "/r", "localMachine", "root"})
-                os.vrunv(certmgr, {"/add", testcer, "/s", "/r", "localMachine", "trustedpublisher"})
-            end,
-            catch
-            {
-                function (errors)
-                    os.tryrm(testcer)
-                    raise(errors)
-                end
-            }
-        }
-    end
-
-    -- do sign
-    os.vrunv(signtool, {"sign", "/a", "/v", "/s", "PrivateCertStore", "/n", company, "/t", timestamp, filepath})
-end
-
--- do release sign
-function _sign_release(target, filepath)
-
-    -- get signtool
-    local signtool = _get_tool(target, "signtool")
-
-    -- get *.cer file
-    local cerfile = target:values("wdk.sign.cerfile") 
-    assert(cerfile, "please call set_values(\"wdk.sign.cerfile\", ...) to set *.cer file for release signing!")
-
-    -- get company
-    local company = target:values("wdk.sign.company") 
-    assert(company, "please call set_values(\"wdk.sign.company\", ...) to set company for release signing!")
 
     -- get timestamp
     local timestamp = target:values("wdk.sign.timestamp") or "http://timestamp.verisign.com/scripts/timestamp.dll"
 
-    -- do sign
-    os.vrunv(signtool, {"sign", "/v", "/ac", cerfile, "/n", company, "/t", timestamp, filepath})
-end
-
--- do sign
-function main(target, filepath, mode)
-
-    -- do sign
-    if mode == "test" then
-        _sign_test(target, filepath)
-    elseif mode == "release" then
-        _sign_release(target, filepath)
+    -- init arguments
+    local argv = {"sign", "/v", "/t", timestamp}
+    local company = target:values("wdk.sign.company") 
+    if company then
+        table.insert(argv, "/n")
+        table.insert(argv, company)
     end
+    local certfile = target:values("wdk.sign.certfile") 
+    if certfile then
+        table.insert(argv, "/ac")
+        table.insert(argv, certfile)
+    end
+    local thumbprint = target:values("wdk.sign.thumbprint")
+    if thumbprint then
+        table.insert(argv, "/sha1")
+        table.insert(argv, thumbprint)
+    end
+    local store = target:values("wdk.sign.store")
+    if not store and mode == "test" then
+    end
+    if store then
+        table.insert(argv, "/a")
+        table.insert(argv, "/s")
+        table.insert(argv, store)
+    end
+
+    -- uses the default test certificate
+    if mode == "test" and (not certfile and not thumbprint and not store) then
+        table.insert(argv, "/a")
+        table.insert(argv, "/n")
+        table.insert(argv, "tboox.org(test)")
+        table.insert(argv, "/s")
+        table.insert(argv, "PrivateCertStore")
+    end
+
+    -- add target file
+    table.insert(argv, filepath)
+
+    -- do sign
+    os.vrunv(signtool, argv)
 end
