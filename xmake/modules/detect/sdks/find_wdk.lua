@@ -28,6 +28,7 @@ import("lib.detect.find_file")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("detect.sdks.find_vstudio")
 
 -- find WDK directory
 function _find_sdkdir(sdkdir)
@@ -39,8 +40,19 @@ function _find_sdkdir(sdkdir)
 
     -- get sdk directory from vsvars
     if not sdkdir then
-        local arch = config.arch()
+        local arch = config.arch() or os.arch()
         local vcvarsall = config.get("__vcvarsall")
+        if not vcvarsall then
+            local vstudio = find_vstudio()
+            if vstudio then
+                for _, vsinfo in pairs(vstudio) do
+                    if vsinfo.vcvarsall then
+                        vcvarsall = vsinfo.vcvarsall
+                        break
+                    end
+                end
+            end
+        end
         if vcvarsall then
             sdkdir = (vcvarsall[arch] or {}).WindowsSdkDir
         end
@@ -58,7 +70,7 @@ function _find_umdfver(libdir, includedir)
     end
 
     -- find version
-    local arch = config.arch()
+    local arch = config.arch() or os.arch()
     if arch then
         for _, ver in ipairs(versions) do
             if os.isfile(path.join(libdir, "wdf", "umdf", arch, ver, "WdfDriverStubUm.lib")) then
@@ -78,7 +90,7 @@ function _find_kmdfver(libdir, includedir)
     end
 
     -- find version
-    local arch = config.arch()
+    local arch = config.arch() or os.arch()
     if arch then
         for _, ver in ipairs(versions) do
             if os.isfile(path.join(libdir, "wdf", "kmdf", arch, ver, "wdfdriverentry.lib")) then

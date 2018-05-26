@@ -42,6 +42,7 @@ rule("wdk.sign")
 
         -- imports
         import("core.project.config")
+        import("utils.wdk.testcert")
 
         -- get wdk
         local wdk = target:data("wdk")
@@ -67,9 +68,19 @@ rule("wdk.sign")
         local thumbprint = target:values("wdk.sign.thumbprint")
         if mode and (not certfile and not thumbprint and not store) then
             if mode == "test" then
-                raise([[please first select one following step for signing:
-1. run `$xmake l utils.wdk.testsign install` as admin in console (only once) or
+                -- attempt to install test certificate first
+                local ok = try
+                {
+                    function ()
+                        testcert("install")
+                        return true
+                    end
+                }
+                if not ok then
+                    raise([[please first select one following step for signing:
+1. run `$xmake l utils.wdk.testcert install` as admin in console (only once) or
 2. add set_values(\"wdk.sign.[certfile|store|thumbprint]\", ...) in xmake.lua]], mode)
+                end
             else
                 raise("please add set_values(\"wdk.sign.[certfile|store|thumbprint]\", ...) for %s signing!", mode)
             end
