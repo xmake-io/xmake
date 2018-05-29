@@ -24,46 +24,51 @@
 
 -- imports
 import("core.project.config")
+import("utils.os.winver", {alias = "os_winver"})
 
--- get windows version defined value
-function _winver_defval(winver)
+-- get windows version value
+function _winver(winver)
+    return os_winver.value(winver or "") or "0x0A00"
+end
 
-    -- make defined values
-    local defvals = 
-    {
-        ["10"]  = "0x0A00"
-    ,   ["8.1"] = "0x0603"
-    ,   ["8"]   = "0x0602"
-    ,   ["7"]   = "0x0601"
-    }
-    return defvals[winver or ""] or "0x0A00"
+-- get windows ntddi version value
+function _winver_ntddi(winver)
+    return os_winver.value_ntddi(winver or "") or "0x0A000000"
 end
 
 -- get subsystem version defined value
-function _subsystem_verval(winver)
+function _winver_subsystem(winver)
+
+    -- ignore the subname with '_xxx'
+    winver = (winver or ""):split('_')[1]
 
     -- make defined values
     local defvals = 
     {
-        ["10"]  = "10.00"
-    ,   ["8.1"] = "6.03"
-    ,   ["8"]   = "6.02"
-    ,   ["7"]   = "6.01"
+        win10   = "10.00" 
+    ,   win81   = "6.03" 
+    ,   winblue = "6.03"  
+    ,   win8    = "6.02"
+    ,   win7    = "6.01" 
     }
-    return defvals[winver or ""] or "10.00"
+    return defvals[winver] or "10.00"
 end
 
 -- get version of the library sub-directory 
-function _libdir_verval(winver)
+function _winver_libdir(winver)
+
+    -- ignore the subname with '_xxx'
+    winver = (winver or ""):split('_')[1]
 
     -- make defined values
     local vervals = 
     {
-        ["8.1"] = "winv6.3"
-    ,   ["8"]   = "win8"
-    ,   ["7"]   = "win7"
+        win81   = "winv6.3" 
+    ,   winblue = "winv6.3" 
+    ,   win8    = "win8"  
+    ,   win7    = "win7"  
     }
-    return vervals[winver or ""] 
+    return vervals[winver] 
 end
 
 -- load for umdf driver
@@ -80,7 +85,6 @@ function umdf_driver(target)
 
     -- add defines
     local winver  = target:values("wdk.env.winver")
-    local verdef  = _winver_defval(winver)
     local umdfver = wdk.umdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -91,7 +95,7 @@ function umdf_driver(target)
     end
     target:add("defines", "UMDF_VERSION_MAJOR=" .. umdfver[1], "UMDF_VERSION_MINOR=" .. umdfver[2], "UMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. verdef, "WINVER=" .. verdef, "NTDDI_VERSION=" .. verdef .. "0000")
+    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
@@ -106,7 +110,7 @@ function umdf_driver(target)
     target:add("shflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
 
     -- add subsystem
-    target:add("shflags", "-subsystem:windows," .. _subsystem_verval(winver), {force = true})
+    target:add("shflags", "-subsystem:windows," .. _winver_subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
     local entry = false
@@ -136,7 +140,6 @@ function umdf_binary(target)
 
     -- add defines
     local winver = target:values("wdk.env.winver")
-    local verdef = _winver_defval(winver)
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
     else
@@ -144,7 +147,7 @@ function umdf_binary(target)
         target:add("defines", "_ATL_NO_WIN_SUPPORT", "_CRT_USE_WINAPI_PARTITION_APP")
     end
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. verdef, "WINVER=" .. verdef, "NTDDI_VERSION=" .. verdef .. "0000")
+    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
@@ -176,7 +179,6 @@ function kmdf_driver(target)
 
     -- add defines
     local winver  = target:values("wdk.env.winver")
-    local verdef  = _winver_defval(winver)
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -186,7 +188,7 @@ function kmdf_driver(target)
     end
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. verdef, "WINVER=" .. verdef, "NTDDI_VERSION=" .. verdef .. "0000")
+    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
@@ -194,7 +196,7 @@ function kmdf_driver(target)
     target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
 
     -- add link directories
-    local libdirver = _libdir_verval(winver)
+    local libdirver = _winver_libdir(winver)
     if libdirver then
         target:add("linkdirs", path.join(wdk.libdir, libdirver, "km", arch))
     end
@@ -209,7 +211,7 @@ function kmdf_driver(target)
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
     -- add subsystem    
-    target:add("ldflags", "-subsystem:native," .. _subsystem_verval(winver), {force = true})
+    target:add("ldflags", "-subsystem:native," .. _winver_subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
     local entry = false
@@ -240,7 +242,6 @@ function kmdf_binary(target)
 
     -- add defines
     local winver  = target:values("wdk.env.winver")
-    local verdef  = _winver_defval(winver)
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -249,14 +250,14 @@ function kmdf_binary(target)
     end
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2])
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. verdef, "WINVER=" .. verdef, "NTDDI_VERSION=" .. verdef .. "0000")
+    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
     target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
 
     -- add link directories
-    local libdirver = _libdir_verval(winver)
+    local libdirver = _winver_libdir(winver)
     if libdirver then
         target:add("linkdirs", path.join(wdk.libdir, libdirver, "km", arch))
     end
@@ -285,7 +286,6 @@ function wdm_driver(target)
 
     -- add defines
     local winver  = target:values("wdk.env.winver")
-    local verdef  = _winver_defval(winver)
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -295,7 +295,7 @@ function wdm_driver(target)
     end
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. verdef, "WINVER=" .. verdef, "NTDDI_VERSION=" .. verdef .. "0000")
+    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
@@ -303,7 +303,7 @@ function wdm_driver(target)
     target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
 
     -- add link directories
-    local libdirver = _libdir_verval(winver)
+    local libdirver = _winver_libdir(winver)
     if libdirver then
         target:add("linkdirs", path.join(wdk.libdir, libdirver, "km", arch))
     end
@@ -318,7 +318,7 @@ function wdm_driver(target)
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
     -- add subsystem    
-    target:add("ldflags", "-subsystem:native," .. _subsystem_verval(winver), {force = true})
+    target:add("ldflags", "-subsystem:native," .. _winver_subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
     local entry = false
@@ -348,7 +348,6 @@ function wdm_binary(target)
 
     -- add defines
     local winver  = target:values("wdk.env.winver")
-    local verdef  = _winver_defval(winver)
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -357,14 +356,14 @@ function wdm_binary(target)
     end
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2])
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. verdef, "WINVER=" .. verdef, "NTDDI_VERSION=" .. verdef .. "0000")
+    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
     target:add("includedirs", path.join(wdk.includedir, "wdf", "kmdf", wdk.kmdfver))
 
     -- add link directories
-    local libdirver = _libdir_verval(winver)
+    local libdirver = _winver_libdir(winver)
     if libdirver then
         target:add("linkdirs", path.join(wdk.libdir, libdirver, "km", arch))
     end
