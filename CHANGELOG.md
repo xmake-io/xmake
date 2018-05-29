@@ -9,9 +9,10 @@
 * Add builtin rules: `mode:debug`, `mode:release`, `mode:profile` and `mode:check`
 * Add `is_mode`, `is_arch` and `is_plat` builtin apis in the custom scripts
 * Add color256 codes
-* [#160](https://github.com/tboox/xmake/issues/160): Add Qt compilation environment support and add `qt.console`, `qt.application` rules
+* [#160](https://github.com/tboox/xmake/issues/160): Support Qt compilation environment and add `qt.console`, `qt.application` rules
 * Add some Qt project templates
 * [#169](https://github.com/tboox/xmake/issues/169): Support yasm for linux, macosx and windows
+* [#159](https://github.com/tboox/xmake/issues/159): Support WDK driver compilation environment 
 
 ### Changes
 
@@ -464,6 +465,7 @@
 * [#160](https://github.com/tboox/xmake/issues/160): 增加对Qt SDK编译环境的跨平台支持，并且增加`qt.console`, `qt.application`等规则
 * 添加一些Qt工程模板
 * [#169](https://github.com/tboox/xmake/issues/169): 支持yasm汇编器
+* [#159](https://github.com/tboox/xmake/issues/159): 增加对WDK驱动编译环境支持
 
 ### 改进
 
