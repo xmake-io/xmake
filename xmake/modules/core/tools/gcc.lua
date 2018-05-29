@@ -47,13 +47,6 @@ function init(self)
     _g.shared          = {}
     _g.shared.cxflags  = {"-fPIC"}
 
-    -- suppress warning for clang (gcc -> clang on macosx) 
-    if self:has_flags("-Qunused-arguments") then
-        _g.cxflags = {"-Qunused-arguments"}
-        _g.mxflags = {"-Qunused-arguments"}
-        _g.asflags = {"-Qunused-arguments"}
-    end
-
     -- init flags map
     _g.mapflags = 
     {
