@@ -99,6 +99,13 @@ platform("windows")
                 ,   {category = "WDK Configuration"                                }
                 ,   {nil, "wdk",       "kv", "auto", "The WDK Directory"           }
                 ,   {nil, "wdk_sdkver","kv", "auto", "The WDK Version"             }
+                ,   {nil, "wdk_winver","kv", "auto", "The WDK Windows Version",
+                                                     "  - win10_rs3",
+                                                     "  - win10",
+                                                     "  - win81",
+                                                     "  - win8",
+                                                     "  - win7",
+                                                     "  - win7_[sp1|sp2|sp3]"      }
                 }
 
             ,   global = 

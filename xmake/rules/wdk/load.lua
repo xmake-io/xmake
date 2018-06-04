@@ -84,7 +84,7 @@ function umdf_driver(target)
     target:set("kind", "shared")
 
     -- add defines
-    local winver  = target:values("wdk.env.winver")
+    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     local umdfver = wdk.umdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -139,7 +139,7 @@ function umdf_binary(target)
     target:set("kind", "binary")
 
     -- add defines
-    local winver = target:values("wdk.env.winver")
+    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
     else
@@ -178,7 +178,7 @@ function kmdf_driver(target)
     target:set("filename", target:basename() .. ".sys")
 
     -- add defines
-    local winver  = target:values("wdk.env.winver")
+    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -241,7 +241,7 @@ function kmdf_binary(target)
     target:set("kind", "binary")
 
     -- add defines
-    local winver  = target:values("wdk.env.winver")
+    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -285,7 +285,7 @@ function wdm_driver(target)
     target:set("filename", target:basename() .. ".sys")
 
     -- add defines
-    local winver  = target:values("wdk.env.winver")
+    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
@@ -347,7 +347,7 @@ function wdm_binary(target)
     target:set("kind", "binary")
 
     -- add defines
-    local winver  = target:values("wdk.env.winver")
+    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     local kmdfver = wdk.kmdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
