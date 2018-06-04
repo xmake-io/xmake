@@ -22,37 +22,25 @@
 -- @file        xmake.lua
 --
 
--- define rule: umdf driver
-rule("wdk.umdf.driver")
+-- define rule: driver
+rule("wdk.driver")
 
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.sign", "wdk.package.cab")
 
     -- on load
     on_load(function (target)
-        import("load").umdf_driver(target)
-    end)
 
--- define rule: umdf binary
-rule("wdk.umdf.binary")
-
-    -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
-
-    -- on load
-    on_load(function (target)
-        import("load").umdf_binary(target)
-    end)
-
--- define rule: kmdf driver
-rule("wdk.kmdf.driver")
-
-    -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.sign", "wdk.package.cab")
-
-    -- on load
-    on_load(function (target)
-        import("load").kmdf_driver(target)
+        -- load environment
+        if target:rule("wdk.env.umdf") then
+            import("load").driver_umdf(target)
+        end
+        if target:rule("wdk.env.kmdf") then
+            import("load").driver_kmdf(target)
+        end
+        if target:rule("wdk.env.wdm") then
+            import("load").driver_wdm(target)
+        end
     end)
 
     -- after build
@@ -61,46 +49,69 @@ rule("wdk.kmdf.driver")
         -- imports
         import("core.project.config")
 
-        -- get wdk
-        local wdk = target:data("wdk")
+        -- copy redist files for kmdf
+        if target:rule("wdk.env.kmdf") then
 
-        -- copy wdf redist dll libraries (WdfCoInstaller01011.dll, ..) to the target directory
-        os.cp(path.join(wdk.sdkdir, "Redist", "wdf", config.arch(), "*.dll"), target:targetdir())
+            -- get wdk
+            local wdk = target:data("wdk")
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", os.files(path.join(target:targetdir(), "*.dll")))
+            -- copy wdf redist dll libraries (WdfCoInstaller01011.dll, ..) to the target directory
+            os.cp(path.join(wdk.sdkdir, "Redist", "wdf", config.arch(), "*.dll"), target:targetdir())
+
+            -- add clean files
+            target:data_add("wdk.cleanfiles", os.files(path.join(target:targetdir(), "*.dll")))
+        end
     end)
 
--- define rule: kmdf binary
-rule("wdk.kmdf.binary")
+-- define rule: binary
+rule("wdk.binary")
 
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
 
     -- on load
     on_load(function (target)
-        import("load").kmdf_binary(target)
+
+        -- set kind
+        target:set("kind", "binary")
+
+        -- add links
+        target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32")
+        target:add("links", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "setupapi")
     end)
 
--- define rule: wdm driver
-rule("wdk.wdm.driver")
-
-    -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.sign", "wdk.package.cab")
-
-    -- on load
-    on_load(function (target)
-        import("load").wdm_driver(target)
-    end)
-
--- define rule: wdm binary
-rule("wdk.wdm.binary")
+-- define rule: static
+rule("wdk.static")
 
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
 
     -- on load
     on_load(function (target)
-        import("load").wdm_binary(target)
+        
+        -- set kind
+        target:set("kind", "static")
+        
+        -- for kernel driver
+        if target:rule("wdk.env.kmdf") or target:rule("wdk.env.wdm") then
+            -- compile as kernel driver
+            target:add("cxflags", "-kernel", {force = true})
+        end
     end)
 
+-- define rule: shared
+rule("wdk.shared")
+
+    -- add rules
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+
+    -- on load
+    on_load(function (target)
+ 
+        -- set kind
+        target:set("kind", "shared")
+        
+        -- add links
+        target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32")
+        target:add("links", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "setupapi")
+    end)

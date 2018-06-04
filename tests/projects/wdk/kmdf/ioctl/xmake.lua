@@ -9,7 +9,7 @@ add_includedirs(".")
 target("nonpnp")
 
     -- add rules
-    add_rules("wdk.kmdf.driver")
+    add_rules("wdk.env.kmdf", "wdk.driver")
 
     -- add flags for rule: wdk.tracewpp
     add_values("wdk.tracewpp.flags", "-func:TraceEvents(LEVEL,FLAGS,MSG,...)", "-func:Hexdump((LEVEL,FLAGS,MSG,...))")
@@ -22,7 +22,7 @@ target("nonpnp")
 target("app")
 
     -- add rules
-    add_rules("wdk.kmdf.binary")
+    add_rules("wdk.env.kmdf", "wdk.binary")
 
     -- add files
     add_files("exe/*.c") 

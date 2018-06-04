@@ -67,3 +67,35 @@ rule("wdk.env")
         target:data_set("wdk.cleanfiles", nil)
     end)
 
+-- define rule: umdf 
+rule("wdk.env.umdf")
+
+    -- add rules
+    add_deps("wdk.env")
+
+    -- on load
+    on_load(function (target)
+        import("load").umdf(target)
+    end)
+
+-- define rule: kmdf 
+rule("wdk.env.kmdf")
+
+    -- add rules
+    add_deps("wdk.env")
+
+    -- on load
+    on_load(function (target)
+        import("load").kmdf(target)
+    end)
+
+-- define rule: wdm 
+rule("wdk.env.wdm")
+
+    -- add rules
+    add_deps("wdk.env")
+
+    -- on load
+    on_load(function (target)
+        import("load").wdm(target)
+    end)

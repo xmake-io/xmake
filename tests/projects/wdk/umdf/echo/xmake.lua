@@ -9,7 +9,7 @@ add_defines("_UNICODE", "UNICODE")
 target("echo")
 
     -- add rules
-    add_rules("wdk.umdf.driver")
+    add_rules("wdk.env.umdf", "wdk.driver")
 
     -- set test sign
 --    set_values("wdk.sign.mode", "test")
@@ -29,7 +29,7 @@ target("echo")
 target("app")
 
     -- add rules
-    add_rules("wdk.umdf.binary")
+    add_rules("wdk.env.umdf", "wdk.binary")
 
     -- add files
     add_files("exe/*.cpp") 

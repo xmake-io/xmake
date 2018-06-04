@@ -75,7 +75,7 @@ rule("wdk.inf")
         end
         local wdk = target:data("wdk")
         if wdk then
-            if wdk.kmdfver and (target:rule("wdk.kmdf.driver") or target:rule("wdk.kmdf.binary") or target:rule("wdk.wdm.driver") or target:rule("wdk.wdm.binary")) then
+            if wdk.kmdfver and (target:rule("wdk.env.wdm") or target:rule("wdk.env.kmdf")) then
                 table.insert(args, "-k")
                 table.insert(args, wdk.kmdfver)
             elseif wdk.umdfver then
