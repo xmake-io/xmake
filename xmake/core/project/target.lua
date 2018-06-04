@@ -149,6 +149,34 @@ function target.new(name, info, project)
     return instance
 end
 
+-- load rule, move cache to target
+function target:_load_rule(ruleinst)
+
+    -- init cache
+    local key = ruleinst:name()
+    local cache = self._RULES_LOADED or {}
+
+    -- do load
+    if cache[key] == nil then
+        local on_load = ruleinst:script("load")
+        if on_load then
+            local ok, errors = sandbox.load(on_load, self)
+            cache[key] = {ok, errors}
+        else
+            cache[key] = {true}
+        end
+    end
+
+    -- save cache
+    self._RULES_LOADED = cache
+
+    -- return results
+    local results = cache[key]
+    if results then
+        return results[1], results[2]
+    end
+end
+
 -- get the target info
 function target:get(name)
     return self._INFO[name]
@@ -568,14 +596,14 @@ function target:filerules(sourcefile)
 
                     -- load dependent rules if these rules have been not loaded
                     for _, deprule in pairs(r:orderdeps()) do
-                        local ok, errors = deprule:do_load(self)
+                        local ok, errors = self:_load_rule(deprule)
                         if not ok then
                             os.raise(errors)
                         end
                     end
 
                     -- load file rule if this rule have been not loaded
-                    local ok, errors = r:do_load(self)
+                    local ok, errors = self:_load_rule(r)
                     if not ok then
                         os.raise(errors)
                     end

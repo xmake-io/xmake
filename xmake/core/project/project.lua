@@ -412,7 +412,7 @@ function project._load_targets()
         -- do load with target rules
         if ok then
             for _, r in pairs(t:orderules()) do
-                ok, errors = r:do_load(t)
+                ok, errors = t:_load_rule(r)
                 if not ok then
                     break
                 end
