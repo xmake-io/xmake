@@ -150,16 +150,18 @@ function build(target, buildinfo)
     local sourcekind = nil
     local sourcebatch = nil
     for kind, batch in pairs(target:sourcebatches()) do
-        sourcekind  = kind
-        sourcebatch = batch
-        kindcount   = kindcount + 1
-        if kindcount > 1 then
-            break
+        if not batch.rulename then
+            sourcekind  = kind
+            sourcebatch = batch
+            kindcount   = kindcount + 1
+            if kindcount > 1 then
+                break
+            end
         end
     end
 
     -- build target
-    if kindcount == 1 and sourcekind and not sourcekind:startswith("__rule_") and compiler.buildmode(sourcekind, "shared:sources", {target = target}) then
+    if kindcount == 1 and compiler.buildmode(sourcekind, "shared:sources", {target = target}) then
         _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     else
         _build_from_objects(target, buildinfo)
