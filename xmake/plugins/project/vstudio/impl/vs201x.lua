@@ -70,9 +70,13 @@ function _make_targetinfo(mode, arch, target)
 
     -- save compiler flags
     targetinfo.compflags = {}
-    for _, sourcefile in ipairs(target:sourcefiles()) do
-        local compflags = compiler.compflags(sourcefile, {target = target})
-        targetinfo.compflags[sourcefile] = compflags
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        if not sourcebatch.rulename then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local compflags = compiler.compflags(sourcefile, {target = target})
+                targetinfo.compflags[sourcefile] = compflags
+            end
+        end
     end
 
     -- save linker flags
