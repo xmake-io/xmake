@@ -50,6 +50,7 @@ end
 function menuconf:event_on(e)
  
     -- select config
+    local back = false
     if e.type == event.ev_keyboard then
         if e.key_name == "Down" then
             return self:select_next()
@@ -65,18 +66,27 @@ function menuconf:event_on(e)
             self:_do_include(false)
             return true
         elseif e.key_name == "Esc" then
-            -- load the previous menu configs
-            local configs_prev = self._CONFIGS._PREV
-            if configs_prev then
-                self._CONFIGS._PREV = configs_prev._PREV
-                self:load(configs_prev)
-                return true
-            end
+            back = true
         end
-    elseif e.type == event.ev_command and e.command == "cm_enter" then
-        self:_do_select()
-        return true
-    end   
+    elseif e.type == event.ev_command then
+        if e.command == "cm_enter" then
+            self:_do_select()
+            return true
+        elseif e.command == "cm_back" then
+            back = true
+        end
+    end  
+
+    -- back?
+    if back then
+        -- load the previous menu configs
+        local configs_prev = self._CONFIGS._PREV
+        if configs_prev then
+            self._CONFIGS._PREV = configs_prev._PREV
+            self:load(configs_prev)
+            return true
+        end
+    end
 end
 
 -- load configs

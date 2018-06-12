@@ -46,11 +46,12 @@ function mconfdialog:init(name, bounds, title)
 
     -- init text
     self:text():text_set([[Arrow keys navigate the menu. <Enter> selects submenus ---> (or empty submenus ----). 
-Pressing <Y> includes, <N> excludes. Enter <Esc> to go back or exit, <?> for Help, </> for Search. Legend: [*] built-in  [ ] excluded
+Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for Help, </> for Search. Legend: [*] built-in  [ ] excluded
 ]])
 
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) self:menuconf():event_on(event.command {"cm_enter"}) end)
+    self:button_add("back", "< Back >", function (v, e) self:menuconf():event_on(event.command {"cm_back"}) end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
     self:button_add("help", "< Help >", function (v, e) self:show_help() end) 
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)

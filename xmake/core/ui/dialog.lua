@@ -72,7 +72,7 @@ function dialog:button_add(name, text, command)
     local index = 1
     local width = self:buttons():width()
     local count = self:buttons():count()
-    local padding = math.floor(width / 6)
+    local padding = math.floor(width / 8)
     for v in self:buttons():views() do
         local x = padding + index * math.floor((width - padding * 2) / (count + 1)) - math.floor(v:width() / 2)
         if x + v:width() > width then
