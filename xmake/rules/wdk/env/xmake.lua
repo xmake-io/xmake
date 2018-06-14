@@ -25,8 +25,8 @@
 -- define rule: environment
 rule("wdk.env")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
 
         -- imports
         import("detect.sdks.find_wdk")
@@ -73,8 +73,8 @@ rule("wdk.env.umdf")
     -- add rules
     add_deps("wdk.env")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         import("load").umdf(target)
     end)
 
@@ -84,8 +84,8 @@ rule("wdk.env.kmdf")
     -- add rules
     add_deps("wdk.env")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         import("load").kmdf(target)
     end)
 
@@ -95,7 +95,7 @@ rule("wdk.env.wdm")
     -- add rules
     add_deps("wdk.env")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         import("load").wdm(target)
     end)

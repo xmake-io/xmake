@@ -31,8 +31,8 @@ rule("qt.qrc")
     -- set extensions
     set_extensions(".qrc")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
         
         -- get rcc
         local rcc = path.join(target:data("qt").bindir, is_host("windows") and "rcc.exe" or "rcc")

@@ -31,8 +31,8 @@ rule("qt.ui")
     -- set extensions
     set_extensions(".ui")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
         
         -- get uic
         local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")

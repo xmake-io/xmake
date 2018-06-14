@@ -31,8 +31,8 @@ rule("wdk.inf")
     -- set extensions
     set_extensions(".inf", ".inx")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
 
         -- imports
         import("core.project.config")

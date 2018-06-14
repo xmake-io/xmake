@@ -197,6 +197,12 @@ function target:_load()
         return false, errors
     end
 
+    -- do load with target rules
+    local ok, errors = self:_load_rules()
+    if not ok then
+        return false, errors
+    end
+
     -- do load for target
     local on_load = self:script("load")
     if on_load then
@@ -204,12 +210,6 @@ function target:_load()
         if not ok then
             return false, errors
         end
-    end
-
-    -- do load with target rules
-    local ok, errors = self:_load_rules()
-    if not ok then
-        return false, errors
     end
 
     -- do after_load with target rules

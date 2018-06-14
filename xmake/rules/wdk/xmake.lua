@@ -28,8 +28,8 @@ rule("wdk.driver")
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp", "wdk.sign", "wdk.package.cab")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
 
         -- load environment
         if target:rule("wdk.env.umdf") then
@@ -69,8 +69,8 @@ rule("wdk.binary")
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
 
         -- set kind
         target:set("kind", "binary")
@@ -86,8 +86,8 @@ rule("wdk.static")
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         
         -- set kind
         target:set("kind", "static")
@@ -105,8 +105,8 @@ rule("wdk.shared")
     -- add rules
     add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
  
         -- set kind
         target:set("kind", "shared")

@@ -31,8 +31,8 @@ rule("qt.moc")
     -- set extensions
     set_extensions(".h")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
         
         -- get moc
         local moc = path.join(target:data("qt").bindir, is_host("windows") and "moc.exe" or "moc")

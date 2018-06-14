@@ -25,8 +25,8 @@
 -- define rule: application
 rule("win.sdk.application")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
 
         -- set kind: binary
         target:set("kind", "binary")

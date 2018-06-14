@@ -25,8 +25,8 @@
 -- define rule: environment
 rule("qt.env")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
         import("detect.sdks.find_qt")
         if not target:data("qt") then
             target:data_set("qt", assert(find_qt(nil, {verbose = true}), "Qt SDK not found!"))

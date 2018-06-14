@@ -28,8 +28,8 @@ rule("qt.static")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         import("load")(target, {kind = "static", frameworks = {"QtCore"}})
     end)
 
@@ -39,8 +39,8 @@ rule("qt.shared")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         import("load")(target, {kind = "shared", frameworks = {"QtCore"}})
     end)
 
@@ -50,8 +50,8 @@ rule("qt.console")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
         import("load")(target, {kind = "binary", frameworks = {"QtCore"}})
     end)
 
@@ -61,8 +61,8 @@ rule("qt.application")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
-    -- on load
-    on_load(function (target)
+    -- after load
+    after_load(function (target)
 
         -- load common flags to target
         import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtQml", "QtNetwork", "QtCore"}})

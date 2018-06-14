@@ -31,8 +31,8 @@ rule("wdk.mof")
     -- set extensions
     set_extensions(".mof")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
 
         -- imports
         import("core.project.config")

@@ -396,37 +396,19 @@ function project._load_targets()
     -- enter toolchains environment
     environment.enter("toolchains")
 
-    -- on load for each target
-    local ok = true
+    -- do load for each target
+    local ok = false
     for _, t in pairs(targets) do
-
-        -- do load for target
-        local on_load = t:script("load")
-        if on_load then
-            ok, errors = sandbox.load(on_load, t)
-            if not ok then
-                break
-            end
-        end
-
-        -- do load with target rules
-        if ok then
-            for _, r in pairs(t:orderules()) do
-                ok, errors = t:_load_rule(r)
-                if not ok then
-                    break
-                end
-            end
-            if not ok then 
-                break 
-            end
+        ok, errors = t:_load()
+        if not ok then
+            break
         end
     end
 
     -- leave toolchains environment
     environment.leave("toolchains")
 
-    -- on load failed?
+    -- do load failed?
     if not ok then
         return nil, errors
     end

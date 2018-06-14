@@ -25,8 +25,8 @@
 -- define rule: dotnet
 rule("win.sdk.dotnet")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
 
         -- imports
         import("core.project.config")

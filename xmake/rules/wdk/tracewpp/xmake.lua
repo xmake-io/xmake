@@ -28,8 +28,8 @@ rule("wdk.tracewpp")
     -- add rule: wdk environment
     add_deps("wdk.env")
 
-    -- on load
-    on_load(function (target)
+    -- before load
+    before_load(function (target)
 
         -- imports
         import("core.project.config")
