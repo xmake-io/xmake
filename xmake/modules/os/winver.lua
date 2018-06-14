@@ -84,6 +84,11 @@ function ntddi_version(name)
     return val
 end
 
+-- get WIN32_WINNT from name 
+function winnt_version(name)
+    return ntddi_version(name)
+end 
+
 -- get windows system version
 --
 -- $ xmake l os.winver

@@ -29,6 +29,8 @@ rule("wdk.env")
     before_load(function (target)
 
         -- imports
+        import("os.winver", {alias = "os_winver"})
+        import("core.project.config")
         import("detect.sdks.find_wdk")
 
         -- load wdk environment
@@ -53,6 +55,26 @@ rule("wdk.env")
             if is_mode("debug") then
                 target:add("define", "DBG=1")
             end
+
+            -- get winver name
+            local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
+
+            -- get winver version
+            local winver_version = os_winver.version(winver or "") or "0x0A00"
+
+            -- get winnt version
+            local winnt_version = os_winver.winnt_version(winver or "") or "0x0A000000"
+
+            -- get ntddi version
+            local ntddi_version = os_winver.ntddi_version(winver or "") or "0x0A000000"
+
+            -- add defines for winver
+            target:add("defines", "_WIN32_WINNT=" .. winnt_version, "WINVER=" .. winver_version, "NTDDI_VERSION=" .. ntddi_version)
+
+            -- set builtin version values
+            target:values_set("wdk.env.winnt_version", winnt_version)
+            target:values_set("wdk.env.ntddi_version", ntddi_version)
+            target:values_set("wdk.env.winver_version", winver_version)
 
             -- save wdk
             target:data_set("wdk", wdk)

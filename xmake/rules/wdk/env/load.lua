@@ -24,17 +24,6 @@
 
 -- imports
 import("core.project.config")
-import("os.winver", {alias = "os_winver"})
-
--- get windows version value
-function _winver(winver)
-    return os_winver.version(winver or "") or "0x0A00"
-end
-
--- get windows ntddi version value
-function _winver_ntddi(winver)
-    return os_winver.ntddi_version(winver or "") or "0x0A000000"
-end
 
 -- get version of the library sub-directory 
 function _winver_libdir(winver)
@@ -75,7 +64,6 @@ function umdf(target)
     end
     target:add("defines", "UMDF_VERSION_MAJOR=" .. umdfver[1], "UMDF_VERSION_MINOR=" .. umdfver[2], "UMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "um"))
@@ -108,7 +96,6 @@ function kmdf(target)
     end
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))
@@ -148,7 +135,6 @@ function wdm(target)
     end
     target:add("defines", "KMDF_VERSION_MAJOR=" .. kmdfver[1], "KMDF_VERSION_MINOR=" .. kmdfver[2], "KMDF_USING_NTSTATUS")
     target:add("defines", "WIN32_LEAN_AND_MEAN=1", "WINNT=1", "_WINDLL")
-    target:add("defines", "_WIN32_WINNT=" .. _winver(winver), "WINVER=" .. _winver(winver), "NTDDI_VERSION=" .. _winver_ntddi(winver))
 
     -- add include directories
     target:add("includedirs", path.join(wdk.includedir, wdk.sdkver, "km"))

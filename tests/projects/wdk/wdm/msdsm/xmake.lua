@@ -25,10 +25,3 @@ target("sampledsm")
     -- add links
     add_links("mpio")
 
-    on_load(function (target)
-
-        import("core.project.config")
-        print(target:values("wdk.env.winver") or config.get("wdk_winver"))
-        local ntddi_version = import("os.winver").ntddi_version(target:values("wdk.env.winver") or config.get("wdk_winver"))
-        print(ntddi_version)
-    end)
