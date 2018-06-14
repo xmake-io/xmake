@@ -77,6 +77,9 @@ Section "xmake (required)" Installer
   
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
+
+  ; Remove previous directories used
+  RMDir /r "$INSTDIR"
   
   ; Put file there
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"

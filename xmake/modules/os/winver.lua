@@ -22,11 +22,11 @@
 -- @file        winver.lua
 --
 
--- get windows version value from name
+-- get WINVER from name
 --
 -- reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa383745(v=vs.85).aspx
 --
-function value(name)
+function version(name)
     
     -- init values
     _g.values = _g.values or 
@@ -53,8 +53,8 @@ function value(name)
     return _g.values[name]
 end
 
--- get ntddi value from name 
-function value_ntddi(name)
+-- get NTDDI_VERSION from name 
+function ntddi_version(name)
     
     -- init subvalues
     _g.subvalues = _g.subvalues or 
@@ -77,7 +77,7 @@ function value_ntddi(name)
     end
 
     -- get value
-    local val = value(name)
+    local val = version(name)
     if val then
         val = val .. (subvalue or "0000")
     end
@@ -86,7 +86,7 @@ end
 
 -- get windows system version
 --
--- $ xmake l utils.os.winver
+-- $ xmake l os.winver
 --
 --   - win10: 10.0.14393
 --   - xp:    5.1.2600

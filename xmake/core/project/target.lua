@@ -150,15 +150,15 @@ function target.new(name, info, project)
 end
 
 -- load rule, move cache to target
-function target:_load_rule(ruleinst)
+function target:_load_rule(ruleinst, suffix)
 
     -- init cache
-    local key = ruleinst:name()
+    local key = ruleinst:name() .. (suffix and ("_" .. suffix) or "")
     local cache = self._RULES_LOADED or {}
 
     -- do load
     if cache[key] == nil then
-        local on_load = ruleinst:script("load")
+        local on_load = ruleinst:script("load" .. (suffix and ("_" .. suffix) or ""))
         if on_load then
             local ok, errors = sandbox.load(on_load, self)
             cache[key] = {ok, errors}
@@ -175,6 +175,51 @@ function target:_load_rule(ruleinst)
     if results then
         return results[1], results[2]
     end
+end
+
+-- load rules
+function target:_load_rules(suffix)
+    for _, r in pairs(self:orderules()) do
+        local ok, errors = self:_load_rule(r, suffix)
+        if not ok then
+            return false, errors
+        end
+    end
+    return true
+end
+
+-- do load target and rules
+function target:_load()
+
+    -- do before_load with target rules
+    local ok, errors = self:_load_rules("before")
+    if not ok then
+        return false, errors
+    end
+
+    -- do load for target
+    local on_load = self:script("load")
+    if on_load then
+        local ok, errors = sandbox.load(on_load, self)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- do load with target rules
+    local ok, errors = self:_load_rules()
+    if not ok then
+        return false, errors
+    end
+
+    -- do after_load with target rules
+    local ok, errors = self:_load_rules("after")
+    if not ok then
+        return false, errors
+    end
+
+    -- ok
+    return true
 end
 
 -- get the target info
@@ -593,22 +638,6 @@ function target:filerules(sourcefile)
             for _, rulename in ipairs(table.wrap(filerules)) do
                 local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
                 if r then
-
-                    -- load dependent rules if these rules have been not loaded
-                    for _, deprule in pairs(r:orderdeps()) do
-                        local ok, errors = self:_load_rule(deprule)
-                        if not ok then
-                            os.raise(errors)
-                        end
-                    end
-
-                    -- load file rule if this rule have been not loaded
-                    local ok, errors = self:_load_rule(r)
-                    if not ok then
-                        os.raise(errors)
-                    end
-
-                    -- add this rule
                     table.insert(rules, r)
                 end
             end

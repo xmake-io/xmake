@@ -26,7 +26,7 @@
 rule("wdk.driver")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.sign", "wdk.package.cab")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp", "wdk.sign", "wdk.package.cab")
 
     -- on load
     on_load(function (target)
@@ -67,7 +67,7 @@ rule("wdk.driver")
 rule("wdk.binary")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp")
 
     -- on load
     on_load(function (target)
@@ -84,7 +84,7 @@ rule("wdk.binary")
 rule("wdk.static")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp")
 
     -- on load
     on_load(function (target)
@@ -103,7 +103,7 @@ rule("wdk.static")
 rule("wdk.shared")
 
     -- add rules
-    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof")
+    add_deps("wdk.inf", "wdk.man", "wdk.mc", "wdk.mof", "wdk.tracewpp")
 
     -- on load
     on_load(function (target)

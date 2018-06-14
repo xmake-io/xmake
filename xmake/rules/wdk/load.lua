@@ -24,7 +24,6 @@
 
 -- imports
 import("core.project.config")
-import("utils.os.winver", {alias = "os_winver"})
 
 -- get subsystem version defined value
 function _winver_subsystem(winver)

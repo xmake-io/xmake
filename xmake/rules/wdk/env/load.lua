@@ -24,16 +24,16 @@
 
 -- imports
 import("core.project.config")
-import("utils.os.winver", {alias = "os_winver"})
+import("os.winver", {alias = "os_winver"})
 
 -- get windows version value
 function _winver(winver)
-    return os_winver.value(winver or "") or "0x0A00"
+    return os_winver.version(winver or "") or "0x0A00"
 end
 
 -- get windows ntddi version value
 function _winver_ntddi(winver)
-    return os_winver.value_ntddi(winver or "") or "0x0A000000"
+    return os_winver.ntddi_version(winver or "") or "0x0A000000"
 end
 
 -- get version of the library sub-directory 

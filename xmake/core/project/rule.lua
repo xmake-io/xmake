@@ -170,6 +170,7 @@ function rule.apis()
         ,   "rule.on_uninstall"
             -- rule.before_xxx
         ,   "rule.before_run"
+        ,   "rule.before_load"
         ,   "rule.before_build"
         ,   "rule.before_build_file"
         ,   "rule.before_build_files"
@@ -179,6 +180,7 @@ function rule.apis()
         ,   "rule.before_uninstall"
             -- rule.after_xxx
         ,   "rule.after_run"
+        ,   "rule.after_load"
         ,   "rule.after_build"
         ,   "rule.after_build_file"
         ,   "rule.after_build_files"
