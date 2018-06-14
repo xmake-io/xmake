@@ -25,6 +25,9 @@
 -- define rule: application
 rule("win.sdk.application")
 
+    -- add deps
+    add_deps("win.sdk.dotnet")
+
     -- after load
     after_load(function (target)
 
