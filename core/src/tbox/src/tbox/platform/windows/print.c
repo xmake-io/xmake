@@ -52,7 +52,7 @@ tb_void_t tb_print(tb_char_t const* string)
 
     // the data and size
     tb_byte_t const*    data = (tb_byte_t const*)string;
-    tb_size_t           size = tb_strlen(string) + 1;
+    tb_size_t           size = tb_strlen(string);
 
     // write string to stdout
     tb_size_t writ = 0;

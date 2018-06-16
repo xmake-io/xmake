@@ -29,9 +29,6 @@ import("core.project.project")
 -- init it
 function init(self)
 
-    -- init mrcflags
-    _g.mrcflags = {"-nologo"}
-    
     -- init buildmodes
     _g.buildmodes = 
     {
