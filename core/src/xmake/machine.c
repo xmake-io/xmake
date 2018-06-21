@@ -509,7 +509,7 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
 xm_machine_ref_t xm_machine_init()
 {
     // done
-    tb_bool_t           ok = tb_false;
+    tb_bool_t      ok = tb_false;
     xm_machine_t*  machine = tb_null;
     do
     {
