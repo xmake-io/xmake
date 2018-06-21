@@ -45,13 +45,13 @@
  * types
  */
 
-// the machine impl type
-typedef struct __xm_machine_impl_t
+// the machine type
+typedef struct __xm_machine_t
 {
     // the lua 
     lua_State*              lua;
 
-}xm_machine_impl_t;
+}xm_machine_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * declaration
@@ -261,33 +261,33 @@ static luaL_Reg const g_semver_functions[] =
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_machine_save_arguments(xm_machine_impl_t* impl, tb_int_t argc, tb_char_t** argv)
+static tb_bool_t xm_machine_save_arguments(xm_machine_t* machine, tb_int_t argc, tb_char_t** argv)
 {
     // check
-    tb_assert_and_check_return_val(impl && impl->lua && argc >= 1 && argv, tb_false);
+    tb_assert_and_check_return_val(machine && machine->lua && argc >= 1 && argv, tb_false);
 
     // put a new table into the stack
-    lua_newtable(impl->lua);
+    lua_newtable(machine->lua);
 
     // save all arguments to the new table
     tb_int_t i = 0;
     for (i = 1; i < argc; i++)
     {
         // table_new[table.getn(table_new) + 1] = argv[i]
-        lua_pushstring(impl->lua, argv[i]);
-        lua_rawseti(impl->lua, -2, (int)lua_objlen(impl->lua, -2) + 1);
+        lua_pushstring(machine->lua, argv[i]);
+        lua_rawseti(machine->lua, -2, (int)lua_objlen(machine->lua, -2) + 1);
     }
 
     // _ARGV = table_new
-    lua_setglobal(impl->lua, "_ARGV");
+    lua_setglobal(machine->lua, "_ARGV");
 
     // ok
     return tb_true;
 }
-static tb_size_t xm_machine_get_program_file(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
+static tb_size_t xm_machine_get_program_file(xm_machine_t* machine, tb_char_t* path, tb_size_t maxn)
 {
     // check
-    tb_assert_and_check_return_val(impl && path && maxn, tb_false);
+    tb_assert_and_check_return_val(machine && path && maxn, tb_false);
 
     // done
     tb_bool_t ok = tb_false;
@@ -340,17 +340,17 @@ static tb_size_t xm_machine_get_program_file(xm_machine_impl_t* impl, tb_char_t*
         tb_trace_d("programfile: %s", path);
 
         // save the directory to the global variable: _PROGRAM_FILE
-        lua_pushstring(impl->lua, path);
-        lua_setglobal(impl->lua, "_PROGRAM_FILE");
+        lua_pushstring(machine->lua, path);
+        lua_setglobal(machine->lua, "_PROGRAM_FILE");
     }
 
     // ok?
     return ok;
 }
-static tb_bool_t xm_machine_get_program_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn, tb_char_t const* programfile)
+static tb_bool_t xm_machine_get_program_directory(xm_machine_t* machine, tb_char_t* path, tb_size_t maxn, tb_char_t const* programfile)
 {
     // check
-    tb_assert_and_check_return_val(impl && path && maxn, tb_false);
+    tb_assert_and_check_return_val(machine && path && maxn, tb_false);
 
     // done
     tb_bool_t ok = tb_false;
@@ -394,17 +394,17 @@ static tb_bool_t xm_machine_get_program_directory(xm_machine_impl_t* impl, tb_ch
         tb_trace_d("programdir: %s", path);
 
         // save the directory to the global variable: _PROGRAM_DIR
-        lua_pushstring(impl->lua, path);
-        lua_setglobal(impl->lua, "_PROGRAM_DIR");
+        lua_pushstring(machine->lua, path);
+        lua_setglobal(machine->lua, "_PROGRAM_DIR");
     }
 
     // ok?
     return ok;
 }
-static tb_bool_t xm_machine_get_project_directory(xm_machine_impl_t* impl, tb_char_t* path, tb_size_t maxn)
+static tb_bool_t xm_machine_get_project_directory(xm_machine_t* machine, tb_char_t* path, tb_size_t maxn)
 {
     // check
-    tb_assert_and_check_return_val(impl && path && maxn, tb_false);
+    tb_assert_and_check_return_val(machine && path && maxn, tb_false);
 
     // done
     tb_bool_t ok = tb_false;
@@ -423,8 +423,8 @@ static tb_bool_t xm_machine_get_project_directory(xm_machine_impl_t* impl, tb_ch
         tb_trace_d("project: %s", path);
 
         // save the directory to the global variable: _PROJECT_DIR
-        lua_pushstring(impl->lua, path);
-        lua_setglobal(impl->lua, "_PROJECT_DIR");
+        lua_pushstring(machine->lua, path);
+        lua_setglobal(machine->lua, "_PROJECT_DIR");
 
         // ok
         ok = tb_true;
@@ -437,6 +437,71 @@ static tb_bool_t xm_machine_get_project_directory(xm_machine_impl_t* impl, tb_ch
     // ok?
     return ok;
 }
+static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
+{
+    // check
+    tb_assert_and_check_return(machine && machine->lua);
+
+#if 0
+#if defined(TB_ARCH_x86)
+#   ifdef TB_CONFIG_OS_WINDOWS
+        lua_pushstring(machine->lua, "x86");
+#   else
+        lua_pushstring(machine->lua, "i386");
+#   endif
+#elif defined(TB_ARCH_x64)
+#   ifdef TB_CONFIG_OS_WINDOWS
+        lua_pushstring(machine->lua, "x64");
+#   else
+        lua_pushstring(machine->lua, "x86_64");
+#   endif
+#else
+        lua_pushstring(machine->lua, TB_ARCH_STRING);
+#endif
+#endif
+
+#if defined(TB_CONFIG_OS_WINDOWS)
+
+        // the GetNativeSystemInfo function type
+        typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
+
+        // get system info
+        SYSTEM_INFO systeminfo = {0};
+        GetNativeSystemInfo_t pGetNativeSystemInfo = tb_null;
+        tb_dynamic_ref_t kernel32 = tb_dynamic_init("kernel32.dll");
+        if (kernel32) pGetNativeSystemInfo = (GetNativeSystemInfo_t)tb_dynamic_func(kernel32, "GetNativeSystemInfo");
+        if (pGetNativeSystemInfo) pGetNativeSystemInfo(&systeminfo);
+        else GetSystemInfo(&systeminfo);
+
+        // init architecture
+        switch (systeminfo.wProcessorArchitecture)
+        {
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            lua_pushstring(machine->lua, "x64");
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+            lua_pushstring(machine->lua, "arm");
+            break;
+        case PROCESSOR_ARCHITECTURE_INTEL:
+            lua_pushstring(machine->lua, "x86");
+            break;
+        default:
+#   ifdef TB_ARCH_x64
+            lua_pushstring(machine->lua, "x64");
+#   else
+            lua_pushstring(machine->lua, "x86");
+#   endif
+            break;
+        }
+#elif defined(TB_ARCH_x64)
+        lua_pushstring(machine->lua, "x86_64");
+#elif defined(TB_ARCH_x86)
+        lua_pushstring(machine->lua, "i386");
+#else
+        lua_pushstring(machine->lua, TB_ARCH_STRING);
+#endif
+        lua_setglobal(machine->lua, "_ARCH");
+}
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -445,95 +510,80 @@ xm_machine_ref_t xm_machine_init()
 {
     // done
     tb_bool_t           ok = tb_false;
-    xm_machine_impl_t*  impl = tb_null;
+    xm_machine_t*  machine = tb_null;
     do
     {
-        // init machine
-        impl = tb_malloc0_type(xm_machine_impl_t);
-        tb_assert_and_check_break(impl);
+        // init self
+        machine = tb_malloc0_type(xm_machine_t);
+        tb_assert_and_check_break(machine);
 
         // init lua 
-        impl->lua = lua_open();
-        tb_assert_and_check_break(impl->lua);
+        machine->lua = lua_open();
+        tb_assert_and_check_break(machine->lua);
 
         // open lua libraries
-        luaL_openlibs(impl->lua);
+        luaL_openlibs(machine->lua);
 
         // bind os functions
-        luaL_register(impl->lua, "os", g_os_functions);
+        luaL_register(machine->lua, "os", g_os_functions);
 
         // bind io functions
-        luaL_register(impl->lua, "io", g_io_functions);
+        luaL_register(machine->lua, "io", g_io_functions);
 
         // bind path functions
-        luaL_register(impl->lua, "path", g_path_functions);
+        luaL_register(machine->lua, "path", g_path_functions);
 
         // bind hash functions
-        luaL_register(impl->lua, "hash", g_hash_functions);
+        luaL_register(machine->lua, "hash", g_hash_functions);
 
         // bind string functions
-        luaL_register(impl->lua, "string", g_string_functions);
+        luaL_register(machine->lua, "string", g_string_functions);
 
         // bind process functions
-        luaL_register(impl->lua, "process", g_process_functions);
+        luaL_register(machine->lua, "process", g_process_functions);
 
         // bind sandbox functions
-        luaL_register(impl->lua, "sandbox", g_sandbox_functions);
+        luaL_register(machine->lua, "sandbox", g_sandbox_functions);
 
         // bind winreg functions 
 #ifdef TB_CONFIG_OS_WINDOWS
-        luaL_register(impl->lua, "winreg", g_winreg_functions);
+        luaL_register(machine->lua, "winreg", g_winreg_functions);
 #endif
 
 #ifdef XM_CONFIG_API_HAVE_READLINE
         // bind readline functions
-        luaL_register(impl->lua, "readline", g_readline_functions);
+        luaL_register(machine->lua, "readline", g_readline_functions);
 #endif
 
         // bind semver functions
-        luaL_register(impl->lua, "semver", g_semver_functions);
+        luaL_register(machine->lua, "semver", g_semver_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses 
-        xm_curses_register(impl->lua);
-        lua_setglobal(impl->lua, "curses");
+        xm_curses_register(machine->lua);
+        lua_setglobal(machine->lua, "curses");
 #endif
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
-        lua_pushstring(impl->lua, "windows");
+        lua_pushstring(machine->lua, "windows");
 #elif defined(TB_CONFIG_OS_MACOSX)
-        lua_pushstring(impl->lua, "macosx");
+        lua_pushstring(machine->lua, "macosx");
 #elif defined(TB_CONFIG_OS_LINUX)
-        lua_pushstring(impl->lua, "linux");
+        lua_pushstring(machine->lua, "linux");
 #elif defined(TB_CONFIG_OS_IOS)
-        lua_pushstring(impl->lua, "ios");
+        lua_pushstring(machine->lua, "ios");
 #elif defined(TB_CONFIG_OS_ANDROID)
-        lua_pushstring(impl->lua, "android");
+        lua_pushstring(machine->lua, "android");
 #elif defined(TB_CONFIG_OS_LIKE_UNIX)
-        lua_pushstring(impl->lua, "unix");
+        lua_pushstring(machine->lua, "unix");
 #else
-        lua_pushstring(impl->lua, "unknown");
+        lua_pushstring(machine->lua, "unknown");
 #endif
-        lua_setglobal(impl->lua, "_HOST");
+        lua_setglobal(machine->lua, "_HOST");
 
         // init architecture
-#if defined(TB_ARCH_x86)
-#   ifdef TB_CONFIG_OS_WINDOWS
-        lua_pushstring(impl->lua, "x86");
-#   else
-        lua_pushstring(impl->lua, "i386");
-#   endif
-#elif defined(TB_ARCH_x64)
-#   ifdef TB_CONFIG_OS_WINDOWS
-        lua_pushstring(impl->lua, "x64");
-#   else
-        lua_pushstring(impl->lua, "x86_64");
-#   endif
-#else
-        lua_pushstring(impl->lua, TB_ARCH_STRING);
-#endif
-        lua_setglobal(impl->lua, "_ARCH");
+        xm_machine_init_arch(machine);
 
         // get version
         tb_version_t const* version = xm_version();
@@ -542,17 +592,17 @@ xm_machine_ref_t xm_machine_init()
         // init version string
         tb_char_t version_cstr[256] = {0};
         tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u.%llu", version->major, version->minor, version->alter, version->build);
-        lua_pushstring(impl->lua, version_cstr);
-        lua_setglobal(impl->lua, "_VERSION");
+        lua_pushstring(machine->lua, version_cstr);
+        lua_setglobal(machine->lua, "_VERSION");
 
         // init short version string
         tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u", version->major, version->minor, version->alter);
-        lua_pushstring(impl->lua, version_cstr);
-        lua_setglobal(impl->lua, "_VERSION_SHORT");
+        lua_pushstring(machine->lua, version_cstr);
+        lua_setglobal(machine->lua, "_VERSION_SHORT");
 
         // init namespace: xmake
-        lua_newtable(impl->lua);
-        lua_setglobal(impl->lua, "xmake");
+        lua_newtable(machine->lua);
+        lua_setglobal(machine->lua, "xmake");
 
 #ifdef TB_CONFIG_OS_WINDOWS
         // enable terminal colors output for windows cmd
@@ -578,43 +628,43 @@ xm_machine_ref_t xm_machine_init()
     if (!ok)
     {
         // exit it
-        if (impl) xm_machine_exit((xm_machine_ref_t)impl);
-        impl = tb_null;
+        if (machine) xm_machine_exit((xm_machine_ref_t)machine);
+        machine = tb_null;
     }
 
-    return (xm_machine_ref_t)impl;
+    return (xm_machine_ref_t)machine;
 }
-tb_void_t xm_machine_exit(xm_machine_ref_t machine)
+tb_void_t xm_machine_exit(xm_machine_ref_t self)
 {
     // check
-    xm_machine_impl_t* impl = (xm_machine_impl_t*)machine;
-    tb_assert_and_check_return(impl);
+    xm_machine_t* machine = (xm_machine_t*)self;
+    tb_assert_and_check_return(machine);
 
     // exit lua
-    if (impl->lua) lua_close(impl->lua);
-    impl->lua = tb_null;
+    if (machine->lua) lua_close(machine->lua);
+    machine->lua = tb_null;
 
     // exit it
-    tb_free(impl);
+    tb_free(machine);
 }
-tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** argv)
+tb_int_t xm_machine_main(xm_machine_ref_t self, tb_int_t argc, tb_char_t** argv)
 {
     // check
-    xm_machine_impl_t* impl = (xm_machine_impl_t*)machine;
-    tb_assert_and_check_return_val(impl && impl->lua, -1);
+    xm_machine_t* machine = (xm_machine_t*)self;
+    tb_assert_and_check_return_val(machine && machine->lua, -1);
 
     // save main arguments to the global variable: _ARGV
-    if (!xm_machine_save_arguments(impl, argc, argv)) return -1;
+    if (!xm_machine_save_arguments(machine, argc, argv)) return -1;
 
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = {0};
-    if (!xm_machine_get_project_directory(impl, path, sizeof(path))) return -1;
+    if (!xm_machine_get_project_directory(machine, path, sizeof(path))) return -1;
 
     // get the program file
-    if (!xm_machine_get_program_file(impl, path, sizeof(path))) return -1;
+    if (!xm_machine_get_program_file(machine, path, sizeof(path))) return -1;
 
     // get the program directory
-    if (!xm_machine_get_program_directory(impl, path, sizeof(path), path)) return -1;
+    if (!xm_machine_get_program_directory(machine, path, sizeof(path), path)) return -1;
 
     // append the main script path
     tb_strcat(path, "/core/_xmake_main.lua");
@@ -633,30 +683,30 @@ tb_int_t xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** ar
     tb_trace_d("main: %s", path);
 
     // load and execute the main script
-    if (luaL_dofile(impl->lua, path))
+    if (luaL_dofile(machine->lua, path))
     {
         // error
-        tb_printf("error: %s\n", lua_tostring(impl->lua, -1));
+        tb_printf("error: %s\n", lua_tostring(machine->lua, -1));
 
         // failed
         return -1;
     }
 
     // set the error function
-    lua_getglobal(impl->lua, "debug");
-    lua_getfield(impl->lua, -1, "traceback");
+    lua_getglobal(machine->lua, "debug");
+    lua_getfield(machine->lua, -1, "traceback");
 
     // call the main function
-    lua_getglobal(impl->lua, "_xmake_main");
-    if (lua_pcall(impl->lua, 0, 1, -2)) 
+    lua_getglobal(machine->lua, "_xmake_main");
+    if (lua_pcall(machine->lua, 0, 1, -2)) 
     {
         // error
-        tb_printf("error: %s\n", lua_tostring(impl->lua, -1));
+        tb_printf("error: %s\n", lua_tostring(machine->lua, -1));
 
         // failed
         return -1;
     }
 
     // get the error code
-    return (tb_int_t)lua_tonumber(impl->lua, -1);
+    return (tb_int_t)lua_tonumber(machine->lua, -1);
 }

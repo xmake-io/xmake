@@ -200,7 +200,7 @@ function main(kind, toolkind)
     -- init the check list of config
     _g.config = 
     {
-        { checker.check_arch, "x86" }
+        checker.check_arch
     ,   _check_vs
     ,   checker.check_cuda
     }
@@ -208,7 +208,7 @@ function main(kind, toolkind)
     -- init the check list of global
     _g.global = 
     {
-        { checker.check_arch, "x86" }
+        checker.check_arch
     ,   _check_vs
     ,   checker.check_cuda
     ,   _clean_global
