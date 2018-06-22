@@ -69,6 +69,8 @@ function main()
     local as = config.get("as")
     if as == "yasm" then
         _g.asflags = { "-f", arch == "x86_64" and "macho64" or "macho32" }
+    elseif as == "fasm" then
+        _g.asflags = {}
     else
         _g.asflags = { "-arch " .. arch }
         if xcode_sdkdir then

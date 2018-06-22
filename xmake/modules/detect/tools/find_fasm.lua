@@ -19,14 +19,14 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_yasm.lua
+-- @file        find_fasm.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find yasm 
+-- find fasm 
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -34,8 +34,8 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local yasm = find_yasm()
--- local yasm, version = find_yasm({program = "yasm", version = true})
+-- local fasm = find_fasm()
+-- local fasm, version = find_fasm({program = "fasm", version = true})
 -- 
 -- @endcode
 --
@@ -45,7 +45,7 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "yasm", opt)
+    local program = find_program(opt.program or "fasm", opt)
 
     -- find program version
     local version = nil

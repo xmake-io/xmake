@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Support fasm assembler
+
 ### Changes
 
 * Improve to detect Qt envirnoment and support mingw
@@ -460,6 +464,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 新增fasm汇编器支持
 
 ### 改进
 
