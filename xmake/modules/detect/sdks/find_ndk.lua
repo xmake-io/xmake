@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_toolchains.lua
+-- @file        find_ndk.lua
 --
 
 -- imports
@@ -31,12 +31,12 @@ import("core.project.config")
 -- @param opt       the argument options 
 --                  .e.g {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]"}
 --
--- @return          the toolchains array. .e.g {{bin = .., cross = ..}, .. }
+-- @return          the ndk toolchains array. .e.g {{bin = .., cross = ..}, .. }
 --
 -- @code 
 --
--- local toolchains = find_toolchains("/xxx/android-ndk-r10e")
--- local toolchains = find_toolchains("/xxx/android-ndk-r10e", {arch = "arm64-v8a"})
+-- local toolchains = find_ndk("/xxx/android-ndk-r10e")
+-- local toolchains = find_ndk("/xxx/android-ndk-r10e", {arch = "arm64-v8a"})
 -- 
 -- @endcode
 --

@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("detect.sdks.find_cross_toolchains")
+import("detect.sdks.find_cross_toolchain")
 import(".checker")
 
 -- get toolchains
@@ -40,15 +40,13 @@ function _toolchains(config)
         arch = "i686"
     end
 
-    -- find cross toolchains
+    -- find cross toolchain
     local cross = ""
-    for _, toolchain in ipairs(find_cross_toolchains(config.get("sdk") or config.get("toolchains"), {bin = config.get("toolchains"), cross = config.get("cross")})) do
-        if toolchain.bin and toolchain.cross and toolchain.cross:find(arch) then
-            config.set("cross", toolchain.cross)
-            config.set("toolchains", toolchain.bin)
-            cross = toolchain.cross
-            break
-        end
+    local toolchain = find_cross_toolchain(config.get("sdk") or config.get("toolchains"), {bin = config.get("toolchains"), cross = config.get("cross")})
+    if toolchain then
+        config.set("cross", toolchain.cross, {readonly = true, force = true})
+        config.set("toolchains", toolchain.bin, {readonly = true, force = true})
+        cross = toolchain.cross
     end
 
     -- make toolchains
