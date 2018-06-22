@@ -29,7 +29,7 @@ import("core.project.config")
 function main()
 
     -- cross toolchains?
-    if config.get("cross") or config.get("toolchains") or config.get("sdk") then 
+    if config.get("cross") or config.get("bin") or config.get("sdk") then 
 
         -- init linkdirs and includedirs
         local sdkdir = config.get("sdk") 

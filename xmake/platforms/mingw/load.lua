@@ -49,6 +49,12 @@ function main()
         _g.linkdirs    = {path.join(sdkdir, "lib")}
     end
 
+    -- add bin search library for loading some dependent .dll files windows 
+    local bindir = config.get("bin")
+    if bindir and is_host("windows") then
+        os.addenv("PATH", bindir)
+    end
+
     -- ok
     return _g
 end

@@ -67,23 +67,23 @@ end
 -- check toolchains 
 function _check_toolchains(config)
 
-    -- get toolchains directory
-    local toolchains = config.get("toolchains")
-    if not toolchains then
+    -- get toolchain bin directory
+    local bindir = config.get("bin")
+    if not bindir then
 
         -- find first toolchains 
         for _, toolchains in ipairs(find_ndk(config.get("ndk"), config.get("arch"))) do
-            config.set("toolchains", toolchains.bin)
+            config.set("bin", toolchains.bin)
             config.set("cross", toolchains.cross)
             break
         end
     end
-    toolchains = config.get("toolchains")
+    bindir = config.get("bin")
 
     -- get toolchains version
     local toolchains_ver = config.get("toolchains_ver")
-    if not toolchains_ver and toolchains then
-        local toolchains_ver = toolchains:match("%-(%d*%.%d*)[/\\]")
+    if not toolchains_ver and bindir then
+        local toolchains_ver = bindir:match("%-(%d*%.%d*)[/\\]")
         if toolchains_ver then
 
             -- save the toolchains version

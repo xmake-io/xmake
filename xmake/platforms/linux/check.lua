@@ -51,10 +51,10 @@ function _toolchains(config)
 
     -- find cross toolchain
     local cross = ""
-    local toolchain = find_cross_toolchain(config.get("sdk") or config.get("toolchains"), {bin = config.get("toolchains"), cross = config.get("cross")})
+    local toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bin = config.get("bin"), cross = config.get("cross")})
     if toolchain then
         config.set("cross", toolchain.cross, {readonly = true, force = true})
-        config.set("toolchains", toolchain.bin, {readonly = true, force = true})
+        config.set("bin", toolchain.bin, {readonly = true, force = true})
         cross = toolchain.cross
     end
 

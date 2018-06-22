@@ -47,7 +47,7 @@ function _toolchain_check(config, toolkind, toolinfo)
 
         -- attempt to check it 
         if not program then
-            local tool = find_tool(name, {program = cross .. name, pathes = config.get("toolchains"), check = toolinfo.check})
+            local tool = find_tool(name, {program = cross .. name, pathes = config.get("bin"), check = toolinfo.check})
             if tool then
                 program = tool.program
             end
