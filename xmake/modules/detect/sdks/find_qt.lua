@@ -32,33 +32,27 @@ import("core.project.config")
 -- find qt sdk directory
 function _find_sdkdir(sdkdir, sdkver)
 
-    -- init sub-directory
-    local subdir = sdkver or "*"
-
     -- append target sub-directory
-    local targetdir = nil
+    local subdirs = {}
     if is_plat("linux") then
-        targetdir = is_arch("x86_64") and "gcc_64" or "gcc_32"
+        table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "gcc_64" or "gcc_32", "bin"))
+        table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "clang_64" or "clang_32", "bin"))
     elseif is_plat("macosx") then
-        targetdir = is_arch("x86_64") and "clang_64" or "clang_32"
+        table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "clang_64" or "clang_32", "bin"))
     elseif is_plat("windows") then
         local vs = config.get("vs")
         if vs then
-            targetdir = is_arch("x64") and "msvc" .. vs .. "_64" or "msvc" .. vs .. "_32"
-        else 
-            targetdir = is_arch("x64") and "msvc*_64" or "msvc*_32"
-        end
+            table.insert(subdirs, path.join(sdkver or "*", is_arch("x64") and "msvc" .. vs .. "_64" or "msvc" .. vs .. "_32", "bin"))
+            table.insert(subdirs, path.join(sdkver or "*", "msvc" .. vs, "bin"))
+        end 
+        table.insert(subdirs, path.join(sdkver or "*", is_arch("x64") and "msvc*_64" or "msvc*_32", "bin"))
+        table.insert(subdirs, path.join(sdkver or "*", "msvc*", "bin"))
     elseif is_plat("mingw") then
-        targetdir = is_arch("x86_64") and "mingw*_64" or "mingw*_32"
+        table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "mingw*_64" or "mingw*_32", "bin"))
     elseif is_plat("android") then
-        targetdir = "android_*" -- TODO android_armv7 and ..?
+        table.insert(subdirs, path.join(sdkver or "*", "android_*", "bin"))
     end
-    if targetdir then
-        subdir = path.join(subdir, targetdir)
-    else
-        subdir = path.join(subdir, "*")
-    end
-    subdir = path.join(subdir, "bin")
+    table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
 
     -- init the search directories
     local pathes = {}
@@ -89,7 +83,7 @@ function _find_sdkdir(sdkdir, sdkver)
     end
 
     -- attempt to find qmake
-    local qmake = find_file(os.host() == "windows" and "qmake.exe" or "qmake", pathes, {suffixes = subdir})
+    local qmake = find_file(os.host() == "windows" and "qmake.exe" or "qmake", pathes, {suffixes = subdirs})
     if qmake then
         return path.directory(path.directory(qmake))
     end
