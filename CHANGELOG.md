@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Changes
+
+* Improve to detect Qt envirnoment and support mingw
+
 ## v2.2.1
 
 ### New features
@@ -456,6 +460,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* 改进Qt编译编译环境探测，增加对mingw sdk的支持
 
 ## v2.2.1
 

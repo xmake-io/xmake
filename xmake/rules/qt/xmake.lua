@@ -72,8 +72,7 @@ rule("qt.application")
             target:add("defines", "_WINDOWS")
             target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
         elseif is_plat("mingw") then
-            target:add("defines", "_WINDOWS")
-            target:add("ldflags", "-Wl,-subsystem:windows", "-Wl,-entry:mainCRTStartup", {force = true})
+            target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
         end
     end)
 
