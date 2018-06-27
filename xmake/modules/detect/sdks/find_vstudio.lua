@@ -79,7 +79,9 @@ function _load_vcvarsall(vcvarsall, arch)
     local WindowsSDKVersion = variables["WindowsSDKVersion"]
     if WindowsSDKVersion then
         WindowsSDKVersion = WindowsSDKVersion:gsub("\\", ""):trim()
-        variables["WindowsSDKVersion"] = WindowsSDKVersion
+        if WindowsSDKVersion ~= "" then
+            variables["WindowsSDKVersion"] = WindowsSDKVersion
+        end
     end
 
     -- fix UCRTVersion 
@@ -87,7 +89,7 @@ function _load_vcvarsall(vcvarsall, arch)
     -- @note vcvarsall.bat maybe detect error if install WDK and SDK at same time (multi-sdk version exists in include directory).
     --
     local UCRTVersion = variables["UCRTVersion"]
-    if UCRTVersion and UCRTVersion ~= WindowsSDKVersion then
+    if UCRTVersion and UCRTVersion ~= WindowsSDKVersion and WindowsSDKVersion ~= "" then
         local lib = variables["lib"]
         if lib then
             lib = lib:gsub(UCRTVersion, WindowsSDKVersion)
