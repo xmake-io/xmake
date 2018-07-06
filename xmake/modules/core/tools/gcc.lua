@@ -41,11 +41,17 @@ function init(self)
                 ,   "-DIBAction=void)__attribute__((ibaction)"}
 
     -- init shflags
-    _g.shflags = { "-shared", "-fPIC" }
+    _g.shflags = { "-shared"}
 
     -- init cxflags for the kind: shared
-    _g.shared          = {}
-    _g.shared.cxflags  = {"-fPIC"}
+    _g.shared = {}
+    _g.shared.cxflags = {}
+
+    -- add -fPIC 
+    if not is_plat("windows", "mingw") then
+        table.insert(_g.shflags, "-fPIC")
+        table.insert(_g.shared.cxflags, "-fPIC")
+    end
 
     -- init flags map
     _g.mapflags = 
