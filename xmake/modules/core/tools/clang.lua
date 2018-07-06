@@ -36,3 +36,21 @@ function init(self)
     _super._g.mxflags = {"-Qunused-arguments"}
     _super._g.asflags = {"-Qunused-arguments"}
 end
+
+-- make the optimize flag
+function nf_optimize(self, level)
+
+    -- the maps
+    local maps = 
+    {   
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Oz" -- smaller than -Os
+    ,   aggressive = "-Ofast"
+    }
+
+    -- make it
+    return maps[level] 
+end
