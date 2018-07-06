@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2018, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        vswprintf.c
@@ -966,10 +966,12 @@ get_qualifier:
  */
 tb_long_t tb_vswprintf(tb_wchar_t* s, tb_size_t n, tb_wchar_t const* fmt, tb_va_list_t args)
 {
+    // check
     if (!n || !s || !fmt) return 0;
 
+    // init start and end pointer
     tb_wchar_t* pb = s;
-    tb_wchar_t* pe = s + n;
+    tb_wchar_t* pe = s + n - 1;
 
 #if 0
     // pe must be larger than pb
@@ -1118,6 +1120,9 @@ tb_long_t tb_vswprintf(tb_wchar_t* s, tb_size_t n, tb_wchar_t const* fmt, tb_va_
             break;
         }
     }
+
+    // end
+    if (pb < s + n) *pb = L'\0';
 
     // the trailing null byte doesn't count towards the total
     return (pb - s);
