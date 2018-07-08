@@ -451,20 +451,24 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
 
-                -- find the start line of error
-                local lines = errors:split("\n")
-                local start = 0
-                for index, line in ipairs(lines) do
-                    if line:find("error:", 1, true) or line:find("错误：", 1, true) then
-                        start = index
-                        break
-                    end
-                end
+                -- parse and strip errors
+                if not option.get("verbose") then
 
-                -- get 16 lines of errors
-                if start > 0 or not option.get("verbose") then
-                    if start == 0 then start = 1 end
-                    errors = table.concat(table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start)), "\n")
+                    -- find the start line of error
+                    local lines = errors:split("\n")
+                    local start = 0
+                    for index, line in ipairs(lines) do
+                        if line:find("error:", 1, true) or line:find("错误：", 1, true) then
+                            start = index
+                            break
+                        end
+                    end
+
+                    -- get 16 lines of errors
+                    if start > 0 then
+                        if start == 0 then start = 1 end
+                        errors = table.concat(table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start)), "\n")
+                    end
                 end
 
                 -- raise compiling errors
