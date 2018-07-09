@@ -298,7 +298,7 @@ tb_bool_t tb_stream_beof(tb_stream_ref_t self)
     tb_hize_t offset    = tb_stream_offset(self);
 
     // eof?
-    return (size > 0 && offset >= size)? tb_true : tb_false;
+    return (size >= 0 && offset >= size)? tb_true : tb_false;
 }
 tb_hize_t tb_stream_offset(tb_stream_ref_t self)
 {
