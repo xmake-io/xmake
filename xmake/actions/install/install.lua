@@ -68,12 +68,6 @@ function _install_library(target)
     -- copy the target file
     os.cp(target:targetfile(), librarydir)
 
-    -- copy the config.h to the include directory
-    local configheader, configoutput = target:configheader(includedir)
-    if configheader and configoutput then
-        os.cp(configheader, configoutput) 
-    end
-
     -- copy headers to the include directory
     local srcheaders, dstheaders = target:headerfiles(includedir)
     if srcheaders and dstheaders then
