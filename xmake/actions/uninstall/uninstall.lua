@@ -59,12 +59,6 @@ function _uninstall_library(target)
     -- remove the target file
     os.rm(path.join(librarydir, path.filename(target:targetfile())))
 
-    -- reove the config.h from the include directory
-    local _, configheader = target:configheader(includedir)
-    if configheader then
-        os.rm(configheader) 
-    end
-
     -- remove headers from the include directory
     local _, dstheaders = target:headerfiles(includedir)
     for _, dstheader in ipairs(dstheaders) do
