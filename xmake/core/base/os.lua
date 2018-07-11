@@ -291,11 +291,7 @@ function os.match(pattern, mode, callback)
     end
 
     -- convert pattern to a lua pattern
-    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-    pattern = pattern:gsub("%*%*", "\001")
-    pattern = pattern:gsub("%*", "\002")
-    pattern = pattern:gsub("\001", ".*")
-    pattern = pattern:gsub("\002", "[^/]*")
+    pattern = path.pattern(pattern)
 
     -- find it
     return os.find(rootdir, pattern, recursion, mode, excludes, callback)

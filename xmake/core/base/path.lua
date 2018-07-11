@@ -109,5 +109,15 @@ function path.seperator()
     end
 end
 
+-- convert path pattern to a lua pattern
+function path.pattern(pattern)
+    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+    pattern = pattern:gsub("%*%*", "\001")
+    pattern = pattern:gsub("%*", "\002")
+    pattern = pattern:gsub("\001", ".*")
+    pattern = pattern:gsub("\002", "[^/]*")
+    return pattern
+end
+
 -- return module: path
 return path

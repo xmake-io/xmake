@@ -38,7 +38,19 @@ function sandbox_lib_detect_find_path._find(filedir, name)
     -- find the first path
     local results = os.filedirs(path.join(filedir, name), function (file, isdir) return false end)
     if results and #results > 0 then
-        return path.directory(results[1])
+        local filepath = results[1]
+        if filepath then
+            local p = filepath:find(path.pattern(name))
+            if p then
+                filepath = path.translate(filepath:sub(1, p - 1))
+                if os.isdir(filepath) then
+                    return filepath
+                else
+                    return path.directory(filepath)
+                end
+            end
+        end
+
     end
 end
 
