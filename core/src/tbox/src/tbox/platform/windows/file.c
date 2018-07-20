@@ -83,9 +83,18 @@ tb_file_ref_t tb_file_init(tb_char_t const* path, tb_size_t mode)
 
     // init flag
     DWORD cflag = 0;
-    if (mode & (TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC)) cflag |= CREATE_ALWAYS;
-    else if (mode & TB_FILE_MODE_CREAT) cflag |= CREATE_NEW;
+    if (mode & TB_FILE_MODE_CREAT)
+    {
+        // always create a new empty file
+        if (mode & TB_FILE_MODE_TRUNC) cflag |= CREATE_ALWAYS;
+        // create or open and append file
+        else if (mode & TB_FILE_MODE_APPEND) cflag |= OPEN_ALWAYS;
+        // create a new file only if file not exists
+        else cflag |= CREATE_NEW;
+    }
+    // open and truncate an existing file
     else if (mode & TB_FILE_MODE_TRUNC) cflag |= TRUNCATE_EXISTING;
+    // open an existing file 
     if (!cflag) cflag |= OPEN_EXISTING;
 
     // init attr
