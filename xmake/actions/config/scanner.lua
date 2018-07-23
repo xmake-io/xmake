@@ -97,6 +97,11 @@ function make()
             -- trace
             cprint("target(${magenta}%s${clear}): %s", targetname, targetkind)
 
+            -- add rules
+            file:print("-- add rules: debug/release")
+            file:print("add_rules(\"mode.debug\", \"mode.release\")")
+            file:print("")
+
             -- add target
             file:print("-- define target")
             file:print("target(\"%s\")", targetname)

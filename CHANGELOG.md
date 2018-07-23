@@ -9,6 +9,7 @@
 ### Changes
 
 * Improve to detect Qt envirnoment and support mingw
+* Add debug and release rules to the auto-generated xmake.lua
 
 ## v2.2.1
 
@@ -472,6 +473,7 @@
 ### 改进
 
 * 改进Qt编译编译环境探测，增加对mingw sdk的支持
+* 在自动扫描生成的xmake.lua中增加默认debug/release规则
 
 ## v2.2.1
 
