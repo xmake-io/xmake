@@ -144,7 +144,7 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
             if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent link
-                table.insert(results, dep:name())
+                table.insert(results, dep:basename())
 
                 -- inherit links from the depdent target
                 self:_inherit_from_target(results, dep, "links")
