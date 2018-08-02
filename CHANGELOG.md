@@ -10,6 +10,11 @@
 
 * Improve to detect Qt envirnoment and support mingw
 * Add debug and release rules to the auto-generated xmake.lua
+* [#178](https://github.com/tboox/xmake/issues/178): Modify the shared library name for mingw.
+
+### Bug fixed
+
+* [#177](https://github.com/tboox/xmake/issues/177): Fix the dependent target link bug
 
 ## v2.2.1
 
@@ -474,6 +479,11 @@
 
 * 改进Qt编译编译环境探测，增加对mingw sdk的支持
 * 在自动扫描生成的xmake.lua中增加默认debug/release规则
+* [#178](https://github.com/tboox/xmake/issues/178): 修改mingw平台下的目标名
+
+### Bugs修复
+
+* [#177](https://github.com/tboox/xmake/issues/177): 修复被依赖的动态库target，如果设置了basename后链接失败问题
 
 ## v2.2.1
 
