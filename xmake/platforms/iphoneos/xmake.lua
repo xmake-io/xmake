@@ -35,7 +35,7 @@ platform("iphoneos")
     set_archs("armv7", "armv7s", "arm64", "i386", "x86_64")
 
     -- set formats
-    set_formats {static = {"lib", ".a"}, object = {"", ".o"}, shared = {"lib", ".dylib"}, symbol = {"", ".sym"}}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).sym"}
 
     -- on check
     on_check("check")

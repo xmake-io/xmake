@@ -35,7 +35,7 @@ platform("android")
     set_archs("armv5te", "armv6", "armv7-a", "armv8-a", "arm64-v8a")
 
     -- set formats
-    set_formats {static = {"lib", ".a"}, object = {"", ".o"}, shared = {"lib", ".so"}, symbol = {"", ".sym"}}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
 
     -- on check
     on_check("check")

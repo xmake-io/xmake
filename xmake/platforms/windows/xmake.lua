@@ -37,6 +37,9 @@ platform("windows")
     -- set environment
     set_environment("environment")
 
+    -- set formats
+    set_formats {static = "$(name).lib", object = "$(name).obj", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
+
     -- on check
     on_check("check")
 
@@ -47,15 +50,7 @@ platform("windows")
         import("core.project.config")
 
         -- init flags for architecture
-        local arch          = config.get("arch")
-
-        -- init the file formats
-        _g.formats          = {}
-        _g.formats.static   = {"", ".lib"}
-        _g.formats.object   = {"", ".obj"}
-        _g.formats.shared   = {"", ".dll"}
-        _g.formats.binary   = {"", ".exe"}
-        _g.formats.symbol   = {"", ".pdb"}
+        local arch = config.get("arch")
 
         -- init flags for asm
         local as = config.get("as")

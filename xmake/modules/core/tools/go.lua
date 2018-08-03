@@ -34,8 +34,7 @@ function init(self)
     _g.arflags = { "grc" }
 
     -- init the file formats
-    _g.formats          = {}
-    _g.formats.static   = {"", ".a"}
+    _g.formats = { static = "$(name).a" }
 
     -- init buildmodes
     _g.buildmodes = 

@@ -29,7 +29,7 @@ platform("cross")
     set_hosts("macosx", "linux", "windows")
 
     -- set formats
-    set_formats {static = {"lib", ".a"}, object = {"", ".o"}, shared = {"lib", ".so"}, symbol = {"", ".sym"}}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
 
     -- on check
     on_check("check")

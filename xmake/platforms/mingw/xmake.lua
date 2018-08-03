@@ -35,7 +35,7 @@ platform("mingw")
     set_archs("i386", "x86_64")
 
     -- set formats
-    set_formats {static = {"lib", ".a"}, object = {"", ".o"}, shared = {"", ".dll"}, binary = {"", ".exe"},symbol = {"", ".pdb"}}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
 
     -- on check
     on_check("check")

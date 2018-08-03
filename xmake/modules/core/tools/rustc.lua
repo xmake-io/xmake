@@ -40,8 +40,7 @@ function init(self)
     _g.ldflags = { "--crate-type=bin" }
 
     -- init the file formats
-    _g.formats          = {}
-    _g.formats.static   = {"lib", ".rlib"}
+    _g.formats = { static = "lib$(name).rlib" }
 
     -- init buildmodes
     _g.buildmodes = 

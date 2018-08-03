@@ -126,11 +126,9 @@ function target.filename(targetname, targetkind, targetformat)
     -- check
     assert(targetname and targetkind)
 
-    -- get format
-    local format = targetformat or platform.format(targetkind) or {"", ""}
-
-    -- make it
-    return format[1] .. targetname .. format[2]
+    -- make filename by format
+    local format = targetformat or platform.format(targetkind) 
+    return format and (format:gsub("%$%(name%)", targetname)) or targetname
 end
 
 -- new a target instance
