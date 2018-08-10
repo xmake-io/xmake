@@ -30,14 +30,13 @@ import("core.language.language")
 function init(self)
     
     -- init cxflags
-    _g.cxflags = { "-nologo", "-MP4", "-D_MBCS", "-D_CRT_SECURE_NO_WARNINGS"}
+    _g.cxflags = { "-nologo", "-MP4" }
 
     -- init flags map
     _g.mapflags = 
     {
         -- optimize
         ["-O0"]                     = "-Od"
-    ,   ["-O1"]                     = ""
     ,   ["-Os"]                     = "-O1"
     ,   ["-O3"]                     = "-Ox"
     ,   ["-Ofast"]                  = "-Ox -fp:fast"
@@ -147,7 +146,7 @@ function nf_optimize(self, level)
     local maps = 
     {   
         none        = "-Od"
-    ,   faster      = "-Ox"
+    ,   faster      = "-O2"
     ,   fastest     = "-Ox -fp:fast"
     ,   smallest    = "-O1"
     ,   aggressive  = "-Ox -fp:fast"

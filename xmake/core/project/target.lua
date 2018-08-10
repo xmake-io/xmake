@@ -729,14 +729,14 @@ function target:sourcefiles()
     -- the patterns
     local patterns = 
     {
-        {"([%w%*]+)%.obj|",     "%1|",  "object"}
-    ,   {"([%w%*]+)%.obj$",     "%1",   "object"}
-    ,   {"([%w%*]+)%.o|",       "%1|",  "object"}
-    ,   {"([%w%*]+)%.o$",       "%1",   "object"}
-    ,   {"([%w%*]+)%.lib|",     "%1|",  "static"}
-    ,   {"([%w%*]+)%.lib$",     "%1",   "static"}
-    ,   {"lib([%w%*]+)%.a|",    "%1|",  "static"}
-    ,   {"lib([%w%*]+)%.a$",    "%1",   "static"}
+        {"([%w%*]+)%.obj|",     "%%1|",  "object"}
+    ,   {"([%w%*]+)%.obj$",     "%%1",   "object"}
+    ,   {"([%w%*]+)%.o|",       "%%1|",  "object"}
+    ,   {"([%w%*]+)%.o$",       "%%1",   "object"}
+    ,   {"([%w%*]+)%.lib|",     "%%1|",  "static"}
+    ,   {"([%w%*]+)%.lib$",     "%%1",   "static"}
+    ,   {"lib([%w%*]+)%.a|",    "%%1|",  "static"}
+    ,   {"lib([%w%*]+)%.a$",    "%%1",   "static"}
     }
 
     -- match files

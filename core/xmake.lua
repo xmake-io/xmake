@@ -55,6 +55,11 @@ option("curses")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
 option_end()
 
+-- suppress warnings
+if is_plat("windows") then
+    add_defines("_CRT_SECURE_NO_WARNINGS")
+end
+
 -- add projects
 includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 
 if is_plat("windows") then
