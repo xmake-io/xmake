@@ -239,44 +239,38 @@ end
 
 -- the current mode is belong to the given modes?
 function config.is_mode(...)
-
-    -- get the current mode
-    local mode = config.get("mode")
-    if not mode then return false end
-
-    -- exists this mode?
-    for _, m in ipairs(table.join(...)) do
-        if m and type(m) == "string" and m == mode then
-            return true
-        end
-    end
+    return config.is_value("mode", ...)
 end
 
 -- the current platform is belong to the given platforms?
 function config.is_plat(...)
+    return config.is_value("plat", ...)
+end
 
-    -- get the current platform
-    local plat = config.get("plat")
-    if not plat then return false end
+-- the current platform is belong to the given architectures?
+function config.is_arch(...)
+    return config.is_value("arch", ...)
+end
 
-    -- exists this platform? and escape '-'
-    for _, p in ipairs(table.join(...)) do
-        if p and type(p) == "string" and plat:find("^" .. p:gsub("%-", "%%-") .. "$") then
+-- the current config is belong to the given config values?
+function config.is_value(name, ...)
+
+    -- get the current config value
+    local value = config.get(name)
+    if not value then return false end
+
+    -- exists this value? and escape '-'
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" and value:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
     end
 end
 
--- the current platform is belong to the given architectures?
-function config.is_arch(...)
-
-    -- get the current architecture
-    local arch = config.get("arch")
-    if not arch then return false end
-
-    -- exists this architecture? and escape '-'
-    for _, a in ipairs(table.join(...)) do
-        if a and type(a) == "string" and arch:find("^" .. a:gsub("%-", "%%-") .. "$") then
+-- some configs are enabled or exists?
+function config.has(...)
+    for _, name in ipairs(table.join(...)) do
+        if name and type(name) == "string" and config.get(name) then
             return true
         end
     end
@@ -284,8 +278,6 @@ end
 
 -- dump the configure
 function config.dump()
-   
-    -- dump
     if not option.get("quiet") then
         table.dump(config.options(), "__%w*", "configure")
     end

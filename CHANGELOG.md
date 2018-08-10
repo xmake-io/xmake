@@ -5,6 +5,7 @@
 ### New features
 
 * Support fasm assembler
+* Add `has_configs` and `is_config` apis
 
 ### Changes
 
@@ -474,6 +475,7 @@
 ### 新特性
 
 * 新增fasm汇编器支持
+* 添加`has_configs`和`is_config`接口去快速判断option和配置值
 
 ### 改进
 

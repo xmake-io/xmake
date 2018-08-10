@@ -98,15 +98,14 @@ function project._api_is_host(interp, ...)
     return os.is_host(...)
 end
 
--- enable options?
-function project._api_is_option(interp, ...)
+-- the current config is belong to the given config values?
+function project._api_is_config(interp, name, ...)
+    return config.is_value(name, ...)
+end
 
-    -- some options are enabled?
-    for _, o in ipairs(table.join(...)) do
-        if o and type(o) == "string" and config.get(o) then
-            return true
-        end
-    end
+-- some configs are enabled?
+function project._api_has_configs(interp, ...)
+    return config.has(...)
 end
 
 -- add module directories
@@ -200,7 +199,8 @@ function project.interpreter()
         ,   {"is_mode",                 project._api_is_mode          }
         ,   {"is_plat",                 project._api_is_plat          }
         ,   {"is_arch",                 project._api_is_arch          }
-        ,   {"is_option",               project._api_is_option        }
+        ,   {"is_config",               project._api_is_config        }
+        ,   {"has_configs",             project._api_has_configs      }
             -- add_xxx
         ,   {"add_moduledirs",          project._api_add_moduledirs   }
         ,   {"add_plugindirs",          project._api_add_plugindirs   }

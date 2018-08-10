@@ -119,6 +119,28 @@ function deprecated_project._api_option_set_enable(interp, ...)
                                         end)
 end
 
+-- enable options?
+function deprecated_project._api_is_option(interp, ...)
+
+    -- make values
+    local values = ""
+    for _, v in ipairs(table.join(...)) do
+        if v and type(v) == "string" then
+            if #values == 0 then
+                values = v
+            else
+                values = values .. ", " .. v
+            end
+        end
+    end
+
+    -- deprecated
+    deprecated.add("has_configs(\"%s\")", "is_option(\"%s\")", values)
+
+    -- done
+    return config.has(...)
+end
+
 -- register api
 function deprecated_project.api_register(interp)
 
@@ -127,6 +149,9 @@ function deprecated_project.api_register(interp)
 
     -- register api: add_pkgs() to root
     interp:api_register(nil, "add_pkgs",    deprecated_project._api_add_packages)
+
+    -- register api: is_option() to root
+    interp:api_register(nil, "is_option",   deprecated_project._api_is_option)
 
     -- register api: set_enable() to option
     interp:api_register("option", "set_enable", deprecated_project._api_option_set_enable)
