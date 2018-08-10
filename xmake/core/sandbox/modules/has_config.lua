@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_configs.lua
+-- @file        has_config.lua
 --
 
 -- return module

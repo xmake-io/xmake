@@ -267,7 +267,7 @@ function config.is_value(name, ...)
     end
 end
 
--- some configs are enabled or exists?
+-- has the given configs?
 function config.has(...)
     for _, name in ipairs(table.join(...)) do
         if name and type(name) == "string" and config.get(name) then

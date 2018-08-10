@@ -104,7 +104,7 @@ function project._api_is_config(interp, name, ...)
 end
 
 -- some configs are enabled?
-function project._api_has_configs(interp, ...)
+function project._api_has_config(interp, ...)
     return config.has(...)
 end
 
@@ -200,7 +200,7 @@ function project.interpreter()
         ,   {"is_plat",                 project._api_is_plat          }
         ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_config",               project._api_is_config        }
-        ,   {"has_configs",             project._api_has_configs      }
+        ,   {"has_config",              project._api_has_config      }
             -- add_xxx
         ,   {"add_moduledirs",          project._api_add_moduledirs   }
         ,   {"add_plugindirs",          project._api_add_plugindirs   }

@@ -135,7 +135,7 @@ function deprecated_project._api_is_option(interp, ...)
     end
 
     -- deprecated
-    deprecated.add("has_configs(\"%s\")", "is_option(\"%s\")", values)
+    deprecated.add("has_config(\"%s\")", "is_option(\"%s\")", values)
 
     -- done
     return config.has(...)
