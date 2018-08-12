@@ -49,7 +49,11 @@
 #endif
 
 // is path separator?
-#define tb_path_is_separator(c)     ((c) == '/' || (c) == '\\')
+#ifdef TB_CONFIG_OS_WINDOWS
+#    define tb_path_is_separator(c)     ((c) == '/' || (c) == '\\')
+#else
+#    define tb_path_is_separator(c)     ((c) == '/')
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
