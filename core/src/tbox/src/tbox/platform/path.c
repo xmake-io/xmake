@@ -43,16 +43,16 @@
 
 // the path separator
 #ifdef TB_CONFIG_OS_WINDOWS
-#   define TB_PATH_SEPARATOR        '\\'
+#   define TB_PATH_SEPARATOR            '\\'
 #else
-#   define TB_PATH_SEPARATOR        '/'
+#   define TB_PATH_SEPARATOR            '/'
 #endif
 
 // is path separator?
 #ifdef TB_CONFIG_OS_WINDOWS
-#    define tb_path_is_separator(c)     ((c) == '/' || (c) == '\\')
+#   define tb_path_is_separator(c)      ((c) == '/' || (c) == '\\')
 #else
-#    define tb_path_is_separator(c)     ((c) == '/')
+#   define tb_path_is_separator(c)      ((c) == '/')
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
