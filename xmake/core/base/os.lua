@@ -861,8 +861,17 @@ function os.fscase()
             -- get temporary directory
             local tmpdir = os.tmpdir()
 
+            -- get matching pattern, this is equal to os.filedirs(path.join(tmpdir, "*"))
+            --
+            -- @note we cannot use os.match() becase os.fscase() will be called in os.match()
+            --
+            local pattern = path.join(tmpdir, "*")
+            pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+            pattern = pattern:gsub("%*", "\002")
+            pattern = pattern:gsub("\002", "[^/]*")
+
             -- attempt to detect it
-            local file = os.filedirs(path.join(tmpdir, "**"), function (file, isdir) return false end)
+            local file = os.find(tmpdir, pattern, 0, -1, nil, function (file, isdir) return false end)
             if file and #file > 0 then
                 local file1 = file[1]
                 local file2 = file1:gsub(".",  function (ch) return (ch >= 'a' and ch <= 'z') and ch:upper() or ch:lower() end)
