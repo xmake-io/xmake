@@ -119,8 +119,8 @@ function path.pattern(pattern)
     pattern = pattern:gsub("\001", ".*")
     pattern = pattern:gsub("\002", "[^/]*")
 
-    -- case-insensitive for windows path
-    if os.host() == "windows" then
+    -- case-insensitive filesystem?
+    if not os.fscase() then
         pattern = string.ipattern(pattern, true)
     end
     return pattern

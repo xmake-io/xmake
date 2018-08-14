@@ -851,6 +851,30 @@ function os.isroot()
     return os.uid().euid == 0
 end
 
+-- is case-insensitive filesystem?
+function os.fscase()
+    if os._FSCASE == nil then
+        if os.host() == "windows" then
+            os._FSCASE = false
+        else
+
+            -- get temporary directory
+            local tmpdir = os.tmpdir()
+
+            -- attempt to detect it
+            local file = os.filedirs(path.join(tmpdir, "**"), function (file, isdir) return false end)
+            if file and #file > 0 then
+                local file1 = file[1]
+                local file2 = file1:gsub(".",  function (ch) return (ch >= 'a' and ch <= 'z') and ch:upper() or ch:lower() end)
+                os._FSCASE = not (os.exists(file1) and os.exists(file2))
+            else
+                os._FSCASE = true
+            end
+        end
+    end
+    return os._FSCASE
+end
+
 -- set values to environment variable 
 function os.setenv(name, ...)
 

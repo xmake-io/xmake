@@ -45,6 +45,7 @@ sandbox_os.argw         = os.argw
 sandbox_os.mtime        = os.mtime
 sandbox_os.sleep        = os.sleep
 sandbox_os.raise        = os.raise
+sandbox_os.fscase       = os.fscase
 sandbox_os.isroot       = os.isroot
 sandbox_os.mclock       = os.mclock
 sandbox_os.nuldev       = os.nuldev
