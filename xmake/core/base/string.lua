@@ -151,5 +151,65 @@ function string.tryformat(format, ...)
     end
 end
 
+-- case-insensitive pattern-matching 
+--
+-- print(("src/dadasd.C"):match(string.ipattern("sR[cd]/.*%.c", true)))
+-- print(("src/dadasd.C"):match(string.ipattern("src/.*%.c", true)))
+--
+-- print(string.ipattern("sR[cd]/.*%.c"))
+--   [sS][rR][cd]/.*%.[cC]
+--
+-- print(string.ipattern("sR[cd]/.*%.c", true))
+--   [sS][rR][cCdD]/.*%.[cC]
+--
+function string.ipattern(pattern, brackets)
+    local tmp = {}
+    local i = 1
+    while i <= #pattern do
+        
+        -- get current charactor
+        local char = pattern:sub(i, i)
+
+        -- escape?
+        if char == '%' then
+            tmp[#tmp + 1] = char
+            i = i + 1
+            char = pattern:sub(i,i)
+            tmp[#tmp + 1] = char
+
+            -- '%bxy'? add next 2 chars
+            if char == 'b' then
+                tmp[#tmp + 1] = pattern:sub(i + 1, i + 2)
+                i = i + 2
+            end
+        -- brackets?
+        elseif char == '[' then 
+            tmp[#tmp + 1] = char
+            i = i + 1
+            while i <= #pattern do
+                char = pattern:sub(i, i)
+                if char == '%' then
+                    tmp[#tmp + 1] = char
+                    tmp[#tmp + 1] = pattern:sub(i + 1, i + 1)
+                    i = i + 1
+                elseif char:match("%a") then 
+                    tmp[#tmp + 1] = not brackets and char or char:lower() .. char:upper()
+                else 
+                    tmp[#tmp + 1] = char
+                end
+                if char == ']' then break end 
+                i = i + 1
+            end
+        -- letter, [aA]
+        elseif char:match("%a") then
+            tmp[#tmp + 1] = '[' .. char:lower() .. char:upper() .. ']'
+        else
+            tmp[#tmp + 1] = char
+        end
+        i = i + 1
+    end
+    return table.concat(tmp)
+end
+
 -- return module: string
 return string

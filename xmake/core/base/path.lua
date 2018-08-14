@@ -111,11 +111,18 @@ end
 
 -- convert path pattern to a lua pattern
 function path.pattern(pattern)
+    
+    -- translate wildcards, .e.g *, **
     pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
     pattern = pattern:gsub("%*%*", "\001")
     pattern = pattern:gsub("%*", "\002")
     pattern = pattern:gsub("\001", ".*")
     pattern = pattern:gsub("\002", "[^/]*")
+
+    -- case-insensitive for windows path
+    if os.host() == "windows" then
+        pattern = string.ipattern(pattern, true)
+    end
     return pattern
 end
 
