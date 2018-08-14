@@ -13,6 +13,7 @@
 * Add debug and release rules to the auto-generated xmake.lua
 * [#178](https://github.com/tboox/xmake/issues/178): Modify the shared library name for mingw.
 * Support case-insensitive path pattern-matching for `add_files()` on windows
+* Improve to detect Qt sdk directory for `detect.sdks.find_qt`
 
 ### Bug fixed
 
@@ -484,6 +485,7 @@
 * 在自动扫描生成的xmake.lua中增加默认debug/release规则
 * [#178](https://github.com/tboox/xmake/issues/178): 修改mingw平台下的目标名
 * 对于`add_files()`在windows上支持大小写不敏感路径模式匹配
+* 改进`detect.sdks.find_qt`对于Qt根目录的探测
 
 ### Bugs修复
 
