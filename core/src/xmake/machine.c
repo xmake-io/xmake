@@ -444,24 +444,6 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
     // check
     tb_assert_and_check_return(machine && machine->lua);
 
-#if 0
-#if defined(TB_ARCH_x86)
-#   ifdef TB_CONFIG_OS_WINDOWS
-        lua_pushstring(machine->lua, "x86");
-#   else
-        lua_pushstring(machine->lua, "i386");
-#   endif
-#elif defined(TB_ARCH_x64)
-#   ifdef TB_CONFIG_OS_WINDOWS
-        lua_pushstring(machine->lua, "x64");
-#   else
-        lua_pushstring(machine->lua, "x86_64");
-#   endif
-#else
-        lua_pushstring(machine->lua, TB_ARCH_STRING);
-#endif
-#endif
-
 #if defined(TB_CONFIG_OS_WINDOWS)
 
         // the GetNativeSystemInfo function type
