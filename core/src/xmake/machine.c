@@ -101,9 +101,10 @@ tb_int_t xm_path_is_absolute(lua_State* lua);
 tb_int_t xm_hash_uuid(lua_State* lua);
 tb_int_t xm_hash_sha256(lua_State* lua);
 
-// the winreg functions
+// the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
-tb_int_t xm_winreg_query(lua_State* lua);
+tb_int_t xm_winos_logical_drives(lua_State* lua);
+tb_int_t xm_winos_registry_query(lua_State* lua);
 #endif
 
 // the string functions
@@ -177,6 +178,16 @@ static luaL_Reg const g_os_functions[] =
 ,   { tb_null,          tb_null         }
 };
 
+// the windows functions
+#ifdef TB_CONFIG_OS_WINDOWS
+static luaL_Reg const g_winos_functions[] = 
+{
+    { "logical_drives", xm_winos_logical_drives }
+,   { "registry_query", xm_winos_registry_query }
+,   { tb_null,          tb_null                 }
+};
+#endif
+
 // the io functions
 static luaL_Reg const g_io_functions[] = 
 {
@@ -209,15 +220,6 @@ static luaL_Reg const g_string_functions[] =
 ,   { "startswith",     xm_string_startswith    }
 ,   { tb_null,          tb_null                 }
 };
-
-#ifdef TB_CONFIG_OS_WINDOWS
-// the winreg functions
-static luaL_Reg const g_winreg_functions[] = 
-{
-    { "query",          xm_winreg_query         }
-,   { tb_null,          tb_null                 }
-};
-#endif
 
 // the process functions
 static luaL_Reg const g_process_functions[] = 
@@ -545,9 +547,9 @@ xm_machine_ref_t xm_machine_init()
         // bind sandbox functions
         luaL_register(machine->lua, "sandbox", g_sandbox_functions);
 
-        // bind winreg functions 
+        // bind windows functions 
 #ifdef TB_CONFIG_OS_WINDOWS
-        luaL_register(machine->lua, "winreg", g_winreg_functions);
+        luaL_register(machine->lua, "winos", g_winos_functions);
 #endif
 
 #ifdef XM_CONFIG_API_HAVE_READLINE

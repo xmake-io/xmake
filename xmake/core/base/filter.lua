@@ -27,6 +27,7 @@ local filter = filter or {}
 
 -- load modules
 local os        = require("base/os")
+local winos     = require("base/winos")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
@@ -91,7 +92,7 @@ function filter.reg(path)
     end
 
     -- query registry value
-    return (winreg.query(path)) 
+    return (winos.registry_query(path)) 
 end
 
 -- set handlers

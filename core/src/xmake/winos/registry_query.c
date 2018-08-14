@@ -19,14 +19,14 @@
  * Copyright (C) 2015 - 2018, TBOOX Open Source Group.
  *
  * @author      TitanSnow, ruki
- * @file        query.c
+ * @file        registry_query.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "query"
+#define TB_TRACE_MODULE_NAME                "registry_query"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -37,22 +37,18 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
-#ifdef TB_CONFIG_OS_WINDOWS
 // the RegGetValueA func type
 typedef BOOL (WINAPI* xm_RegGetValueA_t)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-#ifdef TB_CONFIG_OS_WINDOWS
-
 /* query registry
  *
- * local value, errors = winreg.query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger")
+ * local value, errors = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger")
  */
-tb_int_t xm_winreg_query(lua_State* lua)
+tb_int_t xm_winos_registry_query(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -226,4 +222,3 @@ tb_int_t xm_winreg_query(lua_State* lua)
     // ok?
     return ok? 1 : 2;
 }
-#endif

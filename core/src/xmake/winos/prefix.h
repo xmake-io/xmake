@@ -18,19 +18,19 @@
  *
  * Copyright (C) 2015 - 2018, TBOOX Open Source Group.
  *
- * @author      TitanSnow
+ * @author      ruki
  * @file        prefix.h
  *
  */
-#ifndef XM_WINREG_PREFIX_H
-#define XM_WINREG_PREFIX_H
+#ifndef XM_WINOS_PREFIX_H
+#define XM_WINOS_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "../prefix.h"
 #ifdef TB_CONFIG_OS_WINDOWS
-#include <windows.h>
+#   include <windows.h>
 #endif
 
 

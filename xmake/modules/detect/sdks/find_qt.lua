@@ -25,6 +25,7 @@
 -- imports
 import("lib.detect.cache")
 import("lib.detect.find_file")
+import("core.base.winos")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
@@ -59,7 +60,9 @@ function _find_sdkdir(sdkdir, sdkver)
     if sdkdir then
         table.insert(pathes, sdkdir)
     end
-    if os.host() == "windows" then
+    if is_host("windows") then
+
+        -- add pathes from registry 
         local regs = 
         {
             "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.c\\shell\\Open\\Command",
@@ -78,12 +81,21 @@ function _find_sdkdir(sdkdir, sdkver)
                 end
             end)
         end
+
+        -- add root logical drive pates, .e.g C:/Qt/Qtx.x.x, D:/Qtx.x.x ..
+        for idx, drive in ipairs(winos.logical_drives()) do
+            if idx < 5 then
+                table.insert(pathes, path.join(drive, "Qt", "Qt*"))
+            else
+                break
+            end
+        end
     else
         table.insert(pathes, "~/Qt")
     end
 
     -- attempt to find qmake
-    local qmake = find_file(os.host() == "windows" and "qmake.exe" or "qmake", pathes, {suffixes = subdirs})
+    local qmake = find_file(is_host("windows") and "qmake.exe" or "qmake", pathes, {suffixes = subdirs})
     if qmake then
         return path.directory(path.directory(qmake))
     end

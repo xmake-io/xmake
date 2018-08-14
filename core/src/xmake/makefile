@@ -48,7 +48,6 @@ xmake_C_FILES 			+= \
 						path/is_absolute \
 						hash/uuid \
 						hash/sha256 \
-						winreg/query \
 						string/endswith \
 						string/startswith \
 						process/open \

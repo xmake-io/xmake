@@ -23,7 +23,10 @@ target("xmake")
     add_packages("tbox")
 
     -- add the common source files
-    add_files("**.c") 
+    add_files("**.c|winos/*.c")
+    if is_plat("windows") then
+        add_files("winos/*.c")
+    end
   
     -- add readline
     add_options("readline")      
