@@ -83,7 +83,7 @@ Thank you to all our sponsors! (please ask your company to also support this ope
 
 * 请先更新你的本地分支到最新，再进行提交代码请求，确保没有合并冲突
 * 编写友好可读的提交信息
-* 请使用余工程代码相同的代码规范
+* 请使用与工程代码相同的代码规范
 * 确保提交的代码缩进是四个空格，而不是tab
 * 请提交代码到`dev`分支，如果通过，我们会在特定时间合并到`master`分支上
 * 为了规范化提交日志的格式，commit消息，不要用中文，请用英文描述
