@@ -29,7 +29,7 @@ import("core.project.config")
 function main()
 
     -- init architecture
-    local arch = config.get("arch")
+    local arch = config.get("arch") or "arm64"
     local simulator = (arch == "i386" or arch == "x86_64")
 
     -- init platform name

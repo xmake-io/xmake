@@ -50,7 +50,7 @@ platform("windows")
         import("core.project.config")
 
         -- init flags for architecture
-        local arch = config.get("arch")
+        local arch = config.get("arch") or os.arch()
 
         -- init flags for asm
         local as = config.get("as")

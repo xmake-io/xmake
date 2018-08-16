@@ -89,7 +89,7 @@ function main(kind, toolkind)
     -- init the check list of config
     _g.config = 
     {
-        { checker.check_arch, "armv7" }
+        { checker.check_arch, "arm64" }
     ,   checker.check_xcode
     ,   checker.check_xcode_sdkver
     }

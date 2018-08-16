@@ -29,7 +29,7 @@ import("core.project.config")
 function main()
 
     -- init flags for architecture
-    local arch          = config.get("arch")
+    local arch          = config.get("arch") or os.arch()
     local target_minver = config.get("target_minver")
 
     -- init flags for the xcode sdk directory
