@@ -49,22 +49,25 @@ function _load_vcvarsall(vcvarsall, arch)
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
     file:print("call \"%s\" %s > nul", vcvarsall, arch)
-    file:print("echo { > %s", genvcvars_dat)
     for idx, var in ipairs(vcvars) do
-        file:print("echo " .. (idx == 1 and "" or ",") .. "    " .. var .. " = \"%%" .. var .. "%%\" >> %s", genvcvars_dat)
+        file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genvcvars_dat)
     end
-    file:print("echo } >> %s", genvcvars_dat)
     file:close()
 
     -- run genvcvars.bat
     os.run(genvcvars_bat)
 
-    -- replace "\" => "\\"
-    io.gsub(genvcvars_dat, "\\", "\\\\")
-
     -- load all envirnoment variables
-    local variables = io.load(genvcvars_dat)
-    if not variables then
+    local variables = {}
+    for _, line in ipairs((io.readfile(genvcvars_dat) or ""):split("\n")) do
+        local p = line:find('=', 1, true)
+        if p then
+            local name = line:sub(1, p - 1):trim()
+            local value = line:sub(p + 1):trim()
+            variables[name] = value
+        end
+    end
+    if not variables.path then
         return 
     end
 
