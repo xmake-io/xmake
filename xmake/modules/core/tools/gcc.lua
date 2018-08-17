@@ -181,37 +181,48 @@ end
 function nf_language(self, stdname)
 
     -- the stdc maps
-    local cmaps = 
-    {
-        -- stdc
-        ansi        = "-ansi"
-    ,   c89         = "-std=c89"
-    ,   gnu89       = "-std=gnu89"
-    ,   c99         = "-std=c99"
-    ,   gnu99       = "-std=gnu99"
-    ,   c11         = "-std=c11"
-    ,   gnu11       = "-std=gnu11"
-    }
+    if _g.cmaps == nil then
+        _g.cmaps = 
+        {
+            -- stdc
+            ansi        = "-ansi"
+        ,   c89         = "-std=c89"
+        ,   gnu89       = "-std=gnu89"
+        ,   c99         = "-std=c99"
+        ,   gnu99       = "-std=gnu99"
+        ,   c11         = "-std=c11"
+        ,   gnu11       = "-std=gnu11"
+        }
+    end
 
     -- the stdc++ maps
-    local cxxmaps = 
-    {
-        cxx98       = "-std=c++98"
-    ,   gnuxx98     = "-std=gnu++98"
-    ,   cxx11       = "-std=c++11"
-    ,   gnuxx11     = "-std=gnu++11"
-    ,   cxx14       = "-std=c++14"
-    ,   gnuxx14     = "-std=gnu++14"
-    ,   cxx17       = "-std=c++17"
-    ,   gnuxx17     = "-std=gnu++17"
-    ,   cxx1z       = "-std=c++1z"
-    ,   gnuxx1z     = "-std=gnu++1z"
-    }
+    if _g.cxxmaps == nil then
+        _g.cxxmaps = 
+        {
+            cxx98       = "-std=c++98"
+        ,   gnuxx98     = "-std=gnu++98"
+        ,   cxx11       = "-std=c++11"
+        ,   gnuxx11     = "-std=gnu++11"
+        ,   cxx14       = "-std=c++14"
+        ,   gnuxx14     = "-std=gnu++14"
+        ,   cxx17       = "-std=c++17"
+        ,   gnuxx17     = "-std=gnu++17"
+        ,   cxx1z       = "-std=c++1z"
+        ,   gnuxx1z     = "-std=gnu++1z"
+        ,   cxx2a       = "-std=c++2a"
+        ,   gnuxx2a     = "-std=gnu++2a"
+        }
+        local cxxmaps2 = {}
+        for k, v in pairs(_g.cxxmaps) do
+            cxxmaps2[k:gsub("xx", "++")] = v
+        end
+        table.join2(_g.cxxmaps, cxxmaps2)
+    end
 
     -- select maps
-    local maps = cmaps
+    local maps = _g.cmaps
     if self:kind() == "cxx" or self:kind() == "mxx" then
-        maps = cxxmaps
+        maps = _g.cxxmaps
     elseif self:kind() == "sc" then
         maps = {}
     end

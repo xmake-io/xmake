@@ -179,32 +179,41 @@ end
 function nf_language(self, stdname)
 
     -- the stdc maps
-    local cmaps = 
-    {
-        -- stdc
-        c99   = "-TP" -- compile as c++ files because msvc only support c89
-    ,   gnu99 = "-TP"
-    ,   c11   = "-TP"
-    ,   gnu11 = "-TP"
-    }
+    if _g.cmaps == nil then
+        _g.cmaps = 
+        {
+            -- stdc
+            c99   = "-TP" -- compile as c++ files because msvc only support c89
+        ,   gnu99 = "-TP"
+        ,   c11   = "-TP"
+        ,   gnu11 = "-TP"
+        }
+    end
 
     -- the stdc++ maps
-    local cxxmaps = 
-    {
-        cxx11       = "-std:c++11"
-    ,   gnuxx11     = "-std:c++11"
-    ,   cxx14       = "-std:c++14"
-    ,   gnuxx14     = "-std:c++14"
-    ,   cxx17       = "-std:c++17"
-    ,   gnuxx17     = "-std:c++17"
-    ,   cxx1z       = "-std:c++latest"
-    ,   gnuxx1z     = "-std:c++latest"
-    }
+    if _g.cxxmaps == nil then
+        _g.cxxmaps = 
+        {
+            cxx11       = "-std:c++11"
+        ,   gnuxx11     = "-std:c++11"
+        ,   cxx14       = "-std:c++14"
+        ,   gnuxx14     = "-std:c++14"
+        ,   cxx17       = "-std:c++17"
+        ,   gnuxx17     = "-std:c++17"
+        ,   cxx1z       = "-std:c++latest"
+        ,   gnuxx1z     = "-std:c++latest"
+        }
+        local cxxmaps2 = {}
+        for k, v in pairs(_g.cxxmaps) do
+            cxxmaps2[k:gsub("xx", "++")] = v
+        end
+        table.join2(_g.cxxmaps, cxxmaps2)
+    end
 
     -- select maps
-    local maps = cmaps
+    local maps = _g.cmaps
     if self:kind() == "cxx" or self:kind() == "mxx" then
-        maps = cxxmaps
+        maps = _g.cxxmaps
     end
 
     -- map it
