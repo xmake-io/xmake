@@ -84,9 +84,14 @@ function ntddi_version(name)
     return val
 end
 
--- get WIN32_WINNT from name 
+-- get _WIN32_WINNT from name 
 function winnt_version(name)
-    return ntddi_version(name)
+    return version(name)
+end 
+
+-- get _NT_TARGET_VERSION from name 
+function target_version(name)
+    return version(name)
 end 
 
 -- get windows system version

@@ -34,11 +34,19 @@ function _winver_subsystem(winver)
     -- make defined values
     local defvals = 
     {
-        win10   = "10.00" 
-    ,   win81   = "6.03" 
-    ,   winblue = "6.03"  
-    ,   win8    = "6.02"
-    ,   win7    = "6.01" 
+        nt4      = "4.00"
+    ,   win2k    = "5.00"
+    ,   winxp    = "5.01"
+    ,   ws03     = "5.02"
+    ,   win6     = "6.00"
+    ,   vista    = "6.00"
+    ,   ws08     = "6.00"
+    ,   longhorn = "6.00"
+    ,   win7     = "6.01" 
+    ,   win8     = "6.02"
+    ,   winblue  = "6.03"  
+    ,   win81    = "6.03" 
+    ,   win10    = "10.00" 
     }
     return defvals[winver] or "10.00"
 end
@@ -54,6 +62,7 @@ function driver_umdf(target)
     target:add("shflags", "-NODEFAULTLIB:kernel32.lib", "-NODEFAULTLIB:user32.lib", "-NODEFAULTLIB:libucrt.lib", {force = true})
 
     -- add subsystem
+    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
     target:add("shflags", "-subsystem:windows," .. _winver_subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
@@ -87,6 +96,7 @@ function driver_kmdf(target)
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
     -- add subsystem    
+    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
     target:add("ldflags", "-subsystem:native," .. _winver_subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
@@ -121,6 +131,7 @@ function driver_wdm(target)
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
     -- add subsystem    
+    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
     target:add("ldflags", "-subsystem:native," .. _winver_subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist

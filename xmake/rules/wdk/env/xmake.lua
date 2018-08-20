@@ -62,19 +62,23 @@ rule("wdk.env")
             -- get winver version
             local winver_version = os_winver.version(winver or "") or "0x0A00"
 
+            -- get target version
+            local target_version = os_winver.target_version(winver or "") or "0x0A00"
+
             -- get winnt version
-            local winnt_version = os_winver.winnt_version(winver or "") or "0x0A000000"
+            local winnt_version = os_winver.winnt_version(winver or "") or "0x0A00"
 
             -- get ntddi version
             local ntddi_version = os_winver.ntddi_version(winver or "") or "0x0A000000"
 
             -- add defines for winver
-            target:add("defines", "_WIN32_WINNT=" .. winnt_version, "WINVER=" .. winver_version, "NTDDI_VERSION=" .. ntddi_version)
+            target:add("defines", "_WIN32_WINNT=" .. winnt_version, "WINVER=" .. winver_version, "NTDDI_VERSION=" .. ntddi_version, "_NT_TARGET_VERSION=" .. target_version)
 
             -- set builtin version values
             target:values_set("wdk.env.winnt_version", winnt_version)
             target:values_set("wdk.env.ntddi_version", ntddi_version)
             target:values_set("wdk.env.winver_version", winver_version)
+            target:values_set("wdk.env.target_version", target_version)
 
             -- save wdk
             target:data_set("wdk", wdk)

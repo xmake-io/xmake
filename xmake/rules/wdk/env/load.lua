@@ -52,7 +52,6 @@ function umdf(target)
     local arch = config.arch()
 
     -- add defines
-    local winver  = target:values("wdk.env.winver") or config.get("wdk_winver")
     local umdfver = wdk.umdfver:split('%.')
     if arch == "x64" then
         target:add("defines", "_WIN64", "_AMD64_", "AMD64")
