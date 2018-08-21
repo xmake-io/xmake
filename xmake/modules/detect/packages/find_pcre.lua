@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("lib.detect.vcpkg")
 import("lib.detect.pkg_config")
 
 -- find pcre 
@@ -32,6 +33,21 @@ import("lib.detect.pkg_config")
 -- @return      see the return value of find_package()
 --
 function main(opt)
+
+    -- find package from vcpkg first
+    local result = vcpkg.find("pcre", opt)
+    if result then
+        local links = {}
+        for _, link in ipairs(result.links) do
+            links[link] = true
+        end
+        for _, width in ipairs({"", "16", "32"}) do
+            if links["pcre" .. width] then
+                result.links   = {"pcre" .. width}
+                return result
+            end
+        end
+    end
 
     -- find package from the current host platform
     if opt.plat == os.host() and opt.arch == os.arch() then

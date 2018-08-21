@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("lib.detect.vcpkg")
 import("lib.detect.pkg_config")
 
 -- find pcre2 
@@ -32,6 +33,22 @@ import("lib.detect.pkg_config")
 -- @return      see the return value of find_package()
 --
 function main(opt)
+
+    -- find package from vcpkg first
+    local result = vcpkg.find("pcre2", opt)
+    if result then
+        local links = {}
+        for _, link in ipairs(result.links) do
+            links[link] = true
+        end
+        for _, width in ipairs({"8", "16", "32"}) do
+            if links["pcre2-" .. width] then
+                result.links   = {"pcre2-" .. width}
+                result.defines = {"PCRE2_CODE_UNIT_WIDTH=" .. width}
+                return result
+            end
+        end
+    end
 
     -- find package from the current host platform
     if opt.plat == os.host() and opt.arch == os.arch() then
