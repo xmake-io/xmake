@@ -14,6 +14,7 @@
 * [#178](https://github.com/tboox/xmake/issues/178): Modify the shared library name for mingw.
 * Support case-insensitive path pattern-matching for `add_files()` on windows
 * Improve to detect Qt sdk directory for `detect.sdks.find_qt`
+* [#184](https://github.com/tboox/xmake/issues/184): Improve `lib.detect.find_package` to support vcpkg
 
 ### Bug fixed
 
@@ -486,6 +487,7 @@
 * [#178](https://github.com/tboox/xmake/issues/178): 修改mingw平台下的目标名
 * 对于`add_files()`在windows上支持大小写不敏感路径模式匹配
 * 改进`detect.sdks.find_qt`对于Qt根目录的探测
+* [#184](https://github.com/tboox/xmake/issues/184): 改进`lib.detect.find_package`支持vcpkg
 
 ### Bugs修复
 

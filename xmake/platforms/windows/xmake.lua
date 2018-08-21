@@ -101,6 +101,8 @@ platform("windows")
                                                      "  - win8",
                                                      "  - win7",
                                                      "  - win7_[sp1|sp2|sp3]"      }
+                ,   {category = "Vcpkg Configuration"                              }
+                ,   {nil, "vcpkg",     "kv", "auto", "The Vcpkg Directory"         }
                 }
 
             ,   global = 
@@ -110,6 +112,7 @@ platform("windows")
                 ,   {nil, "cuda",      "kv", "auto", "The Cuda SDK Directory"      }
                 ,   {nil, "qt",        "kv", "auto", "The Qt SDK Directory"        }
                 ,   {nil, "wdk",       "kv", "auto", "The WDK Directory"           }
+                ,   {nil, "vcpkg",     "kv", "auto", "The Vcpkg Directory"         }
                 }
             }
 

@@ -141,9 +141,14 @@ function sandbox_lib_detect_find_package._find_from_modules(name, opt)
     end
 end
 
--- find package from pkg-config
+-- find package from pkg-config/brew
 function sandbox_lib_detect_find_package._find_from_pkg_config(name, opt)
     return import("lib.detect.pkg_config").find(name, opt)
+end
+
+-- find package from vcpkg
+function sandbox_lib_detect_find_package._find_from_vcpkg(name, opt)
+    return import("lib.detect.vcpkg").find(name, opt)
 end
 
 -- find package from system directories
@@ -250,6 +255,9 @@ function sandbox_lib_detect_find_package._find(name, opt)
 
         -- find package from modules
         table.insert(findscripts, sandbox_lib_detect_find_package._find_from_modules)
+
+        -- find package from vcpkg (support multi-platforms/architectures)
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_vcpkg)
 
         -- find package from the current host platform
         if opt.plat == os.host() and opt.arch == os.arch() then

@@ -38,10 +38,10 @@ local find_file         = import("lib.detect.find_file")
 -- get link name from the file name
 function sandbox_lib_detect_find_library._link(filename)
 
-    -- get link
-    local link, count = filename:gsub(target.filename("([%w%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
+    -- get link, @note need %%w to escape to %w because gsub was called in target.filename
+    local link, count = filename:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
     if count == 0 then
-        link, count = filename:gsub(target.filename("([%w%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
+        link, count = filename:gsub(target.filename("([%%w%%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
     end
 
     -- ok?

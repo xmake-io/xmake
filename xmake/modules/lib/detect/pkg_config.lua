@@ -54,8 +54,8 @@ function info(name, opt)
 
     -- get it from cache first
     local result = _g._INFO[name]
-    if result then
-        return result
+    if result ~= nil then
+        return result and result or nil
     end
 
     -- get pkg-config path from brew
@@ -132,7 +132,7 @@ function info(name, opt)
     end
 
     -- save result to cache
-    _g._INFO[name] = result
+    _g._INFO[name] = result and result or false
 
     -- ok?
     return result
