@@ -135,7 +135,7 @@ $ xmake
 $ xmake f --menu
 ```
 
-<img src="/assets/img/index/menuconf.gif" width="60%" />
+<img src="https://xmake.io/assets/img/index/menuconf.gif" width="60%" />
 
 ## 支持平台
 
