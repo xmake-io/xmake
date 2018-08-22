@@ -135,11 +135,11 @@ $ xmake
 $ xmake f --menu
 ```
 
-<img src="http://xmake.io/assets/img/index/menuconf.gif" width="60%" />
+<img src="/assets/img/index/menuconf.gif" width="60%" />
 
 ## 支持平台
 
-* Windows (x86, x64, amd64, x86_amd64)
+* Windows (x86, x64)
 * Macosx (i386, x86_64)
 * Linux (i386, x86_64, cross-toolchains ...)
 * Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
@@ -157,6 +157,16 @@ $ xmake f --menu
 * Rust
 * Dlang
 * Cuda
+
+## 工程类型
+
+* 静态库程序
+* 动态库类型
+* 控制台程序
+* Cuda程序
+* Qt应用程序
+* WDK驱动程序
+* WinSDK应用程序
 
 ## 内置插件
 
@@ -210,137 +220,66 @@ $ xmake doxygen [srcdir]
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
-## 简单例子
+## 更多例子
 
-<a href="https://asciinema.org/a/133693">
-<img src="https://asciinema.org/a/133693.png" width="60%" />
-</a>
-
-创建一个c++ console项目：
-
-```bash
-    xmake create -l c++ -t 1 console
-or  xmake create --language=c++ --template=1 console
-```
-
-工程描述文件：xmake.lua
+Debug和Release模式：
 
 ```lua
+add_rules("mode.debug", "mode.release")
+
 target("console")
     set_kind("binary")
     add_files("src/*.c") 
 ```
 
-配置工程：
+自定义脚本：
 
-   这个是可选的步骤，如果只想编译当前主机平台的项目，是可以不用配置的，默认编译release版本。
-
-```bash
-   xmake f -p iphoneos -m debug
-or xmake f --plat=macosx --arch=x86_64
-or xmake f -p windows
-or xmake config --plat=iphoneos --mode=debug
-or xmake config --plat=android --arch=armv7-a --ndk=xxxxx
-or xmake config -p linux -a i386
-or xmake config -p mingw --cross=i386-mingw32- --toolchains=/xxx/bin
-or xmake config -p mingw --sdk=/mingwsdk
-or xmake config --help
-```
-
-编译工程：
-     
-```bash
-   xmake
-or xmake -r
-or xmake --rebuild
-```
-
-运行目标：
-
-```bash
-   xmake r console
-or xmake run console
-```
-
-调试目标：
-
-```bash
-   xmake r -d console
-or xmake run -d console
-```
-
-打包所有：
-
-```bash
-   xmake p
-or xmake package
-or xmake package console
-or xmake package -o /tmp
-or xmake package --output=/tmp
-```
-
-通过宏脚本打包所有架构:
-   
-```bash
-   xmake m package 
-or xmake m package -p iphoneos
-or xmake m package -p macosx -f "-m debug" -o /tmp/
-or xmake m package --help
-```
-
-安装目标：
-
-```bash
-   xmake i
-or xmake install
-or xmake install console
-or xmake install -o /tmp
-or xmake install --output=/tmp
-```
-
-详细使用方式和参数说明，请参考[文档](https://github.com/waruqi/xmake/wiki/%E7%9B%AE%E5%BD%95)
-或者运行：
-
-```bash
-   xmake -h
-or xmake --help
-or xmake config --help
-or xmake package --help
-or xmake macro --help
-...
-```
-
-## 一些使用xmake的项目：
-
-* [tbox](https://github.com/waruqi/tbox)
-* [gbox](https://github.com/waruqi/gbox)
-* [libsvx](https://github.com/caikelun/libsvx)
-* [更多项目](https://github.com/waruqi/xmake/wiki/%E4%BD%BF%E7%94%A8xmake%E7%9A%84%E5%BC%80%E6%BA%90%E5%BA%93)
-
-## 简单例子
-
-```c
--- add modes: debug and release 
-add_rules("mode.debug", "mode.release")
-
--- add target
+```lua
 target("test")
-
-    -- set kind
     set_kind("static")
-
-    -- add files
-    add_files("src/*.c") 
+    add_files("src/*.cpp")
+    after_build(function (target)
+        print("build %s ok!", target:targetfile())
+    end)
 ```
+
+使用扩展模块：
+
+```lua
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    on_load(function (target)
+        import("lib.detect.find_package")
+        target:add(find_package("zlib"))
+    end)
+```
+
+## 项目例子
+
+一些使用xmake的项目：
+
+* [tbox](https://github.com/tboox/tbox)
+* [gbox](https://github.com/tboox/gbox)
+* [vm86](https://github.com/tboox/vm86)
+* [更多](https://github.com/tboox/awesome-xmake)
+
+## 演示视频
+
+<a href="https://asciinema.org/a/133693">
+<img src="https://asciinema.org/a/133693.png" width="60%" />
+</a>
 
 ## 联系方式
 
 * 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * 主页：[tboox.org](http://www.tboox.org/cn)
-* 社区：[reddit论坛](https://www.reddit.com/r/tboox/)
+* 社区：[Reddit论坛](https://www.reddit.com/r/tboox/)
+* 聊天：[Telegram群组](https://t.me/tbooxorg), [Gitter聊天室](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* 源码：[Github](https://github.com/tboox/xmake), [Gitee](https://gitee.com/tboox/xmake)
 * QQ群：343118190
 * 微信公众号：tboox-os
-
+ 
 ## 感谢
 
 感谢所有对xmake有所[贡献](CONTRIBUTING.md)的人:
