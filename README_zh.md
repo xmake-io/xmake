@@ -98,11 +98,7 @@ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xm
 
 ## 简单的工程描述
 
-```lua
-target("console")
-    set_kind("binary")
-    add_files("src/*.c") 
-```
+<img src="https://xmake.io/assets/img/index/showcode1.png" width="50%" />
 
 ## 构建工程
 
