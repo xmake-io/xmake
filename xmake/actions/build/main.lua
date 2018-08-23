@@ -28,11 +28,17 @@ import("core.base.task")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
-import("builder")
+import("build")
+import("trybuild")
 import("statistics")
 
 -- main
 function main()
+
+    -- try building it using third-party buildsystem if xmake.lua not exists
+    if not os.isfile(project.file()) and option.get("try") then
+        return trybuild() 
+    end
 
     -- get the target name
     local targetname = option.get("target")
@@ -50,7 +56,7 @@ function main()
     try
     {
         function ()
-            builder.build(targetname) 
+            build(targetname) 
         end,
 
         catch 

@@ -30,7 +30,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache", {nocache = true})
 import("lib.detect.cache", {alias = "detectcache"})
-import("scanner")
+import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configheader", {alias = "generate_configheader"})
 import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
@@ -176,7 +176,7 @@ function main()
         end
 
         -- scan and generate it automatically
-        scanner.make()
+        scangen()
     end
 
     -- the target name

@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        builder.lua
+-- @file        build.lua
 --
 
 -- imports
@@ -183,8 +183,8 @@ function _stat_target_count(targetname)
     end
 end
 
--- build
-function build(targetname)
+-- the main entry
+function main(targetname)
 
     -- enter toolchains environment
     environment.enter("toolchains")
@@ -214,4 +214,5 @@ function build(targetname)
     -- leave toolchains environment
     environment.leave("toolchains")
 end
+
 

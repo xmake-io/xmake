@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        scanner.lua
+-- @file        scangen.lua
 --
 
 -- imports
@@ -29,7 +29,7 @@ import("core.project.template")
 import("core.language.language")
 
 -- scan project and generate xmake.lua automaticlly if the project codes exist
-function make()
+function main()
 
     -- trace
     cprint("${yellow}xmake.lua not found, scanning files ..")
