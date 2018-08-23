@@ -75,7 +75,6 @@ function main(targetname)
     table.insert(buildscripts, {"configure",      _build_for_configure})
     table.insert(buildscripts, {"[mM]akefile",    _build_for_makefile})
 
-
     -- attempt to build it
     local ok = false
     for _, buildscript in pairs(buildscripts) do
