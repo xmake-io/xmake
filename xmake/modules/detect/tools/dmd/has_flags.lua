@@ -91,12 +91,13 @@ function _check_try_running(flags, opt, islinker)
 
     -- make an stub source file
     local sourcefile = path.join(os.tmpdir(), "detect", "dmd_has_flags.d")
+    local objectfile = path.join(os.tmpdir(), "detect", "dmd_has_flags.o")
     if not os.isfile(sourcefile) then
         io.writefile(sourcefile, "void main() {\n}")
     end
 
     -- init argv
-    local argv = table.join(flags, "-of" .. os.nuldev(), sourcefile)
+    local argv = table.join(flags, "-of" .. objectfile, sourcefile)
     if not islinker then
         table.insert(argv, 1, "-c")
     end
