@@ -355,7 +355,10 @@ function project._load_targets()
     -- make targets
     local targets = {}
     for targetname, targetinfo in pairs(results) do
-        targets[targetname] = target.new(targetname, targetinfo, project)
+        local t = target.new(targetname, targetinfo, project)
+        if t and (t:get("enabled") == nil or t:get("enabled") == true) then
+            targets[targetname] = t
+        end
     end
 
     -- load and attach target deps and rules

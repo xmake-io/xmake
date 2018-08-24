@@ -7,6 +7,7 @@
 * Support fasm assembler
 * Add `has_config` and `is_config` apis
 * Add `$ xmake --try` to try building project using third-party buildsystem
+* Add `set_enabled(false)` to disable target 
 
 ### Changes
 
@@ -482,6 +483,7 @@
 * 新增fasm汇编器支持
 * 添加`has_config`和`is_config`接口去快速判断option和配置值
 * 添加`$ xmake --try`去尝试构建工程
+* 添加`set_enabled(false)`去显示的禁用target
 
 ### 改进
 

@@ -53,6 +53,7 @@ function target.apis()
             "target.set_kind"
         ,   "target.set_strip"
         ,   "target.set_rules"
+        ,   "target.set_enabled"
         ,   "target.set_default"
         ,   "target.set_options"
         ,   "target.set_symbols"
