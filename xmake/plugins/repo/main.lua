@@ -100,12 +100,16 @@ function _update()
             -- remove repeat and only pull the first repository
             if not pulled[repodir] then
                 if os.isdir(repodir) then
+                    
+                    -- update the local repository with the remote url
+                    if not os.isdir(repo:url()) then
 
-                    -- trace
-                    vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
+                        -- trace
+                        vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
-                    -- pull it
-                    git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                        -- pull it
+                        git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                    end
                 else
                     -- trace
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)

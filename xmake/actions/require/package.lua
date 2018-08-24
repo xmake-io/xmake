@@ -150,10 +150,10 @@ end
 function _load_package_from_repository(packagename, reponame)
 
     -- get package directory from the given package name
-    local packagedir, is_global = repository.packagedir(packagename, reponame)
+    local packagedir, repo = repository.packagedir(packagename, reponame)
     if packagedir then
         -- load it
-        return core_package.load_from_repository(packagename, is_global, packagedir)
+        return core_package.load_from_repository(packagename, repo, packagedir)
     end
 end
 
@@ -219,8 +219,8 @@ function _search_package_from_repository(name)
 
     -- search package directories from the given package name
     local packages = {}
-    for packagename, packageinfo in pairs(repository.searchdirs(name)) do
-        local package = core_package.load_from_repository(packagename, packageinfo.is_global, packageinfo.packagedir)
+    for _, packageinfo in ipairs(repository.searchdirs(name)) do
+        local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
         if package then
             table.insert(packages, package)
         end

@@ -35,14 +35,13 @@ local config      = require("project/config")
 local interpreter = require("base/interpreter")
 
 -- new an instance
-function _instance.new(name, info, url, directory, is_global)
+function _instance.new(name, url, directory, is_global)
 
     -- new an instance
     local instance = table.inherit(_instance)
 
     -- init instance
     instance._NAME      = name
-    instance._INFO      = info
     instance._URL       = url
     instance._DIRECTORY = directory
     instance._IS_GLOBAL = is_global
@@ -56,9 +55,26 @@ function _instance:get(name)
 
     -- the info
     local info = self._INFO
+    if not info then
 
-    -- get if from info first
-    local value = info[name]
+        -- attempt to load info from the repository script (xmake.lua)
+        local scriptpath = path.join(self:directory(), "xmake.lua")
+        if os.isfile(scriptpath) then
+
+            -- load repository and disable filter
+            local results, errors = repository._interpreter():load(scriptpath, nil, true, false)
+            if not results and os.isfile(scriptpath) then
+                os.raise(errors)
+            end
+
+            -- save repository info
+            info = results
+            self._INFO = info
+        end
+    end
+
+    -- get if from info 
+    local value = info and info[name] or nil
     if value ~= nil then
         return value 
     end
@@ -160,25 +176,10 @@ function repository.load(name, url, is_global)
     end
 
     -- the repository directory
-    local repodir = path.join(repository.directory(is_global), name)
-
-    -- get the repository script path
-    local repoinfo = {}
-    local scriptpath = path.join(repodir, "xmake.lua")
-    if os.isfile(scriptpath) then
-
-        -- load repository and disable filter
-        local results, errors = repository._interpreter():load(scriptpath, nil, true, false)
-        if not results and os.isfile(scriptpath) then
-            return nil, errors
-        end
-
-        -- save repository info
-        repoinfo = results
-    end
+    local repodir = os.isdir(url) and url or path.join(repository.directory(is_global), name)
 
     -- new an instance
-    local instance, errors = _instance.new(name, repoinfo, url, repodir, is_global)
+    local instance, errors = _instance.new(name, url, repodir, is_global)
     if not instance then
         return nil, errors
     end

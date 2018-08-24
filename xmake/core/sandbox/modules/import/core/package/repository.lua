@@ -121,6 +121,14 @@ function sandbox_core_package_repository.repositories(is_global)
         end
     end
 
+    -- load repository from builtin program directory
+    if is_global then
+        local repo = repository.load("builtin-repo", path.join(os.programdir(), "repository"), true)
+        if repo then
+            table.insert(repositories, repo)
+        end
+    end
+
     -- get the repositories
     return repositories
 end

@@ -84,6 +84,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the repository of this package
+function _instance:repo()
+    return self._REPO
+end
+
 -- get the package alias  
 function _instance:alias()
     local requireinfo = self:requireinfo()
@@ -545,7 +550,7 @@ function package.load_from_project(packagename, project)
 end
 
 -- load the package from the package directory or package description file
-function package.load_from_repository(packagename, is_global, packagedir, packagefile)
+function package.load_from_repository(packagename, repo, packagedir, packagefile)
 
     -- get it directly from cache first
     package._PACKAGES = package._PACKAGES or {}
@@ -587,8 +592,11 @@ function package.load_from_repository(packagename, is_global, packagedir, packag
         return nil, errors
     end
 
+    -- save repository
+    instance._REPO = repo
+
     -- mark as global/project package?
-    instance._FROMKIND = utils.ifelse(is_global, "global", "local")
+    instance._FROMKIND = repo:is_global() and "global" or "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
