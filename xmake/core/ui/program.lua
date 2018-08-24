@@ -215,6 +215,7 @@ function program:loop(argv)
         else
             -- do idle event
             self:event_on(event.idle())
+            sleep = true
         end
 
         -- quit?

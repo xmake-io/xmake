@@ -20,6 +20,7 @@
 ### Bug fixed
 
 * [#177](https://github.com/tboox/xmake/issues/177): Fix the dependent target link bug
+* Fix high cpu usage bug and Exit issues for `$ xmake f --menu`
 
 ## v2.2.1
 
@@ -494,6 +495,7 @@
 ### Bugs修复
 
 * [#177](https://github.com/tboox/xmake/issues/177): 修复被依赖的动态库target，如果设置了basename后链接失败问题
+* 修复`$ xmake f --menu`中Exit问题以及cpu过高问题
 
 ## v2.2.1
 
