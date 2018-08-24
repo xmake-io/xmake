@@ -69,7 +69,7 @@ function _remove(name, is_global)
     end
 
     -- trace
-    cprint("${bright}remove %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
+    cprint("${bright}remove %s repository(%s): ok!", ifelse(is_global, "global", "local"), name)
 end
 
 -- update repositories

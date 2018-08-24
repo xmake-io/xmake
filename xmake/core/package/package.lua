@@ -558,6 +558,9 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
         return package._PACKAGES[packagename]
     end
 
+    -- load repository first for checking the xmake minimal version
+    repo:load()
+
     -- find the package script path
     local scriptpath = packagefile
     if not packagefile and packagedir then

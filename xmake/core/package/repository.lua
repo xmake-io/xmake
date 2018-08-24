@@ -53,25 +53,8 @@ end
 -- get the repository configure
 function _instance:get(name)
 
-    -- the info
-    local info = self._INFO
-    if not info then
-
-        -- attempt to load info from the repository script (xmake.lua)
-        local scriptpath = path.join(self:directory(), "xmake.lua")
-        if os.isfile(scriptpath) then
-
-            -- load repository and disable filter
-            local results, errors = repository._interpreter():load(scriptpath, nil, true, false)
-            if not results and os.isfile(scriptpath) then
-                os.raise(errors)
-            end
-
-            -- save repository info
-            info = results
-            self._INFO = info
-        end
-    end
+    -- load info
+    local info = self:load()
 
     -- get if from info 
     local value = info and info[name] or nil
@@ -98,6 +81,29 @@ end
 -- get the repository directory
 function _instance:directory()
     return self._DIRECTORY
+end
+
+-- load the repository info in xmake.lua
+function _instance:load()
+
+    -- do not loaded?
+    if not self._INFO then
+
+        -- attempt to load info from the repository script (xmake.lua)
+        local scriptpath = path.join(self:directory(), "xmake.lua")
+        if os.isfile(scriptpath) then
+
+            -- load repository and disable filter
+            local results, errors = repository._interpreter():load(scriptpath, nil, true, false)
+            if not results and os.isfile(scriptpath) then
+                os.raise("load repo(%s) failed, " .. errors, self:name())
+            end
+
+            -- save repository info
+            self._INFO = results
+        end
+    end
+    return self._INFO
 end
 
 -- get cache
@@ -149,8 +155,7 @@ function repository.apis()
         values =
         {
             -- set_xxx
-            "set_xmakever"
-        ,   "set_description"
+            "set_description"
         }
     }
 end
