@@ -46,8 +46,7 @@ end
 -- the remote repositories have been pulled?
 function pulled()
     for _, repo in ipairs(repositories()) do
-        local repodir = path.join(repository.directory(repo.global), repo.name)
-        if not os.isdir(repodir) then
+        if not os.isdir(repo:directory()) then
             return false
         end
     end
@@ -84,7 +83,7 @@ function packagedir(packagename, reponame)
         for _, repo in ipairs(repositories()) do
 
             -- the package directory
-            local dir = path.join(repository.directory(repo.global), repo.name, "packages", (packagename:gsub('%.', path.seperator())))
+            local dir = path.join(repo:directory(), "packages", (packagename:gsub('%.', path.seperator())))
             if os.isdir(dir) then
                 foundir = {dir, repo.global}
                 break

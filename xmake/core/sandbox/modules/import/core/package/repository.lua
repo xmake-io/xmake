@@ -90,13 +90,20 @@ function sandbox_core_package_repository.repositories(is_global)
 
         -- add main urls
         for _, mainurl in ipairs(mainurls) do
-            table.insert(repositories, {name = "xmake-repo", url = mainurl, global = true})
+            local repo = repository.load("xmake-repo", mainurl, true)
+            if repo then
+                table.insert(repositories, repo)
+            end
         end
     end
 
+
     -- load repositories from repository cache 
     for name, url in pairs(table.wrap(repository.repositories(is_global))) do
-        table.insert(repositories, {name = name, url = url, global = is_global})
+        local repo = repository.load(name, url, is_global)
+        if repo then
+            table.insert(repositories, repo)
+        end
     end
 
     -- load repositories from project file
@@ -104,7 +111,10 @@ function sandbox_core_package_repository.repositories(is_global)
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
             local repoinfo = repo:split(' ')
             if #repoinfo == 2 then
-                table.insert(repositories, {name = repoinfo[1], url = repoinfo[2], global = is_global})
+                local repo = repository.load(repoinfo[1], repoinfo[2], is_global)
+                if repo then
+                    table.insert(repositories, repo)
+                end
             else
                 raise("invalid repository: %s", repo)
             end

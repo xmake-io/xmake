@@ -95,23 +95,23 @@ function _update()
         for _, repo in ipairs(repos) do
 
             -- the repository directory
-            local repodir = path.join(repository.directory(repo.global), repo.name)
+            local repodir = repo:directory()
 
             -- remove repeat and only pull the first repository
             if not pulled[repodir] then
                 if os.isdir(repodir) then
 
                     -- trace
-                    vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+                    vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
                     -- pull it
                     git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
                 else
                     -- trace
-                    vprint("cloning repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+                    vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
                     -- clone it
-                    git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+                    git.clone(repo:url(), {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
                 end
 
                 -- pull this repository ok
@@ -164,7 +164,8 @@ function _list()
         for _, repo in pairs(repository.repositories(position == "global")) do
 
             -- trace
-            print("    %s %s", repo.name, repo.url)
+            local description = repo:get("description")
+            print("    %s %s %s", repo:name(), repo:url(), description and ("(" .. description .. ")") or "")
 
             -- update count
             count = count + 1
