@@ -59,10 +59,13 @@ end
 function app:mconfdialog()
     if not self._MCONFDIALOG then
         local mconfdialog = mconfdialog:new("app.config.mconfdialog", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
-        mconfdialog:action_set(action.ac_on_exit, function (v) self:quit() end)
+        mconfdialog:action_set(action.ac_on_exit, function (v) 
+            self:quit() 
+            os.exit()
+        end)
         mconfdialog:action_set(action.ac_on_save, function (v) 
             self:save()
-            mconfdialog:quit()
+            self:quit()
         end)
         self._MCONFDIALOG = mconfdialog
     end
