@@ -65,7 +65,7 @@ function packagedir(packagename, reponame)
 
     -- find the package directory from repositories
     for _, repo in ipairs(repositories()) do
-        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
+        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1):lower(), packagename)
         if os.isdir(dir) and (not reponame or reponame == repo:name()) then
             foundir = {dir, repo}
             break

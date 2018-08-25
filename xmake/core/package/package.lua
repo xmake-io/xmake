@@ -164,7 +164,7 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    return path.join(package.cachedir(), self:name(), self:version_str())
+    return path.join(package.cachedir(), self:name():sub(1, 1):lower(), self:name(), self:version_str())
 end
 
 -- get the installed directory of this package
@@ -176,7 +176,7 @@ function _instance:installdir()
     end
 
     -- make install directory
-    return path.join(package.installdir(self:from("global")), self:name(), self:version_str())
+    return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str())
 end
 
 -- get versions
