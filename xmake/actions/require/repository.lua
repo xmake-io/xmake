@@ -65,7 +65,7 @@ function packagedir(packagename, reponame)
 
     -- find the package directory from repositories
     for _, repo in ipairs(repositories()) do
-        local dir = path.join(repo:directory(), "packages", (packagename:gsub('%.', path.seperator())))
+        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
         if os.isdir(dir) and (not reponame or reponame == repo:name()) then
             foundir = {dir, repo}
             break
@@ -89,14 +89,11 @@ end
 -- search package directories from repositories
 function searchdirs(name)
 
-    -- split name by '.'
-    local subdirs = "**" .. table.concat(name:split('%.'), "*" .. path.seperator() .. "*") .. "*"
-
     -- find the package directories from all repositories
     local unique = {}
     local packageinfos = {}
     for _, repo in ipairs(repositories()) do
-        for _, file in ipairs(os.files(path.join(repo:directory(), "packages", subdirs, "xmake.lua"))) do
+        for _, file in ipairs(os.files(path.join(repo:directory(), "packages", "*", string.ipattern("*" .. name .. "*"), "xmake.lua"))) do
             local packagename = path.basename(path.directory(file))
             if not unique[packagename] then
                 table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})

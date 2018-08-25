@@ -328,9 +328,9 @@ function _load_packages_gitrefs(packages)
         if package then
 
             -- attempt to get refs from cache first
-            local refs = gitrefs[package:fullname()]
+            local refs = gitrefs[package:name()]
             if refs then
-                results[package:fullname()] = {tags = refs.tags, branches = refs.branches}
+                results[package:name()] = {tags = refs.tags, branches = refs.branches}
             else
                 -- attempt to get refs from the git url
                 local tags = {}
@@ -345,10 +345,10 @@ function _load_packages_gitrefs(packages)
                         tags, branches = git.refs(url) 
 
                         -- save result
-                        results[package:fullname()] = {tags = tags, branches = branches}
+                        results[package:name()] = {tags = tags, branches = branches}
 
                         -- cache result
-                        gitrefs[package:fullname()] = {tags = tags, branches = branches}
+                        gitrefs[package:name()] = {tags = tags, branches = branches}
                         break
                     end
                 end
@@ -393,7 +393,7 @@ function _select_packages_version(packages)
             -- attempt to get tags and branches from the git url
             local refs = {}
             if gitrefs then
-                refs = gitrefs[package:fullname()] or {}
+                refs = gitrefs[package:name()] or {}
             end
 
             -- select package version
@@ -426,7 +426,7 @@ function _get_confirm(packages)
         -- show tips
         cprint("${bright yellow}note: ${default yellow}try installing these packages (pass -y to skip confirm)?")
         for _, package in ipairs(confirmed_packages) do
-            print("  -> %s %s", package:fullname(), package:version_str() or "")
+            print("  -> %s %s", package:name(), package:version_str() or "")
         end
         cprint("please input: y (y/n)")
 
@@ -534,7 +534,7 @@ function install_packages(requires, requires_extra)
         for _, index in ipairs(indices) do
             local package = packages_remote[index]
             if package then
-                table.insert(downloading, package:fullname())
+                table.insert(downloading, package:name())
             end
         end
        

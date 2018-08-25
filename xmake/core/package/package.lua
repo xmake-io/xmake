@@ -47,13 +47,9 @@ function _instance.new(name, info, rootdir)
     -- new an instance
     local instance = table.inherit(_instance)
 
-    -- parse name .e.g vendor.name
-    local nameinfo = name:split("%.")
-
     -- init instance
-    instance._FULLNAME  = name
-    instance._NAME      = nameinfo[2] or name
-    instance._VENDOR    = nameinfo[1]
+    instance._name  = name
+    instance._NAME      = name
     instance._INFO      = info
     instance._ROOTDIR   = rootdir
 
@@ -74,12 +70,7 @@ function _instance:get(name)
     end
 end
 
--- get the package full name with vendor
-function _instance:fullname()
-    return self._FULLNAME
-end
-
--- get the package name without vendor
+-- get the package name 
 function _instance:name()
     return self._NAME
 end
@@ -95,11 +86,6 @@ function _instance:alias()
     if requireinfo then
         return requireinfo.alias 
     end
-end
-
--- get the package vendor 
-function _instance:vendor()
-    return self._VENDOR
 end
 
 -- get urls
@@ -178,7 +164,7 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    return path.join(package.cachedir(), self:fullname(), self:version_str())
+    return path.join(package.cachedir(), self:name(), self:version_str())
 end
 
 -- get the installed directory of this package
@@ -190,7 +176,7 @@ function _instance:installdir()
     end
 
     -- make install directory
-    return path.join(package.installdir(self:from("global")), self:fullname(), self:version_str())
+    return path.join(package.installdir(self:from("global")), self:name(), self:version_str())
 end
 
 -- get versions

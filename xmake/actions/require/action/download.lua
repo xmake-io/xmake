@@ -47,7 +47,7 @@ end
 function _checkout(package, url, sourcedir)
 
     -- use previous source directory if exists
-    local packagedir = path.join(sourcedir, package:fullname())
+    local packagedir = path.join(sourcedir, package:name())
     if os.isdir(packagedir) and not option.get("force") then
 
         -- clean the previous build files
@@ -59,7 +59,7 @@ function _checkout(package, url, sourcedir)
     os.rm(sourcedir .. ".tmp")
 
     -- download package from branches?
-    packagedir = path.join(sourcedir .. ".tmp", package:fullname())
+    packagedir = path.join(sourcedir .. ".tmp", package:name())
     if package:version_from("branches") then
 
         -- only shadow clone this branch 
@@ -92,7 +92,7 @@ function _download(package, url, sourcedir, url_alias)
 
     -- get sha256
     local sha256 = package:sha256(url_alias)
-    assert(sha256, "cannot get sha256 of %s in package(%s)", url, package:fullname())
+    assert(sha256, "cannot get sha256 of %s in package(%s)", url, package:name())
 
     -- the package file have been downloaded?
     if option.get("force") or not os.isfile(packagefile) or sha256 ~= hash.sha256(packagefile) then
