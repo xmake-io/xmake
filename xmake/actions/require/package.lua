@@ -307,63 +307,6 @@ function _load_packages(requires, requires_extra, parentinfo)
     return packages
 end
 
--- load all git refs from packages
-function _load_packages_gitrefs(packages)
-
-    -- enter cache scope
-    cache.enter("local.require")
-
-    -- load cache
-    local gitrefs = nil
-    if option.get("force") then
-        gitrefs = {}
-    else
-        gitrefs = cache.get("gitrefs") or {}
-    end
-
-    -- run tasks
-    local results = {}
-    process.runjobs(function (index)
-        local package = packages[index]
-        if package then
-
-            -- attempt to get refs from cache first
-            local refs = gitrefs[package:name()]
-            if refs then
-                results[package:name()] = {tags = refs.tags, branches = refs.branches}
-            else
-                -- attempt to get refs from the git url
-                local tags = {}
-                local branches = {}
-                for _, url in ipairs(package:urls()) do
-                    if git.checkurl(url) then
-                        
-                        -- trace
-                        vprint("fetching refs for the git url ... %s", url)
-
-                        -- fetch refs
-                        tags, branches = git.refs(url) 
-
-                        -- save result
-                        results[package:name()] = {tags = tags, branches = branches}
-
-                        -- cache result
-                        gitrefs[package:name()] = {tags = tags, branches = branches}
-                        break
-                    end
-                end
-            end
-        end
-    end, #packages)
-
-    -- save cache
-    cache.set("gitrefs", gitrefs)
-    cache.flush()
-
-    -- ok?
-    return results
-end
-
 -- sort packages urls
 function _sort_packages_urls(packages)
 
@@ -381,23 +324,14 @@ end
 -- select packages version
 function _select_packages_version(packages)
 
-    -- load git refs from packages
-    local gitrefs = _load_packages_gitrefs(packages)
-
     -- sort and update urls
     for _, package in ipairs(packages) do
 
         -- exists urls? otherwise be phony package (only as package group)
         if #package:urls() > 0 then
 
-            -- attempt to get tags and branches from the git url
-            local refs = {}
-            if gitrefs then
-                refs = gitrefs[package:name()] or {}
-            end
-
             -- select package version
-            local version, source = semver.select(package:requireinfo().version, package:versions(), refs.tags, refs.branches)
+            local version, source = semver.select(package:requireinfo().version, package:versions(), {}, {"master"})
 
             -- save version to package
             package:version_set(version, source)
