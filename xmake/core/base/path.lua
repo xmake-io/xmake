@@ -93,20 +93,18 @@ end
 
 -- split path by the separator
 function path.split(p)
-
-    -- split it
     return p:split("/\\")
 end
 
 -- get the path seperator
 function path.seperator()
+    return xmake._HOST == "windows" and '\\' or '/'
+end
 
-    -- windows?
-    if xmake._HOST == "windows" then
-        return '\\'
-    else
-        return '/'
-    end
+-- the last character is the path seperator?
+function path.islastsep(p)
+    local sep = p:sub(#p, #p)
+    return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
 
 -- convert path pattern to a lua pattern
