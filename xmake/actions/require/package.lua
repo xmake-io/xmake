@@ -77,7 +77,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get repository name, package name and package url
     local reponame    = nil
-    local packageurl  = nil
     local packagename = nil
     local pos = packageinfo:find_last('@', true)
     if pos then
@@ -85,15 +84,8 @@ function _parse_require(require_str, requires_extra, parentinfo)
         -- get package name
         packagename = packageinfo:sub(pos + 1)
 
-        -- get reponame or packageurl
-        local repo_or_pkgurl = packageinfo:sub(1, pos - 1)
-
-        -- is package url?
-        if repo_or_pkgurl:find('[/\\]') then
-            packageurl = repo_or_pkgurl
-        else
-            reponame = repo_or_pkgurl
-        end
+        -- get reponame 
+        reponame = packageinfo:sub(1, pos - 1)
     else 
         packagename = packageinfo
     end
@@ -115,7 +107,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
     {
         originstr        = require_str,
         reponame         = reponame,
-        packageurl       = packageurl,
         version          = version,
         alias            = require_extra.alias,     -- set package alias name
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
@@ -130,11 +121,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- ok
     return required.packagename, required.requireinfo
-end
-
--- load package package from the given package url
-function _load_package_from_url(packagename, packageurl)
-    return core_package.load_from_url(packagename, packageurl)
 end
 
 -- load package package from system
@@ -176,24 +162,17 @@ function _load_package(packagename, requireinfo)
         return package
     end
 
-    -- load package package
-    package = nil
-    if requireinfo.packageurl then
-        -- load package from the given package url
-        package = _load_package_from_url(packagename, requireinfo.packageurl)
-    else
-        -- load package from project first
-        package = _load_package_from_project(packagename)
-            
-        -- load package from repositories
-        if not package then
-            package = _load_package_from_repository(packagename, requireinfo.reponame)
-        end
+    -- load package from project first
+    package = _load_package_from_project(packagename)
+        
+    -- load package from repositories
+    if not package then
+        package = _load_package_from_repository(packagename, requireinfo.reponame)
+    end
 
-        -- load package from system
-        if not package then
-            package = _load_package_from_system(packagename)
-        end
+    -- load package from system
+    if not package then
+        package = _load_package_from_system(packagename)
     end
 
     -- check

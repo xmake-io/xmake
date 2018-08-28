@@ -443,34 +443,6 @@ function package.cachedir()
     return path.join(global.directory(), "cache", "packages")
 end
 
--- load the package from the package url
-function package.load_from_url(packagename, packageurl)
-
-    -- make a temporary package file
-    local packagefile = os.tmpfile() .. ".lua"
-
-    -- make package description
-    local packagedata = string.format([[
-    package("%s")
-        set_urls("%s")
-    ]], packagename, packageurl)
-
-    -- write a temporary package description to file
-    local ok, errors = io.writefile(packagefile, packagedata)
-    if not ok then
-        return nil, errors
-    end
-
-    -- load package instance
-    local instance, errors = package.load_from_repository(packagename, false, nil, packagefile)
-
-    -- remove the package file
-    os.rm(packagefile)
-
-    -- ok?
-    return instance, errors
-end
-
 -- load the package from the system directories
 function package.load_from_system(packagename)
 
