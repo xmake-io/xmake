@@ -37,11 +37,11 @@ import("repository")
 --
 -- parse require string
 --
--- add_requires("tboox.tbox >=1.5.1", "zlib >=1.2.11")
+-- add_requires("tbox >=1.5.1", "zlib >=1.2.11")
 -- add_requires("zlib master")
--- add_requires("xmake-repo@tboox.tbox >=1.5.1") 
+-- add_requires("xmake-repo@tbox >=1.5.1") 
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1") 
--- add_requires("tboox.tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
+-- add_requires("tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
 --
 function _parse_require(require_str, requires_extra, parentinfo)
 
@@ -63,12 +63,13 @@ function _parse_require(require_str, requires_extra, parentinfo)
     --
     -- .e.g 
     -- 
+    -- lastest
     -- >=1.5.1 <1.6.0  
     -- master || >1.4
     -- ~1.2.3
     -- ^1.1
     --
-    local version = "master"
+    local version = "lastest"
     if #splitinfo > 1 then
         version = table.concat(table.slice(splitinfo, 2), " ")
     end
@@ -116,11 +117,11 @@ function _parse_require(require_str, requires_extra, parentinfo)
         reponame         = reponame,
         packageurl       = packageurl,
         version          = version,
-        alias            = require_extra.alias,
-        system           = require_extra.system,
-        option           = require_extra.option,
-        default          = require_extra.default,
-        optional         = parentinfo.optional or require_extra.optional -- inherit parentinfo.optional
+        alias            = require_extra.alias,     -- set package alias name
+        system           = require_extra.system,    -- default: true, we can set it to disable system package manually
+        option           = require_extra.option,    -- set and attach option
+        default          = require_extra.default,   -- default: true, we can set it to disable package manually
+        optional         = parentinfo.optional or require_extra.optional -- default: false, inherit parentinfo.optional
     }
 
     -- save this required item to cache
@@ -330,8 +331,26 @@ function _select_packages_version(packages)
         -- exists urls? otherwise be phony package (only as package group)
         if #package:urls() > 0 then
 
+            -- has git url?
+            local has_giturl = false
+            for _, url in ipairs(package:urls()) do
+                if git.checkurl(url) then
+                    has_giturl = true
+                    break
+                end
+            end
+
             -- select package version
-            local version, source = semver.select(package:requireinfo().version, package:versions(), {}, {"master"})
+            local source = nil
+            local version = nil
+            local require_version = package:requireinfo().version
+            if require_version == "lastest" or require_version:find('.', 1, true) then -- select version?
+                version, source = semver.select(require_version, package:versions())
+            elseif has_giturl then -- select branch?
+                version, source = require_version, "branches"
+            else
+                raise("package(%s %s): not found!", package:name(), require_version)
+            end
 
             -- save version to package
             package:version_set(version, source)

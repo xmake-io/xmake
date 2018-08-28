@@ -1,6 +1,8 @@
 
 -- requires
-add_requires("zlib >=1.2.11", "tbox ~1.6.0", "pcre2")
+add_requires("tbox master")
+add_requires("zlib >=1.2.11", {optional = true})
+add_requires("pcre2", {system = false})
 
 -- add modes
 add_rules("mode.debug", "mode.release")
