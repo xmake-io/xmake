@@ -34,7 +34,7 @@ function _test_semver_select()
                         , {"master", "dev"})
 
     _check_semver_select({"1.5.1", "versions"}
-                        , "master"
+                        , "lastest"
                         , {"1.4.0", "1.5.0", "1.5.1"})
 
     print("semver.select: ok!")
