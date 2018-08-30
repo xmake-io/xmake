@@ -247,7 +247,17 @@ tbox_C_FILES 			+= \
 						src/tbox/libm/cosf \
 						src/tbox/libm/sqrtf \
 						src/tbox/hash/sha \
-						src/tbox/hash/uuid 
+						src/tbox/hash/uuid \
+						src/tbox/charset/charset \
+						src/tbox/charset/ascii \
+						src/tbox/charset/gb2312 \
+						src/tbox/charset/utf8 \
+						src/tbox/charset/utf16 \
+						src/tbox/charset/utf32 \
+						src/tbox/charset/ucs2 \
+						src/tbox/charset/ucs4 \
+						src/tbox/charset/iso8859 
+
 
 ifeq ($(PLAT),windows)
 tbox_C_FILES 			+= \

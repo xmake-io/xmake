@@ -137,7 +137,8 @@ function make(vsinfo, target)
     local vcxprojdir = path.join(vsinfo.solution_dir, targetname)
 
     -- open vcxproj.filters file
-    local filtersfile = vsfile.open(path.join(vcxprojdir, targetname .. ".vcxproj.filters"), "w")
+    local filterspath = path.join(vcxprojdir, targetname .. ".vcxproj.filters")
+    local filtersfile = vsfile.open(filterspath, "w")
 
     -- init indent character
     vsfile.indentchar('  ')
@@ -159,4 +160,7 @@ function make(vsinfo, target)
 
     -- exit solution file
     filtersfile:close()
+
+    -- convert gb2312 to utf8
+    io.writefile(filterspath, io.readfile(filterspath):convert("gb2312", "utf8"))
 end

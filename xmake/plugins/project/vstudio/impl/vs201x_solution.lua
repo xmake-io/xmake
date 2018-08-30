@@ -103,7 +103,8 @@ function make(vsinfo)
     vsinfo.solution_name = project.name() or "vs" .. vsinfo.vstudio_version
 
     -- open solution file
-    local slnfile = vsfile.open(path.join(vsinfo.solution_dir, vsinfo.solution_name .. ".sln"), "w")
+    local slnpath = path.join(vsinfo.solution_dir, vsinfo.solution_name .. ".sln")
+    local slnfile = vsfile.open(slnpath, "w")
 
     -- init indent character
     vsfile.indentchar('\t')
@@ -119,4 +120,7 @@ function make(vsinfo)
 
     -- exit solution file
     slnfile:close()
+
+    -- convert gb2312 to utf8
+    io.writefile(slnpath, io.readfile(slnpath):convert("gb2312", "utf8"))
 end

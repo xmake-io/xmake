@@ -705,7 +705,8 @@ function make(vsinfo, target)
     local vcxprojdir = path.join(vsinfo.solution_dir, targetname)
 
     -- open vcxproj file
-    local vcxprojfile = vsfile.open(path.join(vcxprojdir, targetname .. ".vcxproj"), "w")
+    local vcxprojpath = path.join(vcxprojdir, targetname .. ".vcxproj")
+    local vcxprojfile = vsfile.open(vcxprojpath, "w")
 
     -- init indent character
     vsfile.indentchar('  ')
@@ -727,4 +728,7 @@ function make(vsinfo, target)
 
     -- exit solution file
     vcxprojfile:close()
+
+    -- convert gb2312 to utf8
+    io.writefile(vcxprojpath, io.readfile(vcxprojpath):convert("gb2312", "utf8"))
 end

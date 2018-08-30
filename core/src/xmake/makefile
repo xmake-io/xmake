@@ -48,6 +48,7 @@ xmake_C_FILES 			+= \
 						path/is_absolute \
 						hash/uuid \
 						hash/sha256 \
+						string/convert \
 						string/endswith \
 						string/startswith \
 						process/open \

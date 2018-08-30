@@ -140,7 +140,7 @@ tb_size_t           tb_charset_type(tb_char_t const* name);
  *
  * @return          the charset pointer
  */
-tb_charset_ref_t tb_charset_find(tb_size_t type);
+tb_charset_ref_t    tb_charset_find(tb_size_t type);
 
 /*! convert charset from static stream
  *

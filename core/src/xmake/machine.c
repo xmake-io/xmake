@@ -108,6 +108,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua);
 #endif
 
 // the string functions
+tb_int_t xm_string_convert(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
 
@@ -216,7 +217,8 @@ static luaL_Reg const g_hash_functions[] =
 // the string functions
 static luaL_Reg const g_string_functions[] = 
 {
-    { "endswith",       xm_string_endswith      }
+    { "convert",        xm_string_convert       }
+,   { "endswith",       xm_string_endswith      }
 ,   { "startswith",     xm_string_startswith    }
 ,   { tb_null,          tb_null                 }
 };
