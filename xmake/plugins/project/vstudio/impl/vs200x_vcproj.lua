@@ -40,7 +40,7 @@ function _make_compflags(sourcefile, target, vcprojdir)
 
         -- replace -Idir or /Idir
         flag = flag:gsub("[%-|/]I(.*)", function (dir)
-                        dir = dir:trim()
+                        dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcprojdir)
                         end
@@ -49,7 +49,7 @@ function _make_compflags(sourcefile, target, vcprojdir)
 
         -- replace -Fdsymbol.pdb or /Fdsymbol.pdb
         flag = flag:gsub("[%-|/]Fd(.*)", function (dir)
-                        dir = dir:trim()
+                        dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcprojdir)
                         end
@@ -82,7 +82,7 @@ function _make_linkflags(target, vcprojdir)
 
         -- replace -libpath:dir or /libpath:dir
         flag = flag:gsub("[%-|/]libpath:(.*)", function (dir)
-                        dir = dir:trim()
+                        dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcprojdir)
                         end
@@ -91,7 +91,7 @@ function _make_linkflags(target, vcprojdir)
 
         -- replace -pdb:symbol.pdb or /pdb:symbol.pdb
         flag = flag:gsub("[%-|/]pdb:(.*)", function (dir)
-                        dir = dir:trim()
+                        dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcprojdir)
                         end
@@ -249,8 +249,8 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
         -- make configuration for the current mode
         vcprojfile:enter("<Configuration")
             vcprojfile:print("Name=\"$(mode)|Win32\"")
-			vcprojfile:print("OutputDirectory=\"%s\"", path.relative(path.absolute(config.get("buildir")), vcprojdir))
-			vcprojfile:print("IntermediateDirectory=\"%$(ConfigurationName)\"")
+			vcprojfile:print("OutputDirectory=\"%s\"", path.relative(path.absolute(target:targetdir()), vcprojdir))
+			vcprojfile:print("IntermediateDirectory=\"%s\"", path.relative(path.absolute(target:objectdir()), vcprojdir))
 			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
             vcprojfile:print("CharacterSet=\"2\"") -- mbc: 2, wcs: 1
             vcprojfile:print(">")
