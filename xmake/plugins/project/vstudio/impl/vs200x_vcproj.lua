@@ -250,7 +250,7 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
         vcprojfile:enter("<Configuration")
             vcprojfile:print("Name=\"$(mode)|Win32\"")
 			vcprojfile:print("OutputDirectory=\"%s\"", path.relative(path.absolute(target:targetdir()), vcprojdir))
-			vcprojfile:print("IntermediateDirectory=\"%s\"",path.relative(path.absolute(target:objectdir()), vcprojdir))
+			vcprojfile:print("IntermediateDirectory=\"%s\"", path.relative(path.absolute(target:objectdir()), vcprojdir))
 			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
             vcprojfile:print("CharacterSet=\"2\"") -- mbc: 2, wcs: 1
             vcprojfile:print(">")
