@@ -29,68 +29,41 @@ import("build")
 import("test")
 import("filter")
 
--- install for xmake file
-function _install_for_xmakefile(package)
-
-    -- package to install directory
-    os.vrunv("xmake", {"p", "-o", package:installdir()})
-end
-
--- install for generic
-function _install_for_generic(package)
+-- make package 
+function _make_package(package)
 
     -- the package name
     local name = package:name()
 
-    -- the install directory
-    local installdir = path.join(package:installdir(), name .. ".pkg")
+    -- the package directory
+    local packagedir = path.join(package:directory(), name .. ".pkg")
 
     -- the linkdir
-    local linkdir = path.join(installdir, "lib/$(mode)/$(plat)/$(arch)")
-    os.mkdir(linkdir)
+    local linkdir = path.join(packagedir, "lib/$(mode)/$(plat)/$(arch)")
 
     -- the includedir 
-    local includedir = path.join(installdir, "inc")
-    os.mkdir(includedir)
+    local includedir = path.join(packagedir, "inc")
 
-    -- the prefix directory exists?
-    local prefixdir = ""
-    if os.isdir(".prefix") and not os.emptydir(".prefix") then
-        prefixdir = ".prefix" .. path.seperator()
-    end
+    -- the installdir
+    local installdir = package:installdir()
 
     -- install the library files and ignore hidden files (.xxx)
-    if not os.trycp(prefixdir .. "**" .. target.filename("*", "static"), linkdir) and 
-       not os.trycp(prefixdir .. "**" .. target.filename("*", "shared"), linkdir) then
-        raise("the library files not found in package %s", name)
-    end
+    os.cp(path.join(installdir, "lib"), linkdir)
 
     -- install the header files
-    for _, headerfile in ipairs(table.join((os.files(prefixdir .. "**.h")), (os.files(prefixdir .. "**.hpp")))) do
-
-        -- the destinate header
-        local dstheaderfile = nil
-        if #prefixdir > 0 then
-            dstheaderfile = path.absolute(path.relative(headerfile, path.join(prefixdir, "include")), includedir)
-        else
-            dstheaderfile = path.join(includedir, path.filename(headerfile))
-        end
-
-        -- install header file
-        os.cp(headerfile, dstheaderfile)
-    end
+    os.cp(path.join(installdir, "include"), includedir)
 
     -- get links
     local links = {}
     for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "static"))), path.filename) do
-        local link, count = filename:gsub(target.filename("([%w%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
+        local link, count = filename:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
         if count > 0 then
             table.insert(links, link)
         end
     end
     if #links == 0 then
         for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "shared"))), path.filename) do
-            local link, count = filename:gsub(target.filename("([%w%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
+            local link, count = filename:gsub(target.filename("([%%w%%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
             if count > 0 then
                 table.insert(links, link)
             end
@@ -99,7 +72,7 @@ function _install_for_generic(package)
     assert(#links > 0, "the library files not found in package %s", name)
 
     -- make xmake.lua 
-    local file = io.open(path.join(installdir, "xmake.lua"), "w")
+    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
 
         -- the xmake.lua content
@@ -135,58 +108,6 @@ option("%s")
         -- exit file
         file:close()
     end
-end
-
--- on install the given package
-function _on_install_package(package)
-
-    -- init install scripts
-    local installscripts =
-    {
-        {"xmake.lua",       _install_for_xmakefile    }
-    ,   {"*",               _install_for_generic      }
-    }
-
-    -- attempt to install it
-    for _, installscript in pairs(installscripts) do
-
-        -- save the current directory 
-        local oldir = os.curdir()
-
-        -- try installing 
-        local ok = try
-        {
-            function ()
-
-                -- attempt to install it if file exists
-                local files = os.files(installscript[1])
-                if #files > 0 then
-                    installscript[2](package)
-                    return true
-                end
-            end,
-
-            catch
-            {
-                function (errors)
-
-                    -- trace verbose info
-                    if errors then
-                        vprint(errors)
-                    end
-                end
-            }
-        }
-
-        -- restore directory
-        os.cd(oldir)
-
-        -- ok?
-        if ok then return end
-    end
-
-    -- failed
-    raise("attempt to install package %s failed!", package:name())
 end
 
 -- install the given package
@@ -228,7 +149,7 @@ function main(package)
             local scripts =
             {
                 package:script("install_before") 
-            ,   package:script("install", _on_install_package)
+            ,   package:script("install")
             ,   package:script("install_after") 
             }
 
@@ -245,6 +166,9 @@ function main(package)
                         filter.call(script, package)
                     end
                 end
+
+                -- make package from the install directory
+                _make_package(package)
 
                 -- test it
                 test(package)

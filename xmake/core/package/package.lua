@@ -169,13 +169,11 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir()
+    return path.join(self:cachedir(), "install")
+end
 
-    -- only be a system package without urls, no installdir
-    if self:from("system") then
-        return 
-    end
-
-    -- make install directory
+-- get the directory of this package
+function _instance:directory()
     return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str())
 end
 
@@ -331,9 +329,9 @@ function _instance:fetch(force)
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
 
         -- fetch it from the package directories first
-        local installdir = self:installdir()
-        if not fetchinfo and installdir then
-            fetchinfo = self._find_package(self:name(), {packagedirs = installdir, system = false, cachekey = "package:fetch", force = force}) 
+        local packagedir = self:directory()
+        if not fetchinfo and packagedir then
+            fetchinfo = self._find_package(self:name(), {packagedirs = packagedir, system = false, cachekey = "package:fetch", force = force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
