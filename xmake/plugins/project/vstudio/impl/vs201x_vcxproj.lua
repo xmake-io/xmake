@@ -197,7 +197,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<OutDir>%s\\</OutDir>", path.relative(path.absolute(targetinfo.targetdir), vcxprojdir))
-            vcxprojfile:print("<IntDir>%s\\</IntDir>", path.relative(path.absolute(targetinfo.objectdir),vcxprojdir))
+            vcxprojfile:print("<IntDir>%s\\</IntDir>", path.relative(path.absolute(targetinfo.objectdir), vcxprojdir))
             vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
             vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
 
