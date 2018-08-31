@@ -186,7 +186,7 @@ function _on_install_package(package)
     end
 
     -- failed
-    raise("attempt to install package %s failed!", package:fullname())
+    raise("attempt to install package %s failed!", package:name())
 end
 
 -- install the given package
@@ -208,7 +208,7 @@ function main(package)
     end
 
     -- init tipname 
-    local tipname = package:fullname()
+    local tipname = package:name()
     if package:version_str() then
         tipname = tipname .. "-" .. package:version_str()
     end

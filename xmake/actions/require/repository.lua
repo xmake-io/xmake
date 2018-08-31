@@ -46,8 +46,7 @@ end
 -- the remote repositories have been pulled?
 function pulled()
     for _, repo in ipairs(repositories()) do
-        local repodir = path.join(repository.directory(repo.global), repo.name)
-        if not os.isdir(repodir) then
+        if not os.isdir(repo:directory()) then
             return false
         end
     end
@@ -64,39 +63,12 @@ function packagedir(packagename, reponame)
         return foundir[1], foundir[2]
     end
 
-    -- find the package directory from the given repository 
-    if reponame then
-        for _, from in ipairs({"local", "global"}) do
-            local is_global = (from == "global")
-            for _, repodir in ipairs(repository.directory(is_global)) do
-                local dir = path.join(repodir, reponame, "packages", (packagename:gsub('%.', path.seperator())))
-                if os.isdir(dir) then
-                    foundir = {dir, is_global} 
-                    break
-                end
-            end
-            if foundir then
-                break
-            end
-        end
-    else
-        -- find the package directory from all repositories
-        for _, repo in ipairs(repositories()) do
-
-            -- the package directory
-            local dir = path.join(repository.directory(repo.global), repo.name, "packages", (packagename:gsub('%.', path.seperator())))
-            if os.isdir(dir) then
-                foundir = {dir, repo.global}
-                break
-            end
-        end
-    end
-
-    -- not found? find this package from the builtin packages directory
-    if not foundir then
-        local dir = path.join(os.programdir(), "packages", (packagename:gsub('%.', path.seperator())))
-        if os.isdir(dir) then
-            foundir = {dir, true}
+    -- find the package directory from repositories
+    for _, repo in ipairs(repositories()) do
+        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1):lower(), packagename)
+        if os.isdir(dir) and (not reponame or reponame == repo:name()) then
+            foundir = {dir, repo}
+            break
         end
     end
 
@@ -117,22 +89,17 @@ end
 -- search package directories from repositories
 function searchdirs(name)
 
-    -- split name by '.'
-    local subdirs = "**" .. table.concat(name:split('%.'), "*" .. path.seperator() .. "*") .. "*"
-
     -- find the package directories from all repositories
+    local unique = {}
     local packageinfos = {}
     for _, repo in ipairs(repositories()) do
-
-        -- the package directory pattern
-        for _, file in ipairs(os.files(path.join(repository.directory(repo.global), repo.name, "packages", subdirs, "xmake.lua"))) do
-            packageinfos[path.basename(path.directory(file))] = {is_global = repo.global, packagedir = path.directory(file)}
+        for _, file in ipairs(os.files(path.join(repo:directory(), "packages", "*", string.ipattern("*" .. name .. "*"), "xmake.lua"))) do
+            local packagename = path.basename(path.directory(file))
+            if not unique[packagename] then
+                table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})
+                unique[packagename] = true
+            end
         end
-    end
-
-    -- search the package directories from the builtin packages directory
-    for _, file in ipairs(os.files(path.join(os.programdir(), "packages", subdirs, "xmake.lua"))) do
-        packageinfos[path.basename(path.directory(file))] = {is_global = repo.global, packagedir = path.directory(file)}
     end
 
     -- ok?

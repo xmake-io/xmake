@@ -37,11 +37,11 @@ import("repository")
 --
 -- parse require string
 --
--- add_requires("tboox.tbox >=1.5.1", "zlib >=1.2.11")
+-- add_requires("tbox >=1.5.1", "zlib >=1.2.11")
 -- add_requires("zlib master")
--- add_requires("xmake-repo@tboox.tbox >=1.5.1") 
+-- add_requires("xmake-repo@tbox >=1.5.1") 
 -- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1") 
--- add_requires("tboox.tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
+-- add_requires("tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
 --
 function _parse_require(require_str, requires_extra, parentinfo)
 
@@ -63,12 +63,13 @@ function _parse_require(require_str, requires_extra, parentinfo)
     --
     -- .e.g 
     -- 
+    -- lastest
     -- >=1.5.1 <1.6.0  
     -- master || >1.4
     -- ~1.2.3
     -- ^1.1
     --
-    local version = "master"
+    local version = "lastest"
     if #splitinfo > 1 then
         version = table.concat(table.slice(splitinfo, 2), " ")
     end
@@ -76,7 +77,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get repository name, package name and package url
     local reponame    = nil
-    local packageurl  = nil
     local packagename = nil
     local pos = packageinfo:find_last('@', true)
     if pos then
@@ -84,15 +84,8 @@ function _parse_require(require_str, requires_extra, parentinfo)
         -- get package name
         packagename = packageinfo:sub(pos + 1)
 
-        -- get reponame or packageurl
-        local repo_or_pkgurl = packageinfo:sub(1, pos - 1)
-
-        -- is package url?
-        if repo_or_pkgurl:find('[/\\]') then
-            packageurl = repo_or_pkgurl
-        else
-            reponame = repo_or_pkgurl
-        end
+        -- get reponame 
+        reponame = packageinfo:sub(1, pos - 1)
     else 
         packagename = packageinfo
     end
@@ -114,13 +107,12 @@ function _parse_require(require_str, requires_extra, parentinfo)
     {
         originstr        = require_str,
         reponame         = reponame,
-        packageurl       = packageurl,
         version          = version,
-        alias            = require_extra.alias,
-        system           = require_extra.system,
-        option           = require_extra.option,
-        default          = require_extra.default,
-        optional         = parentinfo.optional or require_extra.optional -- inherit parentinfo.optional
+        alias            = require_extra.alias,     -- set package alias name
+        system           = require_extra.system,    -- default: true, we can set it to disable system package manually
+        option           = require_extra.option,    -- set and attach option
+        default          = require_extra.default,   -- default: true, we can set it to disable package manually
+        optional         = parentinfo.optional or require_extra.optional -- default: false, inherit parentinfo.optional
     }
 
     -- save this required item to cache
@@ -129,11 +121,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- ok
     return required.packagename, required.requireinfo
-end
-
--- load package package from the given package url
-function _load_package_from_url(packagename, packageurl)
-    return core_package.load_from_url(packagename, packageurl)
 end
 
 -- load package package from system
@@ -150,10 +137,10 @@ end
 function _load_package_from_repository(packagename, reponame)
 
     -- get package directory from the given package name
-    local packagedir, is_global = repository.packagedir(packagename, reponame)
+    local packagedir, repo = repository.packagedir(packagename, reponame)
     if packagedir then
         -- load it
-        return core_package.load_from_repository(packagename, is_global, packagedir)
+        return core_package.load_from_repository(packagename, repo, packagedir)
     end
 end
 
@@ -175,24 +162,17 @@ function _load_package(packagename, requireinfo)
         return package
     end
 
-    -- load package package
-    package = nil
-    if requireinfo.packageurl then
-        -- load package from the given package url
-        package = _load_package_from_url(packagename, requireinfo.packageurl)
-    else
-        -- load package from project first
-        package = _load_package_from_project(packagename)
-            
-        -- load package from repositories
-        if not package then
-            package = _load_package_from_repository(packagename, requireinfo.reponame)
-        end
+    -- load package from project first
+    package = _load_package_from_project(packagename)
+        
+    -- load package from repositories
+    if not package then
+        package = _load_package_from_repository(packagename, requireinfo.reponame)
+    end
 
-        -- load package from system
-        if not package then
-            package = _load_package_from_system(packagename)
-        end
+    -- load package from system
+    if not package then
+        package = _load_package_from_system(packagename)
     end
 
     -- check
@@ -219,8 +199,8 @@ function _search_package_from_repository(name)
 
     -- search package directories from the given package name
     local packages = {}
-    for packagename, packageinfo in pairs(repository.searchdirs(name)) do
-        local package = core_package.load_from_repository(packagename, packageinfo.is_global, packageinfo.packagedir)
+    for _, packageinfo in ipairs(repository.searchdirs(name)) do
+        local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
         if package then
             table.insert(packages, package)
         end
@@ -307,63 +287,6 @@ function _load_packages(requires, requires_extra, parentinfo)
     return packages
 end
 
--- load all git refs from packages
-function _load_packages_gitrefs(packages)
-
-    -- enter cache scope
-    cache.enter("local.require")
-
-    -- load cache
-    local gitrefs = nil
-    if option.get("force") then
-        gitrefs = {}
-    else
-        gitrefs = cache.get("gitrefs") or {}
-    end
-
-    -- run tasks
-    local results = {}
-    process.runjobs(function (index)
-        local package = packages[index]
-        if package then
-
-            -- attempt to get refs from cache first
-            local refs = gitrefs[package:fullname()]
-            if refs then
-                results[package:fullname()] = {tags = refs.tags, branches = refs.branches}
-            else
-                -- attempt to get refs from the git url
-                local tags = {}
-                local branches = {}
-                for _, url in ipairs(package:urls()) do
-                    if git.checkurl(url) then
-                        
-                        -- trace
-                        vprint("fetching refs for the git url ... %s", url)
-
-                        -- fetch refs
-                        tags, branches = git.refs(url) 
-
-                        -- save result
-                        results[package:fullname()] = {tags = tags, branches = branches}
-
-                        -- cache result
-                        gitrefs[package:fullname()] = {tags = tags, branches = branches}
-                        break
-                    end
-                end
-            end
-        end
-    end, #packages)
-
-    -- save cache
-    cache.set("gitrefs", gitrefs)
-    cache.flush()
-
-    -- ok?
-    return results
-end
-
 -- sort packages urls
 function _sort_packages_urls(packages)
 
@@ -381,23 +304,32 @@ end
 -- select packages version
 function _select_packages_version(packages)
 
-    -- load git refs from packages
-    local gitrefs = _load_packages_gitrefs(packages)
-
     -- sort and update urls
     for _, package in ipairs(packages) do
 
         -- exists urls? otherwise be phony package (only as package group)
         if #package:urls() > 0 then
 
-            -- attempt to get tags and branches from the git url
-            local refs = {}
-            if gitrefs then
-                refs = gitrefs[package:fullname()] or {}
+            -- has git url?
+            local has_giturl = false
+            for _, url in ipairs(package:urls()) do
+                if git.checkurl(url) then
+                    has_giturl = true
+                    break
+                end
             end
 
             -- select package version
-            local version, source = semver.select(package:requireinfo().version, package:versions(), refs.tags, refs.branches)
+            local source = nil
+            local version = nil
+            local require_version = package:requireinfo().version
+            if require_version == "lastest" or require_version:find('.', 1, true) then -- select version?
+                version, source = semver.select(require_version, package:versions())
+            elseif has_giturl then -- select branch?
+                version, source = require_version, "branches"
+            else
+                raise("package(%s %s): not found!", package:name(), require_version)
+            end
 
             -- save version to package
             package:version_set(version, source)
@@ -426,7 +358,7 @@ function _get_confirm(packages)
         -- show tips
         cprint("${bright yellow}note: ${default yellow}try installing these packages (pass -y to skip confirm)?")
         for _, package in ipairs(confirmed_packages) do
-            print("  -> %s %s", package:fullname(), package:version_str() or "")
+            print("  -> %s %s", package:name(), package:version_str() or "")
         end
         cprint("please input: y (y/n)")
 
@@ -534,7 +466,7 @@ function install_packages(requires, requires_extra)
         for _, index in ipairs(indices) do
             local package = packages_remote[index]
             if package then
-                table.insert(downloading, package:fullname())
+                table.insert(downloading, package:name())
             end
         end
        

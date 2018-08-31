@@ -24,13 +24,87 @@
 
 -- define module
 local repository = repository or {}
+local _instance = _instance or {}
 
 -- load modules
-local utils     = require("base/utils")
-local string    = require("base/string")
-local global    = require("base/global")
-local cache     = require("project/cache")
-local config    = require("project/config")
+local utils       = require("base/utils")
+local string      = require("base/string")
+local global      = require("base/global")
+local cache       = require("project/cache")
+local config      = require("project/config")
+local interpreter = require("base/interpreter")
+
+-- new an instance
+function _instance.new(name, url, directory, is_global)
+
+    -- new an instance
+    local instance = table.inherit(_instance)
+
+    -- init instance
+    instance._NAME      = name
+    instance._URL       = url
+    instance._DIRECTORY = directory
+    instance._IS_GLOBAL = is_global
+
+    -- ok
+    return instance
+end
+
+-- get the repository configure
+function _instance:get(name)
+
+    -- load info
+    local info = self:load()
+
+    -- get if from info 
+    local value = info and info[name] or nil
+    if value ~= nil then
+        return value 
+    end
+end
+
+-- get the repository name 
+function _instance:name()
+    return self._NAME
+end
+
+-- get the repository url
+function _instance:url()
+    return self._URL
+end
+
+-- is global repository?
+function _instance:is_global()
+    return self._IS_GLOBAL
+end
+
+-- get the repository directory
+function _instance:directory()
+    return self._DIRECTORY
+end
+
+-- load the repository info in xmake.lua
+function _instance:load()
+
+    -- do not loaded?
+    if not self._INFO then
+
+        -- attempt to load info from the repository script (xmake.lua)
+        local scriptpath = path.join(self:directory(), "xmake.lua")
+        if os.isfile(scriptpath) then
+
+            -- load repository and disable filter
+            local results, errors = repository._interpreter():load(scriptpath, nil, true, false)
+            if not results and os.isfile(scriptpath) then
+                os.raise("load repo(%s) failed, " .. errors, self:name())
+            end
+
+            -- save repository info
+            self._INFO = results
+        end
+    end
+    return self._INFO
+end
 
 -- get cache
 function repository._cache(is_global)
@@ -51,7 +125,42 @@ function repository._cache(is_global)
     return repository._CACHE[position]
 end
 
--- get the local or global package directory
+-- the interpreter
+function repository._interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if repository._INTERPRETER then
+        return repository._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+ 
+    -- define apis
+    interp:api_define(repository.apis())
+    
+    -- save interpreter
+    repository._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- get repository apis
+function repository.apis()
+
+    return 
+    {
+        values =
+        {
+            -- set_xxx
+            "set_description"
+        }
+    }
+end
+
+-- get the local or global repository directory
 function repository.directory(is_global)
 
     -- get directory
@@ -62,6 +171,31 @@ function repository.directory(is_global)
     end
 end
 
+-- load the repository 
+function repository.load(name, url, is_global)
+
+    -- get it directly from cache first
+    repository._REPOS = repository._REPOS or {}
+    if repository._REPOS[name] then
+        return repository._REPOS[name]
+    end
+
+    -- the repository directory
+    local repodir = os.isdir(url) and url or path.join(repository.directory(is_global), name)
+
+    -- new an instance
+    local instance, errors = _instance.new(name, url, repodir, is_global)
+    if not instance then
+        return nil, errors
+    end
+
+    -- save instance to the cache
+    repository._REPOS[name] = instance
+
+    -- ok
+    return instance
+end
+     
 -- get repository url from the given name
 function repository.get(name, is_global)
 

@@ -35,7 +35,7 @@ import("environment")
 function _attach_to_option(instance, opt)
 
     -- disable this option if this package is optional and missing
-    if _g.optional_missing[instance:fullname()] then
+    if _g.optional_missing[instance:name()] then
         opt:enable(false)
     else
 
@@ -64,7 +64,7 @@ function _attach_to_targets(packages)
 
     for _, instance in ipairs(packages) do
         if instance:kind() ~= "binary" then
-            local opt = project.option(instance:alias() or instance:fullname())
+            local opt = project.option(instance:alias() or instance:name())
             if opt and opt:enabled() then
                 _attach_to_option(instance, opt)
             end
@@ -81,9 +81,9 @@ function _check_missing_packages(packages)
     for _, instance in ipairs(packages) do
         if not instance:exists() and (#instance:urls() > 0 or instance:from("system")) then
             if instance:requireinfo().optional then
-                optional_missing[instance:fullname()] = instance
+                optional_missing[instance:name()] = instance
             else
-                table.insert(packages_missing, instance:fullname())
+                table.insert(packages_missing, instance:name())
             end
         end
     end

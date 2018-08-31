@@ -29,7 +29,5 @@
 -- @return      true or false
 --
 function main(url)
-
-    -- check it
     return url:endswith(".git") or os.isdir(url .. ".git")
 end

@@ -80,7 +80,7 @@ for _, name in ipairs({"xml", "zip", "hash", "regex", "object", "charset", "data
         add_deps("small", "micro")
         add_defines_h(format("$(prefix)_MODULE_HAVE_%s", name:upper()))
         after_check(function (option)
-            if name ~= "hash" and (option:dep("small"):enabled() or option:dep("micro"):enabled()) then
+            if (name ~= "hash" and name ~= "charset") and (option:dep("small"):enabled() or option:dep("micro"):enabled()) then
                 option:enable(false)
             end
         end)

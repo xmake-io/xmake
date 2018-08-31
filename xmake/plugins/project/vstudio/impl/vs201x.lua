@@ -67,6 +67,12 @@ function _make_targetinfo(mode, arch, target)
 
     -- save sourcebatches
     targetinfo.sourcebatches = target:sourcebatches()
+    
+    -- save target dir
+    targetinfo.targetdir = target:targetdir()
+    
+    -- save object dir
+    targetinfo.objectdir = target:objectdir()
 
     -- save compiler flags
     targetinfo.compflags = {}

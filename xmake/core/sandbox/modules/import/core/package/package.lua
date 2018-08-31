@@ -67,23 +67,10 @@ function sandbox_core_package_package.load_from_system(packagename)
 end
 
 -- load the package from repositories
-function sandbox_core_package_package.load_from_repository(packagename, is_global, packagedir, packagefile)
+function sandbox_core_package_package.load_from_repository(packagename, repo, packagedir, packagefile)
 
     -- load package instance
-    local instance, errors = package.load_from_repository(packagename, is_global, packagedir, packagefile) 
-    if not instance then
-        raise(errors)
-    end
-
-    -- ok
-    return instance
-end
-
--- load the package from the package url 
-function sandbox_core_package_package.load_from_url(packagename, packageurl)
-
-    -- load package instance 
-    local instance, errors = package.load_from_url(packagename, packageurl) 
+    local instance, errors = package.load_from_repository(packagename, repo, packagedir, packagefile) 
     if not instance then
         raise(errors)
     end

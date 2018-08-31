@@ -22,6 +22,7 @@
 
 * [#177](https://github.com/tboox/xmake/issues/177): Fix the dependent target link bug
 * Fix high cpu usage bug and Exit issues for `$ xmake f --menu`
+* [#197](https://github.com/tboox/xmake/issues/197): Fix Chinese path for generating vs201x project
 
 ## v2.2.1
 
@@ -498,6 +499,7 @@
 
 * [#177](https://github.com/tboox/xmake/issues/177): 修复被依赖的动态库target，如果设置了basename后链接失败问题
 * 修复`$ xmake f --menu`中Exit问题以及cpu过高问题
+* [#197](https://github.com/tboox/xmake/issues/197): 修复生成的vs201x工程文件带有中文路径乱码问题
 
 ## v2.2.1
 

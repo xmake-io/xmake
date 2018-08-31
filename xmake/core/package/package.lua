@@ -47,13 +47,9 @@ function _instance.new(name, info, rootdir)
     -- new an instance
     local instance = table.inherit(_instance)
 
-    -- parse name .e.g vendor.name
-    local nameinfo = name:split("%.")
-
     -- init instance
-    instance._FULLNAME  = name
-    instance._NAME      = nameinfo[2] or name
-    instance._VENDOR    = nameinfo[1]
+    instance._name  = name
+    instance._NAME      = name
     instance._INFO      = info
     instance._ROOTDIR   = rootdir
 
@@ -74,14 +70,14 @@ function _instance:get(name)
     end
 end
 
--- get the package full name with vendor
-function _instance:fullname()
-    return self._FULLNAME
-end
-
--- get the package name without vendor
+-- get the package name 
 function _instance:name()
     return self._NAME
+end
+
+-- get the repository of this package
+function _instance:repo()
+    return self._REPO
 end
 
 -- get the package alias  
@@ -90,11 +86,6 @@ function _instance:alias()
     if requireinfo then
         return requireinfo.alias 
     end
-end
-
--- get the package vendor 
-function _instance:vendor()
-    return self._VENDOR
 end
 
 -- get urls
@@ -173,7 +164,7 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    return path.join(package.cachedir(), self:fullname(), self:version_str())
+    return path.join(package.cachedir(), self:name():sub(1, 1):lower(), self:name(), self:version_str())
 end
 
 -- get the installed directory of this package
@@ -185,7 +176,7 @@ function _instance:installdir()
     end
 
     -- make install directory
-    return path.join(package.installdir(self:from("global")), self:fullname(), self:version_str())
+    return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str())
 end
 
 -- get versions
@@ -452,34 +443,6 @@ function package.cachedir()
     return path.join(global.directory(), "cache", "packages")
 end
 
--- load the package from the package url
-function package.load_from_url(packagename, packageurl)
-
-    -- make a temporary package file
-    local packagefile = os.tmpfile() .. ".lua"
-
-    -- make package description
-    local packagedata = string.format([[
-    package("%s")
-        set_urls("%s")
-    ]], packagename, packageurl)
-
-    -- write a temporary package description to file
-    local ok, errors = io.writefile(packagefile, packagedata)
-    if not ok then
-        return nil, errors
-    end
-
-    -- load package instance
-    local instance, errors = package.load_from_repository(packagename, false, nil, packagefile)
-
-    -- remove the package file
-    os.rm(packagefile)
-
-    -- ok?
-    return instance, errors
-end
-
 -- load the package from the system directories
 function package.load_from_system(packagename)
 
@@ -545,13 +508,16 @@ function package.load_from_project(packagename, project)
 end
 
 -- load the package from the package directory or package description file
-function package.load_from_repository(packagename, is_global, packagedir, packagefile)
+function package.load_from_repository(packagename, repo, packagedir, packagefile)
 
     -- get it directly from cache first
     package._PACKAGES = package._PACKAGES or {}
     if package._PACKAGES[packagename] then
         return package._PACKAGES[packagename]
     end
+
+    -- load repository first for checking the xmake minimal version
+    repo:load()
 
     -- find the package script path
     local scriptpath = packagefile
@@ -587,8 +553,11 @@ function package.load_from_repository(packagename, is_global, packagedir, packag
         return nil, errors
     end
 
+    -- save repository
+    instance._REPO = repo
+
     -- mark as global/project package?
-    instance._FROMKIND = utils.ifelse(is_global, "global", "local")
+    instance._FROMKIND = repo:is_global() and "global" or "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance

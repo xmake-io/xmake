@@ -69,7 +69,7 @@ function _remove(name, is_global)
     end
 
     -- trace
-    cprint("${bright}remove %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
+    cprint("${bright}remove %s repository(%s): ok!", ifelse(is_global, "global", "local"), name)
 end
 
 -- update repositories
@@ -95,23 +95,27 @@ function _update()
         for _, repo in ipairs(repos) do
 
             -- the repository directory
-            local repodir = path.join(repository.directory(repo.global), repo.name)
+            local repodir = repo:directory()
 
             -- remove repeat and only pull the first repository
             if not pulled[repodir] then
                 if os.isdir(repodir) then
+                    
+                    -- update the local repository with the remote url
+                    if not os.isdir(repo:url()) then
 
-                    -- trace
-                    vprint("pulling repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+                        -- trace
+                        vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
-                    -- pull it
-                    git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                        -- pull it
+                        git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                    end
                 else
                     -- trace
-                    vprint("cloning repository(%s): %s to %s ..", repo.name, repo.url, repodir)
+                    vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
                     -- clone it
-                    git.clone(repo.url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+                    git.clone(repo:url(), {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
                 end
 
                 -- pull this repository ok
@@ -164,7 +168,8 @@ function _list()
         for _, repo in pairs(repository.repositories(position == "global")) do
 
             -- trace
-            print("    %s %s", repo.name, repo.url)
+            local description = repo:get("description")
+            print("    %s %s %s", repo:name(), repo:url(), description and ("(" .. description .. ")") or "")
 
             -- update count
             count = count + 1

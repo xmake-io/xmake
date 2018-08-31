@@ -36,7 +36,7 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
         -- -Idir or /Idir
         flag = flag:gsub("[%-|/]I(.*)", function (dir)
-                        dir = dir:trim()
+                        dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcxprojdir)
                         end
@@ -64,7 +64,7 @@ function _make_linkflags(targetinfo, vcxprojdir)
 
         -- replace -libpath:dir or /libpath:dir
         flag = flag:gsub("[%-|/]libpath:(.*)", function (dir)
-                        dir = dir:trim()
+                        dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcxprojdir)
                         end
@@ -196,11 +196,10 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- make OutputDirectory and IntermediateDirectory
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
-            vcxprojfile:print("<OutDir>%s\\</OutDir>", path.relative(path.absolute(config.get("buildir")), vcxprojdir))
-            vcxprojfile:print("<IntDir>%$(Configuration)\\</IntDir>")
+            vcxprojfile:print("<OutDir>%s\\</OutDir>", path.relative(path.absolute(targetinfo.targetdir), vcxprojdir))
+            vcxprojfile:print("<IntDir>%s\\</IntDir>", path.relative(path.absolute(targetinfo.objectdir), vcxprojdir))
             vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
             vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
-            vcxprojfile:print("<TargetPath>%s</TargetPath>", path.relative(path.absolute(targetinfo.targetfile), vcxprojdir))
 
             if target.kind == "binary" then
                 vcxprojfile:print("<LinkIncremental>true</LinkIncremental>")
@@ -355,12 +354,6 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
                 end
             end
             vcxprojfile:print("<GenerateDebugInformation>%s</GenerateDebugInformation>", tostring(debug))
-
-            -- make *.pdb file path
-            local symbolfile = targetinfo.symbolfile
-            if symbolfile then
-                vcxprojfile:print("<ProgramDatabaseFile>%s</ProgramDatabaseFile>", path.relative(path.absolute(symbolfile), vcxprojdir))
-            end
         end
 
         -- make SubSystem
@@ -371,8 +364,6 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         -- make TargetMachine
         vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(targetinfo.arch == "x64", "MachineX64", "MachineX86"))
 
-        -- make OutputFile
-        vcxprojfile:print("<OutputFile>%s</OutputFile>", path.relative(path.absolute(targetinfo.targetfile), vcxprojdir))
 
     vcxprojfile:leave("</%s>", linkerkinds[targetinfo.targetkind])
 
@@ -382,11 +373,6 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         -- make source options
         _make_source_options(vcxprojfile, targetinfo.commonflags)
 
-        -- make *.pdb file path
-        local symbolfile = targetinfo.symbolfile
-        if symbolfile then
-            vcxprojfile:print("<ProgramDatabaseFile>%s</ProgramDatabaseFile>", path.relative(path.absolute(symbolfile), vcxprojdir))
-        end
 
         -- use c or c++ precompiled header
         local pcheader = target.pcxxheader or target.pcheader
@@ -705,7 +691,8 @@ function make(vsinfo, target)
     local vcxprojdir = path.join(vsinfo.solution_dir, targetname)
 
     -- open vcxproj file
-    local vcxprojfile = vsfile.open(path.join(vcxprojdir, targetname .. ".vcxproj"), "w")
+    local vcxprojpath = path.join(vcxprojdir, targetname .. ".vcxproj")
+    local vcxprojfile = vsfile.open(vcxprojpath, "w")
 
     -- init indent character
     vsfile.indentchar('  ')
@@ -727,4 +714,7 @@ function make(vsinfo, target)
 
     -- exit solution file
     vcxprojfile:close()
+
+    -- convert gb2312 to utf8
+    io.writefile(vcxprojpath, io.readfile(vcxprojpath):convert("gb2312", "utf8"))
 end
