@@ -180,10 +180,22 @@ end
 --      WarningLevel="3"
 --      DebugInformationFormat="4"
 -- />
-function _make_VCCLCompilerTool(vcprojfile, vsinfo, target)
+function _make_VCCLCompilerTool(vcprojfile, vsinfo, target, compflags)
     vcprojfile:enter("<Tool")
         vcprojfile:print("Name=\"VCCLCompilerTool\"")
         vcprojfile:print("ProgramDataBaseFileName=\"\"") -- disable pdb file default
+        -- MT:0, MTd:1, MD:2, MDd:3, ML:4, MLd:5
+        local runtime = 0
+        for _,flag in pairs(compflags) do
+            if flag:find("[%-|/]MD") then
+                runtime = 2
+                break
+            elseif flag:find("[%-|/]MT") then
+                runtime = 0
+                break
+            end
+        end
+        vcprojfile:print("RuntimeLibrary=\"%d\"", ifelse(val("mode") == "debug", runtime + 1, runtime))
     vcprojfile:leave("/>")
 end
 
@@ -219,15 +231,22 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
         end
     end
 
+    -- subsystem, console: 1, windows: 2
+    local subsystem = 1
+    local flags = _make_linkflags(target, vcprojdir)
+    if string.lower(flags):find("[%-/]subsystem:windows") then
+        subsystem = 2
+    end
+
     -- make it
     vcprojfile:enter("<Tool")
         vcprojfile:print("Name=\"VCLinkerTool\"")
-        vcprojfile:print("AdditionalOptions=\"%s\"", _make_linkflags(target, vcprojdir))
+        vcprojfile:print("AdditionalOptions=\"%s\"", flags)
 		vcprojfile:print("AdditionalDependencies=\"\"")
 		vcprojfile:print("AdditionalLibraryDirectories=\"\"")
         vcprojfile:print("LinkIncremental=\"2\"") -- enable: 2, disable: 1
         vcprojfile:print("GenerateDebugInformation=\"%s\"", tostring(debug))
-        vcprojfile:print("SubSystem=\"1\"") -- console: 1, windows: 2
+        vcprojfile:print("SubSystem=\"%d\"", subsystem) -- console: 1, windows: 2
         vcprojfile:print("TargetMachine=\"%d\"", ifelse(config.arch() == "x64", 17, 1))
     vcprojfile:leave("/>")
 end
@@ -243,6 +262,37 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
     ,   static = 4
     }
  
+    -- save compiler flags
+    local compflags=nil
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+        if not sourcebatch.rulename then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local flags = compiler.compflags(sourcefile, {target = target})
+                if sourcekind == "cc" or sourcekind == "cxx" then
+                    compflags = flags
+                    break
+                end
+            end
+        end
+        if compflags then
+            break
+        end
+    end
+
+    -- set default mfc, not used: 0, static:1, dynamic:2
+    local mfc = ifelse(target:values("mfc"), 2, 0)
+    -- set unicode and mfc
+    local unicode = false
+    for _, flag in pairs(compflags) do
+        if flag:find("-DUNICODE") then
+            unicode = true
+        elseif flag:find("[%-|/]MT") then
+            mfc = ifelse(mfc ~= 0, 1, 0)
+        elseif flag:find("[%-|/]MD") then
+            mfc = ifelse(mfc ~= 0, 2, 0)
+        end
+    end
+
     -- enter configurations
     vcprojfile:enter("<Configurations>")
 
@@ -252,7 +302,8 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
 			vcprojfile:print("OutputDirectory=\"%s\"", path.relative(path.absolute(target:targetdir()), vcprojdir))
 			vcprojfile:print("IntermediateDirectory=\"%s\"", path.relative(path.absolute(target:objectdir()), vcprojdir))
 			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
-            vcprojfile:print("CharacterSet=\"2\"") -- mbc: 2, wcs: 1
+            vcprojfile:print("CharacterSet=\"%d\"", ifelse(unicode, 1, 2)) -- mbc: 2, wcs: 1
+            vcprojfile:print("UseOfMFC=\"%d\"", mfc)
             vcprojfile:print(">")
 
             -- make VCPreBuildEventTool
@@ -281,7 +332,7 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
             vcprojfile:leave("/>")
 
             -- make VCCLCompilerTool
-            _make_VCCLCompilerTool(vcprojfile, vsinfo, target)
+            _make_VCCLCompilerTool(vcprojfile, vsinfo, target, compflags)
 
             -- make VCManagedResourceCompilerTool
             vcprojfile:enter("<Tool")

@@ -172,7 +172,10 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Configuration\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target.kind]))
             vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(toolset_versions["vs" .. vsinfo.vstudio_version]))
-            vcxprojfile:print("<CharacterSet>MultiByte</CharacterSet>")
+            vcxprojfile:print("<CharacterSet>%s</CharacterSet>", ifelse(targetinfo.unicode, "Unicode", "MultiByte"))
+            if targetinfo.mfc then
+                vcxprojfile:print("<UseOfMfc>%s</UseOfMfc>", targetinfo.mfc)
+            end
         vcxprojfile:leave("</PropertyGroup>")
     end
 
@@ -328,12 +331,20 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
     -- for linker?
     vcxprojfile:enter("<%s>", linkerkinds[targetinfo.targetkind])
 
+        -- save subsystem
+        local subsystem = "Console"
+
         -- make linker flags
         local flags = {}
         for _, flag in ipairs(_make_linkflags(targetinfo, vcxprojdir)) do
 
+            local flag_lower = string.lower(flag)
+
+            -- remove "-subsystem:windows"
+            if flag_lower:find("[%-/]subsystem:windows") then
+                subsystem = "Windows"
             -- remove "-machine:[x86|x64]", "-pdb:*.pdb" and "-debug"
-            if not flag:find("[%-/]machine:%w+") and not flag:find("[%-/]pdb:.+%.pdb") and not flag:find("[%-/]debug") then
+            elseif not flag_lower:find("[%-/]machine:%w+") and not flag_lower:find("[%-/]pdb:.+%.pdb") and not flag_lower:find("[%-/]debug") then
                 table.insert(flags, flag)
             end
         end
@@ -358,7 +369,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
 
         -- make SubSystem
         if targetinfo.targetkind == "binary" then
-            vcxprojfile:print("<SubSystem>Console</SubSystem>")
+            vcxprojfile:print("<SubSystem>%s</SubSystem>", subsystem)
         end
     
         -- make TargetMachine

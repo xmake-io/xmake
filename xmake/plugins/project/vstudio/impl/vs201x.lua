@@ -75,11 +75,15 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.objectdir = target:objectdir()
 
     -- save compiler flags
+    local firstcompflags=nil
     targetinfo.compflags = {}
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
         if not sourcebatch.rulename then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target})
+                if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx") then
+                    firstcompflags = compflags
+                end
                 targetinfo.compflags[sourcefile] = compflags
             end
         end
@@ -88,6 +92,19 @@ function _make_targetinfo(mode, arch, target)
     -- save linker flags
     local linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
+
+    -- set default mfc
+    targetinfo.mfc = ifelse(target:values("mfc"), "Dynamic", nil)
+    -- set unicode and mfc
+    for _, flag in pairs(firstcompflags) do
+        if flag:find("-DUNICODE") then
+            targetinfo.unicode = true
+        elseif flag:find("[%-|/]MT") then
+            targetinfo.mfc = ifelse(targetinfo.mfc, "Static", false)
+        elseif flag:find("[%-|/]MD") then
+            targetinfo.mfc = ifelse(targetinfo.mfc, "Dynamic", false)
+        end
+    end
 
     -- ok
     return targetinfo
