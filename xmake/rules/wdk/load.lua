@@ -24,32 +24,7 @@
 
 -- imports
 import("core.project.config")
-
--- get subsystem version defined value
-function _winver_subsystem(winver)
-
-    -- ignore the subname with '_xxx'
-    winver = (winver or ""):split('_')[1]
-
-    -- make defined values
-    local defvals = 
-    {
-        nt4      = "4.00"
-    ,   win2k    = "5.00"
-    ,   winxp    = "5.01"
-    ,   ws03     = "5.02"
-    ,   win6     = "6.00"
-    ,   vista    = "6.00"
-    ,   ws08     = "6.00"
-    ,   longhorn = "6.00"
-    ,   win7     = "6.01" 
-    ,   win8     = "6.02"
-    ,   winblue  = "6.03"  
-    ,   win81    = "6.03" 
-    ,   win10    = "10.00" 
-    }
-    return defvals[winver] or "10.00"
-end
+import("os.winver", {alias = "os_winver"})
 
 -- load for umdf driver
 function driver_umdf(target)
@@ -63,7 +38,7 @@ function driver_umdf(target)
 
     -- add subsystem
     local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
-    target:add("shflags", "-subsystem:windows," .. _winver_subsystem(winver), {force = true})
+    target:add("shflags", "-subsystem:windows," .. os_winver.subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
     local entry = false
@@ -89,15 +64,20 @@ function driver_kmdf(target)
     target:set("filename", target:basename() .. ".sys")
 
     -- add links
-    target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "WdfLdr", "ntstrsafe", "wdmsec")
+    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
+    if os_winver.version(winver) >= os_winver.version("win8") then
+        target:add("links", "BufferOverflowFastFailK")
+    else
+        target:add("links", "BufferOverflowK")
+    end
+    target:add("links", "ntoskrnl", "hal", "wmilib", "WdfLdr", "ntstrsafe", "wdmsec")
 
     -- compile as kernel driver
     target:add("cxflags", "-kernel", {force = true})
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
     -- add subsystem    
-    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
-    target:add("ldflags", "-subsystem:native," .. _winver_subsystem(winver), {force = true})
+    target:add("ldflags", "-subsystem:native," .. os_winver.subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
     local entry = false
@@ -124,15 +104,20 @@ function driver_wdm(target)
     target:set("filename", target:basename() .. ".sys")
 
     -- add links
-    target:add("links", "BufferOverflowFastFailK", "ntoskrnl", "hal", "wmilib", "ntstrsafe")
+    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
+    if os_winver.version(winver) >= os_winver.version("win8") then
+        target:add("links", "BufferOverflowFastFailK")
+    else
+        target:add("links", "BufferOverflowK")
+    end
+    target:add("links", "ntoskrnl", "hal", "wmilib", "ntstrsafe")
 
     -- compile as kernel driver
     target:add("cxflags", "-kernel", {force = true})
     target:add("ldflags", "-kernel", "-driver", {force = true})
 
     -- add subsystem    
-    local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
-    target:add("ldflags", "-subsystem:native," .. _winver_subsystem(winver), {force = true})
+    target:add("ldflags", "-subsystem:native," .. os_winver.subsystem(winver), {force = true})
 
     -- set default driver entry if does not exist
     local entry = false

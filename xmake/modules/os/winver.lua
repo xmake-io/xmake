@@ -94,6 +94,32 @@ function target_version(name)
     return version(name)
 end 
 
+-- get subsystem version from name
+function subsystem(name)
+
+    -- ignore the subname with '_xxx'
+    name = (name or ""):split('_')[1]
+
+    -- make defined values
+    local defvals = 
+    {
+        nt4      = "4.00"
+    ,   win2k    = "5.00"
+    ,   winxp    = "5.01"
+    ,   ws03     = "5.02"
+    ,   win6     = "6.00"
+    ,   vista    = "6.00"
+    ,   ws08     = "6.00"
+    ,   longhorn = "6.00"
+    ,   win7     = "6.01" 
+    ,   win8     = "6.02"
+    ,   winblue  = "6.03"  
+    ,   win81    = "6.03" 
+    ,   win10    = "10.00" 
+    }
+    return defvals[name] or "10.00"
+end
+
 -- get windows system version
 --
 -- $ xmake l os.winver
