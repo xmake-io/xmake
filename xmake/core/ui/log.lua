@@ -38,7 +38,7 @@ local log = log or (function ()
     end
 
     -- return module: log
-    local instance = require("base/log") 
+    local instance = table.inherit(require("base/log"))
     if instance then
         instance._FILE = nil
         instance._LOGFILE = path.join(logdir, "ui.log")
