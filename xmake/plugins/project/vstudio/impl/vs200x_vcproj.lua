@@ -234,7 +234,7 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
     -- subsystem, console: 1, windows: 2
     local subsystem = 1
     local flags = _make_linkflags(target, vcprojdir)
-    if string.lower(flags):find("[%-/]subsystem:windows") then
+    if flags:lower():find("[%-/]subsystem:windows") then
         subsystem = 2
     end
 
@@ -284,7 +284,7 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
     -- set unicode and mfc
     local unicode = false
     for _, flag in pairs(compflags) do
-        if flag:find("-DUNICODE") then
+        if flag:find("[%-|/]DUNICODE") then
             unicode = true
         elseif flag:find("[%-|/]MT") then
             mfc = ifelse(mfc ~= 0, 1, 0)

@@ -338,7 +338,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         local flags = {}
         for _, flag in ipairs(_make_linkflags(targetinfo, vcxprojdir)) do
 
-            local flag_lower = string.lower(flag)
+            local flag_lower = flag:lower()
 
             -- remove "-subsystem:windows"
             if flag_lower:find("[%-/]subsystem:windows") then

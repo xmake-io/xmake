@@ -97,7 +97,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.mfc = ifelse(target:values("mfc"), "Dynamic", nil)
     -- set unicode and mfc
     for _, flag in pairs(firstcompflags) do
-        if flag:find("-DUNICODE") then
+        if flag:find("[%-|/]DUNICODE") then
             targetinfo.unicode = true
         elseif flag:find("[%-|/]MT") then
             targetinfo.mfc = ifelse(targetinfo.mfc, "Static", false)
