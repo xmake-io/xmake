@@ -279,17 +279,11 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
         end
     end
 
-    -- set default mfc, not used: 0, static:1, dynamic:2
-    local mfc = ifelse(target:values("mfc"), 2, 0)
-    -- set unicode and mfc
+    -- set unicode
     local unicode = false
     for _, flag in pairs(compflags) do
         if flag:find("[%-|/]DUNICODE") then
             unicode = true
-        elseif flag:find("[%-|/]MT") then
-            mfc = ifelse(mfc ~= 0, 1, 0)
-        elseif flag:find("[%-|/]MD") then
-            mfc = ifelse(mfc ~= 0, 2, 0)
         end
     end
 
@@ -303,7 +297,6 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
 			vcprojfile:print("IntermediateDirectory=\"%s\"", path.relative(path.absolute(target:objectdir()), vcprojdir))
 			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
             vcprojfile:print("CharacterSet=\"%d\"", ifelse(unicode, 1, 2)) -- mbc: 2, wcs: 1
-            vcprojfile:print("UseOfMFC=\"%d\"", mfc)
             vcprojfile:print(">")
 
             -- make VCPreBuildEventTool
@@ -401,7 +394,7 @@ function _make_references(vcprojfile, vsinfo, target)
 	vcprojfile:leave("</References>")
 end
 
--- make cxfile
+-- make file
 --
 -- .e.g
 --  <File
@@ -416,7 +409,7 @@ end
 --          />
 --      </FileConfiguration>
 --  </File>
-function _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
+function _make_file(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
 
     -- get the target key
     local key = tostring(target)
@@ -450,48 +443,6 @@ function _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcproj
                 if flags:find("[%-|/]TP") then
                     vcprojfile:print("CompileAs=\"2\"")
                 end
-            vcprojfile:leave("/>")
-        vcprojfile:leave("</FileConfiguration>")
-
-    -- leave file
-    vcprojfile:leave("</File>")
-end
-
--- make file
---
--- .e.g
---  <File
---      RelativePath="..\..\..\src\resource.rc"
---      >
---      <FileConfiguration
---          Name="Debug|Win32"
---          >
---          <Tool
---              Name="VCResourceCompilerTool"
---              ResourceOutputFileName="..\..\..\build\src\resource.res"
---          />
---      </FileConfiguration>
---  </File>
-function _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
-
-    -- enter file
-    vcprojfile:enter("<File")
-
-        -- add file path
-        vcprojfile:print("RelativePath=\"%s\"", path.relative(path.absolute(sourcefile), vcprojdir))
-        vcprojfile:print(">")
-
-        -- add file configuration
-        vcprojfile:enter("<FileConfiguration")
-            vcprojfile:print("Name=\"$(mode)|Win32\"")
-            vcprojfile:print(">")
-
-            -- add compiling options
-            vcprojfile:enter("<Tool")
-                vcprojfile:print("Name=\"VCResourceCompilerTool\"")
-                -- fixme, maybe need
-                -- vcprojfile:print("AdditionalOptions=\"%s\"", flags)
-                vcprojfile:print("ResourceOutputFileName=\"%s\"", path.relative(path.absolute(objectfile), vcprojdir))
             vcprojfile:leave("/>")
         vcprojfile:leave("</FileConfiguration>")
 
@@ -534,35 +485,18 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
 
     -- enter files
     vcprojfile:enter("<Files>")
-        local sourcebatches = target:sourcebatches()        
-        -- *.rc files
-        vcprojfile:enter("<Filter Name=\"Source Files\">")
-            for sourcekind, sourcebatch in pairs(sourcebatches) do
-                if sourcekind ~= "mrc" then
-                    local objectfiles = sourcebatch.objectfiles
-                    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
-                    end
-                end
+        vcprojfile:enter("<Filter")
+            vcprojfile:print("Name=\"Source Files\"")
+            vcprojfile:print(">")
+
+            -- add files
+            local objectfiles = target:objectfiles()
+            for idx, sourcefile in ipairs(target:sourcefiles()) do
+                _make_file(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
             end
 
         -- leave files
         vcprojfile:leave("</Filter>")
-
-        -- *.rc files
-        vcprojfile:enter("<Filter Name=\"Resource Files\">")
-            for sourcekind, sourcebatch in pairs(sourcebatches) do
-                if sourcekind == "mrc" then
-                    local objectfiles = sourcebatch.objectfiles
-                    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
-                    end
-                end
-            end
-
-        -- leave *.rc files
-        vcprojfile:leave("</Filter>")
-
 	vcprojfile:leave("</Files>")
 end
 

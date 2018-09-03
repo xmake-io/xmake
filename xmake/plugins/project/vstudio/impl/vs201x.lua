@@ -93,16 +93,10 @@ function _make_targetinfo(mode, arch, target)
     local linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
 
-    -- set default mfc
-    targetinfo.mfc = ifelse(target:values("mfc"), "Dynamic", nil)
-    -- set unicode and mfc
+    -- set unicode
     for _, flag in pairs(firstcompflags) do
         if flag:find("[%-|/]DUNICODE") then
             targetinfo.unicode = true
-        elseif flag:find("[%-|/]MT") then
-            targetinfo.mfc = ifelse(targetinfo.mfc, "Static", false)
-        elseif flag:find("[%-|/]MD") then
-            targetinfo.mfc = ifelse(targetinfo.mfc, "Dynamic", false)
         end
     end
 
