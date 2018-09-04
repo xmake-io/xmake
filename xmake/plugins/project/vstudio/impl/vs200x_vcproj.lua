@@ -394,7 +394,7 @@ function _make_references(vcprojfile, vsinfo, target)
 	vcprojfile:leave("</References>")
 end
 
--- make file
+-- make cxfile
 --
 -- .e.g
 --  <File
@@ -409,7 +409,7 @@ end
 --          />
 --      </FileConfiguration>
 --  </File>
-function _make_file(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
+function _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
 
     -- get the target key
     local key = tostring(target)
@@ -443,6 +443,47 @@ function _make_file(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdi
                 if flags:find("[%-|/]TP") then
                     vcprojfile:print("CompileAs=\"2\"")
                 end
+            vcprojfile:leave("/>")
+        vcprojfile:leave("</FileConfiguration>")
+
+    -- leave file
+    vcprojfile:leave("</File>")
+end
+
+-- make rcfile
+--
+-- .e.g
+--  <File
+--      RelativePath="..\..\..\src\resource.rc"
+--      >
+--      <FileConfiguration
+--          Name="Debug|Win32"
+--          >
+--          <Tool
+--              Name="VCResourceCompilerTool"
+--              ResourceOutputFileName="..\..\..\build\src\resource.res"
+--          />
+--      </FileConfiguration>
+--  </File>
+function _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
+
+    -- enter file
+    vcprojfile:enter("<File")
+
+        -- add file path
+        vcprojfile:print("RelativePath=\"%s\"", path.relative(path.absolute(sourcefile), vcprojdir))
+        vcprojfile:print(">")
+
+        -- add file configuration
+        vcprojfile:enter("<FileConfiguration")
+            vcprojfile:print("Name=\"$(mode)|Win32\"")
+            vcprojfile:print(">")
+
+            -- add compiling options
+            vcprojfile:enter("<Tool")
+                vcprojfile:print("Name=\"VCResourceCompilerTool\"")
+                -- FIXME: multi rc files support
+                -- vcprojfile:print("ResourceOutputFileName=\"%s\"", path.relative(path.absolute(objectfile), vcprojdir))
             vcprojfile:leave("/>")
         vcprojfile:leave("</FileConfiguration>")
 
@@ -485,18 +526,35 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
 
     -- enter files
     vcprojfile:enter("<Files>")
-        vcprojfile:enter("<Filter")
-            vcprojfile:print("Name=\"Source Files\"")
-            vcprojfile:print(">")
-
-            -- add files
-            local objectfiles = target:objectfiles()
-            for idx, sourcefile in ipairs(target:sourcefiles()) do
-                _make_file(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
+        local sourcebatches = target:sourcebatches()        
+        -- c/cxx files
+        vcprojfile:enter("<Filter Name=\"Source Files\">")
+            for sourcekind, sourcebatch in pairs(sourcebatches) do
+                if sourcekind ~= "mrc" then
+                    local objectfiles = sourcebatch.objectfiles
+                    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
+                    end
+                end
             end
 
-        -- leave files
+        -- leave c/cxx files
         vcprojfile:leave("</Filter>")
+
+        -- *.rc files
+        vcprojfile:enter("<Filter Name=\"Resource Files\">")
+            for sourcekind, sourcebatch in pairs(sourcebatches) do
+                if sourcekind == "mrc" then
+                    local objectfiles = sourcebatch.objectfiles
+                    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
+                    end
+                end
+            end
+
+        -- leave *.rc files
+        vcprojfile:leave("</Filter>")
+
 	vcprojfile:leave("</Files>")
 end
 
