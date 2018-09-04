@@ -26,7 +26,7 @@
 rule("win.sdk.mfc.shared")
 
     -- add mfc base rule
-    add_deps("win.sdk.mfc")
+    add_deps("win.sdk.mfc.env")
 
     -- after load
     after_load(function (target)
@@ -39,7 +39,7 @@ rule("win.sdk.mfc.shared")
 rule("win.sdk.mfc.static")
 
     -- add mfc base rule
-    add_deps("win.sdk.mfc")
+    add_deps("win.sdk.mfc.env")
 
     -- after load
     after_load(function (target)

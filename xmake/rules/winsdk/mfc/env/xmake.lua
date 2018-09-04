@@ -22,8 +22,8 @@
 -- @file        xmake.lua
 --
 
--- define rule: mfc
-rule("win.sdk.mfc")
+-- define rule: mfc.env
+rule("win.sdk.mfc.env")
 
     -- FIXME: before load need check of vs's minverion, if defined
     --before_load(function (target)
