@@ -17,6 +17,7 @@
 * Support case-insensitive path pattern-matching for `add_files()` on windows
 * Improve to detect Qt sdk directory for `detect.sdks.find_qt`
 * [#184](https://github.com/tboox/xmake/issues/184): Improve `lib.detect.find_package` to support vcpkg
+* [#208](https://github.com/tboox/xmake/issues/208): Improve rpath for shared library
 
 ### Bug fixed
 
@@ -24,6 +25,7 @@
 * Fix high cpu usage bug and Exit issues for `$ xmake f --menu`
 * [#197](https://github.com/tboox/xmake/issues/197): Fix Chinese path for generating vs201x project
 * Fix wdk rules bug
+* [#205](https://github.com/tboox/xmake/pull/205): Fix targetdir,objectdir not used in vsproject 
 
 ## v2.2.1
 
@@ -495,6 +497,7 @@
 * 对于`add_files()`在windows上支持大小写不敏感路径模式匹配
 * 改进`detect.sdks.find_qt`对于Qt根目录的探测
 * [#184](https://github.com/tboox/xmake/issues/184): 改进`lib.detect.find_package`支持vcpkg
+* [#208](https://github.com/tboox/xmake/issues/208): 改进rpath对动态库的支持
 
 ### Bugs修复
 
@@ -502,6 +505,7 @@
 * 修复`$ xmake f --menu`中Exit问题以及cpu过高问题
 * [#197](https://github.com/tboox/xmake/issues/197): 修复生成的vs201x工程文件带有中文路径乱码问题
 * 修复WDK规则编译生成的驱动在Win7下运行蓝屏问题
+* [#205](https://github.com/tboox/xmake/pull/205): 修复vcproj工程生成targetdir, objectdir路径设置不匹配问题 
 
 ## v2.2.1
 

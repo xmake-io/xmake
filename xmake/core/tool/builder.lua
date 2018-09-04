@@ -157,7 +157,7 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
                 -- inherit linkdirs from the depdent target
                 self:_inherit_from_target(results, dep, "linkdirs")
 
-            elseif flagname == "rpathdirs" and targetkind == "binary" then
+            elseif flagname == "rpathdirs" and (targetkind == "binary" or targetkind == "shared") then
 
                 -- make rpathdir 
                 local rpathdir = "@loader_path"
