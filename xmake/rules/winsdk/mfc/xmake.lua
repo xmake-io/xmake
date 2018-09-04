@@ -22,8 +22,8 @@
 -- @file        xmake.lua
 --
 
--- define rule: sharedcapp
-rule("win.sdk.mfc.shared_app")
+-- define rule: shared
+rule("win.sdk.mfc.shared")
 
     -- add mfc base rule
     add_deps("win.sdk.mfc")
@@ -32,18 +32,50 @@ rule("win.sdk.mfc.shared_app")
     after_load(function (target)
 
         -- apply mfc settings
-        import("mfc").mfc_shared_app(target)        
+        import("mfc").mfc_shared(target)
+    end)
+
+-- define rule: static
+rule("win.sdk.mfc.static")
+
+    -- add mfc base rule
+    add_deps("win.sdk.mfc")
+
+    -- after load
+    after_load(function (target)
+
+        -- apply mfc settings
+        import("mfc").mfc_static(target)
+    end)
+
+-- define rule: sharedcapp
+rule("win.sdk.mfc.shared_app")
+
+    -- add mfc base rule
+    add_deps("win.sdk.mfc.shared")
+
+    -- after load
+    after_load(function (target)
+
+        -- set kind: binary
+        target:set("kind", "binary")
+
+        -- set entry
+        target:add("ldflags", import("mfc").mfc_application_entry(target), {force = true})       
     end)
 
 -- define rule: staticapp
 rule("win.sdk.mfc.static_app")
 
     -- add mfc base rule
-    add_deps("win.sdk.mfc")
+    add_deps("win.sdk.mfc.static")
 
     -- after load
     after_load(function (target)
 
-        -- apply mfc settings
-        import("mfc").mfc_static_app(target)
+        -- set kind: binary
+        target:set("kind", "binary")
+
+        -- set entry
+        target:add("ldflags", import("mfc").mfc_application_entry(target), {force = true})
     end)

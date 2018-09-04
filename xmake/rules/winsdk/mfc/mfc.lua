@@ -73,20 +73,20 @@ function _mfc_remove_flags(target)
     _mfc_remove_mt_md_flags(target, "cxxflags")
 end
 
--- check unicode
-function _mfc_check_is_unicode(target)
+-- get application entry
+function mfc_application_entry(target)
     local defines = target:get("defines")
     for key, define in pairs(defines) do
         define = define:lower()
         if define:find("unicode") or define:find("_unicode") then
-            return true
+            return "-entry:wWinMainCRTStartup"
         end
     end
-    return false
+    return "-entry:WinMainCRTStartup"
 end
 
 -- apply shared mfc settings
-function _mfc_shared(target)
+function mfc_shared(target)
 
     -- remove some exists flags
     _mfc_remove_flags(target)
@@ -100,7 +100,7 @@ function _mfc_shared(target)
 end
 
 -- apply static mfc settings
-function _mfc_static(target)
+function mfc_static(target)
 
     -- remove some exists flags
     _mfc_remove_flags(target)
@@ -111,30 +111,4 @@ function _mfc_static(target)
 
     -- set runtimelibrary
     target:add("cxflags", ifelse(is_mode("debug"), "-MTd", "-MT"))
-end
-
--- apply appliction settings use static mfc
-function mfc_static_app(target)
-
-    -- static common
-    _mfc_static(target)
-
-    -- set kind: binary
-    target:set("kind", "binary")
-
-    -- set entry
-    target:add("ldflags", ifelse(_mfc_check_is_unicode(target), "-entry:wWinMainCRTStartup", "-entry:WinMainCRTStartup"), {force = true})
-end
-
--- apply appliction settings use shared mfc
-function mfc_shared_app(target)
-
-    -- static common
-    _mfc_shared(target)
-
-    -- set kind: binary
-    target:set("kind", "binary")
-
-    -- set entry
-    target:add("ldflags", ifelse(_mfc_check_is_unicode(target), "-entry:wWinMainCRTStartup", "-entry:WinMainCRTStartup"), {force = true})
 end
