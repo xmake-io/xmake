@@ -18,7 +18,7 @@
 -- 
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      xigal
 -- @file        xmake.lua
 --
 

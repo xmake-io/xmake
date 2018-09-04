@@ -22,28 +22,9 @@
 -- @file        xmake.lua
 --
 
--- define rule: sharedcapp
-rule("win.sdk.mfc.shared_app")
+-- define rule: mfc
+rule("win.sdk.mfc")
 
-    -- add mfc base rule
-    add_deps("win.sdk.mfc")
-
-    -- after load
-    after_load(function (target)
-
-        -- apply mfc settings
-        import("mfc").mfc_shared_app(target)        
-    end)
-
--- define rule: staticapp
-rule("win.sdk.mfc.static_app")
-
-    -- add mfc base rule
-    add_deps("win.sdk.mfc")
-
-    -- after load
-    after_load(function (target)
-
-        -- apply mfc settings
-        import("mfc").mfc_static_app(target)
-    end)
+    -- FIXME: before load need check of vs's minverion, if defined
+    --before_load(function (target)
+    --end)
