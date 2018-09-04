@@ -413,7 +413,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         local first_flags = nil
         targetinfo.sourceflags = {}
         for sourcekind, sourcebatch in pairs(targetinfo.sourcebatches) do
-            if not sourcebatch.rulename and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as") then
+            if not sourcebatch.rulename and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
                     -- make compiler flags
@@ -482,8 +482,9 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
     end
 
     -- enter it
+    local nodename = ifelse(sourcekind == "as", "CustomBuild", ifelse(sourcekind == "mrc", "ResourceCompile", "ClCompile"))
     sourcefile = path.relative(path.absolute(sourcefile), vcxprojdir)
-    vcxprojfile:enter("<%s Include=\"%s\">", ifelse(sourcekind == "as", "CustomBuild", "ClCompile"), sourcefile)
+    vcxprojfile:enter("<%s Include=\"%s\">", nodename, sourcefile)
 
         -- for *.asm files
         if sourcekind == "as" then
@@ -493,6 +494,13 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                 local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
                 vcxprojfile:print("<Outputs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Outputs>", info.mode .. '|' .. info.arch, objectfile)
                 vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s /nologo /c %s -Fo%s %s</Command>", info.mode .. '|' .. info.arch, ifelse(info.arch == "x64", "ml64", "ml"), os.args(info.flags), objectfile, sourcefile)
+            end
+
+        -- for *.rc files
+        elseif sourcekind == "mrc" then
+            for _, info in ipairs(sourceinfo) do
+                local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
+                vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",info.mode,info.arch,objectfile)
             end
 
         -- for *.c/cpp files
@@ -579,7 +587,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         end
 
     -- leave it
-    vcxprojfile:leave("</%s>", ifelse(sourcekind == "as", "CustomBuild", "ClCompile"))
+    vcxprojfile:leave("</%s>", nodename)
 end
 
 -- make source file for specific modes
@@ -590,7 +598,8 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
     for _, info in ipairs(sourceinfo) do
 
         -- enter it
-        vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">", ifelse(info.sourcekind == "as", "CustomBuild", "ClCompile"), info.mode, info.arch, sourcefile)
+        local nodename = ifelse(info.sourcekind == "as", "CustomBuild", ifelse(info.sourcekind == "mrc", "ResourceCompile", "ClCompile"))
+        vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">", nodename, info.mode, info.arch, sourcefile)
 
         -- for *.asm files
         local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
@@ -599,6 +608,10 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
             vcxprojfile:print("<FileType>Document</FileType>")
             vcxprojfile:print("<Outputs>%s</Outputs>", objectfile)
             vcxprojfile:print("<Command>%s /nologo /c %s -Fo%s %s</Command>", ifelse(info.arch == "x64", "ml64", "ml"), os.args(info.flags), objectfile, sourcefile)
+
+        -- for *.rc files
+        elseif sourcekind == "mrc" then
+            vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",info.mode,info.arch,objectfile)
 
         -- for *.c/cpp files
         else
@@ -613,7 +626,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         end
 
         -- leave it
-        vcxprojfile:leave("</%s>", ifelse(info.sourcekind == "as", "CustomBuild", "ClCompile"))
+        vcxprojfile:leave("</%s>", nodename)
     end
 end
 
@@ -655,7 +668,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         local sourceinfos = {}
         for _, targetinfo in ipairs(target.info) do
             for sourcekind, sourcebatch in pairs(targetinfo.sourcebatches) do
-                if not sourcebatch.rulename and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as") then
+                if not sourcebatch.rulename and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         local objectfile    = objectfiles[idx]
