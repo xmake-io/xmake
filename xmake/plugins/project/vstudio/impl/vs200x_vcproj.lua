@@ -482,7 +482,7 @@ function _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcproj
             -- add compiling options
             vcprojfile:enter("<Tool")
                 vcprojfile:print("Name=\"VCResourceCompilerTool\"")
-                -- fixme, multi rc files support
+                -- FIXME: multi rc files support
                 -- vcprojfile:print("ResourceOutputFileName=\"%s\"", path.relative(path.absolute(objectfile), vcprojdir))
             vcprojfile:leave("/>")
         vcprojfile:leave("</FileConfiguration>")
