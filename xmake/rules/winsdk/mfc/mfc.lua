@@ -27,8 +27,8 @@ function _mfc_remove_mt_md_flags(target, flagsname)
     local flags = target:get(flagsname)
     if type(flags) == "table" then
         for key, flag in pairs(flags) do
-            flag = flag:lower()
-            if flag:find("[/%-]mt") or flag:find("[/%-]md") then
+            flag = flag:lower():trim()
+            if flag:find("^[/%-]?mt[d]?$") or flag:find("^[/%-]?md[d]?$") then
                 flags[key] = nil
             end
         end
@@ -45,20 +45,28 @@ end
 function _mfc_remove_flags(target)
     local ldflags = target:get("ldflags")
     for key, ldflag in pairs(ldflags) do
-        ldflag = ldflag:lower()
+        ldflag = ldflag:lower():trim()
         if ldflag:find("[/%-]subsystem:") then
-            ldflags[key] = nil
+            if type(ldflags) == "table" then
+                ldflags[key] = nil
+            else
+                ldflags = {}
+            end
             break
         end
     end
     target:set("ldflags", ldflags)
     
-    -- remove defines /DMT /DMTd /DMD /DMDd
+    -- remove defines MT MTd MD MDd
     local defines = target:get("defines")
     for key, define in pairs(defines) do
-        define = define:lower()
-        if define:find("[/%-]dmt") or define:find("[/%-]dmd") then
-            defines[key] = nil
+        define = define:lower():trim()
+        if define:find("^[/%-]?mt[d]?$") or define:find("^[/%-]?md[d]?$") then
+            if type(defines) == "table" then
+                defines[key] = nil
+            else
+                defines = {}
+            end
         end
     end
     target:set("defines", defines)
@@ -77,8 +85,8 @@ end
 function mfc_application_entry(target)
     local defines = target:get("defines")
     for key, define in pairs(defines) do
-        define = define:lower()
-        if define:find("unicode") or define:find("_unicode") then
+        define = define:lower():trim()
+        if define:find("^[_]?unicode$") then
             return "-entry:wWinMainCRTStartup"
         end
     end
