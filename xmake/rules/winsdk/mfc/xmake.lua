@@ -22,33 +22,30 @@
 -- @file        xmake.lua
 --
 
--- define rule: application
-rule("win.sdk.application")
+-- define rule: shared mfcapp
+rule("win.sdk.mfcapp.shared")
 
-    -- add deps
-    add_deps("win.sdk.dotnet")
+    -- FIXME: before load need check of vs's minverion, if defined
+    --before_load(function (target)
+    --end)
 
     -- after load
     after_load(function (target)
 
-        -- set kind: binary
-        target:set("kind", "binary")
+        -- apply mfc settings
+        import("mfc").mfc_shared_app(target)        
+    end)
 
-        -- set subsystem: windows
-        local subsystem = false
-        for _, ldflag in ipairs(target:get("ldflags")) do
-            ldflag = ldflag:lower()
-            if ldflag:find("[/%-]subsystem:") then
-                subsystem = true
-                break
-            end
-        end
-        if not subsystem then
-            target:add("ldflags", "-subsystem:windows", {force = true})
-        end
+-- define rule: static mfcapp
+rule("win.sdk.mfcapp.static")
 
-        -- add links
-        target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")
-        target:add("links", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "comctl32")
-        target:add("links", "cfgmgr32", "comdlg32", "setupapi", "strsafe", "shlwapi")
+    -- FIXME: before load need check of vs's minverion, if defined
+    --before_load(function (target)
+    --end)
+
+    -- after load
+    after_load(function (target)
+
+        -- apply mfc settings
+        import("mfc").mfc_static_app(target)
     end)
