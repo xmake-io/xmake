@@ -52,4 +52,3 @@ rule("win.sdk.application")
         target:add("links", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "comctl32")
         target:add("links", "cfgmgr32", "comdlg32", "setupapi", "strsafe", "shlwapi")
     end)
-
