@@ -25,10 +25,10 @@
 -- remove exists md or mt
 function _mfc_remove_mt_md_flags(target, flagsname)
     local flags = table.wrap(target:get(flagsname))
-    for key, flag in pairs(flags) do
-        flag = flag:lower():trim()
+    for i = #flags, 1, -1 do
+        flag = flags[i]:lower():trim()
         if flag:find("^[/%-]?mt[d]?$") or flag:find("^[/%-]?md[d]?$") then
-            flags[key] = nil
+            table.remove(flags, i)
         end
     end
     target:set(flagsname, flags)
@@ -37,10 +37,10 @@ end
 -- remove exists settings
 function _mfc_remove_flags(target)
     local ldflags = table.wrap(target:get("ldflags"))
-    for key, ldflag in pairs(ldflags) do
-        ldflag = ldflag:lower():trim()
+    for i = #ldflags, 1, -1 do
+        ldflag = ldflags[i]:lower():trim()
         if ldflag:find("[/%-]subsystem:") then
-            ldflags[key] = nil
+            table.remove(ldflags, i)
             break
         end
     end
@@ -48,10 +48,10 @@ function _mfc_remove_flags(target)
     
     -- remove defines MT MTd MD MDd
     local defines = table.wrap(target:get("defines"))
-    for key, define in pairs(defines) do
-        define = define:lower():trim()
+    for i = #defines, 1, -1 do
+        define = defines[i]:lower():trim()
         if define:find("^[/%-]?mt[d]?$") or define:find("^[/%-]?md[d]?$") then
-            defines[key] = nil
+            table.remove(defines, i)
         end
     end
     target:set("defines", defines)
