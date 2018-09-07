@@ -93,7 +93,14 @@ function _make_targetinfo(mode, arch, target)
     local linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
 
-    -- set unicode
+    -- save mfc
+    if target:rule("win.sdk.mfc.shared") then
+        targetinfo.mfc = "Dynamic"
+    elseif target:rule("win.sdk.mfc.static") then
+        targetinfo.mfc = "Static"
+    end
+
+    -- set unicode 
     for _, flag in pairs(firstcompflags) do
         if flag:find("[%-|/]DUNICODE") then
             targetinfo.unicode = true

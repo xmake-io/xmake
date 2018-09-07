@@ -279,7 +279,15 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
         end
     end
 
-    -- set unicode
+    -- save mfc, not used: 0, static:1, dynamic:2
+    local mfc = 0
+    if target:rule("win.sdk.mfc.shared") then
+        mfc = 2
+    elseif target:rule("win.sdk.mfc.static") then
+        mfc = 1
+    end
+    
+    -- set unicode and mfc
     local unicode = false
     for _, flag in pairs(compflags) do
         if flag:find("[%-|/]DUNICODE") then
@@ -297,6 +305,7 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
 			vcprojfile:print("IntermediateDirectory=\"%s\"", path.relative(path.absolute(target:objectdir()), vcprojdir))
 			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
             vcprojfile:print("CharacterSet=\"%d\"", ifelse(unicode, 1, 2)) -- mbc: 2, wcs: 1
+            vcprojfile:print("UseOfMFC=\"%d\"", mfc)
             vcprojfile:print(">")
 
             -- make VCPreBuildEventTool
