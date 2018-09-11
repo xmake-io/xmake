@@ -99,6 +99,9 @@ function main(requires)
 
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
+
+        -- show package directory
+        cprint("      -> ${magenta}packagedir${clear}: %s", instance:directory())
     end
 
     -- leave environment

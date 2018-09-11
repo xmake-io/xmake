@@ -110,6 +110,16 @@ option("%s")
     end
 end
 
+-- prepare directories
+function _prepare_directories(...)
+    for _, dir in ipairs({...}) do
+        os.tryrm(dir)
+        if not os.isdir(dir) then
+            os.mkdir(dir)
+        end
+    end
+end
+
 -- install the given package
 function main(package)
 
@@ -155,6 +165,9 @@ function main(package)
 
             -- create the install task
             local installtask = function () 
+
+                -- prepare the install and package directories
+                _prepare_directories(package:installdir(), package:directory())
 
                 -- build it
                 build(package)

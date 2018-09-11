@@ -88,9 +88,9 @@ function sandbox_core_package_repository.repositories(is_global)
         fasturl.add(mainurls)
         mainurls = fasturl.sort(mainurls)
 
-        -- add main urls
-        for _, mainurl in ipairs(mainurls) do
-            local repo = repository.load("xmake-repo", mainurl, true)
+        -- add main url
+        if #mainurls > 0 then
+            local repo = repository.load("xmake-repo", mainurls[1], true)
             if repo then
                 table.insert(repositories, repo)
             end
@@ -107,6 +107,11 @@ function sandbox_core_package_repository.repositories(is_global)
     end
 
     -- load repositories from project file
+    --
+    -- in project xmake.lua:
+    --
+    --     add_repositories("other-repo https://github.com/other/other-repo.git")
+    --
     if not is_global then
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
             local repoinfo = repo:split(' ')
