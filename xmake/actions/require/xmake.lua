@@ -51,6 +51,7 @@ task("require")
                 ,   {                                                                                                                                }
                 ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                              }
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                                          }
+                ,   {nil, "remove",     "k",  nil,       "Remove the installed packages."                                                            }
                 ,   {                                                                                                                                }
                 ,   {nil, "requires",   "vs", nil,       "The package requires.",
                                                          ".e.g",

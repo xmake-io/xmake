@@ -32,6 +32,7 @@ import("list")
 import("info")
 import("clear")
 import("search")
+import("remove")
 import("install")
 
 --
@@ -81,6 +82,11 @@ function main()
     elseif option.get("search") then
 
         search(option.get("requires"))
+
+    -- remove for the installed packages 
+    elseif option.get("remove") then
+
+        remove(option.get("requires"))
 
     -- show the given package info
     elseif option.get("info") then

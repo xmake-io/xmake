@@ -248,7 +248,7 @@ end
 -- clear the option status and need recheck it
 function option:clear()
 
-    -- enable or disable this option?
+    -- clear config
     config.set(self:name(), nil)
 
     -- clear this option in cache 
