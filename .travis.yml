@@ -13,11 +13,9 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-5
-            - luarocks
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install dmd rust; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo luarocks install luacov || sudo luarocks-5.1 install luacov; fi
   - echo $CI
 
 script:
@@ -28,12 +26,8 @@ script:
   - xmake -v -P core 
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake lua versioninfo
-  - echo "require('luacov.runner').init({['statsfile']='$PWD/luacov.stats.out',['reportfile']='$PWD/luacov.report.out'})" > tmp
   - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cat xmake/core/_xmake_main.lua >> tmp; mv tmp "$XMAKE_PROGRAM_DIR/core/_xmake_main.lua"; fi
   - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
   - xmake lua versioninfo
   - xmake lua --backtrace tests/test.lua
 
-after_success:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then luacov; bash <(curl -s https://codecov.io/bash); fi

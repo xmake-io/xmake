@@ -12,9 +12,6 @@
     <a href="https://ci.appveyor.com/project/waruqi/xmake/branch/master">
       <img src="https://img.shields.io/appveyor/ci/waruqi/xmake/master.svg?style=flat-square" alt="appveyor-ci" />
     </a>
-    <a href="https://codecov.io/gh/tboox/xmake">
-      <img src="https://img.shields.io/codecov/c/github/tboox/xmake/master.svg?style=flat-square" alt="Coverage" />
-    </a>
     <a href="https://aur.archlinux.org/packages/xmake">
       <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
     </a>
