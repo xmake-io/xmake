@@ -35,21 +35,6 @@ local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
 local find_file         = import("lib.detect.find_file")
 
--- get link name from the file name
-function sandbox_lib_detect_find_library._link(filename)
-
-    -- get link, @note need %%w to escape to %w because gsub was called in target.filename
-    local link, count = filename:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
-    if count == 0 then
-        link, count = filename:gsub(target.filename("([%%w%%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
-    end
-
-    -- ok?
-    if count > 0 then
-        return link
-    end
-end
-
 -- find library 
 --
 -- @param names     the library names
@@ -84,7 +69,7 @@ function sandbox_lib_detect_find_library.main(names, pathes, opt)
             local filepath = find_file(target.filename(name, kind), pathes, opt)
             if filepath then
                 local filename = path.filename(filepath)
-                return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = sandbox_lib_detect_find_library._link(filename)}
+                return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = target.linkname(filename)}
             end
         end
     end

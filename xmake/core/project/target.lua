@@ -132,6 +132,15 @@ function target.filename(targetname, targetkind, targetformat)
     return format and (format:gsub("%$%(name%)", targetname)) or targetname
 end
 
+-- get the link name of the target file
+function target.linkname(filename)
+    local linkname, count = filename:gsub(target.filename("__pattern__", "static"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+    if count == 0 then
+        linkname, count = filename:gsub(target.filename("__pattern__", "shared"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+    end
+    return count > 0 and linkname or nil
+end
+
 -- new a target instance
 function target.new(name, info, project)
 

@@ -56,15 +56,15 @@ function _make_package(package)
     -- get links
     local links = {}
     for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "static"))), path.filename) do
-        local link, count = filename:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1")
-        if count > 0 then
+        local link = target.linkname(filename)
+        if link then
             table.insert(links, link)
         end
     end
     if #links == 0 then
         for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "shared"))), path.filename) do
-            local link, count = filename:gsub(target.filename("([%%w%%-_]+)", "shared"):gsub("%.", "%%.") .. "$", "%1")
-            if count > 0 then
+            local link = target.linkname(filename)
+            if link then
                 table.insert(links, link)
             end
         end
