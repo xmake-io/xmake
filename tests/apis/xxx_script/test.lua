@@ -1,4 +1,5 @@
 function main()
+    os.exec("xmake f -c")
     os.exec("xmake")
     if os.host() == "macosx" then
         os.exec("xmake f -p iphoneos")

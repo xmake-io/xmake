@@ -278,51 +278,59 @@ end
 function interpreter:_api_register_xxx_script(scope_kind, action, ...)
 
     -- define implementation
-    local implementation = function (self, scope, name, arg1, arg2)
+    local implementation = function (self, scope, name, ...)
 
         -- patch action to name
         if action ~= "on" then
             name = name .. "_" .. action
         end
 
-        -- on_xxx(pattern, script)?
-        if arg1 and arg2 then
+        -- get arguments, pattern1, pattern2, ..., script function or name
+        local args = {...}
 
-            -- get pattern
-            local pattern = arg1
-            assert(type(pattern) == "string")
+        -- get patterns
+        local patterns = {}
+        if #args > 1 then
+            patterns = table.slice(args, 1, #args - 1)
+        end
 
-            -- get script
-            local script, errors = self:_script(arg2)
-            if not script then
-                os.raise("%s_%s(%s, %s): %s", action, name, tostring(arg1), tostring(arg2), errors)
+        -- get script function or name
+        local script_func_or_name = args[#args]
+
+        -- get script
+        local script, errors = self:_script(script_func_or_name)
+        if not script then
+            if #patterns > 0 then
+                os.raise("%s_%s(%s, %s): %s", action, name, table.concat(patterns, ', '), tostring(script_func_or_name), errors)
+            else
+                os.raise("%s_%s(%s): %s", action, name, tostring(script_func_or_name), errors)
             end
+        end
 
-            -- convert pattern to a lua pattern ('*' => '.*')
-            pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-            pattern = pattern:gsub("%*", "\001")
-            pattern = pattern:gsub("\001", ".*")
-
-            -- save script
+        -- save script for all patterns
+        if #patterns > 0 then
             local scripts = scope[name] or {}
-            if type(scripts) == "table" then
-                scripts[pattern] = script
-            elseif type(scripts) == "function" then
-                scripts = {__generic__ = scripts}
-                scripts[pattern] = script
+            for _, pattern in ipairs(patterns) do
+
+                -- check
+                assert(type(pattern) == "string")
+
+                -- convert pattern to a lua pattern ('*' => '.*')
+                pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+                pattern = pattern:gsub("%*", "\001")
+                pattern = pattern:gsub("\001", ".*")
+
+                -- save script
+                if type(scripts) == "table" then
+                    scripts[pattern] = script
+                elseif type(scripts) == "function" then
+                    scripts = {__generic__ = scripts}
+                    scripts[pattern] = script
+                end
             end
             scope[name] = scripts
-
-        -- on_xxx(script)?
-        elseif arg1 then
-
-            -- get script
-            local script, errors = self:_script(arg1)
-            if not script then
-                os.raise("%s_%s(%s): %s", action, name, tostring(arg1), errors)
-            end
-
-            -- save script
+        else
+            -- save the generic script
             local scripts = scope[name]
             if type(scripts) == "table" then
                 scripts["__generic__"] = script

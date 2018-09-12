@@ -1,12 +1,7 @@
 target("test")
 
-    before_build("iphoneos|arm64", function (target)
-        assert(val("plat") == "iphoneos")
-        assert(val("arch") == "arm64")
-    end)
-
-    before_build("macosx", function (target)
-        assert(vformat("$(plat)") == "macosx")
+    before_build("iphoneos|arm64", "macosx", function (target)
+        assert(is_plat("macosx") or (is_plat("iphoneos") and is_arch("arm64")))
     end)
 
     before_build(function (target)
@@ -22,5 +17,5 @@ target("test")
     end)
 
     after_build("linux|*", function (target)
-        assert(val("plat") == "linux")
+        assert(is_plat("linux"))
     end)
