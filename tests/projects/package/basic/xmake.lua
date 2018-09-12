@@ -2,7 +2,7 @@
 -- requires
 add_requires("tbox master")
 add_requires("zlib >=1.2.11", {optional = true})
-add_requires("pcre2", {system = false})
+add_requires("pcre2", "luajit", {system = false})
 
 -- add modes
 add_rules("mode.debug", "mode.release")

@@ -246,6 +246,18 @@ function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
 
+-- is optional package?
+function _instance:optional()
+    local requireinfo = self:requireinfo()
+    return requireinfo and requireinfo.optional or false
+end
+
+-- is supported package?
+function _instance:supported()
+    -- attempt to get the build script with the current plat/arch
+    return self:script("build") ~= nil
+end
+
 -- get xxx_script
 function _instance:script(name, generic)
 

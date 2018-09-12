@@ -35,12 +35,20 @@ function _from(instance)
     if fetchinfo then
         return ", ${green}" .. fetchfrom .. "${clear}"
     elseif #instance:urls() > 0 then
-        return ", ${yellow}remote${clear}"
+        return instance:supported() and format(", ${yellow}remote${clear}(in %s)", instance:repo():name()) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", instance:repo():name())
     elseif instance:from("system") then
         return ", ${red}missing${clear}"
     else
         return ""
     end
+end
+
+-- get package info 
+function _info(instance)
+    local info = instance:version_str() and instance:version_str() or "no version"
+    info = info .. _from(instance)
+    info = info .. (instance:optional() and ", ${yellow}optional${clear}" or "")
+    return info
 end
 
 -- list packages
@@ -65,13 +73,11 @@ function main()
 
     -- list all packages
     for _, instance in ipairs(package.load_packages(requires, requires_extra)) do
-        local requireinfo = instance:requireinfo() or {}
         local packageopt  = project.option(instance:alias() or instance:name())
         if packageopt then
-            cprint("    ${magenta}require${clear}(%s): %s%s%s", requireinfo.originstr, ifelse(instance:version_str(), instance:version_str(), "no version"), _from(instance), ifelse(requireinfo.optional, ", ${yellow}optional${clear}", ""))
+            cprint("    ${magenta}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))
             for _, dep in ipairs(instance:orderdeps()) do
-                requireinfo = dep:requireinfo() or {}
-                cprint("      -> ${magenta}dep${clear}(%s): %s%s%s", requireinfo.originstr, ifelse(dep:version_str(), dep:version_str(), "no version"), _from(dep), ifelse(requireinfo.optional, ", ${yellow}optional${clear}", ""))
+                cprint("      -> ${magenta}dep${clear}(%s): %s", dep:requireinfo().originstr, _info(dep))
             end
         end
     end

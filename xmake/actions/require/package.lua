@@ -340,13 +340,30 @@ end
 -- get user confirm
 function _get_confirm(packages)
 
-    -- init confirmed packages
+    -- init confirmed and not supported packages
     local confirmed_packages = {}
+    local not_supported_packages = {}
     for _, package in ipairs(packages) do
         if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then 
-            table.insert(confirmed_packages, package)
+            if package:supported() then
+                table.insert(confirmed_packages, package)
+            else
+                table.insert(not_supported_packages, package)
+            end
         end
     end
+
+    -- exists not supported packages?
+    if #not_supported_packages > 0 then
+        -- show tips
+        cprint("${bright red}note: ${default red}the following packages are unsupported for $(plat)/$(arch)!")
+        for _, package in ipairs(not_supported_packages) do
+            print("  -> %s %s", package:name(), package:version_str() or "")
+        end
+        raise()
+    end
+
+    -- no confirmed packages?
     if #confirmed_packages == 0 then
         return true
     end
