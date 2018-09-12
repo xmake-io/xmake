@@ -37,11 +37,11 @@ import("repository")
 --
 -- parse require string
 --
+-- add_requires("zlib")
 -- add_requires("tbox >=1.5.1", "zlib >=1.2.11")
 -- add_requires("zlib master")
 -- add_requires("xmake-repo@tbox >=1.5.1") 
--- add_requires("https://github.com/tboox/tbox.git@tboox.tbox >=1.5.1") 
--- add_requires("tbox >=1.5.1 <1.6.0", {optional = true, alias = "tbox"})
+-- add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg"})
 --
 function _parse_require(require_str, requires_extra, parentinfo)
 

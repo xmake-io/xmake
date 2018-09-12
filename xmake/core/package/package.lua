@@ -311,14 +311,19 @@ end
 
 -- fetch package info from the local packages
 --
+-- @param opt   the fetch option, .e.g {force = true, system = false}
+--
 -- @return {packageinfo}, fetchfrom (.e.g local/global/system)
 --
-function _instance:fetch(force)
+function _instance:fetch(opt)
+
+    -- init options
+    opt = opt or {}
 
     -- attempt to get it from cache
     local fetchfrom = self._FETCHFROM
     local fetchinfo = self._FETCHINFO
-    if not force and fetchinfo then
+    if not opt.force and fetchinfo then
         return fetchinfo, fetchfrom
     end
 
@@ -331,7 +336,7 @@ function _instance:fetch(force)
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
         -- fetch it from the system directories
-        fetchinfo = self._find_tool(self:name(), {force = force})
+        fetchinfo = self._find_tool(self:name(), {force = opt.force})
         if fetchinfo then
             fetchfrom = "system" -- ignore self:requireinfo().system
         end
@@ -343,18 +348,19 @@ function _instance:fetch(force)
         -- fetch it from the package directories first
         local packagedir = self:directory()
         if not fetchinfo and packagedir then
-            fetchinfo = self._find_package(self:name(), {packagedirs = packagedir, system = false, cachekey = "package:fetch", force = force}) 
+            -- add cache key to make a distinction with finding system package
+            fetchinfo = self._find_package(self:name(), {packagedirs = packagedir, system = false, cachekey = "package:fetch", force = opt.force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
         -- fetch it from the system directories
         if not fetchinfo then
-            local system = self:requireinfo().system
+            local system = opt.system or self:requireinfo().system
             if system == nil then -- find system package by default
                 system = true
             end
             if system then
-                fetchinfo = self._find_package(self:name(), {force = force})
+                fetchinfo = self._find_package(self:name(), {force = opt.force})
                 if fetchinfo then fetchfrom = "system" end
             end
         end

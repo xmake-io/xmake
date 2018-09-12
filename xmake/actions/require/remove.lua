@@ -27,6 +27,7 @@ import("core.base.task")
 import("package")
 import("repository")
 import("environment")
+import("lib.detect.cache")
 
 -- show the given package info
 function main(requires)
@@ -44,22 +45,21 @@ function main(requires)
         task.run("repo", {update = true})
     end
 
+    -- clear the detect cache
+    cache.clear()
+
     -- remove all packages
     for _, instance in ipairs(package.load_packages(requires)) do
-        
-        -- this package has been installed?
         local requireinfo = instance:requireinfo() or {}
         if os.isdir(instance:directory()) then
-
+            
             -- remove package directory
             os.rm(instance:directory())
 
-            -- force to re-fetch package and flush lib.detect.find_package cache
-            local fetchinfo, fetchfrom = instance:fetch(true)
-
             -- trace
-            cprint("remove: %s%s %s!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "", (fetchinfo and fetchfrom ~= "system") and "failed" or "ok")
+            cprint("remove: %s%s ok!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "")
         else
+            -- trace
             cprint("remove: %s%s not found!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "")
         end
     end

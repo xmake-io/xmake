@@ -195,7 +195,7 @@ function main(package)
             end
 
             -- fetch package and force to flush the cache
-            assert(package:fetch(true), "fetch %s failed!", tipname)
+            assert(package:fetch({force = true}), "fetch %s failed!", tipname)
 
             -- trace
             cprint("${green}ok")
