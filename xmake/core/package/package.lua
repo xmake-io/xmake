@@ -168,8 +168,16 @@ function _instance:cachedir()
 end
 
 -- get the installed directory of this package
-function _instance:installdir()
-    return path.join(self:directory(), "install")
+function _instance:installdir(...)
+    
+    -- make the given install directory
+    local dir = path.join(self:directory(), "install", ...)
+
+    -- ensure the install directory
+    if not os.isdir(dir) then
+        os.mkdir(dir)
+    end
+    return dir
 end
 
 -- get the downloaded original file

@@ -42,16 +42,14 @@ function _make_package(package)
     local linkdir = path.join(packagedir, "lib/$(mode)/$(plat)/$(arch)")
 
     -- the includedir 
-    local includedir = path.join(packagedir, "inc")
-
-    -- the installdir
-    local installdir = package:installdir()
+    local includedir = path.join(packagedir, "include/$(mode)/$(plat)/$(arch)")
 
     -- install the library files and ignore hidden files (.xxx)
-    os.cp(path.join(installdir, "lib"), linkdir)
+    os.tryrm(linkdir)
+    os.cp(package:installdir("lib"), linkdir)
 
     -- install the header files
-    os.cp(path.join(installdir, "include"), includedir)
+    os.cp(package:installdir("include"), includedir)
 
     -- get links
     local links = {}
@@ -99,7 +97,7 @@ option("%s")
     add_linkdirs("lib/$(mode)/$(plat)/$(arch)")
 
     -- add include directories
-    add_includedirs("inc")
+    add_includedirs("include/$(mode)/$(plat)/$(arch)")
 ]]
 
         -- save file
@@ -107,16 +105,6 @@ option("%s")
 
         -- exit file
         file:close()
-    end
-end
-
--- prepare directories
-function _prepare_directories(...)
-    for _, dir in ipairs({...}) do
-        os.tryrm(dir)
-        if not os.isdir(dir) then
-            os.mkdir(dir)
-        end
     end
 end
 
@@ -167,8 +155,8 @@ function main(package)
             -- create the install task
             local installtask = function () 
 
-                -- prepare the install and package directories
-                _prepare_directories(package:directory(), package:installdir())
+                -- clean the install directory first
+                os.tryrm(package:installdir())
 
                 -- build it
                 build(package)
@@ -183,10 +171,7 @@ function main(package)
 
                 -- add search path for program
                 if package:kind() == "binary" then
-                    local bindir = path.join(package:installdir(), "bin")
-                    if os.isdir(bindir) then
-                        os.addenv("PATH", bindir)
-                    end
+                    os.addenv("PATH", package:installdir("bin"))
                 else
                     -- make package from the install directory
                     _make_package(package)
