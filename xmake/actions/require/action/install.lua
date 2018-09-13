@@ -181,7 +181,9 @@ function main(package)
                 end
 
                 -- make package from the install directory
-                _make_package(package)
+                if package:kind() ~= "binary" then
+                    _make_package(package)
+                end
 
                 -- test it
                 test(package)
