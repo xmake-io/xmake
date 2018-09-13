@@ -169,7 +169,7 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir()
-    return path.join(self:cachedir(), "install")
+    return path.join(self:directory(), "install")
 end
 
 -- get the downloaded original file
@@ -389,6 +389,26 @@ function _instance:exists()
     return self._FETCHINFO
 end
 
+-- the current mode is belong to the given modes?
+function package._api_is_mode(interp, ...)
+    return config.is_mode(...)
+end
+
+-- the current platform is belong to the given platforms?
+function package._api_is_plat(interp, ...)
+    return config.is_plat(...)
+end
+
+-- the current platform is belong to the given architectures?
+function package._api_is_arch(interp, ...)
+    return config.is_arch(...)
+end
+
+-- the current host is belong to the given hosts?
+function package._api_is_host(interp, ...)
+    return os.is_host(...)
+end
+
 -- the interpreter
 function package._interpreter()
 
@@ -449,6 +469,14 @@ function package.apis()
         {
             -- package.add_xxx
             "package.add_versions"
+        }
+    ,   custom = 
+        {
+            -- is_xxx
+            { "is_host", package._api_is_host }
+        ,   { "is_mode", package._api_is_mode }
+        ,   { "is_plat", package._api_is_plat }
+        ,   { "is_arch", package._api_is_arch }
         }
     }
 end

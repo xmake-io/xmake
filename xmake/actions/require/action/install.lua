@@ -168,7 +168,7 @@ function main(package)
             local installtask = function () 
 
                 -- prepare the install and package directories
-                _prepare_directories(package:installdir(), package:directory())
+                _prepare_directories(package:directory(), package:installdir())
 
                 -- build it
                 build(package)
@@ -181,8 +181,14 @@ function main(package)
                     end
                 end
 
-                -- make package from the install directory
-                if package:kind() ~= "binary" then
+                -- add search path for program
+                if package:kind() == "binary" then
+                    local bindir = path.join(package:installdir(), "bin")
+                    if os.isdir(bindir) then
+                        os.addenv("PATH", bindir)
+                    end
+                else
+                    -- make package from the install directory
                     _make_package(package)
                 end
 

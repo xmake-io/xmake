@@ -36,3 +36,6 @@ package("git")
         import("winenv", {rootdir = winenv_dir})(winenv_dir)
     end)
 
+    on_test(function (package)
+        os.vrun("git --version")
+    end)
