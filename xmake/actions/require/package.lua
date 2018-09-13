@@ -493,11 +493,20 @@ function install_packages(requires, requires_extra)
     end)
 
     -- install all required packages from repositories
+    local pathes = os.getenv("PATH")
     for _, package in ipairs(packages) do
+
+        -- enter package environment
+        if package:kind() == "binary" then
+            os.addenv("PATH", package:installdir("bin"))
+        end
+
+        -- install package
         if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then 
             action.install(package)
         end
     end
+    os.setenv("PATH", pathes)
 
     -- ok
     return packages
