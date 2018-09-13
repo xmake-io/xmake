@@ -17,5 +17,5 @@ target("console")
     add_files("src/*.c") 
 
     -- add packages
-    add_packages("tbox", "zlib", "pcre2")
+    add_packages("tbox", "zlib", "pcre2", "luajit")
 
