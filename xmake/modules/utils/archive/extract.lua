@@ -272,5 +272,5 @@ function main(archivefile, outputdir)
     local extension = _extension(archivefile, extractors)
 
     -- extract it
-    _extract(archivefile, outputdir, extension, extractors[extension])
+    return _extract(archivefile, outputdir, extension, extractors[extension])
 end

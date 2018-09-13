@@ -111,11 +111,14 @@ function _download(package, url, sourcedir, url_alias)
 
     -- extract package file
     os.rm(sourcedir .. ".tmp")
-    archive.extract(packagefile, sourcedir .. ".tmp")
-    
-    -- move to source directory
-    os.rm(sourcedir)
-    os.mv(sourcedir .. ".tmp", sourcedir)
+    if archive.extract(packagefile, sourcedir .. ".tmp") then
+        -- move to source directory
+        os.rm(sourcedir)
+        os.mv(sourcedir .. ".tmp", sourcedir)
+    end
+
+    -- save original file path
+    package:originfile_set(path.absolute(packagefile))
 
     -- trace
     printf("\r" .. _emptychars())

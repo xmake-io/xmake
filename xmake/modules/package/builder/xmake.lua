@@ -45,5 +45,5 @@ end
 
 -- install package
 function install(package)
-    os.vrun("xmake install -o %s", package:installdir())
+    os.vrunv("xmake", {"install", "-o", package:installdir()})
 end

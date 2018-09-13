@@ -43,28 +43,10 @@ function enter()
     if not find_tool("git") then
         package.install_packages("git")
     end
-
-    -- set the environment variables of toolchains 
-    _g.toolenvs = {}
-    for _, name in ipairs("cc", "cxx", "mm", "mxx", "ld", "ar", "sh") do
-        local value = config.get(name)
-        if value then
-            _g.toolenvs[name] = os.getenv(name:upper()) or ""
-            os.setenv(name:upper(), value)
-        end
-    end
 end
 
 -- leave environment
 function leave()
-
-    -- restore the environment variables of toolchains 
-    for _, name in ipairs("cc", "cxx", "mm", "mxx", "ld", "ar", "sh") do
-        local value = _g.toolenvs[name]
-        if value then
-            os.setenv(name:upper(), value)
-        end
-    end
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")

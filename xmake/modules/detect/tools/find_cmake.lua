@@ -34,8 +34,8 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local git = find_cmake()
--- local git, version = find_cmake({version = true})
+-- local cmake = find_cmake()
+-- local cmake, version = find_cmake({version = true})
 -- 
 -- @endcode
 --
@@ -43,6 +43,9 @@ function main(opt)
 
     -- init options
     opt = opt or {}
+    if is_host("windows") then
+        opt.pathes = "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Kitware\\CMake;InstallDir)\\bin"
+    end
     
     -- find program
     local program = find_program(opt.program or "cmake", opt)

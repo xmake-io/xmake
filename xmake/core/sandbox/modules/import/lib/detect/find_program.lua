@@ -43,6 +43,11 @@ local checking  = nil
 -- check program
 function sandbox_lib_detect_find_program._check(program, check)
 
+    -- is *.exe for windows?
+    if os.host() == "windows" and not program:find("%.exe") then
+        program = program .. ".exe"
+    end
+
     -- no check script? attempt to run it directly
     if not check then
         return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev()})

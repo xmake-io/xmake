@@ -172,6 +172,16 @@ function _instance:installdir()
     return path.join(self:cachedir(), "install")
 end
 
+-- get the downloaded original file
+function _instance:originfile()
+    return self._ORIGINFILE
+end
+
+-- set the downloaded original file
+function _instance:originfile_set(filepath)
+    self._ORIGINFILE = filepath
+end
+
 -- get the directory of this package
 function _instance:directory()
     return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str())

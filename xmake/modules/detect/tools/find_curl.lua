@@ -34,8 +34,8 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local git = find_curl()
--- local git, version = find_curl({version = true})
+-- local curl = find_curl()
+-- local curl, version = find_curl({version = true})
 -- 
 -- @endcode
 --

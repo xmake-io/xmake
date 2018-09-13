@@ -133,7 +133,8 @@ function main(package)
             oldir = os.cd(srcdir)
             break
         end
-    else
+    end
+    if not oldir then
         os.mkdir(workdir)
         oldir = os.cd(workdir) 
     end
