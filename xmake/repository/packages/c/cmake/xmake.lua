@@ -7,7 +7,7 @@ package("cmake")
     if is_host("macosx") then
         add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-Darwin-x86_64.tar.gz")
         add_versions("3.11.4", "2b5eb705f036b1906a5e0bce996e9cd56d43d73bdee8318ece3e5ce31657b812")
-    elseif is_host("linux") then
+    elseif is_host("linux") and is_arch("x86_64") then
         add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz")
         add_versions("3.11.4", "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435")
     elseif is_host("windows") then
@@ -28,9 +28,13 @@ package("cmake")
         os.cp("CMake.app/Contents/share", package:installdir())
     end)
 
-    on_install(function (package)
+    on_install("linux|x86_64", "windows", function (package)
         os.cp("bin", package:installdir())
         os.cp("share", package:installdir())
+    end)
+
+    on_install(function (package)
+        import("package.manager").install("cmake")
     end)
 
     on_test(function (package)
