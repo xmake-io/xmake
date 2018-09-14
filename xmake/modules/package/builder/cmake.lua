@@ -30,10 +30,11 @@ import("lib.detect.find_file")
 function build(package)
     os.mkdir("build/install")
     os.cd("build")
+    -- TODO -a x64/x86
     os.vrun("cmake -DCMAKE_INSTALL_PREFIX=\"%s\" ..", path.absolute("install"))
     if is_host("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.vrun("msbuild %s -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+        os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
     else
         os.vrun("make")
     end
@@ -44,7 +45,7 @@ function install(package)
     os.cd("build")
     if is_host("windows") then
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
-        os.vrun("msbuild %s /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
+        os.vrun("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
     else
         os.vrun("make install")
     end
