@@ -74,7 +74,7 @@ function _filter()
 end
 
 -- the package handler
-function _handler(package)
+function _handler(package, strval)
 
     -- @note cannot cache it, because the package instance will be changed
     return function (variable)
@@ -82,7 +82,17 @@ function _handler(package)
         -- init maps
         local maps =
         {
-            version = function () return package:version_str() end
+            version = function () 
+                if strval then
+                    -- set_urls("https://sqlite.org/2018/sqlite-autoconf-$(version)000.tar.gz",
+                    --          {version = function (version) return version:gsub("%.", "") end})
+                    local version_filter = package:url_version(strval)
+                    if version_filter then
+                        return version_filter(package:version_str())
+                    end
+                end
+                return package:version_str() 
+            end
         ,   buildir = function () return package:buildir() end
         }
 
@@ -121,7 +131,7 @@ end
 function handle(strval, package)
 
     -- register filter handler
-    _filter():register("package", _handler(package))
+    _filter():register("package", _handler(package, strval))
 
     -- handle string value
     strval = _filter():handle(strval)

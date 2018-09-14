@@ -109,6 +109,17 @@ function _instance:url_alias(url)
     end
 end
 
+-- get the version filter of url, @note need raw url
+function _instance:url_version(url)
+    local urls_extra = self:get("__extra_urls")
+    if urls_extra then
+        local urlextra = urls_extra[url]
+        if urlextra then
+            return urlextra.version
+        end
+    end
+end
+
 -- get deps
 function _instance:deps()
     return self._DEPS
