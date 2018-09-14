@@ -244,7 +244,7 @@ function _sort_packagedeps(package)
 end
 
 -- load all required packages
-function _load_packages(requires, requires_extra, parentinfo)
+function _load_packages(requires, opt)
 
     -- no requires?
     if not requires or #requires == 0 then
@@ -253,7 +253,7 @@ function _load_packages(requires, requires_extra, parentinfo)
 
     -- load packages
     local packages = {}
-    for packagename, requireinfo in pairs(load_requires(requires, requires_extra, parentinfo)) do
+    for packagename, requireinfo in pairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
         -- attempt to get project option about this package
         local packageopt = project.option(packagename)
@@ -267,9 +267,9 @@ function _load_packages(requires, requires_extra, parentinfo)
 
                 -- load dependent packages and save them first of this package
                 local deps = package:get("deps")
-                if deps then
+                if deps and opt.nodeps ~= true then
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, package:get("__extra_deps"), requireinfo)) do
+                    for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo, nodeps = opt.nodeps})) do
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
                     end
@@ -415,10 +415,13 @@ function load_requires(requires, requires_extra, parentinfo)
 end
 
 -- load all required packages
-function load_packages(requires, requires_extra)
+function load_packages(requires, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- laod all required packages recursively
-    local packages = _load_packages(requires, requires_extra)
+    local packages = _load_packages(requires, opt)
 
     -- sort package urls
     _sort_packages_urls(packages)
@@ -431,10 +434,13 @@ function load_packages(requires, requires_extra)
 end
 
 -- install packages
-function install_packages(requires, requires_extra)
+function install_packages(requires, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- load packages
-    local packages = load_packages(requires, requires_extra)
+    local packages = load_packages(requires, opt)
 
     -- fetch packages from local first
     local packages_remote = {}

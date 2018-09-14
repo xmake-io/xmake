@@ -87,11 +87,11 @@ function main(sdkdir, opt)
     if vcpkg then
 
         -- save to config
-        config.set("vcpkg", vcpkg.sdkdir, {force = true, readonly = true})
+        config.set("vcpkg", vcpkg, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the vcpkg directory ... ${green}%s", vcpkg.sdkdir)
+            cprint("checking for the vcpkg directory ... ${green}%s", vcpkg)
         end
     else
 

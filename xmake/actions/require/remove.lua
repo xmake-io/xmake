@@ -49,7 +49,7 @@ function main(requires)
     cache.clear()
 
     -- remove all packages
-    for _, instance in ipairs(package.load_packages(requires)) do
+    for _, instance in ipairs(package.load_packages(requires, {nodeps = true})) do
         local requireinfo = instance:requireinfo() or {}
         if os.isdir(instance:directory()) then
             

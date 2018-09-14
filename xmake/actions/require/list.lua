@@ -72,7 +72,7 @@ function main()
     end
 
     -- list all packages
-    for _, instance in ipairs(package.load_packages(requires, requires_extra)) do
+    for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
         local packageopt  = project.option(instance:alias() or instance:name())
         if packageopt then
             cprint("    ${magenta}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))

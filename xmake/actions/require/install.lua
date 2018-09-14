@@ -125,7 +125,7 @@ function main(requires)
     end
 
     -- install packages
-    local packages = package.install_packages(requires, requires_extra)
+    local packages = package.install_packages(requires, {requires_extra = requires_extra})
     if packages then
 
         -- check missing packages
