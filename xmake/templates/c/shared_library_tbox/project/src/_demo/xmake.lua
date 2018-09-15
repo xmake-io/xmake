@@ -14,5 +14,5 @@ target("demo")
     add_files("*.c") 
 
     -- add packages
-    add_packages("tboox.tbox", "base")
+    add_packages("tbox", "base")
 

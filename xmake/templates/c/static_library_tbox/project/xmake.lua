@@ -72,7 +72,7 @@ option("base")
     else add_links("pthread", "dl", "m", "c") end
 
 -- add requires
-add_requires("tboox.tbox")
+add_requires("tbox")
 
 -- include project sources
 includes("src/[targetname]", "src/[targetname]_demo") 
