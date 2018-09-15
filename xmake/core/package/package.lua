@@ -273,6 +273,24 @@ end
 -- set the require info 
 function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
+    -- switch to local package if exists package configuration
+    if requireinfo and requireinfo.config then
+        self._FROMKIND = "local"
+    end
+end
+
+-- get the all configuration values of package
+function _instance:configs()
+    local requireinfo = self:requireinfo()
+    if requireinfo then
+        return requireinfo.config
+    end
+end
+
+-- get the given configuration value of package
+function _instance:config(name)
+    local configs = self:configs()
+    return configs and configs[name] or nil
 end
 
 -- is optional package?

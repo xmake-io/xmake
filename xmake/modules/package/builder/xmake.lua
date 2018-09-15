@@ -39,6 +39,13 @@ function build(package)
         end
     end
     table.insert(argv, "--mode=" .. (is_mode("debug") and "debug" or "release"))
+    for name, value in pairs(package:configs()) do
+        value = tostring(value)
+        if value:find(" ", 1, true) then
+            value = '"' .. value .. '"'
+        end
+        table.insert(argv, "--" .. name .. "=" .. value)
+    end
     os.vrunv("xmake", argv)
     os.vrun("xmake" .. (option.get("verbose") and " -v" or ""))
 end
