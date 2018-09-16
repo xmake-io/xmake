@@ -26,10 +26,12 @@
 import("core.base.option")
 
 -- build package
-function build(package)
+function build(package, configs)
+
+    -- inherit builtin configs
     local argv    = {"f", "-y"}
-    local configs = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
-    for _, name in ipairs(configs) do
+    local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    for _, name in ipairs(names) do
         local value = get_config(name)
         if value ~= nil then
             if value:find(" ", 1, true) then
@@ -39,7 +41,9 @@ function build(package)
         end
     end
     table.insert(argv, "--mode=" .. (is_mode("debug") and "debug" or "release"))
-    for name, value in pairs(package:configs()) do
+
+    -- inherit require and option configs
+    for name, value in pairs(table.join(package:configs() or {}, configs or {})) do
         value = tostring(value)
         if value:find(" ", 1, true) then
             value = '"' .. value .. '"'
