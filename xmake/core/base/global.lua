@@ -103,7 +103,10 @@ end
 
 -- get the global configure directory
 function global.directory()
-    return path.translate("~/.xmake")
+    if global._ROOTDIR == nil then
+        global._ROOTDIR = os.getenv("XMAKE_GLOBALDIR") or path.translate("~/.xmake")
+    end
+    return global._ROOTDIR
 end
 
 -- load the global configure

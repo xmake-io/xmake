@@ -483,11 +483,17 @@ function os.tmpdir()
         end
     end
 
+    -- get root tmpdir
+    if os._ROOT_TMPDIR == nil then
+        os._ROOT_TMPDIR = os.getenv("XMAKE_TMPDIR") or os._tmpdir()
+    end
+    local tmpdir_root = os._ROOT_TMPDIR
+
     -- make sub-directory name
     local subdir = (os._FAKEROOT and ".xmakefake" or ".xmake") .. (os.uid().euid or "")
 
     -- get a temporary directory for each user
-    local tmpdir = path.join(os._tmpdir(), subdir, os.date("%y%m%d"))
+    local tmpdir = path.join(tmpdir_root, subdir, os.date("%y%m%d"))
 
     -- ensure this directory exist and remove the previous directory
     if not os.isdir(tmpdir) then
