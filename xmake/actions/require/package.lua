@@ -193,7 +193,7 @@ end
 
 -- search package package from project
 function _search_package_from_project(name)
---    return core_package.search_from_project(name)
+    return core_package.search_from_project(name)
 end
 
 -- search package package from repositories
@@ -342,31 +342,8 @@ end
 -- get user confirm
 function _get_confirm(packages)
 
-    -- init confirmed and not supported packages
-    local confirmed_packages = {}
-    local not_supported_packages = {}
-    for _, package in ipairs(packages) do
-        if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then 
-            if package:supported() then
-                table.insert(confirmed_packages, package)
-            else
-                table.insert(not_supported_packages, package)
-            end
-        end
-    end
-
-    -- exists not supported packages?
-    if #not_supported_packages > 0 then
-        -- show tips
-        cprint("${bright red}note: ${default red}the following packages are unsupported for $(plat)/$(arch)!")
-        for _, package in ipairs(not_supported_packages) do
-            print("  -> %s %s", package:name(), package:version_str() or "")
-        end
-        raise()
-    end
-
     -- no confirmed packages?
-    if #confirmed_packages == 0 then
+    if #packages == 0 then
         return true
     end
 
@@ -376,7 +353,7 @@ function _get_confirm(packages)
     
         -- show tips
         cprint("${bright yellow}note: ${default yellow}try installing these packages (pass -y to skip confirm)?")
-        for _, package in ipairs(confirmed_packages) do
+        for _, package in ipairs(packages) do
             print("  -> %s %s", package:name(), package:version_str() or "")
         end
         cprint("please input: y (y/n)")
@@ -444,25 +421,53 @@ function install_packages(requires, opt)
     -- load packages
     local packages = load_packages(requires, opt)
 
-    -- fetch packages from local first
-    local packages_remote = {}
-    if option.get("force") then 
-        for _, package in ipairs(packages) do
-            if package and #package:urls() > 0 then
-                table.insert(packages_remote, package)
-            end
+    -- add path environment for fetch binary packages
+    local pathes = os.getenv("PATH")
+    for _, package in ipairs(packages) do
+        if package:kind() == "binary" and package:supported() then
+            os.addenv("PATH", package:installdir("bin"))
         end
-    else
+    end
+
+    -- fetch packages (with system) from local first
+    if not option.get("force") then 
         process.runjobs(function (index)
             local package = packages[index]
-            if package and not package:fetch() and #package:urls() > 0 then -- @note fetch first for only system packge 
-                table.insert(packages_remote, package)
+            if package then
+                package:fetch()
             end
         end, #packages)
     end
 
+    -- filter packages
+    local packages_install = {}
+    local packages_download = {}
+    local packages_unsupported = {}
+    for _, package in ipairs(packages) do
+        if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then
+            if package:supported() then
+                if #package:urls() > 0 then
+                    table.insert(packages_download, package)
+                end
+                table.insert(packages_install, package)
+            elseif not package:optional() then
+                table.insert(packages_unsupported, package)
+            end
+        end
+    end
+
+    -- exists unsupported packages?
+    if #packages_unsupported > 0 then
+        -- show tips
+        cprint("${bright red}note: ${default red}the following packages are unsupported for $(plat)/$(arch)!")
+        for _, package in ipairs(packages_unsupported) do
+            print("  -> %s %s", package:name(), package:version_str() or "")
+        end
+        raise()
+    end
+
     -- get user confirm
-    if not _get_confirm(packages) then
+    if not _get_confirm(packages_install) then
         return 
     end
 
@@ -471,12 +476,12 @@ function install_packages(requires, opt)
     local waitchars = {'\\', '|', '/', '-'}
     process.runjobs(function (index)
 
-        local package = packages_remote[index]
+        local package = packages_download[index]
         if package then
             action.download(package)
         end
 
-    end, #packages_remote, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
+    end, #packages_download, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
 
         -- do not print progress info if be verbose 
         if option.get("verbose") then
@@ -489,7 +494,7 @@ function install_packages(requires, opt)
         -- make downloading packages list
         local downloading = {}
         for _, index in ipairs(indices) do
-            local package = packages_remote[index]
+            local package = packages_download[index]
             if package then
                 table.insert(downloading, package:name())
             end
@@ -501,19 +506,11 @@ function install_packages(requires, opt)
     end)
 
     -- install all required packages from repositories
-    local pathes = os.getenv("PATH")
-    for _, package in ipairs(packages) do
-
-        -- enter package environment
-        if package:kind() == "binary" then
-            os.addenv("PATH", package:installdir("bin"))
-        end
-
-        -- install package
-        if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then 
-            action.install(package)
-        end
+    for _, package in ipairs(packages_install) do
+        action.install(package)
     end
+
+    -- restore path environment
     os.setenv("PATH", pathes)
 
     -- ok

@@ -80,7 +80,7 @@ function _check_missing_packages(packages)
     local optional_missing = {}
     for _, instance in ipairs(packages) do
         if not instance:exists() and (#instance:urls() > 0 or instance:from("system")) then
-            if instance:requireinfo().optional then
+            if instance:optional() then
                 optional_missing[instance:name()] = instance
             else
                 table.insert(packages_missing, instance:name())
