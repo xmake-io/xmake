@@ -357,7 +357,7 @@ function os.mv(...)
     -- get destinate path
     local dstpath = args[#args]
 
-    -- copy files or directories
+    -- move files or directories
     for _, srcpath in ipairs(os.argw(srcpathes)) do
         local ok, errors = os._mv(srcpath, dstpath)
         if not ok then
@@ -378,7 +378,7 @@ function os.rm(...)
         return false, string.format("invalid arguments: %s", table.concat(args, ' '))
     end
 
-    -- create directories
+    -- remove directories
     for _, filedir in ipairs(os.argw(args)) do
         if not os._rm(filedir) then
             return false, string.format("remove: %s failed!", filedir)
