@@ -203,7 +203,7 @@ end
 
 -- get the directory of this package
 function _instance:directory()
-    return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str(), self:debug() and "debug" or "release")
+    return path.join(package.directory(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str(), self:debug() and "debug" or "release")
 end
 
 -- get versions
@@ -524,8 +524,8 @@ function package.apis()
     }
 end
 
--- get install directory
-function package.installdir(is_global)
+-- get package directory
+function package.directory(is_global)
 
     -- get directory
     if is_global then

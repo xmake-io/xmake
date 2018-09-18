@@ -35,9 +35,9 @@ function sandbox_core_package_package.cachedir()
     return package.cachedir()
 end
 
--- get install directory
-function sandbox_core_package_package.installdir(is_global)
-    return package.installdir(is_global)
+-- get package directory
+function sandbox_core_package_package.directory(is_global)
+    return package.directory(is_global)
 end
 
 -- load the package from the project file 
