@@ -39,10 +39,10 @@ function _make_package(package)
     local packagedir = path.join(package:directory(), name .. ".pkg")
 
     -- the linkdir
-    local linkdir = path.join(packagedir, "lib/$(mode)/$(plat)/$(arch)")
+    local linkdir = path.join(packagedir, "lib", get_config("plat"), get_config("arch"))
 
     -- the includedir 
-    local includedir = path.join(packagedir, "include/$(mode)/$(plat)/$(arch)")
+    local includedir = path.join(packagedir, "include", get_config("plat"), get_config("arch"))
 
     -- install the library files and ignore hidden files (.xxx)
     os.tryrm(linkdir)
@@ -94,10 +94,10 @@ option("%s")
     add_links("%s")
 
     -- add link directories
-    add_linkdirs("lib/$(mode)/$(plat)/$(arch)")
+    add_linkdirs("lib/$(plat)/$(arch)")
 
     -- add include directories
-    add_includedirs("include/$(mode)/$(plat)/$(arch)")
+    add_includedirs("include/$(plat)/$(arch)")
 ]]
 
         -- save file

@@ -41,8 +41,8 @@ import("repository")
 -- add_requires("tbox >=1.5.1", "zlib >=1.2.11")
 -- add_requires("zlib master")
 -- add_requires("xmake-repo@tbox >=1.5.1") 
--- add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg"})
--- add_requires("tbox", {config = {coroutine = true, mode = "debug"}})
+-- add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg", debug = true})
+-- add_requires("tbox", {config = {coroutine = true, abc = "xxx"}})
 --
 function _parse_require(require_str, requires_extra, parentinfo)
 
@@ -110,6 +110,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         reponame         = reponame,
         version          = version,
         alias            = require_extra.alias,     -- set package alias name
+        debug            = require_extra.debug,     -- uses the debug package, default: false
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         config           = require_extra.config,    -- the build configuration of package

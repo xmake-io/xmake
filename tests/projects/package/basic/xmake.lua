@@ -1,6 +1,6 @@
 
 -- requires
-add_requires("tbox master")
+add_requires("tbox master", {debug = true})
 add_requires("zlib >=1.2.11", {optional = true})
 add_requires("pcre2", "luajit", {system = false})
 

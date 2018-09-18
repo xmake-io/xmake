@@ -203,7 +203,7 @@ end
 
 -- get the directory of this package
 function _instance:directory()
-    return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str())
+    return path.join(package.installdir(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str(), self:debug() and "debug" or "release")
 end
 
 -- get versions
@@ -273,8 +273,8 @@ end
 -- set the require info 
 function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
-    -- switch to local package if exists package configuration
-    if requireinfo and requireinfo.config then
+    -- switch to local package if exists package configuration or debug package
+    if requireinfo and (requireinfo.config or requireinfo.debug) then
         self._FROMKIND = "local"
     end
 end
@@ -297,6 +297,12 @@ end
 function _instance:optional()
     local requireinfo = self:requireinfo()
     return requireinfo and requireinfo.optional or false
+end
+
+-- is debug package?
+function _instance:debug()
+    local requireinfo = self:requireinfo()
+    return requireinfo and requireinfo.debug or false
 end
 
 -- is supported package?

@@ -40,7 +40,7 @@ function build(package, configs)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    table.insert(argv, "--mode=" .. (is_mode("debug") and "debug" or "release"))
+    table.insert(argv, "--mode=" .. (package:debug() and "debug" or "release"))
 
     -- inherit require and option configs
     for name, value in pairs(table.join(package:configs() or {}, configs or {})) do
