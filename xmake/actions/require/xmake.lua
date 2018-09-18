@@ -52,11 +52,12 @@ task("require")
                 ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                              }
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                                          }
                 ,   {nil, "remove",     "k",  nil,       "Remove the installed packages."                                                            }
+                ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                                           }
                 ,   {                                                                                                                                }
                 ,   {nil, "requires",   "vs", nil,       "The package requires.",
                                                          ".e.g",
-                                                         "    $ xmake require zlib tboox.tbox",
-                                                         "    $ xmake require \"zlib >=1.2.11\" \"tboox.tbox master\"",
-                                                         "    $ xmake require \"git@github.com:tboox/tbox.git@tboox.tbox >=1.6.0 <1.6.1 || master\"" }
+                                                         "    $ xmake require zlib tbox",
+                                                         "    $ xmake require \"zlib >=1.2.11\" \"tbox master\"",
+                                                         "    $ xmake require --extra=\"debug=true,system=false\" tbox"                              } 
                 }
             } 

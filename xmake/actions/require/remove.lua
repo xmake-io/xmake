@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.task")
+import("core.base.option")
 import("package")
 import("repository")
 import("environment")
@@ -48,8 +49,26 @@ function main(requires)
     -- clear the detect cache
     cache.clear()
 
+    -- get extra info
+    local extra =  option.get("extra")
+    local extrainfo = nil
+    if extra then
+        local tmpfile = os.tmpfile() .. ".lua"
+        io.writefile(tmpfile, "{" .. extra .. "}")
+        extrainfo = io.load(tmpfile)
+        os.tryrm(tmpfile)
+    end
+
+    -- init requires extra info
+    local requires_extra = {}
+    if extrainfo then
+        for _, require_str in ipairs(requires) do
+            requires_extra[require_str] = extrainfo
+        end
+    end
+
     -- remove all packages
-    for _, instance in ipairs(package.load_packages(requires, {nodeps = true})) do
+    for _, instance in ipairs(package.load_packages(requires, {nodeps = true, requires_extra = requires_extra})) do
         local requireinfo = instance:requireinfo() or {}
         if os.isdir(instance:directory()) then
             

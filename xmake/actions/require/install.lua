@@ -113,6 +113,24 @@ function main(requires)
         return 
     end
 
+    -- get extra info
+    local extra =  option.get("extra")
+    local extrainfo = nil
+    if extra then
+        local tmpfile = os.tmpfile() .. ".lua"
+        io.writefile(tmpfile, "{" .. extra .. "}")
+        extrainfo = io.load(tmpfile)
+        os.tryrm(tmpfile)
+    end
+
+    -- force to use the given requires extra info
+    if extrainfo then
+        requires_extra = requires_extra or {}
+        for _, require_str in ipairs(requires) do
+            requires_extra[require_str] = extrainfo
+        end
+    end
+
     -- enter environment 
     environment.enter()
 

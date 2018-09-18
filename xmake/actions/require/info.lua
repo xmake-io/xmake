@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.task")
+import("core.base.option")
 import("action.filter")
 import("package")
 import("repository")
@@ -45,11 +46,29 @@ function main(requires)
         task.run("repo", {update = true})
     end
 
+    -- get extra info
+    local extra =  option.get("extra")
+    local extrainfo = nil
+    if extra then
+        local tmpfile = os.tmpfile() .. ".lua"
+        io.writefile(tmpfile, "{" .. extra .. "}")
+        extrainfo = io.load(tmpfile)
+        os.tryrm(tmpfile)
+    end
+
+    -- init requires extra info
+    local requires_extra = {}
+    if extrainfo then
+        for _, require_str in ipairs(requires) do
+            requires_extra[require_str] = extrainfo
+        end
+    end
+
     -- show title
     print("The package infos:")
 
     -- list all packages
-    for _, instance in ipairs(package.load_packages(requires)) do
+    for _, instance in ipairs(package.load_packages(requires, extrainfo and {requires_extra = requires_extra} or nil)) do
 
         -- show package name
         local requireinfo = instance:requireinfo() or {}
