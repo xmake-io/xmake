@@ -180,7 +180,7 @@ function _extract_using_unzip(archivefile, outputdir, extension)
 
     -- init argv
     local argv = {}
-    if option.get("verbose") then
+    if not option.get("verbose") then
         table.insert(argv, "-q")
     end
     table.insert(argv, archivefile)
