@@ -39,6 +39,11 @@ end
 -- on build the given target
 function _on_build_target(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -64,6 +69,11 @@ function _build_target(target)
     {
         function (target)
 
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
             -- get progress
             local progress = _g.targetindex * 100 / _g.targetcount
 
@@ -83,6 +93,11 @@ function _build_target(target)
         end
     ,   target:script("build", _on_build_target)
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
 
             -- get progress
             local progress = (_g.targetindex + 1) * 100 / _g.targetcount
