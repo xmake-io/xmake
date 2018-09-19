@@ -11,7 +11,7 @@ package("cmake")
         add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz")
         add_versions("3.11.4", "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435")
     elseif is_host("windows") then
-        if is_arch("x64") then
+        if os.arch() == "x64" then
             add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win64-x64.zip")
             add_versions("3.11.4", "d3102abd0ded446c898252b58857871ee170312d8e7fd5cbff01fbcb1068a6e5")
         else

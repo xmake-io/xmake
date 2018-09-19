@@ -27,11 +27,8 @@ package("git")
 
     on_install("windows", function (package)
 
-        -- imports
-        import("core.base.global")
-
         -- install winenv with git
-        local winenv_dir = path.join(global.directory(), "winenv")
+        local winenv_dir = path.join(val("globaldir"), "winenv")
         os.mkdir(winenv_dir)
         os.cp("*", winenv_dir)
 
