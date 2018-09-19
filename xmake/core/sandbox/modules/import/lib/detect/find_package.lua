@@ -139,16 +139,16 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     -- get prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
     if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(global.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
         table.insert(prefixdirs, path.join(config.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
+        table.insert(prefixdirs, path.join(global.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
     end
 
     -- find the package list file, .e.g zlib-1.2.11.txt
     local prefixfile = find_file(name .. "-*.txt", prefixdirs, {suffixes = ".list"})
 
     -- get the include and link directories 
-    local linkdirs = table.wrap(opt.linkdirs)
-    local includedirs = table.wrap(opt.includedirs)
+    local linkdirs = {}
+    local includedirs = {}
     if prefixfile then
         local prefixdir = path.directory(path.directory(prefixfile))
         table.insert(linkdirs, path.join(prefixdir, "lib"))
@@ -194,8 +194,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
         links = table.wrap(name)
     end
 
-    -- import find_path and find_library
-    local find_path    = import("lib.detect.find_path")
+    -- import find_library
     local find_library = import("lib.detect.find_library")
 
     -- find library 
@@ -210,23 +209,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     end
     if result and result.links then
         result.links = table.unique(result.links)
-    end
-
-    -- find includes
-    for _, include in ipairs(table.wrap(opt.includes)) do
-        local includedir = find_path(include, includedirs)
-        if includedir then
-            result             = result or {}
-            result.includedirs = table.join(result.includedirs or {}, includedir)
-        end
-    end
-    for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
-        local includedir = find_path(include, includedirs)
-        if includedir then
-            result             = result or {}
-            result.includedirs = table.join(result.includedirs or {}, includedir)
-            break
-        end
+        result.includedirs = includedirs
     end
 
     -- save version
