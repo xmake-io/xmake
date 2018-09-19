@@ -334,21 +334,30 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 end
 
 -- find package
+--
+-- opt.system:
+--   nil: find local or system packages
+--   true: only find system package
+--   false: only find local packages
+--
 function sandbox_lib_detect_find_package._find(name, opt)
 
     -- init find scripts
     local findscripts = {}
 
-    -- find package from the prefix directories
-    table.insert(findscripts, sandbox_lib_detect_find_package._find_from_prefixdirs)
+    -- we cannot find it if only find system packages
+    if opt.system ~= true then
+        -- find package from the prefix directories
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_prefixdirs)
+    end
 
     -- find package from the package directories
     if opt.packagedirs then
         table.insert(findscripts, sandbox_lib_detect_find_package._find_from_packagedirs)
     end
 
-    -- find system package
-    if opt.system then
+    -- find system package if be not disabled
+    if opt.system ~= false then
 
         -- find package from modules
         table.insert(findscripts, sandbox_lib_detect_find_package._find_from_modules)
@@ -410,11 +419,6 @@ function sandbox_lib_detect_find_package.main(name, opt)
     opt.arch   = opt.arch or config.get("arch") or os.arch()
     opt.mode   = opt.mode or config.get("mode")
 
-    -- enable system package by default
-    if opt.system == nil then
-        opt.system = true
-    end
-
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
     if opt.cachekey then
@@ -432,7 +436,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     result = sandbox_lib_detect_find_package._find(name, opt) 
 
     -- cache result
-    cacheinfo[name] = utils.ifelse(result, result, false)
+    cacheinfo[name] = result and result or false
     cache.save(key, cacheinfo)
 
     -- trace

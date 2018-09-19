@@ -45,6 +45,11 @@ import("repository")
 -- add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg", debug = true})
 -- add_requires("tbox", {config = {coroutine = true, abc = "xxx"}})
 --
+-- {system = nil/true/false}:
+--   nil: get local or system packages
+--   true: only get system package
+--   false: only get local packages
+--
 function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get it from cache first
@@ -423,15 +428,6 @@ function install_packages(requires, opt)
     -- load packages
     local packages = load_packages(requires, opt)
 
-    --[[
-    -- add path environment for fetch binary packages
-    local pathes = os.getenv("PATH")
-    for _, package in ipairs(packages) do
-        if package:kind() == "binary" and package:supported() then
-            os.addenv("PATH", package:installdir("bin"))
-        end
-    end]]
-
     -- fetch packages (with system) from local first
     if not option.get("force") then 
         process.runjobs(function (index)
@@ -512,9 +508,6 @@ function install_packages(requires, opt)
     for _, package in ipairs(packages_install) do
         action.install(package)
     end
-
-    -- restore path environment
---    os.setenv("PATH", pathes)
 
     -- ok
     return packages

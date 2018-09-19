@@ -425,23 +425,22 @@ function _instance:fetch(opt)
         -- import find_package
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
 
+        -- nil: find local or system packages
+        -- true: only find system package
+        -- false: only find local packages
+        local system = opt.system or self:requireinfo().system
+
         -- fetch it from the prefix directories first
-        if not fetchinfo then
+        if not fetchinfo and system ~= true then
             -- add cache key to make a distinction with finding system package
             fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), system = false, cachekey = "package:fetch", force = opt.force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
         -- fetch it from the system directories
-        if not fetchinfo then
-            local system = opt.system or self:requireinfo().system
-            if system == nil then -- find system package by default
-                system = true
-            end
-            if system then
-                fetchinfo = self._find_package(self:name(), {force = opt.force})
-                if fetchinfo then fetchfrom = "system" end
-            end
+        if not fetchinfo and system ~= false then
+            fetchinfo = self._find_package(self:name(), {force = opt.force, system = true})
+            if fetchinfo then fetchfrom = "system" end
         end
     end
 
