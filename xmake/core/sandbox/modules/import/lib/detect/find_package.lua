@@ -31,14 +31,16 @@ local path              = require("base/path")
 local utils             = require("base/utils")
 local table             = require("base/table")
 local option            = require("base/option")
+local global            = require("base/global")
 local config            = require("project/config")
+local target            = require("project/target")
 local project           = require("project/project")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
 local cache             = require("sandbox/modules/import/lib/detect/cache")
 local pkg_config        = import("lib.detect.pkg_config")
 
--- find package from package directories
+-- find package from the package directories
 function sandbox_lib_detect_find_package._find_from_packagedirs(name, opt)
 
     -- get package path (.e.g name.pkg) in the package directories
@@ -131,7 +133,116 @@ function sandbox_lib_detect_find_package._find_from_packagedirs(name, opt)
     return result
 end
 
--- find package from modules (detect.packages.find_xxx)
+-- find package from the prefix directories
+function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
+
+    -- get prefix directories
+    local prefixdirs = table.wrap(opt.prefixdirs)
+    if #prefixdirs == 0 then
+        table.insert(prefixdirs, path.join(global.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
+        table.insert(prefixdirs, path.join(config.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
+    end
+
+    -- find the package list file, .e.g zlib-1.2.11.txt
+    local prefixfile = find_file(name .. "-*.txt", prefixdirs, {suffixes = ".list"})
+
+    -- get the include and link directories 
+    local linkdirs = table.wrap(opt.linkdirs)
+    local includedirs = table.wrap(opt.includedirs)
+    if prefixfile then
+        local prefixdir = path.directory(path.directory(prefixfile))
+        table.insert(linkdirs, path.join(prefixdir, "lib"))
+        table.insert(includedirs, path.join(prefixdir, "include"))
+    else
+        for _, prefixdir in ipairs(prefixdirs) do
+            table.insert(linkdirs, path.join(prefixdir, "lib"))
+            table.insert(includedirs, path.join(prefixdir, "include"))
+        end
+    end
+
+    -- get links and linkdirs
+    local links = {}
+    local prefixlist = prefixfile and io.load(prefixfile) or nil
+    if prefixlist then
+        local found = false
+        for _, line in ipairs(prefixlist) do
+            line = line:trim()
+            if line:endswith(".lib") or line:endswith(".a") then
+                found = true
+                for _, prefixdir in ipairs(prefixdirs) do
+                    table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
+                end
+                table.insert(links, target.linkname(path.filename(line)))
+            end
+        end
+        if not found then
+            for _, line in ipairs(prefixlist) do
+                line = line:trim()
+                if line:endswith(".so") or line:endswith(".dylib") then
+                    found = true
+                    for _, prefixdir in ipairs(prefixdirs) do
+                        table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
+                    end
+                    table.insert(links, target.linkname(path.filename(line)))
+                end
+            end
+        end
+    end
+
+    -- uses name as links directly .e.g libname.a
+    if #links == 0 then
+        links = table.wrap(name)
+    end
+
+    -- import find_path and find_library
+    local find_path    = import("lib.detect.find_path")
+    local find_library = import("lib.detect.find_library")
+
+    -- find library 
+    local result = nil
+    for _, link in ipairs(links) do
+        local libinfo = find_library(link, linkdirs)
+        if libinfo then
+            result          = result or {}
+            result.links    = table.join(result.links or {}, libinfo.link)
+            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+        end
+    end
+    if result and result.links then
+        result.links = table.unique(result.links)
+    end
+
+    -- find includes
+    for _, include in ipairs(table.wrap(opt.includes)) do
+        local includedir = find_path(include, includedirs)
+        if includedir then
+            result             = result or {}
+            result.includedirs = table.join(result.includedirs or {}, includedir)
+        end
+    end
+    for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
+        local includedir = find_path(include, includedirs)
+        if includedir then
+            result             = result or {}
+            result.includedirs = table.join(result.includedirs or {}, includedir)
+            break
+        end
+    end
+
+    -- save version
+    if opt.version then
+        local prefixname = path.basename(prefixfile)
+        result.version = prefixname:match(name .. "%-(%d+%.?%d*%.?%d*.-)")
+        if not result.version then
+            result.version = infoname:match(name .. "%-(%d+%.?%d*%.-)")
+        end
+    end
+
+    -- ok
+    return result
+end
+
+-- find package from the modules (detect.packages.find_xxx)
 function sandbox_lib_detect_find_package._find_from_modules(name, opt)
 
     -- "detect.packages.find_xxx" exists?
@@ -141,7 +252,7 @@ function sandbox_lib_detect_find_package._find_from_modules(name, opt)
     end
 end
 
--- find package from pkg-config/brew
+-- find package from the pkg-config/brew
 function sandbox_lib_detect_find_package._find_from_pkg_config(name, opt)
     return import("lib.detect.pkg_config").find(name, opt)
 end
@@ -151,7 +262,7 @@ function sandbox_lib_detect_find_package._find_from_vcpkg(name, opt)
     return import("lib.detect.vcpkg").find(name, opt)
 end
 
--- find package from system directories
+-- find package from the system directories
 function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
     -- cannot get the version of package
@@ -244,6 +355,9 @@ function sandbox_lib_detect_find_package._find(name, opt)
 
     -- init find scripts
     local findscripts = {}
+
+    -- find package from the prefix directories
+    table.insert(findscripts, sandbox_lib_detect_find_package._find_from_prefixdirs)
 
     -- find package from the package directories
     if opt.packagedirs then

@@ -294,8 +294,10 @@ end
 -- set the require info 
 function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
-    -- switch to local package if exists package configuration or debug package
-    if requireinfo and (requireinfo.config or requireinfo.debug) then
+    -- switch to local package if exists package configuration or debug package or limit version
+    local version = requireinfo and requireinfo.version or nil
+    local limitversion = version and version ~= "master" and version ~= "lastest"
+    if requireinfo and (requireinfo.config or requireinfo.debug or limitversion) then
         self._FROMKIND = "local"
     end
 end
@@ -419,14 +421,12 @@ function _instance:fetch(opt)
         -- import find_package
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
 
-        -- TODO fetch it from the package directories first
-        --[[
-        local packagedir = self:directory()
-        if not fetchinfo and packagedir then
+        -- fetch it from the prefix directories first
+        if not fetchinfo then
             -- add cache key to make a distinction with finding system package
-            fetchinfo = self._find_package(self:name(), {packagedirs = packagedir, system = false, cachekey = "package:fetch", force = opt.force}) 
+            fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), system = false, cachekey = "package:fetch", force = opt.force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
-        end]]
+        end
 
         -- fetch it from the system directories
         if not fetchinfo then

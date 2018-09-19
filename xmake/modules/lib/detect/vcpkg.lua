@@ -74,7 +74,7 @@ function info(name, opt)
     local infodir = path.join(installdir, "vcpkg", "info")
 
     -- find the package info file, .e.g zlib_1.2.11-3_x86-windows.list
-    local infofile = find_file(vformat("%s_*_%s-%s.list", name, arch, plat), infodir)
+    local infofile = find_file(format("%s_*_%s-%s.list", name, arch, plat), infodir)
 
     -- save includedirs, linkdirs and links
     local info = infofile and io.readfile(infofile) or nil
