@@ -26,13 +26,42 @@
 local environment = environment or {}
 
 -- load modules
+local os        = require("base/os")
 local platform  = require("platform/platform")
 local sandbox   = require("sandbox/sandbox")
+local package   = require("package/package")
+
+-- enter the toolchains environment
+function environment._enter_toolchains()
+
+    -- save the toolchains environment
+    environment._PATHES = os.getenv("path")
+
+    -- add search binary pathes of packages
+    os.addenv("PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "bin"))  -- globaldir/release/../bin
+    os.addenv("PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "bin")) -- localdir/release/../bin
+end
+
+-- leave the toolchains environment
+function environment._leave_toolchains()
+
+    -- leave the toolchains environment
+    os.setenv("path", environment._PATHES)
+end
 
 -- enter the environment for the current platform
 function environment.enter(name)
 
-    -- enter it
+    -- the maps
+    local maps = {toolchains = environment._enter_toolchains}
+    
+    -- enter the common environment
+    local func = maps[name]
+    if func then
+        func()
+    end
+
+    -- enter the environment of the given platform
     local module = platform.get("environment")
     if module then
         local ok, errors = sandbox.load(module.enter, name)
@@ -48,13 +77,22 @@ end
 -- leave the environment for the current platform
 function environment.leave(name)
 
-    -- leave it
+    -- leave the environment of the given platform
     local module = platform.get("environment")
     if module then
         local ok, errors = sandbox.load(module.leave, name)
         if not ok then
             return false, errors
         end
+    end
+
+    -- the maps
+    local maps = {toolchains = environment._leave_toolchains}
+    
+    -- leave the common environment
+    local func = maps[name]
+    if func then
+        func()
     end
 
     -- ok

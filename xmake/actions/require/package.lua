@@ -423,13 +423,14 @@ function install_packages(requires, opt)
     -- load packages
     local packages = load_packages(requires, opt)
 
+    --[[
     -- add path environment for fetch binary packages
     local pathes = os.getenv("PATH")
     for _, package in ipairs(packages) do
         if package:kind() == "binary" and package:supported() then
             os.addenv("PATH", package:installdir("bin"))
         end
-    end
+    end]]
 
     -- fetch packages (with system) from local first
     if not option.get("force") then 
@@ -513,7 +514,7 @@ function install_packages(requires, opt)
     end
 
     -- restore path environment
-    os.setenv("PATH", pathes)
+--    os.setenv("PATH", pathes)
 
     -- ok
     return packages

@@ -193,9 +193,9 @@ end
 
 -- get the prefix directory
 function _instance:prefixdir(...)
-
+    
     -- make the given prefix directory
-    local dir = path.join(self:from("global") and global.directory() or config.directory(), "prefix", self:debug() and "debug" or "release", config.get("plat") or os.host(), config.get("arch") or os.arch(), ...)
+    local dir = path.join(package.prefixdir(self:from("global")), is_debug and "debug" or "release", config.get("plat") or os.host(), config.get("arch") or os.arch(), ...)
 
     -- ensure the prefix directory
     if not os.isdir(dir) then
@@ -553,6 +553,11 @@ end
 -- the cache directory
 function package.cachedir()
     return path.join(global.directory(), "cache", "packages")
+end
+
+-- get the prefix directory
+function package.prefixdir(is_global)
+    return path.join(is_global and global.directory() or config.directory(), "prefix")
 end
 
 -- load the package from the system directories
