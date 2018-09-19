@@ -70,17 +70,17 @@ function main(requires)
     -- remove all packages
     for _, instance in ipairs(package.load_packages(requires, {nodeps = true, requires_extra = requires_extra})) do
         local requireinfo = instance:requireinfo() or {}
+        --[[
         if os.isdir(instance:directory()) then
             
-            -- remove package directory
-            os.rm(instance:directory())
+            -- TODO remove package directory
 
             -- trace
             cprint("remove: %s%s ok!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "")
         else
             -- trace
             cprint("remove: %s%s not found!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "")
-        end
+        end]]
     end
 
     -- leave environment

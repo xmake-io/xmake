@@ -112,11 +112,11 @@ function main(requires)
         -- show cache directory
         cprint("      -> ${magenta}cachedir${clear}: %s", instance:cachedir())
 
+        -- show prefix directory
+        cprint("      -> ${magenta}prefixdir${clear}: %s", instance:prefixdir())
+
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
-
-        -- show package directory
-        cprint("      -> ${magenta}packagedir${clear}: %s", instance:directory())
 
         -- end
         print("")

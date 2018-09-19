@@ -193,12 +193,28 @@ end
 
 -- get the prefix directory
 function _instance:prefixdir(...)
-    return package.prefixdir(self:from("global"), ...)
+
+    -- make the given prefix directory
+    local dir = path.join(self:from("global") and global.directory() or config.directory(), "prefix", self:debug() and "debug" or "release", config.get("plat") or os.host(), config.get("arch") or os.arch(), ...)
+
+    -- ensure the prefix directory
+    if not os.isdir(dir) then
+        os.mkdir(dir)
+    end
+    return dir
 end
 
--- get the prefix info file
+-- get the prefix list
+function _instance:prefixlist()
+    local prefixfile = self:prefixfile()
+    if os.isfile(prefixfile) then
+        return io.load(prefixfile)
+    end
+end
+
+-- get the prefix list file
 function _instance:prefixfile()
-    return path.join(self:prefixdir(".info"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
+    return path.join(self:prefixdir(".list"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
 end
 
 -- get the downloaded original file
@@ -209,11 +225,6 @@ end
 -- set the downloaded original file
 function _instance:originfile_set(filepath)
     self._ORIGINFILE = filepath
-end
-
--- get the directory of this package
-function _instance:directory()
-    return path.join(package.directory(self:from("global")), self:name():sub(1, 1):lower(), self:name(), self:version_str(), self:debug() and "debug" or "release")
 end
 
 -- get versions
@@ -408,13 +419,14 @@ function _instance:fetch(opt)
         -- import find_package
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
 
-        -- fetch it from the package directories first
+        -- TODO fetch it from the package directories first
+        --[[
         local packagedir = self:directory()
         if not fetchinfo and packagedir then
             -- add cache key to make a distinction with finding system package
             fetchinfo = self._find_package(self:name(), {packagedirs = packagedir, system = false, cachekey = "package:fetch", force = opt.force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
-        end
+        end]]
 
         -- fetch it from the system directories
         if not fetchinfo then
@@ -534,33 +546,9 @@ function package.apis()
     }
 end
 
--- get package directory
-function package.directory(is_global)
-
-    -- get directory
-    if is_global then
-        return path.join(global.directory(), "packages")
-    else
-        return path.join(config.directory(), "packages")
-    end
-end
-
 -- the cache directory
 function package.cachedir()
     return path.join(global.directory(), "cache", "packages")
-end
-
--- get the prefix directory
-function package.prefixdir(is_global, ...)
-
-    -- make the given prefix directory
-    local dir = path.join(package.directory(is_global), "prefix", config.get("plat") or os.host(), config.get("arch") or os.arch(), ...)
-
-    -- ensure the prefix directory
-    if not os.isdir(dir) then
-        os.mkdir(dir)
-    end
-    return dir
 end
 
 -- load the package from the system directories

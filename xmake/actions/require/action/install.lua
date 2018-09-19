@@ -29,89 +29,27 @@ import("build")
 import("test")
 import("filter")
 
--- generate package 
-function _generate_package(package)
-
-    -- the package name
-    local name = package:name()
-
-    -- the package directory
-    local packagedir = path.join(package:directory(), name .. ".pkg")
-
-    -- the linkdir
-    local linkdir = path.join(packagedir, "lib", get_config("plat"), get_config("arch"))
-
-    -- the includedir 
-    local includedir = path.join(packagedir, "include", get_config("plat"), get_config("arch"))
-
-    -- install the library files and ignore hidden files (.xxx)
-    os.tryrm(linkdir)
-    os.cp(package:installdir("lib"), linkdir)
-
-    -- install the header files
-    os.cp(package:installdir("include"), includedir)
-
-    -- get links
-    local links = {}
-    for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "static"))), path.filename) do
-        local link = target.linkname(filename)
-        if link then
-            table.insert(links, link)
-        end
-    end
-    if #links == 0 then
-        for _, filename in ipairs(os.files(path.join(linkdir, target.filename("*", "shared"))), path.filename) do
-            local link = target.linkname(filename)
-            if link then
-                table.insert(links, link)
-            end
-        end
-    end
-    assert(#links > 0, "the library files not found in package %s", name)
-
-    -- make xmake.lua 
-    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
-    if file then
-
-        -- the xmake.lua content
-        local content = [[ 
--- the %s package
-option("%s")
-
-    -- show menu
-    set_showmenu(true)
-
-    -- set category
-    set_category("package")
-
-    -- set description
-    set_description("The %s package")
-
-    -- add defines to config.h if checking ok
-    add_defines_h("$(prefix)_PACKAGE_HAVE_%s")
-
-    -- add links for checking
-    add_links("%s")
-
-    -- add link directories
-    add_linkdirs("lib/$(plat)/$(arch)")
-
-    -- add include directories
-    add_includedirs("include/$(plat)/$(arch)")
-]]
-
-        -- save file
-        file:writef(content, name, name, name, name:upper(), table.concat(links, "\", \""))
-
-        -- exit file
-        file:close()
-    end
-end
-
 -- uninstall package from the prefix directory
 function _uninstall_prefix(package)
 
-    -- TODO
+    -- remove the previous prefix files
+    local prefixdir = package:prefixdir()
+    for _, relativefile in ipairs(package:prefixlist()) do
+
+        -- trace
+        vprint("removing %s ..", relativefile)
+
+        -- remove file
+        local prefixfile = path.absolute(relativefile, prefixdir)
+        os.tryrm(prefixfile)
+ 
+        -- remove it if the parent directory is empty
+        local parentdir = path.directory(prefixfile)
+        while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
+            os.tryrm(parentdir)
+            parentdir = path.directory(parentdir)
+        end
+    end
 end
 
 -- install package to the prefix directory
@@ -165,7 +103,7 @@ function _install_prefix(package)
         finally
         {
             function ()
-                -- save the prefix info to file
+                -- save the prefix list to file
                 io.save(package:prefixfile(), relativefiles)
             end
         }
@@ -231,11 +169,6 @@ function main(package)
                     if script ~= nil then
                         filter.call(script, package)
                     end
-                end
-
-                -- generate package(.pkg) from the install directory
-                if package:kind() ~= "binary" then
-                    _generate_package(package)
                 end
 
                 -- install to the prefix directory
