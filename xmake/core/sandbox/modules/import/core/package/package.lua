@@ -40,6 +40,11 @@ function sandbox_core_package_package.directory(is_global)
     return package.directory(is_global)
 end
 
+-- get the prefix directory
+function sandbox_core_package_package.prefixdir(is_global, ...)
+    return package.prefixdir(is_global, ...)
+end
+
 -- load the package from the project file 
 function sandbox_core_package_package.load_from_project(packagename)
 

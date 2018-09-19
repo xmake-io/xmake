@@ -29,8 +29,8 @@ import("build")
 import("test")
 import("filter")
 
--- make package 
-function _make_package(package)
+-- generate package 
+function _generate_package(package)
 
     -- the package name
     local name = package:name()
@@ -108,6 +108,70 @@ option("%s")
     end
 end
 
+-- uninstall package from the prefix directory
+function _uninstall_prefix(package)
+
+    -- TODO
+end
+
+-- install package to the prefix directory
+function _install_prefix(package)
+
+    -- uninstall the prefix package files first
+    _uninstall_prefix(package)
+
+    -- get prefix and install directory
+    local prefixdir  = package:prefixdir()
+    local installdir = package:installdir()
+
+    -- scan all installed files
+    local installfiles = {}
+    if package:kind() == "binary" then
+        table.join2(installfiles, (os.files(path.join(installdir, "**"))))
+    else
+        table.join2(installfiles, (os.files(path.join(package:installdir("lib"), "**"))))
+        table.join2(installfiles, (os.files(path.join(package:installdir("include"), "**"))))
+    end
+
+    -- trace
+    vprint("installing %s to %s ..", installdir, prefixdir)
+
+    -- install to the prefix directory
+    local relativefiles = {}
+    try
+    {
+        function ()
+            for _, installfile in ipairs(installfiles) do
+
+                -- get relative file
+                local relativefile = path.relative(installfile, installdir)
+
+                -- trace
+                vprint("installing %s ..", relativefile)
+
+                -- copy file
+                os.cp(installfile, path.absolute(relativefile, prefixdir))
+
+                -- save this relative file
+                table.insert(relativefiles, relativefile)
+            end
+        end,
+        catch 
+        {
+            function (errors)
+                raise(errors)
+            end
+        },
+        finally
+        {
+            function ()
+                -- save the prefix info to file
+                io.save(package:prefixfile(), relativefiles)
+            end
+        }
+    }
+end
+
 -- install the given package
 function main(package)
 
@@ -169,13 +233,13 @@ function main(package)
                     end
                 end
 
-                -- add search path for program
-                if package:kind() == "binary" then
-                    os.addenv("PATH", package:installdir("bin"))
-                else
-                    -- make package from the install directory
-                    _make_package(package)
+                -- generate package(.pkg) from the install directory
+                if package:kind() ~= "binary" then
+                    _generate_package(package)
                 end
+
+                -- install to the prefix directory
+                _install_prefix(package)
 
                 -- test it
                 test(package)

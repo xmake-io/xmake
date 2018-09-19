@@ -182,13 +182,23 @@ end
 function _instance:installdir(...)
     
     -- make the given install directory
-    local dir = path.join(self:directory(), "install", ...)
+    local dir = path.join(self:cachedir(), "install", ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
         os.mkdir(dir)
     end
     return dir
+end
+
+-- get the prefix directory
+function _instance:prefixdir(...)
+    return package.prefixdir(self:from("global"), ...)
+end
+
+-- get the prefix info file
+function _instance:prefixfile()
+    return path.join(self:prefixdir(".info"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
 end
 
 -- get the downloaded original file
@@ -538,6 +548,19 @@ end
 -- the cache directory
 function package.cachedir()
     return path.join(global.directory(), "cache", "packages")
+end
+
+-- get the prefix directory
+function package.prefixdir(is_global, ...)
+
+    -- make the given prefix directory
+    local dir = path.join(package.directory(is_global), "prefix", config.get("plat") or os.host(), config.get("arch") or os.arch(), ...)
+
+    -- ensure the prefix directory
+    if not os.isdir(dir) then
+        os.mkdir(dir)
+    end
+    return dir
 end
 
 -- load the package from the system directories
