@@ -30,7 +30,7 @@ import("test")
 import("filter")
 
 -- uninstall package from the prefix directory
-function _uninstall_prefix(package)
+function uninstall_prefix(package)
 
     -- remove the previous prefix files
     local prefixdir = package:prefixdir()
@@ -50,13 +50,16 @@ function _uninstall_prefix(package)
             parentdir = path.directory(parentdir)
         end
     end
+
+    -- remove the prefix file
+    os.tryrm(package:prefixfile())
 end
 
 -- install package to the prefix directory
-function _install_prefix(package)
+function install_prefix(package)
 
     -- uninstall the prefix package files first
-    _uninstall_prefix(package)
+    uninstall_prefix(package)
 
     -- get prefix and install directory
     local prefixdir  = package:prefixdir()
@@ -172,7 +175,7 @@ function main(package)
                 end
 
                 -- install to the prefix directory
-                _install_prefix(package)
+                install_prefix(package)
 
                 -- test it
                 test(package)

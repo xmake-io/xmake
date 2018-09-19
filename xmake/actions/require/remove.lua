@@ -28,7 +28,6 @@ import("core.base.option")
 import("package")
 import("repository")
 import("environment")
-import("lib.detect.cache")
 
 -- show the given package info
 function main(requires)
@@ -45,9 +44,6 @@ function main(requires)
     if not repository.pulled() then
         task.run("repo", {update = true})
     end
-
-    -- clear the detect cache
-    cache.clear()
 
     -- get extra info
     local extra =  option.get("extra")
@@ -67,20 +63,10 @@ function main(requires)
         end
     end
 
-    -- remove all packages
-    for _, instance in ipairs(package.load_packages(requires, {nodeps = true, requires_extra = requires_extra})) do
-        local requireinfo = instance:requireinfo() or {}
-        --[[
-        if os.isdir(instance:directory()) then
-            
-            -- TODO remove package directory
-
-            -- trace
-            cprint("remove: %s%s ok!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "")
-        else
-            -- trace
-            cprint("remove: %s%s not found!", requireinfo.originstr, instance:version_str() and ("/" .. instance:version_str()) or "")
-        end]]
+    -- remove packages
+    local packages = package.remove_packages(requires, {requires_extra = requires_extra})
+    for _, instance in ipairs(packages) do
+        print("remove: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
 
     -- leave environment

@@ -27,6 +27,7 @@ import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
 import("core.project.cache")
+import("lib.detect.cache", {alias = "detectcache"})
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("action")
@@ -515,6 +516,29 @@ function install_packages(requires, opt)
     os.setenv("PATH", pathes)
 
     -- ok
+    return packages
+end
+
+-- remove packages
+function remove_packages(requires, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- do not remove dependent packages
+    opt.nodeps = true
+
+    -- clear the detect cache
+    detectcache.clear()
+
+    -- remove all packages
+    local packages = {}
+    for _, instance in ipairs(load_packages(requires, opt)) do
+        if os.isfile(instance:prefixfile()) then
+            action.install.uninstall_prefix(instance)
+            table.insert(packages, instance)
+        end
+    end
     return packages
 end
 

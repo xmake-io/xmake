@@ -206,10 +206,11 @@ end
 
 -- get the prefix list
 function _instance:prefixlist()
-    local prefixfile = self:prefixfile()
-    if os.isfile(prefixfile) then
-        return io.load(prefixfile)
+    if self._PREFIXLIST == nil then
+        local prefixfile = self:prefixfile()
+        self._PREFIXLIST = os.isfile(prefixfile) and io.load(prefixfile) or {}
     end
+    return self._PREFIXLIST
 end
 
 -- get the prefix list file
@@ -293,7 +294,10 @@ end
 
 -- set the require info 
 function _instance:requireinfo_set(requireinfo)
+
+    -- save require info
     self._REQUIREINFO = requireinfo
+
     -- switch to local package if exists package configuration or debug package or limit version
     local version = requireinfo and requireinfo.version or nil
     local limitversion = version and version ~= "master" and version ~= "lastest"
