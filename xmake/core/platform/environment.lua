@@ -35,7 +35,7 @@ local package   = require("package/package")
 function environment._enter_toolchains()
 
     -- save the toolchains environment
-    environment._PATH            = os.getenv("path")
+    environment._PATH            = os.getenv("PATH")
     environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
 
     -- add search binary pathes of packages
