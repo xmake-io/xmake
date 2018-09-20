@@ -41,25 +41,30 @@ local cache     = require("sandbox/modules/import/lib/detect/cache")
 local checking  = nil
 
 -- check program
-function sandbox_lib_detect_find_program._check(program, check)
+function sandbox_lib_detect_find_program._check(program, opt)
 
     -- is *.exe for windows?
     if os.host() == "windows" and not program:find("%.exe") then
         program = program .. ".exe"
     end
 
+    -- do not attempt to run program? check it fastly
+    if opt.norun then
+        return os.isfile(program) 
+    end
+
     -- no check script? attempt to run it directly
-    if not check then
+    if not opt.check then
         return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev()})
     end
 
     -- check it
     local ok = false
     local errors = nil
-    if type(check) == "string" then
-        ok, errors = os.runv(program, {check})
+    if type(opt.check) == "string" then
+        ok, errors = os.runv(program, {opt.check})
     else
-        ok, errors = sandbox.load(check, program) 
+        ok, errors = sandbox.load(opt.check, program) 
     end
 
     -- check failed? print verbose error info
@@ -72,10 +77,10 @@ function sandbox_lib_detect_find_program._check(program, check)
 end
 
 -- find program
-function sandbox_lib_detect_find_program._find(name, pathes, check)
+function sandbox_lib_detect_find_program._find(name, pathes, opt)
 
     -- attempt to check it directly in current environment 
-    if sandbox_lib_detect_find_program._check(name, check) then
+    if sandbox_lib_detect_find_program._check(name, opt) then
         return name
     end
 
@@ -106,7 +111,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, check)
             -- the program path
             if program_path and os.isexec(program_path) then
                 -- check it
-                if sandbox_lib_detect_find_program._check(program_path, check) then
+                if sandbox_lib_detect_find_program._check(program_path, opt) then
                     return program_path
                 end
             end
@@ -120,7 +125,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, check)
             -- check it
             program_path = program_path:trim()
             if os.isexec(program_path) then
-                if sandbox_lib_detect_find_program._check(program_path, check) then
+                if sandbox_lib_detect_find_program._check(program_path, opt) then
                     return program_path
                 end
             end
@@ -134,6 +139,7 @@ end
 -- @param opt       the options, .e.g {pathes = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
 --                    - opt.pathes    the program pathes (.e.g dirs, pathes, winreg pathes, script pathes)
 --                    - opt.check     the check script or command 
+--                    - opt.norun     do not attempt to run program to check program fastly
 --
 -- @return          the program name or path
 --
@@ -184,7 +190,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
 
     -- find executable program
     checking = utils.ifelse(coroutine_running, name, nil)
-    result = sandbox_lib_detect_find_program._find(name, pathes, opt.check) 
+    result = sandbox_lib_detect_find_program._find(name, pathes, opt) 
     checking = nil
 
     -- cache result

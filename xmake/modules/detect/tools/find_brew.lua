@@ -43,6 +43,10 @@ function main(opt)
 
     -- init options
     opt = opt or {}
+
+    -- we do not attempt to run brew and only find the brew program path
+    -- because the `brew --version` and `brew help` commands are too slow. (~1.5s)
+    opt.norun = true
     
     -- find program
     local program = find_program(opt.program or "brew", opt)
