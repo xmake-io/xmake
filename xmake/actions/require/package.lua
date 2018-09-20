@@ -332,10 +332,10 @@ function _select_packages_version(packages)
             local source = nil
             local version = nil
             local require_version = package:requireinfo().version
-            if require_version == "lastest" or require_version:find('.', 1, true) then -- select version?
+            if #package:versions() > 0 and (require_version == "lastest" or require_version:find('.', 1, true)) then -- select version?
                 version, source = semver.select(require_version, package:versions())
             elseif has_giturl then -- select branch?
-                version, source = require_version, "branches"
+                version, source = require_version ~= "lastest" and require_version or "master", "branches"
             else
                 raise("package(%s %s): not found!", package:name(), require_version)
             end
