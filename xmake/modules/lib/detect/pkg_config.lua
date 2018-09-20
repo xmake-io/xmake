@@ -58,17 +58,23 @@ function info(name, opt)
         return result and result or nil
     end
 
-    -- get pkg-config path from brew
-    local brew = find_brew()
+    -- attempt to find package without `brew --prefix` (brew is too slow!)
+    local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
+
+    -- attempt to get pkg-config path from `brew --prefix` if no flags
+    local brew = nil
     local brewprefix = nil
     local configdirs = opt.configdirs or {}
-    if brew then
-        brewprefix = try { function () return os.iorunv(brew, {"--prefix", name}) end }
-        if brewprefix then
-            brewprefix = brewprefix:trim()
-            local configdir = path.join(brewprefix, "lib", "pkgconfig")
-            if os.isdir(configdir) then
-                table.insert(configdirs, configdir)
+    if not flags then
+        brew = find_brew()
+        if brew then
+            brewprefix = try { function () return os.iorunv(brew, {"--prefix", name}) end }
+            if brewprefix then
+                brewprefix = brewprefix:trim()
+                local configdir = path.join(brewprefix, "lib", "pkgconfig")
+                if os.isdir(configdir) then
+                    table.insert(configdirs, configdir)
+                end
             end
         end
     end
@@ -81,7 +87,7 @@ function info(name, opt)
     end
 
     -- get libs and cflags
-    local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
+    flags = flags or try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
     if flags then
 
         -- init result
