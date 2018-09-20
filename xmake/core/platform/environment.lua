@@ -35,18 +35,24 @@ local package   = require("package/package")
 function environment._enter_toolchains()
 
     -- save the toolchains environment
-    environment._PATHES = os.getenv("path")
+    environment._PATH            = os.getenv("path")
+    environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
 
     -- add search binary pathes of packages
     os.addenv("PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "bin"))  -- globaldir/release/../bin
     os.addenv("PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "bin")) -- localdir/release/../bin
+    if os.host() ~= "windows" then
+        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "lib"))  -- globaldir/release/../lib
+        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "lib")) -- localdir/release/../lib
+    end
 end
 
 -- leave the toolchains environment
 function environment._leave_toolchains()
 
     -- leave the toolchains environment
-    os.setenv("path", environment._PATHES)
+    os.setenv("PATH", environment._PATH)
+    os.setenv("LD_LIBRARY_PATH", environment._LD_LIBRARY_PATH)
 end
 
 -- enter the environment for the current platform
