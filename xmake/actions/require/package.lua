@@ -409,9 +409,6 @@ function load_packages(requires, opt)
     -- laod all required packages recursively
     local packages = _load_packages(requires, opt)
 
-    -- sort package urls
-    _sort_packages_urls(packages)
-
     -- select packages version
     _select_packages_version(packages)
 
@@ -469,6 +466,9 @@ function install_packages(requires, opt)
     if not _get_confirm(packages_install) then
         return 
     end
+
+    -- sort package urls
+    _sort_packages_urls(packages_download)
 
     -- download remote packages
     local waitindex = 0
