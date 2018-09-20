@@ -78,7 +78,7 @@ function main(sdkdir, opt)
     -- attempt to load cache first
     local key = "detect.sdks.find_vcpkgdir." .. (sdkdir or "")
     local cacheinfo = cache.load(key)
-    if not opt.force and cacheinfo.vcpkg then
+    if not opt.force and cacheinfo.vcpkg ~= nil then
         return cacheinfo.vcpkg
     end
        
