@@ -69,6 +69,11 @@ end
 -- uninstall target
 function _on_uninstall(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -106,6 +111,13 @@ function _uninstall_target(target)
     {
         target:script("uninstall_before")
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- uninstall rules
             for _, r in ipairs(target:orderules()) do
                 local before_uninstall = r:script("uninstall_before")
                 if before_uninstall then
@@ -115,6 +127,13 @@ function _uninstall_target(target)
         end
     ,   target:script("uninstall", _on_uninstall)
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- uninstall rules
             for _, r in ipairs(target:orderules()) do
                 local after_uninstall = r:script("uninstall_after")
                 if after_uninstall then

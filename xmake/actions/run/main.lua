@@ -34,6 +34,11 @@ import("devel.debugger")
 -- run target 
 function _on_run_target(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -97,6 +102,13 @@ function _run(target)
     {
         target:script("run_before")
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- run rules
             for _, r in ipairs(target:orderules()) do
                 local before_run = r:script("run_before")
                 if before_run then
@@ -106,6 +118,13 @@ function _run(target)
         end
     ,   target:script("run", _on_run_target)
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- run rules
             for _, r in ipairs(target:orderules()) do
                 local after_run = r:script("run_after")
                 if after_run then

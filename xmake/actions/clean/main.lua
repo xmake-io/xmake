@@ -52,6 +52,11 @@ end
 -- on clean target 
 function _on_clean_target(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -107,6 +112,13 @@ function _clean_target(target)
     {
         target:script("clean_before")
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- clean rules
             for _, r in ipairs(target:orderules()) do
                 local before_clean = r:script("clean_before")
                 if before_clean then
@@ -116,6 +128,13 @@ function _clean_target(target)
         end
     ,   target:script("clean", _on_clean_target)
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- clean rules
             for _, r in ipairs(target:orderules()) do
                 local after_clean = r:script("clean_after")
                 if after_clean then

@@ -85,6 +85,11 @@ end
 -- on install
 function _on_install(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -122,6 +127,13 @@ function _install_target(target)
     {
         target:script("install_before")
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- install rules
             for _, r in ipairs(target:orderules()) do
                 local before_install = r:script("install_before")
                 if before_install then
@@ -131,6 +143,13 @@ function _install_target(target)
         end
     ,   target:script("install", _on_install)
     ,   function (target)
+
+            -- has been disabled?
+            if target:get("enabled") == false then
+                return 
+            end
+
+            -- install rules
             for _, r in ipairs(target:orderules()) do
                 local after_install = r:script("install_after")
                 if after_install then
