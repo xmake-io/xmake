@@ -23,6 +23,8 @@
 --
 
 -- imports
+import("core.project.target")
+import("lib.detect.find_file")
 import("lib.detect.find_library")
 import("detect.tools.find_brew")
 import("detect.tools.find_pkg_config")
@@ -58,24 +60,18 @@ function info(name, opt)
         return result and result or nil
     end
 
-    -- attempt to find package without `brew --prefix` (brew is too slow!)
+    -- attempt to find package without `brew --prefix` first
     local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
 
     -- attempt to get pkg-config path from `brew --prefix` if no flags
-    local brew = nil
     local brewprefix = nil
     local configdirs = opt.configdirs or {}
     if not flags then
-        brew = find_brew()
-        if brew then
-            brewprefix = try { function () return os.iorunv(brew, {"--prefix", name}) end }
-            if brewprefix then
-                brewprefix = brewprefix:trim()
-                local configdir = path.join(brewprefix, "lib", "pkgconfig")
-                if os.isdir(configdir) then
-                    table.insert(configdirs, configdir)
-                end
-            end
+        -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
+        local pcfile = find_file("*.pc", "/usr/local/Cellar/" .. name .. "/*/lib/pkgconfig")
+        if pcfile then
+            brewprefix = path.directory(path.directory(path.directory(pcfile)))
+            table.insert(configdirs, path.directory(pcfile))
         end
     end
 
@@ -118,7 +114,13 @@ function info(name, opt)
             end
         end
     elseif brewprefix then
-        result = {linkdirs = {path.join(brewprefix, "lib")}, includedirs  = {path.join(brewprefix, "include")}}
+        local links = {}
+        for _, file in ipairs(os.files(path.join(brewprefix, "lib", "*.a"))) do
+            table.insert(links, target.linkname(path.filename(file)))
+        end
+        if #links > 0 then
+            result = {links = links, linkdirs = {path.join(brewprefix, "lib")}, includedirs = {path.join(brewprefix, "include")}}
+        end
     end
 
     -- get version
