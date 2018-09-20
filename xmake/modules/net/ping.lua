@@ -76,7 +76,7 @@ function main(hosts, opt)
                         end
 
                         -- find time
-                        local timeval = data:match("time=(.-)ms", 1, true) or "65535"
+                        local timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535"
                         if timeval then
                             timeval = tonumber(timeval:trim())
                         end
