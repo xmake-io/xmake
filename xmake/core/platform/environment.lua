@@ -41,10 +41,6 @@ function environment._enter_toolchains()
     -- add search binary pathes of packages
     os.addenv("PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "bin"))  -- globaldir/release/../bin
     os.addenv("PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "bin")) -- localdir/release/../bin
-    if os.host() ~= "windows" then
-        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "lib"))  -- globaldir/release/../lib
-        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "lib")) -- localdir/release/../lib
-    end
 end
 
 -- leave the toolchains environment
@@ -52,6 +48,25 @@ function environment._leave_toolchains()
 
     -- leave the toolchains environment
     os.setenv("PATH", environment._PATH)
+end
+
+-- enter the running environment
+function environment._enter_run()
+
+    -- save the running environment
+    environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
+
+    -- add search library pathes of packages
+    if os.host() ~= "windows" then
+        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "lib"))  -- globaldir/release/../lib
+        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "lib")) -- localdir/release/../lib
+    end
+end
+
+-- leave the running environment
+function environment._leave_run()
+
+    -- leave the running environment
     os.setenv("LD_LIBRARY_PATH", environment._LD_LIBRARY_PATH)
 end
 
@@ -59,7 +74,7 @@ end
 function environment.enter(name)
 
     -- the maps
-    local maps = {toolchains = environment._enter_toolchains}
+    local maps = {toolchains = environment._enter_toolchains, run = environment._enter_run}
     
     -- enter the common environment
     local func = maps[name]
@@ -93,7 +108,7 @@ function environment.leave(name)
     end
 
     -- the maps
-    local maps = {toolchains = environment._leave_toolchains}
+    local maps = {toolchains = environment._leave_toolchains, run = environment._enter_run}
     
     -- leave the common environment
     local func = maps[name]

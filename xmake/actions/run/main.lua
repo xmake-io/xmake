@@ -29,6 +29,7 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
+import("core.platform.environment")
 import("devel.debugger")
 
 -- run target 
@@ -165,6 +166,9 @@ function main()
     -- enter project directory
     local oldir = os.cd(project.directory())
 
+    -- enter the running environment
+    environment.enter("run")
+
     -- run the given target?
     if targetname then
         _run_deps(project.target(targetname))
@@ -179,6 +183,9 @@ function main()
             end
         end
     end
+
+    -- leave the running environment
+    environment.leave("run")
 
     -- leave project directory
     os.cd(oldir)
