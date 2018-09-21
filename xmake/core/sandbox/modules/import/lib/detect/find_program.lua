@@ -28,6 +28,7 @@ local sandbox_lib_detect_find_program = sandbox_lib_detect_find_program or {}
 -- load modules
 local os        = require("base/os")
 local path      = require("base/path")
+local option    = require("base/winos")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option    = require("base/option")
@@ -118,8 +119,24 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
         end
     end
 
-    -- attempt to check it use `which program` command
-    if os.host() ~= "windows" then
+    -- attempt to check it from regists
+    if os.host() == "windows" then
+        local program_name = name:lower()
+        if not program_name:endswith(".exe") then
+            program_name = program_name .. ".exe"
+        end
+        local program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
+        if program_path then
+            -- check it
+            program_path = program_path:trim()
+            if os.isexec(program_path) then
+                if sandbox_lib_detect_find_program._check(program_path, opt) then
+                    return program_path
+                end
+            end
+        end
+    else
+        -- attempt to check it use `which program` command
         local ok, program_path = os.iorunv("which", {name})
         if ok and program_path then
             -- check it

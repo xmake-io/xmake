@@ -95,6 +95,9 @@ function sandbox_lib_detect_find_programver.main(program, opt)
             end
         elseif parse == nil or type(parse) == "string" then
             result = outdata:match(parse or "(%d+%.?%d*%.?%d*.-)%s")
+            if not result then
+                result = outdata:match(parse or "(%d+%.?%d*%.?%d*.-)")
+            end
         end
     end
 

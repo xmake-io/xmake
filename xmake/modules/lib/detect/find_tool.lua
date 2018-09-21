@@ -69,21 +69,20 @@ function main(name, opt)
 
     -- find tool name
     local toolname = find_toolname(name or opt.program)
-    if not toolname then
-        return 
+    if toolname then
+
+        -- attempt to find tool from modules first
+        local tool = _find_from_modules(toolname, opt)
+        if tool then
+            return tool
+        end
     end
 
     -- init program
     opt.program = opt.program or name
 
-    -- attempt to find tool from modules first
-    local tool = _find_from_modules(toolname, opt)
-    if tool then
-        return tool
-    end
- 
-    -- find tool
-    local program = find_program(opt.program, opt.pathes, opt.check, opt)
+    -- find program
+    local program = find_program(opt.program, opt)
     if not program then
         return 
     end
