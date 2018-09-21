@@ -126,6 +126,9 @@ function main(package)
             oldir = os.cd(srcdir)
             break
         end
+        if not oldir and os.isdir(path.join(workdir, "source")) then
+            oldir = os.cd(path.join(workdir, "source"))
+        end
     end
     if not oldir then
         os.mkdir(workdir)

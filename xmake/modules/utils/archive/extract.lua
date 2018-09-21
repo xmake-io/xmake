@@ -262,6 +262,7 @@ function main(archivefile, outputdir)
         [".zip"]        = {_extract_using_unzip, _extract_using_tar, _extract_using_7z}
     ,   [".7z"]         = {_extract_using_7z}
     ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
+    ,   [".tgz"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".bz2"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".tar"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_gzip, _extract_using_7z}
