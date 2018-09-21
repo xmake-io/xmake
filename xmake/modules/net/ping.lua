@@ -69,10 +69,12 @@ function main(hosts, opt)
                     else
                         -- ping it, timeout: 1s
                         local data = nil
-                        if os.host() == "windows" then
+                        if is_host("windows") then
                             data = os.iorun("%s -n 1 -w 1000 %s", ping, host)
-                        else
+                        elseif is_host("macosx") then
                             data = os.iorun("%s -c 1 -t 1 %s", ping, host)
+                        else
+                            data = os.iorun("%s -c 1 -W 1 %s", ping, host)
                         end
 
                         -- find time
@@ -99,6 +101,9 @@ function main(hosts, opt)
                         if cacheinfo then
                             cacheinfo[host] = timeval
                         end
+
+                        -- trace
+                        vprint("pinging for the host(%s) ... %d ms", host, timeval)
                     end
                 }
             }
