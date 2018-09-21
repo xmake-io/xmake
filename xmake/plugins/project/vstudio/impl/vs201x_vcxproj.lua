@@ -172,7 +172,10 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Configuration\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target.kind]))
             vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(toolset_versions["vs" .. vsinfo.vstudio_version]))
-            vcxprojfile:print("<CharacterSet>%s</CharacterSet>", ifelse(targetinfo.unicode, "Unicode", "MultiByte"))
+            vcxprojfile:print("<CharacterSet>%s</CharacterSet>", targetinfo.unicode and "Unicode" or "MultiByte")
+            if targetinfo.usemfc then
+                vcxprojfile:print("<UseOfMfc>%s</UseOfMfc>", targetinfo.usemfc)
+            end
         vcxprojfile:leave("</PropertyGroup>")
     end
 

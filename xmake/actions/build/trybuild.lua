@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.platform.environment")
+import("lib.detect.find_file")
 
 -- try building for makefile
 function _build_for_makefile(buildfile)
@@ -39,13 +40,20 @@ end
 
 -- try building for cmakelist
 function _build_for_cmakelists(buildfile)
-    os.vrun("cmake .")
-    os.vrun("make")
+    os.mkdir("build")
+    os.cd("build")
+    os.vrun("cmake -a %s ..", os.arch())
+    if is_host("windows") then
+        local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
+        os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", slnfile, os.arch() == "x64" and "x64" or "Win32")
+    else
+        os.vrun("make")
+    end
 end
 
 -- build for *.sln
 function _build_for_sln(buildfile)
-    os.vrun("msbuild %s -nologo -t:Rebuild -p:Configuration=Release", buildfile)
+    os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", buildfile, os.arch() == "x64" and "x64" or "Win32")
 end
 
 -- build for *.xcworkspace or *.xcodeproj

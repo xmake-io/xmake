@@ -18,12 +18,12 @@
 -- 
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
--- @author      xigal
+-- @author      xigal, ruki
 -- @file        xmake.lua
 --
 
 -- remove exists md or mt
-function _mfc_remove_mt_md_flags(target, flagsname)
+function _remove_mt_md_flags(target, flagsname)
     local flags = table.wrap(target:get(flagsname))
     for i = #flags, 1, -1 do
         flag = flags[i]:lower():trim()
@@ -35,7 +35,7 @@ function _mfc_remove_mt_md_flags(target, flagsname)
 end
 
 -- remove exists settings
-function _mfc_remove_flags(target)
+function _remove_flags(target)
     local ldflags = table.wrap(target:get("ldflags"))
     for i = #ldflags, 1, -1 do
         ldflag = ldflags[i]:lower():trim()
@@ -57,51 +57,63 @@ function _mfc_remove_flags(target)
     target:set("defines", defines)
     
     -- remove c /MD,/MT
-    _mfc_remove_mt_md_flags(target, "cflags")
+    _remove_mt_md_flags(target, "cflags")
     
     -- remove c,cpp /MD,/MT
-    _mfc_remove_mt_md_flags(target, "cxflags")
+    _remove_mt_md_flags(target, "cxflags")
     
     -- remove cpp /MD,/MT
-    _mfc_remove_mt_md_flags(target, "cxxflags")
+    _remove_mt_md_flags(target, "cxxflags")
 end
 
--- get application entry
-function mfc_application_entry(target)
-    local defines = target:get("defines")
-    for key, define in pairs(defines) do
+-- apply mfc library settings
+function library(target, kind)
+
+    -- set kind: static/shared
+    target:set("kind", kind)
+
+    -- set runtime library
+    if kind == "static" then
+        target:add("cxflags", is_mode("debug") and "-MTd" or "-MT")
+    else
+        target:add("cxflags", is_mode("debug") and "-MDd" or "-MD")
+        target:add("defines", "AFX", "_AFXDLL")
+    end
+end
+
+-- apply mfc application settings
+function application(target, mfc_kind)
+
+    -- set kind: binary
+    target:set("kind", "binary")
+
+    -- remove some exists flags
+    _remove_flags(target)
+
+    -- set windows subsystem
+    target:add("ldflags", "-subsystem:windows", {force = true})
+
+    -- forces a link to complete even with unresolved symbols
+    if mfc_kind == "static" then
+        target:add("ldflags", "-force", {force = true})
+    end
+
+    -- set runtime library
+    if mfc_kind == "static" then
+        target:add("cxflags", is_mode("debug") and "-MTd" or "-MT")
+    else
+        target:add("cxflags", is_mode("debug") and "-MDd" or "-MD")
+        target:add("defines", "AFX", "_AFXDLL")
+    end
+
+    -- set startup entry 
+    local unicode = false
+    for _, define in ipairs(target:get("defines")) do
         define = define:lower():trim()
         if define:find("^[_]?unicode$") then
-            return "-entry:wWinMainCRTStartup"
+            unicode = true
+            break
         end
     end
-    return "-entry:WinMainCRTStartup"
-end
-
--- apply shared mfc settings
-function mfc_shared(target)
-
-    -- remove some exists flags
-    _mfc_remove_flags(target)
-
-    -- add flags
-    target:add("ldflags", "-subsystem:windows", {force = true})
-
-    -- set runtimelibrary
-    target:add("cxflags", ifelse(is_mode("debug"), "-MDd", "-MD"))
-    target:add("defines", "AFX", "_AFXDLL")
-end
-
--- apply static mfc settings
-function mfc_static(target)
-
-    -- remove some exists flags
-    _mfc_remove_flags(target)
-
-    -- add flags
-    target:add("ldflags", "-subsystem:windows", {force = true})
-    target:add("ldflags", "-force", {force = true})
-
-    -- set runtimelibrary
-    target:add("cxflags", ifelse(is_mode("debug"), "-MTd", "-MT"))
+    target:add("ldflags", unicode and "-entry:wWinMainCRTStartup" or "-entry:WinMainCRTStartup", {force = true})
 end

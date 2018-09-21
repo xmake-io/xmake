@@ -18,11 +18,11 @@
 -- 
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
--- @author      xigal
+-- @author      xigal, ruki
 -- @file        xmake.lua
 --
 
--- define rule: shared
+-- define rule: the mfc shared library
 rule("win.sdk.mfc.shared")
 
     -- add mfc base rule
@@ -30,12 +30,10 @@ rule("win.sdk.mfc.shared")
 
     -- after load
     after_load(function (target)
-
-        -- apply mfc settings
-        import("mfc").mfc_shared(target)
+        import("mfc").library(target, "shared")
     end)
 
--- define rule: static
+-- define rule: the mfc static library
 rule("win.sdk.mfc.static")
 
     -- add mfc base rule
@@ -43,39 +41,27 @@ rule("win.sdk.mfc.static")
 
     -- after load
     after_load(function (target)
-
-        -- apply mfc settings
-        import("mfc").mfc_static(target)
+        import("mfc").library(target, "static")
     end)
 
--- define rule: sharedcapp
+-- define rule: the application with shared mfc libraries
 rule("win.sdk.mfc.shared_app")
 
     -- add mfc base rule
-    add_deps("win.sdk.mfc.shared")
+    add_deps("win.sdk.mfc.env")
 
     -- after load
     after_load(function (target)
-
-        -- set kind: binary
-        target:set("kind", "binary")
-
-        -- set entry
-        target:add("ldflags", import("mfc").mfc_application_entry(target), {force = true})       
+        import("mfc").application(target, "shared")
     end)
 
--- define rule: staticapp
+-- define rule: the application with static mfc libraries
 rule("win.sdk.mfc.static_app")
 
     -- add mfc base rule
-    add_deps("win.sdk.mfc.static")
+    add_deps("win.sdk.mfc.env")
 
     -- after load
     after_load(function (target)
-
-        -- set kind: binary
-        target:set("kind", "binary")
-
-        -- set entry
-        target:add("ldflags", import("mfc").mfc_application_entry(target), {force = true})
+        import("mfc").application(target, "static")
     end)

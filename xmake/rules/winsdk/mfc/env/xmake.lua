@@ -18,13 +18,13 @@
 -- 
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
--- @author      xigal
+-- @author      xigal, ruki
 -- @file        xmake.lua
 --
 
 -- define rule: mfc.env
 rule("win.sdk.mfc.env")
 
-    -- FIXME: before load need check of vs's minverion, if defined
-    --before_load(function (target)
-    --end)
+    -- TODO: before load need check of vs's minverion, if defined
+    before_load(function (target)
+    end)
