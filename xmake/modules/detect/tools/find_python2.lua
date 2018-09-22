@@ -19,14 +19,12 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_python.lua
+-- @file        find_python2.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
-import("detect.tools.find_python2")
-import("detect.tools.find_python3")
 
 -- find python 
 --
@@ -36,8 +34,8 @@ import("detect.tools.find_python3")
 --
 -- @code 
 --
--- local python = find_python()
--- local python, version = find_python({version = true})
+-- local python = find_python2()
+-- local python, version = find_python2({version = true})
 -- 
 -- @endcode
 --
@@ -47,11 +45,12 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    local program = find_program(opt.program or "python", opt)
+    local program = find_program(opt.program or "python2", opt)
     if not program then
-        program = find_python3() or find_python2()
+        program = find_program("python", opt)
+        opt.version = true
     end
-
+    
     -- find program version
     local version = nil
     if program and opt.version then
@@ -60,6 +59,11 @@ function main(opt)
             return ((outs or "") .. (errs or "")):trim()
         end
         version = find_programver(program, opt)
+    end
+
+    -- check version
+    if version and not version:startswith("2.") then
+        return 
     end
 
     -- ok?

@@ -53,10 +53,14 @@ function main(opt)
     
     -- find program
     local program = find_program(opt.program or "python3", opt)
-
+    if not program then
+        program = find_program("python", opt)
+        opt.version = true
+    end
+ 
     -- find program version
     local version = nil
-    if program and opt and opt.version then
+    if program and opt.version then
         opt.command = function () 
             local outs, errs = os.iorunv(program, {"--version"}) 
             return ((outs or "") .. (errs or "")):trim()
@@ -64,6 +68,12 @@ function main(opt)
         version = find_programver(program, opt)
     end
 
+    -- check version
+    if version and not version:startswith("3.") then
+        return 
+    end
+
     -- ok?
     return program, version
+
 end
