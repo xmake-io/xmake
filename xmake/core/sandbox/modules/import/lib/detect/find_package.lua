@@ -144,7 +144,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     end
 
     -- find the package list file, .e.g zlib-1.2.11.txt
-    local prefixfile = find_file(name .. "-*.txt", prefixdirs, {suffixes = ".list"})
+    local prefixfile = find_file(name .. "-*.txt", prefixdirs, {suffixes = ".info"})
 
     -- get the include and link directories 
     local linkdirs = {}

@@ -133,7 +133,7 @@ function _urls(package)
     for _, url in ipairs(package:urls()) do
         if git.checkurl(url) then
             table.insert(urls[1], url)
-        else
+        elseif package:sha256(package:url_alias(url)) then
             table.insert(urls[2], url)
         end
     end
@@ -156,8 +156,11 @@ function main(package)
     -- enter the working directory
     local oldir = os.cd(workdir)
 
-    -- download package from urls
+    -- get urls
     local urls = _urls(package)
+    assert(#urls > 0, "cannot get url of package(%s)", package:name())
+
+    -- download package from urls
     for idx, url in ipairs(urls) do
 
         -- get url alias

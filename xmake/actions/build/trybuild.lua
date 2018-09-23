@@ -29,25 +29,31 @@ import("lib.detect.find_file")
 
 -- try building for makefile
 function _build_for_makefile(buildfile)
-    os.vrun("make")
+    os.vrun("make -j4")
 end
 
 -- try building for configure
 function _build_for_configure(buildfile)
-    os.vrun("./configure")
-    os.vrun("make")
+    os.vrun("./configure --prefix=%s", path.absolute("install"))
+    os.vrun("make -j4")
+    os.vrun("make install")
 end
 
 -- try building for cmakelist
 function _build_for_cmakelists(buildfile)
     os.mkdir("build")
     os.cd("build")
-    os.vrun("cmake -a %s ..", os.arch())
+    os.vrun("cmake -a %s -DCMAKE_INSTALL_PREFIX=\"%s\" ..", os.arch(), path.absolute("install"))
     if is_host("windows") then
+        
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
         os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", slnfile, os.arch() == "x64" and "x64" or "Win32")
+
+        local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
+        os.vrun("msbuild \"%s\" /property:configuration=Release", projfile)
     else
-        os.vrun("make")
+        os.vrun("make -j4")
+        os.vrun("make install")
     end
 end
 
