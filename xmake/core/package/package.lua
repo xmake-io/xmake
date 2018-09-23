@@ -75,6 +75,16 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the platform of package
+function _instance:plat()
+    return config.get("plat") or os.host()
+end
+
+-- get the architecture of package
+function _instance:arch()
+    return config.get("arch") or os.arch()
+end
+
 -- get the repository of this package
 function _instance:repo()
     return self._REPO
@@ -195,7 +205,7 @@ end
 function _instance:prefixdir(...)
     
     -- make the given prefix directory
-    local dir = path.join(package.prefixdir(self:from("global")), is_debug and "debug" or "release", config.get("plat") or os.host(), config.get("arch") or os.arch(), ...)
+    local dir = path.join(package.prefixdir(self:from("global"), self:debug(), self:plat(), self:arch()), ...)
 
     -- ensure the prefix directory
     if not os.isdir(dir) then
@@ -204,18 +214,53 @@ function _instance:prefixdir(...)
     return dir
 end
 
--- get the prefix list
-function _instance:prefixlist()
-    if self._PREFIXLIST == nil then
+-- get the prefix info
+function _instance:prefixinfo()
+    if self._PREFIXINFO == nil then
         local prefixfile = self:prefixfile()
-        self._PREFIXLIST = os.isfile(prefixfile) and io.load(prefixfile) or {}
+        self._PREFIXINFO = os.isfile(prefixfile) and io.load(prefixfile) or {}
     end
-    return self._PREFIXLIST
+    return self._PREFIXINFO
 end
 
--- get the prefix list file
+-- get the prefix info file
 function _instance:prefixfile()
-    return path.join(self:prefixdir(".list"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
+    return path.join(self:prefixdir(".info"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
+end
+
+-- get environment variables
+function _instance:getenv(name, ...)
+    return self:prefixinfo().envars and self:prefixinfo().envars[name] or nil
+end
+
+-- set environment variables
+function _instance:setenv(name, ...)
+    self:prefixinfo().envars = self:prefixinfo().envars or {}
+    self:prefixinfo().envars[name] = {...}
+end
+
+-- add values to environment variable 
+function _instance:addenv(name, ...)
+    self:prefixinfo().envars = self:prefixinfo().envars or {}
+    self:prefixinfo().envars[name] = table.join(self:prefixinfo().envars[name] or {}, ...)
+end
+
+-- register package info in the root prefix info 
+function _instance:register()
+
+    -- register the environment variables
+    for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
+        package.addenv(self:from("global"), self:debug(), self:plat(), self:arch(), name, values)
+    end
+end
+
+-- unregister package info from the root prefix info 
+function _instance:unregister()
+
+    -- unregister the environment variables
+    for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
+        package.delenv(self:from("global"), self:debug(), self:plat(), self:arch(), name, values)
+    end
 end
 
 -- get the downloaded original file
@@ -555,8 +600,67 @@ function package.cachedir()
 end
 
 -- get the prefix directory
-function package.prefixdir(is_global)
-    return path.join(is_global and global.directory() or config.directory(), "prefix")
+function package.prefixdir(is_global, is_debug, plat, arch)
+    return path.join(is_global and global.directory() or config.directory(), "prefix", is_debug and "debug" or "release", plat or os.host(), arch or os.arch())
+end
+
+-- get the prefix info
+function package.prefixinfo(is_global, is_debug, plat, arch)
+    local prefixfile = package.prefixfile(is_global, is_debug, plat, arch)
+    return os.isfile(prefixfile) and io.load(prefixfile) or {}
+end
+
+-- get the prefix info file
+function package.prefixfile(is_global, is_debug, plat, arch)
+    return path.join(package.prefixdir(is_global, is_global, plat, arch), "info.txt")
+end
+
+-- get environment variables
+function package.getenv(is_global, is_debug, plat, arch, name)
+    local prefixinfo = package.prefixinfo(is_global, is_debug, plat, arch)
+    return prefixinfo.envars and prefixinfo.envars[name] or nil
+end
+
+-- add values to environment variable 
+function package.addenv(is_global, is_debug, plat, arch, name, values)
+
+    -- add to the root prefix info
+    local prefixinfo = package.prefixinfo(is_global, is_debug, plat, arch)
+    prefixinfo.envars = prefixinfo.envars or {}
+    prefixinfo.envars[name] = table.join(prefixinfo.envars[name] or {}, values)
+    io.save(package.prefixfile(is_global, is_debug, plat, arch), prefixinfo)
+
+    -- add to the current environment
+    if values then
+        -- PATH? add the prefix root directory 
+        if name:lower() == "path" then
+            local prefixdir = package.prefixdir(is_global, is_debug, plat, arch)
+            for _, value in ipairs(values) do
+                os.addenv(name, path.join(prefixdir, value))
+            end
+        else
+            os.addenv(name, unpack(values))
+        end
+    end
+end
+
+-- remove values to environment variable 
+function package.delenv(is_global, is_debug, plat, arch, name, values)
+    local prefixinfo = package.prefixinfo(is_global, is_debug, plat, arch)
+    local prefixvalues = prefixinfo.envars and prefixinfo.envars[name] or nil
+    if prefixvalues then
+        local exists = {}
+        for _, value in ipairs(values) do
+            exists[value:trim()] = true
+        end
+        for i = #prefixvalues, 1, -1 do
+            value = prefixvalues[i]:trim()
+            if exists[value] then
+                table.remove(prefixvalues, i)
+            end
+        end
+        io.save(package.prefixfile(is_global, is_debug, plat, arch), prefixinfo)
+    end
 end
 
 -- load the package from the system directories

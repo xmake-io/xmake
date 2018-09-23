@@ -162,7 +162,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
 
     -- get links and linkdirs
     local links = {}
-    local prefixlist = prefixfile and io.load(prefixfile) or nil
+    local prefixlist = (prefixfile and io.load(prefixfile) or {}).installed
     if prefixlist then
         local found = false
         for _, line in ipairs(prefixlist) do

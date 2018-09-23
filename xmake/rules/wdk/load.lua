@@ -65,7 +65,7 @@ function driver_kmdf(target)
 
     -- add links
     local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
-    if os_winver.version(winver) >= os_winver.version("win8") then
+    if winver and os_winver.version(winver) >= os_winver.version("win8") then
         target:add("links", "BufferOverflowFastFailK")
     else
         target:add("links", "BufferOverflowK")
@@ -105,7 +105,7 @@ function driver_wdm(target)
 
     -- add links
     local winver = target:values("wdk.env.winver") or config.get("wdk_winver")
-    if os_winver.version(winver) >= os_winver.version("win8") then
+    if winver and os_winver.version(winver) >= os_winver.version("win8") then
         target:add("links", "BufferOverflowFastFailK")
     else
         target:add("links", "BufferOverflowK")

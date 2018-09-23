@@ -115,6 +115,9 @@ function main(requires)
         -- show prefix directory
         cprint("      -> ${magenta}prefixdir${clear}: %s", instance:prefixdir())
 
+        -- show prefix file
+        cprint("      -> ${magenta}prefixfile${clear}: %s", instance:prefixfile())
+
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
 

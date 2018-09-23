@@ -894,7 +894,7 @@ end
 function os.setenv(name, ...)
 
     -- get separator
-    local seperator = utils.ifelse(os.host() == "windows", ';', ':')
+    local seperator = os.host() == "windows" and ';' or ':'
     
     -- append values
     return os._setenv(name, table.concat({...}, seperator))
@@ -904,7 +904,7 @@ end
 function os.addenv(name, ...)
 
     -- get separator
-    local seperator = utils.ifelse(os.host() == "windows", ';', ':')
+    local seperator = os.host() == "windows" and ';' or ':'
     
     -- append values
     return os.setenv(name, table.concat({...}, seperator) .. seperator ..  (os.getenv(name) or ""))

@@ -35,12 +35,21 @@ local package   = require("package/package")
 function environment._enter_toolchains()
 
     -- save the toolchains environment
-    environment._PATH            = os.getenv("PATH")
-    environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
+    environment._PATH = os.getenv("PATH")
 
-    -- add search binary pathes of packages
-    os.addenv("PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "bin"))  -- globaldir/release/../bin
-    os.addenv("PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "bin")) -- localdir/release/../bin
+    -- add global search binary pathes
+    local globaldir = package.prefixdir(true, false, os.host(), os.arch())
+    for _, dir in ipairs(table.wrap(package.getenv(true, false, os.host(), os.arch(), "PATH"))) do
+        os.addenv("PATH", path.join(globaldir, dir))
+    end
+    os.addenv("PATH", path.join(globaldir, "bin"))
+
+    -- add local search binary pathes
+    local localdir = package.prefixdir(false, false, os.host(), os.arch())
+    for _, dir in ipairs(table.wrap(package.getenv(false, false, os.host(), os.arch(), "PATH"))) do
+        os.addenv("PATH", path.join(localdir, dir))
+    end
+    os.addenv("PATH", path.join(localdir, "bin"))
 end
 
 -- leave the toolchains environment
@@ -54,12 +63,23 @@ end
 function environment._enter_run()
 
     -- save the running environment
+    environment._PATH            = os.getenv("PATH")
     environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
 
-    -- add search library pathes of packages
-    if os.host() ~= "windows" then
-        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(true), "release", os.host(), os.arch(), "lib"))  -- globaldir/release/../lib
-        os.addenv("LD_LIBRARY_PATH", path.join(package.prefixdir(false), "release", os.host(), os.arch(), "lib")) -- localdir/release/../lib
+    -- add global search library pathes of pathes
+    local globaldir = package.prefixdir(true, false, os.host(), os.arch())
+    if os.host() == "windows" then
+        os.addenv("PATH", path.join(globaldir, "lib"))
+    else
+        os.addenv("LD_LIBRARY_PATH", path.join(globaldir, "lib"))
+    end
+
+    -- add local search library pathes of pathes
+    local localdir = package.prefixdir(false, false, os.host(), os.arch())
+    if os.host() == "windows" then
+        os.addenv("PATH", path.join(localdir, "lib"))
+    else
+        os.addenv("LD_LIBRARY_PATH", path.join(localdir, "lib"))
     end
 end
 
@@ -67,6 +87,7 @@ end
 function environment._leave_run()
 
     -- leave the running environment
+    os.setenv("PATH", environment._PATH)
     os.setenv("LD_LIBRARY_PATH", environment._LD_LIBRARY_PATH)
 end
 

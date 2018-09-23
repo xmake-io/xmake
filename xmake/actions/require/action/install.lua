@@ -32,9 +32,9 @@ import("filter")
 -- uninstall package from the prefix directory
 function uninstall_prefix(package)
 
-    -- remove the previous prefix files
+    -- remove the previous installed files
     local prefixdir = package:prefixdir()
-    for _, relativefile in ipairs(package:prefixlist()) do
+    for _, relativefile in ipairs(package:prefixinfo().installed) do
 
         -- trace
         vprint("removing %s ..", relativefile)
@@ -50,6 +50,9 @@ function uninstall_prefix(package)
             parentdir = path.directory(parentdir)
         end
     end
+
+    -- unregister this package
+    package:unregister()
 
     -- remove the prefix file
     os.tryrm(package:prefixfile())
@@ -106,8 +109,13 @@ function install_prefix(package)
         finally
         {
             function ()
-                -- save the prefix list to file
-                io.save(package:prefixfile(), relativefiles)
+                -- save the prefix info to file
+                local prefixinfo = package:prefixinfo()
+                prefixinfo.installed = relativefiles
+                io.save(package:prefixfile(), prefixinfo)
+
+                -- register this package
+                package:register()
             end
         }
     }
