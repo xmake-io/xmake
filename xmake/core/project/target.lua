@@ -522,16 +522,22 @@ function target:objectdir()
         objectdir = path.join(config.buildir(), ".objs", self:name())
     end
 
-    -- append mode sub-directory
-    local mode = config.get("mode")
-    if mode then
-        objectdir = path.join(objectdir, mode)
+    -- append plat sub-directory
+    local plat = config.get("plat")
+    if plat then
+        objectdir = path.join(objectdir, plat)
     end
 
     -- append arch sub-directory
     local arch = config.get("arch")
     if arch then
         objectdir = path.join(objectdir, arch)
+    end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        objectdir = path.join(objectdir, mode)
     end
   
     -- ok?
@@ -544,16 +550,22 @@ function target:dependir()
     -- init the dependent directory
     local dependir = path.join(config.buildir(), ".deps", self:name())
 
-    -- append mode sub-directory
-    local mode = config.get("mode")
-    if mode then
-        dependir = path.join(dependir, mode)
+    -- append plat sub-directory
+    local plat = config.get("plat")
+    if plat then
+        dependir = path.join(dependir, plat)
     end
 
     -- append arch sub-directory
     local arch = config.get("arch")
     if arch then
         dependir = path.join(dependir, arch)
+    end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        dependir = path.join(dependir, mode)
     end
   
     -- ok?
@@ -575,16 +587,22 @@ function target:targetdir()
         -- get build directory
         targetdir = config.buildir()
 
-        -- append mode sub-directory
-        local mode = config.get("mode")
-        if mode then
-            targetdir = path.join(targetdir, mode)
+        -- append plat sub-directory
+        local plat = config.get("plat")
+        if plat then
+            targetdir = path.join(targetdir, plat)
         end
 
         -- append arch sub-directory
         local arch = config.get("arch")
         if arch then
             targetdir = path.join(targetdir, arch)
+        end
+
+        -- append mode sub-directory
+        local mode = config.get("mode")
+        if mode then
+            targetdir = path.join(targetdir, mode)
         end
     end
 
