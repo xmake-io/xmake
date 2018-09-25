@@ -19,36 +19,41 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cmake.lua
+-- @file        autoconf.lua
 --
-
--- imports
-import("core.base.option")
-import("lib.detect.find_file")
 
 -- build package
 function build(package, configs)
-    os.mkdir("build/install")
-    os.cd("build")
-    os.vrun("cmake -a $(arch) -DCMAKE_INSTALL_PREFIX=\"%s\" ..", path.absolute("install"))
-    if is_host("windows") then
-        local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
-    else
-        os.vrun("make")
+
+    -- generate configure file
+    if not os.isfile("configure") and os.isfile("configure.ac") then
+        os.vrun("autoreconf --install --symlink")
     end
+
+    -- inherit require and option configs
+    local argv = {}
+    if not configs or not configs.prefix then
+        table.insert(argv, "--prefix=" .. package:installdir())
+    end
+    for name, value in pairs(configs) do
+        value = tostring(value):trim()
+        if type(name) == "number" then
+            if value ~= "" then
+                table.insert(argv, value)
+            end
+        else
+            if value:find(" ", 1, true) then
+                value = '"' .. value .. '"'
+            end
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
+    end
+    os.vrunv("./configure", argv)
+    os.vrun("make -j4")
 end
 
 -- install package
 function install(package)
-    os.cd("build")
-    if is_host("windows") then
-        local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
-        os.vrun("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
-    else
-        os.vrun("make install")
-    end
-    os.cp("install/lib", package:installdir())
-    os.cp("install/include", package:installdir())
+    os.vrun("make install")
 end
 

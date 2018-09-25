@@ -34,6 +34,9 @@ end
 
 -- try building for configure
 function _build_for_configure(buildfile)
+    if not os.isfile("configure") and os.isfile("configure.ac") then
+        os.vrun("autoreconf --install --symlink")
+    end
     os.vrun("./configure --prefix=%s", path.absolute("install"))
     os.vrun("make -j4")
     os.vrun("make install")
@@ -87,6 +90,7 @@ function main(targetname)
     end
     table.insert(buildscripts, {"CMakeLists.txt", _build_for_cmakelists})
     table.insert(buildscripts, {"configure",      _build_for_configure})
+    table.insert(buildscripts, {"configure.ac",   _build_for_configure})
     table.insert(buildscripts, {"[mM]akefile",    _build_for_makefile})
 
     -- attempt to build it
