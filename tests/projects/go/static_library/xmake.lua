@@ -43,8 +43,8 @@ target("test")
     add_files("src/*.go") 
 
     -- add link directory
-    add_linkdirs("$(buildir)/$(mode)/$(arch)")
+    add_linkdirs("$(buildir)/$(plat)/$(arch)/$(mode)")
 
     -- add include directory
-    add_includedirs("$(buildir)/$(mode)/$(arch)")
+    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)")
 

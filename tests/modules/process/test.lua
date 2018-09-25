@@ -1,9 +1,9 @@
 function main()
 
     -- single process test
-    local inftimeout=999
-    local stdout=os.tmpfile()
-    local stderr=os.tmpfile()
+    local inftimeout = 5000
+    local stdout = os.tmpfile()
+    local stderr = os.tmpfile()
     for i = 1, 2 do
         local pro = process.open("echo -n awd", stdout, stderr)
         process.wait(pro, inftimeout)
