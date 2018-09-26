@@ -147,45 +147,66 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local prefixfile = find_file(name .. "-*.txt", prefixdirs, {suffixes = ".info"})
 
     -- get the include and link directories 
+    local links = {}
     local linkdirs = {}
     local includedirs = {}
+    local prefixinfo = {}
     if prefixfile then
+
+        -- get prefix root directory
         local prefixdir = path.directory(path.directory(prefixfile))
+
+        -- add given include and link directories
+        prefixinfo = io.load(prefixfile) or {}
+        for _, includedir in ipairs(table.wrap(prefixinfo.includedirs)) do
+            table.insert(includedirs, path.join(prefixdir, includedir))
+        end
+        for _, linkdir in ipairs(table.wrap(prefixinfo.linkdirs)) do
+            table.insert(linkdirs, path.join(prefixdir, linkdir))
+        end
+        if prefixinfo.links then
+            table.join2(links, prefixinfo.links)
+        end
+        if prefixinfo.installed and (not prefixinfo.linkdirs or not prefixinfo.links) then
+            local found = false
+            for _, line in ipairs(prefixinfo.installed) do
+                line = line:trim()
+                if line:endswith(".lib") or line:endswith(".a") then
+                    found = true
+                    if not prefixinfo.linkdirs then
+                        for _, prefixdir in ipairs(prefixdirs) do
+                            table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
+                        end
+                    end
+                    if not prefixinfo.links then
+                        table.insert(links, target.linkname(path.filename(line)))
+                    end
+                end
+            end
+            if not found then
+                for _, line in ipairs(prefixinfo.installed) do
+                    line = line:trim()
+                    if line:endswith(".so") or line:endswith(".dylib") then
+                        if not prefixinfo.linkdirs then
+                            for _, prefixdir in ipairs(prefixdirs) do
+                                table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
+                            end
+                        end
+                        if not prefixinfo.links then
+                            table.insert(links, target.linkname(path.filename(line)))
+                        end
+                    end
+                end
+            end
+        end
+
+        -- add root include and link directories
         table.insert(linkdirs, path.join(prefixdir, "lib"))
         table.insert(includedirs, path.join(prefixdir, "include"))
     else
         for _, prefixdir in ipairs(prefixdirs) do
             table.insert(linkdirs, path.join(prefixdir, "lib"))
             table.insert(includedirs, path.join(prefixdir, "include"))
-        end
-    end
-
-    -- get links and linkdirs
-    local links = {}
-    local prefixlist = (prefixfile and io.load(prefixfile) or {}).installed
-    if prefixlist then
-        local found = false
-        for _, line in ipairs(prefixlist) do
-            line = line:trim()
-            if line:endswith(".lib") or line:endswith(".a") then
-                found = true
-                for _, prefixdir in ipairs(prefixdirs) do
-                    table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
-                end
-                table.insert(links, target.linkname(path.filename(line)))
-            end
-        end
-        if not found then
-            for _, line in ipairs(prefixlist) do
-                line = line:trim()
-                if line:endswith(".so") or line:endswith(".dylib") then
-                    found = true
-                    for _, prefixdir in ipairs(prefixdirs) do
-                        table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
-                    end
-                    table.insert(links, target.linkname(path.filename(line)))
-                end
-            end
         end
     end
 
@@ -207,9 +228,20 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
         end
     end
+
+    -- save results
     if result and result.links then
+
+        -- make unique directories
         result.links = table.unique(result.links)
-        result.includedirs = includedirs
+        result.includedirs = table.unique(includedirs)
+
+        -- inherit the other prefix variables
+        for name, values in pairs(prefixinfo) do
+            if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" and name ~= "installed" then
+                result[name] = values
+            end
+        end
     end
 
     -- save version
