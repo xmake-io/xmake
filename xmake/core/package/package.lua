@@ -490,13 +490,13 @@ function _instance:fetch(opt)
         -- fetch it from the prefix directories first
         if not fetchinfo and system ~= true then
             -- add cache key to make a distinction with finding system package
-            fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), system = false, cachekey = "package:fetch", force = opt.force}) 
+            fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), system = false, cachekey = "fetch:prefix", force = opt.force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
-            fetchinfo = self._find_package(self:name(), {force = opt.force, system = true})
+            fetchinfo = self._find_package(self:name(), {force = opt.force, cachekey = "fetch:system", system = true})
             if fetchinfo then fetchfrom = "system" end
         end
     end
