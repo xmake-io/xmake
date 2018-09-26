@@ -228,8 +228,23 @@ function _instance:prefixfile()
     return path.join(self:prefixdir(".info"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
 end
 
+-- get variables
+function _instance:get(name)
+    return self:prefixinfo()[name]
+end
+
+-- set variables
+function _instance:set(name, ...)
+    self:prefixinfo()[name] = {...}
+end
+
+-- add variables
+function _instance:add(name, ...)
+    self:prefixinfo()[name] = table.join(self:prefixinfo()[name] or {}, ...)
+end
+
 -- get environment variables
-function _instance:getenv(name, ...)
+function _instance:getenv(name)
     return self:prefixinfo().envars and self:prefixinfo().envars[name] or nil
 end
 
