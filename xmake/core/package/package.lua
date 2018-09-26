@@ -60,11 +60,8 @@ end
 -- get the package configure
 function _instance:get(name)
 
-    -- the info
-    local info = self._INFO
-
-    -- get if from info first
-    local value = info[name]
+    -- get it from info first
+    local value = self._INFO[name]
     if value ~= nil then
         return value 
     end
@@ -228,18 +225,18 @@ function _instance:prefixfile()
     return path.join(self:prefixdir(".info"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
 end
 
--- get variables
-function _instance:get(name)
+-- get prefix variables
+function _instance:getvar(name)
     return self:prefixinfo()[name]
 end
 
--- set variables
-function _instance:set(name, ...)
+-- set prefix variables
+function _instance:setvar(name, ...)
     self:prefixinfo()[name] = {...}
 end
 
--- add variables
-function _instance:add(name, ...)
+-- add prefix variables
+function _instance:addvar(name, ...)
     self:prefixinfo()[name] = table.join(self:prefixinfo()[name] or {}, ...)
 end
 

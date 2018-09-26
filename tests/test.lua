@@ -23,7 +23,7 @@ end
 function main(name)
 
     -- disable statistics
-    os.setenv("XMAKE_STATS", false)
+    os.setenv("XMAKE_STATS", "false")
 
     -- run the given test
     if name then
