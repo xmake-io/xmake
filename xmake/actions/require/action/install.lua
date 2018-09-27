@@ -130,11 +130,11 @@ function main(package)
     -- enter the working directory
     local oldir = nil
     if #package:urls() > 0 then
-        for _, srcdir in ipairs(os.dirs(path.join(workdir, "source", "*"))) do
-            oldir = os.cd(srcdir)
-            break
-        end
-        if not oldir and os.isdir(path.join(workdir, "source")) then
+        -- only one root directory? skip it
+        local filedirs = os.filedirs(path.join(workdir, "source", "*"))
+        if #filedirs == 1 and os.isdir(filedirs[1]) then
+            oldir = os.cd(filedirs[1])
+        else
             oldir = os.cd(path.join(workdir, "source"))
         end
     end
