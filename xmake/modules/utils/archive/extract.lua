@@ -31,7 +31,7 @@ import("detect.tools.find_gzip")
 import("detect.tools.find_unzip")
 
 -- extract archivefile using tar
-function _extract_using_tar(archivefile, outputdir, extension)
+function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- the tar of winenv can only extract "*.tar"
     if os.host() == "windows" and extension ~= ".tar" then
@@ -45,7 +45,7 @@ function _extract_using_tar(archivefile, outputdir, extension)
     end
 
     -- init argv
-    local argv = {ifelse(option.get("verbose"), "-xvf", "-xf"), archivefile}
+    local argv = {option.get("verbose") and "-xvf" or "-xf", archivefile}
 
     -- ensure output directory
     if not os.isdir(outputdir) then
@@ -56,6 +56,14 @@ function _extract_using_tar(archivefile, outputdir, extension)
     table.insert(argv, "-C")
     table.insert(argv, outputdir)
 
+    -- excludes files
+    if opt.excludes then
+        table.insert(argv, "--exclude")
+        for _, exclude in ipairs(opt.excludes) do
+            table.insert(argv, exclude)
+        end
+    end
+
     -- extract it
     os.vrunv(program, argv)
 
@@ -64,7 +72,7 @@ function _extract_using_tar(archivefile, outputdir, extension)
 end
 
 -- extract archivefile using 7z
-function _extract_using_7z(archivefile, outputdir, extension)
+function _extract_using_7z(archivefile, outputdir, extension, opt)
 
     -- find 7z
     local program = find_7z()
@@ -80,7 +88,7 @@ function _extract_using_7z(archivefile, outputdir, extension)
     end
 
     -- init argv
-    local argv = {"x", "-y", ifelse(option.get("verbose"), "-bb3", "-bb0"), archivefile}
+    local argv = {"x", "-y", option.get("verbose") and "-bb3" or "-bb0", archivefile}
 
     -- ensure output directory
     if not os.isdir(outputdir) then
@@ -90,14 +98,27 @@ function _extract_using_7z(archivefile, outputdir, extension)
     -- set outputdir
     table.insert(argv, "-o" .. outputdir)
 
+    -- excludes files
+    local excludesfile = nil
+    if opt.excludes and not outputdir_old then
+        excludesfile = os.tmpfile()
+        io.writefile(excludesfile, table.concat(opt.excludes, '\n'))
+        table.insert(argv, "-xr@" .. excludesfile)
+    end
+
     -- extract it
     os.vrunv(program, argv)
+
+    -- remove the excludes file
+    if excludesfile then
+        os.tryrm(excludesfile)
+    end
 
     -- continue to extract *.tar file
     if outputdir_old then
         local tarfile = find_file("*.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z})
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
     end
 
@@ -106,7 +127,7 @@ function _extract_using_7z(archivefile, outputdir, extension)
 end
 
 -- extract archivefile using gzip
-function _extract_using_gzip(archivefile, outputdir, extension)
+function _extract_using_gzip(archivefile, outputdir, extension, opt)
 
     -- find gzip
     local program = find_gzip()
@@ -154,7 +175,7 @@ function _extract_using_gzip(archivefile, outputdir, extension)
     if outputdir_old then
         local tarfile = find_file("*.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z})
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
     end
 
@@ -163,7 +184,7 @@ function _extract_using_gzip(archivefile, outputdir, extension)
 end
 
 -- extract archivefile using unzip
-function _extract_using_unzip(archivefile, outputdir, extension)
+function _extract_using_unzip(archivefile, outputdir, extension, opt)
 
     -- find unzip
     local program = find_unzip()
@@ -194,6 +215,14 @@ function _extract_using_unzip(archivefile, outputdir, extension)
     table.insert(argv, "-d")
     table.insert(argv, outputdir)
 
+    -- excludes files
+    if opt.excludes and not outputdir_old then
+        table.insert(argv, "-x")
+        for _, exclude in ipairs(opt.excludes) do
+            table.insert(argv, exclude)
+        end
+    end
+
     -- extract it
     os.vrunv(program, argv)
 
@@ -201,7 +230,7 @@ function _extract_using_unzip(archivefile, outputdir, extension)
     if outputdir_old then
         local tarfile = find_file("*.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z})
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
     end
 
@@ -210,11 +239,11 @@ function _extract_using_unzip(archivefile, outputdir, extension)
 end
 
 -- extract archive file using extractors
-function _extract(archivefile, outputdir, extension, extractors)
+function _extract(archivefile, outputdir, extension, extractors, opt)
 
     -- extract it
     for _, extract in ipairs(extractors) do
-        if extract(archivefile, outputdir, extension) then
+        if extract(archivefile, outputdir, extension, opt) then
             return true
         end
     end
@@ -250,11 +279,15 @@ end
 --
 -- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
 -- @param outputdir     the output directory
+-- @param options       the options, .e.g. {excludes = {"*/dir/*", "dir/*"}}
 --
-function main(archivefile, outputdir)
+function main(archivefile, outputdir, opt)
 
     -- init outputdir
     outputdir = outputdir or os.curdir()
+
+    -- init options
+    opt = opt or {}
 
     -- init extractors
     local extractors =
@@ -273,5 +306,5 @@ function main(archivefile, outputdir)
     local extension = _extension(archivefile, extractors)
 
     -- extract it
-    return _extract(archivefile, outputdir, extension, extractors[extension])
+    return _extract(archivefile, outputdir, extension, extractors[extension], opt)
 end
