@@ -85,7 +85,7 @@ function _checkout(package, url, sourcedir)
 end
 
 -- download codes from ftp/http/https
-function _download(package, url, sourcedir, url_alias)
+function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- get package file
     local packagefile = path.filename(url)
@@ -111,7 +111,7 @@ function _download(package, url, sourcedir, url_alias)
 
     -- extract package file
     os.rm(sourcedir .. ".tmp")
-    if archive.extract(packagefile, sourcedir .. ".tmp") then
+    if archive.extract(packagefile, sourcedir .. ".tmp", {excludes = url_excludes}) then
         -- move to source directory
         os.rm(sourcedir)
         os.mv(sourcedir .. ".tmp", sourcedir)
@@ -166,6 +166,9 @@ function main(package)
         -- get url alias
         local url_alias = package:url_alias(url)
 
+        -- get url excludes
+        local url_excludes = package:url_excludes(url)
+
         -- filter url
         url = filter.handle(url, package)
 
@@ -179,7 +182,7 @@ function main(package)
                 if git.checkurl(url) then
                     _checkout(package, url, sourcedir)
                 else
-                    _download(package, url, sourcedir, url_alias)
+                    _download(package, url, sourcedir, url_alias, url_excludes)
                 end
 
                 -- ok

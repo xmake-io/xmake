@@ -127,6 +127,17 @@ function _instance:url_version(url)
     end
 end
 
+-- get the excludes list of url for the archive extractor, @note need raw url
+function _instance:url_excludes(url)
+    local urls_extra = self:get("__extra_urls")
+    if urls_extra then
+        local urlextra = urls_extra[url]
+        if urlextra then
+            return urlextra.excludes
+        end
+    end
+end
+
 -- get deps
 function _instance:deps()
     return self._DEPS
