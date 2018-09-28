@@ -624,7 +624,7 @@ end
 
 -- get the prefix directory
 function package.prefixdir(is_global, is_debug, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", is_debug and "debug" or "release", plat or os.host(), arch or os.arch())
+    return path.join(is_global and global.directory() or config.directory(), "prefix", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
 end
 
 -- get the prefix info
