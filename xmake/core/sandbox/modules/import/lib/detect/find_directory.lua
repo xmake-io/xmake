@@ -71,7 +71,6 @@ function sandbox_lib_detect_find_directory.main(name, pathes, opt)
     end
 
     -- find file
-    local result = nil
     for _, _path in ipairs(pathes) do
 
         -- format path for builtin variables
@@ -86,20 +85,12 @@ function sandbox_lib_detect_find_directory.main(name, pathes, opt)
             _path = vformat(_path)
         end
 
-        -- directory exists?
-        for _, dir in ipairs(os.dirs(path.join(_path, name))) do
-            result = dir
-            break
-        end
-
-        -- found?
-        if result then
-            break
+        -- find the first directory
+        local results = os.dirs(path.join(_path, name), function (file, isdir) return false end)
+        if results and #results > 0 then
+            return results[1]
         end
     end
-
-    -- ok?
-    return result
 end
 
 -- return module

@@ -24,77 +24,14 @@
 
 -- imports
 import(".checker")
-import("detect.sdks.find_ndk_sdkvers")
 import("detect.sdks.find_ndk")
 
--- check the sdk version for ndk
-function _check_ndk_sdkver(config)
-
-    -- get ndk sdk version
-    local ndk_sdkver = config.get("ndk_sdkver")
-    if not ndk_sdkver then 
-
-        -- find the max version
-        local sdkver_max = 0
-        for _, sdkver in ipairs(find_ndk_sdkvers(config.get("ndk"))) do
-
-            -- get the max version
-            sdkver = tonumber(sdkver)
-            if sdkver > sdkver_max then
-                sdkver_max = sdkver
-            end
-        end
-
-        -- save the version
-        if sdkver_max > 0 then ndk_sdkver = sdkver_max end
-
-        -- probe ok? update it
-        if ndk_sdkver ~= nil and ndk_sdkver > 0 then 
-
-            -- save it
-            config.set("ndk_sdkver", ndk_sdkver)
-
-            -- trace
-            cprint("checking for the SDK version of NDK ... ${green}android-%d", ndk_sdkver)
-        else
-
-            -- trace
-            cprint("checking for the SDK version of NDK ... ${red}no")
-        end
-    end
-end
-
--- check toolchains 
-function _check_toolchains(config)
-
-    -- get toolchain bin directory
-    local bindir = config.get("bin")
-    if not bindir then
-
-        -- find first toolchains 
-        for _, toolchains in ipairs(find_ndk(config.get("ndk"), config.get("arch"))) do
-            config.set("bin", toolchains.bin)
-            config.set("cross", toolchains.cross)
-            break
-        end
-    end
-    bindir = config.get("bin")
-
-    -- get toolchains version
-    local toolchains_ver = config.get("toolchains_ver")
-    if not toolchains_ver and bindir then
-        local toolchains_ver = bindir:match("%-(%d*%.%d*)[/\\]")
-        if toolchains_ver then
-
-            -- save the toolchains version
-            config.set("toolchains_ver", toolchains_ver)
- 
-            -- trace
-            cprint("checking for the version of toolchains ... ${green}%s", toolchains_ver)
-        else
-            -- trace
-            cprint("checking for the version of toolchains ... ${red}no")
-        end
+-- check the ndk toolchain
+function _check_ndk(config)
+    local ndk = find_ndk(config.get("ndk"), {verbose = true})
+    if ndk then
+        config.set("bin", ndk.bindir)
+        config.set("cross", ndk.cross)
     end
 end
 
@@ -151,8 +88,7 @@ function main(kind, toolkind)
     _g.config = 
     {
         { checker.check_arch, "armv7-a" }
-    ,   _check_ndk_sdkver
-    ,   _check_toolchains
+    ,   _check_ndk
     ,   { checker.toolchain_check, "sh", _toolchains }
     ,   { checker.toolchain_check, "ld", _toolchains }
     }

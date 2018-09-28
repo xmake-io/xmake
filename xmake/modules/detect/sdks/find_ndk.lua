@@ -23,13 +23,100 @@
 --
 
 -- imports
+import("lib.detect.cache")
+import("core.base.option")
+import("core.base.global")
 import("core.project.config")
+import("lib.detect.find_directory")
+
+-- find ndk directory
+function _find_ndkdir(sdkdir)
+
+    -- get ndk directory
+    if not sdkdir then
+        sdkdir = os.getenv("ANDROID_NDK_ROOT")
+        if not sdkdir and is_host("macosx") then
+            sdkdir = "~/Library/Android/sdk/ndk-bundle"
+        end
+    end
+
+    -- get ndk directory
+    if sdkdir and os.isdir(sdkdir) then
+        return sdkdir
+    end
+end
+
+-- find the sdk version of ndk
+function _find_ndk_sdkver(sdkdir)
+
+    -- find the max version
+    local sdkver_max = 0
+    for _, sdkdir in ipairs(os.dirs(path.join(sdkdir, "platforms", "android-*"))) do
+
+        -- get version
+        local filename = path.filename(sdkdir)
+        local version, count = filename:gsub("android%-", "")
+        if count > 0 then
+
+            -- get the max version
+            local sdkver = tonumber(version)
+            if sdkver > sdkver_max then
+                sdkver_max = sdkver
+            end
+        end
+    end
+
+    -- get the max sdk version
+    return sdkver_max > 0 and sdkver_max or nil
+end
+
+-- find the toolchains version of ndk
+function _find_ndk_toolchains_ver(bindir)
+    return bindir:match("%-(%d*%.%d*)[/\\]")
+end
+
+-- find the ndk toolchain
+function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
+
+    -- find ndk root directory
+    sdkdir = _find_ndkdir(sdkdir)
+    if not sdkdir then
+        return {}
+    end
+
+    -- is arm64?
+    local arm64 = arch and arch:startswith("arm64")
+
+    -- the cross
+    local cross = arm64 and "aarch64-linux-android-" or "arm-linux-androideabi-"
+
+    -- find the binary directory
+    local bindir = find_directory("bin", path.join(sdkdir, "toolchains", cross .. "*", "prebuilt", "*"))
+    if not bindir then
+        return {}
+    end
+
+    -- find the sdk version
+    local sdkver = ndk_sdkver or _find_ndk_sdkver(sdkdir)
+    if not sdkver then
+        return {}
+    end
+
+    -- find the toolchains version
+    local toolchains_ver = ndk_toolchains_ver or _find_ndk_toolchains_ver(bindir)
+    if not toolchains_ver then
+        return {}
+    end
+
+    -- ok?    
+    return {sdkdir = sdkdir, bindir = bindir, cross = cross, sdkver = sdkver, toolchains_ver = toolchains_ver}
+end
 
 -- find ndk toolchains
 --
--- @param ndkdir    the ndk directory
+-- @param sdkdir    the ndk directory
 -- @param opt       the argument options 
---                  .e.g {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]"}
+--                  .e.g {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
 --
 -- @return          the ndk toolchains array. .e.g {{bin = .., cross = ..}, .. }
 --
@@ -40,34 +127,48 @@ import("core.project.config")
 -- 
 -- @endcode
 --
-function main(ndkdir, opt)
+function main(sdkdir, opt)
 
     -- init arguments
     opt = opt or {}
 
-    -- get ndk directory
-    if not ndkdir or not os.isdir(ndkdir) then
-        return {}
+    -- attempt to load cache first
+    local key = "detect.sdks.find_ndk." .. (sdkdir or "")
+    local cacheinfo = cache.load(key)
+    if not opt.force and cacheinfo.ndk then
+        return cacheinfo.ndk
     end
 
     -- get arch
     local arch = opt.arch or config.get("arch") or "armv7-a"
+       
+    -- find ndk
+    local ndk = _find_ndk(sdkdir or config.get("ndk") or global.get("ndk"), arch, opt.sdkver or config.get("ndk_sdkver"), opt.toolchains_ver or config.get("ndk_toolchains_ver"))
+    if ndk then
 
-    -- is arm64?
-    local arm64 = arch and arch:startswith("arm64")
+        -- save to config
+        config.set("ndk", ndk.sdkdir, {force = true, readonly = true})
+        config.set("ndk_sdkver", ndk.sdkver, {force = true, readonly = true})
+        config.set("ndk_toolchains_ver", ndk.toolchains_ver, {force = true, readonly = true})
 
-    -- the cross
-    local cross = ifelse(arm64, "aarch64-linux-android-", "arm-linux-androideabi-")
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for the NDK directory ... ${green}%s", ndk.sdkdir)
+            cprint("checking for the SDK version of NDK ... ${green}%s", ndk.sdkver)
+            cprint("checking for the toolchains version of NDK ... ${green}%s", ndk.toolchains_ver)
+        end
+    else
 
-    -- save the toolchains directory
-    local toolchains = {}
-    for _, bindir in ipairs(os.dirs(path.join(ndkdir, "toolchains", cross .. "*", "prebuilt/*/bin"))) do
-        local binfiles = os.files(path.join(bindir, cross .. "*"))
-        if binfiles and #binfiles > 0 then
-            table.insert(toolchains, {bin = bindir, cross = cross})
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for the NDK directory ... ${red}no")
         end
     end
 
-    -- ok?    
-    return toolchains
+    -- save to cache
+    cacheinfo.ndk = ndk or false
+    cache.save(key, cacheinfo)
+
+    -- ok?
+    return ndk
 end

@@ -55,8 +55,8 @@ platform("android")
             ,   global = 
                 {   
                     {}
-                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"             }
-                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"       }
+                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"       }
+                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK" }
                 }
             }
 

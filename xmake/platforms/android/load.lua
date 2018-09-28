@@ -111,11 +111,11 @@ function main()
         insert(_g.ldflags, "-pie")
 
         -- only for c++ stl
-        local toolchains_ver = config.get("toolchains_ver")
-        if toolchains_ver then
+        local ndk_toolchains_ver = config.get("ndk_toolchains_ver")
+        if ndk_toolchains_ver then
 
             -- get c++ stl sdk directory
-            local cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, toolchains_ver)) 
+            local cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, ndk_toolchains_ver)) 
 
             -- the toolchains archs
             local toolchains_archs = 
