@@ -32,6 +32,12 @@ function _check_ndk(config)
     if ndk then
         config.set("bin", ndk.bindir)
         config.set("cross", ndk.cross)
+    else
+        -- failed
+        cprint("${bright red}please run:")
+        cprint("${red}    - xmake config --ndk=xxx")
+        cprint("${red}or  - xmake global --ndk=xxx")
+        raise()
     end
 end
 
