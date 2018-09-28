@@ -19,37 +19,37 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        build.lua
+-- @file        autoconf.lua
 --
 
--- imports
-import("core.base.option")
-import("core.project.config")
-import("core.sandbox.sandbox")
-import("filter")
+-- install package
+function install(package, configs)
 
--- build the given package
-function main(package)
-
-    -- the package scripts
-    local scripts =
-    {
-        package:script("build_before") 
-    ,   package:script("build")
-    ,   package:script("build_after") 
-    }
-
-    -- save the current directory
-    local oldir = os.curdir()
-
-    -- build it
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            filter.call(script, package)
-        end
+    -- generate configure file
+    if not os.isfile("configure") and os.isfile("configure.ac") then
+        os.vrun("autoreconf --install --symlink")
     end
 
-    -- restore the current directory
-    os.cd(oldir)
+    -- inherit require and option configs
+    local argv = {}
+    if not configs or not configs.prefix then
+        table.insert(argv, "--prefix=" .. package:installdir())
+    end
+    for name, value in pairs(configs) do
+        value = tostring(value):trim()
+        if type(name) == "number" then
+            if value ~= "" then
+                table.insert(argv, value)
+            end
+        else
+            if value:find(" ", 1, true) then
+                value = '"' .. value .. '"'
+            end
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
+    end
+    os.vrunv("./configure", argv)
+    os.vrun("make -j4")
+    os.vrun("make install")
 end
+

@@ -19,41 +19,38 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        autoconf.lua
+-- @file        xmake.lua
 --
 
--- build package
-function build(package, configs)
+-- imports
+import("core.base.option")
 
-    -- generate configure file
-    if not os.isfile("configure") and os.isfile("configure.ac") then
-        os.vrun("autoreconf --install --symlink")
-    end
+-- install package
+function install(package, configs)
 
-    -- inherit require and option configs
-    local argv = {}
-    if not configs or not configs.prefix then
-        table.insert(argv, "--prefix=" .. package:installdir())
-    end
-    for name, value in pairs(configs) do
-        value = tostring(value):trim()
-        if type(name) == "number" then
-            if value ~= "" then
-                table.insert(argv, value)
-            end
-        else
+    -- inherit builtin configs
+    local argv    = {"f", "-y"}
+    local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
             if value:find(" ", 1, true) then
                 value = '"' .. value .. '"'
             end
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    os.vrunv("./configure", argv)
-    os.vrun("make -j4")
-end
+    table.insert(argv, "--mode=" .. (package:debug() and "debug" or "release"))
 
--- install package
-function install(package)
-    os.vrun("make install")
+    -- inherit require and option configs
+    for name, value in pairs(table.join(package:configs() or {}, configs or {})) do
+        value = tostring(value)
+        if value:find(" ", 1, true) then
+            value = '"' .. value .. '"'
+        end
+        table.insert(argv, "--" .. name .. "=" .. value)
+    end
+    os.vrunv("xmake", argv)
+    os.vrun("xmake" .. (option.get("verbose") and " -v" or ""))
+    os.vrunv("xmake", {"install", "-o", package:installdir()})
 end
-

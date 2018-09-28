@@ -12,12 +12,8 @@ package("libtool")
         add_versions("2.4.5", "509cb49c7de14ce7eaf88993cf09fd4071882699dfd874c2e95b31ab107d6987")
     end
 
-    on_build("macosx", "linux", function (package)
-        import("package.builder.autoconf").build(package)
-    end)
-
     on_install("macosx", "linux", function (package)
-        import("package.builder.autoconf").install(package)
+        import("package.tools.autoconf").install(package)
     end)
 
     on_test(function (package)

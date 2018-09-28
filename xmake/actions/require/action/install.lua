@@ -25,7 +25,6 @@
 -- imports
 import("core.base.option")
 import("core.project.target")
-import("build")
 import("test")
 import("filter")
 
@@ -173,9 +172,6 @@ function main(package)
 
                 -- clean the install directory first
                 os.tryrm(package:installdir())
-
-                -- build it
-                build(package)
 
                 -- install it
                 for i = 1, 3 do

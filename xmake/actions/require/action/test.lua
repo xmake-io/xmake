@@ -40,7 +40,7 @@ function main(package)
     -- save the current directory
     local oldir = os.curdir()
 
-    -- build it
+    -- test it
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then

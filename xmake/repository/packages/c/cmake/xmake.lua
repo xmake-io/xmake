@@ -20,9 +20,6 @@ package("cmake")
         end
     end
 
-    on_build(function (package)
-    end)
-
     on_install("macosx", function (package)
         os.cp("CMake.app/Contents/bin", package:installdir())
         os.cp("CMake.app/Contents/share", package:installdir())

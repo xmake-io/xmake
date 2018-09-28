@@ -186,11 +186,6 @@ function _instance:kind()
     return self:get("kind")
 end
 
--- get the build directory of this package
-function _instance:buildir()
-    return path.join(self:cachedir(), "build")
-end
-
 -- get the cached directory of this package
 function _instance:cachedir()
     return path.join(package.cachedir(), self:name():sub(1, 1):lower(), self:name(), self:version_str())
@@ -402,8 +397,8 @@ end
 
 -- is supported package?
 function _instance:supported()
-    -- attempt to get the build script with the current plat/arch
-    return self:script("build") ~= nil
+    -- attempt to get the install script with the current plat/arch
+    return self:script("install") ~= nil
 end
 
 -- get xxx_script
@@ -587,17 +582,14 @@ function package.apis()
     ,   script =
         {
             -- package.on_xxx
-            "package.on_build"
-        ,   "package.on_install"
+            "package.on_install"
         ,   "package.on_test"
 
             -- package.before_xxx
-        ,   "package.before_build"
         ,   "package.before_install"
         ,   "package.before_test"
 
             -- package.before_xxx
-        ,   "package.after_build"
         ,   "package.after_install"
         ,   "package.after_test"
         }

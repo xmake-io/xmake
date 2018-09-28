@@ -93,7 +93,6 @@ function _handler(package, strval)
                 end
                 return package:version_str() 
             end
-        ,   buildir = function () return package:buildir() end
         }
 
         -- get value

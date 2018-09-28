@@ -13,12 +13,8 @@ package("automake")
         add_versions("1.9.5", "68712753fcb756f3707b7da554917afb348450eb8530cae3b623a067078596fd")
     end
 
-    on_build("macosx", "linux", function (package)
-        import("package.builder.autoconf").build(package)
-    end)
-
     on_install("macosx", "linux", function (package)
-        import("package.builder.autoconf").install(package)
+        import("package.tools.autoconf").install(package)
     end)
 
     on_test(function (package)

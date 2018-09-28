@@ -18,9 +18,6 @@ package("git")
         end
     end
 
-    on_build(function (package)
-    end)
-
     on_install("macosx", "linux", function (package)
         import("package.manager.install")("git")
     end)
