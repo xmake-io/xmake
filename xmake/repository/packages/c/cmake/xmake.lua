@@ -12,10 +12,10 @@ package("cmake")
         add_versions("3.11.4", "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435")
     elseif is_host("windows") then
         if os.arch() == "x64" then
-            add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win64-x64.zip")
+            add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win64-x64.zip", {excludes = "*/doc/*"})
             add_versions("3.11.4", "d3102abd0ded446c898252b58857871ee170312d8e7fd5cbff01fbcb1068a6e5")
         else
-            add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win32-x86.zip")
+            add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win32-x86.zip", {excludes = "*/doc/*"})
             add_versions("3.11.4", "b068001ff879f86e704977c50a8c5917e4b4406c66242366dba2674abe316579")
         end
     end
