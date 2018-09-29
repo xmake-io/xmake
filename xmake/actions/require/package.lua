@@ -198,15 +198,9 @@ function _load_package(packagename, requireinfo)
     return package
 end
 
--- search package package from project
-function _search_package_from_project(name)
-    return core_package.search_from_project(name)
-end
+-- search packages from repositories
+function _search_packages(name)
 
--- search package package from repositories
-function _search_package_from_repository(name)
-
-    -- search package directories from the given package name
     local packages = {}
     for _, packageinfo in ipairs(repository.searchdirs(name)) do
         local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
@@ -214,23 +208,6 @@ function _search_package_from_repository(name)
             table.insert(packages, package)
         end
     end
-
-    -- ok?
-    return packages
-end
-
--- search package from the project and repositories
-function _search_package(name)
-
-    -- search package from project first
-    local packages = _search_package_from_project(name)
-        
-    -- search package from repositories
-    if not packages or #packages == 0 then
-        packages = _search_package_from_repository(name)
-    end
-
-    -- ok?
     return packages
 end
 
@@ -412,8 +389,17 @@ function load_packages(requires, opt)
     -- select packages version
     _select_packages_version(packages)
 
-    -- ok
-    return packages
+    -- remove repeat packages with same the package name and version
+    local unique = {}
+    local results = {}
+    for _, package in ipairs(packages) do
+        local key = package:name() .. (package:version_str() or "")
+        if not unique[key] then
+            table.insert(results, package)
+            unique[key] = true
+        end
+    end
+    return results
 end
 
 -- install packages
@@ -549,7 +535,7 @@ function search_packages(names)
     -- search all names
     local results = {}
     for _, name in ipairs(names) do
-        local packages = _search_package(name)
+        local packages = _search_packages(name)
         if packages then
             results[name] = packages
         end

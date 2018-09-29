@@ -26,8 +26,12 @@
 function install(package, configs)
 
     -- generate configure file
-    if not os.isfile("configure") and os.isfile("configure.ac") then
-        os.vrun("autoreconf --install --symlink")
+    if not os.isfile("configure") then
+        if os.isfile("autogen.sh") then
+            os.vrun("./autogen.sh")
+        elseif os.isfile("configure.ac") then
+            os.vrun("autoreconf --install --symlink")
+        end
     end
 
     -- inherit require and option configs
