@@ -69,11 +69,20 @@ function install_prefix(package)
 
     -- scan all installed files
     local installfiles = {}
-    if package:kind() == "binary" then
-        table.join2(installfiles, (os.files(path.join(installdir, "**"))))
+    if is_host("windows") then
+        if package:kind() == "binary" then
+            table.join2(installfiles, (os.files(path.join(installdir, "**"))))
+        else
+            table.join2(installfiles, (os.files(path.join(package:installdir("lib"), "**"))))
+            table.join2(installfiles, (os.files(path.join(package:installdir("include"), "**"))))
+        end
     else
-        table.join2(installfiles, (os.files(path.join(package:installdir("lib"), "**"))))
-        table.join2(installfiles, (os.files(path.join(package:installdir("include"), "**"))))
+        if package:kind() == "binary" then
+            table.join2(installfiles, (os.filedirs(path.join(package:installdir("bin"), "*"))))
+        else
+            table.join2(installfiles, (os.filedirs(path.join(package:installdir("lib"), "*"))))
+            table.join2(installfiles, (os.filedirs(path.join(package:installdir("include"), "*"))))
+        end
     end
 
     -- trace
@@ -92,8 +101,14 @@ function install_prefix(package)
                 -- trace
                 vprint("installing %s ..", relativefile)
 
-                -- copy file
-                os.cp(installfile, path.absolute(relativefile, prefixdir))
+                -- install file
+                if is_host("windows") then
+                    -- copy the whole file to the prefix directory
+                    os.cp(installfile, path.absolute(relativefile, prefixdir))
+                else
+                    -- only link file to the prefix directory
+                    os.ln(installfile, path.absolute(relativefile, prefixdir))
+                end
 
                 -- save this relative file
                 table.insert(relativefiles, relativefile)
