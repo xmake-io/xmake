@@ -60,6 +60,7 @@ typedef struct __xm_machine_t
 // the os functions
 tb_int_t xm_os_argv(lua_State* lua);
 tb_int_t xm_os_find(lua_State* lua);
+tb_int_t xm_os_link(lua_State* lua);
 tb_int_t xm_os_isdir(lua_State* lua);
 tb_int_t xm_os_rmdir(lua_State* lua);
 tb_int_t xm_os_mkdir(lua_State* lua);
@@ -70,6 +71,7 @@ tb_int_t xm_os_sleep(lua_State* lua);
 tb_int_t xm_os_mclock(lua_State* lua);
 tb_int_t xm_os_curdir(lua_State* lua);
 tb_int_t xm_os_tmpdir(lua_State* lua);
+tb_int_t xm_os_islink(lua_State* lua);
 tb_int_t xm_os_isfile(lua_State* lua);
 tb_int_t xm_os_rmfile(lua_State* lua);
 tb_int_t xm_os_cpfile(lua_State* lua);
@@ -149,6 +151,7 @@ static luaL_Reg const g_os_functions[] =
 {
     { "argv",           xm_os_argv      }
 ,   { "find",           xm_os_find      }
+,   { "link",           xm_os_link      }
 ,   { "isdir",          xm_os_isdir     }
 ,   { "rmdir",          xm_os_rmdir     }
 ,   { "mkdir",          xm_os_mkdir     }
@@ -159,6 +162,7 @@ static luaL_Reg const g_os_functions[] =
 ,   { "mclock",         xm_os_mclock    }
 ,   { "curdir",         xm_os_curdir    }
 ,   { "tmpdir",         xm_os_tmpdir    }
+,   { "islink",         xm_os_islink    }
 ,   { "isfile",         xm_os_isfile    }
 ,   { "rmfile",         xm_os_rmfile    }
 ,   { "cpfile",         xm_os_cpfile    }

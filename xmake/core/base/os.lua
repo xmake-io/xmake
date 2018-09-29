@@ -115,8 +115,8 @@ function os._rm(filedir)
     -- check
     assert(filedir)
 
-    -- is file?
-    if os.isfile(filedir) then
+    -- is file or link?
+    if os.isfile(filedir) or os.islink(filedir) then
         -- remove file
         if not os.rmfile(filedir) then
             return false, string.format("cannot remove file %s %s", filedir, os.strerror())
@@ -386,6 +386,17 @@ function os.rm(...)
     end
 
     -- ok
+    return true
+end
+
+-- link file or directory to the new symfile
+function os.ln(filedir, symfile)
+    if os.host() == "windows" then
+        return false, string.format("symlink is not supported!")
+    end
+    if not os.link(filedir, symfile) then
+        return false, string.format("link %s to %s failed!", filedir, symfile)
+    end
     return true
 end
 

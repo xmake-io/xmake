@@ -16,6 +16,7 @@ xmake_C_FILES 			+= \
 						machine \
 						os/argv \
 						os/find \
+						os/link \
 						os/isdir \
 						os/rmdir \
 						os/mkdir \
@@ -27,6 +28,7 @@ xmake_C_FILES 			+= \
 						os/curdir \
 						os/tmpdir \
 						os/isfile \
+						os/islink \
 						os/rmfile \
 						os/cpfile \
 						os/rename \

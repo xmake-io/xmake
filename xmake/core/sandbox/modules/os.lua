@@ -113,6 +113,14 @@ function sandbox_os.rm(...)
     end
 end
 
+-- link file or directory to the new symfile
+function sandbox_os.ln(filedir, symfile)
+    local ok, errors = os.ln(filedir, symfile)
+    if not ok then
+        os.raise(errors)
+    end
+end
+
 -- try to copy file or directory
 function sandbox_os.trycp(...)
     
@@ -389,54 +397,32 @@ end
 
 -- is directory?
 function sandbox_os.isdir(dirpath)
-
-    -- check
     assert(dirpath)
-
-    -- format it first
-    dirpath = vformat(dirpath)
-
-    -- done
-    return os.isdir(dirpath)
+    return os.isdir(vformat(dirpath))
 end
 
--- is directory?
+-- is file?
 function sandbox_os.isfile(filepath)
-
-    -- check
     assert(filepath)
+    return os.isfile(vformat(filepath))
+end
 
-    -- format it first
-    filepath = vformat(filepath)
-
-    -- done
-    return os.isfile(filepath)
+-- is symlink?
+function sandbox_os.islink(filepath)
+    assert(filepath)
+    return os.islink(vformat(filepath))
 end
 
 -- is execute program?
 function sandbox_os.isexec(filepath)
-
-    -- check
     assert(filepath)
-
-    -- format it first
-    filepath = vformat(filepath)
-
-    -- done
-    return os.isexec(filepath)
+    return os.isexec(vformat(filepath))
 end
 
 -- exists file or directory?
-function sandbox_os.exists(file_or_dir)
-
-    -- check
-    assert(file_or_dir)
-
-    -- format it first
-    file_or_dir = vformat(file_or_dir)
-
-    -- done
-    return os.exists(file_or_dir)
+function sandbox_os.exists(filedir)
+    assert(filedir)
+    return os.exists(vformat(filedir))
 end
 
 -- return module
