@@ -195,7 +195,7 @@ end
 function _instance:installdir(...)
     
     -- make the given install directory
-    local dir = path.join(self:cachedir(), "install", ...)
+    local dir = path.join(package.installdir(self:from("global"), self:debug(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -612,6 +612,11 @@ end
 -- the cache directory
 function package.cachedir()
     return path.join(global.directory(), "cache", "packages")
+end
+
+-- the install directory
+function package.installdir(is_global, is_debug, plat, arch)
+    return path.join(is_global and global.directory() or config.directory(), "installed", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
 end
 
 -- get the prefix directory

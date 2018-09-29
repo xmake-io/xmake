@@ -529,7 +529,14 @@ function remove_packages(requires, opt)
     local packages = {}
     for _, instance in ipairs(load_packages(requires, opt)) do
         if os.isfile(instance:prefixfile()) then
+
+            -- uninstall package from the prefix directory
             action.install.uninstall_prefix(instance)
+
+            -- remove the install files
+            os.tryrm(instance:installdir())
+    
+            -- remove ok
             table.insert(packages, instance)
         end
     end
