@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2018, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        file.c
@@ -31,6 +31,17 @@
 #include "../path.h"
 #include "../print.h"
 #include "interface/interface.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+#ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
+#   define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE (0x2)
+#endif
+
+#ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
+#   define SYMBOLIC_LINK_FLAG_DIRECTORY                 (0x1)
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -99,7 +110,6 @@ tb_file_ref_t tb_file_init(tb_char_t const* path, tb_size_t mode)
 
     // init attr
     DWORD attr = FILE_ATTRIBUTE_NORMAL;
-    if (mode & TB_FILE_MODE_ASIO) attr |= FILE_FLAG_OVERLAPPED;
     if (mode & TB_FILE_MODE_DIRECT) attr |= FILE_FLAG_NO_BUFFERING;
 
     // init file
@@ -137,7 +147,7 @@ tb_bool_t tb_file_exit(tb_file_ref_t file)
     tb_assert_and_check_return_val(file, tb_false);
 
     // close it
-    return CloseHandle(file)? tb_true : tb_false;
+    return CloseHandle((HANDLE)file)? tb_true : tb_false;
 }
 tb_long_t tb_file_read(tb_file_ref_t file, tb_byte_t* data, tb_size_t size)
 {
@@ -149,7 +159,7 @@ tb_long_t tb_file_read(tb_file_ref_t file, tb_byte_t* data, tb_size_t size)
 
     // read
     DWORD real_size = 0;
-    return ReadFile(file, data, (DWORD)size, &real_size, tb_null)? (tb_long_t)real_size : -1;
+    return ReadFile((HANDLE)file, data, (DWORD)size, &real_size, tb_null)? (tb_long_t)real_size : -1;
 }
 tb_long_t tb_file_writ(tb_file_ref_t file, tb_byte_t const* data, tb_size_t size)
 {
@@ -161,7 +171,7 @@ tb_long_t tb_file_writ(tb_file_ref_t file, tb_byte_t const* data, tb_size_t size
 
     // writ
     DWORD real_size = 0;
-    return WriteFile(file, data, (DWORD)size, &real_size, tb_null)? (tb_long_t)real_size : -1;
+    return WriteFile((HANDLE)file, data, (DWORD)size, &real_size, tb_null)? (tb_long_t)real_size : -1;
 }
 tb_long_t tb_file_pread(tb_file_ref_t file, tb_byte_t* data, tb_size_t size, tb_hize_t offset)
 {
@@ -351,7 +361,7 @@ tb_bool_t tb_file_sync(tb_file_ref_t file)
     tb_assert_and_check_return_val(file, tb_false);
 
     // sync it
-    return FlushFileBuffers(file)? tb_true : tb_false;
+    return FlushFileBuffers((HANDLE)file)? tb_true : tb_false;
 }
 tb_hong_t tb_file_seek(tb_file_ref_t file, tb_hong_t offset, tb_size_t mode)
 {
@@ -362,7 +372,7 @@ tb_hong_t tb_file_seek(tb_file_ref_t file, tb_hong_t offset, tb_size_t mode)
     LARGE_INTEGER o = {{0}};
     LARGE_INTEGER p = {{0}};
     o.QuadPart = (LONGLONG)offset;
-    return SetFilePointerEx(file, o, &p, (DWORD)mode)? (tb_hong_t)p.QuadPart : -1;
+    return SetFilePointerEx((HANDLE)file, o, &p, (DWORD)mode)? (tb_hong_t)p.QuadPart : -1;
 }
 tb_hong_t tb_file_offset(tb_file_ref_t file)
 {
@@ -383,7 +393,7 @@ tb_hize_t tb_file_size(tb_file_ref_t file)
 
     // the file size
     LARGE_INTEGER p = {{0}};
-    return pGetFileSizeEx(file, &p)? (tb_hong_t)p.QuadPart : 0;
+    return pGetFileSizeEx((HANDLE)file, &p)? (tb_hong_t)p.QuadPart : 0;
 }
 tb_bool_t tb_file_info(tb_char_t const* path, tb_file_info_t* info)
 {
@@ -504,9 +514,16 @@ tb_bool_t tb_file_rename(tb_char_t const* path, tb_char_t const* dest)
 }
 tb_bool_t tb_file_link(tb_char_t const* path, tb_char_t const* dest)
 {
-#if 0
     // check
     tb_assert_and_check_return_val(path && dest, tb_false);
+
+    // support symbolic link? >= vista
+    tb_kernel32_CreateSymbolicLinkW_t pCreateSymbolicLinkW = tb_kernel32()->CreateSymbolicLinkW;
+    tb_check_return_val(pCreateSymbolicLinkW, tb_false);
+
+    // not exists?
+    tb_file_info_t info = {0};
+    if (!tb_file_info(path, &info)) return tb_false;
 
     // the full path
     tb_wchar_t full0[TB_PATH_MAXN];
@@ -516,14 +533,14 @@ tb_bool_t tb_file_link(tb_char_t const* path, tb_char_t const* dest)
     tb_wchar_t full1[TB_PATH_MAXN];
     if (!tb_path_absolute_w(dest, full1, TB_PATH_MAXN)) return tb_false;
 
-    // not exists?
-    tb_file_info_t info = {0};
-    if (!tb_file_info(full0, &info)) return tb_false;
+    // make directory
+    tb_file_mkdir(full1);
 
-    // symlink, supported: >= vista
-    return !CreateSymbolicLinkW(full1, full0, info.bdir? SYMBOLIC_LINK_FLAG_DIRECTORY : 0)? tb_true : tb_false;
-#else
-    tb_trace_noimpl();
-    return tb_false;
-#endif
+    // attempt to link it directly without admin privilege.
+    tb_bool_t isdir = (info.type == TB_FILE_TYPE_DIRECTORY);
+    if (pCreateSymbolicLinkW(full1, full0, (isdir? SYMBOLIC_LINK_FLAG_DIRECTORY : 0) | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))
+        return tb_true;
+
+    // attempt to link it directly with admin privilege
+    return (tb_bool_t)pCreateSymbolicLinkW(full1, full0, isdir? SYMBOLIC_LINK_FLAG_DIRECTORY : 0);
 }
