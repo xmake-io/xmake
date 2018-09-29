@@ -13,7 +13,7 @@ package("libtool")
     end
 
     on_install("macosx", "linux", function (package)
-        import("package.tools.autoconf").install(package)
+        import("package.tools.autoconf").install(package, {"--disable-dependency-tracking", "--enable-ltdl-install"})
     end)
 
     on_test(function (package)
