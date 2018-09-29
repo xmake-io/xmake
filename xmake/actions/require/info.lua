@@ -25,6 +25,7 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
+import("core.project.project")
 import("action.filter")
 import("package")
 import("repository")
