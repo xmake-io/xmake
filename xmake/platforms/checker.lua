@@ -25,7 +25,6 @@
 -- imports
 import("core.base.option")
 import("detect.sdks.find_xcode")
-import("detect.sdks.find_xcode_sdkvers")
 import("detect.sdks.find_cuda")
 import("lib.detect.find_tool")
 
@@ -119,63 +118,26 @@ end
 -- check the xcode application directory
 function check_xcode(config, optional)
 
-    -- get the xcode directory
-    local xcode_dir = config.get("xcode")
-    if not xcode_dir then
+    -- find xcode
+    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true, plat = config.get("plat"), arch = config.get("arch")})
+    if xcode then
 
-        -- check ok? update it
-        xcode_dir = find_xcode()
-        if xcode_dir then
+        -- save it (maybe to global)
+        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
 
-            -- save it
-            config.set("xcode", xcode_dir)
+    elseif not optional then
 
-            -- trace
-            cprint("checking for the Xcode application directory ... ${green}%s", xcode_dir)
-
-        elseif not optional then
-
-            -- failed
-            cprint("checking for the Xcode application directory ... ${red}no")
-            cprint("${bright red}please run:")
-            cprint("${red}    - xmake config --xcode_dir=xxx")
-            cprint("${red}or  - xmake global --xcode_dir=xxx")
-            raise()
-        end
+        -- failed
+        cprint("${bright red}please run:")
+        cprint("${red}    - xmake config --xcode=xxx")
+        cprint("${red}or  - xmake global --xcode=xxx")
+        raise()
     end
-end
 
--- check the xcode sdk version
-function check_xcode_sdkver(config, optional)
-
-    -- get the xcode sdk version
+    -- save target minver
     local xcode_sdkver = config.get("xcode_sdkver")
-    if not xcode_sdkver then
-
-        -- check ok? update it
-        xcode_sdkver = find_xcode_sdkvers({xcode_dir = config.get("xcode"), plat = config.get("plat"), arch = config.get("arch")})[1]
-        if xcode_sdkver then
-            
-            -- save it
-            config.set("xcode_sdkver", xcode_sdkver)
-
-            -- trace
-            cprint("checking for the Xcode SDK version for %s ... ${green}%s", config.get("plat"), xcode_sdkver)
-
-        elseif not optional then
-
-            -- failed
-            cprint("checking for the Xcode SDK version for %s ... ${red}no", config.get("plat"))
-            cprint("${bright red}please run:")
-            cprint("${red}    - xmake config --xcode_sdkver=xxx")
-            cprint("${red}or  - xmake global --xcode_sdkver=xxx")
-            raise()
-        end
-    end
-
-    -- get target minver
     local target_minver = config.get("target_minver")
-    if not target_minver then
+    if xcode_sdkver and not target_minver then
         config.set("target_minver", xcode_sdkver)
     end
 end

@@ -91,7 +91,6 @@ function main(kind, toolkind)
     {
         { checker.check_arch, "armv7k" }
     ,   checker.check_xcode
-    ,   checker.check_xcode_sdkver
     }
 
     -- init the check list of global

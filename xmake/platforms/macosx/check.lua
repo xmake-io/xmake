@@ -136,7 +136,6 @@ function main(kind, toolkind)
     {
         checker.check_arch
     ,   { checker.check_xcode, true }
-    ,   { checker.check_xcode_sdkver, true }
     ,   checker.check_cuda
     }
 

@@ -28,8 +28,9 @@ import("detect.sdks.find_ndk")
 
 -- check the ndk toolchain
 function _check_ndk(config)
-    local ndk = find_ndk(config.get("ndk"), {verbose = true})
+    local ndk = find_ndk(config.get("ndk"), {force = true, verbose = true})
     if ndk then
+        config.set("ndk", ndk.sdkdir, {force = true, readonly = true}) -- maybe to global
         config.set("bin", ndk.bindir)
         config.set("cross", ndk.cross)
     else
