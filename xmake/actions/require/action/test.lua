@@ -37,15 +37,15 @@ function main(package)
     ,   package:script("test_after") 
     }
 
-    -- save the current directory
-    local oldir = os.curdir()
-
     -- enter the test directory
     local testdir = path.join(os.tmpdir(), "pkgtest", package:name(), package:version_str() or "lastest")
+    if os.isdir(testdir) then
+        os.tryrm(testdir)
+    end
     if not os.isdir(testdir) then
         os.mkdir(testdir)
-        os.cd(testdir)
     end
+    local oldir = os.cd(testdir)
 
     -- test it
     for i = 1, 3 do
@@ -55,9 +55,9 @@ function main(package)
         end
     end
 
-    -- remove the test directory
-    os.tryrm(testdir)
-
     -- restore the current directory
     os.cd(oldir)
+
+    -- remove the test directory
+    os.tryrm(testdir)
 end
