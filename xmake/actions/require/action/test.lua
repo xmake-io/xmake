@@ -40,6 +40,13 @@ function main(package)
     -- save the current directory
     local oldir = os.curdir()
 
+    -- enter the test directory
+    local testdir = path.join(os.tmpdir(), "pkgtest", package:name(), package:version_str() or "lastest")
+    if not os.isdir(testdir) then
+        os.mkdir(testdir)
+        os.cd(testdir)
+    end
+
     -- test it
     for i = 1, 3 do
         local script = scripts[i]
@@ -47,6 +54,9 @@ function main(package)
             filter.call(script, package)
         end
     end
+
+    -- remove the test directory
+    os.tryrm(testdir)
 
     -- restore the current directory
     os.cd(oldir)
