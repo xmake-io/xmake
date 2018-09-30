@@ -78,9 +78,11 @@ function install_prefix(package)
         end
     else
         if package:kind() == "binary" then
-            table.join2(installfiles, (os.filedirs(path.join(package:installdir("bin"), "*"))))
+            table.join2(installfiles, (os.files(path.join(package:installdir("bin"), "*"))))
         else
-            table.join2(installfiles, (os.filedirs(path.join(package:installdir("lib"), "*"))))
+            table.join2(installfiles, (os.files(path.join(package:installdir("lib"), "**.a"))))
+            table.join2(installfiles, (os.files(path.join(package:installdir("lib"), is_plat("macosx") and "**.dylib" or "**.so"))))
+            table.join2(installfiles, (os.files(path.join(package:installdir("lib", "pkgconfig"), "**.pc"))))
             table.join2(installfiles, (os.filedirs(path.join(package:installdir("include"), "*"))))
         end
     end

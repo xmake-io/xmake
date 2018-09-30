@@ -74,11 +74,19 @@ end
 
 -- get the platform of package
 function _instance:plat()
+    -- @note we uses os.host() instead of them for the binary package
+    if self:kind() == "binary" then
+        return os.host()
+    end
     return config.get("plat") or os.host()
 end
 
 -- get the architecture of package
 function _instance:arch()
+    -- @note we uses os.arch() instead of them for the binary package
+    if self:kind() == "binary" then
+        return os.arch()
+    end
     return config.get("arch") or os.arch()
 end
 
@@ -391,6 +399,10 @@ end
 
 -- is debug package?
 function _instance:debug()
+    -- @note always release for the binary package
+    if self:kind() == "binary" then
+        return false
+    end
     local requireinfo = self:requireinfo()
     return requireinfo and requireinfo.debug or false
 end
@@ -411,9 +423,12 @@ function _instance:script(name, generic)
         result = script
     elseif type(script) == "table" then
 
+        -- get plat and arch
+        local plat = self:plat() or ""
+        local arch = self:arch() or ""
+
         -- match script for special plat and arch
-        local plat = (config.get("plat") or "")
-        local pattern = plat .. '|' .. (config.get("arch") or "")
+        local pattern = plat .. '|' .. arch
         for _pattern, _script in pairs(script) do
             if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') then
                 result = _script
