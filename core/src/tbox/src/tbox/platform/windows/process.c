@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2018, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        process.c
@@ -313,12 +313,12 @@ tb_void_t tb_process_exit(tb_process_ref_t self)
 
     // close thread handle
     if (process->pi.hThread != INVALID_HANDLE_VALUE)
-        tb_kernel32()->CloseHandle(process->pi.hThread);
+        CloseHandle(process->pi.hThread);
     process->pi.hThread = INVALID_HANDLE_VALUE;
 
     // close process handle
     if (process->pi.hProcess != INVALID_HANDLE_VALUE)
-        tb_kernel32()->CloseHandle(process->pi.hProcess);
+        CloseHandle(process->pi.hProcess);
     process->pi.hProcess = INVALID_HANDLE_VALUE;
 
     // exit stdout file
@@ -380,11 +380,11 @@ tb_long_t tb_process_wait(tb_process_ref_t self, tb_long_t* pstatus, tb_long_t t
             if (pstatus) *pstatus = tb_kernel32()->GetExitCodeProcess(process->pi.hProcess, &exitcode)? (tb_long_t)exitcode : -1;  
 
             // close thread handle
-            tb_kernel32()->CloseHandle(process->pi.hThread);
+            CloseHandle(process->pi.hThread);
             process->pi.hThread = INVALID_HANDLE_VALUE;
 
             // close process
-            tb_kernel32()->CloseHandle(process->pi.hProcess);
+            CloseHandle(process->pi.hProcess);
             process->pi.hProcess = INVALID_HANDLE_VALUE;
 
             // ok
@@ -442,11 +442,11 @@ tb_long_t tb_process_waitlist(tb_process_ref_t const* processes, tb_process_wait
             infosize++;
 
             // close thread handle
-            tb_kernel32()->CloseHandle(process->pi.hThread);
+            CloseHandle(process->pi.hThread);
             process->pi.hThread = INVALID_HANDLE_VALUE;
 
             // close process
-            tb_kernel32()->CloseHandle(process->pi.hProcess);
+            CloseHandle(process->pi.hProcess);
             process->pi.hProcess = INVALID_HANDLE_VALUE;
 
             // next index
@@ -479,11 +479,11 @@ tb_long_t tb_process_waitlist(tb_process_ref_t const* processes, tb_process_wait
                         infosize++;
 
                         // close thread handle
-                        tb_kernel32()->CloseHandle(process->pi.hThread);
+                        CloseHandle(process->pi.hThread);
                         process->pi.hThread = INVALID_HANDLE_VALUE;
 
                         // close process
-                        tb_kernel32()->CloseHandle(process->pi.hProcess);
+                        CloseHandle(process->pi.hProcess);
                         process->pi.hProcess = INVALID_HANDLE_VALUE;
 
                         // next index
