@@ -15,6 +15,10 @@ package("automake")
 
     on_install("macosx", "linux", function (package)
         import("package.tools.autoconf").install(package)
+        io.writefile(path.join(package:installdir("share", "aclocal"), "dirlist"), [[
+            /usr/local/share/aclocal
+            /usr/share/aclocal
+        ]])
     end)
 
     on_test(function (package)
