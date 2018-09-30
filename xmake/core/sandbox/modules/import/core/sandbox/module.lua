@@ -278,7 +278,7 @@ end
 -- import module
 --
 -- @param name      the module name, .e.g core.platform
--- @param opt       the argument options, .e.g {alias = "", rootdir = "", try = false, inherit = false, anonymous = false, nocache = false}
+-- @param opt       the argument options, .e.g {alias = "", nolocal = true, rootdir = "", try = false, inherit = false, anonymous = false, nocache = false}
 --
 -- @return          the module instance
 --
@@ -342,8 +342,8 @@ function core_sandbox_module.import(name, opt)
     local rootdir = opt.rootdir or instance:rootdir()
     assert(rootdir)
 
-    -- init module directories
-    local modules_directories = table.join(rootdir, core_sandbox_module.directories())
+    -- init module directories (disable local packages?)
+    local modules_directories = opt.nolocal and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
 
     -- load module
     local found = false

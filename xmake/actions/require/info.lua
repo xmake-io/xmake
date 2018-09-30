@@ -26,10 +26,10 @@
 import("core.base.task")
 import("core.base.option")
 import("core.project.project")
-import("action.filter")
-import("package")
-import("repository")
-import("environment")
+import("impl.utils.filter")
+import("impl.package")
+import("impl.repository")
+import("impl.environment")
 
 -- show the given package info
 function main(requires)

@@ -26,7 +26,7 @@
 import("core.base.option")
 import("core.project.target")
 import("test")
-import("filter")
+import(".utils.filter")
 
 -- uninstall package from the prefix directory
 function uninstall_prefix(package)

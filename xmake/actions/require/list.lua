@@ -25,9 +25,9 @@
 -- imports
 import("core.project.project")
 import("core.base.task")
-import("package")
-import("repository")
-import("environment")
+import("impl.package")
+import("impl.repository")
+import("impl.environment")
 
 -- from local/global/system/remote?
 function _from(instance)

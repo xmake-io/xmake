@@ -24,10 +24,10 @@
 
 -- imports
 import("core.base.task")
-import("action.filter")
-import("package")
-import("repository")
-import("environment")
+import("impl.utils.filter")
+import("impl.package")
+import("impl.repository")
+import("impl.environment")
 
 -- search the given packages
 function main(names)

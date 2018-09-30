@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("filter")
+import(".utils.filter")
 
 -- test the given package
 function main(package)

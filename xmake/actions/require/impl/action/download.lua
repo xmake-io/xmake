@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("filter")
+import(".utils.filter")
 import("net.http")
 import("devel.git")
 import("utils.archive")

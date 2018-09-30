@@ -27,9 +27,9 @@ import("core.base.option")
 import("core.base.task")
 import("core.project.project")
 import("lib.detect.find_tool")
-import("package")
-import("repository")
-import("environment")
+import("impl.package")
+import("impl.repository")
+import("impl.environment")
 
 -- attach package to option
 function _attach_to_option(instance, opt)

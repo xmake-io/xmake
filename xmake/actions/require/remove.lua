@@ -25,9 +25,9 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
-import("package")
-import("repository")
-import("environment")
+import("impl.package")
+import("impl.repository")
+import("impl.environment")
 
 -- show the given package info
 function main(requires)
