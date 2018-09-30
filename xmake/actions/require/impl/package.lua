@@ -517,7 +517,7 @@ function remove_packages(requires, opt)
         if os.isfile(instance:prefixfile()) then
 
             -- uninstall package from the prefix directory
-            action.install.uninstall_prefix(instance)
+            action.prefix.uninstall(instance)
 
             -- remove the install files
             os.tryrm(instance:installdir())

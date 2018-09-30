@@ -29,7 +29,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.package.repository")
 import("devel.git")
-import("actions.require.environment", {rootdir = os.programdir()})
+import("actions.require.impl.environment", {rootdir = os.programdir()})
 
 -- add repository url
 function _add(name, url, is_global)

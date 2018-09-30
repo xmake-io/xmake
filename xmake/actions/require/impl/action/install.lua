@@ -27,115 +27,7 @@ import("core.base.option")
 import("core.project.target")
 import("test")
 import(".utils.filter")
-
--- uninstall package from the prefix directory
-function uninstall_prefix(package)
-
-    -- remove the previous installed files
-    local prefixdir = package:prefixdir()
-    for _, relativefile in ipairs(package:prefixinfo().installed) do
-
-        -- trace
-        vprint("removing %s ..", relativefile)
-
-        -- remove file
-        local prefixfile = path.absolute(relativefile, prefixdir)
-        os.tryrm(prefixfile)
- 
-        -- remove it if the parent directory is empty
-        local parentdir = path.directory(prefixfile)
-        while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
-            os.tryrm(parentdir)
-            parentdir = path.directory(parentdir)
-        end
-    end
-
-    -- unregister this package
-    package:unregister()
-
-    -- remove the prefix file
-    os.tryrm(package:prefixfile())
-end
-
--- install package to the prefix directory
-function install_prefix(package)
-
-    -- uninstall the prefix package files first
-    uninstall_prefix(package)
-
-    -- get prefix and install directory
-    local prefixdir  = package:prefixdir()
-    local installdir = package:installdir()
-
-    -- scan all installed files
-    local installfiles = {}
-    if is_host("windows") then
-        if package:kind() == "binary" then
-            table.join2(installfiles, (os.files(path.join(installdir, "**"))))
-        else
-            table.join2(installfiles, (os.files(path.join(package:installdir("lib"), "**"))))
-            table.join2(installfiles, (os.files(path.join(package:installdir("include"), "**"))))
-        end
-    else
-        if package:kind() == "binary" then
-            table.join2(installfiles, (os.files(path.join(package:installdir("bin"), "*"))))
-        else
-            table.join2(installfiles, (os.files(path.join(package:installdir("lib"), "**.a"))))
-            table.join2(installfiles, (os.files(path.join(package:installdir("lib"), is_plat("macosx") and "**.dylib" or "**.so"))))
-            table.join2(installfiles, (os.files(path.join(package:installdir("lib", "pkgconfig"), "**.pc"))))
-            table.join2(installfiles, (os.filedirs(path.join(package:installdir("include"), "*"))))
-        end
-    end
-
-    -- trace
-    vprint("installing %s to %s ..", installdir, prefixdir)
-
-    -- install to the prefix directory
-    local relativefiles = {}
-    try
-    {
-        function ()
-            for _, installfile in ipairs(installfiles) do
-
-                -- get relative file
-                local relativefile = path.relative(installfile, installdir)
-
-                -- trace
-                vprint("installing %s ..", relativefile)
-
-                -- install file
-                if is_host("windows") then
-                    -- copy the whole file to the prefix directory
-                    os.cp(installfile, path.absolute(relativefile, prefixdir))
-                else
-                    -- only link file to the prefix directory
-                    os.ln(installfile, path.absolute(relativefile, prefixdir))
-                end
-
-                -- save this relative file
-                table.insert(relativefiles, relativefile)
-            end
-        end,
-        catch 
-        {
-            function (errors)
-                raise(errors)
-            end
-        },
-        finally
-        {
-            function ()
-                -- save the prefix info to file
-                local prefixinfo = package:prefixinfo()
-                prefixinfo.installed = relativefiles
-                io.save(package:prefixfile(), prefixinfo)
-
-                -- register this package
-                package:register()
-            end
-        }
-    }
-end
+import("prefix")
 
 -- install the given package
 function main(package)
@@ -199,7 +91,7 @@ function main(package)
                 end
 
                 -- install to the prefix directory
-                install_prefix(package)
+                prefix.install(package)
 
                 -- test it
                 test(package)
