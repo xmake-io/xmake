@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2018, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        ws2_32.c
@@ -30,6 +30,11 @@
 #include "../../../utils/utils.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * pragma
+ */
+#pragma comment(lib, "Ws2_32.lib")
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 static tb_bool_t tb_ws2_32_instance_init(tb_handle_t instance, tb_cpointer_t priv)
@@ -40,7 +45,7 @@ static tb_bool_t tb_ws2_32_instance_init(tb_handle_t instance, tb_cpointer_t pri
 
     // the ws2_32 module
     HANDLE module = GetModuleHandleA("ws2_32.dll");
-    if (!module) module = tb_dynamic_init("ws2_32.dll");
+    if (!module) module = (HANDLE)tb_dynamic_init("ws2_32.dll");
     tb_assert_and_check_return_val(module, tb_false);
 
     // init interfaces
@@ -49,6 +54,7 @@ static tb_bool_t tb_ws2_32_instance_init(tb_handle_t instance, tb_cpointer_t pri
     TB_INTERFACE_LOAD(ws2_32, WSASocketA);
     TB_INTERFACE_LOAD(ws2_32, WSAIoctl);
     TB_INTERFACE_LOAD(ws2_32, WSAGetLastError);
+    TB_INTERFACE_LOAD(ws2_32, WSAEnumProtocolsW);
     TB_INTERFACE_LOAD(ws2_32, WSASend);
     TB_INTERFACE_LOAD(ws2_32, WSARecv);
     TB_INTERFACE_LOAD(ws2_32, WSASendTo);
