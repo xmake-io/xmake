@@ -425,6 +425,15 @@ function sandbox_os.exists(filedir)
     return os.exists(vformat(filedir))
 end
 
+-- read the content of symlink
+function sandbox_os.readlink(symlink)
+    local result = os.readlink(symlink)
+    if not result then
+        os.raise("cannot read link(%s)", symlink)
+    end
+    return result
+end
+
 -- return module
 return sandbox_os
 

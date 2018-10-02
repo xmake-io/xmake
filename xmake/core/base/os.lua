@@ -40,6 +40,7 @@ os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
 os._setenv      = os._setenv or os.setenv
+os._readlink    = os._readlink or os.readlink
 os._versioninfo = os._versioninfo or os.versioninfo
 
 -- copy single file or directory 
@@ -947,6 +948,11 @@ function os.pbcopy(data)
     else
         -- TODO
     end
+end
+
+-- read the content of symlink
+function os.readlink(symlink)
+    return os._readlink(path.absolute(symlink))
 end
 
 -- get the program directory

@@ -35,6 +35,7 @@ xmake_C_FILES 			+= \
 						os/exists \
 						os/setenv \
 						os/getenv \
+						os/readlink \
 						os/emptydir \
 						os/strerror \
 						os/filesize \
