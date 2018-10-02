@@ -29,5 +29,5 @@
 -- @return      true or false
 --
 function main(url)
-    return url:endswith(".git") or os.isdir(url .. ".git")
+    return url:endswith(".git") or url:startswith("git://") or os.isdir(url .. ".git")
 end
