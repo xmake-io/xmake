@@ -23,7 +23,9 @@
 --
 
 -- imports
+import("core.base.global")
 import("core.project.target")
+import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
 import("detect.tools.find_brew")
@@ -60,26 +62,31 @@ function info(name, opt)
         return result and result or nil
     end
 
+    -- add PKG_CONFIG_PATH
+    local configdirs_old = os.getenv("PKG_CONFIG_PATH")
+    local configdirs = opt.configdirs or {}
+    if #configdirs > 0 then
+        os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
+    end
+
     -- attempt to find package without `brew --prefix` first
     local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
 
     -- attempt to get pkg-config path from `brew --prefix` if no flags
     local brewprefix = nil
-    local configdirs = opt.configdirs or {}
     if not flags then
+
+        -- find the config directories from the prefix directories of xmake
+        local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch(), "release")
+        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, "lib", "pkgconfig"))
+        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, "lib", "pkgconfig"))
+
         -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
         local pcfile = find_file("*.pc", "/usr/local/Cellar/" .. name .. "/*/lib/pkgconfig")
         if pcfile then
             brewprefix = path.directory(path.directory(path.directory(pcfile)))
-            table.insert(configdirs, path.directory(pcfile))
+            os.addenv("PKG_CONFIG_PATH", path.directory(pcfile))
         end
-    end
-
-    -- add PKG_CONFIG_PATH
-    local configdirs_old = nil
-    if #configdirs > 0 then
-        configdirs_old = os.getenv("PKG_CONFIG_PATH")
-        os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
     -- get libs and cflags

@@ -236,7 +236,7 @@ end
 
 -- get the prefix info file
 function _instance:prefixfile()
-    return path.join(self:prefixdir(".info"), self:name() .. "-" .. (self:version_str() or "") .. ".txt")
+    return path.join(self:installdir(), "prefixinfo.txt")
 end
 
 -- get prefix variables

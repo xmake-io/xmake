@@ -138,13 +138,18 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
 
     -- get prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
+    local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch(), "release")
     if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(config.directory(), "prefix", config.get("plat") or os.host(), config.get("arch") or os.arch(), "release"))
-        table.insert(prefixdirs, path.join(global.directory(), "prefix", config.get("plat") or os.host(), config.get("arch") or os.arch(), "release"))
+        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs))
+        table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs))
     end
 
-    -- find the package list file, .e.g zlib-1.2.11.txt
-    local prefixfile = find_file(name .. "-*.txt", prefixdirs, {suffixes = ".info"})
+    -- find the prefix info file of package, .e.g z/zlib/1.2.11/prefixinfo.txt
+    local packagedirs = {}
+    local packagepath = path.join(name:sub(1, 1), name, "*")
+    table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, packagepath))
+    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, packagepath))
+    local prefixfile = find_file("prefixinfo.txt", packagedirs)
 
     -- get the include and link directories 
     local links = {}
@@ -153,10 +158,6 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local prefixinfo = {}
     if prefixfile then
 
-        -- get prefix root directory
-        local prefixdir = path.directory(path.directory(prefixfile))
-
-        -- add given include and link directories
         prefixinfo = io.load(prefixfile) or {}
         for _, includedir in ipairs(table.wrap(prefixinfo.includedirs)) do
             table.insert(includedirs, path.join(prefixdir, includedir))
@@ -199,13 +200,14 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
                 end
             end
         end
+    end
 
-        -- add root include and link directories
-        table.insert(linkdirs, path.join(prefixdir, "lib"))
-        table.insert(includedirs, path.join(prefixdir, "include"))
-    else
-        for _, prefixdir in ipairs(prefixdirs) do
+    -- add root include and link directories
+    for _, prefixdir in ipairs(prefixdirs) do
+        if #linkdirs == 0 then
             table.insert(linkdirs, path.join(prefixdir, "lib"))
+        end
+        if #includedirs == 0 then
             table.insert(includedirs, path.join(prefixdir, "include"))
         end
     end
@@ -219,7 +221,6 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local find_library = import("lib.detect.find_library")
 
     -- find library 
-    local result = nil
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
