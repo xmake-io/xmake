@@ -63,6 +63,56 @@ function _copy_filedirs(pattern)
     _copy('a', pattern)
 end
 
+-- do link 
+function _do_link(sourcepath, destpath)
+
+    -- link conflicts?
+    if os.islink(destpath) then
+
+        -- get the original path of destpath
+        local originpath = os.readlink(destpath)
+        if os.isdir(sourcepath) and os.isdir(originpath) then
+
+            -- trace
+            vprint("unlinking %s ..", destpath)
+                
+            -- remove the previous link
+            os.rm(destpath)
+
+            -- expand and relink the previous directories
+            for _, filedir in ipairs(os.filedirs(path.join(originpath, "*"))) do
+
+                -- trace
+                vprint("relinking %s ..", path.join(destpath, path.filename(filedir)))
+                
+                -- do link
+                os.ln(filedir, path.join(destpath, path.filename(filedir)))
+            end
+
+            -- link the child pathes
+            for _, filedir in ipairs(os.filedirs(path.join(sourcepath, "*"))) do
+                _do_link(filedir, path.join(destpath, path.filename(filedir)))
+            end
+        else
+            -- link conflicts
+            os.raise("cannot link %s => %s", sourcepath, destpath)
+        end
+    elseif os.isdir(destpath) then
+
+        -- link the child pathes
+        for _, filedir in ipairs(os.filedirs(path.join(sourcepath, "*"))) do
+            _do_link(filedir, path.join(destpath, path.filename(filedir)))
+        end
+    else
+
+        -- trace
+        vprint("linking %s ..", destpath)
+
+        -- do link
+        os.ln(sourcepath, destpath)
+    end
+end
+
 -- link files to the prefix directory
 function _link(mode, pattern)
 
@@ -75,11 +125,8 @@ function _link(mode, pattern)
         -- get relative path
         local relative_path = path.relative(sourcepath, installdir)
 
-        -- trace
-        vprint("linking %s ..", relative_path)
-
         -- link file to the prefix directory
-        os.ln(sourcepath, path.absolute(relative_path, prefixdir))
+        _do_link(sourcepath, path.absolute(relative_path, prefixdir))
 
         -- save this relative path
         table.insert(relative_pathes, relative_path)
@@ -106,17 +153,9 @@ function _install_with_link(package)
     _link_files("bin/*")
     _link_files("sbin/*")
     _link_filedirs("include/*")
-    _link_filedirs("lib/*|pkgconfig|cmake|lua")
-    _link_filedirs("lib/pkgconfig/*")
-    _link_filedirs("lib/cmake/*")
-    _link_filedirs("lib/lua/*")
-    _link_filedirs("share/*|aclocal|doc|info|man|icons|locale")
-    _link_filedirs("share/aclocal/*")
-    _link_filedirs("share/doc/*")
-    _link_filedirs("share/info/*")
-    _link_filedirs("share/man/*")
-    _link_filedirs("share/icons/*")
-    _link_filedirs("share/locale/*")
+    _link_filedirs("lib/*")
+    _link_filedirs("share/*|info")
+    _link_filedirs("share/info/*|dir")
 end
 
 -- install package without link (windows)

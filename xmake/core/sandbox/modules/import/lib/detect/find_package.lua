@@ -139,8 +139,8 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     -- get prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
     if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(config.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
-        table.insert(prefixdirs, path.join(global.directory(), "prefix", "release", config.get("plat") or os.host(), config.get("arch") or os.arch()))
+        table.insert(prefixdirs, path.join(config.directory(), "prefix", config.get("plat") or os.host(), config.get("arch") or os.arch(), "release"))
+        table.insert(prefixdirs, path.join(global.directory(), "prefix", config.get("plat") or os.host(), config.get("arch") or os.arch(), "release"))
     end
 
     -- find the package list file, .e.g zlib-1.2.11.txt
