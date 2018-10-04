@@ -231,6 +231,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local find_library = import("lib.detect.find_library")
 
     -- find library 
+    local result = nil
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
