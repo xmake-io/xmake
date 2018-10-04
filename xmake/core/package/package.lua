@@ -369,11 +369,20 @@ function _instance:requireinfo_set(requireinfo)
     -- save require info
     self._REQUIREINFO = requireinfo
 
-    -- switch to local package if exists package configuration or debug package or limit version
+    -- get version
     local version = requireinfo and requireinfo.version or nil
     local limitversion = version and version ~= "master" and version ~= "lastest"
-    if requireinfo and (requireinfo.config or requireinfo.debug or limitversion) then
-        self._FROMKIND = "local"
+    if requireinfo then
+        
+        -- switch to local package if exists package configuration or debug package or limit version
+        if requireinfo.config or requireinfo.debug or limitversion then
+            self._FROMKIND = "local"
+        end
+
+        -- disable the system package if limit version 
+        if limitversion then
+            requireinfo.system = false
+        end
     end
 end
 

@@ -25,6 +25,7 @@
 -- imports
 import("core.project.config")
 import("core.platform.environment")
+import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_tool")
 import("package")
 
@@ -43,10 +44,35 @@ function enter()
     if not find_tool("git") then
         package.install_packages("git")
     end
+
+    -- get prefix directories
+    local plat = get_config("plat")
+    local arch = get_config("arch")
+    _g.prefixdirs = _g.prefixdirs or 
+    {
+        core_package.prefixdir(false, false, plat, arch),
+        core_package.prefixdir(false, true, plat, arch),
+        core_package.prefixdir(true, false, plat, arch), 
+        core_package.prefixdir(true, true, plat, arch)
+    }
+
+    -- add search directories of pkgconfig, aclocal 
+    _g._ACLOCAL_PATH = os.getenv("ACLOCAL_PATH")
+    _g._PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
+    if not is_plat("windows") then
+        for _, prefixdir in ipairs(_g.prefixdirs) do
+            os.addenv("ACLOCAL_PATH", path.join(prefixdir, "share", "aclocal"))
+            os.addenv("PKG_CONFIG_PATH", path.join(prefixdir, "lib", "pkgconfig"))
+        end
+    end
 end
 
 -- leave environment
 function leave()
+
+    -- restore search directories of pkgconfig, aclocal 
+    os.setenv("ACLOCAL_PATH", _g._ACLOCAL_PATH)
+    os.setenv("PKG_CONFIG_PATH", _g._PKG_CONFIG_PATH)
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")

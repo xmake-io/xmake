@@ -35,6 +35,16 @@ function sandbox_core_package_package.cachedir()
     return package.cachedir()
 end
 
+-- the install directory
+function sandbox_core_package_package.installdir(is_global, is_debug, plat, arch)
+    return package.installdir(is_global, is_debug, plat, arch)
+end
+
+-- get the prefix directory
+function sandbox_core_package_package.prefixdir(is_global, is_debug, plat, arch)
+    return package.prefixdir(is_global, is_debug, plat, arch)
+end
+
 -- load the package from the project file 
 function sandbox_core_package_package.load_from_project(packagename)
 

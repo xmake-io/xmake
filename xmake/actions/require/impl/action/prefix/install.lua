@@ -198,9 +198,6 @@ end
 -- install package to the prefix directory
 function main(package)
 
-    -- uninstall the prefix package files first
-    uninstall(package)
-
     -- init some pathes
     _g.prefixdir       = package:prefixdir()
     _g.installdir      = package:installdir()

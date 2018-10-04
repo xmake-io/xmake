@@ -79,8 +79,8 @@ function main(package)
             -- create the install task
             local installtask = function () 
 
-                -- clean the install directory first
-                os.tryrm(package:installdir())
+                -- uninstall the install directory first
+                prefix.uninstall(package)
 
                 -- install it
                 for i = 1, 3 do
