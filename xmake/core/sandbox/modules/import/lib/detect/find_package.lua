@@ -138,17 +138,19 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
 
     -- get prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
-    local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch(), "release")
+    local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
     if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs))
-        table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs))
+        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, "release"))
+        table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, "release"))
     end
 
     -- find the prefix info file of package, .e.g z/zlib/1.2.11/prefixinfo.txt
     local packagedirs = {}
     local packagepath = path.join(name:sub(1, 1), name, "*")
-    table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, packagepath))
-    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, packagepath))
+    table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, "debug", packagepath))
+    table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, "release", packagepath))
+    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "debug", ackagepath))
+    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "release", ackagepath))
     local prefixfile = find_file("prefixinfo.txt", packagedirs)
 
     -- get the include and link directories 
