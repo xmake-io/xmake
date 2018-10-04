@@ -155,10 +155,16 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local links = {}
     local linkdirs = {}
     local includedirs = {}
-    local prefixinfo = {}
-    if prefixfile then
+    local prefixinfo = (prefixfile and os.isfile(prefixfile) and io.load(prefixfile)) or nil
+    if prefixinfo then
 
-        prefixinfo = io.load(prefixfile) or {}
+        -- get prefix directory of this package
+        local prefixdir = prefixinfo.prefixdir
+        if not prefixdir then
+            prefixdir = path.directory(path.directory(path.directory(path.directory(prefixfile)))):gsub("installed", "prefix")
+        end
+
+        -- get link and include directories
         for _, includedir in ipairs(table.wrap(prefixinfo.includedirs)) do
             table.insert(includedirs, path.join(prefixdir, includedir))
         end
@@ -175,9 +181,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
                 if line:endswith(".lib") or line:endswith(".a") then
                     found = true
                     if not prefixinfo.linkdirs then
-                        for _, prefixdir in ipairs(prefixdirs) do
-                            table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
-                        end
+                        table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
                     end
                     if not prefixinfo.links then
                         table.insert(links, target.linkname(path.filename(line)))
@@ -189,9 +193,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
                     line = line:trim()
                     if line:endswith(".so") or line:endswith(".dylib") then
                         if not prefixinfo.linkdirs then
-                            for _, prefixdir in ipairs(prefixdirs) do
-                                table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
-                            end
+                            table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
                         end
                         if not prefixinfo.links then
                             table.insert(links, target.linkname(path.filename(line)))
@@ -200,15 +202,23 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
                 end
             end
         end
-    end
 
-    -- add root include and link directories
-    for _, prefixdir in ipairs(prefixdirs) do
+        -- add root include and link directories
         if #linkdirs == 0 then
             table.insert(linkdirs, path.join(prefixdir, "lib"))
         end
         if #includedirs == 0 then
             table.insert(includedirs, path.join(prefixdir, "include"))
+        end
+    else
+        -- add root include and link directories
+        for _, prefixdir in ipairs(prefixdirs) do
+            if #linkdirs == 0 then
+                table.insert(linkdirs, path.join(prefixdir, "lib"))
+            end
+            if #includedirs == 0 then
+                table.insert(includedirs, path.join(prefixdir, "include"))
+            end
         end
     end
 
@@ -239,7 +249,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
 
         -- inherit the other prefix variables
         for name, values in pairs(prefixinfo) do
-            if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" and name ~= "installed" then
+            if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" and name ~= "installed" and name ~= "prefixdir" then
                 result[name] = values
             end
         end

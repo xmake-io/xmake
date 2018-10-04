@@ -64,9 +64,10 @@ function _copy_filedirs(pattern)
 end
 
 -- do link 
-function _do_link(sourcepath, destpath)
+function _do_link(sourcepath, relativepath)
 
     -- link conflicts?
+    local destpath = path.absolute(relativepath, _g.prefixdir)
     if os.islink(destpath) then
 
         -- get the original path of destpath
@@ -74,24 +75,59 @@ function _do_link(sourcepath, destpath)
         if os.isdir(sourcepath) and os.isdir(originpath) then
 
             -- trace
-            vprint("unlinking %s ..", destpath)
+            vprint("unlinking %s ..", relativepath)
+
+            -- find the prefix info file of the previous package
+            local parentdir = path.directory(originpath)
+            while parentdir and os.isdir(parentdir) and not os.isfile(path.join(parentdir, "prefixinfo.txt")) do
+                parentdir = path.directory(parentdir)
+            end
+
+            -- get the prefix info
+            local prefixfile = nil
+            local prefixinfo = nil
+            if parentdir then
+                prefixfile = path.join(parentdir, "prefixinfo.txt")
+                if os.isfile(prefixfile) then
+                    prefixinfo = io.load(prefixfile)
+                end
+            end
                 
             -- remove the previous link
             os.rm(destpath)
+            if prefixinfo then
+                for idx, installfile in ipairs(prefixinfo.installed) do
+                    if installfile == relativepath then
+                        table.remove(prefixinfo.installed, idx) 
+                        break
+                    end
+                end
+            end
 
             -- expand and relink the previous directories
             for _, filedir in ipairs(os.filedirs(path.join(originpath, "*"))) do
 
+                -- get file or directory name
+                local filename = path.filename(filedir)
+
                 -- trace
-                vprint("relinking %s ..", path.join(destpath, path.filename(filedir)))
+                vprint("relinking %s ..", path.join(relativepath, filename))
                 
                 -- do link
-                os.ln(filedir, path.join(destpath, path.filename(filedir)))
+                os.ln(filedir, path.join(destpath, filename))
+
+                -- save this relative path
+                table.insert(prefixinfo.installed, path.join(relativepath, filename))
+            end
+
+            -- update the previous prefix info file
+            if prefixinfo then
+                io.save(prefixfile, prefixinfo)
             end
 
             -- link the child pathes
             for _, filedir in ipairs(os.filedirs(path.join(sourcepath, "*"))) do
-                _do_link(filedir, path.join(destpath, path.filename(filedir)))
+                _do_link(filedir, path.join(relativepath, path.filename(filedir)))
             end
         else
             -- link conflicts
@@ -101,35 +137,26 @@ function _do_link(sourcepath, destpath)
 
         -- link the child pathes
         for _, filedir in ipairs(os.filedirs(path.join(sourcepath, "*"))) do
-            _do_link(filedir, path.join(destpath, path.filename(filedir)))
+            _do_link(filedir, path.join(relativepath, path.filename(filedir)))
         end
     else
 
         -- trace
-        vprint("linking %s ..", destpath)
+        vprint("linking %s ..", relativepath)
 
         -- do link
         os.ln(sourcepath, destpath)
+
+        -- save this relative path
+        table.insert(_g.relative_pathes, relativepath)
     end
 end
 
 -- link files to the prefix directory
 function _link(mode, pattern)
-
-    -- do install
-    local prefixdir       = _g.prefixdir
-    local installdir      = _g.installdir
-    local relative_pathes = _g.relative_pathes
+    local installdir = _g.installdir
     for _, sourcepath in ipairs(os.match(path.join(installdir, pattern), mode)) do
-
-        -- get relative path
-        local relative_path = path.relative(sourcepath, installdir)
-
-        -- link file to the prefix directory
-        _do_link(sourcepath, path.absolute(relative_path, prefixdir))
-
-        -- save this relative path
-        table.insert(relative_pathes, relative_path)
+        _do_link(sourcepath, path.relative(sourcepath, installdir))
     end
 end
 
@@ -207,6 +234,7 @@ function main(package)
                 -- save the prefix info to file
                 local prefixinfo = package:prefixinfo()
                 prefixinfo.installed = _g.relative_pathes
+                prefixinfo.prefixdir = _g.prefixdir
                 io.save(package:prefixfile(), prefixinfo)
 
                 -- register this package
