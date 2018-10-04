@@ -248,9 +248,11 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
         result.includedirs = table.unique(includedirs)
 
         -- inherit the other prefix variables
-        for name, values in pairs(prefixinfo) do
-            if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" and name ~= "installed" and name ~= "prefixdir" then
-                result[name] = values
+        if prefixinfo then
+            for name, values in pairs(prefixinfo) do
+                if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" and name ~= "installed" and name ~= "prefixdir" then
+                    result[name] = values
+                end
             end
         end
     end
