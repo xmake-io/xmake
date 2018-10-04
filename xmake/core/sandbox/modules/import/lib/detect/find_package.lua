@@ -149,8 +149,8 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local packagepath = path.join(name:sub(1, 1), name, "*")
     table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, "debug", packagepath))
     table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, "release", packagepath))
-    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "debug", ackagepath))
-    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "release", ackagepath))
+    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "debug", packagepath))
+    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "release", packagepath))
     local prefixfile = find_file("prefixinfo.txt", packagedirs)
 
     -- get the include and link directories 
