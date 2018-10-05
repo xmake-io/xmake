@@ -56,23 +56,26 @@ function enter()
         core_package.prefixdir(true, true, plat, arch)
     }
 
-    -- add search directories of pkgconfig, aclocal 
+    -- add search directories of pkgconfig, aclocal, cmake 
     _g._ACLOCAL_PATH = os.getenv("ACLOCAL_PATH")
     _g._PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
-    if not is_plat("windows") then
-        for _, prefixdir in ipairs(_g.prefixdirs) do
+    _g._CMAKE_PREFIX_PATH = os.getenv("CMAKE_PREFIX_PATH")
+    for _, prefixdir in ipairs(_g.prefixdirs) do
+        if not is_plat("windows") then
             os.addenv("ACLOCAL_PATH", path.join(prefixdir, "share", "aclocal"))
             os.addenv("PKG_CONFIG_PATH", path.join(prefixdir, "lib", "pkgconfig"))
         end
+        os.addenv("CMAKE_PREFIX_PATH", prefixdir)
     end
 end
 
 -- leave environment
 function leave()
 
-    -- restore search directories of pkgconfig, aclocal 
+    -- restore search directories of pkgconfig, aclocal, cmake 
     os.setenv("ACLOCAL_PATH", _g._ACLOCAL_PATH)
     os.setenv("PKG_CONFIG_PATH", _g._PKG_CONFIG_PATH)
+    os.setenv("CMAKE_PREFIX_PATH", _g._CMAKE_PREFIX_PATH)
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")
