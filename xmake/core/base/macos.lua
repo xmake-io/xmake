@@ -19,39 +19,39 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        winos.lua
+-- @file        macos.lua
 --
 
--- define module: winos
-local winos = winos or {}
+-- define module: macos
+local macos = macos or {}
 
 -- load modules
 local os = require("base/os")
 
 -- get system version
-function winos.version()
+function macos.version()
 
     -- get it from cache first
-    if winos._VERSION ~= nil then
-        return winos._VERSION 
+    if macos._VERSION ~= nil then
+        return macos._VERSION 
     end
 
-    -- get winver
-    local winver = nil
-    local ok, verstr = os.iorun("cmd /c ver")
+    -- get macver
+    local macver = nil
+    local ok, verstr = os.iorun("sw_vers -productVersion")
     if ok and verstr then
-        winver = verstr:match("%[.-(%d+%.%d+%.%d+)]")
-        if winver then
-            winver = winver:trim()
+        macver = verstr:match("%d+%.%d+%.%d+")
+        if macver then
+            macver = macver:trim()
         end
     end
 
     -- save to cache
-    winos._VERSION = winver or false
+    macos._VERSION = macver or false
 
     -- done
-    return winver
+    return macver
 end
 
--- return module: winos
-return winos
+-- return module: macos
+return macos

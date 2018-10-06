@@ -119,34 +119,3 @@ function subsystem(name)
     }
     return defvals[name] or "10.00"
 end
-
--- get windows system version
---
--- $ xmake l os.winver
---
---   - win10: 10.0.14393
---   - xp:    5.1.2600
---
-function main()
-
-    -- get it from cache first
-    if _g.winver ~= nil then
-        return _g.winver 
-    end
-
-    -- get winver
-    local winver = nil
-    local verstr = try { function () return os.iorun("cmd /c ver") end }
-    if verstr then
-        winver = verstr:match("%[.-(%d+%.%d+%.%d+)]")
-        if winver then
-            winver = winver:trim()
-        end
-    end
-
-    -- save to cache
-    _g.winver = winver or false
-
-    -- done
-    return winver
-end

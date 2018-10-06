@@ -19,39 +19,25 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        winos.lua
+-- @file        macos.lua
 --
 
--- define module: winos
-local winos = winos or {}
-
 -- load modules
-local os = require("base/os")
+local macos     = require("base/macos")
+local raise     = require("sandbox/modules/raise")
+
+-- define module
+local sandbox_core_base_macos = sandbox_core_base_macos or {}
 
 -- get system version
-function winos.version()
-
-    -- get it from cache first
-    if winos._VERSION ~= nil then
-        return winos._VERSION 
+function sandbox_core_base_macos.version()
+    local winver = macos.version()
+    if not winver then
+        raise("cannot get the version of the current macos!")
     end
-
-    -- get winver
-    local winver = nil
-    local ok, verstr = os.iorun("cmd /c ver")
-    if ok and verstr then
-        winver = verstr:match("%[.-(%d+%.%d+%.%d+)]")
-        if winver then
-            winver = winver:trim()
-        end
-    end
-
-    -- save to cache
-    winos._VERSION = winver or false
-
-    -- done
     return winver
 end
 
--- return module: winos
-return winos
+-- return module
+return sandbox_core_base_macos
+
