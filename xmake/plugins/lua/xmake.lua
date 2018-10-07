@@ -33,6 +33,7 @@ task("lua")
            
         -- imports
         import("core.base.option")
+        import("core.sandbox.module")
         import("core.sandbox.sandbox")
 
         -- list all lua scripts?
@@ -68,8 +69,21 @@ task("lua")
                 import("scripts." .. script, {anonymous = true})(unpack(option.get("arguments") or {}))
             else
 
-                -- run modules (xmake lua core.xxx.xxx)
-                print(import(script, {anonymous = true})(unpack(option.get("arguments") or {})))
+                -- attempt to find the builtin module
+                local object = nil
+                for _, name in ipairs(script:split("%.")) do
+                    object = object and object[name] or module.get(name)
+                    if not object then
+                        break
+                    end
+                end
+                if object then
+                    -- run builtin modules (xmake lua core.xxx.xxx)
+                    print(object(unpack(option.get("arguments") or {})))
+                else
+                    -- run imported modules (xmake lua core.xxx.xxx)
+                    print(import(script, {anonymous = true})(unpack(option.get("arguments") or {})))
+                end
             end
         else
             -- enter interactive mode

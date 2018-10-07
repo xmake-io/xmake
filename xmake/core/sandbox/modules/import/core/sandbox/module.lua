@@ -507,6 +507,22 @@ function core_sandbox_module.inherit(name, opt)
     return core_sandbox_module.import(name, opt)
 end
 
+-- get the public object in the current module
+function core_sandbox_module.get(name)
+
+    -- is private object?
+    if name:startswith('_') then
+        return 
+    end
+
+    -- get the parent scope
+    local scope_parent = getfenv(2)
+    assert(scope_parent)
+
+    -- get it
+    return scope_parent[name] 
+end
+
 -- load module
 return core_sandbox_module
 
