@@ -23,25 +23,16 @@
 --
 
 -- load modules
-local winos     = require("base/winos")
-local raise     = require("sandbox/modules/raise")
+local winos = require("base/winos")
 
 -- define module
-local sandbox_core_base_winos = sandbox_core_base_winos or {}
+local sandbox_winos = sandbox_winos or {}
 
--- inherit some builtin interfaces
-sandbox_core_base_winos.registry_query = winos.registry_query
-sandbox_core_base_winos.logical_drives = winos.logical_drives
-
--- get windows system version
-function sandbox_core_base_winos.version()
-    local winver = winos.version()
-    if not winver then
-        raise("cannot get the version of the current winos!")
-    end
-    return winver
-end
+-- export some readonly interfaces
+sandbox_winos.registry_query = winos.registry_query
+sandbox_winos.logical_drives = winos.logical_drives
+sandbox_winos.version        = winos.version
 
 -- return module
-return sandbox_core_base_winos
+return sandbox_winos
 

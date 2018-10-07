@@ -48,7 +48,6 @@ sandbox_os.programdir  = os.programdir
 sandbox_os.programfile = os.programfile
 sandbox_os.projectdir  = os.projectdir
 sandbox_os.projectfile = os.projectfile
-sandbox_os.uuid        = hash.uuid
 
 -- match files
 function sandbox_os.files(pattern, ...)

@@ -23,14 +23,14 @@
 --
 
 -- load modules
-local macos     = require("base/macos")
-local raise     = require("sandbox/modules/raise")
+local macos = require("base/macos")
+local raise = require("sandbox/modules/raise")
 
 -- define module
-local sandbox_core_base_macos = sandbox_core_base_macos or {}
+local sandbox_macos = sandbox_macos or {}
 
 -- get system version
-function sandbox_core_base_macos.version()
+function sandbox_macos.version()
     local winver = macos.version()
     if not winver then
         raise("cannot get the version of the current macos!")
@@ -39,5 +39,5 @@ function sandbox_core_base_macos.version()
 end
 
 -- return module
-return sandbox_core_base_macos
+return sandbox_macos
 
