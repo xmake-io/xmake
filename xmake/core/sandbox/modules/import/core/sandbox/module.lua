@@ -221,6 +221,58 @@ function core_sandbox_module._load(dir, name, instance, module)
     return module, script
 end
 
+-- find and load module
+function core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)
+
+    -- load module
+    local found = false
+    local errors = nil
+    local module = nil
+    local modulekey = nil
+    local isdirs = false
+    local loadnext = false
+    for idx, moduledir in ipairs(modules_directories) do
+
+        -- find module and key
+        modulekey, isdirs = core_sandbox_module._find(moduledir, name) 
+        if modulekey then
+
+            -- load it from cache first
+            local moduleinfo = modules[modulekey]
+            if moduleinfo and not opt.nocache and not opt.inherit then
+                module = moduleinfo[1]
+                errors = moduleinfo[2]
+            else
+
+                -- load it from the script file
+                module, errors = core_sandbox_module._load(   moduledir, name
+                                                            , idx < #modules_directories and instance or nil  -- last modules need not fork sandbox
+                                                            , module) 
+
+
+                -- cache this module
+                if not opt.nocache then
+                    modules[modulekey] = {module, errors}
+                end
+            end
+
+            -- continue to load?
+            if module and isdirs then
+                loadnext = true
+            end
+
+            -- found
+            found = true
+
+            -- end?
+            if not loadnext then
+                break
+            end
+        end
+    end
+    return found, module, errors
+end
+
 -- get module name
 function core_sandbox_module.name(name)
 
@@ -346,48 +398,30 @@ function core_sandbox_module.import(name, opt)
     local modules_directories = opt.nolocal and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
 
     -- load module
-    local found = false
-    local errors = nil
-    local module = nil
-    local modulekey = nil
-    local isdirs = false
-    local loadnext = false
-    for idx, moduledir in ipairs(modules_directories) do
+    local found, module, errors = core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)
 
-        -- find module and key
-        modulekey, isdirs = core_sandbox_module._find(moduledir, name) 
-        if modulekey then
+    -- not found? attempt to load module.interface
+    if not found and not opt.inherit then
+        -- get module name
+        local found2 = false
+        local errors2 = nil
+        local module2_name = nil
+        local interface_name = nil
+        local pos = name:find_last('.', true)
+        if pos then
+            module2_name = name:sub(1, pos - 1)
+            interface_name = name:sub(pos + 1)
+        end
 
-            -- load it from cache first
-            local moduleinfo = modules[modulekey]
-            if moduleinfo and not opt.nocache and not opt.inherit then
-                module = moduleinfo[1]
-                errors = moduleinfo[2]
+        -- load module.interface
+        if module2_name and interface_name then 
+            found2, module2, errors2 = core_sandbox_module._find_and_load(module2_name, opt, instance, modules, modules_directories)
+            if found2 and module2 and module2[interface_name] then
+                module = module2[interface_name]
+                found = true
+                errors = nil
             else
-
-                -- load it from the script file
-                module, errors = core_sandbox_module._load(   moduledir, name
-                                                            , utils.ifelse(idx < #modules_directories, instance, nil)  -- last modules need not fork sandbox
-                                                            , module) 
-
-
-                -- cache this module
-                if not opt.nocache then
-                    modules[modulekey] = {module, errors}
-                end
-            end
-
-            -- continue to load?
-            if module and isdirs then
-                loadnext = true
-            end
-
-            -- found
-            found = true
-
-            -- end?
-            if not loadnext then
-                break
+                errors = errors2
             end
         end
     end
@@ -442,7 +476,7 @@ function core_sandbox_module.import(name, opt)
     end
 
     -- bind main entry 
-    if module.main then
+    if type(module) == "table" and module.main then
         setmetatable(module, { __call = function (_, ...) return module.main(...) end})
     end
 
