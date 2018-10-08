@@ -114,13 +114,19 @@ function table.inherit(...)
     -- init instance
     local classes = {...}
     local instance = {}
+    local metainfo = {}
     for _, clasz in ipairs(classes) do
         for k, v in pairs(clasz) do
             if type(v) == "function" then
-                instance[k] = v
+                if k:startswith("__") then
+                    metainfo[k] = v
+                else
+                    instance[k] = v
+                end
             end
         end
     end
+    setmetatable(instance, metainfo)
 
     -- ok?
     return instance
@@ -134,10 +140,19 @@ function table.inherit2(self, ...)
 
     -- init instance
     local classes = {...}
+    local metainfo = getmetatable(self) or {}
     for _, clasz in ipairs(classes) do
         for k, v in pairs(clasz) do
-            if type(v) == "function" and self[k] == nil then
-                self[k] = v
+            if type(v) == "function" then
+                if k:startswith("__") then
+                    if metainfo[k] == nil then
+                        metainfo[k] = v
+                    end
+                else
+                    if self[k] == nil then
+                        self[k] = v
+                    end
+                end
             end
         end
     end
@@ -172,6 +187,8 @@ function table._dump(self, exclude, level)
  
     -- dump basic type
     if type(self) == "string" or type(self) == "boolean" or type(self) == "number" then  
+        io.write(tostring(self))  
+    elseif type(self) == "table" and (getmetatable(self) or {}).__tostring then
         io.write(tostring(self))  
     -- dump table
     elseif type(self) == "table" then  

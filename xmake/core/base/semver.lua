@@ -60,6 +60,11 @@ function _instance:rawstr()
     return self:get("raw")
 end
 
+-- get the raw version string
+function _instance:__tostring()
+    return self:rawstr()
+end
+
 -- new an instance
 function semver.new(version)
 
