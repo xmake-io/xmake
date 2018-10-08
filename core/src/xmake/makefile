@@ -61,6 +61,7 @@ xmake_C_FILES 			+= \
 						process/close \
 						sandbox/interactive \
 						semver/parse \
+						semver/compare \
 						semver/satisfies \
 						semver/select \
 						semver/semver \

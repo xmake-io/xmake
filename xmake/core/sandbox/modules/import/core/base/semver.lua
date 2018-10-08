@@ -46,6 +46,22 @@ function sandbox_core_base_semver.parse(version)
     return result
 end
 
+-- compare two version strings
+--
+-- semver.compare('1.2.3', '1.3.0') > 0?
+--
+function sandbox_core_base_semver.compare(version1, version2)
+
+     -- compare versions
+    local result, errors = semver.compare(version1, version2)
+    if errors then
+        raise(errors)
+    end
+
+    -- ok
+    return result
+end
+
 -- this version satisfies in the given version range
 --
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
