@@ -27,7 +27,17 @@ local sandbox_core_base_semver = sandbox_core_base_semver or {}
 
 -- load modules
 local table  = require("base/table")
+local semver = require("base/semver")
 local raise  = require("sandbox/modules/raise")
+
+-- new a version instance
+function sandbox_core_base_semver.new(version)
+    local result, errors = semver.new(version)
+    if errors then
+        raise(errors)
+    end
+    return result
+end
 
 -- parse a version string into a props table containing all semver infos
 --
@@ -35,14 +45,10 @@ local raise  = require("sandbox/modules/raise")
 -- semver.parse('a.b.c') => nil
 --
 function sandbox_core_base_semver.parse(version)
-
-     -- compare version
     local result, errors = semver.parse(version)
     if errors then
         raise(errors)
     end
-
-    -- ok
     return result
 end
 
@@ -51,14 +57,10 @@ end
 -- semver.compare('1.2.3', '1.3.0') > 0?
 --
 function sandbox_core_base_semver.compare(version1, version2)
-
-     -- compare versions
     local result, errors = semver.compare(version1, version2)
     if errors then
         raise(errors)
     end
-
-    -- ok
     return result
 end
 
@@ -67,14 +69,10 @@ end
 -- semver.satisfies('1.2.3', '1.x || >=2.5.0 || 5.0.0 - 7.2.3') => true
 --
 function sandbox_core_base_semver.satisfies(version, range)
-
-    -- satisfies version
     local result, errors = semver.satisfies(version, range)
     if errors then
         raise(errors)
     end
-
-    -- ok
     return result
 end
 
@@ -88,14 +86,10 @@ end
 -- @source      the version source, .e.g versions, tags, branchs
 --
 function sandbox_core_base_semver.select(range, versions, tags, branches)
-
-    -- select version
     local verinfo, errors = semver.select(range, table.wrap(versions), table.wrap(tags), table.wrap(branches))
     if not verinfo then
         raise(errors)
     end
-
-    -- ok
     return verinfo.version, verinfo.source
 end
 
