@@ -46,7 +46,9 @@ end
 -- the remote repositories have been pulled?
 function pulled()
     for _, repo in ipairs(repositories()) do
-        if not os.isdir(repo:directory()) then
+        -- repository not found? or xmake has been re-installed
+        local updatefile = path.join(repo:directory(), "updated")
+        if not os.isdir(repo:directory()) or (os.isfile(updatefile) and os.mtime(os.programfile()) > os.mtime(updatefile)) then
             return false
         end
     end

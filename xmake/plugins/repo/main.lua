@@ -109,6 +109,9 @@ function _update()
 
                         -- pull it
                         git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+
+                        -- mark as updated 
+                        io.save(path.join(repodir, "updated"), {})
                     end
                 else
                     -- trace
@@ -116,6 +119,9 @@ function _update()
 
                     -- clone it
                     git.clone(repo:url(), {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+
+                    -- mark as updated 
+                    io.save(path.join(repodir, "updated"), {})
                 end
 
                 -- pull this repository ok
