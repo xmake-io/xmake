@@ -139,7 +139,7 @@ static char parse_hiphen(semver_comp_t *self, const char *str, size_t len, size_
   return 0;
 }
 
-static char parse_tidle(semver_comp_t *self, const char *str, size_t len, size_t *offset) {
+static char parse_caret(semver_comp_t *self, const char *str, size_t len, size_t *offset) {
   semver_t partial;
 
   if (parse_partial(&self->version, str, len, offset)) {
@@ -167,7 +167,7 @@ static char parse_tidle(semver_comp_t *self, const char *str, size_t len, size_t
   return 0;
 }
 
-static char parse_caret(semver_comp_t *self, const char *str, size_t len, size_t *offset) {
+static char parse_tilde(semver_comp_t *self, const char *str, size_t len, size_t *offset) {
   semver_t partial;
 
   if (parse_partial(&self->version, str, len, offset)) {
@@ -230,14 +230,14 @@ char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *
     switch (str[*offset]) {
       case '^':
         ++*offset;
-        if (parse_tidle(self, str, len, offset)) {
+        if (parse_caret(self, str, len, offset)) {
           return 1;
         }
         self = self->next;
         goto next;
       case '~':
         ++*offset;
-        if (parse_caret(self, str, len, offset)) {
+        if (parse_tilde(self, str, len, offset)) {
           return 1;
         }
         self = self->next;
@@ -300,7 +300,7 @@ char semver_comp_read(semver_comp_t *self, const char *str, size_t len, size_t *
   }
   next:
   if (*offset < len && str[*offset] == ' '
-    && *offset < len + 1 && str[*offset + 1] != ' ' && str[*offset + 1] != '|') {
+    && *offset + 1 < len && str[*offset + 1] != ' ' && str[*offset + 1] != '|') {
     ++*offset;
     if (*offset < len) {
       self->next = (semver_comp_t *) sv_malloc(sizeof(semver_comp_t));
