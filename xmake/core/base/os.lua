@@ -982,8 +982,6 @@ end
 
 -- get version info
 function os.versioninfo()
-
-    -- cache it
     os._VERSIONINFO = os._VERSIONINFO or os._versioninfo()
     return os._VERSIONINFO
 end
