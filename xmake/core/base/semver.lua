@@ -60,9 +60,14 @@ function _instance:rawstr()
     return self:get("raw")
 end
 
--- get the raw version string
-function _instance:__tostring()
-    return self:rawstr()
+-- satisfies the given semantic version(.e.g '> 1.0 < 2.0', '~1.5')?
+function _instance:satisfies(version)
+    return semver.satisfies(self:rawstr(), version) 
+end
+
+-- is in the given version range, [version1, version2]?
+function _instance:at(version1, version2)
+    return self:ge(version1) and self:le(version2)
 end
 
 -- v1 == v2 (str/ver)?
@@ -115,6 +120,11 @@ end
 -- v1 <= v2?
 function _instance:__le(version)
     return self:le(version)
+end
+
+-- get the raw version string
+function _instance:__tostring()
+    return self:rawstr()
 end
 
 -- new an instance
