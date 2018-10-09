@@ -65,6 +65,58 @@ function _instance:__tostring()
     return self:rawstr()
 end
 
+-- v1 == v2 (str/ver)?
+function _instance:eq(version)
+    return _instance.__eq(self, version)
+end
+
+-- v1 < v2 (str/ver)?
+function _instance:lt(version)
+    return _instance.__lt(self, version)
+end
+
+-- v1 <= v2 (str/ver)?
+function _instance:le(version)
+    return _instance.__le(self, version)
+end
+
+-- v1 > v2 (str/ver)?
+function _instance:gt(version)
+    return not _instance.__le(self, version)
+end
+
+-- v1 >= v2 (str/ver)?
+function _instance:ge(version)
+    return not _instance.__lt(self, version)
+end
+
+-- v1 == v2?
+function _instance:__eq(version)
+    if type(version) == "string" then
+        return semver.compare(self:rawstr(), version) == 0
+    elseif type(version) == "table" then
+        return semver.compare(self:rawstr(), version:rawstr()) == 0
+    end
+end
+
+-- v1 < v2?
+function _instance:__lt(version)
+    if type(version) == "string" then
+        return semver.compare(self:rawstr(), version) < 0
+    elseif type(version) == "table" then
+        return semver.compare(self:rawstr(), version:rawstr()) < 0
+    end
+end
+
+-- v1 <= v2?
+function _instance:__le(version)
+    if type(version) == "string" then
+        return semver.compare(self:rawstr(), version) <= 0
+    elseif type(version) == "table" then
+        return semver.compare(self:rawstr(), version:rawstr()) <= 0
+    end
+end
+
 -- new an instance
 function semver.new(version)
 

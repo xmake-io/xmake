@@ -26,7 +26,8 @@
 local macos = macos or {}
 
 -- load modules
-local os = require("base/os")
+local os     = require("base/os")
+local semver = require("base/semver")
 
 -- get system version
 function macos.version()
@@ -44,6 +45,7 @@ function macos.version()
         if macver then
             macver = macver:trim()
         end
+        macver = semver.new(macver)
     end
 
     -- save to cache

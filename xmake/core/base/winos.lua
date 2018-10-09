@@ -26,7 +26,8 @@
 local winos = winos or {}
 
 -- load modules
-local os = require("base/os")
+local os     = require("base/os")
+local semver = require("base/semver")
 
 -- get system version
 function winos.version()
@@ -44,6 +45,7 @@ function winos.version()
         if winver then
             winver = winver:trim()
         end
+        winver = semver.new(winver)
     end
 
     -- save to cache
