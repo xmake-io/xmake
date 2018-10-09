@@ -440,15 +440,7 @@ function project._load_options(disable_filter)
     for _, require_str in ipairs(table.wrap(project.get("requires"))) do
 
         -- get the package name
-        local splitinfo = require_str:split('%s+')
-        local packageinfo = splitinfo[1]
-        local packagename = nil
-        local pos = packageinfo:find_last('@', true)
-        if pos then
-            packagename = packageinfo:sub(pos + 1)
-        else 
-            packagename = packageinfo
-        end
+        local packagename = require_str:split('%s+')[1]
 
         -- check
         assert(not results[packagename], "requires(\"" .. packagename .. "\") and option(\"" .. packagename .. "\") conflicts!")
@@ -462,6 +454,7 @@ function project._load_options(disable_filter)
         if require_extra then
 
             -- override values from the extra option
+            local interp = project.interpreter()
             for name, value in pairs(table.wrap(require_extra.option)) do
                 if type(value) == "function" then
                     local maps = {on_check = "check", before_check = "check_before", after_check = "check_after"}
