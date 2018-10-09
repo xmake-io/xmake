@@ -14,11 +14,7 @@ package("pkg-config")
     on_install("macosx", "linux", function (package)
         local pcpath = {"/usr/local/lib/pkgconfig", "/usr/lib/pkgconfig"}
         if is_host("macosx") then
-            local macver = os.iorun("sw_vers -productVersion"):trim()
-            if #macver > 0 then
-                local vers = macver:split('%.')
-                table.insert(pcpath, "/usr/local/Homebrew/Library/Homebrew/os/mac/pkgconfig/" .. vers[1] .. '.' .. vers[2])
-            end
+            table.insert(pcpath, "/usr/local/Homebrew/Library/Homebrew/os/mac/pkgconfig/" .. macos.version():major() .. '.' .. macos.version():minor())
         end
         import("package.tools.autoconf").install(package, {"--disable-debug", "--disable-host-tool", "--with-internal-glib", ["with-pc-path"] = table.concat(pcpath, ':')})
     end)
