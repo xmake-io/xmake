@@ -46,7 +46,7 @@ end
 function _build_for_cmakelists(buildfile)
     os.mkdir("build")
     os.cd("build")
-    os.vrun("cmake -a %s -DCMAKE_INSTALL_PREFIX=\"%s\" ..", os.arch(), path.absolute("install"))
+    os.vrun("cmake -A %s -DCMAKE_INSTALL_PREFIX=\"%s\" ..", os.arch(), path.absolute("install"))
     if is_host("windows") then
         
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
