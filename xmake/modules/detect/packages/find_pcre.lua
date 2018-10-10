@@ -52,7 +52,7 @@ function main(opt)
     -- find package from the current host platform
     if opt.plat == os.host() and opt.arch == os.arch() then
         for _, width in ipairs({"", "16", "32"}) do
-            local result = pkg_config.find("libpcre" .. width)
+            local result = pkg_config.find("libpcre" .. width, {brewhint = "pcre"})
             if result then
                 return result
             end

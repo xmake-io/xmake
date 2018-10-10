@@ -77,12 +77,14 @@ function info(name, opt)
     if not flags then
 
         -- find the config directories from the prefix directories of xmake
-        local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch(), "release")
-        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, "lib", "pkgconfig"))
-        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, "lib", "pkgconfig"))
+        local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
+        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, "release", "lib", "pkgconfig"))
+        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, "debug", "lib", "pkgconfig"))
+        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, "release", "lib", "pkgconfig"))
+        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, "debug", "lib", "pkgconfig"))
 
         -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
-        local pcfile = find_file("*.pc", "/usr/local/Cellar/" .. name .. "/*/lib/pkgconfig")
+        local pcfile = find_file(name .. ".pc", "/usr/local/Cellar/" .. (opt.brewhint or name) .. "/*/lib/pkgconfig")
         if pcfile then
             brewprefix = path.directory(path.directory(path.directory(pcfile)))
             os.addenv("PKG_CONFIG_PATH", path.directory(pcfile))
@@ -186,10 +188,26 @@ function find(name, opt)
         links = opt.links
     end
 
+    -- add default search linkdirs on pc host
+    local linkdirs = pkginfo.linkdirs
+    if links and #links > 0 and (not linkdirs or #linkdirs == 0) then
+        linkdirs = linkdirs or {}
+        table.insert(linkdirs, "/usr/local/lib")
+        table.insert(linkdirs, "/usr/lib")
+        table.insert(linkdirs, "/opt/local/lib")
+        table.insert(linkdirs, "/opt/lib")
+        if opt.plat == "linux" and opt.arch == "x86_64" then
+            table.insert(linkdirs, "/usr/local/lib/x86_64-linux-gnu")
+            table.insert(linkdirs, "/usr/lib/x86_64-linux-gnu")
+            table.insert(linkdirs, "/usr/lib64")
+            table.insert(linkdirs, "/opt/lib64")
+        end
+    end
+
     -- find library 
     local result = nil
     for _, link in ipairs(table.wrap(links)) do
-        local libinfo = find_library(link, pkginfo.linkdirs)
+        local libinfo = find_library(link, linkdirs)
         if libinfo then
             result          = result or {}
             result.links    = table.join(result.links or {}, libinfo.link)

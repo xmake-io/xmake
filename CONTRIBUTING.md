@@ -21,7 +21,7 @@ try to follow these guidelines when you do so.
 * Write good commit messages.
 * Use the same coding conventions as the rest of the project.
 * Ensure your edited codes with four spaces instead of TAB.
-* Please commit code to `dev` branch and we will merge into `master` branch in feature
+* Please commit code to `dev` branch and we will merge into `master` branch in future.
 
 ### Some suggestion on developing
 

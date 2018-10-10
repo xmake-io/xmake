@@ -53,7 +53,7 @@ function main(opt)
     -- find package from the current host platform
     if opt.plat == os.host() and opt.arch == os.arch() then
         for _, width in ipairs({"8", "16", "32"}) do
-            local result = pkg_config.find("libpcre2-" .. width)
+            local result = pkg_config.find("libpcre2-" .. width, {brewhint = "pcre2"})
             if result then
                 result.defines = {"PCRE2_CODE_UNIT_WIDTH=" .. width}
                 return result
