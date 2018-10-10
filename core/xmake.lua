@@ -31,7 +31,7 @@ add_cxflags("-fomit-frame-pointer")
 -- for the windows platform (msvc)
 if is_plat("windows") then 
     add_cxflags("-MT") 
-    add_ldflags("-nodefaultlib:\"msvcrt.lib\"")
+    add_ldflags("-nodefaultlib:msvcrt.lib")
     add_links("kernel32", "user32", "gdi32")
 end
 
