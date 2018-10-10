@@ -69,9 +69,6 @@ function info(name, opt)
         os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
-    -- attempt to find package without `brew --prefix` first
-    local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
-
     -- attempt to get pkg-config path from `brew --prefix` if no flags
     local brewprefix = nil
     if not flags then
@@ -92,7 +89,7 @@ function info(name, opt)
     end
 
     -- get libs and cflags
-    flags = flags or try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
+    local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
     if flags then
 
         -- init result
