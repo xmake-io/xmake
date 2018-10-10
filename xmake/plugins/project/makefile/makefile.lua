@@ -39,7 +39,7 @@ end
 function _mkdir(makefile, dir)
 
     if is_plat("windows") then
-        makefile:print("\t-@mkdir %s > /null 2>&1", dir)
+        makefile:print("\t-@mkdir %s > NUL 2>&1", dir)
     else
         makefile:print("\t@mkdir -p %s", dir)
     end
@@ -50,7 +50,7 @@ function _cp(makefile, sourcefile, targetfile)
 
     -- copy file
     if is_plat("windows") then
-        makefile:print("\t@copy /Y %s %s > /null 2>&1", sourcefile, targetfile)
+        makefile:print("\t@copy /Y %s %s > NUL 2>&1", sourcefile, targetfile)
     else
         makefile:print("\t@cp %s %s", sourcefile, targetfile)
     end
@@ -62,9 +62,9 @@ function _tryrm(makefile, filedir)
     -- remove it
     if is_plat("windows") then
         if os.isdir(filedir) then
-            makefile:print("\t@rmdir /S /Q %s > /null 2>&1", filedir)
+            makefile:print("\t@rmdir /S /Q %s > NUL 2>&1", filedir)
         elseif os.isfile(filedir) then
-            makefile:print("\t@del /F /Q %s > /null 2>&1", filedir)
+            makefile:print("\t@del /F /Q %s > NUL 2>&1", filedir)
         end
     else
         if os.isdir(filedir) then
