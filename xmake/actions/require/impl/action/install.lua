@@ -83,7 +83,7 @@ function main(package)
                 prefix.uninstall(package)
 
                 -- build and install package to the install directory
-                local packagefile = path.join(package:installdir(), "info.txt")
+                local installedfile = path.join(package:installdir(), "installed.txt")
                 if not os.isfile(installedfile) then
 
                     -- clean install directory first
