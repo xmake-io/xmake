@@ -8,6 +8,8 @@
 * Add `has_config`, `get_config` and `is_config` apis
 * Add `$ xmake --try` to try building project using third-party buildsystem
 * Add `set_enabled(false)` to disable target 
+* [#69](https://github.com/tboox/xmake/issues/69): Add remote package management, `add_requires("tbox ~1.6.1")`
+* [#216](https://github.com/tboox/xmake/pull/216): Add windows mfc rules
 
 ### Changes
 
@@ -488,6 +490,8 @@
 * 添加`has_config`, `get_config`和`is_config`接口去快速判断option和配置值
 * 添加`$ xmake --try`去尝试构建工程
 * 添加`set_enabled(false)`去显示的禁用target
+* [#69](https://github.com/tboox/xmake/issues/69): 添加远程依赖包管理, `add_requires("tbox ~1.6.1")`
+* [#216](https://github.com/tboox/xmake/pull/216): 添加windows mfc编译规则
 
 ### 改进
 
