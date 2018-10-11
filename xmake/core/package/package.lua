@@ -610,7 +610,8 @@ function package.apis()
     ,   script =
         {
             -- package.on_xxx
-            "package.on_install"
+            "package.on_load"
+        ,   "package.on_install"
         ,   "package.on_test"
 
             -- package.before_xxx
@@ -734,6 +735,15 @@ function package.load_from_system(packagename)
     -- mark as system package
     instance._FROMKIND = "system"
 
+    -- do load for package
+    local on_load = instance:script("load")
+    if on_load then
+        local ok, errors = sandbox.load(on_load, instance)
+        if not ok then
+            return nil, errors
+        end
+    end
+
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
 
@@ -772,6 +782,15 @@ function package.load_from_project(packagename, project)
 
     -- mark as local package
     instance._FROMKIND = "local"
+
+    -- do load for package
+    local on_load = instance:script("load")
+    if on_load then
+        local ok, errors = sandbox.load(on_load, instance)
+        if not ok then
+            return nil, errors
+        end
+    end
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -831,6 +850,15 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- mark as global/project package?
     instance._FROMKIND = repo:is_global() and "global" or "local"
+
+    -- do load for package
+    local on_load = instance:script("load")
+    if on_load then
+        local ok, errors = sandbox.load(on_load, instance)
+        if not ok then
+            return nil, errors
+        end
+    end
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
