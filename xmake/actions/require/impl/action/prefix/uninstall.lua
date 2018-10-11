@@ -49,8 +49,5 @@ function main(package)
 
     -- remove the prefix file
     os.tryrm(package:prefixfile())
-
-    -- remove the install directory 
-    os.tryrm(package:installdir())
 end
 

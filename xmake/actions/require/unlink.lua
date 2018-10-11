@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        remove.lua
+-- @file        unlink.lua
 --
 
 -- imports
@@ -63,10 +63,10 @@ function main(requires)
         end
     end
 
-    -- remove packages
-    local packages = package.remove_packages(requires, {requires_extra = requires_extra})
+    -- unlink packages
+    local packages = package.unlink_packages(requires, {requires_extra = requires_extra})
     for _, instance in ipairs(packages) do
-        print("remove: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
+        print("unlink: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
 
     -- leave environment

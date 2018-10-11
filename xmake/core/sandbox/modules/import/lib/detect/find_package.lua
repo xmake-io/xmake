@@ -136,22 +136,42 @@ end
 -- find package from the prefix directories
 function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
 
-    -- get prefix directories
+    -- get the prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
     local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
     if #prefixdirs == 0 then
+        if opt.mode then
+            table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, opt.mode))
+        end
         table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, "release"))
-        table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, "release"))
+        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, "debug"))
+        if opt.global ~= false then 
+            if opt.mode then
+                table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, opt.mode))
+            end
+            table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, "release"))
+            table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, "debug"))
+        end
     end
 
-    -- find the prefix info file of package, .e.g z/zlib/1.2.11/prefixinfo.txt
+    -- find the prefix info file of package, .e.g prefix/info/z/zlib/1.2.11/info.txt
     local packagedirs = {}
     local packagepath = path.join(name:sub(1, 1), name, "*")
-    table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, "debug", packagepath))
-    table.insert(packagedirs, path.join(config.directory(), "installed", platsubdirs, "release", packagepath))
-    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "debug", packagepath))
-    table.insert(packagedirs, path.join(global.directory(), "installed", platsubdirs, "release", packagepath))
-    local prefixfile = find_file("prefixinfo.txt", packagedirs)
+    if opt.mode then
+        table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, opt.mode, packagepath))
+    end
+    table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, "release", packagepath))
+    table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, "debug", packagepath))
+
+    -- find the prefix info file from the global prefix directory
+    if opt.global ~= false then 
+        if opt.mode then
+            table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, opt.mode, packagepath))
+        end
+        table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, "release", packagepath))
+        table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, "debug", packagepath))
+    end
+    local prefixfile = find_file("info.txt", packagedirs)
 
     -- get the include and link directories 
     local links = {}
@@ -161,10 +181,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     if prefixinfo then
 
         -- get prefix directory of this package
-        local prefixdir = prefixinfo.prefixdir
-        if not prefixdir then
-            prefixdir = path.directory(path.directory(path.directory(path.directory(prefixfile)))):gsub("installed", "prefix")
-        end
+        local prefixdir = path.translate(path.directory(path.directory(path.directory(path.directory(prefixfile)))):gsub("[/\\]prefix[/\\]info[/\\]", "/prefix/"))
 
         -- get link and include directories
         for _, includedir in ipairs(table.wrap(prefixinfo.includedirs)) do

@@ -23,6 +23,8 @@
 --
 
 -- imports
+import("core.base.global")
+import("core.project.config")
 import("uninstall")
 
 -- copy files to the prefix directory
@@ -63,6 +65,23 @@ function _copy_filedirs(pattern)
     _copy('a', pattern)
 end
 
+-- find the prefix info file of the previous package
+function _find_prefixfile(originpath)
+    local parentdir = path.directory(originpath)
+    while parentdir and os.isdir(parentdir) and parentdir ~= "/" do
+        local relative_path = path.relative(parentdir, path.join(global.directory(), "installed"))
+        local prefixfile_local = path.join(config.directory(), "prefix", "info", relative_path, "info.txt")
+        if os.isfile(prefixfile_local) then
+            return prefixfile_local
+        end
+        local prefixfile_global = path.join(global.directory(), "prefix", "info", relative_path, "info.txt")
+        if os.isfile(prefixfile_global) then
+            return prefixfile_global
+        end
+        parentdir = path.directory(parentdir)
+    end
+end
+
 -- do link 
 function _do_link(sourcepath, relativepath)
 
@@ -77,20 +96,14 @@ function _do_link(sourcepath, relativepath)
             -- trace
             vprint("unlinking %s ..", relativepath)
 
+
             -- find the prefix info file of the previous package
-            local parentdir = path.directory(originpath)
-            while parentdir and os.isdir(parentdir) and not os.isfile(path.join(parentdir, "prefixinfo.txt")) do
-                parentdir = path.directory(parentdir)
-            end
+            local prefixfile = _find_prefixfile(originpath)
 
             -- get the prefix info
-            local prefixfile = nil
             local prefixinfo = nil
-            if parentdir then
-                prefixfile = path.join(parentdir, "prefixinfo.txt")
-                if os.isfile(prefixfile) then
-                    prefixinfo = io.load(prefixfile)
-                end
+            if prefixfile and os.isfile(prefixfile) then
+                prefixinfo = io.load(prefixfile)
             end
                 
             -- remove the previous link
@@ -231,7 +244,6 @@ function main(package)
                 -- save the prefix info to file
                 local prefixinfo = package:prefixinfo()
                 prefixinfo.installed = _g.relative_pathes
-                prefixinfo.prefixdir = _g.prefixdir
                 io.save(package:prefixfile(), prefixinfo)
 
                 -- register this package

@@ -203,7 +203,7 @@ end
 function _instance:installdir(...)
     
     -- make the given install directory
-    local dir = path.join(package.installdir(self:from("global"), self:debug(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
+    local dir = path.join(package.installdir(self:debug(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -236,7 +236,7 @@ end
 
 -- get the prefix info file
 function _instance:prefixfile()
-    return path.join(self:installdir(), "prefixinfo.txt")
+    return path.join(package.prefixinfodir(self:from("global"), self:debug(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), "info.txt")
 end
 
 -- get prefix variables
@@ -518,9 +518,13 @@ function _instance:fetch(opt)
         local system = opt.system or self:requireinfo().system
 
         -- fetch it from the prefix directories first
+        -- and add cache key to make a distinction with finding system package
         if not fetchinfo and system ~= true then
-            -- add cache key to make a distinction with finding system package
-            fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), system = false, cachekey = "fetch:prefix", force = opt.force}) 
+            fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
+                                                         system = false, 
+                                                         global = self:from("local") and false or nil, 
+                                                         cachekey = "fetch:prefix", 
+                                                         force = opt.force or self:from("local")}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
@@ -639,13 +643,18 @@ function package.cachedir()
 end
 
 -- the install directory
-function package.installdir(is_global, is_debug, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "installed", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
+function package.installdir(is_debug, plat, arch)
+    return path.join(global.directory(), "installed", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
 end
 
 -- get the prefix directory
 function package.prefixdir(is_global, is_debug, plat, arch)
     return path.join(is_global and global.directory() or config.directory(), "prefix", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
+end
+
+-- get the prefix info directory
+function package.prefixinfodir(is_global, is_debug, plat, arch)
+    return path.join(is_global and global.directory() or config.directory(), "prefix", "info", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
 end
 
 -- get the prefix info
@@ -656,7 +665,7 @@ end
 
 -- get the prefix info file
 function package.prefixfile(is_global, is_debug, plat, arch)
-    return path.join(package.prefixdir(is_global, is_global, plat, arch), "info.txt")
+    return path.join(package.prefixinfodir(is_global, is_global, plat, arch), "info.txt")
 end
 
 -- get environment variables
