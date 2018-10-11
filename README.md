@@ -89,7 +89,11 @@ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xm
 
 ## Simple description
 
-<img src="https://xmake.io/assets/img/index/showcode1.png" width="50%" />
+<img src="https://xmake.io/assets/img/index/showcode1.png" width="40%" />
+
+## Package dependences
+
+<img src="https://xmake.io/assets/img/index/add_require.png" width="70%" />
 
 ## Build project
 
@@ -122,7 +126,11 @@ $ xmake
 $ xmake f --menu
 ```
 
-<img src="https://xmake.io/assets/img/index/menuconf.gif" width="60%" />
+<img src="https://xmake.io/assets/img/index/menuconf.png" width="80%" />
+
+## Package management
+
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
 
 ## Support platforms
 
