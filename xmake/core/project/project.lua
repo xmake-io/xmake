@@ -108,6 +108,13 @@ function project._api_has_config(interp, ...)
     return config.has(...)
 end
 
+-- set config from the given name
+function project._api_set_config(interp, name, value)
+    if not config.readonly(name) then
+        config.set(name, value)
+    end
+end
+
 -- get config from the given name
 function project._api_get_config(interp, name)
     return config.get(name)
@@ -205,7 +212,11 @@ function project.interpreter()
         ,   {"is_plat",                 project._api_is_plat          }
         ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_config",               project._api_is_config        }
+            -- set_xxx
+        ,   {"set_config",              project._api_set_config       }
+            -- get_xxx
         ,   {"get_config",              project._api_get_config       }
+            -- has_xxx
         ,   {"has_config",              project._api_has_config       }
             -- add_xxx
         ,   {"add_moduledirs",          project._api_add_moduledirs   }
