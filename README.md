@@ -95,6 +95,8 @@ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xm
 
 <img src="https://xmake.io/assets/img/index/add_require.png" width="70%" />
 
+An official xmake package repository: [xmake-repo](https://github.com/tboox/xmake-repo)
+
 ## Build project
 
 ```bash
@@ -170,6 +172,8 @@ $ xmake f --menu
 ```bash
 $ xmake m -b                        # start to record
 $ xmake f -p iphoneos -m debug
+$ xmake 
+$ xmake f -p android --ndk=~/files/android-ndk-r16b
 $ xmake
 $ xmake m -e                        # stop to record
 $ xmake m .                         # playback commands
@@ -225,6 +229,9 @@ add_rules("mode.debug", "mode.release")
 target("console")
     set_kind("binary")
     add_files("src/*.c") 
+    if is_plat("windows", "mingw") then
+        add_defines("XXX")
+    end
 ```
 
 Custom script:
