@@ -82,6 +82,7 @@ function target.apis()
             -- target.set_xxx
             "target.set_targetdir"
         ,   "target.set_objectdir"
+        ,   "target.set_dependir"
             -- target.add_xxx
         ,   "target.add_files"
             -- target.del_xxx
@@ -548,7 +549,10 @@ end
 function target:dependir()
 
     -- init the dependent directory
-    local dependir = path.join(config.buildir(), ".deps", self:name())
+    local dependir = self:get("dependir")
+    if not dependir then
+        dependir = path.join(config.buildir(), ".deps", self:name())
+    end
 
     -- append plat sub-directory
     local plat = config.get("plat")
