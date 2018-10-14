@@ -107,6 +107,24 @@ function _load_vcvarsall(vcvarsall, arch)
         variables["UCRTVersion"] = UCRTVersion
     end
 
+    -- fix rc.exe missing issues
+    --
+    -- @see https://github.com/tboox/xmake/issues/225
+    -- https://stackoverflow.com/questions/43847542/rc-exe-no-longer-found-in-vs-2015-command-prompt/45319119
+    --
+    -- patch sdk bin directory to path environment
+    --
+    -- .e.g C:\Program Files (x86)\Windows Kits\10\bin\10.0.17134.0\x64
+    --
+    local WindowsSdkDir = variables["WindowsSdkDir"]
+    if WindowsSdkDir and WindowsSDKVersion then
+        local pathes = variables["path"]
+        local bindir = path.join(WindowsSdkDir, "bin", WindowsSDKVersion, arch)
+        if os.isdir(bindir) and pathes then
+            variables["path"] = pathes .. ';' .. bindir
+        end
+    end
+
     -- ok
     return variables
 end
