@@ -51,7 +51,9 @@ function main(opt)
     opt = opt or {}
     
     -- find program
-    opt.pathes = opt.pathes or 
+    opt.check   = "-?"
+    opt.command = "-?"
+    opt.pathes = opt.pathes or
     {
         path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Visual Studio", "Installer", "vswhere.exe"),
         path.join(os.getenv("ProgramFiles"), "Microsoft Visual Studio", "Installer", "vswhere.exe"),
