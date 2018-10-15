@@ -55,8 +55,8 @@ function main(opt)
     opt.command = "-?"
     opt.pathes = opt.pathes or
     {
-        path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Visual Studio", "Installer", "vswhere.exe"),
-        path.join(os.getenv("ProgramFiles"), "Microsoft Visual Studio", "Installer", "vswhere.exe"),
+        "$(env ProgramFiles%(x86%))\\Microsoft Visual Studio\\Installer",
+        "$(env ProgramFiles)\\Microsoft Visual Studio\\Installer"
     }
     local program = find_program(opt.program or "vswhere.exe", opt)
 

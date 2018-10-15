@@ -24,7 +24,7 @@
 
 -- imports
 import("lib.detect.find_file")
-import("detect.tools.find_vswhere")
+import("lib.detect.find_tool")
 
 -- init vc variables
 local vcvars = {"path", 
@@ -190,6 +190,9 @@ function main()
         end
     end
     
+    -- find vswhere 
+    local vswhere = find_tool("vswhere")
+    
     -- find vs2017 -> vs4.2
     local results = {}
     for _, version in ipairs({"15.0", "14.0", "12.0", "11.0", "10.0", "9.0", "8.0", "7.1", "7.0", "6.0", "5.0", "4.2"}) do
@@ -198,12 +201,11 @@ function main()
         -- * version > 15.0 eschews registry entries; but `vswhere` (included with version >= 15.2) can be used to find VC install path
         -- ref: https://github.com/Microsoft/vswhere/blob/master/README.md @@ https://archive.is/mEmdu
         local vswhere_VCAuxiliaryBuildDir = nil
-        if ((version+0) >= 15) then
-            local vswhere = find_vswhere()
-            if vswhere then
-                local vswhere_vrange = format("%s,%s)", version, (version+1))
-                local out, err = os.iorunv(vswhere, {"-property", "installationpath", "-products", "Microsoft.VisualStudio.Product.BuildTools", "-version", vswhere_vrange})
-                if out then vswhere_VCAuxiliaryBuildDir = out:trim().."\\VC\\Auxiliary\\Build" end
+        if ((version + 0) >= 15) and vswhere then
+            local vswhere_vrange = format("%s,%s)", version, (version+1))
+            local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-products", "Microsoft.VisualStudio.Product.BuildTools", "-version", vswhere_vrange})
+            if result then 
+                vswhere_VCAuxiliaryBuildDir = result:trim() .."\\VC\\Auxiliary\\Build" 
             end
         end
 
@@ -214,10 +216,14 @@ function main()
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC7\\bin", version),
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
-            format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version),
-            format("$(env %s)\\..\\..\\VC", vsenvs[version] or ""),
-            (vswhere_VCAuxiliaryBuildDir or "")
+            format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version)
         }
+        if vsenvs[version] then
+            table.insert(pathes, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
+        end
+        if vswhere_VCAuxiliaryBuildDir and os.isdir(vswhere_VCAuxiliaryBuildDir) then
+            table.insert(pathes, vswhere_VCAuxiliaryBuildDir)
+        end
 
         -- find vcvarsall.bat, vcvars32.bat for vs7.1
         local vcvarsall = find_file("vcvarsall.bat", pathes) or find_file("vcvars32.bat", pathes)
