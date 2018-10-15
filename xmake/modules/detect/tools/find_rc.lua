@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.project.config")
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
@@ -46,6 +47,28 @@ function main(opt)
     opt.command = opt.command or "-?"
     opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
     
+    -- fix rc.exe missing issues
+    --
+    -- @see https://github.com/tboox/xmake/issues/225
+    -- https://stackoverflow.com/questions/43847542/rc-exe-no-longer-found-in-vs-2015-command-prompt/45319119
+    --
+    -- patch sdk bin directory to path environment
+    --
+    -- .e.g C:\Program Files (x86)\Windows Kits\10\bin\10.0.17134.0\x64
+    --
+    local arch = opt.arch or config.arch() or os.arch()
+    local vcvarsall = config.get("__vcvarsall")
+    if vcvarsall then
+        local vcvars = vcvarsall[arch] or {}
+        if vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
+            local bindir = path.join(vcvars.WindowsSdkDir, "bin", vcvars.WindowsSDKVersion, arch)
+            if os.isdir(bindir) then
+                opt.pathes = opt.pathes or {}
+                table.insert(opt.pathes, bindir)
+            end
+        end
+    end
+
     -- find program
     local program = find_program(opt.program or "rc.exe", opt)
 
