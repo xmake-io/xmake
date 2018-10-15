@@ -21,3 +21,4 @@ target("cuda_console")
     add_cuflags("-gencode arch=compute_" .. sm .. ",code=compute_" .. sm)
     add_ldflags("-gencode arch=compute_" .. sm .. ",code=compute_" .. sm)
  
+    

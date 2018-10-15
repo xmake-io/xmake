@@ -48,10 +48,6 @@ function init(self)
         ["-W1"] = "-Wall"
     ,   ["-W2"] = "-Wall"
     ,   ["-W3"] = "-Wall"
-
-         -- strip
-    ,   ["-s"]  = "-s"
-    ,   ["-S"]  = "-S"
     }
 
     -- init buildmodes
@@ -66,27 +62,6 @@ function get(self, name)
     return _g[name]
 end
 
--- make the strip flag
-function nf_strip(self, level)
-
-    -- the maps
-    local maps = 
-    {   
-        debug = "-S"
-    ,   all   = "-s"
-    }
-
-    -- for macho target
-    local plat = config.plat()
-    if plat == "macosx" or plat == "iphoneos" then
-        maps.all   = "-Wl,-x"
-        maps.debug = "-Wl,-S"
-    end
-
-    -- make it
-    return maps[level]
-end
-
 -- make the symbol flag
 function nf_symbol(self, level)
 
@@ -94,7 +69,6 @@ function nf_symbol(self, level)
     local maps = 
     {   
         debug  = "-g"
-    ,   hidden = "-fvisibility=hidden"
     }
 
     -- make it

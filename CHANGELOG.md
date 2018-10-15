@@ -7,7 +7,7 @@
 * Support fasm assembler
 * Add `has_config`, `get_config`, and `is_config` apis
 * Add `set_config` to set the default configuration
-* Add `$ xmake --try` to try building project using third-party buildsystem
+* Add `$xmake --try` to try building project using third-party buildsystem
 * Add `set_enabled(false)` to disable target 
 * [#69](https://github.com/tboox/xmake/issues/69): Add remote package management, `add_requires("tbox ~1.6.1")`
 * [#216](https://github.com/tboox/xmake/pull/216): Add windows mfc rules
@@ -21,6 +21,7 @@
 * Improve to detect Qt sdk directory for `detect.sdks.find_qt`
 * [#184](https://github.com/tboox/xmake/issues/184): Improve `lib.detect.find_package` to support vcpkg
 * [#208](https://github.com/tboox/xmake/issues/208): Improve rpath for shared library
+* [#225](https://github.com/tboox/xmake/issues/225): Improve to detect vs envirnoment
 
 ### Bug fixed
 
@@ -488,9 +489,9 @@
 ### 新特性
 
 * 新增fasm汇编器支持
-* 添加`has_config`, `get_config`, ``和`is_config`接口去快速判断option和配置值
+* 添加`has_config`, `get_config`和`is_config`接口去快速判断option和配置值
 * 添加`set_config`接口去设置默认配置
-* 添加`$ xmake --try`去尝试构建工程
+* 添加`$xmake --try`去尝试构建工程
 * 添加`set_enabled(false)`去显示的禁用target
 * [#69](https://github.com/tboox/xmake/issues/69): 添加远程依赖包管理, `add_requires("tbox ~1.6.1")`
 * [#216](https://github.com/tboox/xmake/pull/216): 添加windows mfc编译规则
@@ -504,6 +505,7 @@
 * 改进`detect.sdks.find_qt`对于Qt根目录的探测
 * [#184](https://github.com/tboox/xmake/issues/184): 改进`lib.detect.find_package`支持vcpkg
 * [#208](https://github.com/tboox/xmake/issues/208): 改进rpath对动态库的支持
+* [#225](https://github.com/tboox/xmake/issues/225): 改进vs环境探测
 
 ### Bugs修复
 
