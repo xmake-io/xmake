@@ -35,7 +35,7 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
     for _, flag in ipairs(targetinfo.compflags[sourcefile]) do
 
         -- -Idir or /Idir
-        flag = flag:gsub("[%-|/]I(.*)", function (dir)
+        flag = flag:gsub("[%-/]I(.*)", function (dir)
                         dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcxprojdir)
@@ -63,7 +63,7 @@ function _make_linkflags(targetinfo, vcxprojdir)
     for _, flag in ipairs(targetinfo.linkflags) do
 
         -- replace -libpath:dir or /libpath:dir
-        flag = flag:gsub("[%-|/]libpath:(.*)", function (dir)
+        flag = flag:gsub("[%-/]libpath:(.*)", function (dir)
                         dir = path.translate(dir:trim())
                         if not path.is_absolute(dir) then
                             dir = path.relative(path.absolute(dir), vcxprojdir)
@@ -221,68 +221,68 @@ function _make_source_options(vcxprojfile, flags, condition)
     local flagstr = os.args(flags)
 
     -- make Optimization
-    if flagstr:find("[%-|/]Os") or flagstr:find("[%-|/]O1") then
+    if flagstr:find("[%-/]Os") or flagstr:find("[%-/]O1") then
         vcxprojfile:print("<Optimization%s>MinSpace</Optimization>", condition) 
-    elseif flagstr:find("[%-|/]O2") or flagstr:find("[%-|/]Ot") then
+    elseif flagstr:find("[%-/]O2") or flagstr:find("[%-/]Ot") then
         vcxprojfile:print("<Optimization%s>MaxSpeed</Optimization>", condition) 
-    elseif flagstr:find("[%-|/]Ox") then
+    elseif flagstr:find("[%-/]Ox") then
         vcxprojfile:print("<Optimization%s>Full</Optimization>", condition) 
     else
         vcxprojfile:print("<Optimization%s>Disabled</Optimization>", condition) 
     end
 
     -- make FloatingPointModel
-    if flagstr:find("[%-|/]fp:fast") then
+    if flagstr:find("[%-/]fp:fast") then
         vcxprojfile:print("<FloatingPointModel%s>Fast</FloatingPointModel>", condition) 
-    elseif flagstr:find("[%-|/]fp:strict") then
+    elseif flagstr:find("[%-/]fp:strict") then
         vcxprojfile:print("<FloatingPointModel%s>Strict</FloatingPointModel>", condition) 
-    elseif flagstr:find("[%-|/]fp:precise") then
+    elseif flagstr:find("[%-/]fp:precise") then
         vcxprojfile:print("<FloatingPointModel%s>Precise</FloatingPointModel>", condition) 
     end
 
     -- make WarningLevel
-    if flagstr:find("[%-|/]W1") then
+    if flagstr:find("[%-/]W1") then
         vcxprojfile:print("<WarningLevel%s>Level1</WarningLevel>", condition) 
-    elseif flagstr:find("[%-|/]W2") then
+    elseif flagstr:find("[%-/]W2") then
         vcxprojfile:print("<WarningLevel%s>Level2</WarningLevel>", condition) 
-    elseif flagstr:find("[%-|/]W3") then
+    elseif flagstr:find("[%-/]W3") then
         vcxprojfile:print("<WarningLevel%s>Level3</WarningLevel>", condition) 
-    elseif flagstr:find("[%-|/]Wall") then
+    elseif flagstr:find("[%-/]Wall") then
         vcxprojfile:print("<WarningLevel%s>EnableAllWarnings</WarningLevel>", condition) 
     else
         vcxprojfile:print("<WarningLevel%s>TurnOffAllWarnings</WarningLevel>", condition) 
     end
-    if flagstr:find("[%-|/]WX") then
+    if flagstr:find("[%-/]WX") then
         vcxprojfile:print("<TreatWarningAsError%s>true</TreatWarningAsError>", condition) 
     end
 
     -- make DebugInformationFormat
-    if flagstr:find("[%-|/]Zi") then
+    if flagstr:find("[%-/]Zi") then
         vcxprojfile:print("<DebugInformationFormat%s>ProgramDatabase</DebugInformationFormat>", condition)
-    elseif flagstr:find("[%-|/]ZI") then
+    elseif flagstr:find("[%-/]ZI") then
         vcxprojfile:print("<DebugInformationFormat%s>EditAndContinue</DebugInformationFormat>", condition)
-    elseif flagstr:find("[%-|/]Z7") then
+    elseif flagstr:find("[%-/]Z7") then
         vcxprojfile:print("<DebugInformationFormat%s>OldStyle</DebugInformationFormat>", condition)
     else
         vcxprojfile:print("<DebugInformationFormat%s>None</DebugInformationFormat>", condition)
     end
 
     -- make RuntimeLibrary
-    if flagstr:find("[%-|/]MDd") then
+    if flagstr:find("[%-/]MDd") then
         vcxprojfile:print("<RuntimeLibrary%s>MultiThreadedDebugDLL</RuntimeLibrary>", condition)
-    elseif flagstr:find("[%-|/]MD") then
+    elseif flagstr:find("[%-/]MD") then
         vcxprojfile:print("<RuntimeLibrary%s>MultiThreadedDLL</RuntimeLibrary>", condition)
-    elseif flagstr:find("[%-|/]MTd") then
+    elseif flagstr:find("[%-/]MTd") then
         vcxprojfile:print("<RuntimeLibrary%s>MultiThreadedDebug</RuntimeLibrary>", condition)
-    elseif flagstr:find("[%-|/]MT") then
+    elseif flagstr:find("[%-/]MT") then
         vcxprojfile:print("<RuntimeLibrary%s>MultiThreaded</RuntimeLibrary>", condition)
     end
 
     -- make AdditionalIncludeDirectories
-    if flagstr:find("[%-|/]I") then
+    if flagstr:find("[%-/]I") then
         local dirs = {}
         for _, flag in ipairs(flags) do
-            flag:gsub("[%-|/]I(.*)", function (dir) table.insert(dirs, dir) end)
+            flag:gsub("[%-/]I(.*)", function (dir) table.insert(dirs, dir) end)
         end
         if #dirs > 0 then
             vcxprojfile:print("<AdditionalIncludeDirectories%s>%s</AdditionalIncludeDirectories>", condition, table.concat(dirs, ";"))
@@ -290,7 +290,7 @@ function _make_source_options(vcxprojfile, flags, condition)
     end
 
     -- complie as c++ if exists flag: /TP
-    if flagstr:find("[%-|/]TP") then
+    if flagstr:find("[%-/]TP") then
         vcxprojfile:print("<CompileAs%s>CompileAsCpp</CompileAs>", condition)
     end
 
@@ -300,7 +300,7 @@ function _make_source_options(vcxprojfile, flags, condition)
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
-            if flag:find("[%-|/]" .. exclude) then
+            if flag:find("[%-/]" .. exclude) then
                 excluded = true
                 break
             end

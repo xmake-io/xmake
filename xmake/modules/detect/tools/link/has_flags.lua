@@ -115,7 +115,7 @@ end
 function _ignore_flags(flags)
     local results = {}
     for _, flag in ipairs(flags) do
-        if not flag:find("[%-/]def:.+%.def") then
+        if not flag:find("[%-/]def:.+%.def") and not flag:find("[%-/]export:") then
             table.insert(results, flag)
         end
     end
