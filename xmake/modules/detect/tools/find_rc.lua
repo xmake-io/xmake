@@ -59,8 +59,8 @@ function main(opt)
     local arch = opt.arch or config.arch() or os.arch()
     local vcvarsall = config.get("__vcvarsall")
     if vcvarsall then
-        local vcvars = vcvarsall[arch] or {}
-        if vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
+        local vcvars = vcvarsall[arch] 
+        if vcvars and vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
             local bindir = path.join(vcvars.WindowsSdkDir, "bin", vcvars.WindowsSDKVersion, arch)
             if os.isdir(bindir) then
                 opt.pathes = opt.pathes or {}
