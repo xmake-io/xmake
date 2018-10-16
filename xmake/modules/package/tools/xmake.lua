@@ -34,6 +34,7 @@ function install(package, configs)
     for _, name in ipairs(names) do
         local value = get_config(name)
         if value ~= nil then
+            value = tostring(value)
             if value:find(" ", 1, true) then
                 value = '"' .. value .. '"'
             end
@@ -50,7 +51,31 @@ function install(package, configs)
         end
         table.insert(argv, "--" .. name .. "=" .. value)
     end
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    if option.get("backtrace") then
+        table.insert(argv, "--backtrace")
+    end
     os.vrunv("xmake", argv)
-    os.vrun("xmake" .. (option.get("verbose") and " -v" or ""))
-    os.vrunv("xmake", {"install", "-o", package:installdir()})
+
+    -- do build
+    argv = {}
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    if option.get("backtrace") then
+        table.insert(argv, "--backtrace")
+    end
+    os.vrunv("xmake", argv)
+
+    -- do install
+    argv = {"install", "-y", "-o", package:installdir()}
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    if option.get("backtrace") then
+        table.insert(argv, "--backtrace")
+    end
+    os.vrunv("xmake", argv)
 end

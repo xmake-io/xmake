@@ -11,10 +11,6 @@ set_languages("c99", "cxx11")
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
 add_mxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing")
 
--- set the object files directory
-set_objectdir("$(buildir)/$(mode)/$(arch)/.objs")
-set_targetdir("$(buildir)/$(mode)/$(arch)")
-
 -- the debug mode
 if is_mode("debug") then
     
@@ -36,9 +32,6 @@ if is_mode("release") then
 
     -- strip all symbols
     set_strip("all")
-
-    -- fomit the frame pointer
-    add_cxflags("-fomit-frame-pointer")
 
     -- enable fastest optimization
     set_optimize("fastest")

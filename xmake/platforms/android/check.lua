@@ -31,8 +31,8 @@ function _check_ndk(config)
     local ndk = find_ndk(config.get("ndk"), {force = true, verbose = true})
     if ndk then
         config.set("ndk", ndk.sdkdir, {force = true, readonly = true}) -- maybe to global
-        config.set("bin", ndk.bindir)
-        config.set("cross", ndk.cross)
+        config.set("bin", ndk.bindir, {force = true, readonly = true})
+        config.set("cross", ndk.cross, {force = true, readonly = true})
     else
         -- failed
         cprint("${bright red}please run:")
