@@ -93,7 +93,7 @@ function _load_vcvarsall(vcvarsall, arch)
     -- @note vcvarsall.bat maybe detect error if install WDK and SDK at same time (multi-sdk version exists in include directory).
     --
     local UCRTVersion = variables["UCRTVersion"]
-    if UCRTVersion and UCRTVersion ~= WindowsSDKVersion and WindowsSDKVersion ~= "" then
+    if UCRTVersion and WindowsSDKVersion and UCRTVersion ~= WindowsSDKVersion and WindowsSDKVersion ~= "" then
         local lib = variables["lib"]
         if lib then
             lib = lib:gsub(UCRTVersion, WindowsSDKVersion)
@@ -152,13 +152,40 @@ function main()
     ,   ["4.2"]  = "VS42COMNTOOLS"
     }
 
-    -- find vs from environment variables 
+    -- find the single current MSVC/VS from environment variables
     local VCInstallDir = os.getenv("VCInstallDir")
-    local VisualStudioVersion = os.getenv("VisualStudioVersion")
-    if VCInstallDir and VisualStudioVersion then
+    if VCInstallDir and (VCInstallDir ~= "") then
+        local VisualStudioVersion = os.getenv("VisualStudioVersion")
+        if not VisualStudioVersion or (VisualStudioVersion == "") then
 
-        -- find vcvarsall.bat
-        local vcvarsall = path.join(VCInstallDir, "Auxiliary", "Build", "vcvarsall.bat")
+            -- heuristic for VisualStudioVersion value (early MSVC/VS versions don't set VisualStudioVersion)
+            local VSInstallDir = os.getenv("VSInstallDir") or ""
+            VisualStudioVersion = VSInstallDir:match('(%d+[.]?%d*)\\?%s*$')
+            if not VisualStudioVersion then VisualStudioVersion = VCInstallDir:match('(%d+[.]?%d*)\\VC\\?%s*$') end
+            if not VisualStudioVersion then VisualStudioVersion = "0" end
+            if not VisualStudioVersion:match('[.]') then VisualStudioVersion = VisualStudioVersion .. '.0' end
+
+            -- find highest known version which is less than or equal to VisualStudioVersion
+            if not vsvers[VisualStudioVersion] then
+                local versions = {}
+                local count = 0
+                for k in pairs(vsvers) do table.insert(versions, tonumber(k)); count = count + 1 end
+                table.sort(versions)
+                local i = 0
+                local v = tonumber(VisualStudioVersion)
+                while ((i < count) and (versions[i+1] <= v)) do i = i + 1 end
+                VisualStudioVersion = versions[i] or "0"
+            end
+        end
+
+        -- find vcvarsall.bat or vcvars32.bat
+        local pathes =
+        {
+            VCInstallDir.."\\Auxiliary\\Build",
+            VCInstallDir.."\\bin",
+            VCInstallDir
+        }
+        local vcvarsall = find_file("vcvarsall.bat", pathes) or find_file("vcvars32.bat", pathes)
         if os.isfile(vcvarsall) then
 
             -- load vcvarsall
