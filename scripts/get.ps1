@@ -42,7 +42,7 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-if($ver -eq $null){ $ver='v2.2.1' }
+if($ver -eq $null){ $ver='v2.2.2' }
 Write-Host 'Start downloading... Hope amazon S3 is not broken again'
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$ver.exe" -OutFile "$outfile"

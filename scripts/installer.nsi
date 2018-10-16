@@ -60,13 +60,13 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Version Information
 
-VIProductVersion "2.2.1.0616"
+VIProductVersion "2.2.2.1016"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: https://www.xmake.io"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2015-2018 tboox.org"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "The cross-platform build utility based on Lua"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.2.1"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.2.2"
 
 ;--------------------------------
 

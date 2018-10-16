@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.2.2
+
 ### New features
 
 * Support fasm assembler
@@ -485,6 +487,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.2.2
 
 ### 新特性
 
