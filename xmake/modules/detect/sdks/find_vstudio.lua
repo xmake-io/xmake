@@ -169,11 +169,16 @@ function main()
             if not vsvers[VisualStudioVersion] then
                 local versions = {}
                 local count = 0
-                for k in pairs(vsvers) do table.insert(versions, tonumber(k)); count = count + 1 end
+                for k in pairs(vsvers) do 
+                    table.insert(versions, tonumber(k))
+                    count = count + 1 
+                end
                 table.sort(versions)
                 local i = 0
                 local v = tonumber(VisualStudioVersion)
-                while ((i < count) and (versions[i+1] <= v)) do i = i + 1 end
+                while ((i < count) and (versions[i + 1] <= v)) do 
+                    i = i + 1 
+                end
                 VisualStudioVersion = versions[i] or "0"
             end
         end
@@ -181,8 +186,8 @@ function main()
         -- find vcvarsall.bat or vcvars32.bat
         local pathes =
         {
-            VCInstallDir.."\\Auxiliary\\Build",
-            VCInstallDir.."\\bin",
+            path.join(VCInstallDir, "Auxiliary", "Build"),
+            path.join(VCInstallDir, "bin"),
             VCInstallDir
         }
         local vcvarsall = find_file("vcvarsall.bat", pathes) or find_file("vcvars32.bat", pathes)
@@ -195,7 +200,7 @@ function main()
             -- save results
             local results = {}
             results[vsvers[VisualStudioVersion]] = {version = VisualStudioVersion, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
-            return results 
+            return results
         end
     end
     
