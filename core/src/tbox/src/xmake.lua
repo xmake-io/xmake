@@ -219,7 +219,7 @@ function check_interfaces()
 end
 
 -- include project directories
-includes(format("tbox/%s.lua", ifelse(is_option("micro"), "micro", "xmake"))) 
-if is_option("demo") then 
-    includes(format("demo/%s.lua", ifelse(is_option("micro"), "micro", "xmake"))) 
+includes(format("tbox/%s.lua", ifelse(has_config("micro"), "micro", "xmake"))) 
+if has_config("demo") then 
+    includes(format("demo/%s.lua", ifelse(has_config("micro"), "micro", "xmake"))) 
 end

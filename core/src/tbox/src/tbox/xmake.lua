@@ -51,16 +51,16 @@ target("tbox")
     add_files("platform/*.c|context.c|exception.c", "platform/impl/*.c")
 
     -- add the source files for the float type
-    if is_option("float") then add_files("libm/*.c") end
+    if has_config("float") then add_files("libm/*.c") end
 
     -- add the source files for the xml module
-    if is_option("xml") then add_files("xml/**.c") end
+    if has_config("xml") then add_files("xml/**.c") end
 
     -- add the source files for the regex module
-    if is_option("regex") then add_files("regex/*.c") end
+    if has_config("regex") then add_files("regex/*.c") end
 
     -- add the source files for the hash module
-    if is_option("hash") then
+    if has_config("hash") then
         add_files("hash/*.c") 
         if not is_plat("windows") then
             add_files("hash/arch/crc32.S")
@@ -68,18 +68,18 @@ target("tbox")
     end
 
     -- add the source files for the asio module
-    if is_option("deprecated") then 
+    if has_config("deprecated") then 
         add_files("asio/deprecated/*.c|ssl.c")
         add_files("stream/deprecated/**async_**.c")
         add_files("stream/deprecated/transfer_pool.c")
         add_files("platform/deprecated/aicp.c")
         add_files("platform/deprecated/aioo.c")
         add_files("platform/deprecated/aiop.c")
-        if is_option("openssl", "polarssl", "mbedtls") then add_files("asio/deprecated/ssl.c") end
+        if has_config("openssl", "polarssl", "mbedtls") then add_files("asio/deprecated/ssl.c") end
     end
 
     -- add the source files for the coroutine module
-    if is_option("coroutine") then
+    if has_config("coroutine") then
         add_files("platform/context.c") 
         if is_plat("windows") then
             add_files("platform/arch/$(arch)/context.asm") 
@@ -90,16 +90,16 @@ target("tbox")
     end
 
     -- add the source files for the exception module
-    if is_option("exception") then
+    if has_config("exception") then
         add_files("platform/exception.c") 
     end
 
     -- add the source files for the object module
-    if is_option("object") then 
+    if has_config("object") then 
         add_files("object/**.c|**/xml.c|**/xplist.c")
         add_files("utils/option.c")
         add_files("container/element/obj.c")
-        if is_option("xml") then
+        if has_config("xml") then
             add_files("object/impl/reader/xml.c")
             add_files("object/impl/reader/xplist.c")
             add_files("object/impl/writer/xml.c")
@@ -108,16 +108,16 @@ target("tbox")
     end
 
     -- add the source files for the charset module
-    if is_option("charset") then 
+    if has_config("charset") then 
         add_files("charset/**.c")
         add_files("stream/impl/filter/charset.c")
     end
 
     -- add the source files for the zip module
-    if is_option("zip") then 
+    if has_config("zip") then 
         add_files("zip/**.c|gzip.c|zlib.c|zlibraw.c|lzsw.c")
         add_files("stream/impl/filter/zip.c")
-        if is_option("zlib") then 
+        if has_config("zlib") then 
             add_files("zip/gzip.c") 
             add_files("zip/zlib.c") 
             add_files("zip/zlibraw.c") 
@@ -125,16 +125,16 @@ target("tbox")
     end
 
     -- add the source files for the database module
-    if is_option("database") then 
+    if has_config("database") then 
         add_files("database/*.c")
-        if is_option("mysql") then add_files("database/impl/mysql.c") end
-        if is_option("sqlite3") then add_files("database/impl/sqlite3.c") end
+        if has_config("mysql") then add_files("database/impl/mysql.c") end
+        if has_config("sqlite3") then add_files("database/impl/sqlite3.c") end
     end
 
     -- add the source files for the ssl package
-    if is_option("mbedtls") then add_files("network/impl/ssl/mbedtls.c")
-    elseif is_option("polarssl") then add_files("network/impl/ssl/polarssl.c") 
-    elseif is_option("openssl") then add_files("network/impl/ssl/openssl.c") end
+    if has_config("mbedtls") then add_files("network/impl/ssl/mbedtls.c")
+    elseif has_config("polarssl") then add_files("network/impl/ssl/polarssl.c") 
+    elseif has_config("openssl") then add_files("network/impl/ssl/openssl.c") end
 
     -- add the source for the windows 
     if is_os("windows") then

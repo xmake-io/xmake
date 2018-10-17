@@ -74,7 +74,7 @@ if is_mode("release", "profile") then
     end
 
     -- small or micro?
-    if is_option("small", "micro") then
+    if has_config("small", "micro") then
  
         -- enable smallest optimization
         set_optimize("smallest")
@@ -85,7 +85,7 @@ if is_mode("release", "profile") then
 end
 
 -- small or micro?
-if is_option("small", "micro") then
+if has_config("small", "micro") then
 
     -- add defines for small
     add_defines("__tb_small__")
