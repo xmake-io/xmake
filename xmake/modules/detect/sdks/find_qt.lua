@@ -25,7 +25,6 @@
 -- imports
 import("lib.detect.cache")
 import("lib.detect.find_file")
-import("core.base.winos")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
