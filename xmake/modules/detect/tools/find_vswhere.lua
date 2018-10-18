@@ -15,7 +15,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,33 +26,33 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find vswhere 
+-- find vswhere
 --
 -- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\vswhere.exe"}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local vswhere = find_vswhere()
 -- local vswhere, version = find_vswhere({version = true})
 -- local vswhere, version = find_vswhere({version = true, program = "c:\xxx\vswhere.exe"})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if not is_host("windows") then
-        return 
+        return
     end
 
     -- init options
     opt = opt or {}
-    
+
     -- find program
-    opt.check   = "-?"
-    opt.command = "-?"
+    opt.check   = opt.check or "-?"
+    opt.command = opt.command or "-?"
     opt.pathes = opt.pathes or
     {
         "$(env ProgramFiles%(x86%))\\Microsoft Visual Studio\\Installer",
