@@ -19,46 +19,34 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_vswhere.lua
+-- @file        find_dmd.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find vswhere 
+-- find dmd 
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\vswhere.exe"}
+-- @param opt   the argument options, .e.g {version = true}
 --
 -- @return      program, version
 --
 -- @code 
 --
--- local vswhere = find_vswhere()
--- local vswhere, version = find_vswhere({version = true})
--- local vswhere, version = find_vswhere({version = true, program = "c:\xxx\vswhere.exe"})
+-- local dmd = find_dmd()
 -- 
 -- @endcode
 --
 function main(opt)
 
-    -- not on windows?
-    if not is_host("windows") then
-        return 
-    end
-
     -- init options
-    opt = opt or {}
+    opt         = opt or {}
+    opt.command = opt.command or "--version"
+    opt.parse   = opt.parse or function (output) return output:match("v(%d+%.?%d*%.?%d*.-)%s") end
     
     -- find program
-    opt.check   = "/?"
-    opt.command = "/?"
-    opt.pathes  = opt.pathes or 
-    {
-        path.join(os.getenv("ProgramFiles(x86)"), "Microsoft Visual Studio", "Installer"),
-        path.join(os.getenv("ProgramFiles"), "Microsoft Visual Studio", "Installer"),
-    }
-    local program = find_program(opt.program or "vswhere.exe", opt)
+    local program = find_program(opt.program or "dmd", opt)
 
     -- find program version
     local version = nil
