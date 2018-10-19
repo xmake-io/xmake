@@ -216,10 +216,10 @@ function main()
         -- ref: https://github.com/Microsoft/vswhere/blob/master/README.md @@ https://archive.is/mEmdu
         local vswhere_VCAuxiliaryBuildDir = nil
         if ((version + 0) >= 15) and vswhere then
-            local vswhere_vrange = format("%s,%s)", version, (version+1))
-            local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-products", "Microsoft.VisualStudio.Product.BuildTools", "-version", vswhere_vrange})
+            local vswhere_vrange = format("%s,%s)", version, (version + 1))
+            local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-version", vswhere_vrange})
             if result then 
-                vswhere_VCAuxiliaryBuildDir = result:trim() .."\\VC\\Auxiliary\\Build" 
+                vswhere_VCAuxiliaryBuildDir = path.join(result:trim(), "VC", "Auxiliary", "Build")
             end
         end
 
