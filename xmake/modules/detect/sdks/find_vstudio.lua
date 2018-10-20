@@ -42,14 +42,18 @@ local vcvars = {"path",
                 "UCRTVersion"}
 
 -- load vcvarsall environment variables
-function _load_vcvarsall(vcvarsall, arch)
+function _load_vcvarsall(vcvarsall, arch, vcvars_ver)
 
     -- make the genvcvars.bat 
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
     local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
-    file:print("call \"%s\" %s > nul", vcvarsall, arch)
+    if vcvars_ver then
+        file:print("call \"%s\" %s -vcvars_ver=%s > nul", vcvarsall, arch, vcvars_ver)
+    else
+        file:print("call \"%s\" %s > nul", vcvarsall, arch)
+    end
     for idx, var in ipairs(vcvars) do
         file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genvcvars_dat)
     end
@@ -114,10 +118,12 @@ end
 
 -- find vstudio environment
 --
+-- @param opt   the options, .e.g {vcvars_ver = 14.0}
+--
 -- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
 --              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
 --
-function main()
+function main(opt)
 
     -- init vsvers
     local vsvers = 
@@ -151,6 +157,9 @@ function main()
     ,   ["5.0"]  = "VS50COMNTOOLS"
     ,   ["4.2"]  = "VS42COMNTOOLS"
     }
+
+    -- init options
+    opt = opt or {}
 
     -- find the single current MSVC/VS from environment variables
     local VCInstallDir = os.getenv("VCInstallDir")
@@ -194,8 +203,8 @@ function main()
         if os.isfile(vcvarsall) then
 
             -- load vcvarsall
-            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86")
-            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64")
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver)
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver)
 
             -- save results
             local results = {}
@@ -244,8 +253,8 @@ function main()
         if vcvarsall then
 
             -- load vcvarsall
-            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86")
-            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64")
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver)
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver)
 
             -- save results
             results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}

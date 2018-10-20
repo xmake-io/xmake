@@ -84,35 +84,37 @@ platform("windows")
     set_menu {
                 config = 
                 {   
-                    {category = "Visual Studio SDK Configuration"                  }
-                ,   {nil, "vs",        "kv", "auto", "The Microsoft Visual Studio" }
-                ,   {category = "Cuda SDK Configuration"                           }
-                ,   {nil, "cuda",      "kv", "auto", "The Cuda SDK Directory"      }
-                ,   {category = "Qt SDK Configuration"                             }
-                ,   {nil, "qt",        "kv", "auto", "The Qt SDK Directory"        }
-                ,   {nil, "qt_sdkver", "kv", "auto", "The Qt SDK Version"          }
-                ,   {category = "WDK Configuration"                                }
-                ,   {nil, "wdk",       "kv", "auto", "The WDK Directory"           }
-                ,   {nil, "wdk_sdkver","kv", "auto", "The WDK Version"             }
-                ,   {nil, "wdk_winver","kv", "auto", "The WDK Windows Version",
-                                                     "  - win10_rs3",
-                                                     "  - win10",
-                                                     "  - win81",
-                                                     "  - win8",
-                                                     "  - win7",
-                                                     "  - win7_[sp1|sp2|sp3]"      }
-                ,   {category = "Vcpkg Configuration"                              }
-                ,   {nil, "vcpkg",     "kv", "auto", "The Vcpkg Directory"         }
+                    {category = "Visual Studio SDK Configuration"                                   }
+                ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"                 }
+                ,   {nil, "vs_toolset", "kv", nil,    "The Microsoft Visual Studio Toolset Version"
+                                                    , "  .e.g --vs_toolset=14.0"                    }
+                ,   {category = "Cuda SDK Configuration"                                            }
+                ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
+                ,   {category = "Qt SDK Configuration"                                              }
+                ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
+                ,   {nil, "qt_sdkver",  "kv", "auto", "The Qt SDK Version"                          }
+                ,   {category = "WDK Configuration"                                                 }
+                ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
+                ,   {nil, "wdk_sdkver", "kv", "auto", "The WDK Version"                             }
+                ,   {nil, "wdk_winver", "kv", "auto", "The WDK Windows Version",
+                                                      "  - win10_rs3",
+                                                      "  - win10",
+                                                      "  - win81",
+                                                      "  - win8",
+                                                      "  - win7",
+                                                      "  - win7_[sp1|sp2|sp3]"                      }
+                ,   {category = "Vcpkg Configuration"                                               }
+                ,   {nil, "vcpkg",      "kv", "auto", "The Vcpkg Directory"                         }
                 }
 
-            ,   global = 
+            ,   global =
                 {   
-                    {                                                              }
-                ,   {nil, "vs",        "kv", "auto", "The Microsoft Visual Studio" }
-                ,   {nil, "cuda",      "kv", "auto", "The Cuda SDK Directory"      }
-                ,   {nil, "qt",        "kv", "auto", "The Qt SDK Directory"        }
-                ,   {nil, "wdk",       "kv", "auto", "The WDK Directory"           }
-                ,   {nil, "vcpkg",     "kv", "auto", "The Vcpkg Directory"         }
+                    {                                                                               }
+                ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"                 }
+                ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
+                ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
+                ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
+                ,   {nil, "vcpkg",      "kv", "auto", "The Vcpkg Directory"                         }
                 }
             }
 

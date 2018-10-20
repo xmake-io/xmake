@@ -39,7 +39,7 @@ function _check_vsenv(config)
     end
 
     -- find vstudio
-    local vstudio = find_vstudio()
+    local vstudio = find_vstudio({vcvars_ver = config.get("vs_toolset")})
     if vstudio then
 
         -- make order vsver
@@ -105,7 +105,7 @@ function _check_vs(config)
         -- failed
         print("checking for the Microsoft Visual Studio (%s) version ... no", config.get("arch"))
         print("please run:")
-        print("    - xmake config --vs=xxx")
+        print("    - xmake config --vs=xxx [--vs_toolset=xxx]")
         print("or  - xmake global --vs=xxx")
         raise()
     end
