@@ -5,6 +5,7 @@
 ### New features
 
 * [#233](https://github.com/tboox/xmake/issues/233): Support windres for mingw platform
+* [#239](https://github.com/tboox/xmake/issues/239): Add cparser compiler support
 
 ## v2.2.2
 
@@ -495,6 +496,7 @@
 ### 新特性
 
 * [#233](https://github.com/tboox/xmake/issues/233): 对mingw平台增加windres的支持
+* [#239](https://github.com/tboox/xmake/issues/239): 添加cparser编译器支持
 
 ## v2.2.2
 
