@@ -27,6 +27,65 @@ import("core.project.config")
 import("core.language.language")
 import("vsfile")
 
+-- get toolset version
+function _get_toolset_ver(targetinfo, vsinfo)
+
+    -- the toolset versions
+    local toolset_vers = 
+    {
+        vs2010 = "v100"
+    ,   vs2012 = "v110"
+    ,   vs2013 = "v120"
+    ,   vs2015 = "v140"
+    ,   vs2017 = "v141"
+    }
+
+    -- get toolset version from vs version
+    local toolset_ver = nil
+    local vs_toolset = config.get("vs_toolset")
+    if vs_toolset then
+        local verinfo = vs_toolset:split('%.')
+        toolset_ver = "v" .. verinfo[1] .. (verinfo[2] or "0")
+    end
+    if not toolset_ver then
+        toolset_ver = toolset_vers["vs" .. vsinfo.vstudio_version]
+    end
+
+    -- for xp?
+    for _, flag in ipairs(targetinfo.linkflags) do
+        if flag:lower():find("[%-/]subsystem:.-,5.01$") then
+            toolset_ver = toolset_ver .. "_xp"
+            break
+        end
+    end
+
+    -- done
+    return toolset_ver
+end
+
+-- get platform sdk version
+function _get_platform_sdkver(target, vsinfo)
+
+    -- the default sdk version
+    local sdkvers = 
+    {
+        vs2015 = "10.0.10240.0"
+    ,   vs2017 = "10.0.14393.0"
+    }
+
+    -- get sdk version for vcvarsall[arch].WindowsSDKVersion
+    local sdkver = nil
+    for _, targetinfo in ipairs(target.info) do
+        sdkver = targetinfo.sdkver
+        if sdkver then
+            break
+        end
+    end
+
+    -- done
+    return sdkver or sdkvers["vs" .. vsinfo.vstudio_version]
+end
+
 -- make compiling flags
 function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
@@ -119,32 +178,6 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     ,   static = "StaticLibrary"
     }
 
-    -- the toolset versions
-    local toolset_versions = 
-    {
-        vs2010 = "100"
-    ,   vs2012 = "110"
-    ,   vs2013 = "120"
-    ,   vs2015 = "140"
-    ,   vs2017 = "141"
-    }
-
-    -- the default sdk version
-    local sdk_versions = 
-    {
-        vs2015 = "10.0.10240.0"
-    ,   vs2017 = "10.0.14393.0"
-    }
-
-    -- get sdk version
-    local sdkver = nil
-    for _, targetinfo in ipairs(target.info) do
-        sdkver = targetinfo.sdkver
-        if sdkver then
-            break
-        end
-    end
-
     -- make ProjectConfigurations
     vcxprojfile:enter("<ItemGroup Label=\"ProjectConfigurations\">")
     for _, targetinfo in ipairs(target.info) do
@@ -160,7 +193,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:print("<ProjectGuid>{%s}</ProjectGuid>", hash.uuid(targetname))
         vcxprojfile:print("<RootNamespace>%s</RootNamespace>", targetname)
         if vsinfo.vstudio_version >= "2015" then
-            vcxprojfile:print("<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>", sdkver or sdk_versions["vs" .. vsinfo.vstudio_version])
+            vcxprojfile:print("<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>", _get_platform_sdkver(target, vsinfo))
         end
     vcxprojfile:leave("</PropertyGroup>")
 
@@ -171,7 +204,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Configuration\">", targetinfo.mode, targetinfo.arch)
             vcxprojfile:print("<ConfigurationType>%s</ConfigurationType>", assert(configuration_types[target.kind]))
-            vcxprojfile:print("<PlatformToolset>v%s</PlatformToolset>", assert(toolset_versions["vs" .. vsinfo.vstudio_version]))
+            vcxprojfile:print("<PlatformToolset>%s</PlatformToolset>", _get_toolset_ver(targetinfo, vsinfo))
             vcxprojfile:print("<CharacterSet>%s</CharacterSet>", targetinfo.unicode and "Unicode" or "MultiByte")
             if targetinfo.usemfc then
                 vcxprojfile:print("<UseOfMfc>%s</UseOfMfc>", targetinfo.usemfc)
