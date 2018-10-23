@@ -7,6 +7,10 @@
 * [#233](https://github.com/tboox/xmake/issues/233): Support windres for mingw platform
 * [#239](https://github.com/tboox/xmake/issues/239): Add cparser compiler support
 
+### Changes
+
+* [#229](https://github.com/tboox/xmake/issues/229): Improve to select toolset for vcproj plugin
+
 ## v2.2.2
 
 ### New features
@@ -497,6 +501,10 @@
 
 * [#233](https://github.com/tboox/xmake/issues/233): 对mingw平台增加windres的支持
 * [#239](https://github.com/tboox/xmake/issues/239): 添加cparser编译器支持
+
+### 改进
+
+* [#229](https://github.com/tboox/xmake/issues/229): 改进vs toolset选择已经vcproj工程文件生成
 
 ## v2.2.2
 
