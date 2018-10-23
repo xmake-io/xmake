@@ -289,6 +289,23 @@ function _instance:unregister()
     end
 end
 
+-- get user private data
+function _instance:data(name)
+    return self._DATA and self._DATA[name] or nil
+end
+
+-- set user private data
+function _instance:data_set(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = data
+end
+
+-- add user private data
+function _instance:data_add(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
 -- get the downloaded original file
 function _instance:originfile()
     return self._ORIGINFILE

@@ -313,18 +313,18 @@ function target:add(name_or_info, ...)
     end
 end
 
--- get user data
+-- get user private data
 function target:data(name)
     return self._DATA and self._DATA[name] or nil
 end
 
--- set user data
+-- set user private data
 function target:data_set(name, data)
     self._DATA = self._DATA or {}
     self._DATA[name] = data
 end
 
--- add user data
+-- add user private data
 function target:data_add(name, data)
     self._DATA = self._DATA or {}
     self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
