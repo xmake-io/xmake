@@ -153,7 +153,10 @@ end
 
 -- get the configure directory
 function config.directory()
-    return path.join(os.projectdir(), ".xmake")
+    if config._ROOTDIR == nil then
+        config._ROOTDIR = os.getenv("XMAKE_CONFIGDIR") or path.join(os.projectdir(), ".xmake")
+    end
+    return config._ROOTDIR
 end
 
 -- load the project configure
