@@ -60,7 +60,7 @@ function is_changed(dependinfo, opt)
             lastmtime = lastmtime or opt.lastmtime or 0
 
             -- source and header files have been changed?
-            if os.mtime(file) > lastmtime then
+            if not os.isfile(file) or os.mtime(file) > lastmtime then
 
                 -- mark this file as changed
                 _g.file_results[file] = true
@@ -95,6 +95,16 @@ function is_changed(dependinfo, opt)
                 if subvalue ~= optvalue[subidx] then
                     return true
                 end
+            end
+        end
+    end
+
+    -- check the dependent files list are changed?
+    local optfiles = opt.files
+    if optfiles then
+        for idx, file in ipairs(files) do
+            if file ~= optfiles[idx] then
+                return true
             end
         end
     end

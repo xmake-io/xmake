@@ -45,12 +45,6 @@ function _build_from_objects(target, buildinfo)
     local dependfile = target:dependfile()
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
-    -- need build this target?
-    local depvalues = {linkinst:program(), linkflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues}) then
-        return 
-    end
-
     -- expand object files with *.o/obj
     local objectfiles = {}
     for _, objectfile in ipairs(target:objectfiles()) do
@@ -62,6 +56,18 @@ function _build_from_objects(target, buildinfo)
         else
             table.insert(objectfiles, objectfile)
         end
+    end
+
+    -- need build this target?
+    local depfiles = target:objectfiles()
+    for _, dep in pairs(target:deps()) do
+        if dep:targetkind() == "static" then
+            table.insert(depfiles, dep:targetfile())
+        end
+    end
+    local depvalues = {linkinst:program(), linkflags}
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
+        return 
     end
 
     -- the target file
@@ -90,13 +96,8 @@ function _build_from_objects(target, buildinfo)
     assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
 
     -- update files and values to the dependent file
+    dependinfo.files  = depfiles
     dependinfo.values = depvalues
-    dependinfo.files  = target:objectfiles()
-    for _, dep in pairs(target:deps()) do
-        if dep:targetkind() == "static" then
-            table.insert(dependinfo.files, dep:targetfile())
-        end
-    end
     depend.save(dependinfo, dependfile)
 end
 

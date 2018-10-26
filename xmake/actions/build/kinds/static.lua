@@ -45,9 +45,23 @@ function _build_from_objects(target, buildinfo)
     local dependfile = target:dependfile()
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
+    -- expand object files with *.o/obj
+    local objectfiles = {}
+    for _, objectfile in ipairs(target:objectfiles()) do
+        if objectfile:find("%*") then
+            local matchfiles = os.match(objectfile)
+            if matchfiles then
+                table.join2(objectfiles, matchfiles)
+            end
+        else
+            table.insert(objectfiles, objectfile)
+        end
+    end
+
     -- need build this target?
+    local depfiles = target:objectfiles()
     local depvalues = {linkinst:program(), linkflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues}) then
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
         return 
     end
 
@@ -64,18 +78,6 @@ function _build_from_objects(target, buildinfo)
         end
     end
 
-    -- expand object files with *.o/obj
-    local objectfiles = {}
-    for _, objectfile in ipairs(target:objectfiles()) do
-        if objectfile:find("%*") then
-            local matchfiles = os.match(objectfile)
-            if matchfiles then
-                table.join2(objectfiles, matchfiles)
-            end
-        else
-            table.insert(objectfiles, objectfile)
-        end
-    end
 
     -- the target file
     local targetfile = target:targetfile()
@@ -103,8 +105,8 @@ function _build_from_objects(target, buildinfo)
     assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
 
     -- update files and values to the dependent file
+    dependinfo.files  = depfiles
     dependinfo.values = depvalues
-    dependinfo.files  = target:objectfiles()
     depend.save(dependinfo, dependfile)
 end
 
