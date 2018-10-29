@@ -44,7 +44,7 @@ function _emptychars()
 end
 
 -- checkout codes from git
-function _checkout(package, url, sourcedir)
+function _checkout(package, url, sourcedir, url_alias)
 
     -- use previous source directory if exists
     local packagedir = path.join(sourcedir, package:name())
@@ -65,14 +65,14 @@ function _checkout(package, url, sourcedir)
         -- only shadow clone this branch 
         git.clone(url, {depth = 1, branch = package:version_str(), outputdir = packagedir})
 
-    -- download package from tags or versions?
+    -- download package from revision, tag or version?
     else
 
         -- clone whole history and tags
         git.clone(url, {outputdir = packagedir})
 
         -- attempt to checkout the given version
-        git.checkout(package:version_str(), {repodir = packagedir})
+        git.checkout(package:revision(url_alias) or package:version_str(), {repodir = packagedir})
     end
  
     -- move to source directory
@@ -180,7 +180,7 @@ function main(package)
                 -- download package 
                 local sourcedir = "source"
                 if git.checkurl(url) then
-                    _checkout(package, url, sourcedir)
+                    _checkout(package, url, sourcedir, url_alias)
                 else
                     _download(package, url, sourcedir, url_alias, url_excludes)
                 end

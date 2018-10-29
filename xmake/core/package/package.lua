@@ -177,6 +177,11 @@ function _instance:sha256(url_alias)
     end
 end
 
+-- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
+function _instance:revision(url_alias)
+    return self:sha256(url_alias)
+end
+
 -- this package is from system/local/global?
 --
 -- @param kind  the from kind
