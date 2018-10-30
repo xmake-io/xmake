@@ -47,10 +47,14 @@ char semver_num_read(int *self, const char *str, size_t len, size_t *offset) {
       break;
     case '0':
       ++*offset;
-      if (*offset < len && isdigit(str[*offset])) {
-        return 1;
-      }
-      *self = 0;
+      if (*offset < len) {
+        if (isdigit(str[*offset])) {
+          *self = (int) strtol(str + *offset, &endptr, 0);
+          *offset += endptr - str - *offset;
+        } else {
+          return 1;
+        }
+      } else *self = 0;
       break;
     default:
       if (isdigit(str[*offset])) {
