@@ -146,6 +146,14 @@ function _instance:url_excludes(url)
     end
 end
 
+-- get the given dependent package
+function _instance:dep(name)
+    local deps = self:deps()
+    if deps then
+        return deps[name]
+    end
+end
+
 -- get deps
 function _instance:deps()
     return self._DEPS
