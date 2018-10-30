@@ -427,7 +427,9 @@ end
 -- get the given configuration value of package
 function _instance:config(name)
     local configs = self:configs()
-    return configs and configs[name] or nil
+    if configs then
+        return configs[name]
+    end
 end
 
 -- is optional package?
