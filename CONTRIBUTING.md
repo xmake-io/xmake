@@ -23,7 +23,7 @@ try to follow these guidelines when you do so.
 * Ensure your edited codes with four spaces instead of TAB.
 * Please commit code to `dev` branch and we will merge into `master` branch in future.
 
-### Some suggestion on developing
+### Some suggestions for developing code for this project
 
 #### Speed up build
 
@@ -33,11 +33,11 @@ try to follow these guidelines when you do so.
 
 #### Understand API layouts
 
-* Action scripts, plugin scripts and user's `xmake.lua` run in sandbox. Sandbox API is in `xmake/core/sandbox`.
-* Util scripts run in base lua environment. Base API is in `xmake/core/base`
-* Native API includes lua API and xmake ext API written in C in `core/src/xmake`
+* Action scripts, plugin scripts and user's `xmake.lua` run in a sandbox. The sandbox API is in `xmake/core/sandbox`.
+* Utility scripts run in a base lua environment. Base API is in `xmake/core/base`
+* Native API, which includes the lua API and the xmake ext API, is written in C in `core/src/xmake`
 
-For example, to copy a directory in sandbox, calling link is: `sandbox_os.cp()` -> `os.cp()` -> `xm_os_cpdir()` -> `tb_directory_copy()`
+For example, to copy a directory in sandbox, the calling procedure is: `sandbox_os.cp()` -> `os.cp()` -> `xm_os_cpdir()` -> `tb_directory_copy()`
 
 ## Financial contributions
 
