@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_file")
+import("detect.tools.find_xz")
 import("detect.tools.find_7z")
 import("detect.tools.find_tar")
 import("detect.tools.find_gzip")
@@ -131,6 +132,63 @@ function _extract_using_gzip(archivefile, outputdir, extension, opt)
 
     -- find gzip
     local program = find_gzip()
+    if not program then
+        return false
+    end
+
+    -- extract to *.tar file first
+    local outputdir_old = nil
+    if extension:startswith(".tar.") then
+        outputdir_old = outputdir
+        outputdir = os.tmpfile() .. ".tar"
+    end
+
+    -- init temporary archivefile
+    local tmpfile = path.join(outputdir, path.filename(archivefile))
+
+    -- init argv
+    local argv = {"-d", "-f"}
+    if not option.get("verbose") then
+        table.insert(argv, "-q")
+    end
+    table.insert(argv, tmpfile)
+
+    -- ensure output directory
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- copy archivefile to outputdir first
+    if path.absolute(archivefile) ~= path.absolute(tmpfile) then
+        os.cp(archivefile, tmpfile)
+    end
+
+    -- enter outputdir
+    local oldir = os.cd(outputdir)
+
+    -- extract it
+    os.vrunv(program, argv)
+
+    -- leave outputdir
+    os.cd(oldir)
+
+    -- continue to extract *.tar file
+    if outputdir_old then
+        local tarfile = find_file("*.tar", outputdir)
+        if tarfile and os.isfile(tarfile) then
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
+        end
+    end
+
+    -- ok
+    return true
+end
+
+-- extract archivefile using xz
+function _extract_using_xz(archivefile, outputdir, extension, opt)
+
+    -- find xz
+    local program = find_xz()
     if not program then
         return false
     end
@@ -295,10 +353,12 @@ function main(archivefile, outputdir, opt)
         [".zip"]        = {_extract_using_unzip, _extract_using_tar, _extract_using_7z}
     ,   [".7z"]         = {_extract_using_7z}
     ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
+    ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}
     ,   [".tgz"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".bz2"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".tar"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_gzip, _extract_using_7z}
+    ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_xz, _extract_using_7z}
     ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z}
     }
     

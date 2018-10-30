@@ -11,6 +11,7 @@
 
 * [#229](https://github.com/tboox/xmake/issues/229): Improve to select toolset for vcproj plugin
 * Improve compilation dependences
+* Support *.xz for extractor
 
 ## v2.2.2
 
@@ -507,6 +508,7 @@
 
 * [#229](https://github.com/tboox/xmake/issues/229): 改进vs toolset选择已经vcproj工程文件生成
 * 改进编译依赖，对源文件列表的改动进行依赖判断
+* 支持解压*.xz文件
 
 ## v2.2.2
 
