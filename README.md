@@ -134,20 +134,21 @@ $ xmake f --menu
 
 <img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
 
-## Support platforms
+## Supported platforms
 
 * Windows (x86, x64)
-* Macosx (i386, x86_64)
+* macOS (i386, x86_64)
 * Linux (i386, x86_64, cross-toolchains ...)
 * Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
-* iPhoneOS (armv7, armv7s, arm64, i386, x86_64)
+* iOS (armv7, armv7s, arm64, i386, x86_64)
 * WatchOS (armv7k, i386)
-* Mingw (i386, x86_64)
+* MinGW (i386, x86_64)
 
-## Support Languages
+## Supported Languages
 
-* C/C++
-* Objc/Objc++
+* C
+* C++
+* Objective-C and Objective-C++
 * Swift
 * Assembly
 * Golang
@@ -155,11 +156,11 @@ $ xmake f --menu
 * Dlang
 * Cuda
 
-## Support Projects
+## Supported Projects
 
 * Static Library
 * Shared Library
-* Console 
+* Console
 * Cuda Program
 * Qt Application
 * WDK Driver (umdf/kmdf/wdm)
@@ -172,7 +173,7 @@ $ xmake f --menu
 ```bash
 $ xmake m -b                        # start to record
 $ xmake f -p iphoneos -m debug
-$ xmake 
+$ xmake
 $ xmake f -p android --ndk=~/files/android-ndk-r16b
 $ xmake
 $ xmake m -e                        # stop to record
