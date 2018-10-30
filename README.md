@@ -134,7 +134,7 @@ $ xmake f --menu
 
 <img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
 
-## Support platforms
+## Supported platforms
 
 * Windows (x86, x64)
 * Macosx (i386, x86_64)
@@ -144,7 +144,7 @@ $ xmake f --menu
 * WatchOS (armv7k, i386)
 * Mingw (i386, x86_64)
 
-## Support Languages
+## Supported Languages
 
 * C/C++
 * Objc/Objc++
@@ -155,7 +155,7 @@ $ xmake f --menu
 * Dlang
 * Cuda
 
-## Support Projects
+## Supported Projects
 
 * Static Library
 * Shared Library
