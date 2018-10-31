@@ -49,7 +49,7 @@ function _check_vsenv(config)
                 table.insert(vsvers, vsver)
             end
         end
-        table.sort(vsvers, function (a, b) return a > b end)
+        table.sort(vsvers, function (a, b) return tonumber(a) > tonumber(b) end)
         if vs then
             table.insert(vsvers, 1, vs)
         end
