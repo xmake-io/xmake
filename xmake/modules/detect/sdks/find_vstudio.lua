@@ -218,13 +218,13 @@ function main(opt)
     
     -- find vs2017 -> vs4.2
     local results = {}
-    for _, version in ipairs({"15.0", "14.0", "12.0", "11.0", "10.0", "9.0", "8.0", "7.1", "7.0", "6.0", "5.0", "4.2"}) do
+    for version in pairs(vsvers) do
 
         -- find VC install path (and aux build path) using `vswhere` (for version >= 15.0)
         -- * version > 15.0 eschews registry entries; but `vswhere` (included with version >= 15.2) can be used to find VC install path
         -- ref: https://github.com/Microsoft/vswhere/blob/master/README.md @@ https://archive.is/mEmdu
         local vswhere_VCAuxiliaryBuildDir = nil
-        if ((version + 0) >= 15) and vswhere then
+        if (tonumber(version) >= 15) and vswhere then
             local vswhere_vrange = format("%s,%s)", version, (version + 1))
             local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-version", vswhere_vrange})
             if result then 
