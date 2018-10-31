@@ -54,19 +54,15 @@ function sandbox_lib_detect_find_program._check(program, opt)
         return os.isfile(program) 
     end
 
-    -- no check script? attempt to run it directly
-    if not opt.check then
-        return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev()})
+    -- no check function? attempt to run it directly
+    if not opt.check or type(opt.check) ~= "function" then
+        return 0 == os.execv(program, {opt.check or "--version"}, {stdout = os.nuldev(), stderr = os.nuldev()})
     end
 
     -- check it
     local ok = false
     local errors = nil
-    if type(opt.check) == "string" then
-        ok, errors = os.runv(program, {opt.check})
-    else
-        ok, errors = sandbox.load(opt.check, program) 
-    end
+    ok, errors = sandbox.load(opt.check, program)
 
     -- check failed? print verbose error info
     if not ok then
