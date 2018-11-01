@@ -116,7 +116,11 @@ function main(package)
             end
 
             -- fetch package and force to flush the cache
-            assert(package:fetch({force = true}), "fetch %s failed!", tipname)
+            local fetchinfo = package:fetch({force = true})
+            if option.get("verbose") then
+                print(fetchinfo)  
+            end
+            assert(fetchinfo, "fetch %s failed!", tipname)
 
             -- trace
             cprint("${green}ok")
