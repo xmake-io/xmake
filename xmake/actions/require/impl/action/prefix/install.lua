@@ -25,6 +25,7 @@
 -- imports
 import("core.base.global")
 import("core.project.config")
+import("core.project.target")
 import("uninstall")
 
 -- copy files to the prefix directory
@@ -188,6 +189,73 @@ function _link_filedirs(pattern)
     _link('a', pattern)
 end
 
+-- patch pkgconfig if not exists
+function _patch_pkgconfig(package)
+
+    -- get lib/pkgconfig/*.pc file
+    local pcfile = path.join(package:installdir("lib", "pkgconfig"), package:name() .. ".pc")
+    if os.isfile(pcfile) then
+        return 
+    end
+
+    -- trace
+    vprint("patching %s ..", pcfile)
+
+    -- get libs
+    local libs = ""
+    for _, linkdir in ipairs(package:getvar("linkdirs")) do
+        libs = libs .. "-L" .. linkdir
+    end
+    libs = libs .. " -L${libdir}"
+    local links = package:getvar("links")
+    if links then
+        for _, link in ipairs(links) do
+            libs = libs .. " -l" .. link
+        end
+    else
+        local found = false
+        for _, libfile in ipairs(os.files(path.join(package:installdir("lib"), "*.a"))) do
+            local link = target.linkname(path.filename(libfile))
+            if link then
+                libs = libs .. " -l" .. link
+                found = true
+            end
+        end
+        if not found then
+            for _, libfile in ipairs(os.files(path.join(package:installdir("lib"), "*.so"))) do
+                local link = target.linkname(path.filename(libfile))
+                if link then
+                    libs = libs .. " -l" .. link
+                end
+            end
+        end
+    end
+
+    -- cflags 
+    local cflags = ""
+    for _, includedir in ipairs(package:getvar("includedirs")) do
+        cflags = cflags .. "-I" .. includedir
+    end
+    cflags = cflags .. " -I${includedir}"
+
+    -- patch a *.pc file
+    local file = io.open(pcfile, 'w')
+    if file then
+        file:print("prefix=%s", package:prefixdir())
+        file:print("exec_prefix=${prefix}")
+        file:print("libdir=${exec_prefix}/lib")
+        file:print("includedir=${prefix}/include")
+        file:print("")
+        file:print("Name: %s", package:name())
+        file:print("Description: %s", package:description())
+        file:print("Version: %s", package:version_str())
+        file:print("Libs: %s", libs)
+        file:print("Libs.private: ")
+        file:print("Cflags: %s", cflags)
+        file:close()
+    end
+end
+
 -- install package with link
 function _install_with_link(package)
     _link_files("bin/*")
@@ -208,6 +276,22 @@ function _install_without_link(package)
     end
 end
 
+-- install package
+function _install(package)
+
+    -- patch pkgconfig if not exists
+    if not is_plat("windows") then
+        _patch_pkgconfig(package)
+    end
+
+    -- install package to the prefix directory
+    if is_host("windows") then
+        _install_without_link(package)
+    else
+        _install_with_link(package)
+    end
+end
+
 -- install package to the prefix directory
 function main(package)
 
@@ -224,13 +308,7 @@ function main(package)
     try
     {
         function ()
-
-            -- install package
-            if is_host("windows") then
-                _install_without_link(package)
-            else
-                _install_with_link(package)
-            end
+            _install(package)
         end,
         catch 
         {

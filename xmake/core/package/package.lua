@@ -72,6 +72,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the package description
+function _instance:description()
+    return self:get("description")
+end
+
 -- get the platform of package
 function _instance:plat()
     -- @note we uses os.host() instead of them for the binary package
