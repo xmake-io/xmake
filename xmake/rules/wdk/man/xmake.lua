@@ -125,9 +125,9 @@ rule("wdk.man")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%02d%%]:${dim} compiling.wdk.man %s", opt.progress, sourcefile)
+            cprint("${green}[%3d%%]:${dim} compiling.wdk.man %s", opt.progress, sourcefile)
         else
-            cprint("${green}[%02d%%]:${clear} compiling.wdk.man %s", opt.progress, sourcefile)
+            cprint("${green}[%3d%%]:${clear} compiling.wdk.man %s", opt.progress, sourcefile)
         end
 
         -- generate header and resource file

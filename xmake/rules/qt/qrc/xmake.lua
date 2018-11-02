@@ -85,9 +85,9 @@ rule("qt.qrc")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%02d%%]:${dim} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
+            cprint("${green}[%3d%%]:${dim} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
         else
-            cprint("${green}[%02d%%]:${clear} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
+            cprint("${green}[%3d%%]:${clear} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
         end
 
         -- ensure the source file directory

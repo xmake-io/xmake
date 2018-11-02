@@ -105,9 +105,9 @@ rule("wdk.mc")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%02d%%]:${dim} compiling.wdk.mc %s", opt.progress, sourcefile)
+            cprint("${green}[%3d%%]:${dim} compiling.wdk.mc %s", opt.progress, sourcefile)
         else
-            cprint("${green}[%02d%%]:${clear} compiling.wdk.mc %s", opt.progress, sourcefile)
+            cprint("${green}[%3d%%]:${clear} compiling.wdk.mc %s", opt.progress, sourcefile)
         end
 
         -- do message compile
