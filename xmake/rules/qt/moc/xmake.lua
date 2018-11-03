@@ -82,9 +82,9 @@ rule("qt.moc")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%02d%%]:${dim} compiling.qt.moc %s", opt.progress, headerfile_moc)
+            cprint("${green}[%3d%%]:${dim} compiling.qt.moc %s", opt.progress, headerfile_moc)
         else
-            cprint("${green}[%02d%%]:${clear} compiling.qt.moc %s", opt.progress, headerfile_moc)
+            cprint("${green}[%3d%%]:${clear} compiling.qt.moc %s", opt.progress, headerfile_moc)
         end
 
         -- generate c++ source file for moc

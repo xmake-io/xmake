@@ -103,9 +103,9 @@ rule("wdk.tracewpp")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%02d%%]:${dim} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
+            cprint("${green}[%3d%%]:${dim} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
         else
-            cprint("${green}[%02d%%]:${clear} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
+            cprint("${green}[%3d%%]:${clear} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
         end
 
         -- ensure the output directory

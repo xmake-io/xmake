@@ -41,9 +41,9 @@ function _build_from_object(target, sourcefile, objectfile, progress)
 
     -- trace progress info
     if verbose then
-        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${green}[%3d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
     else
-        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${green}[%3d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
     end
 
     -- trace verbose info
@@ -66,9 +66,9 @@ function _build_from_static(target, sourcefile, objectfile, progress)
 
     -- trace progress info
     if verbose then
-        cprint("${green}[%02d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${green}[%3d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
     else
-        cprint("${green}[%02d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${green}[%3d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
     end
 
     -- trace verbose info
@@ -123,9 +123,9 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- trace progress info
     if verbose then
-        cprint("${green}[%02d%%]:${dim} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+        cprint("${green}[%3d%%]:${dim} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
     else
-        cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+        cprint("${green}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
     end
 
     -- trace verbose info
@@ -184,9 +184,9 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
 
         -- trace progress info
         if verbose then
-            cprint("${green}[%02d%%]:${clear} ${dim}%scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+            cprint("${green}[%3d%%]:${clear} ${dim}%scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
         else
-            cprint("${green}[%02d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+            cprint("${green}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
         end
     end
 

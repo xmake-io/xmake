@@ -90,7 +90,7 @@ function _build_from_objects(target, buildinfo)
     local verbose = option.get("verbose")
 
     -- trace progress info
-    cprintf("${green}[%02d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    cprintf("${green}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
         cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
     else
@@ -124,7 +124,7 @@ function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     local verbose = option.get("verbose")
 
     -- trace progress into
-    cprintf("${green}[%02d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    cprintf("${green}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
         cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
     else
