@@ -79,7 +79,7 @@ function _lua(runner, luafile, luaargv)
 
     -- init argv
     local argv = {"lua", "--root"}
-    for _, name in ipairs({"file", "project", "backtrace", "verbose", "quiet", "yes"}) do
+    for _, name in ipairs({"file", "project", "diagnosis", "verbose", "quiet", "yes"}) do
         local value = option.get(name)
         if type(value) == "string" then
             table.insert(argv, "--" .. name .. "=" .. value)

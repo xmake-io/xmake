@@ -47,7 +47,7 @@ function _option_filter(name)
     ,   profile     = true
     ,   project     = true
     ,   verbose     = true
-    ,   backtrace   = true
+    ,   diagnosis   = true
     ,   require     = true
     }
     return not options[name]

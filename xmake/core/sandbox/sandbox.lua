@@ -36,8 +36,8 @@ local option    = require("base/option")
 -- traceback
 function sandbox._traceback(errors)
 
-    -- not verbose?
-    if not option.get("backtrace") then
+    -- only print error info without backtrace if not diagnosis?
+    if not option.get("diagnosis") then
         if errors then
             -- remove the prefix info
             local _, pos = errors:find(":%d+: ")

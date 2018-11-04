@@ -130,22 +130,25 @@ function task._translate_menu(menu)
         end
 
         -- add common options
-        table.insert(options, 1,  {'q', "quiet",     "k",  nil, "Quiet operation."                           })
-        table.insert(options, 2,  {'y', "yes",       "k",  nil, "Input yes by default if need user confirm." })
-        table.insert(options, 3,  {'v', "verbose",   "k",  nil, "Print lots of verbose information."         })
-        table.insert(options, 4,  {nil, "root",      "k",  nil, "Allow to run xmake as root."                })
-        table.insert(options, 5,  {nil, "backtrace", "k",  nil, "Print backtrace information for debugging." })
-        table.insert(options, 6,  {nil, "profile",   "k",  nil, "Print performance data for debugging."      })
-        table.insert(options, 7,  {nil, "version",   "k",  nil, "Print the version number and exit."         })
-        table.insert(options, 8,  {'h', "help",      "k",  nil, "Print this help message and exit."          })
-        table.insert(options, 9,  {})
-        table.insert(options, 10,  {'F', "file",      "kv", nil, "Read a given xmake.lua file."               })
-        table.insert(options, 11, {'P', "project",   "kv", nil, "Change to the given project directory."
+        table.insert(options, 1,  {'q', "quiet",     "k",  nil, "Quiet operation."                                         })
+        table.insert(options, 2,  {'y', "yes",       "k",  nil, "Input yes by default if need user confirm."               })
+        table.insert(options, 3,  {'v', "verbose",   "k",  nil, "Print lots of verbose information for users."             })
+        table.insert(options, 4,  {nil, "root",      "k",  nil, "Allow to run xmake as root."                              })
+        table.insert(options, 5,  {'D', "diagnosis", "k",  nil, "Print lots of diagnosis information (backtrace, check info ..) only for developers."
+                                                              , "And we can append -v to get more whole information."
+                                                              , "    e.g. $ xmake -v -D"})
+        table.insert(options, 6,  {nil, "profile",   "k",  nil, "Print performance data only for developers."              })
+        table.insert(options, 7,  {nil, "version",   "k",  nil, "Print the version number and exit."                       })
+        table.insert(options, 8,  {'h', "help",      "k",  nil, "Print this help message and exit."                        })
+        table.insert(options, 9,  {nil, "backtrace", "k",  nil, "Please uses -D or --diagnosis instead of it. (deprecated)"})
+        table.insert(options, 10, {})
+        table.insert(options, 11, {'F', "file",      "kv", nil, "Read a given xmake.lua file."                             })
+        table.insert(options, 12, {'P', "project",   "kv", nil, "Change to the given project directory."
                                                               , "Search priority:"
                                                               , "    1. The Given Command Argument"
                                                               , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                              , "    3. The Current Directory"               })
-        table.insert(options, 12, {})
+                                                              , "    3. The Current Directory"                             })
+        table.insert(options, 13, {})
 
     end
 

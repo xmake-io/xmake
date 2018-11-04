@@ -77,8 +77,8 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     local command = opt.command
     if type(command) == "function" then
         ok, outdata = sandbox.load(command)
-        if not ok then
-            utils.verror(outdata)
+        if not ok and outdata and option.get("diagnosis") then
+            utils.cprint("${yellow}checkinfo: ${clear dim}" .. outdata)
         end
     else
         ok, outdata = os.iorunv(program, {command or "--version"})
@@ -89,8 +89,8 @@ function sandbox_lib_detect_find_programver.main(program, opt)
         local parse = opt.parse
         if type(parse) == "function" then
             ok, result = sandbox.load(parse, outdata) 
-            if not ok then
-                utils.verror(result)
+            if not ok and result and option.get("diagnosis") then
+                utils.cprint("${yellow}checkinfo: ${clear dim}" .. result)
                 result = nil
             end
         elseif parse == nil or type(parse) == "string" then

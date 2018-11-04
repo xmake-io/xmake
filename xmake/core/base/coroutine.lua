@@ -42,7 +42,7 @@ function coroutine.resume(co, ...)
 
         -- get errors
         local errors = results
-        if option.get("backtrace") then
+        if option.get("diagnosis") then
             errors = debug.traceback(co, results)
         elseif type(results) == "string" then
             -- remove the prefix info

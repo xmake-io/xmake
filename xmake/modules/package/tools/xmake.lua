@@ -54,8 +54,8 @@ function install(package, configs)
     if option.get("verbose") then
         table.insert(argv, "-v")
     end
-    if option.get("backtrace") then
-        table.insert(argv, "--backtrace")
+    if option.get("diagnosis") then
+        table.insert(argv, "--diagnosis")
     end
     os.vrunv("xmake", argv)
 
@@ -64,8 +64,8 @@ function install(package, configs)
     if option.get("verbose") then
         table.insert(argv, "-v")
     end
-    if option.get("backtrace") then
-        table.insert(argv, "--backtrace")
+    if option.get("diagnosis") then
+        table.insert(argv, "--diagnosis")
     end
     os.vrunv("xmake", argv)
 
@@ -74,8 +74,8 @@ function install(package, configs)
     if option.get("verbose") then
         table.insert(argv, "-v")
     end
-    if option.get("backtrace") then
-        table.insert(argv, "--backtrace")
+    if option.get("diagnosis") then
+        table.insert(argv, "--diagnosis")
     end
     os.vrunv("xmake", argv)
 end

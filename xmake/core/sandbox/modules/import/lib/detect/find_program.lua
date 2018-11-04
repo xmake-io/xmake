@@ -69,8 +69,8 @@ function sandbox_lib_detect_find_program._check(program, opt)
     end
 
     -- check failed? print verbose error info
-    if not ok then
-        utils.verror(errors)
+    if not ok and option.get("diagnosis") then
+        utils.cprint("${yellow}checkinfo: ${clear dim}" .. errors)
     end
 
     -- ok?

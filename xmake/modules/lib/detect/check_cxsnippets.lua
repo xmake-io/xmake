@@ -197,7 +197,7 @@ function main(snippets, opt)
     os.tryrm(binaryfile)
 
     -- trace
-    if opt.verbose or option.get("verbose") then
+    if opt.verbose or option.get("verbose") or option.get("diagnosis") then
         local kind = ifelse(sourcekind == "cc", "c", "c++")
         if #includes > 0 then
             cprint("checking for the %s includes %s ... %s", kind, table.concat(includes, ", "), ifelse(ok, "${green}ok", "${red}no"))
@@ -214,9 +214,9 @@ function main(snippets, opt)
         for _, snippet in ipairs(snippets) do
             cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))
         end
-        if errors and #errors > 0 then
-            cprint("${dim red}check error:${clear}${dim} %s", errors)
-        end
+    end
+    if errors and #errors > 0 and option.get("diagnosis") then
+        cprint("${yellow}checkinfo:${clear dim} %s", errors)
     end
 
     -- ok?

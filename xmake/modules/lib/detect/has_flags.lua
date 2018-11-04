@@ -115,11 +115,11 @@ function main(name, flags, opt)
     _g._checking = nil
 
     -- trace
-    if option.get("verbose") or opt.verbose then
+    if option.get("verbose") or option.get("diagnosis") or opt.verbose then
         cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), table.concat(flags, " "), ifelse(result, "${green}ok", "${red}no"))
-        if errors and #errors > 0 then
-            cprint("${dim red}check error:${clear}${dim} %s", errors:trim())
-        end
+    end
+    if errors and #errors > 0 and option.get("diagnosis") then
+        cprint("${yellow}checkinfo:${clear dim} %s", errors:trim())
     end
 
     -- save result to cache

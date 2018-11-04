@@ -197,6 +197,11 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         end
     end
 
+    -- check deprecated options, TODO it will be removed after v2.3.0
+    if option.get("backtrace") then
+        deprecated.add("-D or --diagnosis", "--backtrace")
+    end
+
     -- start profiling
     if option.get("profile") then
         profiler:start()

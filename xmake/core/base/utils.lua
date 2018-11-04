@@ -133,29 +133,22 @@ function utils.cprintf(format, ...)
     end
 end
 
--- the verbose function
-function utils.verbose(format, ...)
-
-    -- enable verbose?
+-- print the verbose information
+function utils.vprint(format, ...)
     if option.get("verbose") and format ~= nil then
         utils.print(format, ...)
     end
 end
 
--- the verbose error function
-function utils.verror(format, ...)
-
-    -- enable verbose?
+-- print the verbose information without newline
+function utils.vprintf(format, ...)
     if option.get("verbose") and format ~= nil then
-        utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
-        log:flush()
+        utils.printf(format, ...)
     end
 end
 
--- the error function
+-- print the error information
 function utils.error(format, ...)
-
-    -- trace
     if format ~= nil then
         utils.cprint("${bright red}error: ${clear}" .. string.tryformat(format, ...))
         log:flush()
@@ -188,32 +181,6 @@ end
 -- ifelse, a? b : c
 function utils.ifelse(a, b, c)
     if a then return b else return c end
-end
-
--- call functions 
-function utils.call(funcs, pred, ...)
-
-    -- check
-    assert(funcs)
-
-    -- call all
-    for _, func in ipairs(table.wrap(funcs)) do
-        
-        -- check
-        assert(type(func) == "function")
-
-        -- call it
-        local result = func(...)
-
-        -- exists predicate?
-        if pred and type(pred) == "function" then
-            if not pred(name, result) then return false end
-        -- failed?
-        elseif not result then return false end
-    end
-
-    -- ok
-    return true
 end
 
 -- return module
