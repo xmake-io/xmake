@@ -6,6 +6,7 @@
 
 * [#233](https://github.com/tboox/xmake/issues/233): Support windres for mingw platform
 * [#239](https://github.com/tboox/xmake/issues/239): Add cparser compiler support
+* Add plugin manager `xmake plugin --help`
 
 ### Changes
 
@@ -505,6 +506,7 @@
 
 * [#233](https://github.com/tboox/xmake/issues/233): 对mingw平台增加windres的支持
 * [#239](https://github.com/tboox/xmake/issues/239): 添加cparser编译器支持
+* 添加插件管理器，`xmake plugin --help`
 
 ### 改进
 
