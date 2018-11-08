@@ -35,11 +35,11 @@ function init(self)
     -- init flags
     _g.cuflags = {}
     _g.ldflags = {}
-    _g.shflags = { "-shared", "-fPIC" }
-
-    -- init cuflags for the kind: shared
-    _g.shared          = {}
-    _g.shared.cuflags  = {"-fPIC"}
+    if not is_plat("windows") then
+        _g.shflags = { "-shared", "-fPIC" }
+        _g.shared  = {}
+        _g.shared.cuflags = {"-fPIC"}
+    end
 
     -- init flags map
     _g.mapflags = 
