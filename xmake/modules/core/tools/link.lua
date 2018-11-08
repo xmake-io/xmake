@@ -83,6 +83,11 @@ function nf_link(self, lib)
     return lib .. ".lib"
 end
 
+-- make the syslink flag
+function nf_syslink(self, lib)
+    return nf_link(self, lib)
+end
+
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     return "-libpath:" .. os.args(dir)

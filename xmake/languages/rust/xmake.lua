@@ -70,6 +70,14 @@ language("rust")
         ,   "option.rpathdirs"
         ,   "platform.linkdirs"
         ,   "platform.rpathdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
         }
     ,   shared =
         {
@@ -79,6 +87,14 @@ language("rust")
         ,   "target.symbols"
         ,   "option.linkdirs"
         ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
         }
     ,   static = 
         {
@@ -100,6 +116,8 @@ language("rust")
                 ,   {nil, "rc-sh",      "kv", nil,          "The Rust Shared Library Linker"   }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"   }
+                ,   {nil, "links",      "kv", nil,          "The Link Libraries"               }
+                ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"        }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"      }
                 }
             } 

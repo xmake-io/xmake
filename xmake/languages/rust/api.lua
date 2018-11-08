@@ -30,12 +30,14 @@ function apis()
     {
         -- target.add_xxx
         "target.add_links"
+    ,   "target.add_syslinks"
     ,   "target.add_rcflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
         -- option.add_xxx
     ,   "option.add_links"
+    ,   "option.add_syslinks"
     ,   "option.add_rcflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"

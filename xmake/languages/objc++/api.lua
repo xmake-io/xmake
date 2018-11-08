@@ -32,6 +32,7 @@ function apis()
         "target.set_config_h_prefix" -- deprecated
         -- target.add_xxx
     ,   "target.add_links"
+    ,   "target.add_syslinks"
     ,   "target.add_mflags"
     ,   "target.add_mxflags"
     ,   "target.add_mxxflags"
@@ -51,6 +52,7 @@ function apis()
     ,   "option.add_ctypes"
     ,   "option.add_cxxtypes"
     ,   "option.add_links"
+    ,   "option.add_syslinks"
     ,   "option.add_mflags"
     ,   "option.add_mxflags"
     ,   "option.add_mxxflags"

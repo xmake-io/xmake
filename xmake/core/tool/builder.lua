@@ -141,13 +141,13 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
         local targetkind   = target:get("kind")
         local depconfig    = table.wrap(target:depconfig(dep:name()))
         if (depkind == "static" or depkind == "shared") and (depconfig.inherit == nil or depconfig.inherit) then
-            if flagname == "links" and (targetkind == "binary" or targetkind == "shared") then
+            if (flagname == "links" or flagname == "syslinks") and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent link
                 table.insert(results, dep:basename())
 
                 -- inherit links from the depdent target
-                self:_inherit_from_target(results, dep, "links")
+                self:_inherit_from_target(results, dep, flagname)
 
             elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
 
@@ -155,7 +155,7 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
                 table.insert(results, path.directory(dep:targetfile()))
 
                 -- inherit linkdirs from the depdent target
-                self:_inherit_from_target(results, dep, "linkdirs")
+                self:_inherit_from_target(results, dep, flagname)
 
             elseif flagname == "rpathdirs" and (targetkind == "binary" or targetkind == "shared") then
 
@@ -293,7 +293,7 @@ function builder:_addflags_from_language(flags, target, getters)
                             if target:type() == "target" then
 
                                 -- link? add includes and links of all dependent targets first
-                                if name == "links" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
+                                if name == "links" or name == "syslinks" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
                                     self:_inherit_from_targetdeps(results, target, name)
                                 end
 

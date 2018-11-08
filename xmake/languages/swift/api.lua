@@ -30,6 +30,7 @@ function apis()
     {
         -- target.add_xxx
         "target.add_links"
+    ,   "target.add_syslinks"
     ,   "target.add_scflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
@@ -37,6 +38,7 @@ function apis()
     ,   "target.add_frameworks"
         -- option.add_xxx
     ,   "option.add_links"
+    ,   "option.add_syslinks"
     ,   "option.add_scflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"

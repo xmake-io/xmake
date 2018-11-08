@@ -106,6 +106,10 @@ language("asm")
         ,   "target.links"
         ,   "option.links"
         ,   "platform.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
         }
     ,   static = 
         {
@@ -136,6 +140,7 @@ language("asm")
 
                 ,   {category = "Cross Complation Configuration/Builin Flags Configuration"   }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"              }
+                ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"       }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"     }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"  }
                 }

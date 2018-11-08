@@ -137,6 +137,11 @@ function nf_link(self, lib)
     return "-L-l" .. lib
 end
 
+-- make the syslink flag
+function nf_syslink(self, lib)
+    return nf_link(self, lib)
+end
+
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     return "-L-L" .. os.args(dir)

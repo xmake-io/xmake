@@ -167,6 +167,7 @@ function apis()
         "target.set_config_h_prefix" -- deprecated
         -- target.add_xxx
     ,   "target.add_links"
+    ,   "target.add_syslinks"
     ,   "target.add_cflags"
     ,   "target.add_cxflags"
     ,   "target.add_cxxflags"
@@ -186,6 +187,7 @@ function apis()
     ,   "option.add_ctypes"
     ,   "option.add_cxxtypes"
     ,   "option.add_links"
+    ,   "option.add_syslinks"
     ,   "option.add_cflags"
     ,   "option.add_cxflags"
     ,   "option.add_cxxflags"

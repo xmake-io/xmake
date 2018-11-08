@@ -93,6 +93,11 @@ function nf_linkdir(self, dir)
     return "-L" .. os.args(dir)
 end
 
+-- make the link flag
+function nf_link(self, lib)
+    return "-l" .. lib
+end
+
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
     return self:program(), table.join(flags, "-o", targetfile, sourcefiles)

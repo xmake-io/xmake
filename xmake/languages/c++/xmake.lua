@@ -105,13 +105,17 @@ language("c++")
         ,   "platform.rpathdirs"
         ,   "platform.frameworkdirs"
         ,   "config.links"
-        ,   "config.frameworks"
         ,   "target.links"
-        ,   "target.frameworks"
         ,   "option.links"
-        ,   "option.frameworks"
         ,   "platform.links"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "option.frameworks"
         ,   "platform.frameworks"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
         }
     ,   shared =
         {
@@ -131,13 +135,17 @@ language("c++")
         ,   "platform.rpathdirs"
         ,   "platform.frameworkdirs"
         ,   "config.links"
-        ,   "config.frameworks"
         ,   "target.links"
-        ,   "target.frameworks"
         ,   "option.links"
-        ,   "option.frameworks"
         ,   "platform.links"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "option.frameworks"
         ,   "platform.frameworks"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
         }
     ,   static = 
         {
@@ -171,6 +179,7 @@ language("c++")
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"                        }
                 ,   {nil, "links",         "kv", nil,          "The Link Libraries"                                 }
+                ,   {nil, "syslinks",      "kv", nil,          "The System Link Libraries"                          }
                 ,   {nil, "linkdirs",      "kv", nil,          "The Link Search Directories"                        }
                 ,   {nil, "includedirs",   "kv", nil,          "The Include Search Directories"                     }
                 ,   {nil, "frameworks",    "kv", nil,          "The Frameworks"                                     }
