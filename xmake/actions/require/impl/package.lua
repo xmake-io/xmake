@@ -395,6 +395,14 @@ function load_packages(requires, opt)
     for _, package in ipairs(packages) do
         local key = package:name() .. (package:version_str() or "")
         if not unique[key] then
+
+            -- do load for package
+            local on_load = package:script("load")
+            if on_load then
+                on_load(package)
+            end
+
+            -- add package
             table.insert(results, package)
             unique[key] = true
         end
