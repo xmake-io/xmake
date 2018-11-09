@@ -129,7 +129,7 @@ function environment.leave(name)
     end
 
     -- the maps
-    local maps = {toolchains = environment._leave_toolchains, run = environment._enter_run}
+    local maps = {toolchains = environment._leave_toolchains, run = environment._leave_run}
     
     -- leave the common environment
     local func = maps[name]
