@@ -230,6 +230,9 @@ function _patch_pkgconfig(package)
             end
         end
     end
+    for _, link in ipairs(package:getvar("syslinks")) do
+        libs = libs .. " -l" .. link
+    end
 
     -- cflags 
     local cflags = ""
