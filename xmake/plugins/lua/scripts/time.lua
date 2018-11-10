@@ -30,7 +30,7 @@ function main(...)
         local t = os.mclock()
         os.execv(program, table.slice(argv, 2))
         t = os.mclock() - t
-        print("time %dms", t)
+        print("time %0.3fs", t / 1000.)
     else
         raise("program not found!")
     end
