@@ -42,11 +42,9 @@ task("update")
                 -- options
             ,   options = 
                 {
-                    {'b', "branch",      "k",  nil,    "Update the given branch version."     }
-                ,   {'u', "uninstall",   "k",  nil,    "Uninstall the current xmake program." }
-
-                ,   {                                                                         }
-                ,   {nil, "version",    "v",  nil,     "The given xmake version."             }
+                    {nil, "uninstall",  "k",  nil,    "Uninstall the current xmake program."                }
+                ,   {                                                                                       }
+                ,   {nil, "xmakever",    "v",  nil,   "The given xmake version. (e.g. ~2.2.3, dev, master)" }
                 }
             }
 
