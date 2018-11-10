@@ -8,6 +8,7 @@
 * [#239](https://github.com/tboox/xmake/issues/239): Add cparser compiler support
 * Add plugin manager `xmake plugin --help`
 * Add `add_syslinks` api to add system libraries dependence
+* Add `xmake l time xmake [--rebuild]` to record compilation time
 
 ### Changes
 
@@ -509,6 +510,7 @@
 * [#239](https://github.com/tboox/xmake/issues/239): 添加cparser编译器支持
 * 添加插件管理器，`xmake plugin --help`
 * 添加`add_syslinks`接口去设置系统库依赖，分离与`add_links`添加的库依赖之间的链接顺序
+* 添加 `xmake l time xmake [--rebuild]` 去记录编译耗时
 
 ### 改进
 
