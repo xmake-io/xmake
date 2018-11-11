@@ -28,44 +28,171 @@ import("core.base.option")
 import("core.base.task")
 import("devel.git")
 import("net.fasturl")
+import("core.base.privilege")
+import("privilege.sudo")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
+
+-- run cmd with privilege
+function _sudo(cmd)
+
+    -- attempt to install directly
+    try
+    {
+        function ()
+            os.vrun(cmd)
+            return true
+        end,
+
+        catch
+        {
+            -- failed or not permission? request administrator permission and run it again
+            function (errors)
+
+                -- try get privilege
+                if privilege.get() then
+                    local ok = try
+                    {
+                        function ()
+                            os.vrun(cmd)
+                            return true
+                        end
+                    }
+
+                    -- release privilege
+                    privilege.store()
+
+                    -- ok?
+                    if ok then 
+                        return true 
+                    end
+                end
+
+                -- show tips
+                cprint("${bright red}error: ${default red}run `%s` failed, may permission denied!", cmd)
+
+                -- continue to install with administrator permission?
+                if sudo.has() then
+
+                    -- get confirm
+                    local confirm = option.get("yes")
+                    if confirm == nil then
+
+                        -- show tips
+                        cprint("${bright yellow}note: ${default yellow}try continue to run `%s` with administrator permission again?", cmd)
+                        cprint("please input: y (y/n)")
+
+                        -- get answer
+                        io.flush()
+                        local answer = io.read()
+                        if answer == 'y' or answer == '' then
+                            confirm = true
+                        end
+                    end
+
+                    -- confirm to install?
+                    if confirm then
+                        sudo.vrun(cmd)
+                        return true
+                    end
+                end
+            end
+        }
+    }
+end
 
 -- do uninstall
 function _uninstall()
+    if is_host("windows") then
+    else
+        if os.programdir():startswith("/usr/") then
+            -- only remove program to avoid some potential risk
+            _sudo("rm -f " .. os.programfile())
+            if os.isfile("/usr/local/bin/xmake") then
+                _sudo("rm -f /usr/local/bin/xmake")
+            end
+            if os.isfile("/usr/bin/xmake") then
+                _sudo("rm -f /usr/bin/xmake")
+            end
+        else
+            os.rm(os.programdir())
+            os.rm(os.programfile())
+            os.rm("~/.local/bin/xmake")
+        end
+    end
 end
 
 -- do install
 function _install(sourcedir)
 
-    -- trace
-    cprintf("${yellow}  => ${clear}installing ..")
-    io.flush()
+    -- the install task
+    local install_task = function ()
 
-    -- install it 
-    os.cd(sourcedir)
-    if is_host("windows") then
-        os.vrun("xmake -P core")
-        os.cp("xmake", os.programdir())
-        os.cp("core/build/xmake.exe", os.programfile())
-    else
-        if os.programdir():startswith("/usr/") then
-            os.vrun("make build")
-            os.vrun("make install") -- TODO sudo
+        -- trace
+        cprintf("\r${yellow}  => ${clear}installing to %s ..  ", os.programdir())
+        local ok = try 
+        {
+            function ()
+
+                -- install it 
+                os.cd(sourcedir)
+                if is_host("windows") then
+                    os.vrun("xmake -P core")
+                    os.cp("xmake", os.programdir())
+                    os.cp("core/build/xmake.exe", os.programfile())
+                else
+                    if os.programdir():startswith("/usr/") then
+                        os.vrun("make build")
+                        _sudo("make install") 
+                    else
+                        os.vrun("./scripts/get.sh __local__")
+                    end
+                end
+                return true
+            end,
+            catch 
+            {
+                function (errors)
+                    vprint(errors)
+                end
+            }
+        }
+            
+        -- trace
+        if ok then
+            cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", os.programdir())
         else
-            os.vrun("./scripts/get.sh __local__")
+            raise("install failed!")
         end
     end
-    
-    -- trace
-    cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", os.programdir())
+
+    -- do install 
+    if option.get("verbose") then
+        install_task()
+    else
+        process.asyncrun(install_task)
+    end
+
+    -- show new version
+    os.exec("xmake --version")
 end
 
 -- main
 function main()
 
+    -- TODO not support on windows now!
+    if is_host("windows") then
+        raise("not support on windows!")
+    end
+
     -- only uninstall it
     if option.get("uninstall") then
-        return _uninstall()
+
+        -- do uninstall
+        _uninstall()
+
+        -- trace
+        cprint("${bright}uninstall ok!")
+        return 
     end
 
     -- enter environment 
@@ -92,39 +219,47 @@ function main()
     -- trace
     print("update version: %s ..", version)
 
-    -- download the source code
+    -- the download task
     local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
-    for idx, url in ipairs(mainurls) do
-        cprintf("${yellow}  => ${clear}clone %s ..", url)
-        io.flush()
-        local ok = try
-        {
-            function ()
-                os.tryrm(sourcedir)
-                if version:find('.', 1, true) then
-                    git.clone(url, {outputdir = sourcedir})
-                    git.checkout(version, {repodir = sourcedir})
-                else
-                    git.clone(url, {depth = 1, branch = version, outputdir = sourcedir})
-                end
-                return true
-            end,
-            catch 
+    local download_task = function ()
+        for idx, url in ipairs(mainurls) do
+            cprintf("\r${yellow}  => ${clear}clone %s ..  ", url)
+            local ok = try
             {
-                function (errors)
-                    vprint(errors)
-                end
+                function ()
+                    os.tryrm(sourcedir)
+                    if version:find('.', 1, true) then
+                        git.clone(url, {outputdir = sourcedir})
+                        git.checkout(version, {repodir = sourcedir})
+                    else
+                        git.clone(url, {depth = 1, branch = version, outputdir = sourcedir})
+                    end
+                    return true
+                end,
+                catch 
+                {
+                    function (errors)
+                        vprint(errors)
+                    end
+                }
             }
-        }
-        if ok then
-            cprint("\r${yellow}  => ${clear}clone %s .. ${green}ok", url)
-            break
-        else
-            cprint("\r${yellow}  => ${clear}clone %s .. ${red}failed", url)
+            if ok then
+                cprint("\r${yellow}  => ${clear}clone %s .. ${green}ok", url)
+                break
+            else
+                cprint("\r${yellow}  => ${clear}clone %s .. ${red}failed", url)
+            end
+            if not ok and idx == #mainurls then
+                raise("download failed!")
+            end
         end
-        if not ok and idx == #mainurls then
-            raise("download failed!")
-        end
+    end
+
+    -- do download 
+    if option.get("verbose") then
+        download_task()
+    else
+        process.asyncrun(download_task)
     end
 
     -- leave environment 
