@@ -68,7 +68,7 @@ function _sudo(cmd)
                 end
 
                 -- show tips
-                cprint("${bright red}error: ${default red}run `%s` failed, may permission denied!", cmd)
+                cprint("\r${bright red}error: ${default red}run `%s` failed, may permission denied!", cmd)
 
                 -- continue to install with administrator permission?
                 if sudo.has() then
