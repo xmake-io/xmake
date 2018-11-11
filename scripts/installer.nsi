@@ -110,7 +110,7 @@ SectionEnd
 ; Descriptions
 
 ; Language strings
-LangString DESC_Installer ${LANG_ENGLISH} "The Make-like Build Utility based on Lua"
+LangString DESC_Installer ${LANG_ENGLISH} "A cross-platform build utility based on Lua"
 
 ; Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
