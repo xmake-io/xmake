@@ -14,7 +14,7 @@
 ;--------------------------------
 
 ; The name of the installer
-Name "xmake"
+Name "xmake-v2.2.2"
 
 ; The file to write
 OutFile "xmake.exe"

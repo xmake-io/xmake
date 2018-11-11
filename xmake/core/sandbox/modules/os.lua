@@ -27,6 +27,7 @@ local io        = require("base/io")
 local os        = require("base/os")
 local utils     = require("base/utils")
 local option    = require("base/option")
+local semver    = require("base/semver")
 local sandbox   = require("sandbox/sandbox")
 local vformat   = require("sandbox/modules/vformat")
 
@@ -432,6 +433,24 @@ function sandbox_os.readlink(symlink)
         os.raise("cannot read link(%s)", symlink)
     end
     return result
+end
+
+-- get xmake version
+function sandbox_os.xmakever()
+
+    -- get it from cache first
+    if sandbox_os._XMAKEVER ~= nil then
+        return sandbox_os._XMAKEVER 
+    end
+
+    -- get xmakever
+    local xmakever = semver.new(xmake._VERSION_SHORT)
+
+    -- save to cache
+    os._XMAKEVER = xmakever or false
+
+    -- done
+    return xmakever
 end
 
 -- return module

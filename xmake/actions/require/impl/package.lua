@@ -172,7 +172,9 @@ function _load_package(packagename, requireinfo)
     end
 
     -- load package from project first
-    package = _load_package_from_project(packagename)
+    if os.isfile(os.projectfile()) then
+        package = _load_package_from_project(packagename)
+    end
         
     -- load package from repositories
     if not package then
@@ -242,7 +244,7 @@ function _load_packages(requires, opt)
     for packagename, requireinfo in pairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
         -- attempt to get project option about this package
-        local packageopt = project.option(packagename)
+        local packageopt = os.isfile(os.projectfile()) and project.option(packagename) or nil
         if packageopt == nil or packageopt:enabled() then -- this package is enabled?
 
             -- load package package

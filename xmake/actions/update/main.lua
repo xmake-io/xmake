@@ -26,6 +26,7 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.task")
+import("net.http")
 import("devel.git")
 import("net.fasturl")
 import("core.base.privilege")
@@ -103,6 +104,15 @@ end
 -- do uninstall
 function _uninstall()
     if is_host("windows") then
+        local uninstaller = path.join(os.programdir(), "uninstall.exe")
+        if os.isfile(uninstaller) then
+            local proc = process.open(uninstaller)
+            if proc ~= nil then
+                process.close(proc)
+            end
+        else
+            raise("the uninstaller(%s) not found!", uninstaller)
+        end
     else
         if os.programdir():startswith("/usr/") then
             _sudo("rm -rf " .. os.programdir())
@@ -121,7 +131,7 @@ function _uninstall()
 end
 
 -- do install
-function _install(sourcedir)
+function _install(sourcedir, version)
 
     -- the install task
     local install_task = function ()
@@ -135,9 +145,15 @@ function _install(sourcedir)
                 -- install it 
                 os.cd(sourcedir)
                 if is_host("windows") then
-                    os.vrun("xmake -P core")
-                    os.cp("xmake", os.programdir())
-                    os.cp("core/build/xmake.exe", os.programfile())
+                    local installer = "xmake-" .. version .. ".exe"
+                    if os.isfile(installer) then
+                        local proc = process.open(installer)
+                        if proc ~= nil then
+                            process.close(proc)
+                        end
+                    else
+                        raise("the installer(%s) not found!", installer)
+                    end
                 else
                     if os.programdir():startswith("/usr/") then
                         os.vrun("make build")
@@ -159,6 +175,7 @@ function _install(sourcedir)
         -- trace
         if ok then
             cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", os.programdir())
+            os.exec("xmake --version")
         else
             raise("install failed!")
         end
@@ -170,18 +187,10 @@ function _install(sourcedir)
     else
         process.asyncrun(install_task)
     end
-
-    -- show new version
-    os.exec("xmake --version")
 end
 
 -- main
 function main()
-
-    -- TODO not support on windows now!
-    if is_host("windows") then
-        raise("not support on windows!")
-    end
 
     -- only uninstall it
     if option.get("uninstall") then
@@ -215,6 +224,19 @@ function main()
         version = "master"
     end
 
+    -- has been installed?
+    if os.xmakever():eq(version) then
+        cprint("${bright}xmake %s has been installed!", version)
+        return
+    end
+
+    -- cannot support to update dev/master on windows
+    if is_host("windows") and not version:find('.', 1, true) then
+        raise("not support to update %s on windows!", version)
+    else
+        mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", version, version)}
+    end
+
     -- trace
     print("update version: %s ..", version)
 
@@ -227,11 +249,16 @@ function main()
             {
                 function ()
                     os.tryrm(sourcedir)
-                    if version:find('.', 1, true) then
-                        git.clone(url, {outputdir = sourcedir})
-                        git.checkout(version, {repodir = sourcedir})
+                    if not git.checkurl(url) then
+                        os.mkdir(sourcedir)
+                        http.download(url, path.join(sourcedir, path.filename(url)))
                     else
-                        git.clone(url, {depth = 1, branch = version, outputdir = sourcedir})
+                        if version:find('.', 1, true) then
+                            git.clone(url, {outputdir = sourcedir})
+                            git.checkout(version, {repodir = sourcedir})
+                        else
+                            git.clone(url, {depth = 1, branch = version, outputdir = sourcedir})
+                        end
                     end
                     return true
                 end,
@@ -243,10 +270,10 @@ function main()
                 }
             }
             if ok then
-                cprint("\r${yellow}  => ${clear}clone %s .. ${green}ok", url)
+                cprint("\r${yellow}  => ${clear}download %s .. ${green}ok", url)
                 break
             else
-                cprint("\r${yellow}  => ${clear}clone %s .. ${red}failed", url)
+                cprint("\r${yellow}  => ${clear}download %s .. ${red}failed", url)
             end
             if not ok and idx == #mainurls then
                 raise("download failed!")
@@ -265,6 +292,6 @@ function main()
     environment.leave()
 
     -- do install
-    _install(sourcedir)
+    _install(sourcedir, version)
 end
 
