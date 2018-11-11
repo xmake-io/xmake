@@ -78,8 +78,8 @@ function _sudo(cmd)
                     if confirm == nil then
 
                         -- show tips
-                        cprint("${bright yellow}note: ${default yellow}try continue to run `%s` with administrator permission again?", cmd)
-                        cprint("please input: y (y/n)")
+                        cprint("\r${bright yellow}note: ${default yellow}try continue to run `%s` with administrator permission again?", cmd)
+                        cprint("\rplease input: y (y/n)")
 
                         -- get answer
                         io.flush()
