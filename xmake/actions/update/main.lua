@@ -105,8 +105,7 @@ function _uninstall()
     if is_host("windows") then
     else
         if os.programdir():startswith("/usr/") then
-            -- only remove program to avoid some potential risk
-            _sudo("rm -f " .. os.programfile())
+            _sudo("rm -rf " .. os.programdir())
             if os.isfile("/usr/local/bin/xmake") then
                 _sudo("rm -f /usr/local/bin/xmake")
             end
