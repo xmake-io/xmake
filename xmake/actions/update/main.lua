@@ -106,9 +106,17 @@ function _uninstall()
     if is_host("windows") then
         local uninstaller = path.join(os.programdir(), "uninstall.exe")
         if os.isfile(uninstaller) then
-            local proc = process.open(uninstaller)
-            if proc ~= nil then
-                process.close(proc)
+            -- UAC on win7
+            if winos:version():gt("winxp") then
+                local proc = process.openv("cscript", {path.join(os.programdir(), "scripts", "sudo.vbs"), uninstaller})
+                if proc ~= nil then
+                    process.close(proc)
+                end
+            else
+                local proc = process.open(uninstaller)
+                if proc ~= nil then
+                    process.close(proc)
+                end
             end
         else
             raise("the uninstaller(%s) not found!", uninstaller)
@@ -147,9 +155,17 @@ function _install(sourcedir, version)
                 if is_host("windows") then
                     local installer = "xmake-" .. version .. ".exe"
                     if os.isfile(installer) then
-                        local proc = process.open(installer)
-                        if proc ~= nil then
-                            process.close(proc)
+                        -- UAC on win7
+                        if winos:version():gt("winxp") then
+                            local proc = process.openv("cscript", {path.join(os.programdir(), "scripts", "sudo.vbs"), installer})
+                            if proc ~= nil then
+                                process.close(proc)
+                            end
+                        else
+                            local proc = process.open(installer)
+                            if proc ~= nil then
+                                process.close(proc)
+                            end
                         end
                     else
                         raise("the installer(%s) not found!", installer)
@@ -175,7 +191,6 @@ function _install(sourcedir, version)
         -- trace
         if ok then
             cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", os.programdir())
-            os.exec("xmake --version")
         else
             raise("install failed!")
         end
@@ -186,6 +201,11 @@ function _install(sourcedir, version)
         install_task()
     else
         process.asyncrun(install_task)
+    end
+
+    -- show version
+    if not is_host("windows") then
+        os.exec("xmake --version")
     end
 end
 
