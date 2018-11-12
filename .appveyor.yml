@@ -18,7 +18,7 @@ build_script:
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
   - cmd: core\build\xmake lua versioninfo
   - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
-  - cmd: xmake lua --backtrace tests\test.lua
+  - cmd: xmake lua -D tests\test.lua
 
 on_success:
   - ps: $env:XMAKE_PROGRAM_DIR=$null
