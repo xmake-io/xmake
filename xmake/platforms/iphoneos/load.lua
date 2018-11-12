@@ -26,21 +26,21 @@
 import("core.project.config")
 
 -- load it
-function main()
+function main(platform)
 
     -- init architecture
     local arch = config.get("arch") or "arm64"
     local simulator = (arch == "i386" or arch == "x86_64")
 
     -- init platform name
-    local platname = ifelse(simulator, "iPhoneSimulator", "iPhoneOS")
+    local platname = simulator and "iPhoneSimulator" or "iPhoneOS"
 
     -- init target minimal version
     local target_minver = config.get("target_minver")
     if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then 
         target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
     end
-    local target_minver_flags = ifelse(simulator, "-mios-simulator-version-min=", "-miphoneos-version-min=") .. target_minver
+    local target_minver_flags = (simulator and "-mios-simulator-version-min=" or "-miphoneos-version-min=") .. target_minver
 
     -- init the xcode sdk directory
     local xcode_dir     = config.get("xcode")
@@ -48,22 +48,19 @@ function main()
     local xcode_sdkdir  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode_dir, platname, platname, xcode_sdkver)
 
     -- init flags for c/c++
-    _g.cxflags = { "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir }
-    _g.ldflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir }
-    _g.shflags = { "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir }
+    platform:add("cxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    platform:add("ldflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    platform:add("shflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir)
 
     -- init flags for objc/c++
-    _g.mxflags = { "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir }
+    platform:add("mxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
 
     -- init flags for asm
-    _g.asflags = { "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir }
+    platform:add("asflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
 
-    -- init flags for swift (with _g.ldflags and _g.shflags)
-    _g.scflags = { format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-    _g["sc-shflags"] = { format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir } 
-    _g["sc-ldflags"] = { format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-
-    -- ok
-    return _g
+    -- init flags for swift (with platform:add("ldflags and platform:add("shflags)
+    platform:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+    platform:add("sc-shflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+    platform:add("sc-ldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
 end
 

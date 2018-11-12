@@ -267,8 +267,6 @@ function table.unwrap(object)
     if type(object) == "table" then
         if #object == 1 then
             return object[1]
-        elseif #object == 0 then
-            return 
         end
     end
     return object

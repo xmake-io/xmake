@@ -51,6 +51,11 @@ function _instance.new(name, info, rootdir)
     return instance
 end
 
+-- get platform name
+function _instance:name()
+    return self._NAME
+end
+
 -- set the value to the platform info
 function _instance:set(name, ...)
     self._INFO[name] = table.unwrap(table.unique({...}))
@@ -64,6 +69,26 @@ end
 
 -- get the platform configure
 function _instance:get(name)
+
+    -- attempt to get the static configure value
+    local value = self._INFO[name]
+    if value ~= nil then
+        return value
+    end
+
+    -- lazy loading platform
+    if not self._LOADED then
+        local on_load = self._INFO.load
+        if on_load then
+            local ok, errors = sandbox.load(on_load, self)
+            if not ok then
+                os.raise(errors)
+            end
+        end
+        self._LOADED = true
+    end
+
+    -- get other platform info
     return self._INFO[name]
 end
 
@@ -204,15 +229,6 @@ function platform.load(plat)
         return nil, errors
     end
 
-    -- do load 
-    local on_load = instance:get("load")
-    if on_load then
-        local ok, errors = sandbox.load(on_load, instance)
-        if not ok then
-            return nil, errors
-        end
-    end
-
     -- save instance to the cache
     platform._PLATFORMS[plat] = instance
 
@@ -225,9 +241,11 @@ end
 function platform.get(name, plat)
 
     -- get the current platform configure
-    local instance = platform.load(plat)
+    local instance, errors = platform.load(plat)
     if instance then
         return instance:get(name)
+    else
+        os.raise(errors)
     end
 end
 

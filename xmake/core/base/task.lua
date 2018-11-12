@@ -437,7 +437,10 @@ function task.menu(tasks)
                 menu.main = function ()
 
                     -- translate main menu
-                    local mainmenu = task._translate_menu(taskinst:get("menu"))
+                    local mainmenu, errors = task._translate_menu(taskinst:get("menu"))
+                    if not mainmenu then
+                        os.raise(errors)
+                    end
 
                     -- make tasks for the main menu
                     mainmenu.tasks = {}
@@ -464,7 +467,11 @@ function task.menu(tasks)
 
             -- delay to load task menu
             menu[taskname] = function ()
-                return task._translate_menu(taskinst:get("menu"))
+                local taskmenu, errors = task._translate_menu(taskinst:get("menu"))
+                if not taskmenu then
+                    os.raise(errors)
+                end
+                return taskmenu
             end
         end
     end
