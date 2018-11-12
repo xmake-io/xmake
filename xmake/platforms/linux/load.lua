@@ -26,7 +26,7 @@
 import("core.project.config")
 
 -- load it
-function main()
+function main(platform)
 
     -- cross toolchains?
     if config.get("cross") or config.get("bin") or config.get("sdk") then 
@@ -34,12 +34,12 @@ function main()
         -- init linkdirs and includedirs
         local sdkdir = config.get("sdk") 
         if sdkdir then
-            _g.includedirs = {path.join(sdkdir, "include")}
-            _g.linkdirs    = {path.join(sdkdir, "lib")}
+            platform:add("includedirs", path.join(sdkdir, "include"))
+            platform:add("linkdirs", path.join(sdkdir, "lib"))
         end
 
         -- ok
-        return _g
+        return 
     end
 
     -- init flags for architecture
@@ -52,48 +52,41 @@ function main()
     end
 
     -- init flags for c/c++
-    _g.cxflags       = { archflags, "-I/usr/local/include", "-I/usr/include" }
-    _g.ldflags       = { archflags, "-L/usr/local/lib", "-L/usr/lib" }
-    _g.shflags       = { archflags, "-L/usr/local/lib", "-L/usr/lib" }
+    platform:add("cxflags", archflags, "-I/usr/local/include", "-I/usr/include")
+    platform:add("ldflags", archflags, "-L/usr/local/lib", "-L/usr/lib")
+    platform:add("shflags", archflags, "-L/usr/local/lib", "-L/usr/lib")
 
-    -- init flags for objc/c++  (with _g.ldflags and _g.shflags)
-    _g.mxflags       = { archflags }
+    -- init flags for objc/c++  (with ldflags and shflags)
+    platform:add("mxflags", archflags)
 
     -- init flags for asm
-    local as = config.get("as")
-    if as == "yasm" then
-        _g.asflags = { "-f", arch == "x86_64" and "elf64" or "elf32" }
-    else
-        _g.asflags = { archflags }
-    end
+    platform:add("yasm.asflags", "-f", arch == "x86_64" and "elf64" or "elf32")
+    platform:add("asflags", archflags)
 
     -- init flags for golang
-    _g["gc-ldflags"] = {}
+    platform:set("gc-ldflags", "")
 
     -- init flags for dlang
     local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
-    _g.dcflags       = { dc_archs[arch] or "" }
-    _g["dc-shflags"] = { dc_archs[arch] or "" }
-    _g["dc-ldflags"] = { dc_archs[arch] or "" }
+    platform:add("dcflags", dc_archs[arch] or "")
+    platform:add("dc-shflags", dc_archs[arch] or "")
+    platform:add("dc-ldflags", dc_archs[arch] or "")
 
     -- init flags for rust
-    _g["rc-shflags"] = {}
-    _g["rc-ldflags"] = {}
+    platform:set("rc-shflags", "")
+    platform:set("rc-ldflags", "")
 
     -- init flags for cuda
     local cu_archs = { i386 = "-m32 -Xcompiler -m32", x86_64 = "-m64 -Xcompiler -m64" }
-    _g.cuflags = {cu_archs[arch] or ""}
-    _g["cu-shflags"] = {cu_archs[arch] or ""}
-    _g["cu-ldflags"] = {cu_archs[arch] or ""}
+    platform:add("cuflags", cu_archs[arch] or "")
+    platform:add("cu-shflags", cu_archs[arch] or "")
+    platform:add("cu-ldflags", cu_archs[arch] or "")
     local cuda_dir = config.get("cuda")
     if cuda_dir then
-        table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
-        table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
-        table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
-        table.insert(_g["cu-ldflags"], "-Xlinker -rpath=" .. os.args(path.join(cuda_dir, "lib")))
+        platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))
+        platform:add("cu-ldflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
+        platform:add("cu-shflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
+        platform:add("cu-ldflags", "-Xlinker -rpath=" .. os.args(path.join(cuda_dir, "lib")))
     end
-
-    -- ok
-    return _g
 end
 

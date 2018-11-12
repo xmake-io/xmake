@@ -26,7 +26,7 @@
 import("core.project.config")
 
 -- load it
-function main()
+function main(platform)
 
     -- init flags for architecture
     local archflags = nil
@@ -37,16 +37,18 @@ function main()
         else archflags = "-arch " .. arch
         end
     end
-    _g.cxflags = { archflags }
-    _g.asflags = { archflags }
-    _g.ldflags = { archflags }
-    _g.shflags = { archflags }
+    if archflags then
+        platform:add("cxflags", archflags)
+        platform:add("asflags", archflags)
+        platform:add("ldflags", archflags)
+        platform:add("shflags", archflags)
+    end
 
     -- init linkdirs and includedirs
     local sdkdir = config.get("sdk") 
     if sdkdir then
-        _g.includedirs = {path.join(sdkdir, "include")}
-        _g.linkdirs    = {path.join(sdkdir, "lib")}
+        platform:add("includedirs", path.join(sdkdir, "include"))
+        platform:add("linkdirs", path.join(sdkdir, "lib"))
     end
 
     -- add bin search library for loading some dependent .dll files windows 
@@ -54,8 +56,5 @@ function main()
     if bindir and is_host("windows") then
         os.addenv("PATH", bindir)
     end
-
-    -- ok
-    return _g
 end
 

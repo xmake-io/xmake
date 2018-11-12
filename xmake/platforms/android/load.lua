@@ -26,26 +26,22 @@
 import("core.project.config")
 
 -- load it
-function main()
+function main(platform)
 
     -- init flags
     local arch = config.get("arch")
     if arch:startswith("arm64") then
-        _g.cxflags      = {}
-        _g.asflags      = {}
-        _g.ldflags      = {"-llog"}
-        _g.shflags      = {"-llog"}
-        _g.cxxflags     = {}
+        platform:add("ldflags", "-llog")
+        platform:add("shflags", "-llog")
     else
-        _g.cxflags      = { "-march=" .. arch, "-mthumb"}
-        _g.asflags      = { "-march=" .. arch, "-mthumb"}
-        _g.ldflags      = { "-march=" .. arch, "-llog", "-mthumb"}
-        _g.shflags      = { "-march=" .. arch, "-llog", "-mthumb"}
-        _g.cxxflags     = {}
+        platform:add("cxflags", "-march=" .. arch, "-mthumb")
+        platform:add("asflags", "-march=" .. arch, "-mthumb")
+        platform:add("ldflags", "-march=" .. arch, "-llog", "-mthumb")
+        platform:add("shflags", "-march=" .. arch, "-llog", "-mthumb")
     end
 
     -- init cxflags for the target kind: binary 
-    _g.binary           = { cxflags = {"-fPIE", "-pie"} }
+    platform:add("binary.cxflags", "-fPIE", "-pie")
 
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
@@ -83,32 +79,32 @@ function main()
             ,   ["i386"]        = "i686-linux-android"
             ,   ["x86_64"]      = "x86_64-linux-android"
             }
-            insert(_g.cxflags, "-D__ANDROID_API__=" .. ndk_sdkver)
-            insert(_g.asflags, "-D__ANDROID_API__=" .. ndk_sdkver)
-            insert(_g.cxflags, "--sysroot=" .. ndk_sysroot_be_r14)
-            insert(_g.asflags, "--sysroot=" .. ndk_sysroot_be_r14)
-            insert(_g.cxflags, "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
-            insert(_g.asflags, "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            platform:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            platform:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            platform:add("cxflags", "--sysroot=" .. ndk_sysroot_be_r14)
+            platform:add("asflags", "--sysroot=" .. ndk_sysroot_be_r14)
+            platform:add("cxflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            platform:add("asflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
         else
             if arch:startswith("arm64") then
-                insert(_g.cxflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-                insert(_g.asflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+                platform:add("cxflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+                platform:add("asflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
             else
-                insert(_g.cxflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
-                insert(_g.asflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
+                platform:add("cxflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
+                platform:add("asflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
             end
         end
         if arch:startswith("arm64") then
-            insert(_g.ldflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-            insert(_g.shflags, format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+            platform:add("ldflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+            platform:add("shflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
         else
-            insert(_g.ldflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
-            insert(_g.shflags, format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            platform:add("ldflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            platform:add("shflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
         end
 
         -- add "-fPIE -pie" to ldflags
-        insert(_g.ldflags, "-fPIE")
-        insert(_g.ldflags, "-pie")
+        platform:add("ldflags", "-fPIE")
+        platform:add("ldflags", "-pie")
 
         -- only for c++ stl
         local ndk_toolchains_ver = config.get("ndk_toolchains_ver")
@@ -128,13 +124,13 @@ function main()
             }
 
             -- add search directories for c++ stl
-            insert(_g.cxxflags, format("-I%s/include", cxxstl_sdkdir))
+            platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
             if toolchains_archs[arch] then
-                insert(_g.cxxflags, format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_archs[arch]))
-                insert(_g.ldflags, format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
-                insert(_g.shflags, format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
-                insert(_g.ldflags, format("-lgnustl_static"))
-                insert(_g.shflags, format("-lgnustl_static"))
+                platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_archs[arch]))
+                platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
+                platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
+                platform:add("ldflags", "-lgnustl_static")
+                platform:add("shflags", "-lgnustl_static")
             end
         end
     end
@@ -150,20 +146,17 @@ function main()
     }
 
     -- init flags for rust
-    _g.rcflags       = { "--target=" .. targets[arch] }
-    _g["rc-shflags"] = { "-C link-args=\"" .. (table.concat(_g.shflags, " "):gsub("%-march=.-%s", "") .. "\"")}
-    _g["rc-ldflags"] = { "-C link-args=\"" .. (table.concat(_g.ldflags, " "):gsub("%-march=.-%s", "") .. "\"")}
+    platform:add("rcflags", "--target=" .. targets[arch])
+    platform:add("rc-shflags", "-C link-args=\"" .. (table.concat(platform:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
+    platform:add("rc-ldflags", "-C link-args=\"" .. (table.concat(platform:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
     local sh = config.get("sh")
     if sh then
-        table.insert(_g["rc-shflags"], "-C linker=" .. sh)
+        platform:add("rc-shflags", "-C linker=" .. sh)
     end
     local ld = config.get("ld")
     if ld then
-        table.insert(_g["rc-ldflags"], "-C linker=" .. ld)
+        platform:add("rc-ldflags", "-C linker=" .. ld)
     end
-
-    -- ok
-    return _g
 end
 
 

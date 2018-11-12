@@ -44,7 +44,7 @@ platform("windows")
     on_check("check")
 
     -- on load
-    on_load(function ()
+    on_load(function (platform)
 
         -- imports
         import("core.project.config")
@@ -53,31 +53,25 @@ platform("windows")
         local arch = config.get("arch") or os.arch()
 
         -- init flags for asm
-        local as = config.get("as")
-        if as and as:find("yasm", 1, true) then
-            _g.asflags = { "-f", arch == "x64" and "win64" or "win32" }
-        end
+        platform:add("yasm.asflags", "-f", arch == "x64" and "win64" or "win32")
 
         -- init flags for dlang
         local dc_archs = { x86 = "-m32", x64 = "-m64" }
-        _g.dcflags       = { dc_archs[arch] }
-        _g["dc-shflags"] = { dc_archs[arch] }
-        _g["dc-ldflags"] = { dc_archs[arch] }
+        platform:add("dcflags", dc_archs[arch])
+        platform:add("dc-shflags", dc_archs[arch])
+        platform:add("dc-ldflags", dc_archs[arch])
 
         -- init flags for cuda
         local cu_archs = { x86 = "-m32 -Xcompiler -m32", x64 = "-m64 -Xcompiler -m64" }
-        _g.cuflags = {cu_archs[arch] or ""}
-        _g["cu-shflags"] = {cu_archs[arch] or ""}
-        _g["cu-ldflags"] = {cu_archs[arch] or ""}
+        platform:add("cuflags", cu_archs[arch] or "")
+        platform:add("cu-shflags", cu_archs[arch] or "")
+        platform:add("cu-ldflags", cu_archs[arch] or "")
         local cuda_dir = config.get("cuda")
         if cuda_dir then
-            table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
-            table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
-            table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
+            platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))
+            platform:add("cu-ldflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
+            platform:add("cu-shflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
         end
-
-        -- ok
-        return _g
     end)
 
     -- set menu

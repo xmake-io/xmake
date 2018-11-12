@@ -26,13 +26,13 @@
 import("core.project.config")
 
 -- load it
-function main()
+function main(platform)
 
     -- init linkdirs and includedirs
     local sdkdir = config.get("sdk") 
     if sdkdir then
-        _g.includedirs = {path.join(sdkdir, "include")}
-        _g.linkdirs    = {path.join(sdkdir, "lib")}
+        platform:add("includedirs", path.join(sdkdir, "include"))
+        platform:add("linkdirs", path.join(sdkdir, "lib"))
     end
 
     -- add bin search library for loading some dependent .dll files windows 
@@ -40,8 +40,5 @@ function main()
     if bindir and is_host("windows") then
         os.addenv("PATH", bindir)
     end
-
-    -- ok
-    return _g
 end
 
