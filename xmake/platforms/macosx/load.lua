@@ -26,7 +26,7 @@
 import("core.project.config")
 
 -- load it
-function main()
+function main(platform)
 
     -- init flags for architecture
     local arch          = config.get("arch") or os.arch()
@@ -41,77 +41,69 @@ function main()
     end
 
     -- init flags for c/c++
-    _g.cxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0" }
-    _g.ldflags = { "-arch " .. arch }
+    platform:add("cxflags", "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0")
+    platform:add("ldflags", "-arch " .. arch)
     if target_minver then
-        table.insert(_g.ldflags, "-mmacosx-version-min=" .. target_minver)
+        platform:add("ldflags", "-mmacosx-version-min=" .. target_minver)
     end
     if xcode_sdkdir then
-        table.insert(_g.cxflags, "-isysroot " .. xcode_sdkdir)
-        table.insert(_g.ldflags, "-isysroot " .. xcode_sdkdir)
+        platform:add("cxflags", "-isysroot " .. xcode_sdkdir)
+        platform:add("ldflags", "-isysroot " .. xcode_sdkdir)
     else
-        table.insert(_g.cxflags, "-I/usr/local/include")
-        table.insert(_g.cxflags, "-I/usr/include")
-        table.insert(_g.ldflags, "-L/usr/local/lib")
-        table.insert(_g.ldflags, "-L/usr/lib")
+        platform:add("cxflags", "-I/usr/local/include")
+        platform:add("cxflags", "-I/usr/include")
+        platform:add("ldflags", "-L/usr/local/lib")
+        platform:add("ldflags", "-L/usr/lib")
     end
-    table.insert(_g.ldflags, "-stdlib=libc++")
-    table.insert(_g.ldflags, "-lz")
-    _g.shflags = table.copy(_g.ldflags)
+    platform:add("ldflags", "-stdlib=libc++")
+    platform:add("ldflags", "-lz")
+    platform:add("shflags", platform:get("ldflags"))
 
-    -- init flags for objc/c++ (with _g.ldflags and _g.shflags)
-    _g.mxflags = { "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0" }
+    -- init flags for objc/c++ (with ldflags and shflags)
+    platform:add("mxflags", "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0")
     if xcode_sdkdir then
-        table.insert(_g.mxflags, "-isysroot " .. xcode_sdkdir)
+        platform:add("mxflags", "-isysroot " .. xcode_sdkdir)
     end
 
     -- init flags for asm 
-    local as = config.get("as")
-    if as == "yasm" then
-        _g.asflags = { "-f", arch == "x86_64" and "macho64" or "macho32" }
-    elseif as == "fasm" then
-        _g.asflags = {}
-    else
-        _g.asflags = { "-arch " .. arch }
-        if xcode_sdkdir then
-            table.insert(_g.asflags, "-isysroot " .. xcode_sdkdir)
-        end
+    platform:add("yasm.asflags", arch == "x86_64" and "macho64" or "macho32")
+    platform:set("fasm.asflags", "")
+    platform:add("asflags", "-arch " .. arch)
+    if xcode_sdkdir then
+        platform:add("asflags", "-isysroot " .. xcode_sdkdir)
     end
 
     -- init flags for swift
     if target_minver and xcode_sdkdir then
-        _g.scflags = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-        _g["sc-shflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
-        _g["sc-ldflags"] = { format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir }
+        platform:add("scflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+        platform:add("sc-shflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+        platform:add("sc-ldflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
     end
 
     -- init flags for golang
-    _g["gc-ldflags"] = {}
+    platform:set("gc-ldflags", "")
 
     -- init flags for dlang
     local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
-    _g.dcflags       = { dc_archs[arch] or "" }
-    _g["dc-shflags"] = { dc_archs[arch] or "" }
-    _g["dc-ldflags"] = { dc_archs[arch] or "" }
+    platform:add("dcflags", dc_archs[arch] or "")
+    platform:add("dc-shflags", dc_archs[arch] or "")
+    platform:add("dc-ldflags", dc_archs[arch] or "" )
 
     -- init flags for rust
-    _g["rc-shflags"] = {}
-    _g["rc-ldflags"] = {}
+    platform:set("rc-shflags", "")
+    platform:set("rc-ldflags", "")
 
     -- init flags for cuda
     local cu_archs = { i386 = "-m32 -Xcompiler -arch -Xcompiler i386", x86_64 = "-m64 -Xcompiler -arch -Xcompiler x86_64" }
-    _g.cuflags = {cu_archs[arch] or ""}
-    _g["cu-shflags"] = {cu_archs[arch] or ""}
-    _g["cu-ldflags"] = {cu_archs[arch] or ""}
+    platform:add("cuflags", cu_archs[arch] or "")
+    platform:add("cu-shflags", cu_archs[arch] or "")
+    platform:add("cu-ldflags", cu_archs[arch] or "")
     local cuda_dir = config.get("cuda")
     if cuda_dir then
-        table.insert(_g.cuflags, "-I" .. os.args(path.join(cuda_dir, "include")))
-        table.insert(_g["cu-ldflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
-        table.insert(_g["cu-shflags"], "-L" .. os.args(path.join(cuda_dir, "lib")))
-        table.insert(_g["cu-ldflags"], "-Xlinker -rpath -Xlinker " .. os.args(path.join(cuda_dir, "lib")))
+        platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))
+        platform:add("cu-ldflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
+        platform:add("cu-shflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
+        platform:add("cu-ldflags", "-Xlinker -rpath -Xlinker " .. os.args(path.join(cuda_dir, "lib")))
     end
-
-    -- ok
-    return _g
 end
 

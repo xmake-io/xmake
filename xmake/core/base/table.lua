@@ -264,18 +264,13 @@ end
 
 -- unwrap object if be only one
 function table.unwrap(object)
-
-    -- check
-    assert(object)
-
-    -- unwrap it
-    if type(object) == "table" and table.getn(object) == 1 then
-        for _, v in pairs(object) do
-            return v
+    if type(object) == "table" then
+        if #object == 1 then
+            return object[1]
+        elseif #object == 0 then
+            return 
         end
     end
-
-    -- ok
     return object
 end
 

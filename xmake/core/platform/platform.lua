@@ -51,53 +51,40 @@ function _instance.new(name, info, rootdir)
     return instance
 end
 
+-- set the value to the platform info
+function _instance:set(name, ...)
+    self._INFO[name] = table.unwrap(table.unique({...}))
+end
+
+-- add the value to the platform info
+function _instance:add(name, ...)
+    local info = table.wrap(self._INFO[name])
+    self._INFO[name] = table.unwrap(table.unique(table.join(info, ...)))
+end
+
 -- get the platform configure
 function _instance:get(name)
-
-    -- the info
-    local info = self._INFO
-
-    -- get if from info first
-    local value = info[name]
-    if value ~= nil then
-        return value 
-    end
-
-    -- load _g 
-    if self._g == nil and info.load ~= nil then
-
-        -- load it
-        local ok, results = sandbox.load(info.load)
-        if not ok then
-            os.raise(results)
-        end
-
-        -- save _g
-        self._g = results
-    end
-
-    -- get it from _g 
-    return self._g[name]
+    return self._INFO[name]
 end
 
 -- get the platform os
 function _instance:os()
-    return self._INFO.os
+    return self:get("os")
 end
 
 -- get the platform menu
 function _instance:menu()
-    return self._INFO.menu
+    return self:get("menu")
 end
 
 -- get the platform hosts
 function _instance:hosts()
-    return self._INFO.hosts
+    return self:get("hosts")
 end
 
 -- get the platform archs
 function _instance:archs()
-    return self._INFO.archs
+    return self:get("archs")
 end
 
 -- the directories of platform
@@ -215,6 +202,15 @@ function platform.load(plat)
     local instance, errors = _instance.new(plat, result, platform._interpreter():rootdir())
     if not instance then
         return nil, errors
+    end
+
+    -- do load 
+    local on_load = instance:get("load")
+    if on_load then
+        local ok, errors = sandbox.load(on_load, instance)
+        if not ok then
+            return nil, errors
+        end
     end
 
     -- save instance to the cache

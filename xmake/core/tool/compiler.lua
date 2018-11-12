@@ -48,15 +48,17 @@ end
 function compiler:_addflags_from_platform(flags, targetkind)
 
     -- add flags 
-    local toolkind = self:kind()
+    local toolname = self:name()
     for _, flagkind in ipairs(self:_flagkinds()) do
 
-        -- add flags for platform
-        table.join2(flags, platform.get(flagkind))
+        -- add flags for platform, e.g. gcc.cxflags or cxflags
+        local toolflags = platform.get(toolname .. '.' .. flagkind)
+        table.join2(flags, toolflags or platform.get(flagkind))
 
-        -- add flags for platform and the given taget kind
-        if targetkind ~= nil and platform.get(targetkind) ~= nil then
-            table.join2(flags, platform.get(targetkind)[flagkind])
+        -- add flags for platform with the given target kind, e.g. binary.gcc.cxflags or binary.cxflags
+        if targetkind then
+            local toolflags = platform.get(targetkind .. '.' .. toolname .. '.' .. flagkind)
+            table.join2(flags, toolflags or platform.get(targetkind .. '.' .. flagkind))
         end
     end
 end

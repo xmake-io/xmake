@@ -45,15 +45,17 @@ function linker:_addflags_from_platform(flags, targetkind)
 
     -- add flags 
     local toolkind = self:kind()
+    local toolname = self:name()
     for _, flagkind in ipairs(self:_flagkinds()) do
 
-        -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
-        table.join2(flags, platform.get(toolkind .. 'flags') or platform.get(flagkind))
+        -- attempt to add special lanugage flags first, e.g. go.gc-ldflags or gcc.ldflags or gc-ldflags or ldflags
+        local toolflags = platform.get(toolname .. '.' .. toolkind .. 'flags') or platform.get(toolname .. '.' .. flagkind)
+        table.join2(flags, toolflags or platform.get(toolkind .. 'flags') or platform.get(flagkind))
 
         -- attempt to add special lanugage flags first for target kind, .e.g gc-ldflags, dc-arflags
         if targetkind then
-            local targetflags = platform.get(targetkind) or {}
-            table.join2(flags, targetflags[toolkind .. 'flags'] or targetflags[flagkind])
+            local toolflags = platform.get(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or platform.get(targetkind .. '.' .. toolname .. '.' .. flagkind)
+            table.join2(flags, toolflags or platform.get(targetkind .. '.' .. toolkind .. 'flags') or platform.get(targetkind .. '.' .. flagkind))
         end
     end
 end
