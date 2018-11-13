@@ -119,9 +119,15 @@ function table.inherit(...)
         for k, v in pairs(clasz) do
             if type(v) == "function" then
                 if k:startswith("__") then
-                    metainfo[k] = v
+                    if metainfo[k] == nil then
+                        metainfo[k] = v
+                    end
                 else
-                    instance[k] = v
+                    if instance[k] == nil then
+                        instance[k] = v
+                    else
+                        instance["_super_" .. k] = v
+                    end
                 end
             end
         end
@@ -151,6 +157,8 @@ function table.inherit2(self, ...)
                 else
                     if self[k] == nil then
                         self[k] = v
+                    else 
+                        self["_super_" .. k] = v
                     end
                 end
             end

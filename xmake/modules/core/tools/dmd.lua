@@ -31,25 +31,19 @@ import("core.project.project")
 function init(self)
     
     -- init arflags
-    _g.arflags = { "-lib" }
+    self:set("arflags", "-lib")
 
     -- init shflags
-    _g.shflags = { "-shared", "-fPIC" }
+    self:set("shflags", "-shared", "-fPIC")
 
     -- init dcflags for the kind: shared
-    _g.shared           = {}
-    _g.shared.dcflags   = {"-fPIC"}
+    self:set("shared.dcflags", "-fPIC")
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
         ["object:sources"] = false
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    })
 end
 
 -- make the optimize flag

@@ -31,30 +31,25 @@ import("core.project.project")
 function init(self)
     
     -- init arflags
-    _g.arflags = { "--crate-type=lib" }
+    self:set("arflags", "--crate-type=lib")
 
     -- init shflags
-    _g.shflags = { "--crate-type=dylib" }
+    self:set("shflags", "--crate-type=dylib")
 
     -- init ldflags
-    _g.ldflags = { "--crate-type=bin" }
+    self:set("ldflags", "--crate-type=bin")
 
     -- init the file formats
-    _g.formats = { static = "lib$(name).rlib" }
+    self:set("formats", { static = "lib$(name).rlib" })
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes", 
     {
         ["object:sources"] = false  -- compile multiple source filess to the single object
     ,   ["binary:sources"] = true   -- build multiple source files to the binary target file
     ,   ["static:sources"] = true   -- build multiple source files to the static target file
     ,   ["shared:sources"] = true   -- build multiple source files to the shared target file
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    })
 end
 
 -- make the optimize flag

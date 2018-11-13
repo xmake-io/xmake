@@ -32,9 +32,9 @@ function init(self)
     _super.init(self)
 
     -- suppress warning 
-    _super._g.cxflags = {"-Qunused-arguments"}
-    _super._g.mxflags = {"-Qunused-arguments"}
-    _super._g.asflags = {"-Qunused-arguments"}
+    self:add("cxflags", "-Qunused-arguments")
+    self:add("mxflags", "-Qunused-arguments")
+    self:add("asflags", "-Qunused-arguments")
 end
 
 -- make the optimize flag

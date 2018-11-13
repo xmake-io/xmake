@@ -30,15 +30,10 @@ import("core.project.project")
 function init(self)
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
         ["object:sources"] = false
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    })
 end
 
 -- make the define flag

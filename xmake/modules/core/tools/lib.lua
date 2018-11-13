@@ -22,11 +22,6 @@
 -- @file        lib.lua
 --
 
--- get the property
-function get(self, name)
-    return _g[name]
-end
-
 -- extract the static library to object directory
 function extract(self, libraryfile, objectdir)
 

@@ -32,10 +32,10 @@ function init(self)
     _super.init(self)
 
     -- init shflags
-    _super._g.shflags = { "-shared" }
+    self:set("shflags", "-shared")
 
     -- init cxflags for the kind: shared
-    _super._g.shared = {}
+    self:set("shared.dcflags", "")
 end
 
 

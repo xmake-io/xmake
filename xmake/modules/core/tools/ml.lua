@@ -27,13 +27,13 @@ function init(self)
    
     -- init asflags
     if self:program():find("64") then
-        _g.asflags = { "-nologo"}
+        self:set("asflags", "-nologo")
     else
-        _g.asflags = { "-nologo", "-Gd"}
+        self:set("asflags", "-nologo", "-Gd")
     end
 
     -- init flags map
-    _g.mapflags = 
+    self:set("mapflags", 
     {
         -- symbols
         ["-g"]                      = "-Z7"
@@ -50,18 +50,13 @@ function init(self)
         -- others
     ,   ["-ftrapv"]                 = ""
     ,   ["-fsanitize=address"]      = ""
-    }
+    })
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
-        ["object:sources"]      = false
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+        ["object:sources"]          = false
+    })
 end
 
 -- make the warning flag

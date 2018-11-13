@@ -33,22 +33,21 @@ import("detect.tools.find_ccache")
 function init(self)
 
     -- init mxflags
-    _g.mxflags = {  "-fmessage-length=0"
-                ,   "-pipe"
-                ,   "-fpascal-strings"
-                ,   "-DIBOutlet=__attribute__((iboutlet))"
-                ,   "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
-                ,   "-DIBAction=void)__attribute__((ibaction)"}
+    self:set("mxflags", "-fmessage-length=0"
+                      , "-pipe"
+                      , "-fpascal-strings"
+                      , "-DIBOutlet=__attribute__((iboutlet))"
+                      , "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
+                      , "-DIBAction=void)__attribute__((ibaction)")
 
     -- init shflags
-    _g.shflags = { "-shared", "-fPIC" }
+    self:set("shflags", "-shared", "-fPIC")
 
     -- init cxflags for the kind: shared
-    _g.shared          = {}
-    _g.shared.cxflags  = {"-fPIC"}
+    self:set("shared.cxflags", "-fPIC")
 
     -- init flags map
-    _g.mapflags = 
+    self:set("mapflags",
     {
         -- warnings
         ["-W1"] = "-Wall"
@@ -58,20 +57,13 @@ function init(self)
          -- strip
     ,   ["-s"]  = "-s"
     ,   ["-S"]  = "-S"
-    }
+    })
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
         ["object:sources"] = false
-    }
-end
-
--- get the property
-function get(self, name)
-
-    -- get it
-    return _g[name]
+    })
 end
 
 -- make the strip flag

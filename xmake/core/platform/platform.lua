@@ -58,13 +58,13 @@ end
 
 -- set the value to the platform info
 function _instance:set(name, ...)
-    self._INFO[name] = table.unwrap(table.unique({...}))
+    self._INFO[name] = table.unwrap({...})
 end
 
 -- add the value to the platform info
 function _instance:add(name, ...)
     local info = table.wrap(self._INFO[name])
-    self._INFO[name] = table.unwrap(table.unique(table.join(info, ...)))
+    self._INFO[name] = table.unwrap(table.join(info, ...))
 end
 
 -- get the platform configure

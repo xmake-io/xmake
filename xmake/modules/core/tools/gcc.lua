@@ -33,28 +33,24 @@ import("detect.tools.find_ccache")
 function init(self)
 
     -- init mxflags
-    _g.mxflags = {  "-fmessage-length=0"
-                ,   "-pipe"
-                ,   "-fpascal-strings"
-                ,   "-DIBOutlet=__attribute__((iboutlet))"
-                ,   "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
-                ,   "-DIBAction=void)__attribute__((ibaction)"}
+    self:set("mxflags", "-fmessage-length=0"
+                      , "-pipe"
+                      , "-fpascal-strings"
+                      , "-DIBOutlet=__attribute__((iboutlet))"
+                      , "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
+                      , "-DIBAction=void)__attribute__((ibaction)")
 
     -- init shflags
-    _g.shflags = { "-shared"}
+    self:set("shflags", "-shared")
 
-    -- init cxflags for the kind: shared
-    _g.shared = {}
-    _g.shared.cxflags = {}
-
-    -- add -fPIC 
+    -- add -fPIC for shared
     if not is_plat("windows", "mingw") then
-        table.insert(_g.shflags, "-fPIC")
-        table.insert(_g.shared.cxflags, "-fPIC")
+        self:add("shflags", "-fPIC")
+        self:add("shared.cxflags", "-fPIC")
     end
 
     -- init flags map
-    _g.mapflags = 
+    self:set("mapflags",
     {
         -- warnings
         ["-W1"] = "-Wall"
@@ -64,27 +60,22 @@ function init(self)
          -- strip
     ,   ["-s"]  = "-s"
     ,   ["-S"]  = "-S"
-    }
+    })
 
     -- for macho target
-    local plat = config.plat()
-    if plat == "macosx" or plat == "iphoneos" then
-        _g.mapflags["-s"] = "-Wl,-x"
-        _g.mapflags["-S"] = "-Wl,-S"
+    if is_plat("macosx") or is_plat("iphoneos") then
+        self:add("mapflags", 
+        {
+            ["-s"] = "-Wl,-x"
+        ,   ["-S"] = "-Wl,-S"
+        })
     end
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
         ["object:sources"] = false
-    }
-end
-
--- get the property
-function get(self, name)
-
-    -- get it
-    return _g[name]
+    })
 end
 
 -- make the strip flag

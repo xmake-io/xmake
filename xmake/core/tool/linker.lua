@@ -73,12 +73,11 @@ function linker:_addflags_from_compiler(flags, target, targetkind)
         if instance then
             for _, flagkind in ipairs(self:_flagkinds()) do
 
-                -- attempt to add special lanugage flags first, .e.g gc-ldflags, dc-arflags
+                -- attempt to add special lanugage flags first, e.g. gc-ldflags, dc-arflags
                 table.join2(flags_of_compiler, instance:get(toolkind .. 'flags') or instance:get(flagkind))
 
-                -- attempt to add special lanugage flags first for target kind, .e.g gc-ldflags, dc-arflags
-                local targetflags = instance:get(targetkind) or {}
-                table.join2(flags_of_compiler, targetflags[toolkind .. 'flags'] or targetflags[flagkind])
+                -- attempt to add special lanugage flags first for target kind, e.g. targetkind.gc-ldflags, targetkind.dc-arflags
+                table.join2(flags_of_compiler, instance:get(targetkind .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. flagkind))
             end
         end
     end

@@ -29,16 +29,16 @@ import("core.project.config")
 function init(self)
    
     -- init ldflags
-    _g.ldflags = { "-nologo", "-dynamicbase", "-nxcompat"}
+    self:set("ldflags", "-nologo", "-dynamicbase", "-nxcompat")
 
     -- init arflags
-    _g.arflags = {"-nologo"}
+    self:set("arflags", "-nologo")
 
     -- init shflags
-    _g.shflags = {"-nologo"}
+    self:set("shflags", "-nologo")
 
     -- init flags map
-    _g.mapflags = 
+    self:set("mapflags",
     {
         -- strip
         ["-s"]                  = ""
@@ -47,12 +47,12 @@ function init(self)
         -- others
     ,   ["-ftrapv"]             = ""
     ,   ["-fsanitize=address"]  = ""
-    }
+    })
 end
 
 -- get the property
 function get(self, name)
-    local values = _g[name]
+    local values = self._INFO[name]
     if name == "ldflags" or name == "arflags" or name == "shflags" then
         -- switch architecture, @note does cache it in init() for generating vs201x project 
         values = table.join(values, "-machine:" .. (config.arch() or "x86"))

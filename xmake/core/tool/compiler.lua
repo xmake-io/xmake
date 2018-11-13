@@ -65,16 +65,14 @@ end
 
 -- add flags from the compiler 
 function compiler:_addflags_from_compiler(flags, targetkind)
-
-    -- done
     for _, flagkind in ipairs(self:_flagkinds()) do
 
-        -- add compiler.xxflags
+        -- add compiler, e.g. cxflags
         table.join2(flags, self:get(flagkind))
 
-        -- add compiler.targetkind.xxflags
-        if targetkind ~= nil and self:get(targetkind) ~= nil then
-            table.join2(flags, self:get(targetkind)[flagkind])
+        -- add compiler, e.g. targetkind.cxflags
+        if targetkind then
+            table.join2(flags, self:get(targetkind .. '.' .. flagkind))
         end
     end
 end

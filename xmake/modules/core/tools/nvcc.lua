@@ -33,33 +33,25 @@ import("detect.tools.find_ccache")
 function init(self)
 
     -- init flags
-    _g.cuflags = {}
-    _g.ldflags = {}
     if not is_plat("windows") then
-        _g.shflags = { "-shared", "-fPIC" }
-        _g.shared  = {}
-        _g.shared.cuflags = {"-fPIC"}
+        self:set("shflags", "-shared", "-fPIC")
+        self:set("shared.cuflags", "-fPIC")
     end
 
     -- init flags map
-    _g.mapflags = 
+    self:set("mapflags",
     {
         -- warnings
         ["-W1"] = "-Wall"
     ,   ["-W2"] = "-Wall"
     ,   ["-W3"] = "-Wall"
-    }
+    })
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
         ["object:sources"] = false
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    })
 end
 
 -- make the symbol flag

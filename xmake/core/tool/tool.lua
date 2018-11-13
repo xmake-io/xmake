@@ -57,6 +57,7 @@ function _instance.new(kind, name, program)
     instance._NAME    = name
     instance._KIND    = kind
     instance._PROGRAM = program
+    instance._INFO    = {}
 
     -- init instance
     if instance.init then
@@ -83,6 +84,28 @@ end
 -- get the tool program
 function _instance:program()
     return self._PROGRAM
+end
+
+-- set the value to the platform info
+function _instance:set(name, ...)
+    self._INFO[name] = table.unwrap({...})
+end
+
+-- add the value to the platform info
+function _instance:add(name, ...)
+    local info = table.wrap(self._INFO[name])
+    self._INFO[name] = table.unwrap(table.join(info, ...))
+end
+
+-- get the platform configure
+function _instance:get(name)
+    if self._super_get then
+        local value = self:_super_get(name)
+        if value ~= nil then
+            return value
+        end
+    end
+    return self._INFO[name]
 end
 
 -- has the given flag?

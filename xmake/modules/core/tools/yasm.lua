@@ -26,7 +26,7 @@
 function init(self)
   
     -- init flags map
-    _g.mapflags = 
+    self:set("mapflags",
     {
         -- symbols
         ["-g"]                      = ""
@@ -43,18 +43,13 @@ function init(self)
         -- others
     ,   ["-ftrapv"]                 = ""
     ,   ["-fsanitize=address"]      = ""
-    }
+    })
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes", 
     {
         ["object:sources"]      = false
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    })
 end
 
 -- make the warning flag

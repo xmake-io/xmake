@@ -27,12 +27,7 @@ import("core.tool.compiler")
 
 -- init it
 function init(self)
-    _g.arflags = { "-cr" }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    self:set("arflags", "-cr")
 end
 
 -- make the strip flag

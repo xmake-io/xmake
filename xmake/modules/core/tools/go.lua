@@ -31,21 +31,16 @@ import("core.project.project")
 function init(self)
     
     -- init arflags
-    _g.arflags = { "grc" }
+    self:set("arflags", "grc")
 
     -- init the file formats
-    _g.formats = { static = "$(name).a" }
+    self:set("formats", { static = "$(name).a" })
 
     -- init buildmodes
-    _g.buildmodes = 
+    self:set("buildmodes",
     {
         ["object:sources"] = true
-    }
-end
-
--- get the property
-function get(self, name)
-    return _g[name]
+    })
 end
 
 -- make the optimize flag
