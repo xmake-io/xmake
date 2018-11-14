@@ -91,7 +91,10 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     local cross = arm64 and "aarch64-linux-android-" or "arm-linux-androideabi-"
 
     -- find the binary directory
-    local bindir = find_directory("bin", path.join(sdkdir, "toolchains", cross .. "*", "prebuilt", "*"))
+    local bindir = find_directory("bin", path.join(sdkdir, "toolchains", "llvm", "prebuilt", "*")) -- larger than ndk r16
+    if not bindir then
+        bindir = find_directory("bin", path.join(sdkdir, "toolchains", cross .. "*", "prebuilt", "*"))
+    end
     if not bindir then
         return {}
     end
@@ -102,14 +105,20 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
         return {}
     end
 
+    -- find the gcc toolchain
+    local gcc_toolchain = find_directory("bin", path.join(sdkdir, "toolchains", cross .. "*", "prebuilt", "*"))
+    if gcc_toolchain then
+        gcc_toolchain = path.directory(gcc_toolchain)
+    end
+
     -- find the toolchains version
-    local toolchains_ver = ndk_toolchains_ver or _find_ndk_toolchains_ver(bindir)
+    local toolchains_ver = ndk_toolchains_ver or _find_ndk_toolchains_ver(gcc_toolchain or bindir)
     if not toolchains_ver then
         return {}
     end
 
     -- ok?    
-    return {sdkdir = sdkdir, bindir = bindir, cross = cross, sdkver = sdkver, toolchains_ver = toolchains_ver}
+    return {sdkdir = sdkdir, bindir = bindir, cross = cross, sdkver = sdkver, gcc_toolchain = gcc_toolchain, toolchains_ver = toolchains_ver}
 end
 
 -- find ndk toolchains

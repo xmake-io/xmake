@@ -33,6 +33,7 @@ function _check_ndk(config)
         config.set("ndk", ndk.sdkdir, {force = true, readonly = true}) -- maybe to global
         config.set("bin", ndk.bindir, {force = true, readonly = true})
         config.set("cross", ndk.cross, {force = true, readonly = true})
+        config.set("gcc_toolchain", ndk.gcc_toolchain, {force = true, readonly = true})
     else
         -- failed
         cprint("${bright red}please run:")
@@ -69,15 +70,13 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "ex",       cross,  "ar",           "the static library extractor") 
     checker.toolchain_insert(toolchains, "sh",       cross,  "g++",          "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       cross,  "gcc",          "the shared library linker") 
-    if is_host("windows") then
-        checker.toolchain_insert(toolchains, "cc",   cross,  "gcc.cmd",          "the c compiler") 
-        checker.toolchain_insert(toolchains, "cxx",  cross,  "g++.cmd",          "the c++ compiler") 
-        checker.toolchain_insert(toolchains, "as",   cross,  "gcc.cmd",          "the assember")
-        checker.toolchain_insert(toolchains, "ld",   cross,  "g++.cmd",          "the linker") 
-        checker.toolchain_insert(toolchains, "ld",   cross,  "gcc.cmd",          "the linker") 
-        checker.toolchain_insert(toolchains, "sh",   cross,  "g++.cmd",          "the shared library linker") 
-        checker.toolchain_insert(toolchains, "sh",   cross,  "gcc.cmd",          "the shared library linker") 
-    end
+    checker.toolchain_insert(toolchains, "cc",       "",     "clang",        "the c compiler") 
+    checker.toolchain_insert(toolchains, "cxx",      "",     "clang++",      "the c++ compiler") 
+    checker.toolchain_insert(toolchains, "as",       "",     "clang",        "the assember")
+    checker.toolchain_insert(toolchains, "ld",       "",     "clang++",      "the linker") 
+    checker.toolchain_insert(toolchains, "ld",       "",     "clang",        "the linker") 
+    checker.toolchain_insert(toolchains, "sh",       "",     "clang++",      "the shared library linker") 
+    checker.toolchain_insert(toolchains, "sh",       "",     "clang",        "the shared library linker") 
 
     -- insert rust tools to toolchains
     checker.toolchain_insert(toolchains, "rc",       "",      "rustc",       "the rust compiler") 

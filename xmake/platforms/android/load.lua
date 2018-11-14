@@ -34,10 +34,51 @@ function main(platform)
         platform:add("ldflags", "-llog")
         platform:add("shflags", "-llog")
     else
-        platform:add("cxflags", "-march=" .. arch, "-mthumb")
-        platform:add("asflags", "-march=" .. arch, "-mthumb")
-        platform:add("ldflags", "-march=" .. arch, "-llog", "-mthumb")
-        platform:add("shflags", "-march=" .. arch, "-llog", "-mthumb")
+        platform:add("cxflags", "-mthumb")
+        platform:add("asflags", "-mthumb")
+        platform:add("ldflags", "-llog", "-mthumb")
+        platform:add("shflags", "-llog", "-mthumb")
+    end
+
+    -- use llvm directory? e.g. android-ndk/toolchains/llvm/prebuilt/darwin-x86_64/bin
+    local isllvm = false
+    local bindir = config.get("bin")
+    if bindir and bindir:find("llvm", 1, true) then
+        isllvm = true
+    end
+
+    -- init architecture
+    if isllvm then
+
+        -- add target
+        local targets = 
+        {
+            ["armv5te"]     = "armv5te-none-linux-androideabi"
+        ,   ["armv7-a"]     = "armv7-none-linux-androideabi"
+        ,   ["arm64-v8a"]   = "aarch64-none-linux-android"
+        ,   ["i386"]        = "i686-none-linux-android"
+        ,   ["x86_64"]      = "x86_64-none-linux-android"
+        ,   ["mips"]        = "mipsel-none-linux-android"
+        }
+        platform:add("cxflags", "-target " .. targets[arch])
+        platform:add("asflags", "-target " .. targets[arch])
+        platform:add("ldflags", "-target " .. targets[arch])
+        platform:add("shflags", "-target " .. targets[arch])
+        
+        -- add gcc toolchain
+        local gcc_toolchain = config.get("gcc_toolchain")
+        if gcc_toolchain then
+            platform:add("cxflags", "-gcc-toolchain " .. gcc_toolchain)
+            platform:add("asflags", "-gcc-toolchain " .. gcc_toolchain)
+            platform:add("ldflags", "-gcc-toolchain " .. gcc_toolchain)
+            platform:add("shflags", "-gcc-toolchain " .. gcc_toolchain)
+        end
+    else
+        -- old version ndk
+        platform:add("cxflags", "-march=" .. arch)
+        platform:add("asflags", "-march=" .. arch)
+        platform:add("ldflags", "-march=" .. arch)
+        platform:add("shflags", "-march=" .. arch)
     end
 
     -- init cxflags for the target kind: binary 
@@ -72,9 +113,7 @@ function main(platform)
             local triples = 
             {
                 ["armv5te"]     = "arm-linux-androideabi"
-            ,   ["armv6"]       = "arm-linux-androideabi"
             ,   ["armv7-a"]     = "arm-linux-androideabi"
-            ,   ["armv8-a"]     = "arm-linux-androideabi"
             ,   ["arm64-v8a"]   = "aarch64-linux-android"
             ,   ["i386"]        = "i686-linux-android"
             ,   ["x86_64"]      = "x86_64-linux-android"
@@ -107,8 +146,8 @@ function main(platform)
         platform:add("ldflags", "-pie")
 
         -- get c++ stl sdk directory
-        local cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/llvm-libc++", ndk)) 
-        if not os.isdir(cxxstl_sdkdir) and config.get("ndk_toolchains_ver") then -- <= ndk r16
+        local cxxstl_sdkdir = isllvm and path.translate(format("%s/sources/cxx-stl/llvm-libc++", ndk)) or nil
+        if (cxxstl_sdkdir == nil or not os.isdir(cxxstl_sdkdir)) and config.get("ndk_toolchains_ver") then -- <= ndk r16
             cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver"))) 
         end
 
@@ -119,9 +158,7 @@ function main(platform)
             local toolchains_archs = 
             {
                 ["armv5te"]     = "armeabi"
-            ,   ["armv6"]       = "armeabi"
             ,   ["armv7-a"]     = "armeabi-v7a"
-            ,   ["armv8-a"]     = "armeabi-v7a"
             ,   ["arm64-v8a"]   = "arm64-v8a"
             }
 
@@ -146,9 +183,7 @@ function main(platform)
     local targets = 
     {
         ["armv5te"]     = "arm-linux-androideabi"
-    ,   ["armv6"]       = "arm-linux-androideabi"
     ,   ["armv7-a"]     = "arm-linux-androideabi"
-    ,   ["armv8-a"]     = "arm-linux-androideabi"
     ,   ["arm64-v8a"]   = "aarch64-linux-android"
     }
 

@@ -82,11 +82,6 @@ end
 -- find program
 function sandbox_lib_detect_find_program._find(name, pathes, opt)
 
-    -- attempt to check it directly in current environment 
-    if sandbox_lib_detect_find_program._check(name, opt) then
-        return name
-    end
-
     -- attempt to check it from the given directories
     if not path.is_absolute(name) then
         for _, _path in ipairs(table.wrap(pathes)) do
@@ -149,6 +144,14 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
                 end
             end
         end
+    end
+
+    -- attempt to check it directly in current environment 
+    --
+    -- @note must be detected at the end, because full path is more accurate
+    --
+    if sandbox_lib_detect_find_program._check(name, opt) then
+        return name
     end
 end
 
