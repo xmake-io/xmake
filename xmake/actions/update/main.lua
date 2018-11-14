@@ -251,10 +251,12 @@ function main()
     end
 
     -- cannot support to update dev/master on windows
-    if is_host("windows") and not version:find('.', 1, true) then
-        raise("not support to update %s on windows!", version)
-    else
-        mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", version, version)}
+    if is_host("windows") then
+        if version:find('.', 1, true) then
+            mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", version, version)}
+        else
+            raise("not support to update %s on windows!", version)
+        end
     end
 
     -- trace
