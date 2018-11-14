@@ -131,8 +131,13 @@ function main(platform)
                 platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_archs[arch]))
                 platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
                 platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
-                platform:add("ldflags", "-lgnustl_static")
-                platform:add("shflags", "-lgnustl_static")
+                if cxxstl_sdkdir:find("llvm-libc++", 1, true) then
+                    platform:add("ldflags", "-lc++")
+                    platform:add("shflags", "-lc++")
+                else
+                    platform:add("ldflags", "-lgnustl_static")
+                    platform:add("shflags", "-lgnustl_static")
+                end
             end
         end
     end
