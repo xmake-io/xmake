@@ -132,8 +132,8 @@ function main(platform)
                 platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
                 platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
                 if cxxstl_sdkdir:find("llvm-libc++", 1, true) then
-                    platform:add("ldflags", "-lc++")
-                    platform:add("shflags", "-lc++")
+                    platform:add("ldflags", "-lc++_static", "-lc++abi", "-landroid_support")
+                    platform:add("shflags", "-lc++_static", "-lc++abi", "-landroid_support")
                 else
                     platform:add("ldflags", "-lgnustl_static")
                     platform:add("shflags", "-lgnustl_static")
