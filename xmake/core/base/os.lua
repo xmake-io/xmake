@@ -718,8 +718,10 @@ function os.isexec(filepath)
     -- check permission
 
     -- is *.exe for windows?
-    if os.host() == "windows" and not filepath:find("%.exe") then
-        filepath = filepath .. ".exe"
+    if os.host() == "windows" then
+        if not filepath:endswith(".exe") and not filepath:endswith(".cmd") and not filepath:endswith(".bat") then
+            filepath = filepath .. ".exe"
+        end
     end
 
     -- file exists?

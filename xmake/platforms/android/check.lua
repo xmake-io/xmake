@@ -69,6 +69,15 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "ex",       cross,  "ar",           "the static library extractor") 
     checker.toolchain_insert(toolchains, "sh",       cross,  "g++",          "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       cross,  "gcc",          "the shared library linker") 
+    if is_host("windows") then
+        checker.toolchain_insert(toolchains, "cc",   cross,  "gcc.cmd",          "the c compiler") 
+        checker.toolchain_insert(toolchains, "cxx",  cross,  "g++.cmd",          "the c++ compiler") 
+        checker.toolchain_insert(toolchains, "as",   cross,  "gcc.cmd",          "the assember")
+        checker.toolchain_insert(toolchains, "ld",   cross,  "g++.cmd",          "the linker") 
+        checker.toolchain_insert(toolchains, "ld",   cross,  "gcc.cmd",          "the linker") 
+        checker.toolchain_insert(toolchains, "sh",   cross,  "g++.cmd",          "the shared library linker") 
+        checker.toolchain_insert(toolchains, "sh",   cross,  "gcc.cmd",          "the shared library linker") 
+    end
 
     -- insert rust tools to toolchains
     checker.toolchain_insert(toolchains, "rc",       "",      "rustc",       "the rust compiler") 

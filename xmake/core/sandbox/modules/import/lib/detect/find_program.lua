@@ -45,8 +45,10 @@ local checking  = nil
 function sandbox_lib_detect_find_program._check(program, opt)
 
     -- is *.exe for windows?
-    if os.host() == "windows" and not program:find("%.exe") then
-        program = program .. ".exe"
+    if os.host() == "windows" then
+        if not program:endswith(".exe") and not program:endswith(".cmd") and not program:endswith(".bat") then
+            program = program .. ".exe"
+        end
     end
 
     -- do not attempt to run program? check it fastly
