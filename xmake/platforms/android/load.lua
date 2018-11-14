@@ -106,12 +106,14 @@ function main(platform)
         platform:add("ldflags", "-fPIE")
         platform:add("ldflags", "-pie")
 
-        -- only for c++ stl
-        local ndk_toolchains_ver = config.get("ndk_toolchains_ver")
-        if ndk_toolchains_ver then
+        -- get c++ stl sdk directory
+        local cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/llvm-libc++", ndk)) 
+        if not os.isdir(cxxstl_sdkdir) and config.get("ndk_toolchains_ver") then -- <= ndk r16
+            cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver"))) 
+        end
 
-            -- get c++ stl sdk directory
-            local cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, ndk_toolchains_ver)) 
+        -- only for c++ stl
+        if cxxstl_sdkdir and os.isdir(cxxstl_sdkdir) then
 
             -- the toolchains archs
             local toolchains_archs = 
