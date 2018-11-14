@@ -35,7 +35,7 @@ import("lib.detect.find_programver")
 -- @code 
 --
 -- local gxx = find_gxx()
--- local gxx, version = find_gxx({program = "xcrun -sdk macosx g++", version = true})
+-- local gxx, version, hintname = find_gxx({program = "xcrun -sdk macosx g++", version = true})
 -- 
 -- @endcode
 --
@@ -53,6 +53,15 @@ function main(opt)
         version = find_programver(program, opt)
     end
 
+    -- is clang++ or g++
+    local is_clang = false
+    if program then
+        local versioninfo = os.iorunv(program, {"--version"})
+        if versioninfo and versioninfo:find("clang", 1, true) then
+            is_clang = true
+        end
+    end
+
     -- ok?
-    return program, version
+    return program, version, (is_clang and "clangxx" or "gxx")
 end
