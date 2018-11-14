@@ -246,14 +246,14 @@ function main()
     local recheck = _need_check(options_changed or not configcache)
     if recheck then
 
+        -- clear detect cache
+        detectcache.clear()
+
         -- check configure
         config.check()
 
         -- check project options
         project.check()
-
-        -- clear detect cache
-        detectcache.clear()
     end
 
     -- load platform
