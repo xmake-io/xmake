@@ -120,17 +120,21 @@ function main(platform)
             }
             platform:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
             platform:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
-            platform:add("cxflags", "--sysroot=" .. ndk_sysroot_be_r14)
+            platform:add("cflags",  "--sysroot=" .. ndk_sysroot_be_r14)
+            platform:add("cxxflags","--sysroot=" .. ndk_sysroot_be_r14)
             platform:add("asflags", "--sysroot=" .. ndk_sysroot_be_r14)
-            platform:add("cxflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            platform:add("cflags",  "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            platform:add("cxxflags","-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
             platform:add("asflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
         else
             if arch:startswith("arm64") then
-                platform:add("cxflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-                platform:add("asflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+                platform:add("cflags",   format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+                platform:add("cxxflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
+                platform:add("asflags",  format("--sysroot=%s/arch-arm64", ndk_sdkdir))
             else
-                platform:add("cxflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
-                platform:add("asflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
+                platform:add("cflags",   format("--sysroot=%s/arch-arm", ndk_sdkdir))
+                platform:add("cxxflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
+                platform:add("asflags",  format("--sysroot=%s/arch-arm", ndk_sdkdir))
             end
         end
         if arch:startswith("arm64") then
