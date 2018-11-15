@@ -77,6 +77,8 @@ function _toolchains(config)
     checker.toolchain_insert(toolchains, "ld",       "",     "clang",        "the linker") 
     checker.toolchain_insert(toolchains, "sh",       "",     "clang++",      "the shared library linker") 
     checker.toolchain_insert(toolchains, "sh",       "",     "clang",        "the shared library linker") 
+    checker.toolchain_insert(toolchains, "ar",       "",     "llvm-ar",      "the static library archiver") 
+    checker.toolchain_insert(toolchains, "ex",       "",     "llvm-ar",      "the static library extractor") 
 
     -- insert rust tools to toolchains
     checker.toolchain_insert(toolchains, "rc",       "",      "rustc",       "the rust compiler") 

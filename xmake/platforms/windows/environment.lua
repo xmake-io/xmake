@@ -77,15 +77,6 @@ function _enter_toolchains()
     _g.libs      = _enter("lib")
     _g.includes  = _enter("include")
     _g.libpathes = _enter("libpath")
-
-    -- add $programdir/winenv/bin to $path
-    os.addenv("path", path.join(os.programdir(), "winenv", "bin"))
-
-    -- attempt to load winenv 
-    local winenv_dir = path.join(global.directory(), "winenv")
-    if os.isdir(winenv_dir) then
-        import("winenv", {rootdir = winenv_dir, try = true, anonymous = true})(winenv_dir)
-    end
 end
 
 -- leave the toolchains environment

@@ -27,9 +27,11 @@ local environment = environment or {}
 
 -- load modules
 local os        = require("base/os")
+local global    = require("base/global")
 local platform  = require("platform/platform")
 local sandbox   = require("sandbox/sandbox")
 local package   = require("package/package")
+local import    = require("sandbox/modules/import")
 
 -- enter the toolchains environment
 function environment._enter_toolchains()
@@ -50,6 +52,17 @@ function environment._enter_toolchains()
         os.addenv("PATH", path.join(localdir, dir))
     end
     os.addenv("PATH", path.join(localdir, "bin"))
+
+    -- add $programdir/winenv/bin to $path
+    if os.host() == "windows" then
+        os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
+
+        -- attempt to load winenv 
+        local winenv_dir = path.join(global.directory(), "winenv")
+        if os.isdir(winenv_dir) then
+            import("winenv", {rootdir = winenv_dir, try = true, anonymous = true})(winenv_dir)
+        end
+    end
 end
 
 -- leave the toolchains environment
