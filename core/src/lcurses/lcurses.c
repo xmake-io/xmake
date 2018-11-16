@@ -88,10 +88,10 @@ Notes:
 ** defines
 ** =======================================================
 */
-static const char *STDSCR_REGISTRY     = "cui:curses:stdscr";
-static const char *WINDOWMETA          = "cui:curses:window";
-static const char *CHSTRMETA           = "cui:curses:chstr";
-static const char *RIPOFF_TABLE        = "cui:curses:ripoffline";
+static const char *STDSCR_REGISTRY     = "ltui:curses:stdscr";
+static const char *WINDOWMETA          = "ltui:curses:window";
+static const char *CHSTRMETA           = "ltui:curses:chstr";
+static const char *RIPOFF_TABLE        = "ltui:curses:ripoffline";
 
 #define B(v) ((v == ERR) ? 0 : 1)
 
