@@ -140,11 +140,13 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
         local depkind      = dep:get("kind")
         local targetkind   = target:get("kind")
         local depconfig    = table.wrap(target:depconfig(dep:name()))
-        if (depkind == "static" or depkind == "shared") and (depconfig.inherit == nil or depconfig.inherit) then
+        if (depkind == "static" or depkind == "shared" or depkind == "object") and (depconfig.inherit == nil or depconfig.inherit) then
             if (flagname == "links" or flagname == "syslinks") and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent link
-                table.insert(results, dep:basename())
+                if depkind ~= "object" then
+                    table.insert(results, dep:basename())
+                end
 
                 -- inherit links from the depdent target
                 self:_inherit_from_target(results, dep, flagname)
@@ -152,22 +154,24 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
             elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent linkdirs
-                table.insert(results, path.directory(dep:targetfile()))
+                if depkind ~= "object" then
+                    table.insert(results, path.directory(dep:targetfile()))
+                end
 
                 -- inherit linkdirs from the depdent target
                 self:_inherit_from_target(results, dep, flagname)
 
             elseif flagname == "rpathdirs" and (targetkind == "binary" or targetkind == "shared") then
 
-                -- make rpathdir 
-                local rpathdir = "@loader_path"
-                local subdir = path.relative(path.directory(dep:targetfile()), path.directory(target:targetfile()))
-                if subdir and subdir ~= '.' then
-                    rpathdir = path.join(rpathdir, subdir)
-                end
-
                 -- add dependent rpathdirs 
-                table.insert(results, rpathdir)
+                if depkind ~= "object" then
+                    local rpathdir = "@loader_path"
+                    local subdir = path.relative(path.directory(dep:targetfile()), path.directory(target:targetfile()))
+                    if subdir and subdir ~= '.' then
+                        rpathdir = path.join(rpathdir, subdir)
+                    end
+                    table.insert(results, rpathdir)
+                end
 
             elseif flagname == "includedirs" then
 

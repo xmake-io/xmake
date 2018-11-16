@@ -623,6 +623,11 @@ function target:targetfile()
     -- get target kind
     local targetkind = self:targetkind()
 
+    -- only compile objects? no target file
+    if targetkind == "object" then
+        return 
+    end
+
     -- make the target file name and attempt to use the format of linker first
     local filename = self:get("filename") or target.filename(self:basename(), targetkind, self:linker():format(targetkind))
     assert(filename)
@@ -878,6 +883,15 @@ function target:objectfiles()
     for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
         if not sourcebatch.rulename then
             table.join2(objectfiles, sourcebatch.objectfiles)
+        end
+    end
+
+    -- get object files from all dependent targets (object kind)
+    if self:orderdeps() then
+        for _, dep in ipairs(self:orderdeps()) do
+            if dep:targetkind() == "object" then
+                table.join2(objectfiles, dep:objectfiles())
+            end
         end
     end
 
