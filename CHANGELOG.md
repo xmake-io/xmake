@@ -10,6 +10,7 @@
 * Add `add_syslinks` api to add system libraries dependence
 * Add `xmake l time xmake [--rebuild]` to record compilation time
 * [#250](https://github.com/tboox/xmake/issues/250): Add `xmake f --vs_sdkver=10.0.15063.0` to change windows sdk version
+* Add `lib.luajit.ffi` and `lib.luajit.jit` extension modules
 
 ### Changes
 
@@ -513,6 +514,7 @@
 * 添加`add_syslinks`接口去设置系统库依赖，分离与`add_links`添加的库依赖之间的链接顺序
 * 添加 `xmake l time xmake [--rebuild]` 去记录编译耗时
 * [#250](https://github.com/tboox/xmake/issues/250): 添加`xmake f --vs_sdkver=10.0.15063.0`去改变windows sdk版本
+* 添加`lib.luajit.ffi`和`lib.luajit.jit`扩展模块
 
 ### 改进
 
