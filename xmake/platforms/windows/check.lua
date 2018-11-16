@@ -39,7 +39,7 @@ function _check_vsenv(config)
     end
 
     -- find vstudio
-    local vstudio = find_vstudio({vcvars_ver = config.get("vs_toolset")})
+    local vstudio = find_vstudio({vcvars_ver = config.get("vs_toolset"), sdkver = config.get("vs_sdkver")})
     if vstudio then
 
         -- make order vsver
