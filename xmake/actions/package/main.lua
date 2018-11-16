@@ -113,19 +113,8 @@ option("[targetname]")
     end
 end
 
--- package target 
-function _on_package(target)
-
-    -- build target with rules
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_package = r:script("package")
-        if on_package then
-            on_package(target)
-            done = true
-        end
-    end
-    if done then return end
+-- do package target 
+function _do_package_target(target)
 
     -- is phony target?
     if target:isphony() then
@@ -150,6 +139,29 @@ function _on_package(target)
     scripts[kind](target) 
 end
 
+-- package target 
+function _on_package_target(target)
+
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_package = r:script("package")
+        if on_package then
+            on_package(target, _do_package_target)
+            done = true
+        end
+    end
+    if done then return end
+
+    -- do package
+    _do_package_target(target)
+end
+
 -- package the given target 
 function _package(target)
 
@@ -168,7 +180,7 @@ function _package(target)
                 end
             end
         end
-    ,   target:script("package", _on_package)
+    ,   target:script("package", _on_package_target)
     ,   function (target)
             for _, r in ipairs(target:orderules()) do
                 local after_package = r:script("package_after")
@@ -184,7 +196,7 @@ function _package(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            script(target, i == 3 and _do_package_target or nil)
         end
     end
 

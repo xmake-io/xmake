@@ -82,24 +82,8 @@ function _install_library(target)
     end
 end
 
--- on install
-function _on_install(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
-
-    -- build target with rules
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_install = r:script("install")
-        if on_install then
-            on_install(target)
-            done = true
-        end
-    end
-    if done then return end
+-- do install target
+function _do_install_target(target)
 
     -- the scripts
     local scripts =
@@ -114,6 +98,29 @@ function _on_install(target)
     if script then
         script(target)
     end
+end
+
+-- on install target
+function _on_install_target(target)
+
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_install = r:script("install")
+        if on_install then
+            on_install(target, _do_install_target)
+            done = true
+        end
+    end
+    if done then return end
+
+    -- do install
+    _do_install_target(target)
 end
 
 -- install the given target 
@@ -141,7 +148,7 @@ function _install_target(target)
                 end
             end
         end
-    ,   target:script("install", _on_install)
+    ,   target:script("install", _on_install_target)
     ,   function (target)
 
             -- has been disabled?
@@ -164,7 +171,7 @@ function _install_target(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            script(target, i == 3 and _do_install_target or nil)
         end
     end
 

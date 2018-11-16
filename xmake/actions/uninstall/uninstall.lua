@@ -66,24 +66,8 @@ function _uninstall_library(target)
     end
 end
 
--- uninstall target
-function _on_uninstall(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
-
-    -- build target with rules
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_uninstall = r:script("uninstall")
-        if on_uninstall then
-            on_uninstall(target)
-            done = true
-        end
-    end
-    if done then return end
+-- do uninstall target
+function _do_uninstall_target(target)
 
     -- the scripts
     local scripts =
@@ -98,6 +82,29 @@ function _on_uninstall(target)
     if script then
         script(target)
     end
+end
+
+-- on uninstall target
+function _on_uninstall_target(target)
+
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_uninstall = r:script("uninstall")
+        if on_uninstall then
+            on_uninstall(target, _do_uninstall_target)
+            done = true
+        end
+    end
+    if done then return end
+
+    -- do uninstall
+    _do_uninstall_target(target)
 end
 
 -- uninstall the given target 
@@ -125,7 +132,7 @@ function _uninstall_target(target)
                 end
             end
         end
-    ,   target:script("uninstall", _on_uninstall)
+    ,   target:script("uninstall", _on_uninstall_target)
     ,   function (target)
 
             -- has been disabled?
@@ -148,7 +155,7 @@ function _uninstall_target(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            script(target, i == 3 and _do_uninstall_target or nil)
         end
     end
 

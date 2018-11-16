@@ -36,6 +36,15 @@ function _clean_target(target)
     end
 end
 
+-- do build the given target
+function _do_build_target(target)
+
+    -- build target
+    if not target:isphony() then
+        import("kinds." .. target:targetkind()).build(target, _g)
+    end
+end
+
 -- on build the given target
 function _on_build_target(target)
 
@@ -49,16 +58,14 @@ function _on_build_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_build = r:script("build")
         if on_build then
-            on_build(target)
+            on_build(target, _do_build_target)
             done = true
         end
     end
     if done then return end
 
-    -- build target
-    if not target:isphony() then
-        import("kinds." .. target:targetkind()).build(target, _g)
-    end
+    -- do build
+    _do_build_target(target)
 end
 
 -- build the given target 
@@ -127,7 +134,7 @@ function _build_target(target)
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            script(target, i == 2 and _do_build_target or nil)
         end
     end
 

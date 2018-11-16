@@ -49,29 +49,8 @@ function _remove(filedirs)
     end
 end
 
--- on clean target 
-function _on_clean_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
-
-    -- build target with rules
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_clean = r:script("clean")
-        if on_clean then
-            on_clean(target)
-            done = true
-        end
-    end
-    if done then return end
-
-    -- is phony target?
-    if target:isphony() then
-        return 
-    end
+-- do clean target 
+function _do_clean_target(target)
 
     -- remove the target file 
     _remove(target:targetfile()) 
@@ -102,6 +81,29 @@ function _on_clean_target(target)
         -- remove the config.h file
         _remove(target:configheader()) 
     end
+end
+
+-- on clean target 
+function _on_clean_target(target)
+
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_clean = r:script("clean")
+        if on_clean then
+            on_clean(target, _do_clean_target)
+            done = true
+        end
+    end
+    if done then return end
+
+    -- do clean
+    _do_clean_target(target)
 end
 
 -- clean the given target files
@@ -149,10 +151,9 @@ function _clean_target(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            script(target, i == 3 and _do_clean_target or nil)
         end
     end
-
 end
 
 -- clean the given target and all dependent targets

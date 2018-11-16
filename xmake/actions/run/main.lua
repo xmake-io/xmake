@@ -33,25 +33,7 @@ import("core.platform.environment")
 import("devel.debugger")
 
 -- run target 
-function _on_run_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
-
-    -- build target with rules
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_run = r:script("run")
-        if on_run then
-            on_run(target)
-            done = true
-        end
-    end
-    if done then return end
-
-    -- get kind
+function _do_run_target(target)
     if target:targetkind() == "binary" then
 
         -- get the absolute target file path
@@ -93,6 +75,29 @@ function _on_run_target(target)
         -- restore the previous directory
         os.cd(oldir)
     end
+end
+
+-- run target 
+function _on_run_target(target)
+
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
+    -- build target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_run = r:script("run")
+        if on_run then
+            on_run(target, _do_run_target)
+            done = true
+        end
+    end
+    if done then return end
+
+    -- do run
+    _do_run_target(target)
 end
 
 -- run the given target 
@@ -140,7 +145,7 @@ function _run(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target)
+            script(target, i == 3 and _do_run_target or nil)
         end
     end
 end
