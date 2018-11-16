@@ -42,7 +42,7 @@ local vcvars = {"path",
                 "UCRTVersion"}
 
 -- load vcvarsall environment variables
-function _load_vcvarsall(vcvarsall, arch, vcvars_ver)
+function _load_vcvarsall(vcvarsall, arch, vcvars_ver, sdkver)
 
     -- make the genvcvars.bat 
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
@@ -50,9 +50,9 @@ function _load_vcvarsall(vcvarsall, arch, vcvars_ver)
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
     if vcvars_ver then
-        file:print("call \"%s\" %s -vcvars_ver=%s > nul", vcvarsall, arch, vcvars_ver)
+        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch,  sdkver and sdkver or "", vcvars_ver)
     else
-        file:print("call \"%s\" %s > nul", vcvarsall, arch)
+        file:print("call \"%s\" %s %s > nul", vcvarsall, arch, sdkver and sdkver or "")
     end
     for idx, var in ipairs(vcvars) do
         file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genvcvars_dat)
@@ -118,7 +118,7 @@ end
 
 -- find vstudio environment
 --
--- @param opt   the options, .e.g {vcvars_ver = 14.0}
+-- @param opt   the options, .e.g {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
 --
 -- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
 --              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}
@@ -203,8 +203,8 @@ function main(opt)
         if os.isfile(vcvarsall) then
 
             -- load vcvarsall
-            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver)
-            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver)
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver, opt.sdkver)
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver, opt.sdkver)
 
             -- save results
             local results = {}
