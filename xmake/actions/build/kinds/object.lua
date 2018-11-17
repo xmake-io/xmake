@@ -83,17 +83,14 @@ function _build_from_static(target, sourcefile, objectfile, progress)
     extractor.extract(sourcefile, path.directory(objectfile))
 end
 
--- build object
-function _build_object(target, buildinfo, index, sourcebatch, ccache)
+-- do build file
+function _do_build_file(target, sourcefile, opt)
 
-    -- get the object and source with the given index
-    local sourcefile = sourcebatch.sourcefiles[index]
-    local objectfile = sourcebatch.objectfiles[index]
-    local dependfile = sourcebatch.dependfiles[index]
-    local sourcekind = sourcebatch.sourcekind
-
-    -- calculate progress
-    local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+    -- get build info
+    local objectfile = opt.objectfile
+    local dependfile = opt.dependfile
+    local sourcekind = opt.sourcekind
+    local progress   = opt.progress
 
     -- build the object for the *.o/obj source makefile
     if sourcekind == "obj" then 
@@ -123,9 +120,9 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
 
     -- trace progress info
     if verbose then
-        cprint("${green}[%3d%%]:${dim} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+        cprint("${green}[%3d%%]:${dim} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
     else
-        cprint("${green}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+        cprint("${green}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
     end
 
     -- trace verbose info
@@ -146,8 +143,46 @@ function _build_object(target, buildinfo, index, sourcebatch, ccache)
     depend.save(dependinfo, dependfile)
 end
 
+-- build object
+function _build_object(target, buildinfo, index, sourcebatch)
+
+    -- get the object and source with the given index
+    local sourcefile = sourcebatch.sourcefiles[index]
+    local objectfile = sourcebatch.objectfiles[index]
+    local dependfile = sourcebatch.dependfiles[index]
+    local sourcekind = sourcebatch.sourcekind
+
+    -- calculate progress
+    local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+
+    -- init build option
+    local opt = {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress}
+
+    -- do before build
+    local before_build_file = target:script("build_file_before")
+    if before_build_file then
+        before_build_file(target, sourcefile, opt)
+    end
+
+    -- do build 
+    local on_build_file = target:script("build_file")
+    if on_build_file then
+        opt.origin = _do_build_file
+        on_build_file(target, sourcefile, opt)
+        opt.origin = nil
+    else
+        _do_build_file(target, sourcefile, opt)
+    end
+
+    -- do after build
+    local after_build_file = target:script("build_file_after")
+    if after_build_file then
+        after_build_file(target, sourcefile, opt)
+    end
+end
+
 -- build each objects from the given source batch
-function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
+function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
 
     -- run build jobs for each source file 
     local curdir = os.curdir()
@@ -157,7 +192,7 @@ function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, c
         os.cd(curdir)
 
         -- build object
-        _build_object(target, buildinfo, index, sourcebatch, ccache)
+        _build_object(target, buildinfo, index, sourcebatch)
 
     end, #sourcebatch.sourcefiles, jobs)
 
@@ -166,7 +201,7 @@ function _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, c
 end
 
 -- compile source files to single object at the same time
-function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
+function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
 
     -- is verbose?
     local verbose = option.get("verbose")
@@ -184,9 +219,9 @@ function _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, 
 
         -- trace progress info
         if verbose then
-            cprint("${green}[%3d%%]:${clear} ${dim}%scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+            cprint("${green}[%3d%%]:${clear} ${dim}%scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
         else
-            cprint("${green}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, ifelse(ccache, "ccache ", ""), sourcefile)
+            cprint("${green}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
         end
     end
 
@@ -269,8 +304,11 @@ function _build_files_with_rule(target, buildinfo, sourcebatch, jobs, suffix)
                     progress = ((buildinfo.targetindex + (suffix == "before" and _g.sourceindex or _g.sourcecount) / _g.sourcecount) * 100 / buildinfo.targetcount)
                 end
 
+                -- get source file
+                local sourcefile = sourcebatch.sourcefiles[index]
+
                 -- do build file
-                on_build_file(target, sourcebatch.sourcefiles[index], {progress = progress})
+                on_build_file(target, sourcefile, {progress = progress})
 
             end, #sourcebatch.sourcefiles, jobs)
 
@@ -293,9 +331,8 @@ function build(target, buildinfo)
     local jobs = tonumber(option.get("jobs") or "4")
 
     -- get ccache
-    local ccache = nil
     if config.get("ccache") then
-        ccache = find_ccache()
+        _g.ccache = find_ccache()
     end
 
     -- build source batches with custom rules before building other sources
@@ -316,9 +353,9 @@ function build(target, buildinfo)
             _build_files_with_rule(target, buildinfo, sourcebatch, jobs)
         -- compile source files to single object at once
         elseif type(sourcebatch.objectfiles) == "string" then
-            _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
+            _build_single_object(target, buildinfo, sourcekind, sourcebatch, jobs)
         else
-            _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs, ccache)
+            _build_each_objects(target, buildinfo, sourcekind, sourcebatch, jobs)
         end
     end
 

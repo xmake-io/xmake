@@ -100,6 +100,7 @@ function target.apis()
             "target.on_run"
         ,   "target.on_load"
         ,   "target.on_build"
+        ,   "target.on_build_file"
         ,   "target.on_clean"
         ,   "target.on_package"
         ,   "target.on_install"
@@ -107,6 +108,7 @@ function target.apis()
             -- target.before_xxx
         ,   "target.before_run"
         ,   "target.before_build"
+        ,   "target.before_build_file"
         ,   "target.before_clean"
         ,   "target.before_package"
         ,   "target.before_install"
@@ -114,6 +116,7 @@ function target.apis()
             -- target.after_xxx
         ,   "target.after_run"
         ,   "target.after_build"
+        ,   "target.after_build_file"
         ,   "target.after_clean"
         ,   "target.after_package"
         ,   "target.after_install"
