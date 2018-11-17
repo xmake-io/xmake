@@ -20,6 +20,7 @@
 * Support *.xz for extractor
 * [#249](https://github.com/tboox/xmake/pull/249): revise progress formatting to space-leading three digit percentages 
 * [#247](https://github.com/tboox/xmake/pull/247): Add `-D` and `--diagnosis` instead of `--backtrace`
+* [#259](https://github.com/tboox/xmake/issues/259): Improve on_build, on_build_file and on_xxx for target and rule
 
 ## v2.2.2
 
@@ -525,6 +526,7 @@
 * 支持解压*.xz文件
 * [#249](https://github.com/tboox/xmake/pull/249): 改进编译进度信息显示格式
 * [#247](https://github.com/tboox/xmake/pull/247): 添加`-D`和`--diagnosis`去替换`--backtrace`，改进诊断信息显示
+* [#259](https://github.com/tboox/xmake/issues/259): 改进 on_build, on_build_file 和 on_xxx 等接口
 
 ## v2.2.2
 
