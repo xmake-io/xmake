@@ -97,7 +97,7 @@ function _on_uninstall_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_uninstall = r:script("uninstall")
         if on_uninstall then
-            on_uninstall(target, _do_uninstall_target)
+            on_uninstall(target, {origin = _do_uninstall_target})
             done = true
         end
     end
@@ -155,7 +155,7 @@ function _uninstall_target(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, i == 3 and _do_uninstall_target or nil)
+            script(target, {origin = (i == 3 and _do_uninstall_target or nil)})
         end
     end
 

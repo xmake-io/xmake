@@ -58,7 +58,7 @@ function _on_build_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_build = r:script("build")
         if on_build then
-            on_build(target, _do_build_target)
+            on_build(target, {origin = _do_build_target})
             done = true
         end
     end
@@ -134,7 +134,7 @@ function _build_target(target)
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, i == 2 and _do_build_target or nil)
+            script(target, {origin = (i == 2 and _do_build_target or nil)})
         end
     end
 
