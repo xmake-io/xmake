@@ -77,7 +77,9 @@ function linker:_addflags_from_compiler(flags, target, targetkind)
                 table.join2(flags_of_compiler, instance:get(toolkind .. 'flags') or instance:get(flagkind))
 
                 -- attempt to add special lanugage flags first for target kind, e.g. targetkind.gc-ldflags, targetkind.dc-arflags
-                table.join2(flags_of_compiler, instance:get(targetkind .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. flagkind))
+                if targetkind then
+                    table.join2(flags_of_compiler, instance:get(targetkind .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. flagkind))
+                end
             end
         end
     end
