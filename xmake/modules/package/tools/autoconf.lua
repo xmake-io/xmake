@@ -46,9 +46,6 @@ function install(package, configs)
                 table.insert(argv, value)
             end
         else
-            if value:find(" ", 1, true) then
-                value = '"' .. value .. '"'
-            end
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end

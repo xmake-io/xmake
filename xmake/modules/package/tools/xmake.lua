@@ -34,22 +34,14 @@ function install(package, configs)
     for _, name in ipairs(names) do
         local value = get_config(name)
         if value ~= nil then
-            value = tostring(value)
-            if value:find(" ", 1, true) then
-                value = '"' .. value .. '"'
-            end
-            table.insert(argv, "--" .. name .. "=" .. value)
+            table.insert(argv, "--" .. name .. "=" .. tostring(value))
         end
     end
     table.insert(argv, "--mode=" .. (package:debug() and "debug" or "release"))
 
     -- inherit require and option configs
     for name, value in pairs(table.join(package:configs() or {}, configs or {})) do
-        value = tostring(value)
-        if value:find(" ", 1, true) then
-            value = '"' .. value .. '"'
-        end
-        table.insert(argv, "--" .. name .. "=" .. value)
+        table.insert(argv, "--" .. name .. "=" .. tostring(value))
     end
     if option.get("verbose") then
         table.insert(argv, "-v")
