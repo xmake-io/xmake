@@ -521,7 +521,7 @@ function target:options()
 end
 
 -- get the object files directory
-function target:objectdir()
+function target:objectdir(onlyroot)
 
     -- the object directory
     local objectdir = self:get("objectdir")
@@ -529,24 +529,28 @@ function target:objectdir()
         objectdir = path.join(config.buildir(), ".objs", self:name())
     end
 
-    -- append plat sub-directory
-    local plat = config.get("plat")
-    if plat then
-        objectdir = path.join(objectdir, plat)
+    -- only in the root directory?
+    if not onlyroot then
+
+        -- append plat sub-directory
+        local plat = config.get("plat")
+        if plat then
+            objectdir = path.join(objectdir, plat)
+        end
+
+        -- append arch sub-directory
+        local arch = config.get("arch")
+        if arch then
+            objectdir = path.join(objectdir, arch)
+        end
+
+        -- append mode sub-directory
+        local mode = config.get("mode")
+        if mode then
+            objectdir = path.join(objectdir, mode)
+        end
     end
 
-    -- append arch sub-directory
-    local arch = config.get("arch")
-    if arch then
-        objectdir = path.join(objectdir, arch)
-    end
-
-    -- append mode sub-directory
-    local mode = config.get("mode")
-    if mode then
-        objectdir = path.join(objectdir, mode)
-    end
-  
     -- ok?
     return objectdir
 end
@@ -560,24 +564,6 @@ function target:dependir()
         dependir = path.join(config.buildir(), ".deps", self:name())
     end
 
-    -- append plat sub-directory
-    local plat = config.get("plat")
-    if plat then
-        dependir = path.join(dependir, plat)
-    end
-
-    -- append arch sub-directory
-    local arch = config.get("arch")
-    if arch then
-        dependir = path.join(dependir, arch)
-    end
-
-    -- append mode sub-directory
-    local mode = config.get("mode")
-    if mode then
-        dependir = path.join(dependir, mode)
-    end
-  
     -- ok?
     return dependir
 end
@@ -588,7 +574,7 @@ function target:targetkind()
 end
 
 -- get the target directory
-function target:targetdir()
+function target:targetdir(onlyroot)
 
     -- the target directory
     local targetdir = self:get("targetdir") 
@@ -596,23 +582,25 @@ function target:targetdir()
 
         -- get build directory
         targetdir = config.buildir()
+        if not onlyroot then
 
-        -- append plat sub-directory
-        local plat = config.get("plat")
-        if plat then
-            targetdir = path.join(targetdir, plat)
-        end
+            -- append plat sub-directory
+            local plat = config.get("plat")
+            if plat then
+                targetdir = path.join(targetdir, plat)
+            end
 
-        -- append arch sub-directory
-        local arch = config.get("arch")
-        if arch then
-            targetdir = path.join(targetdir, arch)
-        end
+            -- append arch sub-directory
+            local arch = config.get("arch")
+            if arch then
+                targetdir = path.join(targetdir, arch)
+            end
 
-        -- append mode sub-directory
-        local mode = config.get("mode")
-        if mode then
-            targetdir = path.join(targetdir, mode)
+            -- append mode sub-directory
+            local mode = config.get("mode")
+            if mode then
+                targetdir = path.join(targetdir, mode)
+            end
         end
     end
 
@@ -894,10 +882,15 @@ function target:objectfiles()
 
     -- get object files from all dependent targets (object kind)
     if self:orderdeps() then
+        local remove_repeat = false
         for _, dep in ipairs(self:orderdeps()) do
             if dep:targetkind() == "object" then
                 table.join2(objectfiles, dep:objectfiles())
+                remove_repeat = true
             end
+        end
+        if remove_repeat then
+            objectfiles = table.unique(objectfiles)
         end
     end
 
@@ -977,26 +970,25 @@ end
 -- get depend file from object file
 function target:dependfile(objectfile)
 
-    -- get target dependent file?
-    if not objectfile then
-        return path.join(self:dependir(), self:name() .. ".d")
+    -- get the dependent original file and directory, @note relative to the root directory
+    local originfile = objectfile and objectfile or self:targetfile(true)
+    local origindir  = objectfile and self:objectdir(true) or self:targetdir(true)
+
+    -- get the relative directory
+    local relativedir = path.directory(path.relative(originfile, origindir))
+    if path.is_absolute(relativedir) and os.host() == "windows" then
+        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
     end
 
-    -- get the relative object directory
-    local objectdir = path.directory(path.relative(objectfile, self:objectdir()))
-    if path.is_absolute(objectdir) and os.host() == "windows" then
-        objectdir = objectdir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
-    end
-
-    -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
+    -- originfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
     --
     -- we need replace '..' to '__' in this case
     --
-    objectdir = objectdir:gsub("%.%.", "__")
+    relativedir = relativedir:gsub("%.%.", "__")
 
     -- make dependent file
-    -- full file name(not base) to avoid name-clash of object file
-    return path.join(self:dependir(), objectdir, path.basename(objectfile) .. ".d")
+    -- full file name(not base) to avoid name-clash of original file
+    return path.join(self:dependir(), relativedir, path.basename(originfile) .. ".d")
 end
 
 -- get the dependent include files
