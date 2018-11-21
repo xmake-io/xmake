@@ -226,9 +226,6 @@ function project.interpreter()
         }
     }
 
-    -- register api: add_packages() to target
-    interp:api_register_builtin("add_packages", interp:_api_within_scope("target", "add_options"))
-
     -- register api: deprecated
     deprecated_project.api_register(interp)
 

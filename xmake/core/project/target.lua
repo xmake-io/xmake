@@ -34,6 +34,7 @@ local deprecated     = require("base/deprecated")
 local rule           = require("project/rule")
 local option         = require("project/option")
 local config         = require("project/config")
+local requireinfo    = require("project/requireinfo")
 local tool           = require("tool/tool")
 local linker         = require("tool/linker")
 local compiler       = require("tool/compiler")
@@ -66,6 +67,7 @@ function target.apis()
         ,   "target.add_deps"
         ,   "target.add_rules"
         ,   "target.add_options"
+        ,   "target.add_packages"
         ,   "target.add_imports"
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
@@ -502,22 +504,50 @@ function target:options()
         return self._OPTIONS
     end
 
-    -- load options 
+    -- load options if be enabled 
     self._OPTIONS = {}
     for _, name in ipairs(table.wrap(self:get("options"))) do
-
-        -- get option if be enabled
         local opt = nil
         if config.get(name) then opt = option.load(name) end
-        if nil ~= opt then
-
-            -- insert it and must ensure the order for linking
+        if opt then
             table.insert(self._OPTIONS, opt)
+        end
+    end
+
+    -- load options from packages if no require info, be compatible with the option package in (*.pkg)
+    for _, name in ipairs(table.wrap(self:get("packages"))) do
+        if not requireinfo.load(name) then
+            local opt = nil
+            if config.get(name) then opt = option.load(name) end
+            if opt then
+                table.insert(self._OPTIONS, opt)
+            end
         end
     end
 
     -- get it 
     return self._OPTIONS
+end
+
+-- get the required packages 
+function target:packages()
+
+    -- attempt to get it from cache first
+    if self._PACKAGES then
+        return self._PACKAGES
+    end
+
+    -- load packages if be enabled
+    self._PACKAGES = {}
+    for _, name in ipairs(table.wrap(self:get("packages"))) do
+        local package = requireinfo.load(name)
+        if package and package:enabled() then
+            table.insert(self._PACKAGES, package)
+        end
+    end
+
+    -- get it 
+    return self._PACKAGES
 end
 
 -- get the object files directory

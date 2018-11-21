@@ -198,9 +198,16 @@ function builder:_addflags_from_config(flags)
 end
 
 -- add flags from the option 
-function builder:_addflags_from_option(flags, target)
+function builder:_addflags_from_option(flags, opt)
     for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, self:_mapflags(target:get(flagkind)))
+        table.join2(flags, self:_mapflags(opt:get(flagkind)))
+    end
+end
+
+-- add flags from the package 
+function builder:_addflags_from_package(flags, pkg)
+    for _, flagkind in ipairs(self:_flagkinds()) do
+        table.join2(flags, self:_mapflags(pkg:get(flagkind)))
     end
 end
 
@@ -225,10 +232,17 @@ function builder:_addflags_from_target(flags, target)
         targetflags = {}
         self:_addflags_from_language(targetflags, target)
 
-        -- add the flags for the target options
+        -- add flags for the target 
         if target:type() == "target" then
+
+            -- add flags from options
             for _, opt in ipairs(target:options()) do
                 self:_addflags_from_option(targetflags, opt)
+            end
+
+            -- add flags from packages
+            for _, pkg in ipairs(target:packages()) do
+                self:_addflags_from_package(targetflags, pkg)
             end
         end
 
@@ -310,12 +324,14 @@ function builder:_addflags_from_language(flags, target, getters)
                         end
     ,   option      =   function (name)
 
-                            -- is target? get flagvalues of the attached options 
+                            -- is target? get flagvalues of the attached options and packages
                             local results = {}
                             if target:type() == "target" then
-
                                 for _, opt in ipairs(target:options()) do
                                     table.join2(results, table.wrap(opt:get(name)))
+                                end
+                                for _, pkg in ipairs(target:packages()) do
+                                    table.join2(results, table.wrap(pkg:get(name)))
                                 end
 
                             -- is option? get flagvalues of option with given flagname
