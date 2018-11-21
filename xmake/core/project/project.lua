@@ -40,6 +40,7 @@ local rule                  = require("project/rule")
 local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
+local requireinfo           = require("project/requireinfo")
 local deprecated_project    = require("project/deprecated/project")
 local package               = require("package/package")
 local platform              = require("platform/platform")
@@ -446,46 +447,6 @@ function project._load_options(disable_filter)
         return nil, errors
     end
 
-    -- load the options from the project requires
-    local requires_extra = project.get("__extra_requires") or {}
-    for _, require_str in ipairs(table.wrap(project.get("requires"))) do
-
-        -- get the package name
-        local packagename = require_str:split('%s+')[1]
-
-        -- check
-        assert(not results[packagename], "requires(\"" .. packagename .. "\") and option(\"" .. packagename .. "\") conflicts!")
-
-        -- define package option
-        local packageopt = {category = "requires", default = true, showmenu = true, description = "The " .. packagename .. " package"}
-
-        -- inherit extra option settings and override the default values
-        local alias = nil
-        local require_extra = requires_extra[require_str]
-        if require_extra then
-
-            -- override values from the extra option
-            local interp = project.interpreter()
-            for name, value in pairs(table.wrap(require_extra.option)) do
-                if type(value) == "function" then
-                    local maps = {on_check = "check", before_check = "check_before", after_check = "check_after"}
-                    local scriptname = maps[name]
-                    if scriptname then
-                        packageopt[scriptname] = interp:_script(value)
-                    end
-                else
-                    packageopt[name] = value
-                end
-            end
-
-            -- get alias
-            alias = require_extra.alias
-        end
-
-        -- add option
-        results[alias or packagename] = packageopt
-    end
-
     -- check options
     local options = {}
     for optionname, optioninfo in pairs(results) do
@@ -521,32 +482,38 @@ function project._load_options(disable_filter)
     return options
 end
 
--- get the project file
-function project.file()
-    return os.projectfile()
-end
+-- load requires
+function project._load_requires()
 
--- get the project directory
-function project.directory()
-    return os.projectdir()
-end
+    -- parse requires
+    local requires = {}
+    local requires_extra = project.get("__extra_requires") or {}
+    for _, requirestr in ipairs(table.wrap(project.get("requires"))) do
 
--- get the project info from the given name
-function project.get(name)
+        -- get the package name
+        local packagename = requirestr:split('%s+')[1]
 
-    -- load the global project infos
-    local infos = project._INFOS 
-    if not infos then
+        -- init a require info instance
+        local instance = table.inherit(requireinfo)
+        assert(instance)
 
-        -- load infos
-        infos = project._load_scope(nil, true, true)
-        project._INFOS = infos
+        -- get alias
+        local alias = nil
+        local extrainfo = requires_extra[requirestr]
+        if extrainfo then
+            alias = extrainfo.alias
+        end
+
+        -- save name and info
+        instance._NAME = packagename
+        instance._INFO = { requirestr = requirestr, extrainfo = extrainfo }
+
+        -- add require info
+        requires[alias or packagename] = instance
     end
 
-    -- get it
-    if infos then
-        return infos[name]
-    end
+    -- ok?
+    return requires
 end
 
 -- clear project cache to reload targets and options
@@ -602,6 +569,27 @@ function project.options()
 
     -- ok
     return project._OPTIONS
+end
+
+-- get the given require info
+function project.require(name)
+    return project.requires()[name]
+end
+
+-- get requires info
+function project.requires()
+
+    -- load requires 
+    if not project._REQUIRES then
+        local requires, errors = project._load_requires()
+        if not requires then
+            os.raise(errors)
+        end
+        project._REQUIRES = requires
+    end
+
+    -- ok
+    return project._REQUIRES
 end
 
 -- get the given rule

@@ -58,7 +58,7 @@ function main()
     print("The package dependencies:")
 
     -- get requires 
-    local requires, requires_extra = project.requires()
+    local requires, requires_extra = project.get("requires"), project.get("__extra_requires")
     if not requires or #requires == 0 then
         return 
     end
@@ -73,12 +73,9 @@ function main()
 
     -- list all packages
     for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
-        local packageopt  = project.option(instance:alias() or instance:name())
-        if packageopt then
-            cprint("    ${magenta}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))
-            for _, dep in ipairs(instance:orderdeps()) do
-                cprint("      -> ${magenta}dep${clear}(%s): %s", dep:requireinfo().originstr, _info(dep))
-            end
+        cprint("    ${magenta}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))
+        for _, dep in ipairs(instance:orderdeps()) do
+            cprint("      -> ${magenta}dep${clear}(%s): %s", dep:requireinfo().originstr, _info(dep))
         end
     end
 

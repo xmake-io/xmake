@@ -243,31 +243,26 @@ function _load_packages(requires, opt)
     local packages = {}
     for packagename, requireinfo in pairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
-        -- attempt to get project option about this package
-        local packageopt = os.isfile(os.projectfile()) and project.option(packagename) or nil
-        if packageopt == nil or packageopt:enabled() then -- this package is enabled?
+        -- load package 
+        local package = _load_package(packagename, requireinfo)
 
-            -- load package package
-            local package = _load_package(packagename, requireinfo)
+        -- maybe package not found and optional
+        if package then
 
-            -- maybe package not found and optional
-            if package then
-
-                -- load dependent packages and save them first of this package
-                local deps = package:get("deps")
-                if deps and opt.nodeps ~= true then
-                    local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo, nodeps = opt.nodeps})) do
-                        table.insert(packages, dep)
-                        packagedeps[dep:name()] = dep
-                    end
-                    package._DEPS = packagedeps
-                    package._ORDERDEPS = table.unique(_sort_packagedeps(package))
+            -- load dependent packages and save them first of this package
+            local deps = package:get("deps")
+            if deps and opt.nodeps ~= true then
+                local packagedeps = {}
+                for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo, nodeps = opt.nodeps})) do
+                    table.insert(packages, dep)
+                    packagedeps[dep:name()] = dep
                 end
-
-                -- save this package package
-                table.insert(packages, package)
+                package._DEPS = packagedeps
+                package._ORDERDEPS = table.unique(_sort_packagedeps(package))
             end
+
+            -- save this package package
+            table.insert(packages, package)
         end
     end
 

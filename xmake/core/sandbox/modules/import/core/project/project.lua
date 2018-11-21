@@ -178,6 +178,11 @@ function sandbox_core_project.version()
     return version, version_build
 end
 
+-- get the project info from the given name
+function sandbox_core_project.get(name)
+    return project.get(name)
+end
+
 -- get the project name
 function sandbox_core_project.name()
     return project.get("project")
@@ -188,9 +193,14 @@ function sandbox_core_project.modes()
     return project.get("modes")
 end
 
--- get the project requires
+-- get the the given require info
+function sandbox_core_project.require(name)
+    return project.require(name)
+end
+
+-- get the all requires
 function sandbox_core_project.requires()
-    return project.get("requires"), project.get("__extra_requires")
+    return project.requires()
 end
 
 -- return module

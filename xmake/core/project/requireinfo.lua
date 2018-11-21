@@ -1,0 +1,158 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed to the Apache Software Foundation (ASF) under one
+-- or more contributor license agreements.  See the NOTICE file
+-- distributed with this work for additional information
+-- regarding copyright ownership.  The ASF licenses this file
+-- to you under the Apache License, Version 2.0 (the
+-- "License"); you may not use this file except in compliance
+-- with the License.  You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        requireinfo.lua
+--
+
+-- define module
+local requireinfo = requireinfo or {}
+
+-- load modules
+local io             = require("base/io")
+local os             = require("base/os")
+local path           = require("base/path")
+local table          = require("base/table")
+local utils          = require("base/utils")
+local cache          = require("project/cache")
+
+-- get cache
+function requireinfo._cache()
+
+    -- get it from cache first if exists
+    if requireinfo._CACHE then
+        return requireinfo._CACHE
+    end
+
+    -- init cache
+    requireinfo._CACHE = cache("local.requires")
+
+    -- ok
+    return requireinfo._CACHE
+end
+
+-- save the requires info to the cache
+function requireinfo:save()
+    requireinfo._cache():set(self:name(), self._INFO)
+    requireinfo._cache():flush()
+end
+
+-- clear the requireinfo status and need recheck it
+function requireinfo:clear()
+    requireinfo._cache():set(self:name(), nil)
+end
+
+-- dump this requireinfo
+function requireinfo:dump()
+    table.dump(self._INFO)
+end
+
+-- get the require info
+function requireinfo:get(infoname)
+    return self._INFO[infoname]
+end
+
+-- get the require name
+function requireinfo:name()
+    return self._NAME
+end
+
+-- get the require string
+function requireinfo:requirestr()
+    return self:get("requirestr")
+end
+
+-- get the extra info from the given name
+function requireinfo:extra(name)
+    local extrainfo = self:extrainfo()
+    if extrainfo then
+        return extrainfo[name]
+    end
+end
+
+-- get the extra info
+function requireinfo:extrainfo()
+    return self:get("extrainfo")
+end
+
+-- set the value to the requires info
+function requireinfo:set(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        local args = ...
+        if args ~= nil then
+            self._INFO[name_or_info] = table.unwrap(table.unique(table.join(...)))
+        else
+            self._INFO[name_or_info] = nil
+        end
+    elseif table.is_dictionary(name_or_info) then
+        for name, info in pairs(table.join(name_or_info, ...)) do
+            self:set(name, info)
+        end
+    end
+end
+
+-- add the value to the requires info
+function requireinfo:add(name_or_info, ...)
+    if type(name_or_info) == "string" then
+        local info = table.wrap(self._INFO[name_or_info])
+        self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
+    elseif table.is_dictionary(name_or_info) then
+        for name, info in pairs(table.join(name_or_info, ...)) do
+            self:add(name, info)
+        end
+    end
+end
+
+-- this require info is enabled?
+function requireinfo:enabled()
+    return self:get("enabled")
+end
+
+-- enable or disable this require info
+--
+-- @param enabled   enable it?
+--
+function requireinfo:enable(enabled)
+    self:set("enabled", enabled)
+end
+
+-- load the requires info from the cache
+function requireinfo.load(name)
+
+    -- check
+    assert(name)
+
+    -- get info
+    local info = requireinfo._cache():get(name)
+    if info == nil then
+        return 
+    end
+
+    -- init requireinfo instance
+    local instance = table.inherit(requireinfo)
+    instance._INFO = info
+    instance._NAME = name
+
+    -- ok
+    return instance
+end
+
+-- return module
+return requireinfo

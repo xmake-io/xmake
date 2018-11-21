@@ -31,42 +31,43 @@ import("impl.package")
 import("impl.repository")
 import("impl.environment")
 
--- attach package to option
-function _attach_to_option(instance, opt)
+-- register the required local package
+function _register_required_package(instance, requireinfo)
 
-    -- disable this option if this package is optional and missing
+    -- disable it if this package is optional and missing
     if _g.optional_missing[instance:name()] then
-        opt:enable(false)
+        requireinfo:enable(false)
     else
+        -- add this package info
+        requireinfo:add(instance:fetch())
 
-        -- add this package info to option
-        opt:add(instance:fetch())
-
-        -- add all dependent packages info to option
+        -- add all dependent packages info 
         local orderdeps = instance:orderdeps()
         if orderdeps then
             local total = #orderdeps
             for idx, _ in ipairs(orderdeps) do
                 local dep = orderdeps[total + 1 - idx]
                 if dep then
-                    opt:add((dep:fetch()))
+                    requireinfo:add((dep:fetch()))
                 end
             end
         end
+
+        -- enable this require info
+        requireinfo:enable(true)
     end
 
-    -- update option info to the cache file
-    opt:save()
+    -- save this require info and flush the whole cache file
+    requireinfo:save()
 end
 
--- attach all packages to targets
-function _attach_to_targets(packages)
-
+-- register all required local packages
+function _register_required_packages(packages)
     for _, instance in ipairs(packages) do
         if instance:kind() ~= "binary" then
-            local opt = project.option(instance:alias() or instance:name())
-            if opt and opt:enabled() then
-                _attach_to_option(instance, opt)
+            local requireinfo = project.require(instance:alias() or instance:name())
+            if requireinfo then
+                _register_required_package(instance, requireinfo)
             end
         end
     end
@@ -107,7 +108,7 @@ function main(requires)
     -- init requires
     local requires_extra = nil
     if not requires then
-        requires, requires_extra = project.requires()
+        requires, requires_extra = project.get("requires"), project.get("__extra_requires")
     end
     if not requires or #requires == 0 then
         return 
@@ -149,8 +150,8 @@ function main(requires)
         -- check missing packages
         _check_missing_packages(packages)
 
-        -- attach required local package to targets
-        _attach_to_targets(packages)
+        -- register all required local packages
+        _register_required_packages(packages)
     end
 
     -- leave environment
