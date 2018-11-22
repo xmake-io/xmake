@@ -542,6 +542,9 @@ function target:packages()
     for _, name in ipairs(table.wrap(self:get("packages"))) do
         local package = requireinfo.load(name)
         if package and package:enabled() then
+            if package:extra("nolink") then
+                package:set("links", nil)
+            end
             table.insert(self._PACKAGES, package)
         end
     end

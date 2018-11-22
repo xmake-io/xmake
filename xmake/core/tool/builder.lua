@@ -122,6 +122,9 @@ function builder:_inherit_from_target(values, target, name)
         for _, opt in ipairs(target:options()) do
             table.join2(values, opt:get(name))
         end
+        for _, opt in ipairs(target:packages()) do
+            table.join2(values, opt:get(name))
+        end
     end
 end
 
