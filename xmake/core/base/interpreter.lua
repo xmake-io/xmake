@@ -1519,7 +1519,7 @@ function interpreter:api_builtin_set_xmakever(minver)
 
     -- check version
     if curvers_num < minvers_num then
-        os.raise("[nobacktrace]: xmake v%s < v%s, please upgrade xmake!", xmake._VERSION_SHORT, minver)
+        os.raise("[nobacktrace]: xmake v%s < v%s, please run `$xmake update` to upgrade xmake!", xmake._VERSION_SHORT, minver)
     end
 end
 
