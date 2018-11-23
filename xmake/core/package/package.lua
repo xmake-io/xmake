@@ -429,6 +429,14 @@ function _instance:configs()
     end
 end
 
+-- get the group name
+function _instance:group()
+    local requireinfo = self:requireinfo()
+    if requireinfo then
+        return requireinfo.group
+    end
+end
+
 -- get the given configuration value of package
 function _instance:config(name)
     local configs = self:configs()

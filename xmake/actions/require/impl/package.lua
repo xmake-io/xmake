@@ -117,6 +117,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         version          = version,
         alias            = require_extra.alias,     -- set package alias name
         debug            = require_extra.debug,     -- uses the debug package, default: false
+        group            = require_extra.group,     -- only uses the first package in same group
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         config           = require_extra.config,    -- the build configuration of package
@@ -241,10 +242,10 @@ function _load_packages(requires, opt)
 
     -- load packages
     local packages = {}
-    for packagename, requireinfo in pairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
+    for _, requireinfo in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
         -- load package 
-        local package = _load_package(packagename, requireinfo)
+        local package = _load_package(requireinfo.name, requireinfo.info)
 
         -- maybe package not found and optional
         if package then
@@ -253,7 +254,7 @@ function _load_packages(requires, opt)
             local deps = package:get("deps")
             if deps and opt.nodeps ~= true then
                 local packagedeps = {}
-                for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo, nodeps = opt.nodeps})) do
+                for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
                     table.insert(packages, dep)
                     packagedeps[dep:name()] = dep
                 end
@@ -367,7 +368,7 @@ function load_requires(requires, requires_extra, parentinfo)
         local packagename, requireinfo = _parse_require(require_str, requires_extra, parentinfo)
 
         -- save this required package
-        requireinfos[packagename] = requireinfo
+        table.insert(requireinfos, {name = packagename, info = requireinfo})
     end
 
     -- ok
@@ -496,8 +497,17 @@ function install_packages(requires, opt)
     end)
 
     -- install all required packages from repositories
+    local installed_in_group = {}
     for _, package in ipairs(packages_install) do
-        action.install(package)
+
+        -- only install the first package in same group
+        local group = package:group()
+        if not group or not installed_in_group[group] then
+            action.install(package)
+            if group then
+                installed_in_group[group] = true
+            end
+        end
     end
 
     -- ok
