@@ -73,16 +73,18 @@ function _make_for_target(target)
     -- make the undefines
     local undefines = table.copy(target:get("undefines_h")) 
 
-    -- make the options
+    -- make the defines for options
     for _, opt in ipairs(target:options()) do
-
-        -- get the option defines
         table.join2(defines, opt:get("defines_h")) 
         table.join2(defines, opt:get("defines_h_if_ok")) -- deprecated 
-
-        -- get the option undefines
         table.join2(undefines, opt:get("undefines_h")) 
         table.join2(undefines, opt:get("undefines_h_if_ok")) -- deprecated
+    end
+
+    -- make the defines for packages
+    for _, pkg in ipairs(target:packages()) do
+        table.join2(defines, pkg:get("defines_h")) 
+        table.join2(undefines, pkg:get("undefines_h")) 
     end
 
     -- make the defines

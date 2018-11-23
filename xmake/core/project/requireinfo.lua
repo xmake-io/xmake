@@ -26,12 +26,14 @@
 local requireinfo = requireinfo or {}
 
 -- load modules
-local io             = require("base/io")
-local os             = require("base/os")
-local path           = require("base/path")
-local table          = require("base/table")
-local utils          = require("base/utils")
-local cache          = require("project/cache")
+local io      = require("base/io")
+local os      = require("base/os")
+local path    = require("base/path")
+local table   = require("base/table")
+local utils   = require("base/utils")
+local cache   = require("project/cache")
+local semver  = require("base/semver")
+local sandbox = require("sandbox/sandbox")
 
 -- get cache
 function requireinfo._cache()
@@ -50,6 +52,21 @@ end
 
 -- save the requires info to the cache
 function requireinfo:save()
+
+    -- To ensure that the full information (version, ..) is obtained, delay loading it
+    if not self._LOADED then
+        local extrainfo = self:extrainfo()
+        if extrainfo and extrainfo.on_load then
+            local ok, errors = sandbox.load(extrainfo.on_load, self)
+            if not ok then
+                os.raise(errors)
+            end
+            extrainfo.on_load = nil
+        end
+        self._LOADED = true
+    end
+
+    -- save it
     requireinfo._cache():set(self:name(), self._INFO)
     requireinfo._cache():flush()
 end
@@ -72,6 +89,28 @@ end
 -- get the require name
 function requireinfo:name()
     return self._NAME
+end
+
+-- get the package version
+function requireinfo:version()
+
+    -- get it from cache first
+    if self._VERSION ~= nil then
+        return self._VERSION 
+    end
+
+    -- get version
+    local version = nil
+    local verstr = self:get("version")
+    if verstr then
+        version = semver.new(verstr)
+    end
+
+    -- save to cache
+    self._VERSION = version or false
+
+    -- done
+    return version
 end
 
 -- get the require string
