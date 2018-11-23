@@ -265,14 +265,15 @@ function main()
         config.set("buildir", path.relative(buildir, project.directory()), {readonly = true, force = true})
     end
 
-    -- check target
-    _check_target(targetname)
-
     -- install and update requires and config header
     local require_enable = option.boolean(option.get("require"))
     if (recheck or require_enable) and require_enable ~= false then
         install_requires()
     end
+
+    -- check target, @note we must load targets after installing required packages, 
+    -- otherwise has_package() will be invalid.
+    _check_target(targetname)
 
     -- update the config header
     if recheck then
