@@ -66,11 +66,24 @@ end
 
 -- register all required local packages
 function _register_required_packages(packages)
+    local registered_in_group = {}
     for _, instance in ipairs(packages) do
-        if instance:kind() ~= "binary" then
-            local requireinfo = project.require(instance:alias() or instance:name())
-            if requireinfo then
-                _register_required_package(instance, requireinfo)
+
+        -- only register the first package in same group
+        local group = instance:group()
+        if not group or not registered_in_group[group] then
+
+            -- do not register binary package
+            if instance:kind() ~= "binary" then
+                local requireinfo = project.require(instance:alias() or instance:name())
+                if requireinfo then
+                    _register_required_package(instance, requireinfo)
+                end
+            end
+
+            -- mark as registered in group
+            if group then
+                registered_in_group[group] = true
             end
         end
     end
