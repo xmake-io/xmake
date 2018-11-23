@@ -531,26 +531,16 @@ end
 
 -- get the required packages 
 function target:packages()
-
-    -- attempt to get it from cache first
-    if self._PACKAGES then
-        return self._PACKAGES
-    end
-
-    -- load packages if be enabled
-    self._PACKAGES = {}
-    for _, name in ipairs(table.wrap(self:get("packages"))) do
-        local package = requireinfo.load(name)
-        if package and package:enabled() then
-            if package:extra("nolink") then
-                package:set("links", nil)
+    if not self._PACKAGES_ENABLED then
+        local packages = {}
+        for _, pkg in ipairs(self._PACKAGES) do
+            if pkg:enabled() then
+                table.insert(packages, pkg)
             end
-            table.insert(self._PACKAGES, package)
         end
+        self._PACKAGES_ENABLED = packages
     end
-
-    -- get it 
-    return self._PACKAGES
+    return self._PACKAGES_ENABLED
 end
 
 -- get the object files directory

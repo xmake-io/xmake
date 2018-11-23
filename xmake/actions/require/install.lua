@@ -54,7 +54,7 @@ function _register_required_package(instance, requireinfo)
         end
 
         -- save this package version
-        requireinfo:set("version", instance:version_str())
+        requireinfo:version_set(instance:version_str())
 
         -- enable this require info
         requireinfo:enable(true)

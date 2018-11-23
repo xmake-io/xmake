@@ -32,6 +32,7 @@ local path    = require("base/path")
 local table   = require("base/table")
 local utils   = require("base/utils")
 local cache   = require("project/cache")
+local config  = require("project/config")
 local semver  = require("base/semver")
 local sandbox = require("sandbox/sandbox")
 
@@ -101,7 +102,7 @@ function requireinfo:version()
 
     -- get version
     local version = nil
-    local verstr = self:get("version")
+    local verstr = self:get("__version")
     if verstr then
         version = semver.new(verstr)
     end
@@ -113,9 +114,15 @@ function requireinfo:version()
     return version
 end
 
+-- set the package version
+function requireinfo:version_set(version)
+    self._VERSION = nil
+    self:set("__version", version)
+end
+
 -- get the require string
 function requireinfo:requirestr()
-    return self:get("requirestr")
+    return self:get("__requirestr")
 end
 
 -- get the extra info from the given name
@@ -128,7 +135,7 @@ end
 
 -- get the extra info
 function requireinfo:extrainfo()
-    return self:get("extrainfo")
+    return self:get("__extrainfo")
 end
 
 -- set the value to the requires info
@@ -161,7 +168,7 @@ end
 
 -- this require info is enabled?
 function requireinfo:enabled()
-    return self:get("enabled")
+    return self:get("__enabled")
 end
 
 -- enable or disable this require info
@@ -169,7 +176,7 @@ end
 -- @param enabled   enable it?
 --
 function requireinfo:enable(enabled)
-    self:set("enabled", enabled)
+    self:set("__enabled", enabled)
 end
 
 -- load the requires info from the cache

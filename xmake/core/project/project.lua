@@ -109,6 +109,20 @@ function project._api_has_config(interp, ...)
     return config.has(...)
 end
 
+-- some packages are enabled?
+function project._api_has_package(interp, ...)
+    -- only for loading targets
+    local requires = project._REQUIRES
+    if requires then
+        for _, name in ipairs(table.join(...)) do
+            local pkg = requires[name]
+            if pkg and pkg:enabled() then
+                return true
+            end
+        end
+    end
+end
+
 -- set config from the given name
 function project._api_set_config(interp, name, value)
     if not config.readonly(name) then
@@ -219,6 +233,7 @@ function project.interpreter()
         ,   {"get_config",              project._api_get_config       }
             -- has_xxx
         ,   {"has_config",              project._api_has_config       }
+        ,   {"has_package",             project._api_has_package      }
             -- add_xxx
         ,   {"add_moduledirs",          project._api_add_moduledirs   }
         ,   {"add_plugindirs",          project._api_add_plugindirs   }
@@ -361,6 +376,9 @@ end
 -- load targets 
 function project._load_targets()
 
+    -- load all requires first (ensure has_package() works for targets)
+    local requires = project.requires()
+
     -- load targets
     local results, errors = project._load_scope("target", true, true)
     if not results then
@@ -376,7 +394,7 @@ function project._load_targets()
         end
     end
 
-    -- load and attach target deps and rules
+    -- load and attach target deps, rules and packages
     for _, t in pairs(targets) do
 
         -- load deps
@@ -407,6 +425,15 @@ function project._load_targets()
                     end
                 end
                 table.insert(t._ORDERULES, r)
+            end
+        end
+
+        -- laod packages
+        t._PACKAGES = t._PACKAGES or {}
+        for _, packagename in ipairs(table.wrap(t:get("packages"))) do
+            local p = requires[packagename]
+            if p then
+                table.insert(t._PACKAGES, p)
             end
         end
     end
@@ -490,10 +517,6 @@ function project._load_requires()
         -- get the package name
         local packagename = requirestr:split('%s+')[1]
 
-        -- init a require info instance
-        local instance = table.inherit(requireinfo)
-        assert(instance)
-
         -- get alias
         local alias = nil
         local extrainfo = requires_extra[requirestr]
@@ -501,9 +524,22 @@ function project._load_requires()
             alias = extrainfo.alias
         end
 
-        -- save name and info
-        instance._NAME = packagename
-        instance._INFO = { requirestr = requirestr, extrainfo = extrainfo }
+        -- load it from cache first
+        local instance = requireinfo.load(alias or packagename)
+        if not instance then
+
+            -- init a require info instance
+            instance = table.inherit(requireinfo)
+
+            -- save name and info
+            instance._NAME = packagename
+            instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
+        end
+
+        -- need not links? remove it
+        if instance:extra("nolink") then
+            instance:set("links", nil)
+        end
 
         -- add require info
         requires[alias or packagename] = instance
