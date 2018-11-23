@@ -89,7 +89,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     end
 
     -- init argv
-    local argv = {"x", "-y", option.get("verbose") and "-bb3" or "-bb0", archivefile}
+    local argv = {"x", "-y", archivefile}
 
     -- ensure output directory
     if not os.isdir(outputdir) then
