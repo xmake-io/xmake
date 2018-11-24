@@ -1,5 +1,5 @@
 -- version
-set_xmakever("2.1.6")
+set_xmakever("2.2.2")
 
 -- set warning all as error
 set_warnings("all", "error")
@@ -57,15 +57,13 @@ if is_plat("windows") then
     add_ldflags("-nodefaultlib:msvcrt.lib")
 end
 
--- the base package
-option("base")
-    set_default(true)
-    if is_os("windows") then add_links("ws2_32") 
-    elseif is_os("android") then add_links("m", "c") 
-    else add_links("pthread", "dl", "m", "c") end
+-- add syslinks
+if is_plat("windows") then add_syslinks("ws2_32") 
+elseif is_plat("android") then add_syslinks("m", "c") 
+else add_syslinks("pthread", "dl", "m", "c") end
 
 -- add requires
-add_requires("tbox")
+add_requires("tbox", {debug = is_mode("debug")})
 
 -- include project sources
 includes("src") 

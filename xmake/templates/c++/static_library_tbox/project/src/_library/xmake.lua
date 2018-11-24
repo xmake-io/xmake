@@ -18,7 +18,7 @@ target("[targetname]")
     add_includedirs("$(buildir)/[targetname]")
 
     -- add packages
-    add_packages("tbox", "base")
+    add_packages("tbox")
 
     -- add files
     add_files("*.cpp") 

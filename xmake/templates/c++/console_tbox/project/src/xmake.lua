@@ -11,7 +11,7 @@ target("[targetname]")
     set_config_header("$(buildir)/[targetname].config.h", {prefix = "CONFIG"})
 
     -- add packages
-    add_packages("tbox", "base")
+    add_packages("tbox")
 
     -- add files
     add_files("*.cpp") 
