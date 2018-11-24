@@ -336,7 +336,7 @@ function _get_confirm(packages)
         -- show tips
         cprint("${bright yellow}note: ${default yellow}try installing these packages (pass -y to skip confirm)?")
         for _, package in ipairs(packages) do
-            print("  -> %s %s", package:name(), package:version_str() or "")
+            print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
         end
         cprint("please input: y (y/n)")
 
