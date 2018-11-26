@@ -543,6 +543,14 @@ function target:packages()
     return self._PACKAGES_ENABLED
 end
 
+-- get the config info of the given package 
+function target:pkgconfig(pkgname)
+    local extra_packages = self:get("__extra_packages")
+    if extra_packages then
+        return extra_packages[pkgname]
+    end
+end
+
 -- get the object files directory
 function target:objectdir(onlyroot)
 

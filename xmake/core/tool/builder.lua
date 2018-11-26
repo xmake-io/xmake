@@ -115,6 +115,21 @@ function builder:_flagkinds()
     return self._FLAGKINDS
 end
 
+-- inherts from target packages
+function builder:_inherit_from_targetpkgs(values, target, name)
+    for _, pkg in ipairs(target:packages()) do
+        -- uses them instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        local configinfo = target:pkgconfig(pkg:name())
+        if configinfo and configinfo[name] then
+            table.join2(values, configinfo[name])
+        else
+            -- uses the builtin package configs
+            table.join2(values, pkg:get(name))
+        end
+    end
+end
+
 -- inherts from target deps
 function builder:_inherit_from_target(values, target, name)
     table.join2(values, target:get(name))
@@ -122,9 +137,7 @@ function builder:_inherit_from_target(values, target, name)
         for _, opt in ipairs(target:options()) do
             table.join2(values, opt:get(name))
         end
-        for _, opt in ipairs(target:packages()) do
-            table.join2(values, opt:get(name))
-        end
+        self:_inherit_from_targetpkgs(values, target, name)
     end
 end
 
@@ -333,9 +346,7 @@ function builder:_addflags_from_language(flags, target, getters)
                                 for _, opt in ipairs(target:options()) do
                                     table.join2(results, table.wrap(opt:get(name)))
                                 end
-                                for _, pkg in ipairs(target:packages()) do
-                                    table.join2(results, table.wrap(pkg:get(name)))
-                                end
+                                self:_inherit_from_targetpkgs(results, target, name)
 
                             -- is option? get flagvalues of option with given flagname
                             elseif target:type() == "option" then

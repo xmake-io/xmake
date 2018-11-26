@@ -536,11 +536,6 @@ function project._load_requires()
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- need not links? remove it
-        if instance:extra("nolink") then
-            instance:set("links", nil)
-        end
-
         -- add require info
         requires[alias or packagename] = instance
     end
