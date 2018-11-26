@@ -4,6 +4,10 @@
 
 & {
 
+param (
+    [string]$branch = "master" 
+)
+
 Function myExit($code){
     if($code -is [int] -and $code -ne 0){
         throw $Error[0]
