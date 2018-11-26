@@ -47,7 +47,7 @@ function _add(name, url, branch, is_global)
     environment.enter()
 
     -- clone repository
-    if git.checkurl(url) then
+    if not os.isdir(url) then
         git.clone(url, {verbose = option.get("verbose"), branch = branch or "master", outputdir = repodir})
     end
 
