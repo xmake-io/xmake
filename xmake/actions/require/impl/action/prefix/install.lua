@@ -92,6 +92,8 @@ function _do_link(sourcepath, relativepath)
 
         -- get the original path of destpath
         local originpath = os.readlink(destpath)
+
+        -- fix conflicts
         if os.isdir(sourcepath) and os.isdir(originpath) then
 
             -- trace
@@ -143,6 +145,21 @@ function _do_link(sourcepath, relativepath)
             for _, filedir in ipairs(os.filedirs(path.join(sourcepath, "*"))) do
                 _do_link(filedir, path.join(relativepath, path.filename(filedir)))
             end
+
+        -- fix broken link path
+        elseif os.isdir(sourcepath) and not os.exists(originpath) then
+
+            -- remove the broken link path
+            os.rm(destpath)
+
+            -- trace
+            vprint("linking %s ..", relativepath)
+
+            -- do link
+            os.ln(sourcepath, destpath)
+
+            -- save this relative path
+            table.insert(_g.relative_pathes, relativepath)
         else
             -- link conflicts
             os.raise("cannot link %s => %s", sourcepath, destpath)
@@ -313,15 +330,9 @@ function main(package)
         function ()
             _install(package)
         end,
-        catch 
-        {
-            function (errors)
-                raise(errors)
-            end
-        },
         finally
         {
-            function ()
+            function (ok, errors)
                 -- save the prefix info to file
                 local prefixinfo = package:prefixinfo()
                 prefixinfo.installed = _g.relative_pathes
@@ -329,6 +340,11 @@ function main(package)
 
                 -- register this package
                 package:register()
+
+                -- continue to raise errors
+                if not ok then
+                    raise(errors)
+                end
             end
         }
     }
