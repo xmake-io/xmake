@@ -47,7 +47,7 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-Write-Host "Start downloading $version... Hope amazon S3 is not broken again"
+Write-Host "Start downloading xmake-installer v$version to $outfile .."
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$version.exe" -OutFile "$outfile"
 }catch{

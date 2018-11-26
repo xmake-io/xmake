@@ -110,7 +110,7 @@ function _update()
                         vprint("pulling repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
                         -- pull it
-                        git.pull({verbose = option.get("verbose"), branch = "master", repodir = repodir})
+                        git.pull({verbose = option.get("verbose"), branch = repo:branch() or "master", repodir = repodir})
 
                         -- mark as updated 
                         io.save(path.join(repodir, "updated"), {})
@@ -120,7 +120,7 @@ function _update()
                     vprint("cloning repository(%s): %s to %s ..", repo:name(), repo:url(), repodir)
 
                     -- clone it
-                    git.clone(repo:url(), {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+                    git.clone(repo:url(), {verbose = option.get("verbose"), branch = repo:branch() or "master", outputdir = repodir})
 
                     -- mark as updated 
                     io.save(path.join(repodir, "updated"), {})
