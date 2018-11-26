@@ -35,7 +35,7 @@ local config      = require("project/config")
 local interpreter = require("base/interpreter")
 
 -- new an instance
-function _instance.new(name, url, directory, is_global)
+function _instance.new(name, url, branch, directory, is_global)
 
     -- new an instance
     local instance = table.inherit(_instance)
@@ -43,6 +43,7 @@ function _instance.new(name, url, directory, is_global)
     -- init instance
     instance._NAME      = name
     instance._URL       = url
+    instance._BRANCH    = branch
     instance._DIRECTORY = directory
     instance._IS_GLOBAL = is_global
 
@@ -71,6 +72,11 @@ end
 -- get the repository url
 function _instance:url()
     return self._URL
+end
+
+-- get the repository branch
+function _instance:branch()
+    return self._BRANCH
 end
 
 -- is global repository?
@@ -172,7 +178,7 @@ function repository.directory(is_global)
 end
 
 -- load the repository 
-function repository.load(name, url, is_global)
+function repository.load(name, url, branch, is_global)
 
     -- get it directly from cache first
     repository._REPOS = repository._REPOS or {}
@@ -184,7 +190,7 @@ function repository.load(name, url, is_global)
     local repodir = os.isdir(url) and url or path.join(repository.directory(is_global), name)
 
     -- new an instance
-    local instance, errors = _instance.new(name, url, repodir, is_global)
+    local instance, errors = _instance.new(name, url, branch, repodir, is_global)
     if not instance then
         return nil, errors
     end
@@ -202,12 +208,17 @@ function repository.get(name, is_global)
     -- get it
     local repositories = repository.repositories(is_global)
     if repositories then
-        return repositories[name]
+        local repoinfo = repositories[name]
+        if type(repoinfo) == "table" then
+            return repoinfo[1], repoinfo[2]
+        else
+            return repoinfo
+        end
     end
 end
 
 -- add repository url to the given name
-function repository.add(name, url, is_global)
+function repository.add(name, url, branch, is_global)
 
     -- no name?
     if not name then
@@ -218,7 +229,7 @@ function repository.add(name, url, is_global)
     local repositories = repository.repositories(is_global) or {}
 
     -- set it
-    repositories[name] = url
+    repositories[name] = {url, branch}
 
     -- save repositories
     repository._cache(is_global):set("repositories", repositories)

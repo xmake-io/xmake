@@ -34,7 +34,7 @@ task("repo")
     -- set menu
     set_menu {
                 -- usage
-                usage = "xmake repo [options] [name] [url]"
+                usage = "xmake repo [options] [name] [url] [branch]"
 
                 -- description
             ,   description = "Manage package repositories."
@@ -52,5 +52,6 @@ task("repo")
                 ,   {                                                                                 }
                 ,   {nil, "name",   "v", nil,        "The repository name."                           }
                 ,   {nil, "url",    "v", nil,        "The repository url"                             }
-                                                                                                      }
-                                                                                                      }
+                ,   {nil, "branch", "v", nil,        "The repository branch"                          }
+                }
+    }

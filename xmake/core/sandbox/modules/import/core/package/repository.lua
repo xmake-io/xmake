@@ -38,16 +38,14 @@ end
 
 -- get repository url from the given name
 function sandbox_core_package_repository.get(name, is_global)
-
-    -- get it
     return repository.get(name, is_global)
 end
 
 -- add repository url to the given name
-function sandbox_core_package_repository.add(name, url, is_global)
+function sandbox_core_package_repository.add(name, url, branch, is_global)
 
     -- add it
-    local ok, errors = repository.add(name, url, is_global)
+    local ok, errors = repository.add(name, url, branch, is_global)
     if not ok then
         raise(errors)
     end
@@ -90,7 +88,7 @@ function sandbox_core_package_repository.repositories(is_global)
 
         -- add main url
         if #mainurls > 0 then
-            local repo = repository.load("xmake-repo", mainurls[1], true)
+            local repo = repository.load("xmake-repo", mainurls[1], "master", true)
             if repo then
                 table.insert(repositories, repo)
             end
@@ -99,8 +97,14 @@ function sandbox_core_package_repository.repositories(is_global)
 
 
     -- load repositories from repository cache 
-    for name, url in pairs(table.wrap(repository.repositories(is_global))) do
-        local repo = repository.load(name, url, is_global)
+    for name, repoinfo in pairs(table.wrap(repository.repositories(is_global))) do
+        local url = repoinfo
+        local branch = nil
+        if type(repoinfo) == "table" then
+            url = repoinfo[1]
+            branch = repoinfo[2]
+        end
+        local repo = repository.load(name, url, branch, is_global)
         if repo then
             table.insert(repositories, repo)
         end
@@ -110,13 +114,13 @@ function sandbox_core_package_repository.repositories(is_global)
     --
     -- in project xmake.lua:
     --
-    --     add_repositories("other-repo https://github.com/other/other-repo.git")
+    --     add_repositories("other-repo https://github.com/other/other-repo.git dev")
     --
     if not is_global then
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
             local repoinfo = repo:split(' ')
-            if #repoinfo == 2 then
-                local repo = repository.load(repoinfo[1], repoinfo[2], is_global)
+            if #repoinfo <= 3 then
+                local repo = repository.load(repoinfo[1], repoinfo[2], repoinfo[3], is_global)
                 if repo then
                     table.insert(repositories, repo)
                 end
@@ -128,7 +132,7 @@ function sandbox_core_package_repository.repositories(is_global)
 
     -- load repository from builtin program directory
     if is_global then
-        local repo = repository.load("builtin-repo", path.join(os.programdir(), "repository"), true)
+        local repo = repository.load("builtin-repo", path.join(os.programdir(), "repository"), nil, true)
         if repo then
             table.insert(repositories, repo)
         end

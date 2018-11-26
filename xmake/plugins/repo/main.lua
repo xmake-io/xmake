@@ -32,10 +32,10 @@ import("devel.git")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
 
 -- add repository url
-function _add(name, url, is_global)
+function _add(name, url, branch, is_global)
 
     -- add url
-    repository.add(name, url, is_global)
+    repository.add(name, url, branch, is_global)
 
     -- remove previous repository if exists
     local repodir = path.join(repository.directory(is_global), name)
@@ -47,10 +47,12 @@ function _add(name, url, is_global)
     environment.enter()
 
     -- clone repository
-    git.clone(url, {verbose = option.get("verbose"), branch = "master", outputdir = repodir})
+    if git.checkurl(url) then
+        git.clone(url, {verbose = option.get("verbose"), branch = branch or "master", outputdir = repodir})
+    end
 
     -- trace
-    cprint("${bright}add %s repository(%s): %s ok!", ifelse(is_global, "global", "local"), name, url)
+    cprint("${bright}add %s repository(%s): %s%s ok!", ifelse(is_global, "global", "local"), name, url, branch and (" " .. branch) or "")
 
     -- leave environment 
     environment.leave()
@@ -175,7 +177,7 @@ function _list()
 
             -- trace
             local description = repo:get("description")
-            print("    %s %s %s", repo:name(), repo:url(), description and ("(" .. description .. ")") or "")
+            print("    %s %s%s %s", repo:name(), repo:url(), repo:branch() and (" " .. repo:branch()) or "", description and ("(" .. description .. ")") or "")
 
             -- update count
             count = count + 1
@@ -218,7 +220,7 @@ function main()
     -- add repository url 
     if option.get("add") then
 
-        _add(option.get("name"), option.get("url"), option.get("global"))
+        _add(option.get("name"), option.get("url"), option.get("branch"), option.get("global"))
 
     -- remove repository url
     elseif option.get("remove") then
