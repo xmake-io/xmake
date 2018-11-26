@@ -253,8 +253,8 @@ function main(opt)
         if vcvarsall then
 
             -- load vcvarsall
-            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver)
-            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver)
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver, opt.sdkver)
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver, opt.sdkver)
 
             -- save results
             results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
