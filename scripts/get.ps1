@@ -2,11 +2,12 @@
 # usage: (in powershell)
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
-& {
-
 param (
+    [string]$version = "2.2.2",
     [string]$branch = "master" 
 )
+
+& {
 
 Function myExit($code){
     if($code -is [int] -and $code -ne 0){
@@ -46,10 +47,9 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-if($ver -eq $null){ $ver='v2.2.2' }
-Write-Host 'Start downloading... Hope amazon S3 is not broken again'
+Write-Host "Start downloading $version... Hope amazon S3 is not broken again"
 try{
-    Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$ver/xmake-$ver.exe" -OutFile "$outfile"
+    Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$version.exe" -OutFile "$outfile"
 }catch{
     writeErrorTip 'Download failed!'
     writeErrorTip 'Check your network or... the news of S3 break'
@@ -77,7 +77,6 @@ try{
     writeErrorTip 'But xmake could not run... Why?'
     myExit 1
 }
-if($branch -eq $null){ $branch='master' }
 Write-Host "Pulling xmake from branch $branch"
 $outfile=$temppath+"\$pid-xmake-repo.zip"
 try{
