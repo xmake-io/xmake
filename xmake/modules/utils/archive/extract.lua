@@ -46,7 +46,13 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- init argv
-    local argv = {option.get("verbose") and "-xvf" or "-xf", archivefile}
+    local argv = {}
+    if is_host("windows") then
+        -- force "x:\\xx" as local file
+        table.insert(argv, "--force-local")
+    end
+    table.insert(argv, option.get("verbose") and "-xvf" or "-xf")
+    table.insert(archivefile)
 
     -- ensure output directory
     if not os.isdir(outputdir) then
