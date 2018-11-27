@@ -4,7 +4,7 @@
 
 param (
     [string]$branch = "master", 
-    [string]$version = "2.2.2"
+    [string]$version = "v2.2.2"
 )
 
 & {
@@ -47,7 +47,7 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-Write-Host "Start downloading xmake-installer v$version to $outfile .."
+Write-Host "Start downloading xmake-installer $version to $outfile .."
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$version.exe" -OutFile "$outfile"
 }catch{
