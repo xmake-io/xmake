@@ -3,8 +3,8 @@
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
 param (
-    [string]$version = "2.2.2",
-    [string]$branch = "master" 
+    [string]$branch = "master", 
+    [string]$version = "2.2.2"
 )
 
 & {
