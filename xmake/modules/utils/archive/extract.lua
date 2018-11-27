@@ -52,7 +52,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
         table.insert(argv, "--force-local")
     end
     table.insert(argv, option.get("verbose") and "-xvf" or "-xf")
-    table.insert(archivefile)
+    table.insert(argv, archivefile)
 
     -- ensure output directory
     if not os.isdir(outputdir) then
