@@ -545,6 +545,11 @@ function project._load_requires()
                     extrainfo[k] = nil
                 end
             end
+
+            -- TODO exists deprecated option? show tips
+            if extrainfo.option then
+                os.raise("`option = {}` is no longger supported in add_requires(), please update xmake.lua")
+            end
         end
 
         -- add require info
