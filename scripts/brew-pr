@@ -1,2 +1,2 @@
 #!/bin/bash
-brew bump-formula-pr --url=https://github.com/tboox/xmake/archive/v2.2.3.zip --sha256=e89b6e45b93d8965aeb93d069c17f60723ecd1389b06bd9c6147ce1181e7cad2 xmake
+brew bump-formula-pr --url=https://github.com/tboox/xmake/archive/v2.2.3.tar.gz --sha256=c73d34805ab26d214f22fee74bf033942f91ce43bfc028663ffb910ad22c2c5d xmake
