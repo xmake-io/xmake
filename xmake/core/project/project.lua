@@ -524,7 +524,7 @@ function project._load_requires()
             alias = extrainfo.alias
         end
 
-        -- load it from cache first
+        -- load it from cache first (@note will discard scripts in extrainfo) 
         local instance = requireinfo.load(alias or packagename)
         if not instance then
 
@@ -534,6 +534,17 @@ function project._load_requires()
             -- save name and info
             instance._NAME = packagename
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
+        end
+
+        -- move scripts of extrainfo  (e.g. on_load ..) 
+        if extrainfo then
+            for k, v in pairs(extrainfo) do
+                if type(v) == "function" then
+                    instance._SCRIPTS = instance._SCRIPTS or {}
+                    instance._SCRIPTS[k] = v
+                    extrainfo[k] = nil
+                end
+            end
         end
 
         -- add require info

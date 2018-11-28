@@ -56,13 +56,12 @@ function requireinfo:save()
 
     -- To ensure that the full information (version, ..) is obtained, delay loading it
     if not self._LOADED then
-        local extrainfo = self:extrainfo()
-        if extrainfo and extrainfo.on_load then
-            local ok, errors = sandbox.load(extrainfo.on_load, self)
+        local on_load = self:script("on_load")
+        if on_load then
+            local ok, errors = sandbox.load(on_load, self)
             if not ok then
                 os.raise(errors)
             end
-            extrainfo.on_load = nil
         end
         self._LOADED = true
     end
@@ -72,9 +71,16 @@ function requireinfo:save()
     requireinfo._cache():flush()
 end
 
--- clear the requireinfo status and need recheck it
+-- clear the requireinfo 
 function requireinfo:clear()
-    requireinfo._cache():set(self:name(), nil)
+    local info = self._INFO
+    if info then
+        for k, v in pairs(info) do
+            if not k:startswith("__") then
+                info[k] = nil
+            end
+        end
+    end
 end
 
 -- dump this requireinfo
@@ -90,6 +96,11 @@ end
 -- get the require name
 function requireinfo:name()
     return self._NAME
+end
+
+-- get the given script
+function requireinfo:script(name)
+    return self._SCRIPTS and self._SCRIPTS[name] or nil
 end
 
 -- get the package version

@@ -39,6 +39,7 @@ function _register_required_package(instance, requireinfo)
         requireinfo:enable(false)
     else
         -- add this package info
+        requireinfo:clear()
         requireinfo:add(instance:fetch())
 
         -- add all dependent packages info 
