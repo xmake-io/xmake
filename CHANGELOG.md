@@ -22,6 +22,13 @@
 * [#247](https://github.com/tboox/xmake/pull/247): Add `-D` and `--diagnosis` instead of `--backtrace`
 * [#259](https://github.com/tboox/xmake/issues/259): Improve on_build, on_build_file and on_xxx for target and rule
 * [#269](https://github.com/tboox/xmake/issues/269): Clean up the temporary files at last 30 days
+* Improve remote package manager
+* Support to add packages with only header file
+* Support to modify builtin package links, e.g. `add_packages("xxx", {links = {}})`
+
+### Bugs fixed
+
+* Fix state inconsistency after failed outage of installation dependency package
 
 ## v2.2.2
 
@@ -529,6 +536,13 @@
 * [#249](https://github.com/tboox/xmake/pull/249): 改进编译进度信息显示格式
 * [#247](https://github.com/tboox/xmake/pull/247): 添加`-D`和`--diagnosis`去替换`--backtrace`，改进诊断信息显示
 * [#259](https://github.com/tboox/xmake/issues/259): 改进 on_build, on_build_file 和 on_xxx 等接口
+* 改进远程包管理器，更加方便的包依赖配置切换
+* 支持only头文件依赖包的安装
+* 支持对包内置links的手动调整，`add_packages("xxx", {links = {}})`
+
+### Bugs修复
+
+* 修复安装依赖包失败中断后的状态不一致性问题
 
 ## v2.2.2
 
