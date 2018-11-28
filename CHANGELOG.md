@@ -21,6 +21,7 @@
 * [#249](https://github.com/tboox/xmake/pull/249): revise progress formatting to space-leading three digit percentages 
 * [#247](https://github.com/tboox/xmake/pull/247): Add `-D` and `--diagnosis` instead of `--backtrace`
 * [#259](https://github.com/tboox/xmake/issues/259): Improve on_build, on_build_file and on_xxx for target and rule
+* [#269](https://github.com/tboox/xmake/issues/269): Clean up the temporary files at last 30 days
 
 ## v2.2.2
 
@@ -518,6 +519,7 @@
 * [#250](https://github.com/tboox/xmake/issues/250): 添加`xmake f --vs_sdkver=10.0.15063.0`去改变windows sdk版本
 * 添加`lib.luajit.ffi`和`lib.luajit.jit`扩展模块
 * [#263](https://github.com/tboox/xmake/issues/263): 添加object目标类型，仅仅用于编译生成object对象文件
+* [#269](https://github.com/tboox/xmake/issues/269): 每天第一次构建时候后台进程自动清理最近30天的临时文件
 
 ### 改进
 

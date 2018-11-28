@@ -29,6 +29,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("build")
+import("cleaner")
 import("trybuild")
 import("statistics")
 
@@ -51,6 +52,9 @@ function main()
 
     -- post statistics
     statistics.post()
+
+    -- clean up temporary files once a day
+    cleaner.cleanup()
 
     -- build it
     try
