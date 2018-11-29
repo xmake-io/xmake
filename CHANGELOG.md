@@ -2,6 +2,14 @@
 
 ## master (unreleased)
 
+### New features
+
+### Changes
+
+### Bugs fixed
+
+* Fix cannot call `set_optimize()` to set optimization flags when exists `add_rules("mode.release")`
+
 ## v2.2.3
 
 ### New features
@@ -517,6 +525,14 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+### 改进
+
+### Bugs修复
+
+* 修复无法通过 `set_optimize()` 设置优化选项，如果存在`add_rules("mode.release")`的情况下
 
 ## v2.2.3
 
