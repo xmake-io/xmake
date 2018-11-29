@@ -45,13 +45,19 @@ rule("mode.release")
         if is_mode("release") then
  
             -- set the symbols visibility: hidden
-            target:set("symbols", "hidden")
+            if not target:get("symbols") then
+                target:set("symbols", "hidden")
+            end
 
             -- enable fastest optimization
-            target:set("optimize", "fastest")
+            if not target:get("optimize") then
+                target:set("optimize", "fastest")
+            end
 
             -- strip all symbols
-            target:set("strip", "all")
+            if not target:get("strip") then
+                target:set("strip", "all")
+            end
         end
     end)
 
@@ -63,10 +69,14 @@ rule("mode.profile")
         if is_mode("profile") then
  
             -- set the symbols visibility: debug
-            target:set("symbols", "debug")
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
 
             -- enable fastest optimization
-            target:set("optimize", "fastest")
+            if not target:get("optimize") then
+                target:set("optimize", "fastest")
+            end
 
             -- enable gprof 
             target:add("cxflags", "-pg")
@@ -83,10 +93,14 @@ rule("mode.check")
         if is_mode("check") then
  
             -- enable the debug symbols
-            target:set("symbols", "debug")
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
 
             -- disable optimization
-            target:set("optimize", "none")
+            if not target:get("optimize") then
+                target:set("optimize", "none")
+            end
 
             -- attempt to enable some checkers for pc
             if is_mode("check") and is_arch("i386", "x86_64") then
@@ -105,10 +119,14 @@ rule("mode.coverage")
         if is_mode("coverage") then
  
             -- enable the debug symbols
-            target:set("symbols", "debug")
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
 
             -- disable optimization
-            target:set("optimize", "none")
+            if not target:get("optimize") then
+                target:set("optimize", "none")
+            end
 
             -- enable coverage
             target:add("cxflags", "--coverage")
