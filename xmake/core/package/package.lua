@@ -539,6 +539,12 @@ function _instance:fetch(opt)
         return fetchinfo, fetchfrom
     end
 
+    -- fetch the require version
+    local require_ver = opt.version or self:requireinfo().version
+    if require_ver == "lastest" then
+        require_ver = nil
+    end
+
     -- fetch binary tool?
     fetchinfo = nil
     fetchfrom = nil
@@ -547,7 +553,7 @@ function _instance:fetch(opt)
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
-        -- fetch it from the system directories
+        -- fetch it from the system directories, TODO find the given version
         fetchinfo = self._find_tool(self:name(), {force = opt.force})
         if fetchinfo then
             fetchfrom = "system" -- ignore self:requireinfo().system
@@ -568,6 +574,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
                                                          system = false, 
                                                          global = self:from("local") and false or nil, 
+                                                         version = require_ver,
                                                          cachekey = "fetch:prefix", 
                                                          force = opt.force or self:from("local")}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
@@ -575,7 +582,7 @@ function _instance:fetch(opt)
 
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
-            fetchinfo = self._find_package(self:name(), {force = opt.force, cachekey = "fetch:system", system = true})
+            fetchinfo = self._find_package(self:name(), {force = opt.force, version = require_ver, cachekey = "fetch:system", system = true})
             if fetchinfo then fetchfrom = "system" end
         end
     end
