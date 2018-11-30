@@ -501,7 +501,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     result = sandbox_lib_detect_find_package._find(name, opt) 
 
     -- match version?
-    if opt.version then
+    if opt.version and result then
         if not result.version or not semver.satisfies(result.version, opt.version) then
             result = nil
         end

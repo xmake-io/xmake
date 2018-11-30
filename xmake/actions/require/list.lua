@@ -55,7 +55,7 @@ end
 function main()
 
     -- list all requires
-    print("The package dependencies:")
+    print("The package dependencies of project:")
 
     -- get requires 
     local requires, requires_extra = project.get("requires"), project.get("__extra_requires")
@@ -80,7 +80,7 @@ function main()
         local fetchinfo = instance:fetch()
         if fetchinfo then
             for name, info in pairs(fetchinfo) do
-                print("      -> %s: %s", name, table.concat(table.wrap(info), " "))
+                cprint("      -> ${magenta}%s${clear}: %s", name, table.concat(table.wrap(info), " "))
             end
         end
     end

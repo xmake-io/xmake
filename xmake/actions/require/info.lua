@@ -31,11 +31,33 @@ import("impl.package")
 import("impl.repository")
 import("impl.environment")
 
--- show the given package info
-function main(requires)
+-- from local/global/system/remote?
+function _from(instance)
+    local fetchinfo, fetchfrom = instance:fetch()
+    if fetchinfo then
+        return ", ${green}" .. fetchfrom .. "${clear}"
+    elseif #instance:urls() > 0 then
+        return instance:supported() and format(", ${yellow}remote${clear}(in %s)", instance:repo():name()) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", instance:repo():name())
+    elseif instance:from("system") then
+        return ", ${red}missing${clear}"
+    else
+        return ""
+    end
+end
 
-    -- no requires?
-    if not requires then
+-- get package info 
+function _info(instance)
+    local info = instance:version_str() and instance:version_str() or "no version"
+    info = info .. _from(instance)
+    info = info .. (instance:optional() and ", ${yellow}optional${clear}" or "")
+    return info
+end
+
+-- show the given package info
+function main(package_names)
+
+    -- no package names?
+    if not package_names then
         return 
     end
 
@@ -47,33 +69,34 @@ function main(requires)
         task.run("repo", {update = true})
     end
 
-    -- get extra info
-    local extra =  option.get("extra")
-    local extrainfo = nil
-    if extra then
-        local tmpfile = os.tmpfile() .. ".lua"
-        io.writefile(tmpfile, "{" .. extra .. "}")
-        extrainfo = io.load(tmpfile)
-        os.tryrm(tmpfile)
+    -- show title
+    print("The package info of project:")
+
+    -- get project requires 
+    local project_requires, requires_extra = project.get("requires"), project.get("__extra_requires")
+    if not project_requires then
+        raise("requires(%s) not found in project!", table.concat(requires, " "))
     end
 
-    -- init requires extra info
-    local requires_extra = {}
-    if extrainfo then
-        for _, require_str in ipairs(requires) do
-            requires_extra[require_str] = extrainfo
+    -- find required package in project
+    local requires = {}
+    for _, name in ipairs(package_names) do
+        for _, require_str in ipairs(project_requires) do
+            if require_str:split(' ')[1]:lower():find(name:lower()) then
+                table.insert(requires, require_str)
+            end
         end
     end
-
-    -- show title
-    print("The package infos:")
+    if #requires == 0 then
+        raise("%s not found in project!", table.concat(package_names, " "))
+    end
 
     -- list all packages
-    for _, instance in ipairs(package.load_packages(requires, extrainfo and {requires_extra = requires_extra} or nil)) do
+    for _, instance in ipairs(package.load_packages(requires, requires_extra)) do
 
         -- show package name
         local requireinfo = instance:requireinfo() or {}
-        cprint("    ${magenta}require${clear}(%s):", requireinfo.originstr)
+        cprint("    ${magenta}require${clear}(%s): ", requireinfo.originstr)
 
         -- show description
         local description = instance:get("description")
@@ -121,6 +144,15 @@ function main(requires)
 
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
+
+        -- show fetch info
+        cprint("      -> ${magenta}fetchinfo${clear}: %s", _info(instance))
+        local fetchinfo = instance:fetch()
+        if fetchinfo then
+            for name, info in pairs(fetchinfo) do
+                cprint("          -> ${magenta}%s${clear}: %s", name, table.concat(table.wrap(info), " "))
+            end
+        end
 
         -- end
         print("")

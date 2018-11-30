@@ -25,15 +25,16 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
+import("core.project.project")
 import("impl.package")
 import("impl.repository")
 import("impl.environment")
 
--- show the given package info
-function main(requires)
+-- unlink the given packages
+function main(package_names)
 
-    -- no requires?
-    if not requires then
+    -- no package names?
+    if not package_names then
         return 
     end
 
@@ -45,22 +46,23 @@ function main(requires)
         task.run("repo", {update = true})
     end
 
-    -- get extra info
-    local extra =  option.get("extra")
-    local extrainfo = nil
-    if extra then
-        local tmpfile = os.tmpfile() .. ".lua"
-        io.writefile(tmpfile, "{" .. extra .. "}")
-        extrainfo = io.load(tmpfile)
-        os.tryrm(tmpfile)
+    -- get project requires 
+    local project_requires, requires_extra = project.get("requires"), project.get("__extra_requires")
+    if not project_requires then
+        raise("requires(%s) not found in project!", table.concat(requires, " "))
     end
 
-    -- init requires extra info
-    local requires_extra = {}
-    if extrainfo then
-        for _, require_str in ipairs(requires) do
-            requires_extra[require_str] = extrainfo
+    -- find required package in project
+    local requires = {}
+    for _, name in ipairs(package_names) do
+        for _, require_str in ipairs(project_requires) do
+            if require_str:split(' ')[1]:lower():find(name:lower()) then
+                table.insert(requires, require_str)
+            end
         end
+    end
+    if #requires == 0 then
+        raise("%s not found in project!", table.concat(package_names, " "))
     end
 
     -- unlink packages
