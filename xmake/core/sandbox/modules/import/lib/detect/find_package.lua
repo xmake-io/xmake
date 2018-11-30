@@ -269,7 +269,7 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     end
 
     -- get version
-    result.version = path.basename(path.directory(prefixfile))
+    result.version = path.filename(path.directory(prefixfile))
 
     -- ok
     return result
