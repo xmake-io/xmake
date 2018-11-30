@@ -71,11 +71,17 @@ function main()
         task.run("repo", {update = true})
     end
 
-    -- list all packages
+    -- list all required packages
     for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
         cprint("    ${magenta}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))
         for _, dep in ipairs(instance:orderdeps()) do
             cprint("      -> ${magenta}dep${clear}(%s): %s", dep:requireinfo().originstr, _info(dep))
+        end
+        local fetchinfo = instance:fetch()
+        if fetchinfo then
+            for name, info in pairs(fetchinfo) do
+                print("      -> %s: %s", name, table.concat(table.wrap(info), " "))
+            end
         end
     end
 

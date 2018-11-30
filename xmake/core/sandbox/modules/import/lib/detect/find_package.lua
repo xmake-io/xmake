@@ -38,6 +38,7 @@ local project           = require("project/project")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
 local cache             = require("sandbox/modules/import/lib/detect/cache")
+local semver            = require("base/semver")
 local pkg_config        = import("lib.detect.pkg_config")
 
 -- find package from the package directories
@@ -267,14 +268,8 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
         end
     end
 
-    -- save version
-    if opt.version then
-        local prefixname = path.basename(prefixfile)
-        result.version = prefixname:match(name .. "%-(%d+%.?%d*%.?%d*.-)")
-        if not result.version then
-            result.version = infoname:match(name .. "%-(%d+%.?%d*%.-)")
-        end
-    end
+    -- get version
+    result.version = path.basename(path.directory(prefixfile))
 
     -- ok
     return result
@@ -303,11 +298,6 @@ end
 -- find package from the system directories
 function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
-    -- cannot get the version of package
-    if opt.version then
-        return 
-    end
-
     -- add default search includedirs on pc host
     local includedirs = table.wrap(opt.includedirs)
     if opt.plat == "linux" or opt.plat == "macosx" then
@@ -334,11 +324,13 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
     -- attempt to get links from pkg-config
     local pkginfo = nil
+    local version = nil
     local links = table.wrap(opt.links)
     if #links == 0 then
         pkginfo = import("lib.detect.pkg_config").info(name)
         if pkginfo then
             links = table.wrap(pkginfo.links)
+            version = pkginfo.version
         end
     end
 
@@ -382,6 +374,11 @@ function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
     -- not found? only add links
     if not result and pkginfo and pkginfo.links then
         result = {links = pkginfo.links}
+    end
+
+    -- save version
+    if result and version then
+        result.version = version
     end
 
     -- ok
@@ -442,6 +439,16 @@ function sandbox_lib_detect_find_package._find(name, opt)
         result.includedirs = table.unique(result.includedirs)
     end
 
+    -- check valid version
+    if result and result.version then
+        local version = semver.new(result.version)
+        if version then
+            result.version = version:rawstr()
+        else 
+            result.version = nil
+        end
+    end
+
     -- ok?
     return result
 end
@@ -459,7 +466,7 @@ end
 -- @code 
 --
 -- local package = find_package("openssl")
--- local package = find_package("openssl", {version = "1.0.1"})
+-- local package = find_package("openssl", {version = "1.0.*"})
 -- local package = find_package("openssl", {plat = "iphoneos"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
@@ -476,6 +483,9 @@ function sandbox_lib_detect_find_package.main(name, opt)
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
+    if opt.version then
+        key = key .. "_" .. opt.version
+    end
     if opt.cachekey then
         key = key .. "_" .. opt.cachekey
     end
@@ -490,6 +500,13 @@ function sandbox_lib_detect_find_package.main(name, opt)
     -- find package
     result = sandbox_lib_detect_find_package._find(name, opt) 
 
+    -- match version?
+    if opt.version then
+        if not result.version or not semver.satisfies(result.version, opt.version) then
+            result = nil
+        end
+    end
+
     -- cache result
     cacheinfo[name] = result and result or false
     cache.save(key, cacheinfo)
@@ -497,7 +514,7 @@ function sandbox_lib_detect_find_package.main(name, opt)
     -- trace
     if opt.verbose or option.get("verbose") then
         if result then
-            utils.cprint("checking for the %s ... ${green}ok", name)
+            utils.cprint("checking for the %s ... ${green}%s", name, result.version and result.version or "ok")
         else
             utils.cprint("checking for the %s ... ${red}no", name)
         end

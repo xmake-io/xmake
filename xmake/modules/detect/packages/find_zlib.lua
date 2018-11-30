@@ -63,14 +63,12 @@ function main(opt)
             -- save include directory
             table.insert(result.includedirs, includedir)
 
-            -- match version
-            if opt.version then
-                local zlib_h = io.readfile(path.join(includedir, "zlib.h"))
-                if zlib_h then
-                    local version = zlib_h:match("#define ZLIB_VERSION \"(%d+%.?%d+%.?%d+)\"")
-                    if version ~= opt.version then
-                        return 
-                    end
+            -- get version
+            local zlib_h = io.readfile(path.join(includedir, "zlib.h"))
+            if zlib_h then
+                local version = zlib_h:match("#define ZLIB_VERSION \"(%d+%.?%d+%.?%d+)\"")
+                if version then
+                    result.version = version
                 end
             end
         end
