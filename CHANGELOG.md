@@ -6,6 +6,8 @@
 
 ### Changes
 
+* Improve to switch version and debug mode for the dependent packages
+
 ### Bugs fixed
 
 * Fix cannot call `set_optimize()` to set optimization flags when exists `add_rules("mode.release")`
@@ -529,6 +531,8 @@
 ### 新特性
 
 ### 改进
+
+* 针对远程依赖包，改进版本和调试模式切换
 
 ### Bugs修复
 
