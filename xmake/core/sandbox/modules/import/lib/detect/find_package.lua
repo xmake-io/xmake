@@ -72,9 +72,9 @@ function sandbox_lib_detect_find_package._find_from_packagedirs(name, opt)
         -- init maps
         local maps = 
         {
-            arch        = opt.arch
-        ,   plat        = opt.plat
-        ,   mode        = opt.mode
+            arch = opt.arch
+        ,   plat = opt.plat
+        ,   mode = opt.mode or config.get("mode")
         }
 
         -- get variable
@@ -141,36 +141,20 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local prefixdirs = table.wrap(opt.prefixdirs)
     local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
     if #prefixdirs == 0 then
-        if opt.mode then
-            table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, opt.mode))
-        end
-        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, "release"))
-        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, "debug"))
+        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, opt.mode or "release"))
         if opt.global ~= false then 
-            if opt.mode then
-                table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, opt.mode))
-            end
-            table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, "release"))
-            table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, "debug"))
+            table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, opt.mode or "release"))
         end
     end
 
     -- find the prefix info file of package, .e.g prefix/info/z/zlib/1.2.11/info.txt
     local packagedirs = {}
     local packagepath = path.join(name:sub(1, 1), name, "*")
-    if opt.mode then
-        table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, opt.mode, packagepath))
-    end
-    table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, "release", packagepath))
-    table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, "debug", packagepath))
+    table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, opt.mode or "release", packagepath))
 
     -- find the prefix info file from the global prefix directory
     if opt.global ~= false then 
-        if opt.mode then
-            table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, opt.mode, packagepath))
-        end
-        table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, "release", packagepath))
-        table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, "debug", packagepath))
+        table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, opt.mode or "release", packagepath))
     end
     local prefixfile = find_file("info.txt", packagedirs)
     if not prefixfile then
@@ -423,7 +407,7 @@ function sandbox_lib_detect_find_package._find(name, opt)
             table.insert(findscripts, sandbox_lib_detect_find_package._find_from_systemdirs)
         end
     end
-
+    
     -- find it
     local result = nil
     for _, find in ipairs(findscripts) do
@@ -476,10 +460,9 @@ end
 function sandbox_lib_detect_find_package.main(name, opt)
 
     -- init options
-    opt        = opt or {}
-    opt.plat   = opt.plat or config.get("plat") or os.host()
-    opt.arch   = opt.arch or config.get("arch") or os.arch()
-    opt.mode   = opt.mode or config.get("mode")
+    opt      = opt or {}
+    opt.plat = opt.plat or config.get("plat") or os.host()
+    opt.arch = opt.arch or config.get("arch") or os.arch()
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
@@ -488,6 +471,9 @@ function sandbox_lib_detect_find_package.main(name, opt)
     end
     if opt.cachekey then
         key = key .. "_" .. opt.cachekey
+    end
+    if opt.mode then
+        key = key .. "_" .. opt.mode
     end
 
     -- attempt to get result from cache first

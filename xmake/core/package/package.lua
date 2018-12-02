@@ -572,6 +572,7 @@ function _instance:fetch(opt)
         -- and add cache key to make a distinction with finding system package
         if not fetchinfo and system ~= true then
             fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
+                                                         mode = self:debug() and "debug" or nil,
                                                          system = false, 
                                                          global = self:from("local") and false or nil, 
                                                          version = require_ver,
@@ -582,7 +583,11 @@ function _instance:fetch(opt)
 
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
-            fetchinfo = self._find_package(self:name(), {force = opt.force, version = require_ver, cachekey = "fetch:system", system = true})
+            fetchinfo = self._find_package(self:name(), {force = opt.force, 
+                                                         version = require_ver, 
+                                                         cachekey = "fetch:system", 
+                                                         mode = self:debug() and "debug" or nil,
+                                                         system = true})
             if fetchinfo then fetchfrom = "system" end
         end
     end

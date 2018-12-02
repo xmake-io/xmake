@@ -69,22 +69,27 @@ function info(name, opt)
         os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
+    -- only find debug package? clear the other pkg-config pathes
+    if opt.mode == "debug" then
+        os.setenv("PKG_CONFIG_PATH", nil)
+    end
+
     -- attempt to get pkg-config path from `brew --prefix` if no flags
     local brewprefix = nil
     if not flags then
 
         -- find the config directories from the prefix directories of xmake
         local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
-        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, "release", "lib", "pkgconfig"))
-        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, "debug", "lib", "pkgconfig"))
-        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, "release", "lib", "pkgconfig"))
-        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, "debug", "lib", "pkgconfig"))
+        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, opt.mode or "release", "lib", "pkgconfig"))
+        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, opt.mode or "release", "lib", "pkgconfig"))
 
         -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
-        local pcfile = find_file(name .. ".pc", "/usr/local/Cellar/" .. (opt.brewhint or name) .. "/*/lib/pkgconfig")
-        if pcfile then
-            brewprefix = path.directory(path.directory(path.directory(pcfile)))
-            os.addenv("PKG_CONFIG_PATH", path.directory(pcfile))
+        if opt.mode ~= "debug" then
+            local pcfile = find_file(name .. ".pc", "/usr/local/Cellar/" .. (opt.brewhint or name) .. "/*/lib/pkgconfig")
+            if pcfile then
+                brewprefix = path.directory(path.directory(path.directory(pcfile)))
+                os.addenv("PKG_CONFIG_PATH", path.directory(pcfile))
+            end
         end
     end
 
