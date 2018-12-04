@@ -282,7 +282,14 @@ end
 -- dump the configure
 function config.dump()
     if not option.get("quiet") then
-        table.dump(config.options(), "__%w*", "configure")
+        utils.print("configure")
+        utils.print("{")
+        for name, value in pairs(config.options()) do
+            if not name:startswith("__") then
+                utils.print("    %s = %s", name, value)
+            end
+        end
+        utils.print("}")
     end
 end
 

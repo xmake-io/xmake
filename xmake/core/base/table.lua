@@ -25,6 +25,74 @@
 -- define module: table
 local table = table or {}
 
+-- make string with the level
+function table._makestr(self, deflate, level)
+    if type(self) == "string" or type(self) == "boolean" or type(self) == "number" then  
+        return tostring(self)
+    elseif type(self) == "table" and (getmetatable(self) or {}).__tostring then
+        return tostring(self)
+    elseif type(self) == "table" then  
+
+        -- make head
+        local s = ""
+        if deflate then
+            s = s .. "{"
+        else
+            s = s .. "\n"
+            for l = 1, level do
+                s = s .. "    "
+            end
+            s = s .. "{\n"
+        end
+
+        -- make body
+        local i = 0
+        for k, v in pairs(self) do  
+
+            if deflate then
+                s = s .. (i ~= 0 and "," or "")
+            else
+                for l = 1, level do
+                    s = s .. "    "
+                end
+                if i == 0 then
+                    s = s .. "    "
+                else
+                    s = s .. ",   "
+                end
+            end
+            
+            -- make key = value
+            if type(k) == "string" then
+                if deflate then
+                    s = s .. k .. "=" 
+                else
+                    s = s .. k .. " = " 
+                end
+            end
+            s = s .. table._makestr(v, deflate, level + 1)  
+
+            if not deflate then
+                s = s .. "\n"
+            end
+            i = i + 1
+        end  
+
+        -- make tail
+        if not deflate then
+            for l = 1, level do
+                s = s .. "    "
+            end
+        end
+        s = s .. "}"
+        return s
+    elseif self ~= nil then
+        return "<" .. tostring(self) .. ">"
+    else
+        return "nil"
+    end
+end
+
 -- clear the table
 function table.clear(self)
     for k in next, self do
@@ -190,84 +258,14 @@ function table.is_dictionary(dict)
     return type(dict) == "table" and dict[1] == nil
 end
 
--- dump it with the level
-function table._dump(self, exclude, level)
- 
-    -- dump basic type
-    if type(self) == "string" or type(self) == "boolean" or type(self) == "number" then  
-        io.write(tostring(self))  
-    elseif type(self) == "table" and (getmetatable(self) or {}).__tostring then
-        io.write(tostring(self))  
-    -- dump table
-    elseif type(self) == "table" then  
-
-        -- dump head
-        io.write("\n")  
-        for l = 1, level do
-            io.write("    ")
-        end
-        io.write("{\n")
-
-        -- dump body
-        local i = 0
-        for k, v in pairs(self) do  
-
-            -- exclude some keys
-            if not exclude or type(k) ~= "string" or not k:find(exclude) then
-
-                -- dump spaces and separator
-                for l = 1, level do
-                    io.write("    ")
-                end
-
-                if i == 0 then
-                    io.write("    ")
-                else
-                    io.write(",   ")
-                end
-                
-                -- dump key
-                if type(k) == "string" then
-                    io.write(k, " = ")  
-                end
-
-                -- dump value
-                table._dump(v, exclude, level + 1)  
-
-                -- dump newline
-                io.write("\n")
-                i = i + 1
-            end
-        end  
-
-        -- dump tail
-        for l = 1, level do
-            io.write("    ")
-        end
-        io.write("}\n")  
-    elseif self ~= nil then
-        io.write("<" .. tostring(self) .. ">")
-    else
-        io.write("nil")
-    end
+-- dump table
+function table.dump(self, deflate)
+    io.write(table.makestr(self, deflate))
 end
 
--- dump it
-function table.dump(self, exclude, prefix)
-
-    -- dump prefix
-    if prefix then
-        io.write(prefix)
-    end
-  
-    -- dump it
-    table._dump(self, exclude, 0)
-
-    -- end
-    print("")
-
-    -- return it
-    return self
+-- make string from the given table
+function table.makestr(self, deflate)
+    return table._makestr(self, deflate, 0)
 end
 
 -- unwrap object if be only one
