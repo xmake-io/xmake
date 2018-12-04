@@ -50,10 +50,8 @@ function enter()
     local arch = get_config("arch")
     _g.prefixdirs = _g.prefixdirs or 
     {
-        core_package.prefixdir(false, false, plat, arch),
-        core_package.prefixdir(false, true, plat, arch),
-        core_package.prefixdir(true, false, plat, arch), 
-        core_package.prefixdir(true, true, plat, arch)
+        core_package.prefixdir(false, "release", plat, arch),
+        core_package.prefixdir(true, "release", plat, arch), 
     }
 
     -- add search directories of pkgconfig, aclocal, cmake 

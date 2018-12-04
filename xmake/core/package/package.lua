@@ -57,6 +57,20 @@ function _instance.new(name, info, rootdir)
     return instance
 end
 
+-- get the build mode
+function _instance:_buildmode()
+    if self._BUILDMODE == nil then
+        local buildmode = self:debug() and "debug" or "release"
+        local configs = self:configs()
+        if configs then
+            self._BUILDMODE = buildmode .. "_" .. hash.uuid(table.makestr(configs, true)):split('-')[1]
+        else
+            self._BUILDMODE = buildmode
+        end
+    end
+    return self._BUILDMODE
+end
+
 -- get the package configure
 function _instance:get(name)
 
@@ -221,7 +235,7 @@ end
 function _instance:installdir(...)
     
     -- make the given install directory
-    local dir = path.join(package.installdir(self:debug(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
+    local dir = path.join(package.installdir(self:_buildmode(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -234,7 +248,7 @@ end
 function _instance:prefixdir(...)
     
     -- make the given prefix directory
-    local dir = path.join(package.prefixdir(self:from("global"), self:debug(), self:plat(), self:arch()), ...)
+    local dir = path.join(package.prefixdir(self:from("global"), self:_buildmode(), self:plat(), self:arch()), ...)
 
     -- ensure the prefix directory
     if not os.isdir(dir) then
@@ -254,7 +268,7 @@ end
 
 -- get the prefix info file
 function _instance:prefixfile()
-    return path.join(package.prefixinfodir(self:from("global"), self:debug(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), "info.txt")
+    return path.join(package.prefixinfodir(self:from("global"), self:_buildmode(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), "info.txt")
 end
 
 -- get prefix variables
@@ -294,7 +308,7 @@ function _instance:register()
 
     -- register the environment variables
     for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.addenv(self:from("global"), self:debug(), self:plat(), self:arch(), name, values)
+        package.addenv(self:from("global"), self:_buildmode(), self:plat(), self:arch(), name, values)
     end
 end
 
@@ -303,7 +317,7 @@ function _instance:unregister()
 
     -- unregister the environment variables
     for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.delenv(self:from("global"), self:debug(), self:plat(), self:arch(), name, values)
+        package.delenv(self:from("global"), self:_buildmode(), self:plat(), self:arch(), name, values)
     end
 end
 
@@ -572,7 +586,7 @@ function _instance:fetch(opt)
         -- and add cache key to make a distinction with finding system package
         if not fetchinfo and system ~= true then
             fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
-                                                         mode = self:debug() and "debug" or nil,
+                                                         mode = self:_buildmode(),
                                                          system = false, 
                                                          islocal = self:from("local"), 
                                                          version = require_ver,
@@ -586,7 +600,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_package(self:name(), {force = opt.force, 
                                                          version = require_ver, 
                                                          cachekey = "fetch:system", 
-                                                         mode = self:debug() and "debug" or nil,
+                                                         mode = self:_buildmode(),
                                                          system = true})
             if fetchinfo then fetchfrom = "system" end
         end
@@ -701,51 +715,51 @@ function package.cachedir()
 end
 
 -- the install directory
-function package.installdir(is_debug, plat, arch)
-    return path.join(global.directory(), "installed", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
+function package.installdir(mode, plat, arch)
+    return path.join(global.directory(), "installed", plat or os.host(), arch or os.arch(), mode or "release")
 end
 
 -- get the prefix directory
-function package.prefixdir(is_global, is_debug, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
+function package.prefixdir(is_global, mode, plat, arch)
+    return path.join(is_global and global.directory() or config.directory(), "prefix", plat or os.host(), arch or os.arch(), mode or "release")
 end
 
 -- get the prefix info directory
-function package.prefixinfodir(is_global, is_debug, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", "info", plat or os.host(), arch or os.arch(), is_debug and "debug" or "release")
+function package.prefixinfodir(is_global, mode, plat, arch)
+    return path.join(is_global and global.directory() or config.directory(), "prefix", "info", plat or os.host(), arch or os.arch(), mode or "release")
 end
 
 -- get the prefix info
-function package.prefixinfo(is_global, is_debug, plat, arch)
-    local prefixfile = package.prefixfile(is_global, is_debug, plat, arch)
+function package.prefixinfo(is_global, mode, plat, arch)
+    local prefixfile = package.prefixfile(is_global, mode, plat, arch)
     return os.isfile(prefixfile) and io.load(prefixfile) or {}
 end
 
 -- get the prefix info file
-function package.prefixfile(is_global, is_debug, plat, arch)
-    return path.join(package.prefixinfodir(is_global, is_global, plat, arch), "info.txt")
+function package.prefixfile(is_global, mode, plat, arch)
+    return path.join(package.prefixinfodir(is_global, mode, plat, arch), "info.txt")
 end
 
 -- get environment variables
-function package.getenv(is_global, is_debug, plat, arch, name)
-    local prefixinfo = package.prefixinfo(is_global, is_debug, plat, arch)
+function package.getenv(is_global, mode, plat, arch, name)
+    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
     return prefixinfo.envars and prefixinfo.envars[name] or nil
 end
 
 -- add values to environment variable 
-function package.addenv(is_global, is_debug, plat, arch, name, values)
+function package.addenv(is_global, mode, plat, arch, name, values)
 
     -- add to the root prefix info
-    local prefixinfo = package.prefixinfo(is_global, is_debug, plat, arch)
+    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
     prefixinfo.envars = prefixinfo.envars or {}
     prefixinfo.envars[name] = table.join(prefixinfo.envars[name] or {}, values)
-    io.save(package.prefixfile(is_global, is_debug, plat, arch), prefixinfo)
+    io.save(package.prefixfile(is_global, mode, plat, arch), prefixinfo)
 
     -- add to the current environment
     if values then
         -- PATH? add the prefix root directory 
         if name:lower() == "path" then
-            local prefixdir = package.prefixdir(is_global, is_debug, plat, arch)
+            local prefixdir = package.prefixdir(is_global, mode, plat, arch)
             for _, value in ipairs(values) do
                 os.addenv(name, path.join(prefixdir, value))
             end
@@ -756,8 +770,8 @@ function package.addenv(is_global, is_debug, plat, arch, name, values)
 end
 
 -- remove values to environment variable 
-function package.delenv(is_global, is_debug, plat, arch, name, values)
-    local prefixinfo = package.prefixinfo(is_global, is_debug, plat, arch)
+function package.delenv(is_global, mode, plat, arch, name, values)
+    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
     local prefixvalues = prefixinfo.envars and prefixinfo.envars[name] or nil
     if prefixvalues then
         local exists = {}
@@ -770,7 +784,7 @@ function package.delenv(is_global, is_debug, plat, arch, name, values)
                 table.remove(prefixvalues, i)
             end
         end
-        io.save(package.prefixfile(is_global, is_debug, plat, arch), prefixinfo)
+        io.save(package.prefixfile(is_global, mode, plat, arch), prefixinfo)
     end
 end
 
