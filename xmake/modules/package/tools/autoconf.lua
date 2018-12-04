@@ -53,7 +53,7 @@ function install(package, configs)
     -- inherit flags from configs
     local flags_prev = {}
     for _, name in ipairs({"cflags", "cxxflags", "ldflags"}) do
-        local flags = package:config(name) or configs[name]
+        local flags = package:config(name) or (configs and configs[name] or nil)
         if flags then
             flags_prev[name] = os.getenv(name:upper())
             os.addenv(name:upper(), flags)
