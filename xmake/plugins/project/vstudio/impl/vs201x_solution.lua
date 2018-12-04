@@ -67,7 +67,7 @@ function _make_global(slnfile, vsinfo)
     -- add solution configuration platforms
     slnfile:enter("GlobalSection(SolutionConfigurationPlatforms) = preSolution")
     for _, mode in ipairs(vsinfo.modes) do
-        for _, arch in ipairs({"x86", "x64"}) do
+        for _, arch in ipairs(vsinfo.archs) do
             slnfile:print("%s|%s = %s|%s", mode, arch, mode, arch)
         end
     end
@@ -78,7 +78,7 @@ function _make_global(slnfile, vsinfo)
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
             for _, mode in ipairs(vsinfo.modes) do
-                for _, arch in ipairs({"x86", "x64"}) do
+                for _, arch in ipairs(vsinfo.archs) do
                     slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
                     slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
                 end
