@@ -163,6 +163,38 @@ function _make_targetheaders(mode, arch, target, last)
     end
 end
 
+function _make_vsinfo_modes()
+    local vsinfo_modes = {}
+    local modes = option.get("modes")
+    if modes then
+        for _, mode in ipairs(modes:split(',')) do
+            table.insert(vsinfo_modes, mode:trim())
+        end
+    else
+        vsinfo_modes = project.modes()
+    end
+    if not vsinfo_modes or #vsinfo_modes == 0 then
+        vsinfo_modes = { config.mode() }
+    end
+    return vsinfo_modes
+end
+
+function _make_vsinfo_archs()
+    local vsinfo_archs = {}
+    local archs = option.get("archs")
+    if archs then
+        for _, arch in ipairs(archs:split(',')) do
+            table.insert(vsinfo_archs, arch:trim())
+        end
+    else
+        vsinfo_archs = platform.archs()
+    end
+    if not vsinfo_archs or #vsinfo_archs == 0 then
+        vsinfo_archs = { config.arch() }
+    end
+    return vsinfo_archs
+end
+
 -- make vstudio project
 function make(outputdir, vsinfo)
 
@@ -173,23 +205,15 @@ function make(outputdir, vsinfo)
     vsinfo.solution_dir = path.join(outputdir, "vs" .. vsinfo.vstudio_version)
 
     -- init modes
-    local modes = option.get("modes")
-    if modes then
-        vsinfo.modes = {}
-        for _, mode in ipairs(modes:split(',')) do
-            table.insert(vsinfo.modes, mode:trim())
-        end
-    else
-        vsinfo.modes = project.modes()
-    end
-    if not vsinfo.modes or #vsinfo.modes == 0 then
-        vsinfo.modes = { config.mode() }
-    end
+    vsinfo.modes = _make_vsinfo_modes()
+    
+    -- init archs
+    vsinfo.archs = _make_vsinfo_archs()
 
     -- load targets
     local targets = {}
     for mode_idx, mode in ipairs(vsinfo.modes) do
-        for arch_idx, arch in ipairs({"x86", "x64"}) do
+        for arch_idx, arch in ipairs(vsinfo.archs) do
 
             -- trace
             print("checking for the %s.%s ...", mode, arch)

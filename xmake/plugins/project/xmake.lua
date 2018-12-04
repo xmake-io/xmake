@@ -51,6 +51,9 @@ task("project")
                                                        ,    "    - xmake project -k makefile"
                                                        ,    "    - xmake project -k compile_commands"
                                                        ,    "    - xmake project -k vs2015 -m \"release,debug\"" }
+                ,   {'a', "archs",     "kv", nil,           "Set the project archs." 
+                                                       ,    "    .e.g "
+                                                       ,    "    - xmake project -k vs2015 -a \"x86,x64\"" }
                 ,   {nil, "outputdir", "v",  ".",           "Set the output directory." }
                 }
             }
