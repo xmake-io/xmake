@@ -92,7 +92,7 @@ function main(package_names)
     end
 
     -- list all packages
-    for _, instance in ipairs(package.load_packages(requires, requires_extra)) do
+    for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
 
         -- show package name
         local requireinfo = instance:requireinfo() or {}
