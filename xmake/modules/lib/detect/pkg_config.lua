@@ -69,8 +69,8 @@ function info(name, opt)
         os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
-    -- only find debug package? clear the other pkg-config pathes
-    if opt.mode == "debug" then
+    -- find other mode package? clear the other pkg-config pathes
+    if opt.mode and opt.mode ~= "release" then
         os.setenv("PKG_CONFIG_PATH", nil)
     end
 
@@ -84,7 +84,7 @@ function info(name, opt)
         os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, opt.mode or "release", "lib", "pkgconfig"))
 
         -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
-        if opt.mode ~= "debug" then
+        if not opt.mode or opt.mode == "release" then
             local pcfile = find_file(name .. ".pc", "/usr/local/Cellar/" .. (opt.brewhint or name) .. "/*/lib/pkgconfig")
             if pcfile then
                 brewprefix = path.directory(path.directory(path.directory(pcfile)))

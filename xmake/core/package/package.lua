@@ -63,7 +63,7 @@ function _instance:_buildmode()
         local buildmode = self:debug() and "debug" or "release"
         local configs = self:configs()
         if configs then
-            self._BUILDMODE = buildmode .. "_" .. hash.uuid(table.makestr(configs, true)):split('-')[1]
+            self._BUILDMODE = buildmode .. "_" .. hash.uuid(table.makestr(configs, true)):split('-')[1]:lower()
         else
             self._BUILDMODE = buildmode
         end
