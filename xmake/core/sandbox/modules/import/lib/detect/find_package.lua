@@ -141,21 +141,13 @@ function sandbox_lib_detect_find_package._find_from_prefixdirs(name, opt)
     local prefixdirs = table.wrap(opt.prefixdirs)
     local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
     if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(config.directory(), "prefix", platsubdirs, opt.mode or "release"))
-        if opt.global ~= false then 
-            table.insert(prefixdirs, path.join(global.directory(), "prefix", platsubdirs, opt.mode or "release"))
-        end
+        table.insert(prefixdirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", platsubdirs, opt.mode or "release"))
     end
 
     -- find the prefix info file of package, .e.g prefix/info/z/zlib/1.2.11/info.txt
     local packagedirs = {}
     local packagepath = path.join(name:sub(1, 1), name, "*")
-    table.insert(packagedirs, path.join(config.directory(), "prefix", "info", platsubdirs, opt.mode or "release", packagepath))
-
-    -- find the prefix info file from the global prefix directory
-    if opt.global ~= false then 
-        table.insert(packagedirs, path.join(global.directory(), "prefix", "info", platsubdirs, opt.mode or "release", packagepath))
-    end
+    table.insert(packagedirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", "info", platsubdirs, opt.mode or "release", packagepath))
     local prefixfile = find_file("info.txt", packagedirs)
     if not prefixfile then
         return 

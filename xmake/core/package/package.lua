@@ -574,7 +574,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
                                                          mode = self:debug() and "debug" or nil,
                                                          system = false, 
-                                                         global = self:from("local") and false or nil, 
+                                                         islocal = self:from("local"), 
                                                          version = require_ver,
                                                          cachekey = "fetch:prefix", 
                                                          force = opt.force or self:from("local")}) 
