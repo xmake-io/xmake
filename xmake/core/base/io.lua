@@ -27,9 +27,10 @@ local io    = io or {}
 local _file = _file or {}
 
 -- load modules
-local path  = require("base/path")
-local table = require("base/table")
-local utils = require("base/utils")
+local path   = require("base/path")
+local table  = require("base/table")
+local utils  = require("base/utils")
+local string = require("base/string")
 
 -- save original apis
 io._open   = io._open or io.open
@@ -72,7 +73,7 @@ end
 
 -- save object
 function _file:save(object)
-    local str, errors = table.makestr(object, false, true)
+    local str, errors = string.serialize(object, false)
     if str then
         self:write(str)
     end
@@ -83,7 +84,7 @@ end
 function _file:load()
     local data = self:read("*all")
     if data and type(data) == "string" then
-        return table.loadstr(data)
+        return data:deserialize()
     end
 end
 

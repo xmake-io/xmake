@@ -4,6 +4,8 @@
 
 ### New features
 
+* Add `string.serialize` and `string.deserialize` to serialize and deserialize object, function and others.
+
 ### Changes
 
 * Improve to switch version and debug mode for the dependent packages
@@ -529,6 +531,8 @@
 ## master (开发中)
 
 ### 新特性
+
+* 添加`string.serialize`和`string.deserialize`去序列化，反序列化对象，函数以及其他类型
 
 ### 改进
 
