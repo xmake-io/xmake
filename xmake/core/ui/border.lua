@@ -39,7 +39,7 @@ function border:init(name, bounds)
     view.init(self, name, bounds)
 
     -- check bounds
-    assert(self:width() > 2 and self:height() > 2, string.format("%s: too small!", self))
+    assert(self:width() > 2 and self:height() > 2, string.format("%s: too small!", tostring(self)))
 end
 
 -- draw border
