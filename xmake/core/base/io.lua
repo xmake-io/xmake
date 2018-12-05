@@ -70,107 +70,21 @@ function _file:close()
     return self._FILE:close()
 end
 
--- save object with the level
-function _file:_save(object, level)
- 
-    -- save string
-    if type(object) == "string" then  
-        self:printf("%q", object)
-    -- save boolean
-    elseif type(object) == "boolean" then  
-        self:write(tostring(object))  
-    -- save number 
-    elseif type(object) == "number" then  
-        self:write(object)  
-    -- save table
-    elseif type(object) == "table" then  
-
-        -- save head
-        self:write("\n")  
-        for l = 1, level do
-            self:write("    ")
-        end
-        self:write("{\n")
-
-        -- save body
-        local i = 0
-        for k, v in pairs(object) do  
-
-            -- save spaces and separator
-            for l = 1, level do
-                self:write("    ")
-            end
-
-            self:write(utils.ifelse(i == 0, "    ", ",   "))
-            
-            -- save key
-            if type(k) == "string" then
-                self:write(string.format("[%q]", k), " = ")  
-            end
-
-            -- save value
-            if not self:_save(v, level + 1) then 
-                return false
-            end
-
-            -- save newline
-            self:write("\n")
-            i = i + 1
-        end  
-
-        -- save tail
-        for l = 1, level do
-            self:write("    ")
-        end
-        self:write("}\n")  
-    else  
-        -- error
-        utils.error("invalid object type: %s", type(object))
-        return false
-    end  
-
-    -- ok
-    return true
-end
-
 -- save object
 function _file:save(object)
-    return self:_save(object, 0)
+    local str, errors = table.makestr(object, false, true)
+    if str then
+        self:write(str)
+    end
+    return str, errors
 end
 
 -- load object
 function _file:load()
-
-    -- check
-    assert(self)
-
-    -- load data
-    local result = nil
-    local errors = nil
     local data = self:read("*all")
     if data and type(data) == "string" then
-
-        -- load script
-        local script, errs = loadstring("return " .. data)
-        if script then
-            
-            -- load object
-            local ok, object = pcall(script)
-            if ok and object then
-                result = object
-            elseif object then
-                -- error
-                errors = object
-            else
-                -- error
-                errors = string.format("load %s failed!", filepath)
-            end
-        -- errors
-        else errors = errs end
+        return table.loadstr(data)
     end
-
-    -- ok?
-    return result, errors
 end
 
 -- read all data from file 
@@ -275,10 +189,11 @@ function io.save(filepath, object)
     end
 
     -- save object to file
-    if not file:save(object) then
+    local ok, errors = file:save(object)
+    if not ok then
         -- error 
         file:close()
-        return false, string.format("save %s failed!", filepath)
+        return false, string.format("save %s failed, %s!", filepath, errors)
     end
 
     -- close file

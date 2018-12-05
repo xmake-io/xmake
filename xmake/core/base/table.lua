@@ -26,10 +26,12 @@
 local table = table or {}
 
 -- make string with the level
-function table._makestr(self, deflate, level)
-    if type(self) == "string" or type(self) == "boolean" or type(self) == "number" then  
+function table._makestr(self, deflate, serialize, level)
+    if type(self) == "string" then
+        return serialize and string.format("%q", self) or self
+    elseif type(self) == "boolean" or type(self) == "number" then  
         return tostring(self)
-    elseif type(self) == "table" and (getmetatable(self) or {}).__tostring then
+    elseif not serialize and type(self) == "table" and (getmetatable(self) or {}).__tostring then
         return tostring(self)
     elseif type(self) == "table" then  
 
@@ -64,13 +66,20 @@ function table._makestr(self, deflate, level)
             
             -- make key = value
             if type(k) == "string" then
+                if serialize then
+                    k = string.format("[%q]", k)
+                end
                 if deflate then
                     s = s .. k .. "=" 
                 else
                     s = s .. k .. " = " 
                 end
             end
-            s = s .. table._makestr(v, deflate, level + 1)  
+            local substr, errors = table._makestr(v, deflate, serialize, level + 1)  
+            if substr == nil then
+                return nil, errors
+            end
+            s = s .. substr
 
             if not deflate then
                 s = s .. "\n"
@@ -86,11 +95,33 @@ function table._makestr(self, deflate, level)
         end
         s = s .. "}"
         return s
+    elseif serialize and type(self) == "function" then 
+        return string.format("%q", string.dump(self))
+    elseif serialize then
+        return nil, "cannot serialize object: " .. type(self)
     elseif self ~= nil then
         return "<" .. tostring(self) .. ">"
     else
         return "nil"
     end
+end
+
+-- load table from string in table
+function table._loadstr(self)
+    -- only load luajit function data: e.g. "\27LJ\2\0\6=stdin"
+    if type(self) == "string" and self:startswith("\27LJ") then
+        return loadstring(self)
+    elseif type(self) == "table" then  
+        for k, v in pairs(self) do
+            local value, errors = table._loadstr(v)
+            if value ~= nil then
+                self[k] = value
+            else
+                return nil, errors
+            end
+        end
+    end
+    return self
 end
 
 -- clear the table
@@ -259,13 +290,57 @@ function table.is_dictionary(dict)
 end
 
 -- dump table
-function table.dump(self, deflate)
-    io.write(table.makestr(self, deflate))
+function table.dump(self, deflate, serialize)
+    local str = table.makestr(self, deflate, serialize)
+    if str then
+        io.write(str)
+    end
 end
 
 -- make string from the given table
-function table.makestr(self, deflate)
-    return table._makestr(self, deflate, 0)
+--
+-- @param deflate       deflate empty characters
+-- @param serialize     make string which can be deserialized, we can use table.loadstr to load it
+--
+-- @return              string, errors
+-- 
+function table.makestr(self, deflate, serialize)
+    return table._makestr(self, deflate, serialize, 0)
+end
+
+-- load table from the serialized string 
+--
+-- @param str           the serialized string
+--
+-- @return              table, errors
+-- 
+function table.loadstr(str)
+
+    -- load table as script
+    local result = nil
+    local script, errors = loadstring("return " .. str)
+    if script then
+        
+        -- load object
+        local ok, object = pcall(script)
+        if ok and object then
+            result = object
+        elseif object then
+            -- error
+            errors = object
+        else
+            -- error
+            errors = string.format("cannot deserialize string: %s", str)
+        end
+    end
+
+    -- load function from string in table
+    if result then
+        result, errors = table._loadstr(result)
+    end
+
+    -- ok?
+    return result, errors
 end
 
 -- unwrap object if be only one
