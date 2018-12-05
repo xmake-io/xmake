@@ -34,8 +34,12 @@ end
 
 -- try building for configure
 function _build_for_configure(buildfile)
-    if not os.isfile("configure") and os.isfile("configure.ac") then
-        os.vrun("autoreconf --install --symlink")
+    if not os.isfile("configure") then
+        if os.isfile("autogen.sh") then
+            os.vrunv("sh", {"./autogen.sh"})
+        elseif os.isfile("configure.ac") then
+            os.vrun("autoreconf --install --symlink")
+        end
     end
     os.vrun("./configure --prefix=%s", path.absolute("install"))
     os.vrun("make -j4")
