@@ -288,6 +288,18 @@ function _make_source_options(vcxprojfile, flags, condition)
     if flagstr:find("[%-/]WX") then
         vcxprojfile:print("<TreatWarningAsError%s>true</TreatWarningAsError>", condition) 
     end
+    
+    -- make PreprocessorDefinitions
+    local defstr = ""
+    for _, flag in ipairs(flags) do
+        flag:gsub("[%-/]D(.*)",
+            function (def) 
+                defstr = defstr .. def .. ";"
+            end
+        )
+    end
+    defstr = defstr .. "%%(PreprocessorDefinitions)"
+    vcxprojfile:print("<PreprocessorDefinitions%s>%s</PreprocessorDefinitions>", condition, defstr) 
 
     -- make DebugInformationFormat
     if flagstr:find("[%-/]Zi") then
@@ -329,7 +341,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I"}
+    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D"}
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
