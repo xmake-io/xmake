@@ -1066,6 +1066,11 @@ end
 --   set_$(name1)("key", "value1")
 --   set_$(name2)("key", "value1", "value2", ...)
 --
+-- get:
+--   
+--   get("name")     => {key => values}
+--   get("name.key") => values
+--
 function interpreter:api_register_set_keyvalues(scope_kind, ...)
 
     -- define implementation
@@ -1080,14 +1085,18 @@ function interpreter:api_register_set_keyvalues(scope_kind, ...)
             extra_config = nil
         end
 
-        -- save values
-        name = name .. "." .. key
-        scope[name] = values
+        -- save values to "name"
+        scope[name] = scope[name] or {}
+        scope[name][key] = values
+
+        -- save values to "name.key"
+        local name_key = name .. "." .. key
+        scope[name_key] = values
 
         -- save extra config
         if extra_config then
-            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
-            local extrascope = scope["__extra_" .. name]
+            scope["__extra_" .. name_key] = scope["__extra_" .. name_key] or {}
+            local extrascope = scope["__extra_" .. name_key]
             for _, value in ipairs(values) do
                 extrascope[value] = extra_config
             end
@@ -1116,14 +1125,18 @@ function interpreter:api_register_add_keyvalues(scope_kind, ...)
             extra_config = nil
         end
 
-        -- save values
-        name = name .. "." .. key
-        scope[name] = table.join2(scope[name] or {}, values)
+        -- save values to "name"
+        scope[name] = scope[name] or {}
+        scope[name][key] = table.join2(scope[name][key] or {}, values)
+
+        -- save values to "name.key"
+        local name_key = name .. "." .. key
+        scope[name_key] = scope[name][key]
 
         -- save extra config
         if extra_config then
-            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
-            local extrascope = scope["__extra_" .. name]
+            scope["__extra_" .. name_key] = scope["__extra_" .. name_key] or {}
+            local extrascope = scope["__extra_" .. name_key]
             for _, value in ipairs(values) do
                 extrascope[value] = extra_config
             end

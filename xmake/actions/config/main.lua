@@ -242,6 +242,15 @@ function main()
         end
     end
 
+    -- merge the project options after default options
+    for name, value in pairs(project.get("config")) do
+        value = table.unwrap(value)
+        assert(type(value) == "string", "set_config(%s): too much values", name)
+        if not config.readonly(name) then
+            config.set(name, value)
+        end
+    end
+
     -- merge the checked configure 
     local recheck = _need_check(options_changed or not configcache)
     if recheck then

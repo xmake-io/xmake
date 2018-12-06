@@ -123,13 +123,6 @@ function project._api_has_package(interp, ...)
     end
 end
 
--- set config from the given name
-function project._api_set_config(interp, name, value)
-    if not config.readonly(name) then
-        config.set(name, value)
-    end
-end
-
 -- get config from the given name
 function project._api_get_config(interp, name)
     return config.get(name)
@@ -217,6 +210,10 @@ function project.interpreter()
         ,   "add_requires"
         ,   "add_repositories"
         }
+    ,   keyvalues =
+        {
+            "set_config"
+        }
     ,   custom = 
         {
             -- is_xxx
@@ -227,8 +224,6 @@ function project.interpreter()
         ,   {"is_plat",                 project._api_is_plat          }
         ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_config",               project._api_is_config        }
-            -- set_xxx
-        ,   {"set_config",              project._api_set_config       }
             -- get_xxx
         ,   {"get_config",              project._api_get_config       }
             -- has_xxx
@@ -308,8 +303,6 @@ function project.get(name)
     -- load the global project infos
     local infos = project._INFOS 
     if not infos then
-
-        -- load infos
         infos = project._load_scope(nil, true, true)
         project._INFOS = infos
     end
@@ -508,6 +501,9 @@ end
 
 -- load requires
 function project._load_requires()
+
+    -- @note clear the previous cache and reload root configs when call project.get()
+    project._INFOS = nil
 
     -- parse requires
     local requires = {}
