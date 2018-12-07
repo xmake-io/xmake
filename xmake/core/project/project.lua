@@ -274,6 +274,13 @@ function project.interpreter()
             if type(result) == "function" then
                 result = result()
             end
+
+            -- attempt to get it from the platform tools, e.g. cc, cxx, ld ..
+            -- because these values may not exist in config cache when call `config.get()`, we need check and get it.
+            --
+            if not result then
+                result = platform.tool(variable)
+            end
         end
 
         -- ok?
