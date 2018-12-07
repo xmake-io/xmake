@@ -25,6 +25,7 @@
 -- imports
 import("core.project.config")
 import("core.base.global")
+import("detect.sdks.find_vstudio")
 
 -- enter the given environment
 function _enter(name)
@@ -40,6 +41,25 @@ function _enter(name)
 
     -- get vs environment for the current arch
     local vsenv = vcvarsall[arch] or {}
+
+    -- switch vstudio environment if vs_sdkver has been changed 
+    local switch_vsenv = false
+    local vs = config.get("vs")
+    local vs_sdkver = config.get("vs_sdkver")
+    if vs and vs_sdkver and vsenv.WindowsSDKVersion and vs_sdkver ~= vsenv.WindowsSDKVersion then
+        switch_vsenv = true
+    end
+    if switch_vsenv then
+        -- find vstudio
+        local vstudio = find_vstudio({vcvars_ver = config.get("vs_toolset"), sdkver = vs_sdkver})
+        if vstudio then
+            vcvarsall = (vstudio[vs] or {}).vcvarsall or {}
+            vsenv = vcvarsall[arch] or {}
+            if vsenv and vsenv.path and vsenv.include and vsenv.lib then
+                config.set("__vcvarsall", vcvarsall)
+            end
+        end
+    end
 
     -- get the pathes for the vs environment
     local old = nil
