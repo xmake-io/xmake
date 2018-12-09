@@ -120,8 +120,8 @@ function nf_warning(self, level)
     local maps = 
     {   
         none  = "-w"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
+    ,   less  = "-Wall"
+    ,   more  = "-Wall"
     ,   all   = "-Wall"
     ,   error = "-Werror"
     }
