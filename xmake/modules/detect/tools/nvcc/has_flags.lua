@@ -31,7 +31,7 @@ function _islinker(flags, opt)
   
     -- the flags is "-Wl,<arg>" or "-Xlinker <arg>"?
     local flags_str = table.concat(flags, " ")
-    if flags_str:startswith("-Wl,") or flags_str:startswith("-Xlinker ") then
+    if flags_str:startswith("-Wl,") or flags_str:startswith("-Xlinker ") flags_str:startswith("-Xcompiler ") then
         return true
     end
 
