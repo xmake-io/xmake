@@ -79,7 +79,8 @@ platform("windows")
                 config = 
                 {   
                     {category = "Visual Studio SDK Configuration"                                   }
-                ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"                 }
+                ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"                 
+                                                    , "  .e.g --vs=2017"                            }
                 ,   {nil, "vs_toolset", "kv", nil,    "The Microsoft Visual Studio Toolset Version"
                                                     , "  .e.g --vs_toolset=14.0"                    }
                 ,   {nil, "vs_sdkver",  "kv", nil,    "The Windows SDK Version of Visual Studio"
