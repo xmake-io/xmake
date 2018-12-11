@@ -37,7 +37,7 @@ platform("macosx")
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).sym"}
 
-    -- set installdir
+    -- set install directory
     set_installdir("/usr/local")
 
     -- on check

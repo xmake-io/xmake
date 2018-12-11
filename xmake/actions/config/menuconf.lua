@@ -84,6 +84,7 @@ function app:_filter_option(name)
     ,   profile     = true
     ,   project     = true
     ,   verbose     = true
+    ,   backtrace   = true
     ,   diagnosis   = true
     ,   require     = true
     ,   version     = true

@@ -37,7 +37,7 @@ platform("linux")
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
 
-    -- set installdir
+    -- set install directory
     set_installdir("/usr/local")
 
     -- on check
