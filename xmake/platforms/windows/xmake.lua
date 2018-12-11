@@ -106,11 +106,15 @@ platform("windows")
 
             ,   global =
                 {   
-                    {                                                                               }
+                    {category = "Visual Studio SDK Configuration"                                   }
                 ,   {nil, "vs",         "kv", "auto", "The Microsoft Visual Studio"                 }
+                ,   {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda",       "kv", "auto", "The Cuda SDK Directory"                      }
+                ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",         "kv", "auto", "The Qt SDK Directory"                        }
+                ,   {category = "WDK Configuration"                                                 }
                 ,   {nil, "wdk",        "kv", "auto", "The WDK Directory"                           }
+                ,   {category = "Vcpkg Configuration"                                               }
                 ,   {nil, "vcpkg",      "kv", "auto", "The Vcpkg Directory"                         }
                 }
             }

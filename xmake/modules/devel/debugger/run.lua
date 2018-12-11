@@ -211,5 +211,5 @@ function main(program, argv)
     end
 
     -- no debugger
-    raise("debugger not found!")
+    raise("debugger%s not found!", debugger and ("(" .. debugger .. ")") or "")
 end

@@ -153,6 +153,12 @@ function global.save()
     return io.save(global._file(), options) 
 end
 
+-- clear config
+function global.clear()
+    global._MODES = nil
+    global._CONFIGS = nil
+end
+
 -- dump the configure
 function global.dump()
     if not option.get("quiet") then

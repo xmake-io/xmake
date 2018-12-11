@@ -5,6 +5,7 @@
 ### New features
 
 * Add `string.serialize` and `string.deserialize` to serialize and deserialize object, function and others.
+* Add `xmake g --menu`
 
 ### Changes
 
@@ -533,6 +534,7 @@
 ### 新特性
 
 * 添加`string.serialize`和`string.deserialize`去序列化，反序列化对象，函数以及其他类型
+* 添加`xmake g --menu`去图形化配置全局选项
 
 ### 改进
 

@@ -63,9 +63,11 @@ platform("macosx")
 
             ,   global = 
                 {   
-                    {}
+                    {category = "XCode SDK Configuration"                                           }
                 ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"   }
+                ,   {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
+                ,   {category = "Qt SDK Configuration"                                              }
                 ,   {nil, "qt",             "kv", "auto",       "The Qt SDK Directory"              }
                 }
             }

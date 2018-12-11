@@ -51,20 +51,12 @@ platform("watchos")
                 ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory" }
                 ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"       }
                 ,   {nil, "target_minver",  "kv", "auto",       "The Target Minimal Version"      }
-                ,   {                                                                             }
-                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"   }
-                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"      }
-                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"   }
                 }
 
             ,   global = 
                 {   
-                    {                                                                             }
+                    {category = "XCode SDK Configuration"                                         }
                 ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory" }
-                ,   {                                                                             }
-                ,   {nil, "mobileprovision","kv", "auto",       "The Provisioning Profile File"   }
-                ,   {nil, "codesign",       "kv", "auto",       "The Code Signing Indentity"      }
-                ,   {nil, "entitlements",   "kv", "auto",       "The Code Signing Entitlements"   }
                 }
             }
 

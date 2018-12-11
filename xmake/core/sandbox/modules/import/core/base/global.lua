@@ -71,6 +71,11 @@ function sandbox_core_base_global.save()
     end
 end
 
+-- clear the configure
+function sandbox_core_base_global.clear()
+    return global.clear()
+end
+
 -- check the configure
 function sandbox_core_base_global.check()
 

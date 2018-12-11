@@ -25,9 +25,15 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("menuconf", {alias = "menuconf_show"})
 
 -- main
 function main()
+
+    -- enter menu config
+    if option.get("menu") then
+        menuconf_show()
+    end
 
     -- load the global configure
     --

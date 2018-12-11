@@ -45,19 +45,16 @@ task("global")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."     }
+                    {'c', "clean",      "k", nil,       "Clean the cached configure and configure all again."     }
+                ,   {nil, "menu",       "k", nil,       "Configure with a menu-driven user interface."            }
 
-                ,   {}
-
-                ,   {nil, "make",       "kv", "auto",   "Set the make path."                                        }
+                ,   {category = "."}
                 ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
-                                                    ,   "    --ccache=[y|n]"                                        }
-
-                ,   {}
-                ,   {nil, "debugger",   "kv", "auto",   "The Debugger"                                              }
-                ,   {}
+                                                    ,   "    --ccache=[y|n]"                                      }
+                ,   {nil, "debugger",   "kv", "auto",   "The Debugger Program Path."                              }
 
                     -- show platform menu options
+                ,   {category = "Platform Configuration"}
                 ,   function () 
 
                         -- import platform menu
