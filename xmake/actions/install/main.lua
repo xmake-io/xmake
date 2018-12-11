@@ -30,26 +30,6 @@ import("core.base.privilege")
 import("privilege.sudo")
 import("install")
 
--- get install directory
-function _installdir()
-
-    -- the install directory
-    --
-    -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
-    --
-    local installdir = option.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("DESTDIR") or platform.get("installdir")
-    assert(installdir, "unknown install directory!")
-
-    -- append prefix
-    local prefix = option.get("prefix") or os.getenv("PREFIX")
-    if prefix then
-        installdir = path.join(installdir, prefix)
-    end
-
-    -- ok
-    return installdir
-end
-
 -- main
 function main()
 
@@ -59,19 +39,13 @@ function main()
     -- build it first
     task.run("build", {target = targetname, all = option.get("all")})
 
-    -- get install directory
-    local installdir = _installdir()
-
-    -- trace
-    print("installing to %s ...", installdir)
-
     -- attempt to install directly
     try
     {
         function ()
 
             -- install target
-            install(targetname or ifelse(option.get("all"), "__all", "__def"), installdir)
+            install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
             -- trace
             cprint("${bright}install ok!${clear}${ok_hand}")
@@ -89,7 +63,7 @@ function main()
                         function ()
 
                             -- install target
-                            install(targetname or ifelse(option.get("all"), "__all", "__def"), installdir)
+                            install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
                             -- trace
                             cprint("${bright}install ok!${clear}${ok_hand}")
@@ -132,7 +106,7 @@ function main()
                     if confirm then
 
                         -- install target with administrator permission
-                        sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), installdir})
+                        sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir"), option.get("prefix")})
 
                         -- trace
                         cprint("${bright}install ok!${clear}${ok_hand}")

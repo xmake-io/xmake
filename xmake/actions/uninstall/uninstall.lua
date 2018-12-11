@@ -36,7 +36,7 @@ function _uninstall_binary(target)
     end
 
     -- the binary directory
-    local binarydir = path.join(_g.installdir, "bin")
+    local binarydir = path.join(target:installdir(), "bin")
 
     -- remove the target file
     os.rm(path.join(binarydir, path.filename(target:targetfile())))
@@ -51,10 +51,10 @@ function _uninstall_library(target)
     end
 
     -- the library directory
-    local librarydir = path.join(_g.installdir, "lib")
+    local librarydir = path.join(target:installdir(), "lib")
 
     -- the include directory
-    local includedir = path.join(_g.installdir, "include")
+    local includedir = path.join(target:installdir(), "include")
 
     -- remove the target file
     os.rm(path.join(librarydir, path.filename(target:targetfile())))
@@ -91,6 +91,15 @@ function _on_uninstall_target(target)
     if target:get("enabled") == false then
         return 
     end
+
+    -- get install directory
+    local installdir = target:installdir()
+    if not installdir then
+        return 
+    end
+
+    -- trace
+    print("uninstalling %s from %s ...", target:name(), installdir)
 
     -- build target with rules
     local done = false
@@ -184,13 +193,10 @@ function _uninstall_target_and_deps(target)
 end
 
 -- uninstall
-function main(targetname, installdir)
+function main(targetname)
 
     -- init finished states
     _g.finished = {}
-
-    -- init install directory
-    _g.installdir = installdir
 
     -- uninstall given target?
     if targetname then

@@ -30,6 +30,7 @@ local os             = require("base/os")
 local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
+local baseoption     = require("base/option")
 local deprecated     = require("base/deprecated")
 local rule           = require("project/rule")
 local option         = require("project/option")
@@ -85,6 +86,7 @@ function target.apis()
             "target.set_targetdir"
         ,   "target.set_objectdir"
         ,   "target.set_dependir"
+        ,   "target.set_installdir"
             -- target.add_xxx
         ,   "target.add_files"
             -- target.del_xxx
@@ -684,6 +686,34 @@ end
 -- get header directory
 function target:headerdir()
     return self:get("headerdir") or config.buildir()
+end
+
+-- get install directory
+function target:installdir()
+
+    -- get it from the cache
+    local installdir = self._INSTALLDIR
+    if not installdir then
+
+        -- get it from target
+        installdir = self:get("installdir")
+        if not installdir then
+
+            -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
+            installdir = baseoption.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("DESTDIR") or platform.get("installdir")
+            assert(installdir, "unknown install directory!")
+
+            -- append prefix
+            local prefix = baseoption.get("prefix") or os.getenv("PREFIX")
+            if prefix then
+                installdir = path.join(installdir, prefix)
+            end
+        end
+        self._INSTALLDIR = installdir 
+    end
+
+    -- ok
+    return installdir
 end
 
 -- get rules of the source file 

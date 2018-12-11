@@ -30,7 +30,7 @@ import("core.platform.platform")
 import("uninstall")
 
 -- uninstall
-function main(targetname, installdir)
+function main(targetname, installdir, prefix)
 
     -- enter project directory
     os.cd(project.directory())
@@ -49,8 +49,13 @@ function main(targetname, installdir)
         option.set("installdir", installdir)
     end
 
+    -- pass prefix to option
+    if prefix then
+        option.set("prefix", prefix)
+    end
+
     -- uninstall target
-    uninstall(ifelse(targetname ~= "__all", targetname, nil))
+    uninstall(targetname ~= "__all" and targetname or nil)
 
     -- restore the previous option context
     option.restore()

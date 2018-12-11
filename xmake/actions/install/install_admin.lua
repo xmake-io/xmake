@@ -30,7 +30,7 @@ import("core.platform.platform")
 import("install")
 
 -- install
-function main(targetname, installdir)
+function main(targetname, installdir, prefix)
 
     -- enter project directory
     os.cd(project.directory())
@@ -44,8 +44,18 @@ function main(targetname, installdir)
     -- save the current option and push a new option context
     option.save()
 
+    -- pass installdir to option
+    if installdir then
+        option.set("installdir", installdir)
+    end
+
+    -- pass prefix to option
+    if prefix then
+        option.set("prefix", prefix)
+    end
+
     -- install target
-    install(targetname, installdir)
+    install(targetname)
 
     -- restore the previous option context
     option.restore()
