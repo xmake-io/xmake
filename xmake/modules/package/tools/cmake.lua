@@ -28,28 +28,33 @@ import("lib.detect.find_file")
 
 -- install package
 function install(package, configs)
+
+    -- enter build directory
     os.mkdir("build/install")
     local oldir = os.cd("build")
 
-    local argv = {
-        "-DCMAKE_INSTALL_PREFIX=\"" .. path.absolute("install") .. "\""
-    }
-
+    -- init arguments
+    local argv = {"-DCMAKE_INSTALL_PREFIX=\"" .. path.absolute("install") .. "\""}
     if is_plat("windows") and is_arch("x64") then
         table.insert(argv, "-A")
         table.insert(argv, "x64")
     end
-
     for name, value in pairs(configs) do
         value = tostring(value):trim()
-        if value ~= "" then
-            table.insert(argv, value)
+        if type(name) == "number" then
+            if value ~= "" then
+                table.insert(argv, value)
+            end
+        else
+            table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-
     table.insert(argv, '..')
+
+    -- generate build file
     os.vrunv("cmake", argv)
 
+    -- do build and install
     if is_host("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
         os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, package:debug() and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
