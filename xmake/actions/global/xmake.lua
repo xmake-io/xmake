@@ -49,8 +49,6 @@ task("global")
                 ,   {nil, "menu",       "k", nil,       "Configure with a menu-driven user interface."            }
 
                 ,   {category = "."}
-                ,   {nil, "ccache",     "kv", "auto",   "Enable or disable the c/c++ compiler cache." 
-                                                    ,   "    --ccache=[y|n]"                                      }
                 ,   {nil, "debugger",   "kv", "auto",   "The Debugger Program Path."                              }
 
                     -- show platform menu options
