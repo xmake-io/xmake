@@ -36,7 +36,8 @@ function install(package, configs)
     }
 
     if is_plat("windows") and is_arch("x64") then
-        table.insert(argv, "-A x64")
+        table.insert(argv, "-A")
+        table.insert(argv, "x64")
     end
 
     for name, value in pairs(configs) do
@@ -46,6 +47,7 @@ function install(package, configs)
         end
     end
 
+    table.insert(argv, '..')
     os.vrunv("cmake", argv)
 
     if is_host("windows") then
