@@ -122,7 +122,7 @@ end
 function check_xcode(config, optional)
 
     -- find xcode
-    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true, plat = config.get("plat"), arch = config.get("arch")})
+    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true, plat = config.get("plat"), arch = config.get("arch")})
     if xcode then
 
         -- save it (maybe to global)

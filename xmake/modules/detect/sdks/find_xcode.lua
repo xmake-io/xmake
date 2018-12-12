@@ -106,9 +106,9 @@ function main(sdkdir, opt)
     opt = opt or {}
 
     -- attempt to load cache first
-    local key = "detect.sdks.find_vscode." .. (sdkdir or "")
+    local key = "detect.sdks.find_vscode"
     local cacheinfo = cache.load(key)
-    if not opt.force and cacheinfo.xcode then
+    if not opt.force and cacheinfo.xcode and cacheinfo.xcode.sdkdir and os.isdir(cacheinfo.xcode.sdkdir) then
         return cacheinfo.xcode
     end
 

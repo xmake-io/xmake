@@ -24,7 +24,7 @@
 
 -- imports
 import("detect.sdks.find_cross_toolchain")
-import(".checker")
+import("platforms.checker", {rootdir = os.programdir()})
 
 -- check the architecture
 function __check_arch(config)

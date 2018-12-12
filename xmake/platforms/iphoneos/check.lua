@@ -23,7 +23,7 @@
 --
 
 -- imports
-import(".checker")
+import("platforms.checker", {rootdir = os.programdir()})
 
 -- get toolchains
 function _toolchains(config)
@@ -96,7 +96,7 @@ function main(kind, toolkind)
     -- init the check list of global
     _g.global = 
     {
-        checker.check_xcode
+        { checker.check_xcode, true }
     }
 
     -- check it

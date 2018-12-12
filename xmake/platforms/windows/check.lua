@@ -23,7 +23,7 @@
 --
 
 -- imports
-import(".checker")
+import("platforms.checker", {rootdir = os.programdir()})
 import("environment")
 import("core.base.option")
 import("detect.sdks.find_vstudio")

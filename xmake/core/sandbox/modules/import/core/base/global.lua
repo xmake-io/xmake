@@ -26,6 +26,7 @@
 local sandbox_core_base_global = sandbox_core_base_global or {}
 
 -- load modules
+local os        = require("base/os")
 local table     = require("base/table")
 local global    = require("base/global")
 local platform  = require("platform/platform")
@@ -90,17 +91,11 @@ function sandbox_core_base_global.check()
 
         -- belong to the current host?
         for _, host in ipairs(table.wrap(instance:hosts())) do
-            if host == xmake._HOST then
-
-                -- get the check script
+            if host == os.host() then
                 local check = instance:get("check")
                 if check ~= nil then
-
-                    -- check it
                     check("global")
                 end
-
-                -- ok
                 break
             end
         end

@@ -23,7 +23,7 @@
 --
 
 -- imports
-import(".checker")
+import("platforms.checker", {rootdir = os.programdir()})
 import("detect.sdks.find_ndk")
 
 -- check the ndk toolchain
