@@ -56,12 +56,6 @@ function environment._enter_toolchains()
     -- add $programdir/winenv/bin to $path
     if os.host() == "windows" then
         os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
-
-        -- attempt to load winenv 
-        local winenv_dir = path.join(global.directory(), "winenv")
-        if os.isdir(winenv_dir) then
-            import("winenv", {rootdir = winenv_dir, try = true, anonymous = true})(winenv_dir)
-        end
     end
 end
 
