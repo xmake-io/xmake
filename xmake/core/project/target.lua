@@ -701,19 +701,19 @@ function target:installdir()
 
             -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
             installdir = baseoption.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("DESTDIR") or platform.get("installdir")
-            assert(installdir, "unknown install directory!")
-
-            -- append prefix
-            local prefix = baseoption.get("prefix") or os.getenv("PREFIX")
-            if prefix then
-                installdir = path.join(installdir, prefix)
+            if installdir then
+                -- append prefix
+                local prefix = baseoption.get("prefix") or os.getenv("PREFIX")
+                if prefix then
+                    installdir = path.join(installdir, prefix)
+                end
             end
         end
-        self._INSTALLDIR = installdir 
+        self._INSTALLDIR = installdir or false
     end
 
     -- ok
-    return installdir
+    return installdir or nil
 end
 
 -- get rules of the source file 
