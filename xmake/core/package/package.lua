@@ -873,9 +873,18 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
         return nil, string.format("the package %s not found!", packagename)
     end
 
+    -- get interpreter
+    local interp = package._interpreter()
+
+    -- load script
+    local ok, errors = interp:load(scriptpath)
+    if not ok then
+        return nil, errors
+    end
+
     -- load package and disable filter, we will process filter after a while
-    local results, errors = package._interpreter():load(scriptpath, "package", true, false)
-    if not results and os.isfile(scriptpath) then
+    local results, errors = interp:make("package", true, false)
+    if not results then
         return nil, errors
     end
 

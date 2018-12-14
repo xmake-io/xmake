@@ -99,9 +99,18 @@ function _instance:load()
         local scriptpath = path.join(self:directory(), "xmake.lua")
         if os.isfile(scriptpath) then
 
+            -- get interpreter
+            local interp = repository._interpreter()
+
+            -- load script
+            local ok, errors = interp:load(scriptpath)
+            if not ok then
+                os.raise("load repo(%s) failed, " .. errors, self:name())
+            end
+
             -- load repository and disable filter
-            local results, errors = repository._interpreter():load(scriptpath, nil, true, false)
-            if not results and os.isfile(scriptpath) then
+            local results, errors = interp:make(nil, true, false)
+            if not results then
                 os.raise("load repo(%s) failed, " .. errors, self:name())
             end
 

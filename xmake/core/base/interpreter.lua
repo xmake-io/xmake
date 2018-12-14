@@ -662,8 +662,8 @@ function interpreter.new()
     return instance
 end
 
--- load results 
-function interpreter:load(file, scope_kind, remove_repeat, enable_filter)
+-- load script file, e.g. xmake.lua 
+function interpreter:load(file)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file)
@@ -691,18 +691,17 @@ function interpreter:load(file, scope_kind, remove_repeat, enable_filter)
     setfenv(script, self._PUBLIC)
 
     -- do interpreter
-    local ok, errors = xpcall(script, interpreter._traceback)
-    if not ok then
-        return nil, errors
-    end
+    return xpcall(script, interpreter._traceback)
+end
 
-    -- make results
+-- make results 
+function interpreter:make(scope_kind, remove_repeat, enable_filter)
+
+    -- get the results with the given scope
     local ok, results = xpcall(interpreter._make, interpreter._traceback, self, scope_kind, remove_repeat, enable_filter)
     if not ok then
         return nil, results 
     end
-
-    -- ok
     return results
 end
 

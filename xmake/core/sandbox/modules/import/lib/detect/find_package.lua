@@ -81,6 +81,12 @@ function sandbox_lib_detect_find_package._find_from_packagedirs(name, opt)
         return maps[variable]
     end)
 
+    -- load script
+    local ok, errors = interp:load(packagefile)
+    if not ok then
+        raise(errors)
+    end
+
     -- load the package from the the package file
     local packageinfos, errors = interp:load(packagefile, "option", true, true)
     if not packageinfos then

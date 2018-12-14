@@ -109,8 +109,14 @@ function rule._load(filepath)
     local interp = rule._interpreter()
     assert(interp) 
 
+    -- load script
+    local ok, errors = interp:load(filepath)
+    if not ok then
+        return nil, errors
+    end
+
     -- load rules
-    local results, errors = interp:load(filepath, "rule", true, true)
+    local results, errors = interp:make("rule", true, true)
     if not results then
         return nil, errors
     end

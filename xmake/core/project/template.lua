@@ -144,8 +144,14 @@ function template.templates(language)
         -- load template
         for _, templatefile in ipairs(templatefiles) do
 
+            -- load script
+            local ok, errors = interp:load(templatefile)
+            if not ok then
+                os.raise(errors)
+            end
+
             -- load templates
-            local results, errors = interp:load(templatefile, nil, true, true)
+            local results, errors = interp:make(nil, true, true)
             if not results then
                 -- trace
                 os.raise(errors)

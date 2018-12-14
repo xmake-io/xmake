@@ -293,8 +293,17 @@ function language.load(name)
         return nil, string.format("the language %s not found!", name)
     end
 
+    -- get interpreter
+    local interp = language._interpreter()
+
+    -- load script
+    local ok, errors = interp:load(scriptpath)
+    if not ok then
+        return nil, errors
+    end
+
     -- load language
-    local results, errors = language._interpreter():load(scriptpath, "language", true, false)
+    local results, errors = interp:make("language", true, false)
     if not results and os.isfile(scriptpath) then
         return nil, errors
     end

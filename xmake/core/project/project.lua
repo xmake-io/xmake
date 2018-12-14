@@ -357,8 +357,14 @@ function project._load_scope(scope_kind, remove_repeat, enable_filter)
         return nil, errors
     end
 
+    -- load script
+    local ok, errors = interp:load(project.file())
+    if not ok then
+        return nil, errors
+    end
+
     -- load targets
-    local results, errors = interp:load(project.file(), scope_kind, remove_repeat, enable_filter)
+    local results, errors = interp:make(scope_kind, remove_repeat, enable_filter)
     if not results then
         return nil, (errors or "load project file failed!")
     end

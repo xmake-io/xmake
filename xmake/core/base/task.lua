@@ -317,9 +317,15 @@ function task._load(filepath)
     local interp = task._interpreter()
     assert(interp) 
 
+    -- load script
+    local ok, errors = interp:load(filepath)
+    if not ok and os.isfile(filepath) then
+        return nil, errors
+    end
+
     -- load tasks
-    local tasks, errors = interp:load(filepath, "task", true, true)
-    if not tasks and os.isfile(filepath) then
+    local tasks, errors = interp:make("task", true, true)
+    if not tasks then
         return nil, errors
     end
 
