@@ -40,9 +40,19 @@ function enter()
     -- set search pathes of toolchains 
     environment.enter("toolchains")
 
+    -- unzip is necessary
+    if not find_tool("unzip") then
+        raise("unzip not found! we need install it first")
+    end
+
     -- git not found? install it first
     if not find_tool("git") then
         package.install_packages("git")
+    end
+
+    -- missing the necessary unarchivers for *.gz, *.7z? install them first, e.g. gzip, 7z, tar ..
+    if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
+        package.install_packages("7z")
     end
 
     -- get prefix directories
