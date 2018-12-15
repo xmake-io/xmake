@@ -306,18 +306,36 @@ end
 
 -- get the project info from the given name
 function project.get(name)
+    return project._INFO and project._INFO[name] or nil
+end
 
-    -- load the global project infos
-    local infos = project._INFOS 
-    if not infos then
-        infos = project._load_scope(nil, true, true)
-        project._INFOS = infos
+-- load the project file
+function project._load()
+
+    -- enter the project directory
+    local oldir, errors = os.cd(os.projectdir())
+    if not oldir then
+        return false, errors
     end
 
-    -- get it
-    if infos then
-        return infos[name]
+    -- get interpreter
+    local interp = project.interpreter()
+
+    -- load script
+    local ok, errors = interp:load(project.file())
+    if not ok then
+        return false, (errors or "load project file failed!")
     end
+
+    -- load the project info
+    project._INFO = project._load_scope(nil, true, true)
+
+    -- leave the project directory
+    oldir, errors = os.cd(oldir)
+    if not oldir then
+        return false, errors
+    end
+    return true
 end
 
 -- load deps for instance: .e.g option, target and rule
@@ -347,43 +365,97 @@ end
 -- load scope from the project file
 function project._load_scope(scope_kind, remove_repeat, enable_filter)
 
-    -- get interpreter
-    local interp = project.interpreter()
-    assert(interp) 
-
     -- enter the project directory
     local oldir, errors = os.cd(os.projectdir())
     if not oldir then
         return nil, errors
     end
 
-    -- load script
-    local ok, errors = interp:load(project.file())
-    if not ok then
-        return nil, errors
-    end
+    -- get interpreter
+    local interp = project.interpreter()
 
-    -- load targets
+    -- load scope
     local results, errors = interp:make(scope_kind, remove_repeat, enable_filter)
     if not results then
-        return nil, (errors or "load project file failed!")
+        return nil, errors 
     end
 
     -- leave the project directory
-    local ok, errors = os.cd(oldir)
+    oldir, errors = os.cd(oldir)
+    if not oldir then
+        return nil, errors
+    end
+    return results
+end
+
+-- load tasks
+function project._load_tasks()
+ 
+    -- the project file is not found?
+    if not os.isfile(project.file()) then
+        return {}, nil
+    end
+
+    -- load the project file first
+    local ok, errors = project._load()
     if not ok then
         return nil, errors
     end
 
-    -- ok
-    return results
+    -- load the tasks from the the project file
+    local results, errors = project._load_scope("task", true, true)
+    if not results then
+       return nil, errors or "load project tasks failed!"
+    end
+
+    -- bind tasks for menu with an sandbox instance
+    local ok, errors = task._bind(results, project.interpreter())
+    if not ok then
+        return nil, errors
+    end
+
+    -- make task instances
+    local tasks = {}
+    for taskname, taskinfo in pairs(results) do
+        tasks[taskname] = task.new(taskname, taskinfo)
+    end
+    return tasks
+end
+
+-- load rules
+function project._load_rules()
+ 
+    -- load the rules from the the project file
+    local results, errors = project._load_scope("rule", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- make rule instances
+    local rules = {}
+    for rulename, ruleinfo in pairs(results) do
+        rules[rulename] = rule.new(rulename, ruleinfo)
+    end
+
+    -- load rule deps
+    local instances = table.join(rule.rules(), rules)
+    for _, instance in pairs(instances)  do
+        instance._DEPS      = instance._DEPS or {}
+        instance._ORDERDEPS = instance._ORDERDEPS or {}
+        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
+    end
+    return rules
 end
 
 -- load targets 
 function project._load_targets()
 
-    -- load all requires first (ensure has_package() works for targets)
+    -- load all requires first and reload the project file to ensure has_package() works for targets
     local requires = project.requires()
+    local ok, errors = project._load()
+    if not ok then
+        return nil, errors
+    end
 
     -- load targets
     local results, errors = project._load_scope("target", true, true)
@@ -515,13 +587,11 @@ end
 -- load requires
 function project._load_requires()
 
-    -- @note clear the previous cache and reload root configs when call project.get()
-    project._INFOS = nil
-
     -- parse requires
     local requires = {}
-    local requires_extra = project.get("__extra_requires") or {}
-    for _, requirestr in ipairs(table.wrap(project.get("requires"))) do
+    local requires_str, requires_extra = project.requires_str() 
+    requires_extra = requires_extra or {}
+    for _, requirestr in ipairs(table.wrap(requires_str)) do
 
         -- get the package name
         local packagename = requirestr:split('%s+')[1]
@@ -567,6 +637,13 @@ function project._load_requires()
 
     -- ok?
     return requires
+end
+
+-- load packages
+function project._load_packages()
+
+    -- load the packages from the the project file and disable filter, we will process filter after a while
+    return project._load_scope("package", true, false)
 end
 
 -- clear project cache to reload targets and options
@@ -632,17 +709,35 @@ end
 -- get requires info
 function project.requires()
 
-    -- load requires 
     if not project._REQUIRES then
+
+        -- load requires
         local requires, errors = project._load_requires()
         if not requires then
             os.raise(errors)
         end
         project._REQUIRES = requires
     end
-
-    -- ok
     return project._REQUIRES
+end
+
+-- get string requires 
+function project.requires_str()
+
+    if not project._REQUIRES_STR then
+
+        -- reload the project file to handle `has_config()`
+        local ok, errors = project._load()
+        if not ok then
+            os.raise(errors)
+        end
+
+        -- get raw requires
+        local requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
+        project._REQUIRES_STR = requires_str or false
+        project._REQUIRES_EXTRA = requires_extra
+    end
+    return project._REQUIRES_STR or nil, project._REQUIRES_EXTRA
 end
 
 -- get the given rule
@@ -652,42 +747,17 @@ end
 
 -- get project rules
 function project.rules()
- 
-    -- return it directly if exists
-    if project._RULES then
-        return project._RULES 
+
+    if not project._RULES then
+
+        -- load rules
+        local rules, errors = project._load_rules()
+        if not rules then
+            os.raise(errors)
+        end
+        project._RULES = rules
     end
-
-    -- the project file is not found?
-    if not os.isfile(project.file()) then
-        return {}
-    end
-
-    -- load the rules from the the project file
-    local results, errors = project._load_scope("rule", true, true)
-    if not results then
-        os.raise(errors)
-    end
-
-    -- make rule instances
-    local rules = {}
-    for rulename, ruleinfo in pairs(results) do
-        rules[rulename] = rule.new(rulename, ruleinfo)
-    end
-
-    -- load rule deps
-    local instances = table.join(rule.rules(), rules)
-    for _, instance in pairs(instances)  do
-        instance._DEPS      = instance._DEPS or {}
-        instance._ORDERDEPS = instance._ORDERDEPS or {}
-        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
-    end
-
-    -- save it
-    project._RULES = rules
-
-    -- ok?
-    return rules
+    return project._RULES
 end
 
 -- get the given task
@@ -697,66 +767,32 @@ end
 
 -- get tasks
 function project.tasks()
- 
-    -- return it directly if exists
-    if project._TASKS then
-        return project._TASKS 
+
+    if not project._TASKS then
+
+        -- load tasks
+        local tasks, errors = project._load_tasks()
+        if not tasks then
+            os.raise(errors)
+        end
+        project._TASKS = tasks
     end
-
-    -- the project file is not found?
-    if not os.isfile(project.file()) then
-        return {}, nil
-    end
-
-    -- load the tasks from the the project file
-    local results, errors = project._load_scope("task", true, true)
-    if not results then
-       os.raise(errors or "load project tasks failed!")
-    end
-
-    -- bind tasks for menu with an sandbox instance
-    local ok, errors = task._bind(results, project.interpreter())
-    if not ok then
-        os.raise(errors)
-    end
-
-    -- make task instances
-    local tasks = {}
-    for taskname, taskinfo in pairs(results) do
-        tasks[taskname] = task.new(taskname, taskinfo)
-    end
-
-    -- save it
-    project._TASKS = tasks
-
-    -- ok?
-    return tasks
+    return project._TASKS
 end
 
 -- get packages
 function project.packages()
 
-    -- get it from cache first
-    if project._PACKAGES then
-        return project._PACKAGES
+    if not project._PACKAGES then
+
+        -- load packages
+        local packages, errors = project._load_packages()
+        if not packages then
+            return nil, errors
+        end
+        project._PACKAGES = packages
     end
-
-    -- the project file is not found?
-    if not os.isfile(os.projectfile()) then
-        return {}, nil
-    end
-
-    -- load the packages from the the project file and disable filter, we will process filter after a while
-    local results, errors = project._load_scope("package", true, false)
-    if not results then
-        return nil, errors
-    end
-
-    -- save results to cache
-    project._PACKAGES = results
-
-    -- ok?
-    return results
+    return project._PACKAGES
 end
 
 -- get the mtimes

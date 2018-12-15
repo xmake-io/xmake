@@ -203,5 +203,10 @@ function sandbox_core_project.requires()
     return project.requires()
 end
 
+-- get the all raw string requires
+function sandbox_core_project.requires_str()
+    return project.requires_str()
+end
+
 -- return module
 return sandbox_core_project

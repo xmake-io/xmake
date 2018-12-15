@@ -73,7 +73,7 @@ function main(package_names)
     print("The package info of project:")
 
     -- get project requires 
-    local project_requires, requires_extra = project.get("requires"), project.get("__extra_requires")
+    local project_requires, requires_extra = project.requires_str()
     if not project_requires then
         raise("requires(%s) not found in project!", table.concat(requires, " "))
     end

@@ -125,7 +125,7 @@ function main(requires)
     -- init requires
     local requires_extra = nil
     if not requires then
-        requires, requires_extra = project.get("requires"), project.get("__extra_requires")
+        requires, requires_extra = project.requires_str()
     end
     if not requires or #requires == 0 then
         return 
