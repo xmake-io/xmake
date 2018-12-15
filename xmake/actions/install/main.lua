@@ -95,7 +95,7 @@ function main()
             function (errors)
 
                 -- trace
-                cprint(errors)
+                vprint(errors)
 
                 -- try get privilege
                 if privilege.get() then
