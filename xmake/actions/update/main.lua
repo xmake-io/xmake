@@ -158,7 +158,7 @@ function _install(sourcedir, version)
                 if is_host("windows") then
                     local installer = "xmake-" .. version .. ".exe"
                     if os.isfile(installer) then
-                        -- UAC on win7
+                        -- need UAC?
                         if winos:version():gt("winxp") then
                             local proc = process.openv("cscript", {path.join(os.programdir(), "scripts", "sudo.vbs"), installer})
                             if proc ~= nil then
@@ -235,9 +235,11 @@ function main()
     mainurls = fasturl.sort(mainurls)
 
     -- get version
+    local tags = nil
+    local branches = nil
     local version = nil
     for _, url in ipairs(mainurls) do
-        local tags, branches = git.refs(url)
+        tags, branches = git.refs(url)
         if tags or branches then
             version = semver.select(option.get("xmakever") or "lastest", tags or {}, tags or {}, branches or {})
             break
@@ -253,12 +255,17 @@ function main()
         return
     end
 
-    -- cannot support to update dev/master on windows
+    -- get urls on windows
     if is_host("windows") then
         if version:find('.', 1, true) then
             mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", version, version)}
         else
-            raise("not support to update %s on windows!", version)
+            local lastest = semver.select("lastest", tags or {}, tags or {}, {})
+            if lastest then
+                mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", lastest, version)}
+            else
+                raise("not support to update %s on windows!", version)
+            end
         end
     end
 
