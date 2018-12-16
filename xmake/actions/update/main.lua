@@ -276,7 +276,7 @@ function main()
     local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
-            cprintf("\r${yellow}  => ${clear}clone %s ..  ", url)
+            cprintf("\r${yellow}  => ${clear}downloading %s ..  ", url)
             local ok = try
             {
                 function ()
