@@ -49,6 +49,9 @@ function _sudo(cmd)
             -- failed or not permission? request administrator permission and run it again
             function (errors)
 
+                -- trace
+                vprint(errors)
+
                 -- try get privilege
                 if privilege.get() then
                     local ok = try
