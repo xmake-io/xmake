@@ -52,6 +52,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
+        printf("\r" .. _emptychars() .. "\r")
         return 
     end
 
@@ -95,7 +96,11 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     assert(sha256, "cannot get sha256 of %s in package(%s)", url, package:name())
 
     -- the package file have been downloaded?
+    local cached = true
     if option.get("force") or not os.isfile(packagefile) or sha256 ~= hash.sha256(packagefile) then
+
+        -- no cached
+        cached = false
 
         -- attempt to remove package file first
         os.rm(packagefile)
@@ -125,8 +130,12 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     package:originfile_set(path.absolute(packagefile))
 
     -- trace
-    printf("\r" .. _emptychars())
-    cprint("\r${yellow}  => ${clear}download %s .. ${green}ok", url)
+    if not cached then
+        printf("\r" .. _emptychars())
+        cprint("\r${yellow}  => ${clear}download %s .. ${green}ok", url)
+    else
+        printf("\r" .. _emptychars() .. "\r")
+    end
 end
 
 -- get sorted urls
