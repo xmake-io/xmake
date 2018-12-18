@@ -94,22 +94,23 @@ end
 
 -- get the platform os
 function _instance:os()
-    return self:get("os")
+    return self._INFO.os
 end
 
 -- get the platform menu
 function _instance:menu()
-    return self:get("menu")
+    -- @note do not use self:get("menu") to avoid loading platform early
+    return self._INFO.menu
 end
 
 -- get the platform hosts
 function _instance:hosts()
-    return self:get("hosts")
+    return self._INFO.hosts
 end
 
 -- get the platform archs
 function _instance:archs()
-    return self:get("archs")
+    return self._INFO.archs
 end
 
 -- the directories of platform
