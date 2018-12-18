@@ -40,9 +40,15 @@ function _toolchains(config)
         arch = "i686"
     end
 
+    -- get sdk directory, TODO add detect.sdks.find_mingw
+    local sdk = config.get("sdk")
+    if os.host() == "macosx" and not sdk then
+        sdk = "/usr/local/opt/mingw-w64"
+    end
+
     -- find cross toolchain
     local cross = ""
-    local toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bin = config.get("bin"), cross = config.get("cross")})
+    local toolchain = find_cross_toolchain(sdk or config.get("bin"), {bin = config.get("bin"), cross = config.get("cross")})
     if toolchain then
 
         -- save toolchain
