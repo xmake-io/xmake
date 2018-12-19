@@ -174,12 +174,7 @@ function _install(sourcedir, version)
                         raise("the installer(%s) not found!", installer)
                     end
                 else
-                    if os.programdir():startswith("/usr/") then
-                        os.vrun("make build")
-                        _sudo("make install") 
-                    else
-                        os.vrun("./scripts/get.sh __local__")
-                    end
+                    os.vrun("./scripts/get.sh __local__")
                 end
                 return true
             end,
