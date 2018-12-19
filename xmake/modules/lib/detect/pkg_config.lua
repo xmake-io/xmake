@@ -85,7 +85,10 @@ function info(name, opt)
 
         -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
         if not opt.mode or opt.mode == "release" then
-            local pcfile = find_file(name .. ".pc", "/usr/local/Cellar/" .. (opt.brewhint or name) .. "/*/lib/pkgconfig")
+            local brew_pkg_root = try { function () return os.iorunv(brew, {"--prefix"}) end } or "/usr/local"
+            brew_pkg_root = path.join(brew_pkg_root, opt.plat == "macosx" and "Cellar" or "opt")
+
+            local pcfile = find_file(name .. ".pc", path.join(brew_pkg_root, (opt.brewhint or name), "*/lib/pkgconfig"))
             if pcfile then
                 brewprefix = path.directory(path.directory(path.directory(pcfile)))
                 os.addenv("PKG_CONFIG_PATH", path.directory(pcfile))
