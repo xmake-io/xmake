@@ -18,6 +18,7 @@
 
 * Fix cannot call `set_optimize()` to set optimization flags when exists `add_rules("mode.release")`
 * [#289](https://github.com/tboox/xmake/issues/289): Fix unarchive gzip file failed on windows
+* [#296](https://github.com/tboox/xmake/issues/296): Fix `option.add_includedirs` for cuda
 
 ## v2.2.3
 
@@ -551,6 +552,7 @@
 
 * 修复无法通过 `set_optimize()` 设置优化选项，如果存在`add_rules("mode.release")`的情况下
 * [#289](https://github.com/tboox/xmake/issues/289): 修复在windows下解压gzip文件失败
+* [#296](https://github.com/tboox/xmake/issues/296): 修复`option.add_includedirs`对cuda编译不生效
 
 ## v2.2.3
 

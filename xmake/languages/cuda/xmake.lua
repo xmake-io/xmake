@@ -60,6 +60,11 @@ language("cuda")
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
+        ,   "option.symbols"
+        ,   "option.warnings"
+        ,   "option.optimize:check"
+        ,   "option.vectorexts:check"
+        ,   "option.includedirs"
         ,   "platform.includedirs"
         }
     ,   binary =
