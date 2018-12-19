@@ -86,9 +86,9 @@ function info(name, opt)
         -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
         if not opt.mode or opt.mode == "release" then
             local brew_pkg_root = try { function () return os.iorunv(brew, {"--prefix"}) end } or "/usr/local"
-            if opt.plat == "linux" then
+            if opt.plat == "macosx" then
                 brew_pkg_root = brew_pkg_root .. "/Cellar/"
-            elseif opt.plat == "macosx" then
+            elseif opt.plat == "linux" then
                 brew_pkg_root = brew_pkg_root .. "/opt/"
             end
 
