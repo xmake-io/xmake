@@ -46,17 +46,17 @@ function _toolchains(config)
 
     -- find cross toolchain
     local cross = ""
-    local toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bin = config.get("bin"), cross = config.get("cross")})
+    local toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
     if toolchain then
 
         -- save toolchain
         config.set("cross", toolchain.cross, {readonly = true, force = true})
-        config.set("bin", toolchain.bin, {readonly = true, force = true})
+        config.set("bin", toolchain.bindir, {readonly = true, force = true})
         cross = toolchain.cross
 
         -- add bin search library for loading some dependent .dll files windows 
-        if toolchain.bin and is_host("windows") then
-            os.addenv("PATH", toolchain.bin)
+        if toolchain.bindir and is_host("windows") then
+            os.addenv("PATH", toolchain.bindir)
         end
     end
 

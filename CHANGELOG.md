@@ -12,6 +12,7 @@
 
 * Improve to switch version and debug mode for the dependent packages
 * [#264](https://github.com/tboox/xmake/issues/264): Support `xmake update dev` on windows
+* [#293](https://github.com/tboox/xmake/issues/293): Add `xmake f/g --mingw=xxx` configuration option and improve to find_mingw
 
 ### Bugs fixed
 
@@ -544,6 +545,7 @@
 
 * 针对远程依赖包，改进版本和调试模式切换
 * [#264](https://github.com/tboox/xmake/issues/264): 支持在windows上更新dev/master版本，`xmake update dev`
+* [#293](https://github.com/tboox/xmake/issues/293): 添加`xmake f/g --mingw=xxx` 配置选线，并且改进find_mingw检测
 
 ### Bugs修复
 

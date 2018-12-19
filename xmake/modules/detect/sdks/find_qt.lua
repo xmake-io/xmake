@@ -154,7 +154,7 @@ function main(sdkdir, opt)
     end
        
     -- find qt
-    local qt = _find_qt(sdkdir or config.get("qt") or global.get("qt"), opt.version or config.get("qt_sdkver"))
+    local qt = _find_qt(sdkdir or config.get("qt") or global.get("qt") or config.get("sdk"), opt.version or config.get("qt_sdkver"))
     if qt then
 
         -- save to config

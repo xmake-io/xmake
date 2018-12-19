@@ -26,50 +26,63 @@
 import("core.project.config")
 import("lib.detect.find_file")
 
+-- find bin directory and cross
+function _find_bindir(sdkdir, opt)
+
+    -- init bin directories
+    local bindirs = {}
+    if opt.bindir then
+        table.insert(bindirs, opt.bindir)
+    end
+    table.insert(bindirs, path.join(sdkdir, "bin"))
+    table.insert(bindirs, path.join(sdkdir, "**", "bin"))
+
+    -- attempt to find *-ld
+    local ldname = is_host("windows") and "ld.exe" or "ld"
+    local ldpath = find_file((opt.cross or '*-') .. ldname, bindirs)
+    if ldpath then
+        return path.directory(ldpath), path.basename(ldpath):sub(1, -3)
+    end
+    
+    -- find ld
+    ldpath = find_file(ldname, bindirs)
+    if ldpath then
+        return path.directory(ldpath), ""
+    end
+end
+
 -- find cross toolchain
 --
--- @param rootdir   the root directory of cross toolchain 
--- @param opt       the argument options 
---                  .e.g {bin = .., cross = ..}
+-- @param sdkdir   the root sdk directory of cross toolchain 
+-- @param opt      the argument options 
+--                 .e.g {bindir = .., cross = ..}
 --
--- @return          the toolchain .e.g {bin = .., cross = ..}
+-- @return          the toolchain .e.g {sdkdir = .., bindir = .., cross = ..}
 --
 -- @code 
 --
 -- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e")
 -- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e", {cross = "arm-linux-androideabi-"})
--- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e", {cross = "arm-linux-androideabi-", bin = ..})
+-- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e", {cross = "arm-linux-androideabi-", bindir = ..})
 -- 
 -- @endcode
 --
-function main(rootdir, opt)
+function main(sdkdir, opt)
 
     -- init arguments
     opt = opt or {}
 
     -- get root directory
-    if not rootdir or not os.isdir(rootdir) then
+    if not sdkdir or not os.isdir(sdkdir) then
         return 
     end
 
-    -- init pathes
-    local pathes = {}
-    if opt.bin then
-        table.insert(pathes, opt.bin)
+    -- find bin directory and cross
+    local bindir, cross = _find_bindir(sdkdir, opt)
+    if not bindir then
+        return 
     end
-    table.insert(pathes, path.join(rootdir, "bin"))
-    table.insert(pathes, path.join(rootdir, "**", "bin"))
 
-    -- attempt to find *-ld
-    local ldname = os.host() == "windows" and "ld.exe" or "ld"
-    local ldpath = find_file((opt.cross or '*-') .. ldname, pathes)
-    if ldpath then
-        return {bin = path.directory(ldpath), cross = path.basename(ldpath):sub(1, -3)}
-    end
-    
-    -- find ld
-    ldpath = find_file(ldname, pathes)
-    if ldpath then
-        return {bin = path.directory(ldpath), cross = ""}
-    end
+    -- found
+    return {sdkdir = sdkdir, bindir = bindir, cross = cross}
 end

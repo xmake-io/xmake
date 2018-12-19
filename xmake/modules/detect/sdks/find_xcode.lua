@@ -117,7 +117,7 @@ function main(sdkdir, opt)
     local arch = opt.arch or config.get("arch") or "x86_64"
 
     -- find xcode
-    local xcode = _find_vscode(sdkdir or config.get("xcode") or global.get("xcode"), opt.sdkver or config.get("xcode_sdkver"), plat, arch)
+    local xcode = _find_vscode(sdkdir or config.get("xcode") or global.get("xcode") or config.get("sdk"), opt.sdkver or config.get("xcode_sdkver"), plat, arch)
     if xcode and xcode.sdkdir then
 
         -- save to config

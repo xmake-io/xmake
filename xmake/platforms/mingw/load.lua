@@ -44,13 +44,6 @@ function main(platform)
         platform:add("shflags", archflags)
     end
 
-    -- init linkdirs and includedirs
-    local sdkdir = config.get("sdk") 
-    if sdkdir then
-        platform:add("includedirs", path.join(sdkdir, "include"))
-        platform:add("linkdirs", path.join(sdkdir, "lib"))
-    end
-
     -- add bin search library for loading some dependent .dll files windows 
     local bindir = config.get("bin")
     if bindir and is_host("windows") then

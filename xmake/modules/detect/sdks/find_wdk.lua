@@ -171,7 +171,7 @@ function main(sdkdir, opt)
     end
        
     -- find wdk
-    local wdk = _find_wdk(sdkdir or config.get("wdk") or global.get("wdk"), opt.version or config.get("wdk_sdkver"))
+    local wdk = _find_wdk(sdkdir or config.get("wdk") or global.get("wdk") or config.get("sdk"), opt.version or config.get("wdk_sdkver"))
     if wdk then
 
         -- save to config

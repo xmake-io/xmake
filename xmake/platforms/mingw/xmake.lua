@@ -43,3 +43,17 @@ platform("mingw")
     -- on load
     on_load("load")
 
+    -- set menu
+    set_menu {
+                config = 
+                {   
+                    {category = "MingW Configuration"                                     }
+                ,   {nil, "mingw",          "kv", nil,          "The MingW SDK Directory" }
+                }
+
+            ,   global = 
+                {   
+                    {category = "MingW Configuration"                                     }
+                ,   {nil, "mingw",          "kv", nil,          "The MingW SDK Directory" }
+                }
+            }

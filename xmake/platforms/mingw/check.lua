@@ -23,8 +23,24 @@
 --
 
 -- imports
-import("detect.sdks.find_cross_toolchain")
+import("detect.sdks.find_mingw")
 import("platforms.checker", {rootdir = os.programdir()})
+
+-- check the mingw toolchain
+function _check_mingw(config)
+    local mingw = find_mingw(config.get("mingw"), {verbose = true, bindir = config.get("bin"), cross = config.get("cross")})
+    if mingw then
+        config.set("mingw", mingw.sdkdir, {force = true, readonly = true}) -- maybe to global
+        config.set("cross", mingw.cross, {readonly = true, force = true})
+        config.set("bin", mingw.bindir, {readonly = true, force = true})
+    else
+        -- failed
+        cprint("${bright red}please run:")
+        cprint("${red}    - xmake config --ndk=xxx")
+        cprint("${red}or  - xmake global --ndk=xxx")
+        raise()
+    end
+end
 
 -- get toolchains
 function _toolchains(config)
@@ -34,32 +50,13 @@ function _toolchains(config)
         return _g.TOOLCHAINS
     end
 
-    -- init arch
-    local arch = config.get("arch")
-    if not arch or arch == "i386" then
-        arch = "i686"
-    end
+    -- get cross
+    local cross = config.get("cross")
 
-    -- get sdk directory, TODO add detect.sdks.find_mingw
-    local sdk = config.get("sdk")
-    if os.host() == "macosx" and not sdk then
-        sdk = "/usr/local/opt/mingw-w64"
-    end
-
-    -- find cross toolchain
-    local cross = ""
-    local toolchain = find_cross_toolchain(sdk or config.get("bin"), {bin = config.get("bin"), cross = config.get("cross")})
-    if toolchain then
-
-        -- save toolchain
-        config.set("cross", toolchain.cross, {readonly = true, force = true})
-        config.set("bin", toolchain.bin, {readonly = true, force = true})
-        cross = toolchain.cross
-
-        -- add bin search library for loading some dependent .dll files windows 
-        if toolchain.bin and is_host("windows") then
-            os.addenv("PATH", toolchain.bin)
-        end
+    -- add bin search library for loading some dependent .dll files windows 
+    local bindir = config.get("bin")
+    if bindir and is_host("windows") then
+        os.addenv("PATH", bindir)
     end
 
     -- make toolchains
@@ -94,7 +91,8 @@ function main(kind, toolkind)
     -- init the check list of config
     _g.config = 
     {
-        { checker.check_arch, "i386" }
+        { checker.check_arch, "x86_64" }
+    ,   _check_mingw
     }
 
     -- init the check list of global
