@@ -54,6 +54,16 @@ function _find_mingw(sdkdir, bindir, cross)
         return {}
     end
 
+    -- select cross on macos, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
+    if is_host("macosx") and not cross then
+        local arch = config.get("arch")
+        if not arch or arch == "i386" then
+            cross = "i686-*-"
+        else
+            cross = "x86_64-*-"
+        end
+    end
+
     -- find cross toolchain
     local toolchain = find_cross_toolchain(sdkdir or bindir, {bindir = bindir, cross = cross})
     if toolchain then
