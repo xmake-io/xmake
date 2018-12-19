@@ -44,6 +44,7 @@ function apis()
     ,   "target.add_defines_h"
     ,   "target.add_undefines_h"
     ,   "target.add_frameworks"
+    ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
     ,   "option.add_cincludes"
     ,   "option.add_cxxincludes"
@@ -66,6 +67,7 @@ function apis()
     ,   "option.add_undefines_if_ok"
     ,   "option.add_undefines_h_if_ok"
     ,   "option.add_frameworks"
+    ,   "option.add_rpathdirs"
     }
     _g.pathes = 
     {
@@ -78,12 +80,10 @@ function apis()
         -- target.add_xxx
     ,   "target.add_headers"
     ,   "target.add_linkdirs"
-    ,   "target.add_rpathdirs"
     ,   "target.add_includedirs"
     ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
-    ,   "option.add_rpathdirs"
     ,   "option.add_includedirs"
     ,   "option.add_frameworkdirs"
     }
