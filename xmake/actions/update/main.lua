@@ -147,8 +147,11 @@ function _install(sourcedir, version)
     -- the install task
     local install_task = function ()
 
+        -- get the install directory
+        local installdir = is_host("windows") and os.programdir() or "~/.local/bin"
+
         -- trace
-        cprintf("\r${yellow}  => ${clear}installing to %s ..  ", os.programdir())
+        cprintf("\r${yellow}  => ${clear}installing to %s ..  ", installdir)
         local ok = try 
         {
             function ()
@@ -188,7 +191,7 @@ function _install(sourcedir, version)
             
         -- trace
         if ok then
-            cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", os.programdir())
+            cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", installdir)
         else
             raise("install failed!")
         end
