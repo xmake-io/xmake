@@ -7,11 +7,13 @@ package("7z")
     if os.host() == "windows" then
         if os.arch() == "x64" then
             set_urls("https://github.com/xmake-mirror/7zip/releases/download/$(version)/7z$(version)-x64.zip",
-                     "https://gitlab.com/xmake-mirror/7zip/uploads/878feb6ad6f95854e2c1d861f7f6cd0d/7z$(version)-x64.zip")
+                     "https://gitlab.com/xmake-mirror/7zip-releases/raw/master/7z$(version)-x64.zip",
+                     "https://qcloud.coding.net/u/waruqi/p/7zip-releases/git/raw/master/7z$(version)-x64.zip")
             add_versions("18.05", "e6e2d21e2c482f1b1c5a6d21ed80800ce1273b902cf4b9afa68621545540ee2f")
         else
             set_urls("https://github.com/xmake-mirror/7zip/releases/download/$(version)/7z$(version)-x86.zip",
-                     "https://gitlab.com/xmake-mirror/7zip/uploads/b7ac5f096c5ff27c257780575c1015c7/7z$(version)-x86.zip")
+                     "https://gitlab.com/xmake-mirror/7zip-releases/raw/master/7z$(version)-x86.zip",
+                     "https://qcloud.coding.net/u/waruqi/p/7zip-releases/git/raw/master/7z$(version)-x86.zip")
             add_versions("18.05", "544c37bebee30437aba405071484e0ac6310332b4bdabe4ca7420a800d4b4b5e")
         end
     else
