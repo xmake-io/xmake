@@ -76,7 +76,10 @@ function main(name, flags, opt)
     opt.program    = tool.program
     opt.programver = tool.version
 
-    -- get tool arch 
+    -- get tool platform
+    local plat = config.get("plat") or os.host()
+
+    -- get tool architecture
     --
     -- some tools select arch by path environment, not be flags, .e.g cl.exe of msvc)
     -- so, it will affect the cache result
@@ -84,7 +87,7 @@ function main(name, flags, opt)
     local arch = config.get("arch") or os.arch()
 
     -- init cache key
-    local key = tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ") .. "_" .. arch
+    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ")
     
     -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
     local coroutine_running = coroutine.running()

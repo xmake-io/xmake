@@ -77,8 +77,8 @@ function compiler:_addflags_from_compiler(flags, targetkind)
     end
 end
 
--- load the compiler from the given source kind
-function compiler.load(sourcekind, target)
+-- load compiler tool
+function compiler._load_tool(sourcekind, target)
 
     -- get program from target
     local program = nil
@@ -89,27 +89,42 @@ function compiler.load(sourcekind, target)
         end
     end
 
-    -- init key
-    local key = sourcekind .. (program or "")
-
-    -- get it directly from cache dirst
-    compiler._INSTANCES = compiler._INSTANCES or {}
-    if compiler._INSTANCES[key] then
-        return compiler._INSTANCES[key]
-    end
-
-    -- new instance
-    local instance = table.inherit(compiler, builder)
-
     -- load the compiler tool from the source kind
     local result, errors = tool.load(sourcekind, program)
     if not result then 
         return nil, errors
     end
-    instance._TOOL = result
+
+    -- done
+    return result, program
+end 
+
+-- load the compiler from the given source kind
+function compiler.load(sourcekind, target)
+
+    -- load compiler tool first (with cache)
+    local compiler_tool, program_or_errors = compiler._load_tool(sourcekind, target)
+    if not compiler_tool then
+        return nil, program_or_errors
+    end
+
+    -- init cache key
+    local cachekey = sourcekind .. (program_or_errors or "")
+
+    -- get it directly from cache dirst
+    compiler._INSTANCES = compiler._INSTANCES or {}
+    if compiler._INSTANCES[cachekey] then
+        return compiler._INSTANCES[cachekey]
+    end
+
+    -- new instance
+    local instance = table.inherit(compiler, builder)
+
+    -- save the compiler tool
+    instance._TOOL = compiler_tool
         
     -- load the compiler language from the source kind
-    result, errors = language.load_sk(sourcekind)
+    local result, errors = language.load_sk(sourcekind)
     if not result then 
         return nil, errors
     end
@@ -125,7 +140,7 @@ function compiler.load(sourcekind, target)
     instance._FLAGKINDS = table.wrap(result:sourceflags()[sourcekind])
 
     -- save this instance
-    compiler._INSTANCES[key] = instance
+    compiler._INSTANCES[cachekey] = instance
 
     -- ok
     return instance

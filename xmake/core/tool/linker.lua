@@ -100,6 +100,48 @@ function linker:_addflags_from_linker(flags)
     end
 end
 
+-- load tool
+function linker._load_tool(targetkind, sourcekinds, target)
+
+    -- get the linker infos
+    local linkerinfos, errors = language.linkerinfos_of(targetkind, sourcekinds)
+    if not linkerinfos then
+        return nil, errors
+    end
+
+    -- select the linker
+    local linkerinfo = nil
+    local linkertool = nil
+    local firsterror = nil
+    for _, _linkerinfo in ipairs(linkerinfos) do
+
+        -- get program from target
+        local program = nil
+        if target then
+            local tools = target:get("tools")
+            if tools then
+                program = tools[_linkerinfo.linkerkind]
+            end
+        end
+
+        -- load the linker tool from the linker kind (with cache)
+        linkertool, errors = tool.load(_linkerinfo.linkerkind, program)
+        if linkertool then 
+            linkerinfo = _linkerinfo
+            linkerinfo.program = program
+            break
+        else
+            firsterror = firsterror or errors
+        end
+    end
+    if not linkerinfo then
+        return nil, firsterror
+    end
+
+    -- done
+    return linkertool, linkerinfo
+end
+
 -- load the linker from the given target kind
 function linker.load(targetkind, sourcekinds, target)
 
@@ -118,43 +160,22 @@ function linker.load(targetkind, sourcekinds, target)
         end
     end
 
-    -- get the linker infos
-    local linkerinfos, errors = language.linkerinfos_of(targetkind, sourcekinds)
-    if not linkerinfos then
-        return nil, errors
+    -- load linker tool first (with cache)
+    local linkertool, linkerinfo_or_errors = linker._load_tool(targetkind, sourcekinds, target)
+    if not linkertool then
+        return nil, linkerinfo_or_errors
     end
 
-    -- get program from target
-    local program = nil
-    if target then
-        local tools = target:get("tools")
-        if tools then
-            program = tools[sourcekind]
-        end
-    end
+    -- get linker info
+    local linkerinfo = linkerinfo_or_errors
 
-    -- select the linker
-    local linkerinfo = nil
-    local linkertool = nil
-    local firsterror = nil
-    for _, _linkerinfo in ipairs(linkerinfos) do
-        -- load the linker tool from the linker kind
-        linkertool, errors = tool.load(_linkerinfo.linkerkind, program)
-        if linkertool then 
-            linkerinfo = _linkerinfo
-            break
-        else
-            firsterror = firsterror or errors
-        end
-    end
-    if not linkerinfo then
-        return nil, firsterror
-    end
+    -- init cache key
+    local cachekey = linkerinfo.linkerkind .. (linkerinfo.program or "")
 
     -- get it directly from cache dirst
     builder._INSTANCES = builder._INSTANCES or {}
-    if builder._INSTANCES[linkerinfo.linkerkind] then
-        return builder._INSTANCES[linkerinfo.linkerkind]
+    if builder._INSTANCES[cachekey] then
+        return builder._INSTANCES[cachekey]
     end
 
     -- new instance
@@ -169,7 +190,7 @@ function linker.load(targetkind, sourcekinds, target)
     for _, sourcekind in ipairs(sourcekinds) do
 
         -- load language 
-        result, errors = language.load_sk(sourcekind)
+        local result, errors = language.load_sk(sourcekind)
         if not result then 
             return nil, errors
         end
@@ -195,7 +216,7 @@ function linker.load(targetkind, sourcekinds, target)
     instance._FLAGKINDS = {linkerinfo.linkerflag}
 
     -- save this instance
-    builder._INSTANCES[linkerinfo.linkerkind] = instance
+    builder._INSTANCES[cachekey] = instance
 
     -- ok
     return instance
