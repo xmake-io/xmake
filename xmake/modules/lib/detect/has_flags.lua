@@ -32,7 +32,7 @@ import("lib.detect.find_tool")
 --
 -- @param name      the tool name
 -- @param flags     the flags
--- @param opt       the argument options, .e.g {verbose = false, program = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+-- @param opt       the argument options, .e.g {verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return          true or false
 --
@@ -54,12 +54,12 @@ function main(name, flags, opt)
         return false
     end
 
-    -- wrap flags
-    flags = table.wrap(flags)
+    -- generate all checked flags
+    local checkflags = table.join(flags, opt.sysflags)
 
     -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
     local results = {}
-    for _, flag in ipairs(flags) do
+    for _, flag in ipairs(checkflags) do
         flag = flag:trim()
         if #flag > 0 then
             if flag:find(" ", 1, true) then
@@ -69,7 +69,7 @@ function main(name, flags, opt)
             end
         end
     end
-    flags = results
+    checkflags = results
 
     -- init tool
     opt.toolname   = tool.name
@@ -87,7 +87,7 @@ function main(name, flags, opt)
     local arch = config.get("arch") or os.arch()
 
     -- init cache key
-    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(flags, " ")
+    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(checkflags, " ")
     
     -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
     local coroutine_running = coroutine.running()
@@ -111,15 +111,18 @@ function main(name, flags, opt)
     local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
     local errors = nil
     if hasflags then
-        result, errors = hasflags(flags, opt)
+        result, errors = hasflags(checkflags, opt)
     else
-        result = try { function () os.runv(tool.program, flags); return true end, catch { function (errs) errors = errs end }}
+        result = try { function () os.runv(tool.program, checkflags); return true end, catch { function (errs) errors = errs end }}
     end
     _g._checking = nil
 
     -- trace
     if option.get("verbose") or option.get("diagnosis") or opt.verbose then
-        cprint("checking for the flags(%s) %s ... %s", path.filename(tool.program), table.concat(flags, " "), ifelse(result, "${green}ok", "${red}no"))
+        cprint("${dim}checking for the flags (%s) ... %s", table.concat(table.wrap(flags), " "), ifelse(result, "${green}ok", "${red}no"))
+        if option.get("diagnosis") then
+            cprint("${dim}> %s %s", path.filename(tool.program), table.concat(checkflags, " "))
+        end
     end
     if errors and #errors > 0 and option.get("diagnosis") then
         cprint("${yellow}checkinfo:${clear dim} %s", errors:trim())
