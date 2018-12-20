@@ -87,7 +87,7 @@ function main(name, flags, opt)
     local arch = config.get("arch") or os.arch()
 
     -- init cache key
-    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. table.concat(flags, " ")
+    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(flags, " ")
     
     -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
     local coroutine_running = coroutine.running()

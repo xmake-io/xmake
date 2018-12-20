@@ -134,12 +134,12 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    if self:has_flags("-Wl,-rpath=" .. dir) then
+    if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
         return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
         end))
-    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir) then
+    elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
         return "-Xlinker -rpath -Xlinker " .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
     end
 end

@@ -109,13 +109,19 @@ function _instance:get(name)
 end
 
 -- has the given flag?
-function _instance:has_flags(flags)
+function _instance:has_flags(flags, flagkind)
 
     -- import has_flags()
     self._has_flags = self._has_flags or import("lib.detect.has_flags")
 
+    -- get base flags
+    local baseflags = self:get(self:kind() .. 'flags') 
+    if not baseflags and flagkind then
+        baseflags = self:get(flagkind)
+    end
+
     -- has flags?
-    return self._has_flags(self:name(), flags, {program = self:program(), toolkind = self:kind()})
+    return self._has_flags(self:name(), table.join(flags, baseflags), {program = self:program(), toolkind = self:kind(), flagkind = flagkind})
 end
 
 -- load the given tool from the given kind

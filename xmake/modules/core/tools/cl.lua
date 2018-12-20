@@ -105,7 +105,7 @@ function nf_symbol(self, level, target)
             
             -- check and add symbol output file
             flags = "-Zi -Fd" .. target:symbolfile()
-            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}) then
+            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}, "cxflags") then
                 flags = "-FS " .. flags
             end
         else
@@ -165,7 +165,7 @@ function nf_vectorext(self, extension)
 
     -- check it
     local flag = maps[extension]
-    if flag and self:has_flags(flag) then
+    if flag and self:has_flags(flag, "cxflags") then
         return flag
     end
 end
@@ -215,7 +215,7 @@ function nf_language(self, stdname)
     local flag = maps[stdname]
 
     -- not support it?
-    if flag and flag:find("std:c++", 1, true) and not self:has_flags(flag) then
+    if flag and flag:find("std:c++", 1, true) and not self:has_flags(flag, "cxflags") then
         return 
     end
 
