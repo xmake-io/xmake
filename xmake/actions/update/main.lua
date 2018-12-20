@@ -191,7 +191,7 @@ function _install(sourcedir, version)
             
         -- trace
         if ok then
-            cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok", installdir)
+            cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok    ", installdir)
         else
             raise("install failed!")
         end
@@ -300,10 +300,10 @@ function main()
                 }
             }
             if ok then
-                cprint("\r${yellow}  => ${clear}download %s .. ${green}ok", url)
+                cprint("\r${yellow}  => ${clear}download %s .. ${green}ok    ", url)
                 break
             else
-                cprint("\r${yellow}  => ${clear}download %s .. ${red}failed", url)
+                cprint("\r${yellow}  => ${clear}download %s .. ${red}failed    ", url)
             end
             if not ok and idx == #mainurls then
                 raise("download failed!")
