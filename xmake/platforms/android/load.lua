@@ -184,13 +184,13 @@ function main(platform)
                 
                 -- include abi directory
                 if cxxstl_sdkdir:find("llvm-libc++", 1, true) then
-                    local abi_path = path.translate(format("%s/sources/cxx-stl/llvm-libc++abi", ndk))
-                    local before_r13 = path.translate(path.join(abi_path, "libcxxabi"))
-                    local after_r13 = path.translate(path.join(abi_path, "include"))
+                    local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
+                    local before_r13 = path.join(abi_path, "libcxxabi")
+                    local after_r13 = path.join(abi_path, "include")
                     if os.isdir(before_r13) then
-                        platform:add("cxxflags", format("-I%s",before_r13))
+                        platform:add("cxxflags", "-I" .. before_r13)
                     elseif os.isdir(after_r13) then
-                        platform:add("cxxflags", format("-I%s",after_r13))
+                        platform:add("cxxflags", "-I" .. after_r13)
                     end
                 end
             end
