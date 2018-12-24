@@ -139,7 +139,7 @@ function _do_build_file(target, sourcefile, opt)
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues
-    table.join2(dependinfo.files, sourcefile, target:pcheaderfile("cxx") or {}, target:pcheaderfile("c"))
+    table.join2(dependinfo.files, sourcefile, target:pcoutputfile("cxx") or {}, target:pcoutputfile("c"))
     depend.save(dependinfo, dependfile)
 end
 

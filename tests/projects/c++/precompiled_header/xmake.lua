@@ -11,5 +11,5 @@ target("main")
     set_pcxxheader("src/header.h")
 
     -- add files
-    add_files("src/*.cpp", "src/*.c")
+    add_files("src/*.cpp", "src/*.c", "*.cpp")
 

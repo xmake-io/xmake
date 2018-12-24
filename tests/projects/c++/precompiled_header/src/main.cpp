@@ -2,6 +2,7 @@
 
 int main(int argc, char** argv) 
 {
-    printf("hello xmake!\n");
+    std::string s("xmake");
+    printf("hello %s!\n", s.c_str());
     return 0;
 }

@@ -277,10 +277,11 @@ end
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then
+        local pcoutputfile = target:pcoutputfile("c")
         if self:name() == "clang" then
-            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(target:pcoutputfile("c"))
+            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(pcoutputfile)
         else
-            return "-include " .. os.args(pcheaderfile)
+            return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
         end
     end
 end
@@ -288,10 +289,11 @@ end
 -- make the c++ precompiled header flag
 function nf_pcxxheader(self, pcheaderfile, target)
     if self:kind() == "cxx" then
+        local pcoutputfile = target:pcoutputfile("cxx")
         if self:name() == "clang" then
-            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(target:pcoutputfile("cxx"))
+            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(pcoutputfile)
         else
-            return "-include " .. os.args(pcheaderfile)
+            return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
         end
     end
 end
@@ -326,55 +328,38 @@ function link(self, objectfiles, targetkind, targetfile, flags)
 end
 
 -- get include deps
-function _include_deps(self, sourcefile, flags)
-
-    -- support -E -MM? some old gcc does not support it at same time
-    if _g._HAS_EMM == nil then
-        _g._HAS_EMM = self:has_flags("-E -MM", "cxflags")
-    end
-    if not _g._HAS_EMM then
-        return {}
-    end
-
-    -- the temporary file
-    local tmpfile = os.tmpfile()
-
-    -- uses pchflags for precompiled header
-    if _g._PCHFLAGS then
-        local key = sourcefile .. tostring(flags)
-        local pchflags = _g._PCHFLAGS[key] 
-        if pchflags then
-            flags = pchflags
-        end
-    end
-
-    -- generate it
-    os.runv(self:program(), table.join("-c", "-E", "-MM", flags or {}, "-o", tmpfile, sourcefile))
+function _include_deps(self, outdata)
 
     -- translate it
-    results = {}
-    local deps = io.readfile(tmpfile)
-    for includefile in string.gmatch(deps, "%s+([%w/%.%-%+_%$%.]+)") do
+    local results = {}
+    local uniques = {}
+    for _, line in ipairs(outdata:split("\n")) do
 
-        -- save it if belong to the project
-        if path.absolute(includefile):startswith(os.projectdir()) then
-            table.insert(results, includefile)
+        -- get includefile, e.g. '! xxx.gch' or '... xxx.h'
+        if line:startswith("!") or line:startswith(".") then
+            local includefile = line:split("%s")[2]
+            if includefile then
+
+                -- get the relative
+                includefile = path.relative(includefile, project.directory())
+
+                -- save it if belong to the project
+                if path.absolute(includefile):startswith(os.projectdir()) then
+
+                    -- insert it and filter repeat
+                    if not uniques[includefile] then
+                        table.insert(results, includefile)
+                        uniques[includefile] = true
+                    end
+                end
+            end
         end
     end
-
-    -- remove the temporary file
-    os.rm(tmpfile)
-
-    -- ok?
     return results
 end
 
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
-
-    -- init key and cache
-    local key = pcheaderfile .. tostring(flags)
-    _g._PCHFLAGS = _g._PCHFLAGS or {}
 
     -- remove "-include xxx.h" and "-include-pch xxx.pch"
     local pchflags = {}
@@ -395,9 +380,6 @@ function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
         table.insert(pchflags, "-x")
         table.insert(pchflags, "c++-header")
     end
-
-    -- save pchflags to cache
-    _g._PCHFLAGS[key] = pchflags
 
     -- make complie arguments list
     return self:program(), table.join("-c", pchflags, "-o", pcoutputfile, pcheaderfile)
@@ -445,11 +427,24 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    try
+    local outdata = try
     {
         function ()
-            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
-            return (outdata or "") .. (errdata or "")
+
+            -- support -H? some old gcc does not support it at same time
+            if _g._HAS_H == nil then
+                _g._HAS_H = self:has_flags("-H", "cxflags")
+            end
+
+            -- generate includes file
+            local compflags = flags
+            if dependinfo and _g._HAS_H then
+                compflags = table.join(flags, "-H")
+            end
+
+            -- do compile
+            local outs, errs = os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+            return (outs or "") .. (errs or "")
         end,
         catch
         {
@@ -495,9 +490,9 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     }
 
     -- generate the dependent includes
-    if dependinfo and self:kind() ~= "as" then
+    if dependinfo and self:kind() ~= "as" and outdata then
         dependinfo.files = dependinfo.files or {}
-        table.join2(dependinfo.files, _include_deps(self, sourcefile, flags))
+        table.join2(dependinfo.files, _include_deps(self, outdata))
     end
 end
 

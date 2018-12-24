@@ -1392,12 +1392,8 @@ function target:pcoutputfile(langkind)
         --
         -- @note gcc has not -include-pch option to set the pch file path
         --
-        if toolinstance and toolinstance:name() == "gcc" then
-            pcoutputfile = pcheaderfile .. ".gch"
-        else
-            local headerdir = path.directory(pcheaderfile):gsub("%.%.", "__")
-            pcoutputfile = string.format("%s/%s/%s/%s", self:objectdir(), self:name(), headerdir, path.filename(pcheaderfile) .. ".pch")
-        end
+        pcoutputfile = self:objectfile(pcheaderfile)
+        pcoutputfile = path.join(path.directory(pcoutputfile), path.basename(pcoutputfile) .. (toolinstance and toolinstance:name() == "gcc" and ".gch" or ".pch"))
 
         -- save to cache
         self._PCOUTPUTFILES[langkind] = pcoutputfile
