@@ -327,8 +327,48 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
+-- get compile info
+--
+-- e.g.
+--
+-- ! xxx.gch
+-- . xxx.h
+-- .. xxx.h
+-- ... xxx.h
+-- In file included from src/xxx.c:43:
+-- src/main.c:2:9 warning: xczx
+--   ..
+--
+-- . xxx.h
+-- Multiple include guards may be useful for:
+-- /usr/include/bits/long-double.h
+-- /usr/include/bits/sigaction.h
+--
+function _get_compile_info(outdata)
+
+    -- filter dependent header info and get compile output 
+    local results = {}
+    for _, line in ipairs(outdata:split("\n")) do
+        if not line:startswith("!") and 
+           not line:startswith(".") and 
+           not line:endswith(".h") and 
+           not line:endswith(".hpp") and 
+           not line:endswith(".inc") and 
+           not line:endswith(".inl") and 
+           not line:endswith(".c") and 
+           not line:endswith(".cpp") and 
+           not line:endswith(".cc") and 
+           not line:endswith(".m") and 
+           not line:endswith(".mm") and 
+           not line:endswith(':') then
+            table.insert(results, line)
+        end
+    end
+    return results
+end
+
 -- get include deps
-function _include_deps(self, outdata)
+function _get_include_deps(outdata)
 
     -- translate it
     local results = {}
@@ -427,7 +467,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    local outdata = try
+    local outdata, errdata = try
     {
         function ()
 
@@ -443,8 +483,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
-            local outs, errs = os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
-            return (outs or "") .. (errs or "")
+            return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
         end,
         catch
         {
@@ -457,7 +496,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 if not option.get("verbose") then
 
                     -- find the start line of error
-                    local lines = errors:split("\n")
+                    local lines = _get_compile_info(errors)
                     local start = 0
                     for index, line in ipairs(lines) do
                         if line:find("error:", 1, true) or line:find("错误：", 1, true) then
@@ -468,7 +507,6 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                     -- get 16 lines of errors
                     if start > 0 then
-                        if start == 0 then start = 1 end
                         errors = table.concat(table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start)), "\n")
                     end
                 end
@@ -479,20 +517,25 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
         },
         finally
         {
-            function (ok, warnings)
+            function (ok, outdata, errdata)
 
-                -- print some warnings
-                if warnings and #warnings > 0 and (option.get("diagnosis") or option.get("warning")) then
-                    cprint("${yellow}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                -- show warnings?
+                if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning")) then
+                    local lines = _get_compile_info(errdata)
+                    if #lines > 0 then
+                        local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
+                        cprint("${yellow}%s", warnings)
+                    end
                 end
             end
         }
     }
 
     -- generate the dependent includes
-    if dependinfo and self:kind() ~= "as" and outdata then
+    local depdata = errdata
+    if dependinfo and self:kind() ~= "as" and depdata then
         dependinfo.files = dependinfo.files or {}
-        table.join2(dependinfo.files, _include_deps(self, outdata))
+        table.join2(dependinfo.files, _get_include_deps(depdata))
     end
 end
 

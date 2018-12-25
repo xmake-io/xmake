@@ -96,22 +96,24 @@ function sandbox_try.try(block)
     local funcs = table.join(block[2] or {}, block[3] or {})
 
     -- try to call it
-    local ok, errors = xpcall(try, sandbox_try._traceback)
+    local ok, errors_or_r1, r2, r3, r4, r5, r6 = xpcall(try, sandbox_try._traceback)
     if not ok then
 
         -- run the catch function
         if funcs and funcs.catch then
-            funcs.catch(errors)
+            funcs.catch(errors_or_r1)
         end
     end
 
     -- run the finally function
     if funcs and funcs.finally then
-        funcs.finally(ok, errors)
+        funcs.finally(ok, errors_or_r1, r2, r3, r4, r5, r6)
     end
 
     -- ok?
-    return utils.ifelse(ok, errors, nil)
+    if ok then
+        return errors_or_r1, r2, r3, r4, r5, r6
+    end
 end
 
 -- return module
