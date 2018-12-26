@@ -343,24 +343,18 @@ end
 -- Multiple include guards may be useful for:
 -- /usr/include/bits/long-double.h
 -- /usr/include/bits/sigaction.h
+-- /usr/include/string
 --
 function _get_compile_info(outdata)
 
     -- filter dependent header info and get compile output 
     local results = {}
     for _, line in ipairs(outdata:split("\n")) do
-        if not line:startswith("!") and 
-           not line:startswith(".") and 
-           not line:endswith(".h") and 
-           not line:endswith(".hpp") and 
-           not line:endswith(".inc") and 
-           not line:endswith(".inl") and 
-           not line:endswith(".c") and 
-           not line:endswith(".cpp") and 
-           not line:endswith(".cc") and 
-           not line:endswith(".m") and 
-           not line:endswith(".mm") and 
-           not line:endswith(':') then
+        if not line:startswith("!") and -- ! xxx.h
+           not line:startswith(".") and -- ... xxx.h
+           not (path.is_absolute(line) and not line:find(':', 3, true)) and -- /usr/xxx/string, C:\xx\string
+           not line:find("%.%a+$") and -- src/xxx.[h|hpp|c|..]
+           not (line:endswith(':') and not line:find("%d")) then -- Multiple include guards may be useful for:
             table.insert(results, line)
         end
     end
@@ -493,10 +487,10 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- parse and strip errors
+                local lines = _get_compile_info(errors)
                 if not option.get("verbose") then
 
                     -- find the start line of error
-                    local lines = _get_compile_info(errors)
                     local start = 0
                     for index, line in ipairs(lines) do
                         if line:find("error:", 1, true) or line:find("错误：", 1, true) then
@@ -507,12 +501,12 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                     -- get 16 lines of errors
                     if start > 0 then
-                        errors = table.concat(table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start)), "\n")
+                        lines = table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start))
                     end
                 end
 
                 -- raise compiling errors
-                raise(errors)
+                raise(#lines > 0 and table.concat(lines, "\n") or "")
             end
         },
         finally

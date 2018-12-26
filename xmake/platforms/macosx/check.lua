@@ -99,7 +99,7 @@ function _toolchains(config)
 
     -- insert dlang tools to toolchains
     checker.toolchain_insert(toolchains, "dc",    "",                   "$(env DC)",  "the dlang compiler")
-    checker.toolchain_insert(toolchains, "dc-ar", "",                   "$(env Dc)",  "the dlang static library archiver")
+    checker.toolchain_insert(toolchains, "dc-ar", "",                   "$(env DC)",  "the dlang static library archiver")
     checker.toolchain_insert(toolchains, "dc-sh", "",                   "$(env DC)",  "the dlang shared library linker")
     checker.toolchain_insert(toolchains, "dc-ld", "",                   "$(env DC)",  "the dlang linker")
     checker.toolchain_insert(toolchains, "dc",    "",                   "dmd",        "the dlang compiler")
