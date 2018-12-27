@@ -151,6 +151,10 @@ function platform._interpreter()
             -- platform.on_xxx
             "platform.on_load"
         ,   "platform.on_check"
+        ,   "platform.on_config_check"
+        ,   "platform.on_global_check"
+        ,   "platform.on_environment_enter"
+        ,   "platform.on_environment_leave"
         }
     ,   module =
         {
