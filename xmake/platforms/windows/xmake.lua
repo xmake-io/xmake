@@ -34,14 +34,17 @@ platform("windows")
     -- set archs
     set_archs("x86", "x64")
 
-    -- set environment
-    set_environment("environment")
-
     -- set formats
     set_formats {static = "$(name).lib", object = "$(name).obj", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
 
     -- on check
     on_check("check")
+
+    -- on environment enter
+    on_environment_enter("environment.enter")
+
+    -- on environment leave
+    on_environment_leave("environment.leave")
 
     -- on load
     on_load("load")

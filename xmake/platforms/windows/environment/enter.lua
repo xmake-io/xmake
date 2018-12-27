@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        environment.lua
+-- @file        enter.lua
 --
 
 -- imports
@@ -28,7 +28,7 @@ import("core.base.global")
 import("detect.sdks.find_vstudio")
 
 -- enter the given environment
-function _enter(name)
+function _enter(platform, name)
 
     -- get vcvarsall
     local vcvarsall = config.get("__vcvarsall") or global.get("__vcvarsall")
@@ -76,61 +76,24 @@ function _enter(name)
         os.setenv(name, new)
     end
 
-    -- return the previous environment
-    return old
-end
-
--- leave the given environment
-function _leave(name, old)
-
-    -- restore the previous environment
-    if old then 
-        os.setenv(name, old)
-    end
+    -- save the previous environment
+    platform:data_set("windows.environment." .. name, old)
 end
 
 -- enter the toolchains environment
-function _enter_toolchains()
-
-    -- enter vs toolchains
-    _g.pathes    = _enter("path")
-    _g.libs      = _enter("lib")
-    _g.includes  = _enter("include")
-    _g.libpathes = _enter("libpath")
+function _enter_toolchains(platform)
+    _enter(platform, "path")
+    _enter(platform, "lib")
+    _enter(platform, "include")
+    _enter(platform, "libpath")
 end
 
--- leave the toolchains environment
-function _leave_toolchains()
-
-    -- leave vs toolchains
-    _leave("path",      _g.pathes)
-    _leave("lib",       _g.libs)
-    _leave("include",   _g.includes)
-    _leave("libpath",   _g.libpathes)
-end
-
--- enter the toolchains environment
-function enter(name)
-
-    -- the maps
+-- enter environment
+function main(platform, name)
     local maps = {toolchains = _enter_toolchains}
-    
-    -- enter it
     local func = maps[name]
     if func then
-        func()
+        func(platform)
     end
 end
 
--- leave the toolchains environment
-function leave(name)
-
-    -- the maps
-    local maps = {toolchains = _leave_toolchains}
-    
-    -- leave it
-    local func = maps[name]
-    if func then
-        func()
-    end
-end

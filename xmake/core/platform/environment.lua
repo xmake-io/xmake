@@ -26,12 +26,12 @@
 local environment = environment or {}
 
 -- load modules
-local os        = require("base/os")
-local global    = require("base/global")
-local platform  = require("platform/platform")
-local sandbox   = require("sandbox/sandbox")
-local package   = require("package/package")
-local import    = require("sandbox/modules/import")
+local os            = require("base/os")
+local global        = require("base/global")
+local platform_core = require("platform/platform")
+local sandbox       = require("sandbox/sandbox")
+local package       = require("package/package")
+local import        = require("sandbox/modules/import")
 
 -- enter the toolchains environment
 function environment._enter_toolchains()
@@ -101,6 +101,12 @@ end
 -- enter the environment for the current platform
 function environment.enter(name)
 
+    -- get the current platform 
+    local platform, errors = platform_core.load()
+    if not platform then
+        return false, errors
+    end
+
     -- the maps
     local maps = {toolchains = environment._enter_toolchains, run = environment._enter_run}
     
@@ -111,9 +117,9 @@ function environment.enter(name)
     end
 
     -- enter the environment of the given platform
-    local module = platform.get("environment")
-    if module then
-        local ok, errors = sandbox.load(module.enter, name)
+    local on_enter = platform:script("environment_enter")
+    if on_enter then
+        local ok, errors = sandbox.load(on_enter, platform, name)
         if not ok then
             return false, errors
         end
@@ -126,10 +132,16 @@ end
 -- leave the environment for the current platform
 function environment.leave(name)
 
+    -- get the current platform 
+    local platform, errors = platform_core.load()
+    if not platform then
+        return false, errors
+    end
+
     -- leave the environment of the given platform
-    local module = platform.get("environment")
-    if module then
-        local ok, errors = sandbox.load(module.leave, name)
+    local on_leave = platform:script("environment_leave")
+    if on_leave then
+        local ok, errors = sandbox.load(on_leave, platform, name)
         if not ok then
             return false, errors
         end

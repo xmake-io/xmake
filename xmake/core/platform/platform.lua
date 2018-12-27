@@ -113,12 +113,33 @@ function _instance:archs()
     return self._INFO.archs
 end
 
+-- get the platform script
+function _instance:script(name)
+    return self._INFO[name]
+end
+
+-- get user private data
+function _instance:data(name)
+    return self._DATA and self._DATA[name] or nil
+end
+
+-- set user private data
+function _instance:data_set(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = data
+end
+
+-- add user private data
+function _instance:data_add(name, data)
+    self._DATA = self._DATA or {}
+    self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
 -- the directories of platform
 function platform._directories()
 
     -- the directories
-    return  {   path.join(config.directory(), "platforms")
-            ,   path.join(global.directory(), "platforms")
+    return  {   path.join(global.directory(), "platforms")
             ,   path.join(os.programdir(), "platforms")
             }
 end
@@ -150,16 +171,11 @@ function platform._interpreter()
         {
             -- platform.on_xxx
             "platform.on_load"
-        ,   "platform.on_check"
+        ,   "platform.on_check" -- TODO removed
         ,   "platform.on_config_check"
         ,   "platform.on_global_check"
         ,   "platform.on_environment_enter"
         ,   "platform.on_environment_leave"
-        }
-    ,   module =
-        {
-            -- platform.set_xxx
-            "platform.set_environment"
         }
     ,   dictionary =
         {
@@ -230,7 +246,7 @@ function platform.load(plat)
     end
 
     -- get result
-    local result = utils.ifelse(cross, results["cross"], results[plat])
+    local result = cross and results["cross"] or results[plat]
 
     -- check the platform name
     if not result then
@@ -238,7 +254,7 @@ function platform.load(plat)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(plat, result, platform._interpreter():rootdir())
+    local instance, errors = _instance.new(plat, result, interp:rootdir())
     if not instance then
         return nil, errors
     end
@@ -248,7 +264,6 @@ function platform.load(plat)
 
     -- ok
     return instance
-
 end
 
 -- get the given platform configure
