@@ -768,6 +768,21 @@ function interpreter:rootscope_set(scope_kind)
     self._PRIVATE._ROOTSCOPE = scope_kind
 end
 
+-- get apis
+function interpreter:apis(scope_kind)
+
+    -- check
+    assert(self and self._PRIVATE)
+
+    -- get apis from the given scope kind
+    if scope_kind and scope_kind ~= "__rootkind" then
+        local apis = self._PRIVATE._APIS 
+        return apis and apis[scope_kind] or {}
+    else
+        return self._PRIVATE._ROOTAPIS or {}
+    end
+end
+
 -- register api 
 --
 -- interp:api_register(nil, "apiroot", function () end)

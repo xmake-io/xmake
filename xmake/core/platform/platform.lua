@@ -67,7 +67,7 @@ function _instance:add(name, ...)
     self._INFO[name] = table.unwrap(table.join(info, ...))
 end
 
--- get the platform configure
+-- get the platform configuration
 function _instance:get(name)
 
     -- attempt to get the static configure value
@@ -76,8 +76,8 @@ function _instance:get(name)
         return value
     end
 
-    -- lazy loading platform
-    if not self._LOADED then
+    -- lazy loading platform if get other configuration
+    if not self._LOADED and not self:_is_builtin_conf(name) then
         local on_load = self._INFO.load
         if on_load then
             local ok, errors = sandbox.load(on_load, self)
@@ -133,6 +133,23 @@ end
 function _instance:data_add(name, data)
     self._DATA = self._DATA or {}
     self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
+-- is builtin configuration?
+function _instance:_is_builtin_conf(name)
+
+    local builtin_configs = self._BUILTIN_CONFIGS
+    if not builtin_configs then
+        builtin_configs = {}
+        for apiname, _ in pairs(platform._interpreter():apis("platform")) do
+            local pos = apiname:find('_', 1, true)
+            if pos then
+                builtin_configs[apiname:sub(pos + 1)] = true
+            end
+        end
+        self._BUILTIN_CONFIGS = builtin_configs
+    end
+    return builtin_configs[name]
 end
 
 -- the directories of platform
