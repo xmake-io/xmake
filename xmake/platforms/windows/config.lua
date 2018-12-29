@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.config")
+import("core.base.singleton")
 import("core.platform.environment")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
@@ -33,11 +34,6 @@ import("private.platform.check_toolchain")
 
 -- get toolchains
 function _toolchains()
-
-    -- attempt to get it from cache first
-    if _g.TOOLCHAINS then
-        return _g.TOOLCHAINS
-    end
 
     -- init cross
     local cross = "xcrun -sdk macosx "
@@ -121,8 +117,6 @@ function _toolchains()
     cu_ld:add("nvcc")
     cu_sh:add("nvcc")
 
-    -- save toolchains
-    _g.TOOLCHAINS = toolchains
     return toolchains
 end
 
@@ -131,7 +125,7 @@ function main(platform, name)
 
     -- only check the given config name?
     if name then
-        local toolchain = _toolchains()[name]
+        local toolchain = singleton.get("windows.toolchains", _toolchains)[name]
         if toolchain then
             environment.enter("toolchains")
             check_toolchain(config, name, toolchain)

@@ -29,7 +29,12 @@ local singleton = singleton or {}
 --
 -- e.g. 
 --
--- local instance = singleton.get("key")
+-- function get_xxx()
+--      return {xxx = 1}
+-- end
+-- local instance = singleton.get("key", get_xxx)
+--
+-- Or
 -- 
 -- function get_xxx()
 --
@@ -44,7 +49,7 @@ local singleton = singleton or {}
 --     return instance
 -- end
 --
-function singleton.get(key)
+function singleton.get(key, init)
 
     -- get key
     key = tostring(key)
@@ -57,11 +62,16 @@ function singleton.get(key)
     local instance = instances[key]
     if instance == nil then
 
-        -- mark as not inited
-        inited = false
-
         -- init instance
-        instance = {}
+        if init then
+            instance = init()
+        else
+            -- mark as not inited
+            inited = false
+
+            -- init instance
+            instance = {}
+        end
 
         -- save this instance
         instances[key] = instance

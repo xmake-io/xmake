@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.config")
+import("core.base.singleton")
 import("detect.sdks.find_ndk")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
@@ -48,11 +49,6 @@ end
 
 -- get toolchains
 function _toolchains()
-
-    -- attempt to get it from cache first
-    if _g.TOOLCHAINS then
-        return _g.TOOLCHAINS
-    end
 
     -- get cross
     local cross = config.get("cross") 
@@ -103,8 +99,6 @@ function _toolchains()
     rc_sh:add("$(env RC)", "rustc")
     rc_ar:add("$(env RC)", "rustc")
 
-    -- save toolchains
-    _g.TOOLCHAINS = toolchains
     return toolchains
 end
 
@@ -113,7 +107,7 @@ function main(platform, name)
 
     -- only check the given config name?
     if name then
-        local toolchain = _toolchains()[name]
+        local toolchain = singleton.get("android.toolchains", _toolchains)[name]
         if toolchain then
             check_toolchain(config, name, toolchain)
         end
@@ -126,7 +120,7 @@ function main(platform, name)
         _check_ndk()
 
         -- check ld and sh, @note toolchains must be initialized after calling check_ndk()
-        local toolchains = _toolchains()
+        local toolchains = singleton.get("android.toolchains", _toolchains)
         check_toolchain(config, "ld", toolchains.ld)
         check_toolchain(config, "sh", toolchains.sh)
     end

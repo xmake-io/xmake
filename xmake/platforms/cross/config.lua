@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.config")
+import("core.base.singleton")
 import("detect.sdks.find_cross_toolchain")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
@@ -41,11 +42,6 @@ end
 
 -- get toolchains
 function _toolchains()
-
-    -- attempt to get it from cache first
-    if _g.TOOLCHAINS then
-        return _g.TOOLCHAINS
-    end
 
     -- find cross toolchain
     local cross = ""
@@ -105,8 +101,6 @@ function _toolchains()
     -- init the static library extractor
     ex:add("$(env AR)", {name = "ar", cross = cross})
 
-    -- save toolchains
-    _g.TOOLCHAINS = toolchains
     return toolchains
 end
 
@@ -115,7 +109,7 @@ function main(platform, name)
 
     -- only check the given config name?
     if name then
-        local toolchain = _toolchains()[name]
+        local toolchain = singleton.get("cross.toolchains", _toolchains)[name]
         if toolchain then
             check_toolchain(config, name, toolchain)
         end
