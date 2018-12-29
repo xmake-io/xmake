@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.global")
+import("private.platform.check_arch")
 import("private.platform.check_cuda")
 import("private.platform.check_vstudio")
 
