@@ -92,9 +92,9 @@ function sandbox_core_base_global.check()
         -- belong to the current host?
         for _, host in ipairs(table.wrap(instance:hosts())) do
             if host == os.host() then
-                local check = instance:get("check")
-                if check ~= nil then
-                    check("global")
+                local on_check = instance:script("global_check")
+                if on_check then
+                    on_check(instance)
                 end
                 break
             end

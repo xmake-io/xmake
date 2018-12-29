@@ -37,8 +37,11 @@ platform("watchos")
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).sym"}
 
-    -- on check
-    on_check("check")
+    -- on check project configuration
+    on_config_check("config")
+
+    -- on check global configuration
+    on_global_check("global")
 
     -- on load
     on_load("load")

@@ -305,11 +305,17 @@ function platform.tool(toolkind)
     local program = config.get(toolkind)
     local toolname = config.get("__toolname_" .. toolkind)
     if program == nil then 
+
+        -- get the current platform 
+        local instance, errors = platform.load()
+        if not instance then
+            os.raise(errors)
+        end
         
         -- check it first
-        local check = platform.get("check")
-        if check then
-            check("config", toolkind)
+        local on_check = instance:script("config_check")
+        if on_check then
+            on_check(instance, toolkind)
         end
 
         -- get it again

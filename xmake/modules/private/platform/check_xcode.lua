@@ -19,22 +19,37 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        check_xcode.lua
 --
 
--- define platform
-platform("cross")
+-- imports
+import("core.base.option")
+import("detect.sdks.find_xcode")
 
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
+-- check the xcode application directory
+function main(config, optional)
 
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+    -- find xcode
+    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true, plat = config.get("plat"), arch = config.get("arch")})
+    if xcode then
 
-    -- on check project configuration
-    on_config_check("config")
+        -- save it (maybe to global)
+        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
 
-    -- on load
-    on_load("load")
+    elseif not optional then
 
+        -- failed
+        cprint("${bright red}please run:")
+        cprint("${red}    - xmake config --xcode=xxx")
+        cprint("${red}or  - xmake global --xcode=xxx")
+        raise()
+    end
+
+    -- save target minver
+    local xcode_sdkver = config.get("xcode_sdkver")
+    local target_minver = config.get("target_minver")
+    if xcode_sdkver and not target_minver then
+        config.set("target_minver", xcode_sdkver)
+    end
+end
 

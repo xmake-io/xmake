@@ -114,10 +114,17 @@ end
 -- check the configuration
 function sandbox_core_project_config.check()
 
-    -- get the check script
-    local check = platform.get("check")
-    if check then
-        check("config")
+    -- get the current platform 
+    local instance, errors = platform.load()
+    if instance then
+
+        -- do check
+        local on_check = instance:script("config_check")
+        if on_check then
+            on_check(instance)
+        end
+    else
+        raise(errors)
     end
 end
 

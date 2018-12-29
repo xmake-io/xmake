@@ -19,22 +19,24 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        toolchain.lua
 --
 
--- define platform
-platform("cross")
+-- imports
+import("core.base.object")
 
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
+-- init toolchain
+local toolchain = toolchain or object {_init = {"description", "list"}}
 
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+-- add tool to toolchain list
+function toolchain:add(...)
+    for _, item in ipairs({...}) do
+        table.insert(self.list, item)
+    end
+end
 
-    -- on check project configuration
-    on_config_check("config")
-
-    -- on load
-    on_load("load")
-
+-- create a toolchain object
+function main(description)
+    return toolchain {description, {}}
+end
 

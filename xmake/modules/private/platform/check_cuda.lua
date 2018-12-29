@@ -19,22 +19,30 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        check_cuda.lua
 --
 
--- define platform
-platform("cross")
+-- imports
+import("core.base.option")
+import("detect.sdks.find_cuda")
 
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
+-- check the cuda sdk toolchains
+function main(config)
 
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+    -- get the cuda directory
+    local cuda_dir = config.get("cuda")
+    if not cuda_dir then
 
-    -- on check project configuration
-    on_config_check("config")
+        -- check ok? update it
+        local toolchains = find_cuda()
+        if toolchains then
 
-    -- on load
-    on_load("load")
+            -- save it
+            config.set("cuda", toolchains.cudadir)
 
+            -- trace
+            cprint("checking for the Cuda SDK directory ... ${green}%s", toolchains.cudadir)
+        end
+    end
+end
 

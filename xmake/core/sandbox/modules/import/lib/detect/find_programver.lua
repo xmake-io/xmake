@@ -105,7 +105,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     cacheinfo[program] = utils.ifelse(result, result, false)
 
     -- save cache info
-    cache.save("find_programver", cacheinfo)
+    cache.save(cachekey, cacheinfo)
 
     -- ok?
     return result

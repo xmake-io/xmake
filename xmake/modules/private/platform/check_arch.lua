@@ -19,22 +19,24 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        check_arch.lua
 --
 
--- define platform
-platform("cross")
+-- imports
+import("core.base.option")
 
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
+-- check the architecture
+function main(config, default)
 
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+    -- get the architecture
+    local arch = config.get("arch")
+    if not arch then
 
-    -- on check project configuration
-    on_config_check("config")
+        -- init the default architecture
+        config.set("arch", default or os.arch())
 
-    -- on load
-    on_load("load")
-
+        -- trace
+        cprint("checking for the architecture ... ${green}%s", config.get("arch"))
+    end
+end
 

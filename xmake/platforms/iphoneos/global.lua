@@ -19,22 +19,22 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        global.lua
 --
 
--- define platform
-platform("cross")
+-- imports
+import("core.base.global")
+import("private.platform.check_xcode")
 
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
+-- check it
+function main(platform, name)
 
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+    -- we cannot check the global configuration with the given name
+    if name then
+        raise("we cannot check global." .. name)
+    end
 
-    -- on check project configuration
-    on_config_check("config")
-
-    -- on load
-    on_load("load")
-
+    -- check xcode 
+    check_xcode(global, true)
+end
 

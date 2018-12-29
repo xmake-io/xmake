@@ -19,22 +19,38 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        global.lua
 --
 
--- define platform
-platform("cross")
+-- imports
+import("core.base.global")
+import("private.platform.check_cuda")
+import("private.platform.check_vstudio")
 
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
+-- clean temporary global configs
+function _clean_global()
+    global.set("arch", nil)
+    global.set("__vcvarsall", nil)
+end
 
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+-- check it
+function main(platform, name)
 
-    -- on check project configuration
-    on_config_check("config")
+    -- we cannot check the global configuration with the given name
+    if name then
+        raise("we cannot check global." .. name)
+    end
 
-    -- on load
-    on_load("load")
+    -- check arch 
+    check_arch(global)
 
+    -- check vstudio
+    check_vstudio(global)
+
+    -- check cuda
+    check_cuda(global)
+
+    -- clean temporary global configs
+    _clean_global()
+end
 

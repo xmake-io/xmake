@@ -219,7 +219,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
     cacheinfo[name] = utils.ifelse(result, result, false)
 
     -- save cache info
-    cache.save("find_program", cacheinfo)
+    cache.save(cachekey, cacheinfo)
 
     -- trace
     if option.get("verbose") or opt.verbose then

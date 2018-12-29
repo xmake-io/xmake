@@ -19,22 +19,8 @@
 -- Copyright (C) 2015 - 2018, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        singleton.lua
 --
 
--- define platform
-platform("cross")
-
-    -- set hosts
-    set_hosts("macosx", "linux", "windows")
-
-    -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
-
-    -- on check project configuration
-    on_config_check("config")
-
-    -- on load
-    on_load("load")
-
-
+-- return module
+return require("base/singleton")
