@@ -235,23 +235,23 @@ add_rules("mode.debug", "mode.release")
 target("console")
     set_kind("binary")
     add_files("src/*.c") 
-    if is_plat("windows", "mingw") then
-        add_defines("XXX")
+    if is_mode("debug") then
+        add_defines("DEBUG")
     end
 ```
 
-自定义脚本：
+下载和使用远程依赖包：
 
 ```lua
+add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
+add_requires("tbox >1.6.1", {optional = true, debug = true})
 target("test")
-    set_kind("static")
-    add_files("src/*.cpp")
-    after_build(function (target)
-        print("build %s ok!", target:targetfile())
-    end)
+    set_kind("shared")
+    add_files("src/*.c")
+    add_packages("libuv", "ffmpeg", "tbox", "zlib")
 ```
 
-使用扩展模块：
+查找和使用本地已安装的包：
 
 ```lua
 target("test")
@@ -260,6 +260,7 @@ target("test")
     on_load(function (target)
         import("lib.detect.find_package")
         target:add(find_package("zlib"))
+        target:add(find_package("openssl"))
     end)
 ```
 
