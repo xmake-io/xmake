@@ -152,15 +152,6 @@ function _instance:_is_builtin_conf(name)
     return builtin_configs[name]
 end
 
--- the directories of platform
-function platform._directories()
-
-    -- the directories
-    return  {   path.join(global.directory(), "platforms")
-            ,   path.join(os.programdir(), "platforms")
-            }
-end
-
 -- the interpreter
 function platform._interpreter()
 
@@ -174,7 +165,19 @@ function platform._interpreter()
     assert(interp)
  
     -- define apis
-    interp:api_define
+    interp:api_define(platform._apis())
+
+    -- save interpreter
+    platform._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- get platform apis
+function platform._apis()
+
+    return 
     {
         values =
         {
@@ -188,7 +191,6 @@ function platform._interpreter()
         {
             -- platform.on_xxx
             "platform.on_load"
-        ,   "platform.on_check" -- TODO removed
         ,   "platform.on_config_check"
         ,   "platform.on_global_check"
         ,   "platform.on_environment_enter"
@@ -201,12 +203,32 @@ function platform._interpreter()
         ,   "platform.set_formats"
         }
     }
+end
 
-    -- save interpreter
-    platform._INTERPRETER = interp
+-- get platform directories
+function platform.directories()
 
-    -- ok?
-    return interp
+    -- init directories
+    local dirs = platform._DIRS or  {   path.join(global.directory(), "platforms")
+                                    ,   path.join(os.programdir(), "platforms")
+                                    }
+                                
+    -- save directories to cache
+    platform._DIRS = dirs
+    return dirs
+end
+
+-- add platform directories
+function platform.add_directories(...)
+
+    -- add directories
+    local dirs = platform.directories()
+    for _, dir in ipairs({...}) do
+        table.insert(dirs, 1, dir)
+    end
+
+    -- remove unique directories
+    platform._DIRS = table.unique(dirs)
 end
 
 -- load the given platform 
@@ -226,7 +248,7 @@ function platform.load(plat)
 
     -- find the platform script path
     local scriptpath = nil
-    for _, dir in ipairs(platform._directories()) do
+    for _, dir in ipairs(platform.directories()) do
 
         -- find this directory
         scriptpath = path.join(dir, plat, "xmake.lua")
@@ -346,7 +368,7 @@ function platform.plats()
 
     -- get all platforms
     local plats = {}
-    local dirs  = platform._directories()
+    local dirs  = platform.directories()
     for _, dir in ipairs(dirs) do
 
         -- get the platform list 

@@ -161,6 +161,11 @@ function project._api_add_packagedirs(interp, ...)
     interp:api_builtin_includes(pkgdirs)
 end
 
+-- add platform directories
+function project._api_add_platformdirs(interp, ...)
+    platform.add_directories(...)
+end
+
 -- get interpreter
 function project.interpreter()
 
@@ -233,6 +238,7 @@ function project.interpreter()
         ,   {"add_moduledirs",          project._api_add_moduledirs   }
         ,   {"add_plugindirs",          project._api_add_plugindirs   }
         ,   {"add_packagedirs",         project._api_add_packagedirs  }
+        ,   {"add_platformdirs",        project._api_add_platformdirs }
         }
     }
 

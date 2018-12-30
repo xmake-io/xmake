@@ -29,7 +29,7 @@ import("core.base.global")
 import("core.project.config")
 import("lib.detect.find_directory")
 
--- find vscode directory
+-- find xcode directory
 function _find_sdkdir(sdkdir)
     if sdkdir and os.isdir(sdkdir) then
         return sdkdir
@@ -37,14 +37,12 @@ function _find_sdkdir(sdkdir)
     return find_directory("Xcode.app", {"/Applications"}) or find_directory("Xcode*.app", {"/Applications"})
 end
 
--- find the sdk version of vscode
+-- find the sdk version of xcode
 function _find_xcode_sdkver(sdkdir, plat, arch)
 
     -- select platform sdkdir
     local platsdkdir = nil
-    if plat == "macosx" then
-        platsdkdir = "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.*.sdk"
-    elseif plat == "iphoneos" then
+    if plat == "iphoneos" then
         if arch == "i386" or arch == "x86_64" then
             platsdkdir = "Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator*.*.sdk"
         else
@@ -56,6 +54,8 @@ function _find_xcode_sdkver(sdkdir, plat, arch)
         else
             platsdkdir = "Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS*.*.sdk"
         end
+    else
+        platsdkdir = "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.*.sdk"
     end
 
     -- attempt to find the platform directory and get sdk version
@@ -67,10 +67,10 @@ function _find_xcode_sdkver(sdkdir, plat, arch)
     end
 end
 
--- find the vscode toolchain
-function _find_vscode(sdkdir, xcode_sdkver, plat, arch)
+-- find the xcode toolchain
+function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
 
-    -- find vscode root directory
+    -- find xcode root directory
     sdkdir = _find_sdkdir(sdkdir)
     if not sdkdir then
         return {}
@@ -96,7 +96,7 @@ end
 --
 -- @code 
 --
--- local toolchain = find_vscode("/Applications/Xcode.app")
+-- local toolchain = find_xcode("/Applications/Xcode.app")
 -- 
 -- @endcode
 --
@@ -106,7 +106,7 @@ function main(sdkdir, opt)
     opt = opt or {}
 
     -- attempt to load cache first
-    local key = "detect.sdks.find_vscode"
+    local key = "detect.sdks.find_xcode"
     local cacheinfo = cache.load(key)
     if not opt.force and cacheinfo.xcode and cacheinfo.xcode.sdkdir and os.isdir(cacheinfo.xcode.sdkdir) then
         return cacheinfo.xcode
@@ -117,7 +117,7 @@ function main(sdkdir, opt)
     local arch = opt.arch or config.get("arch") or "x86_64"
 
     -- find xcode
-    local xcode = _find_vscode(sdkdir or config.get("xcode") or global.get("xcode") or config.get("sdk"), opt.sdkver or config.get("xcode_sdkver"), plat, arch)
+    local xcode = _find_xcode(sdkdir or config.get("xcode") or global.get("xcode") or config.get("sdk"), opt.sdkver or config.get("xcode_sdkver"), plat, arch)
     if xcode and xcode.sdkdir then
 
         -- save to config
@@ -133,7 +133,7 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the xcode directory ... ${red}no")
+            cprint("checking for the Xcode directory ... ${red}no")
         end
     end
 
