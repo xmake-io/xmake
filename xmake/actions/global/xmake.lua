@@ -49,6 +49,7 @@ task("global")
                 ,   {nil, "menu",       "k", nil,       "Configure with a menu-driven user interface."            }
 
                 ,   {category = "."}
+                ,   {nil, "theme",      "kv", "default","The theme name."                                         }
                 ,   {nil, "debugger",   "kv", "auto",   "The Debugger Program Path."                              }
 
                     -- show platform menu options

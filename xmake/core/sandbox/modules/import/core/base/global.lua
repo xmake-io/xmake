@@ -57,11 +57,6 @@ function sandbox_core_base_global.dump()
     global.dump()
 end
 
--- load the configure
-function sandbox_core_base_global.load()
-    return global.load()
-end
-
 -- save the configure
 function sandbox_core_base_global.save()
 

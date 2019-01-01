@@ -51,7 +51,7 @@ function app:init()
     self:insert(self:mconfdialog())
 
     -- load configs
-    self:load(not option.get("clean"))
+    self:load()
 end
 
 -- get menu config dialog
@@ -277,11 +277,11 @@ function app:_save_configs(configs)
 end
 
 -- load configs from options
-function app:load(cache)
+function app:load()
 
-    -- load config from cache
-    if cache then
-        cache = global.load()
+    -- clean the global configuration
+    if option.get("clean") then
+        global.clear()
     end
 
     -- clear configs first
@@ -293,7 +293,7 @@ function app:load(cache)
     self:mconfdialog():load(configs)
 
     -- the previous config is only for loading menuconf, so clear config now
-    if cache then
+    if option.get("clean") then
         global.clear()
     end
 end

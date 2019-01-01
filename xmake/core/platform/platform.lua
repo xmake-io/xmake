@@ -176,7 +176,6 @@ end
 
 -- get platform apis
 function platform._apis()
-
     return 
     {
         values =
@@ -300,15 +299,11 @@ function platform.load(plat)
 
     -- save instance to the cache
     platform._PLATFORMS[plat] = instance
-
-    -- ok
     return instance
 end
 
--- get the given platform configure
+-- get the given platform configuration
 function platform.get(name, plat)
-
-    -- get the current platform configure
     local instance, errors = platform.load(plat)
     if instance then
         return instance:get(name)

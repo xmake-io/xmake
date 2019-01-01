@@ -1,0 +1,176 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed to the Apache Software Foundation (ASF) under one
+-- or more contributor license agreements.  See the NOTICE file
+-- distributed with this work for additional information
+-- regarding copyright ownership.  The ASF licenses this file
+-- to you under the Apache License, Version 2.0 (the
+-- "License"); you may not use this file except in compliance
+-- with the License.  You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        theme.lua
+--
+
+-- define module
+local theme         = theme or {}
+local _instance     = _instance or {}
+
+-- load modules
+local os            = require("base/os")
+local path          = require("base/path")
+local utils         = require("base/utils")
+local table         = require("base/table")
+local interpreter   = require("base/interpreter")
+local sandbox       = require("sandbox/sandbox")
+local global        = require("base/global")
+
+-- new an instance
+function _instance.new(name, info, rootdir)
+
+    -- new an instance
+    local instance = table.inherit(_instance)
+
+    -- init instance
+    instance._NAME      = name
+    instance._INFO      = info
+    instance._ROOTDIR   = rootdir
+
+    -- ok
+    return instance
+end
+
+-- get theme name
+function _instance:name()
+    return self._NAME
+end
+
+-- get the theme configuration
+function _instance:get(name)
+    return self._INFO[name]
+end
+
+-- the interpreter
+function theme._interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if theme._INTERPRETER then
+        return theme._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+ 
+    -- define apis
+    interp:api_define(theme._apis())
+
+    -- save interpreter
+    theme._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- get theme apis
+function theme._apis()
+    return 
+    {
+        keyvalues =
+        {
+            -- theme.set_xxx
+            "theme.set_color"
+        }
+    }
+end
+
+-- get theme directories
+function theme.directories()
+
+    -- init directories
+    local dirs = theme._DIRS or {   path.join(global.directory(), "themes")
+                                ,   path.join(os.programdir(), "themes")
+                                }
+                                
+    -- save directories to cache
+    theme._DIRS = dirs
+    return dirs
+end
+
+-- load the given theme 
+function theme.load(name)
+
+    -- get it directly from cache dirst
+    theme._THEMES = theme._THEMES or {}
+    if theme._THEMES[name] then
+        return theme._THEMES[name]
+    end
+
+    -- find the theme script path
+    local scriptpath = nil
+    for _, dir in ipairs(theme.directories()) do
+        scriptpath = path.join(dir, name, "xmake.lua")
+        if os.isfile(scriptpath) then
+            break
+        end
+    end
+
+    -- not exists? uses the default theme
+    if not scriptpath or not os.isfile(scriptpath) then
+        scriptpath = path.join(os.programdir(), "themes", "default", "xmake.lua")
+    end
+
+    -- get interpreter
+    local interp = theme._interpreter()
+
+    -- load script
+    local ok, errors = interp:load(scriptpath)
+    if not ok then
+        return nil, errors
+    end
+
+    -- load theme
+    local results, errors = interp:make("theme", true, false)
+    if not results and os.isfile(scriptpath) then
+        return nil, errors
+    end
+
+    -- get result
+    local result = results[name]
+    if not result then
+        return nil, string.format("the theme %s not found!", name)
+    end
+
+    -- new an instance
+    local instance, errors = _instance.new(name, result, interp:rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- save instance to the cache
+    theme._THEMES[name] = instance
+    return instance
+end
+
+-- get the given theme configuration
+function theme.get(name)
+    local instance, errors = theme.load(global.get("theme") or "default")
+    if instance then
+        return instance:get(name)
+    else
+        os.raise(errors)
+    end
+end
+
+-- return module
+return theme

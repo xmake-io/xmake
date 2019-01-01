@@ -39,9 +39,8 @@ function main()
     --
     -- priority: option > option_default > config_check > global_cache 
     --
-    local configcache = false
-    if not option.get("clean") then
-        configcache = global.load() 
+    if option.get("clean") then
+        global.clear() 
     end
 
     -- override the option configure 
@@ -64,7 +63,7 @@ function main()
     end
 
     -- check the global configure 
-    if changed or not configcache then
+    if changed or option.get("clean") then
         global.check()
     end
   

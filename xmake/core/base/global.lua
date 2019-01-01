@@ -39,8 +39,6 @@ end
 
 -- get the current given configure
 function global.get(name)
-
-    -- get it 
     local value = nil
     if global._CONFIGS then
         value = global._CONFIGS[name]
@@ -48,8 +46,6 @@ function global.get(name)
             value = nil
         end
     end
-
-    -- get it
     return value
 end
 
@@ -96,8 +92,6 @@ function global.options()
             configs[name] = value
         end
     end
-
-    -- get it
     return configs
 end
 
@@ -109,34 +103,27 @@ function global.directory()
     return global._ROOTDIR
 end
 
--- load the global configure
+-- load the global configuration
 function global.load()
 
     -- load configure from the file first
-    local ok = false
     local filepath = global._file()
     if os.isfile(filepath) then
 
         -- load configs
         local results, errors = io.load(filepath)
-
-        -- error?
         if not results then
-            utils.error(errors)
-            return false
+            return false, errors
         end
 
         -- merge the configure 
         for name, value in pairs(results) do
             if global.get(name) == nil then
                 global.set(name, value)
-                ok = true
             end
         end
     end
-
-    -- ok?
-    return ok
+    return true
 end
 
 -- save the global configure

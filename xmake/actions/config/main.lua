@@ -185,9 +185,6 @@ function main()
     -- enter cache scope
     cache.enter("local.config")
 
-    -- load global configure
-    global.load()
-
     -- load the project configure
     --
     -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache

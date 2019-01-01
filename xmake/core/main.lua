@@ -31,11 +31,13 @@ local log           = require("base/log")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
+local global        = require("base/global")
 local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
 local colors        = require("base/colors")
+local theme         = require("theme/theme")
 local project       = require("project/project")
 local history       = require("project/history")
 
@@ -205,6 +207,13 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     -- start profiling
     if option.get("profile") then
         profiler:start()
+    end
+
+    -- load global configuration
+    ok, errors = global.load()
+    if not ok then
+        utils.error(errors)
+        return -1
     end
 
     -- show help?
