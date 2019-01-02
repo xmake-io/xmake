@@ -219,9 +219,9 @@ function _build_files_for_single(target, sourcebatch, jobs)
 
         -- trace progress info
         if verbose then
-            cprint("${color.build.progress}[%3d%%]:${color.build.object.verbose}%scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.progress}[%3d%%]:${clear}${color.build.object.verbose}%scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
         else
-            cprint("${color.build.progress}[%3d%%]:${color.build.object} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.progress}[%3d%%]:${clear}${color.build.object} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
         end
     end
 
