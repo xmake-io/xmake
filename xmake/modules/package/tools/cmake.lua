@@ -34,7 +34,7 @@ function install(package, configs)
     local oldir = os.cd("build")
 
     -- init arguments
-    local argv = {"-DCMAKE_INSTALL_PREFIX=\"" .. path.absolute("install") .. "\""}
+    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install")}
     if is_plat("windows") and is_arch("x64") then
         table.insert(argv, "-A")
         table.insert(argv, "x64")
