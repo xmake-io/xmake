@@ -37,8 +37,8 @@ theme("dark")
     set_color("build.progress", "green")
 
     -- the color of the building object file
-    set_color("build.object", "clear")
-    set_color("build.object.verbose", "dim")
+    set_color("build.object", "")
+    set_color("build.object.verbose", "dim green")
 
     -- the color of the building target file
     set_color("build.target", "magenta")
