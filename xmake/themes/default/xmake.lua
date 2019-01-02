@@ -36,3 +36,6 @@ theme("default")
 
     -- set color of the verbose warning info
     set_color("verbose.warning", "dim yellow")
+
+    -- the color of the building progress
+    set_color("build.progress", "green")
