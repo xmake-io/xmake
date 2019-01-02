@@ -27,15 +27,20 @@ theme("default")
 
     -- set color of the error info
     set_color("error", "bright red")
+    set_color("error.verbose", "dim red")
 
     -- set color of the warning info
     set_color("warning", "bright yellow")
-
-    -- set color of the verbose error info
-    set_color("verbose.error", "dim red")
-
-    -- set color of the verbose warning info
-    set_color("verbose.warning", "dim yellow")
+    set_color("warning.verbose", "dim yellow")
 
     -- the color of the building progress
     set_color("build.progress", "green")
+
+    -- the color of the building object file
+    set_color("build.object", "clear")
+    set_color("build.object.verbose", "dim")
+
+    -- the color of the building target file
+    set_color("build.target", "magenta")
+    set_color("build.target.verbose", "dim magenta")
+

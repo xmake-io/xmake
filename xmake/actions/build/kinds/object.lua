@@ -41,9 +41,9 @@ function _build_from_object(target, sourcefile, objectfile, progress)
 
     -- trace progress info
     if verbose then
-        cprint("${color.build.progress}[%3d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.progress}[%3d%%]: ${color.build.object.verbose}inserting.$(mode) %s", progress, sourcefile)
     else
-        cprint("${color.build.progress}[%3d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.progress}[%3d%%]: ${color.build.object}inserting.$(mode) %s", progress, sourcefile)
     end
 
     -- trace verbose info
@@ -66,9 +66,9 @@ function _build_from_static(target, sourcefile, objectfile, progress)
 
     -- trace progress info
     if verbose then
-        cprint("${color.build.progress}[%3d%%]: ${dim magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.progress}[%3d%%]: ${color.build.object.verbose}inserting.$(mode) %s", progress, sourcefile)
     else
-        cprint("${color.build.progress}[%3d%%]: ${magenta}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.progress}[%3d%%]: ${color.build.object}inserting.$(mode) %s", progress, sourcefile)
     end
 
     -- trace verbose info
@@ -120,9 +120,9 @@ function _do_build_file(target, sourcefile, opt)
 
     -- trace progress info
     if verbose then
-        cprint("${color.build.progress}[%3d%%]:${dim} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+        cprint("${color.build.progress}[%3d%%]:${color.build.object.verbose} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
     else
-        cprint("${color.build.progress}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+        cprint("${color.build.progress}[%3d%%]:${color.build.object} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
     end
 
     -- trace verbose info
@@ -219,9 +219,9 @@ function _build_files_for_single(target, sourcebatch, jobs)
 
         -- trace progress info
         if verbose then
-            cprint("${color.build.progress}[%3d%%]:${clear} ${dim}%scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.progress}[%3d%%]:${color.build.object.verbose}%scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.progress}[%3d%%]:${color.build.object} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
         end
     end
 

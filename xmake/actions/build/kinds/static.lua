@@ -88,9 +88,9 @@ function _build_from_objects(target, buildinfo)
     -- trace progress info
     cprintf("${color.build.progress}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
-        cprint("${dim magenta}archiving.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target.verbose}archiving.$(mode) %s", path.filename(targetfile))
     else
-        cprint("${magenta}archiving.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target}archiving.$(mode) %s", path.filename(targetfile))
     end
 
     -- trace verbose info
@@ -122,9 +122,9 @@ function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     -- trace progress into
     cprintf("${color.build.progress}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
-        cprint("${dim magenta}archiving.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target.verbose}archiving.$(mode) %s", path.filename(targetfile))
     else
-        cprint("${magenta}archiving.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target}archiving.$(mode) %s", path.filename(targetfile))
     end
 
     -- trace verbose info

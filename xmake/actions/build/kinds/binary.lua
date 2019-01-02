@@ -79,9 +79,9 @@ function _build_from_objects(target, buildinfo)
     -- trace progress into
     cprintf("${color.build.progress}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
-        cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target.verbose}linking.$(mode) %s", path.filename(targetfile))
     else
-        cprint("${magenta}linking.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target}linking.$(mode) %s", path.filename(targetfile))
     end
 
     -- trace verbose info
@@ -113,9 +113,9 @@ function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     -- trace progress into
     cprintf("${color.build.progress}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
-        cprint("${dim magenta}linking.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target.verbose}linking.$(mode) %s", path.filename(targetfile))
     else
-        cprint("${magenta}linking.$(mode) %s", path.filename(targetfile))
+        cprint("${color.build.target}linking.$(mode) %s", path.filename(targetfile))
     end
 
     -- trace verbose info
