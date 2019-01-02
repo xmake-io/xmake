@@ -26,8 +26,8 @@
 theme("emoji")
 
     -- set color of the error info
-    set_color("error", "x")
-    set_color("error.verbose", "x")
+    set_color("error", "exclamation")
+    set_color("error.verbose", "exclamation")
 
     -- set color of the warning info
     set_color("warning", "warning")
