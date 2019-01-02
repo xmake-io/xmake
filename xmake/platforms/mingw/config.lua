@@ -39,9 +39,9 @@ function _check_mingw()
         config.set("bin", mingw.bindir, {readonly = true, force = true})
     else
         -- failed
-        cprint("${bright red}please run:")
-        cprint("${red}    - xmake config --ndk=xxx")
-        cprint("${red}or  - xmake global --ndk=xxx")
+        cprint("${color.error}please run:")
+        cprint("    - xmake config --ndk=xxx")
+        cprint("or  - xmake global --ndk=xxx")
         raise()
     end
 end

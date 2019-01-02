@@ -207,7 +207,7 @@ function main(package)
 
                     -- verbose?
                     if option.get("verbose") and errors then
-                        cprint("${bright red}error: ${clear}%s", errors)
+                        cprint("${color.verbose.error}error: ${clear}%s", errors)
                     end
 
                     -- trace

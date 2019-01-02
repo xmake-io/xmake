@@ -30,3 +30,9 @@ theme("plain")
 
     -- set color of the warning info
     set_color("warning", "")
+
+    -- set color of the verbose error info
+    set_color("verbose.error", "")
+
+    -- set color of the verbose warning info
+    set_color("verbose.warning", "")

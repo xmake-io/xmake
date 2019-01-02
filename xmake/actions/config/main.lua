@@ -160,7 +160,7 @@ function main()
         if not option.get("quiet") and not option.get("yes") then
 
             -- show tips
-            cprint("${bright yellow}note: ${default yellow}xmake.lua not found, try generating it (pass -y to skip confirm)?")
+            cprint("${color.warning}note: ${clear}xmake.lua not found, try generating it (pass -y to skip confirm)?")
             cprint("please input: n (y/n)")
 
             -- get answer

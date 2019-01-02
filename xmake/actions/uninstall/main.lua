@@ -81,7 +81,7 @@ function main()
                 end
 
                 -- show tips
-                cprint("${bright red}error: ${default red}failed to uninstall, may permission denied!")
+                cprint("${color.error}error: ${clear}failed to uninstall, may permission denied!")
 
                 -- continue to uninstall with administrator permission?
                 if sudo.has() then
@@ -91,7 +91,7 @@ function main()
                     if confirm == nil then
 
                         -- show tips
-                        cprint("${bright yellow}note: ${default yellow}try continue to uninstall with administrator permission again?")
+                        cprint("${color.warning}note: ${clear}try continue to uninstall with administrator permission again?")
                         cprint("please input: y (y/n)")
 
                         -- get answer

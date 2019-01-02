@@ -40,9 +40,9 @@ function _check_ndk()
         config.set("gcc_toolchain", ndk.gcc_toolchain, {force = true, readonly = true})
     else
         -- failed
-        cprint("${bright red}please run:")
-        cprint("${red}    - xmake config --ndk=xxx")
-        cprint("${red}or  - xmake global --ndk=xxx")
+        cprint("${color.error}please run:")
+        cprint("    - xmake config --ndk=xxx")
+        cprint("or  - xmake global --ndk=xxx")
         raise()
     end
 end

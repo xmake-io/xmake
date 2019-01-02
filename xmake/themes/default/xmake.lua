@@ -30,3 +30,9 @@ theme("default")
 
     -- set color of the warning info
     set_color("warning", "bright yellow")
+
+    -- set color of the verbose error info
+    set_color("verbose.error", "dim red")
+
+    -- set color of the verbose warning info
+    set_color("verbose.warning", "dim yellow")

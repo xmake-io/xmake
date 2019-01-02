@@ -334,7 +334,7 @@ function _get_confirm(packages)
     if confirm == nil then
     
         -- show tips
-        cprint("${bright yellow}note: ${default yellow}try installing these packages (pass -y to skip confirm)?")
+        cprint("${color.warning}note: ${clear}try installing these packages (pass -y to skip confirm)?")
         for _, package in ipairs(packages) do
             print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
         end
@@ -447,7 +447,7 @@ function install_packages(requires, opt)
     -- exists unsupported packages?
     if #packages_unsupported > 0 then
         -- show tips
-        cprint("${bright red}note: ${default red}the following packages are unsupported for $(plat)/$(arch)!")
+        cprint("${color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch)!")
         for _, package in ipairs(packages_unsupported) do
             print("  -> %s %s", package:name(), package:version_str() or "")
         end
