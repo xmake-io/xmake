@@ -38,4 +38,4 @@ theme("plain")
     set_color("verbose.warning", "")
 
     -- the color of the building progress
-    set_color("build.progress", "")
+    set_color("color.build.progress", "")

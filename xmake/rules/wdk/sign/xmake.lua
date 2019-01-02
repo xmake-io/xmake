@@ -115,7 +115,7 @@ rule("wdk.sign")
         target:data_add("wdk.cleanfiles", {tempfile, dependfile})
 
         -- trace progress info
-        cprintf("${green}[%3d%%]:${clear} ", opt.progress)
+        cprintf("${color.build.progress}[%3d%%]:${clear} ", opt.progress)
         if option.get("verbose") then
             cprint("${dim magenta}signing.%s %s", signmode, path.filename(target:targetfile()))
         else

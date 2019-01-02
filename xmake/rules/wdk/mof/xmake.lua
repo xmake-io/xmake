@@ -115,9 +115,9 @@ rule("wdk.mof")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%3d%%]:${dim} compiling.wdk.mof %s", opt.progress, sourcefile)
+            cprint("${color.build.progress}[%3d%%]:${dim} compiling.wdk.mof %s", opt.progress, sourcefile)
         else
-            cprint("${green}[%3d%%]:${clear} compiling.wdk.mof %s", opt.progress, sourcefile)
+            cprint("${color.build.progress}[%3d%%]:${clear} compiling.wdk.mof %s", opt.progress, sourcefile)
         end
 
         -- ensure the output directory

@@ -72,9 +72,9 @@ rule("qt.ui")
 
         -- trace progress info
         if option.get("verbose") then
-            cprint("${green}[%3d%%]:${dim} compiling.qt.ui %s", opt.progress, sourcefile_ui)
+            cprint("${color.build.progress}[%3d%%]:${dim} compiling.qt.ui %s", opt.progress, sourcefile_ui)
         else
-            cprint("${green}[%3d%%]:${clear} compiling.qt.ui %s", opt.progress, sourcefile_ui)
+            cprint("${color.build.progress}[%3d%%]:${clear} compiling.qt.ui %s", opt.progress, sourcefile_ui)
         end
 
         -- ensure ui header file directory
