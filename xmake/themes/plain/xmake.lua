@@ -19,28 +19,14 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        _xmake_main.lua
+-- @file        xmake.lua
 --
 
--- init namespace: xmake
-xmake                   = xmake or {}
-xmake._ARGV             = _ARGV
-xmake._HOST             = _HOST
-xmake._ARCH             = _ARCH
-xmake._VERSION          = _VERSION
-xmake._VERSION_SHORT    = _VERSION_SHORT
-xmake._PROGRAM_DIR      = _PROGRAM_DIR
-xmake._PROGRAM_FILE     = _PROGRAM_FILE
-xmake._PROJECT_DIR      = _PROJECT_DIR
-xmake._PROJECT_FILE     = "xmake.lua"
+-- define theme
+theme("plain")
 
--- init package path
-package.path = xmake._PROGRAM_DIR .. "/core/?.lua;" .. package.path
+    -- set color of the error info
+    set_color("error", "")
 
--- load modules
-local main = require("main")
-
--- the main function
-function _xmake_main()
-    return main.entry()
-end
+    -- set color of the warning info
+    set_color("warning", "")

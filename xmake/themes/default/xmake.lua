@@ -25,6 +25,8 @@
 -- define theme
 theme("default")
 
-    -- set error color
-    set_color("error", "red")
+    -- set color of the error info
+    set_color("error", "bright red")
 
+    -- set color of the warning info
+    set_color("warning", "bright yellow")

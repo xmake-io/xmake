@@ -172,8 +172,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 end
 
--- the main function
-function main.done()
+-- the main entry function
+function main.entry()
 
     -- init 
     main._init()
@@ -215,6 +215,14 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         utils.error(errors)
         return -1
     end
+
+    -- load theme
+    local theme_inst, errors = theme.load(global.get("theme") or "default")
+    if not theme_inst then
+        utils.error(errors)
+        return -1
+    end
+    colors.theme_set(theme_inst)
 
     -- show help?
     if main._show_help() then

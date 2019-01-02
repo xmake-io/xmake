@@ -29,10 +29,8 @@ local _instance     = _instance or {}
 -- load modules
 local os            = require("base/os")
 local path          = require("base/path")
-local utils         = require("base/utils")
 local table         = require("base/table")
 local interpreter   = require("base/interpreter")
-local sandbox       = require("sandbox/sandbox")
 local global        = require("base/global")
 
 -- new an instance
@@ -110,12 +108,6 @@ end
 -- load the given theme 
 function theme.load(name)
 
-    -- get it directly from cache dirst
-    theme._THEMES = theme._THEMES or {}
-    if theme._THEMES[name] then
-        return theme._THEMES[name]
-    end
-
     -- find the theme script path
     local scriptpath = nil
     for _, dir in ipairs(theme.directories()) do
@@ -157,18 +149,16 @@ function theme.load(name)
         return nil, errors
     end
 
-    -- save instance to the cache
-    theme._THEMES[name] = instance
+    -- save the current theme instance
+    theme._THEME = instance
     return instance
 end
 
 -- get the given theme configuration
 function theme.get(name)
-    local instance, errors = theme.load(global.get("theme") or "default")
+    local instance = theme._THEME
     if instance then
         return instance:get(name)
-    else
-        os.raise(errors)
     end
 end
 

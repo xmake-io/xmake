@@ -26,7 +26,7 @@
 local colors = colors or {}
 
 -- load modules
-local emoji = emoji or require("base/emoji")
+local emoji = require("base/emoji")
 
 -- the color8 keys
 --
@@ -298,6 +298,9 @@ function colors.translate(str)
         return nil
     end
 
+    -- get theme
+    local theme = colors.theme()
+
     -- patch reset
     str = "${reset}" .. str .. "${reset}"
 
@@ -309,7 +312,26 @@ function colors.translate(str)
             return ""
         end
 
-        -- attempt to translate to emoji first
+        -- translate theme color first, e.g ${color.error}
+        if theme then
+            local theme_word = theme:get(word)
+            if theme_word then
+                word = theme_word
+            end
+            if word == "" then
+                return ""
+            end
+        elseif word:startswith("color.") then
+            local default_colors = {["color.error"] = "bright red", ["color.warning"] = "bright yellow"}
+            local theme_word = default_colors[word] 
+            if theme_word then
+                word = theme_word
+            else 
+                return ""
+            end
+        end
+
+        -- attempt to translate to emoji 
         local emoji_str = emoji.translate(word)
         if emoji_str then
             return emoji_str
@@ -367,6 +389,16 @@ function colors.ignore(str)
 
     -- ignore it
     return (string.gsub(str, "(%${(.-)})", ""))
+end
+
+-- get theme
+function colors.theme()
+    return colors._THEME
+end
+
+-- set theme
+function colors.theme_set(theme)
+    colors._THEME = theme
 end
 
 -- return module
