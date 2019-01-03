@@ -32,7 +32,7 @@ import("core.language.language")
 function main()
 
     -- trace
-    cprint("${yellow}xmake.lua not found, scanning files ..")
+    cprint("${color.warning}xmake.lua not found, scanning files ..")
 
     -- scan source files for the current directory
     local targetkinds = {}
