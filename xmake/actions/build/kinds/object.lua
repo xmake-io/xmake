@@ -43,7 +43,7 @@ function _build_from_object(target, sourcefile, objectfile, progress)
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${color.build.object.dim}inserting.$(mode) %s", sourcefile)
+        cprint("${dim color.build.object}inserting.$(mode) %s", sourcefile)
     else
         cprint("${clear}${color.build.object}inserting.$(mode) %s", sourcefile)
     end
@@ -69,7 +69,7 @@ function _build_from_static(target, sourcefile, objectfile, progress)
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${color.build.object.dim}inserting.$(mode) %s", sourcefile)
+        cprint("${dim color.build.object}inserting.$(mode) %s", sourcefile)
     else
         cprint("${color.build.object}inserting.$(mode) %s", sourcefile)
     end
@@ -124,7 +124,7 @@ function _do_build_file(target, sourcefile, opt)
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${color.build.object.dim}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
+        cprint("${dim color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
     else
         cprint("${color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
     end
@@ -224,7 +224,7 @@ function _build_files_for_single(target, sourcebatch, jobs)
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
         if verbose then
-            cprint("${color.build.object.dim}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
+            cprint("${dim color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
         else
             cprint("${color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
         end

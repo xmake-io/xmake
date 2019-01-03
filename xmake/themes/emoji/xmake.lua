@@ -38,14 +38,12 @@ theme("emoji")
     set_color("nothing", "")
 
     -- the error info
-    set_color("error", "exclamation red")
-    set_color("error.dim", "dim exclamation red")
-    set_color("error.bright", "bright exclamation red")
+    set_text("error", "exclamation error")
+    set_color("error", "red")
 
     -- the warning info
-    set_color("warning", "warning yellow")
-    set_color("warning.dim", "dim warning yellow")
-    set_color("warning.bright", "bright warning yellow")
+    set_text("warning", "warning warn")
+    set_color("warning", "yellow")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
@@ -53,9 +51,7 @@ theme("emoji")
 
     -- the building object file
     set_color("build.object", "")
-    set_color("build.object.dim", "dim green")
 
     -- the building target file
     set_color("build.target", "magenta")
-    set_color("build.target.dim", "dim magenta")
 

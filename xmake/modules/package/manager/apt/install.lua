@@ -59,7 +59,7 @@ function main(name, opt)
         if confirm == nil then
 
             -- show tips
-            cprint("${color.warning.bright}note: ${clear}try installing %s with administrator permission?", name)
+            cprint("${bright color.warning}note: ${clear}try installing %s with administrator permission?", name)
             cprint("please input: y (y/n)")
 
             -- get answer

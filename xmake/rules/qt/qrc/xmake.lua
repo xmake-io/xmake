@@ -87,7 +87,7 @@ rule("qt.qrc")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.object.dim}compiling.qt.qrc %s", sourcefile_qrc)
+            cprint("${dim color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
         else
             cprint("${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
         end

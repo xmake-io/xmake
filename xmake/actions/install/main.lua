@@ -122,7 +122,7 @@ function main()
                 end
 
                 -- show tips
-                cprint("${color.error.bright}error: ${clear}installation failed, may permission denied!")
+                cprint("${bright color.error}error: ${clear}installation failed, may permission denied!")
 
                 -- continue to install with administrator permission?
                 if sudo.has() then
@@ -132,7 +132,7 @@ function main()
                     if confirm == nil then
 
                         -- show tips
-                        cprint("${color.warning.bright}note: ${clear}try continue to install with administrator permission again?")
+                        cprint("${bright color.warning}note: ${clear}try continue to install with administrator permission again?")
                         cprint("please input: y (y/n)")
 
                         -- get answer

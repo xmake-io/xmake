@@ -327,18 +327,14 @@ function colors.translate(str)
             if theme then
                 local theme_block = theme:get(block)
                 if theme_block then
-                    if block:startswith("text.") then
-                        table.insert(blocks, theme_block)
-                    else
-                        for _, theme_block_sub in ipairs(theme_block:split("%s+")) do
-                            table.insert(blocks, theme_block_sub)
-                        end
+                    for _, theme_block_sub in ipairs(theme_block:split("%s+")) do
+                        table.insert(blocks, theme_block_sub)
                     end
                 else 
                     table.insert(blocks, block)
                 end
             elseif block:startswith("color.") then
-                local default_colors = {["color.error.bright"] = {"bright", "red"}, ["color.warning.bright"] = {"bright", "yellow"}}
+                local default_colors = {["bright color.error"] = {"bright", "red"}, ["bright color.warning"] = {"bright", "yellow"}}
                 local theme_block = default_colors[block] 
                 if theme_block then
                     table.join2(blocks, theme_block)
@@ -356,7 +352,6 @@ function colors.translate(str)
         for _, block in ipairs(blocks) do
 
             -- get the color code
-            local text = false
             local code = keys[block]
             if not code then
                 if colors.truecolor() and block:find(";", 1, true) then
@@ -376,11 +371,11 @@ function colors.translate(str)
                     local emoji_code = emoji.translate(block)
                     if emoji_code then
                         table.insert(text_buffer, emoji_code)
-                        text = true
+                    else
+                        table.insert(text_buffer, block)
                     end
                 end
             end
-            assert(code or text, "unknown color: " .. block)
 
             -- save this code
             table.insert(color_buffer, code)
@@ -392,7 +387,7 @@ function colors.translate(str)
             result = result .. colors._escape:format(table.concat(color_buffer, ";")) 
         end
         if #text_buffer > 0 then
-            result = result .. table.concat(text_buffer, "")
+            result = result .. table.concat(text_buffer, " ")
         end
         return result
     end)

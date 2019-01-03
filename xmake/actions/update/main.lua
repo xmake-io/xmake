@@ -72,7 +72,7 @@ function _sudo(cmd)
                 end
 
                 -- show tips
-                cprint("\r${color.error.bright}error: ${clear}run `%s` failed, may permission denied!", cmd)
+                cprint("\r${bright color.error}error: ${clear}run `%s` failed, may permission denied!", cmd)
 
                 -- continue to install with administrator permission?
                 if sudo.has() then
@@ -82,7 +82,7 @@ function _sudo(cmd)
                     if confirm == nil then
 
                         -- show tips
-                        cprint("\r${color.warning.bright}note: ${clear}try continue to run `%s` with administrator permission again?", cmd)
+                        cprint("\r${bright color.warning}note: ${clear}try continue to run `%s` with administrator permission again?", cmd)
                         cprint("\rplease input: y (y/n)")
 
                         -- get answer

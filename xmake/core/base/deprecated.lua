@@ -61,11 +61,11 @@ function deprecated.dump()
         end
 
         -- trace
-        utils.cprint("${color.warning.bright}deprecated: ${clear}please uses %s instead of %s", new, old)
+        utils.cprint("${bright color.warning}deprecated: ${clear}please uses %s instead of %s", new, old)
 
         -- too much?
         if index > 6 and not option.get("verbose") then
-            utils.cprint("${color.warning.bright}deprecated: ${clear}add -v for getting more ..")
+            utils.cprint("${bright color.warning}deprecated: ${clear}add -v for getting more ..")
             break
         end
 

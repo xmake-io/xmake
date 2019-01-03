@@ -71,7 +71,7 @@ function _make_single_object(jsonfile, target, sourcekind, sourcebatch)
 
     -- not supported now, ignore it directly
     for _, sourcefile in ipairs(table.wrap(sourcebatch.sourcefiles)) do
-        cprint("${color.warning.bright}warning: ${clear}ignore[%s]: %s", target:name(), sourcefile)
+        cprint("${bright color.warning}warning: ${clear}ignore[%s]: %s", target:name(), sourcefile)
     end
 end
 
