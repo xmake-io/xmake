@@ -39,13 +39,13 @@ theme("emoji")
 
     -- the error info
     set_color("error", "exclamation")
-    set_color("error.dim", "exclamation")
-    set_color("error.bright", "exclamation")
+    set_color("error.dim", "dim exclamation")
+    set_color("error.bright", "bright exclamation")
 
     -- the warning info
     set_color("warning", "warning")
-    set_color("warning.dim", "warning")
-    set_color("warning.bright", "warning")
+    set_color("warning.dim", "dim warning")
+    set_color("warning.bright", "bright warning")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")

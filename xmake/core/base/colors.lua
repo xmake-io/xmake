@@ -335,12 +335,6 @@ function colors.translate(str)
             end
         end
 
-        -- attempt to translate to emoji 
-        local emoji_str = emoji.translate(word)
-        if emoji_str then
-            return emoji_str
-        end
-
         -- get keys
         local keys = colors.color256() and colors._keys256 or colors._keys8
         if colors.truecolor() then
@@ -348,11 +342,13 @@ function colors.translate(str)
         end
 
         -- make color buffer
-        local buffer = {}
+        local text_buffer = {}
+        local color_buffer = {}
         for _, key in ipairs(word:split("%s+")) do
 
             -- get the color code
             local code = keys[key]
+            local text = false
             if not code then
                 if colors.truecolor() and key:find(";", 1, true) then
                     if key:startswith("on;") then
@@ -367,16 +363,26 @@ function colors.translate(str)
                         code = key:gsub("#", "38;5;")
                     end
                 else
+                    -- get emoji code
+                    local emoji_code = emoji.translate(key)
+                    if emoji_code then
+                        table.insert(text_buffer, emoji_code)
+                        text = true
+                    end
                 end
             end
-            assert(code, "unknown color: " .. key)
+            assert(code or text, "unknown color: " .. key)
 
             -- save this code
-            table.insert(buffer, code)
+            table.insert(color_buffer, code)
         end
 
-        -- format the color buffer
-        return colors._escape:format(table.concat(buffer, ";"))
+        -- make result
+        local result = colors._escape:format(table.concat(color_buffer, ";")) 
+        if #text_buffer > 0 then
+            result = result .. table.concat(text_buffer, "")
+        end
+        return result
     end)
 
     -- ok
