@@ -200,23 +200,23 @@ function main(snippets, opt)
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then
         local kind = ifelse(sourcekind == "cc", "c", "c++")
         if #includes > 0 then
-            cprint("checking for the %s includes %s ... %s", kind, table.concat(includes, ", "), ifelse(ok, "${green}ok", "${red}no"))
+            cprint("${dim}checking for the %s includes %s ... %s", kind, table.concat(includes, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         end
         if #types > 0 then
-            cprint("checking for the %s types %s ... %s", kind, table.concat(types, ", "), ifelse(ok, "${green}ok", "${red}no"))
+            cprint("${dim}checking for the %s types %s ... %s", kind, table.concat(types, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         end
         if #funcs > 0 then
-            cprint("checking for the %s funcs %s ... %s", kind, table.concat(funcs, ", "), ifelse(ok, "${green}ok", "${red}no"))
+            cprint("${dim}checking for the %s funcs %s ... %s", kind, table.concat(funcs, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         end
         if #links > 0 then
-            cprint("checking for the %s links %s ... %s", kind, table.concat(links, ", "), ifelse(ok, "${green}ok", "${red}no"))
+            cprint("${dim}checking for the %s links %s ... %s", kind, table.concat(links, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         end
         for _, snippet in ipairs(snippets) do
-            cprint("checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ifelse(ok, "${green}ok", "${red}no"))
+            cprint("${dim}checking for the %s snippet %s ... %s", kind, snippet:sub(1, 16), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         end
     end
     if errors and #errors > 0 and option.get("diagnosis") then
-        cprint("${yellow}checkinfo:${clear dim} %s", errors)
+        cprint("${color.warning}checkinfo:${clear dim} %s", errors)
     end
 
     -- ok?

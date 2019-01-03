@@ -26,7 +26,7 @@
 theme("default")
 
     -- the success status 
-    set_text("success", "ok")
+    set_text("success", "$ok")
     set_color("success", "green")
 
     -- the failure status 
@@ -42,7 +42,7 @@ theme("default")
     set_color("error", "red")
 
     -- the warning info
-    set_text("warning", "warn")
+    set_text("warning", "$warning")
     set_color("warning", "yellow")
 
     -- the building progress

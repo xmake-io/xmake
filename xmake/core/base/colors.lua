@@ -291,6 +291,14 @@ end
 --
 -- "${beer}hello${beer}world"
 --
+-- theme:
+-- "${color.error}"
+-- "${bright color.warning}"
+--
+-- text:
+-- "${hello xmake}"
+-- "${hello xmake $beer}"
+--
 function colors.translate(str)
 
     -- check string
@@ -366,6 +374,9 @@ function colors.translate(str)
                     else
                         code = block:gsub("#", "38;5;")
                     end
+                elseif block:startswith("$") then
+                    -- plain text, do not translate emoji
+                    table.insert(text_buffer, block:sub(2))
                 else
                     -- get emoji code
                     local emoji_code = emoji.translate(block)

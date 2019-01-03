@@ -42,7 +42,7 @@ theme("emoji")
     set_color("error", "red")
 
     -- the warning info
-    set_text("warning", "warning warn")
+    set_text("warning", "warning $warning")
     set_color("warning", "yellow")
 
     -- the building progress
