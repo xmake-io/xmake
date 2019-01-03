@@ -312,73 +312,85 @@ function colors.translate(str)
             return ""
         end
 
-        -- translate theme color first, e.g ${color.error.bright}
-        if theme then
-            local theme_word = theme:get(word)
-            if theme_word then
-                if word:startswith("text.") then
-                    return theme_word
-                else
-                    word = theme_word
-                end
-            end
-            if word == "" then
-                return ""
-            end
-        elseif word:startswith("color.") then
-            local default_colors = {["color.error.bright"] = "bright red", ["color.warning.bright"] = "bright yellow"}
-            local theme_word = default_colors[word] 
-            if theme_word then
-                word = theme_word
-            else 
-                return ""
-            end
-        end
-
         -- get keys
         local keys = colors.color256() and colors._keys256 or colors._keys8
         if colors.truecolor() then
             keys = colors._keys24
         end
 
+        -- split words
+        local blocks_raw = word:split("%s+")
+
+        -- translate theme color first, e.g ${color.error}
+        local blocks = {}
+        for _, block in ipairs(blocks_raw) do
+            if theme then
+                local theme_block = theme:get(block)
+                if theme_block then
+                    if block:startswith("text.") then
+                        table.insert(blocks, theme_block)
+                    else
+                        for _, theme_block_sub in ipairs(theme_block:split("%s+")) do
+                            table.insert(blocks, theme_block_sub)
+                        end
+                    end
+                else 
+                    table.insert(blocks, block)
+                end
+            elseif block:startswith("color.") then
+                local default_colors = {["color.error.bright"] = {"bright", "red"}, ["color.warning.bright"] = {"bright", "yellow"}}
+                local theme_block = default_colors[block] 
+                if theme_block then
+                    table.join2(blocks, theme_block)
+                else
+                    table.insert(blocks, block)
+                end
+            else
+                table.insert(blocks, block)
+            end
+        end
+
         -- make color buffer
         local text_buffer = {}
         local color_buffer = {}
-        for _, key in ipairs(word:split("%s+")) do
+        for _, block in ipairs(blocks) do
 
             -- get the color code
-            local code = keys[key]
             local text = false
+            local code = keys[block]
             if not code then
-                if colors.truecolor() and key:find(";", 1, true) then
-                    if key:startswith("on;") then
-                        code = key:gsub("on;", "48;2;")
+                if colors.truecolor() and block:find(";", 1, true) then
+                    if block:startswith("on;") then
+                        code = block:gsub("on;", "48;2;")
                     else
-                        code = "38;2;" .. key
+                        code = "38;2;" .. block
                     end
-                elseif colors.color256() and key:find("#", 1, true) then
-                    if key:startswith("on#") then
-                        code = key:gsub("on#", "48;5;")
+                elseif colors.color256() and block:find("#", 1, true) then
+                    if block:startswith("on#") then
+                        code = block:gsub("on#", "48;5;")
                     else
-                        code = key:gsub("#", "38;5;")
+                        code = block:gsub("#", "38;5;")
                     end
                 else
                     -- get emoji code
-                    local emoji_code = emoji.translate(key)
+                    local emoji_code = emoji.translate(block)
                     if emoji_code then
                         table.insert(text_buffer, emoji_code)
                         text = true
                     end
                 end
             end
-            assert(code or text, "unknown color: " .. key)
+            assert(code or text, "unknown color: " .. block)
 
             -- save this code
             table.insert(color_buffer, code)
         end
 
         -- make result
-        local result = colors._escape:format(table.concat(color_buffer, ";")) 
+        local result = ""
+        if #color_buffer > 0 then
+            result = result .. colors._escape:format(table.concat(color_buffer, ";")) 
+        end
         if #text_buffer > 0 then
             result = result .. table.concat(text_buffer, "")
         end

@@ -82,7 +82,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- trace
     printf("\r" .. _emptychars())
-    cprint("\r${yellow}  => ${clear}clone %s %s .. ${green}ok", url, package:version_str())
+    cprint("\r${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
 end
 
 -- download codes from ftp/http/https
@@ -132,7 +132,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     -- trace
     if not cached then
         printf("\r" .. _emptychars())
-        cprint("\r${yellow}  => ${clear}download %s .. ${green}ok", url)
+        cprint("\r${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
     else
         printf("\r" .. _emptychars() .. "\r")
     end
@@ -213,9 +213,9 @@ function main(package)
                     -- trace
                     printf("\r" .. _emptychars())
                     if git.checkurl(url) then
-                        cprint("\r${yellow}  => ${clear}clone %s %s .. ${red}failed", url, package:version_str())
+                        cprint("\r${yellow}  => ${clear}clone %s %s .. ${color.failure}${text.failure}", url, package:version_str())
                     else
-                        cprint("\r${yellow}  => ${clear}download %s .. ${red}failed", url)
+                        cprint("\r${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
                     end
 
                     -- failed? break it

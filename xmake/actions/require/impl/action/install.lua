@@ -123,7 +123,7 @@ function main(package)
             assert(fetchinfo, "fetch %s failed!", tipname)
 
             -- trace
-            cprint("${green}ok")
+            cprint("${color.success}${text.success}")
         end,
 
         catch
@@ -136,7 +136,7 @@ function main(package)
                 end
 
                 -- trace
-                cprint("${color.error.bright}failed")
+                cprint("${color.failure}${text.failure}")
 
                 -- failed
                 if not package:requireinfo().optional then

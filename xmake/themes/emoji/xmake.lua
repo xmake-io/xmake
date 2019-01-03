@@ -26,26 +26,26 @@
 theme("emoji")
 
     -- the success status 
-    set_text("success", "")
-    set_color("success", "heavy_check_mark")
+    set_text("success", "heavy_check_mark")
+    set_color("success", "")
 
     -- the failure status 
-    set_text("failure", "")
-    set_color("failure", "x")
+    set_text("failure", "x")
+    set_color("failure", "")
 
     -- the nothing status 
-    set_text("nothing", "")
-    set_color("nothing", "o")
+    set_text("nothing", "o")
+    set_color("nothing", "")
 
     -- the error info
-    set_color("error", "exclamation")
-    set_color("error.dim", "dim exclamation")
-    set_color("error.bright", "bright exclamation")
+    set_color("error", "exclamation red")
+    set_color("error.dim", "dim exclamation red")
+    set_color("error.bright", "bright exclamation red")
 
     -- the warning info
-    set_color("warning", "warning")
-    set_color("warning.dim", "dim warning")
-    set_color("warning.bright", "bright warning")
+    set_color("warning", "warning yellow")
+    set_color("warning.dim", "dim warning yellow")
+    set_color("warning.bright", "bright warning yellow")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")

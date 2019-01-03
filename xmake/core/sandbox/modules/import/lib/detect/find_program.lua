@@ -72,7 +72,7 @@ function sandbox_lib_detect_find_program._check(program, opt)
 
     -- check failed? print verbose error info
     if not ok and option.get("diagnosis") then
-        utils.cprint("${yellow}checkinfo: ${clear dim}" .. errors)
+        utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
     end
 
     -- ok?
@@ -224,9 +224,9 @@ function sandbox_lib_detect_find_program.main(name, opt)
     -- trace
     if option.get("verbose") or opt.verbose then
         if result then
-            utils.cprint("checking for the %s ... ${green}%s", name, utils.ifelse(name == result, "ok", result))
+            utils.cprint("checking for the %s ... ${color.success}%s", name, utils.ifelse(name == result, "${text.success}", result))
         else
-            utils.cprint("checking for the %s ... ${red}no", name)
+            utils.cprint("checking for the %s ... ${color.nothing}${text.nothing}", name)
         end
     end
 
