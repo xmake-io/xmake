@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.project.depend")
@@ -90,7 +91,7 @@ function _build_from_objects(target, buildinfo)
     local verbose = option.get("verbose")
 
     -- trace progress info
-    cprintf("${color.build.progress}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
         cprint("${color.build.target.verbose}linking.$(mode) %s", path.filename(targetfile))
     else
@@ -124,7 +125,7 @@ function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
     local verbose = option.get("verbose")
 
     -- trace progress into
-    cprintf("${color.build.progress}[%3d%%]:${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
     if verbose then
         cprint("${color.build.target.verbose}linking.$(mode) %s", path.filename(targetfile))
     else

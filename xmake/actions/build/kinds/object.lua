@@ -24,6 +24,7 @@
 
 -- imports
 import("core.base.option")
+import("core.theme.theme")
 import("core.tool.compiler")
 import("core.tool.extractor")
 import("core.project.rule")
@@ -40,10 +41,11 @@ function _build_from_object(target, sourcefile, objectfile, progress)
     local verbose = option.get("verbose")
 
     -- trace progress info
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${color.build.progress}[%3d%%]: ${clear}${color.build.object.verbose}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.object.verbose}inserting.$(mode) %s", sourcefile)
     else
-        cprint("${color.build.progress}[%3d%%]: ${clear}${color.build.object}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${clear}${color.build.object}inserting.$(mode) %s", sourcefile)
     end
 
     -- trace verbose info
@@ -65,10 +67,11 @@ function _build_from_static(target, sourcefile, objectfile, progress)
     local verbose = option.get("verbose")
 
     -- trace progress info
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${color.build.progress}[%3d%%]: ${clear}${color.build.object.verbose}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.object.verbose}inserting.$(mode) %s", sourcefile)
     else
-        cprint("${color.build.progress}[%3d%%]: ${clear}${color.build.object}inserting.$(mode) %s", progress, sourcefile)
+        cprint("${color.build.object}inserting.$(mode) %s", sourcefile)
     end
 
     -- trace verbose info
@@ -119,10 +122,11 @@ function _do_build_file(target, sourcefile, opt)
     local verbose = option.get("verbose")
 
     -- trace progress info
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${color.build.progress}[%3d%%]:${clear}${color.build.object.verbose} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+        cprint("${color.build.object.verbose}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
     else
-        cprint("${color.build.progress}[%3d%%]:${clear}${color.build.object} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+        cprint("${color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
     end
 
     -- trace verbose info
@@ -218,10 +222,11 @@ function _build_files_for_single(target, sourcebatch, jobs)
         local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
         if verbose then
-            cprint("${color.build.progress}[%3d%%]:${clear}${color.build.object.verbose}%scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.object.verbose}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear}${color.build.object} %scompiling.$(mode) %s", progress, _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
         end
     end
 

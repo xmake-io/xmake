@@ -48,6 +48,7 @@ rule("qt.moc")
         -- imports
         import("moc")
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.config")
         import("core.tool.compiler")
         import("core.project.depend")
@@ -81,10 +82,11 @@ rule("qt.moc")
         end
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.progress}[%3d%%]:${dim} compiling.qt.moc %s", opt.progress, headerfile_moc)
+            cprint("${color.build.object.verbose}compiling.qt.moc %s", headerfile_moc)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} compiling.qt.moc %s", opt.progress, headerfile_moc)
+            cprint("${color.build.object}compiling.qt.moc %s", headerfile_moc)
         end
 
         -- generate c++ source file for moc

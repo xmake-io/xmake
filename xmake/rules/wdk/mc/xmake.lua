@@ -62,6 +62,7 @@ rule("wdk.mc")
 
         -- imports
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.depend")
 
         -- get mc
@@ -104,10 +105,11 @@ rule("wdk.mc")
         end
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.progress}[%3d%%]:${dim} compiling.wdk.mc %s", opt.progress, sourcefile)
+            cprint("${color.build.object.verbose}compiling.wdk.mc %s", sourcefile)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} compiling.wdk.mc %s", opt.progress, sourcefile)
+            cprint("${color.build.object}compiling.wdk.mc %s", sourcefile)
         end
 
         -- do message compile

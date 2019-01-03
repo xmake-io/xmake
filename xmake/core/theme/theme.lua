@@ -88,6 +88,7 @@ function theme._apis()
         {
             -- theme.set_xxx
             "theme.set_color"
+        ,   "theme.set_text"
         }
     }
 end
@@ -152,6 +153,11 @@ function theme.load(name)
     -- save the current theme instance
     theme._THEME = instance
     return instance
+end
+
+-- get the current theme instance
+function theme.instance()
+    return theme._THEME
 end
 
 -- get the given theme configuration

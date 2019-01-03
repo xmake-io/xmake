@@ -62,6 +62,7 @@ rule("wdk.tracewpp")
 
         -- imports
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.depend")
 
         -- get tracewpp
@@ -102,10 +103,11 @@ rule("wdk.tracewpp")
         end
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.progress}[%3d%%]:${dim} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
+            cprint("${color.build.object.verbose}compiling.wdk.tracewpp %s", sourcefile)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} compiling.wdk.tracewpp %s", opt.progress, sourcefile)
+            cprint("${color.build.object}compiling.wdk.tracewpp %s", sourcefile)
         end
 
         -- ensure the output directory

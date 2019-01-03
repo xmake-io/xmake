@@ -25,21 +25,22 @@
 -- define theme
 theme("plain")
 
-    -- set color of the error info
+    -- the error info
     set_color("error", "")
     set_color("error.verbose", "")
 
-    -- set color of the warning info
+    -- the warning info
     set_color("warning", "")
     set_color("warning.verbose", "")
 
-    -- the color of the building progress
+    -- the building progress
+    set_text("build.progress_format", "[%3d%%]")
     set_color("build.progress", "")
 
-    -- the color of the building object file
+    -- the building object file
     set_color("build.object", "")
     set_color("build.object.verbose", "")
 
-    -- the color of the building target file
+    -- the building target file
     set_color("build.target", "")
     set_color("build.target.verbose", "")

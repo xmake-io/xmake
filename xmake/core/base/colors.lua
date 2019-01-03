@@ -304,8 +304,8 @@ function colors.translate(str)
     -- patch reset
     str = "${reset}" .. str .. "${reset}"
 
-    -- translate it
-    str = string.gsub(str, "(%${(.-)})", function(_, word) 
+    -- translate color blocks, e.g. ${red}, ${color.xxx}, ${emoji}
+    str = str:gsub("(%${(.-)})", function(_, word) 
 
         -- not supported? ignore it
         if not colors.color8() and not colors.color256() and not colors.truecolor() then
@@ -316,7 +316,11 @@ function colors.translate(str)
         if theme then
             local theme_word = theme:get(word)
             if theme_word then
-                word = theme_word
+                if word:startswith("text.") then
+                    return theme_word
+                else
+                    word = theme_word
+                end
             end
             if word == "" then
                 return ""

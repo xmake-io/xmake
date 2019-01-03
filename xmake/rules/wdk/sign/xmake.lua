@@ -93,6 +93,7 @@ rule("wdk.sign")
         -- imports
         import("sign")
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.config")
         import("core.project.depend")
         import("lib.detect.find_file")
@@ -115,11 +116,11 @@ rule("wdk.sign")
         target:data_add("wdk.cleanfiles", {tempfile, dependfile})
 
         -- trace progress info
-        cprintf("${color.build.progress}[%3d%%]:${clear} ", opt.progress)
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${dim magenta}signing.%s %s", signmode, path.filename(target:targetfile()))
+            cprint("${color.build.target.verbose}signing.%s %s", signmode, path.filename(target:targetfile()))
         else
-            cprint("${magenta}signing.%s %s", signmode, path.filename(target:targetfile()))
+            cprint("${color.build.target}signing.%s %s", signmode, path.filename(target:targetfile()))
         end
 
         -- get arch

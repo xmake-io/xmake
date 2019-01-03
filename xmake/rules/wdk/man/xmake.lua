@@ -62,6 +62,7 @@ rule("wdk.man")
 
         -- imports
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.depend")
 
         -- get ctrpp
@@ -124,10 +125,11 @@ rule("wdk.man")
         end
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.progress}[%3d%%]:${dim} compiling.wdk.man %s", opt.progress, sourcefile)
+            cprint("${color.build.object.verbose}compiling.wdk.man %s", sourcefile)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} compiling.wdk.man %s", opt.progress, sourcefile)
+            cprint("${color.build.object}compiling.wdk.man %s", sourcefile)
         end
 
         -- generate header and resource file

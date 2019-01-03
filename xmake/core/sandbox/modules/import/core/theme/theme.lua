@@ -19,29 +19,36 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        theme.lua
 --
 
--- define theme
-theme("emoji")
+-- define module
+local sandbox_core_theme = sandbox_core_theme or {}
 
-    -- the error info
-    set_color("error", "exclamation")
-    set_color("error.verbose", "exclamation")
+-- load modules
+local theme     = require("theme/theme")
+local raise     = require("sandbox/modules/raise")
 
-    -- the warning info
-    set_color("warning", "warning")
-    set_color("warning.verbose", "warning")
+-- get the current theme instance
+function sandbox_core_theme.instance()
+    local instance = theme.instance()
+    if instance ~= nil then
+        return instance
+    else
+        raise("cannot get the current theme")
+    end
+end
 
-    -- the building progress
-    set_text("build.progress_format", "[%3d%%]")
-    set_color("build.progress", "green")
+-- get the theme configuration
+function sandbox_core_theme.get(name)
+    local value = theme.get(name)
+    if value ~= nil then
+        return value
+    else
+        local instance = theme.instance()
+        raise("cannot get %s from the current theme(%s)", name, instance and instance:name() or "unknown")
+    end
+end
 
-    -- the building object file
-    set_color("build.object", "")
-    set_color("build.object.verbose", "dim green")
-
-    -- the building target file
-    set_color("build.target", "magenta")
-    set_color("build.target.verbose", "dim magenta")
-
+-- return module
+return sandbox_core_theme

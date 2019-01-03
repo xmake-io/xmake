@@ -47,6 +47,7 @@ rule("qt.qrc")
 
         -- imports
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.config")
         import("core.project.depend")
         import("core.tool.compiler")
@@ -84,10 +85,11 @@ rule("qt.qrc")
         end
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.progress}[%3d%%]:${dim} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
+            cprint("${color.build.object.verbose}compiling.qt.qrc %s", sourcefile_qrc)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} compiling.qt.qrc %s", opt.progress, sourcefile_qrc)
+            cprint("${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
         end
 
         -- ensure the source file directory

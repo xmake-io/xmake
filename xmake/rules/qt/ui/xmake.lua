@@ -47,6 +47,7 @@ rule("qt.ui")
 
         -- imports
         import("core.base.option")
+        import("core.theme.theme")
         import("core.project.config")
         import("core.project.depend")
 
@@ -71,10 +72,11 @@ rule("qt.ui")
         end
 
         -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.progress}[%3d%%]:${dim} compiling.qt.ui %s", opt.progress, sourcefile_ui)
+            cprint("${color.build.object.verbose}compiling.qt.ui %s", sourcefile_ui)
         else
-            cprint("${color.build.progress}[%3d%%]:${clear} compiling.qt.ui %s", opt.progress, sourcefile_ui)
+            cprint("${color.build.object}compiling.qt.ui %s", sourcefile_ui)
         end
 
         -- ensure ui header file directory
