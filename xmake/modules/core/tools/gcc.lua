@@ -518,7 +518,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     local lines = _get_compile_info(errdata)
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
-                        cprint("${yellow}%s", warnings)
+                        cprint("${color.warning}%s", warnings)
                     end
                 end
             end

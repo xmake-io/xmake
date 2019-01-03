@@ -312,7 +312,7 @@ function colors.translate(str)
             return ""
         end
 
-        -- translate theme color first, e.g ${color.error}
+        -- translate theme color first, e.g ${color.error.bright}
         if theme then
             local theme_word = theme:get(word)
             if theme_word then
@@ -326,7 +326,7 @@ function colors.translate(str)
                 return ""
             end
         elseif word:startswith("color.") then
-            local default_colors = {["color.error"] = "bright red", ["color.warning"] = "bright yellow"}
+            local default_colors = {["color.error.bright"] = "bright red", ["color.warning.bright"] = "bright yellow"}
             local theme_word = default_colors[word] 
             if theme_word then
                 word = theme_word

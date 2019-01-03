@@ -39,7 +39,7 @@ function main(config, optional)
     elseif not optional then
 
         -- failed
-        cprint("${color.error}please run:")
+        cprint("${color.error.bright}please run:")
         cprint("    - xmake config --xcode=xxx")
         cprint("or  - xmake global --xcode=xxx")
         raise()

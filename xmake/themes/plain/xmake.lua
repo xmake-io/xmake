@@ -27,11 +27,13 @@ theme("plain")
 
     -- the error info
     set_color("error", "")
-    set_color("error.verbose", "")
+    set_color("error.dim", "")
+    set_color("error.bright", "")
 
     -- the warning info
     set_color("warning", "")
-    set_color("warning.verbose", "")
+    set_color("warning.dim", "")
+    set_color("warning.bright", "")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
@@ -39,8 +41,8 @@ theme("plain")
 
     -- the building object file
     set_color("build.object", "")
-    set_color("build.object.verbose", "")
+    set_color("build.object.dim", "")
 
     -- the building target file
     set_color("build.target", "")
-    set_color("build.target.verbose", "")
+    set_color("build.target.dim", "")

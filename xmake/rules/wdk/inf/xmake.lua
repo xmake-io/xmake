@@ -97,7 +97,7 @@ rule("wdk.inf")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.object.verbose}compiling.wdk.inf %s", sourcefile)
+            cprint("${color.build.object.dim}compiling.wdk.inf %s", sourcefile)
         else
             cprint("${color.build.object}compiling.wdk.inf %s", sourcefile)
         end

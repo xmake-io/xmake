@@ -118,7 +118,7 @@ rule("wdk.sign")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.target.verbose}signing.%s %s", signmode, path.filename(target:targetfile()))
+            cprint("${color.build.target.dim}signing.%s %s", signmode, path.filename(target:targetfile()))
         else
             cprint("${color.build.target}signing.%s %s", signmode, path.filename(target:targetfile()))
         end

@@ -150,7 +150,7 @@ end
 -- print the error information
 function utils.error(format, ...)
     if format ~= nil then
-        utils.cprint("${color.error}error: ${clear}" .. string.tryformat(format, ...))
+        utils.cprint("${color.error.bright}error: ${clear}" .. string.tryformat(format, ...))
         log:flush()
     end
 end
@@ -162,7 +162,7 @@ function utils.warning(format, ...)
     assert(format)
 
     -- format message
-    local msg = "${color.warning}warning: ${default yellow}" .. string.tryformat(format, ...)
+    local msg = "${color.warning.bright}warning: ${color.warning}" .. string.tryformat(format, ...)
 
     -- init warnings
     utils._WARNINGS = utils._WARNINGS or {}

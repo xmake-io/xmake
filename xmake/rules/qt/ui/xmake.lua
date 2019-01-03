@@ -74,7 +74,7 @@ rule("qt.ui")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${color.build.object.verbose}compiling.qt.ui %s", sourcefile_ui)
+            cprint("${color.build.object.dim}compiling.qt.ui %s", sourcefile_ui)
         else
             cprint("${color.build.object}compiling.qt.ui %s", sourcefile_ui)
         end

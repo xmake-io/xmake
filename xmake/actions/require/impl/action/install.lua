@@ -132,11 +132,11 @@ function main(package)
 
                 -- verbose?
                 if option.get("verbose") and errors then
-                    cprint("${color.error.verbose}error: ${clear}%s", errors)
+                    cprint("${color.error.dim}error: ${clear}%s", errors)
                 end
 
                 -- trace
-                cprint("${color.error}failed")
+                cprint("${color.error.bright}failed")
 
                 -- failed
                 if not package:requireinfo().optional then
