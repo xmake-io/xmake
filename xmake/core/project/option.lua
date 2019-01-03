@@ -177,7 +177,7 @@ function option:_check()
     end
 
     -- trace
-    utils.cprint("checking for the %s ... %s", name, utils.ifelse(self:enabled(), "${green}ok", "${red}no"))
+    utils.cprint("checking for the %s ... %s", name, self:enabled() and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
     if not ok then
         os.raise(errors)
     end

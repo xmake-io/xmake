@@ -119,13 +119,13 @@ function main(name, flags, opt)
 
     -- trace
     if option.get("verbose") or option.get("diagnosis") or opt.verbose then
-        cprint("${dim}checking for the flags (%s) ... %s", table.concat(table.wrap(flags), " "), ifelse(result, "${green}ok", "${red}no"))
+        cprint("${dim}checking for the flags (%s) ... %s", table.concat(table.wrap(flags), " "), result and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         if option.get("diagnosis") then
             cprint("${dim}> %s %s", path.filename(tool.program), table.concat(checkflags, " "))
         end
     end
     if errors and #errors > 0 and option.get("diagnosis") then
-        cprint("${yellow}checkinfo:${clear dim} %s", errors:trim())
+        cprint("${color.warning}checkinfo:${clear dim} %s", errors:trim())
     end
 
     -- save result to cache

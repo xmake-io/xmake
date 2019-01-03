@@ -25,6 +25,18 @@
 -- define theme
 theme("dark")
 
+    -- the success status 
+    set_text("success", "ok")
+    set_color("success", "green")
+
+    -- the failure status 
+    set_text("failure", "failed")
+    set_color("failure", "red")
+
+    -- the nothing status 
+    set_text("nothing", "no")
+    set_color("nothing", "red")
+
     -- the error info
     set_color("error", "red")
     set_color("error.dim", "dim red")

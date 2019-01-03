@@ -25,6 +25,18 @@
 -- define theme
 theme("emoji")
 
+    -- the success status 
+    set_text("success", "")
+    set_color("success", "heavy_check_mark")
+
+    -- the failure status 
+    set_text("failure", "")
+    set_color("failure", "x")
+
+    -- the nothing status 
+    set_text("nothing", "")
+    set_color("nothing", "o")
+
     -- the error info
     set_color("error", "exclamation")
     set_color("error.dim", "exclamation")

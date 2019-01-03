@@ -25,6 +25,18 @@
 -- define theme
 theme("plain")
 
+    -- the success status 
+    set_text("success", "ok")
+    set_color("success", "")
+
+    -- the failure status 
+    set_text("failure", "failed")
+    set_color("failure", "")
+
+    -- the nothing status 
+    set_text("nothing", "no")
+    set_color("nothing", "")
+
     -- the error info
     set_color("error", "")
     set_color("error.dim", "")
@@ -46,3 +58,4 @@ theme("plain")
     -- the building target file
     set_color("build.target", "")
     set_color("build.target.dim", "")
+
