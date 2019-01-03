@@ -308,10 +308,10 @@ function main()
                 }
             }
             if ok then
-                cprint("\r${yellow}  => ${clear}download %s .. ${green}ok    ", url)
+                cprint("\r${yellow}  => ${clear}download %s .. ${color.success}${text.success}    ", url)
                 break
             else
-                cprint("\r${yellow}  => ${clear}download %s .. ${red}failed    ", url)
+                cprint("\r${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}    ", url)
             end
             if not ok and idx == #mainurls then
                 raise("download failed!")

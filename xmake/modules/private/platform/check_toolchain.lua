@@ -59,9 +59,9 @@ function _check_tool(config, toolkind, description, name, cross, check)
         -- trace
         if option.get("verbose") then
             if program then
-                cprint("checking for %s (%s) ... ${green}%s", description, toolkind, path.filename(program))
+                cprint("${dim}checking for %s (%s) ... ${color.success}%s", description, toolkind, path.filename(program))
             else
-                cprint("checking for %s (%s: ${red}%s${clear}) ... ${red}no", description, toolkind, name)
+                cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, name)
             end
         end
     end

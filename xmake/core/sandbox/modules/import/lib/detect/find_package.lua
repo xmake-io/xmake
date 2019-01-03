@@ -498,9 +498,9 @@ function sandbox_lib_detect_find_package.main(name, opt)
     -- trace
     if opt.verbose or option.get("verbose") then
         if result then
-            utils.cprint("checking for the %s ... ${green}%s", name, result.version and result.version or "ok")
+            utils.cprint("checking for the %s ... ${color.success}%s", name, result.version and result.version or "${text.success}")
         else
-            utils.cprint("checking for the %s ... ${red}no", name)
+            utils.cprint("checking for the %s ... ${color.nothing}${text.nothing}", name)
         end
     end
 

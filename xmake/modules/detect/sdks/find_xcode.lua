@@ -126,14 +126,14 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the Xcode directory ... ${green}%s", xcode.sdkdir)
-            cprint("checking for the SDK version of Xcode ... ${green}%s", xcode.sdkver)
+            cprint("checking for the Xcode directory ... ${color.success}%s", xcode.sdkdir)
+            cprint("checking for the SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
         end
     else
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the Xcode directory ... ${red}no")
+            cprint("checking for the Xcode directory ... ${color.nothing}${text.nothing}")
         end
     end
 

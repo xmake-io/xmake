@@ -82,7 +82,7 @@ end
 function main(targetname)
 
     -- trace
-    cprint("${yellow}xmake.lua not found, try building ..")
+    cprint("${color.warning}xmake.lua not found, try building ..")
 
     -- enter toolchains environment
     environment.enter("toolchains")
