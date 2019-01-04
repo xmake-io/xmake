@@ -89,8 +89,6 @@ end
 
 -- load history 
 function history:load(key)
-
-    -- load it
     return self._CACHE:get(key)
 end
 

@@ -28,7 +28,7 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.project.cache", {nocache = true})
+import("core.project.cache")
 import("lib.detect.cache", {alias = "detectcache"})
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
@@ -70,8 +70,9 @@ function _need_check(changed)
     local mtimes = project.mtimes()
 
     -- get the previous mtimes 
+    local configcache = cache("local.config")
     if not changed then
-        local mtimes_prev = cache.get("mtimes")
+        local mtimes_prev = configcache:get("mtimes")
         if mtimes_prev then 
 
             -- check for all project files
@@ -88,7 +89,7 @@ function _need_check(changed)
     end
 
     -- update mtimes
-    cache.set("mtimes", mtimes)
+    configcache:set("mtimes", mtimes)
 
     -- changed?
     return changed
@@ -182,8 +183,8 @@ function main()
     -- the target name
     local targetname = option.get("target") or "all"
 
-    -- enter cache scope
-    cache.enter("local.config")
+    -- get config cache
+    local configcache = cache("local.config")
 
     -- load the project configure
     --
@@ -203,7 +204,7 @@ function main()
     local options_changed = false
     local options_history = {}
     if not option.get("clean") then
-        options_history = cache.get("options_" .. targetname) or {}
+        options_history = configcache:get("options_" .. targetname) or {}
         options = options or options_history
     end
     for name, value in pairs(options) do
@@ -220,9 +221,9 @@ function main()
     -- @note we cannot load cache config when switching platform, arch .. 
     -- so we need known whether options have been changed
     --
-    local configcache = false
+    local configcache_loaded = false
     if not options_changed and not option.get("clean") and not _host_changed(targetname) then
-        configcache = config.load(targetname) 
+        configcache_loaded = config.load(targetname) 
     end
 
     -- merge the global configure 
@@ -249,7 +250,7 @@ function main()
     end
 
     -- merge the checked configure 
-    local recheck = _need_check(options_changed or not configcache)
+    local recheck = _need_check(options_changed or not configcache_loaded)
     if recheck then
 
         -- clear detect cache
@@ -293,16 +294,16 @@ function main()
 
     -- save options and configure for the given target
     config.save(targetname)
-    cache.set("options_" .. targetname, options)
+    configcache:set("options_" .. targetname, options)
 
     -- save options and configure for each targets if be all
     if targetname == "all" then
         for _, target in pairs(project.targets()) do
             config.save(target:name())
-            cache.set("options_" .. target:name(), options)
+            configcache:set("options_" .. target:name(), options)
         end
     end
 
-    -- flush cache
-    cache.flush()
+    -- flush config cache
+    configcache:flush()
 end

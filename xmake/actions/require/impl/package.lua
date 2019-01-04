@@ -26,7 +26,6 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
-import("core.project.cache")
 import("lib.detect.cache", {alias = "detectcache"})
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})

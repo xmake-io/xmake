@@ -24,9 +24,8 @@
 
 -- imports
 import("core.base.option")
-import("core.project.cache", {nocache = true})
 import("core.project.config")
-import("core.project.history", {nocache = true})
+import("core.project.history")
 
 -- the macro directories
 function _directories()
@@ -201,21 +200,15 @@ end
 -- begin to record macro
 function _begin()
 
-    -- enter local history    
-    history.enter("local.history")
-
     -- patch begin tag to the history: cmdlines
-    history.save("cmdlines", "__macro_begin__")
+    history("local.history"):save("cmdlines", "__macro_begin__")
 end
 
 -- end to record macro
 function _end(macroname)
 
-    -- enter local history    
-    history.enter("local.history")
-
     -- load the history: cmdlines
-    local cmdlines = history.load("cmdlines")
+    local cmdlines = history("local.history"):load("cmdlines")
 
     -- get the last macro block
     local begin = false
@@ -257,7 +250,7 @@ function _end(macroname)
     end
 
     -- patch end tag to the history: cmdlines
-    history.save("cmdlines", "__macro_end__")
+    history("local.history"):save("cmdlines", "__macro_end__")
 
     -- open the macro file
     local file = io.open(_wfile(macroname), "w")
@@ -291,11 +284,8 @@ function _run(macroname)
     -- run last command?
     if macroname == ".." then
 
-        -- enter local history    
-        history.enter("local.history")
-
         -- load the history: cmdlines
-        local cmdlines = history.load("cmdlines")
+        local cmdlines = history("local.history"):load("cmdlines")
 
         -- get the last command
         local lastcmd = nil

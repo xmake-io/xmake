@@ -119,11 +119,14 @@ function cache:flush()
 
     -- memory cache? ignore it directly
     if not self._CACHEPATH then
-        return true
+        return 
     end
 
     -- save to file
-    return io.save(self._CACHEPATH, self._CACHEDATA) 
+    local ok, errors = io.save(self._CACHEPATH, self._CACHEDATA) 
+    if not ok then
+        os.raise(errors)
+    end
 end
 
 -- return module

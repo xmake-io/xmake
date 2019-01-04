@@ -42,8 +42,6 @@ function sandbox_lib_detect_cache._instance()
     -- get it
     local detectcache = sandbox_lib_detect_cache._INSTANCE or cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
     sandbox_lib_detect_cache._INSTANCE = detectcache
-
-    -- ok?
     return detectcache
 end
 

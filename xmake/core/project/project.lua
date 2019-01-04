@@ -558,15 +558,36 @@ function project._load_options(disable_filter)
     -- check options
     local options = {}
     for optionname, optioninfo in pairs(results) do
-        
+
+        -- TODO
+        -- load it from cache first (@note will discard scripts)  
+        --[[
+        local instance = option.load(optionname)
+        if instance then
+ 
+            -- patch scripts  (e.g. on_check ..) 
+            for k, v in pairs(optioninfo) do
+                if type(v) == "function" then
+                    instance:set(k, v)
+                end
+            end
+        else
+
+            -- init a option instance
+            instance = table.inherit(option)
+
+            -- save name and info
+            instance._NAME = optionname
+            instance._INFO = optioninfo
+        end]]
+
         -- init a option instance
         local instance = table.inherit(option)
-        assert(instance)
 
         -- save name and info
         instance._NAME = optionname
         instance._INFO = optioninfo
-
+      
         -- save it
         options[optionname] = instance
 
@@ -645,10 +666,8 @@ function project._load_requires()
     return requires
 end
 
--- load packages
+-- load the packages from the the project file and disable filter, we will process filter after a while
 function project._load_packages()
-
-    -- load the packages from the the project file and disable filter, we will process filter after a while
     return project._load_scope("package", true, false)
 end
 
@@ -716,8 +735,6 @@ end
 function project.requires()
 
     if not project._REQUIRES then
-
-        -- load requires
         local requires, errors = project._load_requires()
         if not requires then
             os.raise(errors)

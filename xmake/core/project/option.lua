@@ -219,7 +219,7 @@ function option:check()
             self:enable(false)
         end
 
-    -- no check? save this option to configure directly
+    -- need not check? only save this option to configuration directly
     elseif config.get(name) then
         self:_save()
     end    

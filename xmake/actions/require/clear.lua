@@ -33,8 +33,8 @@ function main()
     os.rm(package.cachedir())
 
     -- clear require cache
-    cache.enter("local.require")
-    cache.clear()
-    cache.flush()
+    local require_cache = cache("local.require")
+    require_cache:clear()
+    require_cache:flush()
 end
 
