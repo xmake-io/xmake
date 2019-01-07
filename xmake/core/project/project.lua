@@ -559,28 +559,6 @@ function project._load_options(disable_filter)
     local options = {}
     for optionname, optioninfo in pairs(results) do
 
-        -- TODO
-        -- load it from cache first (@note will discard scripts)  
-        --[[
-        local instance = option.load(optionname)
-        if instance then
- 
-            -- patch scripts  (e.g. on_check ..) 
-            for k, v in pairs(optioninfo) do
-                if type(v) == "function" then
-                    instance:set(k, v)
-                end
-            end
-        else
-
-            -- init a option instance
-            instance = table.inherit(option)
-
-            -- save name and info
-            instance._NAME = optionname
-            instance._INFO = optioninfo
-        end]]
-
         -- init a option instance
         local instance = table.inherit(option)
 

@@ -117,7 +117,7 @@ end
 
 -- inherts from target packages
 function builder:_inherit_from_targetpkgs(values, target, name)
-    for _, pkg in ipairs(target:packages()) do
+    for _, pkg in ipairs(target:orderpkgs()) do
         -- uses them instead of the builtin configs if exists extra package config
         -- e.g. `add_packages("xxx", {links = "xxx"})`
         local configinfo = target:pkgconfig(pkg:name())
@@ -134,7 +134,7 @@ end
 function builder:_inherit_from_target(values, target, name)
     table.join2(values, target:get(name))
     if target:type() == "target" then
-        for _, opt in ipairs(target:options()) do
+        for _, opt in ipairs(target:orderopts()) do
             table.join2(values, opt:get(name))
         end
         self:_inherit_from_targetpkgs(values, target, name)
@@ -252,12 +252,12 @@ function builder:_addflags_from_target(flags, target)
         if target:type() == "target" then
 
             -- add flags from options
-            for _, opt in ipairs(target:options()) do
+            for _, opt in ipairs(target:orderopts()) do
                 self:_addflags_from_option(targetflags, opt)
             end
 
             -- add flags from packages
-            for _, pkg in ipairs(target:packages()) do
+            for _, pkg in ipairs(target:orderpkgs()) do
                 self:_addflags_from_package(targetflags, pkg)
             end
         end
@@ -343,7 +343,7 @@ function builder:_addflags_from_language(flags, target, getters)
                             -- is target? get flagvalues of the attached options and packages
                             local results = {}
                             if target:type() == "target" then
-                                for _, opt in ipairs(target:options()) do
+                                for _, opt in ipairs(target:orderopts()) do
                                     table.join2(results, table.wrap(opt:get(name)))
                                 end
                                 self:_inherit_from_targetpkgs(results, target, name)

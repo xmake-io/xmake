@@ -448,7 +448,7 @@ function target:deps()
     return self._DEPS
 end
 
--- get target order deps
+-- get target ordered deps
 function target:orderdeps()
     return self._ORDERDEPS
 end
@@ -476,7 +476,7 @@ function target:rules()
     return self._RULES
 end
 
--- get target order rules
+-- get target ordered rules
 function target:orderules()
     return self._ORDERULES
 end
@@ -498,21 +498,44 @@ function target:isphony()
     return not targetkind or targetkind == "phony"
 end
 
--- get the options 
-function target:options()
+-- get the enabled option
+function target:opt(name)
+    return self:opts()[name]
+end
+
+-- get the enabled options
+function target:opts()
 
     -- attempt to get it from cache first
-    if self._OPTIONS then
-        return self._OPTIONS
+    if self._OPTS_ENABLED then
+        return self._OPTS_ENABLED
     end
 
     -- load options if be enabled 
-    self._OPTIONS = {}
+    self._OPTS_ENABLED = {}
+    for _, opt in ipairs(self:orderopts()) do
+        self._OPTS_ENABLED[opt:name()] = opt
+    end
+
+    -- get it 
+    return self._OPTS_ENABLED
+end
+
+-- get the enabled ordered options 
+function target:orderopts()
+
+    -- attempt to get it from cache first
+    if self._ORDEROPTS_ENABLED then
+        return self._ORDEROPTS_ENABLED
+    end
+
+    -- load options if be enabled 
+    self._ORDEROPTS_ENABLED = {}
     for _, name in ipairs(table.wrap(self:get("options"))) do
         local opt = nil
         if config.get(name) then opt = option.load(name) end
         if opt then
-            table.insert(self._OPTIONS, opt)
+            table.insert(self._ORDEROPTS_ENABLED, opt)
         end
     end
 
@@ -522,27 +545,50 @@ function target:options()
             local opt = nil
             if config.get(name) then opt = option.load(name) end
             if opt then
-                table.insert(self._OPTIONS, opt)
+                table.insert(self._ORDEROPTS_ENABLED, opt)
             end
         end
     end
 
     -- get it 
-    return self._OPTIONS
+    return self._ORDEROPTS_ENABLED
+end
+
+-- get the enabled package
+function target:pkg(name)
+    return self:pkgs()[name]
+end
+
+-- get the enabled packages
+function target:pkgs()
+
+    -- attempt to get it from cache first
+    if self._PKGS_ENABLED then
+        return self._PKGS_ENABLED
+    end
+
+    -- load packages if be enabled 
+    self._PKGS_ENABLED = {}
+    for _, pkg in ipairs(self:orderpkgs()) do
+        self._PKGS_ENABLED[pkg:name()] = pkg
+    end
+
+    -- get it 
+    return self._PKGS_ENABLED
 end
 
 -- get the required packages 
-function target:packages()
-    if not self._PACKAGES_ENABLED then
+function target:orderpkgs()
+    if not self._ORDERPKGS_ENABLED then
         local packages = {}
         for _, pkg in ipairs(self._PACKAGES) do
             if pkg:enabled() then
                 table.insert(packages, pkg)
             end
         end
-        self._PACKAGES_ENABLED = packages
+        self._ORDERPKGS_ENABLED = packages
     end
-    return self._PACKAGES_ENABLED
+    return self._ORDERPKGS_ENABLED
 end
 
 -- get the config info of the given package 
