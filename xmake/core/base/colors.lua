@@ -341,11 +341,11 @@ function colors.translate(str)
                 else 
                     table.insert(blocks, block)
                 end
-            elseif block:startswith("color.") then
-                local default_colors = {["bright color.error"] = {"bright", "red"}, ["bright color.warning"] = {"bright", "yellow"}}
-                local theme_block = default_colors[block] 
+            elseif block:startswith("color.") or block:startswith("text.") then
+                local default_theme = {["color.error"] = "red", ["color.warning"] = "yellow", ["text.error"] = "error", ["text.warning"] = "warning"}
+                local theme_block = default_theme[block] 
                 if theme_block then
-                    table.join2(blocks, theme_block)
+                    table.insert(blocks, theme_block)
                 else
                     table.insert(blocks, block)
                 end
