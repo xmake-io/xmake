@@ -316,7 +316,12 @@ function project.get(name)
 end
 
 -- load the project file
-function project._load()
+function project._load(force)
+
+    -- has already been loaded?
+    if project._INFO and not force then
+        return true
+    end
 
     -- enter the project directory
     local oldir, errors = os.cd(os.projectdir())
@@ -403,7 +408,7 @@ function project._load_tasks()
     end
 
     -- load the project file first
-    local ok, errors = project._load()
+    local ok, errors = project._load(true)
     if not ok then
         return nil, errors
     end
@@ -430,6 +435,12 @@ end
 
 -- load rules
 function project._load_rules()
+
+    -- load the project file first if has not been loaded?
+    local ok, errors = project._load()
+    if not ok then
+        return nil, errors
+    end
  
     -- load the rules from the the project file
     local results, errors = project._load_scope("rule", true, true)
@@ -458,7 +469,7 @@ function project._load_targets()
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
     local requires = project.requires()
-    local ok, errors = project._load()
+    local ok, errors = project._load(true)
     if not ok then
         return nil, errors
     end
@@ -548,6 +559,17 @@ end
 
 -- load options
 function project._load_options(disable_filter)
+
+    -- the project file is not found?
+    if not os.isfile(project.file()) then
+        return {}, nil
+    end
+
+    -- load the project file first if has not been loaded?
+    local ok, errors = project._load()
+    if not ok then
+        return nil, errors
+    end
 
     -- load the options from the the project file
     local results, errors = project._load_scope("option", true, not disable_filter)
@@ -646,6 +668,14 @@ end
 
 -- load the packages from the the project file and disable filter, we will process filter after a while
 function project._load_packages()
+
+    -- load the project file first if has not been loaded?
+    local ok, errors = project._load()
+    if not ok then
+        return nil, errors
+    end
+ 
+    -- load packages
     return project._load_scope("package", true, false)
 end
 
@@ -728,7 +758,7 @@ function project.requires_str()
     if not project._REQUIRES_STR then
 
         -- reload the project file to handle `has_config()`
-        local ok, errors = project._load()
+        local ok, errors = project._load(true)
         if not ok then
             os.raise(errors)
         end

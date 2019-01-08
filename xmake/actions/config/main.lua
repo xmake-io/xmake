@@ -148,11 +148,6 @@ function main()
     if _g.configured then return end
     _g.configured = true
 
-    -- enter menu config
-    if option.get("menu") then
-        menuconf_show()
-    end
-
     -- scan project and generate it if xmake.lua not exists
     if not os.isfile(project.file()) then
 
@@ -178,6 +173,11 @@ function main()
 
         -- scan and generate it automatically
         scangen()
+    end
+
+    -- enter menu config
+    if option.get("menu") then
+        menuconf_show()
     end
 
     -- the target name
