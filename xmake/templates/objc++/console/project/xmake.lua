@@ -25,7 +25,7 @@ end
 add_frameworks("Foundation", "CoreFoundation")
 
 -- for macosx or ios
-if os("macosx", "ios") then
+if is_os("macosx", "ios") then
 
     -- enable arc?
     add_mxflags("-fobjc-arc")
