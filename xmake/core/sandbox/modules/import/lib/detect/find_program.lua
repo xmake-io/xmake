@@ -79,8 +79,8 @@ function sandbox_lib_detect_find_program._check(program, opt)
     return ok
 end
 
--- find program
-function sandbox_lib_detect_find_program._find(name, pathes, opt)
+-- find program from the given pathes
+function sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
 
     -- attempt to check it from the given directories
     if not path.is_absolute(name) then
@@ -115,6 +115,16 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
             end
         end
     end
+end
+
+-- find program
+function sandbox_lib_detect_find_program._find(name, pathes, opt)
+
+    -- attempt to check it from the given directories
+    local program_path = sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
+    if program_path then
+        return program_path
+    end
 
     -- attempt to check it from regists
     if os.host() == "windows" then
@@ -122,7 +132,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
         if not program_name:endswith(".exe") then
             program_name = program_name .. ".exe"
         end
-        local program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
+        program_path = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\" .. program_name)
         if program_path then
             -- check it
             program_path = program_path:trim()
@@ -143,6 +153,19 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
                     return program_path
                 end
             end
+        end
+    end
+
+    -- attempt to check it from the some default system directories
+    local syspathes = {}
+    if os.host() ~= "windows" then
+        table.insert(syspathes, "/usr/local/bin")
+        table.insert(syspathes, "/usr/bin")
+    end
+    if #syspathes > 0 then
+        program_path = sandbox_lib_detect_find_program._find_from_pathes(name, syspathes, opt)
+        if program_path then
+            return program_path
         end
     end
 
@@ -204,15 +227,9 @@ function sandbox_lib_detect_find_program.main(name, opt)
         return utils.ifelse(result, result, nil)
     end
 
-    -- add default search pathes 
-    local pathes = opt.pathes
-    if os.host() ~= "windows" then
-        pathes = table.join(table.wrap(pathes), "/usr/local/bin", "/usr/bin")
-    end
-
     -- find executable program
     checking = utils.ifelse(coroutine_running, name, nil)
-    result = sandbox_lib_detect_find_program._find(name, pathes, opt) 
+    result = sandbox_lib_detect_find_program._find(name, opt.pathes, opt) 
     checking = nil
 
     -- cache result
