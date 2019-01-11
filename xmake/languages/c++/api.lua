@@ -227,8 +227,10 @@ function apis()
     _g.dictionary =
     {
         -- option.add_xxx
-        "option.add_csnippet"
-    ,   "option.add_cxxsnippet"
+        "option.add_csnippet"    -- TODO deprecated
+    ,   "option.add_csnippets"
+    ,   "option.add_cxxsnippet"  -- TODO deprecated
+    ,   "option.add_cxxsnippets"
     }
     _g.custom = 
     {

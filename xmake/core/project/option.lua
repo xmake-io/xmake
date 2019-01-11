@@ -31,7 +31,7 @@ local os             = require("base/os")
 local path           = require("base/path")
 local table          = require("base/table")
 local utils          = require("base/utils")
-local option_        = require("base/option")
+local baseoption     = require("base/option")
 local config         = require("project/config")
 local cache          = require("project/cache")
 local linker         = require("tool/linker")
@@ -76,6 +76,7 @@ function option.apis()
         ,   "option.add_deps"
         ,   "option.add_imports"
         ,   "option.add_vectorexts"
+        ,   "option.add_features"
         }
     ,   script =
         {
@@ -106,21 +107,28 @@ function option:_clear()
     option._cache():set(self:name(), nil)
 end
 
--- check option for c/c++
-function option:_cx_check()
+-- check option conditions
+function option:_do_check()
 
     -- import check_cxsnippets()
     self._check_cxsnippets = self._check_cxsnippets or sandbox_module.import("lib.detect.check_cxsnippets", {anonymous = true})
 
     -- check for c and c++
+    local passed = false
     for _, kind in ipairs({"c", "cxx"}) do
 
         -- get conditions
         local links    = self:get("links")
-        local snippets = self:get(kind .. "snippet")
+        local snippets = self:get(kind .. "snippets") 
         local types    = self:get(kind .. "types")
         local funcs    = self:get(kind .. "funcs")
         local includes = self:get(kind .. "includes")
+
+        -- TODO it is deprecated
+        local snippet  = self:get(kind .. "snippet") 
+        if snippet then
+            snippets = table.join(snippets or {}, snippet)
+        end
 
         -- need check it?
         if snippets or types or funcs or links or includes then
@@ -139,10 +147,36 @@ function option:_cx_check()
 
             -- passed?
             if results_or_errors then
-                self:enable(true)
+                passed = true
                 break
             end
         end
+    end
+
+    -- check features
+    local features = self:get("features")
+    if features then
+
+        -- import core.tool.compiler
+        self._core_tool_compiler = self._core_tool_compiler or sandbox_module.import("core.tool.compiler", {anonymous = true})
+
+        -- all features are supported?
+        local features_supported = self._core_tool_compiler.has_features(features, {target = self})
+        if features_supported and #features_supported == #features then
+            passed = true
+        end
+
+        -- trace
+        if baseoption.get("verbose") or baseoption.get("diagnosis") then
+            for _, feature in ipairs(table.wrap(features)) do
+                utils.cprint("${dim}checking for the feature(%s) ... %s", feature, passed and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+            end
+        end
+    end
+
+    -- enable this option if be passed
+    if passed then
+        self:enable(true)
     end
 
     -- ok
@@ -157,7 +191,7 @@ function option:_on_check()
     if check then
         return sandbox.load(check, self)
     else
-        return self:_cx_check()
+        return self:_do_check()
     end
 end
 

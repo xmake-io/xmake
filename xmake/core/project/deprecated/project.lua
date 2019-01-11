@@ -119,6 +119,48 @@ function deprecated_project._api_option_set_enable(interp, ...)
                                         end)
 end
 
+-- add_csnippet for option
+function deprecated_project._api_option_add_csnippet(interp, ...)
+
+    -- get api name
+    local apiname = "add_csnippet"
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("option", apiname .. 's')
+    assert(apifunc)
+
+    -- register api
+    interp:api_register_builtin(apiname, function (...) 
+
+                                            -- deprecated
+                                            deprecated.add(apiname .. "s(...)", apiname .. "(...)")
+                                          
+                                            -- dispatch it
+                                            apifunc(...)
+                                        end)
+end
+
+-- add_cxxsnippet for option
+function deprecated_project._api_option_add_cxxsnippet(interp, ...)
+
+    -- get api name
+    local apiname = "add_cxxsnippet"
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("option", apiname .. 's')
+    assert(apifunc)
+
+    -- register api
+    interp:api_register_builtin(apiname, function (...) 
+
+                                            -- deprecated
+                                            deprecated.add(apiname .. "s(...)", apiname .. "(...)")
+                                          
+                                            -- dispatch it
+                                            apifunc(...)
+                                        end)
+end
+
 -- enable options?
 function deprecated_project._api_is_option(interp, ...)
 
@@ -155,6 +197,12 @@ function deprecated_project.api_register(interp)
 
     -- register api: set_enable() to option
     interp:api_register("option", "set_enable", deprecated_project._api_option_set_enable)
+
+    -- register api: add_csnippet() to option
+    interp:api_register("option", "add_csnippet", deprecated_project._api_option_add_csnippet)
+
+    -- register api: add_cxxsnippet() to option
+    interp:api_register("option", "add_cxxsnippet", deprecated_project._api_option_add_cxxsnippet)
 
     -- register api: set_values() to option
     deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "enable")
