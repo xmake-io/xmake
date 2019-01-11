@@ -203,42 +203,6 @@ function deprecated_project.api_register(interp)
 
     -- register api: add_cxxsnippet() to option
     interp:api_register("option", "add_cxxsnippet", deprecated_project._api_option_add_cxxsnippet)
-
-    -- register api: set_values() to option
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "enable")
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "showmenu")
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "category")
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "warnings")
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "optimize")
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "languages")
-    deprecated_interpreter._api_register_set_xxx_xxx(interp, "option", "description")
-
-    -- register api: add_values() to option
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "links")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cincludes")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxincludes")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cfuncs")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxfuncs")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "ctypes")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxtypes")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "cxxflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "mflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "mxflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "mxxflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "ldflags")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "vectorexts")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "defines")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "defines_if_ok")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "defines_h_if_ok")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "undefines")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "undefines_if_ok")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "undefines_h_if_ok")
-
-    -- register api: add_pathes() to option
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "linkdirs")
-    deprecated_interpreter._api_register_add_xxx_xxx(interp, "option", "includedirs")
 end
 
 -- return module: deprecated_project

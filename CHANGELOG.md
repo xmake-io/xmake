@@ -17,6 +17,7 @@
 * [#293](https://github.com/tboox/xmake/issues/293): Add `xmake f/g --mingw=xxx` configuration option and improve to find_mingw
 * [#301](https://github.com/tboox/xmake/issues/301): Improve precompiled header file
 * [#322](https://github.com/tboox/xmake/issues/322): Add `option.add_features`, `option.add_cxxsnippets` and `option.add_csnippets`
+* Remove some deprecated interfaces of xmake 1.x, e.g. `add_option_xxx`
 
 ### Bugs fixed
 
@@ -556,6 +557,7 @@
 * [#293](https://github.com/tboox/xmake/issues/293): 添加`xmake f/g --mingw=xxx` 配置选线，并且改进find_mingw检测
 * [#301](https://github.com/tboox/xmake/issues/301): 改进编译预处理头文件以及依赖头文件生成，编译速度提升30%
 * [#322](https://github.com/tboox/xmake/issues/322): 添加`option.add_features`, `option.add_cxxsnippets` 和 `option.add_csnippets`
+* 移除xmake 1.x的一些废弃接口, 例如：`add_option_xxx`
 
 ### Bugs修复
 
