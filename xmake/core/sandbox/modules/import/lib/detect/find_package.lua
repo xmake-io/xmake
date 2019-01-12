@@ -277,6 +277,11 @@ function sandbox_lib_detect_find_package._find_from_vcpkg(name, opt)
     return import("lib.detect.vcpkg").find(name, opt)
 end
 
+-- find package from conan
+function sandbox_lib_detect_find_package._find_from_conan(name, opt)
+    return import("lib.detect.conan").find(name, opt)
+end
+
 -- find package from the system directories
 function sandbox_lib_detect_find_package._find_from_systemdirs(name, opt)
 
@@ -398,6 +403,9 @@ function sandbox_lib_detect_find_package._find(name, opt)
 
         -- find package from vcpkg (support multi-platforms/architectures)
         table.insert(findscripts, sandbox_lib_detect_find_package._find_from_vcpkg)
+
+        -- find package from conan
+        table.insert(findscripts, sandbox_lib_detect_find_package._find_from_conan)
 
         -- find package from the current host platform
         if opt.plat == os.host() and opt.arch == os.arch() then

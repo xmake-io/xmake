@@ -19,26 +19,26 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vcpkg.lua
+-- @file        conan.lua
 --
 
 -- imports
 import("lib.detect.find_file")
 import("lib.detect.find_library")
-import("detect.sdks.find_vcpkgdir")
+import("detect.sdks.find_conandir")
 import("core.project.config")
 import("core.project.target")
 
 -- get package info
 --
 -- @param name  the package name
--- @param opt   the argument options, {version = true, arch = "", plat = "", mode = "", vcpkgdir = ""}
+-- @param opt   the argument options, {version = true, arch = "", plat = "", mode = "", conandir = ""}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
 --
 -- @code 
 --
--- local pkginfo = vcpkg.info("openssl")
+-- local pkginfo = conan.info("openssl")
 -- 
 -- @endcode
 --
@@ -47,68 +47,44 @@ function info(name, opt)
     -- init options
     opt = opt or {}
     
-    -- attempt to find the vcpkg root directory
-    local vcpkgdir = find_vcpkgdir(opt.vcpkgdir)
-    if not vcpkgdir then
+    -- attempt to find the conan root directory
+    local conandir = find_conandir(opt.conandir)
+    if not conandir then
         return 
     end
-
-    -- get arch, plat and mode
-    local arch = opt.arch or config.arch() or os.arch()
-    local plat = opt.plat or config.plat() or os.host()
-    local mode = opt.mode or config.mode() or "release"
 
     -- init cache
     _g._INFO = _g._INFO or {}
 
     -- get it from cache first
-    local key = name .. "_" .. arch .. "_" .. plat .. "_" .. mode
+    local key = name 
     local result = _g._INFO[key]
     if result ~= nil then
         return result and result or nil
     end
 
-    -- get the vcpkg installed directory
-    local installdir = path.join(vcpkgdir, "installed")
-
-    -- get the vcpkg info directory
-    local infodir = path.join(installdir, "vcpkg", "info")
-
-    -- find the package info file, .e.g zlib_1.2.11-3_x86-windows.list
-    local infofile = find_file(format("%s_*_%s-%s.list", name, arch, plat), infodir)
+    -- find the package conanmanifest file, .e.g ~/.conan/data/pcre2/10.31/bincrafters/stable/package/519f362e9832d00859a5da6d5f76da34ecf8e237/conanmanifest.txt
+    local manifestfile = find_file("conanmanifest.txt", path.join(conandir, "data", name, "*", "*", "*", "package", "*"))
 
     -- save includedirs, linkdirs and links
-    local info = infofile and io.readfile(infofile) or nil
+    local info = manifestfile and io.readfile(manifestfile) or nil
     if info then
+        local installdir = path.directory(manifestfile)
+        result = {includedirs = path.join(installdir, "include"), linkdirs = path.join(installdir, "lib")}
         for _, line in ipairs(info:split('\n')) do
-            line = line:trim()
-
-            -- get includedirs
-            if line:endswith("/include/") then
-                result = result or {}
-                result.includedirs = result.includedirs or {}
-                table.insert(result.includedirs, path.join(installdir, line))
-            end
-
-            -- get linkdirs and links
-            if (plat == "windows" and line:endswith(".lib")) or line:endswith(".a") then
-                if line:find(plat .. (mode == "debug" and "/debug" or "") .. "/lib/", 1, true) then
-                    result = result or {}
-                    result.links = result.links or {}
-                    result.linkdirs = result.linkdirs or {}
-                    table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
-                    table.insert(result.links, target.linkname(path.filename(line)))
-                end
+            line = line:split(':')[1]:trim()
+            if line:startswith("lib") and (line:endswith(".lib") or line:endswith(".a")) then
+                result.links = result.links or {}
+                table.insert(result.links, target.linkname(path.filename(line)))
             end
         end
     end
 
     -- save version
-    if result then
-        local infoname = path.basename(infofile)
-        result.version = infoname:match(name .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
+    if result and manifestfile then
+        result.version = manifestfile:match(path.join(name, "(%d+%.?%d*%.?%d*.-)"))
         if not result.version then
-            result.version = infoname:match(name .. "_(%d+%.?%d*%.-)_" .. arch)
+            result.version = manifestfile:match(path.join(name, "(%d+%.?%d*%.-)"))
         end
     end
 
@@ -122,13 +98,13 @@ end
 -- find package 
 --
 -- @param name  the package name
--- @param opt   the argument options, {plat = "", arch = "", mode = "", version = "1.0.1", links = {...}, vcpkgdir = ""}
+-- @param opt   the argument options, {version = "1.0.1", links = {...}, conandir = ""}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}}
 --
 -- @code 
 --
--- local pkginfo = vcpkg.find("openssl")
+-- local pkginfo = conan.find("openssl")
 -- 
 -- @endcode
 --
