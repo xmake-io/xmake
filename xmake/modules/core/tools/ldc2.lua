@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ldc.lua
+-- @file        ldc2.lua
 --
 
 -- inherit dmd
