@@ -9,6 +9,7 @@
 * [#283](https://github.com/tboox/xmake/issues/283): Add `target:installdir()` and `set_installdir()` api for target
 * [#260](https://github.com/tboox/xmake/issues/260): Add `add_platformdirs` api, we can define custom platforms
 * [#310](https://github.com/tboox/xmake/issues/310): Add theme feature
+* [#318](https://github.com/tboox/xmake/issues/318): Add `add_installfiles` api to target
 
 ### Changes
 
@@ -550,6 +551,7 @@
 * [#283](https://github.com/tboox/xmake/issues/283): 添加`target:installdir()`和`set_installdir()`接口
 * [#260](https://github.com/tboox/xmake/issues/260): 添加`add_platformdirs`接口，用户现在可以自定义扩展编译平台
 * [#310](https://github.com/tboox/xmake/issues/310): 新增主题设置支持，用户可随意切换和扩展主题样式
+* [#318](https://github.com/tboox/xmake/issues/318): 添加`add_installfiles`接口到target去自定义安装文件
 
 ### 改进
 

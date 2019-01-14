@@ -27,6 +27,15 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
 
+-- uninstall files
+function _uninstall_files(target)
+
+    local _, dstfiles = target:installfiles()
+    for _, dstfile in ipairs(dstfiles) do
+        os.rm(dstfile)
+    end
+end
+
 -- uninstall binary
 function _uninstall_binary(target)
 
@@ -82,6 +91,9 @@ function _do_uninstall_target(target)
     if script then
         script(target)
     end
+
+    -- uninstall the other files
+    _uninstall_files(target)
 end
 
 -- on uninstall target

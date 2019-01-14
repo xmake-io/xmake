@@ -27,6 +27,22 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
 
+-- install files
+function _install_files(target)
+
+    local srcfiles, dstfiles = target:installfiles()
+    if srcfiles and dstfiles then
+        local i = 1
+        for _, srcfile in ipairs(srcfiles) do
+            local dstfile = dstfiles[i]
+            if dstfile then
+                os.cp(srcfile, dstfile)
+            end
+            i = i + 1
+        end
+    end
+end
+
 -- install binary
 function _install_binary(target)
 
@@ -98,6 +114,9 @@ function _do_install_target(target)
     if script then
         script(target)
     end
+
+    -- install other files
+    _install_files(target)
 end
 
 -- on install target

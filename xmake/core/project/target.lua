@@ -89,6 +89,7 @@ function target.apis()
         ,   "target.set_installdir"
             -- target.add_xxx
         ,   "target.add_files"
+        ,   "target.add_installfiles"
             -- target.del_xxx
         ,   "target.del_files"
         }
@@ -1072,6 +1073,84 @@ function target:headerfiles(outputdir)
 
     -- ok?
     return srcheaders, dstheaders
+end
+
+-- get the install files
+function target:installfiles(outputdir)
+
+    -- cached? return it directly
+    if self._INSTALLFILES and outputdir == nil then
+        return self._INSTALLFILES[1], self._INSTALLFILES[2]
+    end
+
+    -- no install files?
+    local installfiles = self:get("installfiles")
+    if not installfiles then return end
+
+    -- get the install directory
+    local installdir = outputdir or self:installdir()
+    assert(installdir)
+
+    -- get the extra information
+    local extrainfo = table.wrap(self:get("__extra_installfiles"))
+
+    -- get the source pathes and destinate pathes
+    local srcfiles = {}
+    local dstfiles = {}
+    for _, installfile in ipairs(table.wrap(installfiles)) do
+
+        -- get the root directory
+        local rootdir, count = installfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
+        if count == 0 then
+            rootdir = nil
+        end
+
+        -- remove '(' and ')'
+        local srcpathes = installfile:gsub("[%(%)]", "")
+        if srcpathes then 
+
+            -- get the source pathes
+            srcpathes = os.match(srcpathes)
+            if srcpathes and #srcpathes > 0 then
+
+                -- add the source install files
+                table.join2(srcfiles, srcpathes)
+
+                -- get the prefix directory
+                local prefixdir = (extrainfo[installfile] or {}).prefixdir
+
+                -- add the destinate install files
+                for _, srcpath in ipairs(srcpathes) do
+
+                    -- get the destinate directory
+                    local dstdir = installdir
+                    if prefixdir then
+                        dstdir = path.join(dstdir, prefixdir)
+                    end
+
+                    -- the destinate installfile
+                    local dstfile = nil
+                    if rootdir then
+                        dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                    else
+                        dstfile = path.join(dstdir, path.filename(srcpath))
+                    end
+                    assert(dstfile)
+
+                    -- add it
+                    table.insert(dstfiles, dstfile)
+                end
+            end
+        end
+    end
+
+    -- cache it
+    if outputdir == nil then
+        self._INSTALLFILES = {srcfiles, dstfiles}
+    end
+
+    -- ok?
+    return srcfiles, dstfiles
 end
 
 -- get depend file from object file
