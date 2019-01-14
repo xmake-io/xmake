@@ -122,6 +122,50 @@ function sandbox_os.ln(filedir, symfile)
     end
 end
 
+-- copy file or directory with the verbose info
+function sandbox_os.vcp(...)
+    if option.get("verbose") or option.get("diagnosis") then
+        local srcfile, dstfile = ...
+        if srcfile and dstfile then
+            utils.cprint("${dim}> copy %s to %s ..", srcfile, dstfile)
+        end
+    end
+    return sandbox_os.cp(...)
+end 
+
+-- move file or directory with the verbose info
+function sandbox_os.vmv(...)
+    if option.get("verbose") or option.get("diagnosis") then
+        local srcfile, dstfile = ...
+        if srcfile and dstfile then
+            utils.cprint("${dim}> move %s to %s ..", srcfile, dstfile)
+        end
+    end
+    return sandbox_os.mv(...)
+end 
+
+-- remove file or directory with the verbose info
+function sandbox_os.vrm(...)
+    if option.get("verbose") or option.get("diagnosis") then
+        local file = ...
+        if file then
+            utils.cprint("${dim}> remove %s ..", file)
+        end
+    end
+    return sandbox_os.rm(...)
+end 
+
+-- link file or directory with the verbose info
+function sandbox_os.vln(...)
+    if option.get("verbose") or option.get("diagnosis") then
+        local srcfile, dstfile = ...
+        if srcfile and dstfile then
+            utils.cprint("${dim}> link %s to %s ..", srcfile, dstfile)
+        end
+    end
+    return sandbox_os.ln(...)
+end 
+
 -- try to copy file or directory
 function sandbox_os.trycp(...)
     

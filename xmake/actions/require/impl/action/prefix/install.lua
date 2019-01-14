@@ -44,7 +44,7 @@ function _copy(mode, pattern)
         vprint("copying %s ..", relative_path)
 
         -- copy file to the prefix directory
-        os.cp(sourcepath, path.absolute(relative_path, prefixdir))
+        os.vcp(sourcepath, path.absolute(relative_path, prefixdir))
 
         -- save this relative path
         table.insert(relative_pathes, relative_path)
@@ -130,7 +130,7 @@ function _do_link(sourcepath, relativepath)
                 vprint("relinking %s ..", path.join(relativepath, filename))
                 
                 -- do link
-                os.ln(filedir, path.join(destpath, filename))
+                os.vln(filedir, path.join(destpath, filename))
 
                 -- save this relative path
                 table.insert(prefixinfo.installed, path.join(relativepath, filename))
@@ -156,7 +156,7 @@ function _do_link(sourcepath, relativepath)
             vprint("linking %s ..", relativepath)
 
             -- do link
-            os.ln(sourcepath, destpath)
+            os.vln(sourcepath, destpath)
 
             -- save this relative path
             table.insert(_g.relative_pathes, relativepath)
@@ -176,7 +176,7 @@ function _do_link(sourcepath, relativepath)
         vprint("linking %s ..", relativepath)
 
         -- do link
-        os.ln(sourcepath, destpath)
+        os.vln(sourcepath, destpath)
 
         -- save this relative path
         table.insert(_g.relative_pathes, relativepath)

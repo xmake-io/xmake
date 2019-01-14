@@ -135,14 +135,14 @@ end
 
 -- print the verbose information
 function utils.vprint(format, ...)
-    if option.get("verbose") and format ~= nil then
+    if (option.get("verbose") or option.get("diagnosis")) and format ~= nil then
         utils.print(format, ...)
     end
 end
 
 -- print the verbose information without newline
 function utils.vprintf(format, ...)
-    if option.get("verbose") and format ~= nil then
+    if (option.get("verbose") or option.get("diagnosis")) and format ~= nil then
         utils.printf(format, ...)
     end
 end

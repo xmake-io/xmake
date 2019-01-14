@@ -36,7 +36,7 @@ function _install_files(target)
         for _, srcfile in ipairs(srcfiles) do
             local dstfile = dstfiles[i]
             if dstfile then
-                os.cp(srcfile, dstfile)
+                os.vcp(srcfile, dstfile)
             end
             i = i + 1
         end
@@ -58,7 +58,7 @@ function _install_binary(target)
     os.mkdir(binarydir)
 
     -- copy the target file
-    os.cp(target:targetfile(), binarydir)
+    os.vcp(target:targetfile(), binarydir)
 end
 
 -- install library
@@ -82,7 +82,7 @@ function _install_library(target)
     os.mkdir(includedir)
 
     -- copy the target file
-    os.cp(target:targetfile(), librarydir)
+    os.vcp(target:targetfile(), librarydir)
 
     -- copy headers to the include directory
     local srcheaders, dstheaders = target:headerfiles(includedir)
@@ -91,7 +91,7 @@ function _install_library(target)
         for _, srcheader in ipairs(srcheaders) do
             local dstheader = dstheaders[i]
             if dstheader then
-                os.cp(srcheader, dstheader)
+                os.vcp(srcheader, dstheader)
             end
             i = i + 1
         end

@@ -32,7 +32,7 @@ function _uninstall_files(target)
 
     local _, dstfiles = target:installfiles()
     for _, dstfile in ipairs(dstfiles) do
-        os.rm(dstfile)
+        os.vrm(dstfile)
     end
 end
 
@@ -48,7 +48,7 @@ function _uninstall_binary(target)
     local binarydir = path.join(target:installdir(), "bin")
 
     -- remove the target file
-    os.rm(path.join(binarydir, path.filename(target:targetfile())))
+    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
 end
 
 -- uninstall library
@@ -66,12 +66,12 @@ function _uninstall_library(target)
     local includedir = path.join(target:installdir(), "include")
 
     -- remove the target file
-    os.rm(path.join(librarydir, path.filename(target:targetfile())))
+    os.vrm(path.join(librarydir, path.filename(target:targetfile())))
 
     -- remove headers from the include directory
     local _, dstheaders = target:headerfiles(includedir)
     for _, dstheader in ipairs(dstheaders) do
-        os.rm(dstheader)
+        os.vrm(dstheader)
     end
 end
 
