@@ -119,8 +119,8 @@ function _make_targetheaders(mode, arch, target, last)
     local kind = target:get("kind")
     if kind == "static" or kind == "shared" then
 
-        -- make headers
-        local srcheaders, dstheaders = target:headerfiles()
+        -- TODO make headers, (deprecated)
+        local srcheaders, dstheaders = target:headers()
         if srcheaders and dstheaders then
             local i = 1
             for _, srcheader in ipairs(srcheaders) do

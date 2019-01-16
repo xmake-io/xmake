@@ -71,8 +71,8 @@ function _do_clean_target(target)
     -- remove the depend files 
     _remove(target:dependfiles())
 
-    -- remove the header files 
-    local _, dstheaders = target:headerfiles()
+    -- TODO remove the header files (deprecated)
+    local _, dstheaders = target:headers()
     _remove(dstheaders) 
 
     -- remove all?

@@ -102,7 +102,7 @@ function deprecated_project._api_add_packages(interp, ...)
 end
 
 -- set_enable for option
-function deprecated_project._api_option_set_enable(interp, ...)
+function deprecated_project._api_option_set_enable(interp)
 
     -- get api function
     local apifunc = interp:_api_within_scope("option", "set_default")
@@ -119,11 +119,8 @@ function deprecated_project._api_option_set_enable(interp, ...)
                                         end)
 end
 
--- add_csnippet for option
-function deprecated_project._api_option_add_csnippet(interp, ...)
-
-    -- get api name
-    local apiname = "add_csnippet"
+-- add_csnippet/add_cxxsnippet for option
+function deprecated_project._api_option_add_cxsnippet(interp, apiname)
 
     -- get api function
     local apifunc = interp:_api_within_scope("option", apiname .. 's')
@@ -140,24 +137,39 @@ function deprecated_project._api_option_add_csnippet(interp, ...)
                                         end)
 end
 
--- add_cxxsnippet for option
-function deprecated_project._api_option_add_cxxsnippet(interp, ...)
-
-    -- get api name
-    local apiname = "add_cxxsnippet"
+-- add_headers for target
+function deprecated_project._api_target_add_headers(interp)
 
     -- get api function
-    local apifunc = interp:_api_within_scope("option", apiname .. 's')
+    local apifunc = interp:_api_within_scope("target", "add_headers")
     assert(apifunc)
 
     -- register api
-    interp:api_register_builtin(apiname, function (...) 
+    interp:api_register_builtin("add_headers", function (value, ...) 
 
                                             -- deprecated
-                                            deprecated.add(apiname .. "s(...)", apiname .. "(...)")
+                                            deprecated.add("add_headerfiles(%s)", "add_headers(%s)", tostring(value))
+
+                                            -- dispatch it
+                                            apifunc(value, ...)
+                                        end)
+end
+
+-- set_headerdir for target
+function deprecated_project._api_target_set_headerdir(interp)
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("target", "set_headerdir")
+    assert(apifunc)
+
+    -- register api
+    interp:api_register_builtin("set_headerdir", function (value, ...) 
+
+                                            -- deprecated
+                                            deprecated.add(false, "set_headerdir(%s)", tostring(value))
                                           
                                             -- dispatch it
-                                            apifunc(...)
+                                            apifunc(value, ...)
                                         end)
 end
 
@@ -196,13 +208,17 @@ function deprecated_project.api_register(interp)
     interp:api_register(nil, "is_option",   deprecated_project._api_is_option)
 
     -- register api: set_enable() to option
-    interp:api_register("option", "set_enable", deprecated_project._api_option_set_enable)
+    deprecated_project._api_option_set_enable(interp)
 
-    -- register api: add_csnippet() to option
-    interp:api_register("option", "add_csnippet", deprecated_project._api_option_add_csnippet)
+    -- register api: add_csnippet/add_cxxsnippet() to option
+    deprecated_project._api_option_add_cxsnippet(interp, "add_csnippet")
+    deprecated_project._api_option_add_cxsnippet(interp, "add_cxxsnippet")
 
-    -- register api: add_cxxsnippet() to option
-    interp:api_register("option", "add_cxxsnippet", deprecated_project._api_option_add_cxxsnippet)
+    -- register api: add_headers() to target
+    deprecated_project._api_target_add_headers(interp)
+
+    -- register api: set_headerdir() to target
+    deprecated_project._api_target_set_headerdir(interp)
 end
 
 -- return module: deprecated_project

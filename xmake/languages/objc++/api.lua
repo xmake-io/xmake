@@ -72,13 +72,15 @@ function apis()
     _g.pathes = 
     {
         -- target.set_xxx
-        "target.set_headerdir"
-    ,   "target.set_config_h" -- deprecated
+        "target.set_headerdir"      -- TODO deprecated
+    ,   "target.set_config_h"       -- TODO deprecated
     ,   "target.set_config_header"
     ,   "target.set_pcheader"
     ,   "target.set_pcxxheader"
         -- target.add_xxx
-    ,   "target.add_headers"
+    ,   "target.add_headers"        -- TODO deprecated
+    ,   "target.add_headerdirs" 
+    ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
     ,   "target.add_frameworkdirs"

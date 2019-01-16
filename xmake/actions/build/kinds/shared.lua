@@ -71,8 +71,8 @@ function _build_from_objects(target, buildinfo)
         return 
     end
 
-    -- make headers
-    local srcheaders, dstheaders = target:headerfiles()
+    -- TODO make headers (deprecated)
+    local srcheaders, dstheaders = target:headers()
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do

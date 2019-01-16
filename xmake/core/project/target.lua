@@ -1009,20 +1009,27 @@ function target:objectfiles()
     return objectfiles
 end
 
+-- TODO get the header files, get("headers") (deprecated)
+function target:headers(outputdir)
+    return self:headerfiles(outputdir, true)
+end
+
 -- get the header files
-function target:headerfiles(outputdir)
+--
+-- default: get("headers") + get("headerfiles")
+-- only_deprecated: get("headers")
+--
+function target:headerfiles(outputdir, only_deprecated)
 
-    -- cached? return it directly
-    if self._HEADERFILES and outputdir == nil then
-        return self._HEADERFILES[1], self._HEADERFILES[2]
+    -- get header files?
+    local headers = self:get("headers") -- TODO deprecated
+    if not only_deprecated then
+       headers = table.join(headers or {}, self:get("headerfiles")) 
     end
-
-    -- no headers?
-    local headers = self:get("headers")
     if not headers then return end
 
     -- get the headerdir
-    local headerdir = outputdir or self:headerdir()
+    local headerdir = outputdir or (only_deprecated and self:headerdir() or path.join(self:installdir(), "include"))
     assert(headerdir)
 
     -- get the source pathes and destinate pathes
@@ -1064,11 +1071,6 @@ function target:headerfiles(outputdir)
                 end
             end
         end
-    end
-
-    -- cache it
-    if outputdir == nil then
-        self._HEADERFILES = {srcheaders, dstheaders}
     end
 
     -- ok?

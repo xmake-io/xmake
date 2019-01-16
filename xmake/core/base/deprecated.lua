@@ -39,7 +39,7 @@ function deprecated.add(newformat, oldformat, ...)
 
     -- the old and new entries
     local old = string.format(oldformat, ...)
-    local new = string.format(newformat, ...)
+    local new = newformat and string.format(newformat, ...) or false
 
     -- add it
     deprecated._ENTRIES[old] = new
@@ -61,7 +61,11 @@ function deprecated.dump()
         end
 
         -- trace
-        utils.cprint("${bright color.warning}deprecated: ${clear}please uses %s instead of %s", new, old)
+        if new then
+            utils.cprint("${bright color.warning}deprecated: ${clear}please uses %s instead of %s", new, old)
+        else
+            utils.cprint("${bright color.warning}deprecated: ${clear}please remove %s", old)
+        end
 
         -- too much?
         if index > 6 and not option.get("verbose") then

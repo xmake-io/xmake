@@ -343,7 +343,7 @@ function _make_target(makefile, target, targetflags)
     _mkdir(makefile, path.directory(targetfile))
     makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 
-    -- make header directories
+    -- TODO make header directories (deprecated)
     local dstheaderdirs = {}
     local srcheaders, dstheaders = target:headerfiles()
     for _, dstheader in ipairs(dstheaders) do
@@ -481,8 +481,8 @@ function _clean_target(makefile, target)
         -- remove the object files 
         _remove(makefile, target:objectfiles())
 
-        -- remove the header files 
-        local _, dstheaders = target:headerfiles()
+        -- TODO remove the header files (deprecated)
+        local _, dstheaders = target:headers()
         _remove(makefile, dstheaders) 
     end
 
