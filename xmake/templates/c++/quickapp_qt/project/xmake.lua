@@ -9,7 +9,7 @@ target("[targetname]")
     add_rules("qt.application")
 
     -- add headers
-    add_headers("src/*.h")
+    add_headerfiles("src/*.h")
 
     -- add files
     add_files("src/*.cpp") 

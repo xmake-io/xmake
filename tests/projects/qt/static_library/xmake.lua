@@ -9,7 +9,7 @@ target("qt_demo")
     add_rules("qt.static")
 
     -- add headers
-    add_headers("src/*.h")
+    add_headerfiles("src/*.h")
 
     -- add files
     add_files("src/*.cpp") 

@@ -11,7 +11,7 @@ target("[targetname]")
     set_config_header("$(buildir)/[targetname]/config.h", {prefix = "CONFIG"})
 
     -- add the header files for installing
-    add_headers("../([targetname]/**.h)")
+    add_headerfiles("../([targetname]/**.h)")
 
     -- add includes directory
     add_includedirs("$(buildir)")
