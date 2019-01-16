@@ -20,6 +20,7 @@
 * [#322](https://github.com/tboox/xmake/issues/322): Add `option.add_features`, `option.add_cxxsnippets` and `option.add_csnippets`
 * Remove some deprecated interfaces of xmake 1.x, e.g. `add_option_xxx`
 * [#327](https://github.com/tboox/xmake/issues/327): Support conan package manager for `lib.detect.find_package` 
+* [#319](https://github.com/tboox/xmake/issues/319): Add `add_headerfiles` and `add_headerdirs` to improve to set header files and directories
 
 ### Bugs fixed
 
@@ -562,6 +563,7 @@
 * [#322](https://github.com/tboox/xmake/issues/322): 添加`option.add_features`, `option.add_cxxsnippets` 和 `option.add_csnippets`
 * 移除xmake 1.x的一些废弃接口, 例如：`add_option_xxx`
 * [#327](https://github.com/tboox/xmake/issues/327): 改进`lib.detect.find_package`增加对conan包管理器的支持
+* [#319](https://github.com/tboox/xmake/issues/319): 添加`add_headerfiles`和`add_headerdirs`接口去改进头文件的设置
 
 ### Bugs修复
 

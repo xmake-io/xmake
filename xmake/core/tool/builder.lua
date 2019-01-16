@@ -191,9 +191,15 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
 
             elseif flagname == "includedirs" then
 
-                -- add dependent headerdir
+                -- TODO add dependent headerdir (deprecated)
                 if dep:get("headers") and os.isdir(dep:headerdir()) then
                     table.insert(results, dep:headerdir())
+                end
+
+                -- add dependent header directories
+                local headerdirs = dep:get("headerdirs")
+                if headerdirs then
+                    table.join2(results, headerdirs)
                 end
                 
                 -- add dependent configheader directory
