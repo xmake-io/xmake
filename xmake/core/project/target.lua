@@ -1030,7 +1030,6 @@ function target:headerfiles(outputdir, only_deprecated)
 
     -- get the headerdir
     local headerdir = outputdir or (only_deprecated and self:headerdir() or path.join(self:installdir(), "include"))
-    assert(headerdir)
 
     -- get the extra information
     local extrainfo = table.wrap(self:get("__extra_headerfiles"))
@@ -1057,29 +1056,33 @@ function target:headerfiles(outputdir, only_deprecated)
                 -- add the source headers
                 table.join2(srcheaders, srcpathes)
 
-                -- get the prefix directory
-                local prefixdir = (extrainfo[header] or {}).prefixdir
+                -- get the destinate directories if the install directory exists
+                if headerdir then
 
-                -- add the destinate headers
-                for _, srcpath in ipairs(srcpathes) do
+                    -- get the prefix directory
+                    local prefixdir = (extrainfo[header] or {}).prefixdir
 
-                    -- get the destinate directory
-                    local dstdir = headerdir
-                    if prefixdir then
-                        dstdir = path.join(dstdir, prefixdir)
+                    -- add the destinate headers
+                    for _, srcpath in ipairs(srcpathes) do
+
+                        -- get the destinate directory
+                        local dstdir = headerdir
+                        if prefixdir then
+                            dstdir = path.join(dstdir, prefixdir)
+                        end
+
+                        -- the destinate header
+                        local dstheader = nil
+                        if rootdir then
+                            dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                        else
+                            dstheader = path.join(dstdir, path.filename(srcpath))
+                        end
+                        assert(dstheader)
+
+                        -- add it
+                        table.insert(dstheaders, dstheader)
                     end
-
-                    -- the destinate header
-                    local dstheader = nil
-                    if rootdir then
-                        dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                    else
-                        dstheader = path.join(dstdir, path.filename(srcpath))
-                    end
-                    assert(dstheader)
-
-                    -- add it
-                    table.insert(dstheaders, dstheader)
                 end
             end
         end
@@ -1092,18 +1095,12 @@ end
 -- get the install files
 function target:installfiles(outputdir)
 
-    -- cached? return it directly
-    if self._INSTALLFILES and outputdir == nil then
-        return self._INSTALLFILES[1], self._INSTALLFILES[2]
-    end
-
     -- no install files?
     local installfiles = self:get("installfiles")
     if not installfiles then return end
 
     -- get the install directory
     local installdir = outputdir or self:installdir()
-    assert(installdir)
 
     -- get the extra information
     local extrainfo = table.wrap(self:get("__extra_installfiles"))
@@ -1130,37 +1127,36 @@ function target:installfiles(outputdir)
                 -- add the source install files
                 table.join2(srcfiles, srcpathes)
 
-                -- get the prefix directory
-                local prefixdir = (extrainfo[installfile] or {}).prefixdir
+                -- the install directory exists?
+                if installdir then
 
-                -- add the destinate install files
-                for _, srcpath in ipairs(srcpathes) do
+                    -- get the prefix directory
+                    local prefixdir = (extrainfo[installfile] or {}).prefixdir
 
-                    -- get the destinate directory
-                    local dstdir = installdir
-                    if prefixdir then
-                        dstdir = path.join(dstdir, prefixdir)
+                    -- add the destinate install files
+                    for _, srcpath in ipairs(srcpathes) do
+
+                        -- get the destinate directory
+                        local dstdir = installdir
+                        if prefixdir then
+                            dstdir = path.join(dstdir, prefixdir)
+                        end
+
+                        -- the destinate installfile
+                        local dstfile = nil
+                        if rootdir then
+                            dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                        else
+                            dstfile = path.join(dstdir, path.filename(srcpath))
+                        end
+                        assert(dstfile)
+
+                        -- add it
+                        table.insert(dstfiles, dstfile)
                     end
-
-                    -- the destinate installfile
-                    local dstfile = nil
-                    if rootdir then
-                        dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                    else
-                        dstfile = path.join(dstdir, path.filename(srcpath))
-                    end
-                    assert(dstfile)
-
-                    -- add it
-                    table.insert(dstfiles, dstfile)
                 end
             end
         end
-    end
-
-    -- cache it
-    if outputdir == nil then
-        self._INSTALLFILES = {srcfiles, dstfiles}
     end
 
     -- ok?
