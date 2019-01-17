@@ -265,7 +265,7 @@ function make(outputdir, vsinfo)
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
-                    _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
+                    _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headers())))
 
                     -- make target headers
                     _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
