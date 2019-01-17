@@ -1032,6 +1032,9 @@ function target:headerfiles(outputdir, only_deprecated)
     local headerdir = outputdir or (only_deprecated and self:headerdir() or path.join(self:installdir(), "include"))
     assert(headerdir)
 
+    -- get the extra information
+    local extrainfo = table.wrap(self:get("__extra_headerfiles"))
+
     -- get the source pathes and destinate pathes
     local srcheaders = {}
     local dstheaders = {}
@@ -1054,15 +1057,24 @@ function target:headerfiles(outputdir, only_deprecated)
                 -- add the source headers
                 table.join2(srcheaders, srcpathes)
 
+                -- get the prefix directory
+                local prefixdir = (extrainfo[header] or {}).prefixdir
+
                 -- add the destinate headers
                 for _, srcpath in ipairs(srcpathes) do
+
+                    -- get the destinate directory
+                    local dstdir = headerdir
+                    if prefixdir then
+                        dstdir = path.join(dstdir, prefixdir)
+                    end
 
                     -- the destinate header
                     local dstheader = nil
                     if rootdir then
-                        dstheader = path.absolute(path.relative(srcpath, rootdir), headerdir)
+                        dstheader = path.absolute(path.relative(srcpath, rootdir), dstdir)
                     else
-                        dstheader = path.join(headerdir, path.filename(srcpath))
+                        dstheader = path.join(dstdir, path.filename(srcpath))
                     end
                     assert(dstheader)
 
@@ -1423,7 +1435,14 @@ function target:configversion()
     local configheader_extra = self:get("__extra_config_header")
     if type(configheader_extra) == "table" then
         version      = table.wrap(configheader_extra[configheader]).version
-        buildversion = table.wrap(configheader_extra[configheader]).buildversion
+        buildversion = self._CONFIGHEADER_BUILDVERSION
+        if not buildversion then
+            buildversion = table.wrap(configheader_extra[configheader]).buildversion
+            if buildversion then
+                buildversion = os.date(buildversion, os.time())
+            end
+            self._CONFIGHEADER_BUILDVERSION = buildversion
+        end
     end
 
     -- ok?

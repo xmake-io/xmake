@@ -8,17 +8,22 @@ target("tbox")
     add_defines("__tb_prefix__=\"tbox\"")
 
     -- set the auto-generated config.h
-    set_config_header("$(buildir)/tbox/tbox.config.h", {prefix = "TB_CONFIG", version = "1.6.2", build = "%Y%m%d%H%M"})
+    set_config_header("$(buildir)/$(plat)/$(arch)/$(mode)/tbox.config.h", {prefix = "TB_CONFIG", version = "1.6.2", buildversion = "%Y%m%d%H%M"})
 
-    -- add includes directory
-    add_includedirs("$(buildir)")
-    add_includedirs("$(buildir)/tbox")
+    -- add include directories
+    add_includedirs("..")
+    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)")
+
+    -- add public header directories
+    add_headerdirs("..")
+    add_headerdirs("$(buildir)/$(plat)/$(arch)/$(mode)")
 
     -- add the header files for installing
-    add_headers("../(tbox/**.h)|**/impl/**.h")
-    add_headers("../(tbox/prefix/**/prefix.S)")
-    add_headers("../(tbox/math/impl/*.h)")
-    add_headers("../(tbox/utils/impl/*.h)")
+    add_headerfiles("../(tbox/**.h)|**/impl/**.h")
+    add_headerfiles("../(tbox/prefix/**/prefix.S)")
+    add_headerfiles("../(tbox/math/impl/*.h)")
+    add_headerfiles("../(tbox/utils/impl/*.h)")
+    add_headerfiles("$(buildir)/$(plat)/$(arch)/$(mode)/tbox.config.h", {prefixdir = "tbox"})
 
     -- add packages
     add_options("zlib", "mysql", "sqlite3", "openssl", "polarssl", "mbedtls", "pcre2", "pcre")

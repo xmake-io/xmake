@@ -22,12 +22,9 @@ target("luajit")
 	set_languages("gnu99")
     end
 
-    -- set the object files directory
-    set_objectdir("$(buildir)/.objs")
-
     -- add headers
-    add_headers("src/(*.h)")
-    set_headerdir("$(buildir)/luajit")
+    add_headerfiles("src/(*.h)")
+    add_headerdirs("src")
 
     -- add include directories
     add_includedirs("src", autogendir)

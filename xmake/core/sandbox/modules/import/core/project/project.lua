@@ -162,14 +162,17 @@ function sandbox_core_project.version()
 
     -- get version and build version
     local version = project.get("version")
-    local version_build = sandbox_core_project._version_build
+    local version_build = nil
     if version then
         local version_extra = project.get("__extra_version")
         if version_extra then
-            version_build = table.wrap(version_extra[version]).build
-            if type(version_build) == "string" then
-                version_build = os.date(version_build, os.time())
-                sandbox_core_project._version_build = version_build
+            version_build = sandbox_core_project._VERSION_BUILD
+            if not version_build then
+                version_build = table.wrap(version_extra[version]).build
+                if type(version_build) == "string" then
+                    version_build = os.date(version_build, os.time())
+                    sandbox_core_project._VERSION_BUILD = version_build
+                end
             end
         end
     end

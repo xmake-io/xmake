@@ -48,8 +48,14 @@ function _make_for_target(target)
 
     -- make version
     local version, version_build = target:configversion()
-    if not version then 
-        version, version_build = project.version()
+    if not version or not version_build then 
+        local project_version, project_version_build = project.version()
+        if not version then
+            version = project_version
+        end
+        if not version_build then
+            version_build = project_version_build
+        end
     end
     if version then
         file:print("// version")
