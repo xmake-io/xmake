@@ -47,7 +47,7 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-Write-Host "Start downloading https://github.com/tboox/xmake/releases/download/$version/xmake-$version.exe .."
+Write-Host "Start downloading https://github.com/tboox/xmake/releases/download/$version/xmake-$branch.exe .."
 try{
     Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$branch.exe" -OutFile "$outfile"
 }catch{
