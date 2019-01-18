@@ -1028,8 +1028,15 @@ function target:headerfiles(outputdir, only_deprecated)
     end
     if not headers then return end
 
-    -- get the headerdir
-    local headerdir = outputdir or (only_deprecated and self:headerdir() or path.join(self:installdir(), "include"))
+    -- get the installed header directory
+    local headerdir = outputdir 
+    if not headerdir then
+        if only_deprecated then
+            headerdir = self:headerdir()
+        elseif self:installdir() then
+            headerdir = path.join(self:installdir(), "include")
+        end
+    end
 
     -- get the extra information
     local extrainfo = table.wrap(self:get("__extra_headerfiles"))
