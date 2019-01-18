@@ -49,7 +49,7 @@ try{
 }
 Write-Host "Start downloading https://github.com/tboox/xmake/releases/download/$version/xmake-$version.exe .."
 try{
-    Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$version.exe" -OutFile "$outfile"
+    Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$branch.exe" -OutFile "$outfile"
 }catch{
     writeErrorTip 'Download failed!'
     writeErrorTip 'Check your network or... the news of S3 break'
