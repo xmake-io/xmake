@@ -31,7 +31,7 @@ package("git")
     end)
 
     on_install("macosx", "linux", function (package)
-        import("package.manager.install")("git")
+        import("package.manager.install_package")("git")
     end)
 
     on_install("windows", function (package)

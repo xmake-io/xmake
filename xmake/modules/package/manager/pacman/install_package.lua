@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        install.lua
+-- @file        install_package.lua
 --
 
 -- imports
@@ -30,7 +30,7 @@ import("privilege.sudo")
 -- install package
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, yum = "the package name"}
+-- @param opt   the options, .e.g {verbose = true, pacman = "the package name"}
 --
 -- @return      true or false
 --
@@ -39,21 +39,21 @@ function main(name, opt)
     -- init options
     opt = opt or {}
 
-    -- find yum
-    local yum = find_tool("yum")
-    if not yum then
+    -- find pacman
+    local pacman = find_tool("pacman")
+    if not pacman then
         return false
     end
 
     -- init argv
-    local argv = {"install", "-y", opt.yum or name}
+    local argv = {"-Sy", "--noconfirm", "--needed", opt.pacman or name}
     if opt.verbose or option.get("verbose") then
         table.insert(argv, "--verbose")
     end
 
     -- install package directly if the current user is root
     if os.isroot() then
-        os.vrunv(yum.program, argv)
+        os.vrunv(pacman.program, argv)
     -- install with administrator permission?
     elseif sudo.has() then
 
@@ -75,7 +75,7 @@ function main(name, opt)
 
         -- install it if be confirmed
         if confirm then
-            sudo.vrunv(yum.program, argv)
+            sudo.vrunv(pacman.program, argv)
         end
     else
         return false

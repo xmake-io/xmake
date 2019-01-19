@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        install.lua
+-- @file        install_package.lua
 --
 
 -- imports
@@ -30,7 +30,7 @@ import("privilege.sudo")
 -- install package
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, apt = "the package name"}
+-- @param opt   the options, .e.g {verbose = true, yum = "the package name"}
 --
 -- @return      true or false
 --
@@ -39,18 +39,21 @@ function main(name, opt)
     -- init options
     opt = opt or {}
 
-    -- find apt
-    local apt = find_tool("apt")
-    if not apt then
+    -- find yum
+    local yum = find_tool("yum")
+    if not yum then
         return false
     end
 
     -- init argv
-    local argv = {"install", "-y", opt.apt or name}
+    local argv = {"install", "-y", opt.yum or name}
+    if opt.verbose or option.get("verbose") then
+        table.insert(argv, "--verbose")
+    end
 
     -- install package directly if the current user is root
     if os.isroot() then
-        os.vrunv(apt.program, argv)
+        os.vrunv(yum.program, argv)
     -- install with administrator permission?
     elseif sudo.has() then
 
@@ -72,7 +75,7 @@ function main(name, opt)
 
         -- install it if be confirmed
         if confirm then
-            sudo.vrunv(apt.program, argv)
+            sudo.vrunv(yum.program, argv)
         end
     else
         return false

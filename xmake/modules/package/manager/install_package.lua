@@ -19,10 +19,10 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        install.lua
+-- @file        install_package.lua
 --
 
--- install package using third-party package manager
+-- install package using the package manager
 --
 -- @param name  the package name
 -- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx", yum = "xxx"}
@@ -34,16 +34,16 @@ function main(name, opt)
     local scripts = {}
     local host = os.host()
     if host == "macosx" then
-        table.insert(scripts, import("brew.install",   {anonymous = true}))
+        table.insert(scripts, import("brew.install_package",   {anonymous = true}))
     elseif host == "linux" then
-        table.insert(scripts, import("apt.install",    {anonymous = true}))
-        table.insert(scripts, import("yum.install",    {anonymous = true}))
-        table.insert(scripts, import("pacman.install", {anonymous = true}))
-        table.insert(scripts, import("brew.install",   {anonymous = true}))
+        table.insert(scripts, import("apt.install_package",    {anonymous = true}))
+        table.insert(scripts, import("yum.install_package",    {anonymous = true}))
+        table.insert(scripts, import("pacman.install_package", {anonymous = true}))
+        table.insert(scripts, import("brew.install_package",   {anonymous = true}))
     elseif host == "windows" then
-        table.insert(scripts, import("pacman.install", {anonymous = true})) -- msys/mingw
+        table.insert(scripts, import("pacman.install_package", {anonymous = true})) -- msys/mingw
     end
-    assert(#scripts > 0, "package manager not found!")
+    assert(#scripts > 0, "the package manager not found!")
 
     -- run install script
     for _, script in ipairs(scripts) do
