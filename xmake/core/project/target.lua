@@ -279,9 +279,17 @@ function target:set(name_or_info, ...)
             end
         end
 
-    -- set a dictionary values
+    -- set array, e.g. set({{links = ..}, {links = ..}})
+    elseif table.is_array(name_or_info) then
+        for _, dict in pairs(name_or_info) do
+            for name, info in pairs(dict) do
+                self:set(name, info)
+            end
+        end
+
+    -- set dictionary, e.g. set({links = ..})
     elseif table.is_dictionary(name_or_info) then
-        for name, info in pairs(table.join(name_or_info, ...)) do
+        for name, info in pairs(name_or_info) do
             self:set(name, info)
         end
     end
@@ -316,9 +324,17 @@ function target:add(name_or_info, ...)
             end
         end
 
-    -- add a dictionary values
+    -- add array, e.g. add({{links = ..}, {links = ..}})
+    elseif table.is_array(name_or_info) then
+        for _, dict in pairs(name_or_info) do
+            for name, info in pairs(dict) do
+                self:add(name, info)
+            end
+        end
+
+    -- add dictionary, e.g. add({links = ..})
     elseif table.is_dictionary(name_or_info) then
-        for name, info in pairs(table.join(name_or_info, ...)) do
+        for name, info in pairs(name_or_info) do
             self:add(name, info)
         end
     end
