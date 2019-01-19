@@ -489,12 +489,20 @@ function sandbox_lib_detect_find_package.main(name, opt)
         return utils.ifelse(result, result, nil)
     end
 
+    -- get version from the name, e.g. find("zlib ~1.x")
+    local nameinfo    = name:split("%s+")
+    local require_ver = opt.version
+    if #nameinfo > 1 then
+        name        = nameinfo[1]
+        require_ver = require_ver or nameinfo[2]
+    end
+
     -- find package
     result = sandbox_lib_detect_find_package._find(name, opt) 
 
     -- match version?
-    if opt.version and result then
-        if not result.version or not semver.satisfies(result.version, opt.version) then
+    if require_ver and result then
+        if not result.version or not semver.satisfies(result.version, require_ver) then
             result = nil
         end
     end
