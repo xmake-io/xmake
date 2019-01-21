@@ -22,6 +22,37 @@
 -- @file        find_package.lua
 --
 
+-- imports
+import("core.base.semver")
+import("core.project.config")
+import("lib.detect.cache")
+
+-- find package 
+function _find(manager_name, package_name, opt)
+
+    -- get managers
+    local managers = {}
+    if manager_name then
+        table.insert(managers, manager_name)
+    else 
+        if not is_host("windows") then
+            table.insert(managers, "brew")
+        end
+        table.insert(managers, "vcpkg")
+        table.insert(managers, "conan")
+    end
+    assert(#managers > 0, "no suitable package manager!")
+
+    -- find package from the given package manager
+    for _, manager_name in ipairs(managers) do
+        vprint("finding %s from %s ..", package_name, manager_name)
+        local result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
+        if result then
+            return result
+        end
+    end
+end
+
 -- find package using the package manager
 --
 -- @param name  the package name, e.g. zlib 1.12.x (try all), XMAKE::zlib 1.12.x, BREW::zlib, VCPKG::zlib, CONAN::OpenSSL/1.0.2n@conan/stable
@@ -30,4 +61,23 @@
 --
 function main(name, opt)
 
+    -- get the copied options
+    opt = table.copy(opt)
+
+    -- get package manager name
+    local manager_name, package_name = unpack(name:split("::", true))
+    if package_name == nil then
+        package_name = manager_name
+        manager_name = nil
+    else
+        manager_name = manager_name:lower():trim()
+    end
+
+    -- get package name and require version
+    local require_version = nil
+    package_name, require_version = unpack(package_name:trim():split("%s+"))
+    opt.version = require_version or opt.version
+
+
+    _find(manager_name, package_name, opt)
 end

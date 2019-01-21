@@ -22,33 +22,61 @@
 -- @file        install_package.lua
 --
 
--- install package using the package manager
---
--- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, brew = "the package name in brew", pacman = "xxx", apt = "xxx", yum = "xxx"}
---
---
-function main(name, opt)
+-- install package 
+function _install(manager_name, package_name, opt)
 
-    -- init scripts
-    local scripts = {}
-    local host = os.host()
-    if host == "macosx" then
-        table.insert(scripts, import("brew.install_package",   {anonymous = true}))
-    elseif host == "linux" then
-        table.insert(scripts, import("apt.install_package",    {anonymous = true}))
-        table.insert(scripts, import("yum.install_package",    {anonymous = true}))
-        table.insert(scripts, import("pacman.install_package", {anonymous = true}))
-        table.insert(scripts, import("brew.install_package",   {anonymous = true}))
-    elseif host == "windows" then
-        table.insert(scripts, import("pacman.install_package", {anonymous = true})) -- msys/mingw
+    -- get managers
+    local managers = {}
+    if manager_name then
+        table.insert(managers, manager_name)
+    else 
+        if is_host("windows") then
+            table.insert(managers, "pacman") -- msys/mingw
+        elseif is_host("linux") then
+            table.insert(managers, "apt")
+            table.insert(managers, "yum")
+            table.insert(managers, "pacman")
+            table.insert(managers, "brew")
+        elseif is_host("macosx") then
+            table.insert(managers, "brew")
+        end
     end
-    assert(#scripts > 0, "the package manager not found!")
+    assert(#managers > 0, "no suitable package manager!")
 
-    -- run install script
-    for _, script in ipairs(scripts) do
-        if script(name, opt) then
+    -- find package from the given package manager
+    for _, manager_name in ipairs(managers) do
+        vprint("installing %s from %s ..", package_name, manager_name)
+        if import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt) then
             break
         end
     end
+end
+
+-- install package using the package manager
+--
+-- @param name  the package name, e.g. zlib 1.12.x (try all), XMAKE::zlib 1.12.x, BREW::zlib, VCPKG::zlib, CONAN::OpenSSL/1.0.2n@conan/stable
+-- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+--
+function main(name, opt)
+
+    -- get the copied options
+    opt = table.copy(opt)
+
+    -- get package manager name
+    local manager_name, package_name = unpack(name:split("::", true))
+    if package_name == nil then
+        package_name = manager_name
+        manager_name = nil
+    else
+        manager_name = manager_name:lower():trim()
+    end
+
+    -- get package name and require version
+    local require_version = nil
+    package_name, require_version = unpack(package_name:trim():split("%s+"))
+    opt.version = require_version or opt.version
+
+    -- do install package
+    _install(manager_name, package_name, opt)
+
 end
