@@ -23,7 +23,7 @@
 --
 
 -- install package 
-function _install(manager_name, package_name, opt)
+function _install_package(manager_name, package_name, opt)
 
     -- get managers
     local managers = {}
@@ -45,7 +45,7 @@ function _install(manager_name, package_name, opt)
 
     -- find package from the given package manager
     for _, manager_name in ipairs(managers) do
-        vprint("installing %s from %s ..", package_name, manager_name)
+        dprint("installing %s from %s ..", package_name, manager_name)
         if import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt) then
             break
         end
@@ -77,6 +77,5 @@ function main(name, opt)
     opt.version = require_version or opt.version
 
     -- do install package
-    _install(manager_name, package_name, opt)
-
+    _install_package(manager_name, package_name, opt)
 end

@@ -157,6 +157,20 @@ function sandbox_utils.vprintf(format, ...)
     end
 end
 
+-- print the diagnosis information 
+function sandbox_utils.dprint(format, ...)
+    if option.get("diagnosis") then
+        sandbox_utils.print(format, ...)
+    end
+end
+
+-- print the diagnosis information without newline
+function sandbox_utils.dprintf(format, ...)
+    if option.get("diagnosis") then
+        sandbox_utils.printf(format, ...)
+    end
+end
+
 -- assert
 function sandbox_utils.assert(value, format, ...)
 
