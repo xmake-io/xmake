@@ -29,6 +29,11 @@ local sandbox_core_language = sandbox_core_language or {}
 local language  = require("language/language")
 local raise     = require("sandbox/modules/raise")
 
+-- get the apis
+function sandbox_core_language.apis()
+    return language.apis()
+end
+
 -- get the source extensions of all languages
 function sandbox_core_language.extensions()
     return language.extensions()

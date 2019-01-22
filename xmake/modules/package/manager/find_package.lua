@@ -29,6 +29,12 @@ import("core.project.config")
 import("lib.detect.cache")
 
 -- find package 
+--
+-- opt.system:
+--   nil: find local or system packages
+--   true: only find system package
+--   false: only find local packages
+--
 function _find_package(manager_name, package_name, opt)
 
     -- get managers
@@ -36,22 +42,65 @@ function _find_package(manager_name, package_name, opt)
     if manager_name then
         table.insert(managers, manager_name)
     else 
-        if not is_host("windows") then
-            table.insert(managers, "brew")
+
+        -- we cannot find it from xmake repo and package directories if only find system packages
+        if opt.system ~= true then
+            table.insert(managers, "xmake")
         end
-        table.insert(managers, "vcpkg")
-        table.insert(managers, "conan")
+
+        -- find system package if be not disabled
+        if opt.system ~= false then
+
+            -- find it from homebrew
+            if not is_host("windows") then
+                table.insert(managers, "brew")
+            end
+
+            -- find it from vcpkg
+            table.insert(managers, "vcpkg")
+
+            -- find it from conan
+            table.insert(managers, "conan")
+
+            -- find it from pkg-config
+            table.insert(managers, "pkg-config")
+
+            -- find it from system
+            table.insert(managers, "system")
+        end
     end
     assert(#managers > 0, "no suitable package manager!")
 
     -- find package from the given package manager
+    local result = nil
     for _, manager_name in ipairs(managers) do
         dprint("finding %s from %s ..", package_name, manager_name)
-        local result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
+        result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
         if result then
-            return result
+            break
         end
     end
+
+    -- found?
+    if result then
+    
+        -- remove repeat
+        result.linkdirs    = table.unique(result.linkdirs)
+        result.includedirs = table.unique(result.includedirs)
+
+        -- check valid version
+        if result.version then
+            local version = semver.new(result.version)
+            if version then
+                result.version = version:rawstr()
+            else 
+                result.version = nil
+            end
+        end
+    end
+
+    -- ok?
+    return result
 end
 
 -- find package using the package manager
