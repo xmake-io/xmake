@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vcpkg.lua
+-- @file        find_package.lua
 --
 
 -- imports
@@ -173,3 +173,32 @@ function find(name, opt)
     return result
 end
 
+-- find package from the brew package manager
+--
+-- @param name  the package name, e.g. zlib, pcre/libpcre16
+-- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+--
+function main(name, opt)
+
+    -- find brew
+    local brew = find_tool("brew")
+    if not brew then
+        return 
+    end
+
+    -- parse name, .e.g pcre/libpcre16
+    local nameinfo = name:split('/')
+    local pcname   = nameinfo[2] or nameinfo[1]
+
+    -- find the prefix directory of brew 
+    local brew_pkg_root = try { function () return os.iorunv(brew.program, {"--prefix"}) end } or "/usr/local"
+    brew_pkg_root = path.join(brew_pkg_root:trim(), opt.plat == "macosx" and "Cellar" or "opt")
+    local pcfile = find_file(pcname .. ".pc", path.join(brew_pkg_root, nameinfo[1], "*/lib/pkgconfig"))
+    if not pcfile then
+        return 
+    end
+
+    -- do find
+    opt.configdirs = path.directory(pcfile)
+    return pkg_config.find(pcname, opt)
+end

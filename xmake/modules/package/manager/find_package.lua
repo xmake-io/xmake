@@ -26,51 +26,44 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.project.config")
-import("lib.detect.cache")
 
--- find package 
+-- find package with the builtin rule
 --
 -- opt.system:
 --   nil: find local or system packages
 --   true: only find system package
 --   false: only find local packages
 --
-function _find_package(manager_name, package_name, opt)
+function _find_package_with_builtin_rule(package_name, opt)
 
-    -- get managers
+    -- we cannot find it from xmake repo and package directories if only find system packages
     local managers = {}
-    if manager_name then
-        table.insert(managers, manager_name)
-    else 
+    if opt.system ~= true then
+        table.insert(managers, "xmake")
+    end
 
-        -- we cannot find it from xmake repo and package directories if only find system packages
-        if opt.system ~= true then
-            table.insert(managers, "xmake")
+    -- find system package if be not disabled
+    if opt.system ~= false then
+
+        -- find it from homebrew
+        if not is_host("windows") and (opt.mode == nil or opt.mode == "release") then
+            table.insert(managers, "brew")
         end
 
-        -- find system package if be not disabled
-        if opt.system ~= false then
+        -- find it from vcpkg (support multi-platforms/architectures)
+--      table.insert(managers, "vcpkg")
 
-            -- find it from homebrew
-            if not is_host("windows") and (opt.mode == nil or opt.mode == "release") then
-                table.insert(managers, "brew")
-            end
+        -- find it from conan (support multi-platforms/architectures)
+--      table.insert(managers, "conan")
 
-            -- find it from vcpkg
-            table.insert(managers, "vcpkg")
+        -- only support the current host platform and architecture
+        if opt.plat == os.host() and opt.arch == os.arch() and (opt.mode == nil or opt.mode == "release") then
 
-            -- find it from conan
-            table.insert(managers, "conan")
- 
-            -- only support the current host platform and architecture
-            if opt.plat == os.host() and opt.arch == os.arch() and (opt.mode == nil or opt.mode == "release") then
+            -- find it from pkg-config
+            table.insert(managers, "pkg_config")
 
-                -- find it from pkg-config
-                table.insert(managers, "pkg_config")
-
-                -- find it from system
-                table.insert(managers, "system")
-            end
+            -- find it from system
+            table.insert(managers, "system")
         end
     end
 
@@ -81,6 +74,50 @@ function _find_package(manager_name, package_name, opt)
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
         if result then
             break
+        end
+    end
+
+    -- check result?
+    if result and not result.includedirs then
+        result = nil
+    end
+
+    -- ok?
+    return result
+end
+
+-- find package 
+function _find_package(manager_name, package_name, opt)
+
+    -- find package from the given package manager
+    local result = nil
+    if manager_name then
+
+        -- trace
+        dprint("finding %s from %s ..", package_name, manager_name)
+
+        -- find it
+        result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
+    else 
+
+        -- find package from the given custom "detect.packages.find_xxx" script
+        local builtin = false
+        local find_package = import("detect.packages.find_" .. package_name, {anonymous = true, try = true})
+        if find_package then
+
+            -- trace
+            dprint("finding %s from find_%s ..", package_name, package_name)
+
+            -- find it
+            result = find_package(table.join(opt, { find_package = function (...)
+                                                        builtin = true
+                                                        return _find_package_with_builtin_rule(...)
+                                                    end}))
+        end
+
+        -- find package with the builtin rule
+        if not result and not builtin then
+            result = _find_package_with_builtin_rule(package_name, opt)
         end
     end
 
@@ -113,7 +150,7 @@ end
 -- @param opt   the options
 --              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x", 
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
---                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"}
+--                     packagedirs = {"/tmp/packages"}, system = true}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
@@ -148,25 +185,6 @@ function main(name, opt)
     package_name, require_version = unpack(package_name:trim():split("%s+"))
     opt.version = require_version or opt.version
 
-    -- init cache key
-    local key = "find_package_" .. opt.plat .. "_" .. opt.arch
-    if opt.version then
-        key = key .. "_" .. opt.version
-    end
-    if opt.cachekey then
-        key = key .. "_" .. opt.cachekey
-    end
-    if opt.mode then
-        key = key .. "_" .. opt.mode
-    end
-
-    -- attempt to get result from cache first
-    local cacheinfo = cache.load(key) 
-    local result = cacheinfo[package_name]
-    if result ~= nil and not opt.force then
-        return result and result or nil
-    end
-
     -- find package
     result = _find_package(manager_name, package_name, opt)
 
@@ -174,19 +192,6 @@ function main(name, opt)
     if opt.version and result then
         if not result.version or not semver.satisfies(result.version, opt.version) then
             result = nil
-        end
-    end
-
-    -- cache result
-    cacheinfo[package_name] = result and result or false
-    cache.save(key, cacheinfo)
-
-    -- trace
-    if opt.verbose or option.get("verbose") then
-        if result then
-            cprint("checking for the %s ... ${color.success}%s", package_name, result.version and result.version or "${text.success}")
-        else
-            cprint("checking for the %s ... ${color.nothing}${text.nothing}", package_name)
         end
     end
 

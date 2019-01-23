@@ -23,7 +23,7 @@
 --
 
 -- imports
-import("lib.detect.pkg_config")
+import("package.manager.find_package")
 
 -- find libxml2 
 --
@@ -33,16 +33,25 @@ import("lib.detect.pkg_config")
 --
 function main(opt)
 
-    -- find package from the current host platform
-    if opt.plat == os.host() and opt.arch == os.arch() then
-        local result = pkg_config.find("libxml2")
-        if result then
-            local includedirs = {}
-            for _, includedir in ipairs(result.includedirs) do
-                table.insert(includedirs, path.join(includedir, "libxml2"))
-            end
-            result.includedirs = includedirs
-            return result
-        end
+    -- find package by the builtin script
+    local result = opt.find_package("libxml2", opt)
+
+    -- find package from the homebrew package manager
+    if not result and opt.plat == os.host() and opt.arch == os.arch() then
+        result = find_package("brew::libxml2/libxml-2.0", opt)
     end
+
+    -- patch "include/libxml2"
+    if result then
+        local includedirs = {}
+        for _, includedir in ipairs(result.includedirs) do
+            if includedir:endswith("include") then
+                table.insert(includedirs, path.join(includedir, "libxml2"))
+            else
+                table.insert(includedirs, includedir)
+            end
+        end
+        result.includedirs = includedirs
+    end
+    return result
 end

@@ -23,8 +23,7 @@
 --
 
 -- imports
-import("lib.detect.vcpkg")
-import("lib.detect.pkg_config")
+import("package.manager.find_package")
 
 -- find pcre 
 --
@@ -34,28 +33,17 @@ import("lib.detect.pkg_config")
 --
 function main(opt)
 
-    -- find package from vcpkg first
-    local result = vcpkg.find("pcre", opt)
-    if result then
-        local links = {}
-        for _, link in ipairs(result.links) do
-            links[link] = true
-        end
-        for _, width in ipairs({"", "16", "32"}) do
-            if links["pcre" .. width] then
-                result.links   = {"pcre" .. width}
-                return result
-            end
-        end
-    end
+    -- find package by the builtin script
+    local result = opt.find_package("pcre", opt)
 
-    -- find package from the current host platform
-    if opt.plat == os.host() and opt.arch == os.arch() then
+    -- find package from the homebrew package manager
+    if not result and opt.plat == os.host() and opt.arch == os.arch() then
         for _, width in ipairs({"", "16", "32"}) do
-            local result = pkg_config.find("libpcre" .. width, {brewhint = "pcre"})
+            result = find_package("brew::pcre/libpcre" .. width, opt)
             if result then
-                return result
+                break
             end
         end
     end
+    return result
 end
