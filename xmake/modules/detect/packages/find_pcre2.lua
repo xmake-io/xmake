@@ -54,6 +54,7 @@ function main(opt)
         end
         for _, width in ipairs({"8", "16", "32"}) do
             if links["pcre2-" .. width] then
+                result.links   = {"pcre2-" .. width}
                 result.defines = {"PCRE2_CODE_UNIT_WIDTH=" .. width}
                 break
             end

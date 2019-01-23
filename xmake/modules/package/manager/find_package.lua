@@ -51,7 +51,7 @@ function _find_package_with_builtin_rule(package_name, opt)
         end
 
         -- find it from vcpkg (support multi-platforms/architectures)
---      table.insert(managers, "vcpkg")
+        table.insert(managers, "vcpkg")
 
         -- find it from conan (support multi-platforms/architectures)
 --      table.insert(managers, "conan")
@@ -170,6 +170,7 @@ function main(name, opt)
     opt = table.copy(opt)
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
+    opt.mode = opt.mode or config.mode() or "release"
 
     -- get package manager name
     local manager_name, package_name = unpack(name:split("::", true))

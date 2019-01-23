@@ -55,6 +55,7 @@ function main(name, opt)
     opt = table.copy(opt)
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
+    opt.mode = opt.mode or config.mode() or "release"
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch

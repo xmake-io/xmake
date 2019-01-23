@@ -29,24 +29,13 @@ import("detect.sdks.find_vcpkgdir")
 import("core.project.config")
 import("core.project.target")
 
--- get package info
+-- find package from the brew package manager
 --
--- @param name  the package name
--- @param opt   the argument options, {version = true, arch = "", plat = "", mode = "", vcpkgdir = ""}
+-- @param name  the package name, e.g. zlib, pcre/libpcre16
+-- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
 --
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
---
--- @code 
---
--- local pkginfo = vcpkg.info("openssl")
--- 
--- @endcode
---
-function info(name, opt)
+function main(name, opt)
 
-    -- init options
-    opt = opt or {}
-    
     -- attempt to find the vcpkg root directory
     local vcpkgdir = find_vcpkgdir(opt.vcpkgdir)
     if not vcpkgdir then
@@ -54,18 +43,14 @@ function info(name, opt)
     end
 
     -- get arch, plat and mode
-    local arch = opt.arch or config.arch() or os.arch()
-    local plat = opt.plat or config.plat() or os.host()
-    local mode = opt.mode or config.mode() or "release"
-
-    -- init cache
-    _g._INFO = _g._INFO or {}
-
-    -- get it from cache first
-    local key = name .. "_" .. arch .. "_" .. plat .. "_" .. mode
-    local result = _g._INFO[key]
-    if result ~= nil then
-        return result and result or nil
+    local arch = opt.arch 
+    local plat = opt.plat 
+    local mode = opt.mode 
+    if plat == "macosx" then
+        plat = "osx"
+        if arch == "x86_64" then
+            arch = "x64"
+        end
     end
 
     -- get the vcpkg installed directory
@@ -111,94 +96,6 @@ function info(name, opt)
             result.version = infoname:match(name .. "_(%d+%.?%d*%.-)_" .. arch)
         end
     end
-
-    -- save result to cache
-    _g._INFO[key] = result and result or false
-
-    -- ok?
     return result
 end
 
--- find package 
---
--- @param name  the package name
--- @param opt   the argument options, {plat = "", arch = "", mode = "", version = "1.0.1", links = {...}, vcpkgdir = ""}
---
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}}
---
--- @code 
---
--- local pkginfo = vcpkg.find("openssl")
--- 
--- @endcode
---
-function find(name, opt)
-
-    -- get package info
-    local pkginfo = info(name, opt)
-    if not pkginfo then
-        return 
-    end
-
-    -- match version?
-    opt = opt or {}
-    if opt.version and pkginfo.version ~= opt.version then
-        return 
-    end
-
-    -- get links
-    local links = pkginfo.links
-    if not links or #links == 0 then
-        links = opt.links
-    end
-
-    -- find library 
-    local result = nil
-    for _, link in ipairs(table.wrap(links)) do
-        local libinfo = find_library(link, pkginfo.linkdirs)
-        if libinfo then
-            result          = result or {}
-            result.links    = table.join(result.links or {}, libinfo.link)
-            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
-        end
-    end
-
-    -- found?
-    if result and result.links then
-        result.linkdirs     = table.unique(result.linkdirs)
-        result.includedirs  = table.join(result.includedirs or {}, pkginfo.includedirs)
-    end
-
-    -- ok?
-    return result
-end
-
--- find package from the brew package manager
---
--- @param name  the package name, e.g. zlib, pcre/libpcre16
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
---
-function main(name, opt)
-
-    -- find brew
-    local brew = find_tool("brew")
-    if not brew then
-        return 
-    end
-
-    -- parse name, .e.g pcre/libpcre16
-    local nameinfo = name:split('/')
-    local pcname   = nameinfo[2] or nameinfo[1]
-
-    -- find the prefix directory of brew 
-    local brew_pkg_root = try { function () return os.iorunv(brew.program, {"--prefix"}) end } or "/usr/local"
-    brew_pkg_root = path.join(brew_pkg_root:trim(), opt.plat == "macosx" and "Cellar" or "opt")
-    local pcfile = find_file(pcname .. ".pc", path.join(brew_pkg_root, nameinfo[1], "*/lib/pkgconfig"))
-    if not pcfile then
-        return 
-    end
-
-    -- do find
-    opt.configdirs = path.directory(pcfile)
-    return pkg_config.find(pcname, opt)
-end
