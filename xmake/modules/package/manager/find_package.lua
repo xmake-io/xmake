@@ -52,7 +52,7 @@ function _find_package(manager_name, package_name, opt)
         if opt.system ~= false then
 
             -- find it from homebrew
-            if not is_host("windows") then
+            if not is_host("windows") and (opt.mode == nil or opt.mode == "release") then
                 table.insert(managers, "brew")
             end
 
@@ -61,15 +61,18 @@ function _find_package(manager_name, package_name, opt)
 
             -- find it from conan
             table.insert(managers, "conan")
+ 
+            -- only support the current host platform and architecture
+            if opt.plat == os.host() and opt.arch == os.arch() and (opt.mode == nil or opt.mode == "release") then
 
-            -- find it from pkg-config
-            table.insert(managers, "pkg-config")
+                -- find it from pkg-config
+                table.insert(managers, "pkg_config")
 
-            -- find it from system
-            table.insert(managers, "system")
+                -- find it from system
+                table.insert(managers, "system")
+            end
         end
     end
-    assert(#managers > 0, "no suitable package manager!")
 
     -- find package from the given package manager
     local result = nil
@@ -105,7 +108,8 @@ end
 
 -- find package using the package manager
 --
--- @param name  the package name, e.g. zlib 1.12.x (try all), XMAKE::zlib 1.12.x, BREW::zlib, VCPKG::zlib, CONAN::OpenSSL/1.0.2n@conan/stable
+-- @param name  the package name
+--              e.g. zlib 1.12.x (try all), xmake::zlib 1.12.x, brew::zlib, brew::pcre/libpcre16, vcpkg::zlib, conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options
 --              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x", 
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}

@@ -52,48 +52,14 @@ function info(name, opt)
         return 
     end
 
-    -- init options and cache
-    opt      = opt or {}
-    _g._INFO = _g._INFO or {}
+    -- init options
+    opt = opt or {}
 
-    -- get it from cache first
-    local result = _g._INFO[name]
-    if result ~= nil then
-        return result and result or nil
-    end
-
-    -- add PKG_CONFIG_PATH
+    -- init PKG_CONFIG_PATH
     local configdirs_old = os.getenv("PKG_CONFIG_PATH")
-    local configdirs = opt.configdirs or {}
+    local configdirs = table.wrap(opt.configdirs)
     if #configdirs > 0 then
-        os.addenv("PKG_CONFIG_PATH", unpack(configdirs))
-    end
-
-    -- find other mode package? clear the other pkg-config pathes
-    if opt.mode and opt.mode ~= "release" then
-        os.setenv("PKG_CONFIG_PATH", nil)
-    end
-
-    -- attempt to get pkg-config path from `brew --prefix` if no flags
-    local brewprefix = nil
-    if not flags then
-
-        -- find the config directories from the prefix directories of xmake
-        local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
-        os.addenv("PKG_CONFIG_PATH", path.join(config.directory(), "prefix", platsubdirs, opt.mode or "release", "lib", "pkgconfig"))
-        os.addenv("PKG_CONFIG_PATH", path.join(global.directory(), "prefix", platsubdirs, opt.mode or "release", "lib", "pkgconfig"))
-
-        -- find the prefix directory of brew directly, because `brew --prefix name` is too slow!
-        if not opt.mode or opt.mode == "release" then
-            local brew_pkg_root = try { function () return os.iorunv(brew, {"--prefix"}) end } or "/usr/local"
-            brew_pkg_root = path.join(brew_pkg_root, opt.plat == "macosx" and "Cellar" or "opt")
-
-            local pcfile = find_file(name .. ".pc", path.join(brew_pkg_root, (opt.brewhint or name), "*/lib/pkgconfig"))
-            if pcfile then
-                brewprefix = path.directory(path.directory(path.directory(pcfile)))
-                os.addenv("PKG_CONFIG_PATH", path.directory(pcfile))
-            end
-        end
+        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
     -- get libs and cflags
@@ -127,14 +93,6 @@ function info(name, opt)
                 table.insert(result.includedirs, includedir)
             end
         end
-    elseif brewprefix then
-        local links = {}
-        for _, file in ipairs(os.files(path.join(brewprefix, "lib", "*.a"))) do
-            table.insert(links, target.linkname(path.filename(file)))
-        end
-        if #links > 0 then
-            result = {links = links, linkdirs = {path.join(brewprefix, "lib")}, includedirs = {path.join(brewprefix, "include")}}
-        end
     end
 
     -- get version
@@ -148,9 +106,6 @@ function info(name, opt)
     if configdirs_old then
         os.setenv("PKG_CONFIG_PATH", configdirs_old)
     end
-
-    -- save result to cache
-    _g._INFO[name] = result and result or false
 
     -- ok?
     return result
@@ -186,25 +141,10 @@ function find(name, opt)
         links = opt.links
     end
 
-    -- add default search linkdirs on pc host
-    local linkdirs = pkginfo.linkdirs
-    if links and #links > 0 and (not linkdirs or #linkdirs == 0) then
-        linkdirs = linkdirs or {}
-        table.insert(linkdirs, "/usr/local/lib")
-        table.insert(linkdirs, "/usr/lib")
-        table.insert(linkdirs, "/opt/local/lib")
-        table.insert(linkdirs, "/opt/lib")
-        if opt.plat == "linux" and opt.arch == "x86_64" then
-            table.insert(linkdirs, "/usr/local/lib/x86_64-linux-gnu")
-            table.insert(linkdirs, "/usr/lib/x86_64-linux-gnu")
-            table.insert(linkdirs, "/usr/lib64")
-            table.insert(linkdirs, "/opt/lib64")
-        end
-    end
-
     -- find library 
     local result = nil
-    for _, link in ipairs(table.wrap(links)) do
+    local linkdirs = table.wrap(pkginfo.linkdirs)
+    for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
             result          = result or {}
