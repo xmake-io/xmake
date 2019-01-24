@@ -555,7 +555,7 @@ function _instance:fetch(opt)
 
     -- fetch the require version
     local require_ver = opt.version or self:requireinfo().version
-    if require_ver == "lastest" then
+    if not require_ver:find('.', 1, true) then
         require_ver = nil
     end
 

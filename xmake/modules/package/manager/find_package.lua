@@ -130,7 +130,7 @@ function _find_package(manager_name, package_name, opt)
 
         -- check valid version
         if result.version then
-            local version = semver.new(result.version)
+            local version = try { function () return semver.new(result.version) end }
             if version then
                 result.version = version:rawstr()
             else 
