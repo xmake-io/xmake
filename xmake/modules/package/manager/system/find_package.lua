@@ -41,25 +41,29 @@ function main(name, opt)
 
     -- add default search includedirs on pc host
     local includedirs = table.wrap(opt.includedirs)
-    if opt.plat == "linux" or opt.plat == "macosx" then
-        table.insert(includedirs, "/usr/local/include")
-        table.insert(includedirs, "/usr/include")
-        table.insert(includedirs, "/opt/local/include")
-        table.insert(includedirs, "/opt/include")
+    if #includedirs == 0 then
+        if opt.plat == "linux" or opt.plat == "macosx" then
+            table.insert(includedirs, "/usr/local/include")
+            table.insert(includedirs, "/usr/include")
+            table.insert(includedirs, "/opt/local/include")
+            table.insert(includedirs, "/opt/include")
+        end
     end
 
     -- add default search linkdirs on pc host
     local linkdirs = table.wrap(opt.linkdirs)
-    if opt.plat == "linux" or opt.plat == "macosx" then
-        table.insert(linkdirs, "/usr/local/lib")
-        table.insert(linkdirs, "/usr/lib")
-        table.insert(linkdirs, "/opt/local/lib")
-        table.insert(linkdirs, "/opt/lib")
-        if opt.plat == "linux" and opt.arch == "x86_64" then
-            table.insert(linkdirs, "/usr/local/lib/x86_64-linux-gnu")
-            table.insert(linkdirs, "/usr/lib/x86_64-linux-gnu")
-            table.insert(linkdirs, "/usr/lib64")
-            table.insert(linkdirs, "/opt/lib64")
+    if #linkdirs == 0 then
+        if opt.plat == "linux" or opt.plat == "macosx" then
+            table.insert(linkdirs, "/usr/local/lib")
+            table.insert(linkdirs, "/usr/lib")
+            table.insert(linkdirs, "/opt/local/lib")
+            table.insert(linkdirs, "/opt/lib")
+            if opt.plat == "linux" and opt.arch == "x86_64" then
+                table.insert(linkdirs, "/usr/local/lib/x86_64-linux-gnu")
+                table.insert(linkdirs, "/usr/lib/x86_64-linux-gnu")
+                table.insert(linkdirs, "/usr/lib64")
+                table.insert(linkdirs, "/opt/lib64")
+            end
         end
     end
 
@@ -92,20 +96,24 @@ function main(name, opt)
     end
 
     -- find includes
-    for _, include in ipairs(table.wrap(opt.includes)) do
-        local includedir = find_path(include, includedirs)
-        if includedir then
-            result             = result or {}
-            result.includedirs = table.join(result.includedirs or {}, includedir)
+    if opt.includes then
+        for _, include in ipairs(opt.includes) do
+            local includedir = find_path(include, includedirs)
+            if includedir then
+                result             = result or {}
+                result.includedirs = table.join(result.includedirs or {}, includedir)
+            end
         end
-    end
-    for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
-        local includedir = find_path(include, includedirs)
-        if includedir then
-            result             = result or {}
-            result.includedirs = table.join(result.includedirs or {}, includedir)
-            break
+        for _, include in ipairs({name .. "/" .. name .. ".h", name .. ".h"}) do
+            local includedir = find_path(include, includedirs)
+            if includedir then
+                result             = result or {}
+                result.includedirs = table.join(result.includedirs or {}, includedir)
+                break
+            end
         end
+    elseif result and result.links and opt.includedirs then
+        result.includedirs = opt.includedirs
     end
 
     -- not found? only add links

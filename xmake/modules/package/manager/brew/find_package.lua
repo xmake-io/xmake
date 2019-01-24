@@ -25,7 +25,7 @@
 -- imports
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
-import("lib.detect.pkg_config")
+import("package.manager.find_package")
 
 -- find package from the brew package manager
 --
@@ -47,12 +47,23 @@ function main(name, opt)
     -- find the prefix directory of brew 
     local brew_pkg_root = try { function () return os.iorunv(brew.program, {"--prefix"}) end } or "/usr/local"
     brew_pkg_root = path.join(brew_pkg_root:trim(), opt.plat == "macosx" and "Cellar" or "opt")
+
+    -- find package from pkg-config/*.pc
+    local result = nil
     local pcfile = find_file(pcname .. ".pc", path.join(brew_pkg_root, nameinfo[1], "*/lib/pkgconfig"))
-    if not pcfile then
-        return 
+    if pcfile then
+        opt.configdirs = path.directory(pcfile)
+        result = find_package("pkg_config::" .. pcname, opt)
     end
 
-    -- do find
-    opt.configdirs = path.directory(pcfile)
-    return pkg_config.find(pcname, opt)
+    -- find package from xxx/lib, xxx/include
+    if not result then
+        local libfile = find_file("*.a", path.join(brew_pkg_root, nameinfo[1], "*", "lib"))
+        if libfile then
+            opt.linkdirs    = path.directory(libfile)
+            opt.includedirs = path.join(path.directory(opt.linkdirs), "include")
+            result = find_package("system::" .. name, opt)
+        end
+    end
+    return result
 end
