@@ -43,6 +43,9 @@ import("repository")
 -- add_requires("xmake-repo@tbox >=1.5.1") 
 -- add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg", debug = true})
 -- add_requires("tbox", {config = {coroutine = true, abc = "xxx"}})
+-- add_requires("xmake::xmake-repo@tbox >=1.5.1") 
+-- add_requires("conan::OpenSSL/1.0.2n@conan/stable")
+-- add_requires("brew::pcre2/libpcre2-8 10.x", {alias = "pcre2"})
 --
 -- {system = nil/true/false}:
 --   nil: get local or system packages
@@ -81,19 +84,25 @@ function _parse_require(require_str, requires_extra, parentinfo)
     end
     assert(version, "require(\"%s\"): unknown version!", require_str)
 
-    -- get repository name, package name and package url
+    -- require third-party packages? e.g. brew::pcre2/libpcre2-8
     local reponame    = nil
     local packagename = nil
-    local pos = packageinfo:find_last('@', true)
-    if pos then
-
-        -- get package name
-        packagename = packageinfo:sub(pos + 1)
-
-        -- get reponame 
-        reponame = packageinfo:sub(1, pos - 1)
-    else 
+    if require_str:find("::", 1, true) then
         packagename = packageinfo
+    else
+
+        -- get repository name, package name and package url
+        local pos = packageinfo:find_last('@', true)
+        if pos then
+
+            -- get package name
+            packagename = packageinfo:sub(pos + 1)
+
+            -- get reponame 
+            reponame = packageinfo:sub(1, pos - 1)
+        else 
+            packagename = packageinfo
+        end
     end
 
     -- check package name
