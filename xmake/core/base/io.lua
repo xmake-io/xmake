@@ -114,7 +114,6 @@ function io.writefile(filepath, data)
     -- open file
     local file = io.open(filepath, "w")
     if not file then
-        -- error
         return false, string.format("open %s failed!", filepath)
     end
 

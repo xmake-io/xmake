@@ -42,7 +42,7 @@ local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, rootdir)
+function _instance.new(name, info)
 
     -- new an instance
     local instance = table.inherit(_instance)
@@ -51,7 +51,6 @@ function _instance.new(name, info, rootdir)
     instance._name      = name
     instance._NAME      = name
     instance._INFO      = info
-    instance._ROOTDIR   = rootdir
 
     -- ok
     return instance
@@ -584,7 +583,7 @@ function _instance:fetch(opt)
 
         -- fetch it from the prefix directories first
         -- and add cache key to make a distinction with finding system package
-        if not fetchinfo and system ~= true then
+        if not fetchinfo and system ~= true and not self:from("system") then
             fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
                                                          mode = self:_buildmode(),
                                                          system = false, 
@@ -797,8 +796,53 @@ function package.load_from_system(packagename)
         return package._PACKAGES[packagename]
     end
 
-    -- new an empty instance
-    local instance, errors = _instance.new(packagename, {}, package._interpreter():rootdir())
+    -- get package info
+    local packageinfo = nil
+    if packagename:find("::", 1, true) then
+
+        -- get interpreter
+        local interp = package._interpreter()
+
+        -- make script file
+        local scriptpath = os.tmpfile()
+        local ok, errors = io.writefile(scriptpath, ([[
+        package("%s")
+            on_install(function (package)
+                import("package.manager.install_package")("%s")
+            end)]]):format(packagename, packagename))
+        if not ok then
+            return nil, errors
+        end
+
+        -- load script
+        ok, errors = interp:load(scriptpath)
+        if not ok then
+            return nil, errors
+        end
+
+        -- load package and disable filter, we will process filter after a while
+        local results, errors = interp:make("package", true, false)
+        if not results then
+            return nil, errors
+        end
+
+        -- get the package info
+        for name, info in pairs(results) do
+            packagename = name -- use the real package name in package() definition
+            packageinfo = info
+            break
+        end
+
+        -- check this package 
+        if not packageinfo then
+            return nil, string.format("cannot get package(%s) info!", packagename)
+        end
+    else
+        packageinfo = {}
+    end
+
+    -- new an instance
+    local instance, errors = _instance.new(packagename, packageinfo)
     if not instance then
         return nil, errors
     end
@@ -828,16 +872,13 @@ function package.load_from_project(packagename, project)
         return nil, errors
     end
 
-    -- get interpreter
-    local interp = project.interpreter() or package._interpreter()
-
     -- not found?
     if not packages[packagename] then
         return
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, packages[packagename], interp:rootdir())
+    local instance, errors = _instance.new(packagename, packages[packagename])
     if not instance then
         return nil, errors
     end
@@ -902,7 +943,7 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, packageinfo, package._interpreter():rootdir())
+    local instance, errors = _instance.new(packagename, packageinfo)
     if not instance then
         return nil, errors
     end
