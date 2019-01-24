@@ -26,7 +26,7 @@
 return function (...)
     
     -- get find_package
-    local find_package = require("sandbox/modules/import/lib/detect/find_package").main
+    local find_package = require("sandbox/modules/import/core/sandbox/module").import("lib.detect.find_package", {anonymous = true})
 
     -- get packages and options
     local pkgs = {...}
