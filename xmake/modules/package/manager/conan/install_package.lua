@@ -28,7 +28,7 @@ import("lib.detect.find_tool")
 
 -- install package
 --
--- @param name  the package name, e.g. pcre2, pcre2/libpcre2-8
+-- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
 -- @param opt   the options, .e.g {verbose = true}
 --
 -- @return      true or false
@@ -37,21 +37,6 @@ function main(name, opt)
 
     -- init options
     opt = opt or {}
-
-    -- find brew
-    local brew = find_tool("brew")
-    if not brew then
-        return false
-    end
-
-    -- init argv
-    local argv = {"install", name:split('/')[1]}
-    if opt.verbose or option.get("verbose") then
-        table.insert(argv, "--verbose")
-    end
-
-    -- install package
-    os.vrunv(brew.program, argv)
 
     -- ok
     return true

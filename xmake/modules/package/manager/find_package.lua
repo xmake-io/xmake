@@ -54,7 +54,7 @@ function _find_package_with_builtin_rule(package_name, opt)
         table.insert(managers, "vcpkg")
 
         -- find it from conan (support multi-platforms/architectures)
---      table.insert(managers, "conan")
+        table.insert(managers, "conan")
 
         -- only support the current host platform and architecture
         if opt.plat == os.host() and opt.arch == os.arch() and (opt.mode == nil or opt.mode == "release") then
