@@ -22,6 +22,9 @@
 -- @file        install_package.lua
 --
 
+-- imports
+import("core.project.config")
+
 -- install package 
 function _install_package(manager_name, package_name, opt)
 
@@ -61,6 +64,9 @@ function main(name, opt)
 
     -- get the copied options
     opt = table.copy(opt)
+    opt.plat = opt.plat or config.get("plat") or os.host()
+    opt.arch = opt.arch or config.get("arch") or os.arch()
+    opt.mode = opt.mode or config.mode() or "release"
 
     -- get package manager name
     local manager_name, package_name = unpack(name:split("::", true))

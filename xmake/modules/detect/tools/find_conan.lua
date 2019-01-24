@@ -19,37 +19,40 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        install_package.lua
+-- @file        find_conan.lua
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_tool")
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- install package
+-- find conan 
 --
--- @param name  the package name, e.g. pcre2, pcre2/libpcre2-8
--- @param opt   the options, .e.g {verbose = true}
+-- @param opt   the argument options, .e.g {version = true}
 --
--- @return      true or false
+-- @return      program, version
 --
-function main(name, opt)
+-- @code 
+--
+-- local conan = find_conan()
+-- local conan, version = find_conan({version = true})
+-- 
+-- @endcode
+--
+function main(opt)
 
-    -- find brew
-    local brew = find_tool("brew")
-    if not brew then
-        return false
+    -- init options
+    opt = opt or {}
+    
+    -- find program
+    local program = find_program(opt.program or "conan", opt)
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, opt)
     end
 
-    -- init argv
-    local argv = {"install", name:split('/')[1]}
-    if opt.verbose or option.get("verbose") then
-        table.insert(argv, "--verbose")
-    end
-
-    -- install package
-    os.vrunv(brew.program, argv)
-
-    -- ok
-    return true
+    -- ok?
+    return program, version
 end

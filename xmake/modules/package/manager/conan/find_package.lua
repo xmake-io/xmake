@@ -22,6 +22,9 @@
 -- @file        find_package.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- find package using the conan package manager
 --
 -- @param name  the package name

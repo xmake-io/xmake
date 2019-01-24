@@ -146,8 +146,6 @@ function config.buildir()
         -- adjust path for the current directory
         buildir = path.relative(buildir, os.curdir())
     end
-
-    -- ok?
     return buildir
 end
 
