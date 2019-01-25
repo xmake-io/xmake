@@ -42,9 +42,9 @@ function _generate_conanfile(name, opt)
     dprint("generate %s ..", conanfile)
 
     -- get conan options and imports
-    local conan_options = opt.options or {}
-    local conan_imports = opt.imports or {}
-    print(opt)
+    local options        = table.wrap(opt.options)
+    local imports        = table.wrap(opt.imports)
+    local build_requires = table.wrap(opt.build_requires)
 
     -- generate it
     io.writefile(conanfile, ([[
@@ -57,8 +57,8 @@ xmake
 [imports]
 %s
 [build_requires]
-xmake_generator/0.1.0@conan/xmakegen
-    ]]):format(name, table.concat(conan_options, "\n"), table.concat(conan_imports, "\n")))
+%s
+    ]]):format(name, table.concat(options, "\n"), table.concat(imports, "\n"), table.concat(build_requires, "\n")))
 end
 
 -- install package
