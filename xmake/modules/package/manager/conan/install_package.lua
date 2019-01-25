@@ -42,8 +42,9 @@ function _generate_conanfile(name, opt)
     dprint("generate %s ..", conanfile)
 
     -- get conan options and imports
-    local conan_options = opt.conan_options or {}
-    local conan_imports = opt.conan_imports or {}
+    local conan_options = opt.options or {}
+    local conan_imports = opt.imports or {}
+    print(opt)
 
     -- generate it
     io.writefile(conanfile, ([[
@@ -63,7 +64,7 @@ end
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
--- @param opt   the options, .e.g {verbose = true, conan_options = {}, conan_imports = {}}
+-- @param opt   the options, .e.g {verbose = true, mode = "release", plat = , arch = , options = {}, imports = {}}
 --
 -- @return      true or false
 --
@@ -79,5 +80,5 @@ function main(name, opt)
     _generate_conanfile(name, opt)
 
     -- ok
-    return true
+--    return true
 end

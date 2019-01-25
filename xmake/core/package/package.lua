@@ -474,10 +474,17 @@ function _instance:debug()
     return requireinfo and requireinfo.debug or false
 end
 
--- is supported package?
+-- is the supported package?
 function _instance:supported()
     -- attempt to get the install script with the current plat/arch
     return self:script("install") ~= nil
+end
+
+-- is the third-party package? e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+-- we need install and find package by third-party package manager directly
+--
+function _instance:is3rd()
+    return self:name():find("::", 1, true)
 end
 
 -- get xxx_script
@@ -797,48 +804,29 @@ function package.load_from_system(packagename)
     end
 
     -- get package info
-    local packageinfo = nil
+    local packageinfo = {}
     if packagename:find("::", 1, true) then
 
         -- get interpreter
         local interp = package._interpreter()
 
-        -- make script file
-        local scriptpath = os.tmpfile()
-        local ok, errors = io.writefile(scriptpath, ([[
-        package("%s")
-            on_install(function (package)
-                import("package.manager.install_package")("%s")
-            end)]]):format(packagename, packagename))
-        if not ok then
+        -- on install script
+        local on_install = function (pkg)
+            local opt = table.copy(pkg:configs())
+            opt.mode = pkg:debug() and "debug" or "release"
+            opt.plat = pkg:plat()
+            opt.arch = pkg:arch()
+            import("package.manager.install_package")(pkg:name(), opt)
+        end
+
+        -- make sandbox instance with the given script
+        local instance, errors = sandbox.new(on_install, interp:filter(), interp:rootdir())
+        if not instance then
             return nil, errors
         end
 
-        -- load script
-        ok, errors = interp:load(scriptpath)
-        if not ok then
-            return nil, errors
-        end
-
-        -- load package and disable filter, we will process filter after a while
-        local results, errors = interp:make("package", true, false)
-        if not results then
-            return nil, errors
-        end
-
-        -- get the package info
-        for name, info in pairs(results) do
-            packagename = name -- use the real package name in package() definition
-            packageinfo = info
-            break
-        end
-
-        -- check this package 
-        if not packageinfo then
-            return nil, string.format("cannot get package(%s) info!", packagename)
-        end
-    else
-        packageinfo = {}
+        -- save the install script
+        packageinfo.install = instance:script()
     end
 
     -- new an instance

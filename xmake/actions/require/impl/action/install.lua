@@ -79,33 +79,42 @@ function main(package)
             -- create the install task
             local installtask = function () 
 
-                -- uninstall it from the prefix directory first
-                prefix.uninstall(package)
+                -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+                if package:is3rd() then
+                    local script = package:script("install")
+                    if script ~= nil then
+                        filter.call(script, package)
+                    end
+                else
 
-                -- build and install package to the install directory
-                local installedfile = path.join(package:installdir(), "installed.txt")
-                if not os.isfile(installedfile) then
+                    -- uninstall it from the prefix directory first
+                    prefix.uninstall(package)
 
-                    -- clean install directory first
-                    os.tryrm(package:installdir())
+                    -- build and install package to the install directory
+                    local installedfile = path.join(package:installdir(), "installed.txt")
+                    if not os.isfile(installedfile) then
 
-                    -- do install
-                    for i = 1, 3 do
-                        local script = scripts[i]
-                        if script ~= nil then
-                            filter.call(script, package)
+                        -- clean install directory first
+                        os.tryrm(package:installdir())
+
+                        -- do install
+                        for i = 1, 3 do
+                            local script = scripts[i]
+                            if script ~= nil then
+                                filter.call(script, package)
+                            end
                         end
+
+                        -- mark as installed
+                        io.writefile(installedfile, "")
                     end
 
-                    -- mark as installed
-                    io.writefile(installedfile, "")
+                    -- install to the prefix directory
+                    prefix.install(package)
+
+                    -- test it
+                    test(package)
                 end
-
-                -- install to the prefix directory
-                prefix.install(package)
-
-                -- test it
-                test(package)
             end
 
             -- install package

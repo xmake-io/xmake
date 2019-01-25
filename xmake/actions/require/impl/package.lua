@@ -123,7 +123,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
         originstr        = require_str,
         reponame         = reponame,
         version          = version,
-        extra            = require_extra
         alias            = require_extra.alias,     -- set package alias name
         debug            = require_extra.debug,     -- uses the debug package, default: false
         group            = require_extra.group,     -- only uses the first package in same group

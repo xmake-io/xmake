@@ -50,7 +50,7 @@ function _install_package(manager_name, package_name, opt)
     for _, manager_name in ipairs(managers) do
         dprint("installing %s from %s ..", package_name, manager_name)
         if import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt) then
-            break
+            return true
         end
     end
 end
@@ -83,5 +83,7 @@ function main(name, opt)
     opt.version = require_version or opt.version
 
     -- do install package
-    _install_package(manager_name, package_name, opt)
+    if not _install_package(manager_name, package_name, opt) then
+        raise("install %s failed!", name)
+    end
 end
