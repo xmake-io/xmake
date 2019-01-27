@@ -316,8 +316,9 @@ function colors.translate(str)
     str = str:gsub("(%${(.-)})", function(_, word) 
 
         -- not supported? ignore it
+        local nocolors = false
         if not colors.color8() and not colors.color256() and not colors.truecolor() then
-            return ""
+            nocolors = true
         end
 
         -- get keys
@@ -394,7 +395,7 @@ function colors.translate(str)
 
         -- make result
         local result = ""
-        if #color_buffer > 0 then
+        if #color_buffer > 0 and not nocolors then
             result = result .. colors._escape:format(table.concat(color_buffer, ";")) 
         end
         if #text_buffer > 0 then
