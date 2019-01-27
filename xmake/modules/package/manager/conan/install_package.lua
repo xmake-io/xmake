@@ -35,11 +35,8 @@ end
 -- generate conanfile.txt
 function _generate_conanfile(name, opt)
 
-    -- get conanfile.txt
-    local conanfile = path.join(_get_build_directory(name), "conanfile.txt")
-
     -- trace
-    dprint("generate %s ..", conanfile)
+    dprint("generate conanfile.txt ..")
 
     -- get conan options and imports
     local options        = table.wrap(opt.options)
@@ -47,7 +44,7 @@ function _generate_conanfile(name, opt)
     local build_requires = table.wrap(opt.build_requires)
 
     -- generate it
-    io.writefile(conanfile, ([[
+    io.writefile("conanfile.txt", ([[
 [generators]
 xmake
 [requires]
@@ -76,9 +73,22 @@ function main(name, opt)
         return false
     end
 
+    -- get build directory
+    local buildir = _get_build_directory(name)
+
+    -- enter build directory
+    local oldir = os.cd(buildir)
+
     -- generate conanfile.txt
     _generate_conanfile(name, opt)
 
+    -- install package
+    local argv = {"install", "."}
+    os.vrunv(conan.program, argv)
+
+    -- leave build directory
+    os.cd(oldir)
+
     -- ok
---    return true
+    return true
 end
