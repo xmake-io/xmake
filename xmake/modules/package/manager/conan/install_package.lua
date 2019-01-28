@@ -61,7 +61,7 @@ end
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
--- @param opt   the options, .e.g {verbose = true, mode = "release", plat = , arch = , options = {}, imports = {}}
+-- @param opt   the options, .e.g {verbose = true, mode = "release", plat = , arch = , build = "all", options = {}, imports = {}, build_requires = {}}
 --
 -- @return      true or false
 --
@@ -90,6 +90,13 @@ function main(name, opt)
 
     -- install package
     local argv = {"install", "."}
+    if opt.build then
+        if opt.build == "all" then
+            table.insert(argv, "--build")
+        else
+            table.insert(argv, "--build=" .. opt.build)
+        end
+    end
     os.vrunv(conan.program, argv)
 
     -- leave build directory
