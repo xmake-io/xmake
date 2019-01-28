@@ -392,10 +392,9 @@ function core_sandbox_module.import(name, opt)
 
     -- the root directory for this sandbox script
     local rootdir = opt.rootdir or instance:rootdir()
-    assert(rootdir)
 
     -- init module directories (disable local packages?)
-    local modules_directories = opt.nolocal and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
+    local modules_directories = (opt.nolocal or not rootdir) and core_sandbox_module.directories() or table.join(rootdir, core_sandbox_module.directories())
 
     -- load module
     local found, module, errors = core_sandbox_module._find_and_load(name, opt, instance, modules, modules_directories)

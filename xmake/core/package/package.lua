@@ -820,7 +820,7 @@ function package.load_from_system(packagename)
         end
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(on_install, interp:filter(), interp:rootdir())
+        local instance, errors = sandbox.new(on_install, interp:filter())
         if not instance then
             return nil, errors
         end

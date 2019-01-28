@@ -76,6 +76,12 @@ function main(name, opt)
     -- get build directory
     local buildir = _get_build_directory(name)
 
+    -- clean the build directory
+    os.tryrm(buildir)
+    if not os.isdir(buildir) then
+        os.mkdir(buildir)
+    end
+
     -- enter build directory
     local oldir = os.cd(buildir)
 
