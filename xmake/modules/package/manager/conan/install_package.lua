@@ -29,14 +29,14 @@ import("lib.detect.find_tool")
 
 -- get build directory
 function _get_build_directory(name)
-    return path.join(config.buildir() or os.tmpdir(), ".conan", name)
+    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name))
 end
 
 -- generate conanfile.txt
 function _generate_conanfile(name, opt)
 
     -- trace
-    dprint("generate conanfile.txt ..")
+    dprint("generate %s ..", path.join(_get_build_directory(name), "conanfile.txt"))
 
     -- get conan options and imports
     local options        = table.wrap(opt.options)

@@ -24,6 +24,12 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
+
+-- get build info file
+function _get_buildinfo_file(name)
+    return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name, "conanbuildinfo.xmake.lua"))
+end
 
 -- find package using the conan package manager
 --
@@ -32,4 +38,25 @@ import("core.base.option")
 --
 function main(name, opt)
 
+    -- get the build info
+    local buildinfo_file = _get_buildinfo_file(name)
+    if not os.isfile(buildinfo_file) then
+        return 
+    end
+
+    -- load build info
+    local buildinfo = io.load(buildinfo_file)
+
+    -- get the package info of the given platform, architecture and mode
+    local found = false
+    local result = {}
+    for k, v in pairs(buildinfo[opt.plat .. "_" .. opt.arch .. "_" .. opt.mode]) do
+        if #table.wrap(v) > 0 then
+            result[k] = v
+            found = true
+        end
+    end
+    if found then
+        return result
+    end
 end

@@ -35,17 +35,20 @@ import("lib.detect.find_library")
 -- find package from the repository (maybe only include and no links)
 function _find_package_from_repo(name, opt)
 
+    -- get build mode, e.g. debug_f7821231
+    local mode = table.concat({opt.mode or "release", opt.configs_hash}, '_')
+
     -- get the prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
     local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
     if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", platsubdirs, opt.mode or "release"))
+        table.insert(prefixdirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", platsubdirs, mode))
     end
 
     -- find the prefix info file of package, .e.g prefix/info/z/zlib/1.2.11/info.txt
     local packagedirs = {}
     local packagepath = path.join(name:sub(1, 1), name, "*")
-    table.insert(packagedirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", "info", platsubdirs, opt.mode or "release", packagepath))
+    table.insert(packagedirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", "info", platsubdirs, mode, packagepath))
     local prefixfile = find_file("info.txt", packagedirs)
     if not prefixfile then
         return 
@@ -256,7 +259,7 @@ end
 -- find package using the xmake package manager
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+-- @param opt   the options, .e.g {verbose = true, version = "1.12.x", configs_hash = "xxxxxx")
 --
 function main(name, opt)
 

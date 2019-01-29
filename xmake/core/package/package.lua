@@ -56,20 +56,6 @@ function _instance.new(name, info)
     return instance
 end
 
--- get the build mode
-function _instance:_buildmode()
-    if self._BUILDMODE == nil then
-        local buildmode = self:debug() and "debug" or "release"
-        local configs = self:configs()
-        if configs then
-            self._BUILDMODE = buildmode .. "_" .. hash.uuid(string.serialize(configs, true)):split('-')[1]:lower()
-        else
-            self._BUILDMODE = buildmode
-        end
-    end
-    return self._BUILDMODE
-end
-
 -- get the package configure
 function _instance:get(name)
 
@@ -106,6 +92,11 @@ function _instance:arch()
         return os.arch()
     end
     return config.get("arch") or os.arch()
+end
+
+-- get the build mode
+function _instance:mode()
+    return self:debug() and "debug" or "release"
 end
 
 -- get the repository of this package
@@ -234,7 +225,7 @@ end
 function _instance:installdir(...)
     
     -- make the given install directory
-    local dir = path.join(package.installdir(self:_buildmode(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
+    local dir = path.join(package.installdir(table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -247,7 +238,7 @@ end
 function _instance:prefixdir(...)
     
     -- make the given prefix directory
-    local dir = path.join(package.prefixdir(self:from("global"), self:_buildmode(), self:plat(), self:arch()), ...)
+    local dir = path.join(package.prefixdir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), ...)
 
     -- ensure the prefix directory
     if not os.isdir(dir) then
@@ -267,7 +258,7 @@ end
 
 -- get the prefix info file
 function _instance:prefixfile()
-    return path.join(package.prefixinfodir(self:from("global"), self:_buildmode(), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), "info.txt")
+    return path.join(package.prefixinfodir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), "info.txt")
 end
 
 -- get prefix variables
@@ -307,7 +298,7 @@ function _instance:register()
 
     -- register the environment variables
     for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.addenv(self:from("global"), self:_buildmode(), self:plat(), self:arch(), name, values)
+        package.addenv(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch(), name, values)
     end
 end
 
@@ -316,7 +307,7 @@ function _instance:unregister()
 
     -- unregister the environment variables
     for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.delenv(self:from("global"), self:_buildmode(), self:plat(), self:arch(), name, values)
+        package.delenv(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch(), name, values)
     end
 end
 
@@ -440,6 +431,17 @@ function _instance:configs()
     if requireinfo then
         return requireinfo.config
     end
+end
+
+-- get the hash of configs
+function _instance:configs_hash()
+    if self._CONFIGS_HASH == nil then
+        local configs = self:configs()
+        if configs then
+            self._CONFIGS_HASH = hash.uuid(string.serialize(configs, true)):split('-')[1]:lower()
+        end
+    end
+    return self._CONFIGS_HASH
 end
 
 -- get the group name
@@ -588,16 +590,14 @@ function _instance:fetch(opt)
         -- false: only find local packages
         local system = opt.system or self:requireinfo().system
 
-        -- fetch it from the prefix directories first
-        -- and add cache key to make a distinction with finding system package
+        -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:from("system") then
-            fetchinfo = self._find_package(self:name(), {prefixdirs = self:prefixdir(), 
-                                                         mode = self:_buildmode(),
-                                                         system = false, 
-                                                         islocal = self:from("local"), 
-                                                         version = require_ver,
-                                                         cachekey = "fetch:prefix", 
-                                                         force = opt.force or self:from("local")}) 
+            fetchinfo = self._find_package("xmake::" .. self:name(), {prefixdirs = self:prefixdir(), 
+                                                                      mode = self:mode(),
+                                                                      islocal = self:from("local"), 
+                                                                      version = require_ver,
+                                                                      configs_hash = self:configs_hash(),
+                                                                      force = opt.force or self:from("local")}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
@@ -605,8 +605,7 @@ function _instance:fetch(opt)
         if not fetchinfo and system ~= false then
             fetchinfo = self._find_package(self:name(), {force = opt.force, 
                                                          version = require_ver, 
-                                                         cachekey = "fetch:system", 
-                                                         mode = self:_buildmode(),
+                                                         mode = self:mode(),
                                                          system = true})
             if fetchinfo then fetchfrom = "system" end
         end
