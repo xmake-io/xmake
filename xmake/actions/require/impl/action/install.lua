@@ -59,7 +59,7 @@ function main(package)
 
     -- trace
     cprintf("${yellow}  => ${clear}installing %s .. ", tipname)
-    if option.get("verbose") then
+    if option.get("verbose") or option.get("diagnosis") then
         print("")
     end
 
@@ -118,7 +118,7 @@ function main(package)
             end
 
             -- install package
-            if option.get("verbose") then
+            if option.get("verbose") or option.get("diagnosis") then
                 installtask()
             else
                 process.asyncrun(installtask)
@@ -126,7 +126,7 @@ function main(package)
 
             -- fetch package and force to flush the cache
             local fetchinfo = package:fetch({force = true})
-            if option.get("verbose") then
+            if option.get("verbose") or option.get("diagnosis") then
                 print(fetchinfo)  
             end
             assert(fetchinfo, "fetch %s failed!", tipname)
@@ -140,7 +140,7 @@ function main(package)
             function (errors)
 
                 -- verbose?
-                if option.get("verbose") and errors then
+                if (option.get("verbose") or option.get("diagnosis")) and errors then
                     cprint("${dim color.error}error: ${clear}%s", errors)
                 end
 

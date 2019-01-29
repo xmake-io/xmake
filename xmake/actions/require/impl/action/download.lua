@@ -206,7 +206,7 @@ function main(package)
                 function (errors)
 
                     -- verbose?
-                    if option.get("verbose") and errors then
+                    if (option.get("verbose") or option.get("diagnosis")) and errors then
                         cprint("${dim color.error}error: ${clear}%s", errors)
                     end
 

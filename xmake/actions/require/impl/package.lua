@@ -480,10 +480,10 @@ function install_packages(requires, opt)
             action.download(package)
         end
 
-    end, #packages_download, ifelse(option.get("verbose"), 1, 4), 300, function (indices) 
+    end, #packages_download, ifelse((option.get("verbose") or option.get("diagnosis")), 1, 4), 300, function (indices) 
 
         -- do not print progress info if be verbose 
-        if option.get("verbose") then
+        if option.get("verbose") or option.get("diagnosis") then
             return 
         end
  

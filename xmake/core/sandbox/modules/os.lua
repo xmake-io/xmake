@@ -316,24 +316,24 @@ end
 function sandbox_os.vrun(cmd, ...)
 
     -- echo command
-    if option.get("verbose") then
+    if option.get("verbose") or option.get("diagnosis") then
         print(vformat(cmd, ...))
     end
 
     -- run it
-    utils.ifelse(option.get("verbose"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
+    utils.ifelse(option.get("verbose") or option.get("diagnosis"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
 end
 
 -- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
 function sandbox_os.vrunv(program, argv, opt)
 
     -- echo command
-    if option.get("verbose") then
+    if option.get("verbose") or option.get("diagnosis") then
         print(vformat(program), table.concat(argv, " "))
     end
 
     -- run it
-    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(program, argv, opt)  
+    utils.ifelse(option.get("verbose") or option.get("diagnosis"), sandbox_os.execv, sandbox_os.runv)(program, argv, opt)  
 end
 
 -- run command and return output and error data

@@ -638,7 +638,7 @@ function project._load_requires()
             instance = table.inherit(requireinfo)
 
             -- save name and info
-            instance._NAME = packagename
+            instance._NAME = alias or packagename
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
