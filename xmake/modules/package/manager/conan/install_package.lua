@@ -28,17 +28,17 @@ import("core.project.config")
 import("lib.detect.find_tool")
 
 -- get build directory
-function _get_build_directory(name)
+function _conan_get_build_directory(name)
     return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name))
 end
 
 -- generate conanfile.txt
-function _generate_conanfile(name, opt)
+function _conan_generate_conanfile(name, opt)
 
     -- trace
-    dprint("generate %s ..", path.join(_get_build_directory(name), "conanfile.txt"))
+    dprint("generate %s ..", path.join(_conan_get_build_directory(name), "conanfile.txt"))
 
-    -- get conan options and imports
+    -- get conan options, imports and build_requires
     local options        = table.wrap(opt.options)
     local imports        = table.wrap(opt.imports)
     local build_requires = table.wrap(opt.build_requires)
@@ -74,7 +74,7 @@ function main(name, opt)
     end
 
     -- get build directory
-    local buildir = _get_build_directory(name)
+    local buildir = _conan_get_build_directory(name)
 
     -- clean the build directory
     os.tryrm(buildir)
@@ -86,8 +86,9 @@ function main(name, opt)
     local oldir = os.cd(buildir)
 
     -- generate conanfile.txt
-    _generate_conanfile(name, opt)
+    _conan_generate_conanfile(name, opt)
 
+    -- TODO opt.mode, --remote=, --compiler=, ..
     -- install package
     local argv = {"install", "."}
     if opt.build then
