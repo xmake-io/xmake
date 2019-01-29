@@ -88,7 +88,7 @@ function main(name, opt)
     -- generate conanfile.txt
     _conan_generate_conanfile(name, opt)
 
-    -- TODO opt.mode, --remote=, --compiler=, ..
+    -- TODO --remote=, --compiler=, ..
     -- install package
     local argv = {"install", "."}
     if opt.build then
@@ -97,6 +97,10 @@ function main(name, opt)
         else
             table.insert(argv, "--build=" .. opt.build)
         end
+    end
+    if opt.mode == "debug" then
+        table.insert(argv, "-s")
+        table.insert(argv, "build_type=Debug")
     end
     os.vrunv(conan.program, argv)
 
