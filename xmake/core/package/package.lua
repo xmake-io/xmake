@@ -411,7 +411,7 @@ function _instance:requireinfo_set(requireinfo)
     -- get version
     local version = requireinfo and requireinfo.version or nil
     local limitversion = version and version ~= "master" and version ~= "lastest"
-    if requireinfo then
+    if requireinfo and not self:is3rd() then
         
         -- switch to local package if exists package configuration or debug package or limit version
         if requireinfo.config or requireinfo.debug or limitversion then
@@ -591,7 +591,7 @@ function _instance:fetch(opt)
         local system = opt.system or self:requireinfo().system
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:from("system") then
+        if not fetchinfo and system ~= true and not self:is3rd() then
             fetchinfo = self._find_package("xmake::" .. self:name(), {prefixdirs = self:prefixdir(), 
                                                                       mode = self:mode(),
                                                                       islocal = self:from("local"), 

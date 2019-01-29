@@ -61,7 +61,7 @@ end
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
--- @param opt   the options, .e.g {verbose = true, mode = "release", plat = , arch = , build = "all", options = {}, imports = {}, build_requires = {}}
+-- @param opt   the options, .e.g {verbose = true, mode = "release", plat = , arch = , remote = "", build = "all", options = {}, imports = {}, build_requires = {}}
 --
 -- @return      true or false
 --
@@ -88,7 +88,6 @@ function main(name, opt)
     -- generate conanfile.txt
     _conan_generate_conanfile(name, opt)
 
-    -- TODO --remote=, --compiler=, ..
     -- install package
     local argv = {"install", "."}
     if opt.build then
@@ -98,10 +97,42 @@ function main(name, opt)
             table.insert(argv, "--build=" .. opt.build)
         end
     end
+
+    -- set platform
+    table.insert(argv, "-s")
+    if opt.plat == "macosx" then
+        table.insert(argv, "os=Macos")
+    elseif opt.plat == "linux" then
+        table.insert(argv, "os=Linux")
+    elseif opt.plat == "windows" then
+        table.insert(argv, "os=Windows")
+    else
+        raise("cannot install package(%s) on platform(%s)!", name, opt.plat)
+    end
+
+    -- set architecture
+    table.insert(argv, "-s")
+    if opt.arch == "x86_64" or opt.arch == "x64" then
+        table.insert(argv, "arch=x86_64")
+    elseif opt.arch == "i386" or opt.arch == "x86" then
+        table.insert(argv, "arch=x86")
+    else
+        raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
+    end
+
+    -- set build mode
     if opt.mode == "debug" then
         table.insert(argv, "-s")
         table.insert(argv, "build_type=Debug")
     end
+
+    -- set remote
+    if opt.remote then
+        table.insert(argv, "-r")
+        table.insert(argv, opt.remote)
+    end
+
+    -- do install
     os.vrunv(conan.program, argv)
 
     -- leave build directory
