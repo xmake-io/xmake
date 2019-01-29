@@ -63,6 +63,7 @@ function info(name, opt)
     end
 
     -- get libs and cflags
+    local result = nil
     local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
     if flags then
 

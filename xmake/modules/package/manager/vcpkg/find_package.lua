@@ -63,6 +63,7 @@ function main(name, opt)
     local infofile = find_file(format("%s_*_%s-%s.list", name, arch, plat), infodir)
 
     -- save includedirs, linkdirs and links
+    local result = nil
     local info = infofile and io.readfile(infofile) or nil
     if info then
         for _, line in ipairs(info:split('\n')) do
@@ -89,7 +90,7 @@ function main(name, opt)
     end
 
     -- save version
-    if result then
+    if result and infofile then
         local infoname = path.basename(infofile)
         result.version = infoname:match(name .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
         if not result.version then

@@ -596,6 +596,7 @@ function _instance:fetch(opt)
                                                                       mode = self:mode(),
                                                                       islocal = self:from("local"), 
                                                                       version = require_ver,
+                                                                      cachekey = "fetch_package_xmake",
                                                                       configs_hash = self:configs_hash(),
                                                                       force = opt.force or self:from("local")}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
@@ -606,6 +607,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_package(self:name(), {force = opt.force, 
                                                          version = require_ver, 
                                                          mode = self:mode(),
+                                                         cachekey = "fetch_package_system",
                                                          system = true})
             if fetchinfo then fetchfrom = "system" end
         end
