@@ -10,6 +10,9 @@
 * [#260](https://github.com/tboox/xmake/issues/260): Add `add_platformdirs` api, we can define custom platforms
 * [#310](https://github.com/tboox/xmake/issues/310): Add theme feature
 * [#318](https://github.com/tboox/xmake/issues/318): Add `add_installfiles` api to target
+* [#339](https://github.com/tboox/xmake/issues/339): Improve `add_requires` and `find_package` to integrate the 3rd package manager
+* [#327](https://github.com/tboox/xmake/issues/327): Integrate with Conan package manager 
+* Add the builtin api `find_packages("pcre2", "zlib")` to find multiple packages
 
 ### Changes
 
@@ -554,6 +557,9 @@
 * [#260](https://github.com/tboox/xmake/issues/260): 添加`add_platformdirs`接口，用户现在可以自定义扩展编译平台
 * [#310](https://github.com/tboox/xmake/issues/310): 新增主题设置支持，用户可随意切换和扩展主题样式
 * [#318](https://github.com/tboox/xmake/issues/318): 添加`add_installfiles`接口到target去自定义安装文件
+* [#339](https://github.com/tboox/xmake/issues/339): 改进`add_requires`和`find_package`使其支持对第三方包管理的集成支持
+* [#327](https://github.com/tboox/xmake/issues/327): 实现对conan包管理的集成支持
+* 添加内置API `find_packages("pcre2", "zlib")`去同时查找多个依赖包，不需要通过import导入即可直接调用
 
 ### 改进
 
