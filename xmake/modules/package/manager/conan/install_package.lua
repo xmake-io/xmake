@@ -126,6 +126,8 @@ function main(name, opt)
         table.insert(argv, "build_type=Debug")
     end
 
+    -- TODO pass compiler settings
+
     -- set remote
     if opt.remote then
         table.insert(argv, "-r")
