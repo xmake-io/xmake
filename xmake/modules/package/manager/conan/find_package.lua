@@ -28,7 +28,6 @@ import("core.project.config")
 
 -- get build info file
 function _conan_get_buildinfo_file(name)
-    name = name:lower():gsub("::", "_")
     return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name, "conanbuildinfo.xmake.lua"))
 end
 
