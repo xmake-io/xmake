@@ -42,7 +42,7 @@ function main(name, opt)
     -- find yum
     local yum = find_tool("yum")
     if not yum then
-        return false
+        raise("yum not found!")
     end
 
     -- init argv
@@ -78,9 +78,6 @@ function main(name, opt)
             sudo.vrunv(yum.program, argv)
         end
     else
-        return false
+        raise("cannot get administrator permission!")
     end
-
-    -- ok
-    return true
 end

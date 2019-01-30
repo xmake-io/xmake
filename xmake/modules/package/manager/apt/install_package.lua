@@ -42,7 +42,7 @@ function main(name, opt)
     -- find apt
     local apt = find_tool("apt")
     if not apt then
-        return false
+        raise("apt not found!")
     end
 
     -- init argv
@@ -75,9 +75,6 @@ function main(name, opt)
             sudo.vrunv(apt.program, argv)
         end
     else
-        return false
+        raise("cannot get administrator permission!")
     end
-
-    -- ok
-    return true
 end

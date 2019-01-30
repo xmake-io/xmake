@@ -70,7 +70,7 @@ function main(name, opt)
     -- find conan
     local conan = find_tool("conan")
     if not conan then
-        return false
+        raise("conan not found!")
     end
 
     -- get build directory
@@ -137,7 +137,4 @@ function main(name, opt)
 
     -- leave build directory
     os.cd(oldir)
-
-    -- ok
-    return true
 end

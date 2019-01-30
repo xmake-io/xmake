@@ -24,7 +24,7 @@
 
 -- imports
 import("core.base.option")
-import("lib.detect.find_tool")
+import("detect.sdks.find_vcpkgdir")
 
 -- install package
 --
@@ -35,10 +35,21 @@ import("lib.detect.find_tool")
 --
 function main(name, opt)
 
-    -- find brew
-    local brew = find_tool("brew")
-    if not brew then
-        raise("brew not found!")
+    -- attempt to find the vcpkg root directory
+    local vcpkgdir = find_vcpkgdir(opt.vcpkgdir)
+    if not vcpkgdir then
+        raise("vcpkg not found!")
+    end
+
+    -- get arch, plat and mode
+    local arch = opt.arch 
+    local plat = opt.plat 
+    local mode = opt.mode 
+    if plat == "macosx" then
+        plat = "osx"
+        if arch == "x86_64" then
+            arch = "x64"
+        end
     end
 
     -- check architecture
@@ -47,11 +58,8 @@ function main(name, opt)
     end
 
     -- init argv
-    local argv = {"install", name:split('/')[1]}
-    if opt.verbose or option.get("verbose") then
-        table.insert(argv, "--verbose")
-    end
+    local argv = {"install", string.format("%s:%s-%s", name, arch, plat)}
 
     -- install package
-    os.vrunv(brew.program, argv)
+    os.vrunv(path.join(vcpkgdir, "vcpkg"), argv)
 end

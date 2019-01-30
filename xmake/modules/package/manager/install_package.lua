@@ -29,30 +29,57 @@ import("core.project.config")
 function _install_package(manager_name, package_name, opt)
 
     -- get managers
-    local managers = {}
     if manager_name then
-        table.insert(managers, manager_name)
-    else 
-        if is_host("windows") then
-            table.insert(managers, "pacman") -- msys/mingw
-        elseif is_host("linux") then
-            table.insert(managers, "apt")
-            table.insert(managers, "yum")
-            table.insert(managers, "pacman")
-            table.insert(managers, "brew")
-        elseif is_host("macosx") then
-            table.insert(managers, "brew")
-        end
+        dprint("installing %s from %s ..", package_name, manager_name)
+        return import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt) 
+    end
+
+    -- get suitable package managers
+    local managers = {}
+    if is_host("windows") then
+        table.insert(managers, "pacman") -- msys/mingw
+    elseif is_host("linux") then
+        table.insert(managers, "apt")
+        table.insert(managers, "yum")
+        table.insert(managers, "pacman")
+        table.insert(managers, "brew")
+    elseif is_host("macosx") then
+        table.insert(managers, "vcpkg")
+        table.insert(managers, "brew")
     end
     assert(#managers > 0, "no suitable package manager!")
 
-    -- find package from the given package manager
-    for _, manager_name in ipairs(managers) do
-        dprint("installing %s from %s ..", package_name, manager_name)
-        if import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt) then
-            return true
+    -- install package from the given package managers
+    local errors = nil
+    for _, manager in ipairs(managers) do
+
+        -- trace
+        dprint("installing %s from %s ..", package_name, manager)
+
+        -- try to install it
+        local ok = try 
+        { 
+            function () 
+                import("package.manager." .. manager .. ".install_package", {anonymous = true})(package_name, opt) 
+                return true
+            end,
+            catch 
+            {
+                function (errs)
+                    errors = errs
+                end
+            }
+        }
+
+        -- install ok?
+        if ok then
+            dprint("install %s ok from %s", package_name, manager)
+            return 
         end
     end
+
+    -- install failed
+    raise("install %s failed! %s", package_name, errors or "")
 end
 
 -- install package using the package manager
@@ -83,7 +110,5 @@ function main(name, opt)
     opt.version = require_version or opt.version
 
     -- do install package
-    if not _install_package(manager_name, package_name, opt) then
-        raise("install %s failed!", name)
-    end
+    _install_package(manager_name, package_name, opt) 
 end
