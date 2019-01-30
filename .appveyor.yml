@@ -20,9 +20,9 @@ build_script:
   - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
   - cmd: xmake lua -D tests\test.lua
 
-on_success:
-  - ps: $env:XMAKE_PROGRAM_DIR=$null
-  - ps: Invoke-Expression (Get-Content scripts\getpb.ps1 | Out-String)
+#on_success:
+#  - ps: $env:XMAKE_PROGRAM_DIR=$null
+#  - ps: Invoke-Expression (Get-Content scripts\getpb.ps1 | Out-String)
 
 after_build:
   - ps: Copy-Item core\build\xmake.exe .
