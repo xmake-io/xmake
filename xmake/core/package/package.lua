@@ -218,14 +218,16 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    return path.join(package.cachedir(), self:name():sub(1, 1):lower(), self:name(), self:version_str())
+    local name = self:name():lower():gsub("::", "_")
+    return path.join(package.cachedir(), name:sub(1, 1):lower(), name, self:version_str())
 end
 
 -- get the installed directory of this package
 function _instance:installdir(...)
     
     -- make the given install directory
-    local dir = path.join(package.installdir(table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), ...)
+    local name = self:name():lower():gsub("::", "_")
+    local dir = path.join(package.installdir(table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), name:sub(1, 1):lower(), name, self:version_str(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -258,7 +260,8 @@ end
 
 -- get the prefix info file
 function _instance:prefixfile()
-    return path.join(package.prefixinfodir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), self:name():sub(1, 1):lower(), self:name(), self:version_str(), "info.txt")
+    local name = self:name():lower():gsub("::", "_")
+    return path.join(package.prefixinfodir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), name:sub(1, 1):lower(), name, self:version_str(), "info.txt")
 end
 
 -- get prefix variables

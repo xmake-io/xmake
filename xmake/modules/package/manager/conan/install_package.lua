@@ -29,6 +29,7 @@ import("lib.detect.find_tool")
 
 -- get build directory
 function _conan_get_build_directory(name)
+    name = name:lower():gsub("::", "_")
     return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name))
 end
 
