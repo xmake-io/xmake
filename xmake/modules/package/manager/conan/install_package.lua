@@ -61,7 +61,9 @@ end
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
--- @param opt   the options, .e.g {verbose = true, mode = "release", plat = , arch = , remote = "", build = "all", options = {}, imports = {}, build_requires = {}}
+-- @param opt   the options, .e.g { verbose = true, mode = "release", plat = , arch = ,
+--                                  remote = "", build = "all", options = {}, imports = {}, build_requires = {},
+--                                  settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}
 --
 -- @return      true or false
 --
@@ -136,6 +138,12 @@ function main(name, opt)
         table.insert(argv, "compiler=Visual Studio")
         table.insert(argv, "-s")
         table.insert(argv, "compiler.version=" .. assert(vsvers[vs], "unknown msvc version!"))
+    end
+
+    -- set custom settings
+    for _, setting in ipairs(opt.settings) do
+        table.insert(argv, "-s")
+        table.insert(argv, setting)
     end
 
     -- set remote
