@@ -1,6 +1,6 @@
 <div align="center">
   <a href="http://xmake.io/cn">
-    <img width="200" heigth="200" src="http://tboox.org/static/img/xmake/logo256c.png">
+    <img width="200" heigth="200" src="https://tboox.org/static/img/xmake/logo256c.png">
   </a>  
 
   <h1>xmake</h1>
@@ -282,7 +282,7 @@ target("test")
 ## 联系方式
 
 * 邮箱：[waruqi@gmail.com](mailto:waruqi@gmail.com)
-* 主页：[tboox.org](http://www.tboox.org/cn)
+* 主页：[tboox.org](https://tboox.org/cn)
 * 社区：[Reddit论坛](https://www.reddit.com/r/tboox/)
 * 聊天：[Telegram群组](https://t.me/tbooxorg), [Gitter聊天室](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * 源码：[Github](https://github.com/tboox/xmake), [Gitee](https://gitee.com/tboox/xmake)

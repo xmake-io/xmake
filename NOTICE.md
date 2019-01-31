@@ -1,7 +1,7 @@
 A cross-platform build utility based on Lua
 Copyright 2015-2019 The TBOOX Open Source Group
 
-This product includes software developed by The TBOOX Open Source Group (http://www.tboox.org/).
+This product includes software developed by The TBOOX Open Source Group (https://tboox.org/).
 
 -------------------------------------------------------------------------------
 
@@ -43,6 +43,6 @@ which can be obtained at:
   * LICENSE:
     * core/src/tbox/LICENSE.md (Apache License 2.0)
   * HOMEPAGE:
-    * http://www.tboox.org/
+    * https://tboox.org/
 
 
