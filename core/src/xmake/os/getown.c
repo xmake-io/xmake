@@ -1,4 +1,4 @@
-/*!The Make-like Build Utility based on Lua
+/*!A cross-platform build utility based on Lua
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
