@@ -211,6 +211,11 @@ function _instance:from(kind)
     return self._FROMKIND == kind
 end
 
+-- get from kind
+function _instance:fromkind()
+    return self._FROMKIND
+end
+
 -- get the package kind, binary or nil(static, shared)
 function _instance:kind()
     return self:get("kind")

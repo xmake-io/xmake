@@ -340,11 +340,25 @@ function _get_confirm(packages)
     -- get confirm
     local confirm = option.get("yes")
     if confirm == nil then
-    
+
+        -- get packages for each repositories
+        local packages_repo = {}
+        for _, package in ipairs(packages) do
+            local reponame = package:repo() and package:repo():name() or package:fromkind()
+            if package:is3rd() then
+                reponame = package:name():lower():split("::")[1]
+            end
+            packages_repo[reponame] = packages_repo[reponame] or {}
+            table.insert(packages_repo[reponame], package)
+        end
+
         -- show tips
         cprint("${bright color.warning}note: ${clear}try installing these packages (pass -y to skip confirm)?")
-        for _, package in ipairs(packages) do
-            print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
+        for reponame, packages in pairs(packages_repo) do
+            print("in %s:", reponame)
+            for _, package in ipairs(packages) do
+                print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
+            end
         end
         cprint("please input: y (y/n)")
 
