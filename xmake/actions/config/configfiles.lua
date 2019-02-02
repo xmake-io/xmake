@@ -92,6 +92,14 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         local pattern = fileinfo.pattern or "%${(.-)}"
         io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
 
+            -- to lower
+            variable = variable:trim():lower()
+
+            -- hack buildir first
+            if variable == "buildir" then
+                return config.buildir()
+            end
+
             -- attempt to get it directly from the configure
             local result = variables[variable] or config.get(variable)
             if not result or type(result) ~= "string" then 
@@ -99,8 +107,8 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 -- init maps
                 local maps = 
                 {
-                    os   = platform.os()
-                ,   host = os.host()
+                    host       = os.host()
+                ,   projectdir = os.projectdir()
                 }
                 result = maps[variable]
 
