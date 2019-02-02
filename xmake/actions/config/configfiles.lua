@@ -73,8 +73,42 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         cprint("${dim}generating %s to %s ..", srcfile, dstfile)
     end
 
+    -- only copy it?
+    local generated = false
+    if fileinfo.onlycopy then
+        if os.mtime(srcfile) > os.mtime(dstfile) then
+            os.cp(srcfile, dstfile)
+            generated = true
+        end
+    else
+        -- generate to the temporary file first
+        local dstfile_tmp = path.join(os.tmpdir(), hash.uuid(srcfile))
+        os.tryrm(dstfile_tmp)
+        os.cp(srcfile, dstfile_tmp)
+
+        -- replace all variables
+        local variables = fileinfo.variables or {}
+        local pattern = fileinfo.pattern or "%${(.-)}"
+        io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
+            return variables[variable]
+        end)
+
+        -- update file if the content is changed
+        if os.isfile(dstfile_tmp) then
+            if os.isfile(dstfile) then
+                if io.readfile(dstfile_tmp) ~= io.readfile(dstfile) then
+                    os.mv(dstfile_tmp, dstfile)
+                    generated = true
+                end
+            else
+                os.mv(dstfile_tmp, dstfile)
+                generated = true
+            end
+        end
+    end
+
     -- trace
-    cprint("generating %s ... ${color.success}${text.success}", srcfile)
+    cprint("generating %s ... %s", srcfile, generated and "${color.success}${text.success}" or "${color.success}cache")
 end
 
 -- the main entry function

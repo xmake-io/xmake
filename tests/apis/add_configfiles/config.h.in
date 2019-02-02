@@ -1,2 +1,3 @@
 #define HAVE_${module}_H 
 #define HELLO "${hello}"
+#define HELLO2 "@hello2@"

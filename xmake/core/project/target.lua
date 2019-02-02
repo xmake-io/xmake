@@ -306,7 +306,7 @@ function target:_copiedfiles(filetype, outputdir, pathfilter)
 
                         -- modify filename
                         if fileinfo.filename then
-                            dstfile = path.join(path.directory(dstfile), filename)
+                            dstfile = path.join(path.directory(dstfile), fileinfo.filename)
                         end
 
                         -- filter the destinate file path
