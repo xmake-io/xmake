@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.platform.platform")
 
 -- get all configuration files
 function _get_configfiles()
@@ -90,7 +91,27 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         local variables = fileinfo.variables or {}
         local pattern = fileinfo.pattern or "%${(.-)}"
         io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
-            return variables[variable]
+
+            -- attempt to get it directly from the configure
+            local result = variables[variable] or config.get(variable)
+            if not result or type(result) ~= "string" then 
+
+                -- init maps
+                local maps = 
+                {
+                    os   = platform.os()
+                ,   host = os.host()
+                }
+                result = maps[variable]
+
+                -- attempt to get it from the platform tools, e.g. cc, cxx, ld ..
+                -- because these values may not exist in config cache when call `config.get()`, we need check and get it.
+                --
+                if not result then
+                    result = platform.tool(variable)
+                end
+            end
+            return result
         end)
 
         -- update file if the content is changed
