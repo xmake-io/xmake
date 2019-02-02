@@ -32,6 +32,7 @@ import("core.project.cache")
 import("lib.detect.cache", {alias = "detectcache"})
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
+import("configfiles", {alias = "generate_configfiles"})
 import("configheader", {alias = "generate_configheader"})
 import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 
@@ -278,12 +279,13 @@ function main()
         install_requires()
     end
 
-    -- check target, @note we must load targets after installing required packages, 
+    -- check target and ensure to load all targets, @note we must load targets after installing required packages, 
     -- otherwise has_package() will be invalid.
     _check_target(targetname)
 
     -- update the config header
     if recheck then
+        generate_configfiles()
         generate_configheader()
     end
 

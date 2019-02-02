@@ -86,9 +86,11 @@ function target.apis()
             "target.set_targetdir"
         ,   "target.set_objectdir"
         ,   "target.set_dependir"
+        ,   "target.set_configdir"
         ,   "target.set_installdir"
             -- target.add_xxx
         ,   "target.add_files"
+        ,   "target.add_configfiles"
         ,   "target.add_installfiles"
             -- target.del_xxx
         ,   "target.del_files"
@@ -240,6 +242,87 @@ function target:_load()
 
     -- ok
     return true
+end
+
+-- get the copied files
+function target:_copiedfiles(filetype, outputdir, pathfilter)
+
+    -- no copied files?
+    local copiedfiles = self:get(filetype)
+    if not copiedfiles then return end
+
+    -- get the extra information
+    local extrainfo = table.wrap(self:get("__extra_" .. filetype))
+
+    -- get the source pathes and destinate pathes
+    local srcfiles = {}
+    local dstfiles = {}
+    local fileinfos = {}
+    for _, copiedfile in ipairs(table.wrap(copiedfiles)) do
+
+        -- get the root directory
+        local rootdir, count = copiedfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
+        if count == 0 then
+            rootdir = nil
+        end
+
+        -- remove '(' and ')'
+        local srcpathes = copiedfile:gsub("[%(%)]", "")
+        if srcpathes then 
+
+            -- get the source pathes
+            srcpathes = os.match(srcpathes)
+            if srcpathes and #srcpathes > 0 then
+
+                -- add the source copied files
+                table.join2(srcfiles, srcpathes)
+
+                -- the copied directory exists?
+                if outputdir then
+
+                    -- get the file info
+                    local fileinfo = extrainfo[copiedfile] or {}
+
+                    -- get the prefix directory
+                    local prefixdir = fileinfo.prefixdir
+
+                    -- add the destinate copied files
+                    for _, srcpath in ipairs(srcpathes) do
+
+                        -- get the destinate directory
+                        local dstdir = outputdir
+                        if prefixdir then
+                            dstdir = path.join(dstdir, prefixdir)
+                        end
+
+                        -- the destinate file
+                        local dstfile = nil
+                        if rootdir then
+                            dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
+                        else
+                            dstfile = path.join(dstdir, path.filename(srcpath))
+                        end
+                        assert(dstfile)
+
+                        -- modify filename
+                        if fileinfo.filename then
+                            dstfile = path.join(path.directory(dstfile), filename)
+                        end
+
+                        -- filter the destinate file path
+                        if pathfilter then
+                            dstfile = pathfilter(dstfile, fileinfo)
+                        end
+
+                        -- add it
+                        table.insert(dstfiles, dstfile)
+                        table.insert(fileinfos, fileinfo)
+                    end
+                end
+            end
+        end
+    end
+    return srcfiles, dstfiles, fileinfos
 end
 
 -- get the target info
@@ -746,9 +829,14 @@ function target:scriptdir()
     return self:get("__scriptdir")
 end
 
--- get header directory
+-- TODO get header directory (deprecated)
 function target:headerdir()
     return self:get("headerdir") or config.buildir()
+end
+
+-- get configuration output directory
+function target:configdir()
+    return self:get("configdir") or config.buildir()
 end
 
 -- get install directory
@@ -1115,75 +1203,19 @@ function target:headerfiles(outputdir, only_deprecated)
     return srcheaders, dstheaders
 end
 
+-- get the configuration files
+function target:configfiles(outputdir)
+    return self:_copiedfiles("configfiles", outputdir or self:configdir(), function (dstpath, fileinfo)
+            if dstpath:endswith(".in") then
+                dstpath = dstpath:sub(1, -4)
+            end
+            return dstpath
+        end)
+end
+
 -- get the install files
 function target:installfiles(outputdir)
-
-    -- no install files?
-    local installfiles = self:get("installfiles")
-    if not installfiles then return end
-
-    -- get the install directory
-    local installdir = outputdir or self:installdir()
-
-    -- get the extra information
-    local extrainfo = table.wrap(self:get("__extra_installfiles"))
-
-    -- get the source pathes and destinate pathes
-    local srcfiles = {}
-    local dstfiles = {}
-    for _, installfile in ipairs(table.wrap(installfiles)) do
-
-        -- get the root directory
-        local rootdir, count = installfile:gsub("|.*$", ""):gsub("%(.*%)$", "")
-        if count == 0 then
-            rootdir = nil
-        end
-
-        -- remove '(' and ')'
-        local srcpathes = installfile:gsub("[%(%)]", "")
-        if srcpathes then 
-
-            -- get the source pathes
-            srcpathes = os.match(srcpathes)
-            if srcpathes and #srcpathes > 0 then
-
-                -- add the source install files
-                table.join2(srcfiles, srcpathes)
-
-                -- the install directory exists?
-                if installdir then
-
-                    -- get the prefix directory
-                    local prefixdir = (extrainfo[installfile] or {}).prefixdir
-
-                    -- add the destinate install files
-                    for _, srcpath in ipairs(srcpathes) do
-
-                        -- get the destinate directory
-                        local dstdir = installdir
-                        if prefixdir then
-                            dstdir = path.join(dstdir, prefixdir)
-                        end
-
-                        -- the destinate installfile
-                        local dstfile = nil
-                        if rootdir then
-                            dstfile = path.absolute(path.relative(srcpath, rootdir), dstdir)
-                        else
-                            dstfile = path.join(dstdir, path.filename(srcpath))
-                        end
-                        assert(dstfile)
-
-                        -- add it
-                        table.insert(dstfiles, dstfile)
-                    end
-                end
-            end
-        end
-    end
-
-    -- ok?
-    return srcfiles, dstfiles
+    return self:_copiedfiles("installfiles", outputdir or self:installdir())
 end
 
 -- get depend file from object file
