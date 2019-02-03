@@ -26,7 +26,6 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
-import("core.platform.platform")
 
 -- get all configuration files
 function _get_configfiles()
@@ -87,39 +86,22 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         os.tryrm(dstfile_tmp)
         os.cp(srcfile, dstfile_tmp)
 
-        -- replace all variables
+        -- get all variables
         local variables = fileinfo.variables or {}
-        local pattern = fileinfo.pattern or "%${(.-)}"
-        io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
-
-            -- to lower
-            variable = variable:trim():lower()
-
-            -- hack buildir first
-            if variable == "buildir" then
-                return config.buildir()
-            end
-
-            -- attempt to get it directly from the configure
-            local result = variables[variable] or config.get(variable)
-            if not result or type(result) ~= "string" then 
-
-                -- init maps
-                local maps = 
-                {
-                    host       = os.host()
-                ,   projectdir = os.projectdir()
-                }
-                result = maps[variable]
-
-                -- attempt to get it from the platform tools, e.g. cc, cxx, ld ..
-                -- because these values may not exist in config cache when call `config.get()`, we need check and get it.
-                --
-                if not result then
-                    result = platform.tool(variable)
+        for _, target in ipairs(targets) do
+            for name, value in pairs(target:get("configvar")) do
+                if variables[name] == nil then
+                    variables[name] = table.unwrap(value)
                 end
             end
-            return result
+        end
+
+        -- replace all variables
+        local pattern = fileinfo.pattern or "%${(.-)}"
+        io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
+            local value = variables[variable:trim()] 
+            assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)
+            return value
         end)
 
         -- update file if the content is changed

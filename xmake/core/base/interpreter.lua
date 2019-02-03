@@ -1107,6 +1107,10 @@ function interpreter:api_register_set_keyvalues(scope_kind, ...)
         local name_key = name .. "." .. key
         scope[name_key] = values
 
+        -- fix override attributes
+        scope["__override_" .. name] = false
+        scope["__override_" .. name_key] = true
+
         -- save extra config
         if extra_config then
             scope["__extra_" .. name_key] = scope["__extra_" .. name_key] or {}

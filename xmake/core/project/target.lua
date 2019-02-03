@@ -77,6 +77,7 @@ function target.apis()
         {
             -- target.set_xxx
             "target.set_values"
+        ,   "target.set_configvar"
             -- target.add_xxx
         ,   "target.add_values"
         }
