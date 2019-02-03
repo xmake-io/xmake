@@ -396,6 +396,28 @@ function interpreter:_api_within_scope(scope_kind, apiname)
     end
 end
 
+-- set api function within scope
+function interpreter:_api_within_scope_set(scope_kind, apiname, apifunc)
+
+    -- the private
+    local priv = self._PRIVATE
+    assert(priv)
+
+    -- the scopes
+    local scopes = priv._SCOPES
+    assert(scopes)
+
+    -- get scope api
+    if scope_kind and priv._APIS then
+
+        -- get api function
+        local api_scope = priv._APIS[scope_kind]
+        if api_scope then
+            api_scope[apiname] = apifunc
+        end
+    end
+end
+
 -- clear results
 function interpreter:_clear()
 

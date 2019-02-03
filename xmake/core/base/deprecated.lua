@@ -48,32 +48,26 @@ end
 -- dump all deprecated entries
 function deprecated.dump()
 
-    -- the entries
-    deprecated._ENTRIES = deprecated._ENTRIES or {}
-
-    -- dump all
+    -- dump one or more ..
     local index = 0
+    deprecated._ENTRIES = deprecated._ENTRIES or {}
     for old, new in pairs(deprecated._ENTRIES) do
 
-        -- trace newline
+        -- trace
         if index == 0 then
             print("")
         end
-
-        -- trace
         if new then
             utils.cprint("${bright color.warning}deprecated: ${clear}please uses %s instead of %s", new, old)
         else
             utils.cprint("${bright color.warning}deprecated: ${clear}please remove %s", old)
         end
 
-        -- too much?
-        if index > 6 and not option.get("verbose") then
+        -- show more?
+        if not option.get("verbose") then
             utils.cprint("${bright color.warning}deprecated: ${clear}add -v for getting more ..")
             break
         end
-
-        -- update index
         index = index + 1
     end
 end
