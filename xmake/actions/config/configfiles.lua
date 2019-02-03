@@ -99,8 +99,38 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         -- replace all variables
         local pattern = fileinfo.pattern or "%${(.-)}"
         io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
-            local value = variables[variable:trim()] 
-            assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)
+
+            -- get variable name
+            variable = variable:trim()
+
+            -- is ${define variable}?
+            local isdefine = false
+            if variable:startswith("define") then
+                variable = variable:split("%s+")[2]
+                isdefine = true
+            end
+
+            -- get variable value
+            local value = variables[variable] 
+            if isdefine then
+                if value == nil then
+                    value = ("/* #undef %s */"):format(variable)
+                elseif type(value) == "boolean" then
+                    if value then
+                        value = ("#define %s 1"):format(variable)
+                    else
+                        value = ("/* #define %s 0 */"):format(variable)
+                    end
+                elseif type(value) == "number" then
+                    value = ("#define %s %d"):format(variable, value)
+                elseif type(value) == "string" then
+                    value = ("#define %s \"%s\""):format(variable, value)
+                else
+                    raise("unknown variable(%s) type: %s", variable, type(value))
+                end
+            else
+                assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)
+            end
             return value
         end)
 

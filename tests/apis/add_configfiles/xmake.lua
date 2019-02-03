@@ -2,6 +2,17 @@
 set_configvar("ARCH", get_config("arch"))
 set_configvar("PLAT", get_config("plat"))
 
+option("foo")
+    set_default("foo")
+    set_description("The Foo Info")
+option_end()
+
+if has_config("foo") then
+    set_configvar("FOO_ENABLE", 1)
+    set_configvar("FOO_ENABLE2", false)
+    set_configvar("FOO_STRING", get_config("foo"))
+end
+
 target("test")
     set_kind("binary")
     add_files("main.c")

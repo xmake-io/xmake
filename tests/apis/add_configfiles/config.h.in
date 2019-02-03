@@ -1,2 +1,6 @@
 #define HAVE_${module}_H 
 #define HELLO "${hello} ${ARCH} ${PLAT}"
+
+${define FOO_ENABLE}
+${define FOO_ENABLE2}
+${define FOO_STRING}
