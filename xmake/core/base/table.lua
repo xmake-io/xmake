@@ -228,8 +228,8 @@ end
 -- remove repeat from the given array
 function table.unique(array, barrier)
 
-    -- remove repeat
-    if type(array) == "table" then
+    -- remove repeat for array
+    if table.is_array(array) then
 
         -- not only one?
         if table.getn(array) ~= 1 then
