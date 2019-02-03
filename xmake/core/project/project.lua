@@ -209,7 +209,6 @@ function project.interpreter()
         {
             -- set_xxx
             "set_project"
-        ,   "set_version"
         ,   "set_modes"
             -- add_xxx
         ,   "add_requires"

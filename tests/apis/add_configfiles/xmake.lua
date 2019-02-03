@@ -1,7 +1,4 @@
 
-set_configvar("ARCH", get_config("arch"))
-set_configvar("PLAT", get_config("plat"))
-
 option("foo")
     set_default("foo")
     set_description("The Foo Info")

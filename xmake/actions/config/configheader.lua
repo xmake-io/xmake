@@ -49,12 +49,12 @@ function _make_for_target(target)
     -- make version
     local version, version_build = target:configversion()
     if not version or not version_build then 
-        local project_version, project_version_build = project.version()
+        local target_version, target_version_build = target:version()
         if not version then
-            version = project_version
+            version = target_version
         end
         if not version_build then
-            version_build = project_version_build
+            version_build = target_version_build
         end
     end
     if version then

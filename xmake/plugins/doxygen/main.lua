@@ -77,7 +77,15 @@ function main()
     --
     -- PROJECT_NUMBER = 
     --
-    local version = project.version()
+    local version = nil
+    for _, target in ipairs(project.targets()) do
+        if target:get("enabled") ~= false then
+            version = target:version()
+            if version then
+                break
+            end
+        end
+    end
     if version then
         io.gsub(doxyfile, "PROJECT_NUMBER%s-=.-\n", format("PROJECT_NUMBER = %s\n", version))
     end

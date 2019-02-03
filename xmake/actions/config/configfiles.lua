@@ -24,8 +24,10 @@
 
 -- imports
 import("core.base.option")
+import("core.base.semver")
 import("core.project.config")
 import("core.project.project")
+import("core.platform.platform")
 
 -- get all configuration files
 function _get_configfiles()
@@ -63,6 +65,50 @@ function _get_configfiles()
         end
     end
     return configfiles
+end
+
+-- get the builtin variables
+function _get_builtinvars_target(target)
+
+    -- get version variables
+    local builtinvars = {}
+    local version, version_build = target:version()
+    if version then
+        builtinvars.VERSION = version
+        try {function () 
+            local v = semver.new(version)
+            if v then
+                builtinvars.VERSION_MAJOR = v:major()
+                builtinvars.VERSION_MINOR = v:minor()
+                builtinvars.VERSION_ALTER = v:patch()
+            end
+        end}
+        if version_build then
+            builtinvars.VERSION_BUILD = version_build
+        end
+    end
+    return builtinvars
+end
+
+-- get the global builtin variables
+function _get_builtinvars_global()
+    local builtinvars = _g.builtinvars_global 
+    if builtinvars == nil then
+        builtinvars = 
+        {
+            arch  = config.get("arch") or os.arch()
+        ,   plat  = config.get("plat") or os.host()
+        ,   host  = os.host()
+        ,   mode  = config.get("mode") or "release"
+        ,   debug = is_mode("debug") and 1 or 0
+        ,   os    = platform.os()
+        }
+        for name, value in pairs(builtinvars) do
+            builtinvars[name:upper()] = type(value) == "string" and value:upper() or value
+        end
+        _g.builtinvars_global = builtinvars
+    end
+    return builtinvars
 end
 
 -- generate the configuration file
@@ -113,6 +159,19 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                         variables[name] = table.unwrap(value)
                     end
                 end
+            end
+
+            -- get the builtin variables from the target
+            for name, value in pairs(_get_builtinvars_target(target)) do
+                if variables[name] == nil then
+                    variables[name] = value
+                end
+            end
+        end
+        -- get the global builtin variables 
+        for name, value in pairs(_get_builtinvars_global()) do
+            if variables[name] == nil then
+                variables[name] = value
             end
         end
 

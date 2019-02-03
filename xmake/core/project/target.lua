@@ -55,6 +55,7 @@ function target.apis()
             "target.set_kind"
         ,   "target.set_strip"
         ,   "target.set_rules"
+        ,   "target.set_version"
         ,   "target.set_enabled"
         ,   "target.set_default"
         ,   "target.set_options"
@@ -489,6 +490,30 @@ end
 -- get the target name
 function target:name()
     return self._NAME
+end
+
+-- get the target version
+function target:version()
+
+    -- get version and build version
+    local version = self:get("version")
+    local version_build = nil
+    if version then
+        local version_extra = self:get("__extra_version")
+        if version_extra then
+            version_build = self._VERSION_BUILD
+            if not version_build then
+                version_build = table.wrap(version_extra[version]).build
+                if type(version_build) == "string" then
+                    version_build = os.date(version_build, os.time())
+                    self._VERSION_BUILD = version_build
+                end
+            end
+        end
+    end
+
+    -- ok?
+    return version, version_build
 end
 
 -- get the base name of target file
@@ -1477,7 +1502,7 @@ function target:script(name, generic)
     return result
 end
 
--- get the config header version
+-- TODO get the config header version (deprecated)
 function target:configversion()
 
     -- get the config version and build version
