@@ -13,6 +13,7 @@
 * [#339](https://github.com/tboox/xmake/issues/339): Improve `add_requires` and `find_package` to integrate the 3rd package manager
 * [#327](https://github.com/tboox/xmake/issues/327): Integrate with Conan package manager 
 * Add the builtin api `find_packages("pcre2", "zlib")` to find multiple packages
+* [#320](https://github.com/tboox/xmake/issues/320): Add template configuration files and replace all variables before building
 
 ### Changes
 
@@ -560,6 +561,7 @@
 * [#339](https://github.com/tboox/xmake/issues/339): 改进`add_requires`和`find_package`使其支持对第三方包管理的集成支持
 * [#327](https://github.com/tboox/xmake/issues/327): 实现对conan包管理的集成支持
 * 添加内置API `find_packages("pcre2", "zlib")`去同时查找多个依赖包，不需要通过import导入即可直接调用
+* [#320](https://github.com/tboox/xmake/issues/320): 添加模板配置文件相关接口，`add_configfiles`和`set_configvar`
 
 ### 改进
 
