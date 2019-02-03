@@ -210,6 +210,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             else
                 assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)
             end
+            dprint("  > replace %s -> %s", variable, value)
             return value
         end)
 
