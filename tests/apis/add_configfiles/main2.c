@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "config.h"
+#include "config2.h"
 
 int main(int argc, char** argv)
 {

@@ -1,0 +1,2 @@
+#define HAVE_@module@_H 
+#define HELLO2 "@hello@ @ARCH@ @PLAT@"

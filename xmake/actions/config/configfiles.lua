@@ -126,11 +126,11 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         if os.isfile(dstfile_tmp) then
             if os.isfile(dstfile) then
                 if io.readfile(dstfile_tmp) ~= io.readfile(dstfile) then
-                    os.mv(dstfile_tmp, dstfile)
+                    os.cp(dstfile_tmp, dstfile)
                     generated = true
                 end
             else
-                os.mv(dstfile_tmp, dstfile)
+                os.cp(dstfile_tmp, dstfile)
                 generated = true
             end
         end

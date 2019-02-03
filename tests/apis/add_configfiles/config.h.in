@@ -1,3 +1,2 @@
 #define HAVE_${module}_H 
 #define HELLO "${hello} ${ARCH} ${PLAT}"
-#define HELLO2 "@hello2@"
