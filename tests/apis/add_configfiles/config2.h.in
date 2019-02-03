@@ -1,2 +1,10 @@
 #define HAVE_@module@_H 
 #define HELLO2 "@hello@ @ARCH@ @PLAT@"
+
+@define FOO_ENABLE@
+@define FOO_ENABLE2@
+@define FOO_STRING@
+
+@define FOO2_ENABLE@
+@define FOO2_ENABLE2@
+@define FOO2_STRING@

@@ -89,9 +89,29 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         -- get all variables
         local variables = fileinfo.variables or {}
         for _, target in ipairs(targets) do
+
+            -- get variables from the target
             for name, value in pairs(target:get("configvar")) do
                 if variables[name] == nil then
                     variables[name] = table.unwrap(value)
+                end
+            end
+
+            -- get variables from the target.options
+            for _, opt in ipairs(target:orderopts()) do
+                for name, value in pairs(opt:get("configvar")) do
+                    if variables[name] == nil then
+                        variables[name] = table.unwrap(value)
+                    end
+                end
+            end
+
+            -- get variables from the target.packages
+            for _, pkg in ipairs(target:orderpkgs()) do
+                for name, value in pairs(pkg:get("configvar")) do
+                    if variables[name] == nil then
+                        variables[name] = table.unwrap(value)
+                    end
                 end
             end
         end

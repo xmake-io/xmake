@@ -78,6 +78,11 @@ function option.apis()
         ,   "option.add_vectorexts"
         ,   "option.add_features"
         }
+    ,   keyvalues =
+        {
+            -- option.set_xxx
+            "option.set_configvar"
+        }
     ,   script =
         {
             -- option.before_xxx

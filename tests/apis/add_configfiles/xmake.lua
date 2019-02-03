@@ -13,6 +13,13 @@ if has_config("foo") then
     set_configvar("FOO_STRING", get_config("foo"))
 end
 
+option("foo2")
+    set_default(true)
+    set_description("Enable Foo2")
+    set_configvar("FOO2_ENABLE", true) 
+    set_configvar("FOO2_STRING", "foo")
+option_end()
+
 target("test")
     set_kind("binary")
     add_files("main.c")
@@ -35,3 +42,5 @@ target("test2")
     add_configfiles("config2.h.in", {variables = {hello = "xmake2"}, pattern = "@(.-)@", prefixdir = "header"})
     add_configfiles("*.man", {onlycopy = true, prefixdir = "man"})
     add_includedirs("$(buildir)/config2/header")
+
+    add_options("foo2")
