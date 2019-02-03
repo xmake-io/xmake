@@ -153,8 +153,8 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
         local dep = orderdeps[total + 1 - idx]
 
         -- is static or shared target library? link it
-        local depkind      = dep:get("kind")
-        local targetkind   = target:get("kind")
+        local depkind      = dep:targetkind()
+        local targetkind   = target:targetkind()
         local depconfig    = table.wrap(target:depconfig(dep:name()))
         if (depkind == "static" or depkind == "shared" or depkind == "object") and (depconfig.inherit == nil or depconfig.inherit) then
             if (flagname == "links" or flagname == "syslinks") and (targetkind == "binary" or targetkind == "shared") then

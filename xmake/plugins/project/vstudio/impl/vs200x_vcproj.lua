@@ -74,7 +74,7 @@ end
 function _make_linkflags(target, vcprojdir)
 
     -- make the linking flags
-    local linkflags = linker.linkflags(target:get("kind"), target:sourcekinds(), {target = target})
+    local linkflags = linker.linkflags(target:targetkind(), target:sourcekinds(), {target = target})
 
     -- replace -libpath:dir or /libpath:dir, -pdb:symbol.pdb or /pdb:symbol.pdb
     local flags = {}
@@ -214,7 +214,7 @@ end
 function _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
 
     -- need not linker?
-    local kind = target:get("kind")
+    local kind = target:targetkind()
     if kind ~= "binary" and kind ~= "shared" then
         vcprojfile:enter("<Tool")
             vcprojfile:print("Name=\"VCLinkerTool\"")
@@ -304,7 +304,7 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
             vcprojfile:print("Name=\"$(mode)|Win32\"")
 			vcprojfile:print("OutputDirectory=\"%s\"", path.relative(path.absolute(target:targetdir()), vcprojdir))
 			vcprojfile:print("IntermediateDirectory=\"%s\"", path.relative(path.absolute(target:objectdir()), vcprojdir))
-			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:get("kind")]))
+			vcprojfile:print("ConfigurationType=\"%d\"", assert(configuration_types[target:targetkind()]))
             vcprojfile:print("CharacterSet=\"%d\"", unicode and 1 or 2) -- mbc: 2, wcs: 1
             vcprojfile:print("UseOfMFC=\"%d\"", usemfc)
             vcprojfile:print(">")

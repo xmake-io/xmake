@@ -775,7 +775,7 @@ end
 
 -- get the target kind
 function target:targetkind()
-    return self:get("kind")
+    return self:get("kind") or "phony"
 end
 
 -- get the target directory

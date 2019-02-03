@@ -174,8 +174,8 @@ function compiler:build(sourcefiles, targetfile, opt)
 
     -- get target kind
     local targetkind = opt.targetkind
-    if not targetkind and opt.target then
-        targetkind = opt.target:get("kind")
+    if not targetkind and opt.target and opt.target.targetkind then
+        targetkind = opt.target:targetkind()
     end
 
     -- get it
@@ -206,8 +206,8 @@ function compiler:buildargv(sourcefiles, targetfile, opt)
 
     -- get target kind
     local targetkind = opt.targetkind
-    if not targetkind and opt.target then
-        targetkind = opt.target:get("kind")
+    if not targetkind and opt.target and opt.target.targetkind then
+        targetkind = opt.target:targetkind()
     end
 
     -- get it
@@ -280,8 +280,8 @@ function compiler:compflags(opt)
 
     -- get target kind
     local targetkind = opt.targetkind
-    if not targetkind and target then
-        targetkind = target:get("kind")
+    if not targetkind and target and target.targetkind then
+        targetkind = target:targetkind()
     end
 
     -- add flags from the configure 

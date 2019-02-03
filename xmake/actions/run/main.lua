@@ -168,7 +168,7 @@ function _check_targets(targetname)
         -- install default or all targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:get("kind") == "binary" then
+            if (default == nil or default == true or option.get("all")) and target:targetkind() == "binary" then
                 table.insert(targets, target)
             end
         end
@@ -217,7 +217,7 @@ function main()
         -- run default or all binary targets
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:get("kind") == "binary" then
+            if (default == nil or default == true or option.get("all")) and target:targetkind() == "binary" then
                 _run_deps(target)
                 _run(target)
             end

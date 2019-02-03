@@ -87,7 +87,7 @@ function _do_uninstall_target(target)
     }
 
     -- call script
-    local script = scripts[target:get("kind")]
+    local script = scripts[target:targetkind()]
     if script then
         script(target)
     end

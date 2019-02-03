@@ -259,8 +259,8 @@ function linker:linkflags(opt)
 
     -- get target kind
     local targetkind = opt.targetkind
-    if not targetkind and target then
-        targetkind = target:get("kind")
+    if not targetkind and target and target.targetkind then
+        targetkind = target:targetkind()
     end
 
     -- add flags from the configure 
