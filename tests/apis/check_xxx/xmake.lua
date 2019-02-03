@@ -1,0 +1,18 @@
+includes("check_links.lua")
+includes("check_ctypes.lua")
+includes("check_cfuncs.lua")
+includes("check_csnippets.lua")
+includes("check_cincludes.lua")
+
+target("test")
+    set_kind("binary")
+    add_files("*.c")
+    add_configfiles("config.h.in")
+
+    check_ctypes("HAS_WCHAR", "wchar_t")
+    check_cincludes("HAS_STRING_H", "string.h")
+    configvar_check_cincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
+    configvar_check_ctypes("HAS_WCHAR_AND_FLOAT", {"wchar_t", "float"})
+    configvar_check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
+    configvar_check_csnippets("HAS_STATIC_ASSERT", "_Static_assert(1, \"\");")
+    configvar_check_cfuncs("HAS_SETJMP", "setjmp", {includes = {"signal.h", "setjmp.h"}})

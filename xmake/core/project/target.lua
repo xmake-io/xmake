@@ -768,8 +768,6 @@ function target:dependir()
     if not dependir then
         dependir = path.join(config.buildir(), ".deps", self:name())
     end
-
-    -- ok?
     return dependir
 end
 
