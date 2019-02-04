@@ -52,6 +52,11 @@ end
 -- do clean target 
 function _do_clean_target(target)
 
+    -- is phony?
+    if target:isphony() then
+        return 
+    end
+
     -- remove the target file 
     _remove(target:targetfile()) 
 
