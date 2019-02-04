@@ -19,64 +19,21 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        check_cfuncs.lua
+-- @file        check_features.lua
 --
 
--- check c funcs and add macro definition 
---
--- the function syntax
---  - sigsetjmp
---  - sigsetjmp((void*)0, 0)
---  - sigsetjmp{sigsetjmp((void*)0, 0);}
---  - sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
+-- check features and add macro definition 
 --
 -- e.g.
 --
--- check_cfuncs("HAS_SETJMP", "setjmp", {includes = {"signal.h", "setjmp.h"}, links = {}})
--- check_cfuncs("HAS_SETJMP", {"setjmp", "sigsetjmp{sigsetjmp((void*)0, 0);}"})
+-- check_features("HAS_CONSTEXPR", "cxx_constexpr")
+-- check_features("HAS_CONSEXPR_AND_STATIC_ASSERT", {"cxx_constexpr", "c_static_assert"}, {cxflags = "", languages = "c++11"})
 --
-function check_cfuncs(definition, funcs, opt)
+function check_features(definition, features, opt)
     opt = opt or {}
     option(definition)
-        add_cfuncs(funcs)
+        add_features(features)
         add_defines(definition)
-        if opt.links then
-            add_links(opt.links)
-        end
-        if opt.includes then
-            add_cincludes(opt.includes)
-        end
-        if opt.languages then
-            set_languages(opt.languages)
-        end
-        if opt.cflags then
-            add_cflags(opt.cflags)
-        end
-        if opt.cflags then
-            add_cxflags(opt.cxflags)
-        end
-    option_end()
-    add_options(definition)
-end
-
--- check c funcs and add macro definition to the configuration files 
---
--- e.g.
---
--- configvar_check_cfuncs("HAS_SETJMP", "setjmp", {includes = {"signal.h", "setjmp.h"}, links = {}})
--- configvar_check_cfuncs("HAS_SETJMP", {"setjmp", "sigsetjmp{sigsetjmp((void*)0, 0);}"})
---
-function configvar_check_cfuncs(definition, funcs, opt)
-    opt = opt or {}
-    option(definition)
-        add_cfuncs(funcs)
-        set_configvar(definition, 1)
-        if opt.links then
-            add_links(opt.links)
-        end
-        if opt.includes then
-            add_cincludes(opt.includes)
-        end
         if opt.languages then
             set_languages(opt.languages)
         end
@@ -85,6 +42,37 @@ function configvar_check_cfuncs(definition, funcs, opt)
         end
         if opt.cxflags then
             add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
+        end
+    option_end()
+    add_options(definition)
+end
+
+-- check features and add macro definition to the configuration files 
+--
+-- e.g.
+--
+-- configvar_check_features("HAS_CONSTEXPR", "cxx_constexpr")
+-- configvar_check_features("HAS_CONSEXPR_AND_STATIC_ASSERT", {"cxx_constexpr", "c_static_assert"}, {languages = "c++11"})
+--
+function configvar_check_features(definition, features, opt)
+    opt = opt or {}
+    option(definition)
+        add_features(features)
+        set_configvar(definition, 1)
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cflags then
+            add_cflags(opt.cflags)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
         end
     option_end()
     add_options(definition)

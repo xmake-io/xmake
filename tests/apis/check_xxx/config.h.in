@@ -5,3 +5,5 @@ ${define HAS_WCHAR_AND_FLOAT}
 ${define HAS_PTHREAD}
 ${define HAS_STATIC_ASSERT}
 ${define HAS_SETJMP}
+${define HAS_CONSTEXPR}
+${define HAS_CONSEXPR_AND_STATIC_ASSERT}

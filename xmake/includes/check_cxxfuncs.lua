@@ -46,6 +46,15 @@ function check_cxxfuncs(definition, funcs, opt)
         if opt.includes then
             add_cincludes(opt.includes)
         end
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
+        end
     option_end()
     add_options(definition)
 end
@@ -67,6 +76,15 @@ function configvar_check_cxxfuncs(definition, funcs, opt)
         end
         if opt.includes then
             add_cincludes(opt.includes)
+        end
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
         end
     option_end()
     add_options(definition)

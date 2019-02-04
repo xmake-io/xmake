@@ -28,10 +28,26 @@
 --
 -- check_cxxsnippets("HAS_STATIC_ASSERT", "static_assert(1, \"\");")
 --
-function check_cxxsnippets(definition, snippets)
+function check_cxxsnippets(definition, snippets, opt)
+    opt = opt or {}
     option(definition)
         add_cxxsnippets(definition, snippets)
         add_defines(definition)
+        if opt.links then
+            add_links(opt.links)
+        end
+        if opt.includes then
+            add_cincludes(opt.includes)
+        end
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
+        end
     option_end()
     add_options(definition)
 end
@@ -42,10 +58,26 @@ end
 --
 -- configvar_check_cxxsnippets("HAS_STATIC_ASSERT", "static_assert(1, \"\");")
 --
-function configvar_check_cxxsnippets(definition, snippets)
+function configvar_check_cxxsnippets(definition, snippets, opt)
+    opt = opt or {}
     option(definition)
         add_cxxsnippets(definition, snippets)
         set_configvar(definition, 1)
+        if opt.links then
+            add_links(opt.links)
+        end
+        if opt.includes then
+            add_cincludes(opt.includes)
+        end
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
+        end
     option_end()
     add_options(definition)
 end

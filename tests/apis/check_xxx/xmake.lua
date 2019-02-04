@@ -1,6 +1,7 @@
 includes("check_links.lua")
 includes("check_ctypes.lua")
 includes("check_cfuncs.lua")
+includes("check_features.lua")
 includes("check_csnippets.lua")
 includes("check_cincludes.lua")
 
@@ -16,3 +17,5 @@ target("test")
     configvar_check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
     configvar_check_csnippets("HAS_STATIC_ASSERT", "_Static_assert(1, \"\");")
     configvar_check_cfuncs("HAS_SETJMP", "setjmp", {includes = {"signal.h", "setjmp.h"}})
+    configvar_check_features("HAS_CONSTEXPR", "cxx_constexpr")
+    configvar_check_features("HAS_CONSEXPR_AND_STATIC_ASSERT", {"cxx_constexpr", "c_static_assert"}, {languages = "c++11"})

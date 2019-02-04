@@ -39,6 +39,15 @@ function check_csnippets(definition, snippets, opt)
         if opt.includes then
             add_cincludes(opt.includes)
         end
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cflags then
+            add_cflags(opt.cflags)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
     option_end()
     add_options(definition)
 end
@@ -59,6 +68,15 @@ function configvar_check_csnippets(definition, snippets, opt)
         end
         if opt.includes then
             add_cincludes(opt.includes)
+        end
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cflags then
+            add_cflags(opt.cflags)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
         end
     option_end()
     add_options(definition)

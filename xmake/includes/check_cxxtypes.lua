@@ -29,10 +29,20 @@
 -- check_cxxtypes("HAS_WCHAR", "wchar_t")
 -- check_cxxtypes("HAS_WCHAR_AND_FLOAT", {"wchar_t", "float"})
 --
-function check_cxxtypes(definition, types)
+function check_cxxtypes(definition, types, opt)
+    opt = opt or {}
     option(definition)
         add_cxxtypes(types)
         add_defines(definition)
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
+        end
     option_end()
     add_options(definition)
 end
@@ -44,10 +54,20 @@ end
 -- configvar_check_cxxtypes("HAS_WCHAR", "wchar_t")
 -- configvar_check_cxxtypes("HAS_WCHAR_AND_FLOAT", {"wchar_t", "float"})
 --
-function configvar_check_cxxtypes(definition, types)
+function configvar_check_cxxtypes(definition, types, opt)
+    opt = opt or {}
     option(definition)
         add_cxxtypes(types)
         set_configvar(definition, 1)
+        if opt.languages then
+            set_languages(opt.languages)
+        end
+        if opt.cxflags then
+            add_cxflags(opt.cxflags)
+        end
+        if opt.cxxflags then
+            add_cxxflags(opt.cxxflags)
+        end
     option_end()
     add_options(definition)
 end
