@@ -31,7 +31,7 @@
 --
 function check_features(definition, features, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_features(features)
         add_defines(definition)
         if opt.languages then
@@ -47,7 +47,7 @@ function check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
 
 -- check features and add macro definition to the configuration files 
@@ -59,7 +59,7 @@ end
 --
 function configvar_check_features(definition, features, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_features(features)
         set_configvar(definition, 1)
         if opt.languages then
@@ -75,5 +75,5 @@ function configvar_check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end

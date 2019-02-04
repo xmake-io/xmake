@@ -30,7 +30,7 @@
 --
 function check_csnippets(definition, snippets, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_csnippets(definition, snippets)
         add_defines(definition)
         if opt.links then
@@ -49,7 +49,7 @@ function check_csnippets(definition, snippets, opt)
             add_cxflags(opt.cxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
 
 -- check c snippets and add macro definition to the configuration snippets 
@@ -60,7 +60,7 @@ end
 --
 function configvar_check_csnippets(definition, snippets, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_csnippets(definition, snippets)
         set_configvar(definition, 1)
         if opt.links then
@@ -79,5 +79,5 @@ function configvar_check_csnippets(definition, snippets, opt)
             add_cxflags(opt.cxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end

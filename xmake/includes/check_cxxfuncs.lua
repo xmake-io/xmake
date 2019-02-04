@@ -37,7 +37,7 @@
 --
 function check_cxxfuncs(definition, funcs, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_cxxfuncs(funcs)
         add_defines(definition)
         if opt.links then
@@ -56,7 +56,7 @@ function check_cxxfuncs(definition, funcs, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
 
 -- check c++ funcs and add macro definition to the configuration files 
@@ -68,7 +68,7 @@ end
 --
 function configvar_check_cxxfuncs(definition, funcs, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_cxxfuncs(funcs)
         set_configvar(definition, 1)
         if opt.links then
@@ -87,5 +87,5 @@ function configvar_check_cxxfuncs(definition, funcs, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end

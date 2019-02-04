@@ -31,7 +31,7 @@
 --
 function check_ctypes(definition, types, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_ctypes(types)
         add_defines(definition)
         if opt.languages then
@@ -44,7 +44,7 @@ function check_ctypes(definition, types, opt)
             add_cxflags(opt.cxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
 
 -- check c types and add macro definition to the configuration types 
@@ -56,7 +56,7 @@ end
 --
 function configvar_check_ctypes(definition, types, opt)
     opt = opt or {}
-    option(definition)
+    option(opt.name or definition)
         add_ctypes(types)
         set_configvar(definition, 1)
         if opt.languages then
@@ -69,5 +69,5 @@ function configvar_check_ctypes(definition, types, opt)
             add_cxflags(opt.cxflags)
         end
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end

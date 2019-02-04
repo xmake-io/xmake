@@ -29,12 +29,13 @@
 -- check_cincludes("HAS_STRING_H", "string.h")
 -- check_cincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
 --
-function check_cincludes(definition, includes)
-    option(definition)
+function check_cincludes(definition, includes, opt)
+    opt = opt or {}
+    option(opt.name or definition)
         add_cincludes(includes)
         add_defines(definition)
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
 
 -- check include c files and add macro definition to the configuration files 
@@ -44,10 +45,11 @@ end
 -- configvar_check_cincludes("HAS_STRING_H", "string.h")
 -- configvar_check_cincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
 --
-function configvar_check_cincludes(definition, includes)
-    option(definition)
+function configvar_check_cincludes(definition, includes, opt)
+    opt = opt or {}
+    option(opt.name or definition)
         add_cincludes(includes)
         set_configvar(definition, 1)
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end

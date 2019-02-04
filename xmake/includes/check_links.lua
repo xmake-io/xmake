@@ -30,11 +30,11 @@
 -- check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
 --
 function check_links(definition, links)
-    option(definition)
+    option(opt.name or definition)
         add_links(links)
         add_defines(definition)
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
 
 -- check links and add macro definition to the configuration files 
@@ -45,9 +45,9 @@ end
 -- configvar_check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
 --
 function configvar_check_links(definition, links)
-    option(definition)
+    option(opt.name or definition)
         add_links(links)
         set_configvar(definition, 1)
     option_end()
-    add_options(definition)
+    add_options(opt.name or definition)
 end
