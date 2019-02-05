@@ -29,7 +29,8 @@
 -- check_links("HAS_PTHREAD", "pthread")
 -- check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
 --
-function check_links(definition, links)
+function check_links(definition, links, opt)
+    opt = opt or {}
     option(opt.name or definition)
         add_links(links)
         add_defines(definition)
@@ -44,7 +45,8 @@ end
 -- configvar_check_links("HAS_PTHREAD", "pthread")
 -- configvar_check_links("HAS_PTHREAD", {"pthread", "m", "dl"})
 --
-function configvar_check_links(definition, links)
+function configvar_check_links(definition, links, opt)
+    opt = opt or {}
     option(opt.name or definition)
         add_links(links)
         set_configvar(definition, 1)
