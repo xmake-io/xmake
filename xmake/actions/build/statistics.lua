@@ -119,7 +119,7 @@ function main()
     local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
     if not os.isdir(outputdir) then
         import("devel.git.clone")
-        clone("https://github.com/tboox/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
+        clone("https://github.com/xmake-io/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
         print("post to traffic ok!")
     end
 
@@ -128,7 +128,7 @@ function main()
     if not os.isfile(releasefile) then
         import("net.http.download")
         local version = os.versioninfo().version
-        download(format("https://github.com/tboox/xmake-stats/releases/download/v%d.%d.%d/%s", version.major, version.minor, version.alter, os.host()), releasefile)
+        download(format("https://github.com/xmake-io/xmake-stats/releases/download/v%d.%d.%d/%s", version.major, version.minor, version.alter, os.host()), releasefile)
         print("post to releases ok!")
     end
 

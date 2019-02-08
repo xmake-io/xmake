@@ -47,9 +47,9 @@ try{
     writeErrorTip 'Please set environment var "TMP" to another path'
     myExit 1
 }
-Write-Host "Start downloading https://github.com/tboox/xmake/releases/download/$version/xmake-$branch.exe .."
+Write-Host "Start downloading https://github.com/xmake-io/xmake/releases/download/$version/xmake-$branch.exe .."
 try{
-    Invoke-Webrequest "https://github.com/tboox/xmake/releases/download/$version/xmake-$branch.exe" -OutFile "$outfile"
+    Invoke-Webrequest "https://github.com/xmake-io/xmake/releases/download/$version/xmake-$branch.exe" -OutFile "$outfile"
 }catch{
     writeErrorTip 'Download failed!'
     writeErrorTip 'Check your network or... the news of S3 break'
@@ -80,7 +80,7 @@ try{
 Write-Host "Pulling xmake from branch $branch"
 $outfile=$temppath+"\$pid-xmake-repo.zip"
 try{
-    Invoke-Webrequest "https://github.com/tboox/xmake/archive/$branch.zip" -OutFile "$outfile"
+    Invoke-Webrequest "https://github.com/xmake-io/xmake/archive/$branch.zip" -OutFile "$outfile"
 }catch{
     writeErrorTip 'Pull Failed!'
     writeErrorTip 'xmake is now available but may not be newest'

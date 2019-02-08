@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: xmake
-Source: https://github.com/tboox/xmake
+Source: https://github.com/xmake-io/xmake
 
 Files: *
 Copyright: 2015-2017 ruki <waruqi@gmail.com>

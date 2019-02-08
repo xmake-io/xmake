@@ -24,7 +24,7 @@ fi
 # tarball
 tarball=$workdir/xmake-$version.tar.gz
 if [ ! -f $tarball ]; then
-    wget https://github.com/tboox/xmake/archive/v$version.tar.gz -O $workdir/xmake-$version.tar.gz
+    wget https://github.com/xmake-io/xmake/archive/v$version.tar.gz -O $workdir/xmake-$version.tar.gz
 fi
 
 # extract tarball

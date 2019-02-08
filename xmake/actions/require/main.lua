@@ -38,7 +38,7 @@ import("unlink")
 
 --
 -- the default repositories:
---     xmake-repo https://github.com/tboox/xmake-repo.git
+--     xmake-repo https://github.com/xmake-io/xmake-repo.git
 --
 -- add other repositories:
 --     xmake repo --add other-repo https://github.com/other/other-repo.git

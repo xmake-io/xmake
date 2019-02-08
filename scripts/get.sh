@@ -27,7 +27,7 @@ remote_get_content(){
 if [ "$1" = "__uninstall__" ]
 then
     # uninstall
-    makefile=$(remote_get_content https://github.com/tboox/xmake/raw/master/makefile)
+    makefile=$(remote_get_content https://github.com/xmake-io/xmake/raw/master/makefile)
     while which xmake >/dev/null 2>&1
     do
         pre=$(which xmake | sed 's/\/bin\/xmake$//')

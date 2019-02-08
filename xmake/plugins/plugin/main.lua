@@ -47,7 +47,7 @@ function _install()
         function ()
 
             -- sort main urls
-            local mainurls = {"https://github.com/tboox/xmake-plugins.git", "https://gitlab.com/tboox/xmake-plugins.git", "https://gitee.com/tboox/xmake-plugins.git"}
+            local mainurls = {"https://github.com/xmake-io/xmake-plugins.git", "https://gitlab.com/tboox/xmake-plugins.git", "https://gitee.com/tboox/xmake-plugins.git"}
             fasturl.add(mainurls)
             mainurls = fasturl.sort(mainurls)
 

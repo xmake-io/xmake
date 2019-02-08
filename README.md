@@ -15,12 +15,12 @@
     <a href="https://aur.archlinux.org/packages/xmake">
       <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
     </a>
-    <a href="https://github.com/tboox/xmake/releases">
+    <a href="https://github.com/xmake-io/xmake/releases">
       <img src="https://img.shields.io/github/release/tboox/xmake.svg?style=flat-square" alt="Github All Releases" />
     </a>
   </div>
   <div>
-    <a href="https://github.com/tboox/xmake/blob/master/LICENSE.md">
+    <a href="https://github.com/xmake-io/xmake/blob/master/LICENSE.md">
       <img src="https://img.shields.io/github/license/tboox/xmake.svg?colorB=f48041&style=flat-square" alt="license" />
     </a>
     <a href="https://www.reddit.com/r/tboox/">
@@ -54,7 +54,7 @@ If you want to known more, please refer to:
 
 * [Documents](http://xmake.io/#/home)
 * [HomePage](http://www.xmake.io)
-* [Github](https://github.com/tboox/xmake)
+* [Github](https://github.com/xmake-io/xmake)
 * [Gitee](https://gitee.com/tboox/xmake)
 
 ```
@@ -95,7 +95,7 @@ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/tboox/xm
 
 <img src="https://xmake.io/assets/img/index/add_require.png" width="70%" />
 
-An official xmake package repository: [xmake-repo](https://github.com/tboox/xmake-repo)
+An official xmake package repository: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
 ## Build project
 
@@ -202,19 +202,19 @@ $ xmake doxygen [srcdir]
 
 ## More Plugins
 
-Please download and install from the plugins repository [xmake-plugins](https://github.com/tboox/xmake-plugins).
+Please download and install from the plugins repository [xmake-plugins](https://github.com/xmake-io/xmake-plugins).
 
 ## IDE/Editor Integration
 
-* [xmake-vscode](https://github.com/tboox/xmake-vscode)
+* [xmake-vscode](https://github.com/xmake-io/xmake-vscode)
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="60%" />
 
-* [xmake-sublime](https://github.com/tboox/xmake-sublime)
+* [xmake-sublime](https://github.com/xmake-io/xmake-sublime)
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="60%" />
 
-* [xmake-idea](https://github.com/tboox/xmake-idea)
+* [xmake-idea](https://github.com/xmake-io/xmake-idea)
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="60%" />
 
@@ -280,12 +280,12 @@ Some projects using xmake:
 * Homepage：[tboox.org](https://tboox.org)
 * Community：[/r/tboox on reddit](https://www.reddit.com/r/tboox/)
 * ChatRoom：[Char on telegram](https://t.me/tbooxorg), [Chat on gitter](https://gitter.im/tboox/tboox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-* Source Code：[Github](https://github.com/tboox/xmake), [Gitee](https://gitee.com/tboox/xmake)
+* Source Code：[Github](https://github.com/xmake-io/xmake), [Gitee](https://gitee.com/tboox/xmake)
 
 ## Thanks
 
 This project exists thanks to all the people who have [contributed](CONTRIBUTING.md):
-<a href="https://github.com/tboox/xmake/graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890&button=false" /></a>
+<a href="https://github.com/xmake-io/xmake/graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890&button=false" /></a>
 
 * [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
 * [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)

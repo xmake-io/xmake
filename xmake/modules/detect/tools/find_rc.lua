@@ -49,7 +49,7 @@ function main(opt)
     
     -- fix rc.exe missing issues
     --
-    -- @see https://github.com/tboox/xmake/issues/225
+    -- @see https://github.com/xmake-io/xmake/issues/225
     -- https://stackoverflow.com/questions/43847542/rc-exe-no-longer-found-in-vs-2015-command-prompt/45319119
     --
     -- patch sdk bin directory to path environment

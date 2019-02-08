@@ -6,56 +6,56 @@
 
 * Add `string.serialize` and `string.deserialize` to serialize and deserialize object, function and others.
 * Add `xmake g --menu`
-* [#283](https://github.com/tboox/xmake/issues/283): Add `target:installdir()` and `set_installdir()` api for target
-* [#260](https://github.com/tboox/xmake/issues/260): Add `add_platformdirs` api, we can define custom platforms
-* [#310](https://github.com/tboox/xmake/issues/310): Add theme feature
-* [#318](https://github.com/tboox/xmake/issues/318): Add `add_installfiles` api to target
-* [#339](https://github.com/tboox/xmake/issues/339): Improve `add_requires` and `find_package` to integrate the 3rd package manager
-* [#327](https://github.com/tboox/xmake/issues/327): Integrate with Conan package manager 
+* [#283](https://github.com/xmake-io/xmake/issues/283): Add `target:installdir()` and `set_installdir()` api for target
+* [#260](https://github.com/xmake-io/xmake/issues/260): Add `add_platformdirs` api, we can define custom platforms
+* [#310](https://github.com/xmake-io/xmake/issues/310): Add theme feature
+* [#318](https://github.com/xmake-io/xmake/issues/318): Add `add_installfiles` api to target
+* [#339](https://github.com/xmake-io/xmake/issues/339): Improve `add_requires` and `find_package` to integrate the 3rd package manager
+* [#327](https://github.com/xmake-io/xmake/issues/327): Integrate with Conan package manager 
 * Add the builtin api `find_packages("pcre2", "zlib")` to find multiple packages
-* [#320](https://github.com/tboox/xmake/issues/320): Add template configuration files and replace all variables before building
+* [#320](https://github.com/xmake-io/xmake/issues/320): Add template configuration files and replace all variables before building
 
 ### Changes
 
 * Improve to switch version and debug mode for the dependent packages
-* [#264](https://github.com/tboox/xmake/issues/264): Support `xmake update dev` on windows
-* [#293](https://github.com/tboox/xmake/issues/293): Add `xmake f/g --mingw=xxx` configuration option and improve to find_mingw
-* [#301](https://github.com/tboox/xmake/issues/301): Improve precompiled header file
-* [#322](https://github.com/tboox/xmake/issues/322): Add `option.add_features`, `option.add_cxxsnippets` and `option.add_csnippets`
+* [#264](https://github.com/xmake-io/xmake/issues/264): Support `xmake update dev` on windows
+* [#293](https://github.com/xmake-io/xmake/issues/293): Add `xmake f/g --mingw=xxx` configuration option and improve to find_mingw
+* [#301](https://github.com/xmake-io/xmake/issues/301): Improve precompiled header file
+* [#322](https://github.com/xmake-io/xmake/issues/322): Add `option.add_features`, `option.add_cxxsnippets` and `option.add_csnippets`
 * Remove some deprecated interfaces of xmake 1.x, e.g. `add_option_xxx`
-* [#327](https://github.com/tboox/xmake/issues/327): Support conan package manager for `lib.detect.find_package` 
-* [#319](https://github.com/tboox/xmake/issues/319): Add `add_headerfiles` and `add_headerdirs` to improve to set header files and directories
+* [#327](https://github.com/xmake-io/xmake/issues/327): Support conan package manager for `lib.detect.find_package` 
+* [#319](https://github.com/xmake-io/xmake/issues/319): Add `add_headerfiles` and `add_headerdirs` to improve to set header files and directories
 * Improve `lib.detect.find_package` and add builtin `find_packages("zlib 1.x", "openssl", {xxx = ...})` api
 
 ### Bugs fixed
 
 * Fix cannot call `set_optimize()` to set optimization flags when exists `add_rules("mode.release")`
-* [#289](https://github.com/tboox/xmake/issues/289): Fix unarchive gzip file failed on windows
-* [#296](https://github.com/tboox/xmake/issues/296): Fix `option.add_includedirs` for cuda
-* [#321](https://github.com/tboox/xmake/issues/321): Fix find program bug with $PATH envirnoment
+* [#289](https://github.com/xmake-io/xmake/issues/289): Fix unarchive gzip file failed on windows
+* [#296](https://github.com/xmake-io/xmake/issues/296): Fix `option.add_includedirs` for cuda
+* [#321](https://github.com/xmake-io/xmake/issues/321): Fix find program bug with $PATH envirnoment
 
 ## v2.2.3
 
 ### New features
 
-* [#233](https://github.com/tboox/xmake/issues/233): Support windres for mingw platform
-* [#239](https://github.com/tboox/xmake/issues/239): Add cparser compiler support
+* [#233](https://github.com/xmake-io/xmake/issues/233): Support windres for mingw platform
+* [#239](https://github.com/xmake-io/xmake/issues/239): Add cparser compiler support
 * Add plugin manager `xmake plugin --help`
 * Add `add_syslinks` api to add system libraries dependence
 * Add `xmake l time xmake [--rebuild]` to record compilation time
-* [#250](https://github.com/tboox/xmake/issues/250): Add `xmake f --vs_sdkver=10.0.15063.0` to change windows sdk version
+* [#250](https://github.com/xmake-io/xmake/issues/250): Add `xmake f --vs_sdkver=10.0.15063.0` to change windows sdk version
 * Add `lib.luajit.ffi` and `lib.luajit.jit` extension modules
-* [#263](https://github.com/tboox/xmake/issues/263): Add new target kind: object to only compile object files
+* [#263](https://github.com/xmake-io/xmake/issues/263): Add new target kind: object to only compile object files
 
 ### Changes
 
-* [#229](https://github.com/tboox/xmake/issues/229): Improve to select toolset for vcproj plugin
+* [#229](https://github.com/xmake-io/xmake/issues/229): Improve to select toolset for vcproj plugin
 * Improve compilation dependences
 * Support *.xz for extractor
-* [#249](https://github.com/tboox/xmake/pull/249): revise progress formatting to space-leading three digit percentages 
-* [#247](https://github.com/tboox/xmake/pull/247): Add `-D` and `--diagnosis` instead of `--backtrace`
-* [#259](https://github.com/tboox/xmake/issues/259): Improve on_build, on_build_file and on_xxx for target and rule
-* [#269](https://github.com/tboox/xmake/issues/269): Clean up the temporary files at last 30 days
+* [#249](https://github.com/xmake-io/xmake/pull/249): revise progress formatting to space-leading three digit percentages 
+* [#247](https://github.com/xmake-io/xmake/pull/247): Add `-D` and `--diagnosis` instead of `--backtrace`
+* [#259](https://github.com/xmake-io/xmake/issues/259): Improve on_build, on_build_file and on_xxx for target and rule
+* [#269](https://github.com/xmake-io/xmake/issues/269): Clean up the temporary files at last 30 days
 * Improve remote package manager
 * Support to add packages with only header file
 * Support to modify builtin package links, e.g. `add_packages("xxx", {links = {}})`
@@ -73,58 +73,58 @@
 * Add `set_config` to set the default configuration
 * Add `$xmake --try` to try building project using third-party buildsystem
 * Add `set_enabled(false)` to disable target 
-* [#69](https://github.com/tboox/xmake/issues/69): Add remote package management, `add_requires("tbox ~1.6.1")`
-* [#216](https://github.com/tboox/xmake/pull/216): Add windows mfc rules
+* [#69](https://github.com/xmake-io/xmake/issues/69): Add remote package management, `add_requires("tbox ~1.6.1")`
+* [#216](https://github.com/xmake-io/xmake/pull/216): Add windows mfc rules
 
 ### Changes
 
 * Improve to detect Qt envirnoment and support mingw
 * Add debug and release rules to the auto-generated xmake.lua
-* [#178](https://github.com/tboox/xmake/issues/178): Modify the shared library name for mingw.
+* [#178](https://github.com/xmake-io/xmake/issues/178): Modify the shared library name for mingw.
 * Support case-insensitive path pattern-matching for `add_files()` on windows
 * Improve to detect Qt sdk directory for `detect.sdks.find_qt`
-* [#184](https://github.com/tboox/xmake/issues/184): Improve `lib.detect.find_package` to support vcpkg
-* [#208](https://github.com/tboox/xmake/issues/208): Improve rpath for shared library
-* [#225](https://github.com/tboox/xmake/issues/225): Improve to detect vs envirnoment
+* [#184](https://github.com/xmake-io/xmake/issues/184): Improve `lib.detect.find_package` to support vcpkg
+* [#208](https://github.com/xmake-io/xmake/issues/208): Improve rpath for shared library
+* [#225](https://github.com/xmake-io/xmake/issues/225): Improve to detect vs envirnoment
 
 ### Bug fixed
 
-* [#177](https://github.com/tboox/xmake/issues/177): Fix the dependent target link bug
+* [#177](https://github.com/xmake-io/xmake/issues/177): Fix the dependent target link bug
 * Fix high cpu usage bug and Exit issues for `$ xmake f --menu`
-* [#197](https://github.com/tboox/xmake/issues/197): Fix Chinese path for generating vs201x project
+* [#197](https://github.com/xmake-io/xmake/issues/197): Fix Chinese path for generating vs201x project
 * Fix wdk rules bug
-* [#205](https://github.com/tboox/xmake/pull/205): Fix targetdir,objectdir not used in vsproject 
+* [#205](https://github.com/xmake-io/xmake/pull/205): Fix targetdir,objectdir not used in vsproject 
 
 ## v2.2.1
 
 ### New features
 
-* [#158](https://github.com/tboox/xmake/issues/158): Support CUDA Toolkit and Compiler
+* [#158](https://github.com/xmake-io/xmake/issues/158): Support CUDA Toolkit and Compiler
 * Add `set_tools` and `add_tools` apis to change the toolchains for special target
 * Add builtin rules: `mode.debug`, `mode.release`, `mode.profile` and `mode.check`
 * Add `is_mode`, `is_arch` and `is_plat` builtin apis in the custom scripts
 * Add color256 codes
-* [#160](https://github.com/tboox/xmake/issues/160): Support Qt compilation environment and add `qt.console`, `qt.application` rules
+* [#160](https://github.com/xmake-io/xmake/issues/160): Support Qt compilation environment and add `qt.console`, `qt.application` rules
 * Add some Qt project templates
-* [#169](https://github.com/tboox/xmake/issues/169): Support yasm for linux, macosx and windows
-* [#159](https://github.com/tboox/xmake/issues/159): Support WDK driver compilation environment 
+* [#169](https://github.com/xmake-io/xmake/issues/169): Support yasm for linux, macosx and windows
+* [#159](https://github.com/xmake-io/xmake/issues/159): Support WDK driver compilation environment 
 
 ### Changes
 
 * Add FAQ to the auto-generated xmake.lua
 * Support android NDK >= r14
 * Improve warning flags for swiftc
-* [#167](https://github.com/tboox/xmake/issues/167): Improve custom rules
+* [#167](https://github.com/xmake-io/xmake/issues/167): Improve custom rules
 * Improve `os.files` and `os.dirs` api
-* [#171](https://github.com/tboox/xmake/issues/171): Improve build dependence for qt rule
+* [#171](https://github.com/xmake-io/xmake/issues/171): Improve build dependence for qt rule
 * Implement `make clean` for generating makefile plugin
 
 ### Bugs fixed
 
 * Fix force to add flags bug
-* [#157](https://github.com/tboox/xmake/issues/157): Fix generate pdb file error if it's output directory does not exists
+* [#157](https://github.com/xmake-io/xmake/issues/157): Fix generate pdb file error if it's output directory does not exists
 * Fix strip all symbols bug for macho target file
-* [#168](https://github.com/tboox/xmake/issues/168): Fix generate vs201x project bug with x86/x64 architectures
+* [#168](https://github.com/xmake-io/xmake/issues/168): Fix generate vs201x project bug with x86/x64 architectures
 
 ## v2.1.9
 
@@ -142,7 +142,7 @@
 ### Changes
 
 * Improve to configure cross-toolchains, add tool alias to support unknown tool name, .e.g `xmake f --cc=gcc@ccmips.exe`
-* [#151](https://github.com/tboox/xmake/issues/151): Improve to build the share library for the mingw platform
+* [#151](https://github.com/xmake-io/xmake/issues/151): Improve to build the share library for the mingw platform
 * Improve to generate makefile plugin
 * Improve the checking errors tips
 * Improve `add_cxflags` .., force to set flags without auto checking: `add_cxflags("-DTEST", {force = true})`
@@ -156,8 +156,8 @@
 ### Bugs fixed
 
 * Fix complation dependence
-* [#151](https://github.com/tboox/xmake/issues/151): Fix `os.nuldev()` for gcc on mingw
-* [#150](https://github.com/tboox/xmake/issues/150): Fix the command line string limitation for `ar.exe`
+* [#151](https://github.com/xmake-io/xmake/issues/151): Fix `os.nuldev()` for gcc on mingw
+* [#150](https://github.com/xmake-io/xmake/issues/150): Fix the command line string limitation for `ar.exe`
 * Fix `xmake f --cross` error
 * Fix `os.cd` to the windows root path bug
 
@@ -178,7 +178,7 @@
 
 ### Bugs fixed
 
-* [#145](https://github.com/tboox/xmake/issues/145): Fix the current directory when running target
+* [#145](https://github.com/xmake-io/xmake/issues/145): Fix the current directory when running target
 
 ## v2.1.7
 
@@ -209,8 +209,8 @@
 ### Bugs fixed
 
 * Fix `set_pcxxheader` bug
-* [#140](https://github.com/tboox/xmake/issues/140): Fix `os.tmpdir()` in fakeroot
-* [#142](https://github.com/tboox/xmake/issues/142): Fix `os.getenv` charset bug on windows
+* [#140](https://github.com/xmake-io/xmake/issues/140): Fix `os.tmpdir()` in fakeroot
+* [#142](https://github.com/xmake-io/xmake/issues/142): Fix `os.getenv` charset bug on windows
 * Fix compile error with spaces path
 * Fix setenv empty value bug
 
@@ -234,8 +234,8 @@
 
 ### New features
 
-* [#83](https://github.com/tboox/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
-* [#83](https://github.com/tboox/xmake/issues/83): Add user extension modules to detect program, libraries and files.
+* [#83](https://github.com/xmake-io/xmake/issues/83): Add `add_csnippet` and `add_cxxsnippet` into `option` for detecting some compiler features.
+* [#83](https://github.com/xmake-io/xmake/issues/83): Add user extension modules to detect program, libraries and files.
 * Add `find_program`, `find_file`, `find_library`, `find_tool` and `find_package` module interfaces.
 * Add `net.*` and `devel.*` extension modules
 * Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
@@ -243,92 +243,92 @@
 * Add `has_flags`, `features` and `has_features` for detect module interfaces.
 * Add `option.on_check`, `option.after_check` and `option.before_check` api
 * Add `target.on_load` api
-* [#132](https://github.com/tboox/xmake/issues/132): Add `add_frameworkdirs` api
+* [#132](https://github.com/xmake-io/xmake/issues/132): Add `add_frameworkdirs` api
 * Add `lib.detect.has_xxx` and `lib.detect.find_xxx` apis.
 * Add `add_moduledirs` api
 * Add `includes` api instead of `add_subdirs` and `add_subfiles`
-* [#133](https://github.com/tboox/xmake/issues/133): Improve the project plugin to generate `compile_commands.json` by run  `xmake project -k compile_commands`
+* [#133](https://github.com/xmake-io/xmake/issues/133): Improve the project plugin to generate `compile_commands.json` by run  `xmake project -k compile_commands`
 * Add `set_pcheader` and `set_pcxxheader` to support the precompiled header, support gcc, clang, msvc
 * Add `xmake f -p cross` platform and support the custom platform
 
 ### Changes
 
-* [#87](https://github.com/tboox/xmake/issues/87): Add includes and links from target deps automatically 
+* [#87](https://github.com/xmake-io/xmake/issues/87): Add includes and links from target deps automatically 
 * Improve `import` to load user extension and global modules
-* [#93](https://github.com/tboox/xmake/pull/93): Improve `xmake lua` to run a single line command
+* [#93](https://github.com/xmake-io/xmake/pull/93): Improve `xmake lua` to run a single line command
 * Improve to print gcc error and warning info
 * Improve `print` interface to dump table
-* [#111](https://github.com/tboox/xmake/issues/111): Add `--root` common option to allow run xmake command as root
-* [#113](https://github.com/tboox/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
+* [#111](https://github.com/xmake-io/xmake/issues/111): Add `--root` common option to allow run xmake command as root
+* [#113](https://github.com/xmake-io/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
 * Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
 * improve builtin-variables to support to get the value envirnoment and registry
 * Improve to detect vstudio sdk and cross toolchains envirnoment
-* [#71](https://github.com/tboox/xmake/issues/71): Improve to detect compiler and linker from env vars
+* [#71](https://github.com/xmake-io/xmake/issues/71): Improve to detect compiler and linker from env vars
 * Improve the option detection (cache and multi-jobs) and increase 70% speed
-* [#129](https://github.com/tboox/xmake/issues/129): Check link deps and cache the target file
+* [#129](https://github.com/xmake-io/xmake/issues/129): Check link deps and cache the target file
 * Support `*.asm` source files for vs201x project plugin
 * Mark `add_bindings` and `add_rbindings` as deprecated
 * Optimize `xmake rebuild` speed on windows
 * Move `core.project.task` to `core.base.task`
-* Move `echo` and `app2ipa` plugins to [xmake-plugins](https://github.com/tboox/xmake-plugins) repo.
+* Move `echo` and `app2ipa` plugins to [xmake-plugins](https://github.com/xmake-io/xmake-plugins) repo.
 * Add new api `set_config_header("config.h", {prefix = ""})` instead of `set_config_h` and `set_config_h_prefix`
 
 ### Bugs fixed
 
 * Fix `try-catch-finally`
 * Fix interpreter bug when parsing multi-level subdirs
-* [#115](https://github.com/tboox/xmake/pull/115): Fix the path problem of the install script `get.sh`
+* [#115](https://github.com/xmake-io/xmake/pull/115): Fix the path problem of the install script `get.sh`
 * Fix cache bug for import()
 
 ## v2.1.4
 
 ### New features
 
-* [#68](https://github.com/tboox/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
+* [#68](https://github.com/xmake-io/xmake/issues/68): Add `$(programdir)` and `$(xmake)` builtin variables
 * add `is_host` api to get current host operating system
-* [#79](https://github.com/tboox/xmake/issues/79): Improve `xmake lua` to run interactive commands, read-eval-print (REPL)
+* [#79](https://github.com/xmake-io/xmake/issues/79): Improve `xmake lua` to run interactive commands, read-eval-print (REPL)
 
 ### Changes
 
 * Modify option menu color.
-* [#71](https://github.com/tboox/xmake/issues/71): Improve to map optimization flags for cl.exe
-* [#73](https://github.com/tboox/xmake/issues/73): Attempt to get executable path as xmake's program directory
+* [#71](https://github.com/xmake-io/xmake/issues/71): Improve to map optimization flags for cl.exe
+* [#73](https://github.com/xmake-io/xmake/issues/73): Attempt to get executable path as xmake's program directory
 * Improve the scope of `xmake.lua` in `add_subdirs` and use independent sub-scope to avoid dirty scope
-* [#78](https://github.com/tboox/xmake/pull/78): Get terminal size in runtime and soft-wrap the help printing
+* [#78](https://github.com/xmake-io/xmake/pull/78): Get terminal size in runtime and soft-wrap the help printing
 * Avoid generate `.xmake` directory if be not in project
 
 ### Bugs fixed
 
-* [#67](https://github.com/tboox/xmake/issues/67): Fix `sudo make install` permission problem
-* [#70](https://github.com/tboox/xmake/issues/70): Fix check android compiler error
+* [#67](https://github.com/xmake-io/xmake/issues/67): Fix `sudo make install` permission problem
+* [#70](https://github.com/xmake-io/xmake/issues/70): Fix check android compiler error
 * Fix temporary file path conflict
 * Fix `os.host` and `os.arch` interfaces
 * Fix interpreter bug for loading root api
-* [#77](https://github.com/tboox/xmake/pull/77): fix `cprint` no color reset eol
+* [#77](https://github.com/xmake-io/xmake/pull/77): fix `cprint` no color reset eol
 
 ## v2.1.3
 
 ### New features
 
-* [#65](https://github.com/tboox/xmake/pull/65): Add `set_default` api for target to modify default build and install behavior
+* [#65](https://github.com/xmake-io/xmake/pull/65): Add `set_default` api for target to modify default build and install behavior
 * Allows to run `xmake` command in project subdirectories, it will find the project root directory automatically
 * Add `add_rpathdirs` for target and option
 
 ### Changes
 
-* [#61](https://github.com/tboox/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
+* [#61](https://github.com/xmake-io/xmake/pull/61): Provide safer `xmake install` and `xmake uninstall` task with administrator permission
 * Provide `rpm`, `deb` and `osxpkg` install package
-* [#63](https://github.com/tboox/xmake/pull/63): More safer build and install xmake
-* [#61](https://github.com/tboox/xmake/pull/61): Check run command as root
+* [#63](https://github.com/xmake-io/xmake/pull/63): More safer build and install xmake
+* [#61](https://github.com/xmake-io/xmake/pull/61): Check run command as root
 * Improve check toolchains and implement delay checking
 * Add user tips when scanning and generating `xmake.lua` automatically
 
 ### Bugs fixed
 
 * Fix error tips for checking xmake min version
-* [#60](https://github.com/tboox/xmake/issues/60): Fix self-build for macosx and windows
-* [#64](https://github.com/tboox/xmake/issues/64): Fix compile android `armv8-a` error
-* [#50](https://github.com/tboox/xmake/issues/50): Fix only position independent executables issue for android program
+* [#60](https://github.com/xmake-io/xmake/issues/60): Fix self-build for macosx and windows
+* [#64](https://github.com/xmake-io/xmake/issues/64): Fix compile android `armv8-a` error
+* [#50](https://github.com/xmake-io/xmake/issues/50): Fix only position independent executables issue for android program
 
 ## v2.1.2
 
@@ -347,7 +347,7 @@
 
 * Fix cannot find android sdk header files
 * Fix checking option bug
-* [#57](https://github.com/tboox/xmake/issues/57): Fix code files mode to 0644
+* [#57](https://github.com/xmake-io/xmake/issues/57): Fix code files mode to 0644
 
 ## v2.1.1
 
@@ -554,56 +554,56 @@
 
 * 添加`string.serialize`和`string.deserialize`去序列化，反序列化对象，函数以及其他类型
 * 添加`xmake g --menu`去图形化配置全局选项
-* [#283](https://github.com/tboox/xmake/issues/283): 添加`target:installdir()`和`set_installdir()`接口
-* [#260](https://github.com/tboox/xmake/issues/260): 添加`add_platformdirs`接口，用户现在可以自定义扩展编译平台
-* [#310](https://github.com/tboox/xmake/issues/310): 新增主题设置支持，用户可随意切换和扩展主题样式
-* [#318](https://github.com/tboox/xmake/issues/318): 添加`add_installfiles`接口到target去自定义安装文件
-* [#339](https://github.com/tboox/xmake/issues/339): 改进`add_requires`和`find_package`使其支持对第三方包管理的集成支持
-* [#327](https://github.com/tboox/xmake/issues/327): 实现对conan包管理的集成支持
+* [#283](https://github.com/xmake-io/xmake/issues/283): 添加`target:installdir()`和`set_installdir()`接口
+* [#260](https://github.com/xmake-io/xmake/issues/260): 添加`add_platformdirs`接口，用户现在可以自定义扩展编译平台
+* [#310](https://github.com/xmake-io/xmake/issues/310): 新增主题设置支持，用户可随意切换和扩展主题样式
+* [#318](https://github.com/xmake-io/xmake/issues/318): 添加`add_installfiles`接口到target去自定义安装文件
+* [#339](https://github.com/xmake-io/xmake/issues/339): 改进`add_requires`和`find_package`使其支持对第三方包管理的集成支持
+* [#327](https://github.com/xmake-io/xmake/issues/327): 实现对conan包管理的集成支持
 * 添加内置API `find_packages("pcre2", "zlib")`去同时查找多个依赖包，不需要通过import导入即可直接调用
-* [#320](https://github.com/tboox/xmake/issues/320): 添加模板配置文件相关接口，`add_configfiles`和`set_configvar`
+* [#320](https://github.com/xmake-io/xmake/issues/320): 添加模板配置文件相关接口，`add_configfiles`和`set_configvar`
 
 ### 改进
 
 * 针对远程依赖包，改进版本和调试模式切换
-* [#264](https://github.com/tboox/xmake/issues/264): 支持在windows上更新dev/master版本，`xmake update dev`
-* [#293](https://github.com/tboox/xmake/issues/293): 添加`xmake f/g --mingw=xxx` 配置选线，并且改进find_mingw检测
-* [#301](https://github.com/tboox/xmake/issues/301): 改进编译预处理头文件以及依赖头文件生成，编译速度提升30%
-* [#322](https://github.com/tboox/xmake/issues/322): 添加`option.add_features`, `option.add_cxxsnippets` 和 `option.add_csnippets`
+* [#264](https://github.com/xmake-io/xmake/issues/264): 支持在windows上更新dev/master版本，`xmake update dev`
+* [#293](https://github.com/xmake-io/xmake/issues/293): 添加`xmake f/g --mingw=xxx` 配置选线，并且改进find_mingw检测
+* [#301](https://github.com/xmake-io/xmake/issues/301): 改进编译预处理头文件以及依赖头文件生成，编译速度提升30%
+* [#322](https://github.com/xmake-io/xmake/issues/322): 添加`option.add_features`, `option.add_cxxsnippets` 和 `option.add_csnippets`
 * 移除xmake 1.x的一些废弃接口, 例如：`add_option_xxx`
-* [#327](https://github.com/tboox/xmake/issues/327): 改进`lib.detect.find_package`增加对conan包管理器的支持
-* [#319](https://github.com/tboox/xmake/issues/319): 添加`add_headerfiles`和`add_headerdirs`接口去改进头文件的设置
+* [#327](https://github.com/xmake-io/xmake/issues/327): 改进`lib.detect.find_package`增加对conan包管理器的支持
+* [#319](https://github.com/xmake-io/xmake/issues/319): 添加`add_headerfiles`和`add_headerdirs`接口去改进头文件的设置
 * 改进`lib.detect.find_package`并且添加内建的`find_packages("zlib 1.x", "openssl", {xxx = ...})`接口
 
 ### Bugs修复
 
 * 修复无法通过 `set_optimize()` 设置优化选项，如果存在`add_rules("mode.release")`的情况下
-* [#289](https://github.com/tboox/xmake/issues/289): 修复在windows下解压gzip文件失败
-* [#296](https://github.com/tboox/xmake/issues/296): 修复`option.add_includedirs`对cuda编译不生效
-* [#321](https://github.com/tboox/xmake/issues/321): 修复PATH环境改动后查找工具不对问题
+* [#289](https://github.com/xmake-io/xmake/issues/289): 修复在windows下解压gzip文件失败
+* [#296](https://github.com/xmake-io/xmake/issues/296): 修复`option.add_includedirs`对cuda编译不生效
+* [#321](https://github.com/xmake-io/xmake/issues/321): 修复PATH环境改动后查找工具不对问题
 
 ## v2.2.3
 
 ### 新特性
 
-* [#233](https://github.com/tboox/xmake/issues/233): 对mingw平台增加windres的支持
-* [#239](https://github.com/tboox/xmake/issues/239): 添加cparser编译器支持
+* [#233](https://github.com/xmake-io/xmake/issues/233): 对mingw平台增加windres的支持
+* [#239](https://github.com/xmake-io/xmake/issues/239): 添加cparser编译器支持
 * 添加插件管理器，`xmake plugin --help`
 * 添加`add_syslinks`接口去设置系统库依赖，分离与`add_links`添加的库依赖之间的链接顺序
 * 添加 `xmake l time xmake [--rebuild]` 去记录编译耗时
-* [#250](https://github.com/tboox/xmake/issues/250): 添加`xmake f --vs_sdkver=10.0.15063.0`去改变windows sdk版本
+* [#250](https://github.com/xmake-io/xmake/issues/250): 添加`xmake f --vs_sdkver=10.0.15063.0`去改变windows sdk版本
 * 添加`lib.luajit.ffi`和`lib.luajit.jit`扩展模块
-* [#263](https://github.com/tboox/xmake/issues/263): 添加object目标类型，仅仅用于编译生成object对象文件
-* [#269](https://github.com/tboox/xmake/issues/269): 每天第一次构建时候后台进程自动清理最近30天的临时文件
+* [#263](https://github.com/xmake-io/xmake/issues/263): 添加object目标类型，仅仅用于编译生成object对象文件
+* [#269](https://github.com/xmake-io/xmake/issues/269): 每天第一次构建时候后台进程自动清理最近30天的临时文件
 
 ### 改进
 
-* [#229](https://github.com/tboox/xmake/issues/229): 改进vs toolset选择已经vcproj工程文件生成
+* [#229](https://github.com/xmake-io/xmake/issues/229): 改进vs toolset选择已经vcproj工程文件生成
 * 改进编译依赖，对源文件列表的改动进行依赖判断
 * 支持解压*.xz文件
-* [#249](https://github.com/tboox/xmake/pull/249): 改进编译进度信息显示格式
-* [#247](https://github.com/tboox/xmake/pull/247): 添加`-D`和`--diagnosis`去替换`--backtrace`，改进诊断信息显示
-* [#259](https://github.com/tboox/xmake/issues/259): 改进 on_build, on_build_file 和 on_xxx 等接口
+* [#249](https://github.com/xmake-io/xmake/pull/249): 改进编译进度信息显示格式
+* [#247](https://github.com/xmake-io/xmake/pull/247): 添加`-D`和`--diagnosis`去替换`--backtrace`，改进诊断信息显示
+* [#259](https://github.com/xmake-io/xmake/issues/259): 改进 on_build, on_build_file 和 on_xxx 等接口
 * 改进远程包管理器，更加方便的包依赖配置切换
 * 支持only头文件依赖包的安装
 * 支持对包内置links的手动调整，`add_packages("xxx", {links = {}})`
@@ -621,58 +621,58 @@
 * 添加`set_config`接口去设置默认配置
 * 添加`$xmake --try`去尝试构建工程
 * 添加`set_enabled(false)`去显示的禁用target
-* [#69](https://github.com/tboox/xmake/issues/69): 添加远程依赖包管理, `add_requires("tbox ~1.6.1")`
-* [#216](https://github.com/tboox/xmake/pull/216): 添加windows mfc编译规则
+* [#69](https://github.com/xmake-io/xmake/issues/69): 添加远程依赖包管理, `add_requires("tbox ~1.6.1")`
+* [#216](https://github.com/xmake-io/xmake/pull/216): 添加windows mfc编译规则
 
 ### 改进
 
 * 改进Qt编译编译环境探测，增加对mingw sdk的支持
 * 在自动扫描生成的xmake.lua中增加默认debug/release规则
-* [#178](https://github.com/tboox/xmake/issues/178): 修改mingw平台下的目标名
+* [#178](https://github.com/xmake-io/xmake/issues/178): 修改mingw平台下的目标名
 * 对于`add_files()`在windows上支持大小写不敏感路径模式匹配
 * 改进`detect.sdks.find_qt`对于Qt根目录的探测
-* [#184](https://github.com/tboox/xmake/issues/184): 改进`lib.detect.find_package`支持vcpkg
-* [#208](https://github.com/tboox/xmake/issues/208): 改进rpath对动态库的支持
-* [#225](https://github.com/tboox/xmake/issues/225): 改进vs环境探测
+* [#184](https://github.com/xmake-io/xmake/issues/184): 改进`lib.detect.find_package`支持vcpkg
+* [#208](https://github.com/xmake-io/xmake/issues/208): 改进rpath对动态库的支持
+* [#225](https://github.com/xmake-io/xmake/issues/225): 改进vs环境探测
 
 ### Bugs修复
 
-* [#177](https://github.com/tboox/xmake/issues/177): 修复被依赖的动态库target，如果设置了basename后链接失败问题
+* [#177](https://github.com/xmake-io/xmake/issues/177): 修复被依赖的动态库target，如果设置了basename后链接失败问题
 * 修复`$ xmake f --menu`中Exit问题以及cpu过高问题
-* [#197](https://github.com/tboox/xmake/issues/197): 修复生成的vs201x工程文件带有中文路径乱码问题
+* [#197](https://github.com/xmake-io/xmake/issues/197): 修复生成的vs201x工程文件带有中文路径乱码问题
 * 修复WDK规则编译生成的驱动在Win7下运行蓝屏问题
-* [#205](https://github.com/tboox/xmake/pull/205): 修复vcproj工程生成targetdir, objectdir路径设置不匹配问题 
+* [#205](https://github.com/xmake-io/xmake/pull/205): 修复vcproj工程生成targetdir, objectdir路径设置不匹配问题 
 
 ## v2.2.1
 
 ### 新特性
 
-* [#158](https://github.com/tboox/xmake/issues/158): 增加对Cuda编译环境的支持
+* [#158](https://github.com/xmake-io/xmake/issues/158): 增加对Cuda编译环境的支持
 * 添加`set_tools`和`add_tools`接口为指定target目标设置编译工具链
 * 添加内建规则：`mode.debug`, `mode.release`, `mode.profile`和`mode.check`
 * 添加`is_mode`, `is_arch` 和`is_plat`内置接口到自定义脚本域
 * 添加color256代码
-* [#160](https://github.com/tboox/xmake/issues/160): 增加对Qt SDK编译环境的跨平台支持，并且增加`qt.console`, `qt.application`等规则
+* [#160](https://github.com/xmake-io/xmake/issues/160): 增加对Qt SDK编译环境的跨平台支持，并且增加`qt.console`, `qt.application`等规则
 * 添加一些Qt工程模板
-* [#169](https://github.com/tboox/xmake/issues/169): 支持yasm汇编器
-* [#159](https://github.com/tboox/xmake/issues/159): 增加对WDK驱动编译环境支持
+* [#169](https://github.com/xmake-io/xmake/issues/169): 支持yasm汇编器
+* [#159](https://github.com/xmake-io/xmake/issues/159): 增加对WDK驱动编译环境支持
 
 ### 改进
 
 * 添加FAQ到自动生成的xmake.lua文件，方便用户快速上手
 * 支持Android NDK >= r14的版本
 * 改进swiftc对warning flags的支持
-* [#167](https://github.com/tboox/xmake/issues/167): 改进自定义规则：`rule()`
+* [#167](https://github.com/xmake-io/xmake/issues/167): 改进自定义规则：`rule()`
 * 改进`os.files`和`os.dirs`接口，加速文件模式匹配
-* [#171](https://github.com/tboox/xmake/issues/171): 改进Qt环境的构建依赖
+* [#171](https://github.com/xmake-io/xmake/issues/171): 改进Qt环境的构建依赖
 * 在makefile生成插件中实现`make clean`
 
 ### Bugs修复
 
 * 修复无法通过`add_ldflags("xx", "xx", {force = true})`强制设置多个flags的问题
-* [#157](https://github.com/tboox/xmake/issues/157): 修复pdb符号输出目录不存在情况下编译失败问题
+* [#157](https://github.com/xmake-io/xmake/issues/157): 修复pdb符号输出目录不存在情况下编译失败问题
 * 修复对macho格式目标strip all符号失效问题
-* [#168](https://github.com/tboox/xmake/issues/168): 修复生成vs201x工程插件，在x64下失败的问题
+* [#168](https://github.com/xmake-io/xmake/issues/168): 修复生成vs201x工程插件，在x64下失败的问题
 
 ## v2.1.9
 
@@ -690,7 +690,7 @@
 ### 改进
 
 * 改进交叉工具链配置，通过指定工具别名定向到已知的工具链来支持未知编译工具名配置, 例如: `xmake f --cc=gcc@ccmips.exe`
-* [#151](https://github.com/tboox/xmake/issues/151): 改进mingw平台下动态库生成
+* [#151](https://github.com/xmake-io/xmake/issues/151): 改进mingw平台下动态库生成
 * 改进生成makefile插件
 * 改进检测错误提示
 * 改进`add_cxflags`等flags api的设置，添加force参数，来禁用自动检测和映射，强制设置选项：`add_cxflags("-DTEST", {force = true})`
@@ -704,8 +704,8 @@
 ### Bugs修复
 
 * 修复依赖修改编译和链接问题
-* [#151](https://github.com/tboox/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
-* [#150](https://github.com/tboox/xmake/issues/150): 修复windows下ar.exe打包过长obj列表参数，导致失败问题
+* [#151](https://github.com/xmake-io/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
+* [#150](https://github.com/xmake-io/xmake/issues/150): 修复windows下ar.exe打包过长obj列表参数，导致失败问题
 * 修复`xmake f --cross`无法配置问题
 * 修复`os.cd`到windows根路径问题
 
@@ -726,7 +726,7 @@
 
 ### Bugs修复
 
-* [#145](https://github.com/tboox/xmake/issues/145): 修复运行target的当前目录环境
+* [#145](https://github.com/xmake-io/xmake/issues/145): 修复运行target的当前目录环境
 
 ## v2.1.7
 
@@ -757,8 +757,8 @@
 ### Bugs修复
 
 * 修复`set_pcxxheader`编译没有继承flags配置问题
-* [#140](https://github.com/tboox/xmake/issues/140): 修复`os.tmpdir()`在fakeroot下的冲突问题
-* [#142](https://github.com/tboox/xmake/issues/142): 修复`os.getenv` 在windows上的中文编码问题
+* [#140](https://github.com/xmake-io/xmake/issues/140): 修复`os.tmpdir()`在fakeroot下的冲突问题
+* [#142](https://github.com/xmake-io/xmake/issues/142): 修复`os.getenv` 在windows上的中文编码问题
 * 修复在带有空格路径的情况下，编译错误问题
 * 修复setenv空值的崩溃问题
 
@@ -782,8 +782,8 @@
 
 ### 新特性
 
-* [#83](https://github.com/tboox/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
-* [#83](https://github.com/tboox/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
+* [#83](https://github.com/xmake-io/xmake/issues/83): 添加 `add_csnippet`，`add_cxxsnippet`到`option`来检测一些编译器特性
+* [#83](https://github.com/xmake-io/xmake/issues/83): 添加用户扩展模块去探测程序，库文件以及其他主机环境
 * 添加`find_program`, `find_file`, `find_library`, `find_tool`和`find_package` 等模块接口
 * 添加`net.*`和`devel.*`扩展模块
 * 添加`val()`接口去获取内置变量，例如：`val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
@@ -791,92 +791,92 @@
 * 增加`has_flags`, `features`和`has_features`等探测模块接口
 * 添加`option.on_check`, `option.after_check` 和 `option.before_check` 接口
 * 添加`target.on_load`接口
-* [#132](https://github.com/tboox/xmake/issues/132): 添加`add_frameworkdirs`接口
+* [#132](https://github.com/xmake-io/xmake/issues/132): 添加`add_frameworkdirs`接口
 * 添加`lib.detect.has_xxx`和`lib.detect.find_xxx`接口
 * 添加`add_moduledirs`接口在工程中定义和加载扩展模块
 * 添加`includes`接口替换`add_subdirs`和`add_subfiles`
-* [#133](https://github.com/tboox/xmake/issues/133): 改进工程插件，通过运行`xmake project -k compile_commands`来导出`compile_commands.json`
+* [#133](https://github.com/xmake-io/xmake/issues/133): 改进工程插件，通过运行`xmake project -k compile_commands`来导出`compile_commands.json`
 * 添加`set_pcheader`和`set_pcxxheader`去支持跨编译器预编译头文件，支持`gcc`, `clang`和`msvc`
 * 添加`xmake f -p cross`平台用于交叉编译，并且支持自定义平台名
 
 ### 改进
 
-* [#87](https://github.com/tboox/xmake/issues/87): 为依赖库目标自动添加：`includes` 和 `links`
+* [#87](https://github.com/xmake-io/xmake/issues/87): 为依赖库目标自动添加：`includes` 和 `links`
 * 改进`import`接口，去加载用户扩展模块
-* [#93](https://github.com/tboox/xmake/pull/93): 改进 `xmake lua`，支持运行单行命令和模块
+* [#93](https://github.com/xmake-io/xmake/pull/93): 改进 `xmake lua`，支持运行单行命令和模块
 * 改进编译错误提示信息输出
 * 改进`print`接口去更好些显示table数据
-* [#111](https://github.com/tboox/xmake/issues/111): 添加`--root`通用选项去临时支持作为root运行
-* [#113](https://github.com/tboox/xmake/pull/113): 改进权限管理，现在作为root运行也是非常安全的
+* [#111](https://github.com/xmake-io/xmake/issues/111): 添加`--root`通用选项去临时支持作为root运行
+* [#113](https://github.com/xmake-io/xmake/pull/113): 改进权限管理，现在作为root运行也是非常安全的
 * 改进`xxx_script`工程描述api，支持多平台模式选择, 例如：`on_build("iphoneos|arm*", function (target) end)`
 * 改进内置变量，支持环境变量和注册表数据的获取
 * 改进vstudio环境和交叉工具链的探测
-* [#71](https://github.com/tboox/xmake/issues/71): 改进从环境变量中探测链接器和编译器
+* [#71](https://github.com/xmake-io/xmake/issues/71): 改进从环境变量中探测链接器和编译器
 * 改进option选项检测，通过多任务检测，提升70%的检测速度
-* [#129](https://github.com/tboox/xmake/issues/129): 检测链接依赖，如果源文件没有改变，就不必重新链接目标文件了
+* [#129](https://github.com/xmake-io/xmake/issues/129): 检测链接依赖，如果源文件没有改变，就不必重新链接目标文件了
 * 在vs201x工程插件中增加对`*.asm`文件的支持
 * 标记`add_bindings`和`add_rbindings`为废弃接口
 * 优化`xmake rebuild`在windows上的构建速度
 * 将`core.project.task`模块迁移至`core.base.task`
-* 将`echo` 和 `app2ipa` 插件迁移到 [xmake-plugins](https://github.com/tboox/xmake-plugins) 仓库
+* 将`echo` 和 `app2ipa` 插件迁移到 [xmake-plugins](https://github.com/xmake-io/xmake-plugins) 仓库
 * 添加`set_config_header("config.h", {prefix = ""})` 代替 `set_config_h` 和 `set_config_h_prefix`
 
 ### Bugs修复
 
 * 修复`try-catch-finally`
 * 修复解释器bug，解决当加载多级子目录时，根域属性设置不对
-* [#115](https://github.com/tboox/xmake/pull/115): 修复安装脚本`get.sh`的路径问题
+* [#115](https://github.com/xmake-io/xmake/pull/115): 修复安装脚本`get.sh`的路径问题
 * 修复`import()`导入接口的缓存问题
 
 ## v2.1.4
 
 ### 新特性
 
-* [#68](https://github.com/tboox/xmake/issues/68): 增加`$(programdir)`和`$(xmake)`内建变量
+* [#68](https://github.com/xmake-io/xmake/issues/68): 增加`$(programdir)`和`$(xmake)`内建变量
 * 添加`is_host`接口去判断当前的主机环境
-* [#79](https://github.com/tboox/xmake/issues/79): 增强`xmake lua`，支持交互式解释执行
+* [#79](https://github.com/xmake-io/xmake/issues/79): 增强`xmake lua`，支持交互式解释执行
 
 ### 改进
 
 * 修改菜单选项颜色
-* [#71](https://github.com/tboox/xmake/issues/71): 针对widows编译器改进优化选项映射
-* [#73](https://github.com/tboox/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
+* [#71](https://github.com/xmake-io/xmake/issues/71): 针对widows编译器改进优化选项映射
+* [#73](https://github.com/xmake-io/xmake/issues/73): 尝试获取可执行文件路径来作为xmake的脚本目录 
 * 在`add_subdirs`中的子`xmake.lua`中，使用独立子作用域，避免作用域污染导致的干扰问题
-* [#78](https://github.com/tboox/xmake/pull/78): 美化非全屏终端窗口下的`xmake --help`输出
+* [#78](https://github.com/xmake-io/xmake/pull/78): 美化非全屏终端窗口下的`xmake --help`输出
 * 避免产生不必要的`.xmake`目录，如果不在工程中的时候
 
 ### Bugs修复
 
-* [#67](https://github.com/tboox/xmake/issues/67): 修复 `sudo make install` 命令权限问题
-* [#70](https://github.com/tboox/xmake/issues/70): 修复检测android编译器错误
+* [#67](https://github.com/xmake-io/xmake/issues/67): 修复 `sudo make install` 命令权限问题
+* [#70](https://github.com/xmake-io/xmake/issues/70): 修复检测android编译器错误
 * 修复临时文件路径冲突问题
 * 修复`os.host`, `os.arch`等接口
 * 修复根域api加载干扰其他子作用域问题
-* [#77](https://github.com/tboox/xmake/pull/77): 修复`cprint`色彩打印中断问题
+* [#77](https://github.com/xmake-io/xmake/pull/77): 修复`cprint`色彩打印中断问题
 
 ## v2.1.3
 
 ### 新特性
 
-* [#65](https://github.com/tboox/xmake/pull/65): 为target添加`set_default`接口用于修改默认的构建所有targets行为
+* [#65](https://github.com/xmake-io/xmake/pull/65): 为target添加`set_default`接口用于修改默认的构建所有targets行为
 * 允许在工程子目录执行`xmake`命令进行构建，xmake会自动检测所在的工程根目录
 * 添加`add_rpathdirs` api到target和option，支持动态库的自动加载运行
 
 ### 改进
 
-* [#61](https://github.com/tboox/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
+* [#61](https://github.com/xmake-io/xmake/pull/61): 提供更加安全的`xmake install` and `xmake uninstall`任务，更友好的处理root安装问题
 * 提供`rpm`, `deb`和`osxpkg`安装包
-* [#63](https://github.com/tboox/xmake/pull/63): 改进安装脚本，实现更加安全的构建和安装xmake
-* [#61](https://github.com/tboox/xmake/pull/61): 禁止在root权限下运行xmake命令，增强安全性
+* [#63](https://github.com/xmake-io/xmake/pull/63): 改进安装脚本，实现更加安全的构建和安装xmake
+* [#61](https://github.com/xmake-io/xmake/pull/61): 禁止在root权限下运行xmake命令，增强安全性
 * 改进工具链检测，通过延迟延迟检测提升整体检测效率
 * 当自动扫面生成`xmake.lua`时，添加更友好的用户提示，避免用户无操作
 
 ### Bugs修复
 
 * 修复版本检测的错误提示信息
-* [#60](https://github.com/tboox/xmake/issues/60): 修复macosx和windows平台的xmake自举编译
-* [#64](https://github.com/tboox/xmake/issues/64): 修复构建android `armv8-a`架构失败问题
-* [#50](https://github.com/tboox/xmake/issues/50): 修复构建android可执行程序，无法运行问题
+* [#60](https://github.com/xmake-io/xmake/issues/60): 修复macosx和windows平台的xmake自举编译
+* [#64](https://github.com/xmake-io/xmake/issues/64): 修复构建android `armv8-a`架构失败问题
+* [#50](https://github.com/xmake-io/xmake/issues/50): 修复构建android可执行程序，无法运行问题
 
 ## v2.1.2
 
@@ -895,7 +895,7 @@
 
 * 修复编译android程序，找不到系统头文件问题
 * 修复检测选项行为不正确问题
-* [#57](https://github.com/tboox/xmake/issues/57): 修复代码文件权限到0644
+* [#57](https://github.com/xmake-io/xmake/issues/57): 修复代码文件权限到0644
 
 ## v2.1.1
 

@@ -228,7 +228,7 @@ function main()
     environment.enter()
 
     -- sort main urls
-    local mainurls = {"https://github.com/tboox/xmake.git", "https://gitlab.com/tboox/xmake.git", "https://gitee.com/tboox/xmake.git"}
+    local mainurls = {"https://github.com/xmake-io/xmake.git", "https://gitlab.com/tboox/xmake.git", "https://gitee.com/tboox/xmake.git"}
     fasturl.add(mainurls)
     mainurls = fasturl.sort(mainurls)
 
@@ -256,13 +256,13 @@ function main()
     -- get urls on windows
     if is_host("windows") then
         if version:find('.', 1, true) then
-            mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", version, version),
+            mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", version, version),
                         format("https://qcloud.coding.net/u/waruqi/p/xmake-releases/git/raw/master/xmake-%s.exe", version),
                         format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe", version)}
         else
             local lastest = semver.select("lastest", tags or {}, tags or {}, {})
             if lastest then
-                mainurls = {format("https://github.com/tboox/xmake/releases/download/%s/xmake-%s.exe", lastest, version),
+                mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", lastest, version),
                             format("https://qcloud.coding.net/u/waruqi/p/xmake-releases/git/raw/master/xmake-%s.exe", version),
                             format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe", version)}
             else

@@ -6,10 +6,10 @@ pkgver=2.2.3
 pkgrel=1
 pkgdesc="A make-like build utility based on Lua"
 arch=('i686' 'x86_64')
-url="https://github.com/tboox/xmake"
+url="https://github.com/xmake-io/xmake"
 license=('Apache')
 makedepends=()
-source=("$pkgname.zip::https://github.com/tboox/xmake/archive/v${pkgver}.zip")
+source=("$pkgname.zip::https://github.com/xmake-io/xmake/archive/v${pkgver}.zip")
 sha256sums=('e89b6e45b93d8965aeb93d069c17f60723ecd1389b06bd9c6147ce1181e7cad2')
 
 build() {

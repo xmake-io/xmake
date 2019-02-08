@@ -73,7 +73,7 @@ try{
         Get-AppVeyorArtifacts TitanSnow "xmake-90ua9" $installdir
     }
     if($branch -eq $null){ $branch='master' }
-    Invoke-Webrequest "https://github.com/tboox/xmake/archive/$branch.zip" -OutFile "$installdir\temp.zip"
+    Invoke-Webrequest "https://github.com/xmake-io/xmake/archive/$branch.zip" -OutFile "$installdir\temp.zip"
     Expand-Archive "$installdir\temp.zip" "$installdir\temp" -Force
     Move-Item "$installdir\temp\xmake-$branch\xmake\*" $installdir
     Remove-Item "$installdir\temp","$installdir\temp.zip" -Recurse -Force
